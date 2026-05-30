@@ -15,7 +15,9 @@ createRoot(document.getElementById("root")!).render(
         // 24h — past this, the persisted blob is dropped on hydrate.
         maxAge: 1000 * 60 * 60 * 24,
         // Bump when query key shapes change to invalidate old caches.
-        buster: "v1",
+        // v2: clan-detail now includes data_version (cache freshness);
+        // dashboard + clan-stats added.
+        buster: "v2",
       }}
     >
       <App />
