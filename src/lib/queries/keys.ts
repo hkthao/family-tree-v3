@@ -11,4 +11,6 @@ export const queryKeys = {
   clan: (clanId: string, userId: string) => ["clan", clanId, userId] as const,
   clanDataVersion: (clanId: string) =>
     ["clan-data-version", clanId] as const,
+  persons: (clanId: string, userId: string, params: unknown) =>
+    ["persons", clanId, userId, params] as const,
 };

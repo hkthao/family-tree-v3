@@ -5,6 +5,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import Account from "@/pages/Account";
 import Clans from "@/pages/Clans";
 import Events from "@/pages/clan/Events";
+import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
 import Settings from "@/pages/clan/Settings";
 import Tree from "@/pages/clan/Tree";
@@ -32,6 +33,15 @@ export default function App() {
           element={
             <RequireAuth>
               <NewClan />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/clans/:clanId/people/new"
+          element={
+            <RequireAuth>
+              <NewPerson />
             </RequireAuth>
           }
         />
