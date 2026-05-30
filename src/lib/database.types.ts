@@ -132,6 +132,13 @@ export type Database = {
             referencedRelation: "persons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "branches_head_person_fk"
+            columns: ["head_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       clan_members: {
@@ -345,6 +352,13 @@ export type Database = {
             referencedRelation: "persons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_related_person_id_fkey"
+            columns: ["related_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
       families: {
@@ -394,10 +408,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "families_husband_fk"
+            columns: ["husband_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "families_wife_fk"
             columns: ["wife_id"]
             isOneToOne: false
             referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "families_wife_fk"
+            columns: ["wife_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -660,14 +688,105 @@ export type Database = {
             referencedRelation: "persons"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "share_links_root_person_id_fkey"
+            columns: ["root_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      persons_public_safe: {
+        Row: {
+          bio: string | null
+          birth_date: string | null
+          birth_place: string | null
+          branch_id: string | null
+          burial_place: string | null
+          clan_id: string | null
+          courtesy_name: string | null
+          death_date: string | null
+          full_name: string | null
+          gender: string | null
+          generation: number | null
+          id: string | null
+          is_living: boolean | null
+          is_root: boolean | null
+          nickname: string | null
+          photo_path: string | null
+          posthumous_name: string | null
+        }
+        Insert: {
+          bio?: never
+          birth_date?: never
+          birth_place?: never
+          branch_id?: string | null
+          burial_place?: never
+          clan_id?: string | null
+          courtesy_name?: never
+          death_date?: never
+          full_name?: string | null
+          gender?: string | null
+          generation?: number | null
+          id?: string | null
+          is_living?: boolean | null
+          is_root?: boolean | null
+          nickname?: never
+          photo_path?: never
+          posthumous_name?: never
+        }
+        Update: {
+          bio?: never
+          birth_date?: never
+          birth_place?: never
+          branch_id?: string | null
+          burial_place?: never
+          clan_id?: string | null
+          courtesy_name?: never
+          death_date?: never
+          full_name?: string | null
+          gender?: string | null
+          generation?: number | null
+          id?: string | null
+          is_living?: boolean | null
+          is_root?: boolean | null
+          nickname?: never
+          photo_path?: never
+          posthumous_name?: never
+        }
+        Relationships: [
+          {
+            foreignKeyName: "persons_branch_fk"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "persons_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
+      clan_role: { Args: { target_clan: string }; Returns: string }
       f_unaccent: { Args: { "": string }; Returns: string }
+      is_caller_suspended: { Args: never; Returns: boolean }
+      is_clan_admin: { Args: { target_clan: string }; Returns: boolean }
+      is_clan_member: { Args: { target_clan: string }; Returns: boolean }
+      is_platform_admin: { Args: never; Returns: boolean }
+      recompute_generation_for_clan: {
+        Args: { target_clan: string }
+        Returns: undefined
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       unaccent: { Args: { "": string }; Returns: string }
