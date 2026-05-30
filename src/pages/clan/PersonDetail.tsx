@@ -12,8 +12,16 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queries/keys";
-import { deletePerson, getPerson, type PersonDetail as PersonDetailT } from "@/lib/queries/persons";
 import { getClanDetail } from "@/lib/queries/clan-detail";
+import {
+  getPersonRelationships,
+  type Relationship,
+} from "@/lib/queries/families";
+import {
+  deletePerson,
+  getPerson,
+  type PersonDetail as PersonDetailT,
+} from "@/lib/queries/persons";
 
 export default function PersonDetail() {
   const { clanId, personId } = useParams<{ clanId: string; personId: string }>();
@@ -31,6 +39,12 @@ export default function PersonDetail() {
     queryKey: queryKeys.person(personId ?? "", userId),
     queryFn: () => getPerson(personId!),
     enabled: !!personId,
+  });
+
+  const { data: relationships } = useQuery({
+    queryKey: queryKeys.personRelationships(personId ?? "", userId),
+    queryFn: () => getPersonRelationships(personId!),
+    enabled: !!personId && !!person,
   });
 
   const deleteMutation = useMutation({
@@ -114,6 +128,56 @@ export default function PersonDetail() {
               </CardContent>
             </Card>
 
+            {relationships && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quan hệ</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <RelationshipGroup
+                    label="Cha mẹ"
+                    items={relationships.parents}
+                    clanId={clanId}
+                    emptyHint="Chưa nhập cha mẹ"
+                  />
+                  <RelationshipGroup
+                    label="Vợ / chồng"
+                    items={relationships.spouses}
+                    clanId={clanId}
+                    emptyHint="Chưa có"
+                    action={
+                      canEdit ? (
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            to={`/clans/${clanId}/people/${personId}/add-spouse`}
+                          >
+                            + Thêm vợ/chồng
+                          </Link>
+                        </Button>
+                      ) : null
+                    }
+                  />
+                  <RelationshipGroup
+                    label="Con cái"
+                    items={relationships.children}
+                    clanId={clanId}
+                    emptyHint="Chưa có"
+                    action={
+                      canEdit ? (
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            to={`/clans/${clanId}/people/${personId}/add-child`}
+                          >
+                            + Thêm con
+                          </Link>
+                        </Button>
+                      ) : null
+                    }
+                  />
+                </CardContent>
+              </Card>
+            )}
+
             {canEdit && (
               <div className="flex flex-wrap gap-3">
                 <Button asChild>
@@ -159,6 +223,51 @@ function DetailRow({ label, value }: { label: string; value: string | null | und
     <div className="grid grid-cols-[120px_1fr] gap-2">
       <span className="text-sm text-muted-foreground">{label}</span>
       <span>{value}</span>
+    </div>
+  );
+}
+
+function RelationshipGroup({
+  label,
+  items,
+  clanId,
+  emptyHint,
+  action,
+}: {
+  label: string;
+  items: Relationship[];
+  clanId: string;
+  emptyHint: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-medium text-muted-foreground">{label}</h3>
+        {action}
+      </div>
+      {items.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">{emptyHint}</p>
+      ) : (
+        <ul className="space-y-1">
+          {items.map((r) => (
+            <li key={r.id}>
+              <Link
+                to={`/clans/${clanId}/people/${r.id}`}
+                className="block py-1.5 px-2 -mx-2 rounded hover:bg-muted/40"
+              >
+                <span className="font-medium">{r.full_name}</span>
+                <span className="text-sm text-muted-foreground ml-2">
+                  {r.gender === "M" ? "Nam" : "Nữ"}
+                  {!r.is_living &&
+                    ` • đã mất${r.death_date ? ` ${r.death_date.slice(0, 4)}` : ""}`}
+                  {r.is_living && r.birth_date && ` • sinh ${r.birth_date.slice(0, 4)}`}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
