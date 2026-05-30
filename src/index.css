@@ -1,19 +1,84 @@
+@import "@fontsource/be-vietnam-pro/400.css";
+@import "@fontsource/be-vietnam-pro/500.css";
+@import "@fontsource/be-vietnam-pro/600.css";
+@import "@fontsource/be-vietnam-pro/700.css";
+@import "@fontsource/noto-serif/400.css";
+@import "@fontsource/noto-serif/600.css";
+@import "@fontsource/noto-serif/700.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-size: 17px;
+@layer base {
+  :root {
+    /* Oxblood palette — light mode (warm paper) */
+    --background: 38 60% 96%;          /* #FBF7F0 paper */
+    --foreground: 20 14% 14%;          /* #2A2320 ink */
+
+    --card: 38 60% 96%;
+    --card-foreground: 20 14% 14%;
+
+    --popover: 38 60% 96%;
+    --popover-foreground: 20 14% 14%;
+
+    --primary: 0 45% 33%;              /* #7A2E2E oxblood */
+    --primary-foreground: 38 60% 96%;
+
+    --secondary: 36 30% 90%;
+    --secondary-foreground: 20 14% 14%;
+
+    --muted: 36 30% 90%;
+    --muted-foreground: 25 9% 44%;     /* #7A6F66 warm gray */
+
+    --accent: 40 64% 45%;              /* #B8862A bronze */
+    --accent-foreground: 38 60% 96%;
+
+    --destructive: 0 70% 51%;          /* #D92E2E bright red — distinct from oxblood */
+    --destructive-foreground: 38 60% 96%;
+
+    --border: 36 41% 86%;              /* #E8E0D2 */
+    --input: 36 41% 86%;
+    --ring: 0 45% 33%;                  /* focus ring = primary */
+
+    --radius: 0.5rem;
+  }
+
+  /* Base font size — 17px, scales with user system preference via rem */
+  html {
+    font-size: 17px;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto,
+      sans-serif;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  .clan-name {
+    font-family: "Noto Serif", Georgia, serif;
+    @apply tracking-tight;
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
-html,
-body,
-#root {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
+@layer utilities {
+  /* Ensure tap targets meet 44×44 (Apple HIG) */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
 }
