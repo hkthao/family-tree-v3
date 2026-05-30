@@ -1,0 +1,24 @@
+import type { ReactNode } from "react";
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+}
+
+export function AuthLayout({ title, subtitle, children }: Props) {
+  return (
+    <main className="min-h-dvh flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-8">
+        <header className="text-center space-y-2">
+          <h1 className="clan-name text-4xl font-semibold">Gia phả</h1>
+          <h2 className="text-2xl">{title}</h2>
+          {subtitle && (
+            <p className="text-muted-foreground">{subtitle}</p>
+          )}
+        </header>
+        {children}
+      </div>
+    </main>
+  );
+}
