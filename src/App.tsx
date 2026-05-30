@@ -6,6 +6,7 @@ import Account from "@/pages/Account";
 import Clans from "@/pages/Clans";
 import AddChild from "@/pages/clan/AddChild";
 import AddSpouse from "@/pages/clan/AddSpouse";
+import Audit from "@/pages/clan/Audit";
 import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
@@ -109,6 +110,7 @@ export default function App() {
           <Route path="events" element={<Events />} />
           <Route path="settings" element={<Settings />} />
           <Route path="import" element={<Import />} />
+          <Route path="audit" element={<Audit />} />
         </Route>
 
         <Route

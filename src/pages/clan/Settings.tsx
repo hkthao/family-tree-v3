@@ -197,6 +197,20 @@ export default function Settings() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Nhật ký chỉnh sửa</CardTitle>
+          <CardDescription>
+            Lịch sử thay đổi với người, gia đình, chi — có thể khôi phục.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline">
+            <Link to={`/clans/${clan.id}/audit`}>Mở nhật ký</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Giới hạn</CardTitle>
           <CardDescription>
             Do quản trị nền tảng đặt, không sửa được ở đây.

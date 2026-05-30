@@ -879,6 +879,7 @@ export type Database = {
         Args: { target_clan: string }
         Returns: undefined
       }
+      restore_audit_entry: { Args: { audit_id: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       unaccent: { Args: { "": string }; Returns: string }
