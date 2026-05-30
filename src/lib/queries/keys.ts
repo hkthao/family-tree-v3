@@ -27,4 +27,6 @@ export const queryKeys = {
     ["clan-stats", clanId, userId] as const,
   branches: (clanId: string, userId: string) =>
     ["branches", clanId, userId] as const,
+  shareLinks: (clanId: string, userId: string) =>
+    ["share-links", clanId, userId] as const,
 };

@@ -702,6 +702,27 @@ export type Database = {
           },
         ]
       }
+      share_view_rate: {
+        Row: {
+          id: number
+          ip: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          id?: number
+          ip: string
+          request_count?: number
+          window_start: string
+        }
+        Update: {
+          id?: number
+          ip?: string
+          request_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       persons_public_safe: {
@@ -853,6 +874,7 @@ export type Database = {
       is_clan_admin: { Args: { target_clan: string }; Returns: boolean }
       is_clan_member: { Args: { target_clan: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
+      prune_share_view_rate: { Args: never; Returns: undefined }
       recompute_generation_for_clan: {
         Args: { target_clan: string }
         Returns: undefined

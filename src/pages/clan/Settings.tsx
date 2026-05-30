@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { BranchesSection } from "@/components/BranchesSection";
+import { ShareLinksSection } from "@/components/ShareLinksSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -178,6 +179,19 @@ export default function Settings() {
           <Button asChild>
             <Link to={`/clans/${clan.id}/members`}>Quản lý thành viên</Link>
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Link chia sẻ</CardTitle>
+          <CardDescription>
+            Tạo link công khai cho khách xem cây (đã ẩn người sống). Link có
+            hạn và thu hồi được bất cứ lúc nào.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ShareLinksSection clanId={clan.id} />
         </CardContent>
       </Card>
 

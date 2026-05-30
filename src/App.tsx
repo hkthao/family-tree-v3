@@ -18,6 +18,7 @@ import Settings from "@/pages/clan/Settings";
 import Tree from "@/pages/clan/Tree";
 import Login from "@/pages/Login";
 import NewClan from "@/pages/NewClan";
+import Share from "@/pages/Share";
 import Signup from "@/pages/Signup";
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/share/:token" element={<Share />} />
 
         <Route
           path="/clans"
