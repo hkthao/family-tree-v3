@@ -6,12 +6,20 @@ interface Tab {
   to: string;
   label: string;
   icon: string;
+  /** Match only the exact path (e.g. for the dashboard index route). */
+  end?: boolean;
 }
 
 interface Props {
   /** Routes scoped to this clan. */
   tabs: Tab[];
 }
+
+const GRID_COLS: Record<number, string> = {
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+  5: "grid-cols-5",
+};
 
 /**
  * Sticky bottom tab bar. Mobile-first: large tap targets (≥56px), icon +
@@ -24,12 +32,12 @@ export function BottomTabBar({ tabs }: Props) {
       className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background safe-area-bottom"
       aria-label="Điều hướng chính"
     >
-      <ul className="grid grid-cols-4 max-w-xl mx-auto">
+      <ul className={cn("grid max-w-xl mx-auto", GRID_COLS[tabs.length] ?? "grid-cols-4")}>
         {tabs.map((tab) => (
           <li key={tab.to}>
             <NavLink
               to={tab.to}
-              end={tab.to.endsWith("/")}
+              end={tab.end ?? tab.to.endsWith("/")}
               className={({ isActive }) =>
                 cn(
                   "flex flex-col items-center justify-center gap-1 py-2 min-h-[56px] text-xs",

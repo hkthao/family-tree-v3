@@ -36,6 +36,7 @@ export function ClanLayout() {
   }
 
   const tabs = [
+    { to: `/clans/${clanId}`, label: "Tổng quan", icon: "🏠", end: true },
     { to: `/clans/${clanId}/people`, label: "Danh bạ", icon: "📋" },
     { to: `/clans/${clanId}/tree`, label: "Cây", icon: "🌳" },
     { to: `/clans/${clanId}/events`, label: "Sự kiện", icon: "🗓" },

@@ -788,6 +788,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_clan_stats: {
+        Args: { target_clan: string }
+        Returns: {
+          branches: number
+          deceased: number
+          females: number
+          living: number
+          males: number
+          max_generation: number
+          total_persons: number
+        }[]
+      }
       invite_member_by_email: {
         Args: { member_role: string; target_clan: string; target_email: string }
         Returns: Json

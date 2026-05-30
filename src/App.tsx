@@ -6,6 +6,7 @@ import Account from "@/pages/Account";
 import Clans from "@/pages/Clans";
 import AddChild from "@/pages/clan/AddChild";
 import AddSpouse from "@/pages/clan/AddSpouse";
+import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
 import Members from "@/pages/clan/Members";
@@ -99,7 +100,7 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<Navigate to="people" replace />} />
+          <Route index element={<Dashboard />} />
           <Route path="people" element={<People />} />
           <Route path="tree" element={<Tree />} />
           <Route path="events" element={<Events />} />
