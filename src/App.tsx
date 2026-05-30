@@ -1,8 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { RequireAuth } from "@/components/RequireAuth";
-import Home from "@/pages/Home";
+import Clans from "@/pages/Clans";
 import Login from "@/pages/Login";
+import NewClan from "@/pages/NewClan";
 import Signup from "@/pages/Signup";
 
 export default function App() {
@@ -11,15 +12,26 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+
         <Route
-          path="/"
+          path="/clans"
           element={
             <RequireAuth>
-              <Home />
+              <Clans />
             </RequireAuth>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="/clans/new"
+          element={
+            <RequireAuth>
+              <NewClan />
+            </RequireAuth>
+          }
+        />
+
+        <Route path="/" element={<Navigate to="/clans" replace />} />
+        <Route path="*" element={<Navigate to="/clans" replace />} />
       </Routes>
     </BrowserRouter>
   );
