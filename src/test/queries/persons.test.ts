@@ -1,7 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createClan } from "@/lib/queries/clans";
-import { createPerson, listPersons } from "@/lib/queries/persons";
+import {
+  createPerson,
+  deletePerson,
+  getPerson,
+  listPersons,
+  updatePerson,
+} from "@/lib/queries/persons";
 import { unaccent } from "@/lib/unaccent";
 
 import { createTestUser, deleteUser, type TestUser } from "../supabase-helpers";
@@ -97,6 +103,74 @@ describe("queries: persons", () => {
     // The is_root person should be first (generation = 1)
     expect(r.rows[0].is_root).toBe(true);
     expect(r.rows[0].generation).toBe(1);
+  });
+
+  it("getPerson returns the row; updatePerson then reflects changes", async () => {
+    const { id } = await createPerson(
+      { clan_id: clanId, full_name: "Tạm Tên", gender: "M" },
+      owner.client,
+    );
+
+    const before = await getPerson(id, owner.client);
+    expect(before?.full_name).toBe("Tạm Tên");
+
+    await updatePerson(
+      id,
+      { full_name: "Đổi Tên", bio: "Tiểu sử mới" },
+      owner.client,
+    );
+
+    const after = await getPerson(id, owner.client);
+    expect(after?.full_name).toBe("Đổi Tên");
+    expect(after?.bio).toBe("Tiểu sử mới");
+  });
+
+  it("deletePerson soft-deletes (row no longer visible via getPerson / listPersons)", async () => {
+    const { id } = await createPerson(
+      { clan_id: clanId, full_name: "Sẽ Xoá", gender: "F" },
+      owner.client,
+    );
+
+    // Sanity
+    expect((await getPerson(id, owner.client))?.id).toBe(id);
+
+    await deletePerson(id, owner.client);
+
+    // getPerson filters by deleted_at IS NULL → null
+    expect(await getPerson(id, owner.client)).toBeNull();
+
+    // listPersons filters out soft-deleted
+    const listed = await listPersons(
+      clanId,
+      { page: 1, pageSize: 100 },
+      owner.client,
+    );
+    expect(listed.rows.find((p) => p.id === id)).toBeUndefined();
+  });
+
+  it("viewer cannot updatePerson (RLS blocks)", async () => {
+    const viewer = await createTestUser({ displayName: "Viewer" });
+    cleanup.push(viewer.id);
+
+    // Add viewer to the existing clan (need owner to do this)
+    await owner.client.from("clan_members").insert({
+      clan_id: clanId,
+      user_id: viewer.id,
+      role: "viewer",
+    });
+
+    const { id } = await createPerson(
+      { clan_id: clanId, full_name: "Bị Sửa", gender: "M" },
+      owner.client,
+    );
+
+    // viewer SELECT works (returns row); UPDATE silently no-ops via RLS USING
+    // Actually our policy uses USING + WITH CHECK = can_edit_clan; viewer
+    // matches USING (false), so update affects 0 rows but doesn't error.
+    await updatePerson(id, { full_name: "Hacked" }, viewer.client);
+
+    const stillOriginal = await getPerson(id, owner.client);
+    expect(stillOriginal?.full_name).toBe("Bị Sửa");
   });
 
   it("non-member cannot listPersons (RLS empty result)", async () => {

@@ -4,9 +4,11 @@ import { ClanLayout } from "@/components/ClanLayout";
 import { RequireAuth } from "@/components/RequireAuth";
 import Account from "@/pages/Account";
 import Clans from "@/pages/Clans";
+import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
 import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
+import PersonDetail from "@/pages/clan/PersonDetail";
 import Settings from "@/pages/clan/Settings";
 import Tree from "@/pages/clan/Tree";
 import Login from "@/pages/Login";
@@ -42,6 +44,22 @@ export default function App() {
           element={
             <RequireAuth>
               <NewPerson />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/clans/:clanId/people/:personId"
+          element={
+            <RequireAuth>
+              <PersonDetail />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/clans/:clanId/people/:personId/edit"
+          element={
+            <RequireAuth>
+              <EditPerson />
             </RequireAuth>
           }
         />

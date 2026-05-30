@@ -132,3 +132,81 @@ export async function createPerson(
   if (error) throw new Error(error.message);
   return { id: data.id };
 }
+
+export interface PersonDetail extends PersonRow {
+  clan_id: string;
+  courtesy_name: string | null;
+  posthumous_name: string | null;
+  nickname: string | null;
+  bio: string | null;
+  birth_place: string | null;
+  burial_place: string | null;
+  photo_path: string | null;
+  birth_lunar_year: number | null;
+  birth_lunar_month: number | null;
+  birth_lunar_day: number | null;
+  death_lunar_year: number | null;
+  death_lunar_month: number | null;
+  death_lunar_day: number | null;
+  death_anniv_lunar_month: number | null;
+  death_anniv_lunar_day: number | null;
+}
+
+const DETAIL_COLS =
+  "id, clan_id, full_name, gender, is_living, is_root, birth_date, death_date, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day";
+
+export async function getPerson(
+  personId: string,
+  client: Client = defaultClient,
+): Promise<PersonDetail | null> {
+  const { data, error } = await client
+    .from("persons")
+    .select(DETAIL_COLS)
+    .eq("id", personId)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return (data as PersonDetail | null) ?? null;
+}
+
+export interface UpdatePersonInput {
+  full_name?: string;
+  gender?: "M" | "F";
+  is_living?: boolean;
+  is_root?: boolean;
+  birth_date?: string | null;
+  death_date?: string | null;
+  bio?: string | null;
+  birth_place?: string | null;
+  burial_place?: string | null;
+  courtesy_name?: string | null;
+  posthumous_name?: string | null;
+  nickname?: string | null;
+}
+
+export async function updatePerson(
+  personId: string,
+  input: UpdatePersonInput,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("persons")
+    .update(input)
+    .eq("id", personId);
+
+  if (error) throw new Error(error.message);
+}
+
+/**
+ * "Delete" a person — the BEFORE DELETE trigger converts this to a
+ * soft delete (set deleted_at = now()). The audit log records the
+ * before-row so it can be restored via the audit UI later.
+ */
+export async function deletePerson(
+  personId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client.from("persons").delete().eq("id", personId);
+  if (error) throw new Error(error.message);
+}
