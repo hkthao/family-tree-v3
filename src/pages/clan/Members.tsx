@@ -1,0 +1,261 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Link, Navigate, useParams } from "react-router-dom";
+
+import { AppHeader } from "@/components/AppHeader";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
+import { getClanDetail } from "@/lib/queries/clan-detail";
+import { queryKeys } from "@/lib/queries/keys";
+import {
+  changeMemberRole,
+  inviteMemberByEmail,
+  listClanMembers,
+  removeMember,
+  type ClanRole,
+} from "@/lib/queries/members";
+
+export default function Members() {
+  const { clanId } = useParams<{ clanId: string }>();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+  const queryClient = useQueryClient();
+
+  const { data: clan } = useQuery({
+    queryKey: queryKeys.clan(clanId ?? "", userId),
+    queryFn: () => getClanDetail(clanId!, userId),
+    enabled: !!clanId && !!userId,
+  });
+
+  const { data: members, isLoading } = useQuery({
+    queryKey: queryKeys.clanMembers(clanId ?? "", userId),
+    queryFn: () => listClanMembers(clanId!),
+    enabled: !!clanId && !!userId,
+  });
+
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<ClanRole>("viewer");
+  const [inviteMessage, setInviteMessage] = useState<{
+    kind: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const inviteMutation = useMutation({
+    mutationFn: () => inviteMemberByEmail(clanId!, inviteEmail.trim(), inviteRole),
+    onSuccess: async (res) => {
+      if (res.ok) {
+        setInviteMessage({
+          kind: "success",
+          text: `Đã thêm ${inviteEmail} với vai trò ${ROLE_LABEL[inviteRole]}.`,
+        });
+        setInviteEmail("");
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.clanMembers(clanId!, userId),
+        });
+      } else {
+        setInviteMessage({
+          kind: "error",
+          text:
+            res.error === "user_not_found"
+              ? `Không tìm thấy tài khoản có email ${inviteEmail}. Họ cần đăng ký trước.`
+              : `${inviteEmail} đã là thành viên.`,
+        });
+      }
+    },
+    onError: (e) => {
+      setInviteMessage({ kind: "error", text: (e as Error).message });
+    },
+  });
+
+  const roleMutation = useMutation({
+    mutationFn: ({ uid, role }: { uid: string; role: ClanRole }) =>
+      changeMemberRole(clanId!, uid, role),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clanMembers(clanId!, userId),
+      }),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (uid: string) => removeMember(clanId!, uid),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clanMembers(clanId!, userId),
+      }),
+  });
+
+  if (!clanId) return null;
+  if (clan && clan.myRole !== "admin") {
+    return <Navigate to={`/clans/${clanId}/people`} replace />;
+  }
+
+  return (
+    <div className="min-h-dvh bg-background">
+      <AppHeader />
+      <main className="container max-w-2xl py-6 px-4 space-y-6">
+        <nav className="text-sm text-muted-foreground">
+          <Link to={`/clans/${clanId}/settings`} className="hover:underline">
+            ← Cài đặt
+          </Link>
+        </nav>
+
+        <h1 className="text-3xl font-semibold">Thành viên</h1>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Mời thêm</CardTitle>
+            <CardDescription>
+              Người được mời cần có sẵn tài khoản (đã đăng ký bằng email
+              tương ứng). Chưa có cơ chế gửi mail mời tự động.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (inviteEmail.trim()) {
+                  setInviteMessage(null);
+                  inviteMutation.mutate();
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="invite_email">Email</Label>
+                <Input
+                  id="invite_email"
+                  type="email"
+                  required
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="vd: anh@example.com"
+                />
+              </div>
+
+              <fieldset>
+                <legend className="text-base font-medium mb-2">Vai trò</legend>
+                <div className="flex flex-wrap gap-3">
+                  {(["viewer", "editor", "admin"] as ClanRole[]).map((r) => (
+                    <label key={r} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        checked={inviteRole === r}
+                        onChange={() => setInviteRole(r)}
+                        className="h-4 w-4 accent-primary"
+                      />
+                      <span>{ROLE_LABEL[r]}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              {inviteMessage && (
+                <Alert
+                  variant={
+                    inviteMessage.kind === "error" ? "destructive" : "default"
+                  }
+                >
+                  <AlertDescription>{inviteMessage.text}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                disabled={inviteMutation.isPending || !inviteEmail.trim()}
+              >
+                {inviteMutation.isPending ? "Đang mời…" : "Mời"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Danh sách thành viên</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+            {members && members.length === 0 && (
+              <p className="text-muted-foreground">Chưa có ai khác.</p>
+            )}
+            {members && members.length > 0 && (
+              <ul className="divide-y">
+                {members.map((m) => (
+                  <li key={m.user_id} className="py-3">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <p className="font-medium">
+                          {m.display_name ?? "(chưa đặt tên)"}
+                          {m.user_id === userId && (
+                            <span className="ml-2 text-sm text-muted-foreground">
+                              (bạn)
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Tham gia: {new Date(m.created_at).toLocaleDateString("vi-VN")}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={m.role}
+                          disabled={m.user_id === userId}
+                          onChange={(e) =>
+                            roleMutation.mutate({
+                              uid: m.user_id,
+                              role: e.target.value as ClanRole,
+                            })
+                          }
+                          className="h-10 rounded-md border border-input bg-background px-2 text-sm"
+                          aria-label={`Vai trò của ${m.display_name ?? m.user_id}`}
+                        >
+                          <option value="viewer">Xem</option>
+                          <option value="editor">Biên tập</option>
+                          <option value="admin">Quản trị</option>
+                        </select>
+                        {m.user_id !== userId && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  `Xoá ${m.display_name ?? "thành viên"} khỏi clan?`,
+                                )
+                              ) {
+                                removeMutation.mutate(m.user_id);
+                              }
+                            }}
+                            disabled={removeMutation.isPending}
+                          >
+                            Xoá
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}
+
+const ROLE_LABEL: Record<ClanRole, string> = {
+  admin: "Quản trị",
+  editor: "Biên tập",
+  viewer: "Xem",
+};

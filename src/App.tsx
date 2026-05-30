@@ -8,6 +8,7 @@ import AddChild from "@/pages/clan/AddChild";
 import AddSpouse from "@/pages/clan/AddSpouse";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
+import Members from "@/pages/clan/Members";
 import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
 import PersonDetail from "@/pages/clan/PersonDetail";
@@ -78,6 +79,14 @@ export default function App() {
           element={
             <RequireAuth>
               <AddChild />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/clans/:clanId/members"
+          element={
+            <RequireAuth>
+              <Members />
             </RequireAuth>
           }
         />

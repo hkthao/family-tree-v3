@@ -778,6 +778,20 @@ export type Database = {
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
       clan_role: { Args: { target_clan: string }; Returns: string }
       f_unaccent: { Args: { "": string }; Returns: string }
+      get_clan_members_info: {
+        Args: { target_clan: string }
+        Returns: {
+          created_at: string
+          display_name: string
+          invited_by: string
+          role: string
+          user_id: string
+        }[]
+      }
+      invite_member_by_email: {
+        Args: { member_role: string; target_clan: string; target_email: string }
+        Returns: Json
+      }
       is_caller_suspended: { Args: never; Returns: boolean }
       is_clan_admin: { Args: { target_clan: string }; Returns: boolean }
       is_clan_member: { Args: { target_clan: string }; Returns: boolean }
