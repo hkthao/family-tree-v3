@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
+import { BranchesSection } from "@/components/BranchesSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -149,6 +150,18 @@ export default function Settings() {
               {mutation.isPending ? "Đang lưu…" : "Lưu thay đổi"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Chi (nhánh)</CardTitle>
+          <CardDescription>
+            Các chi/nhánh của dòng họ. Mỗi người có thể thuộc một chi.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BranchesSection clanId={clan.id} canEdit={clan.myRole === "admin"} />
         </CardContent>
       </Card>
 

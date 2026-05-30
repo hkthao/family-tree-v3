@@ -119,17 +119,23 @@ describe("queries: profile + self-delete", () => {
   it("deleteMyAccount succeeds when owned clan has no persons", async () => {
     const u = await createTestUser({ displayName: "Owner of empty" });
     cleanup.push(u.id);
-    await createClan({ name: "Will be orphaned" }, u.id, u.client);
+    // Unique name per run — orphaned clans (owner_id SET NULL) survive
+    // across test runs because the FK cascade only fires from auth.users.
+    const uniqueName = `Will be orphaned ${crypto.randomUUID()}`;
+    const { id: clanId } = await createClan({ name: uniqueName }, u.id, u.client);
 
     await deleteMyAccount(u.client);
 
-    // Clan still exists but owner_id is null (FK SET NULL)
     const admin = adminClient();
-    const { data: clans } = await admin
+    const { data: clan } = await admin
       .from("clans")
-      .select("id, owner_id, name")
-      .eq("name", "Will be orphaned");
-    expect(clans?.length).toBe(1);
-    expect(clans?.[0].owner_id).toBeNull();
+      .select("id, owner_id")
+      .eq("id", clanId)
+      .maybeSingle();
+    expect(clan).not.toBeNull();
+    expect(clan?.owner_id).toBeNull();
+
+    // Clean up the orphaned clan so it doesn't pile up.
+    await admin.from("clans").delete().eq("id", clanId);
   });
 });

@@ -65,6 +65,7 @@ function invalidateClanQueries(
       if (head === "tree-data" && second === clanId) return true;
       if (head === "clan-members" && second === clanId) return true;
       if (head === "clan-stats" && second === clanId) return true;
+      if (head === "branches" && second === clanId) return true;
       if (head === "clan" && second === clanId) return true;
       // person + person-relationships are keyed by personId, not clanId.
       // We invalidate them broadly here because a clan-level refresh should
