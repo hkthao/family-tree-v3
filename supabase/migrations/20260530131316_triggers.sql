@@ -40,6 +40,12 @@ create or replace function public.protect_profile_privileged_cols()
   set search_path = public, pg_temp
   as $$
   begin
+    -- Service role / internal calls have no auth.uid() — let them through.
+    -- This trigger only guards against authenticated USER actions.
+    if auth.uid() is null then
+      return new;
+    end if;
+
     if not public.is_platform_admin() then
       if new.max_clans is distinct from old.max_clans then
         raise exception 'Only platform admin can change max_clans';
@@ -72,6 +78,11 @@ create or replace function public.protect_clan_privileged_cols()
   set search_path = public, pg_temp
   as $$
   begin
+    -- Service role / internal calls bypass (used for setup, admin actions).
+    if auth.uid() is null then
+      return new;
+    end if;
+
     if not public.is_platform_admin() then
       if new.max_persons is distinct from old.max_persons then
         raise exception 'Only platform admin can change max_persons';
@@ -205,6 +216,33 @@ create trigger enforce_max_users_trg
   before insert on public.clan_members
   for each row
   execute function public.enforce_max_users();
+
+-- auto_add_owner_as_admin --------------------------------------------------
+-- When a clan is created, the owner automatically becomes an admin member.
+-- Without this, the owner cannot SELECT their own freshly-created clan
+-- (RLS SELECT requires is_clan_member), so INSERT ... RETURNING fails even
+-- though the row is created.
+
+create or replace function public.auto_add_owner_as_admin()
+  returns trigger
+  language plpgsql
+  security definer
+  set search_path = public, pg_temp
+  as $$
+  begin
+    if NEW.owner_id is not null then
+      insert into public.clan_members (clan_id, user_id, role, invited_by)
+      values (NEW.id, NEW.owner_id, 'admin', NEW.owner_id)
+      on conflict (clan_id, user_id) do nothing;
+    end if;
+    return NEW;
+  end;
+  $$;
+
+create trigger auto_add_owner_as_admin_trg
+  after insert on public.clans
+  for each row
+  execute function public.auto_add_owner_as_admin();
 
 -- maintain_unaccent --------------------------------------------------------
 -- persons.full_name_unaccent = lowercased unaccented name, for trigram search.

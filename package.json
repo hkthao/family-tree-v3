@@ -12,13 +12,16 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:status": "supabase status",
-    "db:types": "supabase gen types typescript --local > src/lib/database.types.ts"
+    "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
+    "test": "vitest",
+    "test:rls": "vitest run src/test/rls"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "^5.2.8",
     "@fontsource/noto-serif": "^5.2.9",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/supabase-js": "^2.106.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.17.0",
@@ -27,16 +30,21 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^25.9.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
+    "dotenv": "^17.4.2",
+    "jsdom": "^29.1.1",
     "postcss": "^8.4.49",
     "supabase": "^2.102.0",
     "tailwindcss": "^3.4.15",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "vite": "^5.4.11",
+    "vitest": "^4.1.7"
   }
 }

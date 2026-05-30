@@ -140,6 +140,7 @@ create policy "clans_member_or_public_select"
   on public.clans for select
   using (
     public.is_clan_member(id)
+    or owner_id = auth.uid()
     or visibility = 'public'
     or public.is_platform_admin()
   );
