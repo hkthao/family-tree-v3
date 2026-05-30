@@ -285,6 +285,7 @@ export default function People() {
 function metaLine(person: PersonRow): string {
   const parts: string[] = [];
   if (!person.is_living) {
+    // List view stays compact: just the year, even if precision is finer.
     const dy = person.death_date?.slice(0, 4);
     parts.push(`đã mất${dy ? ` • ${dy}` : ""}`);
   } else {
@@ -294,6 +295,7 @@ function metaLine(person: PersonRow): string {
   if (person.generation !== null) parts.push(`Đời ${person.generation}`);
   return parts.join(" • ");
 }
+
 
 function PersonListItem({
   person,

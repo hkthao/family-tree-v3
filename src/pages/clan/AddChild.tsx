@@ -3,12 +3,14 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
+import { dateFromParts, type DateParts } from "@/lib/partialDate";
 import {
   addChildToFamily,
   findOrCreateFamily,
@@ -18,6 +20,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getPerson } from "@/lib/queries/persons";
 
 const SOLO_VALUE = "__solo__";
+const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function AddChild() {
   const { clanId, personId } = useParams<{
@@ -43,11 +46,13 @@ export default function AddChild() {
   const [otherParent, setOtherParent] = useState<string>(SOLO_VALUE);
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
-  const [birthDate, setBirthDate] = useState("");
+  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
   const [isLiving, setIsLiving] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
+      const birthD = dateFromParts(birth);
       if (!clanId || !focal) throw new Error("Thiếu thông tin");
 
       // Resolve other parent (a spouse from the list) or null for single parent
@@ -68,7 +73,8 @@ export default function AddChild() {
         family_id: family.id,
         full_name: fullName.trim(),
         gender,
-        birth_date: birthDate || null,
+        birth_date: birthD.date,
+        birth_date_precision: birthD.precision,
         is_living: isLiving,
       });
     },
@@ -101,9 +107,17 @@ export default function AddChild() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (fullName.trim()) mutation.mutate();
+            setFormError(null);
+            if (!fullName.trim()) return;
+            try {
+              dateFromParts(birth);
+            } catch (err) {
+              setFormError((err as Error).message);
+              return;
+            }
+            mutation.mutate();
           }}
-          className="space-y-5"
+          className="space-y-6"
         >
           <div className="space-y-2">
             <Label htmlFor="other_parent">Người đồng-cha-mẹ</Label>
@@ -164,15 +178,12 @@ export default function AddChild() {
             </div>
           </fieldset>
 
-          <div className="space-y-2">
-            <Label htmlFor="birth_date">Ngày sinh (tuỳ chọn)</Label>
-            <Input
-              id="birth_date"
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-            />
-          </div>
+          <PartialDateInput
+            label="Ngày sinh (tuỳ chọn)"
+            idPrefix="birth"
+            value={birth}
+            onChange={setBirth}
+          />
 
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -184,10 +195,10 @@ export default function AddChild() {
             <span>Đã mất</span>
           </label>
 
-          {mutation.error && (
+          {(formError || mutation.error) && (
             <Alert variant="destructive">
               <AlertDescription>
-                {(mutation.error as Error).message}
+                {formError ?? (mutation.error as Error).message}
               </AlertDescription>
             </Alert>
           )}

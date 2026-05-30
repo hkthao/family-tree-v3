@@ -3,15 +3,19 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
+import { dateFromParts, type DateParts } from "@/lib/partialDate";
 import { findOrCreateFamily } from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
 import { createPerson, getPerson } from "@/lib/queries/persons";
+
+const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function AddSpouse() {
   const { clanId, personId } = useParams<{
@@ -34,24 +38,27 @@ export default function AddSpouse() {
 
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">(defaultGender);
-  const [birthDate, setBirthDate] = useState("");
+  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
   const [isLiving, setIsLiving] = useState(true);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Refresh gender default once `focal` loads
-  if (focal && gender !== defaultGender && fullName === "" && birthDate === "") {
+  if (focal && gender !== defaultGender && fullName === "" && !birth.year) {
     setGender(defaultGender);
   }
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!clanId || !focal) throw new Error("Thiếu thông tin");
+      const birthD = dateFromParts(birth);
       const spouse = await createPerson(
         {
           clan_id: clanId,
           full_name: fullName.trim(),
           gender,
           is_living: isLiving,
-          birth_date: birthDate || null,
+          birth_date: birthD.date,
+          birth_date_precision: birthD.precision,
         },
       );
       await findOrCreateFamily({
@@ -94,9 +101,17 @@ export default function AddSpouse() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (fullName.trim()) mutation.mutate();
+            setFormError(null);
+            if (!fullName.trim()) return;
+            try {
+              dateFromParts(birth);
+            } catch (err) {
+              setFormError((err as Error).message);
+              return;
+            }
+            mutation.mutate();
           }}
-          className="space-y-5"
+          className="space-y-6"
         >
           <div className="space-y-2">
             <Label htmlFor="full_name">Họ và tên</Label>
@@ -135,15 +150,12 @@ export default function AddSpouse() {
             </div>
           </fieldset>
 
-          <div className="space-y-2">
-            <Label htmlFor="birth_date">Ngày sinh (tuỳ chọn)</Label>
-            <Input
-              id="birth_date"
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-            />
-          </div>
+          <PartialDateInput
+            label="Ngày sinh (tuỳ chọn)"
+            idPrefix="birth"
+            value={birth}
+            onChange={setBirth}
+          />
 
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -155,10 +167,10 @@ export default function AddSpouse() {
             <span>Đã mất</span>
           </label>
 
-          {mutation.error && (
+          {(formError || mutation.error) && (
             <Alert variant="destructive">
               <AlertDescription>
-                {(mutation.error as Error).message}
+                {formError ?? (mutation.error as Error).message}
               </AlertDescription>
             </Alert>
           )}

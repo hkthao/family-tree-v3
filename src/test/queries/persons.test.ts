@@ -94,6 +94,39 @@ describe("queries: persons", () => {
     expect(r.rows[0].full_name).toBe("Lê Đức Dũng");
   });
 
+  it("createPerson with year-only date stores precision='year'", async () => {
+    const { id } = await createPerson(
+      {
+        clan_id: clanId,
+        full_name: "Năm only",
+        gender: "M",
+        birth_date: "1920-01-01",
+        birth_date_precision: "year",
+      },
+      owner.client,
+    );
+    const p = await getPerson(id, owner.client);
+    expect(p?.birth_date).toBe("1920-01-01");
+    expect(p?.birth_date_precision).toBe("year");
+  });
+
+  it("DB rejects date set without precision (match check)", async () => {
+    await expect(
+      owner.client
+        .from("persons")
+        .insert({
+          clan_id: clanId,
+          full_name: "Bad",
+          gender: "M",
+          birth_date: "1900-01-01",
+          birth_date_precision: null,
+        })
+        .then(({ error }) => {
+          if (error) throw new Error(error.message);
+        }),
+    ).rejects.toThrow();
+  });
+
   it("listPersons sort=generation puts the root first", async () => {
     const r = await listPersons(
       clanId,

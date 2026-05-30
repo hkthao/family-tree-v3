@@ -3,13 +3,17 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
+import { dateFromParts, type DateParts } from "@/lib/partialDate";
 import { createPerson } from "@/lib/queries/persons";
+
+const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function NewPerson() {
   const { clanId } = useParams<{ clanId: string }>();
@@ -21,20 +25,26 @@ export default function NewPerson() {
   const [gender, setGender] = useState<"M" | "F">("M");
   const [isLiving, setIsLiving] = useState(true);
   const [isRoot, setIsRoot] = useState(false);
-  const [birthDate, setBirthDate] = useState("");
-  const [deathDate, setDeathDate] = useState("");
+  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
+  const [death, setDeath] = useState<DateParts>(EMPTY_PARTS);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      createPerson({
+    mutationFn: async () => {
+      const birthD = dateFromParts(birth);
+      const deathD = dateFromParts(death);
+      return createPerson({
         clan_id: clanId!,
         full_name: fullName.trim(),
         gender,
         is_living: isLiving,
         is_root: isRoot,
-        birth_date: birthDate || null,
-        death_date: deathDate || null,
-      }),
+        birth_date: birthD.date,
+        birth_date_precision: birthD.precision,
+        death_date: deathD.date,
+        death_date_precision: deathD.precision,
+      });
+    },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
       navigate(`/clans/${clanId}/people`);
@@ -42,6 +52,21 @@ export default function NewPerson() {
   });
 
   if (!clanId || !user) return null;
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setFormError(null);
+    if (!fullName.trim()) return;
+    try {
+      // Pre-validate so the user sees a clear message before we round-trip
+      dateFromParts(birth);
+      dateFromParts(death);
+    } catch (err) {
+      setFormError((err as Error).message);
+      return;
+    }
+    mutation.mutate();
+  }
 
   return (
     <div className="min-h-dvh bg-background">
@@ -55,13 +80,7 @@ export default function NewPerson() {
 
         <h1 className="text-3xl font-semibold mb-6">Thêm người</h1>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (fullName.trim()) mutation.mutate();
-          }}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="full_name">Họ và tên</Label>
             <Input
@@ -103,30 +122,24 @@ export default function NewPerson() {
             </div>
           </fieldset>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="birth_date">Ngày sinh (dương lịch)</Label>
-              <Input
-                id="birth_date"
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-              />
-            </div>
+          <PartialDateInput
+            label="Ngày sinh (dương lịch)"
+            idPrefix="birth"
+            value={birth}
+            onChange={setBirth}
+            helperText="Có thể bỏ trống ngày, tháng nếu chỉ biết năm (như khắc trên bia mộ)."
+          />
 
-            <div className="space-y-2">
-              <Label htmlFor="death_date">Ngày mất (nếu đã mất)</Label>
-              <Input
-                id="death_date"
-                type="date"
-                value={deathDate}
-                onChange={(e) => {
-                  setDeathDate(e.target.value);
-                  if (e.target.value) setIsLiving(false);
-                }}
-              />
-            </div>
-          </div>
+          <PartialDateInput
+            label="Ngày mất (nếu đã mất)"
+            idPrefix="death"
+            value={death}
+            onChange={(next) => {
+              setDeath(next);
+              if (next.year) setIsLiving(false);
+            }}
+            helperText="Để trống nếu còn sống."
+          />
 
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -154,10 +167,10 @@ export default function NewPerson() {
             </span>
           </label>
 
-          {mutation.error && (
+          {(formError || mutation.error) && (
             <Alert variant="destructive">
               <AlertDescription>
-                {(mutation.error as Error).message}
+                {formError ?? (mutation.error as Error).message}
               </AlertDescription>
             </Alert>
           )}

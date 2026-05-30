@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
+import { formatPartialDate } from "@/lib/partialDate";
 import { queryKeys } from "@/lib/queries/keys";
 import { getClanDetail } from "@/lib/queries/clan-detail";
 import {
@@ -106,9 +107,21 @@ export default function PersonDetail() {
               </CardHeader>
               <CardContent className="space-y-2 text-base">
                 <DetailRow label="Giới tính" value={person.gender === "M" ? "Nam" : "Nữ"} />
-                <DetailRow label="Ngày sinh" value={person.birth_date} />
+                <DetailRow
+                  label="Ngày sinh"
+                  value={formatPartialDate({
+                    date: person.birth_date,
+                    precision: person.birth_date_precision,
+                  }) || null}
+                />
                 {!person.is_living && (
-                  <DetailRow label="Ngày mất" value={person.death_date} />
+                  <DetailRow
+                    label="Ngày mất"
+                    value={formatPartialDate({
+                      date: person.death_date,
+                      precision: person.death_date_precision,
+                    }) || null}
+                  />
                 )}
                 <DetailRow label="Tên tự" value={person.courtesy_name} />
                 <DetailRow label="Tên húy" value={person.nickname} />

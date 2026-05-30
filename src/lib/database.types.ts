@@ -478,6 +478,7 @@ export type Database = {
         Row: {
           bio: string | null
           birth_date: string | null
+          birth_date_precision: string | null
           birth_family_id: string | null
           birth_lunar_day: number | null
           birth_lunar_is_leap: boolean
@@ -493,6 +494,7 @@ export type Database = {
           death_anniv_lunar_is_leap: boolean
           death_anniv_lunar_month: number | null
           death_date: string | null
+          death_date_precision: string | null
           death_lunar_day: number | null
           death_lunar_is_leap: boolean
           death_lunar_month: number | null
@@ -513,6 +515,7 @@ export type Database = {
         Insert: {
           bio?: string | null
           birth_date?: string | null
+          birth_date_precision?: string | null
           birth_family_id?: string | null
           birth_lunar_day?: number | null
           birth_lunar_is_leap?: boolean
@@ -528,6 +531,7 @@ export type Database = {
           death_anniv_lunar_is_leap?: boolean
           death_anniv_lunar_month?: number | null
           death_date?: string | null
+          death_date_precision?: string | null
           death_lunar_day?: number | null
           death_lunar_is_leap?: boolean
           death_lunar_month?: number | null
@@ -548,6 +552,7 @@ export type Database = {
         Update: {
           bio?: string | null
           birth_date?: string | null
+          birth_date_precision?: string | null
           birth_family_id?: string | null
           birth_lunar_day?: number | null
           birth_lunar_is_leap?: boolean
@@ -563,6 +568,7 @@ export type Database = {
           death_anniv_lunar_is_leap?: boolean
           death_anniv_lunar_month?: number | null
           death_date?: string | null
+          death_date_precision?: string | null
           death_lunar_day?: number | null
           death_lunar_is_leap?: boolean
           death_lunar_month?: number | null

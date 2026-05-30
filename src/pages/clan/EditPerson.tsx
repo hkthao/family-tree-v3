@@ -3,14 +3,22 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
+import {
+  dateFromParts,
+  partsFromDate,
+  type DateParts,
+} from "@/lib/partialDate";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
+
+const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function EditPerson() {
   const { clanId, personId } = useParams<{ clanId: string; personId: string }>();
@@ -29,11 +37,12 @@ export default function EditPerson() {
   const [gender, setGender] = useState<"M" | "F">("M");
   const [isLiving, setIsLiving] = useState(true);
   const [isRoot, setIsRoot] = useState(false);
-  const [birthDate, setBirthDate] = useState("");
-  const [deathDate, setDeathDate] = useState("");
+  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
+  const [death, setDeath] = useState<DateParts>(EMPTY_PARTS);
   const [birthPlace, setBirthPlace] = useState("");
   const [burialPlace, setBurialPlace] = useState("");
   const [bio, setBio] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!person) return;
@@ -41,26 +50,41 @@ export default function EditPerson() {
     setGender(person.gender);
     setIsLiving(person.is_living);
     setIsRoot(person.is_root);
-    setBirthDate(person.birth_date ?? "");
-    setDeathDate(person.death_date ?? "");
+    setBirth(
+      partsFromDate({
+        date: person.birth_date,
+        precision: person.birth_date_precision,
+      }),
+    );
+    setDeath(
+      partsFromDate({
+        date: person.death_date,
+        precision: person.death_date_precision,
+      }),
+    );
     setBirthPlace(person.birth_place ?? "");
     setBurialPlace(person.burial_place ?? "");
     setBio(person.bio ?? "");
   }, [person]);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      updatePerson(personId!, {
+    mutationFn: async () => {
+      const birthD = dateFromParts(birth);
+      const deathD = dateFromParts(death);
+      return updatePerson(personId!, {
         full_name: fullName.trim(),
         gender,
         is_living: isLiving,
         is_root: isRoot,
-        birth_date: birthDate || null,
-        death_date: deathDate || null,
+        birth_date: birthD.date,
+        birth_date_precision: birthD.precision,
+        death_date: deathD.date,
+        death_date_precision: deathD.precision,
         birth_place: birthPlace || null,
         burial_place: burialPlace || null,
         bio: bio || null,
-      }),
+      });
+    },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
       navigate(`/clans/${clanId}/people/${personId}`);
@@ -90,9 +114,18 @@ export default function EditPerson() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (fullName.trim()) mutation.mutate();
+              setFormError(null);
+              if (!fullName.trim()) return;
+              try {
+                dateFromParts(birth);
+                dateFromParts(death);
+              } catch (err) {
+                setFormError((err as Error).message);
+                return;
+              }
+              mutation.mutate();
             }}
-            className="space-y-5"
+            className="space-y-6"
           >
             <div className="space-y-2">
               <Label htmlFor="full_name">Họ và tên</Label>
@@ -129,29 +162,23 @@ export default function EditPerson() {
               </div>
             </fieldset>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="birth_date">Ngày sinh</Label>
-                <Input
-                  id="birth_date"
-                  type="date"
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="death_date">Ngày mất</Label>
-                <Input
-                  id="death_date"
-                  type="date"
-                  value={deathDate}
-                  onChange={(e) => {
-                    setDeathDate(e.target.value);
-                    if (e.target.value) setIsLiving(false);
-                  }}
-                />
-              </div>
-            </div>
+            <PartialDateInput
+              label="Ngày sinh (dương lịch)"
+              idPrefix="birth"
+              value={birth}
+              onChange={setBirth}
+              helperText="Có thể bỏ trống ngày/tháng nếu chỉ biết năm."
+            />
+
+            <PartialDateInput
+              label="Ngày mất (nếu đã mất)"
+              idPrefix="death"
+              value={death}
+              onChange={(next) => {
+                setDeath(next);
+                if (next.year) setIsLiving(false);
+              }}
+            />
 
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -207,10 +234,10 @@ export default function EditPerson() {
               />
             </div>
 
-            {mutation.error && (
+            {(formError || mutation.error) && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  {(mutation.error as Error).message}
+                  {formError ?? (mutation.error as Error).message}
                 </AlertDescription>
               </Alert>
             )}

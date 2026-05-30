@@ -189,6 +189,7 @@ export interface AddChildInput {
   full_name: string;
   gender: "M" | "F";
   birth_date?: string | null;
+  birth_date_precision?: "day" | "month" | "year" | null;
   is_living?: boolean;
 }
 
@@ -204,6 +205,8 @@ export async function addChildToFamily(
       gender: input.gender,
       is_living: input.is_living ?? true,
       birth_date: input.birth_date ?? null,
+      birth_date_precision:
+        input.birth_date_precision ?? (input.birth_date ? "day" : null),
       birth_family_id: input.family_id,
     })
     .select("id")

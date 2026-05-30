@@ -6,6 +6,8 @@ import { unaccent } from "@/lib/unaccent";
 
 type Client = SupabaseClient<Database>;
 
+export type DatePrecision = "day" | "month" | "year";
+
 export interface PersonRow {
   id: string;
   full_name: string;
@@ -13,7 +15,9 @@ export interface PersonRow {
   is_living: boolean;
   is_root: boolean;
   birth_date: string | null;
+  birth_date_precision: DatePrecision | null;
   death_date: string | null;
+  death_date_precision: DatePrecision | null;
   generation: number | null;
   branch_id: string | null;
 }
@@ -52,7 +56,7 @@ export async function listPersons(
   let q = client
     .from("persons")
     .select(
-      "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, branch_id",
+      "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id",
       { count: "exact" },
     )
     .eq("clan_id", clanId)
@@ -104,7 +108,9 @@ export interface CreatePersonInput {
   is_living?: boolean;
   is_root?: boolean;
   birth_date?: string | null;
+  birth_date_precision?: DatePrecision | null;
   death_date?: string | null;
+  death_date_precision?: DatePrecision | null;
   branch_id?: string | null;
   birth_family_id?: string | null;
 }
@@ -122,7 +128,11 @@ export async function createPerson(
       is_living: input.is_living ?? true,
       is_root: input.is_root ?? false,
       birth_date: input.birth_date ?? null,
+      birth_date_precision:
+        input.birth_date_precision ?? (input.birth_date ? "day" : null),
       death_date: input.death_date ?? null,
+      death_date_precision:
+        input.death_date_precision ?? (input.death_date ? "day" : null),
       branch_id: input.branch_id ?? null,
       birth_family_id: input.birth_family_id ?? null,
     })
@@ -153,7 +163,7 @@ export interface PersonDetail extends PersonRow {
 }
 
 const DETAIL_COLS =
-  "id, clan_id, full_name, gender, is_living, is_root, birth_date, death_date, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day";
+  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day";
 
 export async function getPerson(
   personId: string,
@@ -176,7 +186,9 @@ export interface UpdatePersonInput {
   is_living?: boolean;
   is_root?: boolean;
   birth_date?: string | null;
+  birth_date_precision?: DatePrecision | null;
   death_date?: string | null;
+  death_date_precision?: DatePrecision | null;
   bio?: string | null;
   birth_place?: string | null;
   burial_place?: string | null;
