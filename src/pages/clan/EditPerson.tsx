@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { invalidateClanData } from "@/lib/cache";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
 
@@ -61,15 +62,7 @@ export default function EditPerson() {
         bio: bio || null,
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.person(personId!, userId),
-      });
-      await queryClient.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) &&
-          q.queryKey[0] === "persons" &&
-          q.queryKey[1] === clanId,
-      });
+      await invalidateClanData(queryClient, clanId!);
       navigate(`/clans/${clanId}/people/${personId}`);
     },
   });

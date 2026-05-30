@@ -2,6 +2,7 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import { RefreshButton } from "@/components/RefreshButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,13 +47,16 @@ export default function People() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h2 className="text-2xl font-semibold">Danh bạ</h2>
-        {canEdit && (
-          <Button asChild>
-            <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
-          </Button>
-        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
+          {canEdit && (
+            <Button asChild>
+              <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-3">

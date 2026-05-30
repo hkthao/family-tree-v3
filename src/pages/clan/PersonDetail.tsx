@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { invalidateClanData } from "@/lib/cache";
 import { queryKeys } from "@/lib/queries/keys";
 import { getClanDetail } from "@/lib/queries/clan-detail";
 import {
@@ -50,12 +51,7 @@ export default function PersonDetail() {
   const deleteMutation = useMutation({
     mutationFn: () => deletePerson(personId!),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) &&
-          q.queryKey[0] === "persons" &&
-          q.queryKey[1] === clanId,
-      });
+      await invalidateClanData(queryClient, clanId!);
       navigate(`/clans/${clanId}/people`);
     },
   });

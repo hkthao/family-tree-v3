@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { invalidateClanData } from "@/lib/cache";
 import { createPerson } from "@/lib/queries/persons";
 
 export default function NewPerson() {
@@ -35,13 +36,7 @@ export default function NewPerson() {
         death_date: deathDate || null,
       }),
     onSuccess: async () => {
-      // Invalidate all persons queries for this clan (across all pages/searches)
-      await queryClient.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) &&
-          q.queryKey[0] === "persons" &&
-          q.queryKey[1] === clanId,
-      });
+      await invalidateClanData(queryClient, clanId!);
       navigate(`/clans/${clanId}/people`);
     },
   });

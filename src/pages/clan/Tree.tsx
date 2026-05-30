@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { RefreshButton } from "@/components/RefreshButton";
 import {
   Card,
   CardContent,
@@ -121,8 +122,9 @@ export default function Tree() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h2 className="text-2xl font-semibold">Cây gia phả</h2>
+        <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
       </div>
 
       {isLoading && (

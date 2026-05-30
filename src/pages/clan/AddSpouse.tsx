@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { invalidateClanData } from "@/lib/cache";
 import { findOrCreateFamily } from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
 import { createPerson, getPerson } from "@/lib/queries/persons";
@@ -61,7 +62,7 @@ export default function AddSpouse() {
       return spouse;
     },
     onSuccess: async () => {
-      await invalidateForClan(queryClient, clanId!, personId!, userId);
+      await invalidateClanData(queryClient, clanId!);
       navigate(`/clans/${clanId}/people/${personId}`);
     },
   });
@@ -180,21 +181,3 @@ export default function AddSpouse() {
   );
 }
 
-import type { QueryClient } from "@tanstack/react-query";
-
-async function invalidateForClan(
-  qc: QueryClient,
-  clanId: string,
-  personId: string,
-  userId: string,
-): Promise<void> {
-  await qc.invalidateQueries({
-    queryKey: queryKeys.personRelationships(personId, userId),
-  });
-  await qc.invalidateQueries({
-    predicate: (q) =>
-      Array.isArray(q.queryKey) &&
-      q.queryKey[0] === "persons" &&
-      q.queryKey[1] === clanId,
-  });
-}

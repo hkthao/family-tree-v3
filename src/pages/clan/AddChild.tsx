@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { invalidateClanData } from "@/lib/cache";
 import {
   addChildToFamily,
   findOrCreateFamily,
@@ -72,15 +73,7 @@ export default function AddChild() {
       });
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.personRelationships(personId!, userId),
-      });
-      await queryClient.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) &&
-          q.queryKey[0] === "persons" &&
-          q.queryKey[1] === clanId,
-      });
+      await invalidateClanData(queryClient, clanId!);
       navigate(`/clans/${clanId}/people/${personId}`);
     },
   });
