@@ -22,6 +22,8 @@ export interface PersonRow {
   branch_id: string | null;
 }
 
+export type PersonsSource = "persons" | "persons_public_safe";
+
 export interface ListPersonsParams {
   page: number; // 1-based
   pageSize: number;
@@ -29,6 +31,12 @@ export interface ListPersonsParams {
   branchId?: string | null;
   generation?: number | null;
   sort?: "name" | "generation" | "birth";
+  /**
+   * Where to read from. Members + platform admins read the raw table for
+   * full data; non-members of a `visibility=public` clan read the view
+   * which masks sensitive columns for living persons (plan §4).
+   */
+  source?: PersonsSource;
 }
 
 export interface ListPersonsResult {
@@ -53,15 +61,30 @@ export async function listPersons(
   const from = (params.page - 1) * params.pageSize;
   const to = from + params.pageSize - 1;
 
-  let q = client
-    .from("persons")
-    .select(
-      "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id",
-      { count: "exact" },
-    )
-    .eq("clan_id", clanId)
-    .is("deleted_at", null)
-    .range(from, to);
+  const source: PersonsSource = params.source ?? "persons";
+
+  // The public-safe view already filters `deleted_at IS NULL` internally;
+  // applying it again would be harmless but ineffective on the view (the
+  // column is masked-out → not part of the projection).
+  let q =
+    source === "persons_public_safe"
+      ? client
+          .from("persons_public_safe")
+          .select(
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id",
+            { count: "exact" },
+          )
+          .eq("clan_id", clanId)
+          .range(from, to)
+      : client
+          .from("persons")
+          .select(
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id",
+            { count: "exact" },
+          )
+          .eq("clan_id", clanId)
+          .is("deleted_at", null)
+          .range(from, to);
 
   if (params.search && params.search.trim()) {
     const needle = unaccent(params.search);

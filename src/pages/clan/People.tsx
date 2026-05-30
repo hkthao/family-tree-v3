@@ -62,6 +62,11 @@ export default function People() {
     setPage(1);
   }, [branchId, generation, sort, pageSize]);
 
+  // Non-members of a public clan read through the masked view; everyone
+  // else (admin/editor/viewer + platform admin) reads the raw table.
+  const source =
+    clan.myRole === null ? "persons_public_safe" : "persons";
+
   const params = {
     page,
     pageSize,
@@ -69,7 +74,8 @@ export default function People() {
     branchId: branchId || null,
     generation: generation ? Number(generation) : null,
     sort,
-  };
+    source,
+  } as const;
 
   const { data, isFetching, isLoading } = useQuery({
     queryKey: queryKeys.persons(clan.id, userId, params),

@@ -708,13 +708,24 @@ export type Database = {
         Row: {
           bio: string | null
           birth_date: string | null
+          birth_date_precision: string | null
+          birth_lunar_day: number | null
+          birth_lunar_month: number | null
+          birth_lunar_year: number | null
           birth_place: string | null
           branch_id: string | null
           burial_place: string | null
           clan_id: string | null
           courtesy_name: string | null
+          death_anniv_lunar_day: number | null
+          death_anniv_lunar_month: number | null
           death_date: string | null
+          death_date_precision: string | null
+          death_lunar_day: number | null
+          death_lunar_month: number | null
+          death_lunar_year: number | null
           full_name: string | null
+          full_name_unaccent: string | null
           gender: string | null
           generation: number | null
           id: string | null
@@ -727,13 +738,24 @@ export type Database = {
         Insert: {
           bio?: never
           birth_date?: never
+          birth_date_precision?: never
+          birth_lunar_day?: never
+          birth_lunar_month?: never
+          birth_lunar_year?: never
           birth_place?: never
           branch_id?: string | null
           burial_place?: never
           clan_id?: string | null
           courtesy_name?: never
+          death_anniv_lunar_day?: never
+          death_anniv_lunar_month?: never
           death_date?: never
+          death_date_precision?: never
+          death_lunar_day?: never
+          death_lunar_month?: never
+          death_lunar_year?: never
           full_name?: string | null
+          full_name_unaccent?: string | null
           gender?: string | null
           generation?: number | null
           id?: string | null
@@ -746,13 +768,24 @@ export type Database = {
         Update: {
           bio?: never
           birth_date?: never
+          birth_date_precision?: never
+          birth_lunar_day?: never
+          birth_lunar_month?: never
+          birth_lunar_year?: never
           birth_place?: never
           branch_id?: string | null
           burial_place?: never
           clan_id?: string | null
           courtesy_name?: never
+          death_anniv_lunar_day?: never
+          death_anniv_lunar_month?: never
           death_date?: never
+          death_date_precision?: never
+          death_lunar_day?: never
+          death_lunar_month?: never
+          death_lunar_year?: never
           full_name?: string | null
+          full_name_unaccent?: string | null
           gender?: string | null
           generation?: number | null
           id?: string | null
