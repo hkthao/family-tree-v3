@@ -7,6 +7,8 @@
  * the IndexedDB blob survived (it shouldn't — clearAllCache runs on sign-out).
  */
 export const queryKeys = {
+  myProfile: (userId: string) => ["profile", userId] as const,
+  myBlockingClans: (userId: string) => ["blocking-clans", userId] as const,
   myClans: (userId: string) => ["clans", "mine", userId] as const,
   clan: (clanId: string, userId: string) => ["clan", clanId, userId] as const,
   clanDataVersion: (clanId: string) =>

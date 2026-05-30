@@ -777,6 +777,8 @@ export type Database = {
     Functions: {
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
       clan_role: { Args: { target_clan: string }; Returns: string }
+      count_my_blocking_clans: { Args: never; Returns: number }
+      delete_my_account: { Args: never; Returns: undefined }
       f_unaccent: { Args: { "": string }; Returns: string }
       get_clan_members_info: {
         Args: { target_clan: string }
