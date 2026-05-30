@@ -55,6 +55,9 @@ export default function Dashboard() {
               <Button asChild>
                 <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
               </Button>
+              <Button asChild variant="outline">
+                <Link to={`/clans/${clan.id}/import`}>Nhập từ Excel</Link>
+              </Button>
             </CardContent>
           )}
         </Card>
@@ -81,9 +84,14 @@ export default function Dashboard() {
               <Link to={`/clans/${clan.id}/tree`}>Xem cây gia phả</Link>
             </Button>
             {canEdit && (
-              <Button asChild variant="outline">
-                <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
-              </Button>
+              <>
+                <Button asChild variant="outline">
+                  <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to={`/clans/${clan.id}/import`}>Nhập từ Excel</Link>
+                </Button>
+              </>
             )}
           </div>
         </>

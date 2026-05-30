@@ -814,6 +814,10 @@ export type Database = {
       }
     }
     Functions: {
+      bulk_import_persons: {
+        Args: { payload: Json; target_clan: string }
+        Returns: Json
+      }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
       clan_role: { Args: { target_clan: string }; Returns: string }
       count_my_blocking_clans: { Args: never; Returns: number }

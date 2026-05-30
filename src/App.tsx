@@ -9,6 +9,7 @@ import AddSpouse from "@/pages/clan/AddSpouse";
 import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
+import Import from "@/pages/clan/Import";
 import Members from "@/pages/clan/Members";
 import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
@@ -105,6 +106,7 @@ export default function App() {
           <Route path="tree" element={<Tree />} />
           <Route path="events" element={<Events />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="import" element={<Import />} />
         </Route>
 
         <Route
