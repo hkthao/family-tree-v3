@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it } from "vitest";
 
+import { getClanDetail } from "@/lib/queries/clan-detail";
 import { createClan, listMyClans } from "@/lib/queries/clans";
 
 import { createTestUser, deleteUser } from "../supabase-helpers";
@@ -39,6 +40,36 @@ describe("queries: clans", () => {
     expect(clans[0].id).toBe(clanId);
     expect(clans[0].role).toBe("admin");
     expect(clans[0].visibility).toBe("private");
+  });
+
+  it("getClanDetail returns clan with myRole=admin for owner", async () => {
+    const user = await createTestUser({ displayName: "Owner" });
+    cleanup.push(user.id);
+
+    const { id: clanId } = await createClan(
+      { name: "Họ Detail" },
+      user.id,
+      user.client,
+    );
+    const detail = await getClanDetail(clanId, user.id, user.client);
+
+    expect(detail).not.toBeNull();
+    expect(detail!.name).toBe("Họ Detail");
+    expect(detail!.myRole).toBe("admin");
+  });
+
+  it("getClanDetail returns null for non-member of private clan", async () => {
+    const owner = await createTestUser({ displayName: "Owner" });
+    const outsider = await createTestUser({ displayName: "Outsider" });
+    cleanup.push(owner.id, outsider.id);
+
+    const { id: clanId } = await createClan(
+      { name: "Private", visibility: "private" },
+      owner.id,
+      owner.client,
+    );
+    const detail = await getClanDetail(clanId, outsider.id, outsider.client);
+    expect(detail).toBeNull();
   });
 
   it("createClan rejects when user has reached max_clans", async () => {
