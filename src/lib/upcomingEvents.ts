@@ -127,7 +127,7 @@ export function computeUpcomingEvents({
   for (const e of events) {
     // Solar event
     if (e.date_solar) {
-      const [y, m, d] = e.date_solar.split("-").map(Number);
+      const [, m, d] = e.date_solar.split("-").map(Number);
       if (!Number.isInteger(m) || !Number.isInteger(d)) continue;
       let iso: string | null;
       if (e.is_yearly) {
