@@ -77,17 +77,51 @@ export async function createTestUser(opts?: {
     if (upErr) throw new Error(`profile update failed: ${upErr.message}`);
   }
 
-  // Sign in to get a client carrying this user's JWT
+  // Sign in to get a client carrying this user's JWT. Retry on clock-skew:
+  // freshly-started Supabase Docker containers can have sub-second drift
+  // between gotrue (issuer) and PostgREST/auth (validator), producing
+  // transient "JWT issued at future" rejections on the very first query.
   const userClient = createClient<Database>(SUPABASE_URL, ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { error: signInErr } = await userClient.auth.signInWithPassword({
-    email,
-    password: PASSWORD,
-  });
-  if (signInErr) throw new Error(`signIn failed: ${signInErr.message}`);
+  await signInWithClockSkewRetry(userClient, email, PASSWORD);
 
   return { id: userId, email, password: PASSWORD, displayName, client: userClient };
+}
+
+async function signInWithClockSkewRetry(
+  client: Client,
+  email: string,
+  password: string,
+): Promise<void> {
+  const maxAttempts = 5;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const { error: signInErr } = await client.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInErr) throw new Error(`signIn failed: ${signInErr.message}`);
+
+    // Probe with a no-op SELECT — PostgREST's JWT validator runs here,
+    // so this is what surfaces the future-iat error. count=exact head=true
+    // is cheap (no rows returned).
+    const probe = await client
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("id", "00000000-0000-0000-0000-000000000000");
+
+    if (!probe.error) return;
+    const msg = probe.error.message || "";
+    if (!/issued at future/i.test(msg)) {
+      // Some other validation error — bubble up immediately
+      throw new Error(`signIn probe failed: ${msg}`);
+    }
+    // Wait + sign in again so the next JWT's iat catches up to the validator
+    await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+  }
+  throw new Error(
+    "signIn kept producing 'issued at future' JWTs after retries — clock skew?",
+  );
 }
 
 /** Create a clan owned by `owner` (must be signed in). */
