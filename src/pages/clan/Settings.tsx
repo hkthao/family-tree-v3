@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { BranchesSection } from "@/components/BranchesSection";
+import {
+  IconCheck,
+  IconList,
+  IconUsers,
+} from "@/components/icons";
 import { ShareLinksSection } from "@/components/ShareLinksSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -151,7 +156,14 @@ export default function Settings() {
               size="lg"
               disabled={mutation.isPending || !name.trim()}
             >
-              {mutation.isPending ? "Đang lưu…" : "Lưu thay đổi"}
+              {mutation.isPending ? (
+                "Đang lưu…"
+              ) : (
+                <>
+                  <IconCheck className="h-5 w-5 mr-2" />
+                  Lưu thay đổi
+                </>
+              )}
             </Button>
           </form>
         </CardContent>
@@ -180,7 +192,10 @@ export default function Settings() {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link to={`/clans/${clan.id}/members`}>Quản lý thành viên</Link>
+            <Link to={`/clans/${clan.id}/members`}>
+              <IconUsers className="h-4 w-4 mr-1.5" />
+              Quản lý thành viên
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -207,7 +222,10 @@ export default function Settings() {
         </CardHeader>
         <CardContent>
           <Button asChild variant="outline">
-            <Link to={`/clans/${clan.id}/audit`}>Mở nhật ký</Link>
+            <Link to={`/clans/${clan.id}/audit`}>
+              <IconList className="h-4 w-4 mr-1.5" />
+              Mở nhật ký
+            </Link>
           </Button>
         </CardContent>
       </Card>

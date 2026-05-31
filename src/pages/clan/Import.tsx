@@ -3,6 +3,12 @@ import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import {
+  IconCheck,
+  IconDownload,
+  IconList,
+  IconUpload,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -99,7 +105,8 @@ export default function Import() {
                 type="button"
                 onClick={() => downloadTemplate()}
               >
-                ↓ Tải file mẫu (.xlsx)
+                <IconDownload className="h-4 w-4 mr-1.5" />
+                Tải file mẫu (.xlsx)
               </Button>
             </div>
             <input
@@ -192,15 +199,26 @@ export default function Import() {
                   disabled={!canSubmit}
                   onClick={() => importM.mutate()}
                 >
-                  {importM.isPending
-                    ? "Đang nhập…"
-                    : importM.isSuccess
-                      ? "Đã nhập"
-                      : "Nhập vào dòng họ"}
+                  {importM.isPending ? (
+                    "Đang nhập…"
+                  ) : importM.isSuccess ? (
+                    <>
+                      <IconCheck className="h-5 w-5 mr-2" />
+                      Đã nhập
+                    </>
+                  ) : (
+                    <>
+                      <IconUpload className="h-5 w-5 mr-2" />
+                      Nhập vào dòng họ
+                    </>
+                  )}
                 </Button>
                 {importM.isSuccess && (
                   <Button asChild variant="outline" size="lg">
-                    <Link to={`/clans/${clanId}/people`}>Xem danh bạ</Link>
+                    <Link to={`/clans/${clanId}/people`}>
+                      <IconList className="h-5 w-5 mr-2" />
+                      Xem danh bạ
+                    </Link>
                   </Button>
                 )}
               </div>

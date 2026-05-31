@@ -2,10 +2,16 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconGrid,
+  IconList,
+  IconPlus,
+} from "@/components/icons";
 import { RefreshButton } from "@/components/RefreshButton";
+import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
@@ -111,58 +117,54 @@ export default function People() {
           <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
           {canEdit && (
             <Button asChild>
-              <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
+              <Link to={`/clans/${clan.id}/people/new`}>
+                <IconPlus className="h-4 w-4 mr-1.5" />
+                Thêm người
+              </Link>
             </Button>
           )}
         </div>
       </div>
 
-      {/* Filters row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="search">Tìm theo tên (gõ không dấu cũng được)</Label>
-          <Input
-            id="search"
+      {/* Filters row — single line on lg+; everything h-10 for density. */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[200px]">
+          <SearchInput
+            label="Tìm theo tên"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Vd: nguyen van"
+            placeholder="Tìm theo tên — gõ không dấu cũng được"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="branch-filter">Chi</Label>
-          <select
-            id="branch-filter"
-            value={branchId}
-            onChange={(e) => setBranchId(e.target.value)}
-            className="h-12 w-full rounded-md border border-input bg-background px-3"
-          >
-            <option value="">Tất cả chi</option>
-            {branches?.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="gen-filter">Đời</Label>
-          <select
-            id="gen-filter"
-            value={generation}
-            onChange={(e) => setGeneration(e.target.value)}
-            className="h-12 w-full rounded-md border border-input bg-background px-3"
-            disabled={!maxGen}
-          >
-            <option value="">Tất cả đời</option>
-            {maxGen
-              ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
-                  <option key={g} value={g}>
-                    Đời {g}
-                  </option>
-                ))
-              : null}
-          </select>
-        </div>
+        <select
+          value={branchId}
+          onChange={(e) => setBranchId(e.target.value)}
+          aria-label="Lọc theo chi"
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[140px]"
+        >
+          <option value="">Tất cả chi</option>
+          {branches?.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={generation}
+          onChange={(e) => setGeneration(e.target.value)}
+          aria-label="Lọc theo đời"
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[120px] disabled:opacity-50"
+          disabled={!maxGen}
+        >
+          <option value="">Tất cả đời</option>
+          {maxGen
+            ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
+                <option key={g} value={g}>
+                  Đời {g}
+                </option>
+              ))
+            : null}
+        </select>
       </div>
 
       {/* Toolbar: sort + view mode toggle */}
@@ -187,26 +189,28 @@ export default function People() {
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            className={`px-3 h-10 text-sm ${
+            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
               viewMode === "list"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted/50"
             }`}
             aria-pressed={viewMode === "list"}
           >
-            📋 Danh sách
+            <IconList className="h-4 w-4" />
+            Danh sách
           </button>
           <button
             type="button"
             onClick={() => setViewMode("grid")}
-            className={`px-3 h-10 text-sm border-l ${
+            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
               viewMode === "grid"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted/50"
             }`}
             aria-pressed={viewMode === "grid"}
           >
-            ▦ Thẻ
+            <IconGrid className="h-4 w-4" />
+            Thẻ
           </button>
         </div>
       </div>
@@ -270,7 +274,8 @@ export default function People() {
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
           >
-            ← Trước
+            <IconArrowLeft className="h-4 w-4 mr-1" />
+            Trước
           </Button>
           <span className="px-2">
             {page}/{totalPages}
@@ -281,7 +286,8 @@ export default function People() {
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
           >
-            Sau →
+            Sau
+            <IconArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
       </div>

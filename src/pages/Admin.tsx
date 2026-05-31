@@ -3,6 +3,14 @@ import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import {
+  IconCheck,
+  IconLock,
+  IconShield,
+  IconTrash,
+  IconUnlock,
+} from "@/components/icons";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -119,15 +127,12 @@ function UsersTab({ callerId }: { callerId: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="user-search">Tìm theo tên / email</Label>
-          <Input
-            id="user-search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Vd: thao, vnvc"
-          />
-        </div>
+        <SearchInput
+          label="Tìm người dùng theo tên hoặc email"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm theo tên hoặc email"
+        />
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
@@ -273,6 +278,7 @@ function UserRow({
                 String(profile.max_clans) === maxClans
               }
             >
+              <IconCheck className="h-4 w-4 mr-1.5" />
               Lưu
             </Button>
           </div>
@@ -284,7 +290,17 @@ function UserRow({
               disabled={isSelf || suspendM.isPending}
               onClick={() => suspendM.mutate(!profile.is_suspended)}
             >
-              {profile.is_suspended ? "Mở khoá" : "Khoá tài khoản"}
+              {profile.is_suspended ? (
+                <>
+                  <IconUnlock className="h-4 w-4 mr-1.5" />
+                  Mở khoá
+                </>
+              ) : (
+                <>
+                  <IconLock className="h-4 w-4 mr-1.5" />
+                  Khoá tài khoản
+                </>
+              )}
             </Button>
             <Button
               size="sm"
@@ -292,6 +308,7 @@ function UserRow({
               disabled={isSelf || grantM.isPending}
               onClick={() => grantM.mutate(!profile.is_platform_admin)}
             >
+              <IconShield className="h-4 w-4 mr-1.5" />
               {profile.is_platform_admin
                 ? "Thu quyền platform admin"
                 : "Cấp quyền platform admin"}
@@ -310,6 +327,7 @@ function UserRow({
                   deleteM.mutate();
               }}
             >
+              <IconTrash className="h-4 w-4 mr-1.5" />
               Xoá tài khoản
             </Button>
           </div>
@@ -353,15 +371,12 @@ function ClansTab() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="clan-search">Tìm theo tên</Label>
-          <Input
-            id="clan-search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Vd: ho nguyen"
-          />
-        </div>
+        <SearchInput
+          label="Tìm dòng họ theo tên"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm dòng họ theo tên — gõ không dấu cũng được"
+        />
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
@@ -452,7 +467,14 @@ function ClanRow({
           onClick={() => m.mutate()}
           disabled={m.isPending || !changed}
         >
-          {m.isPending ? "Đang lưu…" : "Lưu"}
+          {m.isPending ? (
+            "Đang lưu…"
+          ) : (
+            <>
+              <IconCheck className="h-4 w-4 mr-1.5" />
+              Lưu
+            </>
+          )}
         </Button>
       </div>
       {m.error && (

@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { IconCheck, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,10 +120,20 @@ export default function NewClan() {
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" size="lg" disabled={mutation.isPending || !name.trim()}>
-              {mutation.isPending ? "Đang tạo…" : "Tạo dòng họ"}
+              {mutation.isPending ? (
+                "Đang tạo…"
+              ) : (
+                <>
+                  <IconCheck className="h-5 w-5 mr-2" />
+                  Tạo dòng họ
+                </>
+              )}
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link to="/clans">Hủy</Link>
+              <Link to="/clans">
+                <IconX className="h-5 w-5 mr-2" />
+                Hủy
+              </Link>
             </Button>
           </div>
         </form>

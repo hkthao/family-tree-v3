@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -163,7 +164,8 @@ export default function PersonDetail() {
                           <Link
                             to={`/clans/${clanId}/people/${personId}/add-spouse`}
                           >
-                            + Thêm vợ/chồng
+                            <IconPlus className="h-4 w-4 mr-1" />
+                            Thêm vợ/chồng
                           </Link>
                         </Button>
                       ) : null
@@ -180,7 +182,8 @@ export default function PersonDetail() {
                           <Link
                             to={`/clans/${clanId}/people/${personId}/add-child`}
                           >
-                            + Thêm con
+                            <IconPlus className="h-4 w-4 mr-1" />
+                            Thêm con
                           </Link>
                         </Button>
                       ) : null
@@ -194,6 +197,7 @@ export default function PersonDetail() {
               <div className="flex flex-wrap gap-3">
                 <Button asChild>
                   <Link to={`/clans/${clanId}/people/${personId}/edit`}>
+                    <IconPencil className="h-4 w-4 mr-1.5" />
                     Sửa
                   </Link>
                 </Button>
@@ -210,7 +214,14 @@ export default function PersonDetail() {
                   }}
                   disabled={deleteMutation.isPending}
                 >
-                  {deleteMutation.isPending ? "Đang xoá…" : "Xoá"}
+                  {deleteMutation.isPending ? (
+                    "Đang xoá…"
+                  ) : (
+                    <>
+                      <IconTrash className="h-4 w-4 mr-1.5" />
+                      Xoá
+                    </>
+                  )}
                 </Button>
               </div>
             )}

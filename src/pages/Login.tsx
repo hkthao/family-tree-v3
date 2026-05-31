@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AuthLayout } from "@/components/AuthLayout";
+import { IconLogIn } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,11 +86,14 @@ export default function Login() {
         )}
 
         <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy
-            ? "Đang xử lý…"
-            : mode === "password"
-              ? "Đăng nhập"
-              : "Gửi liên kết qua email"}
+          {busy ? (
+            "Đang xử lý…"
+          ) : (
+            <>
+              <IconLogIn className="h-5 w-5 mr-2" />
+              {mode === "password" ? "Đăng nhập" : "Gửi liên kết qua email"}
+            </>
+          )}
         </Button>
 
         <button

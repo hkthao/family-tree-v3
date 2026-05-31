@@ -3,6 +3,13 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import {
+  IconCheck,
+  IconLogOut,
+  IconShield,
+  IconTrash,
+  IconX,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,7 +62,10 @@ export default function Account() {
             </CardHeader>
             <CardContent>
               <Button asChild variant="outline">
-                <Link to="/admin">Mở trang quản trị</Link>
+                <Link to="/admin">
+                  <IconShield className="h-4 w-4 mr-1.5" />
+                  Mở trang quản trị
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -80,6 +90,7 @@ export default function Account() {
           </CardHeader>
           <CardContent>
             <Button variant="outline" onClick={signOutAndClearCache}>
+              <IconLogOut className="h-4 w-4 mr-1.5" />
               Đăng xuất
             </Button>
           </CardContent>
@@ -157,7 +168,14 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
             </Alert>
           )}
           <Button type="submit" disabled={!changed || !name.trim() || m.isPending}>
-            {m.isPending ? "Đang lưu…" : "Lưu"}
+            {m.isPending ? (
+              "Đang lưu…"
+            ) : (
+              <>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                Lưu
+              </>
+            )}
           </Button>
         </form>
       </CardContent>
@@ -220,7 +238,14 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
             </Alert>
           )}
           <Button type="submit" variant="outline" disabled={!newEmail.trim() || m.isPending}>
-            {m.isPending ? "Đang gửi…" : "Đổi email"}
+            {m.isPending ? (
+              "Đang gửi…"
+            ) : (
+              <>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                Đổi email
+              </>
+            )}
           </Button>
         </form>
       </CardContent>
@@ -300,7 +325,14 @@ function PasswordCard() {
             </Alert>
           )}
           <Button type="submit" variant="outline" disabled={!canSubmit || m.isPending}>
-            {m.isPending ? "Đang đổi…" : "Đổi mật khẩu"}
+            {m.isPending ? (
+              "Đang đổi…"
+            ) : (
+              <>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                Đổi mật khẩu
+              </>
+            )}
           </Button>
         </form>
       </CardContent>
@@ -346,6 +378,7 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
       <CardContent className="space-y-4">
         {!expanded ? (
           <Button variant="outline" onClick={() => setExpanded(true)}>
+            <IconTrash className="h-4 w-4 mr-1.5 text-destructive" />
             Tôi muốn xoá tài khoản
           </Button>
         ) : (
@@ -380,7 +413,14 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
                 disabled={!canSubmit || m.isPending}
                 onClick={() => m.mutate()}
               >
-                {m.isPending ? "Đang xoá…" : "Xoá tài khoản vĩnh viễn"}
+                {m.isPending ? (
+                  "Đang xoá…"
+                ) : (
+                  <>
+                    <IconTrash className="h-4 w-4 mr-1.5" />
+                    Xoá tài khoản vĩnh viễn
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline"
@@ -389,6 +429,7 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
                   setConfirmText("");
                 }}
               >
+                <IconX className="h-4 w-4 mr-1.5" />
                 Hủy
               </Button>
             </div>
