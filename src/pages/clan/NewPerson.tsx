@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -181,10 +182,20 @@ export default function NewPerson() {
               size="lg"
               disabled={mutation.isPending || !fullName.trim()}
             >
-              {mutation.isPending ? "Đang lưu…" : "Thêm"}
+              {mutation.isPending ? (
+                "Đang lưu…"
+              ) : (
+                <>
+                  <IconCheck className="h-5 w-5 mr-2" />
+                  Thêm
+                </>
+              )}
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link to={`/clans/${clanId}/people`}>Hủy</Link>
+              <Link to={`/clans/${clanId}/people`}>
+                <IconX className="h-5 w-5 mr-2" />
+                Hủy
+              </Link>
             </Button>
           </div>
         </form>

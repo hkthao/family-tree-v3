@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import {
+  IconCheck,
+  IconCopy,
+  IconPlus,
+  IconTrash,
+  IconUndo,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +70,14 @@ export function ShareLinksSection({ clanId }: Props) {
           onClick={() => createM.mutate()}
           disabled={createM.isPending || !ttl}
         >
-          {createM.isPending ? "Đang tạo…" : "+ Tạo link mới"}
+          {createM.isPending ? (
+            "Đang tạo…"
+          ) : (
+            <>
+              <IconPlus className="h-4 w-4 mr-1.5" />
+              Tạo link mới
+            </>
+          )}
         </Button>
       </div>
 
@@ -158,7 +172,17 @@ function ShareLinkItem({
           onFocus={(e) => e.currentTarget.select()}
         />
         <Button size="sm" variant="outline" onClick={copyToClipboard}>
-          {copied ? "Đã chép" : "Chép"}
+          {copied ? (
+            <>
+              <IconCheck className="h-4 w-4 mr-1.5" />
+              Đã chép
+            </>
+          ) : (
+            <>
+              <IconCopy className="h-4 w-4 mr-1.5" />
+              Chép
+            </>
+          )}
         </Button>
       </div>
       <div className="flex gap-2">
@@ -169,6 +193,7 @@ function ShareLinkItem({
             onClick={() => revokeM.mutate()}
             disabled={revokeM.isPending}
           >
+            <IconUndo className="h-4 w-4 mr-1.5" />
             Thu hồi
           </Button>
         )}
@@ -181,6 +206,7 @@ function ShareLinkItem({
           }}
           disabled={deleteM.isPending}
         >
+          <IconTrash className="h-4 w-4 mr-1.5" />
           Xoá
         </Button>
       </div>

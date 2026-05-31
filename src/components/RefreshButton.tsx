@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { IconRefresh } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useClanFreshness } from "@/hooks/useClanFreshness";
 
@@ -50,6 +51,7 @@ export function RefreshButton({ clanId, cachedVersion }: Props) {
         }}
         disabled={isChecking}
       >
+        <IconRefresh className={`h-4 w-4 mr-1.5 ${isChecking ? "animate-spin" : ""}`} />
         {isChecking ? "Đang kiểm tra…" : "Làm mới"}
       </Button>
     </div>

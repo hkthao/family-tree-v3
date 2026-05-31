@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { IconArrowLeft, IconArrowRight, IconPlus } from "@/components/icons";
+import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import {
   CLAN_SIZE_BUCKETS,
@@ -132,7 +133,10 @@ export default function Clans() {
             </div>
           </div>
           <Button asChild>
-            <Link to="/clans/new">+ Tạo dòng họ</Link>
+            <Link to="/clans/new">
+              <IconPlus className="h-4 w-4 mr-1.5" />
+              Tạo dòng họ
+            </Link>
           </Button>
         </div>
 
@@ -141,14 +145,12 @@ export default function Clans() {
             label, carry the meaning. h-10 is denser than the default
             h-12 since we're not the primary tap target on this page. */}
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <Input
+          <div className="flex-1 min-w-[200px]">
+            <SearchInput
+              label="Tìm dòng họ"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm dòng họ — gõ không dấu cũng được"
-              className="h-10 pl-9"
-              aria-label="Tìm dòng họ"
             />
           </div>
           {tab === "community" && (
@@ -208,7 +210,10 @@ export default function Clans() {
             {tab === "mine" && !debounced && (
               <CardContent>
                 <Button asChild>
-                  <Link to="/clans/new">Tạo dòng họ</Link>
+                  <Link to="/clans/new">
+                    <IconPlus className="h-4 w-4 mr-1.5" />
+                    Tạo dòng họ
+                  </Link>
                 </Button>
               </CardContent>
             )}
@@ -237,7 +242,8 @@ export default function Clans() {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                ← Trước
+                <IconArrowLeft className="h-4 w-4 mr-1" />
+                Trước
               </Button>
               <span className="px-2">
                 {page}/{totalPages}
@@ -248,7 +254,8 @@ export default function Clans() {
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
               >
-                Sau →
+                Sau
+                <IconArrowRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </div>
@@ -320,21 +327,3 @@ function roleLabel(role: "admin" | "editor" | "viewer"): string {
   return { admin: "Quản trị", editor: "Biên tập", viewer: "Xem" }[role];
 }
 
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}

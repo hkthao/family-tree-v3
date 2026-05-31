@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { IconTrash, IconUserPlus } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -174,7 +175,14 @@ export default function Members() {
                 type="submit"
                 disabled={inviteMutation.isPending || !inviteEmail.trim()}
               >
-                {inviteMutation.isPending ? "Đang mời…" : "Mời"}
+                {inviteMutation.isPending ? (
+                  "Đang mời…"
+                ) : (
+                  <>
+                    <IconUserPlus className="h-4 w-4 mr-1.5" />
+                    Mời
+                  </>
+                )}
               </Button>
             </form>
           </CardContent>
@@ -239,6 +247,7 @@ export default function Members() {
                             }}
                             disabled={removeMutation.isPending}
                           >
+                            <IconTrash className="h-4 w-4 mr-1.5" />
                             Xoá
                           </Button>
                         )}

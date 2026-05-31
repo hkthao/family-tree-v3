@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { IconCheck, IconPencil, IconPlus, IconTrash, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,7 +87,14 @@ export function BranchesSection({ clanId, canEdit }: Props) {
             />
           </div>
           <Button type="submit" disabled={!newName.trim() || addM.isPending}>
-            {addM.isPending ? "Đang thêm…" : "+ Thêm chi"}
+            {addM.isPending ? (
+              "Đang thêm…"
+            ) : (
+              <>
+                <IconPlus className="h-4 w-4 mr-1.5" />
+                Thêm chi
+              </>
+            )}
           </Button>
         </form>
       )}
@@ -150,6 +158,7 @@ function BranchItem({
               disabled={!name.trim() || renameM.isPending || name === branch.name}
               onClick={() => renameM.mutate()}
             >
+              <IconCheck className="h-4 w-4 mr-1.5" />
               Lưu
             </Button>
             <Button
@@ -160,6 +169,7 @@ function BranchItem({
                 setName(branch.name);
               }}
             >
+              <IconX className="h-4 w-4 mr-1.5" />
               Hủy
             </Button>
           </div>
@@ -169,6 +179,7 @@ function BranchItem({
           <span className="flex-1 min-w-0 truncate">{branch.name}</span>
           <div className="flex gap-2 shrink-0">
             <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+              <IconPencil className="h-4 w-4 mr-1" />
               Sửa
             </Button>
             <Button
@@ -186,7 +197,14 @@ function BranchItem({
                 }
               }}
             >
-              {delM.isPending ? "Đang xoá…" : "Xoá"}
+              {delM.isPending ? (
+                "Đang xoá…"
+              ) : (
+                <>
+                  <IconTrash className="h-4 w-4 mr-1" />
+                  Xoá
+                </>
+              )}
             </Button>
           </div>
         </div>

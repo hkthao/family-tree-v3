@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { RefreshButton } from "@/components/RefreshButton";
+import { SearchInput } from "@/components/SearchInput";
 import {
   Card,
   CardContent,
@@ -9,8 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
@@ -146,14 +145,11 @@ export default function Tree() {
       {data && data.persons.length > 0 && (
         <>
           <div className="space-y-2">
-            <Label htmlFor="focal-search">
-              Đặt người trung tâm
-            </Label>
-            <Input
-              id="focal-search"
+            <SearchInput
+              label="Đặt người trung tâm"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Gõ tên để tìm…"
+              placeholder="Đặt người trung tâm — gõ tên để tìm…"
             />
             {matches.length > 0 && (
               <ul className="rounded-md border bg-card divide-y">

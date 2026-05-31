@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
+import { IconArrowLeft, IconArrowRight, IconUndo } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -153,7 +154,8 @@ export default function Audit() {
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
           >
-            ← Trước
+            <IconArrowLeft className="h-4 w-4 mr-1" />
+            Trước
           </Button>
           <span className="px-2">
             {page}/{totalPages}
@@ -164,7 +166,8 @@ export default function Audit() {
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
           >
-            Sau →
+            Sau
+            <IconArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
       </div>
@@ -244,7 +247,14 @@ function AuditItem({
               }
             }}
           >
-            {restoreM.isPending ? "Đang khôi phục…" : "Khôi phục"}
+            {restoreM.isPending ? (
+              "Đang khôi phục…"
+            ) : (
+              <>
+                <IconUndo className="h-4 w-4 mr-1.5" />
+                Khôi phục
+              </>
+            )}
           </Button>
         )}
         {restoreM.isSuccess && (

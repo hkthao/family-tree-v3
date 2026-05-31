@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
+import {
+  IconList,
+  IconPlus,
+  IconUpload,
+} from "@/components/icons";
 import { RefreshButton } from "@/components/RefreshButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,10 +58,16 @@ export default function Dashboard() {
           {canEdit && (
             <CardContent className="flex flex-wrap gap-3">
               <Button asChild>
-                <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
+                <Link to={`/clans/${clan.id}/people/new`}>
+                  <IconPlus className="h-4 w-4 mr-1.5" />
+                  Thêm người
+                </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link to={`/clans/${clan.id}/import`}>Nhập từ Excel</Link>
+                <Link to={`/clans/${clan.id}/import`}>
+                  <IconUpload className="h-4 w-4 mr-1.5" />
+                  Nhập từ Excel
+                </Link>
               </Button>
             </CardContent>
           )}
@@ -78,18 +89,30 @@ export default function Dashboard() {
 
           <div className="flex flex-wrap gap-3">
             <Button asChild>
-              <Link to={`/clans/${clan.id}/people`}>Xem danh bạ</Link>
+              <Link to={`/clans/${clan.id}/people`}>
+                <IconList className="h-4 w-4 mr-1.5" />
+                Xem danh bạ
+              </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link to={`/clans/${clan.id}/tree`}>Xem cây gia phả</Link>
+              <Link to={`/clans/${clan.id}/tree`}>
+                <span className="text-base mr-1.5" aria-hidden="true">🌳</span>
+                Xem cây gia phả
+              </Link>
             </Button>
             {canEdit && (
               <>
                 <Button asChild variant="outline">
-                  <Link to={`/clans/${clan.id}/people/new`}>+ Thêm người</Link>
+                  <Link to={`/clans/${clan.id}/people/new`}>
+                  <IconPlus className="h-4 w-4 mr-1.5" />
+                  Thêm người
+                </Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link to={`/clans/${clan.id}/import`}>Nhập từ Excel</Link>
+                  <Link to={`/clans/${clan.id}/import`}>
+                  <IconUpload className="h-4 w-4 mr-1.5" />
+                  Nhập từ Excel
+                </Link>
                 </Button>
               </>
             )}
