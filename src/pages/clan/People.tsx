@@ -12,6 +12,7 @@ import {
   deletePersonsBulk,
   updatePersonsBranchBulk,
 } from "@/lib/queries/persons";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
@@ -95,6 +96,7 @@ export default function People() {
   }, [page, debounced, branchId, generation, sort, pageSize]);
 
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const bulkChangeBranchM = useMutation({
     mutationFn: () =>
       updatePersonsBranchBulk(
@@ -342,14 +344,15 @@ export default function People() {
             variant="outline"
             className="text-destructive"
             disabled={bulkDeleteM.isPending}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Xoá ${selected.size} người? Có thể khôi phục từ nhật ký.`,
-                )
-              ) {
-                bulkDeleteM.mutate();
-              }
+            onClick={async () => {
+              const ok = await confirm({
+                title: `Xoá ${selected.size} người?`,
+                description:
+                  "Mỗi người được xoá mềm và có thể khôi phục từ nhật ký.",
+                confirmLabel: "Xoá",
+                destructive: true,
+              });
+              if (ok) bulkDeleteM.mutate();
             }}
           >
             {bulkDeleteM.isPending ? "Đang xoá…" : "Xoá"}

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconCheck, IconPencil, IconPlus, IconTrash, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -118,6 +119,7 @@ function BranchItem({
   canEdit: boolean;
 }) {
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(branch.name);
 
@@ -187,14 +189,15 @@ function BranchItem({
               variant="outline"
               className="text-destructive"
               disabled={delM.isPending}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Xoá chi "${branch.name}"? Các người đang thuộc chi này sẽ không còn chi.`,
-                  )
-                ) {
-                  delM.mutate();
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Xoá chi "${branch.name}"?`,
+                  description:
+                    "Các người đang thuộc chi này sẽ không còn chi.",
+                  confirmLabel: "Xoá",
+                  destructive: true,
+                });
+                if (ok) delM.mutate();
               }}
             >
               {delM.isPending ? (

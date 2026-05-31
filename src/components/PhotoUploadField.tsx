@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconTrash, IconUpload } from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -42,6 +43,7 @@ export function PhotoUploadField({
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [stats, setStats] = useState<{ bytes: number } | null>(null);
 
   const { data: signedUrl } = useQuery({
@@ -124,10 +126,13 @@ export function PhotoUploadField({
               size="sm"
               variant="outline"
               className="text-destructive"
-              onClick={() => {
-                if (window.confirm("Xoá ảnh của người này?")) {
-                  deleteM.mutate();
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: "Xoá ảnh của người này?",
+                  confirmLabel: "Xoá",
+                  destructive: true,
+                });
+                if (ok) deleteM.mutate();
               }}
               disabled={deleteM.isPending}
             >

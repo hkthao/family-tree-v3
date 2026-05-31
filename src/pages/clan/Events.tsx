@@ -10,6 +10,7 @@ import {
   IconTrash,
   IconX,
 } from "@/components/icons";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { EventsCalendar } from "@/components/EventsCalendar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SubscriptionSettings } from "@/components/SubscriptionSettings";
@@ -335,6 +336,7 @@ function CustomEventItem({
   canDelete: boolean;
   onDeleted: () => void;
 }) {
+  const confirm = useConfirm();
   const delM = useMutation({
     mutationFn: () => deleteEvent(event.id),
     onSuccess: () => onDeleted(),
@@ -360,10 +362,13 @@ function CustomEventItem({
           variant="outline"
           className="text-destructive shrink-0"
           disabled={delM.isPending}
-          onClick={() => {
-            if (window.confirm(`Xoá sự kiện "${event.title}"?`)) {
-              delM.mutate();
-            }
+          onClick={async () => {
+            const ok = await confirm({
+              title: `Xoá sự kiện "${event.title}"?`,
+              confirmLabel: "Xoá",
+              destructive: true,
+            });
+            if (ok) delM.mutate();
           }}
         >
           <IconTrash className="h-4 w-4 mr-1" />

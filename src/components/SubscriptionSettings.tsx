@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconCheck, IconTrash } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export function SubscriptionSettings({ clanId }: Props) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const qc = useQueryClient();
+  const confirm = useConfirm();
 
   const { data: subs } = useQuery({
     queryKey: queryKeys.subscriptions(clanId, userId),
@@ -146,10 +148,14 @@ export function SubscriptionSettings({ clanId }: Props) {
             variant="outline"
             className="text-destructive"
             disabled={deleteM.isPending}
-            onClick={() => {
-              if (window.confirm("Huỷ theo dõi sự kiện dòng họ này?")) {
-                deleteM.mutate();
-              }
+            onClick={async () => {
+              const ok = await confirm({
+                title: "Huỷ theo dõi sự kiện dòng họ này?",
+                description: "Bạn sẽ không nhận email nhắc nữa.",
+                confirmLabel: "Huỷ theo dõi",
+                destructive: true,
+              });
+              if (ok) deleteM.mutate();
             }}
           >
             <IconTrash className="h-4 w-4 mr-1" />

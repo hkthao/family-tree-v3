@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconCheck, IconSearch, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export default function Merge() {
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const confirm = useConfirm();
 
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const [loserId, setLoserId] = useState<string | null>(null);
@@ -131,14 +133,14 @@ export default function Merge() {
       <div className="flex gap-3">
         <Button
           disabled={!winnerId || !loserId || m.isPending}
-          onClick={() => {
-            if (
-              window.confirm(
-                `Gộp "${loser?.full_name}" vào "${winner?.full_name}"?\n\nQuan hệ và trường còn trống của người giữ lại sẽ lấy từ người gộp vào. Người gộp vào sẽ bị xoá mềm.`,
-              )
-            ) {
-              m.mutate();
-            }
+          onClick={async () => {
+            const ok = await confirm({
+              title: `Gộp "${loser?.full_name}" vào "${winner?.full_name}"?`,
+              description:
+                "Quan hệ và trường còn trống của người giữ lại sẽ lấy từ người gộp vào. Người gộp vào sẽ bị xoá mềm — có thể khôi phục từ nhật ký.",
+              confirmLabel: "Gộp",
+            });
+            if (ok) m.mutate();
           }}
         >
           <IconCheck className="h-4 w-4 mr-1.5" />

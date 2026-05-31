@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconCheck,
   IconCopy,
@@ -114,6 +115,7 @@ function ShareLinkItem({
   userId: string;
 }) {
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [copied, setCopied] = useState(false);
 
   const revokeM = useMutation({
@@ -201,8 +203,14 @@ function ShareLinkItem({
           size="sm"
           variant="outline"
           className="text-destructive"
-          onClick={() => {
-            if (window.confirm("Xoá link này vĩnh viễn?")) deleteM.mutate();
+          onClick={async () => {
+            const ok = await confirm({
+              title: "Xoá link này vĩnh viễn?",
+              description: "Sau khi xoá không khôi phục lại được.",
+              confirmLabel: "Xoá",
+              destructive: true,
+            });
+            if (ok) deleteM.mutate();
           }}
           disabled={deleteM.isPending}
         >

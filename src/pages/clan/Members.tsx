@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconTrash, IconUserPlus } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export default function Members() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
 
   const { clan } = useClanContext();
 
@@ -229,14 +231,15 @@ export default function Members() {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  `Xoá ${m.display_name ?? "thành viên"} khỏi clan?`,
-                                )
-                              ) {
-                                removeMutation.mutate(m.user_id);
-                              }
+                            onClick={async () => {
+                              const ok = await confirm({
+                                title: `Xoá ${m.display_name ?? "thành viên"} khỏi clan?`,
+                                description:
+                                  "Tài khoản người đó vẫn tồn tại trên hệ thống, chỉ bị gỡ khỏi dòng họ này.",
+                                confirmLabel: "Xoá",
+                                destructive: true,
+                              });
+                              if (ok) removeMutation.mutate(m.user_id);
                             }}
                             disabled={removeMutation.isPending}
                           >
