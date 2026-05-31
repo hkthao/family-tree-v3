@@ -20,6 +20,7 @@
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getSolarDate } from "https://esm.sh/@dqcai/vn-lunar@1.0.1";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -151,6 +152,29 @@ function computeFireList(
 }
 
 // ─── Event computation (also inlined for Edge runtime) ─────────────
+
+/**
+ * Given a recurring lunar (month, day) and a target solar year, return
+ * the ISO yyyy-mm-dd this anniversary falls on in that solar year.
+ * Lunar new year happens late Jan / early Feb, so a single lunar
+ * (month, day) can map to two adjacent solar calendar years — try
+ * Y-1, Y, Y+1 and pick the result that lands in `solarYear`.
+ */
+function lunarAnniversaryInSolarYear(
+  month: number,
+  day: number,
+  isLeap: boolean,
+  solarYear: number,
+): string | null {
+  for (const y of [solarYear - 1, solarYear, solarYear + 1]) {
+    const sol = getSolarDate(day, month, y, isLeap);
+    if (sol && sol.year === solarYear) {
+      const pad = (n: number) => String(n).padStart(2, "0");
+      return `${solarYear}-${pad(sol.month)}-${pad(sol.day)}`;
+    }
+  }
+  return null;
+}
 
 function nextOccurrenceOfMonthDay(
   month: number,
@@ -346,17 +370,37 @@ Deno.serve(async (req) => {
         }
       }
     }
-    // Ngày giỗ for deceased with lunar anniversary recorded.
+    // Ngày giỗ for deceased with lunar anniversary recorded. The lunar
+    // (month, day) can fall in this or next calendar year depending on
+    // when Tết lands; try both and keep the first match in the lookahead.
     if (
       !p.is_living &&
       p.death_anniv_lunar_month &&
       p.death_anniv_lunar_day
     ) {
-      // Reuse the same lunar→solar logic from the UI side. Without
-      // bundling, we approximate by treating death_date as the
-      // anniversary's solar date this year. For an accurate cron we
-      // should port lunarAnniversaryInSolarYear here — TODO.
-      // For now, skip in cron (UI still shows them on the Events page).
+      const candidateYears = [
+        todayDate.getUTCFullYear(),
+        todayDate.getUTCFullYear() + 1,
+      ];
+      for (const yr of candidateYears) {
+        const iso = lunarAnniversaryInSolarYear(
+          p.death_anniv_lunar_month,
+          p.death_anniv_lunar_day,
+          !!p.death_anniv_lunar_is_leap,
+          yr,
+        );
+        if (!iso) continue;
+        const days = daysBetween(today, iso);
+        if (days < 0 || days > lookaheadDays) continue;
+        upcoming.push({
+          key: `anniversary:${p.id}:${iso}`,
+          kind: "anniversary",
+          title: `Giỗ ${p.full_name}`,
+          date: iso,
+          personId: p.id,
+        });
+        break; // first matching solar year is enough
+      }
     }
   }
 
