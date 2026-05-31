@@ -388,7 +388,7 @@ function PersonListItem({
       >
         <PersonAvatar
           gender={person.gender}
-          photoPath={person.photo_path}
+          /* photo display batched separately */
           size={44}
           className={person.is_living ? "" : "opacity-80"}
         />
@@ -459,7 +459,7 @@ function PersonGridCard({
       >
         <PersonAvatar
           gender={person.gender}
-          photoPath={person.photo_path}
+          /* photo display batched separately */
           size={64}
           className={person.is_living ? "" : "opacity-80"}
         />

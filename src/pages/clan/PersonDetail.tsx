@@ -7,7 +7,9 @@ import {
   IconPlus,
   IconTrash,
 } from "@/components/icons";
+import { PersonAvatar } from "@/components/PersonAvatar";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
+import { getSignedPhotoUrl } from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,6 +73,13 @@ export default function PersonDetail() {
     enabled: !!personId && !!person,
   });
 
+  const { data: photoUrl } = useQuery({
+    queryKey: ["signed-photo", personId, person?.photo_path ?? null],
+    queryFn: () => getSignedPhotoUrl(person?.photo_path ?? null),
+    enabled: !!person?.photo_path,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const deleteMutation = useMutation({
     mutationFn: () => deletePerson(personId!),
     onSuccess: async () => {
@@ -103,24 +112,31 @@ export default function PersonDetail() {
         {person && (
           <>
             <header className="flex items-start justify-between gap-3 flex-wrap">
-              <div className="space-y-2">
-                <h1 className="clan-name text-3xl font-semibold">
-                  {person.full_name}
-                </h1>
-                <p className="text-base text-muted-foreground">
-                  {person.is_root && (
-                    <span className="text-accent font-medium">Thuỷ tổ • </span>
-                  )}
-                  {person.generation !== null && <>Đời {person.generation}</>}
-                  {!person.is_living && (
-                    <span>
-                      {person.generation !== null && " • "}
-                      đã mất
-                      {person.death_date?.slice(0, 4) &&
-                        ` • ${person.death_date.slice(0, 4)}`}
-                    </span>
-                  )}
-                </p>
+              <div className="flex items-start gap-4 min-w-0">
+                <PersonAvatar
+                  gender={person.gender}
+                  photoUrl={photoUrl ?? null}
+                  size={72}
+                />
+                <div className="space-y-2 min-w-0">
+                  <h1 className="clan-name text-3xl font-semibold">
+                    {person.full_name}
+                  </h1>
+                  <p className="text-base text-muted-foreground">
+                    {person.is_root && (
+                      <span className="text-accent font-medium">Thuỷ tổ • </span>
+                    )}
+                    {person.generation !== null && <>Đời {person.generation}</>}
+                    {!person.is_living && (
+                      <span>
+                        {person.generation !== null && " • "}
+                        đã mất
+                        {person.death_date?.slice(0, 4) &&
+                          ` • ${person.death_date.slice(0, 4)}`}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
               {effectiveRole(clan) !== null && personId && (
                 <SubscribeToggle

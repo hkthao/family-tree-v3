@@ -1,26 +1,28 @@
 interface Props {
   gender: "M" | "F";
-  /** Photo path within the person-photos Supabase Storage bucket. */
-  photoPath?: string | null;
+  /**
+   * Pre-resolved signed URL pointing at the person's photo in
+   * Supabase Storage. Caller is expected to feed it from
+   * `useSignedPhotoUrl(photoPath)` so we don't trigger a fresh API
+   * call on every avatar render. Falsy → fall back to the gendered
+   * illustration.
+   */
+  photoUrl?: string | null;
   /** Diameter in px. Defaults to 40. */
   size?: number;
   className?: string;
 }
 
 /**
- * Circular avatar for a person. Falls back to the gendered illustration
- * in /avatars when no photo is uploaded. The bucket is private so
- * showing a real photo would require a signed-URL fetch; for now the
- * gendered PNG covers the common case where no photo has been added.
+ * Circular avatar for a person. Renders the uploaded photo when
+ * `photoUrl` is provided, otherwise the gendered illustration from
+ * /public/avatars.
  */
-export function PersonAvatar({ gender, photoPath, size = 40, className }: Props) {
-  // Photo support deferred until upload UI exists — see Phase 3 backlog.
-  void photoPath;
-  const src = gender === "M" ? "/avatars/male.png" : "/avatars/female.png";
-
+export function PersonAvatar({ gender, photoUrl, size = 40, className }: Props) {
+  const fallback = gender === "M" ? "/avatars/male.png" : "/avatars/female.png";
   return (
     <img
-      src={src}
+      src={photoUrl || fallback}
       alt=""
       width={size}
       height={size}

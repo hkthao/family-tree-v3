@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
+import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,6 +140,18 @@ export default function EditPerson() {
                 onChange={(e) => setFullName(e.target.value)}
               />
             </div>
+
+            {person && (
+              <div className="space-y-2">
+                <Label>Ảnh đại diện</Label>
+                <PhotoUploadField
+                  clanId={clanId!}
+                  personId={personId!}
+                  gender={gender}
+                  photoPath={person.photo_path ?? null}
+                />
+              </div>
+            )}
 
             <fieldset className="space-y-3">
               <legend className="text-base font-medium mb-2">Giới tính</legend>
