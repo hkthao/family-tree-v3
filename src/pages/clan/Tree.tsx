@@ -69,43 +69,68 @@ export default function Tree() {
 
     let disposed = false;
     const node = containerRef.current;
+    let chart: F3Chart | null = null;
+    let resizeObserver: ResizeObserver | null = null;
 
     (async () => {
       const f3 = await loadF3();
       if (disposed) return;
 
-      // Clear previous render
       node.innerHTML = "";
 
       try {
-        const chart = (f3 as unknown as {
-          createChart: (el: HTMLElement | string, data: unknown) => F3Chart;
-          CardSvg: unknown;
-        })
-          .createChart(node, f3Data)
-          .setTransitionTime(200);
+        const built = (
+          f3 as unknown as {
+            createChart: (el: HTMLElement | string, data: unknown) => F3Chart;
+          }
+        ).createChart(node, f3Data);
 
-        // SVG card for mobile (lighter than HTML cards)
-        const maybeWithCard = chart as F3Chart & {
+        const ext = built as F3Chart & {
           setCardSvg?: () => F3Chart;
           setCardDisplay?: (lines: string[][]) => F3Chart;
+          setCardDim?: (dim: { w?: number; h?: number }) => F3Chart;
         };
-        if (typeof maybeWithCard.setCardSvg === "function") {
-          maybeWithCard.setCardSvg();
-        }
-        if (typeof maybeWithCard.setCardDisplay === "function") {
-          maybeWithCard.setCardDisplay([["full name"], ["birthday"]]);
-        }
 
-        chart.updateTree({ initial: true });
+        // SVG cards are lighter than HTML cards on mobile and let us
+        // size them explicitly. Default 200×80 is fine for the cards
+        // themselves; the issue was layout fit, not card size.
+        ext.setCardSvg?.();
+        ext.setCardDisplay?.([["full name"], ["birthday"]]);
+        ext.setCardDim?.({ w: 220, h: 70 });
+        built.setTransitionTime(200);
+
+        // updateTree({ initial: true }) calls treeFit which measures the
+        // SVG via getBoundingClientRect. Wait one paint frame so the
+        // browser has actually laid the container out — otherwise the
+        // initial fit anchors at the top-left and cards stay tiny.
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        );
+        if (disposed) return;
+        built.updateTree({ initial: true });
+        chart = built;
+
+        // Re-fit on container resize (window resize, drawer expand/collapse,
+        // orientation change). family-chart's updateTree with no `initial`
+        // and tree_position='fit' (the default) re-runs the same fit math.
+        if (typeof ResizeObserver !== "undefined") {
+          let last = node.getBoundingClientRect().width;
+          resizeObserver = new ResizeObserver(() => {
+            const next = node.getBoundingClientRect().width;
+            if (Math.abs(next - last) < 1) return; // ignore sub-pixel noise
+            last = next;
+            chart?.updateTree({ initial: false });
+          });
+          resizeObserver.observe(node);
+        }
       } catch (err) {
-        // family-chart API surface varies; keep going with whatever rendered.
         console.error("family-chart init failed:", err);
       }
     })();
 
     return () => {
       disposed = true;
+      resizeObserver?.disconnect();
       node.innerHTML = "";
     };
   }, [f3Data, focal]);
@@ -178,7 +203,11 @@ export default function Tree() {
 
           <div
             ref={containerRef}
-            className="rounded-lg border bg-card overflow-hidden min-h-[480px] -mx-4 sm:mx-0"
+            // The `f3` class is required — family-chart's stylesheet scopes
+            // `svg.main_svg { width:100%; height:100% }` under it. Without
+            // the class, the SVG (and the f3Canvas it lives in) renders at
+            // intrinsic size and the cards clump in the corner.
+            className="f3 rounded-lg border bg-card overflow-hidden -mx-4 sm:mx-0 h-[70vh] min-h-[480px] max-h-[820px]"
             aria-label="Cây gia phả tương tác"
           />
           <p className="text-xs text-muted-foreground">
