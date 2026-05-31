@@ -33,90 +33,72 @@ const COLORS = {
 const styles = StyleSheet.create({
   page: {
     fontFamily: PDF_FONT_FAMILY,
-    fontSize: 10.5,
+    fontSize: 11,
     lineHeight: 1.45,
     color: COLORS.ink,
-    padding: 56,
+    paddingTop: 56,
+    paddingBottom: 56,
+    paddingHorizontal: 56,
     backgroundColor: COLORS.paper,
   },
-  cover: {
-    flexGrow: 1,
+  coverWrap: {
+    marginTop: 200,
     alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
+  },
+  coverEyebrow: {
+    fontSize: 11,
+    color: COLORS.muted,
+    marginBottom: 6,
   },
   coverTitle: {
-    fontSize: 36,
+    fontSize: 32,
     fontWeight: 600,
     color: COLORS.primary,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   coverSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.muted,
-    marginBottom: 32,
+    marginBottom: 28,
+  },
+  coverStat: {
+    fontSize: 13,
+    color: COLORS.ink,
+    marginBottom: 4,
   },
   coverDateline: {
     fontSize: 11,
     color: COLORS.muted,
     marginTop: 24,
   },
-  statRow: {
-    flexDirection: "row",
-    gap: 24,
-    marginTop: 12,
-  },
-  statBox: {
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: 600,
-    color: COLORS.primary,
-  },
-  statLabel: {
-    fontSize: 9,
-    color: COLORS.muted,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
   h1: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 600,
     color: COLORS.primary,
-    marginBottom: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.accent,
+    marginBottom: 10,
     paddingBottom: 4,
+    borderBottomWidth: 1.5,
+    borderBottomColor: COLORS.accent,
   },
-  h2: {
-    fontSize: 14,
+  intro: {
+    color: COLORS.muted,
+    marginBottom: 10,
+    fontSize: 10,
+  },
+  generationHeading: {
+    fontSize: 13,
     fontWeight: 600,
-    color: COLORS.primary,
+    color: COLORS.accent,
     marginTop: 14,
     marginBottom: 4,
   },
-  generationHeading: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: COLORS.accent,
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  treeItem: {
-    flexDirection: "row",
+  treeRow: {
+    fontSize: 11,
     marginBottom: 2,
   },
-  treeBullet: {
-    width: 12,
-    color: COLORS.muted,
-  },
-  treeNameLine: {
-    flex: 1,
-  },
   personEntry: {
-    marginTop: 10,
-    paddingTop: 6,
+    marginTop: 12,
+    paddingTop: 8,
     borderTopWidth: 0.5,
     borderTopColor: COLORS.divider,
   },
@@ -124,37 +106,20 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     fontWeight: 600,
     color: COLORS.ink,
+    marginBottom: 2,
   },
   personMeta: {
     fontSize: 10,
     color: COLORS.muted,
     marginBottom: 4,
   },
-  fieldRow: {
-    flexDirection: "row",
+  field: {
+    fontSize: 10.5,
     marginBottom: 1,
   },
   fieldLabel: {
-    width: 92,
     color: COLORS.muted,
-    fontSize: 10,
-  },
-  fieldValue: {
-    flex: 1,
-    fontSize: 10,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 24,
-    left: 56,
-    right: 56,
-    fontSize: 9,
-    color: COLORS.muted,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderTopWidth: 0.5,
-    borderTopColor: COLORS.divider,
-    paddingTop: 6,
+    fontWeight: 600,
   },
 });
 
@@ -163,7 +128,6 @@ const styles = StyleSheet.create({
 interface Props {
   clan: ClanDetail;
   data: ClanBookData;
-  /** Optional flags to toggle sections — defaults all true. */
   include?: {
     tree?: boolean;
     detail?: boolean;
@@ -179,7 +143,6 @@ export function ClanBookPdf({ clan, data, include }: Props) {
   const { persons, families } = data;
   const branchById = new Map(data.branches.map((b) => [b.id, b.name]));
 
-  // Family lookups for spouses + children
   const spousesByPerson = new Map<string, string[]>();
   const childrenByFamily = new Map<string, string[]>();
   for (const fam of families) {
@@ -193,7 +156,6 @@ export function ClanBookPdf({ clan, data, include }: Props) {
   }
   const personById = new Map(persons.map((p) => [p.id, p]));
 
-  // Group by generation for the "cây tóm tắt" page
   const byGeneration = new Map<number, PersonDetail[]>();
   for (const p of persons) {
     const g = p.generation ?? 0;
@@ -213,68 +175,45 @@ export function ClanBookPdf({ clan, data, include }: Props) {
 
   return (
     <Document
-      title={`Gia phả — ${clan.name}`}
+      title={`Gia phả - ${clan.name}`}
       author="Gia phả"
       subject={`Sổ gia phả dòng họ ${clan.name}`}
     >
       {/* ─── Cover ──────────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
-        <View style={styles.cover}>
-          <Text style={{ fontSize: 11, color: COLORS.muted, marginBottom: 6 }}>
-            GIA PHẢ
-          </Text>
+        <View style={styles.coverWrap}>
+          <Text style={styles.coverEyebrow}>GIA PHẢ</Text>
           <Text style={styles.coverTitle}>{clan.name}</Text>
           {clan.description ? (
             <Text style={styles.coverSubtitle}>{clan.description}</Text>
           ) : null}
-
-          <View style={styles.statRow}>
-            <Stat label="Người" value={stats.persons} />
-            <Stat label="Đời" value={stats.maxGen} />
-            <Stat label="Chi" value={stats.branches} />
-          </View>
-
+          <Text style={styles.coverStat}>Số người: {stats.persons}</Text>
+          <Text style={styles.coverStat}>Số đời: {stats.maxGen}</Text>
+          <Text style={styles.coverStat}>Số chi: {stats.branches}</Text>
           <Text style={styles.coverDateline}>Xuất ngày {todayLabel}</Text>
         </View>
       </Page>
 
       {/* ─── Tree by generation ───────────────────────────────── */}
-      {showTree && (
+      {showTree && persons.length > 0 && (
         <Page size="A4" style={styles.page}>
           <Text style={styles.h1}>Cây gia phả theo đời</Text>
-          <Text style={{ color: COLORS.muted, marginBottom: 8 }}>
-            Mỗi đời liệt kê thành viên trong dòng họ, kèm năm sinh – năm
-            mất khi có.
+          <Text style={styles.intro}>
+            Mỗi đời liệt kê thành viên, kèm năm sinh - năm mất khi có.
           </Text>
 
-          {generations.map((g) => {
-            const list = byGeneration.get(g)!;
-            return (
-              <View key={g} wrap={false}>
-                <Text style={styles.generationHeading}>
-                  Đời {g} · {list.length} người
+          {generations.map((g) => (
+            <View key={g}>
+              <Text style={styles.generationHeading}>
+                Đời {g} ({byGeneration.get(g)!.length} người)
+              </Text>
+              {byGeneration.get(g)!.map((p) => (
+                <Text key={p.id} style={styles.treeRow}>
+                  {treeRowText(p, branchById)}
                 </Text>
-                {list.map((p) => (
-                  <View key={p.id} style={styles.treeItem}>
-                    <Text style={styles.treeBullet}>•</Text>
-                    <Text style={styles.treeNameLine}>
-                      <Text style={{ fontWeight: 600 }}>{p.full_name}</Text>
-                      <Text style={{ color: COLORS.muted }}>
-                        {" "}
-                        ({p.gender === "M" ? "nam" : "nữ"})
-                        {lifespanShort(p) ? `, ${lifespanShort(p)}` : ""}
-                        {p.branch_id && branchById.get(p.branch_id)
-                          ? ` · chi ${branchById.get(p.branch_id)}`
-                          : ""}
-                      </Text>
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            );
-          })}
-
-          <PageFooter clanName={clan.name} todayLabel={todayLabel} />
+              ))}
+            </View>
+          ))}
         </Page>
       )}
 
@@ -302,7 +241,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
               month: p.death_lunar_month ?? undefined,
               day: p.death_lunar_day ?? undefined,
             });
-            const giỗ = formatLunarAnniversary({
+            const gioRow = formatLunarAnniversary({
               month: p.death_anniv_lunar_month ?? undefined,
               day: p.death_anniv_lunar_day ?? undefined,
             });
@@ -322,57 +261,60 @@ export function ClanBookPdf({ clan, data, include }: Props) {
               .map((id) => personById.get(id)?.full_name)
               .filter(Boolean) as string[];
 
+            const branchName = p.branch_id
+              ? branchById.get(p.branch_id)
+              : null;
+
+            const metaParts: string[] = [];
+            if (p.generation !== null) metaParts.push(`Đời ${p.generation}`);
+            metaParts.push(p.gender === "M" ? "Nam" : "Nữ");
+            if (!p.is_living) metaParts.push("đã mất");
+            if (branchName) metaParts.push(`chi ${branchName}`);
+
             return (
-              <View key={p.id} style={styles.personEntry} wrap={false}>
+              <View key={p.id} style={styles.personEntry}>
                 <Text style={styles.personName}>
                   {p.full_name}
-                  {p.is_root ? "  ⟨thuỷ tổ⟩" : ""}
+                  {p.is_root ? "  (thuỷ tổ)" : ""}
                 </Text>
-                <Text style={styles.personMeta}>
-                  {p.generation !== null ? `Đời ${p.generation} · ` : ""}
-                  {p.gender === "M" ? "Nam" : "Nữ"}
-                  {p.is_living ? "" : " · đã mất"}
-                  {p.branch_id && branchById.get(p.branch_id)
-                    ? ` · chi ${branchById.get(p.branch_id)}`
-                    : ""}
-                </Text>
+                <Text style={styles.personMeta}>{metaParts.join(" - ")}</Text>
 
-                <Field label="Tên tự" value={p.courtesy_name} />
-                <Field label="Tên húy" value={p.nickname} />
-                <Field label="Tên thụy" value={p.posthumous_name} />
+                <FieldLine label="Tên tự" value={p.courtesy_name} />
+                <FieldLine label="Tên húy" value={p.nickname} />
+                <FieldLine label="Tên thụy" value={p.posthumous_name} />
 
-                <Field label="Ngày sinh" value={birthSolar || null} />
-                <Field
+                <FieldLine label="Ngày sinh" value={birthSolar || null} />
+                <FieldLine
                   label="Ngày sinh ÂL"
-                  value={[birthLunar, dayCanChi ? formatCanChiShort(dayCanChi) : ""]
-                    .filter(Boolean)
-                    .join(" — ") || null}
+                  value={
+                    [birthLunar, dayCanChi ? formatCanChiShort(dayCanChi) : ""]
+                      .filter(Boolean)
+                      .join(" - ") || null
+                  }
                 />
                 {!p.is_living && (
                   <>
-                    <Field label="Ngày mất" value={deathSolar || null} />
-                    <Field label="Ngày mất ÂL" value={deathLunar || null} />
-                    <Field label="Ngày giỗ" value={giỗ || null} />
+                    <FieldLine label="Ngày mất" value={deathSolar || null} />
+                    <FieldLine label="Ngày mất ÂL" value={deathLunar || null} />
+                    <FieldLine label="Ngày giỗ" value={gioRow || null} />
                   </>
                 )}
 
-                <Field label="Nơi sinh" value={p.birth_place} />
-                <Field label="Nơi an táng" value={p.burial_place} />
+                <FieldLine label="Nơi sinh" value={p.birth_place} />
+                <FieldLine label="Nơi an táng" value={p.burial_place} />
 
-                <Field
+                <FieldLine
                   label="Vợ/chồng"
                   value={spouseNames.length > 0 ? spouseNames.join(", ") : null}
                 />
-                <Field
+                <FieldLine
                   label="Con"
                   value={childNames.length > 0 ? childNames.join(", ") : null}
                 />
-                <Field label="Tiểu sử" value={p.bio} />
+                <FieldLine label="Tiểu sử" value={p.bio} />
               </View>
             );
           })}
-
-          <PageFooter clanName={clan.name} todayLabel={todayLabel} />
         </Page>
       )}
     </Document>
@@ -381,53 +323,37 @@ export function ClanBookPdf({ clan, data, include }: Props) {
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-function Stat({ label, value }: { label: string; value: number | string }) {
-  return (
-    <View style={styles.statBox}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string | null }) {
+function FieldLine({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
   return (
-    <View style={styles.fieldRow}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <Text style={styles.fieldValue}>{value}</Text>
-    </View>
+    <Text style={styles.field}>
+      {label}: {value}
+    </Text>
   );
 }
 
-function PageFooter({
-  clanName,
-  todayLabel,
-}: {
-  clanName: string;
-  todayLabel: string;
-}) {
-  return (
-    <View style={styles.footer} fixed>
-      <Text>
-        Gia phả {clanName} · {todayLabel}
-      </Text>
-      <Text
-        render={({ pageNumber, totalPages }) =>
-          `Trang ${pageNumber}/${totalPages}`
-        }
-      />
-    </View>
-  );
+function treeRowText(
+  p: PersonDetail,
+  branchById: Map<string, string>,
+): string {
+  const parts: string[] = [];
+  parts.push(p.full_name);
+  parts.push(`(${p.gender === "M" ? "nam" : "nữ"})`);
+  const ls = lifespanShort(p);
+  if (ls) parts.push(ls);
+  if (p.branch_id && branchById.get(p.branch_id)) {
+    parts.push(`chi ${branchById.get(p.branch_id)}`);
+  }
+  return `- ${parts.join(" - ")}`;
 }
 
 function lifespanShort(p: PersonDetail): string {
   const b = p.birth_date?.slice(0, 4);
   const d = p.death_date?.slice(0, 4);
   if (!b && !d && p.is_living) return "";
-  if (!b && !d) return "?–?";
-  if (!d && p.is_living) return `${b}–`;
-  return `${b ?? "?"}–${d ?? "?"}`;
+  if (!b && !d) return "?-?";
+  if (!d && p.is_living) return `${b}-`;
+  return `${b ?? "?"}-${d ?? "?"}`;
 }
 
 function pad(n: number): string {
