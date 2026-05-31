@@ -33,6 +33,10 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { getTreeData } from "@/lib/queries/tree";
 import {
+  formatCanChiShort,
+  getCanChiForSolarDate,
+} from "@/lib/lunarDate";
+import {
   computeUpcomingAnniversaries,
   computeUpcomingEvents,
   type UpcomingEvent,
@@ -232,6 +236,14 @@ function UpcomingItem({
             {kindLabel(event.kind)}
             {event.subtitle ? ` • ${event.subtitle}` : ""}
           </p>
+          {(() => {
+            const c = getCanChiForSolarDate(event.date);
+            return c ? (
+              <p className="text-[11px] text-muted-foreground/80 truncate">
+                {formatCanChiShort(c)}
+              </p>
+            ) : null;
+          })()}
         </div>
       </div>
       <span

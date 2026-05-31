@@ -20,8 +20,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
+  formatCanChiShort,
   formatLunarAnniversary,
   formatLunarDate,
+  getCanChiForSolarDate,
+  lunarToSolarString,
   solarStringToLunar,
 } from "@/lib/lunarDate";
 import { formatPartialDate } from "@/lib/partialDate";
@@ -304,8 +307,16 @@ export default function PersonDetail() {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string | null | undefined }) {
-  if (!value) return null;
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  if (value === null || value === undefined || value === "" || value === false) {
+    return null;
+  }
   return (
     <div className="grid grid-cols-[120px_1fr] gap-2">
       <span className="text-sm text-muted-foreground">{label}</span>
@@ -340,7 +351,27 @@ function LunarDetailRow({
     lunar = solarStringToLunar(fallbackSolar);
   }
   const text = formatLunarDate(lunar);
-  return <DetailRow label={label} value={text || null} />;
+  if (!text) return <DetailRow label={label} value={null} />;
+
+  // Resolve the matching solar date so we can compute the day Can Chi.
+  const solarForCanChi = fallbackSolar ?? (lunar ? lunarToSolarString(lunar) : null);
+  const canChi = getCanChiForSolarDate(solarForCanChi);
+
+  return (
+    <DetailRow
+      label={label}
+      value={
+        <span className="space-y-0.5 inline-block align-top">
+          <span className="block">{text}</span>
+          {canChi && (
+            <span className="block text-xs text-muted-foreground">
+              {formatCanChiShort(canChi)}
+            </span>
+          )}
+        </span>
+      }
+    />
+  );
 }
 
 function RelationshipGroup({
