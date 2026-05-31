@@ -54,8 +54,10 @@ const styles = StyleSheet.create({
   coverTitle: {
     fontSize: 40,
     fontWeight: 600,
+    lineHeight: 1.3,
     color: COLORS.primary,
-    marginBottom: 24,
+    paddingBottom: 8,
+    marginBottom: 18,
   },
   coverDivider: {
     width: 90,
@@ -78,21 +80,21 @@ const styles = StyleSheet.create({
   coverStat: { fontSize: 12, color: COLORS.ink, marginBottom: 4 },
   coverDateline: { fontSize: 11, color: COLORS.muted, marginTop: 36 },
 
-  // Section heading. h1 has its own lineHeight (1.25) so descenders
-  // ("ạ", "ậ") stay inside the Text box and don't bleed into the
-  // amber underline that follows it.
+  // Section heading. h1 has its own lineHeight (1.2) so descenders
+  // ("ạ", "ậ") stay inside the Text box; the underline sits just
+  // below the box with minimal extra gap.
   h1: {
     fontSize: 22,
     fontWeight: 600,
-    lineHeight: 1.25,
+    lineHeight: 1.2,
     color: COLORS.primary,
-    marginBottom: 10,
+    marginBottom: 2,
   },
   h1Underline: {
     width: 60,
     height: 1.5,
     backgroundColor: COLORS.accent,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   intro: { color: COLORS.muted, marginBottom: 14, fontSize: 10 },
 
@@ -124,12 +126,16 @@ const styles = StyleSheet.create({
   // View-based avatar (no Image — Image trips a Buffer polyfill issue
   // in this Vite bundle). A coloured circle with the first letter of
   // the given name, gendered by background colour.
+  // Circle uses explicit paddingTop instead of justifyContent: center.
+  // PDF text baselines sit lower in the line-box than browser CSS, so
+  // flex-centering drops the glyph below the geometric centre. Push
+  // it back up with a measured top padding.
   avatarCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: "center",
-    justifyContent: "center",
+    paddingTop: 9,
     marginBottom: 6,
   },
   avatarCircleM: { backgroundColor: COLORS.primary },
@@ -138,6 +144,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: 600,
+    lineHeight: 1,
+    textAlign: "center",
   },
   personName: {
     fontSize: 10.5,
@@ -413,7 +421,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
         </Page>
       )}
 
-      {/* ─── Dâu / rể ────────────────────────────────────────── */}
+      {/* ─── Dâu / rể (3-card grid, same style as danh bạ) ──── */}
       {inLaws.length > 0 && (
         <Page size="A4" style={styles.page}>
           <Text style={styles.h1}>Dâu / rể kết hôn vào họ</Text>
@@ -422,11 +430,27 @@ export function ClanBookPdf({ clan, data, include }: Props) {
             Người ngoài huyết thống. Không gắn số đời, sắp theo bảng
             chữ cái. Ghi kèm vợ/chồng trong họ để tra ngược.
           </Text>
-          {[...inLaws]
-            .sort((a, b) => a.full_name.localeCompare(b.full_name, "vi"))
-            .map((p) =>
-              renderInLawEntry(p, spousesByPerson, personById, sttById),
-            )}
+          {chunk(
+            [...inLaws].sort((a, b) =>
+              a.full_name.localeCompare(b.full_name, "vi"),
+            ),
+            3,
+          ).map((row, i) => (
+            <View key={i} style={styles.cardRow} wrap={false}>
+              {row.map((p, ci) => (
+                <View
+                  key={p.id}
+                  style={
+                    ci === row.length - 1
+                      ? [styles.card, styles.cardLast]
+                      : styles.card
+                  }
+                >
+                  {renderInLawCard(p, spousesByPerson, personById)}
+                </View>
+              ))}
+            </View>
+          ))}
         </Page>
       )}
     </Document>
@@ -547,37 +571,50 @@ function renderPersonCard(
 }
 
 
-// ─── In-law entry ──────────────────────────────────────────────────
+// ─── In-law card (matches bloodline card layout) ──────────────────
 
-function renderInLawEntry(
+function renderInLawCard(
   p: PersonDetail,
   spousesByPerson: Map<string, string[]>,
   personById: Map<string, PersonDetail>,
-  sttById: Map<string, string>,
 ): React.ReactNode {
   const ls = lifespanText(p);
   const spouseList = (spousesByPerson.get(p.id) ?? [])
     .map((id) => personById.get(id))
     .filter((s): s is PersonDetail => !!s);
 
+  const metaParts: string[] = [p.gender === "M" ? "Nam" : "Nữ"];
+  if (ls) metaParts.push(ls);
+  if (!p.is_living) metaParts.push("đã mất");
+
   return (
-    <View key={p.id} style={styles.personEntry}>
+    <>
+      <View
+        style={
+          p.gender === "M"
+            ? [styles.avatarCircle, styles.avatarCircleM]
+            : [styles.avatarCircle, styles.avatarCircleF]
+        }
+      >
+        <Text style={styles.avatarLetter}>{firstInitial(p.full_name)}</Text>
+      </View>
       <Text style={styles.personName}>{p.full_name}</Text>
-      <Text style={styles.personMeta}>
-        {`${p.gender === "M" ? "Nam" : "Nữ"}${ls ? ` - ${ls}` : ""}${
-          !p.is_living ? " - đã mất" : ""
-        }`}
-      </Text>
-      {spouseList.length > 0 && (
+      <Text style={styles.personMeta}>{metaParts.join(" · ")}</Text>
+
+      <View style={styles.cardBody}>
         <FieldLine
           label="Vợ/chồng của"
-          value={spouseList.map((s) => withStt(s, sttById)).join(", ")}
+          value={
+            spouseList.length > 0
+              ? spouseList.map((s) => s.full_name).join(", ")
+              : null
+          }
         />
-      )}
-      <FieldLine label="Nơi sinh" value={p.birth_place} />
-      <FieldLine label="Nơi an táng" value={p.burial_place} />
-      <FieldLine label="Tiểu sử" value={p.bio} />
-    </View>
+        <FieldLine label="Nơi sinh" value={p.birth_place} />
+        <FieldLine label="Nơi an táng" value={p.burial_place} />
+        <FieldLine label="Tiểu sử" value={p.bio} />
+      </View>
+    </>
   );
 }
 
@@ -601,11 +638,6 @@ function lifespanText(p: PersonDetail): string {
   if (b && !p.is_living) return `${b}-`;
   if (d && !p.is_living) return `-${d}`;
   return "";
-}
-
-function withStt(p: PersonDetail, sttById: Map<string, string>): string {
-  const stt = sttById.get(p.id);
-  return stt ? `[${stt}] ${p.full_name}` : p.full_name;
 }
 
 function pad(n: number): string {
