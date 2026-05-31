@@ -17,13 +17,39 @@ export interface ClanSummary {
 }
 
 /**
- * List all clans the current user is a member of, joined with their role.
- * Role comes from clan_members (the trigger auto-adds the owner as admin).
+ * List clans for the "Dòng họ của tôi" page.
+ *
+ * - Regular users: only clans they're a member of, joined with their role.
+ * - Platform admin: every clan, since they have full access by policy.
+ *   They get role 'admin' so the existing UI logic (which keys off `role`)
+ *   keeps working without a special case.
  */
 export async function listMyClans(
   userId: string,
   client: Client = defaultClient,
 ): Promise<ClanSummary[]> {
+  // First find out whether this caller is a platform admin so we don't
+  // round-trip on every regular user. RLS lets them SELECT their own row.
+  const { data: profile } = await client
+    .from("profiles")
+    .select("is_platform_admin")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profile?.is_platform_admin) {
+    const { data, error } = await client
+      .from("clans")
+      .select(
+        "id, name, description, visibility, max_persons, max_users, owner_id",
+      )
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((c) => ({
+      ...(c as Omit<ClanSummary, "role">),
+      role: "admin" as const,
+    }));
+  }
+
   const { data, error } = await client
     .from("clan_members")
     .select(

@@ -13,10 +13,18 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { listMyClans } from "@/lib/queries/clans";
 import { queryKeys } from "@/lib/queries/keys";
+import { getMyProfile } from "@/lib/queries/profile";
 
 export default function Clans() {
   const { user } = useAuth();
   const userId = user?.id;
+
+  const { data: profile } = useQuery({
+    queryKey: queryKeys.myProfile(userId ?? ""),
+    queryFn: () => getMyProfile(userId!),
+    enabled: !!userId,
+  });
+  const isPlatformAdmin = !!profile?.is_platform_admin;
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.myClans(userId ?? ""),
@@ -29,11 +37,19 @@ export default function Clans() {
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="clan-name text-3xl font-semibold">Dòng họ của tôi</h1>
+          <h1 className="clan-name text-3xl font-semibold">
+            {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ của tôi"}
+          </h1>
           <Button asChild>
             <Link to="/clans/new">+ Tạo dòng họ</Link>
           </Button>
         </div>
+
+        {isPlatformAdmin && (
+          <p className="text-sm text-muted-foreground">
+            Bạn đang xem với quyền platform admin: thấy mọi dòng họ trong hệ thống.
+          </p>
+        )}
 
         {isLoading && (
           <p className="text-muted-foreground">Đang tải…</p>
