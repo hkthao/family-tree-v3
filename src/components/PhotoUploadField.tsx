@@ -86,17 +86,17 @@ export function PhotoUploadField({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-start gap-3">
         {photoPath && signedUrl ? (
           <img
             src={signedUrl}
             alt=""
-            width={64}
-            height={64}
+            width={96}
+            height={96}
             className="rounded-full object-cover bg-muted"
           />
         ) : (
-          <PersonAvatar gender={gender} size={64} />
+          <PersonAvatar gender={gender} size={96} />
         )}
         <div className="flex flex-wrap gap-2">
           <label className="inline-block">

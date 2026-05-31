@@ -156,6 +156,9 @@ export default function PersonDetail() {
               </CardHeader>
               <CardContent className="space-y-2 text-base">
                 <DetailRow label="Giới tính" value={person.gender === "M" ? "Nam" : "Nữ"} />
+                <DetailRow label="Tên tự" value={person.courtesy_name} />
+                <DetailRow label="Tên húy" value={person.nickname} />
+                <DetailRow label="Tên thụy" value={person.posthumous_name} />
                 <DetailRow
                   label="Ngày sinh"
                   value={formatPartialDate({
@@ -211,9 +214,6 @@ export default function PersonDetail() {
                     />
                   </>
                 )}
-                <DetailRow label="Tên tự" value={person.courtesy_name} />
-                <DetailRow label="Tên húy" value={person.nickname} />
-                <DetailRow label="Tên thụy" value={person.posthumous_name} />
                 <DetailRow label="Nơi sinh" value={person.birth_place} />
                 <DetailRow label="Nơi an táng" value={person.burial_place} />
                 {person.bio && (
