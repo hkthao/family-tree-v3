@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
   listAudit,
@@ -43,8 +43,9 @@ export default function Audit() {
   const userId = user?.id ?? "";
   const qc = useQueryClient();
 
-  const canEdit = clan.myRole === "admin" || clan.myRole === "editor";
-  if (clan.myRole === null) return <Navigate to={`/clans/${clan.id}`} replace />;
+  const canEdit = canEditClan(clan);
+  if (effectiveRole(clan) === null)
+    return <Navigate to={`/clans/${clan.id}`} replace />;
 
   const [page, setPage] = useState(1);
   const [entityType, setEntityType] = useState<AuditEntity | "">("");

@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import { downloadTemplate, parseSpreadsheet } from "@/lib/excel";
 import {
@@ -33,7 +33,7 @@ export default function Import() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
 
-  const canEdit = clan.myRole === "admin" || clan.myRole === "editor";
+  const canEdit = canEditClan(clan);
   if (!canEdit) return <Navigate to={`/clans/${clanId}`} replace />;
 
   async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {

@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
 
@@ -19,7 +19,7 @@ export default function Dashboard() {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
-  const canEdit = clan.myRole === "admin" || clan.myRole === "editor";
+  const canEdit = canEditClan(clan);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: queryKeys.clanStats(clan.id, userId),

@@ -17,6 +17,13 @@ export interface ClanDetail {
   owner_id: string | null;
   /** Caller's role in this clan, derived from clan_members. */
   myRole: "admin" | "editor" | "viewer" | null;
+  /**
+   * True when the caller has profiles.is_platform_admin = true. Treated as
+   * effective admin for every clan in UI gates; the underlying RLS helpers
+   * already grant the access, this surfaces it so pages can render the
+   * admin-only controls without re-fetching the profile.
+   */
+  isPlatformAdmin: boolean;
 }
 
 /**
@@ -28,7 +35,11 @@ export async function getClanDetail(
   userId: string,
   client: Client = defaultClient,
 ): Promise<ClanDetail | null> {
-  const [{ data: clan, error: clanErr }, { data: membership }] = await Promise.all([
+  const [
+    { data: clan, error: clanErr },
+    { data: membership },
+    { data: profile },
+  ] = await Promise.all([
     client
       .from("clans")
       .select(
@@ -42,6 +53,11 @@ export async function getClanDetail(
       .eq("clan_id", clanId)
       .eq("user_id", userId)
       .maybeSingle(),
+    client
+      .from("profiles")
+      .select("is_platform_admin")
+      .eq("id", userId)
+      .maybeSingle(),
   ]);
 
   if (clanErr) throw new Error(clanErr.message);
@@ -51,5 +67,6 @@ export async function getClanDetail(
     ...clan,
     visibility: clan.visibility as ClanDetail["visibility"],
     myRole: (membership?.role as ClanDetail["myRole"]) ?? null,
+    isPlatformAdmin: !!profile?.is_platform_admin,
   };
 }
