@@ -1,7 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { IconPencil, IconPlus, IconTrash } from "@/components/icons";
+import {
+  IconBell,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+} from "@/components/icons";
+import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
   formatLunarAnniversary,
@@ -93,24 +99,36 @@ export default function PersonDetail() {
 
         {person && (
           <>
-            <header className="space-y-2">
-              <h1 className="clan-name text-3xl font-semibold">
-                {person.full_name}
-              </h1>
-              <p className="text-base text-muted-foreground">
-                {person.is_root && (
-                  <span className="text-accent font-medium">Thuỷ tổ • </span>
-                )}
-                {person.generation !== null && <>Đời {person.generation}</>}
-                {!person.is_living && (
-                  <span>
-                    {person.generation !== null && " • "}
-                    đã mất
-                    {person.death_date?.slice(0, 4) &&
-                      ` • ${person.death_date.slice(0, 4)}`}
-                  </span>
-                )}
-              </p>
+            <header className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="space-y-2">
+                <h1 className="clan-name text-3xl font-semibold">
+                  {person.full_name}
+                </h1>
+                <p className="text-base text-muted-foreground">
+                  {person.is_root && (
+                    <span className="text-accent font-medium">Thuỷ tổ • </span>
+                  )}
+                  {person.generation !== null && <>Đời {person.generation}</>}
+                  {!person.is_living && (
+                    <span>
+                      {person.generation !== null && " • "}
+                      đã mất
+                      {person.death_date?.slice(0, 4) &&
+                        ` • ${person.death_date.slice(0, 4)}`}
+                    </span>
+                  )}
+                </p>
+              </div>
+              {effectiveRole(clan) !== null && personId && (
+                <SubscribeToggle
+                  clanId={clan.id}
+                  scope="person"
+                  targetId={personId}
+                  icon={<IconBell className="h-4 w-4 mr-1.5" />}
+                  labelOff="Theo dõi"
+                  labelOn="Đang theo dõi"
+                />
+              )}
             </header>
 
             <Card>

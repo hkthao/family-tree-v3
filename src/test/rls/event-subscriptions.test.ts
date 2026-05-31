@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
 
+import { upsertSubscription } from "@/lib/queries/subscriptions";
+
 import {
   addMember,
   createTestClan,
@@ -63,6 +65,47 @@ describe("RLS + partial unique: event_subscriptions", () => {
       scope: "clan",
     });
     expect(error).not.toBeNull();
+  });
+
+  it("upsertSubscription creates then updates the clan-scope row in place", async () => {
+    const owner = await createTestUser({ displayName: "Upsert" });
+    cleanup.push(owner.id);
+    const clanId = await createTestClan(owner);
+
+    const created = await upsertSubscription(
+      {
+        clan_id: clanId,
+        user_id: owner.id,
+        scope: "clan",
+        channels: ["email"],
+        lead_days: [7, 1],
+      },
+      owner.client,
+    );
+    expect(created.id).toBeDefined();
+    expect(created.lead_days).toEqual([7, 1]);
+
+    // Second call with different config should UPDATE, not insert (partial
+    // unique would otherwise reject).
+    const updated = await upsertSubscription(
+      {
+        clan_id: clanId,
+        user_id: owner.id,
+        scope: "clan",
+        channels: ["email"],
+        lead_days: [14, 3, 0],
+      },
+      owner.client,
+    );
+    expect(updated.id).toBe(created.id);
+    expect(updated.lead_days).toEqual([14, 3, 0]);
+
+    const { data } = await owner.client
+      .from("event_subscriptions")
+      .select("id")
+      .eq("clan_id", clanId)
+      .eq("user_id", owner.id);
+    expect(data).toHaveLength(1);
   });
 
   it("user sees only their own subscriptions", async () => {

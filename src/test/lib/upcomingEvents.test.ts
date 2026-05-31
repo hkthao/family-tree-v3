@@ -10,8 +10,6 @@ import {
 
 function person(over: Partial<PersonForTree> & Pick<PersonForTree, "id" | "full_name">): PersonForTree {
   return {
-    id: over.id,
-    full_name: over.full_name,
     gender: "M",
     is_living: true,
     is_root: false,
@@ -25,9 +23,7 @@ function person(over: Partial<PersonForTree> & Pick<PersonForTree, "id" | "full_
 
 function ev(over: Partial<EventRow> & Pick<EventRow, "id" | "title">): EventRow {
   return {
-    id: over.id,
     clan_id: "c1",
-    title: over.title,
     event_type: "custom",
     date_solar: null,
     lunar_year: null,

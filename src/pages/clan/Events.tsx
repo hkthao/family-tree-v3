@@ -2,8 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { IconPlus, IconTrash, IconX } from "@/components/icons";
+import { IconBell, IconPlus, IconTrash, IconX } from "@/components/icons";
 import { RefreshButton } from "@/components/RefreshButton";
+import { SubscriptionSettings } from "@/components/SubscriptionSettings";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  effectiveRole,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
   createEvent,
@@ -137,6 +142,25 @@ export default function Events() {
             <UpcomingItem key={e.key} event={e} clanId={clan.id} />
           ))}
         </ul>
+      )}
+
+      {/* Subscription / notification preferences */}
+      {effectiveRole(clan) !== null && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <IconBell className="h-5 w-5" />
+              Theo dõi sự kiện
+            </CardTitle>
+            <CardDescription>
+              Nhận thông báo qua email khi có sinh nhật, ngày giỗ hoặc sự
+              kiện sắp đến. Chỉ áp dụng cho riêng bạn.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SubscriptionSettings clanId={clan.id} />
+          </CardContent>
+        </Card>
       )}
 
       {/* Custom events management */}
