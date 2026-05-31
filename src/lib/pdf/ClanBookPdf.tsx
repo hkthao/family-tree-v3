@@ -745,9 +745,9 @@ function buildTreeLayout(
 }
 
 /** Soft cap before we split the diagram into multiple pages.
- *  Tuned so cards stay ≥ 50pt wide (enough for 4-char Vietnamese
- *  names like "Ngô Văn A") on the 730pt content width. */
-const MAX_LEAVES_PER_PAGE = 14;
+ *  At 12 leaves, each lane is ~60pt → cards 56pt with a 4pt gap; 4-char
+ *  Vietnamese names ("Ngô Văn A") fit comfortably at 7pt. */
+const MAX_LEAVES_PER_PAGE = 12;
 
 function countLeaves(
   roots: PersonDetail[],
@@ -840,18 +840,22 @@ function renderTreePages({
     );
   }
 
-  // ─── Strategy C: split by Đời-2 sub-roots ───────────────────
-  const subRoots = roots.flatMap((r) =>
+  // ─── Strategy C: recursively split by sub-roots ──────────────
+  // Walk down the tree; for each node, if its subtree fits the leaf
+  // budget, render one page. Otherwise descend to its children and
+  // recurse. The Thuỷ tổ itself is skipped from page generation
+  // (we go straight to its children) because it's listed at the top
+  // of every chi/sub-root subtree anyway.
+  const pages: React.ReactNode[] = [];
+  const seedNodes = roots.flatMap((r) =>
     (childrenByParent.get(r.id) ?? [])
       .map((id) => personById.get(id))
       .filter((c): c is PersonDetail => !!c && c.generation !== null),
   );
-  // Group sub-roots so each page fits roughly the leaf budget.
-  // For now: one page per sub-root (clean & predictable).
-  return subRoots.map((sr) => {
-    // Universe = sr + all descendants
-    const universe = new Set<string>([sr.id]);
-    const queue = [sr.id];
+
+  function descendantsOf(p: PersonDetail): Set<string> {
+    const universe = new Set<string>([p.id]);
+    const queue = [p.id];
     while (queue.length > 0) {
       const cur = queue.shift()!;
       for (const c of childrenByParent.get(cur) ?? []) {
@@ -861,18 +865,52 @@ function renderTreePages({
         }
       }
     }
-    return (
-      <TreeDiagramPage
-        key={sr.id}
-        title={`Phả hệ từ ${sr.full_name}`}
-        subtitle={`Một nhánh của họ — ${universe.size} người`}
-        roots={[sr]}
-        childrenByParent={childrenByParent}
-        personById={personById}
-        memberFilter={universe}
-      />
-    );
-  });
+    return universe;
+  }
+
+  function emit(p: PersonDetail) {
+    const leaves = countLeaves([p], childrenByParent, personById);
+    if (leaves <= MAX_LEAVES_PER_PAGE) {
+      const universe = descendantsOf(p);
+      pages.push(
+        <TreeDiagramPage
+          key={p.id}
+          title={`Phả hệ từ ${p.full_name}`}
+          subtitle={`Một nhánh của họ — ${universe.size} người`}
+          roots={[p]}
+          childrenByParent={childrenByParent}
+          personById={personById}
+          memberFilter={universe}
+        />,
+      );
+      return;
+    }
+    // Too big — descend to children.
+    const children = (childrenByParent.get(p.id) ?? [])
+      .map((id) => personById.get(id))
+      .filter((c): c is PersonDetail => !!c && c.generation !== null);
+    if (children.length === 0) {
+      // Leaf with > MAX_LEAVES_PER_PAGE shouldn't happen (leaf = 1
+      // descendant). Emit anyway as a fallback.
+      const universe = descendantsOf(p);
+      pages.push(
+        <TreeDiagramPage
+          key={p.id}
+          title={`Phả hệ từ ${p.full_name}`}
+          subtitle={`Một nhánh của họ — ${universe.size} người`}
+          roots={[p]}
+          childrenByParent={childrenByParent}
+          personById={personById}
+          memberFilter={universe}
+        />,
+      );
+      return;
+    }
+    for (const c of children) emit(c);
+  }
+
+  for (const seed of seedNodes) emit(seed);
+  return pages;
 }
 
 function TreeDiagramPage({
@@ -906,28 +944,29 @@ function TreeDiagramPage({
   const SVG_W = PAGE_W_LS - 56 * 2; // 730
   const SVG_H = 360; // leaves ~107pt for h1 + underline + intro
 
-  // Inset cards from the SVG edges so the lines and labels don't kiss
-  // the bounds.
-  const X_INSET = 16;
+  // Top/bottom inset for cards. Sides are handled by the lane scheme
+  // below so edge cards always sit fully inside the SVG.
   const TOP_INSET = 20;
   const BOTTOM_INSET = 12;
-  const W = SVG_W - X_INSET * 2;
+  const SAFETY = 8;
   const H = SVG_H - TOP_INSET - BOTTOM_INSET;
 
-  // Card sizing — clamp wide enough to fit a Vietnamese 4-char given
-  // name ("Ngô Văn A") at the smallest font.
-  const col = leafCount > 1 ? W / (leafCount - 1) : W;
-  const CARD_W = Math.max(50, Math.min(96, col - 6));
-  const CARD_H = 26;
-  const ROW = Math.max(60, Math.min(110, H / Math.max(maxDepth + 1, 2)));
+  // Lane scheme: divide the SVG width into N equal "lanes" (one per
+  // leaf) and centre each leaf at its lane midpoint. This keeps the
+  // outermost cards comfortably inside the SVG bounds instead of
+  // hanging off the edge.
+  const lane = leafCount > 0 ? (SVG_W - SAFETY * 2) / leafCount : SVG_W;
+  const CARD_W = Math.max(48, Math.min(80, lane - 6));
+  const CARD_H = 24;
+  const ROW = Math.max(56, Math.min(110, H / Math.max(maxDepth + 1, 2)));
 
   const pxOf = (gridX: number) =>
-    leafCount === 1 ? X_INSET + W / 2 : X_INSET + gridX * col;
+    leafCount === 1 ? SVG_W / 2 : SAFETY + lane * (gridX + 0.5);
   const pyOf = (gridY: number) => TOP_INSET + gridY * ROW + CARD_H / 2;
 
-  const nameFontSize = CARD_W < 60 ? 7 : 8;
+  const nameFontSize = CARD_W < 56 ? 6.5 : CARD_W < 70 ? 7 : 7.5;
   const yearFontSize = nameFontSize - 1.5;
-  // Truncate to fit width: assume each glyph ≈ fontSize × 0.55 wide.
+  // Truncate to fit width: each glyph ≈ fontSize × 0.55 wide.
   const maxChars = Math.max(6, Math.floor(CARD_W / (nameFontSize * 0.55)));
   const truncate = (s: string) =>
     s.length > maxChars ? s.slice(0, maxChars - 1) + "…" : s;
