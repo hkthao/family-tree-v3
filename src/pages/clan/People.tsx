@@ -116,7 +116,7 @@ export default function People() {
         <div className="flex items-center gap-3 flex-wrap">
           <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
           {canEdit && (
-            <Button asChild>
+            <Button asChild size="sm">
               <Link to={`/clans/${clan.id}/people/new`}>
                 <IconPlus className="h-4 w-4 mr-1.5" />
                 Thêm người
