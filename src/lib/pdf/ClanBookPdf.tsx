@@ -200,61 +200,60 @@ const FRAME_IN_M = 32; // inner rectangle margin
 const VINE_REACH = 64; // how far the corner vine curls along each edge
 
 /**
- * Renders the four corner vines + two perpendicular straight rules.
- * `cx, cy` is the corner pivot in absolute SVG space; `rot` rotates
- * the whole pattern around that pivot so the same drawing serves all
- * four corners.
+ * Renders a single corner vine. `(cx, cy)` is the corner pivot;
+ * `sx, sy` are ±1 reflection signs so the same geometry produces
+ * all four corners, each curling INWARD toward the page centre.
+ *   TL: ( +1, +1 )   TR: ( -1, +1 )
+ *   BL: ( +1, -1 )   BR: ( -1, -1 )
+ * We use sign-based reflection instead of rotation because rotating
+ * an asymmetric path 90°/270° around the corner doesn't mirror it
+ * along the perpendicular edge — the vines ended up pointing
+ * outward in two of the corners.
  */
-function vineCorner(cx: number, cy: number, rot: number): React.ReactNode {
-  // Outer arc: from (cx+R, cy) on the top edge down to (cx, cy+R) on
-  // the left edge — a smooth quarter-curve that hugs the corner.
+function vineCorner(
+  cx: number,
+  cy: number,
+  sx: number,
+  sy: number,
+): React.ReactNode {
+  const x = (off: number) => cx + sx * off;
+  const y = (off: number) => cy + sy * off;
   return (
-    <G transform={`rotate(${rot} ${cx} ${cy})`}>
+    <G>
       <Path
-        d={`M ${cx + VINE_REACH} ${cy + 8} Q ${cx + 10} ${cy + 10} ${cx + 8} ${cy + VINE_REACH}`}
+        d={`M ${x(VINE_REACH)} ${y(8)} Q ${x(10)} ${y(10)} ${x(8)} ${y(VINE_REACH)}`}
         stroke={COLORS.primary}
         strokeWidth={1}
         fill="none"
       />
       <Path
-        d={`M ${cx + VINE_REACH - 8} ${cy + 16} Q ${cx + 18} ${cy + 18} ${cx + 16} ${cy + VINE_REACH - 8}`}
+        d={`M ${x(VINE_REACH - 8)} ${y(16)} Q ${x(18)} ${y(18)} ${x(16)} ${y(VINE_REACH - 8)}`}
         stroke={COLORS.accent}
         strokeWidth={0.6}
         fill="none"
       />
-      {/* Leaf-dots along the outer vine */}
-      <Circle
-        cx={cx + VINE_REACH - 2}
-        cy={cy + 10}
-        r={2.4}
-        fill={COLORS.accent}
-      />
-      <Circle
-        cx={cx + 24}
-        cy={cy + 24}
-        r={3.2}
-        fill={COLORS.primary}
-      />
-      <Circle
-        cx={cx + 10}
-        cy={cy + VINE_REACH - 2}
-        r={2.4}
-        fill={COLORS.accent}
-      />
-      {/* Smaller buds */}
-      <Circle cx={cx + 40} cy={cy + 14} r={1.2} fill={COLORS.primary} />
-      <Circle cx={cx + 14} cy={cy + 40} r={1.2} fill={COLORS.primary} />
+      <Circle cx={x(VINE_REACH - 2)} cy={y(10)} r={2.4} fill={COLORS.accent} />
+      <Circle cx={x(24)} cy={y(24)} r={3.2} fill={COLORS.primary} />
+      <Circle cx={x(10)} cy={y(VINE_REACH - 2)} r={2.4} fill={COLORS.accent} />
+      <Circle cx={x(40)} cy={y(14)} r={1.2} fill={COLORS.primary} />
+      <Circle cx={x(14)} cy={y(40)} r={1.2} fill={COLORS.primary} />
     </G>
   );
 }
 
 /** Three-dot cluster at the midpoint of an edge. */
-function midOrnament(cx: number, cy: number, rot: number): React.ReactNode {
+function midOrnament(
+  cx: number,
+  cy: number,
+  vertical: boolean,
+): React.ReactNode {
+  const dx = vertical ? 0 : 9;
+  const dy = vertical ? 9 : 0;
   return (
-    <G transform={`rotate(${rot} ${cx} ${cy})`}>
+    <G>
       <Circle cx={cx} cy={cy} r={2.6} fill={COLORS.primary} />
-      <Circle cx={cx - 9} cy={cy} r={1.4} fill={COLORS.accent} />
-      <Circle cx={cx + 9} cy={cy} r={1.4} fill={COLORS.accent} />
+      <Circle cx={cx - dx} cy={cy - dy} r={1.4} fill={COLORS.accent} />
+      <Circle cx={cx + dx} cy={cy + dy} r={1.4} fill={COLORS.accent} />
     </G>
   );
 }
@@ -292,16 +291,16 @@ function VineBorder() {
           strokeWidth={0.5}
           fill="none"
         />
-        {/* Four corner vines */}
-        {vineCorner(FRAME_OUT_M, FRAME_OUT_M, 0)}
-        {vineCorner(PAGE_W - FRAME_OUT_M, FRAME_OUT_M, 90)}
-        {vineCorner(PAGE_W - FRAME_OUT_M, PAGE_H - FRAME_OUT_M, 180)}
-        {vineCorner(FRAME_OUT_M, PAGE_H - FRAME_OUT_M, 270)}
+        {/* Four corner vines (sign-based reflection: each curls inward) */}
+        {vineCorner(FRAME_OUT_M, FRAME_OUT_M, +1, +1)}
+        {vineCorner(PAGE_W - FRAME_OUT_M, FRAME_OUT_M, -1, +1)}
+        {vineCorner(PAGE_W - FRAME_OUT_M, PAGE_H - FRAME_OUT_M, -1, -1)}
+        {vineCorner(FRAME_OUT_M, PAGE_H - FRAME_OUT_M, +1, -1)}
         {/* Mid-edge ornaments */}
-        {midOrnament(PAGE_W / 2, FRAME_OUT_M, 0)}
-        {midOrnament(PAGE_W / 2, PAGE_H - FRAME_OUT_M, 0)}
-        {midOrnament(FRAME_OUT_M, PAGE_H / 2, 90)}
-        {midOrnament(PAGE_W - FRAME_OUT_M, PAGE_H / 2, 90)}
+        {midOrnament(PAGE_W / 2, FRAME_OUT_M, false)}
+        {midOrnament(PAGE_W / 2, PAGE_H - FRAME_OUT_M, false)}
+        {midOrnament(FRAME_OUT_M, PAGE_H / 2, true)}
+        {midOrnament(PAGE_W - FRAME_OUT_M, PAGE_H / 2, true)}
       </Svg>
     </View>
   );
