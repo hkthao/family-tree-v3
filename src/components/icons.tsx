@@ -248,6 +248,28 @@ export function IconGrid(p: IconProps) {
   );
 }
 
+export function IconLayoutVertical(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="9" y="3" width="6" height="5" rx="1" />
+      <rect x="3" y="14" width="6" height="5" rx="1" />
+      <rect x="15" y="14" width="6" height="5" rx="1" />
+      <path d="M12 8 V11 M6 14 V11 H18 V14" />
+    </Svg>
+  );
+}
+
+export function IconLayoutHorizontal(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="3" y="9" width="5" height="6" rx="1" />
+      <rect x="14" y="3" width="5" height="6" rx="1" />
+      <rect x="14" y="15" width="5" height="6" rx="1" />
+      <path d="M8 12 H11 M14 6 H11 V18 H14" />
+    </Svg>
+  );
+}
+
 export function IconUndo(p: IconProps) {
   return (
     <Svg {...p}>

@@ -2,7 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { IconPlus, IconUpload } from "@/components/icons";
+import {
+  IconLayoutHorizontal,
+  IconLayoutVertical,
+  IconPlus,
+  IconUpload,
+} from "@/components/icons";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
@@ -67,6 +72,19 @@ async function loadF3(): Promise<typeof import("family-chart")> {
   return f3Module;
 }
 
+type Orientation = "vertical" | "horizontal";
+const ORIENTATION_KEY = "family-tree:tree-orientation";
+
+function readOrientation(): Orientation {
+  try {
+    return localStorage.getItem(ORIENTATION_KEY) === "horizontal"
+      ? "horizontal"
+      : "vertical";
+  } catch {
+    return "vertical";
+  }
+}
+
 export default function Tree() {
   const { clan } = useClanContext();
   const navigate = useNavigate();
@@ -77,6 +95,19 @@ export default function Tree() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [orientation, setOrientation] = useState<Orientation>(() =>
+    readOrientation(),
+  );
+
+  // Persist the chosen orientation so the user gets the same layout
+  // next time they open the tree.
+  useEffect(() => {
+    try {
+      localStorage.setItem(ORIENTATION_KEY, orientation);
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [orientation]);
 
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.treeData(clan.id, userId),
@@ -251,13 +282,27 @@ export default function Tree() {
             }
           });
 
-        // Spacing tuned to the new 260×72 card. Default 250/150 was
-        // tight for our 220-wide Vietnamese-name cards; 260 cards
-        // need ~290 horizontally and 150 vertically still works.
-        built
-          .setTransitionTime(200)
-          .setCardXSpacing(290)
-          .setCardYSpacing(160);
+        // Spacing tuned per orientation. family-chart swaps the X/Y
+        // pair internally when horizontal, so the centre-to-centre
+        // gap each axis enforces *on screen* stays consistent:
+        //   X = horizontal screen distance,
+        //   Y = vertical screen distance.
+        // Our cards are 260×72, so X needs ≥ ~290 to avoid horizontal
+        // overlap in either mode, and Y ≥ ~100 to clear the card
+        // height. Vertical mode allows tighter Y because siblings
+        // stack horizontally instead.
+        built.setTransitionTime(200);
+        if (orientation === "horizontal") {
+          built.setOrientationHorizontal?.();
+          // Generations flow left→right → X must clear card width.
+          // Siblings stack top→bottom → Y must clear card height.
+          built.setCardXSpacing(320).setCardYSpacing(100);
+        } else {
+          built.setOrientationVertical?.();
+          // Siblings stack left→right → X must clear card width.
+          // Generations flow top→bottom → Y must clear card height.
+          built.setCardXSpacing(290).setCardYSpacing(160);
+        }
 
         // updateTree({ initial: true }) calls treeFit which measures the
         // SVG via getBoundingClientRect. Wait one paint frame so the
@@ -293,7 +338,7 @@ export default function Tree() {
       resizeObserver?.disconnect();
       node.innerHTML = "";
     };
-  }, [f3Data, focal]);
+  }, [f3Data, focal, orientation]);
 
   // Search-by-name → set focal
   const matches = useMemo(() => {
@@ -308,7 +353,46 @@ export default function Tree() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h2 className="text-2xl font-semibold">Cây gia phả</h2>
-        <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Orientation toggle — vertical (top-down) vs horizontal
+              (left-right). Re-inits the chart via the orientation dep
+              on the init effect so the layout flips immediately. */}
+          <div
+            className="inline-flex rounded-md border bg-card overflow-hidden"
+            role="group"
+            aria-label="Hướng cây"
+          >
+            <button
+              type="button"
+              onClick={() => setOrientation("vertical")}
+              aria-pressed={orientation === "vertical"}
+              title="Dọc — gốc ở trên, đời con xuống dưới"
+              className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
+                orientation === "vertical"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted/50"
+              }`}
+            >
+              <IconLayoutVertical className="h-4 w-4" />
+              Dọc
+            </button>
+            <button
+              type="button"
+              onClick={() => setOrientation("horizontal")}
+              aria-pressed={orientation === "horizontal"}
+              title="Ngang — gốc ở trái, đời con sang phải"
+              className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
+                orientation === "horizontal"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted/50"
+              }`}
+            >
+              <IconLayoutHorizontal className="h-4 w-4" />
+              Ngang
+            </button>
+          </div>
+          <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
+        </div>
       </div>
 
       {isLoading && (
