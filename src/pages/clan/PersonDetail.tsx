@@ -13,6 +13,11 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
+import {
+  formatLunarAnniversary,
+  formatLunarDate,
+  solarStringToLunar,
+} from "@/lib/lunarDate";
 import { formatPartialDate } from "@/lib/partialDate";
 import { queryKeys } from "@/lib/queries/keys";
 import {
@@ -121,14 +126,53 @@ export default function PersonDetail() {
                     precision: person.birth_date_precision,
                   }) || null}
                 />
+                {/* Lunar birth: prefer the explicitly-stored lunar
+                    fields (tombstones often record only lunar). If
+                    those are absent but we have a full solar day, we
+                    auto-derive — it's deterministic so showing both
+                    helps elderly users orient by whichever calendar
+                    they know. */}
+                <LunarDetailRow
+                  label="Ngày sinh (âm)"
+                  lunarYear={person.birth_lunar_year}
+                  lunarMonth={person.birth_lunar_month}
+                  lunarDay={person.birth_lunar_day}
+                  fallbackSolar={
+                    person.birth_date_precision === "day"
+                      ? person.birth_date
+                      : null
+                  }
+                />
                 {!person.is_living && (
-                  <DetailRow
-                    label="Ngày mất"
-                    value={formatPartialDate({
-                      date: person.death_date,
-                      precision: person.death_date_precision,
-                    }) || null}
-                  />
+                  <>
+                    <DetailRow
+                      label="Ngày mất"
+                      value={formatPartialDate({
+                        date: person.death_date,
+                        precision: person.death_date_precision,
+                      }) || null}
+                    />
+                    <LunarDetailRow
+                      label="Ngày mất (âm)"
+                      lunarYear={person.death_lunar_year}
+                      lunarMonth={person.death_lunar_month}
+                      lunarDay={person.death_lunar_day}
+                      fallbackSolar={
+                        person.death_date_precision === "day"
+                          ? person.death_date
+                          : null
+                      }
+                    />
+                    <DetailRow
+                      label="Ngày giỗ"
+                      value={
+                        formatLunarAnniversary({
+                          month: person.death_anniv_lunar_month ?? undefined,
+                          day: person.death_anniv_lunar_day ?? undefined,
+                        }) || null
+                      }
+                    />
+                  </>
                 )}
                 <DetailRow label="Tên tự" value={person.courtesy_name} />
                 <DetailRow label="Tên húy" value={person.nickname} />
@@ -250,6 +294,35 @@ function DetailRow({ label, value }: { label: string; value: string | null | und
       <span>{value}</span>
     </div>
   );
+}
+
+/**
+ * Renders a lunar date row. Prefers the explicitly-stored lunar fields
+ * (tombstones often have lunar but not solar), falling back to
+ * deriving from a known full solar date — that way we show *something*
+ * for users who only entered solar.
+ */
+function LunarDetailRow({
+  label,
+  lunarYear,
+  lunarMonth,
+  lunarDay,
+  fallbackSolar,
+}: {
+  label: string;
+  lunarYear: number | null;
+  lunarMonth: number | null;
+  lunarDay: number | null;
+  fallbackSolar: string | null;
+}) {
+  let lunar: { year: number; month: number; day: number; isLeap: boolean } | null = null;
+  if (lunarYear && lunarMonth && lunarDay) {
+    lunar = { year: lunarYear, month: lunarMonth, day: lunarDay, isLeap: false };
+  } else if (fallbackSolar) {
+    lunar = solarStringToLunar(fallbackSolar);
+  }
+  const text = formatLunarDate(lunar);
+  return <DetailRow label={label} value={text || null} />;
 }
 
 function RelationshipGroup({
