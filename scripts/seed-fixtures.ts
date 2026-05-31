@@ -81,11 +81,15 @@ async function createUser(email: string, displayName: string, opts?: { isPlatfor
 }
 
 async function seedClan(label: string, size: number, ownerId: string): Promise<string> {
+  // Pick ONE surname per clan and use it for both the clan name and the
+  // person names — they used to be drawn independently, producing a
+  // "Họ Đỗ" clan populated with "Dương" persons.
+  const surname = faker.helpers.arrayElement(VN_SURNAMES);
   const { data: clan, error } = await admin
     .from("clans")
     .insert({
-      name: `Họ ${faker.helpers.arrayElement(VN_SURNAMES)} (${label})`,
-      description: `Demo clan with ${size} persons`,
+      name: `Họ ${surname}`,
+      description: `Dòng họ ${surname} — bộ dữ liệu mẫu (${label}, ${size} người).`,
       owner_id: ownerId,
       visibility: "private",
       max_persons: size + 100,
@@ -98,7 +102,6 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
 
   // Build a simple tree: 1 root → ~10 children → grandchildren cascading.
   // For size 5000 we keep it shallow but wide.
-  const surname = faker.helpers.arrayElement(VN_SURNAMES);
   const persons: { id: string; gender: "M" | "F"; parentFamily?: string; generation: number }[] = [];
 
   // Root
