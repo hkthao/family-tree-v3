@@ -104,7 +104,7 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
   // Root
   const rootId = randomUUID();
   const root = randName("M");
-  await admin.from("persons").insert({
+  const rootIns = await admin.from("persons").insert({
     id: rootId,
     clan_id: clanId,
     full_name: `${surname} ${root.full.split(" ").slice(1).join(" ")}`,
@@ -112,29 +112,42 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
     is_root: true,
     is_living: false,
     birth_date: faker.date.between({ from: "1850-01-01", to: "1900-12-31" }).toISOString().slice(0, 10),
+    birth_date_precision: "day",
     death_date: faker.date.between({ from: "1920-01-01", to: "1970-12-31" }).toISOString().slice(0, 10),
+    death_date_precision: "day",
   });
+  if (rootIns.error) throw new Error(`seed root: ${rootIns.error.message}`);
   persons.push({ id: rootId, gender: "M", generation: 1 });
 
-  // BFS: each person gets ~2-4 children up to target size
+  // BFS: each iteration takes a person who doesn't already have a family
+  // and gives them a spouse + 1–4 children. We track who's already
+  // "married off" so we don't double-spouse anyone — previously the loop
+  // gave a spouse to every parent including ones added as spouses,
+  // which both produced weird trees and burned through the size budget
+  // on extra spouses that never had children.
+  const married = new Set<string>();
   let cursor = 0;
   const families: string[] = [];
   while (persons.length < size && cursor < persons.length) {
     const parent = persons[cursor++];
-    if (parent.generation >= 7) continue; // cap depth for sanity
+    if (parent.generation >= 10) continue;
+    if (married.has(parent.id)) continue;
 
     // Spouse
     const spouseId = randomUUID();
     const spouseGender: "M" | "F" = parent.gender === "M" ? "F" : "M";
     const spouseName = randName(spouseGender);
-    await admin.from("persons").insert({
+    const spIns = await admin.from("persons").insert({
       id: spouseId,
       clan_id: clanId,
       full_name: spouseName.full,
       gender: spouseGender,
       is_living: faker.datatype.boolean({ probability: 0.3 }),
     });
+    if (spIns.error) throw new Error(`spouse insert: ${spIns.error.message}`);
     persons.push({ id: spouseId, gender: spouseGender, generation: parent.generation });
+    married.add(parent.id);
+    married.add(spouseId);
 
     // Family
     const familyId = randomUUID();
@@ -155,7 +168,7 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
       const childId = randomUUID();
       const childGender: "M" | "F" = faker.datatype.boolean() ? "M" : "F";
       const childName = randName(childGender);
-      await admin.from("persons").insert({
+      const cIns = await admin.from("persons").insert({
         id: childId,
         clan_id: clanId,
         full_name: `${surname} ${childName.full.split(" ").slice(1).join(" ")}`,
@@ -163,61 +176,175 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
         is_living: parent.generation >= 5 ? faker.datatype.boolean({ probability: 0.85 }) : faker.datatype.boolean({ probability: 0.3 }),
         birth_family_id: familyId,
       });
+      if (cIns.error) throw new Error(`child insert: ${cIns.error.message}`);
       persons.push({ id: childId, gender: childGender, generation: parent.generation + 1 });
     }
+  }
+
+  // The BFS doesn't always hit the target — small clans cluster at top of
+  // tree and married-skip iterations slow growth. Fill the remainder with
+  // loose persons (no parents, no spouse) so we reliably land on `size`.
+  // Loose persons live in the orphan bucket of the dashboard / Tree, which
+  // is itself a useful state to exercise in manual testing.
+  while (persons.length < size) {
+    const fg: "M" | "F" = faker.datatype.boolean() ? "M" : "F";
+    const filler = randName(fg);
+    const fid = randomUUID();
+    const { error: fErr } = await admin.from("persons").insert({
+      id: fid,
+      clan_id: clanId,
+      full_name: filler.full,
+      gender: fg,
+      is_living: faker.datatype.boolean({ probability: 0.75 }),
+    });
+    if (fErr) throw new Error(`filler insert: ${fErr.message}`);
+    persons.push({ id: fid, gender: fg, generation: 0 });
   }
 
   console.log(`  ${label}: ${persons.length} persons, ${families.length} families`);
   return clanId;
 }
 
-async function main() {
-  console.log("Seeding fixtures…");
+/** A clan slot: who owns it, what its tree looks like, what extras we add. */
+interface ClanSpec {
+  ownerEmail: string;
+  ownerName: string;
+  clanLabel: string; // appears in name; also used to compose tokens
+  size: number;
+  visibility: "private" | "public";
+  withEditor: boolean;
+  withViewer: boolean;
+  withShareLinks: boolean;
+}
 
-  const platformAdmin = await createUser("admin@example.test", "Platform Admin", { isPlatformAdmin: true, maxClans: 10 });
-  console.log(`  Platform admin: ${platformAdmin}`);
+function buildClanRoster(): ClanSpec[] {
+  const specs: ClanSpec[] = [];
 
-  const sizes: Array<{ label: string; size: number }> = [
-    { label: "small", size: 50 },
-    { label: "medium", size: 500 },
-    // 5000 is slow because each insert hits triggers; comment out unless needed.
-    // { label: "large", size: 5000 },
-  ];
+  // --- Named clans (backward-compatible logins kept on purpose) -----------
+  specs.push({
+    ownerEmail: "small-admin@example.test",
+    ownerName: "Small Admin",
+    clanLabel: "small",
+    size: 50,
+    visibility: "private",
+    withEditor: true,
+    withViewer: true,
+    withShareLinks: true,
+  });
+  specs.push({
+    // The 100-member target the user asked for. Use this clan to exercise
+    // pagination, search, tree perf, /admin filtering, share-view…
+    ownerEmail: "medium-admin@example.test",
+    ownerName: "Medium Admin",
+    clanLabel: "medium",
+    size: 100,
+    visibility: "public",
+    withEditor: true,
+    withViewer: true,
+    withShareLinks: true,
+  });
 
-  for (const { label, size } of sizes) {
-    const owner = await createUser(
-      `${label}-admin@example.test`,
-      `${label} Admin`,
-      { maxClans: 1 },
-    );
-    const clanId = await seedClan(label, size, owner);
-
-    // Editor + viewer members
-    const editor = await createUser(`${label}-editor@example.test`, `${label} Editor`);
-    const viewer = await createUser(`${label}-viewer@example.test`, `${label} Viewer`);
-    await admin.from("clan_members").insert([
-      { clan_id: clanId, user_id: editor, role: "editor", invited_by: owner },
-      { clan_id: clanId, user_id: viewer, role: "viewer", invited_by: owner },
-    ]);
-
-    // Share links: 1 active + 1 expired
-    await admin.from("share_links").insert([
-      {
-        clan_id: clanId,
-        token: `share-${label}-active-${randomUUID().slice(0, 8)}`,
-        created_by: owner,
-        expires_at: new Date(Date.now() + 30 * 86400_000).toISOString(),
-      },
-      {
-        clan_id: clanId,
-        token: `share-${label}-expired-${randomUUID().slice(0, 8)}`,
-        created_by: owner,
-        expires_at: new Date(Date.now() - 86400_000).toISOString(),
-      },
-    ]);
+  // --- 48 generated clans with a realistic size distribution --------------
+  // Sizes weighted toward small (most real-world clans haven't been
+  // entered fully yet). Five public ones for share-link / hide-living
+  // testing without re-seeding.
+  for (let i = 1; i <= 48; i++) {
+    const n = i.toString().padStart(3, "0");
+    const size = pickClanSize(i);
+    specs.push({
+      ownerEmail: `clan-${n}-admin@example.test`,
+      ownerName: `Clan ${n} Admin`,
+      clanLabel: `clan-${n}`,
+      size,
+      visibility: i % 7 === 0 ? "public" : "private",
+      // Editor/viewer only on bigger clans, so we don't bloat user count.
+      withEditor: size >= 20,
+      withViewer: size >= 20,
+      withShareLinks: i % 5 === 0,
+    });
   }
 
-  console.log("Done. Login with admin@example.test / demo-password-1234");
+  return specs;
+}
+
+function pickClanSize(i: number): number {
+  // Roughly: a few medium (30–50), most small (5–20), one tiny (1–3) every
+  // few rows so the dashboard "empty / starter" state is covered too.
+  if (i % 12 === 0) return faker.number.int({ min: 30, max: 50 });
+  if (i % 5 === 0) return faker.number.int({ min: 15, max: 30 });
+  if (i % 9 === 0) return faker.number.int({ min: 1, max: 3 });
+  return faker.number.int({ min: 5, max: 15 });
+}
+
+async function main() {
+  console.log("Seeding fixtures…");
+  const t0 = Date.now();
+
+  const platformAdmin = await createUser(
+    "admin@example.test",
+    "Platform Admin",
+    { isPlatformAdmin: true, maxClans: 10 },
+  );
+  console.log(`  Platform admin: ${platformAdmin}`);
+
+  const roster = buildClanRoster();
+  console.log(`  Planning ${roster.length} clans…`);
+
+  for (const spec of roster) {
+    const owner = await createUser(spec.ownerEmail, spec.ownerName, { maxClans: 1 });
+    const clanId = await seedClan(spec.clanLabel, spec.size, owner);
+
+    if (spec.visibility === "public") {
+      await admin.from("clans").update({ visibility: "public" }).eq("id", clanId);
+    }
+
+    if (spec.withEditor) {
+      const editorEmail =
+        spec.clanLabel.startsWith("clan-")
+          ? `${spec.clanLabel}-editor@example.test`
+          : `${spec.clanLabel}-editor@example.test`;
+      const editor = await createUser(editorEmail, `${spec.ownerName} Editor`);
+      await admin
+        .from("clan_members")
+        .insert({ clan_id: clanId, user_id: editor, role: "editor", invited_by: owner });
+    }
+    if (spec.withViewer) {
+      const viewerEmail = `${spec.clanLabel}-viewer@example.test`;
+      const viewer = await createUser(viewerEmail, `${spec.ownerName} Viewer`);
+      await admin
+        .from("clan_members")
+        .insert({ clan_id: clanId, user_id: viewer, role: "viewer", invited_by: owner });
+    }
+
+    if (spec.withShareLinks) {
+      await admin.from("share_links").insert([
+        {
+          clan_id: clanId,
+          token: `share-${spec.clanLabel}-active-${randomUUID().slice(0, 8)}`,
+          created_by: owner,
+          expires_at: new Date(Date.now() + 30 * 86400_000).toISOString(),
+          is_revoked: false,
+        },
+        {
+          clan_id: clanId,
+          token: `share-${spec.clanLabel}-expired-${randomUUID().slice(0, 8)}`,
+          created_by: owner,
+          expires_at: new Date(Date.now() - 86400_000).toISOString(),
+          is_revoked: false,
+        },
+      ]);
+    }
+  }
+
+  const totalSize = roster.reduce((acc, s) => acc + s.size, 0);
+  const dt = ((Date.now() - t0) / 1000).toFixed(1);
+  console.log(
+    `Done in ${dt}s. ${roster.length} clans, ~${totalSize} persons total.`,
+  );
+  console.log("Login with admin@example.test / demo-password-1234");
+  console.log(
+    "Big clan for manual perf testing: medium-admin@example.test (100 members, public).",
+  );
 }
 
 main().catch((e) => {
