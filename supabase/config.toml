@@ -394,6 +394,12 @@ verify_jwt = false
 # function (plan §8). verify_jwt=true gives us the extra gateway layer.
 verify_jwt = true
 
+[functions.notify-events]
+# Cron-triggered. We don't use Supabase JWTs here because pg_cron's
+# http call sends the service-role bearer or a shared CRON_TOKEN
+# header. verify_jwt=false lets the function gate access itself.
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
