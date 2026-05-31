@@ -389,6 +389,11 @@ deno_version = 2
 # Anonymous tree viewer — no JWT required (plan §9).
 verify_jwt = false
 
+[functions.admin-action]
+# Caller's JWT is required and we verify platform-admin inside the
+# function (plan §8). verify_jwt=true gives us the extra gateway layer.
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

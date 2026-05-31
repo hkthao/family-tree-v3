@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -43,6 +43,23 @@ export default function Account() {
       <AppHeader />
       <main className="container max-w-2xl py-6 px-4 space-y-6">
         <h1 className="clan-name text-3xl font-semibold">Tài khoản</h1>
+
+        {profile?.is_platform_admin && (
+          <Card className="border-accent/40">
+            <CardHeader>
+              <CardTitle className="text-accent">Quản trị nền tảng</CardTitle>
+              <CardDescription>
+                Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá
+                tài khoản, gán quyền.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline">
+                <Link to="/admin">Mở trang quản trị</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <DisplayNameCard
           userId={userId}

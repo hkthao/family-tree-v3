@@ -866,6 +866,13 @@ export type Database = {
           total_persons: number
         }[]
       }
+      get_profile_emails: {
+        Args: { user_ids: string[] }
+        Returns: {
+          email: string
+          id: string
+        }[]
+      }
       invite_member_by_email: {
         Args: { member_role: string; target_clan: string; target_email: string }
         Returns: Json
