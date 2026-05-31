@@ -1001,3 +1001,136 @@ npx supabase secrets set RESEND_API_KEY=...       # set env cho function trên c
 ```
 
 **Không** chạy `db push` thẳng lên prod khi chưa test ở staging. CI quy ước: PR merge vào `staging` branch → auto deploy lên Supabase staging; tag release → deploy lên prod.
+
+---
+
+## 26. Trạng thái triển khai — log thay đổi so với plan gốc
+
+Cập nhật **2026-05-31**. Phần này ghi lại cái gì đã xong, cái gì đã đổi
+hướng đi so với các mục 1–25 ở trên, và cái gì vẫn chưa làm. Mục đích:
+giữ plan là nguồn tham chiếu duy nhất cho người vào dự án sau.
+
+### 26.1 Trạng thái phase
+
+| Phase | Trạng thái | Ghi chú |
+|---|---|---|
+| Phase 0 — Setup | ✅ Xong | Repo, Vite + React + TS + Tailwind + shadcn, Supabase local, 7 migration đầu (schema → RLS → triggers → member_management → clan_stats → account_self_delete → admin_emails_rpc). RLS test suite chạy ở CI. |
+| Phase 1 — MVP | ✅ Xong | Clans CRUD + members + persons/families/branches + danh bạ (list+grid+filters) + tree (search + focal + depth + orientation) + import Excel + dashboard + hide-living public view + cache version-check + tài khoản đầy đủ. |
+| Phase 2 — post-MVP | ✅ phần lớn xong | Share-link + share-view Edge Function (rate-limit 60req/phút), audit_log + khôi phục (RPC `restore_audit_entry`), /admin + admin-action Edge Function (suspend / unsuspend / signout / grant_platform_admin / delete). Chỉ còn **PDF export** (mục 20) hoãn. |
+| Phase 3 | ⏳ Chưa làm | Quy đổi âm-dương, events + thông báo, kinship UI, GEDCOM, OCR. |
+
+### 26.2 Migrations đã apply (theo thứ tự)
+
+1. `20260530130631_core_schema.sql` — bảng + FK + extension
+2. `20260530131033_rls_policies.sql` — policies + helpers + `persons_public_safe` view + Storage RLS
+3. `20260530131316_triggers.sql` — limit enforcement, audit log, generation recompute, soft delete, unaccent, data_version bump
+4. `20260530141401_member_management.sql` — `invite_member_by_email` RPC
+5. `20260530143832_clan_stats.sql` — RPC dashboard
+6. `20260530144551_account_self_delete.sql` — `delete_my_account` + `count_my_blocking_clans` + opt-in flag để cascade `clans.owner_id → NULL`
+7. `20260530150931_partial_dates.sql` — `birth_date_precision` / `death_date_precision` + check ràng buộc
+8. `20260530151940_persons_public_safe_fix.sql` — view chạy ở `security_invoker=false` + thêm cột precision/lunar/unaccent
+9. `20260530152602_bulk_import.sql` — `bulk_import_persons` RPC (one-transaction + advisory lock + defer FK)
+10. `20260530153500_share_view_rate.sql` — bảng rate-limit + `prune_share_view_rate`
+11. `20260530154310_audit_restore.sql` — `restore_audit_entry` RPC, soft-delete inverse model
+12. `20260530154742_admin_emails_rpc.sql` — `get_profile_emails` SECURITY DEFINER
+13. `20260531040641_platform_admin_full_access.sql` — **mở rộng quyền** (xem 26.4)
+14. `20260531044307_clans_name_unaccent.sql` — cột + trigger + GIN trigram để search clan không dấu
+15. `20260531044915_clans_person_count.sql` — `clans.person_count` denormalised + trigger increment/decrement
+
+### 26.3 Edge Functions đã deploy local
+
+| Tên | `verify_jwt` | Mục đích |
+|---|---|---|
+| `share-view` | false | Tra cứu token, mask living, trả JSON cho family-chart. Rate-limit theo IP 60 req/phút. |
+| `admin-action` | true | Re-verify caller là platform admin rồi gọi `auth.admin.signOut` / `auth.admin.deleteUser` / cập nhật `is_suspended` / `is_platform_admin`. Cấm caller tự huỷ bản thân. |
+
+### 26.4 Phân quyền — thay đổi so với mục 5 & 7
+
+**Platform admin nay là superset của mọi clan role.** Plan gốc nói platform
+admin chỉ quản giới hạn (`max_clans/max_persons/max_users`) và không "gắn"
+với clan nào. Triển khai thực tế mở rộng: 3 helper RLS đều OR thêm
+`is_platform_admin()`, tức platform admin có quyền tương đương clan admin
+ở mọi clan (read + write + manage members + share-link + audit restore).
+
+- `is_clan_member(target)` = `is_platform_admin() OR clan_role(target) IS NOT NULL`
+- `can_edit_clan(target)` = `is_platform_admin() OR clan_role(target) IN ('admin','editor')`
+- `is_clan_admin(target)` = `is_platform_admin() OR clan_role(target) = 'admin'`
+- `is_platform_admin()` cũng kiểm tra `is_suspended = false` để tài khoản bị khoá mất luôn quyền vượt cấp.
+
+UI mirror: `ClanDetail` gắn thêm `isPlatformAdmin`; hook `useClanContext`
+expose `effectiveRole / canEditClan / isClanAdmin` để mọi page gating
+chung một nguồn.
+
+`/clans` cho platform admin liệt kê **mọi clan trong hệ thống** (không
+chỉ membership). Banner "bạn đang xem với quyền platform admin".
+
+`clans_insert` cũng nới: platform admin được set `owner_id` cho user khác
+(dùng cho support / khôi phục).
+
+### 26.5 Schema bổ sung so với mục 6
+
+- **`persons.birth_date_precision` / `death_date_precision`** (`day` | `month` | `year` | null) đi cùng cột `date`. Check constraint ràng buộc cùng null hoặc cùng set. Khi `year`, lưu placeholder `yyyy-01-01`; khi `month`, `yyyy-mm-01`. Helper `src/lib/partialDate.ts` round-trip.
+- **`clans.name_unaccent`** + trigger + GIN trigram → search `/clans` không dấu.
+- **`clans.person_count`** denormalised int, maintain bằng trigger trên `persons` (insert/update.deleted_at toggle/cascade-delete). Dùng cho filter "Quy mô" ở tab Cộng đồng.
+
+### 26.6 Frontend — sai lệch / bổ sung so với mục 10
+
+- **Left drawer permission-aware** ở `src/components/AppDrawer.tsx`. Trên `<lg`: hamburger mở overlay; trên `≥lg`: **luôn hiện như sidebar cố định** (`lg:translate-x-0`). BottomTabBar và hamburger `lg:hidden`. Mọi page root có `lg:pl-72`. Drawer footer 1 row: avatar + tên + email + nút logout icon-only.
+- **`/clans` 2 tab + size filter** (chưa nói trong plan):
+  - Của tôi (membership) — Cộng đồng (clan public chưa join + ALL clan với platform admin).
+  - Bucket Quy mô: Mới khởi tạo `<5`, Nhỏ `5–19`, Vừa `20–49`, Lớn `≥50`.
+  - Server pagination (`.range`), search debounce 300ms, unaccent.
+- **Search input tái sử dụng** `src/components/SearchInput.tsx` (icon 🔍 inline, h-10) trên `/clans`, `/people`, `/tree` (focal), `/admin` (user + clan).
+- **Icon mọi nút**: `src/components/icons.tsx` — 25 SVG stroke Lucide-style. Mỗi nút action mang icon tương ứng (Plus / Pencil / Trash / Check / X / Refresh / Search / Login / Logout / Lock / Unlock / Shield / Upload / Download / Copy / Undo / ArrowLeft / ArrowRight / Users / UserPlus / List / Grid / Settings / LayoutVertical / LayoutHorizontal).
+- **Route nesting**: mọi route `/clans/:clanId/people/*` và `/clans/:clanId/members` là child của `<ClanLayout>` (không top-level), chia sẻ drawer + header + footer-tab → không reflow giữa Danh bạ ↔ Detail ↔ Edit.
+- **`?from=tree` propagation**: action icon trên tree card append query param → PersonDetail/EditPerson/AddSpouse/AddChild đọc và preserve qua chuỗi navigation → back chính xác về `/tree` thay vì `/people`.
+
+### 26.7 Tree (family-chart) — chốt thiết kế thực tế (mục 11)
+
+- Container có `class="f3"` + `text-foreground` + inline `--male-color #D4DDE4` / `--female-color #E8D2CC` để palette khớp paper/oxblood.
+- Container size responsive: `h-[70vh] min-h-[480px] max-h-[820px]`.
+- `setCardSvg()` trả về CardSvg instance — mọi config (`setCardDisplay`, `setCardDim`, `setOnCardUpdate`) chain trên instance đó, KHÔNG trên Chart. (Bug suýt mất nửa ngày debug.)
+- `card_dim: w=260, h=72, img 50×50, text_x=64`.
+- Line 1: full name (trái, 13px).
+- Line 2: `YYYY - YYYY` lifespan với `?` cho năm chưa biết, trái, 11px muted (`#7A6F66`).
+- Badge **Đời N** góc phải trên: pill oxblood `#7A2E2E` + chữ TRẮNG `#FFFFFF` (CSS rule `.gen-badge text` thắng `.f3 svg text { fill: currentColor }`).
+- Avatar tròn: `clip-path: circle(50%)` override `card_image_clip` của library. PNG male/female ở `public/avatars/` set qua `data.avatar`.
+- Hover action icons (chỉ admin/editor): pencil → `/people/:id/edit?from=tree`, plus → `/people/:id?from=tree`. CSS `opacity:0 → 1` khi `.card_cont:hover`.
+- Connecting lines: library hardcode `stroke="#fff"`, override CSS bằng `stroke #7A6F66 opacity .55`; path-to-focal ăn oxblood.
+- **Orientation toggle** vertical/horizontal (lưu localStorage `family-tree:tree-orientation`). Spacing per orientation:
+  - Vertical: `setCardXSpacing(290) setCardYSpacing(160)`
+  - Horizontal: `setCardXSpacing(320) setCardYSpacing(100)`
+- Resize observer + `requestAnimationFrame` trước `updateTree({initial:true})` để fit-on-init đo đúng.
+
+### 26.8 Seed — tăng quy mô (mục 25)
+
+`scripts/seed-fixtures.ts` hiện sinh **50 clan**:
+- `admin@example.test` platform admin (`max_clans=10`)
+- `small-admin@example.test` clan 50 người (private)
+- `medium-admin@example.test` clan **100 người, public** (target test thủ công)
+- `clan-001-admin@example.test` … `clan-048-admin@example.test`: 48 clan với phân bố quy mô (đa số 5–20 ng, vài clan 30–50, vài clan <5 để hứng empty-state)
+- Clan ≥20 ng có thêm `*-editor` + `*-viewer`
+- 11 clan có share-links (1 active + 1 expired)
+- Tổng ~850 person. Mọi tài khoản pass `demo-password-1234`.
+
+### 26.9 CI hardening
+
+- `vitest.config.ts`: `fileParallelism: false` — integration tests share một PostgREST/Kong, parallel gây flake "invalid response from upstream" và "JWT issued at future".
+- `createTestUser` retry signIn nếu probe SELECT báo "JWT issued at future" (drift sub-giây giữa Docker container).
+- CI workflow: poll `/storage/v1/version` health 30s sau `supabase start` + retry 3 lần `supabase db reset` để né 502 từ Kong khi Storage chưa ready.
+- Persister cache `buster: "v2"` ở `main.tsx` để cache IndexedDB cũ tự drop khi schema đổi.
+
+### 26.10 Bug fixes có ý nghĩa lâu dài
+
+- `RequireAuth` probe `profiles` row; thiếu row → force `signOutAndClearCache` → tránh `clans_owner_id_fkey` violation khi JWT survive sau `db:reset`.
+- `bump_data_version` chuyển sang STATEMENT-level (đã trong plan) — verified bulk import 7000 row chỉ bump version 1 lần / statement, không bloat MVCC.
+- `delete_my_account` set txn-local flag `app.allow_owner_clear`; `protect_clan_privileged_cols` cho cascade `owner_id → NULL` đi qua khi flag bật. Mọi transfer owner_id khác vẫn yêu cầu platform admin.
+- `protect_*_privileged_cols`: bypass khi `auth.uid() is null` (service role / internal call).
+
+### 26.11 Còn chưa làm
+
+- Mục 19 (events & thông báo) toàn bộ — phụ thuộc quy đổi âm-dương.
+- Mục 13 — quy đổi âm-dương thực tế (cột vẫn lưu nhưng UI hiển thị chỉ đọc dương lịch).
+- Mục 20 — PDF export sách / sơ đồ cây.
+- PWA: `vite-plugin-pwa` đã install nhưng chưa cấu hình manifest + service worker production-ready.
+- Quy đổi/render âm lịch trên PersonDetail.
