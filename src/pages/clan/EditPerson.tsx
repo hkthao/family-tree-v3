@@ -46,6 +46,9 @@ export default function EditPerson() {
   const [death, setDeath] = useState<DateParts>(EMPTY_PARTS);
   const [birthPlace, setBirthPlace] = useState("");
   const [burialPlace, setBurialPlace] = useState("");
+  const [courtesyName, setCourtesyName] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [posthumousName, setPosthumousName] = useState("");
   const [bio, setBio] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -69,6 +72,9 @@ export default function EditPerson() {
     );
     setBirthPlace(person.birth_place ?? "");
     setBurialPlace(person.burial_place ?? "");
+    setCourtesyName(person.courtesy_name ?? "");
+    setNickname(person.nickname ?? "");
+    setPosthumousName(person.posthumous_name ?? "");
     setBio(person.bio ?? "");
   }, [person]);
 
@@ -87,6 +93,9 @@ export default function EditPerson() {
         death_date_precision: deathD.precision,
         birth_place: birthPlace || null,
         burial_place: burialPlace || null,
+        courtesy_name: courtesyName.trim() || null,
+        nickname: nickname.trim() || null,
+        posthumous_name: posthumousName.trim() || null,
         bio: bio || null,
       });
     },
@@ -130,17 +139,6 @@ export default function EditPerson() {
             }}
             className="space-y-6"
           >
-            <div className="space-y-2">
-              <Label htmlFor="full_name">Họ và tên</Label>
-              <Input
-                id="full_name"
-                required
-                maxLength={200}
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-            </div>
-
             {person && (
               <div className="space-y-2">
                 <Label>Ảnh đại diện</Label>
@@ -152,6 +150,48 @@ export default function EditPerson() {
                 />
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Họ và tên</Label>
+              <Input
+                id="full_name"
+                required
+                maxLength={200}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="courtesy_name">Tên tự</Label>
+              <Input
+                id="courtesy_name"
+                maxLength={100}
+                value={courtesyName}
+                onChange={(e) => setCourtesyName(e.target.value)}
+                placeholder="Tên đặt khi trưởng thành, dùng nơi trang trọng"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nickname">Tên húy</Label>
+              <Input
+                id="nickname"
+                maxLength={100}
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="Tên khai sinh, kiêng gọi sau khi mất"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="posthumous_name">Tên thụy</Label>
+              <Input
+                id="posthumous_name"
+                maxLength={100}
+                value={posthumousName}
+                onChange={(e) => setPosthumousName(e.target.value)}
+                placeholder="Tên đặt khi mất, dùng trong văn cúng"
+              />
+            </div>
 
             <fieldset className="space-y-3">
               <legend className="text-base font-medium mb-2">Giới tính</legend>
@@ -260,21 +300,20 @@ export default function EditPerson() {
             <div className="flex gap-3 pt-2">
               <Button
                 type="submit"
-                size="lg"
                 disabled={mutation.isPending || !fullName.trim()}
               >
                 {mutation.isPending ? (
                   "Đang lưu…"
                 ) : (
                   <>
-                    <IconCheck className="h-5 w-5 mr-2" />
+                    <IconCheck className="h-4 w-4 mr-1.5" />
                     Lưu thay đổi
                   </>
                 )}
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline">
                 <Link to={`/clans/${clanId}/people/${personId}${fromQs}`}>
-                  <IconX className="h-5 w-5 mr-2" />
+                  <IconX className="h-4 w-4 mr-1.5" />
                   Hủy
                 </Link>
               </Button>
