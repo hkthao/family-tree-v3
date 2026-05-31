@@ -247,25 +247,31 @@ function midOrnament(
   );
 }
 
-function VineBorder() {
+function VineBorder({
+  width = PAGE_W,
+  height = PAGE_H,
+}: {
+  width?: number;
+  height?: number;
+} = {}) {
   return (
     <View
       style={{
         position: "absolute",
         top: 0,
         left: 0,
-        width: PAGE_W,
-        height: PAGE_H,
+        width,
+        height,
       }}
       fixed
     >
-      <Svg width={PAGE_W} height={PAGE_H} viewBox={`0 0 ${PAGE_W} ${PAGE_H}`}>
+      <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
         {/* Outer red rectangle */}
         <Rect
           x={FRAME_OUT_M}
           y={FRAME_OUT_M}
-          width={PAGE_W - FRAME_OUT_M * 2}
-          height={PAGE_H - FRAME_OUT_M * 2}
+          width={width - FRAME_OUT_M * 2}
+          height={height - FRAME_OUT_M * 2}
           stroke={COLORS.primary}
           strokeWidth={1.2}
           fill="none"
@@ -274,22 +280,22 @@ function VineBorder() {
         <Rect
           x={FRAME_IN_M}
           y={FRAME_IN_M}
-          width={PAGE_W - FRAME_IN_M * 2}
-          height={PAGE_H - FRAME_IN_M * 2}
+          width={width - FRAME_IN_M * 2}
+          height={height - FRAME_IN_M * 2}
           stroke={COLORS.accent}
           strokeWidth={0.5}
           fill="none"
         />
         {/* Four corner vines (sign-based reflection: each curls inward) */}
         {vineCorner(FRAME_OUT_M, FRAME_OUT_M, +1, +1)}
-        {vineCorner(PAGE_W - FRAME_OUT_M, FRAME_OUT_M, -1, +1)}
-        {vineCorner(PAGE_W - FRAME_OUT_M, PAGE_H - FRAME_OUT_M, -1, -1)}
-        {vineCorner(FRAME_OUT_M, PAGE_H - FRAME_OUT_M, +1, -1)}
+        {vineCorner(width - FRAME_OUT_M, FRAME_OUT_M, -1, +1)}
+        {vineCorner(width - FRAME_OUT_M, height - FRAME_OUT_M, -1, -1)}
+        {vineCorner(FRAME_OUT_M, height - FRAME_OUT_M, +1, -1)}
         {/* Mid-edge ornaments */}
-        {midOrnament(PAGE_W / 2, FRAME_OUT_M, false)}
-        {midOrnament(PAGE_W / 2, PAGE_H - FRAME_OUT_M, false)}
-        {midOrnament(FRAME_OUT_M, PAGE_H / 2, true)}
-        {midOrnament(PAGE_W - FRAME_OUT_M, PAGE_H / 2, true)}
+        {midOrnament(width / 2, FRAME_OUT_M, false)}
+        {midOrnament(width / 2, height - FRAME_OUT_M, false)}
+        {midOrnament(FRAME_OUT_M, height / 2, true)}
+        {midOrnament(width - FRAME_OUT_M, height / 2, true)}
       </Svg>
     </View>
   );
@@ -452,49 +458,15 @@ export function ClanBookPdf({ clan, data, include }: Props) {
         </Text>
       </Page>
 
-      {/* ─── Cây phả hệ (flat by generation) ─────────────────── */}
-      {showTree && bloodline.length > 0 && (
-        <Page size="A4" style={styles.page}>
-        <VineBorder />
-          <Text style={styles.h1}>Cây phả hệ</Text>
-          <View style={styles.h1Underline} />
-          <Text style={styles.intro}>
-            Liệt kê theo từng đời. Số d'Aboville đi đầu mỗi dòng để tra
-            ngược trong danh bạ chi tiết.
-          </Text>
-          {Array.from(
-            new Set(bloodlineSorted.map((p) => p.generation as number)),
-          )
-            .sort((a, b) => a - b)
-            .map((g) => {
-              const list = bloodlineSorted.filter((p) => p.generation === g);
-              return (
-                <View key={g} style={{ marginTop: 10 }}>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: COLORS.accent,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {`Đời ${g} (${list.length} người)`}
-                  </Text>
-                  {list.map((p) => {
-                    const stt = sttById.get(p.id) ?? "";
-                    const g2 = p.gender === "M" ? "Nam" : "Nữ";
-                    const ls = lifespanText(p);
-                    return (
-                      <Text key={p.id} style={styles.treeLine}>
-                        {`${stt}  ${p.full_name}  (${g2})${ls ? `  ${ls}` : ""}`}
-                      </Text>
-                    );
-                  })}
-                </View>
-              );
-            })}
-        </Page>
-      )}
+      {/* ─── Cây phả hệ (SVG diagram, paginated) ─────────────── */}
+      {showTree && bloodline.length > 0 &&
+        renderTreePages({
+          bloodline,
+          roots,
+          branches: data.branches,
+          childrenByParent,
+          personById,
+        })}
 
       {/* ─── Danh bạ chi tiết (3-card grid) ─────────────────── */}
       {showDetail && bloodlineSorted.length > 0 && (
@@ -714,6 +686,336 @@ function renderInLawCard(
         <FieldLine label="Tiểu sử" value={p.bio} />
       </View>
     </>
+  );
+}
+
+// ─── Tree diagram (A4 landscape SVG) ───────────────────────────────
+
+interface TreeNode {
+  person: PersonDetail;
+  x: number; // grid coords; normalized later
+  y: number;
+  children: TreeNode[];
+}
+
+interface TreeEdge {
+  parent: TreeNode;
+  child: TreeNode;
+}
+
+function buildTreeLayout(
+  roots: PersonDetail[],
+  childrenByParent: Map<string, string[]>,
+  personById: Map<string, PersonDetail>,
+  /** Restrict the traversal to this set if provided. */
+  memberFilter?: Set<string>,
+): { nodes: TreeNode[]; edges: TreeEdge[]; leafCount: number; maxDepth: number } {
+  let leafCounter = 0;
+  const nodes: TreeNode[] = [];
+  const edges: TreeEdge[] = [];
+
+  function visit(p: PersonDetail, depth: number): TreeNode {
+    const childIds = (childrenByParent.get(p.id) ?? [])
+      .map((id) => personById.get(id))
+      .filter((c): c is PersonDetail => !!c && c.generation !== null)
+      .filter((c) => !memberFilter || memberFilter.has(c.id));
+    childIds.sort(birthOrder);
+
+    let node: TreeNode;
+    if (childIds.length === 0) {
+      const x = leafCounter++;
+      node = { person: p, x, y: depth, children: [] };
+    } else {
+      const childNodes = childIds.map((c) => visit(c, depth + 1));
+      const x =
+        (childNodes[0].x + childNodes[childNodes.length - 1].x) / 2;
+      node = { person: p, x, y: depth, children: childNodes };
+      for (const c of childNodes) {
+        edges.push({ parent: node, child: c });
+      }
+    }
+    nodes.push(node);
+    return node;
+  }
+
+  for (const r of roots) visit(r, 0);
+
+  const maxDepth = nodes.reduce((m, n) => Math.max(m, n.y), 0);
+  return { nodes, edges, leafCount: Math.max(leafCounter, 1), maxDepth };
+}
+
+/** Soft cap before we split the diagram into multiple pages.
+ *  Tuned so cards stay ≥ 50pt wide (enough for 4-char Vietnamese
+ *  names like "Ngô Văn A") on the 730pt content width. */
+const MAX_LEAVES_PER_PAGE = 14;
+
+function countLeaves(
+  roots: PersonDetail[],
+  childrenByParent: Map<string, string[]>,
+  personById: Map<string, PersonDetail>,
+  memberFilter?: Set<string>,
+): number {
+  let n = 0;
+  const walk = (p: PersonDetail) => {
+    const kids = (childrenByParent.get(p.id) ?? [])
+      .map((id) => personById.get(id))
+      .filter((c): c is PersonDetail => !!c && c.generation !== null)
+      .filter((c) => !memberFilter || memberFilter.has(c.id));
+    if (kids.length === 0) n++;
+    else kids.forEach(walk);
+  };
+  roots.forEach(walk);
+  return n || 1;
+}
+
+/**
+ * Decide how to slice the tree across pages:
+ *   - If the clan has ≥ 2 branches, render one page per chi.
+ *   - Else if the single tree has too many leaves, render one page
+ *     per Đời-2 sub-root (a child of the Thuỷ tổ).
+ *   - Else, one page covers the whole tree.
+ */
+function renderTreePages({
+  bloodline,
+  roots,
+  branches,
+  childrenByParent,
+  personById,
+}: {
+  bloodline: PersonDetail[];
+  roots: PersonDetail[];
+  branches: { id: string; name: string }[];
+  childrenByParent: Map<string, string[]>;
+  personById: Map<string, PersonDetail>;
+}): React.ReactNode {
+  // ─── Strategy A: one page per chi ───────────────────────────
+  const byBranch = new Map<string, PersonDetail[]>();
+  for (const p of bloodline) {
+    if (!p.branch_id) continue;
+    const arr = byBranch.get(p.branch_id) ?? [];
+    arr.push(p);
+    byBranch.set(p.branch_id, arr);
+  }
+  if (byBranch.size >= 2) {
+    return branches
+      .filter((b) => (byBranch.get(b.id)?.length ?? 0) > 0)
+      .map((b) => {
+        const members = byBranch.get(b.id)!;
+        const memberSet = new Set(members.map((m) => m.id));
+        // Roots of this branch: members whose father/mother isn't in
+        // the same branch (the chi's founder).
+        const branchRoots = members
+          .filter((p) => {
+            const famId = p.id; // we don't have father refs handy here
+            void famId;
+            // approximate: smallest generation in branch is the root
+            return true;
+          })
+          .sort((a, b2) => (a.generation ?? 999) - (b2.generation ?? 999));
+        const minGen = branchRoots[0]?.generation ?? null;
+        const realRoots = members.filter((p) => p.generation === minGen);
+        return (
+          <TreeDiagramPage
+            key={b.id}
+            title={`Chi ${b.name}`}
+            roots={realRoots}
+            childrenByParent={childrenByParent}
+            personById={personById}
+            memberFilter={memberSet}
+          />
+        );
+      });
+  }
+
+  // ─── Strategy B: single tree, check size ─────────────────────
+  const totalLeaves = countLeaves(roots, childrenByParent, personById);
+  if (totalLeaves <= MAX_LEAVES_PER_PAGE) {
+    return (
+      <TreeDiagramPage
+        title="Sơ đồ cây gia phả"
+        roots={roots}
+        childrenByParent={childrenByParent}
+        personById={personById}
+      />
+    );
+  }
+
+  // ─── Strategy C: split by Đời-2 sub-roots ───────────────────
+  const subRoots = roots.flatMap((r) =>
+    (childrenByParent.get(r.id) ?? [])
+      .map((id) => personById.get(id))
+      .filter((c): c is PersonDetail => !!c && c.generation !== null),
+  );
+  // Group sub-roots so each page fits roughly the leaf budget.
+  // For now: one page per sub-root (clean & predictable).
+  return subRoots.map((sr) => {
+    // Universe = sr + all descendants
+    const universe = new Set<string>([sr.id]);
+    const queue = [sr.id];
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      for (const c of childrenByParent.get(cur) ?? []) {
+        if (!universe.has(c)) {
+          universe.add(c);
+          queue.push(c);
+        }
+      }
+    }
+    return (
+      <TreeDiagramPage
+        key={sr.id}
+        title={`Phả hệ từ ${sr.full_name}`}
+        subtitle={`Một nhánh của họ — ${universe.size} người`}
+        roots={[sr]}
+        childrenByParent={childrenByParent}
+        personById={personById}
+        memberFilter={universe}
+      />
+    );
+  });
+}
+
+function TreeDiagramPage({
+  title = "Sơ đồ cây gia phả",
+  subtitle,
+  roots,
+  childrenByParent,
+  personById,
+  memberFilter,
+}: {
+  title?: string;
+  subtitle?: string;
+  roots: PersonDetail[];
+  childrenByParent: Map<string, string[]>;
+  personById: Map<string, PersonDetail>;
+  memberFilter?: Set<string>;
+}): React.ReactNode {
+  const { nodes, edges, leafCount, maxDepth } = buildTreeLayout(
+    roots,
+    childrenByParent,
+    personById,
+    memberFilter,
+  );
+
+  // A4 landscape: 842 × 595 pt. The Page applies its own padding via
+  // styles.page (top 60 / bottom 68 / sides 56). The SVG sits in flex
+  // flow under the title block, so we keep it just shy of the
+  // remaining height so it doesn't bump to a new page.
+  const PAGE_W_LS = 842;
+  const PAGE_H_LS = 595;
+  const SVG_W = PAGE_W_LS - 56 * 2; // 730
+  const SVG_H = 360; // leaves ~107pt for h1 + underline + intro
+
+  // Inset cards from the SVG edges so the lines and labels don't kiss
+  // the bounds.
+  const X_INSET = 16;
+  const TOP_INSET = 20;
+  const BOTTOM_INSET = 12;
+  const W = SVG_W - X_INSET * 2;
+  const H = SVG_H - TOP_INSET - BOTTOM_INSET;
+
+  // Card sizing — clamp wide enough to fit a Vietnamese 4-char given
+  // name ("Ngô Văn A") at the smallest font.
+  const col = leafCount > 1 ? W / (leafCount - 1) : W;
+  const CARD_W = Math.max(50, Math.min(96, col - 6));
+  const CARD_H = 26;
+  const ROW = Math.max(60, Math.min(110, H / Math.max(maxDepth + 1, 2)));
+
+  const pxOf = (gridX: number) =>
+    leafCount === 1 ? X_INSET + W / 2 : X_INSET + gridX * col;
+  const pyOf = (gridY: number) => TOP_INSET + gridY * ROW + CARD_H / 2;
+
+  const nameFontSize = CARD_W < 60 ? 7 : 8;
+  const yearFontSize = nameFontSize - 1.5;
+  // Truncate to fit width: assume each glyph ≈ fontSize × 0.55 wide.
+  const maxChars = Math.max(6, Math.floor(CARD_W / (nameFontSize * 0.55)));
+  const truncate = (s: string) =>
+    s.length > maxChars ? s.slice(0, maxChars - 1) + "…" : s;
+
+  return (
+    <Page size="A4" orientation="landscape" style={styles.page}>
+      <VineBorder width={PAGE_W_LS} height={PAGE_H_LS} />
+      <Text style={styles.h1}>{title}</Text>
+      <View style={styles.h1Underline} />
+      <Text style={styles.intro}>
+        {subtitle ??
+          "Mỗi ô là một thành viên trong huyết thống. Đường nối thể hiện quan hệ cha-con. Đời 1 (Thuỷ tổ) ở đầu sơ đồ, các đời sau xuôi xuống dưới."}
+      </Text>
+      <Svg
+        width={SVG_W}
+        height={SVG_H}
+        viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+      >
+        {/* Orthogonal connectors: parent → horizontal bus → child */}
+        {edges.map((e, i) => {
+          const px = pxOf(e.parent.x);
+          const py = pyOf(e.parent.y) + CARD_H / 2;
+          const cx = pxOf(e.child.x);
+          const cy = pyOf(e.child.y) - CARD_H / 2;
+          const midY = (py + cy) / 2;
+          return (
+            <Path
+              key={i}
+              d={`M ${px} ${py} V ${midY} H ${cx} V ${cy}`}
+              stroke={COLORS.divider}
+              strokeWidth={0.7}
+              fill="none"
+            />
+          );
+        })}
+        {/* Cards */}
+        {nodes.map((n) => {
+          const cx = pxOf(n.x);
+          const cy = pyOf(n.y);
+          const x = cx - CARD_W / 2;
+          const y = cy - CARD_H / 2;
+          const fill = n.person.gender === "M" ? "#D4DDE4" : "#E8D2CC";
+          const ls = lifespanText(n.person);
+          return (
+            <G key={n.person.id}>
+              <Rect
+                x={x}
+                y={y}
+                width={CARD_W}
+                height={CARD_H}
+                rx={3}
+                ry={3}
+                fill={fill}
+                stroke={COLORS.primary}
+                strokeWidth={0.5}
+              />
+              <Text
+                x={cx}
+                y={y + (ls ? 10 : 14)}
+                style={{
+                  fontFamily: PDF_FONT_FAMILY,
+                  fontSize: nameFontSize,
+                  fontWeight: 600,
+                  fill: COLORS.ink,
+                  textAnchor: "middle",
+                }}
+              >
+                {truncate(n.person.full_name)}
+              </Text>
+              {ls && (
+                <Text
+                  x={cx}
+                  y={y + 19}
+                  style={{
+                    fontFamily: PDF_FONT_FAMILY,
+                    fontSize: yearFontSize,
+                    fill: COLORS.muted,
+                    textAnchor: "middle",
+                  }}
+                >
+                  {ls}
+                </Text>
+              )}
+            </G>
+          );
+        })}
+      </Svg>
+    </Page>
   );
 }
 
