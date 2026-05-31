@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ClanLayout } from "@/components/ClanLayout";
 import { RequireAuth } from "@/components/RequireAuth";
 import Account from "@/pages/Account";
+import Admin from "@/pages/Admin";
 import Clans from "@/pages/Clans";
 import AddChild from "@/pages/clan/AddChild";
 import AddSpouse from "@/pages/clan/AddSpouse";
@@ -118,6 +119,14 @@ export default function App() {
           element={
             <RequireAuth>
               <Account />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth>
+              <Admin />
             </RequireAuth>
           }
         />
