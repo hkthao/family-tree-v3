@@ -17,6 +17,7 @@ function person(over: Partial<PersonForTree> & Pick<PersonForTree, "id" | "full_
     death_date: null,
     generation: null,
     birth_family_id: null,
+    photo_path: null,
     ...over,
   };
 }

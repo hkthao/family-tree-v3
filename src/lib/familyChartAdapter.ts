@@ -60,6 +60,12 @@ function genderAvatar(gender: "M" | "F"): string {
 export function toFamilyChart(
   persons: PersonForTree[],
   families: FamilyForTree[],
+  /**
+   * Map of `photo_path` → signed URL for persons who have uploaded a
+   * photo. If a person isn't in the map (or their photo_path is null),
+   * the card falls back to the gendered illustration.
+   */
+  photoUrlByPath?: Map<string, string>,
 ): F3Datum[] {
   const familyById = new Map(families.map((f) => [f.id, f]));
 
@@ -101,6 +107,8 @@ export function toFamilyChart(
       (f) => childrenByFamily.get(f.id) ?? [],
     );
 
+    const uploaded =
+      p.photo_path && photoUrlByPath?.get(p.photo_path);
     return {
       id: p.id,
       data: {
@@ -111,7 +119,7 @@ export function toFamilyChart(
         is_living: p.is_living,
         is_root: p.is_root,
         generation: p.generation,
-        avatar: genderAvatar(p.gender),
+        avatar: uploaded || genderAvatar(p.gender),
       },
       rels: { parents, spouses, children },
     } satisfies F3Datum;

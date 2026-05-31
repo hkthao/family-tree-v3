@@ -22,6 +22,7 @@ function p(
     death_date: null,
     generation: null,
     birth_family_id: null,
+    photo_path: null,
     ...opts,
   };
 }
