@@ -22,7 +22,11 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pin a specific CLI version. Using `latest` hits the
+          # GitHub releases API per run, and the runner IPs share an
+          # anonymous quota → spurious "rate limit exceeded" failures.
+          # Bump this when local development moves to a newer CLI.
+          version: 2.102.0
 
       - name: Start Supabase local
         run: supabase start
