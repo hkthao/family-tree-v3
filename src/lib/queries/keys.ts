@@ -9,7 +9,10 @@
 export const queryKeys = {
   myProfile: (userId: string) => ["profile", userId] as const,
   myBlockingClans: (userId: string) => ["blocking-clans", userId] as const,
-  myClans: (userId: string) => ["clans", "mine", userId] as const,
+  myClans: (userId: string, params: unknown) =>
+    ["clans", "mine", userId, params] as const,
+  communityClans: (userId: string, params: unknown) =>
+    ["clans", "community", userId, params] as const,
   clan: (clanId: string, userId: string) => ["clan", clanId, userId] as const,
   clanDataVersion: (clanId: string) =>
     ["clan-data-version", clanId] as const,

@@ -48,7 +48,10 @@ export default function Settings() {
         queryKey: queryKeys.clan(clan.id, userId),
       });
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.myClans(userId),
+        predicate: (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey[0] === "clans" &&
+          q.queryKey[1] === "mine",
       });
     },
   });

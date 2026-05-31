@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { createClan } from "@/lib/queries/clans";
-import { queryKeys } from "@/lib/queries/keys";
 
 export default function NewClan() {
   const { user } = useAuth();
@@ -25,7 +24,9 @@ export default function NewClan() {
       createClan({ name, description: description || undefined, visibility }, user!.id),
     onSuccess: async (clan) => {
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.myClans(user!.id),
+        predicate: (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey[0] === "clans",
       });
       navigate(`/clans/${clan.id}`);
     },
