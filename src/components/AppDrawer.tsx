@@ -303,6 +303,11 @@ function buildSections(
         label: "Nhập từ Excel",
         icon: "📥",
       });
+      items.push({
+        to: `/clans/${clanId}/merge`,
+        label: "Gộp người trùng",
+        icon: "🔗",
+      });
     }
     if (isMember) {
       items.push({

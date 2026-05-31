@@ -887,6 +887,10 @@ export type Database = {
       is_clan_admin: { Args: { target_clan: string }; Returns: boolean }
       is_clan_member: { Args: { target_clan: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
+      merge_persons: {
+        Args: { p_loser: string; p_winner: string }
+        Returns: Json
+      }
       prune_share_view_rate: { Args: never; Returns: undefined }
       recompute_generation_for_clan: {
         Args: { target_clan: string }
