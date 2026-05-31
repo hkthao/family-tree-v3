@@ -7,6 +7,7 @@ import {
   IconPlus,
   IconUpload,
 } from "@/components/icons";
+import { ExportPdfButton } from "@/components/ExportPdfButton";
 import { RefreshButton } from "@/components/RefreshButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -182,6 +183,7 @@ export default function Dashboard() {
                 </Button>
               </>
             )}
+            <ExportPdfButton clan={clan} />
           </div>
         </>
       ) : null}
