@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconArrowLeft, IconArrowRight, IconUndo } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -184,6 +185,7 @@ function AuditItem({
   canRestore: boolean;
   onRestored: () => Promise<void> | void;
 }) {
+  const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
 
   const restoreM = useMutation({
@@ -235,16 +237,14 @@ function AuditItem({
             size="sm"
             variant="outline"
             disabled={restoreM.isPending}
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Khôi phục về trạng thái ${
-                    row.action === "delete" ? "trước khi xoá" : "trước khi sửa"
-                  }?`,
-                )
-              ) {
-                restoreM.mutate();
-              }
+            onClick={async () => {
+              const ok = await confirm({
+                title: `Khôi phục về trạng thái ${
+                  row.action === "delete" ? "trước khi xoá" : "trước khi sửa"
+                }?`,
+                confirmLabel: "Khôi phục",
+              });
+              if (ok) restoreM.mutate();
             }}
           >
             {restoreM.isPending ? (

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconCheck,
   IconLock,
@@ -162,6 +163,7 @@ function UserRow({
   isSelf: boolean;
   onChange: () => void;
 }) {
+  const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
   const [maxClans, setMaxClans] = useState(String(profile.max_clans));
 
@@ -318,13 +320,15 @@ function UserRow({
               variant="outline"
               className="text-destructive"
               disabled={isSelf || deleteM.isPending}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Xoá vĩnh viễn ${profile.display_name ?? profile.email ?? "user này"}? Mọi clan họ sở hữu sẽ thành owner_id = null.`,
-                  )
-                )
-                  deleteM.mutate();
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Xoá vĩnh viễn ${profile.display_name ?? profile.email ?? "user này"}?`,
+                  description:
+                    "Mọi clan họ sở hữu sẽ thành owner_id = null. Không khôi phục được.",
+                  confirmLabel: "Xoá tài khoản",
+                  destructive: true,
+                });
+                if (ok) deleteM.mutate();
               }}
             >
               <IconTrash className="h-4 w-4 mr-1.5" />

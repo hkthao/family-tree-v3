@@ -7,6 +7,7 @@ import {
   IconPlus,
   IconTrash,
 } from "@/components/icons";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { getSignedPhotoUrl } from "@/lib/photoUpload";
@@ -47,6 +48,7 @@ export default function PersonDetail() {
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const askConfirm = useConfirm();
   const [searchParams] = useSearchParams();
 
   // Where to send the breadcrumb back. Tree action icons append
@@ -287,14 +289,14 @@ export default function PersonDetail() {
                 </Button>
                 <Button
                   variant="destructive"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        `Xoá ${person.full_name}? Có thể khôi phục từ nhật ký.`,
-                      )
-                    ) {
-                      deleteMutation.mutate();
-                    }
+                  onClick={async () => {
+                    const ok = await askConfirm({
+                      title: `Xoá ${person.full_name}?`,
+                      description: "Có thể khôi phục từ nhật ký.",
+                      confirmLabel: "Xoá",
+                      destructive: true,
+                    });
+                    if (ok) deleteMutation.mutate();
                   }}
                   disabled={deleteMutation.isPending}
                 >
