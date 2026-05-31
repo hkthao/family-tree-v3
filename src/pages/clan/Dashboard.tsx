@@ -1,13 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+import type { ClanDetail } from "@/lib/queries/clan-detail";
+
 import {
+  IconDownload,
   IconList,
   IconPlus,
+  IconTree,
   IconUpload,
 } from "@/components/icons";
-import { ExportPdfButton } from "@/components/ExportPdfButton";
+import { EventsCalendar } from "@/components/EventsCalendar";
+import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { RefreshButton } from "@/components/RefreshButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import {
   listAnniversaryCandidates,
@@ -59,22 +64,25 @@ export default function Dashboard() {
     enabled: !!userId,
   });
 
+  // Bumped to a year so the calendar (below) has data across months.
+  // The flat "next 5" list still slices the top of this list.
   const upcoming: UpcomingEvent[] = useMemo(() => {
     if (!tree || !events || !anniversaries) return [];
     const today = new Date();
     const a = computeUpcomingEvents({
       today,
-      daysAhead: 30,
+      daysAhead: 365,
       persons: tree.persons,
       events,
     });
     const b = computeUpcomingAnniversaries({
       today,
-      daysAhead: 30,
+      daysAhead: 365,
       anniversaries,
     });
-    return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil).slice(0, 5);
+    return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil);
   }, [tree, events, anniversaries]);
+  const upcomingTop5 = upcoming.slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -124,7 +132,6 @@ export default function Dashboard() {
           >
             <StatTile label="Tổng số người" value={stats.total_persons} highlight />
             <StatTile label="Số đời" value={stats.max_generation ?? "—"} />
-            <StatTile label="Số chi" value={stats.branches} />
             <StatTile label="Nam" value={stats.males} />
             <StatTile label="Nữ" value={stats.females} />
             <StatTile label="Còn sống" value={stats.living} />
@@ -132,9 +139,9 @@ export default function Dashboard() {
           </section>
 
           {upcoming.length > 0 && (
-            <section aria-label="Sự kiện sắp tới" className="space-y-2">
+            <section aria-label="Lịch sự kiện" className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Sự kiện sắp tới</h3>
+                <h3 className="text-lg font-semibold">Lịch sự kiện</h3>
                 <Link
                   to={`/clans/${clan.id}/events`}
                   className="text-sm text-primary hover:underline"
@@ -142,49 +149,59 @@ export default function Dashboard() {
                   Xem tất cả →
                 </Link>
               </div>
+              <EventsCalendar events={upcoming} clanId={clan.id} />
+            </section>
+          )}
+
+          {upcomingTop5.length > 0 && (
+            <section aria-label="Sự kiện sắp tới" className="space-y-2">
+              <h3 className="text-lg font-semibold">Sự kiện sắp tới</h3>
               <ul className="space-y-1.5">
-                {upcoming.map((e) => (
-                  <UpcomingRow
-                    key={e.key}
-                    event={e}
-                    clanId={clan.id}
-                  />
+                {upcomingTop5.map((e) => (
+                  <UpcomingRow key={e.key} event={e} clanId={clan.id} />
                 ))}
               </ul>
             </section>
           )}
 
-          <div className="flex flex-wrap gap-3">
-            <Button asChild>
-              <Link to={`/clans/${clan.id}/people`}>
-                <IconList className="h-4 w-4 mr-1.5" />
-                Xem danh bạ
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to={`/clans/${clan.id}/tree`}>
-                <span className="text-base mr-1.5" aria-hidden="true">🌳</span>
-                Xem cây gia phả
-              </Link>
-            </Button>
-            {canEdit && (
-              <>
-                <Button asChild variant="outline">
-                  <Link to={`/clans/${clan.id}/people/new`}>
-                  <IconPlus className="h-4 w-4 mr-1.5" />
-                  Thêm người
-                </Link>
-                </Button>
-                <Button asChild variant="outline">
-                  <Link to={`/clans/${clan.id}/import`}>
-                  <IconUpload className="h-4 w-4 mr-1.5" />
-                  Nhập từ Excel
-                </Link>
-                </Button>
-              </>
-            )}
-            <ExportPdfButton clan={clan} />
-          </div>
+          <section aria-label="Thao tác nhanh" className="space-y-2">
+            <h3 className="text-lg font-semibold">Thao tác nhanh</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <ActionTile
+                to={`/clans/${clan.id}/people`}
+                icon={<IconList className="h-5 w-5" />}
+                title="Danh bạ"
+                desc="Xem & lọc thành viên"
+              />
+              <ActionTile
+                to={`/clans/${clan.id}/tree`}
+                icon={<IconTree className="h-5 w-5" />}
+                title="Cây gia phả"
+                desc="Sơ đồ phả hệ"
+              />
+              {canEdit && (
+                <>
+                  <ActionTile
+                    to={`/clans/${clan.id}/people/new`}
+                    icon={<IconPlus className="h-5 w-5" />}
+                    title="Thêm người"
+                    desc="Tạo bản ghi mới"
+                  />
+                  <ActionTile
+                    to={`/clans/${clan.id}/import`}
+                    icon={<IconUpload className="h-5 w-5" />}
+                    title="Nhập Excel"
+                    desc="Import hàng loạt"
+                  />
+                </>
+              )}
+              <PdfActionTile clan={clan} />
+            </div>
+          </section>
+
+          {effectiveRole(clan) !== null && (
+            <RecentActivityPanel clanId={clan.id} />
+          )}
         </>
       ) : null}
     </div>
@@ -196,6 +213,74 @@ interface StatTileProps {
   value: number | string;
   highlight?: boolean;
   muted?: boolean;
+}
+
+function ActionTile({
+  to,
+  icon,
+  title,
+  desc,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex flex-col gap-1 rounded-lg border bg-card p-4 hover:border-primary hover:bg-muted/30 transition-colors"
+    >
+      <span className="text-primary" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="font-medium leading-tight">{title}</span>
+      <span className="text-xs text-muted-foreground">{desc}</span>
+    </Link>
+  );
+}
+
+function PdfActionTile({ clan }: { clan: ClanDetail }) {
+  return (
+    <ExportPdfTile clan={clan} />
+  );
+}
+
+function ExportPdfTile({ clan }: { clan: ClanDetail }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onClick() {
+    setBusy(true);
+    setErr(null);
+    try {
+      const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
+      await downloadClanBookPdf(clan, { tree: true, detail: true });
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      className="text-left flex flex-col gap-1 rounded-lg border bg-card p-4 hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
+    >
+      <span className="text-primary" aria-hidden="true">
+        <IconDownload className="h-5 w-5" />
+      </span>
+      <span className="font-medium leading-tight">
+        {busy ? "Đang xuất…" : "Xuất sổ PDF"}
+      </span>
+      <span className="text-xs text-muted-foreground">
+        {err ? `Lỗi: ${err.slice(0, 40)}` : "Sách gia phả PDF"}
+      </span>
+    </button>
+  );
 }
 
 function UpcomingRow({

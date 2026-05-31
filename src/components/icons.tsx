@@ -279,6 +279,22 @@ export function IconUndo(p: IconProps) {
   );
 }
 
+export function IconTree(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="4" r="2" />
+      <circle cx="6" cy="12" r="2" />
+      <circle cx="18" cy="12" r="2" />
+      <circle cx="6" cy="20" r="2" />
+      <circle cx="18" cy="20" r="2" />
+      <line x1="12" y1="6" x2="6" y2="10" />
+      <line x1="12" y1="6" x2="18" y2="10" />
+      <line x1="6" y1="14" x2="6" y2="18" />
+      <line x1="18" y1="14" x2="18" y2="18" />
+    </Svg>
+  );
+}
+
 export function IconBell(p: IconProps) {
   return (
     <Svg {...p}>
