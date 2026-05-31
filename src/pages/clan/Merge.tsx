@@ -16,9 +16,14 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
+import {
+  findDuplicateCandidates,
+  type DuplicateCandidate,
+} from "@/lib/duplicateFinder";
 import { queryKeys } from "@/lib/queries/keys";
 import { mergePersons } from "@/lib/queries/merge";
 import { getPerson, listPersons, type PersonDetail } from "@/lib/queries/persons";
+import { getTreeData } from "@/lib/queries/tree";
 
 export default function Merge() {
   const { clan } = useClanContext();
@@ -29,6 +34,25 @@ export default function Merge() {
 
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const [loserId, setLoserId] = useState<string | null>(null);
+
+  // Auto-detect duplicate candidates from the existing tree-data query.
+  const { data: tree } = useQuery({
+    queryKey: queryKeys.treeData(clan.id, userId),
+    queryFn: () => getTreeData(clan.id),
+    enabled: !!userId,
+  });
+  const candidates: DuplicateCandidate[] = tree
+    ? findDuplicateCandidates(
+        tree.persons.map((p) => ({
+          id: p.id,
+          full_name: p.full_name,
+          gender: p.gender,
+          birth_date: p.birth_date,
+          is_living: p.is_living,
+          generation: p.generation,
+        })),
+      )
+    : [];
 
   const { data: winner } = useQuery({
     queryKey: queryKeys.person(winnerId ?? "", userId),
@@ -64,6 +88,16 @@ export default function Merge() {
           còn lại bị xoá mềm (có thể khôi phục từ nhật ký).
         </p>
       </div>
+
+      {candidates.length > 0 && (
+        <SuggestionPanel
+          candidates={candidates}
+          onPick={(winner, loser) => {
+            setWinnerId(winner);
+            setLoserId(loser);
+          }}
+        />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <PersonPicker
@@ -113,6 +147,101 @@ export default function Merge() {
       </div>
     </div>
   );
+}
+
+// ─── Suggestion panel ─────────────────────────────────────────────
+
+function SuggestionPanel({
+  candidates,
+  onPick,
+}: {
+  candidates: DuplicateCandidate[];
+  onPick: (winnerId: string, loserId: string) => void;
+}) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? candidates : candidates.slice(0, 5);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Đề xuất gộp</CardTitle>
+        <CardDescription>
+          Tìm thấy {candidates.length} cặp có thể trùng (theo tên + giới
+          tính + năm sinh). Chọn người sống / có nhiều dữ liệu hơn làm
+          "giữ lại".
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="divide-y rounded-md border bg-card">
+          {visible.map((c, i) => (
+            <li key={i} className="px-3 py-2 flex flex-wrap items-center gap-3">
+              <span
+                className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                  c.kind === "exact"
+                    ? "bg-primary/15 text-primary"
+                    : c.kind === "name"
+                      ? "bg-accent/20 text-accent"
+                      : "bg-muted text-muted-foreground"
+                }`}
+                title={
+                  c.kind === "exact"
+                    ? "Trùng tên + năm sinh"
+                    : c.kind === "name"
+                      ? "Trùng tên"
+                      : "Tên gần giống"
+                }
+              >
+                {c.kind === "exact"
+                  ? "tên + năm"
+                  : c.kind === "name"
+                    ? "tên"
+                    : "gần giống"}
+              </span>
+              <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-x-3">
+                <span className="truncate text-sm">
+                  {c.a.full_name}
+                  <span className="text-muted-foreground ml-1.5">
+                    {personMeta(c.a)}
+                  </span>
+                </span>
+                <span className="truncate text-sm">
+                  {c.b.full_name}
+                  <span className="text-muted-foreground ml-1.5">
+                    {personMeta(c.b)}
+                  </span>
+                </span>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onPick(c.a.id, c.b.id)}
+              >
+                Dùng cặp này
+              </Button>
+            </li>
+          ))}
+        </ul>
+        {candidates.length > 5 && !showAll && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2"
+            onClick={() => setShowAll(true)}
+          >
+            Xem thêm {candidates.length - 5} cặp
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function personMeta(p: DuplicateCandidate["a"]): string {
+  const parts: string[] = [];
+  if (p.birth_date) parts.push(`sinh ${p.birth_date.slice(0, 4)}`);
+  if (p.generation !== null) parts.push(`Đời ${p.generation}`);
+  if (!p.is_living) parts.push("đã mất");
+  return parts.length > 0 ? `· ${parts.join(" · ")}` : "";
 }
 
 // ─── Person picker (search + result list) ─────────────────────────
