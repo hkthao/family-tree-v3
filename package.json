@@ -23,6 +23,7 @@
     "@fontsource/noto-serif": "^5.2.9",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.106.2",
     "@tanstack/query-sync-storage-persister": "^5.100.14",
     "@tanstack/react-query": "^5.100.14",
