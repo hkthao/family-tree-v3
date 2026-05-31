@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import {
+  CLAN_SIZE_BUCKETS,
   listCommunityClans,
   listMyClans,
+  type ClanSizeBucket,
   type ClanSummary,
 } from "@/lib/queries/clans";
 import { queryKeys } from "@/lib/queries/keys";
@@ -39,6 +41,7 @@ export default function Clans() {
   const [tab, setTab] = useState<Tab>("mine");
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
+  const [sizeBucket, setSizeBucket] = useState<ClanSizeBucket | "">("");
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -51,9 +54,16 @@ export default function Clans() {
 
   useEffect(() => {
     setPage(1);
-  }, [tab]);
+  }, [tab, sizeBucket]);
 
-  const params = { page, pageSize: PAGE_SIZE, search: debounced };
+  const params = {
+    page,
+    pageSize: PAGE_SIZE,
+    search: debounced,
+    // Size filter only applies to the community tab; keep "Của tôi"
+    // unfiltered so the user can always find clans they joined.
+    sizeBucket: tab === "community" && sizeBucket ? sizeBucket : null,
+  };
 
   const mineQ = useQuery({
     queryKey: queryKeys.myClans(userId, params),
@@ -95,7 +105,7 @@ export default function Clans() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-6">
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -124,17 +134,39 @@ export default function Clans() {
           />
         </div>
 
-        {/* Search */}
-        <div className="space-y-2 max-w-md">
-          <Label htmlFor="clan-search">
-            Tìm theo tên (gõ không dấu cũng được)
-          </Label>
-          <Input
-            id="clan-search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Vd: ho nguyen"
-          />
+        {/* Search + (community only) size filter */}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 max-w-2xl">
+          <div className="space-y-2">
+            <Label htmlFor="clan-search">
+              Tìm theo tên (gõ không dấu cũng được)
+            </Label>
+            <Input
+              id="clan-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Vd: ho nguyen"
+            />
+          </div>
+          {tab === "community" && (
+            <div className="space-y-2">
+              <Label htmlFor="size-filter">Quy mô</Label>
+              <select
+                id="size-filter"
+                value={sizeBucket}
+                onChange={(e) =>
+                  setSizeBucket(e.target.value as ClanSizeBucket | "")
+                }
+                className="h-12 rounded-md border border-input bg-background px-3 sm:min-w-[180px] w-full"
+              >
+                <option value="">Tất cả quy mô</option>
+                {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
+                  <option key={k} value={k}>
+                    {CLAN_SIZE_BUCKETS[k].label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Tab body */}
@@ -275,6 +307,8 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
                 </>
               ) : null}
               {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
+              {" • "}
+              {clan.person_count} thành viên
             </p>
           </div>
         </div>
