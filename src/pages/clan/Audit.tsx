@@ -59,7 +59,7 @@ export default function Audit() {
     action: action || null,
   };
 
-  const { data, isFetching, isLoading } = useQuery({
+  const { data, isFetching } = useQuery({
     queryKey: queryKeys.audit(clan.id, userId, params),
     queryFn: () => listAudit(clan.id, params),
     enabled: !!userId,
@@ -113,9 +113,9 @@ export default function Audit() {
         </div>
       </div>
 
-      {isLoading ? (
+      {!data ? (
         <p className="text-muted-foreground">Đang tải…</p>
-      ) : data && data.rows.length === 0 ? (
+      ) : data.rows.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Chưa có thay đổi nào</CardTitle>
@@ -126,7 +126,7 @@ export default function Audit() {
         </Card>
       ) : (
         <ul className="space-y-3">
-          {data!.rows.map((r) => (
+          {data.rows.map((r) => (
             <AuditItem
               key={r.id}
               row={r}

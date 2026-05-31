@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
-import { AppHeader } from "@/components/AppHeader";
 import {
   IconCheck,
   IconDownload,
@@ -75,15 +74,8 @@ export default function Import() {
   const canSubmit = !!plan?.payload && errorCount === 0 && !importM.isPending && !importM.isSuccess;
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-6">
-        <nav className="text-sm text-muted-foreground">
-          <Link to={`/clans/${clanId}`} className="hover:underline">
-            ← {clan.name}
-          </Link>
-        </nav>
-        <h1 className="text-3xl font-semibold">Nhập từ Excel</h1>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Nhập từ Excel</h2>
 
         <Card>
           <CardHeader>
@@ -223,9 +215,8 @@ export default function Import() {
                 )}
               </div>
             </CardContent>
-          </Card>
-        )}
-      </main>
+        </Card>
+      )}
     </div>
   );
 }
