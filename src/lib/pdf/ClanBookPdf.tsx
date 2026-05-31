@@ -1,7 +1,12 @@
 import {
+  Circle,
   Document,
+  G,
   Page,
+  Path,
+  Rect,
   StyleSheet,
+  Svg,
   Text,
   View,
 } from "@react-pdf/renderer";
@@ -19,6 +24,8 @@ import { ensurePdfFontRegistered, PDF_FONT_FAMILY } from "./registerFont";
 
 // ─── Page geometry (A4 in points) ──────────────────────────────────
 
+const PAGE_W = 595;
+const PAGE_H = 842;
 const SIDE_PAD = 56;
 const TOP_PAD = 60;
 const BOTTOM_PAD = 68;
@@ -186,6 +193,120 @@ const styles = StyleSheet.create({
   },
 });
 
+// ─── Vine border (SVG vector, fixed per page) ──────────────────────
+
+const FRAME_OUT_M = 24; // outer rectangle margin from page edge
+const FRAME_IN_M = 32; // inner rectangle margin
+const VINE_REACH = 64; // how far the corner vine curls along each edge
+
+/**
+ * Renders the four corner vines + two perpendicular straight rules.
+ * `cx, cy` is the corner pivot in absolute SVG space; `rot` rotates
+ * the whole pattern around that pivot so the same drawing serves all
+ * four corners.
+ */
+function vineCorner(cx: number, cy: number, rot: number): React.ReactNode {
+  // Outer arc: from (cx+R, cy) on the top edge down to (cx, cy+R) on
+  // the left edge — a smooth quarter-curve that hugs the corner.
+  return (
+    <G transform={`rotate(${rot} ${cx} ${cy})`}>
+      <Path
+        d={`M ${cx + VINE_REACH} ${cy + 8} Q ${cx + 10} ${cy + 10} ${cx + 8} ${cy + VINE_REACH}`}
+        stroke={COLORS.primary}
+        strokeWidth={1}
+        fill="none"
+      />
+      <Path
+        d={`M ${cx + VINE_REACH - 8} ${cy + 16} Q ${cx + 18} ${cy + 18} ${cx + 16} ${cy + VINE_REACH - 8}`}
+        stroke={COLORS.accent}
+        strokeWidth={0.6}
+        fill="none"
+      />
+      {/* Leaf-dots along the outer vine */}
+      <Circle
+        cx={cx + VINE_REACH - 2}
+        cy={cy + 10}
+        r={2.4}
+        fill={COLORS.accent}
+      />
+      <Circle
+        cx={cx + 24}
+        cy={cy + 24}
+        r={3.2}
+        fill={COLORS.primary}
+      />
+      <Circle
+        cx={cx + 10}
+        cy={cy + VINE_REACH - 2}
+        r={2.4}
+        fill={COLORS.accent}
+      />
+      {/* Smaller buds */}
+      <Circle cx={cx + 40} cy={cy + 14} r={1.2} fill={COLORS.primary} />
+      <Circle cx={cx + 14} cy={cy + 40} r={1.2} fill={COLORS.primary} />
+    </G>
+  );
+}
+
+/** Three-dot cluster at the midpoint of an edge. */
+function midOrnament(cx: number, cy: number, rot: number): React.ReactNode {
+  return (
+    <G transform={`rotate(${rot} ${cx} ${cy})`}>
+      <Circle cx={cx} cy={cy} r={2.6} fill={COLORS.primary} />
+      <Circle cx={cx - 9} cy={cy} r={1.4} fill={COLORS.accent} />
+      <Circle cx={cx + 9} cy={cy} r={1.4} fill={COLORS.accent} />
+    </G>
+  );
+}
+
+function VineBorder() {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: PAGE_W,
+        height: PAGE_H,
+      }}
+      fixed
+    >
+      <Svg width={PAGE_W} height={PAGE_H} viewBox={`0 0 ${PAGE_W} ${PAGE_H}`}>
+        {/* Outer red rectangle */}
+        <Rect
+          x={FRAME_OUT_M}
+          y={FRAME_OUT_M}
+          width={PAGE_W - FRAME_OUT_M * 2}
+          height={PAGE_H - FRAME_OUT_M * 2}
+          stroke={COLORS.primary}
+          strokeWidth={1.2}
+          fill="none"
+        />
+        {/* Inner amber rectangle */}
+        <Rect
+          x={FRAME_IN_M}
+          y={FRAME_IN_M}
+          width={PAGE_W - FRAME_IN_M * 2}
+          height={PAGE_H - FRAME_IN_M * 2}
+          stroke={COLORS.accent}
+          strokeWidth={0.5}
+          fill="none"
+        />
+        {/* Four corner vines */}
+        {vineCorner(FRAME_OUT_M, FRAME_OUT_M, 0)}
+        {vineCorner(PAGE_W - FRAME_OUT_M, FRAME_OUT_M, 90)}
+        {vineCorner(PAGE_W - FRAME_OUT_M, PAGE_H - FRAME_OUT_M, 180)}
+        {vineCorner(FRAME_OUT_M, PAGE_H - FRAME_OUT_M, 270)}
+        {/* Mid-edge ornaments */}
+        {midOrnament(PAGE_W / 2, FRAME_OUT_M, 0)}
+        {midOrnament(PAGE_W / 2, PAGE_H - FRAME_OUT_M, 0)}
+        {midOrnament(FRAME_OUT_M, PAGE_H / 2, 90)}
+        {midOrnament(PAGE_W - FRAME_OUT_M, PAGE_H / 2, 90)}
+      </Svg>
+    </View>
+  );
+}
+
 // ─── Document ───────────────────────────────────────────────────────
 
 interface Props {
@@ -286,6 +407,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
     >
       {/* ─── Cover ──────────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
+        <VineBorder />
         <View style={styles.coverWrap}>
           <Text style={styles.coverEyebrow}>GIA PHẢ</Text>
           <Text style={styles.coverTitle}>{withHoPrefix(cleanName)}</Text>
@@ -309,6 +431,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
 
       {/* ─── Phàm lệ ─────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
+        <VineBorder />
         <Text style={styles.h1}>Phàm lệ</Text>
         <View style={styles.h1Underline} />
         <Text style={styles.intro}>
@@ -343,6 +466,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
       {/* ─── Cây phả hệ (flat by generation) ─────────────────── */}
       {showTree && bloodline.length > 0 && (
         <Page size="A4" style={styles.page}>
+        <VineBorder />
           <Text style={styles.h1}>Cây phả hệ</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
@@ -386,6 +510,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
       {/* ─── Danh bạ chi tiết (3-card grid) ─────────────────── */}
       {showDetail && bloodlineSorted.length > 0 && (
         <Page size="A4" style={styles.page}>
+        <VineBorder />
           <Text style={styles.h1}>Danh bạ chi tiết</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
@@ -424,6 +549,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
       {/* ─── Dâu / rể (3-card grid, same style as danh bạ) ──── */}
       {inLaws.length > 0 && (
         <Page size="A4" style={styles.page}>
+        <VineBorder />
           <Text style={styles.h1}>Dâu / rể kết hôn vào họ</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
