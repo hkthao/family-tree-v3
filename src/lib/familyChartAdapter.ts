@@ -3,6 +3,11 @@ import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
 /**
  * family-chart datum shape. The library wants this exact structure.
  * gender must be "M" or "F" — schema enforces that already.
+ *
+ * `avatar` is a data-URI SVG that family-chart renders inside the
+ * card's image area. The library's default SVG card hard-codes the
+ * "genderless" silhouette and ignores gender — supplying an explicit
+ * `avatar` is the documented way to override per-row.
  */
 export interface F3Datum {
   id: string;
@@ -11,10 +16,18 @@ export interface F3Datum {
     "first name"?: string;
     "last name"?: string;
     "full name": string;
+    /** Year of birth (string, 4 digits). */
     birthday?: string;
+    /** Year of death (string, 4 digits) — kept separate so onCardUpdate
+     *  can render "YYYY - YYYY" / "? - ?" without re-parsing the date. */
+    death_year?: string;
     /** Custom — we use it to render the muted "đã mất" footer. */
     is_living?: boolean;
     is_root?: boolean;
+    /** 1, 2, 3, … null when unknown. Rendered as a corner badge. */
+    generation?: number | null;
+    /** SVG data-URI consumed by family-chart's <image href=…/> path. */
+    avatar?: string;
   };
   rels: {
     /** At most 2 — birth_family's husband + wife. */
@@ -24,6 +37,15 @@ export interface F3Datum {
     /** All persons whose birth_family belongs to any of this person's families. */
     children: string[];
   };
+}
+
+/**
+ * Per-gender placeholder PNG served from /public. family-chart's SVG
+ * card uses <image href=…/> when `data.avatar` is set, which trumps
+ * the library's default genderless silhouette.
+ */
+function genderAvatar(gender: "M" | "F"): string {
+  return gender === "M" ? "/avatars/male.png" : "/avatars/female.png";
 }
 
 /**
@@ -85,8 +107,11 @@ export function toFamilyChart(
         gender: p.gender,
         "full name": p.full_name,
         birthday: p.birth_date?.slice(0, 4),
+        death_year: p.death_date?.slice(0, 4),
         is_living: p.is_living,
         is_root: p.is_root,
+        generation: p.generation,
+        avatar: genderAvatar(p.gender),
       },
       rels: { parents, spouses, children },
     } satisfies F3Datum;
