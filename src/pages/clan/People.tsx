@@ -1,6 +1,18 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+
+import { invalidateClanData } from "@/lib/cache";
+import {
+  deletePersonsBulk,
+  updatePersonsBranchBulk,
+} from "@/lib/queries/persons";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   IconArrowLeft,
@@ -50,6 +62,8 @@ export default function People() {
   const [generation, setGeneration] = useState<string>("");
   const [sort, setSort] = useState<"name" | "generation" | "birth">("name");
   const [viewMode, setViewMode] = useState<ViewMode>(() => readViewMode());
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [bulkBranch, setBulkBranch] = useState<string>("");
 
   // Persist viewMode globally — same preference across clans.
   useEffect(() => {
@@ -73,6 +87,52 @@ export default function People() {
   useEffect(() => {
     setPage(1);
   }, [branchId, generation, sort, pageSize]);
+
+  // Drop the selection when the visible page changes — selecting
+  // across pages is rarely intended and produces confusing toolbars.
+  useEffect(() => {
+    setSelected(new Set());
+  }, [page, debounced, branchId, generation, sort, pageSize]);
+
+  const qc = useQueryClient();
+  const bulkChangeBranchM = useMutation({
+    mutationFn: () =>
+      updatePersonsBranchBulk(
+        [...selected],
+        bulkBranch === "" ? null : bulkBranch,
+      ),
+    onSuccess: async () => {
+      await invalidateClanData(qc, clan.id);
+      setSelected(new Set());
+    },
+  });
+  const bulkDeleteM = useMutation({
+    mutationFn: () => deletePersonsBulk([...selected]),
+    onSuccess: async () => {
+      await invalidateClanData(qc, clan.id);
+      setSelected(new Set());
+    },
+  });
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleAllOnPage(rows: PersonRow[] | undefined, on: boolean) {
+    if (!rows) return;
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const r of rows) {
+        if (on) next.add(r.id);
+        else next.delete(r.id);
+      }
+      return next;
+    });
+  }
 
   // Non-members of a public clan read through the masked view; everyone
   // else (admin/editor/viewer + platform admin) reads the raw table.
@@ -251,6 +311,66 @@ export default function People() {
           query is briefly disabled (e.g. while a sibling useAuth() is
           still settling), so `data` is undefined and `isLoading` is
           false at the same time. */}
+      {/* Bulk-action toolbar — shows when ≥ 1 person is selected. */}
+      {canEdit && selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-md border bg-primary/5 px-3 py-2 text-sm">
+          <span className="font-medium mr-1">
+            Đã chọn {selected.size} người
+          </span>
+          <select
+            value={bulkBranch}
+            onChange={(e) => setBulkBranch(e.target.value)}
+            aria-label="Đổi chi cho lựa chọn"
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">(không có chi)</option>
+            {branches?.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+          <Button
+            size="sm"
+            onClick={() => bulkChangeBranchM.mutate()}
+            disabled={bulkChangeBranchM.isPending}
+          >
+            {bulkChangeBranchM.isPending ? "Đang đổi…" : "Đổi chi"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive"
+            disabled={bulkDeleteM.isPending}
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Xoá ${selected.size} người? Có thể khôi phục từ nhật ký.`,
+                )
+              ) {
+                bulkDeleteM.mutate();
+              }
+            }}
+          >
+            {bulkDeleteM.isPending ? "Đang xoá…" : "Xoá"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSelected(new Set())}
+          >
+            Bỏ chọn
+          </Button>
+        </div>
+      )}
+      {(bulkChangeBranchM.error || bulkDeleteM.error) && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {((bulkChangeBranchM.error ?? bulkDeleteM.error) as Error).message}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {!data ? (
         <div className="rounded-lg border bg-card p-4">
           <p className="text-muted-foreground">Đang tải…</p>
@@ -263,6 +383,24 @@ export default function People() {
         </div>
       ) : viewMode === "list" ? (
         <ul className="divide-y rounded-lg border bg-card">
+          {canEdit && (
+            <li className="px-3 py-2 bg-muted/30">
+              <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={
+                    data.rows.length > 0 &&
+                    data.rows.every((r) => selected.has(r.id))
+                  }
+                  onChange={(e) =>
+                    toggleAllOnPage(data.rows, e.target.checked)
+                  }
+                  className="h-4 w-4 accent-primary"
+                />
+                Chọn tất cả trên trang này
+              </label>
+            </li>
+          )}
           {data.rows.map((p) => (
             <PersonListItem
               key={p.id}
@@ -270,6 +408,9 @@ export default function People() {
               clanId={clan.id}
               relatives={relatives}
               photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
+              selectable={canEdit}
+              selected={selected.has(p.id)}
+              onToggleSelect={() => toggleSelected(p.id)}
             />
           ))}
         </ul>
@@ -282,6 +423,9 @@ export default function People() {
               clanId={clan.id}
               relatives={relatives}
               photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
+              selectable={canEdit}
+              selected={selected.has(p.id)}
+              onToggleSelect={() => toggleSelected(p.id)}
             />
           ))}
         </ul>
@@ -389,11 +533,17 @@ function PersonListItem({
   clanId,
   relatives,
   photoUrl,
+  selectable,
+  selected,
+  onToggleSelect,
 }: {
   person: PersonRow;
   clanId: string;
   relatives: RelativesIndex | undefined;
   photoUrl: string | null;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
@@ -402,10 +552,21 @@ function PersonListItem({
   if (person.generation !== null) metaBits.push(`Đời ${person.generation}`);
 
   return (
-    <li>
+    <li className="flex items-start gap-2">
+      {selectable && (
+        <label className="pl-3 pt-4 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={onToggleSelect}
+            className="h-4 w-4 accent-primary"
+            aria-label={`Chọn ${person.full_name}`}
+          />
+        </label>
+      )}
       <Link
         to={`/clans/${clanId}/people/${person.id}`}
-        className="flex items-start gap-3 p-3 hover:bg-muted/40 transition-colors"
+        className="flex flex-1 items-start gap-3 p-3 hover:bg-muted/40 transition-colors"
       >
         <PersonAvatar
           gender={person.gender}
@@ -465,20 +626,39 @@ function PersonGridCard({
   clanId,
   relatives,
   photoUrl,
+  selectable,
+  selected,
+  onToggleSelect,
 }: {
   person: PersonRow;
   clanId: string;
   relatives: RelativesIndex | undefined;
   photoUrl: string | null;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
 
   return (
-    <li>
+    <li className="relative">
+      {selectable && (
+        <label className="absolute top-2 left-2 z-10 cursor-pointer rounded bg-card/80 p-0.5 backdrop-blur">
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={onToggleSelect}
+            className="h-4 w-4 accent-primary block"
+            aria-label={`Chọn ${person.full_name}`}
+          />
+        </label>
+      )}
       <Link
         to={`/clans/${clanId}/people/${person.id}`}
-        className="flex flex-col items-center text-center gap-2 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
+        className={`flex flex-col items-center text-center gap-2 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full ${
+          selected ? "border-primary ring-1 ring-primary/30" : ""
+        }`}
       >
         <PersonAvatar
           gender={person.gender}

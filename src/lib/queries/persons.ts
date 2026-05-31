@@ -247,3 +247,41 @@ export async function deletePerson(
   const { error } = await client.from("persons").delete().eq("id", personId);
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Bulk-update the `branch_id` for a set of persons in one round-trip.
+ * Pass `branchId = null` to clear the chi assignment. Each row still
+ * fires the audit trigger (one before/after pair per person), so the
+ * change is restorable per-person from the audit log.
+ */
+export async function updatePersonsBranchBulk(
+  ids: string[],
+  branchId: string | null,
+  client: Client = defaultClient,
+): Promise<{ updated: number }> {
+  if (ids.length === 0) return { updated: 0 };
+  const { error, count } = await client
+    .from("persons")
+    .update({ branch_id: branchId }, { count: "exact" })
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return { updated: count ?? 0 };
+}
+
+/**
+ * Bulk-soft-delete persons. The BEFORE DELETE trigger converts each
+ * DELETE into a soft-delete (set deleted_at = now()). Single
+ * round-trip; per-row audit entries are emitted.
+ */
+export async function deletePersonsBulk(
+  ids: string[],
+  client: Client = defaultClient,
+): Promise<{ deleted: number }> {
+  if (ids.length === 0) return { deleted: 0 };
+  const { error, count } = await client
+    .from("persons")
+    .delete({ count: "exact" })
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return { deleted: count ?? 0 };
+}
