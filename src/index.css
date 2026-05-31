@@ -82,3 +82,55 @@
     @apply min-h-[44px] min-w-[44px];
   }
 }
+
+/* ---------------------------------------------------------------- *
+ * family-chart overrides
+ *
+ * The library hard-codes stroke="#fff" on every `path.link` it draws,
+ * which is invisible on our paper background. SVG presentation
+ * attributes are overridden by CSS, so this rule wins without any
+ * !important. Use a muted ink-ish tone so the lines connect cards
+ * legibly without competing with the cards themselves.
+ * ---------------------------------------------------------------- */
+.f3 svg.main_svg path.link {
+  stroke: #7A6F66; /* matches design palette --muted */
+  stroke-width: 1.5px;
+  opacity: 0.55;
+}
+.f3 svg.main_svg path.link.f3-path-to-main {
+  stroke: #7A2E2E; /* oxblood — highlight the path back to focal */
+  opacity: 0.9;
+}
+
+/* Card text: smaller body font so Vietnamese full names + the meta
+   line stay legible without overflowing the clip rect. The library
+   sets dy=14 per tspan, so 13px font sits nicely inside that line
+   height. */
+.f3 svg.main_svg .card-text text {
+  font-size: 13px;
+  font-weight: 500;
+}
+.f3 svg.main_svg .card-text tspan:nth-child(2) {
+  font-size: 11px;
+  fill: #7A6F66; /* muted meta line */
+  font-weight: 400;
+}
+
+/* Circular avatar — clip the rectangular image into a circle that
+   fills the card's img_w/h box. !important beats the library's
+   `clip-path="url(#card_image_clip)"` presentation attribute. */
+.f3 svg.main_svg .card_image {
+  clip-path: circle(50%) !important;
+}
+
+/* Generation badge ("Đời N") — the library applies
+   `.f3 svg.main_svg text { fill: currentColor }` which overrides the
+   white `fill` attribute we set inline on the badge text. A more
+   specific selector (extra `.gen-badge` class lifts specificity by
+   one class) wins back. */
+.f3 svg.main_svg .gen-badge rect {
+  fill: #7A2E2E; /* oxblood */
+}
+.f3 svg.main_svg .gen-badge text {
+  fill: #FFFFFF;
+}

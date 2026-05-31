@@ -26,9 +26,36 @@ interface F3Chart {
   setTransitionTime: (n: number) => F3Chart;
   setSingleParentEmptyCard: (b: boolean) => F3Chart;
   updateTree: (opts: { initial?: boolean }) => void;
-  setCard?: (Card: unknown) => F3Chart;
-  // Method names vary across family-chart versions; we use whatever exists.
+  // setCardSvg / setCardHtml return a NEW Card instance (CardSvg /
+  // CardHtml), not the Chart. Configuration like setCardDisplay,
+  // setCardDim etc. lives on that returned instance — calling them
+  // on the Chart silently no-ops (which is what was hiding the card
+  // text before).
+  setCardSvg?: () => F3Card;
+  setCardHtml?: () => F3Card;
 }
+
+interface F3Card {
+  setCardDisplay: (lines: (CardDisplayFn | string | string[])[]) => F3Card;
+  setCardDim: (dim: { w?: number; h?: number; img_w?: number; img_h?: number; img_x?: number; img_y?: number; text_x?: number; text_y?: number }) => F3Card;
+  setCardImageField?: (field: string) => F3Card;
+  setOnCardUpdate: (fn: OnCardUpdateFn) => F3Card;
+}
+
+type OnCardUpdateFn = (this: SVGGElement, d: { data?: DatumNode }) => void;
+
+/**
+ * Shape that family-chart's display function receives — the whole
+ * datum {id, data, rels}, not just the inner field bag. The library
+ * does `cd(d.data)` where `d` is the d3 node, so `d.data` is our
+ * outer datum and `d.data.data` is the field bag.
+ */
+interface DatumNode {
+  id?: string;
+  data?: Record<string, unknown>;
+  rels?: unknown;
+}
+type CardDisplayFn = (d: DatumNode) => string;
 
 // Lazy import — family-chart pulls in d3 (big), don't ship to login bundle.
 let f3Module: typeof import("family-chart") | null = null;
@@ -85,19 +112,92 @@ export default function Tree() {
           }
         ).createChart(node, f3Data);
 
-        const ext = built as F3Chart & {
-          setCardSvg?: () => F3Chart;
-          setCardDisplay?: (lines: string[][]) => F3Chart;
-          setCardDim?: (dim: { w?: number; h?: number }) => F3Chart;
+        // setCardSvg returns a CardSvg instance — every config call
+        // (setCardDisplay, setCardDim, …) must chain off THAT, not the
+        // Chart. Calling them on the Chart silently no-ops which is
+        // what was hiding the card text before.
+        //
+        // Function form of setCardDisplay receives the OUTER datum
+        // ({id, data, rels}); fields live under `.data`. String
+        // entries also work — the library wraps them as
+        // d1 => d1.data[key] internally.
+        const card = (built as F3Chart & {
+          setCardSvg?: () => F3Card;
+        }).setCardSvg?.();
+
+        // Display: name on line 1 (left-aligned by default); lifespan
+        // "YYYY - YYYY" on line 2 (centered via the onCardUpdate hook
+        // below — the library hard-codes x=0 on every tspan, so we
+        // post-process). Unknown years render as "?".
+        const lifespan = (d: DatumNode): string => {
+          const f = d.data ?? {};
+          const b = (f["birthday"] as string) || "?";
+          const isLiving = f["is_living"] !== false;
+          const death = (f["death_year"] as string) || (isLiving ? "" : "?");
+          return death ? `${b} - ${death}` : b;
         };
 
-        // SVG cards are lighter than HTML cards on mobile and let us
-        // size them explicitly. Default 200×80 is fine for the cards
-        // themselves; the issue was layout fit, not card size.
-        ext.setCardSvg?.();
-        ext.setCardDisplay?.([["full name"], ["birthday"]]);
-        ext.setCardDim?.({ w: 220, h: 70 });
-        built.setTransitionTime(200);
+        card
+          ?.setCardDisplay([
+            (d) => String((d as DatumNode).data?.["full name"] ?? ""),
+            (d) => lifespan(d as DatumNode),
+          ])
+          // Wider card so Vietnamese full names ("Huỳnh Thanh Châu")
+          // fit; a touch taller so the two text lines breathe.
+          // Tighter card: 50px circular avatar with small inset, text
+          // starts at x=64 so name + meta line take the remaining
+          // ~190px. h=72 keeps both rows close without crowding the
+          // generation badge in the corner.
+          .setCardDim({
+            w: 260,
+            h: 72,
+            text_x: 64,
+            text_y: 20,
+            img_w: 50,
+            img_h: 50,
+            img_x: 8,
+            img_y: 11,
+          })
+          .setOnCardUpdate(function (d) {
+            const fields = (d.data as DatumNode | undefined)?.data ?? {};
+            const tspans = this.querySelectorAll<SVGTSpanElement>(
+              ".card-text text tspan",
+            );
+            const meta = tspans[1];
+            if (meta) {
+              // Left-aligned meta line, slightly more vertical breathing.
+              meta.setAttribute("text-anchor", "start");
+              meta.setAttribute("x", "0");
+              meta.setAttribute("dy", "18");
+            }
+            // Generation badge — small pill in the top-right corner.
+            const gen = fields["generation"];
+            if (typeof gen === "number" && gen > 0) {
+              const existing = this.querySelector(".gen-badge");
+              if (existing) existing.remove();
+              const badge = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g",
+              );
+              badge.setAttribute("class", "gen-badge");
+              badge.innerHTML = `
+                <rect x="212" y="6" width="42" height="18" rx="9"
+                      fill="#7A2E2E" />
+                <text x="233" y="19" text-anchor="middle"
+                      fill="#FFFFFF" font-size="10" font-weight="700">
+                  Đời ${gen}
+                </text>`;
+              this.querySelector(".card-body")?.appendChild(badge);
+            }
+          });
+
+        // Spacing tuned to the new 260×72 card. Default 250/150 was
+        // tight for our 220-wide Vietnamese-name cards; 260 cards
+        // need ~290 horizontally and 150 vertically still works.
+        built
+          .setTransitionTime(200)
+          .setCardXSpacing(290)
+          .setCardYSpacing(160);
 
         // updateTree({ initial: true }) calls treeFit which measures the
         // SVG via getBoundingClientRect. Wait one paint frame so the
@@ -207,7 +307,18 @@ export default function Tree() {
             // `svg.main_svg { width:100%; height:100% }` under it. Without
             // the class, the SVG (and the f3Canvas it lives in) renders at
             // intrinsic size and the cards clump in the corner.
-            className="f3 rounded-lg border bg-card overflow-hidden -mx-4 sm:mx-0 h-[70vh] min-h-[480px] max-h-[820px]"
+            //
+            // CSS-var overrides shift the default saturated blue/pink card
+            // fills toward the paper/oxblood palette from plan §10:
+            // male = cool muted, female = warm muted, text in ink colour.
+            className="f3 rounded-lg border bg-card overflow-hidden -mx-4 sm:mx-0 h-[70vh] min-h-[480px] max-h-[820px] text-foreground"
+            style={
+              {
+                "--male-color": "#D4DDE4",
+                "--female-color": "#E8D2CC",
+                "--genderless-color": "#E8E0D2",
+              } as React.CSSProperties
+            }
             aria-label="Cây gia phả tương tác"
           />
           <p className="text-xs text-muted-foreground">
