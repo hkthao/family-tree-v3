@@ -2,6 +2,7 @@ import {
   Circle,
   Document,
   G,
+  Image,
   Page,
   Path,
   Rect,
@@ -52,7 +53,8 @@ const styles = StyleSheet.create({
   },
 
   // Cover
-  coverWrap: { marginTop: 140, alignItems: "center" },
+  coverWrap: { marginTop: 100, alignItems: "center" },
+  coverLogo: { width: 96, height: 96, marginBottom: 22 },
   coverEyebrow: {
     fontSize: 10,
     color: COLORS.muted,
@@ -133,26 +135,13 @@ const styles = StyleSheet.create({
   // View-based avatar (no Image — Image trips a Buffer polyfill issue
   // in this Vite bundle). A coloured circle with the first letter of
   // the given name, gendered by background colour.
-  // Circle uses explicit paddingTop instead of justifyContent: center.
-  // PDF text baselines sit lower in the line-box than browser CSS, so
-  // flex-centering drops the glyph below the geometric centre. Push
-  // it back up with a measured top padding.
-  avatarCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    paddingTop: 9,
+  // Round avatar image (the actual male.png / female.png illustration
+  // from /public/avatars). Sits at the top of each card.
+  avatarImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginBottom: 6,
-  },
-  avatarCircleM: { backgroundColor: COLORS.primary },
-  avatarCircleF: { backgroundColor: COLORS.accent },
-  avatarLetter: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: 600,
-    lineHeight: 1,
-    textAlign: "center",
   },
   personName: {
     fontSize: 10.5,
@@ -408,6 +397,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
       <Page size="A4" style={styles.page}>
         <VineBorder />
         <View style={styles.coverWrap}>
+          <Image src="/icons/app-icon-192.png" style={styles.coverLogo} />
           <Text style={styles.coverEyebrow}>GIA PHẢ</Text>
           <Text style={styles.coverTitle}>{withHoPrefix(cleanName)}</Text>
           <View style={styles.coverDivider} />
@@ -639,15 +629,7 @@ function renderPersonCard(
 
   return (
     <>
-      <View
-        style={
-          p.gender === "M"
-            ? [styles.avatarCircle, styles.avatarCircleM]
-            : [styles.avatarCircle, styles.avatarCircleF]
-        }
-      >
-        <Text style={styles.avatarLetter}>{firstInitial(p.full_name)}</Text>
-      </View>
+      <Image src={avatarSrc(p.gender)} style={styles.avatarImg} />
       <Text style={styles.personName}>{p.full_name}</Text>
       {p.is_root && (
         <Text
@@ -714,15 +696,7 @@ function renderInLawCard(
 
   return (
     <>
-      <View
-        style={
-          p.gender === "M"
-            ? [styles.avatarCircle, styles.avatarCircleM]
-            : [styles.avatarCircle, styles.avatarCircleF]
-        }
-      >
-        <Text style={styles.avatarLetter}>{firstInitial(p.full_name)}</Text>
-      </View>
+      <Image src={avatarSrc(p.gender)} style={styles.avatarImg} />
       <Text style={styles.personName}>{p.full_name}</Text>
       <Text style={styles.personMeta}>{metaParts.join(" · ")}</Text>
 
@@ -797,10 +771,8 @@ function birthOrder(a: PersonDetail, b: PersonDetail): number {
   return a.full_name.localeCompare(b.full_name, "vi");
 }
 
-function firstInitial(fullName: string): string {
-  const tokens = fullName.trim().split(/\s+/);
-  const last = tokens[tokens.length - 1] ?? "";
-  return last.charAt(0).toUpperCase() || "?";
+function avatarSrc(g: "M" | "F"): string {
+  return g === "M" ? "/avatars/male.png" : "/avatars/female.png";
 }
 
 function chunk<T>(arr: T[], n: number): T[][] {
