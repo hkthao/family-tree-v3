@@ -54,6 +54,7 @@ interface PersonRow {
   birth_date_precision: string | null;
   death_date: string | null;
   death_date_precision: string | null;
+  photo_path: string | null;
 }
 
 interface FamilyRow {
@@ -121,7 +122,7 @@ Deno.serve(async (req) => {
 
   // ---- 3. Fetch persons + families ----
   const personSelect =
-    "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_date, birth_date_precision, death_date, death_date_precision";
+    "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_date, birth_date_precision, death_date, death_date_precision, photo_path";
   const { data: persons, error: pErr } = await sb
     .from("persons")
     .select(personSelect)
@@ -185,22 +186,47 @@ Deno.serve(async (req) => {
     scopedFamilies = scopedFamilies.filter((f) => familiesKept.has(f.id));
   }
 
-  // ---- 5. Mask living-person columns ----
+  // ---- 5. Sign photo URLs for the deceased only ----
+  // Living-person photos are masked along with the rest of their PII;
+  // deceased persons can show their portrait to the public viewer.
+  const deceasedPhotoPaths = scopedPersons
+    .filter((p) => !p.is_living && p.photo_path)
+    .map((p) => p.photo_path as string);
+  const photoUrlByPath = new Map<string, string>();
+  if (deceasedPhotoPaths.length > 0) {
+    const { data: signed } = await sb.storage
+      .from("person-photos")
+      .createSignedUrls([...new Set(deceasedPhotoPaths)], 3600);
+    for (const row of signed ?? []) {
+      if (row.signedUrl && row.path) photoUrlByPath.set(row.path, row.signedUrl);
+    }
+  }
+
+  // ---- 6. Mask living-person columns + attach signed photo URL ----
   const masked = scopedPersons.map((p) => {
-    if (!p.is_living) return p;
+    if (p.is_living) {
+      return {
+        id: p.id,
+        full_name: p.full_name,
+        gender: p.gender,
+        is_living: true,
+        is_root: p.is_root,
+        generation: p.generation,
+        branch_id: p.branch_id,
+        birth_family_id: p.birth_family_id,
+        birth_date: null,
+        birth_date_precision: null,
+        death_date: null,
+        death_date_precision: null,
+        photo_url: null,
+      };
+    }
     return {
-      id: p.id,
-      full_name: p.full_name,
-      gender: p.gender,
-      is_living: true,
-      is_root: p.is_root,
-      generation: p.generation,
-      branch_id: p.branch_id,
-      birth_family_id: p.birth_family_id,
-      birth_date: null,
-      birth_date_precision: null,
-      death_date: null,
-      death_date_precision: null,
+      ...p,
+      photo_url: p.photo_path ? (photoUrlByPath.get(p.photo_path) ?? null) : null,
+      // photo_path itself stays out of the response — only the signed
+      // URL is useful to the anonymous client.
+      photo_path: undefined,
     };
   });
 

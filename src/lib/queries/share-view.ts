@@ -13,6 +13,9 @@ export interface ShareViewPerson {
   birth_date_precision: "day" | "month" | "year" | null;
   death_date: string | null;
   death_date_precision: "day" | "month" | "year" | null;
+  /** Short-lived signed URL for deceased persons' photos. Null for the
+   *  living (their photos are masked) and for anyone without an upload. */
+  photo_url: string | null;
 }
 
 export interface ShareViewFamily {
