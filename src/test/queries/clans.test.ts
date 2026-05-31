@@ -69,15 +69,19 @@ describe("queries: clans", () => {
     const owner = await createTestUser({ displayName: "PubOwner" });
     const stranger = await createTestUser({ displayName: "Stranger" });
     cleanup.push(owner.id, stranger.id);
+    // Unique name so the search filter narrows the (potentially large)
+    // public-clan list down to this row regardless of how much test
+    // data has piled up in the local DB.
+    const uniqueName = `Public clan ${crypto.randomUUID().slice(0, 8)}`;
     const { id: pub } = await createClan(
-      { name: "Public clan", visibility: "public" },
+      { name: uniqueName, visibility: "public" },
       owner.id,
       owner.client,
     );
 
     const r = await listCommunityClans(
       stranger.id,
-      DEFAULT_PARAMS,
+      { ...DEFAULT_PARAMS, search: uniqueName },
       stranger.client,
     );
     expect(r.rows.some((c) => c.id === pub)).toBe(true);

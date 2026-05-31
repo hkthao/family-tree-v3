@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
@@ -11,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { queryKeys } from "@/lib/queries/keys";
 import { getTreeData } from "@/lib/queries/tree";
@@ -66,6 +67,9 @@ async function loadF3(): Promise<typeof import("family-chart")> {
 
 export default function Tree() {
   const { clan } = useClanContext();
+  const navigate = useNavigate();
+  const canEdit = canEditClan(clan);
+  const clanId = clan.id;
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const containerRef = useRef<HTMLDivElement>(null);
@@ -159,22 +163,24 @@ export default function Tree() {
             img_y: 11,
           })
           .setOnCardUpdate(function (d) {
-            const fields = (d.data as DatumNode | undefined)?.data ?? {};
+            const datum = d.data as DatumNode | undefined;
+            const fields = datum?.data ?? {};
+            const personId = datum?.id;
+
             const tspans = this.querySelectorAll<SVGTSpanElement>(
               ".card-text text tspan",
             );
             const meta = tspans[1];
             if (meta) {
-              // Left-aligned meta line, slightly more vertical breathing.
               meta.setAttribute("text-anchor", "start");
               meta.setAttribute("x", "0");
               meta.setAttribute("dy", "18");
             }
+
             // Generation badge — small pill in the top-right corner.
             const gen = fields["generation"];
             if (typeof gen === "number" && gen > 0) {
-              const existing = this.querySelector(".gen-badge");
-              if (existing) existing.remove();
+              this.querySelector(".gen-badge")?.remove();
               const badge = document.createElementNS(
                 "http://www.w3.org/2000/svg",
                 "g",
@@ -188,6 +194,52 @@ export default function Tree() {
                   Đời ${gen}
                 </text>`;
               this.querySelector(".card-body")?.appendChild(badge);
+            }
+
+            // Quick actions: pencil = edit, plus = open detail (where
+            // add-spouse / add-child / etc. live). Visible only when the
+            // viewer can edit (admin/editor incl. platform admin); hidden
+            // until the card is hovered (CSS in index.css). Routes
+            // reuse our existing /people/:id/edit + detail pages so the
+            // f3 library doesn't need its built-in editTree UI.
+            this.querySelector(".card-actions")?.remove();
+            if (canEdit && personId) {
+              const actions = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g",
+              );
+              actions.setAttribute("class", "card-actions");
+              actions.innerHTML = `
+                <g class="card-action card-action-add"
+                   transform="translate(208, 46)">
+                  <circle cx="11" cy="11" r="11" fill="#FBF7F0"
+                          stroke="#7A2E2E" stroke-width="1.5" />
+                  <path d="M11 6 V16 M6 11 H16" stroke="#7A2E2E"
+                        stroke-width="2" stroke-linecap="round"
+                        fill="none" />
+                </g>
+                <g class="card-action card-action-edit"
+                   transform="translate(234, 46)">
+                  <circle cx="11" cy="11" r="11" fill="#FBF7F0"
+                          stroke="#7A2E2E" stroke-width="1.5" />
+                  <path d="M7 15 L7 13 L13 7 L15 9 L9 15 Z"
+                        fill="#7A2E2E" />
+                </g>
+              `;
+
+              const editEl = actions.querySelector(".card-action-edit");
+              editEl?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                navigate(`/clans/${clanId}/people/${personId}/edit`);
+              });
+
+              const addEl = actions.querySelector(".card-action-add");
+              addEl?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                navigate(`/clans/${clanId}/people/${personId}`);
+              });
+
+              this.querySelector(".card-body")?.appendChild(actions);
             }
           });
 

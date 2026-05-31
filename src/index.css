@@ -134,3 +134,24 @@
 .f3 svg.main_svg .gen-badge text {
   fill: #FFFFFF;
 }
+
+/* Card quick-action icons (edit, add) — hidden until the card is
+   hovered or focused so they don't compete with the name + lifespan
+   text. The `.card_cont` group is family-chart's per-card wrapper;
+   hovering anywhere on the card reveals the action cluster. */
+.f3 svg.main_svg .card-actions {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.f3 svg.main_svg .card_cont:hover .card-actions,
+.f3 svg.main_svg .card_cont:focus-within .card-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+.f3 svg.main_svg .card-action {
+  cursor: pointer;
+}
+.f3 svg.main_svg .card-action:hover circle {
+  fill: #F0E6D1;
+}
