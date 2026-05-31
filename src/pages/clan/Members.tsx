@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
-import { AppHeader } from "@/components/AppHeader";
 import { IconTrash, IconUserPlus } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { getClanDetail } from "@/lib/queries/clan-detail";
+import { useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   changeMemberRole,
@@ -32,11 +31,7 @@ export default function Members() {
   const userId = user?.id ?? "";
   const queryClient = useQueryClient();
 
-  const { data: clan } = useQuery({
-    queryKey: queryKeys.clan(clanId ?? "", userId),
-    queryFn: () => getClanDetail(clanId!, userId),
-    enabled: !!clanId && !!userId,
-  });
+  const { clan } = useClanContext();
 
   const { data: members, isLoading } = useQuery({
     queryKey: queryKeys.clanMembers(clanId ?? "", userId),
@@ -97,21 +92,19 @@ export default function Members() {
 
   if (!clanId) return null;
   // Treat platform admin as clan admin everywhere.
-  if (clan && clan.myRole !== "admin" && !clan.isPlatformAdmin) {
+  if (clan.myRole !== "admin" && !clan.isPlatformAdmin) {
     return <Navigate to={`/clans/${clanId}/people`} replace />;
   }
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-2xl py-6 px-4 space-y-6">
-        <nav className="text-sm text-muted-foreground">
-          <Link to={`/clans/${clanId}/settings`} className="hover:underline">
-            ← Cài đặt
-          </Link>
-        </nav>
+    <div className="space-y-6">
+      <nav className="text-sm text-muted-foreground">
+        <Link to={`/clans/${clanId}/settings`} className="hover:underline">
+          ← Cài đặt
+        </Link>
+      </nav>
 
-        <h1 className="text-3xl font-semibold">Thành viên</h1>
+      <h1 className="text-2xl font-semibold">Thành viên</h1>
 
         <Card>
           <CardHeader>
@@ -257,9 +250,8 @@ export default function Members() {
                 ))}
               </ul>
             )}
-          </CardContent>
-        </Card>
-      </main>
+        </CardContent>
+      </Card>
     </div>
   );
 }

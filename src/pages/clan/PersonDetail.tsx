@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { AppHeader } from "@/components/AppHeader";
 import { IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -12,10 +11,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import { formatPartialDate } from "@/lib/partialDate";
 import { queryKeys } from "@/lib/queries/keys";
-import { getClanDetail } from "@/lib/queries/clan-detail";
 import {
   getPersonRelationships,
   type Relationship,
@@ -33,11 +32,8 @@ export default function PersonDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: clan } = useQuery({
-    queryKey: queryKeys.clan(clanId ?? "", userId),
-    queryFn: () => getClanDetail(clanId!, userId),
-    enabled: !!clanId && !!userId,
-  });
+  // Clan comes from the layout, not a duplicate fetch.
+  const { clan } = useClanContext();
   const { data: person, isLoading } = useQuery({
     queryKey: queryKeys.person(personId ?? "", userId),
     queryFn: () => getPerson(personId!),
@@ -61,19 +57,15 @@ export default function PersonDetail() {
   if (!clanId || !personId) return null;
 
   const canEdit =
-    clan?.isPlatformAdmin ||
-    clan?.myRole === "admin" ||
-    clan?.myRole === "editor";
+    clan.isPlatformAdmin || clan.myRole === "admin" || clan.myRole === "editor";
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-2xl py-6 px-4 space-y-6">
-        <nav className="text-sm text-muted-foreground">
-          <Link to={`/clans/${clanId}/people`} className="hover:underline">
-            ← Danh bạ
-          </Link>
-        </nav>
+    <div className="space-y-6">
+      <nav className="text-sm text-muted-foreground">
+        <Link to={`/clans/${clanId}/people`} className="hover:underline">
+          ← Danh bạ
+        </Link>
+      </nav>
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
@@ -233,9 +225,8 @@ export default function PersonDetail() {
                 </AlertDescription>
               </Alert>
             )}
-          </>
-        )}
-      </main>
+        </>
+      )}
     </div>
   );
 }

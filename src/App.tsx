@@ -49,55 +49,6 @@ export default function App() {
         />
 
         <Route
-          path="/clans/:clanId/people/new"
-          element={
-            <RequireAuth>
-              <NewPerson />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/clans/:clanId/people/:personId"
-          element={
-            <RequireAuth>
-              <PersonDetail />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/clans/:clanId/people/:personId/edit"
-          element={
-            <RequireAuth>
-              <EditPerson />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/clans/:clanId/people/:personId/add-spouse"
-          element={
-            <RequireAuth>
-              <AddSpouse />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/clans/:clanId/people/:personId/add-child"
-          element={
-            <RequireAuth>
-              <AddChild />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/clans/:clanId/members"
-          element={
-            <RequireAuth>
-              <Members />
-            </RequireAuth>
-          }
-        />
-
-        <Route
           path="/clans/:clanId"
           element={
             <RequireAuth>
@@ -107,6 +58,12 @@ export default function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="people" element={<People />} />
+          <Route path="people/new" element={<NewPerson />} />
+          <Route path="people/:personId" element={<PersonDetail />} />
+          <Route path="people/:personId/edit" element={<EditPerson />} />
+          <Route path="people/:personId/add-spouse" element={<AddSpouse />} />
+          <Route path="people/:personId/add-child" element={<AddChild />} />
+          <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
           <Route path="events" element={<Events />} />
           <Route path="settings" element={<Settings />} />

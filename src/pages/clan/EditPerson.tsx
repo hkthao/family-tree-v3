@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { AppHeader } from "@/components/AppHeader";
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -95,21 +94,19 @@ export default function EditPerson() {
   if (!clanId || !personId) return null;
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-2xl py-6 px-4">
-        <nav className="text-sm text-muted-foreground mb-4">
-          <Link
-            to={`/clans/${clanId}/people/${personId}`}
-            className="hover:underline"
-          >
-            ← Quay lại
-          </Link>
-        </nav>
+    <div className="space-y-6">
+      <nav className="text-sm text-muted-foreground">
+        <Link
+          to={`/clans/${clanId}/people/${personId}`}
+          className="hover:underline"
+        >
+          ← Quay lại
+        </Link>
+      </nav>
 
-        <h1 className="text-3xl font-semibold mb-6">Sửa thông tin</h1>
+      <h1 className="text-2xl font-semibold">Sửa thông tin</h1>
 
-        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
         {person && (
           <form
@@ -265,9 +262,8 @@ export default function EditPerson() {
                 </Link>
               </Button>
             </div>
-          </form>
-        )}
-      </main>
+        </form>
+      )}
     </div>
   );
 }

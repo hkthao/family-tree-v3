@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { AppHeader } from "@/components/AppHeader";
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -88,24 +87,24 @@ export default function AddChild() {
   if (!clanId || !personId) return null;
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-2xl py-6 px-4">
-        <nav className="text-sm text-muted-foreground mb-4">
-          <Link
-            to={`/clans/${clanId}/people/${personId}`}
-            className="hover:underline"
-          >
-            ← Quay lại
-          </Link>
-        </nav>
+    <div className="space-y-6">
+      <nav className="text-sm text-muted-foreground">
+        <Link
+          to={`/clans/${clanId}/people/${personId}`}
+          className="hover:underline"
+        >
+          ← Quay lại
+        </Link>
+      </nav>
 
-        <h1 className="text-3xl font-semibold mb-2">Thêm con</h1>
+      <div>
+        <h1 className="text-2xl font-semibold">Thêm con</h1>
         {focal && (
-          <p className="text-muted-foreground mb-6">Cho {focal.full_name}</p>
+          <p className="text-muted-foreground">Cho {focal.full_name}</p>
         )}
+      </div>
 
-        <form
+      <form
           onSubmit={(e) => {
             e.preventDefault();
             setFormError(null);
@@ -224,10 +223,9 @@ export default function AddChild() {
                 <IconX className="h-5 w-5 mr-2" />
                 Hủy
               </Link>
-            </Button>
-          </div>
-        </form>
-      </main>
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

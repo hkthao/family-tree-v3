@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { AppHeader } from "@/components/AppHeader";
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -70,18 +69,16 @@ export default function NewPerson() {
   }
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-2xl py-6 px-4">
-        <nav className="text-sm text-muted-foreground mb-4">
-          <Link to={`/clans/${clanId}/people`} className="hover:underline">
-            ← Danh bạ
-          </Link>
-        </nav>
+    <div className="space-y-6">
+      <nav className="text-sm text-muted-foreground">
+        <Link to={`/clans/${clanId}/people`} className="hover:underline">
+          ← Danh bạ
+        </Link>
+      </nav>
 
-        <h1 className="text-3xl font-semibold mb-6">Thêm người</h1>
+      <h1 className="text-2xl font-semibold">Thêm người</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="full_name">Họ và tên</Label>
             <Input
@@ -196,10 +193,9 @@ export default function NewPerson() {
                 <IconX className="h-5 w-5 mr-2" />
                 Hủy
               </Link>
-            </Button>
-          </div>
-        </form>
-      </main>
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
