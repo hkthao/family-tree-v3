@@ -27,6 +27,13 @@ jobs:
       - name: Start Supabase local
         run: supabase start
 
+      - name: Wait for clocks to settle
+        # Sub-second drift between freshly-started Docker containers can
+        # produce transient "JWT issued at future" rejections on the very
+        # first authenticated request. A brief pause lets the system clock
+        # catch up before the test suite issues real tokens.
+        run: sleep 5
+
       - name: Apply migrations (db reset)
         run: supabase db reset --no-seed
 
