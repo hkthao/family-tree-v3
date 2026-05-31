@@ -132,7 +132,7 @@ export default function Clans() {
               />
             </div>
           </div>
-          <Button asChild>
+          <Button asChild size="sm">
             <Link to="/clans/new">
               <IconPlus className="h-4 w-4 mr-1.5" />
               Tạo dòng họ
