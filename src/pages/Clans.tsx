@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -10,50 +11,141 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { listMyClans } from "@/lib/queries/clans";
+import {
+  listCommunityClans,
+  listMyClans,
+  type ClanSummary,
+} from "@/lib/queries/clans";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 
+const PAGE_SIZE = 20;
+type Tab = "mine" | "community";
+
 export default function Clans() {
   const { user } = useAuth();
-  const userId = user?.id;
+  const userId = user?.id ?? "";
 
   const { data: profile } = useQuery({
-    queryKey: queryKeys.myProfile(userId ?? ""),
-    queryFn: () => getMyProfile(userId!),
+    queryKey: queryKeys.myProfile(userId),
+    queryFn: () => getMyProfile(userId),
     enabled: !!userId,
   });
   const isPlatformAdmin = !!profile?.is_platform_admin;
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.myClans(userId ?? ""),
-    queryFn: () => listMyClans(userId!),
+  const [tab, setTab] = useState<Tab>("mine");
+  const [search, setSearch] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    const h = setTimeout(() => {
+      setDebounced(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(h);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [tab]);
+
+  const params = { page, pageSize: PAGE_SIZE, search: debounced };
+
+  const mineQ = useQuery({
+    queryKey: queryKeys.myClans(userId, params),
+    queryFn: () => listMyClans(userId, params),
+    enabled: !!userId && tab === "mine",
+    placeholderData: keepPreviousData,
+  });
+  const communityQ = useQuery({
+    queryKey: queryKeys.communityClans(userId, params),
+    queryFn: () => listCommunityClans(userId, params),
+    enabled: !!userId && tab === "community",
+    placeholderData: keepPreviousData,
+  });
+
+  // Count fetch for the inactive tab (so the tab label always carries
+  // an accurate total — a single 1-row request per refocus).
+  const mineCount = useQuery({
+    queryKey: queryKeys.myClans(userId, { ...params, page: 1, _count: true }),
+    queryFn: () => listMyClans(userId, { ...params, page: 1, pageSize: 1 }),
     enabled: !!userId,
   });
+  const communityCount = useQuery({
+    queryKey: queryKeys.communityClans(userId, {
+      ...params,
+      page: 1,
+      _count: true,
+    }),
+    queryFn: () =>
+      listCommunityClans(userId, { ...params, page: 1, pageSize: 1 }),
+    enabled: !!userId,
+  });
+
+  const active = tab === "mine" ? mineQ : communityQ;
+  const data = active.data;
+  const isLoading = active.isLoading;
+  const error = active.error;
+
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <h1 className="clan-name text-3xl font-semibold">
-            {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ của tôi"}
+            {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
           </h1>
           <Button asChild>
             <Link to="/clans/new">+ Tạo dòng họ</Link>
           </Button>
         </div>
 
-        {isPlatformAdmin && (
+        {/* Tabs */}
+        <div
+          className="inline-flex rounded-md border bg-card overflow-hidden"
+          role="tablist"
+        >
+          <TabButton
+            active={tab === "mine"}
+            onClick={() => setTab("mine")}
+            label={`Của tôi${mineCount.data ? ` (${mineCount.data.total})` : ""}`}
+          />
+          <TabButton
+            active={tab === "community"}
+            onClick={() => setTab("community")}
+            label={`Cộng đồng${communityCount.data ? ` (${communityCount.data.total})` : ""}`}
+          />
+        </div>
+
+        {/* Search */}
+        <div className="space-y-2 max-w-md">
+          <Label htmlFor="clan-search">
+            Tìm theo tên (gõ không dấu cũng được)
+          </Label>
+          <Input
+            id="clan-search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Vd: ho nguyen"
+          />
+        </div>
+
+        {/* Tab body */}
+        {tab === "community" && !isPlatformAdmin && (
           <p className="text-sm text-muted-foreground">
-            Bạn đang xem với quyền platform admin: thấy mọi dòng họ trong hệ thống.
+            Dòng họ công khai bạn chưa tham gia — chỉ xem cây, thông tin của
+            người còn sống được ẩn.
           </p>
         )}
 
-        {isLoading && (
-          <p className="text-muted-foreground">Đang tải…</p>
-        )}
+        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
         {error && (
           <Card>
@@ -63,54 +155,131 @@ export default function Clans() {
           </Card>
         )}
 
-        {data && data.length === 0 && (
+        {data && data.rows.length === 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Chưa có dòng họ nào</CardTitle>
-              <CardDescription>
-                Tạo dòng họ đầu tiên để bắt đầu xây dựng gia phả.
-              </CardDescription>
+              <CardTitle>
+                {tab === "mine"
+                  ? debounced
+                    ? `Không có dòng họ nào khớp "${debounced}".`
+                    : "Bạn chưa tham gia dòng họ nào"
+                  : debounced
+                    ? `Không có dòng họ công khai nào khớp "${debounced}".`
+                    : "Chưa có dòng họ công khai để duyệt"}
+              </CardTitle>
+              {tab === "mine" && !debounced && (
+                <CardDescription>
+                  Tạo dòng họ đầu tiên hoặc xem tab "Cộng đồng" để duyệt dòng
+                  họ công khai.
+                </CardDescription>
+              )}
             </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <Link to="/clans/new">Tạo dòng họ</Link>
-              </Button>
-            </CardContent>
+            {tab === "mine" && !debounced && (
+              <CardContent>
+                <Button asChild>
+                  <Link to="/clans/new">Tạo dòng họ</Link>
+                </Button>
+              </CardContent>
+            )}
           </Card>
         )}
 
-        {data && data.length > 0 && (
+        {data && data.rows.length > 0 && (
           <ul className="space-y-3">
-            {data.map((clan) => (
-              <li key={clan.id}>
-                <Link
-                  to={`/clans/${clan.id}`}
-                  className="block rounded-lg border bg-card p-4 hover:border-primary transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1 min-w-0">
-                      <h2 className="clan-name text-xl font-semibold truncate">
-                        {clan.name}
-                      </h2>
-                      {clan.description && (
-                        <p className="text-muted-foreground text-sm">
-                          {clan.description}
-                        </p>
-                      )}
-                      <p className="text-sm text-muted-foreground">
-                        Vai trò: <span className="font-medium">{roleLabel(clan.role)}</span>
-                        {" • "}
-                        {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </li>
+            {data.rows.map((c) => (
+              <ClanRow key={c.id} clan={c} />
             ))}
           </ul>
         )}
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <div className="text-muted-foreground">
+              {`${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} / ${total}`}
+              {active.isFetching && <span className="ml-2 italic">đang tải…</span>}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+              >
+                ← Trước
+              </Button>
+              <span className="px-2">
+                {page}/{totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                Sau →
+              </Button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`px-4 h-10 text-sm border-l first:border-l-0 ${
+        active ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function ClanRow({ clan }: { clan: ClanSummary }) {
+  return (
+    <li>
+      <Link
+        to={`/clans/${clan.id}`}
+        className="block rounded-lg border bg-card p-4 hover:border-primary transition-colors"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <h2 className="clan-name text-xl font-semibold truncate">
+              {clan.name}
+            </h2>
+            {clan.description && (
+              <p className="text-muted-foreground text-sm">{clan.description}</p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              {clan.role ? (
+                <>
+                  Vai trò:{" "}
+                  <span className="font-medium">{roleLabel(clan.role)}</span>
+                  {" • "}
+                </>
+              ) : null}
+              {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
+            </p>
+          </div>
+        </div>
+      </Link>
+    </li>
   );
 }
 

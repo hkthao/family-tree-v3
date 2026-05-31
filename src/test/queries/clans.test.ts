@@ -1,9 +1,15 @@
 import { afterAll, describe, expect, it } from "vitest";
 
 import { getClanDetail } from "@/lib/queries/clan-detail";
-import { createClan, listMyClans } from "@/lib/queries/clans";
+import {
+  createClan,
+  listCommunityClans,
+  listMyClans,
+} from "@/lib/queries/clans";
 
 import { createTestUser, deleteUser } from "../supabase-helpers";
+
+const DEFAULT_PARAMS = { page: 1, pageSize: 50 } as const;
 
 /**
  * Integration tests against the real local Supabase: validate that the
@@ -20,8 +26,9 @@ describe("queries: clans", () => {
     const user = await createTestUser({ displayName: "Empty" });
     cleanup.push(user.id);
 
-    const clans = await listMyClans(user.id, user.client);
-    expect(clans).toEqual([]);
+    const r = await listMyClans(user.id, DEFAULT_PARAMS, user.client);
+    expect(r.rows).toEqual([]);
+    expect(r.total).toBe(0);
   });
 
   it("createClan + listMyClans round-trips with role=admin", async () => {
@@ -35,11 +42,59 @@ describe("queries: clans", () => {
     );
     expect(clanId).toBeTruthy();
 
-    const clans = await listMyClans(user.id, user.client);
-    expect(clans).toHaveLength(1);
-    expect(clans[0].id).toBe(clanId);
-    expect(clans[0].role).toBe("admin");
-    expect(clans[0].visibility).toBe("private");
+    const r = await listMyClans(user.id, DEFAULT_PARAMS, user.client);
+    expect(r.rows).toHaveLength(1);
+    expect(r.total).toBe(1);
+    expect(r.rows[0].id).toBe(clanId);
+    expect(r.rows[0].role).toBe("admin");
+    expect(r.rows[0].visibility).toBe("private");
+  });
+
+  it("listMyClans search by unaccent matches diacritics", async () => {
+    const user = await createTestUser({ displayName: "Searcher", maxClans: 3 });
+    cleanup.push(user.id);
+    await createClan({ name: "Họ Nguyễn" }, user.id, user.client);
+    await createClan({ name: "Họ Trần" }, user.id, user.client);
+
+    const r = await listMyClans(
+      user.id,
+      { ...DEFAULT_PARAMS, search: "nguyen" },
+      user.client,
+    );
+    expect(r.total).toBe(1);
+    expect(r.rows[0].name).toBe("Họ Nguyễn");
+  });
+
+  it("listCommunityClans shows public clans the caller isn't a member of", async () => {
+    const owner = await createTestUser({ displayName: "PubOwner" });
+    const stranger = await createTestUser({ displayName: "Stranger" });
+    cleanup.push(owner.id, stranger.id);
+    const { id: pub } = await createClan(
+      { name: "Public clan", visibility: "public" },
+      owner.id,
+      owner.client,
+    );
+
+    const r = await listCommunityClans(
+      stranger.id,
+      DEFAULT_PARAMS,
+      stranger.client,
+    );
+    expect(r.rows.some((c) => c.id === pub)).toBe(true);
+    expect(r.rows.every((c) => c.role === null)).toBe(true);
+  });
+
+  it("listCommunityClans hides clans the caller is already a member of", async () => {
+    const user = await createTestUser({ displayName: "Joined", maxClans: 2 });
+    cleanup.push(user.id);
+    const { id: cid } = await createClan(
+      { name: "Mine", visibility: "public" },
+      user.id,
+      user.client,
+    );
+
+    const r = await listCommunityClans(user.id, DEFAULT_PARAMS, user.client);
+    expect(r.rows.some((c) => c.id === cid)).toBe(false);
   });
 
   it("getClanDetail returns clan with myRole=admin for owner", async () => {

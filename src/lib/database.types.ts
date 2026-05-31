@@ -199,6 +199,7 @@ export type Database = {
           max_persons: number
           max_users: number
           name: string
+          name_unaccent: string | null
           owner_id: string | null
           visibility: string
         }
@@ -211,6 +212,7 @@ export type Database = {
           max_persons?: number
           max_users?: number
           name: string
+          name_unaccent?: string | null
           owner_id?: string | null
           visibility?: string
         }
@@ -223,6 +225,7 @@ export type Database = {
           max_persons?: number
           max_users?: number
           name?: string
+          name_unaccent?: string | null
           owner_id?: string | null
           visibility?: string
         }
