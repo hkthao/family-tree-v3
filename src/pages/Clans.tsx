@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import {
   CLAN_SIZE_BUCKETS,
@@ -107,73 +106,73 @@ export default function Clans() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-6">
+      <main className="container max-w-4xl py-4 px-4 space-y-4">
+        {/* Title row — tabs sit on the same line at lg+ so the filter
+            row owns the next line by itself and we save the vertical
+            space the standalone tabs used to take. */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="clan-name text-3xl font-semibold">
-            {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
-          </h1>
+          <div className="flex items-center gap-4 flex-wrap">
+            <h1 className="clan-name text-2xl sm:text-3xl font-semibold">
+              {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
+            </h1>
+            <div
+              className="inline-flex rounded-md border bg-card overflow-hidden"
+              role="tablist"
+            >
+              <TabButton
+                active={tab === "mine"}
+                onClick={() => setTab("mine")}
+                label={`Của tôi${mineCount.data ? ` (${mineCount.data.total})` : ""}`}
+              />
+              <TabButton
+                active={tab === "community"}
+                onClick={() => setTab("community")}
+                label={`Cộng đồng${communityCount.data ? ` (${communityCount.data.total})` : ""}`}
+              />
+            </div>
+          </div>
           <Button asChild>
             <Link to="/clans/new">+ Tạo dòng họ</Link>
           </Button>
         </div>
 
-        {/* Tabs */}
-        <div
-          className="inline-flex rounded-md border bg-card overflow-hidden"
-          role="tablist"
-        >
-          <TabButton
-            active={tab === "mine"}
-            onClick={() => setTab("mine")}
-            label={`Của tôi${mineCount.data ? ` (${mineCount.data.total})` : ""}`}
-          />
-          <TabButton
-            active={tab === "community"}
-            onClick={() => setTab("community")}
-            label={`Cộng đồng${communityCount.data ? ` (${communityCount.data.total})` : ""}`}
-          />
-        </div>
-
-        {/* Search + (community only) size filter */}
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 max-w-2xl">
-          <div className="space-y-2">
-            <Label htmlFor="clan-search">
-              Tìm theo tên (gõ không dấu cũng được)
-            </Label>
+        {/* Filter row — single line on sm+. No external labels; the
+            search icon + placeholder, and the dropdown's own default
+            label, carry the meaning. h-10 is denser than the default
+            h-12 since we're not the primary tap target on this page. */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
-              id="clan-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Vd: ho nguyen"
+              placeholder="Tìm dòng họ — gõ không dấu cũng được"
+              className="h-10 pl-9"
+              aria-label="Tìm dòng họ"
             />
           </div>
           {tab === "community" && (
-            <div className="space-y-2">
-              <Label htmlFor="size-filter">Quy mô</Label>
-              <select
-                id="size-filter"
-                value={sizeBucket}
-                onChange={(e) =>
-                  setSizeBucket(e.target.value as ClanSizeBucket | "")
-                }
-                className="h-12 rounded-md border border-input bg-background px-3 sm:min-w-[180px] w-full"
-              >
-                <option value="">Tất cả quy mô</option>
-                {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
-                  <option key={k} value={k}>
-                    {CLAN_SIZE_BUCKETS[k].label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={sizeBucket}
+              onChange={(e) =>
+                setSizeBucket(e.target.value as ClanSizeBucket | "")
+              }
+              aria-label="Lọc theo quy mô"
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
+            >
+              <option value="">Tất cả quy mô</option>
+              {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
+                <option key={k} value={k}>
+                  {CLAN_SIZE_BUCKETS[k].label}
+                </option>
+              ))}
+            </select>
           )}
         </div>
 
-        {/* Tab body */}
         {tab === "community" && !isPlatformAdmin && (
-          <p className="text-sm text-muted-foreground">
-            Dòng họ công khai bạn chưa tham gia — chỉ xem cây, thông tin của
-            người còn sống được ẩn.
+          <p className="text-xs text-muted-foreground -mt-2">
+            Dòng họ công khai bạn chưa tham gia — chỉ xem cây, người còn sống được ẩn.
           </p>
         )}
 
@@ -217,7 +216,7 @@ export default function Clans() {
         )}
 
         {data && data.rows.length > 0 && (
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {data.rows.map((c) => (
               <ClanRow key={c.id} clan={c} />
             ))}
@@ -288,30 +287,30 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
     <li>
       <Link
         to={`/clans/${clan.id}`}
-        className="block rounded-lg border bg-card p-4 hover:border-primary transition-colors"
+        className="block rounded-lg border bg-card px-4 py-3 hover:border-primary transition-colors"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1 min-w-0">
-            <h2 className="clan-name text-xl font-semibold truncate">
-              {clan.name}
-            </h2>
-            {clan.description && (
-              <p className="text-muted-foreground text-sm">{clan.description}</p>
-            )}
-            <p className="text-sm text-muted-foreground">
-              {clan.role ? (
-                <>
-                  Vai trò:{" "}
-                  <span className="font-medium">{roleLabel(clan.role)}</span>
-                  {" • "}
-                </>
-              ) : null}
-              {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
-              {" • "}
-              {clan.person_count} thành viên
-            </p>
-          </div>
+        <div className="flex items-baseline justify-between gap-3 min-w-0">
+          <h2 className="clan-name text-lg font-semibold truncate">
+            {clan.name}
+          </h2>
+          <span className="text-xs text-muted-foreground shrink-0">
+            {clan.person_count} thành viên
+          </span>
         </div>
+        {clan.description && (
+          <p className="text-muted-foreground text-sm truncate mt-0.5">
+            {clan.description}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground mt-1">
+          {clan.role ? (
+            <span className="text-foreground">{roleLabel(clan.role)}</span>
+          ) : (
+            <span>Khách</span>
+          )}
+          {" • "}
+          {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
+        </p>
       </Link>
     </li>
   );
@@ -319,4 +318,23 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
 
 function roleLabel(role: "admin" | "editor" | "viewer"): string {
   return { admin: "Quản trị", editor: "Biên tập", viewer: "Xem" }[role];
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
 }
