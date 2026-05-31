@@ -77,7 +77,7 @@ export default function People() {
     source,
   } as const;
 
-  const { data, isFetching, isLoading } = useQuery({
+  const { data, isFetching } = useQuery({
     queryKey: queryKeys.persons(clan.id, userId, params),
     queryFn: () => listPersons(clan.id, params),
     enabled: !!userId,
@@ -211,12 +211,15 @@ export default function People() {
         </div>
       </div>
 
-      {/* Results */}
-      {isLoading ? (
+      {/* Results — guard against the (rare but real) state where the
+          query is briefly disabled (e.g. while a sibling useAuth() is
+          still settling), so `data` is undefined and `isLoading` is
+          false at the same time. */}
+      {!data ? (
         <div className="rounded-lg border bg-card p-4">
           <p className="text-muted-foreground">Đang tải…</p>
         </div>
-      ) : data && data.rows.length === 0 ? (
+      ) : data.rows.length === 0 ? (
         <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
           {debounced || branchId || generation
             ? `Không tìm thấy ai khớp bộ lọc.`
@@ -224,13 +227,13 @@ export default function People() {
         </div>
       ) : viewMode === "list" ? (
         <ul className="divide-y rounded-lg border bg-card">
-          {data!.rows.map((p) => (
+          {data.rows.map((p) => (
             <PersonListItem key={p.id} person={p} clanId={clan.id} />
           ))}
         </ul>
       ) : (
         <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {data!.rows.map((p) => (
+          {data.rows.map((p) => (
             <PersonGridCard key={p.id} person={p} clanId={clan.id} />
           ))}
         </ul>
