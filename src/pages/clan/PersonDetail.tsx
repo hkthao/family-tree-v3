@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -31,6 +31,17 @@ export default function PersonDetail() {
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+
+  // Where to send the breadcrumb back. Tree action icons append
+  // ?from=tree; everything else (e.g. clicking from /people) leaves
+  // it absent and we fall back to Danh bạ.
+  const fromTree = searchParams.get("from") === "tree";
+  const backTo = fromTree ? `/clans/${clanId}/tree` : `/clans/${clanId}/people`;
+  const backLabel = fromTree ? "Cây gia phả" : "Danh bạ";
+  // Append the same ?from when navigating onward so the chain holds
+  // through Edit / AddSpouse / AddChild.
+  const fromQs = fromTree ? "?from=tree" : "";
 
   // Clan comes from the layout, not a duplicate fetch.
   const { clan } = useClanContext();
@@ -50,7 +61,7 @@ export default function PersonDetail() {
     mutationFn: () => deletePerson(personId!),
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
-      navigate(`/clans/${clanId}/people`);
+      navigate(backTo);
     },
   });
 
@@ -62,8 +73,8 @@ export default function PersonDetail() {
   return (
     <div className="space-y-6">
       <nav className="text-sm text-muted-foreground">
-        <Link to={`/clans/${clanId}/people`} className="hover:underline">
-          ← Danh bạ
+        <Link to={backTo} className="hover:underline">
+          ← {backLabel}
         </Link>
       </nav>
 
@@ -154,7 +165,7 @@ export default function PersonDetail() {
                       canEdit ? (
                         <Button asChild variant="outline" size="sm">
                           <Link
-                            to={`/clans/${clanId}/people/${personId}/add-spouse`}
+                            to={`/clans/${clanId}/people/${personId}/add-spouse${fromQs}`}
                           >
                             <IconPlus className="h-4 w-4 mr-1" />
                             Thêm vợ/chồng
@@ -172,7 +183,7 @@ export default function PersonDetail() {
                       canEdit ? (
                         <Button asChild variant="outline" size="sm">
                           <Link
-                            to={`/clans/${clanId}/people/${personId}/add-child`}
+                            to={`/clans/${clanId}/people/${personId}/add-child${fromQs}`}
                           >
                             <IconPlus className="h-4 w-4 mr-1" />
                             Thêm con
@@ -188,7 +199,7 @@ export default function PersonDetail() {
             {canEdit && (
               <div className="flex flex-wrap gap-3">
                 <Button asChild>
-                  <Link to={`/clans/${clanId}/people/${personId}/edit`}>
+                  <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
                     <IconPencil className="h-4 w-4 mr-1.5" />
                     Sửa
                   </Link>

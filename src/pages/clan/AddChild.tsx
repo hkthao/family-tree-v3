@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
@@ -31,6 +31,8 @@ export default function AddChild() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const userId = user?.id ?? "";
+  const [searchParams] = useSearchParams();
+  const fromQs = searchParams.get("from") === "tree" ? "?from=tree" : "";
 
   const { data: focal } = useQuery({
     queryKey: queryKeys.person(personId ?? "", userId),
@@ -80,7 +82,7 @@ export default function AddChild() {
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
-      navigate(`/clans/${clanId}/people/${personId}`);
+      navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
     },
   });
 
@@ -90,7 +92,7 @@ export default function AddChild() {
     <div className="space-y-6">
       <nav className="text-sm text-muted-foreground">
         <Link
-          to={`/clans/${clanId}/people/${personId}`}
+          to={`/clans/${clanId}/people/${personId}${fromQs}`}
           className="hover:underline"
         >
           ← Quay lại
@@ -219,7 +221,7 @@ export default function AddChild() {
               )}
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link to={`/clans/${clanId}/people/${personId}`}>
+              <Link to={`/clans/${clanId}/people/${personId}${fromQs}`}>
                 <IconX className="h-5 w-5 mr-2" />
                 Hủy
               </Link>
