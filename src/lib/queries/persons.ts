@@ -219,6 +219,7 @@ export interface UpdatePersonInput {
   courtesy_name?: string | null;
   posthumous_name?: string | null;
   nickname?: string | null;
+  photo_path?: string | null;
 }
 
 export async function updatePerson(
