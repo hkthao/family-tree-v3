@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  formatCanChiFull,
+  formatCanChiShort,
   formatLunarAnniversary,
   formatLunarDate,
+  getCanChiForSolarDate,
   lunarAnniversaryInSolarYear,
   lunarToSolarString,
   solarStringToLunar,
@@ -78,6 +81,48 @@ describe("lunarDate", () => {
     it("returns empty string when fields missing", () => {
       expect(formatLunarAnniversary(null)).toBe("");
       expect(formatLunarAnniversary({ month: 0, day: 0 })).toBe("");
+    });
+  });
+
+  describe("getCanChiForSolarDate (day · month · year Can Chi)", () => {
+    it("Tết Giáp Thìn (solar 2024-02-10) has năm Giáp Thìn + valid Can-Chi triple", () => {
+      const c = getCanChiForSolarDate("2024-02-10");
+      expect(c?.year).toBe("Giáp Thìn");
+      // Month + day still follow the 2-token "Can Chi" form
+      expect(c?.month).toMatch(/^\S+\s+\S+$/);
+      expect(c?.day).toMatch(/^\S+\s+\S+$/);
+    });
+
+    it("returns three non-empty Can-Chi labels for a normal date", () => {
+      const c = getCanChiForSolarDate("2024-09-02");
+      expect(c).not.toBeNull();
+      expect(c!.day.split(" ")).toHaveLength(2);
+      expect(c!.month.split(" ")).toHaveLength(2);
+      expect(c!.year.split(" ")).toHaveLength(2);
+    });
+
+    it("returns null for empty / malformed input", () => {
+      expect(getCanChiForSolarDate(null)).toBeNull();
+      expect(getCanChiForSolarDate("")).toBeNull();
+      expect(getCanChiForSolarDate("nonsense")).toBeNull();
+    });
+  });
+
+  describe("formatCanChi* (Vietnamese-friendly rendering)", () => {
+    const triple = { day: "Giáp Tý", month: "Bính Dần", year: "Giáp Thìn" };
+    it("formatCanChiFull renders 'Ngày X · tháng Y · năm Z'", () => {
+      expect(formatCanChiFull(triple)).toBe(
+        "Ngày Giáp Tý · tháng Bính Dần · năm Giáp Thìn",
+      );
+    });
+    it("formatCanChiShort renders 'X / Y / Z'", () => {
+      expect(formatCanChiShort(triple)).toBe(
+        "Giáp Tý / Bính Dần / Giáp Thìn",
+      );
+    });
+    it("both return empty for null/undefined", () => {
+      expect(formatCanChiFull(null)).toBe("");
+      expect(formatCanChiShort(undefined)).toBe("");
     });
   });
 
