@@ -20,6 +20,7 @@ export interface PersonRow {
   death_date_precision: DatePrecision | null;
   generation: number | null;
   branch_id: string | null;
+  photo_path: string | null;
 }
 
 export type PersonsSource = "persons" | "persons_public_safe";
@@ -71,7 +72,7 @@ export async function listPersons(
       ? client
           .from("persons_public_safe")
           .select(
-            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id",
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path",
             { count: "exact" },
           )
           .eq("clan_id", clanId)
@@ -79,7 +80,7 @@ export async function listPersons(
       : client
           .from("persons")
           .select(
-            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id",
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path",
             { count: "exact" },
           )
           .eq("clan_id", clanId)

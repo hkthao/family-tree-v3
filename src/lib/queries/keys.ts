@@ -40,6 +40,8 @@ export const queryKeys = {
     ["anniversaries", clanId, userId] as const,
   subscriptions: (clanId: string, userId: string) =>
     ["subscriptions", clanId, userId] as const,
+  relativesIndex: (clanId: string, userId: string) =>
+    ["relatives-index", clanId, userId] as const,
   adminProfiles: () => ["admin-profiles"] as const,
   adminClans: () => ["admin-clans"] as const,
   adminUserClans: (userId: string) => ["admin-user-clans", userId] as const,
