@@ -1,17 +1,53 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import {
+  IconLayoutHorizontal,
+  IconLayoutVertical,
+} from "@/components/icons";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { fetchShareView } from "@/lib/queries/share-view";
 
 import "family-chart/styles/family-chart.css";
 
+type DatumNode = {
+  id?: string;
+  data?: Record<string, unknown>;
+};
+
+interface F3Card {
+  setCardDisplay: (
+    lines: ((d: unknown) => string)[] | string[][],
+  ) => F3Card;
+  setCardDim: (dim: {
+    w?: number;
+    h?: number;
+    img_w?: number;
+    img_h?: number;
+    img_x?: number;
+    img_y?: number;
+    text_x?: number;
+    text_y?: number;
+  }) => F3Card;
+  setOnCardUpdate: (
+    fn: (this: SVGGElement, d: { data?: DatumNode }) => void,
+  ) => F3Card;
+}
+
 interface F3Chart {
   setTransitionTime: (n: number) => F3Chart;
+  setCardXSpacing: (n: number) => F3Chart;
+  setCardYSpacing: (n: number) => F3Chart;
+  setOrientationVertical?: () => F3Chart;
+  setOrientationHorizontal?: () => F3Chart;
   updateTree: (opts: { initial?: boolean }) => void;
+  updateMainId?: (id: string) => void;
 }
+
+type Orientation = "vertical" | "horizontal";
 
 let f3Module: typeof import("family-chart") | null = null;
 async function loadF3(): Promise<typeof import("family-chart")> {
@@ -19,14 +55,30 @@ async function loadF3(): Promise<typeof import("family-chart")> {
   return f3Module;
 }
 
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d");
+}
+
 /**
  * /share/:token — read-only family tree for anonymous viewers. Calls the
  * Edge Function, which has already masked living persons' sensitive data.
- * No edit UI, no danh bạ, no PWA shell — just the tree on a clean page.
+ * Filters: search-to-focal + vertical/horizontal orientation.
  */
 export default function Share() {
   const { token } = useParams<{ token: string }>();
   const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<F3Chart | null>(null);
+
+  // `focal` starts as null and becomes the user's choice (or a default
+  // picked from the data) once we have it. We don't gate the chart on
+  // it — family-chart picks its own default main when none is set.
+  const [focal, setFocal] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [orientation, setOrientation] = useState<Orientation>("vertical");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["share-view", token ?? ""],
@@ -35,10 +87,30 @@ export default function Share() {
     retry: false,
   });
 
+  // Pick a default focal synchronously the moment data lands — using
+  // a setState-inside-render guard (only fires once) instead of an
+  // async useEffect, so the chart inits with the right main on the
+  // very first paint instead of racing the focal computation.
+  if (data && focal === null) {
+    const def = pickDefaultFocal(
+      data.persons.map((p) => ({
+        id: p.id,
+        full_name: p.full_name,
+        gender: p.gender,
+        is_living: p.is_living,
+        is_root: p.is_root,
+        birth_date: p.birth_date,
+        death_date: p.death_date,
+        generation: p.generation,
+        birth_family_id: p.birth_family_id,
+        photo_path: null,
+      })),
+    );
+    if (def) setFocal(def);
+  }
+
   const f3Data = useMemo(() => {
     if (!data) return null;
-    // The share-view function already signed photo URLs for deceased
-    // persons. Synthesize a path so the adapter's lookup table hits.
     const photoByPath = new Map<string, string>();
     const adapted = data.persons.map((p) => {
       const synthetic = p.photo_url ? `share/${p.id}` : null;
@@ -59,51 +131,117 @@ export default function Share() {
     return toFamilyChart(adapted, data.families, photoByPath);
   }, [data]);
 
-  const focal = useMemo(
-    () =>
-      data
-        ? pickDefaultFocal(
-            data.persons.map((p) => ({
-              id: p.id,
-              full_name: p.full_name,
-              gender: p.gender,
-              is_living: p.is_living,
-              is_root: p.is_root,
-              birth_date: p.birth_date,
-              death_date: p.death_date,
-              generation: p.generation,
-              birth_family_id: p.birth_family_id,
-        photo_path: null,
-            })),
-          )
-        : null,
-    [data],
-  );
-
+  // (Re-)initialise the chart on orientation change. Focal updates do
+  // NOT re-init — we call chart.updateMainId() instead so the camera
+  // smoothly pans/zooms to the new centre.
   useEffect(() => {
-    if (!containerRef.current || !f3Data || !focal) return;
+    if (!containerRef.current || !f3Data) return;
     let disposed = false;
     const node = containerRef.current;
+    let resizeObserver: ResizeObserver | null = null;
 
     (async () => {
       const f3 = await loadF3();
       if (disposed) return;
       node.innerHTML = "";
       try {
-        const chart = (
+        const built = (
           f3 as unknown as {
             createChart: (el: HTMLElement, data: unknown) => F3Chart;
           }
-        ).createChart(node, f3Data).setTransitionTime(200);
+        ).createChart(node, f3Data);
 
-        const ext = chart as F3Chart & {
-          setCardSvg?: () => F3Chart;
-          setCardDisplay?: (lines: string[][]) => F3Chart;
+        const card = (built as F3Chart & {
+          setCardSvg?: () => F3Card;
+        }).setCardSvg?.();
+
+        const lifespan = (d: DatumNode): string => {
+          const f = d.data ?? {};
+          const b = (f["birthday"] as string) || "?";
+          const isLiving = f["is_living"] !== false;
+          const death = (f["death_year"] as string) || (isLiving ? "" : "?");
+          return death ? `${b} - ${death}` : b;
         };
-        ext.setCardSvg?.();
-        ext.setCardDisplay?.([["full name"], ["birthday"]]);
 
-        chart.updateTree({ initial: true });
+        card
+          ?.setCardDisplay([
+            (d) => String((d as DatumNode).data?.["full name"] ?? ""),
+            (d) => lifespan(d as DatumNode),
+          ])
+          .setCardDim({
+            w: 260,
+            h: 72,
+            text_x: 64,
+            text_y: 20,
+            img_w: 50,
+            img_h: 50,
+            img_x: 8,
+            img_y: 11,
+          })
+          .setOnCardUpdate(function (d) {
+            const datum = d.data as DatumNode | undefined;
+            const fields = datum?.data ?? {};
+
+            const tspans = this.querySelectorAll<SVGTSpanElement>(
+              ".card-text text tspan",
+            );
+            const meta = tspans[1];
+            if (meta) {
+              meta.setAttribute("text-anchor", "start");
+              meta.setAttribute("x", "0");
+              meta.setAttribute("dy", "18");
+            }
+
+            const gen = fields["generation"];
+            if (typeof gen === "number" && gen > 0) {
+              this.querySelector(".gen-badge")?.remove();
+              const badge = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g",
+              );
+              badge.setAttribute("class", "gen-badge");
+              badge.innerHTML = `
+                <rect x="212" y="6" width="42" height="18" rx="9"
+                      fill="#7A2E2E" />
+                <text x="233" y="19" text-anchor="middle"
+                      fill="#FFFFFF" font-size="10" font-weight="700">
+                  Đời ${gen}
+                </text>`;
+              this.querySelector(".card-body")?.appendChild(badge);
+            }
+          });
+
+        built.setTransitionTime(200);
+        if (orientation === "horizontal") {
+          built.setOrientationHorizontal?.();
+          built.setCardXSpacing(320).setCardYSpacing(100);
+        } else {
+          built.setOrientationVertical?.();
+          built.setCardXSpacing(290).setCardYSpacing(160);
+        }
+
+        if (focal && built.updateMainId) built.updateMainId(focal);
+
+        // Wait one paint frame so the browser has actually laid the
+        // container out — otherwise treeFit anchors at the top-left
+        // and cards stay tiny on first render.
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => resolve()),
+        );
+        if (disposed) return;
+        built.updateTree({ initial: true });
+        chartRef.current = built;
+
+        if (typeof ResizeObserver !== "undefined") {
+          let last = node.getBoundingClientRect().width;
+          resizeObserver = new ResizeObserver(() => {
+            const next = node.getBoundingClientRect().width;
+            if (Math.abs(next - last) < 1) return;
+            last = next;
+            chartRef.current?.updateTree({ initial: false });
+          });
+          resizeObserver.observe(node);
+        }
       } catch (err) {
         console.error("family-chart init failed", err);
       }
@@ -111,13 +249,31 @@ export default function Share() {
 
     return () => {
       disposed = true;
+      chartRef.current = null;
+      resizeObserver?.disconnect();
       node.innerHTML = "";
     };
-  }, [f3Data, focal]);
+  }, [f3Data, orientation]);
+
+  // Smoothly re-centre when focal changes without re-creating the chart.
+  useEffect(() => {
+    if (!focal) return;
+    chartRef.current?.updateMainId?.(focal);
+    chartRef.current?.updateTree({ initial: false });
+  }, [focal]);
+
+  // Search → top 5 matches by normalised name.
+  const matches = useMemo(() => {
+    if (!data || !search.trim()) return [];
+    const needle = normalize(search.trim());
+    return data.persons
+      .filter((p) => normalize(p.full_name).includes(needle))
+      .slice(0, 5);
+  }, [data, search]);
 
   return (
-    <div className="min-h-dvh bg-background flex flex-col">
-      <header className="border-b py-3 px-4">
+    <div className="h-dvh bg-background flex flex-col">
+      <header className="border-b py-3 px-4 shrink-0">
         <h1 className="clan-name text-xl font-semibold text-center">
           Cây gia phả
         </h1>
@@ -126,7 +282,7 @@ export default function Share() {
         </p>
       </header>
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 min-h-0 flex flex-col">
         {isLoading && (
           <p className="p-8 text-center text-muted-foreground">Đang tải…</p>
         )}
@@ -145,11 +301,90 @@ export default function Share() {
           </p>
         )}
         {data && data.persons.length > 0 && (
-          <div
-            ref={containerRef}
-            className="flex-1 min-h-[480px]"
-            aria-label="Cây gia phả tương tác (chỉ xem)"
-          />
+          <>
+            {/* Filter toolbar */}
+            <div className="border-b px-4 py-3 shrink-0 flex flex-wrap items-start gap-3">
+              <div className="flex-1 min-w-[200px] max-w-md relative">
+                <SearchInput
+                  label="Đặt người trung tâm"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Đặt người trung tâm — gõ tên để tìm…"
+                />
+                {matches.length > 0 && (
+                  <ul className="absolute top-full left-0 right-0 z-10 mt-1 rounded-md border bg-card divide-y shadow-md">
+                    {matches.map((m) => (
+                      <li key={m.id}>
+                        <button
+                          type="button"
+                          className="w-full text-left px-3 py-2 hover:bg-muted/40"
+                          onClick={() => {
+                            setFocal(m.id);
+                            setSearch("");
+                          }}
+                        >
+                          <p className="font-medium">{m.full_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {m.gender === "M" ? "Nam" : "Nữ"}
+                            {m.birth_date
+                              ? ` · sinh ${m.birth_date.slice(0, 4)}`
+                              : ""}
+                            {m.generation !== null
+                              ? ` · Đời ${m.generation}`
+                              : ""}
+                          </p>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div
+                className="inline-flex rounded-md border bg-card overflow-hidden"
+                role="group"
+                aria-label="Hướng cây"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOrientation("vertical")}
+                  aria-pressed={orientation === "vertical"}
+                  className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
+                    orientation === "vertical"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <IconLayoutVertical className="h-4 w-4" />
+                  Dọc
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrientation("horizontal")}
+                  aria-pressed={orientation === "horizontal"}
+                  className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
+                    orientation === "horizontal"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <IconLayoutHorizontal className="h-4 w-4" />
+                  Ngang
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={containerRef}
+              className="f3 flex-1 min-h-0 w-full text-foreground"
+              style={
+                {
+                  "--male-color": "#D4DDE4",
+                  "--female-color": "#E8D2CC",
+                } as React.CSSProperties
+              }
+              aria-label="Cây gia phả tương tác (chỉ xem)"
+            />
+          </>
         )}
       </main>
     </div>

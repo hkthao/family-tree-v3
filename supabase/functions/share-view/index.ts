@@ -186,24 +186,39 @@ Deno.serve(async (req) => {
     scopedFamilies = scopedFamilies.filter((f) => familiesKept.has(f.id));
   }
 
-  // ---- 5. Sign photo URLs for the deceased only ----
-  // Living-person photos are masked along with the rest of their PII;
-  // deceased persons can show their portrait to the public viewer.
-  const deceasedPhotoPaths = scopedPersons
-    .filter((p) => !p.is_living && p.photo_path)
+  // ---- 5. Sign photo URLs for everyone with an upload ----
+  // Per clan owner preference, share view shows portraits for both
+  // living and deceased members. Dates / places / bio remain masked
+  // for the living — only the photo itself is treated as
+  // family-approved-public when uploaded.
+  //
+  // We strip the absolute origin from each signed URL because inside
+  // Supabase Local the storage helper bakes Docker-internal hostnames
+  // (kong:8000 / supabase_edge_runtime_*:8081) that the browser can
+  // never resolve. The client knows its own Supabase URL via
+  // VITE_SUPABASE_URL and prepends it back. Works in cloud + local
+  // without needing forwarded-host headers.
+  const allPhotoPaths = scopedPersons
+    .filter((p) => p.photo_path)
     .map((p) => p.photo_path as string);
   const photoUrlByPath = new Map<string, string>();
-  if (deceasedPhotoPaths.length > 0) {
+  if (allPhotoPaths.length > 0) {
     const { data: signed } = await sb.storage
       .from("person-photos")
-      .createSignedUrls([...new Set(deceasedPhotoPaths)], 3600);
+      .createSignedUrls([...new Set(allPhotoPaths)], 3600);
+    const stripOrigin = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
     for (const row of signed ?? []) {
-      if (row.signedUrl && row.path) photoUrlByPath.set(row.path, row.signedUrl);
+      if (row.signedUrl && row.path) {
+        photoUrlByPath.set(row.path, stripOrigin(row.signedUrl));
+      }
     }
   }
 
-  // ---- 6. Mask living-person columns + attach signed photo URL ----
+  // ---- 6. Mask living-person dates/places + attach signed photo URL ----
   const masked = scopedPersons.map((p) => {
+    const photo_url = p.photo_path
+      ? (photoUrlByPath.get(p.photo_path) ?? null)
+      : null;
     if (p.is_living) {
       return {
         id: p.id,
@@ -218,12 +233,12 @@ Deno.serve(async (req) => {
         birth_date_precision: null,
         death_date: null,
         death_date_precision: null,
-        photo_url: null,
+        photo_url,
       };
     }
     return {
       ...p,
-      photo_url: p.photo_path ? (photoUrlByPath.get(p.photo_path) ?? null) : null,
+      photo_url,
       // photo_path itself stays out of the response — only the signed
       // URL is useful to the anonymous client.
       photo_path: undefined,
