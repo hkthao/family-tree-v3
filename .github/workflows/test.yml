@@ -27,15 +27,39 @@ jobs:
       - name: Start Supabase local
         run: supabase start
 
-      - name: Wait for clocks to settle
-        # Sub-second drift between freshly-started Docker containers can
-        # produce transient "JWT issued at future" rejections on the very
-        # first authenticated request. A brief pause lets the system clock
-        # catch up before the test suite issues real tokens.
-        run: sleep 5
+      - name: Wait for the stack to settle
+        # Two cold-start hazards we've seen on CI:
+        #   1. Sub-second clock drift between gotrue + PostgREST →
+        #      "JWT issued at future" on the first authenticated request.
+        #   2. The Storage container needs a moment after the API gateway
+        #      starts answering — `supabase db reset` then auto-creates
+        #      the configured bucket via the Storage REST API, and a 502
+        #      from Kong on that call aborts the whole reset.
+        # Poll the Storage health endpoint with a generous total budget
+        # before proceeding.
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:54321/storage/v1/version > /dev/null 2>&1; then
+              echo "Storage ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+          sleep 3  # extra grace for the clock + connection pool
 
-      - name: Apply migrations (db reset)
-        run: supabase db reset --no-seed
+      - name: Apply migrations (db reset, retries on 502)
+        # Even with the wait above, the reset's bucket call can intermittently
+        # 502 on slow CI runners. Try up to 3 times before giving up.
+        run: |
+          for attempt in 1 2 3; do
+            if supabase db reset --no-seed; then
+              exit 0
+            fi
+            echo "::warning::db reset attempt ${attempt} failed; retrying"
+            sleep 5
+          done
+          echo "::error::db reset failed after 3 attempts"
+          exit 1
 
       - name: Generate types & check no drift
         run: |
