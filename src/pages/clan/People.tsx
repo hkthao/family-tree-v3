@@ -18,6 +18,7 @@ import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanConte
 import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
+import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
   getRelativesIndex,
@@ -118,6 +119,22 @@ export default function People() {
     queryKey: queryKeys.relativesIndex(clan.id, userId),
     queryFn: () => getRelativesIndex(clan.id),
     enabled: !!userId && source === "persons",
+  });
+
+  // Batch-resolve signed URLs for the photos visible on this page.
+  // Keyed by the sorted set of paths so re-renders share the cache.
+  const photoPaths = [
+    ...new Set(
+      (data?.rows ?? [])
+        .map((p) => p.photo_path)
+        .filter((p): p is string => !!p),
+    ),
+  ].sort();
+  const { data: photoUrls } = useQuery({
+    queryKey: ["signed-photos-batch", clan.id, photoPaths],
+    queryFn: () => getSignedPhotoUrlMap(photoPaths),
+    enabled: photoPaths.length > 0,
+    staleTime: 5 * 60 * 1000,
   });
 
   const total = data?.total ?? 0;
@@ -252,6 +269,7 @@ export default function People() {
               person={p}
               clanId={clan.id}
               relatives={relatives}
+              photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
             />
           ))}
         </ul>
@@ -263,6 +281,7 @@ export default function People() {
               person={p}
               clanId={clan.id}
               relatives={relatives}
+              photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
             />
           ))}
         </ul>
@@ -369,10 +388,12 @@ function PersonListItem({
   person,
   clanId,
   relatives,
+  photoUrl,
 }: {
   person: PersonRow;
   clanId: string;
   relatives: RelativesIndex | undefined;
+  photoUrl: string | null;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
@@ -388,7 +409,7 @@ function PersonListItem({
       >
         <PersonAvatar
           gender={person.gender}
-          /* photo display batched separately */
+          photoUrl={photoUrl}
           size={44}
           className={person.is_living ? "" : "opacity-80"}
         />
@@ -443,10 +464,12 @@ function PersonGridCard({
   person,
   clanId,
   relatives,
+  photoUrl,
 }: {
   person: PersonRow;
   clanId: string;
   relatives: RelativesIndex | undefined;
+  photoUrl: string | null;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
@@ -459,7 +482,7 @@ function PersonGridCard({
       >
         <PersonAvatar
           gender={person.gender}
-          /* photo display batched separately */
+          photoUrl={photoUrl}
           size={64}
           className={person.is_living ? "" : "opacity-80"}
         />

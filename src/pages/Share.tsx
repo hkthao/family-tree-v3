@@ -49,6 +49,7 @@ export default function Share() {
         death_date: p.death_date,
         generation: p.generation,
         birth_family_id: p.birth_family_id,
+        photo_path: null,
       })),
       data.families,
     );
@@ -68,6 +69,7 @@ export default function Share() {
               death_date: p.death_date,
               generation: p.generation,
               birth_family_id: p.birth_family_id,
+        photo_path: null,
             })),
           )
         : null,

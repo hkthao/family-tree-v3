@@ -21,6 +21,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
+import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
 import { getTreeData } from "@/lib/queries/tree";
 
@@ -115,10 +116,29 @@ export default function Tree() {
     enabled: !!userId,
   });
 
+  // Batch-resolve signed URLs for every uploaded photo on the tree.
+  const treePhotoPaths = useMemo(
+    () =>
+      [
+        ...new Set(
+          (data?.persons ?? [])
+            .map((p) => p.photo_path)
+            .filter((p): p is string => !!p),
+        ),
+      ].sort(),
+    [data],
+  );
+  const { data: photoUrls } = useQuery({
+    queryKey: ["signed-photos-batch", clan.id, "tree", treePhotoPaths],
+    queryFn: () => getSignedPhotoUrlMap(treePhotoPaths),
+    enabled: treePhotoPaths.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const f3Data = useMemo(() => {
     if (!data) return null;
-    return toFamilyChart(data.persons, data.families);
-  }, [data]);
+    return toFamilyChart(data.persons, data.families, photoUrls);
+  }, [data, photoUrls]);
 
   // Pick default focal once data lands
   useEffect(() => {

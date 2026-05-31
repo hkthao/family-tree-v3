@@ -87,6 +87,29 @@ export async function getSignedPhotoUrl(
 }
 
 /**
+ * Batched signed-URL fetch for a page of photos. One round-trip for
+ * the whole list — cheaper than N parallel `createSignedUrl` calls
+ * when listing 50-100 persons at once. Returns a Map keyed by the
+ * original photo_path; paths that failed to sign are absent.
+ */
+export async function getSignedPhotoUrlMap(
+  photoPaths: string[],
+  expiresInSec = 3600,
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const cleaned = [...new Set(photoPaths.filter(Boolean))];
+  if (cleaned.length === 0) return out;
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrls(cleaned, expiresInSec);
+  if (error || !data) return out;
+  for (const entry of data) {
+    if (entry.signedUrl && entry.path) out.set(entry.path, entry.signedUrl);
+  }
+  return out;
+}
+
+/**
  * Delete a person's photo from storage. Used by the editor's "Xoá ảnh"
  * action. Idempotent: missing object returns success.
  */
