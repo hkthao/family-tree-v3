@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { BranchesSection } from "@/components/BranchesSection";
+import { GedcomButtons } from "@/components/GedcomButtons";
 import {
   IconCheck,
   IconList,
@@ -210,6 +211,20 @@ export default function Settings() {
         </CardHeader>
         <CardContent>
           <ShareLinksSection clanId={clan.id} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Xuất / nhập GEDCOM</CardTitle>
+          <CardDescription>
+            Chuẩn trao đổi dữ liệu phả hệ (5.5.1) — đem dữ liệu đi nơi
+            khác hoặc nạp từ phần mềm khác. Giữ được cả các trường tiếng
+            Việt (tên tự / húy / thụy, ngày âm, ngày giỗ, chi).
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <GedcomButtons clan={clan} />
         </CardContent>
       </Card>
 
