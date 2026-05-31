@@ -1017,7 +1017,7 @@ giữ plan là nguồn tham chiếu duy nhất cho người vào dự án sau.
 | Phase 0 — Setup | ✅ Xong | Repo, Vite + React + TS + Tailwind + shadcn, Supabase local, 7 migration đầu (schema → RLS → triggers → member_management → clan_stats → account_self_delete → admin_emails_rpc). RLS test suite chạy ở CI. |
 | Phase 1 — MVP | ✅ Xong | Clans CRUD + members + persons/families/branches + danh bạ (list+grid+filters) + tree (search + focal + depth + orientation) + import Excel + dashboard + hide-living public view + cache version-check + tài khoản đầy đủ. |
 | Phase 2 — post-MVP | ✅ phần lớn xong | Share-link + share-view Edge Function (rate-limit 60req/phút), audit_log + khôi phục (RPC `restore_audit_entry`), /admin + admin-action Edge Function (suspend / unsuspend / signout / grant_platform_admin / delete). Chỉ còn **PDF export** (mục 20) hoãn. |
-| Phase 3 | ⏳ Chưa làm | Quy đổi âm-dương, events + thông báo, kinship UI, GEDCOM, OCR. |
+| Phase 3 | 🚧 Đang làm | Milestone A (lunar converter + hiển thị) ✅. Milestone B (Events page list view + custom event CRUD + Dashboard panel) ✅. Còn lại: Milestone C (theo dõi), Milestone D (cron + email), kinship UI, GEDCOM, OCR. |
 
 ### 26.2 Migrations đã apply (theo thứ tự)
 
