@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import { IconPlus, IconUpload } from "@/components/icons";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -318,10 +320,27 @@ export default function Tree() {
           <CardHeader>
             <CardTitle>Chưa có dữ liệu</CardTitle>
             <CardDescription>
-              Hãy thêm người trong Danh bạ để bắt đầu xây dựng cây gia phả.
+              {canEdit
+                ? "Bắt đầu bằng cách thêm Thuỷ tổ (đời 1), hoặc nhập sẵn từ Excel."
+                : "Quản trị/biên tập viên sẽ thêm thành viên trước."}
             </CardDescription>
           </CardHeader>
-          <CardContent />
+          {canEdit && (
+            <CardContent className="flex flex-wrap gap-3">
+              <Button asChild>
+                <Link to={`/clans/${clanId}/people/new`}>
+                  <IconPlus className="h-4 w-4 mr-1.5" />
+                  Thêm người
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to={`/clans/${clanId}/import`}>
+                  <IconUpload className="h-4 w-4 mr-1.5" />
+                  Nhập từ Excel
+                </Link>
+              </Button>
+            </CardContent>
+          )}
         </Card>
       )}
 
