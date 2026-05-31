@@ -59,7 +59,10 @@ export default function PersonDetail() {
 
   if (!clanId || !personId) return null;
 
-  const canEdit = clan?.myRole === "admin" || clan?.myRole === "editor";
+  const canEdit =
+    clan?.isPlatformAdmin ||
+    clan?.myRole === "admin" ||
+    clan?.myRole === "editor";
 
   return (
     <div className="min-h-dvh bg-background">

@@ -95,7 +95,8 @@ export default function Members() {
   });
 
   if (!clanId) return null;
-  if (clan && clan.myRole !== "admin") {
+  // Treat platform admin as clan admin everywhere.
+  if (clan && clan.myRole !== "admin" && !clan.isPlatformAdmin) {
     return <Navigate to={`/clans/${clanId}/people`} replace />;
   }
 

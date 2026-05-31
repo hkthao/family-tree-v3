@@ -87,7 +87,7 @@ export function ClanLayout() {
               {clan.name}
             </h1>
           </div>
-          {clan.myRole === "admin" ? (
+          {(clan.myRole === "admin" || clan.isPlatformAdmin) ? (
             <Link
               to={`/clans/${clanId}/settings`}
               className="text-sm text-muted-foreground hover:text-foreground"

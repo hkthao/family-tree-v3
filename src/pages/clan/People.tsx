@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
@@ -65,7 +65,7 @@ export default function People() {
   // Non-members of a public clan read through the masked view; everyone
   // else (admin/editor/viewer + platform admin) reads the raw table.
   const source =
-    clan.myRole === null ? "persons_public_safe" : "persons";
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
 
   const params = {
     page,
@@ -101,7 +101,7 @@ export default function People() {
 
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const canEdit = clan.myRole === "admin" || clan.myRole === "editor";
+  const canEdit = canEditClan(clan);
 
   return (
     <div className="space-y-4">

@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { updateClan } from "@/lib/queries/clan-update";
 import { queryKeys } from "@/lib/queries/keys";
 
@@ -53,7 +53,7 @@ export default function Settings() {
     },
   });
 
-  if (clan.myRole !== "admin") {
+  if (!isClanAdmin(clan)) {
     return <Navigate to={`/clans/${clan.id}/people`} replace />;
   }
 
@@ -162,7 +162,7 @@ export default function Settings() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <BranchesSection clanId={clan.id} canEdit={clan.myRole === "admin"} />
+          <BranchesSection clanId={clan.id} canEdit={isClanAdmin(clan)} />
         </CardContent>
       </Card>
 
