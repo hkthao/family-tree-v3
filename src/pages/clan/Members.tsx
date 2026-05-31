@@ -101,7 +101,7 @@ export default function Members() {
   }
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-2xl py-6 px-4 space-y-6">
         <nav className="text-sm text-muted-foreground">

@@ -201,6 +201,7 @@ export type Database = {
           name: string
           name_unaccent: string | null
           owner_id: string | null
+          person_count: number
           visibility: string
         }
         Insert: {
@@ -214,6 +215,7 @@ export type Database = {
           name: string
           name_unaccent?: string | null
           owner_id?: string | null
+          person_count?: number
           visibility?: string
         }
         Update: {
@@ -227,6 +229,7 @@ export type Database = {
           name?: string
           name_unaccent?: string | null
           owner_id?: string | null
+          person_count?: number
           visibility?: string
         }
         Relationships: [

@@ -42,10 +42,14 @@ export function AppDrawer({ open, onClose }: Props) {
     enabled: !!userId && !!clanId,
   });
 
-  // Lock body scroll while the drawer is open so the underlying page
-  // doesn't scroll out from under the user on iOS.
+  // On mobile, lock body scroll while the drawer is open so the page
+  // doesn't scroll out from under the user on iOS. On desktop (≥lg) the
+  // drawer is part of the layout and never modal, so skip the lock.
   useEffect(() => {
     if (!open) return;
+    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
+      return;
+    }
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -65,60 +69,50 @@ export function AppDrawer({ open, onClose }: Props) {
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop — mobile only */}
       <div
         className={cn(
-          "fixed inset-0 z-30 bg-black/40 transition-opacity",
+          "fixed inset-0 z-30 bg-black/40 transition-opacity lg:hidden",
           open ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         aria-hidden="true"
         onClick={onClose}
       />
 
-      {/* Drawer */}
+      {/* Drawer — modal slide-in on mobile, persistent sidebar on lg+. */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Điều hướng"
         className={cn(
           "fixed top-0 left-0 bottom-0 z-40 w-72 max-w-[85vw]",
-          "bg-background border-r shadow-lg",
+          "bg-background border-r shadow-lg lg:shadow-none",
           "flex flex-col",
           "transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
+          // ≥lg: always visible, no transform regardless of `open`.
+          "lg:translate-x-0",
         )}
       >
-        <header className="border-b px-4 py-4 flex items-center justify-between">
+        {/* Header — matches AppHeader's min-h-[64px] + text-2xl so both
+            align pixel-perfect across the seam between sidebar and main. */}
+        <header className="border-b py-3 px-4 flex items-center justify-between min-h-[64px]">
           <Link
             to="/clans"
             onClick={pick}
-            className="clan-name text-xl font-semibold text-primary"
+            className="clan-name text-2xl font-semibold text-primary"
           >
             Gia phả
           </Link>
           <button
             type="button"
             onClick={onClose}
-            className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted"
+            className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted lg:hidden"
             aria-label="Đóng menu"
           >
             <span className="text-lg" aria-hidden="true">✕</span>
           </button>
         </header>
-
-        {profile && (
-          <div className="px-4 py-3 border-b">
-            <p className="font-medium truncate">
-              {profile.display_name ?? user?.email ?? "—"}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user?.email}
-              {profile.is_platform_admin && (
-                <span className="ml-2 text-accent font-medium">platform admin</span>
-              )}
-            </p>
-          </div>
-        )}
 
         <nav className="flex-1 overflow-y-auto py-2">
           {sections.map((section) => (
@@ -154,20 +148,93 @@ export function AppDrawer({ open, onClose }: Props) {
           ))}
         </nav>
 
+        {/* Footer — user identity + logout in a single row to keep the
+            nav body roomy. Logout is icon-only with a tooltip; the row
+            itself is the visible "I'm signed in as X" cue. */}
         <footer className="border-t p-3">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => {
-              onClose();
-              void signOutAndClearCache();
-            }}
-          >
-            Đăng xuất
-          </Button>
+          {profile ? (
+            <div className="flex items-center gap-3">
+              <div
+                className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium shrink-0"
+                aria-hidden="true"
+              >
+                {initialOf(profile.display_name ?? user?.email ?? "?")}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {profile.display_name ?? user?.email ?? "—"}
+                  {profile.is_platform_admin && (
+                    <span
+                      className="ml-1.5 text-accent text-[10px] uppercase tracking-wide font-semibold"
+                      title="Platform admin"
+                    >
+                      ★
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  void signOutAndClearCache();
+                }}
+                className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
+                aria-label="Đăng xuất"
+                title="Đăng xuất"
+              >
+                <LogoutIcon />
+              </button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                onClose();
+                void signOutAndClearCache();
+              }}
+            >
+              Đăng xuất
+            </Button>
+          )}
         </footer>
       </aside>
     </>
+  );
+}
+
+function initialOf(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return "?";
+  // For an email, take the first letter of the local part.
+  const head = trimmed.includes("@") ? trimmed.split("@")[0] : trimmed;
+  // Last word's first letter is conventional for Vietnamese full names.
+  const parts = head.split(/\s+/).filter(Boolean);
+  const tail = parts[parts.length - 1] ?? head;
+  return tail.charAt(0).toUpperCase();
+}
+
+function LogoutIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
   );
 }
 

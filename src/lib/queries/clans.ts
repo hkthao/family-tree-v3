@@ -14,14 +14,32 @@ export interface ClanSummary {
   max_persons: number;
   max_users: number;
   owner_id: string | null;
+  person_count: number;
   /** null on community-list rows where the caller is not a member. */
   role: "admin" | "editor" | "viewer" | null;
 }
+
+export type ClanSizeBucket = "tiny" | "small" | "medium" | "large";
+
+/**
+ * Inclusive size ranges for the community filter. Single source of truth
+ * so the UI label and the query predicate can't drift.
+ */
+export const CLAN_SIZE_BUCKETS: Record<
+  ClanSizeBucket,
+  { label: string; min: number; max: number | null }
+> = {
+  tiny: { label: "Mới khởi tạo (<5)", min: 0, max: 4 },
+  small: { label: "Nhỏ (5–19)", min: 5, max: 19 },
+  medium: { label: "Vừa (20–49)", min: 20, max: 49 },
+  large: { label: "Lớn (≥50)", min: 50, max: null },
+};
 
 export interface ListClansParams {
   page: number; // 1-based
   pageSize: number;
   search?: string;
+  sizeBucket?: ClanSizeBucket | null;
 }
 
 export interface ListClansResult {
@@ -31,7 +49,8 @@ export interface ListClansResult {
   pageSize: number;
 }
 
-const COLS = "id, name, description, visibility, max_persons, max_users, owner_id";
+const COLS =
+  "id, name, description, visibility, max_persons, max_users, owner_id, person_count";
 
 async function isPlatformAdmin(userId: string, client: Client): Promise<boolean> {
   const { data } = await client
@@ -122,6 +141,12 @@ export async function listCommunityClans(
   if (params.search?.trim()) {
     const needle = `%${unaccent(params.search)}%`;
     q = q.ilike("name_unaccent", needle);
+  }
+
+  if (params.sizeBucket) {
+    const b = CLAN_SIZE_BUCKETS[params.sizeBucket];
+    q = q.gte("person_count", b.min);
+    if (b.max !== null) q = q.lte("person_count", b.max);
   }
 
   const { data, error, count } = await q;

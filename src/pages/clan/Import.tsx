@@ -69,7 +69,7 @@ export default function Import() {
   const canSubmit = !!plan?.payload && errorCount === 0 && !importM.isPending && !importM.isSuccess;
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-6">
         <nav className="text-sm text-muted-foreground">

@@ -55,7 +55,7 @@ export default function Admin() {
   if (!me?.is_platform_admin) return <Navigate to="/clans" replace />;
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-5xl py-6 px-4 space-y-6">
         <h1 className="clan-name text-3xl font-semibold">Quản trị nền tảng</h1>
