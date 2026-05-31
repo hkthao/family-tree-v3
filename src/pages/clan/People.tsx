@@ -9,6 +9,7 @@ import {
   IconList,
   IconPlus,
 } from "@/components/icons";
+import { PersonAvatar } from "@/components/PersonAvatar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,10 @@ import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
+import {
+  getRelativesIndex,
+  type RelativesIndex,
+} from "@/lib/queries/relatives-index";
 
 const PAGE_SIZE_OPTIONS = [25, 50, 100];
 const VIEW_KEY = "family-tree:people-view-mode";
@@ -104,6 +109,16 @@ export default function People() {
     enabled: !!userId,
   });
   const maxGen = stats?.max_generation ?? null;
+
+  // Clan-wide relatives lookup (father / mother / spouses by id).
+  // Only members + platform admin should see relatives; non-members of a
+  // public clan get hidden relatives because the query reads `persons`
+  // (RLS will already block them). Skip the call entirely for guests.
+  const { data: relatives } = useQuery({
+    queryKey: queryKeys.relativesIndex(clan.id, userId),
+    queryFn: () => getRelativesIndex(clan.id),
+    enabled: !!userId && source === "persons",
+  });
 
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -232,13 +247,23 @@ export default function People() {
       ) : viewMode === "list" ? (
         <ul className="divide-y rounded-lg border bg-card">
           {data.rows.map((p) => (
-            <PersonListItem key={p.id} person={p} clanId={clan.id} />
+            <PersonListItem
+              key={p.id}
+              person={p}
+              clanId={clan.id}
+              relatives={relatives}
+            />
           ))}
         </ul>
       ) : (
         <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {data.rows.map((p) => (
-            <PersonGridCard key={p.id} person={p} clanId={clan.id} />
+            <PersonGridCard
+              key={p.id}
+              person={p}
+              clanId={clan.id}
+              relatives={relatives}
+            />
           ))}
         </ul>
       )}
@@ -297,43 +322,118 @@ export default function People() {
 
 // ---------------------------------------------------------------------------
 
-function metaLine(person: PersonRow): string {
-  const parts: string[] = [];
+function lifespan(person: PersonRow): string {
+  const by = person.birth_date?.slice(0, 4);
+  const dy = person.death_date?.slice(0, 4);
   if (!person.is_living) {
-    // List view stays compact: just the year, even if precision is finer.
-    const dy = person.death_date?.slice(0, 4);
-    parts.push(`đã mất${dy ? ` • ${dy}` : ""}`);
-  } else {
-    const by = person.birth_date?.slice(0, 4);
-    if (by) parts.push(`sinh ${by}`);
+    if (by && dy) return `${by}–${dy}`;
+    if (dy) return `?–${dy}`;
+    if (by) return `${by}–?`;
+    return "đã mất";
   }
-  if (person.generation !== null) parts.push(`Đời ${person.generation}`);
-  return parts.join(" • ");
+  return by ? `sinh ${by}` : "";
 }
 
+function genderLabel(g: "M" | "F"): string {
+  return g === "M" ? "♂ Nam" : "♀ Nữ";
+}
+
+function spouseLabel(g: "M" | "F"): string {
+  return g === "M" ? "Vợ" : "Chồng";
+}
+
+interface RelativeNames {
+  father: string | null;
+  mother: string | null;
+  spouses: string[];
+}
+
+function lookupRelatives(
+  personId: string,
+  index: RelativesIndex | undefined,
+): RelativeNames {
+  if (!index) return { father: null, mother: null, spouses: [] };
+  const fId = index.fatherOf.get(personId);
+  const mId = index.motherOf.get(personId);
+  const sIds = index.spousesOf.get(personId) ?? [];
+  return {
+    father: fId ? (index.byId.get(fId)?.full_name ?? null) : null,
+    mother: mId ? (index.byId.get(mId)?.full_name ?? null) : null,
+    spouses: sIds
+      .map((id) => index.byId.get(id)?.full_name)
+      .filter((n): n is string => !!n),
+  };
+}
 
 function PersonListItem({
   person,
   clanId,
+  relatives,
 }: {
   person: PersonRow;
   clanId: string;
+  relatives: RelativesIndex | undefined;
 }) {
+  const rel = lookupRelatives(person.id, relatives);
+  const life = lifespan(person);
+  const metaBits = [genderLabel(person.gender)];
+  if (life) metaBits.push(life);
+  if (person.generation !== null) metaBits.push(`Đời ${person.generation}`);
+
   return (
     <li>
       <Link
         to={`/clans/${clanId}/people/${person.id}`}
-        className="block p-4 hover:bg-muted/40 transition-colors"
+        className="flex items-start gap-3 p-3 hover:bg-muted/40 transition-colors"
       >
-        <p className="font-medium truncate">
-          {person.full_name}
-          {person.is_root && (
-            <span className="ml-2 text-xs text-accent font-medium">
-              Thuỷ tổ
-            </span>
+        <PersonAvatar
+          gender={person.gender}
+          photoPath={person.photo_path}
+          size={44}
+          className={person.is_living ? "" : "opacity-80"}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="font-medium truncate">
+            {person.full_name}
+            {person.is_root && (
+              <span className="ml-2 text-xs text-accent font-medium">
+                Thuỷ tổ
+              </span>
+            )}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {metaBits.join(" · ")}
+          </p>
+          {(rel.father || rel.mother || rel.spouses.length > 0) && (
+            <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+              {(rel.father || rel.mother) && (
+                <p className="truncate">
+                  {rel.father && (
+                    <>
+                      <span className="font-medium">Cha:</span> {rel.father}
+                    </>
+                  )}
+                  {rel.father && rel.mother && (
+                    <span className="mx-1.5 text-muted-foreground/60">·</span>
+                  )}
+                  {rel.mother && (
+                    <>
+                      <span className="font-medium">Mẹ:</span> {rel.mother}
+                    </>
+                  )}
+                </p>
+              )}
+              {rel.spouses.length > 0 && (
+                <p className="truncate">
+                  <span className="font-medium">
+                    {spouseLabel(person.gender)}:
+                  </span>{" "}
+                  {rel.spouses.join(", ")}
+                </p>
+              )}
+            </div>
           )}
-        </p>
-        <p className="text-sm text-muted-foreground">{metaLine(person)}</p>
+        </div>
       </Link>
     </li>
   );
@@ -342,25 +442,27 @@ function PersonListItem({
 function PersonGridCard({
   person,
   clanId,
+  relatives,
 }: {
   person: PersonRow;
   clanId: string;
+  relatives: RelativesIndex | undefined;
 }) {
-  const initial = person.full_name.trim().charAt(0).toUpperCase() || "?";
+  const rel = lookupRelatives(person.id, relatives);
+  const life = lifespan(person);
+
   return (
     <li>
       <Link
         to={`/clans/${clanId}/people/${person.id}`}
         className="flex flex-col items-center text-center gap-2 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
       >
-        <div
-          className={`flex items-center justify-center w-16 h-16 rounded-full text-2xl font-medium ${
-            person.gender === "F" ? "bg-accent/20" : "bg-primary/10"
-          } ${person.is_living ? "" : "opacity-85"}`}
-          aria-hidden="true"
-        >
-          {initial}
-        </div>
+        <PersonAvatar
+          gender={person.gender}
+          photoPath={person.photo_path}
+          size={64}
+          className={person.is_living ? "" : "opacity-80"}
+        />
         <div className="min-w-0 w-full">
           <p className="font-medium text-sm leading-tight truncate">
             {person.full_name}
@@ -369,8 +471,23 @@ function PersonGridCard({
             <p className="text-[10px] text-accent font-medium mt-0.5">Thuỷ tổ</p>
           )}
           <p className="text-xs text-muted-foreground mt-1 truncate">
-            {metaLine(person)}
+            {genderLabel(person.gender)}
+            {life ? ` · ${life}` : ""}
           </p>
+          {person.generation !== null && (
+            <p className="text-xs text-muted-foreground truncate">
+              Đời {person.generation}
+            </p>
+          )}
+          {rel.spouses.length > 0 && (
+            <p className="text-[11px] text-muted-foreground mt-1 truncate">
+              <span className="font-medium">
+                {spouseLabel(person.gender)}:
+              </span>{" "}
+              {rel.spouses[0]}
+              {rel.spouses.length > 1 ? ` +${rel.spouses.length - 1}` : ""}
+            </p>
+          )}
         </div>
       </Link>
     </li>
