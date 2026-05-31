@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
+import { AppLogo } from "@/components/AppLogo";
 import { useAuth } from "@/hooks/useAuth";
 
 export function AppHeader() {
@@ -22,8 +23,9 @@ export function AppHeader() {
           </button>
           <Link
             to="/clans"
-            className="clan-name text-2xl font-semibold text-primary"
+            className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
           >
+            <AppLogo size={28} className="rounded" />
             Gia phả
           </Link>
           <span className="hidden sm:inline text-sm text-muted-foreground truncate max-w-[160px]">

@@ -1,0 +1,27 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Icon app gia phả — con triện</title>
+  <desc>Con dấu son đỏ trầm, bên trong là cây dòng họ với gốc tổ màu vàng đồng.</desc>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="228" ry="228" fill="#7A2230"/>
+
+  <rect x="150" y="150" width="724" height="724" rx="48" ry="48" fill="none" stroke="#F4EBDD" stroke-width="26"/>
+
+  <g stroke="#F4EBDD" stroke-width="26" stroke-linecap="round" fill="none">
+    <path d="M512 360 L398 512"/>
+    <path d="M512 360 L626 512"/>
+    <path d="M398 512 L344 664"/>
+    <path d="M398 512 L452 664"/>
+    <path d="M626 512 L572 664"/>
+    <path d="M626 512 L680 664"/>
+  </g>
+
+  <circle cx="398" cy="512" r="40" fill="#F4EBDD"/>
+  <circle cx="626" cy="512" r="40" fill="#F4EBDD"/>
+  <circle cx="344" cy="664" r="30" fill="#F4EBDD"/>
+  <circle cx="452" cy="664" r="30" fill="#F4EBDD"/>
+  <circle cx="572" cy="664" r="30" fill="#F4EBDD"/>
+  <circle cx="680" cy="664" r="30" fill="#F4EBDD"/>
+
+  <circle cx="512" cy="360" r="56" fill="#C19A5B"/>
+  <circle cx="512" cy="360" r="56" fill="none" stroke="#F4EBDD" stroke-width="10"/>
+</svg>
