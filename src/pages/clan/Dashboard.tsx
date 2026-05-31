@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -18,7 +19,17 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { getClanStats } from "@/lib/queries/clan-stats";
+import {
+  listAnniversaryCandidates,
+  listEvents,
+} from "@/lib/queries/events";
 import { queryKeys } from "@/lib/queries/keys";
+import { getTreeData } from "@/lib/queries/tree";
+import {
+  computeUpcomingAnniversaries,
+  computeUpcomingEvents,
+  type UpcomingEvent,
+} from "@/lib/upcomingEvents";
 
 export default function Dashboard() {
   const { clan } = useClanContext();
@@ -31,6 +42,38 @@ export default function Dashboard() {
     queryFn: () => getClanStats(clan.id),
     enabled: !!userId,
   });
+  const { data: tree } = useQuery({
+    queryKey: queryKeys.treeData(clan.id, userId),
+    queryFn: () => getTreeData(clan.id),
+    enabled: !!userId,
+  });
+  const { data: events } = useQuery({
+    queryKey: queryKeys.events(clan.id, userId),
+    queryFn: () => listEvents(clan.id),
+    enabled: !!userId,
+  });
+  const { data: anniversaries } = useQuery({
+    queryKey: queryKeys.anniversaries(clan.id, userId),
+    queryFn: () => listAnniversaryCandidates(clan.id),
+    enabled: !!userId,
+  });
+
+  const upcoming: UpcomingEvent[] = useMemo(() => {
+    if (!tree || !events || !anniversaries) return [];
+    const today = new Date();
+    const a = computeUpcomingEvents({
+      today,
+      daysAhead: 30,
+      persons: tree.persons,
+      events,
+    });
+    const b = computeUpcomingAnniversaries({
+      today,
+      daysAhead: 30,
+      anniversaries,
+    });
+    return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil).slice(0, 5);
+  }, [tree, events, anniversaries]);
 
   return (
     <div className="space-y-6">
@@ -87,6 +130,29 @@ export default function Dashboard() {
             <StatTile label="Đã mất" value={stats.deceased} muted />
           </section>
 
+          {upcoming.length > 0 && (
+            <section aria-label="Sự kiện sắp tới" className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Sự kiện sắp tới</h3>
+                <Link
+                  to={`/clans/${clan.id}/events`}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Xem tất cả →
+                </Link>
+              </div>
+              <ul className="space-y-1.5">
+                {upcoming.map((e) => (
+                  <UpcomingRow
+                    key={e.key}
+                    event={e}
+                    clanId={clan.id}
+                  />
+                ))}
+              </ul>
+            </section>
+          )}
+
           <div className="flex flex-wrap gap-3">
             <Button asChild>
               <Link to={`/clans/${clan.id}/people`}>
@@ -128,6 +194,58 @@ interface StatTileProps {
   value: number | string;
   highlight?: boolean;
   muted?: boolean;
+}
+
+function UpcomingRow({
+  event,
+  clanId,
+}: {
+  event: UpcomingEvent;
+  clanId: string;
+}) {
+  const dt = new Date(event.date + "T00:00:00");
+  const day = dt.getDate();
+  const month = dt.getMonth() + 1;
+  const countdown =
+    event.daysUntil === 0
+      ? "Hôm nay"
+      : event.daysUntil === 1
+        ? "Ngày mai"
+        : `Còn ${event.daysUntil} ngày`;
+
+  const inner = (
+    <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border bg-card hover:border-primary transition-colors">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
+          {day}/{month}
+        </span>
+        <span className="truncate">{event.title}</span>
+      </div>
+      <span
+        className={`text-xs whitespace-nowrap ${
+          event.daysUntil <= 1
+            ? "text-primary font-semibold"
+            : event.daysUntil <= 7
+              ? "text-accent font-medium"
+              : "text-muted-foreground"
+        }`}
+      >
+        {countdown}
+      </span>
+    </div>
+  );
+
+  return (
+    <li>
+      {event.personId ? (
+        <Link to={`/clans/${clanId}/people/${event.personId}`} className="block">
+          {inner}
+        </Link>
+      ) : (
+        inner
+      )}
+    </li>
+  );
 }
 
 function StatTile({ label, value, highlight, muted }: StatTileProps) {
