@@ -37,9 +37,13 @@ export default function Share() {
 
   const f3Data = useMemo(() => {
     if (!data) return null;
-    // Adapter accepts only what it needs; ShareViewPerson is a superset.
-    return toFamilyChart(
-      data.persons.map((p) => ({
+    // The share-view function already signed photo URLs for deceased
+    // persons. Synthesize a path so the adapter's lookup table hits.
+    const photoByPath = new Map<string, string>();
+    const adapted = data.persons.map((p) => {
+      const synthetic = p.photo_url ? `share/${p.id}` : null;
+      if (synthetic && p.photo_url) photoByPath.set(synthetic, p.photo_url);
+      return {
         id: p.id,
         full_name: p.full_name,
         gender: p.gender,
@@ -49,10 +53,10 @@ export default function Share() {
         death_date: p.death_date,
         generation: p.generation,
         birth_family_id: p.birth_family_id,
-        photo_path: null,
-      })),
-      data.families,
-    );
+        photo_path: synthetic,
+      };
+    });
+    return toFamilyChart(adapted, data.families, photoByPath);
   }, [data]);
 
   const focal = useMemo(
