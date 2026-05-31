@@ -227,16 +227,22 @@ export default function Tree() {
                 </g>
               `;
 
+              // Carry `?from=tree` so PersonDetail / EditPerson know
+              // to render the breadcrumb as "← Cây gia phả" and to
+              // navigate back to /tree on cancel/save.
+              const fromQs = "?from=tree";
               const editEl = actions.querySelector(".card-action-edit");
               editEl?.addEventListener("click", (e) => {
                 e.stopPropagation();
-                navigate(`/clans/${clanId}/people/${personId}/edit`);
+                navigate(
+                  `/clans/${clanId}/people/${personId}/edit${fromQs}`,
+                );
               });
 
               const addEl = actions.querySelector(".card-action-add");
               addEl?.addEventListener("click", (e) => {
                 e.stopPropagation();
-                navigate(`/clans/${clanId}/people/${personId}`);
+                navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
               });
 
               this.querySelector(".card-body")?.appendChild(actions);
