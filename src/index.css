@@ -92,6 +92,18 @@
  * !important. Use a muted ink-ish tone so the lines connect cards
  * legibly without competing with the cards themselves.
  * ---------------------------------------------------------------- */
+
+/* Make the f3 canvas + main SVG fill their container in every layout
+ * (the library's inline styles don't survive in some flex chains). */
+.f3 {
+  display: block;
+}
+.f3 svg.main_svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .f3 svg.main_svg path.link {
   stroke: #7A6F66; /* matches design palette --muted */
   stroke-width: 1.5px;

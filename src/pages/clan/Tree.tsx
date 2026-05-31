@@ -35,6 +35,7 @@ interface F3Chart {
   setTransitionTime: (n: number) => F3Chart;
   setSingleParentEmptyCard: (b: boolean) => F3Chart;
   updateTree: (opts: { initial?: boolean }) => void;
+  updateMainId?: (id: string) => void;
   // setCardSvg / setCardHtml return a NEW Card instance (CardSvg /
   // CardHtml), not the Chart. Configuration like setCardDisplay,
   // setCardDim etc. lives on that returned instance — calling them
@@ -323,6 +324,11 @@ export default function Tree() {
           // Generations flow top→bottom → Y must clear card height.
           built.setCardXSpacing(290).setCardYSpacing(160);
         }
+
+        // Anchor the chart on the chosen focal (Thuỷ tổ by default).
+        // Without this, family-chart picks an arbitrary first row as
+        // "main" and Đời 1 ends up collapsed off-screen.
+        if (focal && built.updateMainId) built.updateMainId(focal);
 
         // updateTree({ initial: true }) calls treeFit which measures the
         // SVG via getBoundingClientRect. Wait one paint frame so the

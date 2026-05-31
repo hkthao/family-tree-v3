@@ -57,7 +57,20 @@ export async function fetchShareView(token: string): Promise<ShareViewPayload> {
       body.error ?? `share-view error (${res.status})`,
     );
   }
-  return (await res.json()) as ShareViewPayload;
+  const payload = (await res.json()) as ShareViewPayload;
+  // The function returns photo_url as a path-only string (no origin),
+  // because the storage helper inside Supabase Local would otherwise
+  // bake Docker-internal hostnames. Prepend our reachable base.
+  return {
+    ...payload,
+    persons: payload.persons.map((p) => ({
+      ...p,
+      photo_url:
+        p.photo_url && p.photo_url.startsWith("/")
+          ? `${base}${p.photo_url}`
+          : p.photo_url,
+    })),
+  };
 }
 
 // Re-export the supabase client so callers can import it from the same
