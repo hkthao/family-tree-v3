@@ -2,7 +2,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { IconBell, IconPlus, IconTrash, IconX } from "@/components/icons";
+import {
+  IconBell,
+  IconGrid,
+  IconList,
+  IconPlus,
+  IconTrash,
+  IconX,
+} from "@/components/icons";
+import { EventsCalendar } from "@/components/EventsCalendar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SubscriptionSettings } from "@/components/SubscriptionSettings";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -56,6 +64,7 @@ export default function Events() {
   const qc = useQueryClient();
 
   const [daysAhead, setDaysAhead] = useState<number>(90);
+  const [view, setView] = useState<"list" | "calendar">("list");
 
   const { data: tree } = useQuery({
     queryKey: queryKeys.treeData(clan.id, userId),
@@ -73,12 +82,16 @@ export default function Events() {
     enabled: !!userId,
   });
 
+  // Calendar view needs a wider window so users can flip months. List
+  // view honours the chosen "Trong:" pill instead.
+  const effectiveDays = view === "calendar" ? 365 : daysAhead;
+
   const upcoming: UpcomingEvent[] = useMemo(() => {
     const today = new Date();
     const fromPersons = tree
       ? computeUpcomingEvents({
           today,
-          daysAhead,
+          daysAhead: effectiveDays,
           persons: tree.persons,
           events: events ?? [],
         })
@@ -86,14 +99,14 @@ export default function Events() {
     const fromAnniv = anniversaries
       ? computeUpcomingAnniversaries({
           today,
-          daysAhead,
+          daysAhead: effectiveDays,
           anniversaries,
         })
       : [];
     return [...fromPersons, ...fromAnniv].sort(
       (a, b) => a.daysUntil - b.daysUntil,
     );
-  }, [tree, events, anniversaries, daysAhead]);
+  }, [tree, events, anniversaries, effectiveDays]);
 
   return (
     <div className="space-y-4">
@@ -102,34 +115,74 @@ export default function Events() {
         <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
       </div>
 
-      {/* Look-ahead window */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-sm text-muted-foreground">Trong:</span>
+      {/* Toolbar: look-ahead + view-mode toggle */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        {view === "list" ? (
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm text-muted-foreground">Trong:</span>
+            <div
+              className="inline-flex rounded-md border bg-card overflow-hidden"
+              role="group"
+            >
+              {LOOKAHEAD_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setDaysAhead(opt.value)}
+                  aria-pressed={daysAhead === opt.value}
+                  className={`px-3 h-10 text-sm border-l first:border-l-0 ${
+                    daysAhead === opt.value
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div />
+        )}
         <div
           className="inline-flex rounded-md border bg-card overflow-hidden"
           role="group"
+          aria-label="Chế độ hiển thị"
         >
-          {LOOKAHEAD_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setDaysAhead(opt.value)}
-              aria-pressed={daysAhead === opt.value}
-              className={`px-3 h-10 text-sm border-l first:border-l-0 ${
-                daysAhead === opt.value
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted/50"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            aria-pressed={view === "list"}
+            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
+              view === "list"
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted/50"
+            }`}
+          >
+            <IconList className="h-4 w-4" />
+            Danh sách
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("calendar")}
+            aria-pressed={view === "calendar"}
+            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
+              view === "calendar"
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted/50"
+            }`}
+          >
+            <IconGrid className="h-4 w-4" />
+            Lịch
+          </button>
         </div>
       </div>
 
-      {/* Upcoming list */}
+      {/* Upcoming list / calendar */}
       {!tree || !events || !anniversaries ? (
         <p className="text-muted-foreground">Đang tải…</p>
+      ) : view === "calendar" ? (
+        <EventsCalendar events={upcoming} clanId={clan.id} />
       ) : upcoming.length === 0 ? (
         <Card>
           <CardHeader>
@@ -146,25 +199,6 @@ export default function Events() {
             <UpcomingItem key={e.key} event={e} clanId={clan.id} />
           ))}
         </ul>
-      )}
-
-      {/* Subscription / notification preferences */}
-      {effectiveRole(clan) !== null && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconBell className="h-5 w-5" />
-              Theo dõi sự kiện
-            </CardTitle>
-            <CardDescription>
-              Nhận thông báo qua email khi có sinh nhật, ngày giỗ hoặc sự
-              kiện sắp đến. Chỉ áp dụng cho riêng bạn.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SubscriptionSettings clanId={clan.id} />
-          </CardContent>
-        </Card>
       )}
 
       {/* Custom events management */}
@@ -200,6 +234,25 @@ export default function Events() {
           )}
         </CardContent>
       </Card>
+
+      {/* Subscription / notification preferences */}
+      {effectiveRole(clan) !== null && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <IconBell className="h-5 w-5" />
+              Theo dõi sự kiện
+            </CardTitle>
+            <CardDescription>
+              Nhận thông báo qua email khi có sinh nhật, ngày giỗ hoặc sự
+              kiện sắp đến. Chỉ áp dụng cho riêng bạn.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SubscriptionSettings clanId={clan.id} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

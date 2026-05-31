@@ -59,6 +59,74 @@ function randName(gender: "M" | "F"): { surname: string; full: string } {
   return { surname, full: `${surname} ${middle} ${given}` };
 }
 
+const VN_PROVINCES = [
+  "Hà Nội", "Hải Dương", "Hưng Yên", "Bắc Ninh", "Nam Định", "Thái Bình",
+  "Thanh Hóa", "Nghệ An", "Hà Tĩnh", "Quảng Bình", "Quảng Trị", "Huế",
+  "Đà Nẵng", "Quảng Nam", "Bình Định", "Khánh Hòa", "Lâm Đồng",
+  "Đồng Nai", "Sài Gòn", "Tiền Giang", "Bến Tre", "Vĩnh Long",
+];
+const COURTESY_TOKENS_M = [
+  "Văn Đại", "Trung Dũng", "Hữu Tài", "Đức Trí", "Quang Minh",
+  "Bình An", "Trí Đạt", "Hùng Anh",
+];
+const COURTESY_TOKENS_F = [
+  "Diệu Linh", "Hồng Nhung", "Tâm An", "Phương Thảo", "Mai Hoa",
+  "Hạnh Phúc", "Thanh Tâm",
+];
+const POSTHUMOUS_TOKENS = [
+  "Trung Hiếu", "Cẩn Trực", "Khoan Hậu", "Đoan Trang", "Cương Nghị",
+  "Nhân Đức", "Thuần Hậu",
+];
+const NICKNAME_TOKENS = [
+  "Bé", "Cu", "Cún", "Tí", "Mít", "Bin", "Bo", "Bống", "Nhím", "Sóc",
+];
+
+/** Extra optional Vietnamese fields. Caller spreads into the insert. */
+function randExtraFields(
+  gender: "M" | "F",
+  isLiving: boolean,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+
+  // Birth place — ~70% of persons
+  if (faker.datatype.boolean({ probability: 0.7 })) {
+    out.birth_place = faker.helpers.arrayElement(VN_PROVINCES);
+  }
+  // Nickname (tên húy) — ~40%, the "small-name" parents called as children
+  if (faker.datatype.boolean({ probability: 0.4 })) {
+    out.nickname = faker.helpers.arrayElement(NICKNAME_TOKENS);
+  }
+  // Courtesy (tên tự) — ~25%, more common for older generations
+  if (faker.datatype.boolean({ probability: 0.25 })) {
+    out.courtesy_name = faker.helpers.arrayElement(
+      gender === "M" ? COURTESY_TOKENS_M : COURTESY_TOKENS_F,
+    );
+  }
+
+  // Deceased-only fields
+  if (!isLiving) {
+    if (faker.datatype.boolean({ probability: 0.5 })) {
+      out.burial_place = faker.helpers.arrayElement(VN_PROVINCES);
+    }
+    if (faker.datatype.boolean({ probability: 0.3 })) {
+      out.posthumous_name = faker.helpers.arrayElement(POSTHUMOUS_TOKENS);
+    }
+    // Lunar anniversary (ngày giỗ) — most deceased should have one so the
+    // notify-events cron has something to dispatch.
+    if (faker.datatype.boolean({ probability: 0.85 })) {
+      out.death_anniv_lunar_month = faker.number.int({ min: 1, max: 12 });
+      out.death_anniv_lunar_day = faker.number.int({ min: 1, max: 28 });
+      out.death_anniv_lunar_is_leap = false;
+    }
+  }
+
+  // Bio — rare blurb
+  if (faker.datatype.boolean({ probability: 0.08 })) {
+    out.bio = faker.lorem.sentence({ min: 8, max: 18 });
+  }
+  return out;
+}
+
 async function createUser(email: string, displayName: string, opts?: { isPlatformAdmin?: boolean; maxClans?: number }) {
   const { data, error } = await admin.auth.admin.createUser({
     email,
@@ -118,6 +186,7 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
     birth_date_precision: "day",
     death_date: faker.date.between({ from: "1920-01-01", to: "1970-12-31" }).toISOString().slice(0, 10),
     death_date_precision: "day",
+    ...randExtraFields("M", false),
   });
   if (rootIns.error) throw new Error(`seed root: ${rootIns.error.message}`);
   persons.push({ id: rootId, gender: "M", generation: 1 });
@@ -140,12 +209,14 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
     const spouseId = randomUUID();
     const spouseGender: "M" | "F" = parent.gender === "M" ? "F" : "M";
     const spouseName = randName(spouseGender);
+    const spouseLiving = faker.datatype.boolean({ probability: 0.3 });
     const spIns = await admin.from("persons").insert({
       id: spouseId,
       clan_id: clanId,
       full_name: spouseName.full,
       gender: spouseGender,
-      is_living: faker.datatype.boolean({ probability: 0.3 }),
+      is_living: spouseLiving,
+      ...randExtraFields(spouseGender, spouseLiving),
     });
     if (spIns.error) throw new Error(`spouse insert: ${spIns.error.message}`);
     persons.push({ id: spouseId, gender: spouseGender, generation: parent.generation });
@@ -171,13 +242,18 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
       const childId = randomUUID();
       const childGender: "M" | "F" = faker.datatype.boolean() ? "M" : "F";
       const childName = randName(childGender);
+      const childLiving =
+        parent.generation >= 5
+          ? faker.datatype.boolean({ probability: 0.85 })
+          : faker.datatype.boolean({ probability: 0.3 });
       const cIns = await admin.from("persons").insert({
         id: childId,
         clan_id: clanId,
         full_name: `${surname} ${childName.full.split(" ").slice(1).join(" ")}`,
         gender: childGender,
-        is_living: parent.generation >= 5 ? faker.datatype.boolean({ probability: 0.85 }) : faker.datatype.boolean({ probability: 0.3 }),
+        is_living: childLiving,
         birth_family_id: familyId,
+        ...randExtraFields(childGender, childLiving),
       });
       if (cIns.error) throw new Error(`child insert: ${cIns.error.message}`);
       persons.push({ id: childId, gender: childGender, generation: parent.generation + 1 });
@@ -193,12 +269,14 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
     const fg: "M" | "F" = faker.datatype.boolean() ? "M" : "F";
     const filler = randName(fg);
     const fid = randomUUID();
+    const fillerLiving = faker.datatype.boolean({ probability: 0.75 });
     const { error: fErr } = await admin.from("persons").insert({
       id: fid,
       clan_id: clanId,
       full_name: filler.full,
       gender: fg,
-      is_living: faker.datatype.boolean({ probability: 0.75 }),
+      is_living: fillerLiving,
+      ...randExtraFields(fg, fillerLiving),
     });
     if (fErr) throw new Error(`filler insert: ${fErr.message}`);
     persons.push({ id: fid, gender: fg, generation: 0 });
