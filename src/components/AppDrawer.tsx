@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
 
+import { AppLogo } from "@/components/AppLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { signOutAndClearCache } from "@/lib/auth-actions";
@@ -100,8 +101,9 @@ export function AppDrawer({ open, onClose }: Props) {
           <Link
             to="/clans"
             onClick={pick}
-            className="clan-name text-2xl font-semibold text-primary"
+            className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
           >
+            <AppLogo size={28} className="rounded" />
             Gia phả
           </Link>
           <button
