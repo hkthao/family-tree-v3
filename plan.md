@@ -1017,7 +1017,7 @@ giữ plan là nguồn tham chiếu duy nhất cho người vào dự án sau.
 | Phase 0 — Setup | ✅ Xong | Repo, Vite + React + TS + Tailwind + shadcn, Supabase local, 7 migration đầu (schema → RLS → triggers → member_management → clan_stats → account_self_delete → admin_emails_rpc). RLS test suite chạy ở CI. |
 | Phase 1 — MVP | ✅ Xong | Clans CRUD + members + persons/families/branches + danh bạ (list+grid+filters) + tree (search + focal + depth + orientation) + import Excel + dashboard + hide-living public view + cache version-check + tài khoản đầy đủ. |
 | Phase 2 — post-MVP | ✅ Xong | Share-link + share-view Edge Function (rate-limit 60req/phút), audit_log + khôi phục (RPC `restore_audit_entry`), /admin + admin-action Edge Function (suspend / unsuspend / signout / grant_platform_admin / delete), PDF export sổ gia phả (client-side @react-pdf/renderer, lazy-loaded). |
-| Phase 3 | 🚧 Đang làm | Milestone A (lunar converter + Can Chi) ✅. Milestone B (Events page list view + custom event CRUD + Dashboard panel) ✅. Milestone C (Subscribe UI: theo dõi clan-scope/person-scope, channels/lead-days/event-types editor) ✅. Milestone D (Edge Function `notify-events` + Resend + pg_cron daily 00:05 UTC + dedupe via notification_log unique index) ✅. Còn lại: kinship UI, GEDCOM, OCR. |
+| Phase 3 | 🚧 Đang làm | Milestone A (lunar + Can Chi) ✅. Milestone B (Events page) ✅. Milestone C (Subscribe UI) ✅. Milestone D (cron + Resend) ✅. GEDCOM 5.5.1 export + import với custom tags cho fields tiếng Việt (`_LUNAR_BIRTH`, `_GIO`, `_COURTESY`, `_NICKNAME`, `_POSTHUMOUS`, `_BRANCH`, `_ROOT`, `_GEN`) ✅. Còn lại: kinship UI, OCR. |
 
 ### 26.2 Migrations đã apply (theo thứ tự)
 
