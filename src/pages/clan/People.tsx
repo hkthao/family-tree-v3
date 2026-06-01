@@ -13,6 +13,7 @@ import {
   updatePersonsBranchBulk,
 } from "@/lib/queries/persons";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
@@ -97,23 +98,36 @@ export default function People() {
 
   const qc = useQueryClient();
   const confirm = useConfirm();
+  const toast = useToast();
   const bulkChangeBranchM = useMutation({
     mutationFn: () =>
       updatePersonsBranchBulk(
         [...selected],
         bulkBranch === "" ? null : bulkBranch,
       ),
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       await invalidateClanData(qc, clan.id);
+      const branchName =
+        bulkBranch === ""
+          ? "không có chi"
+          : (branches?.find((b) => b.id === bulkBranch)?.name ?? "");
+      toast.success(`Đã đổi chi cho ${res.updated} người`, {
+        description: `Mới: ${branchName}`,
+      });
       setSelected(new Set());
     },
+    onError: (e) => toast.error("Không đổi được chi", { description: (e as Error).message }),
   });
   const bulkDeleteM = useMutation({
     mutationFn: () => deletePersonsBulk([...selected]),
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       await invalidateClanData(qc, clan.id);
+      toast.success(`Đã xoá ${res.deleted} người`, {
+        description: "Có thể khôi phục từ nhật ký.",
+      });
       setSelected(new Set());
     },
+    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   function toggleSelected(id: string) {

@@ -4,6 +4,7 @@ import { Link, Navigate } from "react-router-dom";
 
 import { BranchesSection } from "@/components/BranchesSection";
 import { GedcomButtons } from "@/components/GedcomButtons";
+import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconList,
@@ -30,6 +31,7 @@ export default function Settings() {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const userId = user?.id ?? "";
 
   const [name, setName] = useState(clan.name);
@@ -59,7 +61,10 @@ export default function Settings() {
           q.queryKey[0] === "clans" &&
           q.queryKey[1] === "mine",
       });
+      toast.success("Đã lưu cài đặt");
     },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
   if (!isClanAdmin(clan)) {
