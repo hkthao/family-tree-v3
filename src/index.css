@@ -74,15 +74,11 @@
     --destructive: 0 70% 60%;           /* #E04D4D */
     --destructive-foreground: 38 30% 92%;
 
-    /* Cards on bg get their separation from the card surface
-     * being lighter (12%) than the page (8%), not from the
-     * border. The border just needs to be a faint hairline at
-     * the card/section seam — anything brighter starts to look
-     * like a stamped outline. 10% sits right between bg and
-     * card so the rule is barely-there. Inputs keep more
-     * contrast so they read as interactive. */
-    --border: 24 10% 10%;
-    --input: 24 10% 22%;
+    /* Card border literally matches input border color
+     * (rgb(56, 50, 46) = hsl(24, 10%, 20%)) — every contained
+     * surface uses the same computed border-color. */
+    --border: 24 10% 20%;
+    --input: 24 10% 20%;
     --ring: 0 60% 58%;
   }
 

@@ -4,6 +4,7 @@ import { Link, Navigate, Outlet, useParams } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
+import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanRealtime } from "@/hooks/useClanRealtime";
@@ -97,16 +98,17 @@ export function ClanLayout() {
               {clan.name}
             </h1>
           </div>
-          {(clan.myRole === "admin" || clan.isPlatformAdmin) ? (
-            <Link
-              to={`/clans/${clanId}/settings`}
-              className="text-sm text-muted-foreground hover:text-foreground shrink-0"
-            >
-              Cài đặt
-            </Link>
-          ) : (
-            <span className="w-10 shrink-0" aria-hidden="true" />
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            <ThemeQuickToggle />
+            {(clan.myRole === "admin" || clan.isPlatformAdmin) && (
+              <Link
+                to={`/clans/${clanId}/settings`}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Cài đặt
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 

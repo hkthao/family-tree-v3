@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { AppLogo } from "@/components/AppLogo";
+import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { useAuth } from "@/hooks/useAuth";
 
 export function AppHeader() {
@@ -28,9 +29,12 @@ export function AppHeader() {
             <AppLogo size={28} className="rounded" />
             Gia phả
           </Link>
-          <span className="hidden sm:inline text-sm text-muted-foreground truncate max-w-[160px]">
-            {user?.user_metadata?.display_name ?? user?.email}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline text-sm text-muted-foreground truncate max-w-[160px]">
+              {user?.user_metadata?.display_name ?? user?.email}
+            </span>
+            <ThemeQuickToggle />
+          </div>
         </div>
       </header>
       <AppDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
