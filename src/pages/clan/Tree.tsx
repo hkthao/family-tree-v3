@@ -371,22 +371,50 @@ export default function Tree() {
   }, [f3Data, focal, orientation]);
 
   // Before the OS print dialog opens (either via our "In" button or
-  // OS-level Cmd/Ctrl+P), refit the tree to its container so a
-  // zoomed-in view doesn't print only a sliver of the family. We
-  // suppress the transition during the resize so the print snapshot
-  // captures the fitted layout immediately, then restore animation
-  // when the print finishes.
+  // OS-level Cmd/Ctrl+P), refit the tree to the printable area.
+  // family-chart measures the container via getBoundingClientRect,
+  // but `beforeprint` fires while the on-screen layout is still
+  // active — the chart would otherwise fit to viewport, not page.
+  //
+  // The trick: temporarily force the container's inline size to
+  // match A3 landscape minus margins + title (40×27 cm rendered as
+  // CSS pixels — 96 dpi → 1512×1020). updateTree({initial:true})
+  // then fits everything into that target box. The print engine
+  // snapshots the resized SVG; the print stylesheet (.f3 width/
+  // height in cm) just clips to the same area.
+  //
+  // afterprint restores the original screen layout.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // 96 dpi assumption — Chrome/Firefox use 96 css px per inch
+    // for printable layout regardless of the physical printer.
+    const PRINT_PX = { w: Math.round((40 / 2.54) * 96), h: Math.round((27 / 2.54) * 96) };
+
+    let savedWidth = "";
+    let savedHeight = "";
+
     const onBeforePrint = () => {
       const c = chartRef.current;
-      if (!c) return;
+      const node = containerRef.current;
+      if (!c || !node) return;
+      savedWidth = node.style.width;
+      savedHeight = node.style.height;
+      node.style.width = `${PRINT_PX.w}px`;
+      node.style.height = `${PRINT_PX.h}px`;
       c.setTransitionTime(0);
       c.updateTree({ initial: true });
     };
+
     const onAfterPrint = () => {
-      chartRef.current?.setTransitionTime(200);
+      const c = chartRef.current;
+      const node = containerRef.current;
+      if (!c || !node) return;
+      node.style.width = savedWidth;
+      node.style.height = savedHeight;
+      c.setTransitionTime(200);
+      c.updateTree({ initial: false });
     };
+
     window.addEventListener("beforeprint", onBeforePrint);
     window.addEventListener("afterprint", onAfterPrint);
     return () => {
