@@ -305,7 +305,7 @@ export default function Share() {
         {data && data.persons.length > 0 && (
           <>
             {/* Filter toolbar */}
-            <div className="border-b px-4 py-3 shrink-0 flex flex-wrap items-start gap-3">
+            <div className="border-b px-4 py-3 shrink-0 flex flex-wrap items-start gap-3 print-hide">
               <div className="flex-1 min-w-[200px] max-w-md relative">
                 <SearchInput
                   label="Đặt người trung tâm"

@@ -6,6 +6,7 @@ import {
   IconLayoutHorizontal,
   IconLayoutVertical,
   IconPlus,
+  IconPrinter,
   IconUpload,
 } from "@/components/icons";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -377,9 +378,29 @@ export default function Tree() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      {/* Print-only title strip — shows "Họ Nguyễn — Cây gia phả · 2026-06-01"
+          at the top of the printed page. The on-screen flow ignores it. */}
+      <div className="print-only" aria-hidden="true">
+        <h1 style={{ fontSize: "18pt", fontWeight: 600, marginBottom: "0.4cm" }}>
+          {clan.name} — Cây gia phả
+        </h1>
+        <p style={{ fontSize: "10pt", color: "#555", marginBottom: "0.6cm" }}>
+          In ngày {new Date().toLocaleDateString("vi-VN")}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 flex-wrap print-hide">
         <h2 className="text-2xl font-semibold">Cây gia phả</h2>
         <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            title="In trang này (Ctrl/Cmd+P)"
+          >
+            <IconPrinter className="h-4 w-4 mr-1.5" />
+            In
+          </Button>
           {/* Orientation toggle — vertical (top-down) vs horizontal
               (left-right). Re-inits the chart via the orientation dep
               on the init effect so the layout flips immediately. */}
@@ -456,7 +477,7 @@ export default function Tree() {
 
       {data && data.persons.length > 0 && (
         <>
-          <div className="space-y-2">
+          <div className="space-y-2 print-hide">
             <SearchInput
               label="Đặt người trung tâm"
               value={search}
@@ -508,7 +529,7 @@ export default function Tree() {
             }
             aria-label="Cây gia phả tương tác"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground print-hide">
             Vuốt để di chuyển, kéo 2 ngón để phóng to/thu nhỏ. Chạm vào thẻ
             người để mở rộng nhánh.
           </p>

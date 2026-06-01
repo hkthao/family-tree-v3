@@ -167,3 +167,88 @@
 .f3 svg.main_svg .card-action:hover circle {
   fill: #F0E6D1;
 }
+
+/* ---------------------------------------------------------------- *
+ * Print stylesheet — Ctrl/Cmd-P from the Tree page (or Share view)
+ *
+ * The browser's PDF/print path is a useful complement to the
+ * server-side ClanBook PDF: it lets users print the live tree
+ * with the current focal + orientation. We hide the entire app
+ * shell + page toolbars, expand the family-chart canvas to fill
+ * the page, and surface a small print-only header block so the
+ * printout has a title.
+ *
+ * Classes used:
+ *   .print-hide  — applied to toolbars / quick-help text on the
+ *                  Tree + Share pages so they vanish on print.
+ *   .print-only  — a block that ONLY shows on print (hidden in the
+ *                  normal flow) — used for the title strip.
+ * ---------------------------------------------------------------- */
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 1cm;
+  }
+
+  /* Drop the warm paper background so toner doesn't fill the page. */
+  body,
+  .bg-background,
+  .bg-card {
+    background: #ffffff !important;
+  }
+
+  /* App shell chrome — sticky header, drawer, bottom tabs, status
+   * banners, toasts — none of it belongs on paper. The selectors
+   * are tight enough that legitimate page-level <header>/<nav>
+   * elements (e.g. the Account page header) also vanish; that's
+   * what we want — only the chart should print. */
+  header,
+  nav,
+  aside,
+  [role="dialog"],
+  [aria-live="polite"],
+  [aria-live="assertive"],
+  .print-hide {
+    display: none !important;
+  }
+
+  /* The reverse: explicit print-only blocks like the title strip. */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Tighten the page container so the chart can use full width. */
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .container {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  /* Expand the family-chart canvas to fill the printable area.
+   * Removing the border + rounded corners avoids printing the
+   * card frame around the SVG. */
+  .f3 {
+    height: 18cm !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  /* family-chart's pan/zoom transforms keep working — print just
+   * captures whatever's currently in view. We do NOT reset the
+   * transform here: the user already chose a focal + orientation;
+   * they likely want that exact framing on paper too. */
+}
