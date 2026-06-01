@@ -82,6 +82,17 @@
     --ring: 0 60% 58%;
   }
 
+  /* Force every Tailwind `border` utility (without an explicit
+   * border-color suffix) to use our --border CSS var instead of
+   * Tailwind's hard-coded gray-200 default. Without this rule
+   * a bare `border` on a card stays light grey in dark mode
+   * regardless of how we tune --border, because the utility
+   * never reads the variable. shadcn ships this same line in
+   * every starter for the same reason. */
+  * {
+    @apply border-border;
+  }
+
   /* Base font size — 17px, scales with user system preference via rem */
   html {
     font-size: 17px;
