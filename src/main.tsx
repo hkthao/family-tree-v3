@@ -3,8 +3,11 @@ import { createRoot } from "react-dom/client";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 
 import App from "./App";
+import { initPwa } from "./lib/pwa";
 import { persister, queryClient } from "./lib/queryClient";
 import "./index.css";
+
+initPwa();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
