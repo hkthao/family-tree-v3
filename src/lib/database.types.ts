@@ -519,6 +519,7 @@ export type Database = {
           nickname: string | null
           photo_path: string | null
           posthumous_name: string | null
+          search_text: string | null
           updated_at: string
         }
         Insert: {
@@ -556,6 +557,7 @@ export type Database = {
           nickname?: string | null
           photo_path?: string | null
           posthumous_name?: string | null
+          search_text?: string | null
           updated_at?: string
         }
         Update: {
@@ -593,6 +595,7 @@ export type Database = {
           nickname?: string | null
           photo_path?: string | null
           posthumous_name?: string | null
+          search_text?: string | null
           updated_at?: string
         }
         Relationships: [

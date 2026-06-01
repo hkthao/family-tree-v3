@@ -89,7 +89,18 @@ export async function listPersons(
 
   if (params.search && params.search.trim()) {
     const needle = unaccent(params.search);
-    q = q.ilike("full_name_unaccent", `%${needle}%`);
+    // search_text is the concatenated unaccented blob of full_name,
+    // courtesy/posthumous/nickname, bio, birth_place, burial_place
+    // — typing "Hà Nội" finds anyone born/buried there; typing "Tí"
+    // finds every nickname; etc. Trigram GIN index keeps it fast.
+    // Falls back to the public-safe view's `full_name_unaccent`
+    // when reading from there since that view doesn't expose
+    // search_text (masked fields would leak).
+    if (source === "persons_public_safe") {
+      q = q.ilike("full_name_unaccent", `%${needle}%`);
+    } else {
+      q = q.ilike("search_text", `%${needle}%`);
+    }
   }
   if (params.branchId !== undefined && params.branchId !== null) {
     q = q.eq("branch_id", params.branchId);

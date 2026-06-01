@@ -241,7 +241,7 @@ export default function People() {
             label="Tìm theo tên"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên — gõ không dấu cũng được"
+            placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
           />
         </div>
         <select
