@@ -891,6 +891,7 @@ export type Database = {
         Args: { p_loser: string; p_winner: string }
         Returns: Json
       }
+      prune_audit_log: { Args: { retention_days?: number }; Returns: number }
       prune_share_view_rate: { Args: never; Returns: undefined }
       recompute_generation_for_clan: {
         Args: { target_clan: string }
