@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { BranchesSection } from "@/components/BranchesSection";
+import { CsvExportButton } from "@/components/CsvExportButton";
 import { GedcomButtons } from "@/components/GedcomButtons";
 import { useToast } from "@/components/Toast";
 import {
@@ -230,6 +231,21 @@ export default function Settings() {
         </CardHeader>
         <CardContent>
           <GedcomButtons clan={clan} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Xuất CSV</CardTitle>
+          <CardDescription>
+            Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng
+            loạt trong Excel/Google Sheets rồi nhập lại. Các trường
+            ngoài 9 cột này (ngày âm, tên tự, ảnh, nơi sinh…) không
+            được mang theo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CsvExportButton clan={clan} />
         </CardContent>
       </Card>
 
