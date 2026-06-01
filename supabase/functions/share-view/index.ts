@@ -120,6 +120,14 @@ Deno.serve(async (req) => {
     return err("Link đã hết hạn.", 410);
   }
 
+  // ---- 2b. Fetch clan-level toggles that affect masking ----
+  const { data: clanRow } = await sb
+    .from("clans")
+    .select("hide_photos_in_share")
+    .eq("id", link.clan_id)
+    .maybeSingle();
+  const hidePhotos = !!clanRow?.hide_photos_in_share;
+
   // ---- 3. Fetch persons + families ----
   const personSelect =
     "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_date, birth_date_precision, death_date, death_date_precision, photo_path";
@@ -190,7 +198,10 @@ Deno.serve(async (req) => {
   // Per clan owner preference, share view shows portraits for both
   // living and deceased members. Dates / places / bio remain masked
   // for the living — only the photo itself is treated as
-  // family-approved-public when uploaded.
+  // family-approved-public when uploaded. The hide_photos_in_share
+  // clan toggle short-circuits this path entirely so the response
+  // carries no photo_url for anyone — useful for clans with
+  // children or members who prefer not to appear publicly.
   //
   // We strip the absolute origin from each signed URL because inside
   // Supabase Local the storage helper bakes Docker-internal hostnames
@@ -198,9 +209,11 @@ Deno.serve(async (req) => {
   // never resolve. The client knows its own Supabase URL via
   // VITE_SUPABASE_URL and prepends it back. Works in cloud + local
   // without needing forwarded-host headers.
-  const allPhotoPaths = scopedPersons
-    .filter((p) => p.photo_path)
-    .map((p) => p.photo_path as string);
+  const allPhotoPaths = hidePhotos
+    ? []
+    : scopedPersons
+        .filter((p) => p.photo_path)
+        .map((p) => p.photo_path as string);
   const photoUrlByPath = new Map<string, string>();
   if (allPhotoPaths.length > 0) {
     const { data: signed } = await sb.storage

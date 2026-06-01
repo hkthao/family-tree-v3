@@ -195,6 +195,7 @@ export type Database = {
           data_version: number
           description: string | null
           hide_living_for_nonmembers: boolean
+          hide_photos_in_share: boolean
           id: string
           max_persons: number
           max_users: number
@@ -209,6 +210,7 @@ export type Database = {
           data_version?: number
           description?: string | null
           hide_living_for_nonmembers?: boolean
+          hide_photos_in_share?: boolean
           id?: string
           max_persons?: number
           max_users?: number
@@ -223,6 +225,7 @@ export type Database = {
           data_version?: number
           description?: string | null
           hide_living_for_nonmembers?: boolean
+          hide_photos_in_share?: boolean
           id?: string
           max_persons?: number
           max_users?: number
