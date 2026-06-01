@@ -3,16 +3,11 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
-import { IconArrowLeft, IconArrowRight, IconUndo } from "@/components/icons";
+import { IconArrowLeft, IconArrowRight, IconRefresh, IconUndo } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
@@ -118,14 +113,11 @@ export default function Audit() {
       {!data ? (
         <p className="text-muted-foreground">Đang tải…</p>
       ) : data.rows.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Chưa có thay đổi nào</CardTitle>
-            <CardDescription>
-              Mọi chỉnh sửa từ giờ sẽ xuất hiện ở đây.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <EmptyState
+          icon={<IconRefresh className="h-10 w-10" />}
+          title="Chưa có thay đổi nào"
+          description="Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm."
+        />
       ) : (
         <ul className="space-y-3">
           {data.rows.map((r) => (

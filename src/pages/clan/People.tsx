@@ -22,7 +22,11 @@ import {
   IconGrid,
   IconList,
   IconPlus,
+  IconSearch,
+  IconUpload,
+  IconUsers,
 } from "@/components/icons";
+import { EmptyState } from "@/components/EmptyState";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
@@ -393,11 +397,45 @@ export default function People() {
           <p className="text-muted-foreground">Đang tải…</p>
         </div>
       ) : data.rows.length === 0 ? (
-        <div className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
-          {debounced || branchId || generation
-            ? `Không tìm thấy ai khớp bộ lọc.`
-            : "Chưa có ai trong dòng họ. Bấm Thêm người để bắt đầu."}
-        </div>
+        debounced || branchId || generation ? (
+          <EmptyState
+            icon={<IconSearch className="h-10 w-10" />}
+            title="Không tìm thấy ai khớp bộ lọc"
+            description="Thử bỏ bớt từ khoá, đổi chi hoặc đời để mở rộng kết quả."
+            primary={{
+              label: "Xoá bộ lọc",
+              onClick: () => {
+                setSearch("");
+                setBranchId("");
+                setGeneration("");
+              },
+            }}
+          />
+        ) : (
+          <EmptyState
+            icon={<IconUsers className="h-10 w-10" />}
+            title="Chưa có ai trong dòng họ"
+            description="Thêm thuỷ tổ trước, các thế hệ con cháu nối vào dễ hơn. Nếu đã có dữ liệu sẵn ở file Excel, dùng nhập hàng loạt."
+            primary={
+              canEdit
+                ? {
+                    label: "Thêm người",
+                    to: `/clans/${clan.id}/people/new`,
+                    icon: <IconPlus className="h-4 w-4 mr-1.5" />,
+                  }
+                : null
+            }
+            secondary={
+              canEdit
+                ? {
+                    label: "Nhập từ Excel",
+                    to: `/clans/${clan.id}/import`,
+                    icon: <IconUpload className="h-4 w-4 mr-1.5" />,
+                  }
+                : null
+            }
+          />
+        )
       ) : viewMode === "list" ? (
         <ul className="divide-y rounded-lg border bg-card">
           {canEdit && (

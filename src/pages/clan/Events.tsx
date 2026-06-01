@@ -10,7 +10,9 @@ import {
   IconTrash,
   IconX,
 } from "@/components/icons";
+import { IconBellOff } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
 import { EventsCalendar } from "@/components/EventsCalendar";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -186,15 +188,11 @@ export default function Events() {
       ) : view === "calendar" ? (
         <EventsCalendar events={upcoming} clanId={clan.id} />
       ) : upcoming.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Không có sự kiện sắp tới</CardTitle>
-            <CardDescription>
-              Không tìm thấy sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào
-              trong {daysAhead} ngày tới.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <EmptyState
+          icon={<IconBellOff className="h-10 w-10" />}
+          title="Không có sự kiện sắp tới"
+          description={`Trong ${daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới.`}
+        />
       ) : (
         <ul className="space-y-2">
           {upcoming.map((e) => (

@@ -204,7 +204,11 @@ export default function Members() {
           <CardContent>
             {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
             {members && members.length === 0 && (
-              <p className="text-muted-foreground">Chưa có ai khác.</p>
+              <p className="text-muted-foreground">
+                Chưa có ai khác. Dùng ô email phía trên để mời thành viên — họ
+                cần đăng ký tài khoản trước, sau đó bạn gõ đúng email để gửi
+                lời mời.
+              </p>
             )}
             {members && members.length > 0 && (
               <ul className="divide-y">
