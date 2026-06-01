@@ -59,9 +59,11 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        // Lets us test the SW path in `npm run dev`. Off by default
-        // would require running `vite preview` after a build.
-        enabled: false,
+        // Register the SW in `npm run dev` too so devs can verify
+        // install/update flows without a build step. Workbox keeps
+        // navigation requests untouched so Vite HMR still works.
+        enabled: true,
+        type: "module",
       },
     }),
   ],
