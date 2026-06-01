@@ -343,9 +343,9 @@ function DetailRow({
     return null;
   }
   return (
-    <div className="grid grid-cols-[120px_1fr] gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-0.5 sm:gap-2">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span>{value}</span>
+      <span className="break-words">{value}</span>
     </div>
   );
 }
