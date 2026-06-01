@@ -307,9 +307,16 @@ interface Props {
   clan: ClanDetail;
   data: ClanBookData;
   include?: { tree?: boolean; detail?: boolean };
+  /**
+   * Optional personId → JPEG data URI map for embedding real avatar
+   * photos. Persons not in the map fall back to the gendered
+   * illustration. The caller pre-fetches these in exportClanBook so
+   * the PDF render stays synchronous.
+   */
+  photoByPersonId?: Map<string, string>;
 }
 
-export function ClanBookPdf({ clan, data, include }: Props) {
+export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
   ensurePdfFontRegistered();
 
   const showTree = include?.tree ?? true;
@@ -499,6 +506,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
                     motherOf,
                     personById,
                     branchById,
+                    photoByPersonId,
                   )}
                 </View>
               ))}
@@ -533,7 +541,7 @@ export function ClanBookPdf({ clan, data, include }: Props) {
                       : styles.card
                   }
                 >
-                  {renderInLawCard(p, spousesByPerson, personById)}
+                  {renderInLawCard(p, spousesByPerson, personById, photoByPersonId)}
                 </View>
               ))}
             </View>
@@ -555,6 +563,7 @@ function renderPersonCard(
   motherOf: Map<string, string>,
   personById: Map<string, PersonDetail>,
   branchById: Map<string, string>,
+  photoByPersonId?: Map<string, string>,
 ): React.ReactNode {
   const birthSolar = formatPartialDate({
     date: p.birth_date,
@@ -599,9 +608,14 @@ function renderPersonCard(
   if (!p.is_living) metaParts.push("đã mất");
   if (branchName) metaParts.push(`chi ${branchName}`);
 
+  const photoUri = photoByPersonId?.get(p.id);
+
   return (
     <>
-      <Image src={avatarSrc(p.gender)} style={styles.avatarImg} />
+      <Image
+        src={photoUri ?? avatarSrc(p.gender)}
+        style={styles.avatarImg}
+      />
       <Text style={styles.personName}>{p.full_name}</Text>
       {p.is_root && (
         <Text
@@ -656,6 +670,7 @@ function renderInLawCard(
   p: PersonDetail,
   spousesByPerson: Map<string, string[]>,
   personById: Map<string, PersonDetail>,
+  photoByPersonId?: Map<string, string>,
 ): React.ReactNode {
   const ls = lifespanText(p);
   const spouseList = (spousesByPerson.get(p.id) ?? [])
@@ -666,9 +681,14 @@ function renderInLawCard(
   if (ls) metaParts.push(ls);
   if (!p.is_living) metaParts.push("đã mất");
 
+  const photoUri = photoByPersonId?.get(p.id);
+
   return (
     <>
-      <Image src={avatarSrc(p.gender)} style={styles.avatarImg} />
+      <Image
+        src={photoUri ?? avatarSrc(p.gender)}
+        style={styles.avatarImg}
+      />
       <Text style={styles.personName}>{p.full_name}</Text>
       <Text style={styles.personMeta}>{metaParts.join(" · ")}</Text>
 
