@@ -6,6 +6,7 @@ import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useClanRealtime } from "@/hooks/useClanRealtime";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
 
@@ -31,6 +32,11 @@ export function ClanLayout() {
     refetchOnMount: "always",
     staleTime: 0,
   });
+
+  // Subscribe to live updates so edits from other members propagate
+  // without manual refresh. Idempotent — running parallel to the
+  // RefreshButton, not in place of it.
+  useClanRealtime(clanId, clan?.data_version);
 
   if (!clanId) return <Navigate to="/clans" replace />;
 
