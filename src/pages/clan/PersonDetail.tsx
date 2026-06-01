@@ -10,6 +10,7 @@ import {
 import { useConfirm } from "@/components/ConfirmDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
+import { useToast } from "@/components/Toast";
 import { getSignedPhotoUrl } from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export default function PersonDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const askConfirm = useConfirm();
+  const toast = useToast();
   const [searchParams] = useSearchParams();
 
   // Where to send the breadcrumb back. Tree action icons append
@@ -86,8 +88,13 @@ export default function PersonDetail() {
     mutationFn: () => deletePerson(personId!),
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
+      toast.success(`Đã xoá ${person?.full_name ?? "người này"}`, {
+        description: "Có thể khôi phục từ nhật ký.",
+      });
       navigate(backTo);
     },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   if (!clanId || !personId) return null;

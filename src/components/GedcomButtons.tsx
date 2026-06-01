@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { useToast } from "@/components/Toast";
 import { IconDownload, IconUpload } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ interface Props {
  */
 export function GedcomButtons({ clan }: Props) {
   const qc = useQueryClient();
+  const toast = useToast();
   const [importMsg, setImportMsg] = useState<string | null>(null);
 
   const exportM = useMutation({
@@ -25,6 +27,12 @@ export function GedcomButtons({ clan }: Props) {
       const { downloadClanGedcom } = await import("@/lib/gedcom/exportClan");
       return downloadClanGedcom(clan);
     },
+    onSuccess: (res) =>
+      toast.success("Đã xuất GEDCOM", {
+        description: `${res.filename} (${Math.round(res.bytes / 1024)} KB)`,
+      }),
+    onError: (e) =>
+      toast.error("Không xuất được", { description: (e as Error).message }),
   });
 
   const importM = useMutation({
@@ -36,16 +44,19 @@ export function GedcomButtons({ clan }: Props) {
       return importGedcomIntoClan(clan.id, parsed);
     },
     onSuccess: (res) => {
-      setImportMsg(
+      const summary =
         `Đã nhập ${res.personsCreated} người, ${res.familiesCreated} gia đình` +
-          (res.branchesCreated ? `, ${res.branchesCreated} chi` : "") +
-          (res.warnings.length
-            ? `. Có ${res.warnings.length} cảnh báo (xem console).`
-            : "."),
-      );
+        (res.branchesCreated ? `, ${res.branchesCreated} chi` : "") +
+        (res.warnings.length
+          ? `. Có ${res.warnings.length} cảnh báo (xem console).`
+          : ".");
+      setImportMsg(summary);
       if (res.warnings.length) console.warn(res.warnings);
       invalidateClanData(qc, clan.id);
+      toast.success("Đã nhập GEDCOM", { description: summary });
     },
+    onError: (e) =>
+      toast.error("Không nhập được", { description: (e as Error).message }),
   });
 
   return (

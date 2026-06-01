@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { IconTrash, IconUpload } from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -44,6 +45,7 @@ export function PhotoUploadField({
   const userId = user?.id ?? "";
   const qc = useQueryClient();
   const confirm = useConfirm();
+  const toast = useToast();
   const [stats, setStats] = useState<{ bytes: number } | null>(null);
 
   const { data: signedUrl } = useQuery({
@@ -69,7 +71,12 @@ export function PhotoUploadField({
           Array.isArray(q.queryKey) && q.queryKey[0] === "signed-photo",
       });
       onChange?.(res.path);
+      toast.success("Đã tải ảnh lên", {
+        description: `${Math.round(res.bytes / 1024)} KB sau khi nén.`,
+      });
     },
+    onError: (e) =>
+      toast.error("Tải ảnh thất bại", { description: (e as Error).message }),
   });
 
   const deleteM = useMutation({
@@ -83,7 +90,10 @@ export function PhotoUploadField({
         queryKey: queryKeys.person(personId, userId),
       });
       onChange?.(null);
+      toast.success("Đã xoá ảnh");
     },
+    onError: (e) =>
+      toast.error("Xoá ảnh thất bại", { description: (e as Error).message }),
   });
 
   return (

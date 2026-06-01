@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ClanLayout } from "@/components/ClanLayout";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
 import { RequireAuth } from "@/components/RequireAuth";
+import { ToastProvider } from "@/components/Toast";
 import Account from "@/pages/Account";
 import Admin from "@/pages/Admin";
 import Clans from "@/pages/Clans";
@@ -28,6 +29,7 @@ import Signup from "@/pages/Signup";
 export default function App() {
   return (
     <BrowserRouter>
+      <ToastProvider>
       <ConfirmDialogProvider>
         <Routes>
         <Route path="/login" element={<Login />} />
@@ -96,6 +98,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/clans" replace />} />
         </Routes>
       </ConfirmDialogProvider>
+      </ToastProvider>
     </BrowserRouter>
   );
 }

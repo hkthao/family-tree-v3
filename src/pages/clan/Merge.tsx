@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { IconCheck, IconSearch, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export default function Merge() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const confirm = useConfirm();
+  const toast = useToast();
 
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const [loserId, setLoserId] = useState<string | null>(null);
@@ -69,10 +71,15 @@ export default function Merge() {
 
   const m = useMutation({
     mutationFn: () => mergePersons(winnerId!, loserId!),
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       await invalidateClanData(qc, clan.id);
+      toast.success("Đã gộp xong", {
+        description: `Đã cập nhật ${res.familiesUpdated} gia đình, ${res.subsUpdated} đăng ký, ${res.eventsUpdated} sự kiện.`,
+      });
       navigate(`/clans/${clan.id}/people/${winnerId}`);
     },
+    onError: (e) =>
+      toast.error("Không gộp được", { description: (e as Error).message }),
   });
 
   if (!canEditClan(clan)) {

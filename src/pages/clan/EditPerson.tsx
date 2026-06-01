@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ export default function EditPerson() {
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   // Preserve ?from=tree so PersonDetail's breadcrumb stays correct
   // after we navigate back from this form.
@@ -101,8 +103,11 @@ export default function EditPerson() {
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
+      toast.success("Đã lưu thay đổi");
       navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
     },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
   if (!clanId || !personId) return null;
