@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queries/keys";
@@ -46,6 +47,7 @@ export function SubscribeToggle({
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const qc = useQueryClient();
+  const toast = useToast();
 
   const { data: subs } = useQuery({
     queryKey: queryKeys.subscriptions(clanId, userId),
@@ -73,9 +75,15 @@ export function SubscribeToggle({
         });
       }
     },
-    onSuccess: () =>
+    onSuccess: () => {
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
+      });
+      toast.success(existing ? "Đã huỷ theo dõi" : "Đã bật theo dõi");
+    },
+    onError: (e) =>
+      toast.error("Không cập nhật được", {
+        description: (e as Error).message,
       }),
   });
 

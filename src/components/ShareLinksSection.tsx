@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconCopy,
@@ -33,6 +34,7 @@ export function ShareLinksSection({ clanId }: Props) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const qc = useQueryClient();
+  const toast = useToast();
 
   const { data: links, isLoading } = useQuery({
     queryKey: queryKeys.shareLinks(clanId, userId),
@@ -48,8 +50,12 @@ export function ShareLinksSection({ clanId }: Props) {
         clan_id: clanId,
         ttlDays: Math.max(1, Math.min(365, Number(ttl) || DEFAULT_TTL)),
       }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) });
+      toast.success("Đã tạo link chia sẻ");
+    },
+    onError: (e) =>
+      toast.error("Không tạo được", { description: (e as Error).message }),
   });
 
   return (
@@ -115,18 +121,27 @@ function ShareLinkItem({
   userId: string;
 }) {
   const qc = useQueryClient();
+  const toast = useToast();
   const confirm = useConfirm();
   const [copied, setCopied] = useState(false);
 
   const revokeM = useMutation({
     mutationFn: () => revokeShareLink(link.id),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) });
+      toast.success("Đã thu hồi link");
+    },
+    onError: (e) =>
+      toast.error("Không thu hồi được", { description: (e as Error).message }),
   });
   const deleteM = useMutation({
     mutationFn: () => deleteShareLink(link.id),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) });
+      toast.success("Đã xoá link");
+    },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   const expired = new Date(link.expires_at) < new Date();

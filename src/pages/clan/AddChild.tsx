@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { IconCheck, IconX } from "@/components/icons";
+import { useToast } from "@/components/Toast";
 import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export default function AddChild() {
   }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const [searchParams] = useSearchParams();
@@ -82,8 +84,11 @@ export default function AddChild() {
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
+      toast.success("Đã thêm con", { description: fullName.trim() });
       navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
     },
+    onError: (e) =>
+      toast.error("Không thêm được", { description: (e as Error).message }),
   });
 
   if (!clanId || !personId) return null;

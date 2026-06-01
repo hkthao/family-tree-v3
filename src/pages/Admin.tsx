@@ -4,6 +4,7 @@ import { Link, Navigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconLock,
@@ -164,12 +165,18 @@ function UserRow({
   onChange: () => void;
 }) {
   const confirm = useConfirm();
+  const toast = useToast();
   const [expanded, setExpanded] = useState(false);
   const [maxClans, setMaxClans] = useState(String(profile.max_clans));
 
   const updateLimits = useMutation({
     mutationFn: () => updateProfileMaxClans(profile.id, Number(maxClans)),
-    onSuccess: () => onChange(),
+    onSuccess: () => {
+      onChange();
+      toast.success("Đã cập nhật giới hạn");
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
   const suspendM = useMutation({
@@ -178,7 +185,12 @@ function UserRow({
         action: suspend ? "suspend" : "unsuspend",
         target_user_id: profile.id,
       }),
-    onSuccess: () => onChange(),
+    onSuccess: (_data, suspend) => {
+      onChange();
+      toast.success(suspend ? "Đã khoá tài khoản" : "Đã mở khoá");
+    },
+    onError: (e) =>
+      toast.error("Thất bại", { description: (e as Error).message }),
   });
 
   const grantM = useMutation({
@@ -188,13 +200,23 @@ function UserRow({
         target_user_id: profile.id,
         grant,
       }),
-    onSuccess: () => onChange(),
+    onSuccess: (_data, grant) => {
+      onChange();
+      toast.success(grant ? "Đã cấp quyền admin" : "Đã thu hồi quyền admin");
+    },
+    onError: (e) =>
+      toast.error("Thất bại", { description: (e as Error).message }),
   });
 
   const deleteM = useMutation({
     mutationFn: () =>
       adminAction({ action: "delete", target_user_id: profile.id }),
-    onSuccess: () => onChange(),
+    onSuccess: () => {
+      onChange();
+      toast.success("Đã xoá tài khoản");
+    },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   const { data: clans } = useQuery({
@@ -407,6 +429,7 @@ function ClanRow({
   clan: AdminClanRow;
   onChange: () => void;
 }) {
+  const toast = useToast();
   const [maxPersons, setMaxPersons] = useState(String(clan.max_persons));
   const [maxUsers, setMaxUsers] = useState(String(clan.max_users));
 
@@ -416,7 +439,12 @@ function ClanRow({
         max_persons: Number(maxPersons),
         max_users: Number(maxUsers),
       }),
-    onSuccess: () => onChange(),
+    onSuccess: () => {
+      onChange();
+      toast.success("Đã cập nhật giới hạn clan");
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
   const changed =

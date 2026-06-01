@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { IconArrowLeft, IconArrowRight, IconUndo } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -186,11 +187,19 @@ function AuditItem({
   onRestored: () => Promise<void> | void;
 }) {
   const confirm = useConfirm();
+  const toast = useToast();
   const [expanded, setExpanded] = useState(false);
 
   const restoreM = useMutation({
     mutationFn: () => restoreAuditEntry(row.id),
-    onSuccess: () => onRestored(),
+    onSuccess: () => {
+      onRestored();
+      toast.success("Đã khôi phục");
+    },
+    onError: (e) =>
+      toast.error("Không khôi phục được", {
+        description: (e as Error).message,
+      }),
   });
 
   const name =

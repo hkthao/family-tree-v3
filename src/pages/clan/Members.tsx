@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { IconTrash, IconUserPlus } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export default function Members() {
   const userId = user?.id ?? "";
   const queryClient = useQueryClient();
   const confirm = useConfirm();
+  const toast = useToast();
 
   const { clan } = useClanContext();
 
@@ -56,6 +58,9 @@ export default function Members() {
           kind: "success",
           text: `Đã thêm ${inviteEmail} với vai trò ${ROLE_LABEL[inviteRole]}.`,
         });
+        toast.success("Đã thêm thành viên", {
+          description: `${inviteEmail} — ${ROLE_LABEL[inviteRole]}`,
+        });
         setInviteEmail("");
         await queryClient.invalidateQueries({
           queryKey: queryKeys.clanMembers(clanId!, userId),
@@ -72,24 +77,33 @@ export default function Members() {
     },
     onError: (e) => {
       setInviteMessage({ kind: "error", text: (e as Error).message });
+      toast.error("Không thêm được", { description: (e as Error).message });
     },
   });
 
   const roleMutation = useMutation({
     mutationFn: ({ uid, role }: { uid: string; role: ClanRole }) =>
       changeMemberRole(clanId!, uid, role),
-    onSuccess: () =>
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.clanMembers(clanId!, userId),
-      }),
+      });
+      toast.success(`Đã đổi vai trò sang ${ROLE_LABEL[vars.role]}`);
+    },
+    onError: (e) =>
+      toast.error("Không đổi được", { description: (e as Error).message }),
   });
 
   const removeMutation = useMutation({
     mutationFn: (uid: string) => removeMember(clanId!, uid),
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.clanMembers(clanId!, userId),
-      }),
+      });
+      toast.success("Đã xoá thành viên");
+    },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   if (!clanId) return null;

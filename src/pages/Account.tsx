@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconLogOut,
@@ -123,11 +124,15 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
     setName(current ?? "");
   }, [current]);
 
+  const toast = useToast();
   const m = useMutation({
     mutationFn: () => updateMyDisplayName(userId, name.trim()),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId) });
+      toast.success("Đã đổi tên hiển thị");
     },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
   const changed = name.trim() !== (current ?? "").trim();
@@ -186,6 +191,7 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
 // ---------------------------------------------------------------------------
 
 function EmailCard({ currentEmail }: { currentEmail: string | null }) {
+  const toast = useToast();
   const [newEmail, setNewEmail] = useState("");
 
   const m = useMutation({
@@ -193,7 +199,16 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
       const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
       if (error) throw new Error(error.message);
     },
-    onSuccess: () => setNewEmail(""),
+    onSuccess: () => {
+      setNewEmail("");
+      toast.success("Đã gửi email xác nhận", {
+        description: "Bấm link trong email để hoàn tất.",
+      });
+    },
+    onError: (e) =>
+      toast.error("Không đổi được email", {
+        description: (e as Error).message,
+      }),
   });
 
   return (
@@ -256,6 +271,7 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
 // ---------------------------------------------------------------------------
 
 function PasswordCard() {
+  const toast = useToast();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
@@ -271,7 +287,10 @@ function PasswordCard() {
     onSuccess: () => {
       setPassword("");
       setConfirm("");
+      toast.success("Đã đổi mật khẩu");
     },
+    onError: (e) =>
+      toast.error("Không đổi được", { description: (e as Error).message }),
   });
 
   return (
@@ -348,6 +367,7 @@ interface DeleteProps {
 }
 
 function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
+  const toast = useToast();
   const [confirmText, setConfirmText] = useState("");
   const [expanded, setExpanded] = useState(false);
 
@@ -359,7 +379,12 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
 
   const m = useMutation({
     mutationFn: () => deleteMyAccount(),
-    onSuccess: () => onDeleted(),
+    onSuccess: () => {
+      toast.success("Đã xoá tài khoản");
+      onDeleted();
+    },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   const blockingCount = blocking ?? 0;
