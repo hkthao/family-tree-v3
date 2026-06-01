@@ -3,15 +3,20 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { IconArrowLeft, IconArrowRight, IconPlus } from "@/components/icons";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconPlus,
+  IconSearch,
+  IconTree,
+  IconUsers,
+} from "@/components/icons";
+import { EmptyState } from "@/components/EmptyState";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -189,35 +194,43 @@ export default function Clans() {
         )}
 
         {data && data.rows.length === 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {tab === "mine"
-                  ? debounced
-                    ? `Không có dòng họ nào khớp "${debounced}".`
-                    : "Bạn chưa tham gia dòng họ nào"
-                  : debounced
-                    ? `Không có dòng họ công khai nào khớp "${debounced}".`
-                    : "Chưa có dòng họ công khai để duyệt"}
-              </CardTitle>
-              {tab === "mine" && !debounced && (
-                <CardDescription>
-                  Tạo dòng họ đầu tiên hoặc xem tab "Cộng đồng" để duyệt dòng
-                  họ công khai.
-                </CardDescription>
-              )}
-            </CardHeader>
-            {tab === "mine" && !debounced && (
-              <CardContent>
-                <Button asChild>
-                  <Link to="/clans/new">
-                    <IconPlus className="h-4 w-4 mr-1.5" />
-                    Tạo dòng họ
-                  </Link>
-                </Button>
-              </CardContent>
-            )}
-          </Card>
+          debounced ? (
+            <EmptyState
+              icon={<IconSearch className="h-10 w-10" />}
+              title={`Không có dòng họ nào khớp "${debounced}"`}
+              description={
+                tab === "mine"
+                  ? "Thử bỏ bớt từ khoá hoặc đổi sang tab Cộng đồng."
+                  : "Thử bỏ bớt từ khoá. Dòng họ riêng tư không hiện trong tab Cộng đồng."
+              }
+              primary={{
+                label: "Xoá tìm kiếm",
+                onClick: () => setSearch(""),
+              }}
+            />
+          ) : tab === "mine" ? (
+            <EmptyState
+              icon={<IconTree className="h-10 w-10" />}
+              title="Bạn chưa tham gia dòng họ nào"
+              description="Tạo dòng họ đầu tiên — bạn sẽ là quản trị, có thể mời người thân vào sau. Hoặc duyệt các dòng họ công khai ở tab Cộng đồng."
+              primary={{
+                label: "Tạo dòng họ",
+                to: "/clans/new",
+                icon: <IconPlus className="h-4 w-4 mr-1.5" />,
+              }}
+              secondary={{
+                label: "Xem cộng đồng",
+                onClick: () => setTab("community"),
+                icon: <IconUsers className="h-4 w-4 mr-1.5" />,
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={<IconUsers className="h-10 w-10" />}
+              title="Chưa có dòng họ công khai để duyệt"
+              description="Khi có dòng họ chuyển sang chế độ công khai, họ sẽ xuất hiện ở đây."
+            />
+          )
         )}
 
         {data && data.rows.length > 0 && (

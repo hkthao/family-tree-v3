@@ -62,7 +62,10 @@ export function BranchesSection({ clanId, canEdit }: Props) {
 
       {branches && branches.length === 0 && (
         <p className="text-muted-foreground text-sm">
-          Chưa có chi nào. {canEdit ? "Thêm chi đầu tiên ở dưới." : ""}
+          Chưa có chi nào.{" "}
+          {canEdit
+            ? "Thêm chi đầu tiên ở form bên dưới — chi giúp lọc danh bạ và đăng ký thông báo riêng."
+            : "Quản trị sẽ thêm sau."}
         </p>
       )}
 
