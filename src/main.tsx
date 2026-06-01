@@ -5,8 +5,10 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import App from "./App";
 import { initPwa } from "./lib/pwa";
 import { persister, queryClient } from "./lib/queryClient";
+import { initTheme } from "./lib/theme";
 import "./index.css";
 
+initTheme();
 initPwa();
 
 createRoot(document.getElementById("root")!).render(

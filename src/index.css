@@ -44,6 +44,41 @@
     --radius: 0.5rem;
   }
 
+  /* Dark mode — warm ink palette. Same oxblood + bronze accents,
+   * shifted to remain legible against a dark warm background. The
+   * `.dark` class is applied to <html> by lib/theme.ts when the
+   * user chooses "tối" or when their system preference is dark
+   * and the choice is "hệ thống". */
+  .dark {
+    --background: 24 14% 8%;            /* #1A1612 warm ink */
+    --foreground: 38 30% 92%;           /* #EFE9DB cream */
+
+    --card: 24 14% 12%;                 /* #221E19 slightly lifted */
+    --card-foreground: 38 30% 92%;
+
+    --popover: 24 14% 12%;
+    --popover-foreground: 38 30% 92%;
+
+    --primary: 0 60% 58%;               /* #D24545 brighter oxblood */
+    --primary-foreground: 38 30% 92%;
+
+    --secondary: 24 12% 18%;
+    --secondary-foreground: 38 30% 92%;
+
+    --muted: 24 12% 18%;                /* #2B2520 */
+    --muted-foreground: 35 18% 70%;     /* #BAB1A3 warm grey */
+
+    --accent: 40 65% 60%;               /* #D4A045 bronze, brighter */
+    --accent-foreground: 24 14% 8%;
+
+    --destructive: 0 70% 60%;           /* #E04D4D */
+    --destructive-foreground: 38 30% 92%;
+
+    --border: 25 12% 22%;
+    --input: 25 12% 22%;
+    --ring: 0 60% 58%;
+  }
+
   /* Base font size — 17px, scales with user system preference via rem */
   html {
     font-size: 17px;
@@ -112,6 +147,23 @@
 .f3 svg.main_svg path.link.f3-path-to-main {
   stroke: #7A2E2E; /* oxblood — highlight the path back to focal */
   opacity: 0.9;
+}
+
+/* Dark-mode family-chart overrides — the library hard-codes a few
+ * colours we need to flip for legibility on a dark warm background. */
+.dark .f3 svg.main_svg path.link {
+  stroke: #8A8278;
+  opacity: 0.7;
+}
+.dark .f3 svg.main_svg path.link.f3-path-to-main {
+  stroke: #E26B6B;
+  opacity: 1;
+}
+.dark .f3 svg.main_svg .card-text tspan:nth-child(2) {
+  fill: #B0A89C;
+}
+.dark .f3 svg.main_svg .gen-badge rect {
+  fill: #D24545;
 }
 
 /* Card text: smaller body font so Vietnamese full names + the meta
