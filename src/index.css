@@ -190,8 +190,13 @@
 }
 
 @media print {
+  /* A3 landscape gives roughly double A4's surface so a mid-sized
+   * tree fits without each card shrinking past legibility. Printers
+   * that only handle A4 will offer "fit to printable area" in their
+   * dialog, scaling the whole sheet down — the cards stay
+   * proportional, just smaller. */
   @page {
-    size: A4 landscape;
+    size: A3 landscape;
     margin: 1cm;
   }
 
@@ -245,18 +250,22 @@
   }
 
   /* Expand the family-chart canvas to fill the printable area.
-   * A4 landscape minus 1 cm margins = 19 cm tall; subtract ~2 cm
-   * for the title strip and we land on 16 cm. Going taller
-   * (the prior 18 cm) overflowed the page and pushed the chart
-   * to a second sheet, leaving page 1 blank. */
+   * A3 landscape = 42×30 cm; with 1 cm margins all round and
+   * ~2 cm reserved for the title strip we get 40×27 cm. The
+   * beforeprint hook in Tree.tsx mirrors these dimensions into
+   * inline pixel sizes on the container so family-chart can fit
+   * the whole tree into the same box before the snapshot runs.
+   * NOTE: no `!important` on dimensions here — the inline style
+   * applied during beforeprint needs to win. */
   .f3 {
-    height: 16cm !important;
+    width: 40cm;
+    height: 27cm;
     min-height: 0 !important;
     max-height: none !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     margin: 0 !important;
     page-break-before: avoid;
     page-break-after: avoid;
