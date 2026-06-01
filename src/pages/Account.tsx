@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/Toast";
 import {
   IconCheck,
@@ -81,6 +82,18 @@ export default function Account() {
         <EmailCard currentEmail={user?.email ?? null} />
 
         <PasswordCard />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Giao diện</CardTitle>
+            <CardDescription>
+              Chế độ màu cho riêng tài khoản này trên thiết bị hiện tại.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ThemeToggle />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

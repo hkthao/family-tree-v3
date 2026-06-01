@@ -29,6 +29,26 @@
     <meta name="twitter:image" content="/icons/og-image.png" />
 
     <title>Gia phả — Quản lý cây dòng họ Việt</title>
+    <script>
+      // Apply theme class BEFORE first paint so dark-mode users
+      // don't flash the light palette while the React bundle loads.
+      // Mirrors lib/theme.ts; keep these in sync if either changes.
+      (function () {
+        try {
+          var v = localStorage.getItem("family-tree:theme");
+          var dark =
+            v === "dark" ||
+            ((v === "system" || !v) &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = dark
+            ? "dark"
+            : "light";
+        } catch (e) {
+          /* private mode — leave default light */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
