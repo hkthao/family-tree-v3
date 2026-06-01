@@ -222,21 +222,35 @@
     display: block !important;
   }
 
-  /* Tighten the page container so the chart can use full width. */
-  main {
-    padding: 0 !important;
-    max-width: none !important;
-  }
+  /* Tighten the page container so the chart can use full width.
+   * ClanLayout's outer div applies `lg:pl-72` + `pb-20` to make
+   * room for the sidebar / bottom tab bar; on print those reserve
+   * space that ends up as a blank first column / final blank
+   * page. Same story for `<main class="py-6 px-4">`.
+   * Wildcard attribute selectors target the specific Tailwind
+   * classes without having to add helper classes to every
+   * layout. */
+  body,
+  body > div,
+  body > div > div,
+  [class~="lg:pl-72"],
+  [class~="pl-72"],
+  [class~="pb-20"],
+  main,
   .container {
-    max-width: none !important;
     padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
   }
 
   /* Expand the family-chart canvas to fill the printable area.
-   * Removing the border + rounded corners avoids printing the
-   * card frame around the SVG. */
+   * A4 landscape minus 1 cm margins = 19 cm tall; subtract ~2 cm
+   * for the title strip and we land on 16 cm. Going taller
+   * (the prior 18 cm) overflowed the page and pushed the chart
+   * to a second sheet, leaving page 1 blank. */
   .f3 {
-    height: 18cm !important;
+    height: 16cm !important;
     min-height: 0 !important;
     max-height: none !important;
     border: none !important;
@@ -244,6 +258,8 @@
     box-shadow: none !important;
     overflow: visible !important;
     margin: 0 !important;
+    page-break-before: avoid;
+    page-break-after: avoid;
     page-break-inside: avoid;
   }
 
