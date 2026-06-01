@@ -127,6 +127,56 @@ function randExtraFields(
   return out;
 }
 
+/**
+ * Fetch a deterministic portrait from i.pravatar.cc, upload it to the
+ * person-photos bucket, and stamp persons.photo_path. Deterministic by
+ * person id so a re-seed reproducing the same uuids would land the
+ * same faces — useful when debugging visual diffs across runs.
+ *
+ * pravatar's pool is ~70 portraits so collisions are expected at scale
+ * — fine for fixtures. Network blip / 404 is silently skipped: the
+ * person renders the gendered placeholder instead. The seed will not
+ * abort over one missing avatar.
+ */
+async function seedPhotoForPerson(
+  personId: string,
+  clanId: string,
+): Promise<void> {
+  try {
+    const res = await fetch(`https://i.pravatar.cc/300?u=${personId}`);
+    if (!res.ok) return;
+    const buf = new Uint8Array(await res.arrayBuffer());
+    if (buf.byteLength < 1000) return; // probably an error page, skip
+    const path = `${clanId}/${personId}.jpg`;
+    const { error: upErr } = await admin.storage
+      .from("person-photos")
+      .upload(path, buf, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: "image/jpeg",
+      });
+    if (upErr) return;
+    await admin.from("persons").update({ photo_path: path }).eq("id", personId);
+  } catch {
+    // network error during seed is non-fatal
+  }
+}
+
+/**
+ * Per-generation photo probability. Photos didn't really exist in
+ * Vietnam before the 1900s, so gen 1 (born 1850–1900) gets nothing;
+ * gen 2–3 occasionally; recent generations more frequently. Tweaked
+ * so a 50-person clan ends up with ~15 photos — enough variety in the
+ * tree / detail PDF without hammering the placeholder service.
+ */
+function photoProbabilityForGen(generation: number): number {
+  if (generation <= 1) return 0;
+  if (generation === 2) return 0.1;
+  if (generation === 3) return 0.25;
+  if (generation === 4) return 0.45;
+  return 0.6;
+}
+
 async function createUser(email: string, displayName: string, opts?: { isPlatformAdmin?: boolean; maxClans?: number }) {
   const { data, error } = await admin.auth.admin.createUser({
     email,
@@ -223,6 +273,10 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
     married.add(parent.id);
     married.add(spouseId);
 
+    if (faker.datatype.boolean({ probability: photoProbabilityForGen(parent.generation) })) {
+      await seedPhotoForPerson(spouseId, clanId);
+    }
+
     // Family
     const familyId = randomUUID();
     const husband = parent.gender === "M" ? parent.id : spouseId;
@@ -256,7 +310,12 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
         ...randExtraFields(childGender, childLiving),
       });
       if (cIns.error) throw new Error(`child insert: ${cIns.error.message}`);
-      persons.push({ id: childId, gender: childGender, generation: parent.generation + 1 });
+      const childGeneration = parent.generation + 1;
+      persons.push({ id: childId, gender: childGender, generation: childGeneration });
+
+      if (faker.datatype.boolean({ probability: photoProbabilityForGen(childGeneration) })) {
+        await seedPhotoForPerson(childId, clanId);
+      }
     }
   }
 
@@ -280,6 +339,12 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
     });
     if (fErr) throw new Error(`filler insert: ${fErr.message}`);
     persons.push({ id: fid, gender: fg, generation: 0 });
+
+    // Loose fillers are "modern" people in this fixture — higher
+    // photo probability than the rooted generations.
+    if (faker.datatype.boolean({ probability: 0.5 })) {
+      await seedPhotoForPerson(fid, clanId);
+    }
   }
 
   console.log(`  ${label}: ${persons.length} persons, ${families.length} families`);
