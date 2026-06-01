@@ -96,6 +96,7 @@ export default function Tree() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<F3Chart | null>(null);
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [orientation, setOrientation] = useState<Orientation>(() =>
@@ -341,6 +342,7 @@ export default function Tree() {
         if (disposed) return;
         built.updateTree({ initial: true });
         chart = built;
+        chartRef.current = built;
 
         // Re-fit on container resize (window resize, drawer expand/collapse,
         // orientation change). family-chart's updateTree with no `initial`
@@ -363,9 +365,35 @@ export default function Tree() {
     return () => {
       disposed = true;
       resizeObserver?.disconnect();
+      chartRef.current = null;
       node.innerHTML = "";
     };
   }, [f3Data, focal, orientation]);
+
+  // Before the OS print dialog opens (either via our "In" button or
+  // OS-level Cmd/Ctrl+P), refit the tree to its container so a
+  // zoomed-in view doesn't print only a sliver of the family. We
+  // suppress the transition during the resize so the print snapshot
+  // captures the fitted layout immediately, then restore animation
+  // when the print finishes.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onBeforePrint = () => {
+      const c = chartRef.current;
+      if (!c) return;
+      c.setTransitionTime(0);
+      c.updateTree({ initial: true });
+    };
+    const onAfterPrint = () => {
+      chartRef.current?.setTransitionTime(200);
+    };
+    window.addEventListener("beforeprint", onBeforePrint);
+    window.addEventListener("afterprint", onAfterPrint);
+    return () => {
+      window.removeEventListener("beforeprint", onBeforePrint);
+      window.removeEventListener("afterprint", onAfterPrint);
+    };
+  }, []);
 
   // Search-by-name → set focal
   const matches = useMemo(() => {
