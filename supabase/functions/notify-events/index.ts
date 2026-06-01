@@ -71,6 +71,7 @@ interface UpcomingEvent {
   title: string;
   date: string;
   personId?: string;
+  branchId?: string | null;
 }
 
 interface FireItem {
@@ -114,8 +115,8 @@ function computeFireList(
         if (sub.target_id !== null) continue;
       } else if (sub.scope === "person") {
         if (sub.target_id !== evt.personId) continue;
-      } else {
-        continue; // branch scope not wired yet
+      } else if (sub.scope === "branch") {
+        if (!evt.branchId || sub.target_id !== evt.branchId) continue;
       }
 
       const eventType = KIND_TO_EVENT_TYPE[evt.kind];
@@ -314,7 +315,7 @@ Deno.serve(async (req) => {
     supabase
       .from("persons")
       .select(
-        "id, clan_id, full_name, is_living, birth_date, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap, generation",
+        "id, clan_id, full_name, is_living, birth_date, branch_id, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap, generation",
       )
       .in("clan_id", clanIds)
       .is("deleted_at", null),
@@ -347,6 +348,8 @@ Deno.serve(async (req) => {
   );
   const persons = personsRes.data ?? [];
   const events = eventsRes.data ?? [];
+  const personBranch = new Map<string, string | null>();
+  for (const p of persons) personBranch.set(p.id as string, (p.branch_id as string | null) ?? null);
 
   // 3) Compute upcoming events per clan (we just need a flat list — the
   //    matcher's scope/target filter will drop irrelevant ones).
@@ -366,6 +369,7 @@ Deno.serve(async (req) => {
             title: `Sinh nhật ${p.full_name}`,
             date: next,
             personId: p.id,
+            branchId: (p.branch_id as string | null) ?? null,
           });
         }
       }
@@ -398,6 +402,7 @@ Deno.serve(async (req) => {
           title: `Giỗ ${p.full_name}`,
           date: iso,
           personId: p.id,
+          branchId: (p.branch_id as string | null) ?? null,
         });
         break; // first matching solar year is enough
       }
@@ -423,6 +428,9 @@ Deno.serve(async (req) => {
         title: ev.title,
         date: iso,
         personId: ev.related_person_id ?? undefined,
+        branchId: ev.related_person_id
+          ? (personBranch.get(ev.related_person_id as string) ?? null)
+          : null,
       });
     }
   }

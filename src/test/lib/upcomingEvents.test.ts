@@ -17,6 +17,7 @@ function person(over: Partial<PersonForTree> & Pick<PersonForTree, "id" | "full_
     death_date: null,
     generation: null,
     birth_family_id: null,
+    branch_id: null,
     photo_path: null,
     ...over,
   };
@@ -166,6 +167,7 @@ describe("computeUpcomingAnniversaries", () => {
   function anniv(over: Partial<PersonAnniversary> & Pick<PersonAnniversary, "id" | "full_name">): PersonAnniversary {
     return {
       generation: null,
+      branch_id: null,
       death_anniv_lunar_month: null,
       death_anniv_lunar_day: null,
       death_anniv_lunar_is_leap: false,

@@ -15,6 +15,7 @@ export interface PersonForTree {
   death_date: string | null;
   generation: number | null;
   birth_family_id: string | null;
+  branch_id: string | null;
   photo_path: string | null;
 }
 
@@ -44,7 +45,7 @@ export async function getTreeData(
     client
       .from("persons")
       .select(
-        "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, photo_path",
+        "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, branch_id, photo_path",
       )
       .eq("clan_id", clanId)
       .is("deleted_at", null),

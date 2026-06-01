@@ -103,6 +103,7 @@ export default function Share() {
         death_date: p.death_date,
         generation: p.generation,
         birth_family_id: p.birth_family_id,
+        branch_id: null,
         photo_path: null,
       })),
     );
@@ -125,6 +126,7 @@ export default function Share() {
         death_date: p.death_date,
         generation: p.generation,
         birth_family_id: p.birth_family_id,
+        branch_id: null,
         photo_path: synthetic,
       };
     });

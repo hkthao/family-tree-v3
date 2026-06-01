@@ -88,6 +88,7 @@ export interface AnniversaryCandidate {
   id: string;
   full_name: string;
   generation: number | null;
+  branch_id: string | null;
   death_anniv_lunar_month: number | null;
   death_anniv_lunar_day: number | null;
   death_anniv_lunar_is_leap: boolean;
@@ -105,7 +106,7 @@ export async function listAnniversaryCandidates(
   const { data, error } = await client
     .from("persons")
     .select(
-      "id, full_name, generation, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap",
+      "id, full_name, generation, branch_id, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap",
     )
     .eq("clan_id", clanId)
     .eq("is_living", false)

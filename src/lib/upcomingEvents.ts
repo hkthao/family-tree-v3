@@ -32,6 +32,12 @@ export interface UpcomingEvent {
   daysUntil: number;
   /** Person id if the event belongs to one — for linking in the UI. */
   personId?: string;
+  /**
+   * Branch the event's person belongs to (when known). Used by the
+   * notification matcher to honor scope="branch" subscriptions — without
+   * it, branch-scope subs would silently no-op.
+   */
+  branchId?: string | null;
   /** Optional secondary line, e.g. "tròn 50 tuổi" or "đời 2". */
   subtitle?: string;
 }
@@ -92,6 +98,8 @@ export function computeUpcomingEvents({
   events,
 }: ComputeInput): UpcomingEvent[] {
   const out: UpcomingEvent[] = [];
+  const personBranch = new Map<string, string | null>();
+  for (const p of persons) personBranch.set(p.id, p.branch_id ?? null);
 
   // ─── Birthdays (living, with full solar day precision) ─────────────
   for (const p of persons) {
@@ -113,6 +121,7 @@ export function computeUpcomingEvents({
       date: nextIso,
       daysUntil: days,
       personId: p.id,
+      branchId: p.branch_id ?? null,
       subtitle: age !== null ? `tròn ${age} tuổi` : undefined,
     });
   }
@@ -145,6 +154,9 @@ export function computeUpcomingEvents({
         date: iso,
         daysUntil: days,
         personId: e.related_person_id ?? undefined,
+        branchId: e.related_person_id
+          ? (personBranch.get(e.related_person_id) ?? null)
+          : null,
       });
       continue;
     }
@@ -196,6 +208,7 @@ export interface PersonAnniversary {
   death_anniv_lunar_day: number | null;
   death_anniv_lunar_is_leap: boolean;
   generation: number | null;
+  branch_id: string | null;
 }
 
 export function computeUpcomingAnniversaries({
@@ -230,6 +243,7 @@ export function computeUpcomingAnniversaries({
         date: iso,
         daysUntil: days,
         personId: p.id,
+        branchId: p.branch_id ?? null,
         subtitle: p.generation !== null ? `Đời ${p.generation}` : undefined,
       });
       break;

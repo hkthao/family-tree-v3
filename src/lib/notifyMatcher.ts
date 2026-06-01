@@ -103,8 +103,10 @@ export function computeFireList(input: ComputeInput): FireItem[] {
       } else if (sub.scope === "person") {
         if (sub.target_id !== evt.personId) continue;
       } else if (sub.scope === "branch") {
-        // branch scope not wired yet — would need branch lookup per event
-        continue;
+        // Match when the event's person is a member of the target chi.
+        // Events without a known branch (no related person, person not
+        // assigned to any chi) never fire for a branch-scope sub.
+        if (!evt.branchId || sub.target_id !== evt.branchId) continue;
       }
 
       // Event-type filter

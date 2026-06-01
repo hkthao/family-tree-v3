@@ -82,6 +82,55 @@ describe("computeFireList", () => {
     expect(fires).toHaveLength(0);
   });
 
+  it("branch-scope sub only fires when the event's person belongs to the target chi", () => {
+    const branchSub: SubscriptionLite = {
+      ...baseClanSub,
+      scope: "branch",
+      target_id: "bA",
+    };
+    // Same person, no branch on the event → no fire.
+    const fires0 = computeFireList({
+      today: "2024-06-08",
+      subscriptions: [branchSub],
+      events: [birthday({ branchId: null })],
+      alreadySent: new Set(),
+    });
+    expect(fires0).toHaveLength(0);
+
+    // Event belongs to a different chi → no fire.
+    const fires1 = computeFireList({
+      today: "2024-06-08",
+      subscriptions: [branchSub],
+      events: [birthday({ branchId: "bB" })],
+      alreadySent: new Set(),
+    });
+    expect(fires1).toHaveLength(0);
+
+    // Event belongs to the target chi → fire.
+    const fires2 = computeFireList({
+      today: "2024-06-08",
+      subscriptions: [branchSub],
+      events: [birthday({ branchId: "bA" })],
+      alreadySent: new Set(),
+    });
+    expect(fires2).toHaveLength(1);
+    expect(fires2[0].personId).toBe("p1");
+  });
+
+  it("branch-scope sub coexists with a clan-scope sub without double-firing", () => {
+    const fires = computeFireList({
+      today: "2024-06-08",
+      subscriptions: [
+        baseClanSub,
+        { ...baseClanSub, id: "s-branch", scope: "branch", target_id: "bA" },
+      ],
+      events: [birthday({ branchId: "bA" })],
+      alreadySent: new Set(),
+    });
+    // Same user × eventKey × channel → matcher dedups
+    expect(fires).toHaveLength(1);
+  });
+
   it("person-scope sub only fires when the event's person matches", () => {
     const personSub: SubscriptionLite = {
       ...baseClanSub,
