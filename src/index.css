@@ -74,15 +74,15 @@
     --destructive: 0 70% 60%;           /* #E04D4D */
     --destructive-foreground: 38 30% 92%;
 
-    /* Card-on-bg contrast in dark mode comes mostly from the
-     * card's own lighter background (12% vs bg 8%) — pushing
-     * border lightness up to 22% turned every card/list/input
-     * into a hard-edged rectangle. 15% sits just above the card
-     * surface, so the rule reads as a soft seam instead of a
-     * frame. Inputs stay a touch brighter so form fields remain
-     * distinguishable from surrounding cards. */
-    --border: 24 10% 15%;
-    --input: 24 10% 20%;
+    /* Cards on bg get their separation from the card surface
+     * being lighter (12%) than the page (8%), not from the
+     * border. The border just needs to be a faint hairline at
+     * the card/section seam — anything brighter starts to look
+     * like a stamped outline. 10% sits right between bg and
+     * card so the rule is barely-there. Inputs keep more
+     * contrast so they read as interactive. */
+    --border: 24 10% 10%;
+    --input: 24 10% 22%;
     --ring: 0 60% 58%;
   }
 
