@@ -8,6 +8,7 @@ import {
   IconList,
   IconUpload,
 } from "@/components/icons";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ export default function Import() {
   const { clanId } = useParams<{ clanId: string }>();
   const { clan } = useClanContext();
   const qc = useQueryClient();
+  const toast = useToast();
 
   const [fileName, setFileName] = useState<string | null>(null);
   const [plan, setPlan] = useState<ImportPlan | null>(null);
@@ -64,9 +66,14 @@ export default function Import() {
       if (!plan?.payload) throw new Error("Không có payload để nhập.");
       return bulkImportPersons(clanId!, plan.payload);
     },
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       await invalidateClanData(qc, clanId!);
+      toast.success("Đã nhập từ Excel", {
+        description: `${res.imported_persons} người, ${res.imported_families} gia đình`,
+      });
     },
+    onError: (e) =>
+      toast.error("Không nhập được", { description: (e as Error).message }),
   });
 
   const errorCount = plan?.issues.filter((i) => i.severity === "error").length ?? 0;

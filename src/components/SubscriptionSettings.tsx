@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { IconCheck, IconTrash } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ export function SubscriptionSettings({ clanId }: Props) {
   const userId = user?.id ?? "";
   const qc = useQueryClient();
   const confirm = useConfirm();
+  const toast = useToast();
 
   const { data: subs } = useQuery({
     queryKey: queryKeys.subscriptions(clanId, userId),
@@ -89,10 +91,14 @@ export function SubscriptionSettings({ clanId }: Props) {
         is_enabled: true,
       });
     },
-    onSuccess: () =>
+    onSuccess: () => {
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
-      }),
+      });
+      toast.success("Đã lưu cài đặt theo dõi");
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
   const toggleM = useMutation({
@@ -100,9 +106,15 @@ export function SubscriptionSettings({ clanId }: Props) {
       if (!current) throw new Error("no subscription");
       return setSubscriptionEnabled(current.id, enabled);
     },
-    onSuccess: () =>
+    onSuccess: (_data, enabled) => {
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
+      });
+      toast.success(enabled ? "Đã bật theo dõi" : "Đã tạm tắt theo dõi");
+    },
+    onError: (e) =>
+      toast.error("Không cập nhật được", {
+        description: (e as Error).message,
       }),
   });
 
@@ -111,10 +123,14 @@ export function SubscriptionSettings({ clanId }: Props) {
       if (!current) throw new Error("no subscription");
       return deleteSubscription(current.id);
     },
-    onSuccess: () =>
+    onSuccess: () => {
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
-      }),
+      });
+      toast.success("Đã huỷ theo dõi");
+    },
+    onError: (e) =>
+      toast.error("Không huỷ được", { description: (e as Error).message }),
   });
 
   if (!userId) return null;

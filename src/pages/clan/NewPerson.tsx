@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ export default function NewPerson() {
   const { clanId } = useParams<{ clanId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const { user } = useAuth();
 
   const [fullName, setFullName] = useState("");
@@ -47,8 +49,11 @@ export default function NewPerson() {
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
+      toast.success("Đã thêm người", { description: fullName.trim() });
       navigate(`/clans/${clanId}/people`);
     },
+    onError: (e) =>
+      toast.error("Không thêm được", { description: (e as Error).message }),
   });
 
   if (!clanId || !user) return null;

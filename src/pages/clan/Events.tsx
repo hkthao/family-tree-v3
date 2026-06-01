@@ -11,6 +11,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { EventsCalendar } from "@/components/EventsCalendar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SubscriptionSettings } from "@/components/SubscriptionSettings";
@@ -337,9 +338,15 @@ function CustomEventItem({
   onDeleted: () => void;
 }) {
   const confirm = useConfirm();
+  const toast = useToast();
   const delM = useMutation({
     mutationFn: () => deleteEvent(event.id),
-    onSuccess: () => onDeleted(),
+    onSuccess: () => {
+      onDeleted();
+      toast.success(`Đã xoá sự kiện "${event.title}"`);
+    },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   const when = event.date_solar
@@ -388,6 +395,7 @@ function AddEventForm({
   clanId: string;
   onCreated: () => void;
 }) {
+  const toast = useToast();
   const [title, setTitle] = useState("");
   const [calendar, setCalendar] = useState<"solar" | "lunar">("solar");
   const [dateSolar, setDateSolar] = useState("");
@@ -415,6 +423,7 @@ function AddEventForm({
       });
     },
     onSuccess: () => {
+      toast.success("Đã thêm sự kiện", { description: title.trim() });
       setTitle("");
       setDateSolar("");
       setLunarMonth("");
@@ -422,6 +431,8 @@ function AddEventForm({
       setOpen(false);
       onCreated();
     },
+    onError: (e) =>
+      toast.error("Không thêm được", { description: (e as Error).message }),
   });
 
   const canSubmit =

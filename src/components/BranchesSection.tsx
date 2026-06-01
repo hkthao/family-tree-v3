@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { useToast } from "@/components/Toast";
 import { IconCheck, IconPencil, IconPlus, IconTrash, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export function BranchesSection({ clanId, canEdit }: Props) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const qc = useQueryClient();
+  const toast = useToast();
 
   const { data: branches, isLoading } = useQuery({
     queryKey: queryKeys.branches(clanId, userId),
@@ -47,8 +49,11 @@ export function BranchesSection({ clanId, canEdit }: Props) {
       createBranch({ clan_id: clanId, name: newName.trim() }),
     onSuccess: async () => {
       await invalidateClanData(qc, clanId);
+      toast.success("Đã thêm chi", { description: newName.trim() });
       setNewName("");
     },
+    onError: (e) =>
+      toast.error("Không thêm được", { description: (e as Error).message }),
   });
 
   return (
@@ -119,6 +124,7 @@ function BranchItem({
   canEdit: boolean;
 }) {
   const qc = useQueryClient();
+  const toast = useToast();
   const confirm = useConfirm();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(branch.name);
@@ -127,13 +133,21 @@ function BranchItem({
     mutationFn: () => updateBranch(branch.id, { name }),
     onSuccess: async () => {
       await invalidateClanData(qc, clanId);
+      toast.success("Đã đổi tên chi");
       setEditing(false);
     },
+    onError: (e) =>
+      toast.error("Không đổi được", { description: (e as Error).message }),
   });
 
   const delM = useMutation({
     mutationFn: () => deleteBranch(branch.id),
-    onSuccess: () => invalidateClanData(qc, clanId),
+    onSuccess: () => {
+      invalidateClanData(qc, clanId);
+      toast.success(`Đã xoá chi "${branch.name}"`);
+    },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   if (!canEdit) {

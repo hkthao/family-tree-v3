@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { useToast } from "@/components/Toast";
 import { IconCheck, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export default function NewClan() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -29,8 +31,11 @@ export default function NewClan() {
           Array.isArray(q.queryKey) &&
           q.queryKey[0] === "clans",
       });
+      toast.success("Đã tạo dòng họ", { description: name });
       navigate(`/clans/${clan.id}`);
     },
+    onError: (e) =>
+      toast.error("Không tạo được", { description: (e as Error).message }),
   });
 
   return (
