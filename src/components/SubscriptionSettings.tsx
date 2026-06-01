@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconTrash } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { listBranches } from "@/lib/queries/branches";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   DEFAULT_CHANNELS,
@@ -285,6 +287,48 @@ export function SubscriptionSettings({ clanId }: Props) {
             ? "Đang bật…"
             : "Bật theo dõi"}
       </Button>
+
+      <BranchSubsSection clanId={clanId} />
     </div>
+  );
+}
+
+function BranchSubsSection({ clanId }: { clanId: string }) {
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+
+  const { data: branches } = useQuery({
+    queryKey: queryKeys.branches(clanId, userId),
+    queryFn: () => listBranches(clanId),
+    enabled: !!userId,
+  });
+
+  if (!branches || branches.length === 0) return null;
+
+  return (
+    <fieldset className="space-y-2 pt-2 border-t">
+      <legend className="text-sm font-medium">Theo dõi riêng theo chi</legend>
+      <p className="text-xs text-muted-foreground">
+        Bật để chỉ nhận thông báo sự kiện của một chi cụ thể. Dùng kèm hoặc
+        thay cho cài đặt toàn dòng họ ở trên.
+      </p>
+      <ul className="divide-y rounded-md border">
+        {branches.map((b) => (
+          <li
+            key={b.id}
+            className="flex items-center justify-between gap-3 px-3 py-2"
+          >
+            <span className="truncate text-sm">{b.name}</span>
+            <SubscribeToggle
+              clanId={clanId}
+              scope="branch"
+              targetId={b.id}
+              labelOff="Theo dõi chi"
+              labelOn="Đang theo dõi"
+            />
+          </li>
+        ))}
+      </ul>
+    </fieldset>
   );
 }
