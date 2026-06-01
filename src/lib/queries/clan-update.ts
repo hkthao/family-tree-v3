@@ -10,6 +10,7 @@ export interface UpdateClanInput {
   description?: string | null;
   visibility?: "private" | "public";
   hide_living_for_nonmembers?: boolean;
+  hide_photos_in_share?: boolean;
 }
 
 /**

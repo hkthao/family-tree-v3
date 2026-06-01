@@ -11,6 +11,7 @@ export interface ClanDetail {
   description: string | null;
   visibility: "private" | "public";
   hide_living_for_nonmembers: boolean;
+  hide_photos_in_share: boolean;
   max_persons: number;
   max_users: number;
   data_version: number;
@@ -43,7 +44,7 @@ export async function getClanDetail(
     client
       .from("clans")
       .select(
-        "id, name, description, visibility, hide_living_for_nonmembers, max_persons, max_users, data_version, owner_id",
+        "id, name, description, visibility, hide_living_for_nonmembers, hide_photos_in_share, max_persons, max_users, data_version, owner_id",
       )
       .eq("id", clanId)
       .maybeSingle(),

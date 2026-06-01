@@ -38,11 +38,15 @@ export default function Settings() {
   const [name, setName] = useState(clan.name);
   const [description, setDescription] = useState(clan.description ?? "");
   const [visibility, setVisibility] = useState(clan.visibility);
+  const [hidePhotosInShare, setHidePhotosInShare] = useState(
+    clan.hide_photos_in_share,
+  );
 
   useEffect(() => {
     setName(clan.name);
     setDescription(clan.description ?? "");
     setVisibility(clan.visibility);
+    setHidePhotosInShare(clan.hide_photos_in_share);
   }, [clan.id]);
 
   const mutation = useMutation({
@@ -51,6 +55,7 @@ export default function Settings() {
         name: name.trim(),
         description: description.trim() || null,
         visibility,
+        hide_photos_in_share: hidePhotosInShare,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -140,6 +145,30 @@ export default function Settings() {
                   <p className="text-sm text-muted-foreground">
                     Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn
                     thông tin nhạy cảm.
+                  </p>
+                </div>
+              </label>
+            </fieldset>
+
+            <fieldset className="space-y-2">
+              <legend className="text-base font-medium mb-2">
+                Ảnh trong link chia sẻ
+              </legend>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hidePhotosInShare}
+                  onChange={(e) => setHidePhotosInShare(e.target.checked)}
+                  className="mt-1.5 h-4 w-4 accent-primary"
+                />
+                <div>
+                  <p className="font-medium">
+                    Ẩn ảnh thật khi xem qua link công khai
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Người vào bằng link chia sẻ chỉ thấy ảnh đại diện
+                    mặc định (nam/nữ). Thành viên đăng nhập vào dòng họ
+                    vẫn thấy ảnh thật như bình thường.
                   </p>
                 </div>
               </label>
