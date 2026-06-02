@@ -97,7 +97,7 @@ export function AppDrawer({ open, onClose }: Props) {
       >
         {/* Header — matches AppHeader's min-h-[64px] + text-2xl so both
             align pixel-perfect across the seam between sidebar and main. */}
-        <header className="border-b py-3 px-4 flex items-center justify-between min-h-[64px]">
+        <header className="border-b px-4 flex items-center justify-between h-[64px]">
           <Link
             to="/clans"
             onClick={pick}

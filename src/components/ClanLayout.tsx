@@ -84,7 +84,7 @@ export function ClanLayout() {
   return (
     <div className="min-h-dvh bg-background pb-20 lg:pb-0 lg:pl-72">
       <header className="border-b bg-background sticky top-0 z-10">
-        <div className="container max-w-4xl flex items-center justify-between gap-3 py-3 px-4 min-h-[64px]">
+        <div className="container max-w-4xl flex items-center justify-between gap-3 px-4 h-[64px]">
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}

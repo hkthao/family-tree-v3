@@ -13,7 +13,7 @@ export function AppHeader() {
   return (
     <>
       <header className="border-b bg-background sticky top-0 z-10">
-        <div className="container max-w-4xl flex items-center justify-between gap-2 py-3 px-4 min-h-[64px]">
+        <div className="container max-w-4xl flex items-center justify-between gap-2 px-4 h-[64px]">
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
