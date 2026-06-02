@@ -41,6 +41,14 @@
     --input: 36 41% 86%;
     --ring: 0 45% 33%;                  /* focus ring = primary */
 
+    /* family-chart card fills (consumed via --male-color etc.
+     * set inline on the .f3 container in Tree.tsx / Share.tsx).
+     * Light pastel tones to match the warm-paper bg. */
+    --tree-card-male: #D4DDE4;
+    --tree-card-female: #E8D2CC;
+    --tree-card-genderless: #E8E0D2;
+    --tree-card-text: #2A2320;
+
     --radius: 0.5rem;
   }
 
@@ -80,6 +88,15 @@
     --border: 24 10% 20%;
     --input: 24 10% 20%;
     --ring: 0 60% 58%;
+
+    /* Darker family-chart card fills so cream text (--foreground
+     * 38 30% 92%) reads against them. Same hue family as light
+     * mode (cool blue / warm rose / neutral) but shifted to
+     * ~25% lightness so contrast clears 4.5:1 against cream. */
+    --tree-card-male: #2F3D48;
+    --tree-card-female: #4A2F2D;
+    --tree-card-genderless: #38322B;
+    --tree-card-text: #EFE9DB;
   }
 
   /* Force every Tailwind `border` utility (without an explicit
@@ -164,7 +181,10 @@
 }
 
 /* Dark-mode family-chart overrides — the library hard-codes a few
- * colours we need to flip for legibility on a dark warm background. */
+ * colours we need to flip for legibility on a dark warm background.
+ * Card fills + text get swapped via --tree-card-* variables
+ * declared in :root + .dark above; this block just handles the
+ * link/path stroke + badge colour. */
 .dark .f3 svg.main_svg path.link {
   stroke: #8A8278;
   opacity: 0.7;
@@ -173,9 +193,6 @@
   stroke: #E26B6B;
   opacity: 1;
 }
-.dark .f3 svg.main_svg .card-text tspan:nth-child(2) {
-  fill: #B0A89C;
-}
 .dark .f3 svg.main_svg .gen-badge rect {
   fill: #D24545;
 }
@@ -183,14 +200,17 @@
 /* Card text: smaller body font so Vietnamese full names + the meta
    line stay legible without overflowing the clip rect. The library
    sets dy=14 per tspan, so 13px font sits nicely inside that line
-   height. */
+   height. Fill comes from --tree-card-text so dark mode swaps to
+   cream against the darker cards. */
 .f3 svg.main_svg .card-text text {
   font-size: 13px;
   font-weight: 500;
+  fill: var(--tree-card-text);
 }
 .f3 svg.main_svg .card-text tspan:nth-child(2) {
   font-size: 11px;
-  fill: #7A6F66; /* muted meta line */
+  fill: var(--tree-card-text);
+  opacity: 0.7;
   font-weight: 400;
 }
 
