@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { IconSearch } from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
 import { listPersons } from "@/lib/queries/persons";
 
@@ -23,8 +23,7 @@ const MAX_RESULTS = 8;
  * /clans index, account pages) Cmd+K is a no-op — would expand
  * to cross-clan search in a future revision.
  */
-export function CommandPalette() {
-  const { clan } = useClanContext();
+export function CommandPalette({ clan }: { clan: ClanDetail }) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
