@@ -2,9 +2,40 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { VitePWA } from "vite-plugin-pwa";
+import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
+// Pull version from package.json (single source of truth) and the
+// short git SHA so the footer reads "v0.1.0 · 1a2b3c4". The SHA
+// pulls from CI env vars first (GitHub Actions, Netlify build) then
+// falls back to local git for `npm run dev`. Wrapped so a missing
+// git binary in production builds doesn't kill the bundler.
+function readCommitSha(): string {
+  const fromEnv =
+    process.env.GITHUB_SHA ??
+    process.env.COMMIT_REF ??
+    process.env.VERCEL_GIT_COMMIT_SHA;
+  if (fromEnv) return fromEnv.slice(0, 7);
+  try {
+    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+      .toString()
+      .trim();
+  } catch {
+    return "dev";
+  }
+}
+
+const pkg = JSON.parse(readFileSync(path.resolve(__dirname, "package.json"), "utf-8")) as {
+  version: string;
+};
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_COMMIT__: JSON.stringify(readCommitSha()),
+    __APP_BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
+  },
   plugins: [
     react(),
     // @react-pdf/renderer's image pipeline uses Node's Buffer to decode
