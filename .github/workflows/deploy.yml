@@ -33,17 +33,13 @@
 
 name: deploy
 
-# Chained after the `test` workflow finishes on main. workflow_run
-# fires whenever the upstream completes regardless of outcome, so
-# every job below has an `if:` guard that requires conclusion ==
-# 'success'. workflow_dispatch is kept for manual re-deploys (eg.
-# after fixing a project-side issue without a code commit) and
-# skips the upstream gate by design.
+# Manual-only trigger. Auto-deploy on every green test run was
+# chewing through Netlify's free deploy quota (300/month) — each
+# commit ate one slot whether or not the change touched the
+# frontend. Until we move off the free tier or skip the netlify
+# job on backend-only commits, deploys are operator-driven via
+# the Actions tab (or `gh workflow run deploy.yml`).
 on:
-  workflow_run:
-    workflows: ["test"]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -57,13 +53,6 @@ jobs:
   # / changed the test workflow, this gate keeps deploys honest.
   verify:
     runs-on: ubuntu-latest
-    # Skip everything when the upstream test workflow didn't succeed.
-    # `workflow_run` events carry the upstream conclusion in the
-    # event payload; workflow_dispatch payloads don't, so the gate
-    # only fires for the chained-on-success path.
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
 
@@ -161,6 +150,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Optional — if the secret is unset, lib/sentry.ts skips init
+          # silently and the SPA runs without runtime error monitoring.
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
         run: npm run build
 
       - name: Publish to Netlify
