@@ -59,16 +59,20 @@ jobs:
 
       - run: npm ci
 
-      - name: Unit tests (excl. RLS — those need a live Supabase)
-        # src/lib/supabase.ts throws at module-load time if these env
-        # vars are missing. The tests never hit the placeholder host
-        # — every query is mocked or runs against the createClient
-        # instance with stub data — they just need the import to
-        # succeed.
+      - name: Unit tests (lib only — integration tests run in test.yml)
+        # Run ONLY the pure unit tests under src/test/lib/. Both
+        # src/test/queries/ and src/test/rls/ are integration suites
+        # that need a live Supabase + service-role key (handled by
+        # test.yml's matrix). The deploy gate just verifies pure-JS
+        # logic and a clean build; full DB coverage is upstream.
+        #
+        # src/lib/supabase.ts throws at module-load when these env
+        # vars are missing — the placeholder values let the import
+        # succeed even though nothing in src/test/lib hits the host.
         env:
           VITE_SUPABASE_URL: https://placeholder.supabase.co
           VITE_SUPABASE_ANON_KEY: placeholder
-        run: npx vitest run --exclude 'src/test/rls/**'
+        run: npx vitest run src/test/lib
 
       - name: Build (typecheck + bundle)
         run: npm run build
