@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
 
 import { AppLogo } from "@/components/AppLogo";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { signOutAndClearCache } from "@/lib/auth-actions";
@@ -153,7 +154,8 @@ export function AppDrawer({ open, onClose }: Props) {
         {/* Footer — user identity + logout in a single row to keep the
             nav body roomy. Logout is icon-only with a tooltip; the row
             itself is the visible "I'm signed in as X" cue. */}
-        <footer className="border-t p-3">
+        <footer className="border-t p-3 space-y-3">
+          <InstallAppButton />
           {profile ? (
             <div className="flex items-center gap-3">
               <div
