@@ -360,3 +360,18 @@ export function IconPhoneDownload(p: IconProps) {
     </Svg>
   );
 }
+
+export function IconQrCode(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <line x1="14" y1="14" x2="14" y2="17" />
+      <line x1="17" y1="14" x2="17" y2="14" />
+      <line x1="20" y1="14" x2="20" y2="20" />
+      <line x1="14" y1="20" x2="17" y2="20" />
+      <line x1="17" y1="17" x2="20" y2="17" />
+    </Svg>
+  );
+}

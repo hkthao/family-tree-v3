@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
+import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconCopy,
   IconPlus,
+  IconQrCode,
   IconTrash,
   IconUndo,
 } from "@/components/icons";
@@ -124,6 +126,7 @@ function ShareLinkItem({
   const toast = useToast();
   const confirm = useConfirm();
   const [copied, setCopied] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
 
   const revokeM = useMutation({
     mutationFn: () => revokeShareLink(link.id),
@@ -202,17 +205,27 @@ function ShareLinkItem({
           )}
         </Button>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {!link.is_revoked && !expired && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => revokeM.mutate()}
-            disabled={revokeM.isPending}
-          >
-            <IconUndo className="h-4 w-4 mr-1.5" />
-            Thu hồi
-          </Button>
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setQrOpen(true)}
+            >
+              <IconQrCode className="h-4 w-4 mr-1.5" />
+              QR
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => revokeM.mutate()}
+              disabled={revokeM.isPending}
+            >
+              <IconUndo className="h-4 w-4 mr-1.5" />
+              Thu hồi
+            </Button>
+          </>
         )}
         <Button
           size="sm"
@@ -233,6 +246,13 @@ function ShareLinkItem({
           Xoá
         </Button>
       </div>
+      <QrCodeModal
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        url={shareUrl}
+        title="Quét để xem cây gia phả"
+        description="Mở camera điện thoại, hướng vào mã QR. Link sẽ mở trang xem chỉ-đọc."
+      />
     </li>
   );
 }
