@@ -1129,8 +1129,109 @@ chỉ membership). Banner "bạn đang xem với quyền platform admin".
 
 ### 26.11 Còn chưa làm
 
-- Mục 19 (events & thông báo) toàn bộ — phụ thuộc quy đổi âm-dương.
-- Mục 13 — quy đổi âm-dương thực tế (cột vẫn lưu nhưng UI hiển thị chỉ đọc dương lịch).
-- Mục 20 — PDF export sách / sơ đồ cây.
-- PWA: `vite-plugin-pwa` đã install nhưng chưa cấu hình manifest + service worker production-ready.
-- Quy đổi/render âm lịch trên PersonDetail.
+- Mục 13 — quy đổi âm-dương thực tế trên PersonDetail (cột vẫn lưu, UI hiển thị chỉ đọc dương lịch).
+- SMS provider cho channel `sms` (đã có trong schema event_subscriptions nhưng chưa wire).
+- OCR ảnh gia phả cũ (skip ở v1).
+- Kinship UI ("đây là chú ruột bạn") — quan hệ hai chiều ngoài cha/mẹ/con/anh chị em (skip ở v1).
+
+---
+
+## 27. Production deploy — Supabase Cloud + Netlify
+
+Pipeline tự động từ `main` → Supabase Cloud + Netlify, gated bằng full test suite.
+
+### 27.1 Hạ tầng
+
+| Lớp | Provider | URL |
+|---|---|---|
+| Postgres + Auth + Storage + Edge Functions | Supabase Cloud | `<ref>.supabase.co` |
+| SPA static + CDN | Netlify | `<site>.netlify.app` |
+| Email transactional (Auth) | Resend (khuyến nghị) | qua custom SMTP của Supabase Auth |
+| Source + CI | GitHub Actions | repo `family-tree-v3` |
+
+### 27.2 Pipeline GitHub Actions
+
+Hai workflow chained:
+
+**`.github/workflows/test.yml`** — chạy mọi push + PR:
+- `supabase start` ephemeral local stack
+- `supabase db reset` apply mọi migration
+- `gen types` + diff check `database.types.ts` (chống drift)
+- `npm run build` (tsc + vite)
+- `npm run test:rls` — full integration suite (queries/* + rls/*)
+
+**`.github/workflows/deploy.yml`** — chained sau test:
+- Trigger: `on.workflow_run: workflows: [test]: types: [completed]: branches: [main]`
+- Gate cứng: `if: github.event.workflow_run.conclusion == 'success'` — test fail → deploy skip
+- `workflow_dispatch` bypass gate (manual re-deploy không cần code change)
+- 3 jobs sequential:
+  1. **verify**: pure unit tests (`src/test/lib/`) + vite build với placeholder env
+  2. **supabase**: `supabase link` → `db push` (migration) → loop `supabase functions deploy <name>` cho mọi function trong `supabase/functions/*/`
+  3. **netlify**: `npm ci` → `npm run build` với real env → `nwtgck/actions-netlify` publish `dist/`
+
+Concurrency: group `deploy-prod`, `cancel-in-progress: false` — deploy đang chạy không bị giết giữa chừng.
+
+Backend (supabase) gate frontend (netlify) → user không hit SPA mới khi schema chưa migrate.
+
+### 27.3 Secrets (GitHub Settings → Secrets → Actions)
+
+| Secret | Nguồn | Ghi chú |
+|---|---|---|
+| `SUPABASE_ACCESS_TOKEN` | Supabase Account → Access Tokens | personal token `sbp_*` |
+| `SUPABASE_PROJECT_REF` | `<ref>` của `<ref>.supabase.co` | |
+| `SUPABASE_DB_PASSWORD` | Project Settings → Database | dùng cho `db push` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Project Settings → API | OPTIONAL — cloud edge function tự inject |
+| `NETLIFY_AUTH_TOKEN` | Netlify User → Applications | `nfp_*` |
+| `NETLIFY_SITE_ID` | Netlify Site → Site information | UUID |
+| `VITE_SUPABASE_URL` | Project URL | baked vào SPA bundle |
+| `VITE_SUPABASE_ANON_KEY` | Project API → publishable key | safe to be public |
+
+Helper: `scripts/setup-deploy-secrets.sh` đọc `.env.deploy` (gitignored), gọi `gh secret set -f` push một phát. Template ở `.env.deploy.example`.
+
+### 27.4 `netlify.toml` (root)
+
+- `[build]` command = `npm run build`, publish = `dist`
+- SPA fallback: `/* → /index.html status=200` — deep link hard-refresh không 404
+- Cache headers:
+  - `/assets/*`, `/fonts/*` — `max-age=31536000, immutable` (hashed bundles)
+  - `/icons/*` — `max-age=604800`
+  - `/sw.js` — `max-age=0, must-revalidate` (SW phải re-fetch để rollout version mới)
+  - `/manifest.webmanifest` — content-type + 1-day cache
+
+### 27.5 Post-deploy one-time setup
+
+Sau deploy đầu tiên, chạy 1 lần trong Supabase Dashboard:
+
+**A. GUC cho `notify-events` cron** (Dashboard → SQL Editor):
+```sql
+alter database postgres set app.notify_events_url =
+  'https://<ref>.supabase.co/functions/v1/notify-events';
+alter database postgres set app.notify_events_token = '<random-token>';
+```
+
+**B. Edge function env** (Dashboard → Edge Functions → notify-events → Settings):
+- `CRON_TOKEN` = cùng giá trị với `app.notify_events_token` ở A
+- `RESEND_API_KEY` = nếu muốn gửi email thực; bỏ trống → function dry-run (vẫn ghi notification_log).
+
+**C. Auth Site URL** (Dashboard → Authentication → URL Configuration):
+- Site URL: production URL Netlify
+- Redirect URLs: production URL + `http://localhost:5173/**` (dev)
+- Nếu bỏ qua → confirmation email + magic link trỏ về `localhost:3000`, click vào dead.
+
+**D. Email templates** (Dashboard → Authentication → Email Templates):
+Paste 6 template HTML từ `supabase/email-templates/*.html` (tiếng Việt, palette oxblood + bronze + paper khớp app).
+
+**E. Netlify Auto Build** (Netlify Dashboard → Site → Build & deploy → Continuous deployment → Stop builds):
+Disable Netlify's own Git deploy vì GitHub Actions pipeline đã quản — tránh double-deploy.
+
+### 27.6 Edge function import strategy
+
+Edge function chạy Deno runtime. Lần deploy đầu fail vì `https://esm.sh/...` 522 (CDN overload). Đổi sang `jsr:@supabase/supabase-js@2` (Deno-native registry) ổn định hơn. NPM-only packages dùng `npm:` specifier (vd `npm:@dqcai/vn-lunar@1.0.1`).
+
+### 27.7 Email branding
+
+`supabase/email-templates/` chứa 6 file HTML (confirm-signup, magic-link, reset-password, change-email, invite, reauth). Layout: card 560px nền trắng, top accent strip 3px bronze `#B8862A`, wordmark "GIA PHẢ" uppercase tracked bronze, h1 oxblood Noto Serif, CTA button oxblood/cream. Inline styles (Gmail/Outlook strip `<style>` block). README ở cùng folder giải thích cách paste vào Dashboard.
+
+### 27.8 MCP server (developer ergonomics)
+
+`.mcp.json` ở repo root config Model Context Protocol server `@supabase/mcp-server-supabase` chạy ở chế độ `--read-only`. Đọc `SUPABASE_ACCESS_TOKEN` + `SUPABASE_PROJECT_REF` từ env của user. Agent (Claude Code, etc.) có thể list schema, execute SELECT, get function logs trực tiếp mà không cần psql/dashboard.
