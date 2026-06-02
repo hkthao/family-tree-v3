@@ -380,8 +380,8 @@ export default function Share() {
               className="f3 flex-1 min-h-0 w-full text-foreground"
               style={
                 {
-                  "--male-color": "#D4DDE4",
-                  "--female-color": "#E8D2CC",
+                  "--male-color": "var(--tree-card-male)",
+                  "--female-color": "var(--tree-card-female)",
                 } as React.CSSProperties
               }
               aria-label="Cây gia phả tương tác (chỉ xem)"

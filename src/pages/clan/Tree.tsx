@@ -578,9 +578,9 @@ export default function Tree() {
             className="f3 rounded-lg border bg-card overflow-hidden -mx-4 sm:mx-0 h-[70vh] min-h-[480px] max-h-[820px] text-foreground"
             style={
               {
-                "--male-color": "#D4DDE4",
-                "--female-color": "#E8D2CC",
-                "--genderless-color": "#E8E0D2",
+                "--male-color": "var(--tree-card-male)",
+                "--female-color": "var(--tree-card-female)",
+                "--genderless-color": "var(--tree-card-genderless)",
               } as React.CSSProperties
             }
             aria-label="Cây gia phả tương tác"
