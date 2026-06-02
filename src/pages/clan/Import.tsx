@@ -82,7 +82,14 @@ export default function Import() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Nhập từ Excel</h2>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <h2 className="text-2xl font-semibold">Nhập từ Excel</h2>
+        <Button asChild variant="outline" size="sm">
+          <Link to={`/clans/${clanId}/ai-generate`}>
+            Sinh file bằng AI →
+          </Link>
+        </Button>
+      </div>
 
         <Card>
           <CardHeader>
