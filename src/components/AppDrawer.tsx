@@ -207,6 +207,12 @@ export function AppDrawer({ open, onClose }: Props) {
               Đăng xuất
             </Button>
           )}
+          <p
+            className="text-[10px] text-muted-foreground/70 text-center font-mono"
+            title={`Build ${__APP_BUILD_DATE__}`}
+          >
+            v{__APP_VERSION__} · {__APP_COMMIT__}
+          </p>
         </footer>
       </aside>
     </>
