@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { IconDownload, IconX } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -67,8 +68,13 @@ export function QrCodeModal({ url, title, description, open, onClose }: Props) {
   }, [open, onClose]);
 
   if (!open) return null;
+  if (typeof document === "undefined") return null;
 
-  return (
+  // Render into <body> via portal so the dialog escapes any
+  // ancestor with `transform` / `filter` applied (the drawer uses
+  // translate-x for slide-in, which would otherwise pin our
+  // `position: fixed` to the drawer instead of the viewport).
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -133,6 +139,7 @@ export function QrCodeModal({ url, title, description, open, onClose }: Props) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
