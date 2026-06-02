@@ -17,10 +17,11 @@ export function ShareAppQrButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background hover:bg-muted px-3 h-10 text-sm"
+        title="Chia sẻ app qua mã QR"
+        className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm"
       >
-        <IconQrCode className="h-4 w-4" />
-        Chia sẻ app qua QR
+        <IconQrCode className="h-4 w-4 shrink-0" />
+        Chia sẻ QR
       </button>
       <QrCodeModal
         open={open}

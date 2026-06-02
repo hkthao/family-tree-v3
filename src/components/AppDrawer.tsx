@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
 
 import { AppLogo } from "@/components/AppLogo";
+import { AppVersion } from "@/components/AppVersion";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
@@ -156,8 +157,10 @@ export function AppDrawer({ open, onClose }: Props) {
             nav body roomy. Logout is icon-only with a tooltip; the row
             itself is the visible "I'm signed in as X" cue. */}
         <footer className="border-t p-3 space-y-3">
-          <InstallAppButton />
-          <ShareAppQrButton />
+          <div className="flex gap-2">
+            <InstallAppButton />
+            <ShareAppQrButton />
+          </div>
           {profile ? (
             <div className="flex items-center gap-3">
               <div
@@ -207,12 +210,7 @@ export function AppDrawer({ open, onClose }: Props) {
               Đăng xuất
             </Button>
           )}
-          <p
-            className="text-[10px] text-muted-foreground/70 text-center font-mono"
-            title={`Build ${__APP_BUILD_DATE__}`}
-          >
-            v{__APP_VERSION__} · {__APP_COMMIT__}
-          </p>
+          <AppVersion className="text-center" />
         </footer>
       </aside>
     </>
