@@ -11,6 +11,7 @@ import Admin from "@/pages/Admin";
 import Clans from "@/pages/Clans";
 import AddChild from "@/pages/clan/AddChild";
 import AddSpouse from "@/pages/clan/AddSpouse";
+import AiGenerate from "@/pages/clan/AiGenerate";
 import Audit from "@/pages/clan/Audit";
 import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="events" element={<Events />} />
           <Route path="settings" element={<Settings />} />
           <Route path="import" element={<Import />} />
+          <Route path="ai-generate" element={<AiGenerate />} />
           <Route path="merge" element={<Merge />} />
           <Route path="audit" element={<Audit />} />
         </Route>
