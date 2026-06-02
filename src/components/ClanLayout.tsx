@@ -4,6 +4,7 @@ import { Link, Navigate, Outlet, useParams } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
+import { CommandPalette } from "@/components/CommandPalette";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -119,6 +120,7 @@ export function ClanLayout() {
       </main>
 
       <BottomTabBar tabs={tabs} />
+      <CommandPalette />
     </div>
   );
 }
