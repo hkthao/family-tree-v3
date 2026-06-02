@@ -19,8 +19,8 @@
  *     the matcher without sending real emails.
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getSolarDate } from "https://esm.sh/@dqcai/vn-lunar@1.0.1";
+import { createClient } from "jsr:@supabase/supabase-js@2";
+import { getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
