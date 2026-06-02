@@ -9,7 +9,16 @@ export async function parseSpreadsheet(
   file: File,
 ): Promise<Record<string, unknown>[]> {
   const buf = await file.arrayBuffer();
-  const wb = XLSX.read(buf, { type: "array" });
+
+  // SheetJS reads .csv buffers as Latin-1 by default — Vietnamese
+  // diacritics arrive as mojibake (Họ tên → Há» tÃªn) and every
+  // header lookup downstream fails. Detect plain-text formats by
+  // filename + decode UTF-8 ourselves before handing to XLSX. For
+  // real .xlsx (a ZIP archive) we keep the raw buffer.
+  const isText = /\.(csv|tsv|txt)$/i.test(file.name);
+  const wb = isText
+    ? XLSX.read(new TextDecoder("utf-8").decode(buf), { type: "string", raw: false })
+    : XLSX.read(buf, { type: "array" });
   const sheetName = wb.SheetNames[0];
   if (!sheetName) return [];
   const sheet = wb.Sheets[sheetName];
