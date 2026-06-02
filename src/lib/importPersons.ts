@@ -20,15 +20,15 @@
  * headers case-insensitively and tolerates a few common alternatives.
  */
 const COL = {
-  tempId: ["id", "id tạm", "ma"],
-  fullName: ["họ tên", "ho ten", "họ và tên", "name", "tên"],
-  gender: ["giới tính", "gioi tinh", "gender", "gt"],
-  birthYear: ["năm sinh", "nam sinh", "birth year", "ns"],
-  deathYear: ["năm mất", "nam mat", "death year", "nm"],
-  fatherTempId: ["id cha", "father id", "cha"],
-  motherTempId: ["id mẹ", "id me", "mother id", "mẹ"],
-  branch: ["chi", "chi họ", "branch", "nhánh"],
-  notes: ["ghi chú", "ghi chu", "notes", "tiểu sử", "bio"],
+  tempId: ["id", "id tạm", "ma", "ma so", "stt", "code", "person id"],
+  fullName: ["họ tên", "ho ten", "họ và tên", "name", "tên", "full name", "fullname", "ten"],
+  gender: ["giới tính", "gioi tinh", "gender", "gt", "sex"],
+  birthYear: ["năm sinh", "nam sinh", "birth year", "ns", "year of birth", "birth"],
+  deathYear: ["năm mất", "nam mat", "death year", "nm", "year of death", "death"],
+  fatherTempId: ["id cha", "father id", "cha", "father", "ma cha", "id father"],
+  motherTempId: ["id mẹ", "id me", "mother id", "mẹ", "me", "mother", "ma me", "id mother"],
+  branch: ["chi", "chi họ", "branch", "nhánh", "nhanh"],
+  notes: ["ghi chú", "ghi chu", "notes", "tiểu sử", "bio", "note", "remark", "ghi chu", "comment"],
 } as const;
 
 type ColKey = keyof typeof COL;
@@ -102,6 +102,13 @@ export interface ImportPlan {
 function buildHeaderMap(headers: string[]): Partial<Record<ColKey, string>> {
   const norm = (s: string) =>
     s
+      // Strip BOM (﻿) — TextEdit/Notepad inject it when
+      // saving UTF-8 .csv, turning "ID" into "﻿ID" so the
+      // exact-match fails. Also drop other zero-width chars +
+      // surrounding non-alphanumeric punctuation that AI output
+      // sometimes sprinkles in ("**ID**", "ID:", etc).
+      .replace(/[﻿​-‍‪-‮]/g, "")
+      .replace(/^[^a-zA-Z0-9À-ỹ\s]+|[^a-zA-Z0-9À-ỹ\s]+$/g, "")
       .normalize("NFD")
       .replace(/\p{Diacritic}/gu, "")
       .toLowerCase()
