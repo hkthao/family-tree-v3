@@ -15,7 +15,20 @@ export async function parseSpreadsheet(
   const sheet = wb.Sheets[sheetName];
   // defval: "" → keep empty cells as empty string (not undefined) so
   // downstream code can `.trim()` without null-checking.
-  return XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+    defval: "",
+  });
+  // Strip BOM (﻿) + leading/trailing whitespace from every key. TextEdit
+  // / Notepad inject BOM when saving UTF-8 CSV, turning "ID" into
+  // "﻿ID" so downstream header matching fails. Doing this here once
+  // is cheaper than every consumer remembering to handle it.
+  return rows.map((r) => {
+    const cleaned: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(r)) {
+      cleaned[k.replace(/[﻿​-‍‪-‮]/g, "").trim()] = v;
+    }
+    return cleaned;
+  });
 }
 
 /**
