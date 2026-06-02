@@ -120,7 +120,7 @@ export function ClanLayout() {
       </main>
 
       <BottomTabBar tabs={tabs} />
-      <CommandPalette />
+      <CommandPalette clan={clan} />
     </div>
   );
 }
