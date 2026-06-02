@@ -4,6 +4,7 @@ import { Link, NavLink, useParams } from "react-router-dom";
 
 import { AppLogo } from "@/components/AppLogo";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { signOutAndClearCache } from "@/lib/auth-actions";
@@ -156,6 +157,7 @@ export function AppDrawer({ open, onClose }: Props) {
             itself is the visible "I'm signed in as X" cue. */}
         <footer className="border-t p-3 space-y-3">
           <InstallAppButton />
+          <ShareAppQrButton />
           {profile ? (
             <div className="flex items-center gap-3">
               <div
