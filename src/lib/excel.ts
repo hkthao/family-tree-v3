@@ -13,22 +13,51 @@ export async function parseSpreadsheet(
   const sheetName = wb.SheetNames[0];
   if (!sheetName) return [];
   const sheet = wb.Sheets[sheetName];
-  // defval: "" → keep empty cells as empty string (not undefined) so
-  // downstream code can `.trim()` without null-checking.
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
+
+  // Read as array-of-arrays so we can skip leading empty rows that
+  // Excel sometimes prepends when re-saving UTF-8 CSV (eg ";;;;\r\n"
+  // on the first line). SheetJS otherwise treats that empty row as
+  // the header line, which makes every subsequent column come out
+  // as __EMPTY_N and downstream header matching fails.
+  const matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
+    header: 1,
     defval: "",
+    blankrows: false,
   });
-  // Strip BOM (﻿) + leading/trailing whitespace from every key. TextEdit
-  // / Notepad inject BOM when saving UTF-8 CSV, turning "ID" into
-  // "﻿ID" so downstream header matching fails. Doing this here once
-  // is cheaper than every consumer remembering to handle it.
-  return rows.map((r) => {
-    const cleaned: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(r)) {
-      cleaned[k.replace(/[﻿​-‍‪-‮]/g, "").trim()] = v;
-    }
-    return cleaned;
-  });
+  if (matrix.length === 0) return [];
+
+  // Skip leading rows that are entirely empty / all-whitespace.
+  let headerRowIdx = 0;
+  while (
+    headerRowIdx < matrix.length &&
+    matrix[headerRowIdx].every((c) => String(c ?? "").trim() === "")
+  ) {
+    headerRowIdx++;
+  }
+  if (headerRowIdx >= matrix.length) return [];
+
+  // Clean each header: strip BOM (U+FEFF) + zero-width chars +
+  // surrounding whitespace. TextEdit / Notepad inject BOM on UTF-8
+  // CSV save and SheetJS preserves it, breaking exact-match lookup
+  // downstream.
+  const cleanKey = (k: string): string =>
+    k.replace(/[﻿​-‍‪-‮]/g, "").trim();
+
+  const headers = matrix[headerRowIdx].map((h) => cleanKey(String(h ?? "")));
+
+  // Convert remaining rows to keyed objects.
+  const out: Record<string, unknown>[] = [];
+  for (let r = headerRowIdx + 1; r < matrix.length; r++) {
+    const row = matrix[r];
+    if (row.every((c) => String(c ?? "").trim() === "")) continue;
+    const obj: Record<string, unknown> = {};
+    headers.forEach((h, i) => {
+      if (!h) return; // drop fully-empty header columns
+      obj[h] = row[i] ?? "";
+    });
+    if (Object.keys(obj).length > 0) out.push(obj);
+  }
+  return out;
 }
 
 /**
