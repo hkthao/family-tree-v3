@@ -81,19 +81,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # scp the compose file + Caddyfile so the VPS holds the
-      # latest reverse-proxy config alongside the app image.
-      - name: Copy deploy files to VPS
+      # scp docker-compose.yml so the VPS has the latest stack
+      # definition. nginx-site.conf is a one-time install on the
+      # host nginx — not re-copied each deploy.
+      - name: Copy compose file to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          source: "deploy/docker-compose.yml,deploy/Caddyfile"
+          source: "deploy/docker-compose.yml"
           target: "/opt/gia-pha/"
           strip_components: 1
 
-      - name: Deploy stack on VPS
+      - name: Deploy app container on VPS
         uses: appleboy/ssh-action@v1.2.0
         env:
           APP_IMAGE: ${{ env.IMAGE }}:${{ needs.build-push.outputs.sha7 }}
@@ -110,20 +111,16 @@ jobs:
             echo "${{ secrets.DOCKER_TOKEN }}" \
               | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-            # docker-compose env file. DOMAIN + ACME_EMAIL drive
-            # Caddy's TLS issuance; APP_IMAGE pins the SHA tag
-            # we just built. Re-runs overwrite this file with
-            # the current deploy's values.
+            # docker-compose env file — pins APP_IMAGE to the
+            # SHA tag built this run. Re-runs overwrite with
+            # whatever the latest deploy is.
             cat > .env <<EOF
             APP_IMAGE=${APP_IMAGE}
-            DOMAIN=${{ secrets.DEPLOY_DOMAIN }}
-            ACME_EMAIL=${{ secrets.ACME_EMAIL }}
             EOF
 
-            # Pull the new app image and rotate the stack.
-            # `docker compose up -d` is idempotent — only
-            # containers whose image / config changed get
-            # recreated.
+            # Pull the new app image and rotate the container.
+            # docker compose up -d is idempotent — only services
+            # whose image / config changed get recreated.
             docker compose pull app
             docker compose up -d --remove-orphans
 
