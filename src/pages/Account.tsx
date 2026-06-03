@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { QrSignInButton } from "@/components/QrSignInButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/Toast";
 import {
@@ -92,6 +93,20 @@ export default function Account() {
           </CardHeader>
           <CardContent>
             <ThemeToggle />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Đăng nhập trên điện thoại</CardTitle>
+            <CardDescription>
+              Hiện mã QR — mở camera điện thoại, quét để đăng nhập cùng
+              tài khoản, không phải gõ mật khẩu. Mã hiệu lực ~5 phút và
+              chỉ dùng được một lần.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <QrSignInButton />
           </CardContent>
         </Card>
 
