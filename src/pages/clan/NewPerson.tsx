@@ -144,12 +144,12 @@ export default function NewPerson() {
             helperText="Để trống nếu còn sống."
           />
 
-          <label className="flex items-center gap-3 cursor-pointer">
+          <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={!isLiving}
               onChange={(e) => setIsLiving(!e.target.checked)}
-              className="h-5 w-5 accent-primary"
+              className="mt-1 h-5 w-5 accent-primary shrink-0"
             />
             <span>Đã mất</span>
           </label>
@@ -159,7 +159,7 @@ export default function NewPerson() {
               type="checkbox"
               checked={isRoot}
               onChange={(e) => setIsRoot(e.target.checked)}
-              className="mt-1 h-5 w-5 accent-primary"
+              className="mt-1 h-5 w-5 accent-primary shrink-0"
             />
             <span>
               <span className="font-medium">Thuỷ tổ</span>

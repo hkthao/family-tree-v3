@@ -222,37 +222,52 @@ export default function People() {
   const canEdit = canEditClan(clan);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2 className="text-2xl font-semibold">Danh bạ</h2>
-        <div className="flex items-center gap-3 flex-wrap">
-          <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
-          {canEdit && (
-            <Button asChild size="sm">
+    <div className="space-y-3">
+      {/* Header row — title + icon refresh + add + import buttons.
+          All wrap onto a second line on viewports too narrow for
+          one row. h-10 across so they line up. */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <h2 className="text-2xl font-semibold sm:flex-1">Danh bạ</h2>
+        <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
+        <RefreshButton
+          clanId={clan.id}
+          cachedVersion={clan.data_version}
+          compact
+        />
+        {canEdit && (
+          <>
+            <Button asChild size="sm" className="h-10">
               <Link to={`/clans/${clan.id}/people/new`}>
                 <IconPlus className="h-4 w-4 mr-1.5" />
                 Thêm người
               </Link>
             </Button>
-          )}
+            <Button asChild variant="outline" size="sm" className="h-10">
+              <Link to={`/clans/${clan.id}/import`}>
+                <IconUpload className="h-4 w-4 mr-1.5" />
+                Nhập Excel
+              </Link>
+            </Button>
+          </>
+        )}
         </div>
       </div>
 
-      {/* Filters row — single line on lg+; everything h-10 for density. */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[200px]">
-          <SearchInput
-            label="Tìm theo tên"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
-          />
-        </div>
+      {/* Search row — full width, owns one line. */}
+      <SearchInput
+        label="Tìm theo tên"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
+      />
+
+      {/* Toolbar — filters + sort + view toggle in one wrap row. */}
+      <div className="flex flex-wrap items-center gap-2">
         <select
           value={branchId}
           onChange={(e) => setBranchId(e.target.value)}
           aria-label="Lọc theo chi"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[140px]"
+          className="h-10 flex-1 min-w-[140px] rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="">Tất cả chi</option>
           {branches?.map((b) => (
@@ -265,7 +280,7 @@ export default function People() {
           value={generation}
           onChange={(e) => setGeneration(e.target.value)}
           aria-label="Lọc theo đời"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[120px] disabled:opacity-50"
+          className="h-10 flex-1 min-w-[120px] rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
           disabled={!maxGen}
         >
           <option value="">Tất cả đời</option>
@@ -277,22 +292,16 @@ export default function People() {
               ))
             : null}
         </select>
-      </div>
-
-      {/* Toolbar: sort + view mode toggle */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <label className="text-sm flex items-center gap-2">
-          <span className="text-muted-foreground">Sắp xếp:</span>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="h-10 rounded-md border border-input bg-background px-2"
-          >
-            <option value="name">Tên</option>
-            <option value="generation">Đời</option>
-            <option value="birth">Năm sinh</option>
-          </select>
-        </label>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          aria-label="Sắp xếp"
+          className="h-10 flex-1 min-w-[120px] rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="name">Sắp: Tên</option>
+          <option value="generation">Sắp: Đời</option>
+          <option value="birth">Sắp: Năm sinh</option>
+        </select>
         <div
           className="inline-flex rounded-md border bg-card overflow-hidden"
           role="group"
@@ -301,7 +310,9 @@ export default function People() {
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
+            title="Danh sách"
+            aria-label="Danh sách"
+            className={`inline-flex items-center justify-center w-10 h-10 ${
               viewMode === "list"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted/50"
@@ -309,12 +320,13 @@ export default function People() {
             aria-pressed={viewMode === "list"}
           >
             <IconList className="h-4 w-4" />
-            Danh sách
           </button>
           <button
             type="button"
             onClick={() => setViewMode("grid")}
-            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
+            title="Thẻ"
+            aria-label="Thẻ"
+            className={`inline-flex items-center justify-center w-10 h-10 border-l ${
               viewMode === "grid"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted/50"
@@ -322,7 +334,6 @@ export default function People() {
             aria-pressed={viewMode === "grid"}
           >
             <IconGrid className="h-4 w-4" />
-            Thẻ
           </button>
         </div>
       </div>
@@ -431,6 +442,14 @@ export default function People() {
                     label: "Nhập từ Excel",
                     to: `/clans/${clan.id}/import`,
                     icon: <IconUpload className="h-4 w-4 mr-1.5" />,
+                  }
+                : null
+            }
+            tertiary={
+              canEdit
+                ? {
+                    label: "Sinh bằng AI",
+                    to: `/clans/${clan.id}/ai-generate`,
                   }
                 : null
             }

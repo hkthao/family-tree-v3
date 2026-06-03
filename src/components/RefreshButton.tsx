@@ -8,6 +8,13 @@ interface Props {
   clanId: string;
   /** data_version from the cached clan detail query. */
   cachedVersion: number | null;
+  /**
+   * Drop the "Cập nhật lúc HH:MM" status text + collapse the
+   * button to an icon-only h-10 square. The status moves into
+   * the button's title attribute. Used inside dense toolbars
+   * where the long form chews up a whole row on mobile.
+   */
+  compact?: boolean;
 }
 
 function formatTime(d: Date): string {
@@ -16,7 +23,7 @@ function formatTime(d: Date): string {
   return `${hh}:${mm}`;
 }
 
-export function RefreshButton({ clanId, cachedVersion }: Props) {
+export function RefreshButton({ clanId, cachedVersion, compact }: Props) {
   const { lastSyncedAt, isChecking, refresh } = useClanFreshness(
     clanId,
     cachedVersion,
@@ -33,14 +40,36 @@ export function RefreshButton({ clanId, cachedVersion }: Props) {
     ? `Cập nhật lúc ${formatTime(lastSyncedAt)}`
     : "Chưa đồng bộ";
 
+  const flashedStatus =
+    flash === "updated"
+      ? "Đã có dữ liệu mới"
+      : flash === "fresh"
+        ? "Đã là mới nhất"
+        : status;
+
+  if (compact) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-10 w-10 p-0 shrink-0"
+        title={isChecking ? "Đang kiểm tra…" : flashedStatus}
+        aria-label="Làm mới"
+        onClick={async () => {
+          const outcome = await refresh();
+          setFlash(outcome);
+        }}
+        disabled={isChecking}
+      >
+        <IconRefresh className={`h-4 w-4 ${isChecking ? "animate-spin" : ""}`} />
+      </Button>
+    );
+  }
+
   return (
     <div className="flex items-center gap-3 text-sm">
       <span className="text-muted-foreground" aria-live="polite">
-        {flash === "updated"
-          ? "Đã có dữ liệu mới"
-          : flash === "fresh"
-            ? "Đã là mới nhất"
-            : status}
+        {flashedStatus}
       </span>
       <Button
         variant="outline"

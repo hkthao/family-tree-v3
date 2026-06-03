@@ -30,6 +30,9 @@ interface Props {
   primary?: Action | null;
   /** Secondary CTA (outline button). */
   secondary?: Action | null;
+  /** Tertiary CTA (ghost button) — extra option without
+   * competing with the primary path. */
+  tertiary?: Action | null;
 }
 
 /**
@@ -39,7 +42,7 @@ interface Props {
  * pages. Pure presentation — caller passes title / description / icon
  * / actions; no internal state.
  */
-export function EmptyState({ icon, title, description, primary, secondary }: Props) {
+export function EmptyState({ icon, title, description, primary, secondary, tertiary }: Props) {
   return (
     <div className="rounded-lg border bg-card text-center py-10 sm:py-14 px-6 space-y-4">
       {icon && (
@@ -58,17 +61,18 @@ export function EmptyState({ icon, title, description, primary, secondary }: Pro
           </p>
         )}
       </div>
-      {(primary || secondary) && (
+      {(primary || secondary || tertiary) && (
         <div className="flex flex-wrap justify-center gap-3 pt-2">
           {primary && renderAction(primary, "default")}
           {secondary && renderAction(secondary, "outline")}
+          {tertiary && renderAction(tertiary, "ghost")}
         </div>
       )}
     </div>
   );
 }
 
-function renderAction(a: Action, variant: "default" | "outline") {
+function renderAction(a: Action, variant: "default" | "outline" | "ghost") {
   const content = (
     <>
       {a.icon}
