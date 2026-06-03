@@ -13,7 +13,7 @@ type Mode = "password" | "magic-link";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("password");
+  const [mode, setMode] = useState<Mode>("magic-link");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -43,8 +43,49 @@ export default function Login() {
     }
   }
 
+  function switchMode(next: Mode) {
+    setMode(next);
+    setError(null);
+    setInfo(null);
+  }
+
   return (
     <AuthLayout title="Đăng nhập" subtitle="Truy cập dòng họ của bạn">
+      {/* Mode selector — tab-style toggle. Magic-link sits on the
+          left so users with a fresh device / no-password flow see
+          it first (one-tap after typing email). */}
+      <div
+        className="inline-flex w-full rounded-md border bg-card overflow-hidden mb-5"
+        role="tablist"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "magic-link"}
+          onClick={() => switchMode("magic-link")}
+          className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 h-11 text-sm font-medium ${
+            mode === "magic-link"
+              ? "bg-primary text-primary-foreground"
+              : "hover:bg-muted/50"
+          }`}
+        >
+          Đăng nhập nhanh (email)
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "password"}
+          onClick={() => switchMode("password")}
+          className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 h-11 text-sm font-medium border-l ${
+            mode === "password"
+              ? "bg-primary text-primary-foreground"
+              : "hover:bg-muted/50"
+          }`}
+        >
+          Mật khẩu
+        </button>
+      </div>
+
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -74,6 +115,13 @@ export default function Login() {
           </div>
         )}
 
+        {mode === "magic-link" && (
+          <p className="text-sm text-muted-foreground -mt-2">
+            Không cần mật khẩu. Bấm gửi, vào hộp thư, bấm liên kết —
+            đăng nhập ngay.
+          </p>
+        )}
+
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -95,20 +143,6 @@ export default function Login() {
             </>
           )}
         </Button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setMode(mode === "password" ? "magic-link" : "password");
-            setError(null);
-            setInfo(null);
-          }}
-          className="block w-full text-center text-base text-primary hover:underline"
-        >
-          {mode === "password"
-            ? "Đăng nhập bằng liên kết qua email"
-            : "Dùng mật khẩu"}
-        </button>
 
         <p className="text-center text-base text-muted-foreground">
           Chưa có tài khoản?{" "}
