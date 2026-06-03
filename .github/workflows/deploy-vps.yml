@@ -79,38 +79,54 @@ jobs:
     needs: build-push
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
+      - uses: actions/checkout@v4
+
+      # scp the compose file + Caddyfile so the VPS holds the
+      # latest reverse-proxy config alongside the app image.
+      - name: Copy deploy files to VPS
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
+          source: "deploy/docker-compose.yml,deploy/Caddyfile"
+          target: "/opt/gia-pha/"
+          strip_components: 1
+
+      - name: Deploy stack on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          APP_IMAGE: ${{ env.IMAGE }}:${{ needs.build-push.outputs.sha7 }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          envs: APP_IMAGE
           script: |
             set -euo pipefail
-            IMAGE="${{ env.IMAGE }}:${{ needs.build-push.outputs.sha7 }}"
-            echo "Deploying $IMAGE"
+            cd /opt/gia-pha
 
-            # Docker login on the VPS so private/rate-limited
-            # pulls succeed. Username+password come from the
-            # same Hub PAT we used to push.
+            # Hub login (rate-limit / private pull safe).
             echo "${{ secrets.DOCKER_TOKEN }}" \
               | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-            docker pull "$IMAGE"
+            # docker-compose env file. DOMAIN + ACME_EMAIL drive
+            # Caddy's TLS issuance; APP_IMAGE pins the SHA tag
+            # we just built. Re-runs overwrite this file with
+            # the current deploy's values.
+            cat > .env <<EOF
+            APP_IMAGE=${APP_IMAGE}
+            DOMAIN=${{ secrets.DEPLOY_DOMAIN }}
+            ACME_EMAIL=${{ secrets.ACME_EMAIL }}
+            EOF
 
-            # Rotate the container. --restart unless-stopped
-            # makes Docker restart it on host reboot. Bind to
-            # :80 — add nginx-proxy / Caddy in front for TLS
-            # later if you want HTTPS.
-            docker stop family-tree-v3 || true
-            docker rm   family-tree-v3 || true
-            docker run -d \
-              --name family-tree-v3 \
-              --restart unless-stopped \
-              -p 80:80 \
-              "$IMAGE"
+            # Pull the new app image and rotate the stack.
+            # `docker compose up -d` is idempotent — only
+            # containers whose image / config changed get
+            # recreated.
+            docker compose pull app
+            docker compose up -d --remove-orphans
 
-            # Free disk by dropping dangling images from older
-            # deploys. Keep the named tags so rollbacks via SHA
-            # still work.
+            # Drop dangling images from older deploys; keep
+            # named tags so rollback by SHA still works.
             docker image prune -f
