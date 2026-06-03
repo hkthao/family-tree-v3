@@ -116,16 +116,18 @@ export default function Login() {
           )}
         </Button>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          className="w-full"
-          onClick={() => setScannerOpen(true)}
-        >
-          <IconQrCode className="h-5 w-5 mr-2" />
-          Đăng nhập nhanh (quét mã QR)
-        </Button>
+        {mode === "password" && (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => setScannerOpen(true)}
+          >
+            <IconQrCode className="h-5 w-5 mr-2" />
+            Đăng nhập nhanh (quét mã QR)
+          </Button>
+        )}
 
         <button
           type="button"
