@@ -10,6 +10,12 @@ interface Props {
   description?: string;
   open: boolean;
   onClose: () => void;
+  /**
+   * When true, render a centered spinner in place of the QR
+   * canvas. Use this while the caller is still resolving the
+   * URL (eg waiting for an edge function to mint a magic link).
+   */
+  loading?: boolean;
 }
 
 /**
@@ -23,13 +29,13 @@ interface Props {
  * Output is a PNG data URL drawn onto the canvas and also
  * stamped onto an <a download> link for "Lưu ảnh QR".
  */
-export function QrCodeModal({ url, title, description, open, onClose }: Props) {
+export function QrCodeModal({ url, title, description, open, onClose, loading }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || loading || !url) return;
     let cancelled = false;
     setErr(null);
     setDataUrl(null);
@@ -55,7 +61,7 @@ export function QrCodeModal({ url, title, description, open, onClose }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [open, url]);
+  }, [open, url, loading]);
 
   // ESC closes
   useEffect(() => {
@@ -107,21 +113,33 @@ export function QrCodeModal({ url, title, description, open, onClose }: Props) {
             </p>
           )}
 
-          <div className="flex justify-center bg-white rounded-md p-3">
-            <canvas
-              ref={canvasRef}
-              width={320}
-              height={320}
-              aria-label="Mã QR"
-            />
+          <div className="flex justify-center items-center bg-white rounded-md p-3 min-h-[344px]">
+            {loading || !url ? (
+              <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                <div
+                  className="h-10 w-10 rounded-full border-4 border-muted border-t-primary animate-spin"
+                  aria-hidden="true"
+                />
+                <p className="text-sm">Đang tạo mã QR…</p>
+              </div>
+            ) : (
+              <canvas
+                ref={canvasRef}
+                width={320}
+                height={320}
+                aria-label="Mã QR"
+              />
+            )}
           </div>
 
-          <p
-            className="text-xs text-muted-foreground text-center break-all font-mono"
-            aria-hidden="true"
-          >
-            {url}
-          </p>
+          {url && !loading && (
+            <p
+              className="text-xs text-muted-foreground text-center break-all font-mono"
+              aria-hidden="true"
+            >
+              {url}
+            </p>
+          )}
 
           {err && (
             <p className="text-sm text-destructive text-center">{err}</p>
