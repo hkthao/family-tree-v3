@@ -1,0 +1,39 @@
+# Multi-stage Vite SPA → nginx static image.
+#
+# Stage 1 builds the bundle with the VITE_* env vars baked in
+# (they're consumed by import.meta.env at build time, so they
+# must be present when `npm run build` runs — passed in via
+# --build-arg from the deploy pipeline).
+#
+# Stage 2 is a minimal nginx:alpine serving dist/ on :80 with
+# the SPA-fallback + cache headers from netlify.toml mirrored
+# into nginx.conf.
+
+FROM node:22-alpine AS build
+WORKDIR /app
+
+# Cache dep install layer ahead of source copy.
+COPY package*.json ./
+RUN npm ci
+
+# Now copy the rest and build. Build-args populate Vite env so
+# the version footer + Supabase client + Sentry DSN compile in.
+COPY . .
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_SENTRY_DSN=
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+RUN npm run build
+
+# ─── Runtime stage ──────────────────────────────────────────
+FROM nginx:1.27-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Healthcheck — Nginx is up if index.html is served.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
+EXPOSE 80

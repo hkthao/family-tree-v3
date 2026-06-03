@@ -1,0 +1,116 @@
+# Self-hosted VPS deploy.
+#
+#   1. build-push: builds the Docker image with Vite env baked in,
+#      pushes to Docker Hub under `hkthao/family-tree-v3:<tags>`.
+#   2. deploy: SSH into the VPS, pulls the new image, rotates the
+#      container with the new tag, prunes the old image.
+#
+# Manual-only trigger so a code-only refactor doesn't redeploy
+# the VPS for no reason. Push the workflow_run gate back if you
+# want auto-deploy after tests pass.
+#
+# Required secrets (`gh secret set <name> --body <value>`):
+#   DOCKER_USERNAME       Docker Hub username
+#   DOCKER_TOKEN          Docker Hub access token / PAT
+#   VPS_HOST              VPS IP or hostname
+#   VPS_USER              SSH user (typically root)
+#   VPS_PASSWORD          SSH password (or migrate to VPS_SSH_KEY)
+#   VITE_SUPABASE_URL     Same as netlify build-time env
+#   VITE_SUPABASE_ANON_KEY
+#   VITE_SENTRY_DSN       Optional
+
+name: deploy-vps
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+env:
+  IMAGE: hkthao/family-tree-v3
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    outputs:
+      sha7: ${{ steps.meta.outputs.sha7 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute short SHA
+        id: meta
+        run: echo "sha7=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build + push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          # Tag both `latest` (so docker pull on the VPS picks
+          # up the newest by default) and the short SHA (for
+          # rollbacks: ssh in, `docker run hkthao/...:<sha>`
+          # of the prior build).
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ steps.meta.outputs.sha7 }}
+          build-args: |
+            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+            VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+          # Buildx cache via GH Actions registry for warmer
+          # subsequent builds (mostly the node_modules layer).
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Multi-arch is overkill for a small VPS — stick to
+          # x86_64 unless the box is ARM.
+          platforms: linux/amd64
+
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            set -euo pipefail
+            IMAGE="${{ env.IMAGE }}:${{ needs.build-push.outputs.sha7 }}"
+            echo "Deploying $IMAGE"
+
+            # Docker login on the VPS so private/rate-limited
+            # pulls succeed. Username+password come from the
+            # same Hub PAT we used to push.
+            echo "${{ secrets.DOCKER_TOKEN }}" \
+              | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+            docker pull "$IMAGE"
+
+            # Rotate the container. --restart unless-stopped
+            # makes Docker restart it on host reboot. Bind to
+            # :80 — add nginx-proxy / Caddy in front for TLS
+            # later if you want HTTPS.
+            docker stop family-tree-v3 || true
+            docker rm   family-tree-v3 || true
+            docker run -d \
+              --name family-tree-v3 \
+              --restart unless-stopped \
+              -p 80:80 \
+              "$IMAGE"
+
+            # Free disk by dropping dangling images from older
+            # deploys. Keep the named tags so rollbacks via SHA
+            # still work.
+            docker image prune -f
