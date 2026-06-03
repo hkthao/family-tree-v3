@@ -1,0 +1,87 @@
+# One-shot VPS bootstrap: fixes authorized_keys, installs the
+# host-nginx site config for giapha.thaohk.com, issues a Let's
+# Encrypt cert via certbot, and verifies HTTPS responds.
+#
+# Trigger manually via `gh workflow run vps-bootstrap.yml` after
+# the main deploy-vps run has the app container running.
+
+name: vps-bootstrap
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH bootstrap
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          command_timeout: 10m
+          script: |
+            set -euo pipefail
+
+            # ─── 1. Repair authorized_keys ───────────────────
+            # Earlier terminal paste fragments left a mashed
+            # broken line in the file. Keep only the first
+            # (github-actions) key + append the agent key
+            # cleanly.
+            mkdir -p ~/.ssh && chmod 700 ~/.ssh
+            head -1 ~/.ssh/authorized_keys > /tmp/ak.new
+            echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFPf829BVzudDh4B2zqD/GnIioQsWeV9x+M5OTH7Z6oC claude-code-agent@family-tree-v3' >> /tmp/ak.new
+            mv /tmp/ak.new ~/.ssh/authorized_keys
+            chmod 600 ~/.ssh/authorized_keys
+            echo "authorized_keys repaired:"
+            wc -l ~/.ssh/authorized_keys
+
+            # ─── 2. Verify app container is up ───────────────
+            docker ps --filter name=family-tree-v3 --format 'table {{.Names}}\t{{.Status}}'
+            curl -sI http://127.0.0.1:8080 | head -3
+
+            # ─── 3. Install nginx site config ────────────────
+            cat > /etc/nginx/sites-available/giapha.thaohk.com <<'CFG'
+            server {
+              listen 80;
+              listen [::]:80;
+              server_name giapha.thaohk.com;
+
+              location / {
+                proxy_pass http://127.0.0.1:8080;
+                proxy_http_version 1.1;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                gzip off;
+              }
+
+              client_max_body_size 10M;
+            }
+            CFG
+            ln -sf /etc/nginx/sites-available/giapha.thaohk.com /etc/nginx/sites-enabled/
+            nginx -t
+            systemctl reload nginx
+            echo "nginx site enabled + reloaded"
+
+            # ─── 4. Install certbot (if not present) ─────────
+            if ! command -v certbot >/dev/null 2>&1; then
+              apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+                certbot python3-certbot-nginx
+            fi
+
+            # ─── 5. Issue / renew TLS cert ───────────────────
+            certbot --nginx \
+              -d giapha.thaohk.com \
+              --email thao.hk90@gmail.com \
+              --agree-tos --no-eff-email \
+              --non-interactive \
+              --redirect
+
+            # ─── 6. Verify HTTPS ─────────────────────────────
+            echo "---HTTPS PROBE---"
+            curl -sI https://giapha.thaohk.com | head -5
+            echo "---DONE---"
