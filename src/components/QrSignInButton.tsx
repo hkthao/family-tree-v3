@@ -81,7 +81,8 @@ export function QrSignInButton() {
         Đăng nhập trên điện thoại
       </button>
       <QrCodeModal
-        open={open && !!url}
+        open={open}
+        loading={loading}
         onClose={closeModal}
         url={url ?? ""}
         title="Quét để đăng nhập trên điện thoại"
