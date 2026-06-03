@@ -22,9 +22,15 @@ COPY . .
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 ARG VITE_SENTRY_DSN=
+# vite.config.ts reads GITHUB_SHA / COMMIT_REF to stamp the
+# drawer footer ("v0.1.0 · <sha>"). The build context has no
+# git binary and .dockerignore drops .git/, so without this
+# build-arg we'd fall back to "dev". CI passes the real SHA.
+ARG GITHUB_SHA=dev
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+ENV GITHUB_SHA=$GITHUB_SHA
 RUN npm run build
 
 # ─── Runtime stage ──────────────────────────────────────────
