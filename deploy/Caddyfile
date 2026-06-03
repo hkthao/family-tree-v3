@@ -1,0 +1,38 @@
+# Caddy reverse proxy + automatic HTTPS for the Gia phả SPA.
+#
+# Domain + email come from environment variables set by
+# docker-compose (DOMAIN + EMAIL). Caddy uses EMAIL to register
+# with Let's Encrypt for cert issuance / renewal notifications.
+
+{
+  email {$EMAIL}
+}
+
+{$DOMAIN} {
+  encode zstd gzip
+
+  # Pass through to the app container. `app` resolves via the
+  # docker-compose `web` bridge network. Port 80 is what nginx
+  # inside the app container listens on.
+  reverse_proxy app:80
+
+  # Hardening — modest defaults; tighten further if needed.
+  header {
+    # Tell HTTPS-aware clients to never downgrade to plain HTTP
+    # for this host. 6-month max-age, include subdomains.
+    Strict-Transport-Security "max-age=15552000; includeSubDomains"
+    # Block clickjacking embeds.
+    X-Frame-Options "DENY"
+    # MIME-sniff lockdown.
+    X-Content-Type-Options "nosniff"
+    # Don't leak the full referrer to third parties.
+    Referrer-Policy "strict-origin-when-cross-origin"
+    # Drop Caddy's default Server header.
+    -Server
+  }
+
+  log {
+    output stdout
+    format console
+  }
+}
