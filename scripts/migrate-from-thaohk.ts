@@ -217,55 +217,44 @@ async function main() {
   const oldToNewPersonId = new Map<string, string>();
   for (const m of members) oldToNewPersonId.set(m.id, randomUUID());
 
-  // 6. Build families
-  // 6a. Birth families: unique (fatherId, motherId) pairs across all
-  //     persons that have at least one parent recorded.
-  const birthFamilyByKey = new Map<string, { id: string; husbandId: string | null; wifeId: string | null }>();
-  for (const m of members) {
-    if (!m.fatherId && !m.motherId) continue;
-    const k = pairKey(m.fatherId, m.motherId)!;
-    if (!birthFamilyByKey.has(k)) {
-      birthFamilyByKey.set(k, {
-        id: randomUUID(),
-        husbandId: m.fatherId ? (oldToNewPersonId.get(m.fatherId) ?? null) : null,
-        wifeId: m.motherId ? (oldToNewPersonId.get(m.motherId) ?? null) : null,
-      });
-    }
+  // 6. Build families — ONE map keyed by (husband_id, wife_id).
+  //    Both birth-family lookup (children → parents) and marriage
+  //    lookup (spouse pair) end up pointing at the SAME (father,
+  //    mother) tuple. Using a single map dedupes the case where a
+  //    couple both have children in the dataset AND show up as
+  //    each other's husband/wife — previously this produced two
+  //    `families` rows for the same union, surfaced in the UI as
+  //    a duplicate "Vợ/chồng" entry on the person detail page.
+  const familyByKey = new Map<string, { id: string; husbandId: string | null; wifeId: string | null }>();
+
+  function addFamily(husbandOldId: string | null, wifeOldId: string | null): string | null {
+    if (!husbandOldId && !wifeOldId) return null;
+    const k = pairKey(husbandOldId, wifeOldId)!;
+    const existing = familyByKey.get(k);
+    if (existing) return existing.id;
+    const row = {
+      id: randomUUID(),
+      husbandId: husbandOldId ? (oldToNewPersonId.get(husbandOldId) ?? null) : null,
+      wifeId: wifeOldId ? (oldToNewPersonId.get(wifeOldId) ?? null) : null,
+    };
+    familyByKey.set(k, row);
+    return row.id;
   }
 
-  // 6b. Marriage families: unique (husbandId, wifeId) pairs. A
-  //     person's spouse points back symmetrically — we canonicalise
-  //     to (male, female) by orienting via gender.
-  const marriageFamilyByKey = new Map<string, { id: string; husbandId: string | null; wifeId: string | null }>();
+  // 6a. Birth families: each (fatherId, motherId) pair.
+  for (const m of members) addFamily(m.fatherId, m.motherId);
+
+  // 6b. Marriage families: canonicalise spouse direction on gender
+  //     so (X male, A female) reached from either side keys identical.
   for (const m of members) {
     if (!m.husbandId && !m.wifeId) continue;
-    let husbandOldId: string | null = null;
-    let wifeOldId: string | null = null;
-    if (m.gender === "Male") {
-      husbandOldId = m.id;
-      wifeOldId = m.wifeId;
-    } else {
-      wifeOldId = m.id;
-      husbandOldId = m.husbandId;
-    }
-    if (!husbandOldId && !wifeOldId) continue;
-    const k = pairKey(husbandOldId, wifeOldId)!;
-    if (!marriageFamilyByKey.has(k)) {
-      marriageFamilyByKey.set(k, {
-        id: randomUUID(),
-        husbandId: husbandOldId ? (oldToNewPersonId.get(husbandOldId) ?? null) : null,
-        wifeId: wifeOldId ? (oldToNewPersonId.get(wifeOldId) ?? null) : null,
-      });
-    }
+    const husbandOld = m.gender === "Male" ? m.id : m.husbandId;
+    const wifeOld    = m.gender === "Male" ? m.wifeId : m.id;
+    addFamily(husbandOld, wifeOld);
   }
 
-  const allFamilies = [
-    ...birthFamilyByKey.values(),
-    ...marriageFamilyByKey.values(),
-  ];
-  console.log(
-    `  families: ${birthFamilyByKey.size} birth + ${marriageFamilyByKey.size} marriage = ${allFamilies.length}`,
-  );
+  const allFamilies = [...familyByKey.values()];
+  console.log(`  families: ${allFamilies.length} (deduped birth + marriage)`);
 
   // 7. Insert persons (without husband/wife on families yet — they'd
   //    create circular FK; create families with NULL hb/wf first,
@@ -273,7 +262,7 @@ async function main() {
   const personRows = members.map((m) => {
     const birthFamilyKey = pairKey(m.fatherId, m.motherId);
     const birth_family_id =
-      birthFamilyKey ? (birthFamilyByKey.get(birthFamilyKey)?.id ?? null) : null;
+      birthFamilyKey ? (familyByKey.get(birthFamilyKey)?.id ?? null) : null;
     const birth_date = toLocalDate(m.dateOfBirth);
     const death_date = toLocalDate(m.dateOfDeath);
     const bioParts: string[] = [];
