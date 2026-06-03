@@ -1,52 +1,22 @@
-# Production stack on the VPS.
+# Production stack on the VPS — single app container bound to
+# localhost only. The VPS already runs host nginx (on :80 + :443
+# serving thaohk.com and friends), so we publish the container
+# on 127.0.0.1:8080 and let the host nginx reverse-proxy
+# giapha.thaohk.com → http://127.0.0.1:8080.
 #
-# Two services on a shared bridge network:
-#   - app:   the SPA container (Dockerfile in repo root)
-#   - caddy: reverse proxy + automatic Let's Encrypt TLS
-#
-# Caddy fetches a certificate for the domain in `DOMAIN` env var
-# the first time it boots, then auto-renews. The app container
-# is NOT exposed publicly — caddy is the only public-facing
-# service.
-#
-# Deployed by deploy-vps.yml: the workflow scp's this file +
-# Caddyfile to /opt/gia-pha/ on the VPS, pulls the latest app
-# image, then `docker compose up -d`.
+# Deployed by deploy-vps.yml: workflow scp's this file to
+# /opt/gia-pha/, writes a .env with APP_IMAGE pinned to the SHA
+# we just built, then runs `docker compose up -d`.
 
 services:
   app:
     image: ${APP_IMAGE:-hkthao/family-tree-v3:latest}
     container_name: family-tree-v3
     restart: unless-stopped
-    # No public ports — only reachable from caddy via the
-    # `web` network below.
-    networks:
-      - web
-
-  caddy:
-    image: caddy:2-alpine
-    container_name: caddy
-    restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      DOMAIN: ${DOMAIN:?DOMAIN env var required (eg giapha.thaohk.com)}
-      EMAIL: ${ACME_EMAIL:-admin@thaohk.com}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - web
-    depends_on:
-      - app
-
-networks:
-  web:
-    driver: bridge
-
-volumes:
-  caddy_data:
-  caddy_config:
+      # 127.0.0.1 prefix binds only to loopback — the container
+      # is not directly reachable from the public internet. The
+      # host nginx is the only thing that can talk to it. Change
+      # 8080 if your VPS already uses that port for something
+      # else (eg another internal service).
+      - "127.0.0.1:8080:80"
