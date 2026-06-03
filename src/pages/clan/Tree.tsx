@@ -445,12 +445,13 @@ export default function Tree() {
         </p>
       </div>
 
-      <div className="flex items-center justify-between gap-3 flex-wrap print-hide">
-        <h2 className="text-2xl font-semibold">Cây gia phả</h2>
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 print-hide">
+        <h2 className="text-2xl font-semibold sm:flex-1">Cây gia phả</h2>
+        <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
           <Button
             variant="outline"
             size="sm"
+            className="h-10"
             onClick={() => window.print()}
             title="In trang này (Ctrl/Cmd+P)"
           >
@@ -494,7 +495,11 @@ export default function Tree() {
               Ngang
             </button>
           </div>
-          <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
+          <RefreshButton
+            clanId={clan.id}
+            cachedVersion={clan.data_version}
+            compact
+          />
         </div>
       </div>
 
@@ -575,7 +580,7 @@ export default function Tree() {
             // CSS-var overrides shift the default saturated blue/pink card
             // fills toward the paper/oxblood palette from plan §10:
             // male = cool muted, female = warm muted, text in ink colour.
-            className="f3 rounded-lg border bg-card overflow-hidden -mx-4 sm:mx-0 h-[70vh] min-h-[480px] max-h-[820px] text-foreground"
+            className="f3 rounded-lg border bg-card overflow-hidden h-[70vh] min-h-[480px] max-h-[820px] text-foreground"
             style={
               {
                 "--male-color": "var(--tree-card-male)",
