@@ -1,22 +1,26 @@
-# Production stack on the VPS — single app container bound to
-# localhost only. The VPS already runs host nginx (on :80 + :443
-# serving thaohk.com and friends), so we publish the container
-# on 127.0.0.1:8080 and let the host nginx reverse-proxy
-# giapha.thaohk.com → http://127.0.0.1:8080.
+# Production stack on the VPS — single SPA container that joins
+# the EXISTING genealogy-app docker network so the existing
+# nginx container (genealogy-app-nginx-1) can proxy_pass to it
+# by service name "family-tree-v3". No host port binding —
+# everything stays internal to the docker network.
 #
-# Deployed by deploy-vps.yml: workflow scp's this file to
-# /opt/gia-pha/, writes a .env with APP_IMAGE pinned to the SHA
-# we just built, then runs `docker compose up -d`.
+# nginx + certbot are owned by the genealogy-app stack; we only
+# add a server block for giapha.thaohk.com pointing at the
+# `family-tree-v3` upstream (done once by the bootstrap script).
 
 services:
   app:
     image: ${APP_IMAGE:-hkthao/family-tree-v3:latest}
     container_name: family-tree-v3
     restart: unless-stopped
-    ports:
-      # 127.0.0.1 prefix binds only to loopback — the container
-      # is not directly reachable from the public internet. The
-      # host nginx is the only thing that can talk to it. Change
-      # 8080 if your VPS already uses that port for something
-      # else (eg another internal service).
-      - "127.0.0.1:8080:80"
+    networks:
+      # Join genealogy's docker network so nginx can reach us
+      # via the alias `family-tree-v3`.
+      genealogy-app_app-network: {}
+
+networks:
+  # Pre-existing network created by the genealogy-app compose.
+  # `external: true` tells docker not to create it; this stack
+  # refuses to start if the network is missing.
+  genealogy-app_app-network:
+    external: true

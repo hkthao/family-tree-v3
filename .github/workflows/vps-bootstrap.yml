@@ -1,9 +1,22 @@
-# One-shot VPS bootstrap: fixes authorized_keys, installs the
-# host-nginx site config for giapha.thaohk.com, issues a Let's
-# Encrypt cert via certbot, and verifies HTTPS responds.
+# One-shot VPS bootstrap. The VPS already runs an existing
+# `genealogy-app` docker stack with its own nginx container
+# (genealogy-app-nginx-1) bound to :80 + :443 — that nginx
+# already serves family.thaohk.com + family-api.thaohk.com. To
+# add giapha.thaohk.com we:
 #
-# Trigger manually via `gh workflow run vps-bootstrap.yml` after
-# the main deploy-vps run has the app container running.
+#   1. patch the genealogy nginx default.conf at
+#      /var/www/genealogy-app/nginx/default.conf — add an HTTP
+#      server block for giapha.thaohk.com that proxies to the
+#      family-tree-v3 container (joined to the same docker net
+#      via docker-compose).
+#   2. reload the genealogy nginx container.
+#   3. issue a Let's Encrypt cert via certbot in webroot mode
+#      pointing at the existing /var/www/certbot path; certs
+#      land in the certs/ folder already bind-mounted into
+#      nginx.
+#   4. patch nginx again to add the HTTPS server block, reload.
+#
+# Idempotent — every step checks before mutating.
 
 name: vps-bootstrap
 
@@ -23,65 +36,97 @@ jobs:
           command_timeout: 10m
           script: |
             set -euo pipefail
+            CONF=/var/www/genealogy-app/nginx/default.conf
+            CERT_WEBROOT=/var/www/genealogy-app/apps/admin/dist
+            CERT_STORE=/var/www/genealogy-app/nginx/certs
 
-            # ─── 1. Repair authorized_keys ───────────────────
-            # Earlier terminal paste fragments left a mashed
-            # broken line in the file. Keep only the first
-            # (github-actions) key + append the agent key
-            # cleanly.
-            mkdir -p ~/.ssh && chmod 700 ~/.ssh
-            head -1 ~/.ssh/authorized_keys > /tmp/ak.new
-            echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFPf829BVzudDh4B2zqD/GnIioQsWeV9x+M5OTH7Z6oC claude-code-agent@family-tree-v3' >> /tmp/ak.new
-            mv /tmp/ak.new ~/.ssh/authorized_keys
-            chmod 600 ~/.ssh/authorized_keys
-            echo "authorized_keys repaired:"
-            wc -l ~/.ssh/authorized_keys
+            # ─── 1. Add HTTP server block ────────────────────
+            if ! grep -q "server_name giapha.thaohk.com;" "$CONF"; then
+              cat >> "$CONF" <<'NGINX'
 
-            # ─── 2. Verify app container is up ───────────────
-            docker ps --filter name=family-tree-v3 --format 'table {{.Names}}\t{{.Status}}'
-            curl -sI http://127.0.0.1:8080 | head -3
+# ─── giapha.thaohk.com (added by vps-bootstrap) ───
+server {
+    listen 80;
+    server_name giapha.thaohk.com;
 
-            # ─── 3. Install nginx site config ────────────────
-            cat > /etc/nginx/sites-available/giapha.thaohk.com <<'CFG'
-            server {
-              listen 80;
-              listen [::]:80;
-              server_name giapha.thaohk.com;
+    location ~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
 
-              location / {
-                proxy_pass http://127.0.0.1:8080;
-                proxy_http_version 1.1;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                gzip off;
-              }
+    location / {
+        proxy_pass http://family-tree-v3:80;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 
-              client_max_body_size 10M;
-            }
-            CFG
-            ln -sf /etc/nginx/sites-available/giapha.thaohk.com /etc/nginx/sites-enabled/
-            nginx -t
-            systemctl reload nginx
-            echo "nginx site enabled + reloaded"
-
-            # ─── 4. Install certbot (if not present) ─────────
-            if ! command -v certbot >/dev/null 2>&1; then
-              apt-get update -qq
-              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-                certbot python3-certbot-nginx
+    client_max_body_size 10M;
+}
+NGINX
+              echo "added HTTP block for giapha.thaohk.com"
+            else
+              echo "HTTP block already present"
             fi
 
-            # ─── 5. Issue / renew TLS cert ───────────────────
-            certbot --nginx \
-              -d giapha.thaohk.com \
-              --email thao.hk90@gmail.com \
-              --agree-tos --no-eff-email \
-              --non-interactive \
-              --redirect
+            docker exec genealogy-app-nginx-1 nginx -t
+            docker exec genealogy-app-nginx-1 nginx -s reload
+            echo "nginx reloaded"
 
-            # ─── 6. Verify HTTPS ─────────────────────────────
+            # ─── 2. Issue cert via certbot webroot ───────────
+            if [ ! -d "$CERT_STORE/live/giapha.thaohk.com" ]; then
+              if ! command -v certbot >/dev/null 2>&1; then
+                apt-get update -qq
+                DEBIAN_FRONTEND=noninteractive apt-get install -y -qq certbot
+              fi
+              certbot certonly --webroot \
+                -w "$CERT_WEBROOT" \
+                -d giapha.thaohk.com \
+                --email thao.hk90@gmail.com \
+                --agree-tos --no-eff-email \
+                --non-interactive \
+                --config-dir "$CERT_STORE" \
+                --work-dir /tmp/certbot-work \
+                --logs-dir /tmp/certbot-logs
+              echo "cert issued"
+            else
+              echo "cert already exists"
+            fi
+
+            # ─── 3. Add HTTPS server block ───────────────────
+            if ! grep -q "ssl_certificate /etc/letsencrypt/live/giapha.thaohk.com" "$CONF"; then
+              cat >> "$CONF" <<'NGINX'
+
+server {
+    listen 443 ssl;
+    server_name giapha.thaohk.com;
+
+    ssl_certificate /etc/letsencrypt/live/giapha.thaohk.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/giapha.thaohk.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    location / {
+        proxy_pass http://family-tree-v3:80;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    client_max_body_size 10M;
+}
+NGINX
+              docker exec genealogy-app-nginx-1 nginx -t
+              docker exec genealogy-app-nginx-1 nginx -s reload
+              echo "HTTPS block added + nginx reloaded"
+            else
+              echo "HTTPS block already present"
+            fi
+
+            # ─── 4. Verify ───────────────────────────────────
             echo "---HTTPS PROBE---"
             curl -sI https://giapha.thaohk.com | head -5
             echo "---DONE---"
