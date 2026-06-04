@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
 import {
+  IconBook,
   IconBuildings,
   IconCalendar,
   IconDownload,
@@ -313,6 +314,11 @@ function buildSections(
       to: "/account",
       label: "Tài khoản",
       icon: <IconUser className={ic} />,
+    },
+    {
+      to: "/docs",
+      label: "Hướng dẫn",
+      icon: <IconBook className={ic} />,
     },
   ];
   if (profile?.is_platform_admin) {

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { AuthLayout } from "@/components/AuthLayout";
 import { IconUserPlus } from "@/components/icons";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,6 +102,8 @@ export default function Signup() {
             Đăng nhập
           </Link>
         </p>
+
+        <SocialAuthButtons />
       </form>
     </AuthLayout>
   );

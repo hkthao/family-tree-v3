@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthLayout } from "@/components/AuthLayout";
 import { IconLogIn, IconQrCode } from "@/components/icons";
 import { QrScannerModal } from "@/components/QrScannerModal";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,6 +150,8 @@ export default function Login() {
             Đăng ký
           </Link>
         </p>
+
+        <SocialAuthButtons />
       </form>
 
       <QrScannerModal
