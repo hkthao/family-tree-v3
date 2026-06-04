@@ -37,7 +37,14 @@ export function SocialAuthButtons({ redirectTo }: Props) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: redirectTo ?? `${window.location.origin}/`,
+        // Redirect straight to /clans rather than `/`. The root path
+        // renders `<Navigate to="/clans" replace />` synchronously
+        // during the first React commit, which strips the
+        // `#access_token=…` hash from window.location BEFORE
+        // Supabase JS gets a chance to parse it — session never
+        // hydrates, RequireAuth then bounces the user to /login.
+        // Landing directly on /clans avoids the racing redirect.
+        redirectTo: redirectTo ?? `${window.location.origin}/clans`,
       },
     });
     // On success the browser is already redirecting — we only fall through
