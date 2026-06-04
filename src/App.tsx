@@ -9,6 +9,7 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 import Account from "@/pages/Account";
 import Admin from "@/pages/Admin";
 import Clans from "@/pages/Clans";
+import Docs from "@/pages/Docs";
 import AddChild from "@/pages/clan/AddChild";
 import AddSpouse from "@/pages/clan/AddSpouse";
 import AiGenerate from "@/pages/clan/AiGenerate";
@@ -94,6 +95,22 @@ export default function App() {
           element={
             <RequireAuth>
               <Admin />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/docs"
+          element={
+            <RequireAuth>
+              <Docs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/docs/:slug"
+          element={
+            <RequireAuth>
+              <Docs />
             </RequireAuth>
           }
         />
