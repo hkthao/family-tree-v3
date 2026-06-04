@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { IconPhoneDownload } from "@/components/icons";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -70,16 +71,16 @@ export function QrSignInButton() {
 
   return (
     <>
-      <button
-        type="button"
+      <Button
+        variant="outline"
         onClick={openModal}
         disabled={loading}
         title="Hiện mã QR — quét bằng điện thoại để đăng nhập cùng tài khoản này"
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm"
+        className="w-full sm:w-auto"
       >
-        <IconPhoneDownload className="h-4 w-4 shrink-0" />
+        <IconPhoneDownload className="h-4 w-4 mr-1.5 shrink-0" />
         Đăng nhập trên điện thoại
-      </button>
+      </Button>
       <QrCodeModal
         open={open}
         loading={loading}
