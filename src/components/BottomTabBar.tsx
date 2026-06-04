@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -5,7 +6,12 @@ import { cn } from "@/lib/utils";
 interface Tab {
   to: string;
   label: string;
-  icon: string;
+  /**
+   * Outline icon (lucide-style). Uses `currentColor`, so it tints
+   * with the surrounding text colour automatically — selected tab
+   * gets `text-primary`, others `text-muted-foreground`.
+   */
+  icon: ReactNode;
   /** Match only the exact path (e.g. for the dashboard index route). */
   end?: boolean;
 }
@@ -49,7 +55,7 @@ export function BottomTabBar({ tabs }: Props) {
                 )
               }
             >
-              <span className="text-2xl leading-none" aria-hidden="true">
+              <span className="inline-flex items-center justify-center h-6 w-6">
                 {tab.icon}
               </span>
               <span>{tab.label}</span>

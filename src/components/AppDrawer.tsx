@@ -2,8 +2,25 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
 
+import type { ReactNode } from "react";
+
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
+import {
+  IconBuildings,
+  IconCalendar,
+  IconDownload,
+  IconHome,
+  IconLink,
+  IconPlus,
+  IconScroll,
+  IconSettings,
+  IconShield,
+  IconTree,
+  IconUser,
+  IconUserPlus,
+  IconUsers,
+} from "@/components/icons";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
@@ -141,7 +158,7 @@ export function AppDrawer({ open, onClose }: Props) {
                         )
                       }
                     >
-                      <span className="text-lg" aria-hidden="true">
+                      <span className="inline-flex items-center justify-center shrink-0">
                         {item.icon}
                       </span>
                       <span>{item.label}</span>
@@ -253,7 +270,7 @@ function LogoutIcon() {
 interface DrawerItem {
   to: string;
   label: string;
-  icon: string;
+  icon: ReactNode;
   end?: boolean;
 }
 interface DrawerSection {
@@ -274,19 +291,36 @@ function buildSections(
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
+  // Single icon size used across the drawer — matches typical sidebar
+  // density and lets the lucide-style strokes stay legible at small
+  // text-sm row heights.
+  const ic = "h-5 w-5";
+
   // -- Global section ------------------------------------------------------
   const global: DrawerItem[] = [
     {
       to: "/clans",
       label: profile?.is_platform_admin ? "Tất cả dòng họ" : "Dòng họ của tôi",
-      icon: "🏘",
+      icon: <IconBuildings className={ic} />,
       end: true,
     },
-    { to: "/clans/new", label: "Tạo dòng họ mới", icon: "✚" },
-    { to: "/account", label: "Tài khoản", icon: "👤" },
+    {
+      to: "/clans/new",
+      label: "Tạo dòng họ mới",
+      icon: <IconPlus className={ic} />,
+    },
+    {
+      to: "/account",
+      label: "Tài khoản",
+      icon: <IconUser className={ic} />,
+    },
   ];
   if (profile?.is_platform_admin) {
-    global.push({ to: "/admin", label: "Quản trị nền tảng", icon: "🛡" });
+    global.push({
+      to: "/admin",
+      label: "Quản trị nền tảng",
+      icon: <IconShield className={ic} />,
+    });
   }
   sections.push({ label: "Chung", items: global });
 
@@ -300,40 +334,57 @@ function buildSections(
     const isMember = clan.isPlatformAdmin || clan.myRole !== null;
 
     const items: DrawerItem[] = [
-      { to: `/clans/${clanId}`, label: "Tổng quan", icon: "🏠", end: true },
-      { to: `/clans/${clanId}/people`, label: "Danh bạ", icon: "📋" },
-      { to: `/clans/${clanId}/tree`, label: "Cây gia phả", icon: "🌳" },
-      { to: `/clans/${clanId}/events`, label: "Sự kiện", icon: "🗓" },
+      {
+        to: `/clans/${clanId}`,
+        label: "Tổng quan",
+        icon: <IconHome className={ic} />,
+        end: true,
+      },
+      {
+        to: `/clans/${clanId}/people`,
+        label: "Danh bạ",
+        icon: <IconUsers className={ic} />,
+      },
+      {
+        to: `/clans/${clanId}/tree`,
+        label: "Cây gia phả",
+        icon: <IconTree className={ic} />,
+      },
+      {
+        to: `/clans/${clanId}/events`,
+        label: "Sự kiện",
+        icon: <IconCalendar className={ic} />,
+      },
     ];
     if (canEdit) {
       items.push({
         to: `/clans/${clanId}/import`,
         label: "Nhập từ Excel",
-        icon: "📥",
+        icon: <IconDownload className={ic} />,
       });
       items.push({
         to: `/clans/${clanId}/merge`,
         label: "Gộp người trùng",
-        icon: "🔗",
+        icon: <IconLink className={ic} />,
       });
     }
     if (isMember) {
       items.push({
         to: `/clans/${clanId}/audit`,
         label: "Nhật ký",
-        icon: "📜",
+        icon: <IconScroll className={ic} />,
       });
     }
     if (isAdmin) {
       items.push({
         to: `/clans/${clanId}/members`,
         label: "Thành viên",
-        icon: "👥",
+        icon: <IconUserPlus className={ic} />,
       });
       items.push({
         to: `/clans/${clanId}/settings`,
         label: "Cài đặt dòng họ",
-        icon: "⚙️",
+        icon: <IconSettings className={ic} />,
       });
     }
 

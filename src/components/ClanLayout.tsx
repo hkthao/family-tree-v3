@@ -5,7 +5,14 @@ import { Link, Navigate, Outlet, useParams } from "react-router-dom";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
-import { IconSettings } from "@/components/icons";
+import {
+  IconCalendar,
+  IconHome,
+  IconSettings,
+  IconTree,
+  IconUser,
+  IconUsers,
+} from "@/components/icons";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -76,16 +83,37 @@ export function ClanLayout() {
   }
 
   const tabs = [
-    { to: `/clans/${clanId}`, label: "Tổng quan", icon: "🏠", end: true },
-    { to: `/clans/${clanId}/people`, label: "Danh bạ", icon: "📋" },
-    { to: `/clans/${clanId}/tree`, label: "Cây", icon: "🌳" },
-    { to: `/clans/${clanId}/events`, label: "Sự kiện", icon: "🗓" },
-    { to: "/account", label: "Tài khoản", icon: "👤" },
+    {
+      to: `/clans/${clanId}`,
+      label: "Tổng quan",
+      icon: <IconHome className="h-5 w-5" />,
+      end: true,
+    },
+    {
+      to: `/clans/${clanId}/people`,
+      label: "Danh bạ",
+      icon: <IconUsers className="h-5 w-5" />,
+    },
+    {
+      to: `/clans/${clanId}/tree`,
+      label: "Cây",
+      icon: <IconTree className="h-5 w-5" />,
+    },
+    {
+      to: `/clans/${clanId}/events`,
+      label: "Sự kiện",
+      icon: <IconCalendar className="h-5 w-5" />,
+    },
+    {
+      to: "/account",
+      label: "Tài khoản",
+      icon: <IconUser className="h-5 w-5" />,
+    },
   ];
 
   return (
     <div className="min-h-dvh bg-background pb-20 lg:pb-0 lg:pl-72">
-      <header className="border-b bg-background sticky top-0 z-10">
+      <header className="border-b bg-background sticky top-0 z-30">
         <div className="container max-w-4xl flex items-center justify-between gap-3 px-4 h-[64px]">
           <button
             type="button"
