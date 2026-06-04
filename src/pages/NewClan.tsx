@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { BackLink } from "@/components/BackLink";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -42,8 +43,8 @@ export default function NewClan() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-2xl py-6 px-4">
-        <nav className="text-sm text-muted-foreground mb-4">
-          <Link to="/clans" className="hover:underline">← Dòng họ của tôi</Link>
+        <nav className="mb-4">
+          <BackLink fallback="/clans" />
         </nav>
 
         <h1 className="clan-name text-3xl font-semibold mb-6">Tạo dòng họ mới</h1>
