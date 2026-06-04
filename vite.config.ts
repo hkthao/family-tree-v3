@@ -60,6 +60,16 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,webmanifest}"],
         // Don't ship Workbox debug files in prod.
         cleanupOutdatedCaches: true,
+        // When the user accepts "Cập nhật" in the banner, the new SW
+        // must activate AND take over the existing tab in one step.
+        // Without `clientsClaim`, the post-reload navigation is still
+        // intercepted by the OLD SW which serves the cached old
+        // index.html — that HTML references chunk hashes that no
+        // longer exist on the server, producing 404 + a white screen.
+        // F5 bypasses the SW which is why the user's manual refresh
+        // recovers. `skipWaiting` removes the waiting phase entirely.
+        skipWaiting: true,
+        clientsClaim: true,
         // Route everything inside our SPA shell to index.html so deep
         // links (e.g. /clans/abc/people) load when offline.
         navigateFallback: "/index.html",
