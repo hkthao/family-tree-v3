@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import {
+  IconArrowLeft,
+  IconArrowRight,
   IconCheck,
   IconLock,
   IconShield,
@@ -15,13 +17,6 @@ import {
 import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +35,8 @@ import { getMyProfile } from "@/lib/queries/profile";
 import { unaccent } from "@/lib/unaccent";
 
 type Tab = "users" | "clans";
+
+const PAGE_SIZE = 20;
 
 export default function Admin() {
   const { user, loading } = useAuth();
@@ -67,28 +64,34 @@ export default function Admin() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-5xl py-6 px-4 space-y-6">
-        <h1 className="clan-name text-3xl font-semibold">Quản trị nền tảng</h1>
-
-        <div className="inline-flex rounded-md border bg-card overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setTab("users")}
-            className={`px-4 h-10 text-sm ${
-              tab === "users" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
-            }`}
-          >
-            Người dùng
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("clans")}
-            className={`px-4 h-10 text-sm border-l ${
-              tab === "clans" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
-            }`}
-          >
-            Dòng họ
-          </button>
+      <main className="container max-w-5xl py-6 px-4 space-y-4">
+        {/* Title + tab switcher on one row at sm+ (tabs right-aligned)
+            — saves a row of vertical space on desktop. Stacked on
+            mobile so the tabs still get full width. */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <h1 className="clan-name text-2xl sm:text-3xl font-semibold sm:flex-1">
+            Quản trị nền tảng
+          </h1>
+          <div className="flex sm:inline-flex rounded-md border bg-card overflow-hidden shrink-0">
+            <button
+              type="button"
+              onClick={() => setTab("users")}
+              className={`flex-1 sm:flex-none px-4 h-10 text-sm ${
+                tab === "users" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
+              }`}
+            >
+              Người dùng
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("clans")}
+              className={`flex-1 sm:flex-none px-4 h-10 text-sm border-l ${
+                tab === "clans" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
+              }`}
+            >
+              Dòng họ
+            </button>
+          </div>
         </div>
 
         {tab === "users" ? <UsersTab callerId={user.id} /> : <ClansTab />}
@@ -101,6 +104,7 @@ export default function Admin() {
 
 function UsersTab({ callerId }: { callerId: string }) {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const qc = useQueryClient();
 
   const { data: profiles, isLoading } = useQuery({
@@ -119,39 +123,52 @@ function UsersTab({ callerId }: { callerId: string }) {
     });
   }, [profiles, search]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Người dùng</CardTitle>
-        <CardDescription>
-          {profiles?.length ?? 0} tài khoản. Khoá / mở khoá, đổi giới hạn,
-          gán quyền platform admin, xoá tài khoản từ đây.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <SearchInput
-          label="Tìm người dùng theo tên hoặc email"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm theo tên hoặc email"
+    <div className="space-y-3">
+      <CollapsibleHint>
+        {profiles?.length ?? 0} tài khoản. Khoá / mở khoá, đổi giới hạn,
+        gán quyền platform admin, xoá tài khoản từ đây.
+      </CollapsibleHint>
+
+      <SearchInput
+        label="Tìm người dùng theo tên hoặc email"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Tìm theo tên hoặc email"
+      />
+
+      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+
+      <ul className="space-y-2">
+        {pageRows.map((p) => (
+          <UserRow
+            key={p.id}
+            profile={p}
+            isSelf={p.id === callerId}
+            onChange={() =>
+              qc.invalidateQueries({ queryKey: queryKeys.adminProfiles() })
+            }
+          />
+        ))}
+      </ul>
+
+      {total > 0 && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          onChange={setPage}
         />
-
-        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
-
-        <ul className="space-y-3">
-          {filtered.map((p) => (
-            <UserRow
-              key={p.id}
-              profile={p}
-              isSelf={p.id === callerId}
-              onChange={() =>
-                qc.invalidateQueries({ queryKey: queryKeys.adminProfiles() })
-              }
-            />
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
 
@@ -295,7 +312,6 @@ function UserRow({
               />
             </div>
             <Button
-              size="sm"
               onClick={() => updateLimits.mutate()}
               disabled={
                 updateLimits.isPending ||
@@ -322,7 +338,7 @@ function UserRow({
               ) : (
                 <>
                   <IconLock className="h-4 w-4 mr-1.5" />
-                  Khoá tài khoản
+                  Khoá
                 </>
               )}
             </Button>
@@ -333,9 +349,8 @@ function UserRow({
               onClick={() => grantM.mutate(!profile.is_platform_admin)}
             >
               <IconShield className="h-4 w-4 mr-1.5" />
-              {profile.is_platform_admin
-                ? "Thu quyền platform admin"
-                : "Cấp quyền platform admin"}
+              {profile.is_platform_admin ? "Thu quyền" : "Cấp quyền"}
+              <span className="hidden sm:inline">&nbsp;platform admin</span>
             </Button>
             <Button
               size="sm"
@@ -354,7 +369,7 @@ function UserRow({
               }}
             >
               <IconTrash className="h-4 w-4 mr-1.5" />
-              Xoá tài khoản
+              Xoá
             </Button>
           </div>
 
@@ -373,6 +388,7 @@ function UserRow({
 
 function ClansTab() {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const qc = useQueryClient();
 
   const { data: clans, isLoading } = useQuery({
@@ -387,38 +403,96 @@ function ClansTab() {
     return clans.filter((c) => unaccent(c.name).includes(needle));
   }, [clans, search]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Dòng họ</CardTitle>
-        <CardDescription>
-          {clans?.length ?? 0} dòng họ. Chỉnh giới hạn số người / tài khoản
-          tại đây.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <SearchInput
-          label="Tìm dòng họ theo tên"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm dòng họ theo tên — gõ không dấu cũng được"
+    <div className="space-y-3">
+      <CollapsibleHint>
+        {clans?.length ?? 0} dòng họ. Chỉnh giới hạn số người / tài khoản
+        tại đây.
+      </CollapsibleHint>
+
+      <SearchInput
+        label="Tìm dòng họ theo tên"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Tìm dòng họ theo tên — gõ không dấu cũng được"
+      />
+
+      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+
+      <ul className="space-y-2">
+        {pageRows.map((c) => (
+          <ClanRow
+            key={c.id}
+            clan={c}
+            onChange={() =>
+              qc.invalidateQueries({ queryKey: queryKeys.adminClans() })
+            }
+          />
+        ))}
+      </ul>
+
+      {total > 0 && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          onChange={setPage}
         />
+      )}
+    </div>
+  );
+}
 
-        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
-
-        <ul className="space-y-3">
-          {filtered.map((c) => (
-            <ClanRow
-              key={c.id}
-              clan={c}
-              onChange={() =>
-                qc.invalidateQueries({ queryKey: queryKeys.adminClans() })
-              }
-            />
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+function Pagination({
+  page,
+  totalPages,
+  total,
+  onChange,
+}: {
+  page: number;
+  totalPages: number;
+  total: number;
+  onChange: (p: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-sm">
+      <div className="text-muted-foreground">
+        {`${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} / ${total}`}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onChange(page - 1)}
+          aria-label="Trang trước"
+        >
+          <IconArrowLeft className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">Trước</span>
+        </Button>
+        <span className="px-2">
+          {page}/{totalPages}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page >= totalPages}
+          onClick={() => onChange(page + 1)}
+          aria-label="Trang sau"
+        >
+          <span className="hidden sm:inline">Sau</span>
+          <IconArrowRight className="h-4 w-4 sm:ml-1" />
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -451,26 +525,43 @@ function ClanRow({
     String(clan.max_persons) !== maxPersons ||
     String(clan.max_users) !== maxUsers;
 
+  const isPublic = clan.visibility === "public";
+
   return (
-    <li className="rounded-md border bg-card p-3 space-y-2">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <Link
-          to={`/clans/${clan.id}`}
-          className="font-medium hover:underline truncate"
+    <li className="rounded-lg border bg-card p-4 space-y-3">
+      {/* Header: clan name + visibility pill on top row, description
+          (if any) wraps below the name on its own line. */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <Link
+            to={`/clans/${clan.id}`}
+            className="font-semibold hover:underline truncate block"
+          >
+            {clan.name}
+          </Link>
+          {clan.description && (
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+              {clan.description}
+            </p>
+          )}
+        </div>
+        <span
+          className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full ${
+            isPublic
+              ? "bg-accent/20 text-accent"
+              : "bg-muted text-muted-foreground"
+          }`}
         >
-          {clan.name}
-        </Link>
-        <span className="text-xs text-muted-foreground">
-          {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
+          {isPublic ? "Công khai" : "Riêng tư"}
         </span>
       </div>
-      {clan.description && (
-        <p className="text-xs text-muted-foreground">{clan.description}</p>
-      )}
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
+
+      {/* Limits — grid: 2 inputs share width, button sits on its own
+          row at mobile and inline-right at sm+. */}
+      <div className="border-t pt-3 grid grid-cols-2 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+        <div className="space-y-1 min-w-0">
           <Label htmlFor={`mp-${clan.id}`} className="text-xs">
-            max_persons
+            Giới hạn người
           </Label>
           <Input
             id={`mp-${clan.id}`}
@@ -478,12 +569,12 @@ function ClanRow({
             min={1}
             value={maxPersons}
             onChange={(e) => setMaxPersons(e.target.value)}
-            className="w-28"
+            className="w-full"
           />
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           <Label htmlFor={`mu-${clan.id}`} className="text-xs">
-            max_users
+            Giới hạn tài khoản
           </Label>
           <Input
             id={`mu-${clan.id}`}
@@ -491,13 +582,13 @@ function ClanRow({
             min={1}
             value={maxUsers}
             onChange={(e) => setMaxUsers(e.target.value)}
-            className="w-28"
+            className="w-full"
           />
         </div>
         <Button
-          size="sm"
           onClick={() => m.mutate()}
           disabled={m.isPending || !changed}
+          className="col-span-2 sm:col-span-1"
         >
           {m.isPending ? (
             "Đang lưu…"
@@ -509,11 +600,39 @@ function ClanRow({
           )}
         </Button>
       </div>
+
       {m.error && (
         <Alert variant="destructive">
           <AlertDescription>{(m.error as Error).message}</AlertDescription>
         </Alert>
       )}
     </li>
+  );
+}
+
+/**
+ * Help-text block that clamps to 1 line on mobile + offers a "Xem
+ * thêm / Thu gọn" toggle. On sm+ it shows the full text — there's
+ * enough vertical room there that hiding it is overkill.
+ */
+function CollapsibleHint({ children }: { children: React.ReactNode }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div>
+      <p
+        className={`text-sm text-muted-foreground ${
+          expanded ? "" : "line-clamp-1 sm:line-clamp-none"
+        }`}
+      >
+        {children}
+      </p>
+      <button
+        type="button"
+        onClick={() => setExpanded((x) => !x)}
+        className="mt-1 text-xs text-primary hover:underline sm:hidden"
+      >
+        {expanded ? "Thu gọn" : "Xem thêm"}
+      </button>
+    </div>
   );
 }

@@ -114,73 +114,80 @@ export default function Events() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2 className="text-2xl font-semibold">Sự kiện</h2>
-        <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
-      </div>
-
-      {/* Toolbar: look-ahead + view-mode toggle */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        {view === "list" ? (
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm text-muted-foreground">Trong:</span>
-            <div
-              className="inline-flex rounded-md border bg-card overflow-hidden"
-              role="group"
+      {/* Header: title + view toggle + refresh in one row on sm+,
+          stacked on mobile. View toggle is icon-only on mobile to
+          leave room for the look-ahead pills underneath. */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <h2 className="text-2xl font-semibold sm:flex-1">Sự kiện</h2>
+        <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
+          <div
+            className="inline-flex rounded-md border bg-card overflow-hidden"
+            role="group"
+            aria-label="Chế độ hiển thị"
+          >
+            <button
+              type="button"
+              onClick={() => setView("list")}
+              aria-pressed={view === "list"}
+              aria-label="Danh sách"
+              className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
+                view === "list"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted/50"
+              }`}
             >
-              {LOOKAHEAD_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setDaysAhead(opt.value)}
-                  aria-pressed={daysAhead === opt.value}
-                  className={`px-3 h-10 text-sm border-l first:border-l-0 ${
-                    daysAhead === opt.value
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+              <IconList className="h-4 w-4" />
+              <span className="hidden sm:inline">Danh sách</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("calendar")}
+              aria-pressed={view === "calendar"}
+              aria-label="Lịch"
+              className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
+                view === "calendar"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted/50"
+              }`}
+            >
+              <IconGrid className="h-4 w-4" />
+              <span className="hidden sm:inline">Lịch</span>
+            </button>
           </div>
-        ) : (
-          <div />
-        )}
-        <div
-          className="inline-flex rounded-md border bg-card overflow-hidden"
-          role="group"
-          aria-label="Chế độ hiển thị"
-        >
-          <button
-            type="button"
-            onClick={() => setView("list")}
-            aria-pressed={view === "list"}
-            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
-              view === "list"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50"
-            }`}
-          >
-            <IconList className="h-4 w-4" />
-            Danh sách
-          </button>
-          <button
-            type="button"
-            onClick={() => setView("calendar")}
-            aria-pressed={view === "calendar"}
-            className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
-              view === "calendar"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50"
-            }`}
-          >
-            <IconGrid className="h-4 w-4" />
-            Lịch
-          </button>
+          <RefreshButton
+            clanId={clan.id}
+            cachedVersion={clan.data_version}
+            compact
+          />
         </div>
       </div>
+
+      {/* Look-ahead pills — only meaningful in list view. Full-width
+          on mobile (each pill flex-1) so taps are large; auto-width
+          on sm+ where the row has plenty of room. */}
+      {view === "list" && (
+        <div
+          className="flex sm:inline-flex rounded-md border bg-card overflow-hidden"
+          role="group"
+          aria-label="Khoảng thời gian"
+        >
+          {LOOKAHEAD_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setDaysAhead(opt.value)}
+              aria-pressed={daysAhead === opt.value}
+              className={`flex-1 sm:flex-none px-3 h-10 text-sm border-l first:border-l-0 ${
+                daysAhead === opt.value
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted/50"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Upcoming list / calendar */}
       {!tree || !events || !anniversaries ? (
@@ -528,14 +535,14 @@ function AddEventForm({
         </div>
       )}
 
-      <label className="flex items-center gap-2 cursor-pointer text-sm">
+      <label className="flex items-center gap-3 cursor-pointer">
         <input
           type="checkbox"
           checked={isYearly}
           onChange={(e) => setIsYearly(e.target.checked)}
-          className="h-4 w-4 accent-primary"
+          className="h-5 w-5 accent-primary shrink-0"
         />
-        Lặp lại hằng năm
+        <span>Lặp lại hằng năm</span>
       </label>
 
       {m.error && (

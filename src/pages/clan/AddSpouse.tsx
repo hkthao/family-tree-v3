@@ -167,7 +167,7 @@ export default function AddSpouse() {
               type="checkbox"
               checked={!isLiving}
               onChange={(e) => setIsLiving(!e.target.checked)}
-              className="h-5 w-5 accent-primary"
+              className="h-5 w-5 accent-primary shrink-0"
             />
             <span>Đã mất</span>
           </label>
@@ -183,21 +183,21 @@ export default function AddSpouse() {
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
-              size="lg"
+              className="flex-1 sm:flex-none"
               disabled={mutation.isPending || !fullName.trim()}
             >
               {mutation.isPending ? (
                 "Đang lưu…"
               ) : (
                 <>
-                  <IconCheck className="h-5 w-5 mr-2" />
-                  Thêm vợ/chồng
+                  <IconCheck className="h-4 w-4 mr-1.5" />
+                  Lưu
                 </>
               )}
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" className="flex-1 sm:flex-none">
               <Link to={`/clans/${clanId}/people/${personId}${fromQs}`}>
-                <IconX className="h-5 w-5 mr-2" />
+                <IconX className="h-4 w-4 mr-1.5" />
                 Hủy
               </Link>
           </Button>

@@ -112,35 +112,36 @@ export default function Clans() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-4xl py-4 px-4 space-y-4">
-        {/* Title row — tabs sit on the same line at lg+ so the filter
-            row owns the next line by itself and we save the vertical
-            space the standalone tabs used to take. */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="clan-name text-2xl sm:text-3xl font-semibold">
-              {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
-            </h1>
-            <div
-              className="inline-flex rounded-md border bg-card overflow-hidden"
-              role="tablist"
-            >
-              <TabButton
-                active={tab === "mine"}
-                onClick={() => setTab("mine")}
-                label={`Của tôi${mineCount.data ? ` (${mineCount.data.total})` : ""}`}
-              />
-              <TabButton
-                active={tab === "community"}
-                onClick={() => setTab("community")}
-                label={`Cộng đồng${communityCount.data ? ` (${communityCount.data.total})` : ""}`}
-              />
-            </div>
+      <main className="container max-w-4xl py-4 px-4 space-y-3">
+        <h1 className="clan-name text-2xl sm:text-3xl font-semibold">
+          {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
+        </h1>
+
+        {/* Tabs left + create-clan CTA right on the same row. Tabs
+            already eat ~230 px with the count badges, so the CTA
+            collapses to icon + "Tạo" on mobile and expands to
+            "Tạo dòng họ" on sm+ to keep both on one line at every
+            viewport width. */}
+        <div className="flex items-center gap-2">
+          <div
+            className="inline-flex rounded-md border bg-card overflow-hidden"
+            role="tablist"
+          >
+            <TabButton
+              active={tab === "mine"}
+              onClick={() => setTab("mine")}
+              label={`Của tôi${mineCount.data ? ` (${mineCount.data.total})` : ""}`}
+            />
+            <TabButton
+              active={tab === "community"}
+              onClick={() => setTab("community")}
+              label={`Cộng đồng${communityCount.data ? ` (${communityCount.data.total})` : ""}`}
+            />
           </div>
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="h-10 ml-auto shrink-0">
             <Link to="/clans/new">
-              <IconPlus className="h-4 w-4 mr-1.5" />
-              Tạo dòng họ
+              <IconPlus className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Tạo dòng họ</span>
             </Link>
           </Button>
         </div>

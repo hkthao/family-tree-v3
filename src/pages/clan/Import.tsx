@@ -82,9 +82,9 @@ export default function Import() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <h2 className="text-2xl font-semibold">Nhập từ Excel</h2>
-        <Button asChild variant="outline" size="sm">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <h2 className="text-2xl font-semibold sm:flex-1">Nhập từ Excel</h2>
+        <Button asChild variant="outline" size="sm" className="h-10 sm:w-auto">
           <Link to={`/clans/${clanId}/ai-generate`}>
             Sinh file bằng AI →
           </Link>
@@ -201,7 +201,7 @@ export default function Import() {
               )}
               <div className="flex gap-3">
                 <Button
-                  size="lg"
+                  className="flex-1 sm:flex-none"
                   disabled={!canSubmit}
                   onClick={() => importM.mutate()}
                 >
@@ -209,20 +209,24 @@ export default function Import() {
                     "Đang nhập…"
                   ) : importM.isSuccess ? (
                     <>
-                      <IconCheck className="h-5 w-5 mr-2" />
+                      <IconCheck className="h-4 w-4 mr-1.5" />
                       Đã nhập
                     </>
                   ) : (
                     <>
-                      <IconUpload className="h-5 w-5 mr-2" />
+                      <IconUpload className="h-4 w-4 mr-1.5" />
                       Nhập vào dòng họ
                     </>
                   )}
                 </Button>
                 {importM.isSuccess && (
-                  <Button asChild variant="outline" size="lg">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="flex-1 sm:flex-none"
+                  >
                     <Link to={`/clans/${clanId}/people`}>
-                      <IconList className="h-5 w-5 mr-2" />
+                      <IconList className="h-4 w-4 mr-1.5" />
                       Xem danh bạ
                     </Link>
                   </Button>

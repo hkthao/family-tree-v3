@@ -200,7 +200,7 @@ export function SubscriptionSettings({ clanId }: Props) {
                       : prev.filter((t) => t !== opt.value),
                   )
                 }
-                className="h-4 w-4 accent-primary"
+                className="h-5 w-5 accent-primary shrink-0"
               />
               {opt.label}
             </label>
@@ -226,7 +226,7 @@ export function SubscriptionSettings({ clanId }: Props) {
                       : prev.filter((d) => d !== opt.value),
                   )
                 }
-                className="h-4 w-4 accent-primary"
+                className="h-5 w-5 accent-primary shrink-0"
               />
               {opt.label}
             </label>
@@ -248,7 +248,7 @@ export function SubscriptionSettings({ clanId }: Props) {
                     : prev.filter((c) => c !== "email"),
                 )
               }
-              className="h-4 w-4 accent-primary"
+              className="h-5 w-5 accent-primary shrink-0"
             />
             Email
           </label>
@@ -260,7 +260,7 @@ export function SubscriptionSettings({ clanId }: Props) {
               type="checkbox"
               disabled
               checked={false}
-              className="h-4 w-4"
+              className="h-5 w-5 shrink-0"
             />
             SMS (sắp có)
           </label>

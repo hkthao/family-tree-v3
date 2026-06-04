@@ -18,8 +18,8 @@ interface Props {
   targetId?: string;
   /** Inline icon (already sized) shown before the label. */
   icon?: React.ReactNode;
-  labelOn?: string;
-  labelOff?: string;
+  labelOn?: React.ReactNode;
+  labelOff?: React.ReactNode;
   size?: "default" | "sm" | "lg";
   disabled?: boolean;
 }

@@ -159,7 +159,7 @@ export default function Settings() {
                   type="checkbox"
                   checked={hidePhotosInShare}
                   onChange={(e) => setHidePhotosInShare(e.target.checked)}
-                  className="mt-1.5 h-4 w-4 accent-primary"
+                  className="mt-1 h-5 w-5 accent-primary shrink-0"
                 />
                 <div>
                   <p className="font-medium">

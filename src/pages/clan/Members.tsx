@@ -157,12 +157,12 @@ export default function Members() {
                 <legend className="text-base font-medium mb-2">Vai trò</legend>
                 <div className="flex flex-wrap gap-3">
                   {(["viewer", "editor", "admin"] as ClanRole[]).map((r) => (
-                    <label key={r} className="flex items-center gap-2 cursor-pointer">
+                    <label key={r} className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="radio"
                         checked={inviteRole === r}
                         onChange={() => setInviteRole(r)}
-                        className="h-4 w-4 accent-primary"
+                        className="h-5 w-5 accent-primary shrink-0"
                       />
                       <span>{ROLE_LABEL[r]}</span>
                     </label>
@@ -260,9 +260,10 @@ export default function Members() {
                               if (ok) removeMutation.mutate(m.user_id);
                             }}
                             disabled={removeMutation.isPending}
+                            aria-label="Xoá thành viên"
                           >
-                            <IconTrash className="h-4 w-4 mr-1.5" />
-                            Xoá
+                            <IconTrash className="h-4 w-4 sm:mr-1.5" />
+                            <span className="hidden sm:inline">Xoá</span>
                           </Button>
                         )}
                       </div>

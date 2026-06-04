@@ -139,6 +139,7 @@ export default function Merge() {
 
       <div className="flex gap-3">
         <Button
+          className="flex-1 sm:flex-none"
           disabled={!winnerId || !loserId || m.isPending}
           onClick={async () => {
             const ok = await confirm({
@@ -180,61 +181,53 @@ function SuggestionPanel({
           "giữ lại".
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ul className="divide-y rounded-md border bg-card">
-          {visible.map((c, i) => (
-            <li key={i} className="px-3 py-2 flex flex-wrap items-center gap-3">
-              <span
-                className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                  c.kind === "exact"
-                    ? "bg-primary/15 text-primary"
-                    : c.kind === "name"
-                      ? "bg-accent/20 text-accent"
-                      : "bg-muted text-muted-foreground"
-                }`}
-                title={
-                  c.kind === "exact"
-                    ? "Trùng tên + năm sinh"
-                    : c.kind === "name"
-                      ? "Trùng tên"
-                      : "Tên gần giống"
+      <CardContent className="space-y-3">
+        {visible.map((c, i) => {
+          const kindMeta =
+            c.kind === "exact"
+              ? {
+                  label: "Trùng tên + năm sinh",
+                  classes: "bg-primary/15 text-primary",
                 }
+              : c.kind === "name"
+                ? { label: "Trùng tên", classes: "bg-accent/20 text-accent" }
+                : {
+                    label: "Tên gần giống",
+                    classes: "bg-muted text-muted-foreground",
+                  };
+          return (
+            <div
+              key={i}
+              className="rounded-lg bg-muted/30 p-3 space-y-3"
+            >
+              <span
+                className={`inline-block text-[11px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full ${kindMeta.classes}`}
               >
-                {c.kind === "exact"
-                  ? "tên + năm"
-                  : c.kind === "name"
-                    ? "tên"
-                    : "gần giống"}
+                {kindMeta.label}
               </span>
-              <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-x-3">
-                <span className="truncate text-sm">
-                  {c.a.full_name}
-                  <span className="text-muted-foreground ml-1.5">
-                    {personMeta(c.a)}
-                  </span>
-                </span>
-                <span className="truncate text-sm">
-                  {c.b.full_name}
-                  <span className="text-muted-foreground ml-1.5">
-                    {personMeta(c.b)}
-                  </span>
-                </span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <PersonChip person={c.a} />
+                <PersonChip person={c.b} />
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onPick(c.a.id, c.b.id)}
-              >
-                Dùng cặp này
-              </Button>
-            </li>
-          ))}
-        </ul>
+
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onPick(c.a.id, c.b.id)}
+                  className="w-full sm:w-auto"
+                >
+                  Dùng cặp này →
+                </Button>
+              </div>
+            </div>
+          );
+        })}
         {candidates.length > 5 && !showAll && (
           <Button
             variant="ghost"
             size="sm"
-            className="mt-2"
             onClick={() => setShowAll(true)}
           >
             Xem thêm {candidates.length - 5} cặp
@@ -251,6 +244,20 @@ function personMeta(p: DuplicateCandidate["a"]): string {
   if (p.generation !== null) parts.push(`Đời ${p.generation}`);
   if (!p.is_living) parts.push("đã mất");
   return parts.length > 0 ? `· ${parts.join(" · ")}` : "";
+}
+
+function PersonChip({ person }: { person: DuplicateCandidate["a"] }) {
+  const meta = personMeta(person).replace(/^·\s*/, "");
+  return (
+    <div className="rounded-md bg-card border px-3 py-2 min-w-0">
+      <p className="font-medium truncate">{person.full_name}</p>
+      {meta && (
+        <p className="text-xs text-muted-foreground truncate mt-0.5">
+          {meta}
+        </p>
+      )}
+    </div>
+  );
 }
 
 // ─── Person picker (search + result list) ─────────────────────────

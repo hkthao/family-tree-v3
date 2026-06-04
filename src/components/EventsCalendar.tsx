@@ -165,7 +165,7 @@ export function EventsCalendar({ events, clanId }: Props) {
                 `}
               >
                 <span
-                  className={`pt-1 pl-2 text-left ${
+                  className={`pt-1 text-center ${
                     isToday ? "text-primary font-semibold" : ""
                   }`}
                 >
