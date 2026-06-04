@@ -64,7 +64,7 @@ export default function Account() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link to="/admin">
                   <IconShield className="h-4 w-4 mr-1.5" />
                   Mở trang quản trị
@@ -118,7 +118,11 @@ export default function Account() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" onClick={signOutAndClearCache}>
+            <Button
+              variant="outline"
+              onClick={signOutAndClearCache}
+              className="w-full sm:w-auto"
+            >
               <IconLogOut className="h-4 w-4 mr-1.5" />
               Đăng xuất
             </Button>
@@ -200,7 +204,12 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
               <AlertDescription>Đã lưu.</AlertDescription>
             </Alert>
           )}
-          <Button type="submit" disabled={!changed || !name.trim() || m.isPending}>
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={!changed || !name.trim() || m.isPending}
+            className="w-full sm:w-auto"
+          >
             {m.isPending ? (
               "Đang lưu…"
             ) : (
@@ -280,7 +289,12 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
               </AlertDescription>
             </Alert>
           )}
-          <Button type="submit" variant="outline" disabled={!newEmail.trim() || m.isPending}>
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={!newEmail.trim() || m.isPending}
+            className="w-full sm:w-auto"
+          >
             {m.isPending ? (
               "Đang gửi…"
             ) : (
@@ -371,7 +385,12 @@ function PasswordCard() {
               <AlertDescription>Đã đổi mật khẩu.</AlertDescription>
             </Alert>
           )}
-          <Button type="submit" variant="outline" disabled={!canSubmit || m.isPending}>
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={!canSubmit || m.isPending}
+            className="w-full sm:w-auto"
+          >
             {m.isPending ? (
               "Đang đổi…"
             ) : (
@@ -430,7 +449,11 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {!expanded ? (
-          <Button variant="outline" onClick={() => setExpanded(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setExpanded(true)}
+            className="w-full sm:w-auto"
+          >
             <IconTrash className="h-4 w-4 mr-1.5 text-destructive" />
             Tôi muốn xoá tài khoản
           </Button>
