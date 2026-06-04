@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
+import { IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queries/keys";
 import { listAudit, type AuditRow } from "@/lib/queries/audit";
@@ -20,10 +21,29 @@ const ACTION_LABEL: Record<string, string> = {
   update: "Cập nhật",
   delete: "Xoá",
 };
-const ACTION_COLOR: Record<string, string> = {
-  insert: "bg-accent/20 text-accent",
-  update: "bg-primary/15 text-primary",
-  delete: "bg-destructive/15 text-destructive",
+
+/**
+ * Per-action visual treatment for the circle that leads each row.
+ * Using a small coloured icon avatar instead of a full-row pill keeps
+ * the feed scannable — the eye can pick out a delete (red) or an
+ * insert (green) without the row screaming for attention.
+ */
+const ACTION_VISUAL: Record<
+  string,
+  { icon: React.ReactNode; classes: string }
+> = {
+  insert: {
+    icon: <IconPlus className="h-4 w-4" />,
+    classes: "bg-accent/20 text-accent",
+  },
+  update: {
+    icon: <IconPencil className="h-4 w-4" />,
+    classes: "bg-primary/15 text-primary",
+  },
+  delete: {
+    icon: <IconTrash className="h-4 w-4" />,
+    classes: "bg-destructive/15 text-destructive",
+  },
 };
 
 function timeAgo(iso: string): string {
@@ -79,10 +99,14 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
           Xem nhật ký →
         </Link>
       </div>
-      <ul className="divide-y rounded-md border bg-card">
+      <ul className="space-y-1">
         {data.rows.map((r) => {
           const action = ACTION_LABEL[r.action] ?? r.action;
           const entity = ENTITY_LABEL[r.entity_type] ?? r.entity_type;
+          const visual = ACTION_VISUAL[r.action] ?? {
+            icon: null,
+            classes: "bg-muted text-muted-foreground",
+          };
           const linkTarget =
             r.entity_type === "person"
               ? `/clans/${clanId}/people/${r.entity_id}`
@@ -91,20 +115,23 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
             <li key={r.id}>
               <Link
                 to={linkTarget}
-                className="flex items-center gap-3 px-3 py-2 hover:bg-muted/40"
+                className="flex items-center gap-3 rounded-md px-2 py-2 -mx-2 hover:bg-muted/40"
               >
                 <span
-                  className={`text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                    ACTION_COLOR[r.action] ?? "bg-muted"
-                  }`}
+                  className={`h-8 w-8 rounded-full inline-flex items-center justify-center shrink-0 ${visual.classes}`}
+                  aria-hidden="true"
                 >
-                  {action}
+                  {visual.icon}
                 </span>
-                <span className="flex-1 min-w-0 text-sm truncate">
-                  <span className="font-medium">{entityName(r)}</span>
-                  <span className="text-muted-foreground"> · {entity}</span>
-                </span>
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-sm truncate">
+                    {entityName(r)}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {action} {entity}
+                  </p>
+                </div>
+                <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
                   {timeAgo(r.changed_at)}
                 </span>
               </Link>

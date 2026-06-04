@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
+import { BackLink } from "@/components/BackLink";
 import { IconCheck, IconX } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { PartialDateInput } from "@/components/PartialDateInput";
@@ -87,13 +88,8 @@ export default function AddSpouse() {
 
   return (
     <div className="space-y-6">
-      <nav className="text-sm text-muted-foreground">
-        <Link
-          to={`/clans/${clanId}/people/${personId}${fromQs}`}
-          className="hover:underline"
-        >
-          ← Quay lại
-        </Link>
+      <nav>
+        <BackLink fallback={`/clans/${clanId}/people/${personId}${fromQs}`} />
       </nav>
 
       <h1 className="text-2xl font-semibold">Thêm vợ / chồng</h1>

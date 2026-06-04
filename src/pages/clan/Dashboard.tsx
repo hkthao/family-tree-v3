@@ -302,17 +302,51 @@ function UpcomingRow({
         ? "Ngày mai"
         : `Còn ${event.daysUntil} ngày`;
 
+  // Strip the kind prefix from the title so the redesigned row can
+  // present "person name (top)" + "kind label (subtitle)" without
+  // repeating "Sinh nhật" 5 times down the column. For custom events
+  // the title doesn't have a prefix, so it's left intact.
+  let mainText = event.title;
+  if (event.kind === "birthday" && mainText.startsWith("Sinh nhật ")) {
+    mainText = mainText.slice("Sinh nhật ".length);
+  } else if (event.kind === "anniversary" && mainText.startsWith("Giỗ ")) {
+    mainText = mainText.slice("Giỗ ".length);
+  }
+
+  const kindLabel =
+    event.kind === "birthday"
+      ? "Sinh nhật"
+      : event.kind === "anniversary"
+        ? "Ngày giỗ"
+        : "Sự kiện";
+
+  const stampColor =
+    event.kind === "birthday"
+      ? "bg-primary/10 text-primary"
+      : event.kind === "anniversary"
+        ? "bg-muted text-muted-foreground"
+        : "bg-accent/15 text-accent";
+
   const inner = (
-    <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border bg-card hover:border-primary transition-colors">
-      <div className="flex items-center gap-3 min-w-0">
-        <span className="text-sm text-muted-foreground whitespace-nowrap">
-          {day}/{month}
-        </span>
-        <span className="truncate">{event.title}</span>
+    <div className="flex items-center gap-3 p-2.5 rounded-md border bg-card hover:border-primary transition-colors">
+      <div
+        className={`shrink-0 w-12 text-center rounded-md py-1 ${stampColor}`}
+      >
+        <div className="text-[10px] uppercase tracking-wider leading-none">
+          Th{month}
+        </div>
+        <div className="text-lg font-semibold leading-tight">{day}</div>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-medium truncate">{mainText}</p>
+        <p className="text-xs text-muted-foreground truncate">
+          {kindLabel}
+          {event.subtitle ? ` · ${event.subtitle}` : ""}
+        </p>
       </div>
       <span
-        className={`text-xs whitespace-nowrap ${
-          event.daysUntil <= 1
+        className={`text-xs whitespace-nowrap shrink-0 ${
+          event.daysUntil === 0
             ? "text-primary font-semibold"
             : event.daysUntil <= 7
               ? "text-accent font-medium"

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { BackLink } from "@/components/BackLink";
 import { IconCheck, IconX } from "@/components/icons";
 import { PartialDateInput } from "@/components/PartialDateInput";
 import { useToast } from "@/components/Toast";
@@ -75,10 +76,8 @@ export default function NewPerson() {
 
   return (
     <div className="space-y-6">
-      <nav className="text-sm text-muted-foreground">
-        <Link to={`/clans/${clanId}/people`} className="hover:underline">
-          ← Danh bạ
-        </Link>
+      <nav>
+        <BackLink fallback={`/clans/${clanId}/people`} />
       </nav>
 
       <h1 className="text-2xl font-semibold">Thêm người</h1>

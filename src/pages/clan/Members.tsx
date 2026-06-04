@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 
+import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { IconTrash, IconUserPlus } from "@/components/icons";
@@ -114,10 +115,8 @@ export default function Members() {
 
   return (
     <div className="space-y-6">
-      <nav className="text-sm text-muted-foreground">
-        <Link to={`/clans/${clanId}/settings`} className="hover:underline">
-          ← Cài đặt
-        </Link>
+      <nav>
+        <BackLink fallback={`/clans/${clanId}/settings`} />
       </nav>
 
       <h1 className="text-2xl font-semibold">Thành viên</h1>

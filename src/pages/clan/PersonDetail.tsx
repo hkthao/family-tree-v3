@@ -7,6 +7,7 @@ import {
   IconPlus,
   IconTrash,
 } from "@/components/icons";
+import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
@@ -58,7 +59,6 @@ export default function PersonDetail() {
   // it absent and we fall back to Danh bạ.
   const fromTree = searchParams.get("from") === "tree";
   const backTo = fromTree ? `/clans/${clanId}/tree` : `/clans/${clanId}/people`;
-  const backLabel = fromTree ? "Cây gia phả" : "Danh bạ";
   // Append the same ?from when navigating onward so the chain holds
   // through Edit / AddSpouse / AddChild.
   const fromQs = fromTree ? "?from=tree" : "";
@@ -104,10 +104,8 @@ export default function PersonDetail() {
 
   return (
     <div className="space-y-6">
-      <nav className="text-sm text-muted-foreground">
-        <Link to={backTo} className="hover:underline">
-          ← {backLabel}
-        </Link>
+      <nav>
+        <BackLink fallback={backTo} />
       </nav>
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
