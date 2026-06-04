@@ -28,7 +28,7 @@ export default function Signup() {
         password,
         options: {
           data: { display_name: displayName || email.split("@")[0] },
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/clans`,
         },
       });
       if (error) setError(error.message);

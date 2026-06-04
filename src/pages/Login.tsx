@@ -54,7 +54,7 @@ export default function Login() {
       } else {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: `${window.location.origin}/` },
+          options: { emailRedirectTo: `${window.location.origin}/clans` },
         });
         if (error) setError(error.message);
         else setInfo("Đã gửi liên kết đăng nhập. Kiểm tra email của bạn.");

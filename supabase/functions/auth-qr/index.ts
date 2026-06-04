@@ -20,7 +20,10 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SITE_URL = Deno.env.get("AUTH_QR_SITE_URL") ?? "https://giapha.thaohk.com";
+// Land directly on /clans so the URL fragment / code survives — see
+// SocialAuthButtons comment for the race the `/` root-redirect causes.
+const SITE_URL =
+  Deno.env.get("AUTH_QR_SITE_URL") ?? "https://giapha.thaohk.com/clans";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
