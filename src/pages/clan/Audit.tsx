@@ -8,7 +8,6 @@ import { useToast } from "@/components/Toast";
 import { IconArrowLeft, IconArrowRight, IconRefresh, IconUndo } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
@@ -73,41 +72,39 @@ export default function Audit() {
         khôi phục bằng một nút bấm — soft-delete giữ dữ liệu nguyên vẹn.
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="entity-filter">Đối tượng</Label>
-          <select
-            id="entity-filter"
-            value={entityType}
-            onChange={(e) => {
-              setEntityType(e.target.value as AuditEntity | "");
-              setPage(1);
-            }}
-            className="h-12 w-full rounded-md border border-input bg-background px-3"
-          >
-            <option value="">Tất cả</option>
-            <option value="person">Người</option>
-            <option value="family">Gia đình</option>
-            <option value="branch">Chi</option>
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="action-filter">Hành động</Label>
-          <select
-            id="action-filter"
-            value={action}
-            onChange={(e) => {
-              setAction(e.target.value as AuditAction | "");
-              setPage(1);
-            }}
-            className="h-12 w-full rounded-md border border-input bg-background px-3"
-          >
-            <option value="">Tất cả</option>
-            <option value="insert">Thêm mới</option>
-            <option value="update">Sửa</option>
-            <option value="delete">Xoá</option>
-          </select>
-        </div>
+      {/* Filters in a single row at every viewport (2-col grid).
+          Labels are dropped; the first option of each select serves
+          as a prompt ("Mọi đối tượng" / "Mọi hành động") so the
+          filter purpose is still clear without eating a label row. */}
+      <div className="grid grid-cols-2 gap-2">
+        <select
+          aria-label="Lọc theo đối tượng"
+          value={entityType}
+          onChange={(e) => {
+            setEntityType(e.target.value as AuditEntity | "");
+            setPage(1);
+          }}
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="">Mọi đối tượng</option>
+          <option value="person">Người</option>
+          <option value="family">Gia đình</option>
+          <option value="branch">Chi</option>
+        </select>
+        <select
+          aria-label="Lọc theo hành động"
+          value={action}
+          onChange={(e) => {
+            setAction(e.target.value as AuditAction | "");
+            setPage(1);
+          }}
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="">Mọi hành động</option>
+          <option value="insert">Thêm mới</option>
+          <option value="update">Sửa</option>
+          <option value="delete">Xoá</option>
+        </select>
       </div>
 
       {!data ? (
@@ -147,9 +144,10 @@ export default function Audit() {
             size="sm"
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
+            aria-label="Trang trước"
           >
-            <IconArrowLeft className="h-4 w-4 mr-1" />
-            Trước
+            <IconArrowLeft className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline">Trước</span>
           </Button>
           <span className="px-2">
             {page}/{totalPages}
@@ -159,9 +157,10 @@ export default function Audit() {
             size="sm"
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
+            aria-label="Trang sau"
           >
-            Sau
-            <IconArrowRight className="h-4 w-4 ml-1" />
+            <span className="hidden sm:inline">Sau</span>
+            <IconArrowRight className="h-4 w-4 sm:ml-1" />
           </Button>
         </div>
       </div>

@@ -86,14 +86,16 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-center justify-between gap-3">
         <h2 className="text-2xl font-semibold">Tổng quan</h2>
-        <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} />
+        <RefreshButton
+          clanId={clan.id}
+          cachedVersion={clan.data_version}
+          compact
+        />
       </div>
 
-      {clan.description && (
-        <p className="text-muted-foreground">{clan.description}</p>
-      )}
+      {clan.description && <ClanDescription text={clan.description} />}
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
@@ -332,6 +334,34 @@ function UpcomingRow({
         inner
       )}
     </li>
+  );
+}
+
+/**
+ * Clan description block. Long family histories (multi-paragraph)
+ * push the rest of the dashboard below the fold on mobile, so we
+ * clamp to ~3 lines + a "Xem thêm" toggle. Desktop (sm+) shows
+ * the whole text — there's plenty of vertical room.
+ */
+function ClanDescription({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div>
+      <p
+        className={`text-muted-foreground whitespace-pre-line ${
+          expanded ? "" : "line-clamp-3 sm:line-clamp-none"
+        }`}
+      >
+        {text}
+      </p>
+      <button
+        type="button"
+        onClick={() => setExpanded((x) => !x)}
+        className="mt-1 text-sm text-primary hover:underline sm:hidden"
+      >
+        {expanded ? "Thu gọn" : "Xem thêm"}
+      </button>
+    </div>
   );
 }
 

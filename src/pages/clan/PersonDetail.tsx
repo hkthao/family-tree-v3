@@ -120,41 +120,41 @@ export default function PersonDetail() {
 
         {person && (
           <>
-            <header className="flex items-start justify-between gap-3 flex-wrap">
-              <div className="flex items-start gap-4 min-w-0">
-                <PersonAvatar
-                  gender={person.gender}
-                  photoUrl={photoUrl ?? null}
-                  size={72}
-                />
-                <div className="space-y-2 min-w-0">
-                  <h1 className="clan-name text-3xl font-semibold">
-                    {person.full_name}
-                  </h1>
-                  <p className="text-base text-muted-foreground">
-                    {person.is_root && (
-                      <span className="text-accent font-medium">Thuỷ tổ • </span>
-                    )}
-                    {person.generation !== null && <>Đời {person.generation}</>}
-                    {!person.is_living && (
-                      <span>
-                        {person.generation !== null && " • "}
-                        đã mất
-                        {person.death_date?.slice(0, 4) &&
-                          ` • ${person.death_date.slice(0, 4)}`}
-                      </span>
-                    )}
-                  </p>
-                </div>
+            <header className="flex items-center gap-3">
+              <PersonAvatar
+                gender={person.gender}
+                photoUrl={photoUrl ?? null}
+                size={56}
+              />
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <h1 className="clan-name text-xl sm:text-3xl font-semibold truncate">
+                  {person.full_name}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {person.is_root && (
+                    <span className="text-accent font-medium">Thuỷ tổ • </span>
+                  )}
+                  {person.generation !== null && <>Đời {person.generation}</>}
+                  {!person.is_living && (
+                    <span>
+                      {person.generation !== null && " • "}
+                      đã mất
+                      {person.death_date?.slice(0, 4) &&
+                        ` • ${person.death_date.slice(0, 4)}`}
+                    </span>
+                  )}
+                </p>
               </div>
               {effectiveRole(clan) !== null && personId && (
                 <SubscribeToggle
                   clanId={clan.id}
                   scope="person"
                   targetId={personId}
-                  icon={<IconBell className="h-4 w-4 mr-1.5" />}
-                  labelOff="Theo dõi"
-                  labelOn="Đang theo dõi"
+                  icon={<IconBell className="h-4 w-4 sm:mr-1.5" />}
+                  labelOff={<span className="hidden sm:inline">Theo dõi</span>}
+                  labelOn={
+                    <span className="hidden sm:inline">Đang theo dõi</span>
+                  }
                 />
               )}
             </header>
@@ -250,7 +250,7 @@ export default function PersonDetail() {
                     label="Vợ / chồng"
                     items={relationships.spouses}
                     clanId={clanId}
-                    emptyHint="Chưa có"
+                    emptyHint="Chưa có vợ / chồng."
                     action={
                       canEdit ? (
                         <Button asChild variant="outline" size="sm">
@@ -258,7 +258,7 @@ export default function PersonDetail() {
                             to={`/clans/${clanId}/people/${personId}/add-spouse${fromQs}`}
                           >
                             <IconPlus className="h-4 w-4 mr-1" />
-                            Thêm vợ/chồng
+                            Thêm
                           </Link>
                         </Button>
                       ) : null
@@ -268,7 +268,7 @@ export default function PersonDetail() {
                     label="Con cái"
                     items={relationships.children}
                     clanId={clanId}
-                    emptyHint="Chưa có"
+                    emptyHint="Chưa có con cái."
                     action={
                       canEdit ? (
                         <Button asChild variant="outline" size="sm">
@@ -276,7 +276,7 @@ export default function PersonDetail() {
                             to={`/clans/${clanId}/people/${personId}/add-child${fromQs}`}
                           >
                             <IconPlus className="h-4 w-4 mr-1" />
-                            Thêm con
+                            Thêm
                           </Link>
                         </Button>
                       ) : null
@@ -287,8 +287,8 @@ export default function PersonDetail() {
             )}
 
             {canEdit && (
-              <div className="flex flex-wrap gap-3">
-                <Button asChild>
+              <div className="flex gap-3">
+                <Button asChild className="flex-1 sm:flex-none">
                   <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
                     <IconPencil className="h-4 w-4 mr-1.5" />
                     Sửa
@@ -296,6 +296,7 @@ export default function PersonDetail() {
                 </Button>
                 <Button
                   variant="destructive"
+                  className="flex-1 sm:flex-none"
                   onClick={async () => {
                     const ok = await askConfirm({
                       title: `Xoá ${person.full_name}?`,
@@ -414,26 +415,39 @@ function RelationshipGroup({
 }) {
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium text-muted-foreground">{label}</h3>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold">{label}</h3>
         {action}
       </div>
       {items.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic">{emptyHint}</p>
+        <div className="rounded-md border border-dashed bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
+          {emptyHint}
+        </div>
       ) : (
-        <ul className="space-y-1">
+        <ul className="space-y-1.5">
           {items.map((r) => (
             <li key={r.id}>
               <Link
                 to={`/clans/${clanId}/people/${r.id}`}
-                className="block py-1.5 px-2 -mx-2 rounded hover:bg-muted/40"
+                className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
               >
-                <span className="font-medium">{r.full_name}</span>
-                <span className="text-sm text-muted-foreground ml-2">
-                  {r.gender === "M" ? "Nam" : "Nữ"}
-                  {!r.is_living &&
-                    ` • đã mất${r.death_date ? ` ${r.death_date.slice(0, 4)}` : ""}`}
-                  {r.is_living && r.birth_date && ` • sinh ${r.birth_date.slice(0, 4)}`}
+                <PersonAvatar gender={r.gender} photoUrl={null} size={40} />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium truncate">{r.full_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {r.gender === "M" ? "Nam" : "Nữ"}
+                    {!r.is_living &&
+                      ` · đã mất${r.death_date ? ` ${r.death_date.slice(0, 4)}` : ""}`}
+                    {r.is_living &&
+                      r.birth_date &&
+                      ` · sinh ${r.birth_date.slice(0, 4)}`}
+                  </p>
+                </div>
+                <span
+                  className="text-muted-foreground shrink-0"
+                  aria-hidden="true"
+                >
+                  ›
                 </span>
               </Link>
             </li>

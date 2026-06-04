@@ -5,6 +5,7 @@ import { Link, Navigate, Outlet, useParams } from "react-router-dom";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
+import { IconSettings } from "@/components/icons";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -104,9 +105,11 @@ export function ClanLayout() {
             {(clan.myRole === "admin" || clan.isPlatformAdmin) && (
               <Link
                 to={`/clans/${clanId}/settings`}
-                className="text-sm text-muted-foreground hover:text-foreground"
+                aria-label="Cài đặt"
+                title="Cài đặt"
+                className="h-10 w-10 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               >
-                Cài đặt
+                <IconSettings className="h-5 w-5" />
               </Link>
             )}
           </div>

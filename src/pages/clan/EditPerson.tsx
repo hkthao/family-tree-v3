@@ -240,12 +240,12 @@ export default function EditPerson() {
               }}
             />
 
-            <label className="flex items-start gap-3 cursor-pointer">
+            <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={!isLiving}
                 onChange={(e) => setIsLiving(!e.target.checked)}
-                className="mt-1 h-5 w-5 accent-primary shrink-0"
+                className="h-5 w-5 accent-primary shrink-0"
               />
               <span>Đã mất</span>
             </label>
@@ -305,6 +305,7 @@ export default function EditPerson() {
             <div className="flex gap-3 pt-2">
               <Button
                 type="submit"
+                className="flex-1 sm:flex-none"
                 disabled={mutation.isPending || !fullName.trim()}
               >
                 {mutation.isPending ? (
@@ -312,11 +313,15 @@ export default function EditPerson() {
                 ) : (
                   <>
                     <IconCheck className="h-4 w-4 mr-1.5" />
-                    Lưu thay đổi
+                    Lưu
                   </>
                 )}
               </Button>
-              <Button asChild variant="outline">
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 sm:flex-none"
+              >
                 <Link to={`/clans/${clanId}/people/${personId}${fromQs}`}>
                   <IconX className="h-4 w-4 mr-1.5" />
                   Hủy
