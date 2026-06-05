@@ -13,6 +13,12 @@ export interface ClanMember {
   display_name: string | null;
   invited_by: string | null;
   created_at: string;
+  /** persons.id this member identifies as in the tree, or null. */
+  self_person_id: string | null;
+  /** Admin has confirmed the claim above is correct. */
+  self_person_verified: boolean;
+  /** Convenience: full_name of self_person_id, joined server-side. */
+  self_person_full_name: string | null;
 }
 
 export async function listClanMembers(
@@ -70,6 +76,48 @@ export async function removeMember(
   const { error } = await client
     .from("clan_members")
     .delete()
+    .eq("clan_id", clanId)
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+}
+
+/**
+ * Set (or clear, with personId=null) the current user's self_person_id
+ * for this clan. Goes through the SECURITY DEFINER RPC because RLS on
+ * clan_members only allows admins to UPDATE.
+ *
+ * The RPC also resets self_person_verified to false — admin must
+ * re-approve after any change.
+ */
+export async function setMySelfPerson(
+  clanId: string,
+  personId: string | null,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client.rpc("set_my_self_person", {
+    p_clan_id: clanId,
+    // RPC accepts NULL to clear the claim; the generated types narrow
+    // to `string` because Postgres function args aren't tagged
+    // nullable in pg_proc. Safe to cast — the SQL function handles
+    // NULL explicitly.
+    p_person_id: personId as string,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/**
+ * Admin flips the verified flag on another member's self-link.
+ * RLS already restricts clan_members UPDATE to clan admins.
+ */
+export async function setMemberSelfVerified(
+  clanId: string,
+  userId: string,
+  verified: boolean,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("clan_members")
+    .update({ self_person_verified: verified })
     .eq("clan_id", clanId)
     .eq("user_id", userId);
   if (error) throw new Error(error.message);

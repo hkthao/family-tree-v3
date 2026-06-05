@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
+import { BackLink } from "@/components/BackLink";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconCopy, IconList } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -60,6 +61,9 @@ export default function AiGenerate() {
 
   return (
     <div className="space-y-6">
+      <nav>
+        <BackLink fallback={`/clans/${clanId}/people`} />
+      </nav>
       <div>
         <h2 className="text-2xl font-semibold">Sinh dữ liệu bằng AI</h2>
         <p className="text-sm text-muted-foreground mt-1">

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
+import { BackLink } from "@/components/BackLink";
 import {
   IconCheck,
   IconDownload,
@@ -82,6 +83,9 @@ export default function Import() {
 
   return (
     <div className="space-y-6">
+      <nav>
+        <BackLink fallback={`/clans/${clanId}/people`} />
+      </nav>
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <h2 className="text-2xl font-semibold sm:flex-1">Nhập từ Excel</h2>
         <Button asChild variant="outline" size="sm" className="h-10 sm:w-auto">

@@ -377,6 +377,11 @@ function buildSections(
     }
     if (isMember) {
       items.push({
+        to: `/clans/${clanId}/my-lineage`,
+        label: "Đường trực hệ",
+        icon: <IconUser className={ic} />,
+      });
+      items.push({
         to: `/clans/${clanId}/audit`,
         label: "Nhật ký",
         icon: <IconScroll className={ic} />,

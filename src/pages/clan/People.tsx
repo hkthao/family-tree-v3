@@ -23,6 +23,7 @@ import {
   IconList,
   IconPlus,
   IconSearch,
+  IconSparkles,
   IconUpload,
   IconUsers,
 } from "@/components/icons";
@@ -450,6 +451,7 @@ export default function People() {
                 ? {
                     label: "Sinh bằng AI",
                     to: `/clans/${clan.id}/ai-generate`,
+                    icon: <IconSparkles className="h-4 w-4 mr-1.5" />,
                   }
                 : null
             }

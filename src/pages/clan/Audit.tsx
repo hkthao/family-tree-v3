@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
+import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
@@ -66,6 +67,9 @@ export default function Audit() {
 
   return (
     <div className="space-y-4">
+      <nav>
+        <BackLink fallback={`/clans/${clan.id}`} />
+      </nav>
       <h2 className="text-2xl font-semibold">Nhật ký chỉnh sửa</h2>
       <p className="text-sm text-muted-foreground">
         Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể

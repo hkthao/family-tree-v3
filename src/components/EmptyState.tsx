@@ -30,8 +30,9 @@ interface Props {
   primary?: Action | null;
   /** Secondary CTA (outline button). */
   secondary?: Action | null;
-  /** Tertiary CTA (ghost button) — extra option without
-   * competing with the primary path. */
+  /** Tertiary CTA — extra option alongside the primary path.
+   * Rendered as an outline button (same weight as secondary) so all
+   * non-primary actions sit at the same visual level. */
   tertiary?: Action | null;
 }
 
@@ -65,14 +66,14 @@ export function EmptyState({ icon, title, description, primary, secondary, terti
         <div className="flex flex-wrap justify-center gap-3 pt-2">
           {primary && renderAction(primary, "default")}
           {secondary && renderAction(secondary, "outline")}
-          {tertiary && renderAction(tertiary, "ghost")}
+          {tertiary && renderAction(tertiary, "outline")}
         </div>
       )}
     </div>
   );
 }
 
-function renderAction(a: Action, variant: "default" | "outline" | "ghost") {
+function renderAction(a: Action, variant: "default" | "outline") {
   const content = (
     <>
       {a.icon}

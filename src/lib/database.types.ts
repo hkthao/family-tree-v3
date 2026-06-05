@@ -147,6 +147,8 @@ export type Database = {
           id: string
           invited_by: string | null
           role: string
+          self_person_id: string | null
+          self_person_verified: boolean
           user_id: string
         }
         Insert: {
@@ -155,6 +157,8 @@ export type Database = {
           id?: string
           invited_by?: string | null
           role: string
+          self_person_id?: string | null
+          self_person_verified?: boolean
           user_id: string
         }
         Update: {
@@ -163,6 +167,8 @@ export type Database = {
           id?: string
           invited_by?: string | null
           role?: string
+          self_person_id?: string | null
+          self_person_verified?: boolean
           user_id?: string
         }
         Relationships: [
@@ -178,6 +184,20 @@ export type Database = {
             columns: ["invited_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_members_self_person_id_fkey"
+            columns: ["self_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_members_self_person_id_fkey"
+            columns: ["self_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
             referencedColumns: ["id"]
           },
           {
@@ -863,6 +883,9 @@ export type Database = {
           display_name: string
           invited_by: string
           role: string
+          self_person_full_name: string
+          self_person_id: string
+          self_person_verified: boolean
           user_id: string
         }[]
       }
@@ -904,6 +927,10 @@ export type Database = {
         Returns: undefined
       }
       restore_audit_entry: { Args: { audit_id: string }; Returns: undefined }
+      set_my_self_person: {
+        Args: { p_clan_id: string; p_person_id: string }
+        Returns: undefined
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       unaccent: { Args: { "": string }; Returns: string }

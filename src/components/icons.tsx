@@ -446,3 +446,15 @@ export function IconScroll(p: IconProps) {
     </Svg>
   );
 }
+
+export function IconSparkles(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 3 13.9 8.1 19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+      <path d="M19 17v4" />
+      <path d="M17 19h4" />
+      <path d="M5 4v3" />
+      <path d="M3.5 5.5h3" />
+    </Svg>
+  );
+}

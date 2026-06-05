@@ -20,6 +20,7 @@ import Events from "@/pages/clan/Events";
 import Import from "@/pages/clan/Import";
 import Members from "@/pages/clan/Members";
 import Merge from "@/pages/clan/Merge";
+import MyLineage from "@/pages/clan/MyLineage";
 import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
 import PersonDetail from "@/pages/clan/PersonDetail";
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="merge" element={<Merge />} />
           <Route path="audit" element={<Audit />} />
           <Route path="qr-export" element={<QrExport />} />
+          <Route path="my-lineage" element={<MyLineage />} />
         </Route>
 
         <Route
