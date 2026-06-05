@@ -188,6 +188,31 @@ describe("queries: members & clan settings", () => {
     expect(rows.find((r) => r.user_id === member.id)?.self_person_id).toBeNull();
   });
 
+  it("setMySelfPerson lets a platform admin claim on a clan they don't belong to", async () => {
+    const owner = await createTestUser({ displayName: "L3 Owner" });
+    const platAdmin = await createTestUser({
+      displayName: "PlatAdmin",
+      isPlatformAdmin: true,
+    });
+    cleanup.push(owner.id, platAdmin.id);
+    const { id: clanId } = await createClan({ name: "L3" }, owner.id, owner.client);
+    const p = await createPerson(
+      { clan_id: clanId, full_name: "Lineage Root", gender: "M" },
+      owner.client,
+    );
+
+    // Platform admin is NOT a clan_members row yet — RPC must auto-
+    // insert a viewer row and write the claim.
+    await setMySelfPerson(clanId, p.id, platAdmin.client);
+
+    const rows = await listClanMembers(clanId, owner.client);
+    const row = rows.find((r) => r.user_id === platAdmin.id);
+    expect(row).toBeDefined();
+    expect(row!.role).toBe("viewer");
+    expect(row!.self_person_id).toBe(p.id);
+    expect(row!.self_person_verified).toBe(false);
+  });
+
   it("setMySelfPerson rejects non-members of the clan", async () => {
     const owner = await createTestUser({ displayName: "L2 Owner" });
     const stranger = await createTestUser({ displayName: "Stranger" });
