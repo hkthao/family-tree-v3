@@ -6,6 +6,7 @@ import {
   deletePerson,
   getPerson,
   listPersons,
+  listPersonsForQrExport,
   updatePerson,
 } from "@/lib/queries/persons";
 import { unaccent } from "@/lib/unaccent";
@@ -156,6 +157,37 @@ describe("queries: persons", () => {
     const after = await getPerson(id, owner.client);
     expect(after?.full_name).toBe("Đổi Tên");
     expect(after?.bio).toBe("Tiểu sử mới");
+  });
+
+  it("listPersonsForQrExport filters deceasedOnly + caps via limit", async () => {
+    // Mark one of the seeded persons as deceased so we can confirm the
+    // filter. Pick "Trần Hữu Cường".
+    const all = await listPersons(
+      clanId,
+      { page: 1, pageSize: 100 },
+      owner.client,
+    );
+    const someoneId = all.rows.find((p) => p.full_name === "Trần Hữu Cường")!.id;
+    await updatePerson(
+      someoneId,
+      { is_living: false, death_date: "1950-01-01", death_date_precision: "year" },
+      owner.client,
+    );
+
+    const deceased = await listPersonsForQrExport(
+      clanId,
+      { deceasedOnly: true },
+      owner.client,
+    );
+    expect(deceased.every((p) => p.is_living === false)).toBe(true);
+    expect(deceased.some((p) => p.id === someoneId)).toBe(true);
+
+    const capped = await listPersonsForQrExport(
+      clanId,
+      { limit: 2 },
+      owner.client,
+    );
+    expect(capped.length).toBe(2);
   });
 
   it("deletePerson soft-deletes (row no longer visible via getPerson / listPersons)", async () => {

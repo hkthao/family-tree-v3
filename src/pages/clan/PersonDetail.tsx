@@ -1,17 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import {
   IconBell,
   IconPencil,
   IconPlus,
+  IconQrCode,
   IconTrash,
 } from "@/components/icons";
 import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
+import { QrCodeModal } from "@/components/QrCodeModal";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { useToast } from "@/components/Toast";
+import { downloadSinglePersonQrPdf } from "@/lib/pdf/exportPersonQrPdf";
+import { getOrCreatePersonShareLink } from "@/lib/queries/share-links";
 import { getSignedPhotoUrl } from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -97,10 +102,23 @@ export default function PersonDetail() {
       toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
+  const [qrOpen, setQrOpen] = useState(false);
+  const qrM = useMutation({
+    mutationFn: () => getOrCreatePersonShareLink(clanId!, personId!),
+    onError: (e) =>
+      toast.error("Không tạo được QR", { description: (e as Error).message }),
+  });
+  const qrUrl = qrM.data
+    ? `${window.location.origin}/share/${qrM.data.token}`
+    : "";
+
   if (!clanId || !personId) return null;
 
   const canEdit =
     clan.isPlatformAdmin || clan.myRole === "admin" || clan.myRole === "editor";
+  // QR creation needs to write share_links, which only clan admin can do
+  // under the current RLS policy. Editors don't see the button.
+  const canCreateQr = clan.isPlatformAdmin || clan.myRole === "admin";
 
   return (
     <div className="space-y-6">
@@ -284,39 +302,84 @@ export default function PersonDetail() {
               </Card>
             )}
 
-            {canEdit && (
-              <div className="flex gap-3">
-                <Button asChild className="flex-1 sm:flex-none">
-                  <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
-                    <IconPencil className="h-4 w-4 mr-1.5" />
-                    Sửa
-                  </Link>
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1 sm:flex-none"
-                  onClick={async () => {
-                    const ok = await askConfirm({
-                      title: `Xoá ${person.full_name}?`,
-                      description: "Có thể khôi phục từ nhật ký.",
-                      confirmLabel: "Xoá",
-                      destructive: true,
-                    });
-                    if (ok) deleteMutation.mutate();
-                  }}
-                  disabled={deleteMutation.isPending}
-                >
-                  {deleteMutation.isPending ? (
-                    "Đang xoá…"
-                  ) : (
-                    <>
-                      <IconTrash className="h-4 w-4 mr-1.5" />
-                      Xoá
-                    </>
-                  )}
-                </Button>
+            {(canEdit || canCreateQr) && (
+              <div className="flex flex-wrap gap-3">
+                {canEdit && (
+                  <Button asChild className="flex-1 sm:flex-none">
+                    <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
+                      <IconPencil className="h-4 w-4 mr-1.5" />
+                      Sửa
+                    </Link>
+                  </Button>
+                )}
+                {canCreateQr && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 sm:flex-none"
+                    onClick={() => {
+                      setQrOpen(true);
+                      if (!qrM.data) qrM.mutate();
+                    }}
+                  >
+                    <IconQrCode className="h-4 w-4 mr-1.5" />
+                    QR cá nhân
+                  </Button>
+                )}
+                {canEdit && (
+                  <Button
+                    variant="destructive"
+                    className="flex-1 sm:flex-none"
+                    onClick={async () => {
+                      const ok = await askConfirm({
+                        title: `Xoá ${person.full_name}?`,
+                        description: "Có thể khôi phục từ nhật ký.",
+                        confirmLabel: "Xoá",
+                        destructive: true,
+                      });
+                      if (ok) deleteMutation.mutate();
+                    }}
+                    disabled={deleteMutation.isPending}
+                  >
+                    {deleteMutation.isPending ? (
+                      "Đang xoá…"
+                    ) : (
+                      <>
+                        <IconTrash className="h-4 w-4 mr-1.5" />
+                        Xoá
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             )}
+
+            <QrCodeModal
+              open={qrOpen}
+              onClose={() => setQrOpen(false)}
+              url={qrUrl}
+              loading={qrM.isPending}
+              title={`QR · ${person.full_name}`}
+              description="Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, sổ gia phả, danh thiếp."
+              onDownloadPdf={async () => {
+                try {
+                  await downloadSinglePersonQrPdf(clan.name, {
+                    clanId: clan.id,
+                    personId: person.id,
+                    fullName: person.full_name,
+                    courtesyName: person.courtesy_name,
+                    generation: person.generation,
+                    birthYear: person.birth_date?.slice(0, 4) ?? null,
+                    deathYear: person.death_date?.slice(0, 4) ?? null,
+                    isLiving: person.is_living,
+                  });
+                  toast.success("Đã tải PDF danh thiếp");
+                } catch (e) {
+                  toast.error("Không tạo được PDF", {
+                    description: (e as Error).message,
+                  });
+                }
+              }}
+            />
 
             {deleteMutation.error && (
               <Alert variant="destructive">

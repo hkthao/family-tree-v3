@@ -34,6 +34,7 @@ export interface CreateShareLinkInput {
   /** Days from now until link expires. */
   ttlDays: number;
   root_person_id?: string | null;
+  scope?: string;
 }
 
 /**
@@ -63,13 +64,52 @@ export async function createShareLink(
       clan_id: input.clan_id,
       token: makeToken(),
       root_person_id: input.root_person_id ?? null,
-      scope: "tree_view",
+      scope: input.scope ?? "tree_view",
       expires_at: expires,
     })
     .select("id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at")
     .single();
   if (error) throw new Error(error.message);
   return data as ShareLink;
+}
+
+const PERSON_SCOPE = "single_person";
+const PERSON_SHARE_TTL_DAYS = 365;
+
+/**
+ * Return an active (non-revoked, non-expired) personal share link for
+ * the person, or create one if none exists. Used by "QR cá nhân" — we
+ * reuse the existing token across reprints so the same physical QR
+ * (engraved on a headstone, printed in a book) keeps resolving.
+ */
+export async function getOrCreatePersonShareLink(
+  clanId: string,
+  personId: string,
+  client: Client = defaultClient,
+): Promise<ShareLink> {
+  const nowIso = new Date().toISOString();
+  const { data: existing, error: selErr } = await client
+    .from("share_links")
+    .select("id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at")
+    .eq("clan_id", clanId)
+    .eq("root_person_id", personId)
+    .eq("scope", PERSON_SCOPE)
+    .eq("is_revoked", false)
+    .gt("expires_at", nowIso)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (selErr) throw new Error(selErr.message);
+  if (existing && existing.length > 0) return existing[0] as ShareLink;
+
+  return createShareLink(
+    {
+      clan_id: clanId,
+      ttlDays: PERSON_SHARE_TTL_DAYS,
+      root_person_id: personId,
+      scope: PERSON_SCOPE,
+    },
+    client,
+  );
 }
 
 export async function revokeShareLink(

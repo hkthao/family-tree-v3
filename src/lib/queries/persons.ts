@@ -279,6 +279,59 @@ export async function updatePersonsBranchBulk(
   return { updated: count ?? 0 };
 }
 
+export interface QrExportRow {
+  id: string;
+  full_name: string;
+  courtesy_name: string | null;
+  gender: "M" | "F";
+  is_living: boolean;
+  generation: number | null;
+  branch_id: string | null;
+  birth_date: string | null;
+  death_date: string | null;
+}
+
+export interface ListPersonsForQrExportParams {
+  branchId?: string | null;
+  generationMin?: number | null;
+  generationMax?: number | null;
+  deceasedOnly?: boolean;
+  limit?: number;
+}
+
+/**
+ * Slim, unpaginated person list shaped for the QR bulk-export page.
+ * Hard-capped at `limit` (default 500) so we don't accidentally pull a
+ * 5000-person clan into the browser.
+ */
+export async function listPersonsForQrExport(
+  clanId: string,
+  params: ListPersonsForQrExportParams = {},
+  client: Client = defaultClient,
+): Promise<QrExportRow[]> {
+  let q = client
+    .from("persons")
+    .select(
+      "id, full_name, courtesy_name, gender, is_living, generation, branch_id, birth_date, death_date",
+    )
+    .eq("clan_id", clanId)
+    .is("deleted_at", null)
+    .order("generation", { ascending: true, nullsFirst: false })
+    .order("full_name", { ascending: true })
+    .limit(params.limit ?? 500);
+  if (params.branchId) q = q.eq("branch_id", params.branchId);
+  if (params.generationMin !== undefined && params.generationMin !== null) {
+    q = q.gte("generation", params.generationMin);
+  }
+  if (params.generationMax !== undefined && params.generationMax !== null) {
+    q = q.lte("generation", params.generationMax);
+  }
+  if (params.deceasedOnly) q = q.eq("is_living", false);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  return (data ?? []) as QrExportRow[];
+}
+
 /**
  * Bulk-soft-delete persons. The BEFORE DELETE trigger converts each
  * DELETE into a soft-delete (set deleted_at = now()). Single

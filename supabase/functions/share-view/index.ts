@@ -55,6 +55,22 @@ interface PersonRow {
   death_date: string | null;
   death_date_precision: string | null;
   photo_path: string | null;
+  // Extras used by the single_person card view. Always selected but
+  // only included in the response when scope === 'single_person'.
+  courtesy_name: string | null;
+  posthumous_name: string | null;
+  nickname: string | null;
+  birth_place: string | null;
+  burial_place: string | null;
+  bio: string | null;
+  birth_lunar_year: number | null;
+  birth_lunar_month: number | null;
+  birth_lunar_day: number | null;
+  death_lunar_year: number | null;
+  death_lunar_month: number | null;
+  death_lunar_day: number | null;
+  death_anniv_lunar_month: number | null;
+  death_anniv_lunar_day: number | null;
 }
 
 interface FamilyRow {
@@ -130,7 +146,7 @@ Deno.serve(async (req) => {
 
   // ---- 3. Fetch persons + families ----
   const personSelect =
-    "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_date, birth_date_precision, death_date, death_date_precision, photo_path";
+    "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_date, birth_date_precision, death_date, death_date_precision, photo_path, courtesy_name, posthumous_name, nickname, birth_place, burial_place, bio, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day";
   const { data: persons, error: pErr } = await sb
     .from("persons")
     .select(personSelect)
@@ -148,9 +164,56 @@ Deno.serve(async (req) => {
   let scopedFamilies = (families ?? []) as FamilyRow[];
 
   // ---- 4. Optional subtree scoping ----
-  // When root_person_id is set, keep only that person + their descendants
-  // and the families connecting them.
-  if (link.root_person_id) {
+  // Two modes:
+  //  - scope='single_person': focal + parents + spouse(s) + children (one
+  //    hop each). Used by the personal QR code on tombstones / cards.
+  //  - default (tree_view): focal + all descendants. Used by the public
+  //    tree view link.
+  if (link.scope === "single_person" && link.root_person_id) {
+    const focal = scopedPersons.find((p) => p.id === link.root_person_id);
+    if (!focal) {
+      return err("Người này không còn trong gia phả.", 404);
+    }
+    const kept = new Set<string>([focal.id]);
+    const familiesKept = new Set<string>();
+
+    // Parents — via the focal's birth_family. Both the family record and
+    // both parents are included so the card can render names.
+    if (focal.birth_family_id) {
+      familiesKept.add(focal.birth_family_id);
+      const birthFam = scopedFamilies.find((f) => f.id === focal.birth_family_id);
+      if (birthFam) {
+        if (birthFam.husband_id) kept.add(birthFam.husband_id);
+        if (birthFam.wife_id) kept.add(birthFam.wife_id);
+      }
+    }
+
+    // Marriages — every family where focal is a spouse. Pull in the
+    // partner + all children of that union.
+    const childrenByFamily = new Map<string, string[]>();
+    for (const p of scopedPersons) {
+      if (!p.birth_family_id) continue;
+      const arr = childrenByFamily.get(p.birth_family_id) ?? [];
+      arr.push(p.id);
+      childrenByFamily.set(p.birth_family_id, arr);
+    }
+    for (const f of scopedFamilies) {
+      if (f.husband_id === focal.id || f.wife_id === focal.id) {
+        familiesKept.add(f.id);
+        for (const sp of [f.husband_id, f.wife_id]) {
+          if (sp && sp !== focal.id) kept.add(sp);
+        }
+        for (const c of childrenByFamily.get(f.id) ?? []) {
+          kept.add(c);
+        }
+      }
+    }
+
+    scopedPersons = scopedPersons.filter((p) => kept.has(p.id));
+    scopedFamilies = scopedFamilies.filter((f) => familiesKept.has(f.id));
+  } else if (link.root_person_id) {
+    // Default tree_view scope with subtree: focal + all descendants and
+    // the families connecting them.
     const kept = new Set<string>([link.root_person_id]);
     const familyById = new Map(scopedFamilies.map((f) => [f.id, f]));
     const childrenByFamily = new Map<string, string[]>();
@@ -228,6 +291,10 @@ Deno.serve(async (req) => {
   }
 
   // ---- 6. Mask living-person dates/places + attach signed photo URL ----
+  // Extra columns (places, bio, lunar dates, alt names) only ride along
+  // when the link is scope='single_person' — the tree view doesn't render
+  // them and we'd rather not leak them in a generic anonymous payload.
+  const includeExtras = link.scope === "single_person";
   const masked = scopedPersons.map((p) => {
     const photo_url = p.photo_path
       ? (photoUrlByPath.get(p.photo_path) ?? null)
@@ -249,18 +316,45 @@ Deno.serve(async (req) => {
         photo_url,
       };
     }
-    return {
-      ...p,
+    const base = {
+      id: p.id,
+      full_name: p.full_name,
+      gender: p.gender,
+      is_living: false,
+      is_root: p.is_root,
+      generation: p.generation,
+      branch_id: p.branch_id,
+      birth_family_id: p.birth_family_id,
+      birth_date: p.birth_date,
+      birth_date_precision: p.birth_date_precision,
+      death_date: p.death_date,
+      death_date_precision: p.death_date_precision,
       photo_url,
-      // photo_path itself stays out of the response — only the signed
-      // URL is useful to the anonymous client.
-      photo_path: undefined,
+    };
+    if (!includeExtras) return base;
+    return {
+      ...base,
+      courtesy_name: p.courtesy_name,
+      posthumous_name: p.posthumous_name,
+      nickname: p.nickname,
+      birth_place: p.birth_place,
+      burial_place: p.burial_place,
+      bio: p.bio,
+      birth_lunar_year: p.birth_lunar_year,
+      birth_lunar_month: p.birth_lunar_month,
+      birth_lunar_day: p.birth_lunar_day,
+      death_lunar_year: p.death_lunar_year,
+      death_lunar_month: p.death_lunar_month,
+      death_lunar_day: p.death_lunar_day,
+      death_anniv_lunar_month: p.death_anniv_lunar_month,
+      death_anniv_lunar_day: p.death_anniv_lunar_day,
     };
   });
 
   return json({
     clan_id: link.clan_id,
     root_person_id: link.root_person_id,
+    scope: link.scope,
     persons: masked,
     families: scopedFamilies,
   });

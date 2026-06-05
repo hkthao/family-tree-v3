@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { QrCodeModal } from "@/components/QrCodeModal";
@@ -25,6 +25,7 @@ import {
   revokeShareLink,
   type ShareLink,
 } from "@/lib/queries/share-links";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
   clanId: string;
@@ -42,6 +43,33 @@ export function ShareLinksSection({ clanId }: Props) {
     queryKey: queryKeys.shareLinks(clanId, userId),
     queryFn: () => listShareLinks(clanId),
     enabled: !!userId,
+  });
+
+  // Resolve names for the focal person of each personal QR link, so the
+  // list shows "QR cá nhân · Nguyễn Văn A" instead of a bare token.
+  const personIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (links ?? [])
+            .filter((l) => l.scope === "single_person" && l.root_person_id)
+            .map((l) => l.root_person_id as string),
+        ),
+      ),
+    [links],
+  );
+  const { data: personNames } = useQuery({
+    queryKey: ["share-link-person-names", clanId, personIds.slice().sort().join(",")],
+    queryFn: async () => {
+      if (personIds.length === 0) return new Map<string, string>();
+      const { data, error } = await supabase
+        .from("persons")
+        .select("id, full_name")
+        .in("id", personIds);
+      if (error) throw new Error(error.message);
+      return new Map((data ?? []).map((p) => [p.id as string, p.full_name as string]));
+    },
+    enabled: personIds.length > 0,
   });
 
   const [ttl, setTtl] = useState(String(DEFAULT_TTL));
@@ -105,7 +133,15 @@ export function ShareLinksSection({ clanId }: Props) {
       {links && links.length > 0 && (
         <ul className="space-y-3">
           {links.map((l) => (
-            <ShareLinkItem key={l.id} link={l} clanId={clanId} userId={userId} />
+            <ShareLinkItem
+              key={l.id}
+              link={l}
+              clanId={clanId}
+              userId={userId}
+              personName={
+                l.root_person_id ? personNames?.get(l.root_person_id) ?? null : null
+              }
+            />
           ))}
         </ul>
       )}
@@ -117,10 +153,12 @@ function ShareLinkItem({
   link,
   clanId,
   userId,
+  personName,
 }: {
   link: ShareLink;
   clanId: string;
   userId: string;
+  personName: string | null;
 }) {
   const qc = useQueryClient();
   const toast = useToast();
@@ -166,20 +204,31 @@ function ShareLinkItem({
     }
   }
 
+  const isPersonScope = link.scope === "single_person";
+  const scopeLabel = isPersonScope
+    ? `QR cá nhân · ${personName ?? "—"}`
+    : "Link cây gia phả";
+
   return (
     <li className="rounded-md border bg-card p-3 space-y-2">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <span
-          className={`text-xs font-medium ${
-            status.tone === "destructive"
-              ? "text-destructive"
-              : status.tone === "muted"
-                ? "text-muted-foreground"
-                : "text-accent"
-          }`}
-        >
-          {status.label}
-        </span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className={`text-xs font-medium ${
+              status.tone === "destructive"
+                ? "text-destructive"
+                : status.tone === "muted"
+                  ? "text-muted-foreground"
+                  : "text-accent"
+            }`}
+          >
+            {status.label}
+          </span>
+          <span className="text-xs text-muted-foreground">·</span>
+          <span className="text-xs font-medium text-foreground">
+            {scopeLabel}
+          </span>
+        </div>
         <span className="text-xs text-muted-foreground">
           Hết hạn {new Date(link.expires_at).toLocaleDateString("vi-VN")}
         </span>
@@ -250,8 +299,16 @@ function ShareLinkItem({
         open={qrOpen}
         onClose={() => setQrOpen(false)}
         url={shareUrl}
-        title="Quét để xem cây gia phả"
-        description="Mở camera điện thoại, hướng vào mã QR. Link sẽ mở trang xem chỉ-đọc."
+        title={
+          isPersonScope
+            ? `QR · ${personName ?? "Trang cá nhân"}`
+            : "Quét để xem cây gia phả"
+        }
+        description={
+          isPersonScope
+            ? "Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, sổ gia phả, danh thiếp."
+            : "Mở camera điện thoại, hướng vào mã QR. Link sẽ mở trang xem chỉ-đọc."
+        }
       />
     </li>
   );
