@@ -16,6 +16,22 @@ export interface ShareViewPerson {
   /** Short-lived signed URL for deceased persons' photos. Null for the
    *  living (their photos are masked) and for anyone without an upload. */
   photo_url: string | null;
+  // Extra detail fields. Only present in scope='single_person' responses
+  // and only for deceased persons; always undefined in tree_view.
+  courtesy_name?: string | null;
+  posthumous_name?: string | null;
+  nickname?: string | null;
+  birth_place?: string | null;
+  burial_place?: string | null;
+  bio?: string | null;
+  birth_lunar_year?: number | null;
+  birth_lunar_month?: number | null;
+  birth_lunar_day?: number | null;
+  death_lunar_year?: number | null;
+  death_lunar_month?: number | null;
+  death_lunar_day?: number | null;
+  death_anniv_lunar_month?: number | null;
+  death_anniv_lunar_day?: number | null;
 }
 
 export interface ShareViewFamily {
@@ -27,6 +43,8 @@ export interface ShareViewFamily {
 export interface ShareViewPayload {
   clan_id: string;
   root_person_id: string | null;
+  /** 'tree_view' (default) or 'single_person'. Drives client rendering. */
+  scope: string;
   persons: ShareViewPerson[];
   families: ShareViewFamily[];
 }

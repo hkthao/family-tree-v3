@@ -23,6 +23,7 @@ import Merge from "@/pages/clan/Merge";
 import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
 import PersonDetail from "@/pages/clan/PersonDetail";
+import QrExport from "@/pages/clan/QrExport";
 import Settings from "@/pages/clan/Settings";
 import Tree from "@/pages/clan/Tree";
 import Login from "@/pages/Login";
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="ai-generate" element={<AiGenerate />} />
           <Route path="merge" element={<Merge />} />
           <Route path="audit" element={<Audit />} />
+          <Route path="qr-export" element={<QrExport />} />
         </Route>
 
         <Route

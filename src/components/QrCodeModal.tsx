@@ -16,6 +16,14 @@ interface Props {
    * URL (eg waiting for an edge function to mint a magic link).
    */
   loading?: boolean;
+  /**
+   * Optional secondary download action — surfaces a "Tải PDF
+   * danh thiếp" button below the PNG. Caller owns the side
+   * effect (mints the share link, renders the PDF, triggers the
+   * browser download). The modal just shows a pending spinner
+   * while the returned promise is in flight.
+   */
+  onDownloadPdf?: () => Promise<void>;
 }
 
 /**
@@ -29,10 +37,19 @@ interface Props {
  * Output is a PNG data URL drawn onto the canvas and also
  * stamped onto an <a download> link for "Lưu ảnh QR".
  */
-export function QrCodeModal({ url, title, description, open, onClose, loading }: Props) {
+export function QrCodeModal({
+  url,
+  title,
+  description,
+  open,
+  onClose,
+  loading,
+  onDownloadPdf,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     if (!open || loading || !url) return;
@@ -146,13 +163,32 @@ export function QrCodeModal({ url, title, description, open, onClose, loading }:
           )}
 
           {dataUrl && (
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-2 flex-wrap">
               <Button asChild variant="outline" size="sm">
                 <a href={dataUrl} download="qr-gia-pha.png">
                   <IconDownload className="h-4 w-4 mr-1.5" />
                   Lưu ảnh QR
                 </a>
               </Button>
+              {onDownloadPdf && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={pdfBusy}
+                  onClick={async () => {
+                    setPdfBusy(true);
+                    try {
+                      await onDownloadPdf();
+                    } finally {
+                      setPdfBusy(false);
+                    }
+                  }}
+                >
+                  <IconDownload className="h-4 w-4 mr-1.5" />
+                  {pdfBusy ? "Đang tạo PDF…" : "Tải PDF danh thiếp"}
+                </Button>
+              )}
             </div>
           )}
         </div>

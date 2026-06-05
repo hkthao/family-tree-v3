@@ -14,6 +14,7 @@ import {
   IconHome,
   IconLink,
   IconPlus,
+  IconQrCode,
   IconScroll,
   IconSettings,
   IconShield,
@@ -382,6 +383,11 @@ function buildSections(
       });
     }
     if (isAdmin) {
+      items.push({
+        to: `/clans/${clanId}/qr-export`,
+        label: "Xuất QR cá nhân",
+        icon: <IconQrCode className={ic} />,
+      });
       items.push({
         to: `/clans/${clanId}/members`,
         label: "Thành viên",

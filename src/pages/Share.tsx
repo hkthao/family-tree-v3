@@ -7,6 +7,7 @@ import {
   IconLayoutVertical,
 } from "@/components/icons";
 import { SearchInput } from "@/components/SearchInput";
+import { SharedPersonCard } from "@/components/SharedPersonCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { fetchShareView } from "@/lib/queries/share-view";
@@ -272,6 +273,40 @@ export default function Share() {
       .filter((p) => normalize(p.full_name).includes(needle))
       .slice(0, 5);
   }, [data, search]);
+
+  // Personal QR branch — bypass the family-chart and render a card.
+  // The focal is whichever person matches data.root_person_id (always
+  // set when scope='single_person').
+  if (data && data.scope === "single_person") {
+    const focalPerson = data.root_person_id
+      ? data.persons.find((p) => p.id === data.root_person_id)
+      : null;
+    return (
+      <div className="min-h-dvh bg-background flex flex-col">
+        <header className="border-b py-3 px-4 shrink-0">
+          <h1 className="clan-name text-xl font-semibold text-center">
+            Trang cá nhân
+          </h1>
+          <p className="text-xs text-center text-muted-foreground mt-1">
+            Đang xem qua liên kết chia sẻ.
+          </p>
+        </header>
+        <main className="flex-1 min-h-0">
+          {focalPerson ? (
+            <SharedPersonCard
+              focal={focalPerson}
+              persons={data.persons}
+              families={data.families}
+            />
+          ) : (
+            <p className="p-8 text-center text-muted-foreground">
+              Không tìm thấy thông tin người này.
+            </p>
+          )}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="h-dvh bg-background flex flex-col">
