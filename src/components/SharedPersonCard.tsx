@@ -1,4 +1,9 @@
+import { useState } from "react";
+
+import { ContributeDialog } from "@/components/ContributeDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
+import { IconScroll } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,6 +21,11 @@ interface Props {
   focal: ShareViewPerson;
   persons: ShareViewPerson[];
   families: ShareViewFamily[];
+  /** Pass the share link token so guests can submit contributions
+   *  via the submit-contribution edge function. Omit to hide the
+   *  contribution UI entirely. */
+  clanId?: string;
+  shareToken?: string;
 }
 
 /**
@@ -27,7 +37,14 @@ interface Props {
  * Living-person masking already happened in the Edge Function — every
  * field we receive is safe to display.
  */
-export function SharedPersonCard({ focal, persons, families }: Props) {
+export function SharedPersonCard({
+  focal,
+  persons,
+  families,
+  clanId,
+  shareToken,
+}: Props) {
+  const [contribOpen, setContribOpen] = useState(false);
   const byId = new Map(persons.map((p) => [p.id, p]));
 
   // Parents — via focal.birth_family_id. Either may be null in the data.
@@ -101,6 +118,17 @@ export function SharedPersonCard({ focal, persons, families }: Props) {
             )}
           </p>
         </div>
+        {clanId && shareToken && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setContribOpen(true)}
+            className="shrink-0"
+          >
+            <IconScroll className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">Đề xuất sửa</span>
+          </Button>
+        )}
       </header>
 
       <Card>
@@ -161,6 +189,27 @@ export function SharedPersonCard({ focal, persons, families }: Props) {
             {children.length > 0 && <Group label="Con cái" items={children} />}
           </CardContent>
         </Card>
+      )}
+
+      {clanId && shareToken && (
+        <ContributeDialog
+          open={contribOpen}
+          onClose={() => setContribOpen(false)}
+          clanId={clanId}
+          shareToken={shareToken}
+          focalPerson={{
+            id: focal.id,
+            full_name: focal.full_name,
+            gender: focal.gender,
+            is_living: focal.is_living,
+            birth_date: focal.birth_date,
+            death_date: focal.death_date,
+            courtesy_name: focal.courtesy_name ?? null,
+            birth_place: focal.birth_place ?? null,
+            burial_place: focal.burial_place ?? null,
+            bio: focal.bio ?? null,
+          }}
+        />
       )}
     </div>
   );
