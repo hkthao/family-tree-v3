@@ -15,7 +15,6 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { useToast } from "@/components/Toast";
-import { downloadSinglePersonQrPdf } from "@/lib/pdf/exportPersonQrPdf";
 import { getOrCreatePersonShareLink } from "@/lib/queries/share-links";
 import { getSignedPhotoUrl } from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -362,6 +361,11 @@ export default function PersonDetail() {
               description="Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, sổ gia phả, danh thiếp."
               onDownloadPdf={async () => {
                 try {
+                  // Lazy-load @react-pdf/renderer (~1.5MB) on demand
+                  // so the initial app payload doesn't carry it.
+                  const { downloadSinglePersonQrPdf } = await import(
+                    "@/lib/pdf/exportPersonQrPdf"
+                  );
                   await downloadSinglePersonQrPdf(clan.name, {
                     clanId: clan.id,
                     personId: person.id,
