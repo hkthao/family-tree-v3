@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 
 import {
   IconBell,
@@ -10,6 +9,7 @@ import {
   IconTrash,
   IconX,
 } from "@/components/icons";
+import { BackLink } from "@/components/BackLink";
 import { IconBellOff } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -44,10 +44,7 @@ import {
 } from "@/lib/queries/events";
 import { queryKeys } from "@/lib/queries/keys";
 import { getTreeData } from "@/lib/queries/tree";
-import {
-  formatCanChiShort,
-  getCanChiForSolarDate,
-} from "@/lib/lunarDate";
+import { UpcomingEventRow } from "@/components/UpcomingEventRow";
 import {
   computeUpcomingAnniversaries,
   computeUpcomingEvents,
@@ -114,6 +111,9 @@ export default function Events() {
 
   return (
     <div className="space-y-4">
+      <nav>
+        <BackLink fallback={`/clans/${clan.id}`} />
+      </nav>
       {/* Header: title + view toggle + refresh in one row on sm+,
           stacked on mobile. View toggle is icon-only on mobile to
           leave room for the look-ahead pills underneath. */}
@@ -203,7 +203,9 @@ export default function Events() {
       ) : (
         <ul className="space-y-2">
           {upcoming.map((e) => (
-            <UpcomingItem key={e.key} event={e} clanId={clan.id} />
+            <li key={e.key}>
+              <UpcomingEventRow event={e} clanId={clan.id} />
+            </li>
           ))}
         </ul>
       )}
@@ -265,73 +267,6 @@ export default function Events() {
 }
 
 // ─── Items ──────────────────────────────────────────────────────────
-
-function UpcomingItem({
-  event,
-  clanId,
-}: {
-  event: UpcomingEvent;
-  clanId: string;
-}) {
-  const dt = new Date(event.date + "T00:00:00");
-  const day = dt.getDate();
-  const month = dt.getMonth() + 1;
-  const countdown =
-    event.daysUntil === 0
-      ? "Hôm nay"
-      : event.daysUntil === 1
-        ? "Ngày mai"
-        : `Còn ${event.daysUntil} ngày`;
-
-  const inner = (
-    <div className="flex items-center justify-between gap-3 p-3 rounded-md border bg-card hover:border-primary transition-colors">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="flex-shrink-0 w-12 text-center">
-          <div className="text-xs text-muted-foreground">Th {month}</div>
-          <div className="text-xl font-semibold leading-none">{day}</div>
-        </div>
-        <div className="min-w-0">
-          <p className="font-medium truncate">{event.title}</p>
-          <p className="text-xs text-muted-foreground">
-            {kindLabel(event.kind)}
-            {event.subtitle ? ` • ${event.subtitle}` : ""}
-          </p>
-          {(() => {
-            const c = getCanChiForSolarDate(event.date);
-            return c ? (
-              <p className="text-[11px] text-muted-foreground/80 truncate">
-                {formatCanChiShort(c)}
-              </p>
-            ) : null;
-          })()}
-        </div>
-      </div>
-      <span
-        className={`text-xs whitespace-nowrap ${
-          event.daysUntil <= 1
-            ? "text-primary font-semibold"
-            : event.daysUntil <= 7
-              ? "text-accent font-medium"
-              : "text-muted-foreground"
-        }`}
-      >
-        {countdown}
-      </span>
-    </div>
-  );
-
-  return (
-    <li>
-      {event.personId ? (
-        <Link to={`/clans/${clanId}/people/${event.personId}`} className="block">
-          {inner}
-        </Link>
-      ) : (
-        inner
-      )}
-    </li>
-  );
-}
 
 function CustomEventItem({
   event,
@@ -570,13 +505,3 @@ function AddEventForm({
   );
 }
 
-function kindLabel(k: UpcomingEvent["kind"]): string {
-  switch (k) {
-    case "birthday":
-      return "Sinh nhật";
-    case "anniversary":
-      return "Ngày giỗ";
-    case "custom":
-      return "Sự kiện";
-  }
-}

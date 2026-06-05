@@ -348,6 +348,11 @@ function buildSections(
         end: true,
       },
       {
+        to: `/clans/${clanId}/today`,
+        label: "Hôm nay",
+        icon: <IconCalendar className={ic} />,
+      },
+      {
         to: `/clans/${clanId}/people`,
         label: "Danh bạ",
         icon: <IconUsers className={ic} />,

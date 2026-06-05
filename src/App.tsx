@@ -26,6 +26,7 @@ import People from "@/pages/clan/People";
 import PersonDetail from "@/pages/clan/PersonDetail";
 import QrExport from "@/pages/clan/QrExport";
 import Settings from "@/pages/clan/Settings";
+import Today from "@/pages/clan/Today";
 import Tree from "@/pages/clan/Tree";
 import Login from "@/pages/Login";
 import NewClan from "@/pages/NewClan";
@@ -84,6 +85,7 @@ export default function App() {
           <Route path="audit" element={<Audit />} />
           <Route path="qr-export" element={<QrExport />} />
           <Route path="my-lineage" element={<MyLineage />} />
+          <Route path="today" element={<Today />} />
         </Route>
 
         <Route
