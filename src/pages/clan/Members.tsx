@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
-import { IconTrash, IconUserPlus } from "@/components/icons";
+import { IconCheck, IconTrash, IconUserPlus } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import {
   inviteMemberByEmail,
   listClanMembers,
   removeMember,
+  setMemberSelfVerified,
   type ClanRole,
 } from "@/lib/queries/members";
 
@@ -50,6 +51,18 @@ export default function Members() {
     kind: "success" | "error";
     text: string;
   } | null>(null);
+
+  const verifySelfMutation = useMutation({
+    mutationFn: (args: { uid: string; verified: boolean }) =>
+      setMemberSelfVerified(clanId!, args.uid, args.verified),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clanMembers(clanId ?? "", userId),
+      });
+    },
+    onError: (e) =>
+      toast.error("Không cập nhật được", { description: (e as Error).message }),
+  });
 
   const inviteMutation = useMutation({
     mutationFn: () => inviteMemberByEmail(clanId!, inviteEmail.trim(), inviteRole),
@@ -212,7 +225,7 @@ export default function Members() {
             {members && members.length > 0 && (
               <ul className="divide-y">
                 {members.map((m) => (
-                  <li key={m.user_id} className="py-3">
+                  <li key={m.user_id} className="py-3 space-y-2">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="min-w-0">
                         <p className="font-medium">
@@ -267,6 +280,46 @@ export default function Members() {
                         )}
                       </div>
                     </div>
+                    {/* Self-person claim — shown when the member has
+                        picked themselves in the tree. Admin gets a
+                        verify toggle so the ✓ admin-confirmed badge
+                        on the lineage page is meaningful. */}
+                    {m.self_person_id && (
+                      <div className="flex items-center justify-between gap-2 flex-wrap text-sm pl-1 border-l-2 border-muted ml-1">
+                        <div className="min-w-0">
+                          <span className="text-muted-foreground mr-1">Tự xưng:</span>
+                          <Link
+                            to={`/clans/${clanId}/people/${m.self_person_id}`}
+                            className="font-medium hover:text-primary"
+                          >
+                            {m.self_person_full_name ?? "(người đã xoá)"}
+                          </Link>
+                          {m.self_person_verified ? (
+                            <span className="ml-2 inline-flex items-center gap-1 text-xs text-accent">
+                              <IconCheck className="h-3.5 w-3.5" />
+                              Đã xác nhận
+                            </span>
+                          ) : (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              Chờ xác nhận
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={m.self_person_verified ? "outline" : "default"}
+                          onClick={() =>
+                            verifySelfMutation.mutate({
+                              uid: m.user_id,
+                              verified: !m.self_person_verified,
+                            })
+                          }
+                          disabled={verifySelfMutation.isPending}
+                        >
+                          {m.self_person_verified ? "Bỏ xác nhận" : "Xác nhận"}
+                        </Button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

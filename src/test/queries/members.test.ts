@@ -2,11 +2,14 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { createClan } from "@/lib/queries/clans";
 import { updateClan } from "@/lib/queries/clan-update";
+import { createPerson } from "@/lib/queries/persons";
 import {
   changeMemberRole,
   inviteMemberByEmail,
   listClanMembers,
   removeMember,
+  setMemberSelfVerified,
+  setMySelfPerson,
 } from "@/lib/queries/members";
 
 import { createTestUser, deleteUser } from "../supabase-helpers";
@@ -133,6 +136,70 @@ describe("queries: members & clan settings", () => {
     expect(data?.name).toBe("After");
     expect(data?.visibility).toBe("public");
     expect(data?.description).toBe("x");
+  });
+
+  it("setMySelfPerson + setMemberSelfVerified flow", async () => {
+    const owner = await createTestUser({ displayName: "LineageOwner" });
+    const member = await createTestUser({ displayName: "LineageMember" });
+    cleanup.push(owner.id, member.id);
+    const { id: clanId } = await createClan({ name: "L" }, owner.id, owner.client);
+    // owner invites member as viewer
+    await inviteMemberByEmail(clanId, member.email, "viewer", owner.client);
+    // owner adds a person to claim
+    const p1 = await createPerson(
+      { clan_id: clanId, full_name: "Ancestor A", gender: "M" },
+      owner.client,
+    );
+    const p2 = await createPerson(
+      { clan_id: clanId, full_name: "Ancestor B", gender: "F" },
+      owner.client,
+    );
+
+    // Member claims p1 — should work, verified=false
+    await setMySelfPerson(clanId, p1.id, member.client);
+    let rows = await listClanMembers(clanId, owner.client);
+    const m1 = rows.find((r) => r.user_id === member.id)!;
+    expect(m1.self_person_id).toBe(p1.id);
+    expect(m1.self_person_verified).toBe(false);
+
+    // Admin verifies
+    await setMemberSelfVerified(clanId, member.id, true, owner.client);
+    rows = await listClanMembers(clanId, owner.client);
+    expect(rows.find((r) => r.user_id === member.id)?.self_person_verified).toBe(true);
+
+    // Member changes to p2 — verified should reset to false
+    await setMySelfPerson(clanId, p2.id, member.client);
+    rows = await listClanMembers(clanId, owner.client);
+    const m2 = rows.find((r) => r.user_id === member.id)!;
+    expect(m2.self_person_id).toBe(p2.id);
+    expect(m2.self_person_verified).toBe(false);
+
+    // Owner claims p1; should succeed (separate user)
+    await setMySelfPerson(clanId, p1.id, owner.client);
+
+    // Member tries to also claim p1 — already taken by owner → throws
+    await expect(
+      setMySelfPerson(clanId, p1.id, member.client),
+    ).rejects.toThrow(/đã có/i);
+
+    // Clear claim by passing null
+    await setMySelfPerson(clanId, null, member.client);
+    rows = await listClanMembers(clanId, owner.client);
+    expect(rows.find((r) => r.user_id === member.id)?.self_person_id).toBeNull();
+  });
+
+  it("setMySelfPerson rejects non-members of the clan", async () => {
+    const owner = await createTestUser({ displayName: "L2 Owner" });
+    const stranger = await createTestUser({ displayName: "Stranger" });
+    cleanup.push(owner.id, stranger.id);
+    const { id: clanId } = await createClan({ name: "L2" }, owner.id, owner.client);
+    const p = await createPerson(
+      { clan_id: clanId, full_name: "Some Person", gender: "M" },
+      owner.client,
+    );
+    await expect(
+      setMySelfPerson(clanId, p.id, stranger.client),
+    ).rejects.toThrow();
   });
 
   it("updateClan max_persons attempt by clan admin is blocked by trigger", async () => {
