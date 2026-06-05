@@ -265,6 +265,99 @@ export type Database = {
           },
         ]
       }
+      contributions: {
+        Row: {
+          clan_id: string
+          contribution_type: string
+          created_at: string
+          id: string
+          person_id: string | null
+          proposed_data: Json
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_user_id: string | null
+          status: string
+          submitter_contact: string | null
+          submitter_ip: unknown
+          submitter_name: string | null
+          submitter_note: string | null
+          submitter_relation: string | null
+          submitter_user_id: string | null
+        }
+        Insert: {
+          clan_id: string
+          contribution_type: string
+          created_at?: string
+          id?: string
+          person_id?: string | null
+          proposed_data: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_user_id?: string | null
+          status?: string
+          submitter_contact?: string | null
+          submitter_ip?: unknown
+          submitter_name?: string | null
+          submitter_note?: string | null
+          submitter_relation?: string | null
+          submitter_user_id?: string | null
+        }
+        Update: {
+          clan_id?: string
+          contribution_type?: string
+          created_at?: string
+          id?: string
+          person_id?: string | null
+          proposed_data?: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_user_id?: string | null
+          status?: string
+          submitter_contact?: string | null
+          submitter_ip?: unknown
+          submitter_name?: string | null
+          submitter_note?: string | null
+          submitter_relation?: string | null
+          submitter_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contributions_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_reviewer_user_id_fkey"
+            columns: ["reviewer_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contributions_submitter_user_id_fkey"
+            columns: ["submitter_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_subscriptions: {
         Row: {
           channels: string[]
@@ -867,6 +960,7 @@ export type Database = {
       }
     }
     Functions: {
+      apply_contribution: { Args: { p_id: string }; Returns: undefined }
       bulk_import_persons: {
         Args: { payload: Json; target_clan: string }
         Returns: Json
@@ -924,6 +1018,10 @@ export type Database = {
       prune_share_view_rate: { Args: never; Returns: undefined }
       recompute_generation_for_clan: {
         Args: { target_clan: string }
+        Returns: undefined
+      }
+      reject_contribution: {
+        Args: { p_id: string; p_note?: string; p_status: string }
         Returns: undefined
       }
       restore_audit_entry: { Args: { audit_id: string }; Returns: undefined }

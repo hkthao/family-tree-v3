@@ -7,10 +7,12 @@ import {
   IconPencil,
   IconPlus,
   IconQrCode,
+  IconScroll,
   IconTrash,
 } from "@/components/icons";
 import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { ContributeDialog } from "@/components/ContributeDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
@@ -102,6 +104,7 @@ export default function PersonDetail() {
   });
 
   const [qrOpen, setQrOpen] = useState(false);
+  const [contribOpen, setContribOpen] = useState(false);
   const qrM = useMutation({
     mutationFn: () => getOrCreatePersonShareLink(clanId!, personId!),
     onError: (e) =>
@@ -118,6 +121,10 @@ export default function PersonDetail() {
   // QR creation needs to write share_links, which only clan admin can do
   // under the current RLS policy. Editors don't see the button.
   const canCreateQr = clan.isPlatformAdmin || clan.myRole === "admin";
+  // Any signed-in member of the clan (incl. viewers) can submit a
+  // contribution; admin reviews before it lands.
+  const canContribute =
+    !!user && (clan.isPlatformAdmin || clan.myRole !== null);
 
   return (
     <div className="space-y-6">
@@ -301,7 +308,7 @@ export default function PersonDetail() {
               </Card>
             )}
 
-            {(canEdit || canCreateQr) && (
+            {(canEdit || canCreateQr || canContribute) && (
               <div className="flex flex-wrap gap-3">
                 {canEdit && (
                   <Button asChild className="flex-1 sm:flex-none">
@@ -309,6 +316,16 @@ export default function PersonDetail() {
                       <IconPencil className="h-4 w-4 mr-1.5" />
                       Sửa
                     </Link>
+                  </Button>
+                )}
+                {canContribute && (
+                  <Button
+                    variant="outline"
+                    className="flex-1 sm:flex-none"
+                    onClick={() => setContribOpen(true)}
+                  >
+                    <IconScroll className="h-4 w-4 mr-1.5" />
+                    Đề xuất sửa
                   </Button>
                 )}
                 {canCreateQr && (
@@ -384,6 +401,27 @@ export default function PersonDetail() {
                 }
               }}
             />
+
+            {canContribute && (
+              <ContributeDialog
+                open={contribOpen}
+                onClose={() => setContribOpen(false)}
+                clanId={clan.id}
+                userId={user?.id}
+                focalPerson={{
+                  id: person.id,
+                  full_name: person.full_name,
+                  gender: person.gender,
+                  is_living: person.is_living,
+                  birth_date: person.birth_date,
+                  death_date: person.death_date,
+                  courtesy_name: person.courtesy_name,
+                  birth_place: person.birth_place,
+                  burial_place: person.burial_place,
+                  bio: person.bio,
+                }}
+              />
+            )}
 
             {deleteMutation.error && (
               <Alert variant="destructive">

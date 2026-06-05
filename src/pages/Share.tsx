@@ -297,6 +297,8 @@ export default function Share() {
               focal={focalPerson}
               persons={data.persons}
               families={data.families}
+              clanId={data.clan_id}
+              shareToken={token}
             />
           ) : (
             <p className="p-8 text-center text-muted-foreground">
