@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
-import { downloadBulkPersonQrPdf } from "@/lib/pdf/exportPersonQrPdf";
 import { listBranches } from "@/lib/queries/branches";
 import { queryKeys } from "@/lib/queries/keys";
 import {
@@ -87,6 +86,11 @@ export default function QrExport() {
           deathYear: r.death_date?.slice(0, 4) ?? null,
           isLiving: r.is_living,
         }));
+      // Lazy-load @react-pdf/renderer (~1.5MB) on click so it stays
+      // out of the initial app bundle and the PWA precache.
+      const { downloadBulkPersonQrPdf } = await import(
+        "@/lib/pdf/exportPersonQrPdf"
+      );
       return downloadBulkPersonQrPdf(clan.name, inputs);
     },
     onSuccess: (r) => {
