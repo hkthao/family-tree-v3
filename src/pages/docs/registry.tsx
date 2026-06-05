@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import * as Community from "./articles/community";
 import * as Faq from "./articles/faq";
 import * as Persons from "./articles/persons";
 import * as Start from "./articles/start";
@@ -93,6 +94,37 @@ export const DOCS_SECTIONS: DocSection[] = [
         title: "Gộp người trùng",
         summary: "Khi 2 dòng dữ liệu cùng một người — gộp lại còn một.",
         Body: Persons.Merge,
+      },
+    ],
+  },
+  {
+    label: "Lịch & cộng đồng",
+    articles: [
+      {
+        slug: "hom-nay",
+        title: "Hôm nay & nhắc giỗ",
+        summary:
+          "Trang Hôm nay tóm tắt giỗ + sinh nhật 30 ngày tới + nhắc qua email.",
+        Body: Community.Today,
+      },
+      {
+        slug: "qr-ca-nhan",
+        title: "QR cá nhân",
+        summary: "Mã QR riêng cho từng người — in lên bia, sổ, danh thiếp.",
+        Body: Community.PersonalQr,
+      },
+      {
+        slug: "duong-truc-he",
+        title: 'Đường trực hệ "từ tôi về thuỷ tổ"',
+        summary: "Vẽ chuỗi tổ tiên từ bạn lên thuỷ tổ, đổi bên nội / bên ngoại.",
+        Body: Community.Lineage,
+      },
+      {
+        slug: "dong-gop",
+        title: "Đóng góp có duyệt",
+        summary:
+          "Người trong họ đề xuất sửa, admin xem & quyết định. Email tự động.",
+        Body: Community.Contributions,
       },
     ],
   },

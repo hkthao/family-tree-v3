@@ -1132,7 +1132,108 @@ chỉ membership). Banner "bạn đang xem với quyền platform admin".
 - Mục 13 — quy đổi âm-dương thực tế trên PersonDetail (cột vẫn lưu, UI hiển thị chỉ đọc dương lịch).
 - SMS provider cho channel `sms` (đã có trong schema event_subscriptions nhưng chưa wire).
 - OCR ảnh gia phả cũ (skip ở v1).
-- Kinship UI ("đây là chú ruột bạn") — quan hệ hai chiều ngoài cha/mẹ/con/anh chị em (skip ở v1).
+- Kinship calculator ("máy tính xưng hô") — bảng rules xưng hô VN (cô/dì/chú/bác/cậu). Lineage đã làm (26.12), kinship là bước kế.
+
+### 26.12 Tính năng mới (sau 2026-06-05)
+
+Bốn nhóm tính năng ship sau khi seed prod, mở rộng phạm vi từ "sổ điện
+tử" sang "trải nghiệm dòng họ chủ động":
+
+#### A. QR cá nhân — mã QR cho từng người
+- Tận dụng bảng `share_links` sẵn có với cột `scope='single_person'`
+  + `root_person_id`. Không cần schema mới.
+- Edge `share-view` extend: branch theo scope, trả focal + cha/mẹ + vợ/
+  chồng + con (1 hop) thay vì cả descendant subtree. Living vẫn mask.
+- Page `/share/:token` detect scope → render `SharedPersonCard`
+  (card read-only) thay vì family-chart.
+- Helper `getOrCreatePersonShareLink(clanId, personId)` — reuse link
+  cũ nếu chưa revoke, mặc định 365 ngày (in lên bia cần lâu).
+- Trang `/clans/:id/qr-export` (admin) — filter chi/đời/đã-mất,
+  multi-select, xuất PDF A4 2×3 grid (6 thẻ A6/trang) qua
+  `@react-pdf/renderer` (lazy chunk).
+
+#### B. Đường trực hệ — "từ tôi về thuỷ tổ"
+- Migration: `clan_members.self_person_id` (uuid → persons) +
+  `self_person_verified` (admin xác nhận).
+- RPC `set_my_self_person(p_clan_id, p_person_id)` SECURITY DEFINER —
+  member claim/clear; platform admin không phải member vẫn dùng được
+  (auto-insert clan_members row role='viewer').
+- `src/lib/lineage.ts`: pure `traceLineage(persons, families, fromId,
+  choices)` — walk birth_family lên gốc với cycle guard + per-fork
+  override (paternal mặc định, maternal qua choices map).
+- Page `/clans/:id/my-lineage` — reuse family-chart với data đã lọc
+  thành 1 chuỗi dọc (synthetic single-parent family ở mỗi tầng).
+  Toolbar "Bên nội / Bên ngoại" cho từng điểm rẽ.
+- Members page extend: row "Tự xưng: X · Chờ xác nhận" + nút admin
+  ✓ Xác nhận.
+
+#### C. "Hôm nay" — at-a-glance giỗ + sinh nhật
+- Page `/clans/:id/today` — 3 bucket: Hôm nay (emphasised) · 7 ngày
+  tới · 30 ngày tới. Tái sử dụng `computeUpcomingEvents` +
+  `computeUpcomingAnniversaries` đã có (cron `notify-events` dùng
+  chung) → cron + page đồng bộ.
+- Extract `UpcomingEventRow` shared component (refactor từ inline
+  trong Events.tsx) với prop `emphasised` cho tile "Hôm nay" lớn hơn.
+- Drawer item "Hôm nay" ngay sau "Tổng quan".
+
+#### D. Đóng góp có duyệt — crowdsource edits
+- Bảng `contributions` (id, clan_id, person_id?, type, payload jsonb,
+  submitter_*, status, reviewer_*, submitter_ip). 3 loại:
+  `edit_person`, `add_note`, `add_person` (+ relation hint).
+- RLS: member INSERT (auth.uid pinned), editor+submitter SELECT,
+  admin UPDATE/DELETE.
+- RPC `apply_contribution(p_id)` SECURITY DEFINER — branch theo type,
+  apply atomic vào persons/families. Audit trigger có sẵn ghi log.
+- RPC `reject_contribution(p_id, status, note)` cho rejected /
+  needs_info.
+- Edge `submit-contribution` cho guest qua share-link path:
+  rate-limit 5/10min/IP, validate link còn hiệu lực + person thuộc
+  clan, INSERT service role.
+- Edge `notify-contribution`: status-driven, đọc DB là single source
+  of truth. pending → email admin; approved/rejected/needs_info →
+  email submitter (auth.users.email khi auth, submitter_contact khi
+  guest). Resend templates (3 variants).
+- `ContributeDialog` 3-mode (edit_person / add_note / add_person +
+  spouse|child). 2-layer scroll wrapper để tránh title bị giấu khi
+  form dài hơn viewport.
+- Trang `/clans/:id/contributions` (list, filter pills) + detail
+  `/:contribId` (submitter card + `ContributionDiffView` per-type:
+  row-per-field strikethrough→tint cho edit, "bio sau khi duyệt" cho
+  add_note, card mới cho add_person + relation hint).
+- Drawer badge "Đóng góp (N)" qua `countPendingContributions()` —
+  cache 30s.
+
+#### E. UI consistency sweep
+- AppHeader logo `lg:hidden` (drawer đã có, tránh duplicate).
+- 5 trang top-level (Account, Docs, Admin, Clans, NewClan) →
+  `max-w-4xl py-6 px-4 space-y-6` đồng nhất với ClanLayout.
+- Toàn bộ `size="lg"` Buttons → default size + icon `h-4 w-4 mr-1.5`
+  (Login, Signup, Settings, AiGenerate, SocialAuth, NewClan).
+- EmptyState `tertiary` đổi từ ghost → outline để 3 CTA cùng weight.
+- ContributeDialog xoá Tiểu sử field khỏi mode "Sửa thông tin" — buộc
+  user dùng tab "Bổ sung tiểu sử" cho mọi cập nhật bio (clearer
+  separation).
+
+#### Migration list bổ sung
+
+16. `20260605120000_lineage_self_link.sql` — clan_members self_person
+    cols + RPC `set_my_self_person`, extend `get_clan_members_info`.
+17. `20260605130000_lineage_platform_admin.sql` — patch RPC để
+    platform admin claim được trên clan họ không là thành viên.
+18. `20260605140000_contributions.sql` — bảng + RLS + RPC `apply` /
+    `reject`.
+
+#### Edge functions bổ sung
+
+| Tên | `verify_jwt` | Mục đích |
+|---|---|---|
+| `submit-contribution` | false | Guest submit đề xuất qua share-link; rate-limit IP, INSERT service role, gọi `notify-contribution` |
+| `notify-contribution` | false | Status-driven email dispatcher; pending → admin emails, resolved → submitter contact |
+
+#### Env mới
+
+- `APP_BASE_URL` — gốc URL prod (cho link trong email từ
+  `notify-contribution`).
 
 ---
 
