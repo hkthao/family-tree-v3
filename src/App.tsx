@@ -14,6 +14,8 @@ import AddChild from "@/pages/clan/AddChild";
 import AddSpouse from "@/pages/clan/AddSpouse";
 import AiGenerate from "@/pages/clan/AiGenerate";
 import Audit from "@/pages/clan/Audit";
+import ContributionDetail from "@/pages/clan/ContributionDetail";
+import Contributions from "@/pages/clan/Contributions";
 import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
@@ -86,6 +88,8 @@ export default function App() {
           <Route path="qr-export" element={<QrExport />} />
           <Route path="my-lineage" element={<MyLineage />} />
           <Route path="today" element={<Today />} />
+          <Route path="contributions" element={<Contributions />} />
+          <Route path="contributions/:contribId" element={<ContributionDetail />} />
         </Route>
 
         <Route

@@ -167,5 +167,20 @@ Deno.serve(async (req) => {
     .single();
   if (insErr) return err(insErr.message, 500);
 
+  // Fire-and-forget: notify clan admins via the sibling
+  // notify-contribution edge function. We use the service-role
+  // key (already in env) and don't await, so a Resend outage
+  // can't bubble up to the guest.
+  if (row?.id) {
+    fetch(`${SUPABASE_URL}/functions/v1/notify-contribution`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${SERVICE_KEY}`,
+      },
+      body: JSON.stringify({ contribution_id: row.id }),
+    }).catch(() => {/* ignore — see notify-contribution */});
+  }
+
   return json({ ok: true, id: row?.id });
 });

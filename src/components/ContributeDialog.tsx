@@ -89,7 +89,6 @@ export function ContributeDialog({
   const [editDeathYear, setEditDeathYear] = useState("");
   const [editBirthPlace, setEditBirthPlace] = useState("");
   const [editBurialPlace, setEditBurialPlace] = useState("");
-  const [editBio, setEditBio] = useState("");
 
   // add_note field
   const [noteAddition, setNoteAddition] = useState("");
@@ -120,7 +119,6 @@ export function ContributeDialog({
     setEditDeathYear(focalPerson.death_date?.slice(0, 4) ?? "");
     setEditBirthPlace(focalPerson.birth_place ?? "");
     setEditBurialPlace(focalPerson.burial_place ?? "");
-    setEditBio(focalPerson.bio ?? "");
     setNoteAddition("");
     setAddAs("child");
     setAddName("");
@@ -179,10 +177,6 @@ export function ContributeDialog({
       if (editBurialPlace.trim() !== (focalPerson.burial_place ?? "")) {
         changes.burial_place = editBurialPlace.trim() || null;
         original.burial_place = focalPerson.burial_place ?? null;
-      }
-      if (editBio.trim() !== (focalPerson.bio ?? "").trim()) {
-        changes.bio = editBio.trim() || null;
-        original.bio = focalPerson.bio ?? null;
       }
       if (Object.keys(changes).length === 0) return null;
       return { type: "edit_person", data: { changes, original } };
@@ -272,17 +266,23 @@ export function ContributeDialog({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
+    // Two-layer scroll pattern: outer is fixed + scrollable, inner
+    // wrapper has min-h-full so flex centering still works when the
+    // content fits, but the modal can grow past viewport and stay
+    // fully reachable by scrolling — items-start guarantees the top
+    // (title + close button) is always above the fold.
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Đề xuất sửa thông tin"
-      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 bg-black/40 overflow-y-auto"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/40"
       onClick={onClose}
     >
-      <div
-        className="relative w-full max-w-xl rounded-lg bg-card p-4 sm:p-5 shadow-xl my-4"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="min-h-full flex items-start justify-center p-2 sm:p-4">
+        <div
+          className="relative w-full max-w-xl rounded-lg bg-card p-4 sm:p-5 shadow-xl my-4 sm:my-8"
+          onClick={(e) => e.stopPropagation()}
+        >
         <button
           type="button"
           onClick={onClose}
@@ -396,14 +396,10 @@ export function ContributeDialog({
                       />
                     </Field>
                   )}
-                  <Field label="Tiểu sử">
-                    <textarea
-                      value={editBio}
-                      onChange={(e) => setEditBio(e.target.value)}
-                      rows={4}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
-                  </Field>
+                  <p className="text-xs text-muted-foreground italic">
+                    Để thêm thông tin tiểu sử (cụ làm gì, sống ở đâu…),
+                    chuyển sang tab <span className="font-medium">Bổ sung tiểu sử</span>.
+                  </p>
                 </>
               )}
 
@@ -581,6 +577,7 @@ export function ContributeDialog({
             </div>
           </>
         )}
+        </div>
       </div>
     </div>,
     document.body,

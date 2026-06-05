@@ -64,7 +64,7 @@ export default function Admin() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-5xl py-6 px-4 space-y-4">
+      <main className="container max-w-4xl py-6 px-4 space-y-6">
         {/* Title + tab switcher on one row at sm+ (tabs right-aligned)
             — saves a row of vertical space on desktop. Stacked on
             mobile so the tabs still get full width. */}

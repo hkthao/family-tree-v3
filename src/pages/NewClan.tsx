@@ -42,7 +42,7 @@ export default function NewClan() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-2xl py-6 px-4">
+      <main className="container max-w-4xl py-6 px-4 space-y-6">
         <nav className="mb-4">
           <BackLink fallback="/clans" />
         </nav>
@@ -125,19 +125,19 @@ export default function NewClan() {
           )}
 
           <div className="flex gap-3 pt-2">
-            <Button type="submit" size="lg" disabled={mutation.isPending || !name.trim()}>
+            <Button type="submit" disabled={mutation.isPending || !name.trim()}>
               {mutation.isPending ? (
                 "Đang tạo…"
               ) : (
                 <>
-                  <IconCheck className="h-5 w-5 mr-2" />
+                  <IconCheck className="h-4 w-4 mr-1.5" />
                   Tạo dòng họ
                 </>
               )}
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline">
               <Link to="/clans">
-                <IconX className="h-5 w-5 mr-2" />
+                <IconX className="h-4 w-4 mr-1.5" />
                 Hủy
               </Link>
             </Button>

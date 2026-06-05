@@ -51,7 +51,7 @@ export default function Account() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-2xl py-6 px-4 space-y-6">
+      <main className="container max-w-4xl py-6 px-4 space-y-6">
         <h1 className="clan-name text-3xl font-semibold">Tài khoản</h1>
 
         {profile?.is_platform_admin && (
