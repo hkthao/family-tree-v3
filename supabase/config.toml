@@ -405,6 +405,20 @@ verify_jwt = true
 # header. verify_jwt=false lets the function gate access itself.
 verify_jwt = false
 
+[functions.submit-contribution]
+# Guest path via share link — submitters have no Supabase JWT. The
+# function gates access itself: validates the share-link token,
+# rate-limits by IP, and confirms the person belongs to the linked
+# clan before inserting via the service role.
+verify_jwt = false
+
+[functions.notify-contribution]
+# Fire-and-forget from client + submit-contribution. The function
+# only reads from the contributions table and dispatches the email
+# matching the current status — no information leak even if a third
+# party triggers it, so no JWT requirement.
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
