@@ -14,7 +14,11 @@
 #   DOCKER_TOKEN          Docker Hub access token / PAT
 #   VPS_HOST              VPS IP or hostname
 #   VPS_USER              SSH user (typically root)
-#   VPS_PASSWORD          SSH password (or migrate to VPS_SSH_KEY)
+#   VPS_SSH_KEY           PEM-format private key — public counterpart
+#                         is in /root/.ssh/authorized_keys on the VPS.
+#                         Auth used to be VPS_PASSWORD; key auth scales
+#                         better (no MaxAuthTries throttling under load
+#                         from brute-force bots on the same box).
 #   VITE_SUPABASE_URL     Same as netlify build-time env
 #   VITE_SUPABASE_ANON_KEY
 #   VITE_SENTRY_DSN       Optional
@@ -90,7 +94,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           source: "deploy/docker-compose.yml"
           target: "/opt/gia-pha/"
           strip_components: 1
@@ -102,7 +106,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           envs: APP_IMAGE
           script: |
             set -euo pipefail
