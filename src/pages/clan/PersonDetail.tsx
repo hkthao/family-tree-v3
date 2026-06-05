@@ -311,7 +311,7 @@ export default function PersonDetail() {
             {(canEdit || canCreateQr || canContribute) && (
               <div className="flex flex-wrap gap-3">
                 {canEdit && (
-                  <Button asChild className="flex-1 sm:flex-none">
+                  <Button asChild variant="outline" className="flex-1 sm:flex-none">
                     <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
                       <IconPencil className="h-4 w-4 mr-1.5" />
                       Sửa

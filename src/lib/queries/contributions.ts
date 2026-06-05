@@ -96,6 +96,34 @@ export interface ContributionRow {
   created_at: string;
 }
 
+// ─── Notify helper (fire-and-forget) ─────────────────────────────
+
+/**
+ * Trigger the notify-contribution edge function for a contribution.
+ * The function reads the row's current status and dispatches the
+ * appropriate email — admins for pending, submitter for resolved.
+ *
+ * Fire-and-forget: a network blip / Resend outage must not break
+ * the submit/approve flow. Errors are swallowed; the worst case is
+ * a missed notification, which the in-app badge already covers.
+ */
+function notifyContribution(id: string): void {
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!base || !anon) return;
+  fetch(`${base}/functions/v1/notify-contribution`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anon,
+      Authorization: `Bearer ${anon}`,
+    },
+    body: JSON.stringify({ contribution_id: id }),
+  }).catch(() => {
+    // Intentionally silent — see jsdoc above.
+  });
+}
+
 // ─── Submit (authenticated members) ──────────────────────────────
 
 export interface SubmitContributionInput {
@@ -136,7 +164,9 @@ export async function submitContribution(
     .select("*")
     .single();
   if (error) throw new Error(error.message);
-  return data as ContributionRow;
+  const row = data as ContributionRow;
+  notifyContribution(row.id);
+  return row;
 }
 
 // ─── Submit (guest via share link) ───────────────────────────────
@@ -242,6 +272,7 @@ export async function approveContribution(
 ): Promise<void> {
   const { error } = await client.rpc("apply_contribution", { p_id: id });
   if (error) throw new Error(error.message);
+  notifyContribution(id);
 }
 
 export async function rejectContribution(
@@ -258,4 +289,5 @@ export async function rejectContribution(
     p_note: (note ?? undefined) as string | undefined,
   });
   if (error) throw new Error(error.message);
+  notifyContribution(id);
 }

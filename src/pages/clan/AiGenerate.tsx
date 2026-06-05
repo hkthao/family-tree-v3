@@ -136,7 +136,7 @@ export default function AiGenerate() {
         </CardContent>
       </Card>
 
-      <Button size="lg" onClick={generate} disabled={!narrative.trim()}>
+      <Button onClick={generate} disabled={!narrative.trim()}>
         Sinh prompt
       </Button>
 

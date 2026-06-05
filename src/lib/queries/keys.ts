@@ -45,4 +45,10 @@ export const queryKeys = {
   adminProfiles: () => ["admin-profiles"] as const,
   adminClans: () => ["admin-clans"] as const,
   adminUserClans: (userId: string) => ["admin-user-clans", userId] as const,
+  contributions: (clanId: string, userId: string, params: unknown) =>
+    ["contributions", clanId, userId, params] as const,
+  contribution: (id: string, userId: string) =>
+    ["contribution", id, userId] as const,
+  pendingContributionsCount: (clanId: string, userId: string) =>
+    ["pending-contributions-count", clanId, userId] as const,
 };

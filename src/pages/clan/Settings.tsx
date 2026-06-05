@@ -193,14 +193,13 @@ export default function Settings() {
 
             <Button
               type="submit"
-              size="lg"
               disabled={mutation.isPending || !name.trim()}
             >
               {mutation.isPending ? (
                 "Đang lưu…"
               ) : (
                 <>
-                  <IconCheck className="h-5 w-5 mr-2" />
+                  <IconCheck className="h-4 w-4 mr-1.5" />
                   Lưu thay đổi
                 </>
               )}

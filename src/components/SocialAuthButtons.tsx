@@ -111,7 +111,6 @@ function ProviderButton({
     <Button
       type="button"
       variant="outline"
-      size="lg"
       onClick={onClick}
       disabled={disabled}
       aria-label={`Tiếp tục với ${label}`}

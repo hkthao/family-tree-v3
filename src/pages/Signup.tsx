@@ -85,12 +85,12 @@ export default function Signup() {
           </Alert>
         )}
 
-        <Button type="submit" size="lg" className="w-full" disabled={busy}>
+        <Button type="submit" className="w-full" disabled={busy}>
           {busy ? (
             "Đang tạo…"
           ) : (
             <>
-              <IconUserPlus className="h-5 w-5 mr-2" />
+              <IconUserPlus className="h-4 w-4 mr-1.5" />
               Tạo tài khoản
             </>
           )}

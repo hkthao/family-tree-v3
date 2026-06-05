@@ -31,7 +31,7 @@ export default function Docs() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-6xl py-6 px-4">
+      <main className="container max-w-4xl py-6 px-4 space-y-6">
         {article ? (
           <ArticleView article={article} />
         ) : (
@@ -60,7 +60,7 @@ function Index() {
     : DOCS_SECTIONS;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6">
       <h1 className="clan-name text-3xl font-semibold">Hướng dẫn sử dụng</h1>
       <p className="text-muted-foreground">
         Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ

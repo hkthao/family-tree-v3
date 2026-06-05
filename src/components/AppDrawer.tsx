@@ -30,6 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { signOutAndClearCache } from "@/lib/auth-actions";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
+import { countPendingContributions } from "@/lib/queries/contributions";
 import { getMyProfile, type MyProfile } from "@/lib/queries/profile";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +65,21 @@ export function AppDrawer({ open, onClose }: Props) {
     queryFn: () => getClanDetail(clanId!, userId),
     enabled: !!userId && !!clanId,
   });
+  // Pending contributions count — drives the drawer badge. RLS only
+  // returns rows the user can SELECT, so for viewers this is always 0.
+  const canSeeContribs =
+    !!clan &&
+    (clan.isPlatformAdmin ||
+      clan.myRole === "admin" ||
+      clan.myRole === "editor");
+  const { data: pendingContribCount } = useQuery({
+    queryKey: queryKeys.pendingContributionsCount(clanId ?? "", userId),
+    queryFn: () => countPendingContributions(clanId!),
+    enabled: !!userId && !!clanId && canSeeContribs,
+    // Cheap COUNT — refetch fairly often so the badge feels live
+    // when admin lands on the drawer.
+    staleTime: 30_000,
+  });
 
   // On mobile, lock body scroll while the drawer is open so the page
   // doesn't scroll out from under the user on iOS. On desktop (≥lg) the
@@ -88,7 +104,12 @@ export function AppDrawer({ open, onClose }: Props) {
     onClose();
   }
 
-  const sections = buildSections(clanId, clan ?? null, profile ?? null);
+  const sections = buildSections(
+    clanId,
+    clan ?? null,
+    profile ?? null,
+    pendingContribCount ?? 0,
+  );
 
   return (
     <>
@@ -163,7 +184,12 @@ export function AppDrawer({ open, onClose }: Props) {
                       <span className="inline-flex items-center justify-center shrink-0">
                         {item.icon}
                       </span>
-                      <span>{item.label}</span>
+                      <span className="flex-1">{item.label}</span>
+                      {item.badge !== undefined && (
+                        <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
+                          {item.badge}
+                        </span>
+                      )}
                     </NavLink>
                   </li>
                 ))}
@@ -274,6 +300,8 @@ interface DrawerItem {
   label: string;
   icon: ReactNode;
   end?: boolean;
+  /** Optional pill rendered after the label — e.g. pending count. */
+  badge?: string | number;
 }
 interface DrawerSection {
   label: string;
@@ -290,6 +318,7 @@ function buildSections(
   clanId: string | undefined,
   clan: ClanDetail | null,
   profile: MyProfile | null,
+  pendingContribCount: number,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -369,6 +398,12 @@ function buildSections(
       },
     ];
     if (canEdit) {
+      items.push({
+        to: `/clans/${clanId}/contributions`,
+        label: "Đóng góp",
+        icon: <IconScroll className={ic} />,
+        badge: pendingContribCount > 0 ? pendingContribCount : undefined,
+      });
       items.push({
         to: `/clans/${clanId}/import`,
         label: "Nhập từ Excel",

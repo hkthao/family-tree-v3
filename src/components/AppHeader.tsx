@@ -22,13 +22,17 @@ export function AppHeader() {
           >
             <span className="text-2xl leading-none" aria-hidden="true">☰</span>
           </button>
+          {/* Logo only on mobile — the persistent drawer on lg+
+              already shows "Gia phả" at top-left, so repeating it in
+              the page header creates a visible duplicate. */}
           <Link
             to="/clans"
-            className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
+            className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2 lg:hidden"
           >
             <AppLogo size={28} className="rounded" />
             Gia phả
           </Link>
+          <div className="hidden lg:block flex-1" aria-hidden="true" />
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline text-sm text-muted-foreground truncate max-w-[160px]">
               {user?.user_metadata?.display_name ?? user?.email}

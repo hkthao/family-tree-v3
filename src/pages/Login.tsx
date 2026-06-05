@@ -106,12 +106,12 @@ export default function Login() {
           </Alert>
         )}
 
-        <Button type="submit" size="lg" className="w-full" disabled={busy}>
+        <Button type="submit" className="w-full" disabled={busy}>
           {busy ? (
             "Đang xử lý…"
           ) : (
             <>
-              <IconLogIn className="h-5 w-5 mr-2" />
+              <IconLogIn className="h-4 w-4 mr-1.5" />
               {mode === "password" ? "Đăng nhập" : "Gửi liên kết qua email"}
             </>
           )}
@@ -121,11 +121,10 @@ export default function Login() {
           <Button
             type="button"
             variant="outline"
-            size="lg"
             className="w-full"
             onClick={() => setScannerOpen(true)}
           >
-            <IconQrCode className="h-5 w-5 mr-2" />
+            <IconQrCode className="h-4 w-4 mr-1.5" />
             Đăng nhập nhanh (quét mã QR)
           </Button>
         )}
