@@ -12,7 +12,7 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:status": "supabase status",
-    "db:types": "supabase gen types typescript --local 2>/dev/null > src/lib/database.types.ts",
+    "db:types": "supabase gen types typescript --local 2>/dev/null | awk '/^export type Json =/{seen=1} seen{print} /^} as const$/{exit}' > src/lib/database.types.ts",
     "test": "vitest",
     "test:rls": "vitest run src/test/rls",
     "seed": "tsx scripts/seed-fixtures.ts"
