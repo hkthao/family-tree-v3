@@ -119,6 +119,52 @@ export async function updateClanLimits(
  * users see the precise reason (e.g. "Cannot perform this action on
  * yourself") instead of the opaque wrapper text.
  */
+// ─── Platform-wide DB stats (Health tab) ────────────────────────────
+
+export interface CronJobStatus {
+  jobname: string;
+  schedule: string;
+  active: boolean;
+  last_run: {
+    status: string;
+    start_time: string;
+    end_time: string | null;
+    return_message: string | null;
+  } | null;
+}
+
+export interface PlatformDbStats {
+  rows: Record<string, number>;
+  sizes_bytes: Record<string, number>;
+  rates: {
+    persons_24h?: number;
+    persons_7d?: number;
+    persons_30d?: number;
+    clans_7d?: number;
+    clans_30d?: number;
+    users_7d?: number;
+    users_30d?: number;
+  };
+  states: {
+    contributions_pending: number;
+    person_links_pending: number;
+    share_links_active: number;
+    notifications_failed_total: number;
+    users_total: number;
+    users_suspended: number;
+  };
+  cron: CronJobStatus[];
+  generated_at: string;
+}
+
+export async function getPlatformDbStats(
+  client: Client = defaultClient,
+): Promise<PlatformDbStats> {
+  const { data, error } = await client.rpc("get_platform_db_stats");
+  if (error) throw new Error(error.message);
+  return data as unknown as PlatformDbStats;
+}
+
 export async function adminAction(
   body: {
     action: "suspend" | "unsuspend" | "signout" | "grant_platform_admin" | "delete";

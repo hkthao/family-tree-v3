@@ -1092,6 +1092,7 @@ export type Database = {
       get_inlaw_peer_relatives: { Args: { p_link_id: string }; Returns: Json }
       get_inlaw_proposal_preview: { Args: { p_link_id: string }; Returns: Json }
       get_link_peek: { Args: { p_link_id: string }; Returns: Json }
+      get_platform_db_stats: { Args: never; Returns: Json }
       get_profile_emails: {
         Args: { user_ids: string[] }
         Returns: {
@@ -1112,6 +1113,10 @@ export type Database = {
         Returns: Json
       }
       prune_audit_log: { Args: { retention_days?: number }; Returns: number }
+      prune_notification_log: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
       prune_share_view_rate: { Args: never; Returns: undefined }
       recompute_generation_for_clan: {
         Args: { target_clan: string }
