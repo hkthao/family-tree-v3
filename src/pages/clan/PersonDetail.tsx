@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 
 import {
   IconBell,
+  IconLink,
   IconPencil,
   IconPlus,
   IconQrCode,
@@ -30,6 +31,12 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
+import {
+  listLinksForPerson,
+  peekLink,
+  type LinkPeek,
+  type PersonLink,
+} from "@/lib/queries/person-links";
 import {
   formatCanChiShort,
   formatLunarAnniversary,
@@ -308,6 +315,8 @@ export default function PersonDetail() {
               </Card>
             )}
 
+            <InLawLinksSection personId={personId!} userId={userId} />
+
             {(canEdit || canCreateQr || canContribute) && (
               <div className="flex flex-wrap gap-3">
                 {canEdit && (
@@ -556,6 +565,101 @@ function RelationshipGroup({
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+// ─── Cross-clan link section ─────────────────────────────────────────
+
+/**
+ * Renders a Card listing every confirmed person_link this person is
+ * part of. Each row peeks the peer through get_link_peek so we never
+ * cross RLS on the peer clan's persons table directly. Hides itself
+ * entirely when there are no active links.
+ */
+function InLawLinksSection({
+  personId,
+  userId,
+}: {
+  personId: string;
+  userId: string;
+}) {
+  const { data: links } = useQuery({
+    queryKey: queryKeys.personLinksForPerson(personId, userId),
+    queryFn: () => listLinksForPerson(personId),
+    enabled: !!userId && !!personId,
+  });
+  if (!links || links.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="inline-flex items-center gap-2">
+          <IconLink className="h-5 w-5" />
+          Liên kết thông gia
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {links.map((l) => (
+          <InLawLinkRow key={l.id} link={l} userId={userId} />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function InLawLinkRow({
+  link,
+  userId,
+}: {
+  link: PersonLink;
+  userId: string;
+}) {
+  const { data: peek, isLoading } = useQuery({
+    queryKey: queryKeys.personLinkPeek(link.id, userId),
+    queryFn: () => peekLink(link.id),
+    enabled: !!userId,
+  });
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Đang tải…</p>;
+  }
+  if (!peek) return null;
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-md border bg-background p-3">
+      <div className="text-sm min-w-0">
+        <p className="font-medium">
+          {peek.masked
+            ? "Người còn sống"
+            : (peek.full_name ?? "—")}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          <span className="text-foreground">{peek.clan_name}</span>
+          {!peek.masked && peek.gender ? ` · ${peek.gender === "M" ? "Nam" : "Nữ"}` : ""}
+          {!peek.masked && peek.generation
+            ? ` · Đời ${peek.generation}`
+            : ""}
+          {!peek.masked
+            ? (peek.birth_year && peek.death_year
+                ? ` · ${peek.birth_year}–${peek.death_year}`
+                : peek.birth_year
+                  ? ` · sinh ${peek.birth_year}`
+                  : peek.death_year
+                    ? ` · mất ${peek.death_year}`
+                    : "")
+            : ""}
+        </p>
+        {peek.masked && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Họ này chưa công khai thông tin người sống.
+          </p>
+        )}
+      </div>
+      {!peek.masked && (
+        <Button asChild variant="outline" size="sm">
+          <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
+            Xem
+          </Link>
+        </Button>
       )}
     </div>
   );

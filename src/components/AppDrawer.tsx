@@ -450,6 +450,11 @@ function buildSections(
             icon: <IconUserPlus className={ic} />,
           },
           {
+            to: `/clans/${clanId}/inlaws`,
+            label: "Liên kết thông gia",
+            icon: <IconLink className={ic} />,
+          },
+          {
             to: `/clans/${clanId}/qr-export`,
             label: "Xuất QR cá nhân",
             icon: <IconQrCode className={ic} />,

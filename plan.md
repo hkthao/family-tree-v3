@@ -1607,3 +1607,38 @@ FK `on delete cascade` đã xử mức DB. UX bên kia: khi list links thấy ro
 - `/clans/:id/inlaws/new` — đề nghị nối (chọn mode discovery vs token)
 - `/inlaws/confirm/:token` — public route confirm qua token (mode 2)
 - Notification email cho mode 1 trỏ thẳng vào `/clans/:b/inlaws?pending=:linkId` để B mở danh sách → review từng row.
+
+### 28.12 Trạng thái triển khai
+
+**Phase 1 backend + UI**: ✅ (2026-06-06).
+
+Migration: `20260606200218_inlaw_links.sql` — composite UNIQUE
+`persons(id, clan_id)`, bảng `person_links`, RLS, trigger
+`protect_person_link_transitions`, RPC `get_link_peek` /
+`resolve_link_token` / `confirm_link_by_token`, realtime publication.
+
+Queries lib: `src/lib/queries/person-links.ts` — list / propose /
+confirm / revoke / peek + types.
+
+Pages:
+- `/clans/:id/inlaws` — tabs Đã liên kết / Đang chờ, copy invite,
+  revoke, cancel.
+- `/clans/:id/inlaws/new` — 3-step propose (pick person → details →
+  show token URL).
+- `/inlaws/confirm/:token` — public preview (anon-callable
+  `resolve_link_token`), login redirect, pick clan + person + confirm.
+
+PersonDetail Card `Liên kết thông gia` qua `get_link_peek` cho mỗi
+confirmed link liên quan tới person hiện hành (masked / unmasked).
+
+Drawer item dưới "Quản trị". Route registered ở `App.tsx`. Help map
+chừa slot doc article (chưa viết).
+
+**Phase 1 còn thiếu** (sẽ làm tiếp):
+- Public-discovery mode (admin A pick clan B trực tiếp khi B public).
+- Audit trigger ghi `audit_log` cho `person_links`.
+- Email notify admin B khi pending tạo.
+- Badge "(N)" trong drawer cho B side.
+- Test suite: chưa viết RLS test (28.9 + 28.11.F).
+
+**Phase 2** (chưa làm): tree ghost spouse, GEDCOM `_INLAW`.

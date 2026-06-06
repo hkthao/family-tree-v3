@@ -20,6 +20,8 @@ import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
 import Import from "@/pages/clan/Import";
+import Inlaws from "@/pages/clan/Inlaws";
+import InlawsNew from "@/pages/clan/InlawsNew";
 import Members from "@/pages/clan/Members";
 import Merge from "@/pages/clan/Merge";
 import MyLineage from "@/pages/clan/MyLineage";
@@ -30,6 +32,7 @@ import QrExport from "@/pages/clan/QrExport";
 import Settings from "@/pages/clan/Settings";
 import Today from "@/pages/clan/Today";
 import Tree from "@/pages/clan/Tree";
+import InlawsConfirm from "@/pages/InlawsConfirm";
 import Login from "@/pages/Login";
 import NewClan from "@/pages/NewClan";
 import Share from "@/pages/Share";
@@ -44,6 +47,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/share/:token" element={<Share />} />
+        <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />
 
         <Route
           path="/clans"
@@ -90,6 +94,8 @@ export default function App() {
           <Route path="today" element={<Today />} />
           <Route path="contributions" element={<Contributions />} />
           <Route path="contributions/:contribId" element={<ContributionDetail />} />
+          <Route path="inlaws" element={<Inlaws />} />
+          <Route path="inlaws/new" element={<InlawsNew />} />
         </Route>
 
         <Route
