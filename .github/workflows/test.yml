@@ -66,8 +66,14 @@ jobs:
           exit 1
 
       - name: Generate types & check no drift
+        # Strip Supabase CLI chatter ("Connecting to db…", upgrade
+        # warnings on stdout) so the diff isn't sensitive to which CLI
+        # version the runner happens to ship. The same awk filter
+        # lives in package.json's db:types script.
         run: |
-          supabase gen types typescript --local 2>/dev/null > /tmp/db.types.gen.ts
+          supabase gen types typescript --local 2>/dev/null \
+            | awk '/^export type Json =/{seen=1} seen{print} /^} as const$/{exit}' \
+            > /tmp/db.types.gen.ts
           diff /tmp/db.types.gen.ts src/lib/database.types.ts \
             || (echo "::error::database.types.ts is out of sync — run npm run db:types"; exit 1)
 
