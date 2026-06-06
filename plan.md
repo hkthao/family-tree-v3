@@ -1643,4 +1643,7 @@ chừa slot doc article (chưa viết).
 - Public-discovery mode (admin A pick clan B trực tiếp khi B public) — sẽ kèm theo pending notify.
 - Badge "(N)" trong drawer cho B side.
 
+**Phase 2 đã làm**:
+- ✅ Tree ghost badge: card person có link confirmed hiện "↔" chip oxblood/bronze ở góc phải. Click → popup nhẹ trên cây với peek info (cùng pattern qua `get_link_peek` → masking nhất quán). Không cần rời cây. `linkedIdsRef` để chart không phải rebuild khi link thay đổi.
+
 **Phase 2** (chưa làm): tree ghost spouse, GEDCOM `_INLAW`.
