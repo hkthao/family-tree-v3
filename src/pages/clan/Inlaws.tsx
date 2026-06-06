@@ -21,11 +21,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import {
+  acceptLinkDirect,
   deletePendingLink,
+  getInlawProposalPreview,
   listLinksForClan,
   notifyInlaw,
   peekLink,
   revokeLink,
+  type InlawProposalPreview,
   type LinkPeek,
   type PersonLink,
 } from "@/lib/queries/person-links";
@@ -65,13 +68,27 @@ export default function Inlaws() {
     () => (links ?? []).filter((l) => l.status === "confirmed"),
     [links],
   );
-  const pending = useMemo(
+  // Outgoing pending = we're the proposer (A side). These show the
+  // invite URL (token mode) or peer hint (direct mode).
+  const pendingOutgoing = useMemo(
     () =>
       (links ?? []).filter(
         (l) => l.status === "pending" && l.clan_a_id === clan.id,
       ),
     [links, clan.id],
   );
+  // Incoming pending = direct-mode invite from another clan. Only
+  // possible in public-discovery mode (clan_b_id set at propose
+  // time). Token-mode pendings have clan_b_id NULL, so they never
+  // appear in B's list until they confirm.
+  const pendingIncoming = useMemo(
+    () =>
+      (links ?? []).filter(
+        (l) => l.status === "pending" && l.clan_b_id === clan.id,
+      ),
+    [links, clan.id],
+  );
+  const pendingTotal = pendingOutgoing.length + pendingIncoming.length;
 
   const revokeM = useMutation({
     mutationFn: (id: string) => revokeLink(id),
@@ -100,6 +117,34 @@ export default function Inlaws() {
     },
     onError: (e) =>
       toast.error("Không huỷ được", { description: (e as Error).message }),
+  });
+
+  // Incoming-pending actions
+  const acceptM = useMutation({
+    mutationFn: (id: string) => acceptLinkDirect(id),
+    onSuccess: (_void, id) => {
+      qc.invalidateQueries({
+        predicate: (q) =>
+          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
+      });
+      toast.success("Đã xác nhận liên kết");
+      notifyInlaw(id);
+    },
+    onError: (e) =>
+      toast.error("Không xác nhận được", { description: (e as Error).message }),
+  });
+  const rejectM = useMutation({
+    mutationFn: (id: string) => revokeLink(id),
+    onSuccess: (_void, id) => {
+      qc.invalidateQueries({
+        predicate: (q) =>
+          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
+      });
+      toast.success("Đã từ chối đề nghị");
+      notifyInlaw(id);
+    },
+    onError: (e) =>
+      toast.error("Không từ chối được", { description: (e as Error).message }),
   });
 
   return (
@@ -157,7 +202,7 @@ export default function Inlaws() {
               : "hover:bg-muted/50")
           }
         >
-          Đang chờ ({pending.length})
+          Đang chờ ({pendingTotal})
         </button>
       </div>
 
@@ -197,22 +242,62 @@ export default function Inlaws() {
           </ul>
         ))}
 
-      {tab === "pending" &&
-        !isLoading &&
-        (pending.length === 0 ? (
-          <EmptyState
-            icon={<IconLink className="h-10 w-10" />}
-            title="Không có đề nghị nào đang chờ"
-            description="Bấm “Đề nghị mới” để tạo mã mời cho bên thông gia."
-            primary={{
-              label: "Đề nghị mới",
-              to: `/clans/${clan.id}/inlaws/new`,
-              icon: <IconPlus className="h-4 w-4 mr-1.5" />,
-            }}
-          />
-        ) : (
+      {tab === "pending" && !isLoading && pendingTotal === 0 && (
+        <EmptyState
+          icon={<IconLink className="h-10 w-10" />}
+          title="Không có đề nghị nào đang chờ"
+          description="Bấm “Đề nghị mới” để gửi mã mời hoặc đề nghị thẳng tới một dòng họ công khai."
+          primary={{
+            label: "Đề nghị mới",
+            to: `/clans/${clan.id}/inlaws/new`,
+            icon: <IconPlus className="h-4 w-4 mr-1.5" />,
+          }}
+        />
+      )}
+
+      {tab === "pending" && !isLoading && pendingIncoming.length > 0 && (
+        <section className="space-y-2">
+          <h3 className="text-sm font-medium text-primary">
+            Đề nghị đến với bạn ({pendingIncoming.length})
+          </h3>
           <ul className="divide-y rounded-md border bg-background">
-            {pending.map((l) => (
+            {pendingIncoming.map((l) => (
+              <IncomingPendingRow
+                key={l.id}
+                link={l}
+                onAccept={async () => {
+                  const ok = await confirm({
+                    title: "Xác nhận liên kết này?",
+                    description:
+                      "Cả hai bên sẽ thấy liên kết trên card người. Có thể thu hồi sau.",
+                    confirmLabel: "Xác nhận",
+                  });
+                  if (ok) acceptM.mutate(l.id);
+                }}
+                onReject={async () => {
+                  const ok = await confirm({
+                    title: "Từ chối đề nghị này?",
+                    description:
+                      "Bên đề nghị sẽ thấy đề nghị đã bị thu hồi. Họ có thể đề nghị lại nếu cần.",
+                    confirmLabel: "Từ chối",
+                    destructive: true,
+                  });
+                  if (ok) rejectM.mutate(l.id);
+                }}
+                busy={acceptM.isPending || rejectM.isPending}
+              />
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {tab === "pending" && !isLoading && pendingOutgoing.length > 0 && (
+        <section className="space-y-2">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            Đề nghị tôi đã gửi ({pendingOutgoing.length})
+          </h3>
+          <ul className="divide-y rounded-md border bg-background">
+            {pendingOutgoing.map((l) => (
               <PendingRow
                 key={l.id}
                 link={l}
@@ -231,12 +316,18 @@ export default function Inlaws() {
               />
             ))}
           </ul>
-        ))}
+        </section>
+      )}
 
-      {(revokeM.error || cancelM.error) && (
+      {(revokeM.error || cancelM.error || acceptM.error || rejectM.error) && (
         <Alert variant="destructive">
           <AlertDescription>
-            {((revokeM.error ?? cancelM.error) as Error).message}
+            {(
+              (revokeM.error ??
+                cancelM.error ??
+                acceptM.error ??
+                rejectM.error) as Error
+            ).message}
           </AlertDescription>
         </Alert>
       )}
@@ -350,6 +441,105 @@ function PeekMeta({ peek }: { peek: LinkPeek }) {
 
 // ─── Pending row ─────────────────────────────────────────────────────
 
+// ─── Incoming pending row (direct-mode proposal from another clan) ──
+
+function IncomingPendingRow({
+  link,
+  onAccept,
+  onReject,
+  busy,
+}: {
+  link: PersonLink;
+  onAccept: () => void;
+  onReject: () => void;
+  busy: boolean;
+}) {
+  const { data: preview } = useQuery<InlawProposalPreview>({
+    queryKey: ["inlaw-proposal-preview", link.id],
+    queryFn: () => getInlawProposalPreview(link.id),
+  });
+
+  // Local person name comes from a normal SELECT — admin B is a
+  // member of clan_b, so RLS lets them read their own clan's persons.
+  const localPersonId = link.person_b_id;
+  const { data: localPerson } = useQuery({
+    queryKey: ["inlaw-local-person", localPersonId],
+    queryFn: async () => {
+      if (!localPersonId) return null;
+      const { data, error } = await supabase
+        .from("persons")
+        .select("full_name")
+        .eq("id", localPersonId)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    enabled: !!localPersonId,
+  });
+
+  const lifespan =
+    preview && preview.person_a_birth_year && preview.person_a_death_year
+      ? `${preview.person_a_birth_year}–${preview.person_a_death_year}`
+      : preview?.person_a_birth_year
+        ? `sinh ${preview.person_a_birth_year}`
+        : preview?.person_a_death_year
+          ? `mất ${preview.person_a_death_year}`
+          : "";
+
+  return (
+    <li className="p-3 space-y-2">
+      <div className="text-sm space-y-1">
+        <p>
+          <span className="text-muted-foreground">Từ </span>
+          <span className="font-semibold">
+            {preview?.clan_a_name ?? "…"}
+          </span>
+        </p>
+        <p>
+          <span className="text-muted-foreground">Người bên họ: </span>
+          <span className="font-medium">
+            {preview?.person_a_name ?? "…"}
+          </span>
+          {preview && (
+            <span className="text-xs text-muted-foreground ml-1">
+              ({preview.person_a_gender === "M" ? "Nam" : "Nữ"}
+              {lifespan ? ` · ${lifespan}` : ""})
+            </span>
+          )}
+        </p>
+        <p>
+          <span className="text-muted-foreground">Đề nghị nối với: </span>
+          <span className="font-medium">
+            {localPerson?.full_name ?? "…"}
+          </span>
+        </p>
+        {preview?.note && (
+          <p className="text-xs text-muted-foreground italic">
+            "{preview.note}"
+          </p>
+        )}
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        <Button size="sm" onClick={onAccept} disabled={busy}>
+          <IconCheck className="h-4 w-4 mr-1.5" />
+          Xác nhận
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-destructive"
+          onClick={onReject}
+          disabled={busy}
+        >
+          <IconUndo className="h-4 w-4 mr-1.5" />
+          Từ chối
+        </Button>
+      </div>
+    </li>
+  );
+}
+
 function PendingRow({
   link,
   clanId,
@@ -409,27 +599,34 @@ function PendingRow({
         </div>
       </div>
 
-      <div className="relative">
-        <Input
-          readOnly
-          value={confirmUrl}
-          className="font-mono text-xs pr-10"
-          onFocus={(e) => e.currentTarget.select()}
-        />
-        <button
-          type="button"
-          onClick={copy}
-          aria-label={copied ? "Đã chép" : "Chép link"}
-          title={copied ? "Đã chép" : "Chép link"}
-          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-        >
-          {copied ? (
-            <IconCheck className="h-4 w-4" />
-          ) : (
-            <IconCopy className="h-4 w-4" />
-          )}
-        </button>
-      </div>
+      {link.invite_token ? (
+        <div className="relative">
+          <Input
+            readOnly
+            value={confirmUrl}
+            className="font-mono text-xs pr-10"
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <button
+            type="button"
+            onClick={copy}
+            aria-label={copied ? "Đã chép" : "Chép link"}
+            title={copied ? "Đã chép" : "Chép link"}
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+          >
+            {copied ? (
+              <IconCheck className="h-4 w-4" />
+            ) : (
+              <IconCopy className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Đề nghị gửi thẳng tới dòng họ công khai — chờ admin bên kia
+          xác nhận trong /inlaws của họ.
+        </p>
+      )}
 
       <div className="flex gap-2 flex-wrap">
         <Button

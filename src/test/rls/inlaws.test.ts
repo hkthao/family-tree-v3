@@ -584,6 +584,137 @@ describe("RLS: cross-clan in-law links", () => {
     await admin.from("person_links").delete().eq("id", linkId);
   });
 
+  // ── Direct (public-discovery) mode ──────────────────────────────
+
+  it("admin A can propose directly with B side set (no token)", async () => {
+    const { data, error } = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        clan_b_id: clanB,
+        person_b_id: personB,
+        created_by: adminA.id,
+        note: "Direct mode test",
+      })
+      .select("id, status, invite_token, clan_b_id, person_b_id")
+      .single();
+    expect(error).toBeNull();
+    expect(data?.status).toBe("pending");
+    expect(data?.invite_token).toBeNull();
+    expect(data?.clan_b_id).toBe(clanB);
+    expect(data?.person_b_id).toBe(personB);
+    await adminClient().from("person_links").delete().eq("id", data!.id);
+  });
+
+  it("admin B can accept a direct-mode pending via plain UPDATE", async () => {
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        clan_b_id: clanB,
+        person_b_id: personB,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+
+    // Trigger stamps confirmed_by + confirmed_at; admin B just flips
+    // status. .select() forces return=representation.
+    const { data: updated, error } = await adminB.client
+      .from("person_links")
+      .update({ status: "confirmed" })
+      .eq("id", linkId)
+      .select("status, confirmed_by, confirmed_at")
+      .single();
+    expect(error).toBeNull();
+    expect(updated?.status).toBe("confirmed");
+    expect(updated?.confirmed_by).toBe(adminB.id);
+    expect(updated?.confirmed_at).toBeTruthy();
+
+    await adminClient().from("person_links").delete().eq("id", linkId);
+  });
+
+  it("admin B can SELECT a direct-mode pending row (RLS), but viewer B cannot accept", async () => {
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        clan_b_id: clanB,
+        person_b_id: personB,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+
+    // viewerB sees the row (SELECT policy lets either-side members
+    // read), so the UI list query returns it.
+    const { data: seen } = await viewerB.client
+      .from("person_links")
+      .select("id, status")
+      .eq("id", linkId)
+      .maybeSingle();
+    expect(seen?.id).toBe(linkId);
+
+    // But viewerB cannot UPDATE status (only admin can confirm) —
+    // either RLS blocks the row (0 rows updated, error null) or the
+    // trigger raises if it gets through. Use .select() to force
+    // postgrest into return=representation; a viewer-blocked UPDATE
+    // returns null data with a "no rows" outcome we can detect.
+    const { data, error } = await viewerB.client
+      .from("person_links")
+      .update({ status: "confirmed" })
+      .eq("id", linkId)
+      .select("status");
+    // Either error is set, or the array is empty (RLS hid the row).
+    expect(error !== null || (data ?? []).length === 0).toBe(true);
+
+    await adminClient().from("person_links").delete().eq("id", linkId);
+  });
+
+  it("get_inlaw_proposal_preview returns A side to admin B; stranger blocked", async () => {
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        clan_b_id: clanB,
+        person_b_id: personB,
+        created_by: adminA.id,
+        person_b_name_hint: "Hint preview",
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+
+    const { data: previewRaw, error: pErr } = await adminB.client.rpc(
+      "get_inlaw_proposal_preview",
+      { p_link_id: linkId },
+    );
+    expect(pErr).toBeNull();
+    const preview = previewRaw as unknown as {
+      clan_a_name: string;
+      person_a_name: string;
+      person_b_name_hint: string | null;
+    };
+    expect(preview.clan_a_name).toBe("Inlaws Clan A");
+    expect(preview.person_a_name).toBe("Person A");
+    expect(preview.person_b_name_hint).toBe("Hint preview");
+
+    // Stranger (member of neither clan) is rejected.
+    const { error: strErr } = await stranger.client.rpc(
+      "get_inlaw_proposal_preview",
+      { p_link_id: linkId },
+    );
+    expect(strErr).not.toBeNull();
+
+    await adminClient().from("person_links").delete().eq("id", linkId);
+  });
+
   it("anon can call resolve_link_token but only for active pending tokens", async () => {
     const token = `t-${Math.random()}`;
     const ins = await adminA.client

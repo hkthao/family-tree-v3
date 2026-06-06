@@ -1082,6 +1082,7 @@ export type Database = {
           total_persons: number
         }[]
       }
+      get_inlaw_proposal_preview: { Args: { p_link_id: string }; Returns: Json }
       get_link_peek: { Args: { p_link_id: string }; Returns: Json }
       get_profile_emails: {
         Args: { user_ids: string[] }

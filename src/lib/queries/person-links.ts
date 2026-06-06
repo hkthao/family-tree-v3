@@ -136,6 +136,63 @@ export async function proposeLink(
   return data as PersonLink;
 }
 
+/**
+ * Public-discovery mode propose: admin A already picked clan B and
+ * person B from a public-clan search, so the pending row has both
+ * sides filled and no invite_token. Admin B sees it in their own
+ * /inlaws "Đang chờ" tab + gets emailed by notify-inlaw.
+ */
+export interface ProposeLinkDirectInput {
+  clanAId: string;
+  personAId: string;
+  clanBId: string;
+  personBId: string;
+  note?: string;
+  createdBy: string;
+}
+
+export async function proposeLinkDirect(
+  input: ProposeLinkDirectInput,
+  client: Client = defaultClient,
+): Promise<PersonLink> {
+  const { data, error } = await client
+    .from("person_links")
+    .insert({
+      clan_a_id: input.clanAId,
+      person_a_id: input.personAId,
+      clan_b_id: input.clanBId,
+      person_b_id: input.personBId,
+      note: input.note?.trim() || null,
+      created_by: input.createdBy,
+    })
+    .select(
+      "id, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
+    )
+    .single();
+  if (error) throw new Error(error.message);
+  return data as PersonLink;
+}
+
+/**
+ * Admin B accepts a direct-mode pending link they've been offered.
+ * The row already has clan_b_id + person_b_id; we just flip status,
+ * and the protect_person_link_transitions trigger stamps
+ * confirmed_by + confirmed_at.
+ */
+export async function acceptLinkDirect(
+  linkId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  // .select() forces return=representation so the trigger's raised
+  // errors surface as client errors (see RLS test learning).
+  const { error } = await client
+    .from("person_links")
+    .update({ status: "confirmed" })
+    .eq("id", linkId)
+    .select("status");
+  if (error) throw new Error(error.message);
+}
+
 export async function revokeLink(
   linkId: string,
   client: Client = defaultClient,
@@ -239,6 +296,38 @@ export async function peekLink(
   });
   if (error) throw new Error(error.message);
   return data as unknown as LinkPeek;
+}
+
+/**
+ * Read-through preview for direct-mode pending invites. Admin B
+ * normally can't SELECT clan_a or person_a (private clan, RLS); this
+ * RPC reaches around RLS to surface the minimal A-side info needed
+ * to render the proposal row in /inlaws.
+ */
+export interface InlawProposalPreview {
+  link_id: string;
+  status: PersonLinkStatus;
+  clan_a_id: string;
+  clan_a_name: string;
+  person_a_id: string;
+  person_a_name: string;
+  person_a_gender: "M" | "F";
+  person_a_birth_year: number | null;
+  person_a_death_year: number | null;
+  person_b_name_hint: string | null;
+  note: string | null;
+  created_at: string;
+}
+
+export async function getInlawProposalPreview(
+  linkId: string,
+  client: Client = defaultClient,
+): Promise<InlawProposalPreview> {
+  const { data, error } = await client.rpc("get_inlaw_proposal_preview", {
+    p_link_id: linkId,
+  });
+  if (error) throw new Error(error.message);
+  return data as unknown as InlawProposalPreview;
 }
 
 export interface InlawExportEntry {
