@@ -360,7 +360,12 @@ function buildSections(
   }
   sections.push({ label: "Chung", items: global });
 
-  // -- Clan-scoped section -------------------------------------------------
+  // -- Clan-scoped sections ------------------------------------------------
+  // Split the clan menu into three semantic groups so the list of ~13 items
+  // is scannable instead of one long undifferentiated column:
+  //   1. <clan name>   — read-only views every member can use
+  //   2. Cập nhật      — data-entry tools (editor+)
+  //   3. Quản trị      — clan administration (admin)
   if (clanId && clan) {
     const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
     const canEdit =
@@ -369,7 +374,7 @@ function buildSections(
       clan.myRole === "editor";
     const isMember = clan.isPlatformAdmin || clan.myRole !== null;
 
-    const items: DrawerItem[] = [
+    const browseItems: DrawerItem[] = [
       {
         to: `/clans/${clanId}`,
         label: "Tổng quan",
@@ -397,55 +402,66 @@ function buildSections(
         icon: <IconCalendar className={ic} />,
       },
     ];
-    if (canEdit) {
-      items.push({
-        to: `/clans/${clanId}/contributions`,
-        label: "Đóng góp",
-        icon: <IconScroll className={ic} />,
-        badge: pendingContribCount > 0 ? pendingContribCount : undefined,
-      });
-      items.push({
-        to: `/clans/${clanId}/import`,
-        label: "Nhập từ Excel",
-        icon: <IconDownload className={ic} />,
-      });
-      items.push({
-        to: `/clans/${clanId}/merge`,
-        label: "Gộp người trùng",
-        icon: <IconLink className={ic} />,
-      });
-    }
     if (isMember) {
-      items.push({
+      browseItems.push({
         to: `/clans/${clanId}/my-lineage`,
         label: "Đường trực hệ",
         icon: <IconUser className={ic} />,
       });
-      items.push({
+      browseItems.push({
         to: `/clans/${clanId}/audit`,
         label: "Nhật ký",
         icon: <IconScroll className={ic} />,
       });
     }
-    if (isAdmin) {
-      items.push({
-        to: `/clans/${clanId}/qr-export`,
-        label: "Xuất QR cá nhân",
-        icon: <IconQrCode className={ic} />,
-      });
-      items.push({
-        to: `/clans/${clanId}/members`,
-        label: "Thành viên",
-        icon: <IconUserPlus className={ic} />,
-      });
-      items.push({
-        to: `/clans/${clanId}/settings`,
-        label: "Cài đặt dòng họ",
-        icon: <IconSettings className={ic} />,
+    sections.push({ label: clan.name, items: browseItems });
+
+    if (canEdit) {
+      sections.push({
+        label: "Cập nhật",
+        items: [
+          {
+            to: `/clans/${clanId}/contributions`,
+            label: "Đóng góp",
+            icon: <IconScroll className={ic} />,
+            badge: pendingContribCount > 0 ? pendingContribCount : undefined,
+          },
+          {
+            to: `/clans/${clanId}/import`,
+            label: "Nhập từ Excel",
+            icon: <IconDownload className={ic} />,
+          },
+          {
+            to: `/clans/${clanId}/merge`,
+            label: "Gộp người trùng",
+            icon: <IconLink className={ic} />,
+          },
+        ],
       });
     }
 
-    sections.push({ label: clan.name, items });
+    if (isAdmin) {
+      sections.push({
+        label: "Quản trị",
+        items: [
+          {
+            to: `/clans/${clanId}/members`,
+            label: "Thành viên",
+            icon: <IconUserPlus className={ic} />,
+          },
+          {
+            to: `/clans/${clanId}/qr-export`,
+            label: "Xuất QR cá nhân",
+            icon: <IconQrCode className={ic} />,
+          },
+          {
+            to: `/clans/${clanId}/settings`,
+            label: "Cài đặt dòng họ",
+            icon: <IconSettings className={ic} />,
+          },
+        ],
+      });
+    }
   }
 
   return sections;

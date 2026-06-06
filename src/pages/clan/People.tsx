@@ -19,6 +19,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconCopy,
   IconGrid,
   IconList,
   IconPlus,
@@ -487,6 +488,7 @@ export default function People() {
               selectable={canEdit}
               selected={selected.has(p.id)}
               onToggleSelect={() => toggleSelected(p.id)}
+              canCopy={canEdit}
             />
           ))}
         </ul>
@@ -502,6 +504,7 @@ export default function People() {
               selectable={canEdit}
               selected={selected.has(p.id)}
               onToggleSelect={() => toggleSelected(p.id)}
+              canCopy={canEdit}
             />
           ))}
         </ul>
@@ -612,6 +615,7 @@ function PersonListItem({
   selectable,
   selected,
   onToggleSelect,
+  canCopy,
 }: {
   person: PersonRow;
   clanId: string;
@@ -620,6 +624,7 @@ function PersonListItem({
   selectable?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
+  canCopy?: boolean;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
@@ -693,6 +698,16 @@ function PersonListItem({
           )}
         </div>
       </Link>
+      {canCopy && (
+        <Link
+          to={`/clans/${clanId}/people/new?from=${person.id}`}
+          aria-label={`Sao chép ${person.full_name}`}
+          title="Sao chép thành người mới"
+          className="self-center mr-2 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
+        >
+          <IconCopy className="h-4 w-4" />
+        </Link>
+      )}
     </li>
   );
 }
@@ -705,6 +720,7 @@ function PersonGridCard({
   selectable,
   selected,
   onToggleSelect,
+  canCopy,
 }: {
   person: PersonRow;
   clanId: string;
@@ -713,6 +729,7 @@ function PersonGridCard({
   selectable?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
+  canCopy?: boolean;
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
@@ -729,6 +746,16 @@ function PersonGridCard({
             aria-label={`Chọn ${person.full_name}`}
           />
         </label>
+      )}
+      {canCopy && (
+        <Link
+          to={`/clans/${clanId}/people/new?from=${person.id}`}
+          aria-label={`Sao chép ${person.full_name}`}
+          title="Sao chép thành người mới"
+          className="absolute top-2 right-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-card/80 text-muted-foreground hover:text-primary backdrop-blur"
+        >
+          <IconCopy className="h-3.5 w-3.5" />
+        </Link>
       )}
       <Link
         to={`/clans/${clanId}/people/${person.id}`}
