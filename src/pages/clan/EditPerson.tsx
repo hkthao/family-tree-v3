@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
+import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconX } from "@/components/icons";
-import { PartialDateInput } from "@/components/PartialDateInput";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,14 +14,14 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
 import {
-  dateFromParts,
-  partsFromDate,
-  type DateParts,
-} from "@/lib/partialDate";
+  buildDeathAnniversary,
+  buildPersonDateColumns,
+  EMPTY_CALENDAR_DATE,
+  loadCalendarDateValue,
+  type CalendarDateValue,
+} from "@/lib/personDates";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
-
-const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function EditPerson() {
   const { clanId, personId } = useParams<{ clanId: string; personId: string }>();
@@ -45,8 +45,8 @@ export default function EditPerson() {
   const [gender, setGender] = useState<"M" | "F">("M");
   const [isLiving, setIsLiving] = useState(true);
   const [isRoot, setIsRoot] = useState(false);
-  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
-  const [death, setDeath] = useState<DateParts>(EMPTY_PARTS);
+  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
+  const [death, setDeath] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [birthPlace, setBirthPlace] = useState("");
   const [burialPlace, setBurialPlace] = useState("");
   const [courtesyName, setCourtesyName] = useState("");
@@ -62,15 +62,21 @@ export default function EditPerson() {
     setIsLiving(person.is_living);
     setIsRoot(person.is_root);
     setBirth(
-      partsFromDate({
-        date: person.birth_date,
-        precision: person.birth_date_precision,
+      loadCalendarDateValue({
+        solarDate: person.birth_date,
+        solarPrecision: person.birth_date_precision,
+        lunarYear: person.birth_lunar_year,
+        lunarMonth: person.birth_lunar_month,
+        lunarDay: person.birth_lunar_day,
       }),
     );
     setDeath(
-      partsFromDate({
-        date: person.death_date,
-        precision: person.death_date_precision,
+      loadCalendarDateValue({
+        solarDate: person.death_date,
+        solarPrecision: person.death_date_precision,
+        lunarYear: person.death_lunar_year,
+        lunarMonth: person.death_lunar_month,
+        lunarDay: person.death_lunar_day,
       }),
     );
     setBirthPlace(person.birth_place ?? "");
@@ -83,17 +89,29 @@ export default function EditPerson() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const birthD = dateFromParts(birth);
-      const deathD = dateFromParts(death);
+      const birthCols = buildPersonDateColumns(birth);
+      const deathCols = buildPersonDateColumns(death);
+      const anniv = buildDeathAnniversary(death);
       return updatePerson(personId!, {
         full_name: fullName.trim(),
         gender,
         is_living: isLiving,
         is_root: isRoot,
-        birth_date: birthD.date,
-        birth_date_precision: birthD.precision,
-        death_date: deathD.date,
-        death_date_precision: deathD.precision,
+        birth_date: birthCols.solar_date,
+        birth_date_precision: birthCols.solar_precision,
+        death_date: deathCols.solar_date,
+        death_date_precision: deathCols.solar_precision,
+        birth_lunar_year: birthCols.lunar_year,
+        birth_lunar_month: birthCols.lunar_month,
+        birth_lunar_day: birthCols.lunar_day,
+        birth_lunar_is_leap: birthCols.lunar_is_leap,
+        death_lunar_year: deathCols.lunar_year,
+        death_lunar_month: deathCols.lunar_month,
+        death_lunar_day: deathCols.lunar_day,
+        death_lunar_is_leap: deathCols.lunar_is_leap,
+        death_anniv_lunar_month: anniv.death_anniv_lunar_month,
+        death_anniv_lunar_day: anniv.death_anniv_lunar_day,
+        death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
         birth_place: birthPlace || null,
         burial_place: burialPlace || null,
         courtesy_name: courtesyName.trim() || null,
@@ -130,8 +148,8 @@ export default function EditPerson() {
               setFormError(null);
               if (!fullName.trim()) return;
               try {
-                dateFromParts(birth);
-                dateFromParts(death);
+                buildPersonDateColumns(birth);
+                buildPersonDateColumns(death);
               } catch (err) {
                 setFormError((err as Error).message);
                 return;
@@ -218,22 +236,23 @@ export default function EditPerson() {
               </div>
             </fieldset>
 
-            <PartialDateInput
-              label="Ngày sinh (dương lịch)"
+            <CalendarDateInput
+              label="Ngày sinh"
               idPrefix="birth"
               value={birth}
               onChange={setBirth}
-              helperText="Có thể bỏ trống ngày/tháng nếu chỉ biết năm."
+              helperText="Chọn lịch Dương hoặc Âm. Bia mộ thường ghi ngày âm — chuyển tab Âm rồi gõ thẳng. Lịch dương cho phép bỏ trống ngày/tháng nếu chỉ biết năm."
             />
 
-            <PartialDateInput
+            <CalendarDateInput
               label="Ngày mất (nếu đã mất)"
               idPrefix="death"
               value={death}
               onChange={(next) => {
                 setDeath(next);
-                if (next.year) setIsLiving(false);
+                if (next.parts.year) setIsLiving(false);
               }}
+              helperText="Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
             />
 
             <label className="flex items-center gap-3 cursor-pointer">

@@ -1129,10 +1129,12 @@ chỉ membership). Banner "bạn đang xem với quyền platform admin".
 
 ### 26.11 Còn chưa làm
 
-- Mục 13 — quy đổi âm-dương thực tế trên PersonDetail (cột vẫn lưu, UI hiển thị chỉ đọc dương lịch).
 - SMS provider cho channel `sms` (đã có trong schema event_subscriptions nhưng chưa wire).
 - OCR ảnh gia phả cũ (skip ở v1).
 - Kinship calculator ("máy tính xưng hô") — bảng rules xưng hô VN (cô/dì/chú/bác/cậu). Lineage đã làm (26.12), kinship là bước kế.
+- Lunar input cho `PartialDateInput` ở **AddSpouse / AddChild** (quick-add form). Form chính (`NewPerson` / `EditPerson`) đã có toggle Dương/Âm (xem 26.13). Quick-add giữ solar-only cho gọn — chuyển sau nếu user phản hồi.
+
+> Đã làm trước đây (sửa log cũ): hiển thị âm-dương song song trên PersonDetail (`LunarDetailRow`) — milestone A của Phase 3, commit `116a7fe` + `54ed0b0`. Cột schema `*_lunar_*` đã được cả import Excel/GEDCOM lẫn UI tự derive khi solar=day-precision.
 
 ### 26.12 Tính năng mới (sau 2026-06-05)
 
@@ -1234,6 +1236,31 @@ tử" sang "trải nghiệm dòng họ chủ động":
 
 - `APP_BASE_URL` — gốc URL prod (cho link trong email từ
   `notify-contribution`).
+
+### 26.13 Lunar date input cho form chính (2026-06-06)
+
+`NewPerson` + `EditPerson` giờ nhận input theo **cả 2 lịch**: tab
+"Dương / Âm" trên field ngày sinh / ngày mất, checkbox "Tháng nhuận"
+khi ở lunar mode, preview line "= 15/3 ÂL — năm Canh Thân" hoặc "=
+30/4/1980 dương lịch" để user sanity-check.
+
+- Component mới `CalendarDateInput` (`src/components/CalendarDateInput.tsx`)
+  thay `PartialDateInput` trong 2 form chính. AddSpouse / AddChild
+  vẫn dùng `PartialDateInput` solar-only (quick-add, chưa cần lunar).
+- Helper `src/lib/personDates.ts` round-trip giữa form state
+  (`CalendarDateValue`) ↔ DB columns. Solar mode chấp nhận partial
+  precision (year-only / year+month) như cũ; lunar mode bắt buộc full
+  ymd vì conversion âm→dương cần đủ 3 thành phần. Lunar partial sẽ
+  hint user đổi sang dương.
+- `loadCalendarDateValue` chọn mode khởi tạo theo dữ liệu cũ: solar
+  null + lunar set (thường từ Excel/GEDCOM bia mộ) → khởi tạo ở lunar
+  tab để user thấy đúng cái họ nhập.
+- `createPerson` / `updatePerson` (`src/lib/queries/persons.ts`) nhận
+  thêm 11 cột lunar (`birth_lunar_*`, `death_lunar_*`,
+  `death_anniv_lunar_*`); helper `buildDeathAnniversary` tự sinh giỗ
+  tháng/ngày âm khi user nhập ngày mất full-day.
+- Khi solar=day-precision, lunar columns được auto-derive và lưu
+  song song để display luôn đọc DB (không fallback runtime convert).
 
 ---
 
