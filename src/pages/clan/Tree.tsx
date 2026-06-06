@@ -24,11 +24,8 @@ import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
-import {
-  listLinksForClan,
-  peekLink,
-  type LinkPeek,
-} from "@/lib/queries/person-links";
+import { listLinksForClan } from "@/lib/queries/person-links";
+import { InlawFamilyCard } from "@/components/InlawFamilyCard";
 import { getTreeData } from "@/lib/queries/tree";
 
 import "family-chart/styles/family-chart.css";
@@ -735,11 +732,6 @@ function InlawBadgeDialog({
 }
 
 function InlawBadgeBody({ personId }: { personId: string }) {
-  // We can't easily reuse PersonDetail's InLawLinksSection because it
-  // takes a userId prop and is tightly coupled to that page; pulling
-  // out a shared component would change too many imports. Duplicate
-  // the ~30-line pattern instead — single source is still the same
-  // get_link_peek RPC.
   const { data: links, isLoading } = useQuery({
     queryKey: ["tree-inlaw-dialog", personId],
     queryFn: async () => {
@@ -747,7 +739,7 @@ function InlawBadgeBody({ personId }: { personId: string }) {
         ({ supabase }) =>
           supabase
             .from("person_links")
-            .select("id, status, clan_a_id, person_a_id, clan_b_id, person_b_id")
+            .select("id, status")
             .eq("status", "confirmed")
             .or(`person_a_id.eq.${personId},person_b_id.eq.${personId}`),
       );
@@ -762,61 +754,13 @@ function InlawBadgeBody({ personId }: { personId: string }) {
       <p className="text-sm text-muted-foreground">Không còn liên kết nào.</p>
     );
   return (
-    <ul className="space-y-3">
-      {links.map((l) => (
-        <InlawBadgeRow key={l.id} linkId={l.id} />
+    <div className="space-y-5">
+      {links.map((l, idx) => (
+        <div key={l.id}>
+          {idx > 0 && <hr className="my-5 border-t" />}
+          <InlawFamilyCard linkId={l.id} />
+        </div>
       ))}
-    </ul>
-  );
-}
-
-function InlawBadgeRow({ linkId }: { linkId: string }) {
-  const { data: peek } = useQuery({
-    queryKey: ["tree-inlaw-peek", linkId],
-    queryFn: () => peekLink(linkId),
-  });
-  if (!peek)
-    return <li className="text-sm text-muted-foreground">Đang tải…</li>;
-  return <li>{renderPeek(peek)}</li>;
-}
-
-function renderPeek(peek: LinkPeek) {
-  if (peek.masked) {
-    return (
-      <div className="rounded-md border bg-background p-3 text-sm">
-        <p className="font-medium">Người còn sống</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          <span className="text-foreground">{peek.clan_name}</span> chưa
-          công khai thông tin người sống.
-        </p>
-      </div>
-    );
-  }
-  const lifespan =
-    peek.birth_year && peek.death_year
-      ? `${peek.birth_year}–${peek.death_year}`
-      : peek.birth_year
-        ? `sinh ${peek.birth_year}`
-        : peek.death_year
-          ? `mất ${peek.death_year}`
-          : null;
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-md border bg-background p-3">
-      <div className="text-sm min-w-0">
-        <p className="font-medium">{peek.full_name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          <span className="text-foreground">{peek.clan_name}</span>
-          {peek.gender ? ` · ${peek.gender === "M" ? "Nam" : "Nữ"}` : ""}
-          {peek.generation ? ` · Đời ${peek.generation}` : ""}
-          {lifespan ? ` · ${lifespan}` : ""}
-        </p>
-      </div>
-      <Link
-        to={`/clans/${peek.clan_id}/people/${peek.person_id}`}
-        className="text-sm text-primary hover:underline whitespace-nowrap"
-      >
-        Xem →
-      </Link>
     </div>
   );
 }

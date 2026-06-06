@@ -1043,6 +1043,13 @@ export type Database = {
       }
     }
     Functions: {
+      _inlaw_person_card: {
+        Args: {
+          hide_living: boolean
+          p: Database["public"]["Tables"]["persons"]["Row"]
+        }
+        Returns: Json
+      }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
       bulk_import_persons: {
         Args: { payload: Json; target_clan: string }
@@ -1082,6 +1089,7 @@ export type Database = {
           total_persons: number
         }[]
       }
+      get_inlaw_peer_relatives: { Args: { p_link_id: string }; Returns: Json }
       get_inlaw_proposal_preview: { Args: { p_link_id: string }; Returns: Json }
       get_link_peek: { Args: { p_link_id: string }; Returns: Json }
       get_profile_emails: {

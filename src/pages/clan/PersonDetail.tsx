@@ -31,6 +31,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
+import { InlawFamilyCard } from "@/components/InlawFamilyCard";
 import {
   listLinksForPerson,
   peekLink,
@@ -614,6 +615,7 @@ function InLawLinkRow({
   link: PersonLink;
   userId: string;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const { data: peek, isLoading } = useQuery({
     queryKey: queryKeys.personLinkPeek(link.id, userId),
     queryFn: () => peekLink(link.id),
@@ -624,41 +626,60 @@ function InLawLinkRow({
   }
   if (!peek) return null;
   return (
-    <div className="flex items-start justify-between gap-3 rounded-md border bg-background p-3">
-      <div className="text-sm min-w-0">
-        <p className="font-medium">
-          {peek.masked
-            ? "Người còn sống"
-            : (peek.full_name ?? "—")}
-        </p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          <span className="text-foreground">{peek.clan_name}</span>
-          {!peek.masked && peek.gender ? ` · ${peek.gender === "M" ? "Nam" : "Nữ"}` : ""}
-          {!peek.masked && peek.generation
-            ? ` · Đời ${peek.generation}`
-            : ""}
-          {!peek.masked
-            ? (peek.birth_year && peek.death_year
-                ? ` · ${peek.birth_year}–${peek.death_year}`
-                : peek.birth_year
-                  ? ` · sinh ${peek.birth_year}`
-                  : peek.death_year
-                    ? ` · mất ${peek.death_year}`
-                    : "")
-            : ""}
-        </p>
-        {peek.masked && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Họ này chưa công khai thông tin người sống.
+    <div className="rounded-md border bg-background p-3 space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-sm min-w-0">
+          <p className="font-medium">
+            {peek.masked
+              ? "Người còn sống"
+              : (peek.full_name ?? "—")}
           </p>
-        )}
+          <p className="text-xs text-muted-foreground mt-0.5">
+            <span className="text-foreground">{peek.clan_name}</span>
+            {!peek.masked && peek.gender
+              ? ` · ${peek.gender === "M" ? "Nam" : "Nữ"}`
+              : ""}
+            {!peek.masked && peek.generation
+              ? ` · Đời ${peek.generation}`
+              : ""}
+            {!peek.masked
+              ? (peek.birth_year && peek.death_year
+                  ? ` · ${peek.birth_year}–${peek.death_year}`
+                  : peek.birth_year
+                    ? ` · sinh ${peek.birth_year}`
+                    : peek.death_year
+                      ? ` · mất ${peek.death_year}`
+                      : "")
+              : ""}
+          </p>
+          {peek.masked && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Họ này chưa công khai thông tin người sống.
+            </p>
+          )}
+        </div>
+        <div className="flex gap-2 items-center shrink-0">
+          {!peek.masked && (
+            <Button asChild variant="outline" size="sm">
+              <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
+                Xem
+              </Link>
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setExpanded((x) => !x)}
+            aria-expanded={expanded}
+          >
+            {expanded ? "Thu gọn" : "Gia đình bên đó"}
+          </Button>
+        </div>
       </div>
-      {!peek.masked && (
-        <Button asChild variant="outline" size="sm">
-          <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
-            Xem
-          </Link>
-        </Button>
+      {expanded && (
+        <div className="pt-2 border-t">
+          <InlawFamilyCard linkId={link.id} />
+        </div>
       )}
     </div>
   );
