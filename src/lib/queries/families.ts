@@ -191,6 +191,10 @@ export interface AddChildInput {
   birth_date?: string | null;
   birth_date_precision?: "day" | "month" | "year" | null;
   is_living?: boolean;
+  birth_lunar_year?: number | null;
+  birth_lunar_month?: number | null;
+  birth_lunar_day?: number | null;
+  birth_lunar_is_leap?: boolean;
 }
 
 export async function addChildToFamily(
@@ -208,6 +212,10 @@ export async function addChildToFamily(
       birth_date_precision:
         input.birth_date_precision ?? (input.birth_date ? "day" : null),
       birth_family_id: input.family_id,
+      birth_lunar_year: input.birth_lunar_year ?? null,
+      birth_lunar_month: input.birth_lunar_month ?? null,
+      birth_lunar_day: input.birth_lunar_day ?? null,
+      birth_lunar_is_leap: input.birth_lunar_is_leap ?? false,
     })
     .select("id")
     .single();

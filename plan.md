@@ -1132,7 +1132,7 @@ chỉ membership). Banner "bạn đang xem với quyền platform admin".
 - SMS provider cho channel `sms` (đã có trong schema event_subscriptions nhưng chưa wire).
 - OCR ảnh gia phả cũ (skip ở v1).
 - Kinship calculator ("máy tính xưng hô") — bảng rules xưng hô VN (cô/dì/chú/bác/cậu). Lineage đã làm (26.12), kinship là bước kế.
-- Lunar input cho `PartialDateInput` ở **AddSpouse / AddChild** (quick-add form). Form chính (`NewPerson` / `EditPerson`) đã có toggle Dương/Âm (xem 26.13). Quick-add giữ solar-only cho gọn — chuyển sau nếu user phản hồi.
+- ~~Lunar input cho **AddSpouse / AddChild** (quick-add form)~~ — ✅ đã port sang `CalendarDateInput` (2026-06-06). `PartialDateInput` cũ deleted, 4 form (NewPerson / EditPerson / AddSpouse / AddChild) nay đều hỗ trợ tab Dương / Âm + checkbox tháng nhuận + preview line. `addChildToFamily` query mở rộng nhận `birth_lunar_*`.
 
 > Đã làm trước đây (sửa log cũ): hiển thị âm-dương song song trên PersonDetail (`LunarDetailRow`) — milestone A của Phase 3, commit `116a7fe` + `54ed0b0`. Cột schema `*_lunar_*` đã được cả import Excel/GEDCOM lẫn UI tự derive khi solar=day-precision.
 
