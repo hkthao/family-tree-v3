@@ -23,6 +23,7 @@ import {
   IconUserPlus,
   IconUsers,
 } from "@/components/icons";
+import { CheckUpdateButton } from "@/components/CheckUpdateButton";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
@@ -219,6 +220,7 @@ export function AppDrawer({ open, onClose }: Props) {
             <InstallAppButton />
             <ShareAppQrButton />
           </div>
+          <CheckUpdateButton />
           {profile ? (
             <div className="flex items-center gap-3">
               <div

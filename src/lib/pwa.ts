@@ -67,6 +67,7 @@ export function initPwa(): void {
     },
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
+      currentRegistration = registration;
       // Periodic update poll so installed-PWA users (who may keep
       // the tab open for days without refocusing) eventually see
       // new builds. registration.update() asks the browser to refetch
@@ -93,4 +94,29 @@ export function subscribeUpdateAvailable(listener: UpdateListener): () => void {
 
 export function applyPendingUpdate(): void {
   void pendingUpdate?.();
+}
+
+let currentRegistration: ServiceWorkerRegistration | null = null;
+
+/**
+ * Trigger a manual SW update check — the same call the hourly
+ * interval makes. Returns `false` if PWA isn't supported (SSR /
+ * old browser) or no SW is registered yet, otherwise resolves once
+ * the network refetch of sw.js completes. The `onNeedRefresh`
+ * callback fires automatically if a new build is found, so callers
+ * just need to await + show their own "đang kiểm tra…" feedback.
+ */
+export async function checkForUpdate(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  if (!("serviceWorker" in navigator)) return false;
+  // Prefer the registration we cached at init; fall back to the
+  // ready promise in case checkForUpdate ran before initPwa.
+  const reg = currentRegistration ?? (await navigator.serviceWorker.ready);
+  if (!reg) return false;
+  await reg.update();
+  return true;
+}
+
+export function hasPendingUpdate(): boolean {
+  return !!pendingUpdate;
 }
