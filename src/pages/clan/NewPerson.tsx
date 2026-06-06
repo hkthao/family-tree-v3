@@ -8,8 +8,8 @@ import {
 } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
+import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconCopy, IconX } from "@/components/icons";
-import { PartialDateInput } from "@/components/PartialDateInput";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
-import { dateFromParts, partsFromDate, type DateParts } from "@/lib/partialDate";
+import {
+  buildDeathAnniversary,
+  buildPersonDateColumns,
+  EMPTY_CALENDAR_DATE,
+  loadCalendarDateValue,
+  type CalendarDateValue,
+} from "@/lib/personDates";
 import { queryKeys } from "@/lib/queries/keys";
 import { createPerson, getPerson } from "@/lib/queries/persons";
-
-const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function NewPerson() {
   const { clanId } = useParams<{ clanId: string }>();
@@ -49,8 +53,8 @@ export default function NewPerson() {
   const [gender, setGender] = useState<"M" | "F">("M");
   const [isLiving, setIsLiving] = useState(true);
   const [isRoot, setIsRoot] = useState(false);
-  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
-  const [death, setDeath] = useState<DateParts>(EMPTY_PARTS);
+  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
+  const [death, setDeath] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [birthPlace, setBirthPlace] = useState("");
   const [burialPlace, setBurialPlace] = useState("");
   const [courtesyName, setCourtesyName] = useState("");
@@ -71,15 +75,21 @@ export default function NewPerson() {
     // a duplicate root is unintended. User can re-tick if needed.
     setIsRoot(false);
     setBirth(
-      partsFromDate({
-        date: source.birth_date,
-        precision: source.birth_date_precision,
+      loadCalendarDateValue({
+        solarDate: source.birth_date,
+        solarPrecision: source.birth_date_precision,
+        lunarYear: source.birth_lunar_year,
+        lunarMonth: source.birth_lunar_month,
+        lunarDay: source.birth_lunar_day,
       }),
     );
     setDeath(
-      partsFromDate({
-        date: source.death_date,
-        precision: source.death_date_precision,
+      loadCalendarDateValue({
+        solarDate: source.death_date,
+        solarPrecision: source.death_date_precision,
+        lunarYear: source.death_lunar_year,
+        lunarMonth: source.death_lunar_month,
+        lunarDay: source.death_lunar_day,
       }),
     );
     setBirthPlace(source.birth_place ?? "");
@@ -93,18 +103,30 @@ export default function NewPerson() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const birthD = dateFromParts(birth);
-      const deathD = dateFromParts(death);
+      const birthCols = buildPersonDateColumns(birth);
+      const deathCols = buildPersonDateColumns(death);
+      const anniv = buildDeathAnniversary(death);
       return createPerson({
         clan_id: clanId!,
         full_name: fullName.trim(),
         gender,
         is_living: isLiving,
         is_root: isRoot,
-        birth_date: birthD.date,
-        birth_date_precision: birthD.precision,
-        death_date: deathD.date,
-        death_date_precision: deathD.precision,
+        birth_date: birthCols.solar_date,
+        birth_date_precision: birthCols.solar_precision,
+        death_date: deathCols.solar_date,
+        death_date_precision: deathCols.solar_precision,
+        birth_lunar_year: birthCols.lunar_year,
+        birth_lunar_month: birthCols.lunar_month,
+        birth_lunar_day: birthCols.lunar_day,
+        birth_lunar_is_leap: birthCols.lunar_is_leap,
+        death_lunar_year: deathCols.lunar_year,
+        death_lunar_month: deathCols.lunar_month,
+        death_lunar_day: deathCols.lunar_day,
+        death_lunar_is_leap: deathCols.lunar_is_leap,
+        death_anniv_lunar_month: anniv.death_anniv_lunar_month,
+        death_anniv_lunar_day: anniv.death_anniv_lunar_day,
+        death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
         birth_place: birthPlace.trim() || null,
         burial_place: burialPlace.trim() || null,
         courtesy_name: courtesyName.trim() || null,
@@ -132,8 +154,8 @@ export default function NewPerson() {
     if (!fullName.trim()) return;
     try {
       // Pre-validate so the user sees a clear message before we round-trip
-      dateFromParts(birth);
-      dateFromParts(death);
+      buildPersonDateColumns(birth);
+      buildPersonDateColumns(death);
     } catch (err) {
       setFormError((err as Error).message);
       return;
@@ -242,23 +264,23 @@ export default function NewPerson() {
           </div>
         </fieldset>
 
-        <PartialDateInput
-          label="Ngày sinh (dương lịch)"
+        <CalendarDateInput
+          label="Ngày sinh"
           idPrefix="birth"
           value={birth}
           onChange={setBirth}
-          helperText="Có thể bỏ trống ngày, tháng nếu chỉ biết năm (như khắc trên bia mộ)."
+          helperText="Chọn lịch Dương hoặc Âm tuỳ nguồn dữ liệu (bia mộ thường ghi ngày âm). Có thể bỏ trống ngày, tháng ở lịch dương nếu chỉ biết năm."
         />
 
-        <PartialDateInput
+        <CalendarDateInput
           label="Ngày mất (nếu đã mất)"
           idPrefix="death"
           value={death}
           onChange={(next) => {
             setDeath(next);
-            if (next.year) setIsLiving(false);
+            if (next.parts.year) setIsLiving(false);
           }}
-          helperText="Để trống nếu còn sống."
+          helperText="Để trống nếu còn sống. Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
         />
 
         <label className="flex items-center gap-3 cursor-pointer">

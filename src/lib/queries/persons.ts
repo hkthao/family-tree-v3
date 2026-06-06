@@ -157,6 +157,21 @@ export interface CreatePersonInput {
   courtesy_name?: string | null;
   posthumous_name?: string | null;
   nickname?: string | null;
+  // Lunar calendar columns — set when the user typed the date in
+  // lunar mode (tombstones do this), or auto-derived from a full
+  // solar day.
+  birth_lunar_year?: number | null;
+  birth_lunar_month?: number | null;
+  birth_lunar_day?: number | null;
+  birth_lunar_is_leap?: boolean;
+  death_lunar_year?: number | null;
+  death_lunar_month?: number | null;
+  death_lunar_day?: number | null;
+  death_lunar_is_leap?: boolean;
+  // Recurring giỗ — month/day in lunar, repeats each year.
+  death_anniv_lunar_month?: number | null;
+  death_anniv_lunar_day?: number | null;
+  death_anniv_lunar_is_leap?: boolean;
 }
 
 export async function createPerson(
@@ -185,6 +200,17 @@ export async function createPerson(
       courtesy_name: input.courtesy_name ?? null,
       posthumous_name: input.posthumous_name ?? null,
       nickname: input.nickname ?? null,
+      birth_lunar_year: input.birth_lunar_year ?? null,
+      birth_lunar_month: input.birth_lunar_month ?? null,
+      birth_lunar_day: input.birth_lunar_day ?? null,
+      birth_lunar_is_leap: input.birth_lunar_is_leap ?? false,
+      death_lunar_year: input.death_lunar_year ?? null,
+      death_lunar_month: input.death_lunar_month ?? null,
+      death_lunar_day: input.death_lunar_day ?? null,
+      death_lunar_is_leap: input.death_lunar_is_leap ?? false,
+      death_anniv_lunar_month: input.death_anniv_lunar_month ?? null,
+      death_anniv_lunar_day: input.death_anniv_lunar_day ?? null,
+      death_anniv_lunar_is_leap: input.death_anniv_lunar_is_leap ?? false,
     })
     .select("id")
     .single();
@@ -246,6 +272,20 @@ export interface UpdatePersonInput {
   posthumous_name?: string | null;
   nickname?: string | null;
   photo_path?: string | null;
+  // Lunar columns — write through unchanged when undefined; explicit
+  // null means "clear" (e.g., user switched a day-precision solar to
+  // year-only so we drop the previously-derived lunar values).
+  birth_lunar_year?: number | null;
+  birth_lunar_month?: number | null;
+  birth_lunar_day?: number | null;
+  birth_lunar_is_leap?: boolean;
+  death_lunar_year?: number | null;
+  death_lunar_month?: number | null;
+  death_lunar_day?: number | null;
+  death_lunar_is_leap?: boolean;
+  death_anniv_lunar_month?: number | null;
+  death_anniv_lunar_day?: number | null;
+  death_anniv_lunar_is_leap?: boolean;
 }
 
 export async function updatePerson(
