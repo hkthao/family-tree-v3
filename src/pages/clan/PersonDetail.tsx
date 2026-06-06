@@ -34,7 +34,6 @@ import { invalidateClanData } from "@/lib/cache";
 import {
   listLinksForPerson,
   peekLink,
-  type LinkPeek,
   type PersonLink,
 } from "@/lib/queries/person-links";
 import {
