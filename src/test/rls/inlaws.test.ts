@@ -865,6 +865,19 @@ describe("RLS: cross-clan in-law links", () => {
     expect(childById.get(child1)?.masked).toBe(false);
     expect(childById.get(child1)?.full_name).toBe("Child B One");
     expect(childById.get(child2)?.masked).toBe(true);
+    // Both children share the same family (peer + husband) → both
+    // expose other_parent_id pointing at husband. Used by InlawMiniTree
+    // to anchor each child to the correct (peer, spouse) pair.
+    const childRows = r.children as unknown as Array<{
+      id: string;
+      other_parent_id: string | null;
+    }>;
+    expect(childRows.find((c) => c.id === child1)?.other_parent_id).toBe(
+      husband,
+    );
+    expect(childRows.find((c) => c.id === child2)?.other_parent_id).toBe(
+      husband,
+    );
 
     // The "unmasked" path requires the caller to be a member of the
     // PEER clan (clanB here, since peer is Peer B). Add viewerA to

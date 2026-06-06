@@ -16,11 +16,12 @@ import type {
  * gender colour so the topology stays readable without exposing
  * identifying info.
  *
- * Topology compromise: when the peer has multiple spouses, the RPC
- * doesn't tell us which spouse each child is from. We attribute each
- * child to (peer, first spouse) for the draw — visually slightly
- * wrong for polygamy / remarriage, but readable. Full topology lives
- * one click away on the peer clan's own /tree page.
+ * Topology: each child carries `other_parent_id` from the RPC, so we
+ * draw multi-spouse families correctly — child X parented by
+ * (peer, spouse_A) sits below the peer+spouse_A subtree; child Y
+ * parented by (peer, spouse_B) under the peer+spouse_B subtree.
+ * Children whose other_parent_id is null (single-parent family) hang
+ * off peer alone.
  */
 export function InlawMiniTree({ data }: { data: InlawPeerRelatives }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -224,9 +225,22 @@ function buildMiniTreeData(d: InlawPeerRelatives): F3Datum[] {
   const parentIds = d.parents.map((p) => p.id);
   const spouseIds = d.spouses.map((s) => s.id);
   const childIds = d.children.map((c) => c.id);
-  // Pick a single "anchor" spouse for child parents — see header
-  // comment about the topology compromise.
-  const anchorSpouseId = spouseIds[0];
+
+  // Per-spouse child grouping from RPC's other_parent_id field.
+  const childrenBySpouse = new Map<string, string[]>();
+  const peerOnlyChildren: string[] = [];
+  for (const c of d.children) {
+    if (c.other_parent_id && spouseIds.includes(c.other_parent_id)) {
+      const arr = childrenBySpouse.get(c.other_parent_id) ?? [];
+      arr.push(c.id);
+      childrenBySpouse.set(c.other_parent_id, arr);
+    } else {
+      // No spouse recorded (single-parent family). Hang under peer
+      // directly — family-chart will draw them with no second
+      // parent line.
+      peerOnlyChildren.push(c.id);
+    }
+  }
 
   const out: F3Datum[] = [];
 
@@ -234,7 +248,7 @@ function buildMiniTreeData(d: InlawPeerRelatives): F3Datum[] {
     entryFor(d.peer, {
       parents: parentIds,
       spouses: spouseIds,
-      children: childIds,
+      children: childIds, // peer is always a parent of every child
     }),
   );
 
@@ -252,7 +266,9 @@ function buildMiniTreeData(d: InlawPeerRelatives): F3Datum[] {
     out.push(
       entryFor(s, {
         spouses: [peerId],
-        children: s.id === anchorSpouseId ? childIds : [],
+        // Each spouse only claims THEIR children, not peer's
+        // children from other unions.
+        children: childrenBySpouse.get(s.id) ?? [],
       }),
     );
   }
@@ -260,10 +276,18 @@ function buildMiniTreeData(d: InlawPeerRelatives): F3Datum[] {
   for (const c of d.children) {
     out.push(
       entryFor(c, {
-        parents: anchorSpouseId ? [peerId, anchorSpouseId] : [peerId],
+        // Anchor each child to (peer, that-child's-other-parent).
+        // Single-parent children list only peer.
+        parents:
+          c.other_parent_id && spouseIds.includes(c.other_parent_id)
+            ? [peerId, c.other_parent_id]
+            : [peerId],
       }),
     );
   }
+  // Suppress unused-var lint without removing the local — it stays
+  // descriptive for the topology comment above.
+  void peerOnlyChildren;
 
   return out;
 }

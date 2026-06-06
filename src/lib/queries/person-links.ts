@@ -342,6 +342,14 @@ export interface InlawRelativeCard {
   generation?: number | null;
   birth_year?: number | null;
   death_year?: number | null;
+  /**
+   * Only set for entries in the `children` list: the OTHER parent
+   * (peer's spouse) that the child shares with peer. Null for single-
+   * parent family units. Used by InlawMiniTree to anchor each child
+   * to the correct (peer, spouse) pair when peer has multiple
+   * spouses.
+   */
+  other_parent_id?: string | null;
 }
 
 export interface InlawFocalCard extends InlawRelativeCard {
