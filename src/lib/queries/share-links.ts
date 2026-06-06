@@ -29,6 +29,31 @@ export async function listShareLinks(
   return (data ?? []) as ShareLink[];
 }
 
+export interface ShareLinksPage {
+  rows: ShareLink[];
+  total: number;
+}
+
+export async function listShareLinksPage(
+  clanId: string,
+  params: { page: number; pageSize: number },
+  client: Client = defaultClient,
+): Promise<ShareLinksPage> {
+  const from = (params.page - 1) * params.pageSize;
+  const to = from + params.pageSize - 1;
+  const { data, error, count } = await client
+    .from("share_links")
+    .select(
+      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+      { count: "exact" },
+    )
+    .eq("clan_id", clanId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+  if (error) throw new Error(error.message);
+  return { rows: (data ?? []) as ShareLink[], total: count ?? 0 };
+}
+
 export interface CreateShareLinkInput {
   clan_id: string;
   /** Days from now until link expires. */

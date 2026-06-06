@@ -148,6 +148,15 @@ export interface CreatePersonInput {
   death_date_precision?: DatePrecision | null;
   branch_id?: string | null;
   birth_family_id?: string | null;
+  // Extra biographical fields — optional. Mirrors UpdatePersonInput so a
+  // "copy" can preserve everything visible in EditPerson in one insert,
+  // without a follow-up update.
+  bio?: string | null;
+  birth_place?: string | null;
+  burial_place?: string | null;
+  courtesy_name?: string | null;
+  posthumous_name?: string | null;
+  nickname?: string | null;
 }
 
 export async function createPerson(
@@ -170,6 +179,12 @@ export async function createPerson(
         input.death_date_precision ?? (input.death_date ? "day" : null),
       branch_id: input.branch_id ?? null,
       birth_family_id: input.birth_family_id ?? null,
+      bio: input.bio ?? null,
+      birth_place: input.birth_place ?? null,
+      burial_place: input.burial_place ?? null,
+      courtesy_name: input.courtesy_name ?? null,
+      posthumous_name: input.posthumous_name ?? null,
+      nickname: input.nickname ?? null,
     })
     .select("id")
     .single();

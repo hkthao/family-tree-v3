@@ -1,17 +1,26 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
 import {
+  IconArrowLeft,
+  IconArrowRight,
   IconCheck,
   IconCopy,
+  IconLink,
   IconPlus,
   IconQrCode,
   IconTrash,
   IconUndo,
 } from "@/components/icons";
+import { EmptyState } from "@/components/EmptyState";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +30,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import {
   createShareLink,
   deleteShareLink,
-  listShareLinks,
+  listShareLinksPage,
   revokeShareLink,
   type ShareLink,
 } from "@/lib/queries/share-links";
@@ -32,6 +41,7 @@ interface Props {
 }
 
 const DEFAULT_TTL = 30;
+const PAGE_SIZE = 20;
 
 export function ShareLinksSection({ clanId }: Props) {
   const { user } = useAuth();
@@ -39,11 +49,19 @@ export function ShareLinksSection({ clanId }: Props) {
   const qc = useQueryClient();
   const toast = useToast();
 
-  const { data: links, isLoading } = useQuery({
-    queryKey: queryKeys.shareLinks(clanId, userId),
-    queryFn: () => listShareLinks(clanId),
+  const [page, setPage] = useState(1);
+  const params = { page, pageSize: PAGE_SIZE };
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: queryKeys.shareLinksPage(clanId, userId, params),
+    queryFn: () => listShareLinksPage(clanId, params),
     enabled: !!userId,
+    placeholderData: keepPreviousData,
   });
+
+  const links = data?.rows;
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // Resolve names for the focal person of each personal QR link, so the
   // list shows "QR cá nhân · Nguyễn Văn A" instead of a bare token.
@@ -74,6 +92,15 @@ export function ShareLinksSection({ clanId }: Props) {
 
   const [ttl, setTtl] = useState(String(DEFAULT_TTL));
 
+  function invalidateAllPages() {
+    qc.invalidateQueries({
+      predicate: (q) =>
+        Array.isArray(q.queryKey) &&
+        q.queryKey[0] === "share-links-page" &&
+        q.queryKey[1] === clanId,
+    });
+  }
+
   const createM = useMutation({
     mutationFn: () =>
       createShareLink({
@@ -81,7 +108,8 @@ export function ShareLinksSection({ clanId }: Props) {
         ttlDays: Math.max(1, Math.min(365, Number(ttl) || DEFAULT_TTL)),
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) });
+      setPage(1);
+      invalidateAllPages();
       toast.success("Đã tạo link chia sẻ");
     },
     onError: (e) =>
@@ -124,26 +152,62 @@ export function ShareLinksSection({ clanId }: Props) {
         </Alert>
       )}
 
-      {isLoading && <p className="text-sm text-muted-foreground">Đang tải…</p>}
-
-      {links && links.length === 0 && (
-        <p className="text-sm text-muted-foreground">Chưa có link chia sẻ nào.</p>
-      )}
-
-      {links && links.length > 0 && (
-        <ul className="space-y-3">
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Đang tải…</p>
+      ) : links && links.length === 0 ? (
+        <EmptyState
+          icon={<IconLink className="h-10 w-10" />}
+          title="Chưa có link chia sẻ"
+          description="Bấm “Tạo link mới” ở trên để tạo link công khai cho cây gia phả. QR cá nhân của từng người sinh tự động ở trang chi tiết người."
+        />
+      ) : links && links.length > 0 ? (
+        <ul className="divide-y rounded-md border bg-background">
           {links.map((l) => (
             <ShareLinkItem
               key={l.id}
               link={l}
               clanId={clanId}
-              userId={userId}
+              onChanged={invalidateAllPages}
               personName={
                 l.root_person_id ? personNames?.get(l.root_person_id) ?? null : null
               }
             />
           ))}
         </ul>
+      ) : null}
+
+      {total > 0 && (
+        <div className="flex items-center justify-between text-sm">
+          <div className="text-muted-foreground">
+            {total} link
+            {isFetching && <span className="ml-2 italic">đang tải…</span>}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+              aria-label="Trang trước"
+            >
+              <IconArrowLeft className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Trước</span>
+            </Button>
+            <span className="px-2">
+              {page}/{totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage(page + 1)}
+              aria-label="Trang sau"
+            >
+              <span className="hidden sm:inline">Sau</span>
+              <IconArrowRight className="h-4 w-4 sm:ml-1" />
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -152,24 +216,27 @@ export function ShareLinksSection({ clanId }: Props) {
 function ShareLinkItem({
   link,
   clanId,
-  userId,
+  onChanged,
   personName,
 }: {
   link: ShareLink;
   clanId: string;
-  userId: string;
+  onChanged: () => void;
   personName: string | null;
 }) {
-  const qc = useQueryClient();
   const toast = useToast();
   const confirm = useConfirm();
   const [copied, setCopied] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
 
+  // Drop the stale-link compile-time check: ESLint won't catch this prop
+  // anyway, and reusing onChanged keeps the parent in charge of cache.
+  void clanId;
+
   const revokeM = useMutation({
     mutationFn: () => revokeShareLink(link.id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) });
+      onChanged();
       toast.success("Đã thu hồi link");
     },
     onError: (e) =>
@@ -178,7 +245,7 @@ function ShareLinkItem({
   const deleteM = useMutation({
     mutationFn: () => deleteShareLink(link.id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.shareLinks(clanId, userId) });
+      onChanged();
       toast.success("Đã xoá link");
     },
     onError: (e) =>
@@ -210,7 +277,7 @@ function ShareLinkItem({
     : "Link cây gia phả";
 
   return (
-    <li className="rounded-md border bg-card p-3 space-y-2">
+    <li className="p-3 space-y-2 first:rounded-t-md last:rounded-b-md">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span
