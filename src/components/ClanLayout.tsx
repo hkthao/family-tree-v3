@@ -10,8 +10,8 @@ import {
   IconCalendar,
   IconHome,
   IconSettings,
+  IconSun,
   IconTree,
-  IconUser,
   IconUsers,
 } from "@/components/icons";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
@@ -106,9 +106,9 @@ export function ClanLayout() {
       icon: <IconCalendar className="h-5 w-5" />,
     },
     {
-      to: "/account",
-      label: "Tài khoản",
-      icon: <IconUser className="h-5 w-5" />,
+      to: `/clans/${clanId}/today`,
+      label: "Hôm nay",
+      icon: <IconSun className="h-5 w-5" />,
     },
   ];
 
