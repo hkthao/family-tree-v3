@@ -1637,10 +1637,10 @@ chừa slot doc article (chưa viết).
 **Đã bổ sung sau MVP**:
 - ✅ RLS test suite (16 cases ở `src/test/rls/inlaws.test.ts`) — phát hiện + fix bug `is_clan_admin`/`can_edit_clan` trả NULL (migration `20260606204646`).
 - ✅ Audit trigger (migration `20260606205259`) — mỗi propose/confirm/revoke ghi 1 row vào `audit_log` dưới `clan_a_id`. `entity_type='person_link'`. Restore qua `restore_audit_entry` intentionally skip (trigger chặn rollback to pending).
+- ✅ Email notify (Edge function `notify-inlaw`) — fire-and-forget từ client sau `confirmByToken` và `revokeLink`. Dispatch theo status: confirmed → email admin clan A (proposer); revoked → email admin cả 2 bên. Token mode chưa có clan B lúc propose → bỏ pending notify (chờ public-discovery).
 
 **Phase 1 còn thiếu** (sẽ làm tiếp):
-- Public-discovery mode (admin A pick clan B trực tiếp khi B public).
-- Email notify admin B khi pending tạo.
+- Public-discovery mode (admin A pick clan B trực tiếp khi B public) — sẽ kèm theo pending notify.
 - Badge "(N)" trong drawer cho B side.
 
 **Phase 2** (chưa làm): tree ghost spouse, GEDCOM `_INLAW`.
