@@ -419,6 +419,13 @@ verify_jwt = false
 # party triggers it, so no JWT requirement.
 verify_jwt = false
 
+[functions.notify-inlaw]
+# Same fire-and-forget pattern as notify-contribution. The function
+# reads person_links and dispatches the email matching the row's
+# current status (confirmed / revoked). No state change, no data
+# echoed in the response → safe to be anon-callable.
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

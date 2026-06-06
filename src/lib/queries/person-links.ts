@@ -123,6 +123,30 @@ export async function revokeLink(
   if (error) throw new Error(error.message);
 }
 
+/**
+ * Fire-and-forget call to the notify-inlaw Edge function. The function
+ * inspects the row's CURRENT status and emails the appropriate side
+ * — caller doesn't have to tell us which event fired. Errors are
+ * swallowed so a Resend outage / network blip never breaks the user's
+ * action.
+ */
+export function notifyInlaw(linkId: string): void {
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!base || !anon) return;
+  fetch(`${base}/functions/v1/notify-inlaw`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: anon,
+      Authorization: `Bearer ${anon}`,
+    },
+    body: JSON.stringify({ link_id: linkId }),
+  }).catch(() => {
+    /* see jsdoc */
+  });
+}
+
 export async function deletePendingLink(
   linkId: string,
   client: Client = defaultClient,

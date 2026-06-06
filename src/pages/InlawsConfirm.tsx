@@ -21,6 +21,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 import {
   confirmByToken,
+  notifyInlaw,
   resolveTokenPreview,
   type LinkTokenPreview,
 } from "@/lib/queries/person-links";
@@ -219,12 +220,15 @@ function ConfirmForm({
         clanBId,
         personBId: picked!.id,
       }),
-    onSuccess: () => {
+    onSuccess: (linkId) => {
       qc.invalidateQueries({
         predicate: (q) =>
           Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
       });
       toast.success("Đã xác nhận liên kết");
+      // Fire-and-forget — proposer (clan A) gets an email about the
+      // confirmation. Don't block navigation on it.
+      notifyInlaw(linkId);
       navigate(`/clans/${clanBId}/inlaws`);
     },
     onError: (e) =>

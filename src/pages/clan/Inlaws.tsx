@@ -23,6 +23,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import {
   deletePendingLink,
   listLinksForClan,
+  notifyInlaw,
   peekLink,
   revokeLink,
   type LinkPeek,
@@ -74,11 +75,14 @@ export default function Inlaws() {
 
   const revokeM = useMutation({
     mutationFn: (id: string) => revokeLink(id),
-    onSuccess: () => {
+    onSuccess: (_void, id) => {
       qc.invalidateQueries({
         queryKey: queryKeys.personLinksForClan(clan.id, userId),
       });
       toast.success("Đã thu hồi liên kết");
+      // Fire-and-forget — both sides get an email so the side that
+      // didn't revoke learns the link is gone.
+      notifyInlaw(id);
     },
     onError: (e) =>
       toast.error("Không thu hồi được", { description: (e as Error).message }),
