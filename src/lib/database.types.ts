@@ -1,3 +1,4 @@
+Connecting to db 5432
 export type Json =
   | string
   | number
@@ -596,6 +597,89 @@ export type Database = {
           },
         ]
       }
+      person_links: {
+        Row: {
+          clan_a_id: string
+          clan_b_id: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          created_by: string
+          id: string
+          invite_token: string | null
+          link_type: string
+          note: string | null
+          person_a_id: string
+          person_b_id: string | null
+          person_b_name_hint: string | null
+          revoked_at: string | null
+          status: string
+        }
+        Insert: {
+          clan_a_id: string
+          clan_b_id?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          invite_token?: string | null
+          link_type?: string
+          note?: string | null
+          person_a_id: string
+          person_b_id?: string | null
+          person_b_name_hint?: string | null
+          revoked_at?: string | null
+          status?: string
+        }
+        Update: {
+          clan_a_id?: string
+          clan_b_id?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          invite_token?: string | null
+          link_type?: string
+          note?: string | null
+          person_a_id?: string
+          person_b_id?: string | null
+          person_b_name_hint?: string | null
+          revoked_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_links_person_a_id_clan_a_id_fkey"
+            columns: ["person_a_id", "clan_a_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id", "clan_id"]
+          },
+          {
+            foreignKeyName: "person_links_person_a_id_clan_a_id_fkey"
+            columns: ["person_a_id", "clan_a_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id", "clan_id"]
+          },
+          {
+            foreignKeyName: "person_links_person_b_id_clan_b_id_fkey"
+            columns: ["person_b_id", "clan_b_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id", "clan_id"]
+          },
+          {
+            foreignKeyName: "person_links_person_b_id_clan_b_id_fkey"
+            columns: ["person_b_id", "clan_b_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id", "clan_id"]
+          },
+        ]
+      }
       persons: {
         Row: {
           bio: string | null
@@ -967,6 +1051,10 @@ export type Database = {
       }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
       clan_role: { Args: { target_clan: string }; Returns: string }
+      confirm_link_by_token: {
+        Args: { p_clan_b: string; p_person_b: string; p_token: string }
+        Returns: string
+      }
       count_my_blocking_clans: { Args: never; Returns: number }
       delete_my_account: { Args: never; Returns: undefined }
       f_unaccent: { Args: { "": string }; Returns: string }
@@ -995,6 +1083,7 @@ export type Database = {
           total_persons: number
         }[]
       }
+      get_link_peek: { Args: { p_link_id: string }; Returns: Json }
       get_profile_emails: {
         Args: { user_ids: string[] }
         Returns: {
@@ -1024,6 +1113,7 @@ export type Database = {
         Args: { p_id: string; p_note?: string; p_status: string }
         Returns: undefined
       }
+      resolve_link_token: { Args: { p_token: string }; Returns: Json }
       restore_audit_entry: { Args: { audit_id: string }; Returns: undefined }
       set_my_self_person: {
         Args: { p_clan_id: string; p_person_id: string }
@@ -1168,3 +1258,5 @@ export const Constants = {
   },
 } as const
 
+A new version of Supabase CLI is available: v2.105.0 (currently installed v2.102.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

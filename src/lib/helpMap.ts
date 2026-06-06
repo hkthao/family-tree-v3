@@ -40,6 +40,7 @@ export function helpSlugFor(pathname: string): string | null {
   if (sub === "import") return "them-sua-xoa";
   if (sub === "ai-generate") return "them-sua-xoa";
   if (sub.startsWith("contributions")) return "dong-gop";
+  if (sub.startsWith("inlaws")) return null; // TODO: add doc article when ready
   if (sub.startsWith("people")) {
     // Add / edit / detail / new — all the same doc.
     return "them-sua-xoa";

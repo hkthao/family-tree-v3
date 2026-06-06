@@ -422,6 +422,113 @@ function pickClanSize(i: number): number {
   return faker.number.int({ min: 5, max: 15 });
 }
 
+/**
+ * After the clan loop runs, seed a handful of cross-clan in-law links
+ * (Section 28 of plan.md) so the `/inlaws` UI has real rows to show.
+ *
+ * We service-role-INSERT directly with status='confirmed' (skipping
+ * the pending→confirmed trigger which expects an admin auth.uid()).
+ * Real-app usage always goes through the propose/confirm RPCs, but
+ * the trigger only fires on UPDATE — INSERT with all fields set is
+ * fine and lets a re-seed produce deterministic fixtures.
+ */
+interface SeededClan {
+  clanId: string;
+  ownerId: string;
+  label: string;
+}
+
+async function pickFemalePerson(clanId: string): Promise<string | null> {
+  // Avoid the root (is_root=true) — that's the male thuỷ tổ in this
+  // fixture. We want a married-out daughter / dâu — i.e. someone who
+  // could plausibly exist in BOTH clans.
+  const { data, error } = await admin
+    .from("persons")
+    .select("id")
+    .eq("clan_id", clanId)
+    .eq("gender", "F")
+    .eq("is_root", false)
+    .is("deleted_at", null)
+    .limit(50);
+  if (error || !data || data.length === 0) return null;
+  return faker.helpers.arrayElement(data).id;
+}
+
+async function pickMalePerson(clanId: string): Promise<string | null> {
+  const { data, error } = await admin
+    .from("persons")
+    .select("id")
+    .eq("clan_id", clanId)
+    .eq("gender", "M")
+    .eq("is_root", false)
+    .is("deleted_at", null)
+    .limit(50);
+  if (error || !data || data.length === 0) return null;
+  return faker.helpers.arrayElement(data).id;
+}
+
+async function seedInlawLinks(seeded: SeededClan[]): Promise<void> {
+  if (seeded.length < 4) {
+    console.log("  (skipping in-law links — need ≥4 clans)");
+    return;
+  }
+  console.log("  Seeding in-law links…");
+
+  // ── 3 confirmed links: pair adjacent clans, link a female on each side.
+  // Same human, two records, so we use same-gender on both sides.
+  const confirmedPairs: Array<[SeededClan, SeededClan]> = [
+    [seeded[0], seeded[1]],
+    [seeded[2], seeded[3]],
+  ];
+  if (seeded.length >= 6) {
+    confirmedPairs.push([seeded[4], seeded[5]]);
+  }
+
+  for (const [a, b] of confirmedPairs) {
+    const personA = await pickFemalePerson(a.clanId);
+    const personB = await pickFemalePerson(b.clanId);
+    if (!personA || !personB) continue;
+    const { error } = await admin.from("person_links").insert({
+      clan_a_id: a.clanId,
+      person_a_id: personA,
+      clan_b_id: b.clanId,
+      person_b_id: personB,
+      status: "confirmed",
+      created_by: a.ownerId,
+      confirmed_by: b.ownerId,
+      confirmed_at: new Date(Date.now() - 7 * 86400_000).toISOString(),
+      note: `Cùng một người — dâu của ${a.label}, con gái của ${b.label}.`,
+    });
+    if (error) {
+      console.warn(`    confirmed link skip (${a.label}↔${b.label}): ${error.message}`);
+    }
+  }
+
+  // ── Pending links with invite tokens — show up in /clans/:id/inlaws
+  // "Đang chờ" tab so manual testing has something to click.
+  const pendingFromClans = seeded.slice(0, 3);
+  for (const c of pendingFromClans) {
+    // Prefer a male — the "rể" archetype, but really anyone works.
+    const personA = (await pickMalePerson(c.clanId)) ?? (await pickFemalePerson(c.clanId));
+    if (!personA) continue;
+    const token = `inlaw-${c.label}-${randomUUID().slice(0, 12)}`;
+    const { error } = await admin.from("person_links").insert({
+      clan_a_id: c.clanId,
+      person_a_id: personA,
+      invite_token: token,
+      status: "pending",
+      created_by: c.ownerId,
+      person_b_name_hint: `${faker.helpers.arrayElement(VN_SURNAMES)} Thị ${faker.helpers.arrayElement(VN_GIVEN_F)}, sinh ~${faker.number.int({ min: 1950, max: 1995 })}`,
+      note: "Mã mời mẫu — bấm Chép, dán vào tab ẩn danh để thử luồng xác nhận.",
+    });
+    if (error) {
+      console.warn(`    pending link skip (${c.label}): ${error.message}`);
+    }
+  }
+
+  console.log("  In-law links seeded.");
+}
+
 async function main() {
   console.log("Seeding fixtures…");
   const t0 = Date.now();
@@ -435,10 +542,12 @@ async function main() {
 
   const roster = buildClanRoster();
   console.log(`  Planning ${roster.length} clans…`);
+  const seededClans: SeededClan[] = [];
 
   for (const spec of roster) {
     const owner = await createUser(spec.ownerEmail, spec.ownerName, { maxClans: 1 });
     const clanId = await seedClan(spec.clanLabel, spec.size, owner);
+    seededClans.push({ clanId, ownerId: owner, label: spec.clanLabel });
 
     if (spec.visibility === "public") {
       await admin.from("clans").update({ visibility: "public" }).eq("id", clanId);
@@ -481,6 +590,8 @@ async function main() {
       ]);
     }
   }
+
+  await seedInlawLinks(seededClans);
 
   const totalSize = roster.reduce((acc, s) => acc + s.size, 0);
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
