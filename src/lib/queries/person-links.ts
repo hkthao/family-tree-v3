@@ -45,6 +45,30 @@ function makeToken(): string {
     .replace(/=+$/, "");
 }
 
+/**
+ * Cheap count of pending links involving this clan, on either side.
+ * Drives the drawer badge — same role contribution counts play. RLS
+ * already filters out rows the caller can't see, so the number we
+ * get back is "what's pending and visible to me in this clan".
+ *
+ * Today (token-only discovery), pending rows always have clan_b_id
+ * NULL, so the OR clause only ever matches clan_a_id. When
+ * public-discovery lands, admin B's drawer will start counting
+ * incoming invites automatically — no badge wiring change needed.
+ */
+export async function countPendingPersonLinks(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<number> {
+  const { count, error } = await client
+    .from("person_links")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending")
+    .or(`clan_a_id.eq.${clanId},clan_b_id.eq.${clanId}`);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
 /** List every link involving the given clan (either side). */
 export async function listLinksForClan(
   clanId: string,

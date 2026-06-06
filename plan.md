@@ -1641,10 +1641,10 @@ chừa slot doc article (chưa viết).
 
 **Phase 1 còn thiếu** (sẽ làm tiếp):
 - Public-discovery mode (admin A pick clan B trực tiếp khi B public) — sẽ kèm theo pending notify.
-- Badge "(N)" trong drawer cho B side.
 
 **Phase 2 đã làm**:
 - ✅ Tree ghost badge: card person có link confirmed hiện "↔" chip oxblood/bronze ở góc phải. Click → popup nhẹ trên cây với peek info (cùng pattern qua `get_link_peek` → masking nhất quán). Không cần rời cây. `linkedIdsRef` để chart không phải rebuild khi link thay đổi.
+- ✅ Drawer badge "(N) chờ" trên mục **Liên kết thông gia** — query `countPendingPersonLinks(clanId)` đếm pending where (clan_a OR clan_b) = current, cache 30s. Hôm nay (token mode) chỉ match clan_a → proposer thấy nhắc về invite mình đã gửi. Khi public-discovery lands, clan_b_id được set → admin B tự thấy "(N)" mà không phải sửa wiring.
 - ✅ GEDCOM `_INLAW` export: mỗi confirmed link emit 1 sub-block `_INLAW { _CLAN, _PERSON, _SEX, _BIRTH_YEAR, _DEATH_YEAR }` dưới INDI của local person. Masked peer (clan đối tác hide living) → `_PERSON "(người còn sống, chưa công khai)"`. Parse round-trip: `ParsedIndi.inlaws[]` được expose nhưng **import KHÔNG tự recreate** `person_links` (peer clan có thể không tồn tại ở DB đích; peer person chỉ là string) — preserve thông tin để human-read, admin tự re-propose qua UI nếu cần.
 
 **Phase 2** (chưa làm): tree ghost spouse, GEDCOM `_INLAW`.

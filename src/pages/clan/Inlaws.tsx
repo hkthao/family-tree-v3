@@ -77,7 +77,8 @@ export default function Inlaws() {
     mutationFn: (id: string) => revokeLink(id),
     onSuccess: (_void, id) => {
       qc.invalidateQueries({
-        queryKey: queryKeys.personLinksForClan(clan.id, userId),
+        predicate: (q) =>
+          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
       });
       toast.success("Đã thu hồi liên kết");
       // Fire-and-forget — both sides get an email so the side that
@@ -92,7 +93,8 @@ export default function Inlaws() {
     mutationFn: (id: string) => deletePendingLink(id),
     onSuccess: () => {
       qc.invalidateQueries({
-        queryKey: queryKeys.personLinksForClan(clan.id, userId),
+        predicate: (q) =>
+          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
       });
       toast.success("Đã huỷ đề nghị");
     },

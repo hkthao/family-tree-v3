@@ -36,6 +36,8 @@ export const queryKeys = {
     ["share-links-page", clanId, userId, params] as const,
   personLinksForClan: (clanId: string, userId: string) =>
     ["person-links", "clan", clanId, userId] as const,
+  pendingPersonLinksCount: (clanId: string, userId: string) =>
+    ["person-links", "pending-count", clanId, userId] as const,
   personLinksForPerson: (personId: string, userId: string) =>
     ["person-links", "person", personId, userId] as const,
   personLinkPeek: (linkId: string, userId: string) =>
