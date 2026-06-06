@@ -6,7 +6,20 @@ import type { Database } from "@/lib/database.types";
 type Client = SupabaseClient<Database>;
 
 export type AuditAction = "insert" | "update" | "delete";
-export type AuditEntity = "person" | "family" | "branch";
+export type AuditEntity = "person" | "family" | "branch" | "person_link";
+
+/**
+ * Entity types whose audit rows can be rolled back via
+ * `restore_audit_entry`. The RPC's CASE statement only covers these —
+ * person_link is excluded because the protect_person_link_transitions
+ * trigger blocks rollback to pending, and re-inserting a revoked link
+ * would collide with the partial unique index.
+ */
+export const RESTORABLE_ENTITY_TYPES: AuditEntity[] = ["person", "family", "branch"];
+
+export function isRestorableEntity(t: AuditEntity): boolean {
+  return RESTORABLE_ENTITY_TYPES.includes(t);
+}
 
 export interface AuditRow {
   id: string;

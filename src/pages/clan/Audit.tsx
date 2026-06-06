@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
+  isRestorableEntity,
   listAudit,
   restoreAuditEntry,
   type AuditAction,
@@ -27,6 +28,7 @@ const ENTITY_LABEL: Record<AuditEntity, string> = {
   person: "Người",
   family: "Gia đình",
   branch: "Chi",
+  person_link: "Liên kết thông gia",
 };
 
 const ACTION_LABEL: Record<AuditAction, string> = {
@@ -94,6 +96,7 @@ export default function Audit() {
           <option value="person">Người</option>
           <option value="family">Gia đình</option>
           <option value="branch">Chi</option>
+          <option value="person_link">Liên kết thông gia</option>
         </select>
         <select
           aria-label="Lọc theo hành động"
@@ -236,7 +239,7 @@ function AuditItem({
         >
           {expanded ? "Thu gọn" : "Chi tiết"}
         </Button>
-        {canRestore && (
+        {canRestore && isRestorableEntity(row.entity_type) && (
           <Button
             size="sm"
             variant="outline"

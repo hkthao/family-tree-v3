@@ -504,6 +504,86 @@ describe("RLS: cross-clan in-law links", () => {
 
   // ── Anonymous resolve_link_token ───────────────────────────────
 
+  // ── Audit trail ─────────────────────────────────────────────────
+
+  it("propose + confirm + revoke each write one audit_log row under clan_a", async () => {
+    const admin = adminClient();
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+    await adminB.client.rpc("confirm_link_by_token", {
+      p_token: token,
+      p_clan_b: clanB,
+      p_person_b: personB,
+    });
+    await adminA.client
+      .from("person_links")
+      .update({ status: "revoked" })
+      .eq("id", linkId)
+      .select("status");
+
+    // Audit rows are scoped to clan_a — read via the proposer admin.
+    const { data: rows, error } = await adminA.client
+      .from("audit_log")
+      .select("action, entity_type, entity_id, clan_id")
+      .eq("entity_type", "person_link")
+      .eq("entity_id", linkId)
+      .order("changed_at", { ascending: true });
+    expect(error).toBeNull();
+    expect(rows).toHaveLength(3);
+    expect(rows!.map((r) => r.action)).toEqual(["insert", "update", "update"]);
+    expect(rows!.every((r) => r.clan_id === clanA)).toBe(true);
+
+    // Clan B viewer does NOT see the audit rows (RLS is_clan_member on clan_id).
+    const { data: bRows } = await viewerB.client
+      .from("audit_log")
+      .select("id")
+      .eq("entity_id", linkId);
+    expect(bRows ?? []).toHaveLength(0);
+
+    await admin.from("person_links").delete().eq("id", linkId);
+  });
+
+  it("audit insert action carries the after-jsonb snapshot", async () => {
+    const admin = adminClient();
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+        person_b_name_hint: "Snapshot test",
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+
+    const { data: rows } = await adminA.client
+      .from("audit_log")
+      .select("action, before, after")
+      .eq("entity_id", linkId);
+    expect(rows).toHaveLength(1);
+    const row = rows![0];
+    expect(row.action).toBe("insert");
+    expect(row.before).toBeNull();
+    const after = row.after as Record<string, unknown>;
+    expect(after.person_b_name_hint).toBe("Snapshot test");
+    expect(after.status).toBe("pending");
+
+    await admin.from("person_links").delete().eq("id", linkId);
+  });
+
   it("anon can call resolve_link_token but only for active pending tokens", async () => {
     const token = `t-${Math.random()}`;
     const ins = await adminA.client
