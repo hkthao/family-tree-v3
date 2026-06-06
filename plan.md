@@ -1655,6 +1655,7 @@ chừa slot doc article (chưa viết).
 - ✅ Shared component `InlawFamilyCard` — render peer family (focal nổi bật + 3 group cha mẹ/vợ chồng/con). Mỗi row: avatar + tên + meta line; masked rows hiển thị "Người còn sống".
 - ✅ Tree's `↔` badge dialog: thay simple peek list bằng `InlawFamilyCard` (multi-link stack với separator). Click badge → thấy ngay gia đình bên đó (cha mẹ / vợ chồng / con).
 - ✅ PersonDetail's link card thêm nút "Gia đình bên đó" → expand inline với `InlawFamilyCard`.
+- ✅ Visual mini-tree (`InlawMiniTree`) — toggle list ↔ tree trong `InlawFamilyCard` header (icon List / Grid). Tree mode dùng family-chart instance riêng, render parents → peer (oxblood border) → spouses + children. Multi-spouse: anchor child cho spouse đầu tiên (compromise vì RPC chưa group children theo family).
 
 **Phase 2 đã làm**:
 - ✅ Tree ghost badge: card person có link confirmed hiện "↔" chip oxblood/bronze ở góc phải. Click → popup nhẹ trên cây với peek info (cùng pattern qua `get_link_peek` → masking nhất quán). Không cần rời cây. `linkedIdsRef` để chart không phải rebuild khi link thay đổi.

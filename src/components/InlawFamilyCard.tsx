@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { IconGrid, IconList } from "@/components/icons";
+import { InlawMiniTree } from "@/components/InlawMiniTree";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import {
   getInlawPeerRelatives,
@@ -39,12 +42,61 @@ export function InlawFamilyCard({ linkId }: { linkId: string }) {
 }
 
 function FamilyView({ data }: { data: InlawPeerRelatives }) {
+  const [view, setView] = useState<"list" | "tree">("list");
   return (
     <div className="space-y-4">
-      <header className="text-xs text-muted-foreground uppercase tracking-wider">
-        {data.peer_clan_name}
+      <header className="flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground uppercase tracking-wider">
+          {data.peer_clan_name}
+        </p>
+        <div
+          className="inline-flex rounded-md border bg-card overflow-hidden"
+          role="group"
+          aria-label="Chế độ hiển thị"
+        >
+          <button
+            type="button"
+            onClick={() => setView("list")}
+            aria-pressed={view === "list"}
+            title="Danh sách"
+            className={cn(
+              "inline-flex items-center justify-center w-8 h-8",
+              view === "list"
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted/50",
+            )}
+          >
+            <IconList className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("tree")}
+            aria-pressed={view === "tree"}
+            title="Cây gia phả"
+            className={cn(
+              "inline-flex items-center justify-center w-8 h-8 border-l",
+              view === "tree"
+                ? "bg-primary text-primary-foreground"
+                : "hover:bg-muted/50",
+            )}
+          >
+            <IconGrid className="h-4 w-4" />
+          </button>
+        </div>
       </header>
 
+      {view === "tree" ? (
+        <InlawMiniTree data={data} />
+      ) : (
+        <FamilyListView data={data} />
+      )}
+    </div>
+  );
+}
+
+function FamilyListView({ data }: { data: InlawPeerRelatives }) {
+  return (
+    <div className="space-y-4">
       {data.parents.length > 0 && (
         <RelativeGroup
           label="Cha mẹ"
@@ -53,6 +105,8 @@ function FamilyView({ data }: { data: InlawPeerRelatives }) {
           callerIsMember={data.peer.caller_can_visit}
         />
       )}
+
+      <FocalRow focal={data.peer} peerClanId={data.peer_clan_id} />
 
       <FocalRow focal={data.peer} peerClanId={data.peer_clan_id} />
 
