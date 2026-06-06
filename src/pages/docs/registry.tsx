@@ -126,6 +126,13 @@ export const DOCS_SECTIONS: DocSection[] = [
           "Người trong họ đề xuất sửa, admin xem & quyết định. Email tự động.",
         Body: Community.Contributions,
       },
+      {
+        slug: "lien-ket-thong-gia",
+        title: "Liên kết thông gia giữa các dòng họ",
+        summary:
+          "Nối dâu/rể với cùng người đó ở dòng họ bên kia. Cần admin 2 bên đồng ý.",
+        Body: Community.Inlaws,
+      },
     ],
   },
   {

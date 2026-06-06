@@ -227,3 +227,108 @@ export function Contributions() {
     </>
   );
 }
+
+// ─── E. Liên kết thông gia ───────────────────────────────────────
+
+export function Inlaws() {
+  return (
+    <>
+      <Lead>
+        Em gái lấy chồng họ Nguyễn — cô ấy có 1 record trong sổ Họ Huỳnh
+        (như con gái), 1 record trong sổ Họ Nguyễn (như dâu). Hai bản
+        ghi là cùng một người, nhưng app chưa biết. <Strong>Liên kết
+        thông gia</Strong> nói cho app biết, để bấm 1 cái nhảy qua xem
+        sổ bên kia.
+      </Lead>
+
+      <H2>Nguyên tắc cốt lõi</H2>
+      <UL>
+        <LI>
+          Mỗi clan vẫn <Strong>tự chứa</Strong> dâu/rể của mình — không
+          phá quyền sở hữu dữ liệu.
+        </LI>
+        <LI>
+          Link là <Strong>chú thích</Strong>, không phải merge. Gỡ link
+          → cả hai cây vẫn nguyên vẹn.
+        </LI>
+        <LI>
+          Phải có <Strong>cả hai admin đồng ý</Strong> mới hiệu lực
+          (mô hình proposal → confirm).
+        </LI>
+        <LI>
+          Chỉ <Strong>hé tối thiểu</Strong> dữ liệu bên kia: tên + dòng
+          họ + giới tính + năm sinh/mất. Không lộ ảnh, tiểu sử, nơi
+          sinh.
+        </LI>
+      </UL>
+
+      <H2>Khi nào dùng</H2>
+      <P>
+        Chỉ khi <Strong>cả hai dòng họ đều đang ở trên platform</Strong>.
+        Nếu nhà thông gia chưa dùng app → cứ ghi dâu/rể vào sổ bên này
+        như bình thường, không cần làm gì thêm.
+      </P>
+
+      <H2>Bên A đề nghị nối (admin)</H2>
+      <Steps>
+        <LI>
+          Sidebar trái → <Strong>Quản trị</Strong> →{" "}
+          <Strong>Liên kết thông gia</Strong>. Bấm{" "}
+          <Strong>+ Đề nghị mới</Strong>.
+        </LI>
+        <LI>
+          <Strong>Bước 1</Strong>: gõ tên dâu/rể trong dòng họ này
+          (vd "Huỳnh Thị Lan"), chọn từ kết quả.
+        </LI>
+        <LI>
+          <Strong>Bước 2</Strong>: viết gợi ý người bên kia (vd "Hiện
+          là dâu họ Nguyễn, sinh 1985, ở Hà Nội") + ghi chú tuỳ chọn.
+          Bấm <Strong>Tạo mã mời</Strong>.
+        </LI>
+        <LI>
+          App sinh <Strong>link mời</Strong>. Bấm icon copy → gửi qua
+          Zalo / SMS / email cho admin bên kia.
+        </LI>
+      </Steps>
+
+      <H2>Bên B xác nhận (admin)</H2>
+      <Steps>
+        <LI>Mở link → đăng nhập (nếu chưa).</LI>
+        <LI>
+          Xem preview "Họ X đề nghị nối: ..." → chọn dòng họ của bạn →
+          tìm + chọn đúng người trong sổ.
+        </LI>
+        <LI>
+          Bấm <Strong>Xác nhận liên kết</Strong>. Mã mời tự huỷ ngay
+          sau khi confirm — link chỉ dùng 1 lần.
+        </LI>
+      </Steps>
+
+      <H2>Sau khi link confirmed</H2>
+      <UL>
+        <LI>
+          Trang chi tiết người (cả hai bên) hiện card{" "}
+          <Strong>Liên kết thông gia</Strong> với tên + clan + lifespan
+          + nút <Strong>Xem</Strong> → mở trang bên kia.
+        </LI>
+        <LI>
+          Trang <Code>/inlaws</Code> tab <Strong>Đã liên kết</Strong>{" "}
+          liệt kê mọi liên kết của dòng họ.
+        </LI>
+        <LI>
+          Admin một trong hai bên có thể <Strong>Thu hồi</Strong> bất
+          cứ lúc nào — link biến mất ở cả hai bên, dữ liệu gia phả mỗi
+          bên không đổi.
+        </LI>
+      </UL>
+
+      <H2>Riêng tư người sống</H2>
+      <Callout>
+        Nếu clan bên kia bật <Code>hide_living_for_nonmembers</Code>{" "}
+        (mặc định), bạn (không phải member bên kia) sẽ chỉ thấy{" "}
+        <Strong>"Người còn sống — họ X chưa công khai"</Strong>, không
+        lộ tên. Member của clan bên kia thì thấy đầy đủ.
+      </Callout>
+    </>
+  );
+}

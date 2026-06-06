@@ -17,6 +17,7 @@ export function helpSlugFor(pathname: string): string | null {
   if (pathname === "/clans/new") return "tao-dong-ho";
   if (pathname.startsWith("/account")) return "dang-nhap";
   if (pathname.startsWith("/admin")) return "vai-tro";
+  if (pathname.startsWith("/inlaws/confirm/")) return "lien-ket-thong-gia";
   if (pathname.startsWith("/login") || pathname.startsWith("/signup"))
     return "dang-nhap";
   // The Docs pages already ARE the help — no extra button needed.
@@ -40,7 +41,7 @@ export function helpSlugFor(pathname: string): string | null {
   if (sub === "import") return "them-sua-xoa";
   if (sub === "ai-generate") return "them-sua-xoa";
   if (sub.startsWith("contributions")) return "dong-gop";
-  if (sub.startsWith("inlaws")) return null; // TODO: add doc article when ready
+  if (sub.startsWith("inlaws")) return "lien-ket-thong-gia";
   if (sub.startsWith("people")) {
     // Add / edit / detail / new — all the same doc.
     return "them-sua-xoa";

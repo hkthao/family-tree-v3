@@ -85,11 +85,7 @@ export default function InlawsConfirm() {
             {!user ? (
               <LoginPrompt token={token!} />
             ) : (
-              <ConfirmForm
-                token={token!}
-                preview={preview}
-                userId={userId}
-              />
+              <ConfirmForm token={token!} userId={userId} />
             )}
           </>
         )}
@@ -169,11 +165,9 @@ function LoginPrompt({ token }: { token: string }) {
 
 function ConfirmForm({
   token,
-  preview,
   userId,
 }: {
   token: string;
-  preview: LinkTokenPreview;
   userId: string;
 }) {
   const qc = useQueryClient();
