@@ -1639,8 +1639,16 @@ chừa slot doc article (chưa viết).
 - ✅ Audit trigger (migration `20260606205259`) — mỗi propose/confirm/revoke ghi 1 row vào `audit_log` dưới `clan_a_id`. `entity_type='person_link'`. Restore qua `restore_audit_entry` intentionally skip (trigger chặn rollback to pending).
 - ✅ Email notify (Edge function `notify-inlaw`) — fire-and-forget từ client sau `confirmByToken` và `revokeLink`. Dispatch theo status: confirmed → email admin clan A (proposer); revoked → email admin cả 2 bên. Token mode chưa có clan B lúc propose → bỏ pending notify (chờ public-discovery).
 
-**Phase 1 còn thiếu** (sẽ làm tiếp):
-- Public-discovery mode (admin A pick clan B trực tiếp khi B public) — sẽ kèm theo pending notify.
+**Phase 1 còn thiếu**: (none — Phase 1 đã đủ)
+
+**Public-discovery mode (§28.11.A) — đã làm 2026-06-06**:
+- `proposeLinkDirect(clanA, personA, clanB, personB, note)` — INSERT pending với cả 2 sides set, không có invite_token.
+- `acceptLinkDirect(linkId)` — admin B UPDATE status='confirmed', trigger stamps confirmed_by/at (không cần token-based RPC).
+- RPC `get_inlaw_proposal_preview(link_id)` (SECURITY DEFINER) — admin B peek qua RLS để xem clan A name + person A name + year (private clan A vẫn lộ minimal).
+- `InlawsNew` thêm tab "Tìm dòng họ công khai": search `listCommunityClans` → pick → search `persons_public_safe` → pick → confirm.
+- `Inlaws` "Đang chờ" split: section "Đề nghị đến với bạn" (incoming, admin B clan thấy với nút Xác nhận/Từ chối) + section "Đề nghị tôi đã gửi" (outgoing).
+- `notify-inlaw` thêm branch `status='pending' AND clan_b_id IS NOT NULL` → email admin clan B kèm gợi ý + ghi chú + link `/clans/<b>/inlaws`.
+- Seed fixtures: 2 direct-mode pending để smoke test.
 
 **Phase 2 đã làm**:
 - ✅ Tree ghost badge: card person có link confirmed hiện "↔" chip oxblood/bronze ở góc phải. Click → popup nhẹ trên cây với peek info (cùng pattern qua `get_link_peek` → masking nhất quán). Không cần rời cây. `linkedIdsRef` để chart không phải rebuild khi link thay đổi.

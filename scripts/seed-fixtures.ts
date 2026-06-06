@@ -526,6 +526,32 @@ async function seedInlawLinks(seeded: SeededClan[]): Promise<void> {
     }
   }
 
+  // ── Direct-mode pending (public-discovery) — clan_b_id pre-filled
+  // so admin B sees the invite in their /inlaws "Đang chờ" tab on
+  // first login. Pairs medium ↔ clan-005 because both exist in any
+  // fresh seed.
+  const directPairs: Array<[SeededClan, SeededClan]> = [];
+  if (seeded.length >= 7) directPairs.push([seeded[1], seeded[6]]);
+  if (seeded.length >= 9) directPairs.push([seeded[7], seeded[8]]);
+
+  for (const [a, b] of directPairs) {
+    const personA = await pickMalePerson(a.clanId);
+    const personB = await pickFemalePerson(b.clanId);
+    if (!personA || !personB) continue;
+    const { error } = await admin.from("person_links").insert({
+      clan_a_id: a.clanId,
+      person_a_id: personA,
+      clan_b_id: b.clanId,
+      person_b_id: personB,
+      status: "pending",
+      created_by: a.ownerId,
+      note: `Direct-mode mẫu — admin ${b.label} mở /inlaws thấy đề nghị này, có thể Xác nhận hoặc Từ chối.`,
+    });
+    if (error) {
+      console.warn(`    direct pending skip (${a.label}→${b.label}): ${error.message}`);
+    }
+  }
+
   console.log("  In-law links seeded.");
 }
 

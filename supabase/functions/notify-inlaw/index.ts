@@ -5,14 +5,13 @@
  * takes ONLY a `link_id`; the email type is derived from the current
  * row's status (DB = single source of truth, same pattern as
  * notify-contribution):
+ *   - status='pending'   AND clan_b_id set → "Có đề nghị mới" to
+ *                          clan B admins (public-discovery flow only;
+ *                          token-mode pendings have clan_b_id NULL
+ *                          and are silently skipped — token URL is
+ *                          shared out-of-band instead).
  *   - status='confirmed' → "Họ X đã xác nhận liên kết" to clan A admins
  *   - status='revoked'   → "Liên kết đã thu hồi" to admins of BOTH sides
- *
- * Pending propose is NOT emailed because the MVP only supports
- * out-of-band token sharing — there's no clan_b_id at propose time,
- * so we don't know whom to address. When public-discovery mode lands
- * (admin A picks clan B directly), extend this with a pending branch
- * that emails clan_b admins.
  *
  * Security model identical to notify-contribution: a third party who
  * calls this can re-trigger an email matching the existing state, but
@@ -84,6 +83,49 @@ function emailLayout(opts: {
         Email tự động từ ứng dụng Gia phả. Không cần trả lời.
       </p>
     </div></body></html>`;
+}
+
+function buildPendingEmail(opts: {
+  recipientClanName: string;
+  peerClanName: string;
+  peerPersonName: string;
+  localPersonName: string;
+  note: string | null;
+  link: string;
+}): { subject: string; html: string } {
+  const subject = `[Gia phả ${opts.recipientClanName}] ${opts.peerClanName} đề nghị liên kết thông gia`;
+  const noteBlock = opts.note
+    ? `<div style="border-left:4px solid #B8862A;background:#FBF7F0;padding:10px 14px;margin:14px 0;">
+         <p style="font-size:11px;color:#6F665F;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px;">
+           Ghi chú từ bên đề nghị
+         </p>
+         <p style="margin:0;font-size:14px;">${esc(opts.note)}</p>
+       </div>`
+    : "";
+  const body = `
+    <p>Một dòng họ vừa gửi đề nghị liên kết thông gia tới bạn.</p>
+    <table style="border-collapse:collapse;margin:12px 0;font-size:14px;">
+      <tr><td style="padding:4px 12px 4px 0;color:#6F665F;">Từ dòng họ</td>
+          <td style="padding:4px 0;font-weight:600;">${esc(opts.peerClanName)}</td></tr>
+      <tr><td style="padding:4px 12px 4px 0;color:#6F665F;">Người bên họ</td>
+          <td style="padding:4px 0;font-weight:600;">${esc(opts.peerPersonName)}</td></tr>
+      <tr><td style="padding:4px 12px 4px 0;color:#6F665F;">Nối với</td>
+          <td style="padding:4px 0;font-weight:600;">${esc(opts.localPersonName)} (bên bạn)</td></tr>
+    </table>
+    ${noteBlock}
+    <p style="color:#6F665F;font-size:13px;">
+      Mở /inlaws → tab "Đang chờ" để xác nhận hoặc từ chối.
+    </p>`;
+  return {
+    subject,
+    html: emailLayout({
+      clanName: opts.recipientClanName,
+      title: "Có đề nghị liên kết mới",
+      body,
+      ctaLabel: "Xem & quyết định",
+      ctaHref: opts.link,
+    }),
+  };
 }
 
 function buildConfirmedEmail(opts: {
@@ -210,7 +252,7 @@ Deno.serve(async (req) => {
   const { data: l, error: lErr } = await sb
     .from("person_links")
     .select(
-      "id, status, clan_a_id, clan_b_id, person_a_id, person_b_id",
+      "id, status, clan_a_id, clan_b_id, person_a_id, person_b_id, note",
     )
     .eq("id", body.link_id)
     .maybeSingle();
@@ -245,7 +287,29 @@ Deno.serve(async (req) => {
 
   const sent: Array<{ to: string; ok: boolean; error?: string }> = [];
 
-  if (l.status === "confirmed") {
+  if (l.status === "pending") {
+    // Public-discovery only — token-mode pendings have clan_b_id null
+    // and the URL is shared out-of-band.
+    if (!l.clan_b_id) {
+      return json({ ok: true, skipped: "pending-token-mode" });
+    }
+    const bEmails = await adminEmailsForClan(sb, l.clan_b_id);
+    if (bEmails.length === 0) {
+      return json({ ok: true, skipped: "no-admin-emails-b" });
+    }
+    const tpl = buildPendingEmail({
+      recipientClanName: clanBName,
+      peerClanName: clanAName,
+      peerPersonName: personAName,
+      localPersonName: personBName,
+      note: l.note ?? null,
+      link: `${APP_BASE_URL}/clans/${l.clan_b_id}/inlaws`,
+    });
+    for (const to of bEmails) {
+      const r = await sendOne({ to, subject: tpl.subject, html: tpl.html });
+      sent.push({ to, ...r });
+    }
+  } else if (l.status === "confirmed") {
     // Email clan A admins — they proposed and have been waiting.
     const aEmails = await adminEmailsForClan(sb, l.clan_a_id);
     if (aEmails.length === 0) {
