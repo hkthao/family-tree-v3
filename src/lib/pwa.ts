@@ -23,6 +23,16 @@ type UpdateListener = (ready: boolean) => void;
 let pendingUpdate: (() => Promise<void>) | null = null;
 const listeners = new Set<UpdateListener>();
 
+/**
+ * How often to ask the service worker to check the server for a new
+ * sw.js. vite-plugin-pwa's default registerSW only polls on
+ * focus/visibilitychange, so a PWA tab the user never refocuses
+ * (e.g. installed app left open) misses updates. 60 minutes keeps
+ * the network footprint trivial while making "deploy → user sees
+ * banner within an hour" the worst case.
+ */
+const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+
 function fireListeners() {
   const ready = !!pendingUpdate;
   for (const l of listeners) l(ready);
@@ -54,6 +64,19 @@ export function initPwa(): void {
       // Quietly log — never break the app over an SW registration hiccup.
       // eslint-disable-next-line no-console
       console.warn("[pwa] registerSW failed", err);
+    },
+    onRegisteredSW(_swUrl, registration) {
+      if (!registration) return;
+      // Periodic update poll so installed-PWA users (who may keep
+      // the tab open for days without refocusing) eventually see
+      // new builds. registration.update() asks the browser to refetch
+      // sw.js with our no-store cache header; if it's changed, the
+      // normal SW lifecycle fires and onNeedRefresh runs.
+      setInterval(() => {
+        registration.update().catch(() => {
+          // Network blip is fine — try again on the next interval.
+        });
+      }, UPDATE_CHECK_INTERVAL_MS);
     },
   });
 }
