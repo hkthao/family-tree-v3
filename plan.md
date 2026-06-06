@@ -1634,11 +1634,13 @@ confirmed link liên quan tới person hiện hành (masked / unmasked).
 Drawer item dưới "Quản trị". Route registered ở `App.tsx`. Help map
 chừa slot doc article (chưa viết).
 
+**Đã bổ sung sau MVP**:
+- ✅ RLS test suite (16 cases ở `src/test/rls/inlaws.test.ts`) — phát hiện + fix bug `is_clan_admin`/`can_edit_clan` trả NULL (migration `20260606204646`).
+- ✅ Audit trigger (migration `20260606205259`) — mỗi propose/confirm/revoke ghi 1 row vào `audit_log` dưới `clan_a_id`. `entity_type='person_link'`. Restore qua `restore_audit_entry` intentionally skip (trigger chặn rollback to pending).
+
 **Phase 1 còn thiếu** (sẽ làm tiếp):
 - Public-discovery mode (admin A pick clan B trực tiếp khi B public).
-- Audit trigger ghi `audit_log` cho `person_links`.
 - Email notify admin B khi pending tạo.
 - Badge "(N)" trong drawer cho B side.
-- Test suite: chưa viết RLS test (28.9 + 28.11.F).
 
 **Phase 2** (chưa làm): tree ghost spouse, GEDCOM `_INLAW`.
