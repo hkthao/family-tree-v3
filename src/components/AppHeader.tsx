@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { AppLogo } from "@/components/AppLogo";
+import { HelpButton } from "@/components/HelpButton";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -37,6 +38,7 @@ export function AppHeader() {
             <span className="hidden sm:inline text-sm text-muted-foreground truncate max-w-[160px]">
               {user?.user_metadata?.display_name ?? user?.email}
             </span>
+            <HelpButton />
             <ThemeQuickToggle />
           </div>
         </div>

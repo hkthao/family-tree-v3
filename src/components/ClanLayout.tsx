@@ -5,6 +5,7 @@ import { Link, Navigate, Outlet, useParams } from "react-router-dom";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
+import { HelpButton } from "@/components/HelpButton";
 import {
   IconCalendar,
   IconHome,
@@ -129,6 +130,7 @@ export function ClanLayout() {
             </h1>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <HelpButton />
             <ThemeQuickToggle />
             {(clan.myRole === "admin" || clan.isPlatformAdmin) && (
               <Link
