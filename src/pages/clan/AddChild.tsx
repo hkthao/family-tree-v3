@@ -3,16 +3,20 @@ import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
+import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconX } from "@/components/icons";
 import { useToast } from "@/components/Toast";
-import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
-import { dateFromParts, type DateParts } from "@/lib/partialDate";
+import {
+  buildPersonDateColumns,
+  EMPTY_CALENDAR_DATE,
+  type CalendarDateValue,
+} from "@/lib/personDates";
 import {
   addChildToFamily,
   findOrCreateFamily,
@@ -22,7 +26,6 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getPerson } from "@/lib/queries/persons";
 
 const SOLO_VALUE = "__solo__";
-const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function AddChild() {
   const { clanId, personId } = useParams<{
@@ -51,13 +54,13 @@ export default function AddChild() {
   const [otherParent, setOtherParent] = useState<string>(SOLO_VALUE);
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
-  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
+  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [isLiving, setIsLiving] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const birthD = dateFromParts(birth);
+      const birthCols = buildPersonDateColumns(birth);
       if (!clanId || !focal) throw new Error("Thiếu thông tin");
 
       // Resolve other parent (a spouse from the list) or null for single parent
@@ -78,8 +81,12 @@ export default function AddChild() {
         family_id: family.id,
         full_name: fullName.trim(),
         gender,
-        birth_date: birthD.date,
-        birth_date_precision: birthD.precision,
+        birth_date: birthCols.solar_date,
+        birth_date_precision: birthCols.solar_precision,
+        birth_lunar_year: birthCols.lunar_year,
+        birth_lunar_month: birthCols.lunar_month,
+        birth_lunar_day: birthCols.lunar_day,
+        birth_lunar_is_leap: birthCols.lunar_is_leap,
         is_living: isLiving,
       });
     },
@@ -113,7 +120,7 @@ export default function AddChild() {
             setFormError(null);
             if (!fullName.trim()) return;
             try {
-              dateFromParts(birth);
+              buildPersonDateColumns(birth);
             } catch (err) {
               setFormError((err as Error).message);
               return;
@@ -181,9 +188,10 @@ export default function AddChild() {
             </div>
           </fieldset>
 
-          <PartialDateInput
+          <CalendarDateInput
             label="Ngày sinh (tuỳ chọn)"
             idPrefix="birth"
+            helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
             value={birth}
             onChange={setBirth}
           />

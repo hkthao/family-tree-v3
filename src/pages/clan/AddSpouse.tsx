@@ -3,21 +3,23 @@ import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
+import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconX } from "@/components/icons";
 import { useToast } from "@/components/Toast";
-import { PartialDateInput } from "@/components/PartialDateInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
-import { dateFromParts, type DateParts } from "@/lib/partialDate";
+import {
+  buildPersonDateColumns,
+  EMPTY_CALENDAR_DATE,
+  type CalendarDateValue,
+} from "@/lib/personDates";
 import { findOrCreateFamily } from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
 import { createPerson, getPerson } from "@/lib/queries/persons";
-
-const EMPTY_PARTS: DateParts = { year: "", month: "", day: "" };
 
 export default function AddSpouse() {
   const { clanId, personId } = useParams<{
@@ -43,27 +45,36 @@ export default function AddSpouse() {
 
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">(defaultGender);
-  const [birth, setBirth] = useState<DateParts>(EMPTY_PARTS);
+  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [isLiving, setIsLiving] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
 
   // Refresh gender default once `focal` loads
-  if (focal && gender !== defaultGender && fullName === "" && !birth.year) {
+  if (
+    focal &&
+    gender !== defaultGender &&
+    fullName === "" &&
+    !birth.parts.year
+  ) {
     setGender(defaultGender);
   }
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!clanId || !focal) throw new Error("Thiếu thông tin");
-      const birthD = dateFromParts(birth);
+      const birthCols = buildPersonDateColumns(birth);
       const spouse = await createPerson(
         {
           clan_id: clanId,
           full_name: fullName.trim(),
           gender,
           is_living: isLiving,
-          birth_date: birthD.date,
-          birth_date_precision: birthD.precision,
+          birth_date: birthCols.solar_date,
+          birth_date_precision: birthCols.solar_precision,
+          birth_lunar_year: birthCols.lunar_year,
+          birth_lunar_month: birthCols.lunar_month,
+          birth_lunar_day: birthCols.lunar_day,
+          birth_lunar_is_leap: birthCols.lunar_is_leap,
         },
       );
       await findOrCreateFamily({
@@ -105,7 +116,7 @@ export default function AddSpouse() {
             setFormError(null);
             if (!fullName.trim()) return;
             try {
-              dateFromParts(birth);
+              buildPersonDateColumns(birth);
             } catch (err) {
               setFormError((err as Error).message);
               return;
@@ -151,11 +162,12 @@ export default function AddSpouse() {
             </div>
           </fieldset>
 
-          <PartialDateInput
+          <CalendarDateInput
             label="Ngày sinh (tuỳ chọn)"
             idPrefix="birth"
             value={birth}
             onChange={setBirth}
+            helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
           />
 
           <label className="flex items-center gap-3 cursor-pointer">
