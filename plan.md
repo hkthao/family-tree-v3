@@ -1336,3 +1336,247 @@ Edge function chạy Deno runtime. Lần deploy đầu fail vì `https://esm.sh/
 ### 27.8 MCP server (developer ergonomics)
 
 `.mcp.json` ở repo root config Model Context Protocol server `@supabase/mcp-server-supabase` chạy ở chế độ `--read-only`. Đọc `SUPABASE_ACCESS_TOKEN` + `SUPABASE_PROJECT_REF` từ env của user. Agent (Claude Code, etc.) có thể list schema, execute SELECT, get function logs trực tiếp mà không cần psql/dashboard.
+
+---
+
+## 28. Liên kết thông gia giữa các dòng họ (cross-clan in-law links)
+
+Trạng thái: **chưa làm**, kế hoạch (2026-06-06). Xếp **Phase 2** (sau share-link) vì dùng cùng pattern `SECURITY DEFINER` + mô hình đồng thuận admin.
+
+### 28.1 Bối cảnh & nguyên tắc cốt lõi
+
+Khi hai dòng họ (clan) cùng dùng nền tảng và có quan hệ dâu/rể, người dùng muốn "nối" hai cây để thấy mối liên hệ. Nhưng toàn bộ app dựa trên việc **mỗi clan bị cô lập tuyệt đối bằng RLS**. Vì vậy nguyên tắc số một, không được vi phạm:
+
+> **KHÔNG bao giờ để cấu trúc cây của một clan phụ thuộc vào dữ liệu của clan khác.**
+
+Hệ quả của nguyên tắc này:
+- **Cấm foreign key chéo clan** trong `persons` / `families`. Nếu record ở clan A trỏ thẳng (FK cấu trúc) sang record clan B, thì khi clan B chuyển private / bị xoá / người dùng không có quyền → RLS trả null → cây render lỗi. Hoặc buộc phải nới RLS → lộ dữ liệu riêng tư. Cả hai đều là lỗi nghiêm trọng.
+- **Liên kết hai họ là một LỚP CHÚ THÍCH có đồng thuận, nằm TRÊN hai cây độc lập** — không phải một thành phần cấu trúc của cây nào.
+- `family-chart` luôn chỉ nhận dữ liệu của **đúng một clan**. Không bao giờ kéo subtree của clan khác vào (giữ luôn được giới hạn hiệu năng ~7.000 người/cây).
+
+### 28.2 Mô hình 3 lớp
+
+**Lớp 1 — Mỗi clan tự chứa dâu/rể của mình (không FK chéo).**
+Trong họ Nguyễn, cô dâu vốn thuộc họ Trần vẫn là một `person` **cục bộ** của clan Nguyễn (đánh dấu là dâu, `generation` tính theo hệ quy chiếu họ Nguyễn). Trong họ Trần, cô ấy là một record đầy đủ riêng. Hai dòng dữ liệu **độc lập hoàn toàn**; mỗi cây render đúng kể cả khi clan kia biến mất.
+
+**Lớp 2 — Quan hệ "cùng một người" để ở bảng cầu nối riêng `person_links`.**
+Đây chỉ là **metadata** nói "person cục bộ X ở clan A chính là person Y ở clan B", tách hẳn khỏi `persons`/`families`. Gỡ link → cả hai cây vẫn nguyên vẹn.
+
+**Lớp 3 — Liên kết phải được admin CẢ HAI clan đồng ý; chỉ hé dữ liệu tối thiểu qua một cửa `SECURITY DEFINER`.**
+Link ở trạng thái `pending` cho tới khi admin bên kia `confirmed`. Khi đã confirmed, **không nới RLS** — dùng đúng pattern như `share-view`: một RPC `SECURITY DEFINER` kiểm tra link rồi trả về một projection tối thiểu, đã làm sạch (đã áp quy tắc ẩn người còn sống của clan đích).
+
+### 28.3 Schema — bảng `person_links`
+
+Yêu cầu trước: `persons` cần có `unique (id, clan_id)` để dùng composite FK đảm bảo person thuộc đúng clan.
+
+```sql
+-- đảm bảo person_a thực sự thuộc clan_a, person_b thuộc clan_b (qua composite FK)
+alter table persons add constraint persons_id_clan_uniq unique (id, clan_id);
+
+create table person_links (
+  id            uuid primary key default gen_random_uuid(),
+  link_type     text not null default 'same_person'
+                  check (link_type in ('same_person')),  -- mở rộng sau nếu cần
+  status        text not null default 'pending'
+                  check (status in ('pending','confirmed','revoked')),
+
+  -- bên A là bên KHỞI TẠO (admin clan A bấm "đề nghị nối")
+  clan_a_id     uuid not null,
+  person_a_id   uuid not null,
+  -- bên B là bên XÁC NHẬN (admin clan B duyệt)
+  clan_b_id     uuid not null,
+  person_b_id   uuid not null,
+
+  created_by    uuid not null references auth.users(id),
+  confirmed_by  uuid references auth.users(id),
+  note          text,
+
+  created_at    timestamptz not null default now(),
+  confirmed_at  timestamptz,
+  revoked_at    timestamptz,
+
+  -- person phải thuộc đúng clan của nó (chốt ở DB, không tin frontend)
+  foreign key (person_a_id, clan_a_id) references persons(id, clan_id) on delete cascade,
+  foreign key (person_b_id, clan_b_id) references persons(id, clan_id) on delete cascade,
+
+  constraint different_clans  check (clan_a_id <> clan_b_id),
+  constraint different_person check (person_a_id <> person_b_id)
+);
+
+-- chống trùng: cùng một cặp người không tạo link 2 lần (bất kể chiều A/B)
+create unique index person_links_pair_uniq
+  on person_links (least(person_a_id, person_b_id), greatest(person_a_id, person_b_id))
+  where status <> 'revoked';
+
+create index person_links_a_idx on person_links (clan_a_id, person_a_id);
+create index person_links_b_idx on person_links (clan_b_id, person_b_id);
+```
+
+### 28.4 RLS cho `person_links`
+
+Dùng các helper đã có (`is_clan_member(clan_id)`, `is_clan_admin(clan_id)`). Quy tắc:
+
+```sql
+alter table person_links enable row level security;
+
+-- ĐỌC: thành viên của BẤT KỲ bên nào cũng thấy được dòng link
+--      (chỉ thấy metadata link, KHÔNG phải dữ liệu person bên kia)
+create policy plinks_select on person_links for select
+  using ( is_clan_member(clan_a_id) or is_clan_member(clan_b_id) );
+
+-- TẠO: chỉ admin của clan_a (bên khởi tạo) mới đề nghị nối
+create policy plinks_insert on person_links for insert
+  with check ( is_clan_admin(clan_a_id) and status = 'pending' and created_by = auth.uid() );
+
+-- XÁC NHẬN: chỉ admin clan_b mới chuyển pending -> confirmed
+--           (kiểm tra giá trị cũ/mới làm chặt thêm bằng trigger, xem 28.5)
+create policy plinks_confirm on person_links for update
+  using ( is_clan_admin(clan_b_id) or is_clan_admin(clan_a_id) )
+  with check ( is_clan_admin(clan_b_id) or is_clan_admin(clan_a_id) );
+```
+
+> **Quan trọng:** RLS cho phép admin hai bên *thấy và sửa dòng link*, nhưng **tuyệt đối không** cho họ đọc bảng `persons` của clan kia. Việc lấy dữ liệu person bên kia chỉ qua RPC ở 28.6.
+
+### 28.5 Trigger bảo vệ chuyển trạng thái
+
+RLS không diễn đạt tốt logic "ai được đổi field nào". Thêm `BEFORE UPDATE` trigger:
+
+- `pending -> confirmed`: chỉ khi `is_clan_admin(clan_b_id)`; tự set `confirmed_by = auth.uid()`, `confirmed_at = now()`.
+- `-> revoked`: admin **một trong hai** clan được thu hồi; set `revoked_at = now()`.
+- Cấm sửa `clan_*_id` / `person_*_id` sau khi tạo (nối nhầm thì revoke rồi tạo mới).
+- Cấm tự confirm chính link mình tạo nếu mình không phải admin clan_b (chống admin một họ tự nối lén sang họ khác).
+
+### 28.6 RPC hé dữ liệu tối thiểu (`SECURITY DEFINER`)
+
+Đây là "cửa duy nhất" để một bên nhìn người bên kia, theo đúng pattern `share-view`.
+
+```sql
+create or replace function get_link_peek(p_link_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  l person_links;
+  other_clan uuid;
+  other_person uuid;
+  rec persons;
+  hide_living boolean;
+begin
+  select * into l from person_links
+   where id = p_link_id and status = 'confirmed';
+  if not found then
+    raise exception 'link not found or not confirmed';
+  end if;
+
+  -- caller phải là thành viên của MỘT trong hai bên
+  if is_clan_member(l.clan_a_id) then
+    other_clan := l.clan_b_id; other_person := l.person_b_id;
+  elsif is_clan_member(l.clan_b_id) then
+    other_clan := l.clan_a_id; other_person := l.person_a_id;
+  else
+    raise exception 'not authorized';
+  end if;
+
+  select * into rec from persons where id = other_person and clan_id = other_clan;
+  -- person bên kia có thể đã soft-delete; coi như không tồn tại.
+  if rec.id is null or rec.deleted_at is not null then
+    raise exception 'peer person no longer available';
+  end if;
+
+  -- áp quy tắc ẩn người còn sống của CLAN ĐÍCH nếu caller KHÔNG là member clan đó
+  select c.hide_living_for_nonmembers into hide_living from clans c where c.id = other_clan;
+  if rec.is_living and hide_living and not is_clan_member(other_clan) then
+    return jsonb_build_object(
+      'masked', true,
+      'clan_id', other_clan,
+      'person_id', other_person,
+      'is_living', true
+    );
+  end if;
+
+  -- projection TỐI THIỂU, đã làm sạch (không trả ghi chú nhạy cảm, quan hệ, v.v.)
+  return jsonb_build_object(
+    'masked', false,
+    'clan_id', other_clan,
+    'person_id', other_person,
+    'full_name', rec.full_name,
+    'generation', rec.generation,          -- theo hệ quy chiếu CLAN ĐÍCH
+    'birth_year', extract(year from rec.birth_date),
+    'death_year', extract(year from rec.death_date),
+    'is_living', rec.is_living
+  );
+end;
+$$;
+```
+
+> Hàm chạy với quyền owner nên vượt RLS *một cách có kiểm soát*: nó **tự** kiểm tra tư cách caller + trạng thái link + quy tắc ẩn, rồi chỉ trả về đúng vài trường an toàn. Không có đường nào khác để clan A đọc `persons` của clan B.
+
+### 28.7 Trải nghiệm người dùng
+
+- Trên card person trong cây, nếu có link confirmed → hiện **badge nhỏ** "↔ thuộc họ Trần".
+- Bấm badge:
+  - Nếu caller **cũng là thành viên clan đích** → **deep-link** sang đúng người đó trong cây clan đích (`/clan/:id/person/:pid`).
+  - Nếu không → mở một **thẻ tối thiểu** từ `get_link_peek` (tên, đời, năm sinh/mất theo gốc clan kia). Nếu `masked = true` → chỉ hiển thị "Người còn sống — họ X chưa công khai".
+- Luồng tạo link (admin clan A): tìm clan đích → tìm person đích (qua tìm kiếm công khai có giới hạn, hoặc dán mã/đường link person) → gửi đề nghị → clan B nhận thông báo → admin clan B duyệt/từ chối.
+
+### 28.8 Quy tắc bắt buộc (chống phá app)
+
+- **KHÔNG đồng bộ `generation` giữa hai họ.** Đời là hệ quy chiếu riêng từng clan (cùng một người: đời 5 bên Nguyễn, đời 8 bên Trần). Mỗi bên hiển thị theo gốc của mình, không hoà giải.
+- **KHÔNG auto-merge.** Link `same_person` chỉ chú thích, tuyệt đối không gộp record (quyền sở hữu/chỉnh sửa sẽ rối ngay).
+- **Máy tính xưng hô (#2) giữ trong phạm vi MỘT clan.** Quan hệ xuyên họ không làm ở MVP.
+- **Trang public / share-link không bao giờ rò dữ liệu clan kia qua link.** Badge trên trang công khai chỉ dẫn tới đúng những gì clan kia *tự* công khai; nếu clan kia private → badge không hiển thị gì có thể truy ra dữ liệu.
+- **Trường hợp phổ biến nhất vẫn đơn giản:** nhà thông gia *chưa* dùng app → không có link nào, chỉ là record dâu/rể cục bộ bình thường. Tính năng link chỉ kích hoạt khi **cả hai clan đều ở trên nền tảng**.
+
+### 28.9 Test (bổ sung vào mục test tự động)
+
+Đây là tính năng động tới bảo mật, **phải có test RLS riêng**:
+- Admin clan A tạo được link `pending`; **member thường** clan A thì không.
+- Chỉ admin clan B confirm được; admin A confirm hộ → bị chặn.
+- Link `pending` → `get_link_peek` trả lỗi (chưa hé gì).
+- Link confirmed: member clan A đọc được projection tối thiểu của person clan B; **không** đọc được trực tiếp bảng `persons` clan B.
+- Người còn sống ở clan B (hide_living = true) → caller ngoài clan B chỉ nhận `masked`.
+- Người **không thuộc cả hai clan** gọi `get_link_peek` → bị chặn.
+- Revoke link → peek trả lỗi; cả hai cây vẫn render bình thường.
+
+### 28.10 Lộ trình & ngoài phạm vi
+
+- **Phase:** xếp **Phase 2** (sau share-link, vì tái dùng pattern `SECURITY DEFINER` và mô hình đồng thuận admin). Không phải tính năng MVP.
+- **Ngoài phạm vi v1 của tính năng này:** liên kết kiểu khác ngoài `same_person` (vd. "cùng tổ tiên xa"); tính quan hệ họ hàng xuyên clan; hiển thị gộp hai cây trên cùng một màn hình; tự động phát hiện trùng người giữa hai họ để gợi ý nối (làm sau khi có nhiều clan dữ liệu thật).
+
+### 28.11 Bổ sung sau review
+
+Các điểm chốt thêm khi triển khai — không phá kiến trúc, chỉ điền chỗ trống:
+
+**A. Discovery — admin A tìm person bên B thế nào?**
+28.7 nói chung chung "tìm clan đích → tìm person đích". Cụ thể, hỗ trợ **hai cách song song**, admin A chọn mode khi tạo proposal:
+
+1. **Public discovery** (nếu clan B `visibility=public`): A search clan trong tab "Cộng đồng" → mở danh bạ clan B (đã ẩn người sống) → chọn person → gửi đề nghị. Backend snapshot `clan_b_id`, `person_b_id` vào row pending. Admin B nhận notification, duyệt.
+2. **Token invite** (cho cả khi clan B `private`): A tạo proposal **chưa chốt person bên kia** — bảng tạm có thêm cột `invite_token text unique` + bỏ NOT NULL cho `clan_b_id`/`person_b_id` ở giai đoạn pending-by-token. A share token qua kênh ngoài app (Zalo, email). B paste token vào trang `/inlaws/confirm/:token` → resolve qua Edge function (không cần auth ở bước resolve, chỉ trả `note` + tên A) → B chọn person của mình → submit → row fill đủ field + status='confirmed' (vẫn đi qua trigger 28.5 để ép admin clan_b mới được confirm).
+
+   Schema vẫn giữ NOT NULL cho 2 field này ở `confirmed`/`revoked` (ép qua CHECK conditional, hoặc 2 row lifecycle riêng). Cụ thể migration sẽ chốt khi code.
+
+**B. Notify admin B**
+Khi link `pending` tạo, gửi email cho tất cả admin clan_b qua **`notify-events` Edge function pattern** đã có + `notification_log` để idempotent. Bonus: badge "(N) liên kết chờ" trong drawer giống "Đóng góp" — query `count(*)` từ `person_links where clan_b_id IN (clans tôi admin) and status='pending'`, cache 30s.
+
+**C. Audit**
+Trigger giống `persons`/`families`/`branches`: `after insert/update/delete on person_links` ghi `audit_log` với `entity_type='person_link'`, `before`/`after` jsonb. Tận dụng UI nhật ký hiện hữu — chỉ cần extend `ENTITY_LABEL` ở `src/pages/clan/Audit.tsx`.
+
+**D. Soft-delete tương tác**
+Đã chốt trong `get_link_peek` ở 28.6 (kiểm `deleted_at is null`, raise nếu peer mất). Khi person được restore qua audit → link tự "sống lại" (FK còn nguyên, peek lại trả data).
+
+**E. Cascade khi clan/person bị xoá hẳn**
+FK `on delete cascade` đã xử mức DB. UX bên kia: khi list links thấy row vẫn ở đó (nếu cascade chưa kích hoạt) nhưng peek raise → render "Bên kia đã xoá dữ liệu". Test phải cover trường hợp clan B hard-delete (xảy ra khi xoá clan toàn diện).
+
+**F. Test bổ sung (vào 28.9)**
+- **Admin A revoke khi đã confirmed**: link biến mất ở cả hai bên; B nhận notify "đã thu hồi liên kết" (qua kênh tương tự).
+- **Notify idempotent**: gửi email nhiều lần cho cùng proposal không tạo log trùng.
+- **Token mode** (nếu implement): B paste token rồi paste lại lần 2 sau khi confirm → endpoint trả "đã sử dụng".
+- **Hard-delete person**: link cascade-cleanup; cây mỗi bên render bình thường.
+
+**G. Route name**
+- `/clans/:id/inlaws` — list link của clan (cả pending + confirmed, có tab)
+- `/clans/:id/inlaws/new` — đề nghị nối (chọn mode discovery vs token)
+- `/inlaws/confirm/:token` — public route confirm qua token (mode 2)
+- Notification email cho mode 1 trỏ thẳng vào `/clans/:b/inlaws?pending=:linkId` để B mở danh sách → review từng row.
