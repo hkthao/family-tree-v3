@@ -24,6 +24,11 @@ import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
+import {
+  listLinksForClan,
+  peekLink,
+  type LinkPeek,
+} from "@/lib/queries/person-links";
 import { getTreeData } from "@/lib/queries/tree";
 
 import "family-chart/styles/family-chart.css";
@@ -143,6 +148,39 @@ export default function Tree() {
     return toFamilyChart(data.persons, data.families, photoUrls);
   }, [data, photoUrls]);
 
+  // Persons with an active cross-clan in-law link — used to decorate
+  // their card with a "↔" badge. We only need the set of ids; the
+  // peek itself is fetched on badge click.
+  const { data: clanLinks } = useQuery({
+    queryKey: queryKeys.personLinksForClan(clan.id, userId),
+    queryFn: () => listLinksForClan(clan.id),
+    enabled: !!userId,
+  });
+  const linkedPersonIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of clanLinks ?? []) {
+      if (l.status !== "confirmed") continue;
+      // Either side could be in this clan; only the local-clan id is
+      // useful for matching cards we'll render.
+      if (l.clan_a_id === clan.id && l.person_a_id) set.add(l.person_a_id);
+      if (l.clan_b_id === clan.id && l.person_b_id) set.add(l.person_b_id);
+    }
+    return set;
+  }, [clanLinks, clan.id]);
+
+  // Badge dialog state. The card-update closure runs inside
+  // family-chart's d3 render — refs let it read the latest values
+  // without rebuilding the whole chart whenever a new link confirms.
+  const [badgePersonId, setBadgePersonId] = useState<string | null>(null);
+  const setBadgePersonRef = useRef(setBadgePersonId);
+  useEffect(() => {
+    setBadgePersonRef.current = setBadgePersonId;
+  }, [setBadgePersonId]);
+  const linkedIdsRef = useRef<Set<string>>(linkedPersonIds);
+  useEffect(() => {
+    linkedIdsRef.current = linkedPersonIds;
+  }, [linkedPersonIds]);
+
   // Pick default focal once data lands
   useEffect(() => {
     if (data && focal === null) {
@@ -250,6 +288,31 @@ export default function Tree() {
                   Đời ${gen}
                 </text>`;
               this.querySelector(".card-body")?.appendChild(badge);
+            }
+
+            // In-law link badge — small "↔" chip under the gen badge,
+            // shown only when this person has a confirmed person_link
+            // to someone in another clan. Click opens a popup with the
+            // peek info (no navigation needed — keep tree context).
+            this.querySelector(".inlaw-badge")?.remove();
+            if (personId && linkedIdsRef.current.has(personId)) {
+              const inlaw = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g",
+              );
+              inlaw.setAttribute("class", "inlaw-badge");
+              inlaw.innerHTML = `
+                <circle cx="232" cy="38" r="11" fill="#FBF7F0"
+                        stroke="#B8862A" stroke-width="1.5" />
+                <text x="232" y="42" text-anchor="middle"
+                      fill="#B8862A" font-size="13" font-weight="700">↔</text>
+                <title>Liên kết thông gia</title>`;
+              inlaw.style.cursor = "pointer";
+              inlaw.addEventListener("click", (e) => {
+                e.stopPropagation();
+                setBadgePersonRef.current(personId);
+              });
+              this.querySelector(".card-body")?.appendChild(inlaw);
             }
 
             // Quick actions: pencil = edit, plus = open detail (where
@@ -596,6 +659,164 @@ export default function Tree() {
           </p>
         </>
       )}
+
+      <InlawBadgeDialog
+        personId={badgePersonId}
+        onClose={() => setBadgePersonId(null)}
+      />
+    </div>
+  );
+}
+
+// ─── In-law badge popup ──────────────────────────────────────────────
+
+/**
+ * Lightweight modal that pops up from the tree when the user taps a
+ * "↔" badge. Lists every confirmed link the focal person is part of,
+ * showing the peer projection via get_link_peek — same data path
+ * PersonDetail uses, so visibility/masking is consistent.
+ */
+function InlawBadgeDialog({
+  personId,
+  onClose,
+}: {
+  personId: string | null;
+  onClose: () => void;
+}) {
+  const open = !!personId;
+
+  // ESC + body-scroll lock
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-lg border bg-card shadow-lg overflow-hidden"
+      >
+        <header className="border-b px-5 py-3 flex items-center justify-between">
+          <h2 className="font-semibold inline-flex items-center gap-2">
+            <span aria-hidden="true">↔</span>
+            Liên kết thông gia
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng"
+            className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
+          >
+            ✕
+          </button>
+        </header>
+        <div className="p-5">
+          <InlawBadgeBody personId={personId!} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InlawBadgeBody({ personId }: { personId: string }) {
+  // We can't easily reuse PersonDetail's InLawLinksSection because it
+  // takes a userId prop and is tightly coupled to that page; pulling
+  // out a shared component would change too many imports. Duplicate
+  // the ~30-line pattern instead — single source is still the same
+  // get_link_peek RPC.
+  const { data: links, isLoading } = useQuery({
+    queryKey: ["tree-inlaw-dialog", personId],
+    queryFn: async () => {
+      const { data, error } = await import("@/lib/supabase").then(
+        ({ supabase }) =>
+          supabase
+            .from("person_links")
+            .select("id, status, clan_a_id, person_a_id, clan_b_id, person_b_id")
+            .eq("status", "confirmed")
+            .or(`person_a_id.eq.${personId},person_b_id.eq.${personId}`),
+      );
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
+  if (isLoading)
+    return <p className="text-sm text-muted-foreground">Đang tải…</p>;
+  if (!links || links.length === 0)
+    return (
+      <p className="text-sm text-muted-foreground">Không còn liên kết nào.</p>
+    );
+  return (
+    <ul className="space-y-3">
+      {links.map((l) => (
+        <InlawBadgeRow key={l.id} linkId={l.id} />
+      ))}
+    </ul>
+  );
+}
+
+function InlawBadgeRow({ linkId }: { linkId: string }) {
+  const { data: peek } = useQuery({
+    queryKey: ["tree-inlaw-peek", linkId],
+    queryFn: () => peekLink(linkId),
+  });
+  if (!peek)
+    return <li className="text-sm text-muted-foreground">Đang tải…</li>;
+  return <li>{renderPeek(peek)}</li>;
+}
+
+function renderPeek(peek: LinkPeek) {
+  if (peek.masked) {
+    return (
+      <div className="rounded-md border bg-background p-3 text-sm">
+        <p className="font-medium">Người còn sống</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          <span className="text-foreground">{peek.clan_name}</span> chưa
+          công khai thông tin người sống.
+        </p>
+      </div>
+    );
+  }
+  const lifespan =
+    peek.birth_year && peek.death_year
+      ? `${peek.birth_year}–${peek.death_year}`
+      : peek.birth_year
+        ? `sinh ${peek.birth_year}`
+        : peek.death_year
+          ? `mất ${peek.death_year}`
+          : null;
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-md border bg-background p-3">
+      <div className="text-sm min-w-0">
+        <p className="font-medium">{peek.full_name}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          <span className="text-foreground">{peek.clan_name}</span>
+          {peek.gender ? ` · ${peek.gender === "M" ? "Nam" : "Nữ"}` : ""}
+          {peek.generation ? ` · Đời ${peek.generation}` : ""}
+          {lifespan ? ` · ${lifespan}` : ""}
+        </p>
+      </div>
+      <Link
+        to={`/clans/${peek.clan_id}/people/${peek.person_id}`}
+        className="text-sm text-primary hover:underline whitespace-nowrap"
+      >
+        Xem →
+      </Link>
     </div>
   );
 }
