@@ -1650,6 +1650,12 @@ chừa slot doc article (chưa viết).
 - `notify-inlaw` thêm branch `status='pending' AND clan_b_id IS NOT NULL` → email admin clan B kèm gợi ý + ghi chú + link `/clans/<b>/inlaws`.
 - Seed fixtures: 2 direct-mode pending để smoke test.
 
+**Phase 3 đã làm (2026-06-06)**:
+- ✅ RPC `get_inlaw_peer_relatives(link_id)` — SECURITY DEFINER, trả peer person + parents + spouses + children dạng card. Áp dụng `hide_living_for_nonmembers` per relative; mỗi card có `masked` flag + `caller_can_visit` (cho biết link Xem có resolve được không).
+- ✅ Shared component `InlawFamilyCard` — render peer family (focal nổi bật + 3 group cha mẹ/vợ chồng/con). Mỗi row: avatar + tên + meta line; masked rows hiển thị "Người còn sống".
+- ✅ Tree's `↔` badge dialog: thay simple peek list bằng `InlawFamilyCard` (multi-link stack với separator). Click badge → thấy ngay gia đình bên đó (cha mẹ / vợ chồng / con).
+- ✅ PersonDetail's link card thêm nút "Gia đình bên đó" → expand inline với `InlawFamilyCard`.
+
 **Phase 2 đã làm**:
 - ✅ Tree ghost badge: card person có link confirmed hiện "↔" chip oxblood/bronze ở góc phải. Click → popup nhẹ trên cây với peek info (cùng pattern qua `get_link_peek` → masking nhất quán). Không cần rời cây. `linkedIdsRef` để chart không phải rebuild khi link thay đổi.
 - ✅ Drawer badge "(N) chờ" trên mục **Liên kết thông gia** — query `countPendingPersonLinks(clanId)` đếm pending where (clan_a OR clan_b) = current, cache 30s. Hôm nay (token mode) chỉ match clan_a → proposer thấy nhắc về invite mình đã gửi. Khi public-discovery lands, clan_b_id được set → admin B tự thấy "(N)" mà không phải sửa wiring.

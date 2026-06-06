@@ -715,6 +715,226 @@ describe("RLS: cross-clan in-law links", () => {
     await adminClient().from("person_links").delete().eq("id", linkId);
   });
 
+  // ── Phase 3 — extended family across clans ──────────────────────
+
+  it("get_inlaw_peer_relatives surfaces parents/spouses/children with proper masking", async () => {
+    const admin = adminClient();
+    // Build a small family in clan B around a fresh peer person:
+    //   father + mother (both dead) → peer (dead) + spouse (LIVING)
+    //   peer + spouse → 2 children
+    const family1 = (
+      await admin
+        .from("families")
+        .insert({ clan_id: clanB })
+        .select("id")
+        .single()
+    ).data!.id;
+    const father = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Father B",
+          gender: "M",
+          is_living: false,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    const mother = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Mother B",
+          gender: "F",
+          is_living: false,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    await admin
+      .from("families")
+      .update({ husband_id: father, wife_id: mother })
+      .eq("id", family1);
+
+    const peer = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Peer B",
+          gender: "F",
+          is_living: false,
+          birth_family_id: family1,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    const husband = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Husband B",
+          gender: "M",
+          is_living: true, // LIVING — should be masked for non-members
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    const family2 = (
+      await admin
+        .from("families")
+        .insert({ clan_id: clanB, husband_id: husband, wife_id: peer })
+        .select("id")
+        .single()
+    ).data!.id;
+    const child1 = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Child B One",
+          gender: "M",
+          is_living: false,
+          birth_family_id: family2,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    const child2 = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Child B Two",
+          gender: "F",
+          is_living: true, // LIVING — masked for non-members
+          birth_family_id: family2,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+
+    // Confirm a link between personA (clan A) and peer (clan B)
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    await adminB.client.rpc("confirm_link_by_token", {
+      p_token: token,
+      p_clan_b: clanB,
+      p_person_b: peer,
+    });
+    const linkId = ins.data!.id;
+
+    // viewerA is NOT a member of clan B → living relatives masked.
+    const { data: rels, error } = await viewerA.client.rpc(
+      "get_inlaw_peer_relatives",
+      { p_link_id: linkId },
+    );
+    expect(error).toBeNull();
+    const r = rels as unknown as {
+      peer_clan_name: string;
+      peer: { full_name?: string; caller_can_visit: boolean };
+      parents: Array<{ full_name?: string; masked: boolean; id: string }>;
+      spouses: Array<{ full_name?: string; masked: boolean; id: string }>;
+      children: Array<{ full_name?: string; masked: boolean; id: string }>;
+    };
+    expect(r.peer_clan_name).toBe("Inlaws Clan B");
+    expect(r.peer.full_name).toBe("Peer B");
+    expect(r.peer.caller_can_visit).toBe(false);
+    // Parents: both dead → unmasked
+    expect(r.parents).toHaveLength(2);
+    expect(r.parents.every((p) => p.masked === false)).toBe(true);
+    // Spouse: LIVING → masked
+    expect(r.spouses).toHaveLength(1);
+    expect(r.spouses[0].masked).toBe(true);
+    expect(r.spouses[0].full_name).toBeUndefined();
+    // Children: one dead (unmasked), one living (masked)
+    expect(r.children).toHaveLength(2);
+    const childById = new Map(r.children.map((c) => [c.id, c]));
+    expect(childById.get(child1)?.masked).toBe(false);
+    expect(childById.get(child1)?.full_name).toBe("Child B One");
+    expect(childById.get(child2)?.masked).toBe(true);
+
+    // The "unmasked" path requires the caller to be a member of the
+    // PEER clan (clanB here, since peer is Peer B). Add viewerA to
+    // clanB temporarily so the same caller flips from masked → not.
+    // (We can't reuse viewerB because peek flips sides — viewerB
+    // would see Person A's family, not Peer B's.)
+    await admin
+      .from("clan_members")
+      .insert({ clan_id: clanB, user_id: viewerA.id, role: "viewer" });
+    const { data: rels2, error: rels2Err } = await viewerA.client.rpc(
+      "get_inlaw_peer_relatives",
+      { p_link_id: linkId },
+    );
+    expect(rels2Err).toBeNull();
+    const r2 = rels2 as unknown as {
+      peer: { caller_can_visit: boolean };
+      spouses: Array<{ masked: boolean; full_name?: string }>;
+    };
+    expect(r2.peer.caller_can_visit).toBe(true);
+    expect(r2.spouses[0].masked).toBe(false);
+    expect(r2.spouses[0].full_name).toBe("Husband B");
+    // Roll back the temporary membership so later tests aren't surprised.
+    await admin
+      .from("clan_members")
+      .delete()
+      .eq("clan_id", clanB)
+      .eq("user_id", viewerA.id);
+
+    // Cleanup
+    await admin.from("person_links").delete().eq("id", linkId);
+    await admin.from("persons").delete().in("id", [father, mother, peer, husband, child1, child2]);
+    await admin.from("families").delete().in("id", [family1, family2]);
+  });
+
+  it("get_inlaw_peer_relatives raises for stranger / pending link", async () => {
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+
+    // Pending link → raises
+    const { error: pendErr } = await adminA.client.rpc(
+      "get_inlaw_peer_relatives",
+      { p_link_id: linkId },
+    );
+    expect(pendErr).not.toBeNull();
+
+    // Confirm, then stranger tries
+    await adminB.client.rpc("confirm_link_by_token", {
+      p_token: token,
+      p_clan_b: clanB,
+      p_person_b: personB,
+    });
+    const { error: strErr } = await stranger.client.rpc(
+      "get_inlaw_peer_relatives",
+      { p_link_id: linkId },
+    );
+    expect(strErr).not.toBeNull();
+
+    await adminClient().from("person_links").delete().eq("id", linkId);
+  });
+
   it("anon can call resolve_link_token but only for active pending tokens", async () => {
     const token = `t-${Math.random()}`;
     const ins = await adminA.client

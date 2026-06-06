@@ -330,6 +330,55 @@ export async function getInlawProposalPreview(
   return data as unknown as InlawProposalPreview;
 }
 
+// ─── Phase 3 — extended family across clans ─────────────────────────
+
+export interface InlawRelativeCard {
+  id: string;
+  clan_id: string;
+  masked: boolean;
+  is_living: boolean;
+  gender: "M" | "F";
+  full_name?: string;
+  generation?: number | null;
+  birth_year?: number | null;
+  death_year?: number | null;
+}
+
+export interface InlawFocalCard extends InlawRelativeCard {
+  /**
+   * True when the caller is also a member of the peer clan — UI can
+   * render a deep-link to /clans/<peer>/people/<id> that will resolve
+   * for them.
+   */
+  caller_can_visit: boolean;
+}
+
+export interface InlawPeerRelatives {
+  link_id: string;
+  peer_clan_id: string;
+  peer_clan_name: string;
+  peer: InlawFocalCard;
+  parents: InlawRelativeCard[];
+  spouses: InlawRelativeCard[];
+  children: InlawRelativeCard[];
+}
+
+/**
+ * One-hop "mini family" of the peer person on a confirmed link.
+ * Parents, spouses, children, all masked per hide_living_for_nonmembers
+ * if caller isn't a peer-clan member.
+ */
+export async function getInlawPeerRelatives(
+  linkId: string,
+  client: Client = defaultClient,
+): Promise<InlawPeerRelatives> {
+  const { data, error } = await client.rpc("get_inlaw_peer_relatives", {
+    p_link_id: linkId,
+  });
+  if (error) throw new Error(error.message);
+  return data as unknown as InlawPeerRelatives;
+}
+
 export interface InlawExportEntry {
   /** The local person (in the exporting clan) whose card the link sits on. */
   localPersonId: string;
