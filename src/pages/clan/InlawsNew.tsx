@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
-import { queryKeys } from "@/lib/queries/keys";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
   proposeLink,
@@ -65,7 +64,8 @@ export default function InlawsNew() {
     onSuccess: (link) => {
       setCreatedLink(link);
       qc.invalidateQueries({
-        queryKey: queryKeys.personLinksForClan(clan.id, userId),
+        predicate: (q) =>
+          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
       });
       toast.success("Đã tạo mã mời");
     },

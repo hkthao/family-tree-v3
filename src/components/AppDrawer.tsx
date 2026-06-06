@@ -31,6 +31,7 @@ import { signOutAndClearCache } from "@/lib/auth-actions";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
 import { countPendingContributions } from "@/lib/queries/contributions";
+import { countPendingPersonLinks } from "@/lib/queries/person-links";
 import { getMyProfile, type MyProfile } from "@/lib/queries/profile";
 import { cn } from "@/lib/utils";
 
@@ -80,6 +81,17 @@ export function AppDrawer({ open, onClose }: Props) {
     // when admin lands on the drawer.
     staleTime: 30_000,
   });
+  // Pending in-law links on either side of this clan. Admin-only —
+  // viewers can't see person_links rows anyway, but skipping the
+  // probe saves a request.
+  const canSeeInlaws =
+    !!clan && (clan.isPlatformAdmin || clan.myRole === "admin");
+  const { data: pendingInlawCount } = useQuery({
+    queryKey: queryKeys.pendingPersonLinksCount(clanId ?? "", userId),
+    queryFn: () => countPendingPersonLinks(clanId!),
+    enabled: !!userId && !!clanId && canSeeInlaws,
+    staleTime: 30_000,
+  });
 
   // On mobile, lock body scroll while the drawer is open so the page
   // doesn't scroll out from under the user on iOS. On desktop (≥lg) the
@@ -109,6 +121,7 @@ export function AppDrawer({ open, onClose }: Props) {
     clan ?? null,
     profile ?? null,
     pendingContribCount ?? 0,
+    pendingInlawCount ?? 0,
   );
 
   return (
@@ -319,6 +332,7 @@ function buildSections(
   clan: ClanDetail | null,
   profile: MyProfile | null,
   pendingContribCount: number,
+  pendingInlawCount: number,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -453,6 +467,7 @@ function buildSections(
             to: `/clans/${clanId}/inlaws`,
             label: "Liên kết thông gia",
             icon: <IconLink className={ic} />,
+            badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
           },
           {
             to: `/clans/${clanId}/qr-export`,
