@@ -42,6 +42,22 @@ export interface ParsedIndi {
 
   famcPtr: string | null;
   famsPtrs: string[];
+
+  /**
+   * Cross-clan in-law links seen in `_INLAW` blocks. Preserved for
+   * inspection / surface UX (e.g. import preview) but the importer
+   * does NOT recreate person_links — the peer clan may not exist in
+   * the destination DB and the peer person is just a name string.
+   */
+  inlaws: ParsedInlaw[];
+}
+
+export interface ParsedInlaw {
+  clanName: string | null;
+  personName: string | null;
+  gender: "M" | "F" | null;
+  birthYear: number | null;
+  deathYear: number | null;
 }
 
 export interface ParsedFam {
@@ -238,6 +254,7 @@ function parseIndi(
     bio: null,
     famcPtr: null,
     famsPtrs: [],
+    inlaws: [],
   };
 
   let i = start + 1;
@@ -325,6 +342,36 @@ function parseIndi(
         case "FAMS":
           if (l.value) record.famsPtrs.push(l.value);
           break;
+        case "_INLAW": {
+          // Sub-tags: _CLAN, _PERSON, _SEX, _BIRTH_YEAR, _DEATH_YEAR.
+          // Multiple blocks possible per INDI (remarriage / polygamy).
+          const inlaw: ParsedInlaw = {
+            clanName: null,
+            personName: null,
+            gender: null,
+            birthYear: null,
+            deathYear: null,
+          };
+          let j = i + 1;
+          while (j < lines.length && lines[j].level > l.level) {
+            const s = lines[j];
+            if (s.tag === "_CLAN") inlaw.clanName = s.value || null;
+            else if (s.tag === "_PERSON") inlaw.personName = s.value || null;
+            else if (s.tag === "_SEX")
+              inlaw.gender = s.value.toUpperCase().startsWith("F") ? "F" : "M";
+            else if (s.tag === "_BIRTH_YEAR") {
+              const n = Number(s.value);
+              inlaw.birthYear = Number.isInteger(n) ? n : null;
+            } else if (s.tag === "_DEATH_YEAR") {
+              const n = Number(s.value);
+              inlaw.deathYear = Number.isInteger(n) ? n : null;
+            }
+            j++;
+          }
+          record.inlaws.push(inlaw);
+          i = j;
+          continue;
+        }
       }
     }
     i++;
