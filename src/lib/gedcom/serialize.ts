@@ -10,6 +10,7 @@
 
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
+import type { InlawExportEntry } from "@/lib/queries/person-links";
 
 const MONTH_ABBR = [
   "JAN",
@@ -66,12 +67,19 @@ function isoToGed(
 /**
  * Serialize a whole clan to a GEDCOM string.
  *
- * @param clan   clan detail row (name, description, etc.)
- * @param data   full clan book data (persons, families, branches, childToFamily)
+ * @param clan    clan detail row (name, description, etc.)
+ * @param data    full clan book data (persons, families, branches, childToFamily)
+ * @param inlaws  optional list of confirmed cross-clan in-law links
+ *                involving this clan, already peeked. Emitted as custom
+ *                `_INLAW` blocks per local person. Re-import is
+ *                one-way: parser preserves the strings but doesn't
+ *                recreate the actual person_link row (peer clan may
+ *                not exist in the destination DB).
  */
 export function serializeClanToGedcom(
   clan: ClanDetail,
   data: ClanBookData,
+  inlaws: InlawExportEntry[] = [],
 ): string {
   const o: Out = { lines: [] };
 
@@ -107,6 +115,13 @@ export function serializeClanToGedcom(
   for (const f of data.families) {
     if (f.husband_id) pushTo(famsOf, f.husband_id, f.id);
     if (f.wife_id) pushTo(famsOf, f.wife_id, f.id);
+  }
+
+  // Bucket in-law entries by local person — one INDI can carry
+  // multiple `_INLAW` blocks (e.g. remarried into another clan).
+  const inlawsByLocal = new Map<string, InlawExportEntry[]>();
+  for (const e of inlaws) {
+    pushTo(inlawsByLocal, e.localPersonId, e);
   }
 
   // ─── INDI records ────────────────────────────────────────────
@@ -159,6 +174,22 @@ export function serializeClanToGedcom(
     }
 
     if (p.bio) emit(o, 1, "NOTE", p.bio);
+
+    // Cross-clan in-law links (Section 28). Multiple `_INLAW` blocks
+    // per INDI when the person has more than one peer.
+    for (const e of inlawsByLocal.get(p.id) ?? []) {
+      emit(o, 1, "_INLAW");
+      emit(o, 2, "_CLAN", e.peek.clan_name);
+      if (e.peek.masked) {
+        // Living peer in a clan that hides living info from outsiders.
+        emit(o, 2, "_PERSON", "(người còn sống, chưa công khai)");
+      } else {
+        if (e.peek.full_name) emit(o, 2, "_PERSON", e.peek.full_name);
+        if (e.peek.gender) emit(o, 2, "_SEX", e.peek.gender);
+        if (e.peek.birth_year) emit(o, 2, "_BIRTH_YEAR", e.peek.birth_year);
+        if (e.peek.death_year) emit(o, 2, "_DEATH_YEAR", e.peek.death_year);
+      }
+    }
 
     // Family pointers: FAMC = the family they were a child in,
     // FAMS = each family they're a spouse in.

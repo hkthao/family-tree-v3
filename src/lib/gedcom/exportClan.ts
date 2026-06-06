@@ -1,17 +1,23 @@
 import { getClanBookData } from "@/lib/queries/clan-book";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
+import { getClanInlawExports } from "@/lib/queries/person-links";
 
 import { serializeClanToGedcom } from "./serialize";
 
 /**
  * Fetch the clan + every person/family/branch, serialize to GEDCOM
- * 5.5.1, and trigger a browser download.
+ * 5.5.1, and trigger a browser download. Cross-clan in-law links
+ * are embedded as `_INLAW` custom blocks per INDI (one-way export
+ * preservation — see serialize.ts).
  */
 export async function downloadClanGedcom(
   clan: ClanDetail,
 ): Promise<{ filename: string; bytes: number }> {
-  const data = await getClanBookData(clan.id);
-  const ged = serializeClanToGedcom(clan, data);
+  const [data, inlaws] = await Promise.all([
+    getClanBookData(clan.id),
+    getClanInlawExports(clan.id).catch(() => []),
+  ]);
+  const ged = serializeClanToGedcom(clan, data, inlaws);
 
   const safe = clan.name
     .normalize("NFD")

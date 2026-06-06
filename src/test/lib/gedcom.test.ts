@@ -171,6 +171,67 @@ describe("GEDCOM serialize → parse round-trip", () => {
     expect(abc.birthDatePrecision).toBe("year");
   });
 
+  it("emits and re-parses _INLAW blocks round-trip", () => {
+    const persons: PersonDetail[] = [
+      makePerson({ id: "p1", full_name: "Nguyễn Thị Lan", gender: "F" }),
+    ];
+    const data: ClanBookData = {
+      persons,
+      families: [],
+      branches: [],
+      childToFamily: {},
+    };
+    const ged = serializeClanToGedcom(clan, data, [
+      {
+        localPersonId: "p1",
+        peek: {
+          masked: false,
+          clan_id: "c2",
+          clan_name: "Họ Trần",
+          person_id: "p2",
+          full_name: "Trần Văn B",
+          gender: "M",
+          generation: 4,
+          birth_year: 1980,
+          death_year: null,
+          is_living: true,
+        },
+      },
+      // A second link (e.g. dual-clan record), also for p1 — should
+      // emit two _INLAW blocks under that INDI.
+      {
+        localPersonId: "p1",
+        peek: {
+          masked: true,
+          clan_id: "c3",
+          clan_name: "Họ Lê",
+          person_id: "p3",
+          is_living: true,
+        },
+      },
+    ]);
+
+    // Sanity check the raw text: both blocks present, masked entry
+    // emits a placeholder _PERSON string.
+    expect(ged).toMatch(/1 _INLAW[\s\S]*2 _CLAN Họ Trần[\s\S]*2 _PERSON Trần Văn B/);
+    expect(ged).toMatch(/2 _CLAN Họ Lê/);
+    expect(ged).toMatch(/người còn sống, chưa công khai/);
+
+    // Round-trip: parser exposes the same fields on the INDI.
+    const parsed = parseGedcom(ged);
+    const indi = parsed.indis[0];
+    expect(indi.inlaws).toHaveLength(2);
+    const real = indi.inlaws.find((x) => x.clanName === "Họ Trần")!;
+    expect(real.personName).toBe("Trần Văn B");
+    expect(real.gender).toBe("M");
+    expect(real.birthYear).toBe(1980);
+    expect(real.deathYear).toBeNull();
+    const masked = indi.inlaws.find((x) => x.clanName === "Họ Lê")!;
+    expect(masked.personName).toMatch(/chưa công khai/);
+    expect(masked.gender).toBeNull();
+    expect(masked.birthYear).toBeNull();
+  });
+
   it("foreign GEDCOM with surname in trailing slashes still parses", () => {
     const foreign = `0 HEAD
 1 CHAR UTF-8

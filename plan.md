@@ -1645,5 +1645,6 @@ chừa slot doc article (chưa viết).
 
 **Phase 2 đã làm**:
 - ✅ Tree ghost badge: card person có link confirmed hiện "↔" chip oxblood/bronze ở góc phải. Click → popup nhẹ trên cây với peek info (cùng pattern qua `get_link_peek` → masking nhất quán). Không cần rời cây. `linkedIdsRef` để chart không phải rebuild khi link thay đổi.
+- ✅ GEDCOM `_INLAW` export: mỗi confirmed link emit 1 sub-block `_INLAW { _CLAN, _PERSON, _SEX, _BIRTH_YEAR, _DEATH_YEAR }` dưới INDI của local person. Masked peer (clan đối tác hide living) → `_PERSON "(người còn sống, chưa công khai)"`. Parse round-trip: `ParsedIndi.inlaws[]` được expose nhưng **import KHÔNG tự recreate** `person_links` (peer clan có thể không tồn tại ở DB đích; peer person chỉ là string) — preserve thông tin để human-read, admin tự re-propose qua UI nếu cần.
 
 **Phase 2** (chưa làm): tree ghost spouse, GEDCOM `_INLAW`.

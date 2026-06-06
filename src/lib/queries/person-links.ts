@@ -216,3 +216,43 @@ export async function peekLink(
   if (error) throw new Error(error.message);
   return data as unknown as LinkPeek;
 }
+
+export interface InlawExportEntry {
+  /** The local person (in the exporting clan) whose card the link sits on. */
+  localPersonId: string;
+  peek: LinkPeek;
+}
+
+/**
+ * Bundle of confirmed links involving the exporting clan, peeked so
+ * the peer name + clan are ready for GEDCOM serialization. Each row
+ * is one local-person→peer pair; persons with multiple links produce
+ * multiple entries.
+ *
+ * Peer rows that fail to peek (peer person soft-deleted, etc.) are
+ * dropped silently — export shouldn't break over one missing link.
+ */
+export async function getClanInlawExports(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<InlawExportEntry[]> {
+  const links = await listLinksForClan(clanId, client);
+  const confirmed = links.filter((l) => l.status === "confirmed");
+  const out: InlawExportEntry[] = [];
+  for (const l of confirmed) {
+    const localId =
+      l.clan_a_id === clanId
+        ? l.person_a_id
+        : l.clan_b_id === clanId
+          ? l.person_b_id
+          : null;
+    if (!localId) continue;
+    try {
+      const peek = await peekLink(l.id, client);
+      out.push({ localPersonId: localId, peek });
+    } catch {
+      // dead peer / RLS hiccup — skip rather than abort the export
+    }
+  }
+  return out;
+}
