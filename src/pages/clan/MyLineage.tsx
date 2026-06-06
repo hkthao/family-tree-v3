@@ -16,6 +16,7 @@ import {
   traceLineage,
   type LineageVia,
 } from "@/lib/lineage";
+import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
 import { listClanMembers, setMySelfPerson } from "@/lib/queries/members";
 import { getTreeData } from "@/lib/queries/tree";
@@ -303,6 +304,26 @@ function LineageView({
       toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
+  // Batch-resolve signed URLs for every uploaded photo on the lineage
+  // chain. Keyed by sorted paths so re-renders share the cache.
+  const lineagePhotoPaths = useMemo(
+    () =>
+      [
+        ...new Set(
+          lineage.steps
+            .map((s) => s.person.photo_path)
+            .filter((p): p is string => !!p),
+        ),
+      ].sort(),
+    [lineage],
+  );
+  const { data: photoUrls } = useQuery({
+    queryKey: ["signed-photos-batch", clanId, "lineage", lineagePhotoPaths],
+    queryFn: () => getSignedPhotoUrlMap(lineagePhotoPaths),
+    enabled: lineagePhotoPaths.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Build a filtered slice of (persons, families) representing only
   // the direct line: each step's person, and one synthetic family per
   // gap connecting child to chosen parent. Other rels (spouses,
@@ -320,7 +341,7 @@ function LineageView({
       birth_date: s.person.birth_date,
       death_date: s.person.death_date,
       branch_id: null as string | null,
-      photo_path: null as string | null,
+      photo_path: s.person.photo_path,
     }));
     const families: Array<{
       id: string;
@@ -337,8 +358,8 @@ function LineageView({
         wife_id: parent.arrivedVia === "mother" ? parent.person.id : null,
       });
     }
-    return toFamilyChart(persons, families);
-  }, [lineage]);
+    return toFamilyChart(persons, families, photoUrls);
+  }, [lineage, photoUrls]);
 
   // Build / rebuild the chart whenever the filtered slice changes
   // (initial mount or choices toggled).
