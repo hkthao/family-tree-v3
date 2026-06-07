@@ -26,10 +26,22 @@ import { cn } from "@/lib/utils";
  * Tree.tsx badge dialog and PersonDetail's link card both embed it.
  * Living relatives in a clan that hides them appear masked.
  */
-export function InlawFamilyCard({ linkId }: { linkId: string }) {
+export function InlawFamilyCard({
+  linkId,
+  /**
+   * Clan id of the side the caller is viewing FROM. Disambiguates
+   * which side counts as "peer" when the caller is a member of both
+   * clans (platform admin / dual-clan owner). When omitted the RPC
+   * falls back to the legacy is_clan_member heuristic.
+   */
+  viewingClanId,
+}: {
+  linkId: string;
+  viewingClanId?: string;
+}) {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["inlaw-peer-relatives", linkId],
-    queryFn: () => getInlawPeerRelatives(linkId),
+    queryKey: ["inlaw-peer-relatives", linkId, viewingClanId ?? null],
+    queryFn: () => getInlawPeerRelatives(linkId, viewingClanId ?? null),
   });
   if (isLoading)
     return (

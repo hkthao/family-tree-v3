@@ -745,6 +745,7 @@ export default function Tree() {
       <InlawBadgeDialog
         personId={badgePersonId}
         userId={userId}
+        viewingClanId={clan.id}
         onClose={() => setBadgePersonId(null)}
       />
     </div>
@@ -762,10 +763,12 @@ export default function Tree() {
 function InlawBadgeDialog({
   personId,
   userId,
+  viewingClanId,
   onClose,
 }: {
   personId: string | null;
   userId: string;
+  viewingClanId: string;
   onClose: () => void;
 }) {
   const open = !!personId;
@@ -812,7 +815,11 @@ function InlawBadgeDialog({
           </button>
         </header>
         <div className="p-5">
-          <InlawBadgeBody personId={personId!} userId={userId} />
+          <InlawBadgeBody
+            personId={personId!}
+            userId={userId}
+            viewingClanId={viewingClanId}
+          />
         </div>
       </div>
     </div>
@@ -822,9 +829,11 @@ function InlawBadgeDialog({
 function InlawBadgeBody({
   personId,
   userId,
+  viewingClanId,
 }: {
   personId: string;
   userId: string;
+  viewingClanId: string;
 }) {
   // Reuse PersonDetail's typed helper + the canonical "person-links"
   // cache prefix so mutations (revoke / accept / propose) invalidate
@@ -847,7 +856,7 @@ function InlawBadgeBody({
       {links.map((l, idx) => (
         <div key={l.id}>
           {idx > 0 && <hr className="my-5 border-t" />}
-          <InlawFamilyCard linkId={l.id} />
+          <InlawFamilyCard linkId={l.id} viewingClanId={viewingClanId} />
         </div>
       ))}
     </div>
