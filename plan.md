@@ -1669,3 +1669,198 @@ chừa slot doc article (chưa viết).
 - ✅ GEDCOM `_INLAW` export: mỗi confirmed link emit 1 sub-block `_INLAW { _CLAN, _PERSON, _SEX, _BIRTH_YEAR, _DEATH_YEAR }` dưới INDI của local person. Masked peer (clan đối tác hide living) → `_PERSON "(người còn sống, chưa công khai)"`. Parse round-trip: `ParsedIndi.inlaws[]` được expose nhưng **import KHÔNG tự recreate** `person_links` (peer clan có thể không tồn tại ở DB đích; peer person chỉ là string) — preserve thông tin để human-read, admin tự re-propose qua UI nếu cần.
 
 **Phase 2** (chưa làm): tree ghost spouse, GEDCOM `_INLAW`.
+
+## 29. Web Push (VAPID, không Firebase) — nhắc giỗ/sinh nhật ngay trên thiết bị
+
+Trạng thái: **chưa làm**, kế hoạch (2026-06-07). Xếp sau Phase 3 contributions vì tái dùng cron + lunar engine có sẵn.
+
+### 29.1 Bối cảnh & nguyên tắc cốt lõi
+
+App đã có 3 lớp nhắc:
+1. **Trang Hôm nay** — luôn chạy, không cần quyền.
+2. **Email reminder** qua `notify-events` Edge Function + pg_cron (giỗ/sinh nhật + mùng 1/rằm).
+3. **Xuất `.ics`** từ trang Sự kiện sang Google/Apple Calendar.
+
+Web Push là **lớp phụ thứ 4**, không thay thế 3 lớp trên. Người dùng app phần nhiều **lớn tuổi + ở quê + iOS hạn chế** — tỉ lệ bật push thành công sẽ thấp. App phải vẫn hữu ích khi không có push.
+
+Nguyên tắc:
+- **Dùng Web Push API + VAPID chuẩn mở — KHÔNG Firebase/FCM.** Không tạo project Firebase, không nhúng SDK, không khoá nhà cung cấp. Trình duyệt tự routing qua endpoint (Google push service / Mozilla / APNs). Code phía gửi y hệt nhau qua lib `web-push`.
+- **Push là LỚP PHỤ.** App đã hữu ích không có push. Người dùng từ chối quyền → đẩy sang phương án `.ics` đã có.
+- **Mọi việc gửi đặt ở backend.** Frontend chỉ đăng ký subscription + hiển thị banner pre-prompt. Edge Function ký + gửi.
+
+### 29.2 Tái dùng infrastructure đã có (KHÔNG viết song song)
+
+Web Push **mở rộng** stack thông báo hiện có, không tạo ra stack thứ hai. Cụ thể:
+
+| Đã có | Web Push tái dùng | KHÔNG tạo mới |
+|---|---|---|
+| `notify-events` Edge Function | Mở rộng để gửi push + email cùng lúc | ❌ `send-reminders` riêng |
+| `event_subscriptions` (per-user/clan/branch/person opt-in) | Dùng nguyên — opt-in dùng chung cho cả email lẫn push | ❌ `notification_prefs` riêng |
+| `notification_log` UNIQUE `(user_id, event_key, channel)` | Thêm row `channel='webpush'` để idempotent | ❌ tracking trên `push_subscriptions` |
+| `profiles.notify_monthly_lunar` toggle | Thêm `profiles.notify_via_push` toggle cùng pattern | ❌ |
+| pg_cron `notify-events-daily` 00:05 UTC | Reuse — push gửi cùng lúc với email | ❌ cron riêng |
+| Lunar engine `@dqcai/vn-lunar` | Reuse | ❌ |
+
+### 29.3 Schema mới
+
+```sql
+-- 1 user có thể có nhiều thiết bị/trình duyệt → nhiều subscription
+create table push_subscriptions (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references auth.users(id) on delete cascade,
+  endpoint        text not null unique,
+  p256dh          text not null,
+  auth            text not null,
+  user_agent      text,
+  created_at      timestamptz not null default now(),
+  last_success_at timestamptz,
+  failure_count   int not null default 0
+);
+create index push_subs_user_idx on push_subscriptions (user_id);
+
+-- Toggle "nhận push" toàn cục, theo pattern notify_monthly_lunar đã có
+alter table profiles
+  add column notify_via_push boolean not null default false;
+```
+
+**KHÔNG** tạo `notification_prefs` riêng. Opt-in chi tiết "nhắc event nào" tái dùng `event_subscriptions` đã ship.
+
+### 29.4 RLS
+
+```sql
+alter table push_subscriptions enable row level security;
+create policy psub_owner on push_subscriptions
+  for all using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+```
+
+Edge Function `notify-events` đọc bảng này bằng service_role (vượt RLS, server-side).
+
+### 29.5 Khoá VAPID & env
+
+Sinh 1 lần bằng `npx web-push generate-vapid-keys`:
+- `VITE_VAPID_PUBLIC_KEY` — public, nhúng frontend. An toàn để lộ.
+- `VAPID_PRIVATE_KEY` — secret của Edge Function `notify-events`. KHÔNG commit, KHÔNG frontend.
+- `VAPID_SUBJECT` — `mailto:thaohk@vnvc.vn` (yêu cầu giao thức).
+
+Set qua `npx supabase secrets set` cho Edge Function (giống `RESEND_API_KEY`, `CRON_TOKEN`).
+
+### 29.6 Service Worker (mở rộng SW có sẵn)
+
+`vite-plugin-pwa` đã sinh SW. Thêm handler `push` + `notificationclick` trong custom SW file:
+
+```ts
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? {};
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? 'Gia phả', {
+      body: data.body,
+      icon: '/icon-192.png',
+      badge: '/badge.png',
+      data: { url: data.url ?? '/' },
+      tag: data.tag,           // event_key để gộp nhắc trùng cross-device
+      requireInteraction: true // giỗ — giữ thông báo cho tới khi user tap
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.openWindow(event.notification.data.url));
+});
+```
+
+### 29.7 Luồng xin quyền (cẩn thận với người lớn tuổi)
+
+- **KHÔNG** `Notification.requestPermission()` ngay khi mở app. Bị từ chối 1 lần thì rất khó xin lại.
+- Chỉ xin quyền **sau khi user chủ động bật** toggle "Nhắc tôi qua thông báo" trong `/account`.
+- Trước khi gọi prompt hệ thống, hiện **pre-prompt banner** giải thích vì sao cần. User đồng ý → mới gọi API thật.
+- User từ chối → hiện hướng dẫn nhẹ + **đề xuất ngay `.ics`** làm thay thế (link trực tiếp tới nút Xuất lịch ở /events).
+
+### 29.8 Hook + UI
+
+- `usePushSubscription()` — hook khôi phục/tạo subscription, lưu vào `push_subscriptions`. Idempotent: cùng endpoint không tạo row thứ hai (dùng `upsert` on `endpoint`).
+- Card mới trong `/account`: toggle `notify_via_push` + nút "Thử gửi push test" (gọi Edge Function `send-test-push`).
+- **Permission revocation drift fix**: trên app boot, check `Notification.permission`. Nếu `denied` nhưng còn sub trong DB → xoá sub. Tránh case "user tắt notification trong browser settings, app không biết, push gửi đi nhưng không hiện".
+
+### 29.9 Mở rộng `notify-events` Edge Function
+
+Pseudocode bổ sung (sau bước email dispatch):
+
+```ts
+import webpush from 'npm:web-push@^3';  // ưu tiên npm: specifier trên Deno
+webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+
+// Với mỗi (user_id, event_key) đã được chọn để nhắc:
+//   1. Check profiles.notify_via_push = true → nếu false, bỏ qua push
+//   2. Reserve notification_log row với channel='webpush' (ON CONFLICT DO NOTHING)
+//      → nếu đã có row, skip (đã gửi rồi)
+//   3. Fetch all push_subscriptions của user (nhiều thiết bị)
+//   4. Promise.allSettled chunks of 50 → webpush.sendNotification
+//      payload = { title, body (1 dòng), url (deep-link), tag (event_key) }
+//   5. Xử lý lỗi (29.10)
+```
+
+Payload web push **bị giới hạn ~4KB** và **mã hoá đầu-cuối**. Chỉ gửi tối thiểu (title + 1 dòng + URL). KHÔNG nhét dữ liệu nhạy cảm. Áp đúng quy tắc ẩn người còn sống: nội dung không lộ thông tin người nhận không được phép thấy.
+
+### 29.10 Dọn subscription chết
+
+- HTTP **404** hoặc **410 Gone** → subscription hết hạn → **xoá** khỏi `push_subscriptions`.
+- Lỗi khác (network, 5xx) → tăng `failure_count`. Quá 5 → xoá.
+- Thành công → cập nhật `last_success_at`, reset `failure_count = 0`.
+
+### 29.11 iOS — rào cản thật, cần UX hướng dẫn rõ
+
+- iOS hỗ trợ web push **chỉ từ 16.4 trở lên** VÀ **bắt buộc Add to Home Screen** (mở từ icon, không phải Safari).
+- Detect qua feature-detect (KHÔNG UA sniff):
+  ```ts
+  const supportsPush = 'PushManager' in window && 'Notification' in window;
+  const isStandalone = 'standalone' in navigator
+    && (navigator as any).standalone === true;
+  ```
+- Nếu iOS + chưa standalone → hiện banner "Để nhận thông báo, cần Thêm Gia phả vào màn hình chính" + link doc bước add-to-home.
+- Nếu iOS quá cũ (< 16.4) → ẩn toggle push, hiện text "Thiết bị iOS này chưa hỗ trợ — dùng .ics".
+
+### 29.12 Concurrency khi fan-out
+
+Với 1000 subscription, `await sendNotification(...)` tuần tự = phút. Bắt buộc:
+```ts
+const CHUNK = 50;
+for (let i = 0; i < subs.length; i += CHUNK) {
+  await Promise.allSettled(
+    subs.slice(i, i + CHUNK).map(s => webpush.sendNotification(s, payload))
+  );
+}
+```
+
+### 29.13 Test (bổ sung)
+
+- Đăng ký subscription → INSERT đúng row, RLS chặn user khác đọc.
+- `notify_via_push = false` → skip push hoàn toàn (chỉ email).
+- `notification_log` reserve-then-commit: cron chạy 2 lần liên tiếp → push gửi 1 lần.
+- 410 Gone → subscription bị xoá; lần gửi sau không nhắm tới endpoint đã chết.
+- Payload **không** chứa tên người còn sống bị ẩn (test với `hide_living_for_nonmembers=true`).
+- `Notification.permission = 'denied'` + sub còn tồn tại → app boot xoá sub.
+- iOS detect (mock) feature-detect: PushManager missing → toggle bị ẩn.
+- Concurrency: 100 subscription, 1 sub fail → 99 cái còn lại vẫn gửi (allSettled).
+
+### 29.14 Lộ trình triển khai
+
+Một migration + extend notify-events + 1 hook + 1 Account card + SW handler + RLS test.
+
+1. **Migration `push_subscriptions` + `profiles.notify_via_push`.**
+2. **Sinh VAPID keys + set secrets prod.**
+3. **SW handler push + notificationclick.**
+4. **Hook `usePushSubscription` + `/account` toggle + pre-prompt banner.**
+5. **Mở rộng `notify-events`** dispatch push song song email.
+6. **Permission revocation drift fix.**
+7. **iOS A2HS banner + doc article hướng dẫn.**
+8. **RLS test + integration test.**
+
+### 29.15 Ngoài phạm vi v1
+
+- Push tương tác 2 chiều (trả lời từ notification).
+- Cá nhân hoá giờ gửi theo múi giờ user (mặc định giờ VN 07:05).
+- Gom digest theo tuần.
+- SMS nhắc (tốn phí — cân nhắc riêng).
+- Push cho contributions pending (admin) — Phase tiếp.
