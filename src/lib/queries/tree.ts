@@ -31,6 +31,16 @@ export interface TreeData {
 }
 
 /**
+ * Hard ceiling — PostgREST's `max_rows` setting (1000 by default on
+ * Supabase Cloud / local config.toml) silently truncates the result.
+ * Without an explicit `.range()` above that, a 5000-person clan would
+ * load with only 1000 persons and 4000 missing nodes drawn as orphans.
+ * Set a defensive upper bound that comfortably covers plan §5's
+ * 7000-person max with headroom.
+ */
+const TREE_FETCH_MAX = 9999;
+
+/**
  * Fetch every (non-deleted) person + family in a clan in a single round-trip.
  *
  * Reasonable up to a few thousand persons (each row is small). For very
@@ -48,12 +58,14 @@ export async function getTreeData(
         "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, branch_id, photo_path",
       )
       .eq("clan_id", clanId)
-      .is("deleted_at", null),
+      .is("deleted_at", null)
+      .range(0, TREE_FETCH_MAX),
     client
       .from("families")
       .select("id, husband_id, wife_id")
       .eq("clan_id", clanId)
-      .is("deleted_at", null),
+      .is("deleted_at", null)
+      .range(0, TREE_FETCH_MAX),
   ]);
   if (pErr) throw new Error(pErr.message);
   if (fErr) throw new Error(fErr.message);

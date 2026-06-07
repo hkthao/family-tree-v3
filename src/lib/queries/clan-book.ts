@@ -40,6 +40,10 @@ export async function getClanBookData(
   clanId: string,
   client: Client = defaultClient,
 ): Promise<ClanBookData> {
+  // PostgREST's max_rows (1000 by default) silently truncates list
+  // queries. Used by PDF export + GEDCOM — both want every row,
+  // not the first 1000. Same defensive ceiling as getTreeData.
+  const MAX_ROWS = 9999;
   const [pq, fq, bq] = await Promise.all([
     client
       .from("persons")
@@ -47,17 +51,20 @@ export async function getClanBookData(
       .eq("clan_id", clanId)
       .is("deleted_at", null)
       .order("generation", { ascending: true, nullsFirst: false })
-      .order("birth_date", { ascending: true, nullsFirst: false }),
+      .order("birth_date", { ascending: true, nullsFirst: false })
+      .range(0, MAX_ROWS),
     client
       .from("families")
       .select("id, husband_id, wife_id")
       .eq("clan_id", clanId)
-      .is("deleted_at", null),
+      .is("deleted_at", null)
+      .range(0, MAX_ROWS),
     client
       .from("branches")
       .select("id, name")
       .eq("clan_id", clanId)
-      .order("name"),
+      .order("name")
+      .range(0, MAX_ROWS),
   ]);
 
   if (pq.error) throw new Error(pq.error.message);

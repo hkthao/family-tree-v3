@@ -34,17 +34,23 @@ export async function getRelativesIndex(
   clanId: string,
   client: Client = defaultClient,
 ): Promise<RelativesIndex> {
+  // Same defensive cap as getTreeData — PostgREST max_rows truncates
+  // silently at 1000 by default, which would leave a 5000-person
+  // Danh bạ with most parent/spouse columns unfilled.
+  const MAX_ROWS = 9999;
   const [pq, fq] = await Promise.all([
     client
       .from("persons")
       .select("id, full_name, gender, birth_family_id")
       .eq("clan_id", clanId)
-      .is("deleted_at", null),
+      .is("deleted_at", null)
+      .range(0, MAX_ROWS),
     client
       .from("families")
       .select("id, husband_id, wife_id")
       .eq("clan_id", clanId)
-      .is("deleted_at", null),
+      .is("deleted_at", null)
+      .range(0, MAX_ROWS),
   ]);
   if (pq.error) throw new Error(pq.error.message);
   if (fq.error) throw new Error(fq.error.message);

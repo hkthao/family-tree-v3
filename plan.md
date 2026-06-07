@@ -1639,6 +1639,11 @@ chừa slot doc article (chưa viết).
 - ✅ Audit trigger (migration `20260606205259`) — mỗi propose/confirm/revoke ghi 1 row vào `audit_log` dưới `clan_a_id`. `entity_type='person_link'`. Restore qua `restore_audit_entry` intentionally skip (trigger chặn rollback to pending).
 - ✅ Email notify (Edge function `notify-inlaw`) — fire-and-forget từ client sau `confirmByToken` và `revokeLink`. Dispatch theo status: confirmed → email admin clan A (proposer); revoked → email admin cả 2 bên. Token mode chưa có clan B lúc propose → bỏ pending notify (chờ public-discovery).
 
+**Performance hardening (2026-06-07)**:
+- ✅ Fixed silent truncation bug: PostgREST `max_rows = 1000` (config.toml + Supabase Cloud default) silently truncate ed `getTreeData`, `getClanBookData`, `getRelativesIndex` cho clan > 1000 person. Thêm `.range(0, 9999)` defensive — covers plan §5 ceiling 7000/clan với headroom.
+- ✅ Benchmark `toFamilyChart` với 5000 person dataset — chạy < 100ms (locally ~10ms). Adapter là O(P + F), không có loop bậc 2.
+- ✅ Seed opt-in `BIG_CLAN_SIZE=5000 npm run seed` để manual test render full tree.
+
 **Phase 1 còn thiếu**: (none — Phase 1 đã đủ)
 
 **Public-discovery mode (§28.11.A) — đã làm 2026-06-06**:

@@ -389,6 +389,23 @@ function buildClanRoster(): ClanSpec[] {
     withViewer: true,
     withShareLinks: true,
   });
+  // Opt-in: set BIG_CLAN_SIZE=5000 npm run seed to spin up an
+  // intentionally huge clan for tree-render benchmarking. Defaults
+  // off because building it takes ~3-5 minutes (no photo fetches —
+  // see seedClan's gen 1 path skips them automatically).
+  const bigSize = Number(process.env.BIG_CLAN_SIZE ?? "0");
+  if (bigSize >= 500) {
+    specs.push({
+      ownerEmail: "big-admin@example.test",
+      ownerName: "Big Admin",
+      clanLabel: "big",
+      size: bigSize,
+      visibility: "private",
+      withEditor: false,
+      withViewer: false,
+      withShareLinks: false,
+    });
+  }
 
   // --- 48 generated clans with a realistic size distribution --------------
   // Sizes weighted toward small (most real-world clans haven't been
