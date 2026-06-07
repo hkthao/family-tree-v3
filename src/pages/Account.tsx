@@ -33,6 +33,7 @@ import {
   deleteMyAccount,
   getMyProfile,
   updateMyDisplayName,
+  updateMyMonthlyLunarPref,
 } from "@/lib/queries/profile";
 import { supabase } from "@/lib/supabase";
 
@@ -77,6 +78,12 @@ export default function Account() {
         <DisplayNameCard
           userId={userId}
           current={profile?.display_name ?? null}
+          queryClient={queryClient}
+        />
+
+        <MonthlyLunarCard
+          userId={userId}
+          enabled={profile?.notify_monthly_lunar ?? false}
           queryClient={queryClient}
         />
 
@@ -511,6 +518,62 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
             </div>
           </>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Mùng 1 / Rằm reminder toggle ─────────────────────────────────
+
+function MonthlyLunarCard({
+  userId,
+  enabled,
+  queryClient,
+}: {
+  userId: string;
+  enabled: boolean;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const toast = useToast();
+  const m = useMutation({
+    mutationFn: (next: boolean) => updateMyMonthlyLunarPref(userId, next),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.myProfile(userId),
+      });
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Nhắc mùng 1 / rằm âm lịch</CardTitle>
+        <CardDescription>
+          Mỗi ngày 1 và ngày 15 âm lịch, app gửi email nhắc thắp hương.
+          Áp dụng cho tài khoản này, không phụ thuộc dòng họ nào.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => m.mutate(e.target.checked)}
+            disabled={m.isPending}
+            className="mt-1 h-5 w-5 accent-primary shrink-0"
+          />
+          <div>
+            <p className="font-medium">
+              {enabled ? "Đang bật — nhận email mùng 1 và rằm" : "Tắt"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để
+              dừng.
+            </p>
+          </div>
+        </label>
       </CardContent>
     </Card>
   );
