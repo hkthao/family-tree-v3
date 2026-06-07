@@ -54,6 +54,18 @@ function esc(s: string): string {
     .replaceAll('"', "&quot;");
 }
 
+/**
+ * Strip CR/LF + collapse whitespace for fields that land in an email
+ * header (subject). A clan name like `Họ X\r\nBcc: attacker@evil`
+ * would otherwise reach Resend's API body intact; while Resend's own
+ * parser may or may not flatten it, downstream MTAs / MUAs that
+ * naively split on \r\n would treat the trailing line as a new
+ * header. Stripping here is cheap defense-in-depth.
+ */
+function safeForHeader(s: string): string {
+  return s.replace(/[\r\n\t]+/g, " ").trim();
+}
+
 function emailLayout(opts: {
   clanName: string;
   title: string;
@@ -93,7 +105,7 @@ function buildPendingEmail(opts: {
   note: string | null;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Gia phả ${opts.recipientClanName}] ${opts.peerClanName} đề nghị liên kết thông gia`;
+  const subject = `[Gia phả ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đề nghị liên kết thông gia`;
   const noteBlock = opts.note
     ? `<div style="border-left:4px solid #B8862A;background:#FBF7F0;padding:10px 14px;margin:14px 0;">
          <p style="font-size:11px;color:#6F665F;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px;">
@@ -135,7 +147,7 @@ function buildConfirmedEmail(opts: {
   peerPersonName: string;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Gia phả ${opts.recipientClanName}] ${opts.peerClanName} đã xác nhận liên kết thông gia`;
+  const subject = `[Gia phả ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đã xác nhận liên kết thông gia`;
   const body = `
     <p>Đề xuất liên kết của bạn với <strong>${esc(opts.peerClanName)}</strong>
        vừa được admin bên đó xác nhận.</p>
@@ -165,7 +177,7 @@ function buildRevokedEmail(opts: {
   peerClanName: string;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Gia phả ${opts.recipientClanName}] Liên kết với ${opts.peerClanName} đã thu hồi`;
+  const subject = `[Gia phả ${safeForHeader(opts.recipientClanName)}] Liên kết với ${safeForHeader(opts.peerClanName)} đã thu hồi`;
   const body = `
     <p>Liên kết thông gia giữa <strong>${esc(opts.recipientClanName)}</strong>
        và <strong>${esc(opts.peerClanName)}</strong> đã được thu hồi.</p>
