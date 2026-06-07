@@ -653,57 +653,69 @@ function InLawLinkRow({
     return <p className="text-sm text-muted-foreground">Đang tải…</p>;
   }
   if (!peek) return null;
+  // Build meta string once so the JSX stays readable.
+  const metaBits: string[] = [peek.clan_name];
+  if (!peek.masked) {
+    if (peek.gender) metaBits.push(peek.gender === "M" ? "Nam" : "Nữ");
+    if (peek.generation) metaBits.push(`Đời ${peek.generation}`);
+    if (peek.birth_year && peek.death_year) {
+      metaBits.push(`${peek.birth_year}–${peek.death_year}`);
+    } else if (peek.birth_year) {
+      metaBits.push(`sinh ${peek.birth_year}`);
+    } else if (peek.death_year) {
+      metaBits.push(`mất ${peek.death_year}`);
+    }
+  }
+
   return (
-    <div className="rounded-md border bg-background p-3 space-y-2">
-      <div className="flex items-start justify-between gap-3">
-        <div className="text-sm min-w-0">
-          <p className="font-medium">
-            {peek.masked
-              ? "Người còn sống"
-              : (peek.full_name ?? "—")}
-          </p>
+    <div className="rounded-md border bg-background p-3 space-y-3">
+      {/* Identity row — full width, no horizontal squeeze from buttons. */}
+      <div className="min-w-0">
+        <p className="font-medium text-sm truncate">
+          {peek.masked
+            ? "Người còn sống"
+            : (peek.full_name ?? "—")}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+          <span className="text-foreground">{metaBits[0]}</span>
+          {metaBits.slice(1).map((bit) => (
+            <span key={bit}> · {bit}</span>
+          ))}
+        </p>
+        {peek.masked && (
           <p className="text-xs text-muted-foreground mt-0.5">
-            <span className="text-foreground">{peek.clan_name}</span>
-            {!peek.masked && peek.gender
-              ? ` · ${peek.gender === "M" ? "Nam" : "Nữ"}`
-              : ""}
-            {!peek.masked && peek.generation
-              ? ` · Đời ${peek.generation}`
-              : ""}
-            {!peek.masked
-              ? (peek.birth_year && peek.death_year
-                  ? ` · ${peek.birth_year}–${peek.death_year}`
-                  : peek.birth_year
-                    ? ` · sinh ${peek.birth_year}`
-                    : peek.death_year
-                      ? ` · mất ${peek.death_year}`
-                      : "")
-              : ""}
+            Họ này chưa công khai thông tin người sống.
           </p>
-          {peek.masked && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Họ này chưa công khai thông tin người sống.
-            </p>
-          )}
-        </div>
-        <div className="flex gap-2 items-center shrink-0">
-          {!peek.masked && (
-            <Button asChild variant="outline" size="sm">
-              <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
-                Xem
-              </Link>
-            </Button>
-          )}
+        )}
+      </div>
+
+      {/* Action row — buttons split full width on narrow screens, hug
+          their content on sm+. Previously the row was a single flex
+          row that squeezed the name into character-per-line wrap. */}
+      <div className="flex gap-2 flex-wrap">
+        {!peek.masked && (
           <Button
+            asChild
             variant="outline"
             size="sm"
-            onClick={() => setExpanded((x) => !x)}
-            aria-expanded={expanded}
+            className="flex-1 sm:flex-none"
           >
-            {expanded ? "Thu gọn" : "Gia đình bên đó"}
+            <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
+              Xem trang
+            </Link>
           </Button>
-        </div>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setExpanded((x) => !x)}
+          aria-expanded={expanded}
+          className="flex-1 sm:flex-none"
+        >
+          {expanded ? "Thu gọn" : "Gia đình bên đó"}
+        </Button>
       </div>
+
       {expanded && (
         <div className="pt-2 border-t">
           <InlawFamilyCard linkId={link.id} viewingClanId={viewingClanId} />
