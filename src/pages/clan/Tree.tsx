@@ -384,10 +384,12 @@ export default function Tree() {
               this.querySelector(".card-body")?.appendChild(badge);
             }
 
-            // In-law link badge — small "↔" chip under the gen badge,
-            // shown only when this person has a confirmed person_link
-            // to someone in another clan. Click opens a popup with the
-            // peek info (no navigation needed — keep tree context).
+            // In-law link badge — small "↔" pill on the same top row
+            // as the generation badge (left of it). Solid bronze fill
+            // + white glyph so it stays legible on both light and dark
+            // card backgrounds. Previously sat on the right edge at
+            // mid-height where it collided with the hover action
+            // buttons (add / edit) at y=46.
             this.querySelector(".inlaw-badge")?.remove();
             if (personId && linkedIdsRef.current.has(personId)) {
               const inlaw = document.createElementNS(
@@ -396,11 +398,11 @@ export default function Tree() {
               );
               inlaw.setAttribute("class", "inlaw-badge");
               inlaw.innerHTML = `
-                <circle cx="232" cy="38" r="11" fill="#FBF7F0"
-                        stroke="#B8862A" stroke-width="1.5" />
-                <text x="232" y="42" text-anchor="middle"
-                      fill="#B8862A" font-size="13" font-weight="700">↔</text>
-                <title>Liên kết thông gia</title>`;
+                <circle cx="200" cy="15" r="9" fill="#B8862A"
+                        stroke="#FBF7F0" stroke-width="1" />
+                <text x="200" y="19" text-anchor="middle"
+                      fill="#FFFFFF" font-size="12" font-weight="700">↔</text>
+                <title>Liên kết thông gia — bấm để xem</title>`;
               inlaw.style.cursor = "pointer";
               inlaw.addEventListener("click", (e) => {
                 e.stopPropagation();
