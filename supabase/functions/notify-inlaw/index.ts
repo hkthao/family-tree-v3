@@ -205,23 +205,34 @@ interface OutEmail {
 
 async function sendOne(email: OutEmail): Promise<{ ok: boolean; error?: string }> {
   if (!RESEND_API_KEY) return { ok: false, error: "no-api-key (dry-run)" };
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: RESEND_FROM,
-      to: email.to,
-      subject: email.subject,
-      html: email.html,
-    }),
-  });
-  if (!res.ok) {
-    return { ok: false, error: `resend ${res.status}: ${await res.text()}` };
+  // try/catch around the fetch so a single ECONNRESET / DNS blip
+  // doesn't abort the loop and leave later recipients silently
+  // un-emailed. Each recipient is independent — we surface the
+  // failure per row + keep iterating.
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: RESEND_FROM,
+        to: email.to,
+        subject: email.subject,
+        html: email.html,
+      }),
+    });
+    if (!res.ok) {
+      return { ok: false, error: `resend ${res.status}: ${await res.text()}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: `network: ${e instanceof Error ? e.message : String(e)}`,
+    };
   }
-  return { ok: true };
 }
 
 async function adminEmailsForClan(
@@ -339,12 +350,20 @@ Deno.serve(async (req) => {
       sent.push({ to, ...r });
     }
   } else if (l.status === "revoked") {
+    // Token-mode revoke (admin A cancels a pending invite before any
+    // clan B accepted) has clan_b_id null — nobody else even knew
+    // the invite existed, so there's nothing to "notify B" about.
+    // Skip silently to avoid rendering a "Liên kết với Gia phả đã
+    // thu hồi" email with the default fallback clan name.
+    if (!l.clan_b_id) {
+      return json({ ok: true, skipped: "revoked-token-mode-no-peer" });
+    }
     // Email admins of BOTH sides — schema doesn't track who revoked,
     // so we err on the side of transparency over avoiding duplicates.
     // (The revoker also gets the email, useful as confirmation.)
     const [aEmails, bEmails] = await Promise.all([
       adminEmailsForClan(sb, l.clan_a_id),
-      l.clan_b_id ? adminEmailsForClan(sb, l.clan_b_id) : Promise.resolve([]),
+      adminEmailsForClan(sb, l.clan_b_id),
     ]);
     for (const to of aEmails) {
       const tpl = buildRevokedEmail({

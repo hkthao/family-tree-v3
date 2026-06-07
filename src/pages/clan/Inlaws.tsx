@@ -29,6 +29,7 @@ import {
   peekLink,
   revokeLink,
   type InlawProposalPreview,
+  isInlawCacheKey,
   type LinkPeek,
   type PersonLink,
 } from "@/lib/queries/person-links";
@@ -93,10 +94,7 @@ export default function Inlaws() {
   const revokeM = useMutation({
     mutationFn: (id: string) => revokeLink(id),
     onSuccess: (_void, id) => {
-      qc.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
-      });
+      qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       toast.success("Đã thu hồi liên kết");
       // Fire-and-forget — both sides get an email so the side that
       // didn't revoke learns the link is gone.
@@ -109,10 +107,7 @@ export default function Inlaws() {
   const cancelM = useMutation({
     mutationFn: (id: string) => deletePendingLink(id),
     onSuccess: () => {
-      qc.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
-      });
+      qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       toast.success("Đã huỷ đề nghị");
     },
     onError: (e) =>
@@ -123,10 +118,7 @@ export default function Inlaws() {
   const acceptM = useMutation({
     mutationFn: (id: string) => acceptLinkDirect(id),
     onSuccess: (_void, id) => {
-      qc.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
-      });
+      qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       toast.success("Đã xác nhận liên kết");
       notifyInlaw(id);
     },
@@ -136,10 +128,7 @@ export default function Inlaws() {
   const rejectM = useMutation({
     mutationFn: (id: string) => revokeLink(id),
     onSuccess: (_void, id) => {
-      qc.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
-      });
+      qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       toast.success("Đã từ chối đề nghị");
       notifyInlaw(id);
     },
