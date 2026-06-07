@@ -132,7 +132,6 @@ describe("RLS: push_subscriptions", () => {
       p_endpoint: "https://example.push/anon",
       p_p256dh: "x".repeat(20),
       p_auth: "y".repeat(20),
-      p_user_agent: null,
     });
     expect(error).not.toBeNull();
   });

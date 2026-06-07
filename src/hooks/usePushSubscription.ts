@@ -104,7 +104,13 @@ export function usePushSubscription(): UsePushSubscriptionResult {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        // Cast to BufferSource — TS 5.7+ tightened Uint8Array's buffer
+        // narrowing so the default `Uint8Array<ArrayBufferLike>` no
+        // longer satisfies BufferSource (which requires ArrayBuffer
+        // specifically). The runtime value is identical.
+        applicationServerKey: urlBase64ToUint8Array(
+          VAPID_PUBLIC_KEY,
+        ) as unknown as BufferSource,
       });
       const json = sub.toJSON() as {
         keys?: { p256dh?: string; auth?: string };
