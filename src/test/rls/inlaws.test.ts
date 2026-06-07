@@ -948,6 +948,229 @@ describe("RLS: cross-clan in-law links", () => {
     await adminClient().from("person_links").delete().eq("id", linkId);
   });
 
+  // ── Wave A hardening: trigger immutability after confirm ─────────
+
+  it("admin A CANNOT change person_b_id on a confirmed link", async () => {
+    const admin = adminClient();
+    // Spin up a second person in clan B to flip toward.
+    const otherB = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Other B",
+          gender: "F",
+          is_living: false,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+    await adminB.client.rpc("confirm_link_by_token", {
+      p_token: token,
+      p_clan_b: clanB,
+      p_person_b: personB,
+    });
+
+    // Admin A flips person_b_id to a different clan-B person —
+    // policy allows the UPDATE, but the trigger should raise.
+    const { error } = await adminA.client
+      .from("person_links")
+      .update({ person_b_id: otherB })
+      .eq("id", linkId)
+      .select("person_b_id");
+    expect(error).not.toBeNull();
+
+    await admin.from("person_links").delete().eq("id", linkId);
+    await admin.from("persons").delete().eq("id", otherB);
+  });
+
+  it("admin A CANNOT change confirmed_by/confirmed_at after confirm", async () => {
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+    await adminB.client.rpc("confirm_link_by_token", {
+      p_token: token,
+      p_clan_b: clanB,
+      p_person_b: personB,
+    });
+
+    const { error } = await adminA.client
+      .from("person_links")
+      .update({ confirmed_by: adminA.id })
+      .eq("id", linkId)
+      .select("confirmed_by");
+    expect(error).not.toBeNull();
+
+    await adminClient().from("person_links").delete().eq("id", linkId);
+  });
+
+  it("get_inlaw_proposal_preview returns 'not found' for revoked links", async () => {
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        clan_b_id: clanB,
+        person_b_id: personB,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+    // Pending preview works.
+    const { error: pendErr } = await adminA.client.rpc(
+      "get_inlaw_proposal_preview",
+      { p_link_id: linkId },
+    );
+    expect(pendErr).toBeNull();
+
+    // Revoke, then preview should refuse.
+    await adminA.client
+      .from("person_links")
+      .update({ status: "revoked" })
+      .eq("id", linkId)
+      .select("status");
+    const { error: revokedErr } = await adminA.client.rpc(
+      "get_inlaw_proposal_preview",
+      { p_link_id: linkId },
+    );
+    expect(revokedErr).not.toBeNull();
+    expect(revokedErr?.message).toMatch(/not found/);
+
+    await adminClient().from("person_links").delete().eq("id", linkId);
+    // Bypass via dummy create_by for ref cleanup.
+    void token;
+  });
+
+  it("other_parent_id null for soft-deleted spouse", async () => {
+    const admin = adminClient();
+    // peer (dead) + spouse (LIVING then soft-deleted) → 1 child.
+    const peer = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Peer SD",
+          gender: "F",
+          is_living: false,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    const spouseSD = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Spouse SD",
+          gender: "M",
+          is_living: false,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    const fam = (
+      await admin
+        .from("families")
+        .insert({
+          clan_id: clanB,
+          husband_id: spouseSD,
+          wife_id: peer,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+    const childSD = (
+      await admin
+        .from("persons")
+        .insert({
+          clan_id: clanB,
+          full_name: "Child SD",
+          gender: "M",
+          is_living: false,
+          birth_family_id: fam,
+        })
+        .select("id")
+        .single()
+    ).data!.id;
+
+    const token = `t-${Math.random()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    const linkId = ins.data!.id;
+    await adminB.client.rpc("confirm_link_by_token", {
+      p_token: token,
+      p_clan_b: clanB,
+      p_person_b: peer,
+    });
+
+    // Before soft-delete: other_parent_id surfaces spouseSD.
+    const { data: before } = await viewerA.client.rpc(
+      "get_inlaw_peer_relatives",
+      { p_link_id: linkId },
+    );
+    const b = before as unknown as {
+      children: Array<{ id: string; other_parent_id: string | null }>;
+    };
+    expect(b.children.find((c) => c.id === childSD)?.other_parent_id).toBe(
+      spouseSD,
+    );
+
+    // Soft-delete the spouse.
+    await admin
+      .from("persons")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", spouseSD);
+
+    // After: other_parent_id null. (Spouse no longer surfaced in
+    // sibling spouses list either — already covered by existing
+    // hide_living test, but worth double-checking the children path
+    // doesn't leak the UUID.)
+    const { data: after } = await viewerA.client.rpc(
+      "get_inlaw_peer_relatives",
+      { p_link_id: linkId },
+    );
+    const a = after as unknown as {
+      children: Array<{ id: string; other_parent_id: string | null }>;
+    };
+    expect(a.children.find((c) => c.id === childSD)?.other_parent_id).toBeNull();
+
+    await admin.from("person_links").delete().eq("id", linkId);
+    await admin.from("persons").delete().in("id", [peer, spouseSD, childSD]);
+    await admin.from("families").delete().eq("id", fam);
+  });
+
   it("anon can call resolve_link_token but only for active pending tokens", async () => {
     const token = `t-${Math.random()}`;
     const ins = await adminA.client
