@@ -158,6 +158,13 @@ export function ghostSpouseId(linkId: string, peerSpouseId: string): string {
  *  - append one synthetic node per ghost candidate,
  *  - register the ghost id as a spouse of the local person.
  *
+ * Skips a ghost when the local anchor already has a non-ghost local
+ * spouse with the same full_name + birth_year — that's almost always
+ * the same real-world person already represented on this tree
+ * (e.g. the local rể) but without a confirmed inlaw link establishing
+ * the formal mirror. Without this guard the ghost duplicates an
+ * existing card and family-chart renders them side-by-side.
+ *
  * Returns the same array so callers can chain. Idempotent — calling
  * twice with the same input no-ops the second time.
  */
@@ -174,6 +181,29 @@ export function addInlawGhosts(
 
     const id = ghostSpouseId(g.linkId, g.spouseId);
     if (byId.has(id)) continue;
+
+    // Heuristic dedup: same full_name (+ year when both present) on
+    // an existing local spouse → skip. Covers the case where the
+    // inlaw link for THIS person wasn't (or was un-)confirmed but the
+    // local mirror still exists on the tree.
+    const ghostName = (g.spouseFullName ?? "").trim();
+    const ghostYear = g.spouseBirthYear ? String(g.spouseBirthYear) : null;
+    if (ghostName) {
+      const localSpouseDuplicates = local.rels.spouses
+        .map((sid) => byId.get(sid))
+        .filter((d): d is F3Datum => !!d && d.data.is_ghost !== true)
+        .some((d) => {
+          if ((d.data["full name"] ?? "").trim() !== ghostName) return false;
+          // If both sides have a year, require exact match; if either
+          // is missing, accept the name match alone (Vietnamese
+          // full names are specific enough that collisions are rare).
+          if (ghostYear && d.data.birthday) {
+            return d.data.birthday === ghostYear;
+          }
+          return true;
+        });
+      if (localSpouseDuplicates) continue;
+    }
 
     const displayName = g.masked
       ? "Người còn sống"
