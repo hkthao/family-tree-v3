@@ -78,3 +78,26 @@ export async function countClanTodo(
   if (error) throw new Error(error.message);
   return Number(data ?? 0);
 }
+
+/**
+ * Flip the todo_excluded flag for a single person. When true the
+ * person stops appearing on /todo across every category and is no
+ * longer counted in the drawer badge.
+ *
+ * Reason use cases:
+ *   - Thuỷ tổ legitimately has no parents (already auto-skipped for
+ *     missing_parents, but may still appear in other categories).
+ *   - A relative whose dates are genuinely lost and never recoverable.
+ *   - Anything admin decides "we accept the gap, stop nagging".
+ */
+export async function setPersonTodoExcluded(
+  personId: string,
+  excluded: boolean,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client.rpc("set_person_todo_excluded", {
+    p_person_id: personId,
+    p_excluded: excluded,
+  });
+  if (error) throw new Error(error.message);
+}

@@ -716,6 +716,7 @@ export type Database = {
           photo_path: string | null
           posthumous_name: string | null
           search_text: string | null
+          todo_excluded: boolean
           updated_at: string
         }
         Insert: {
@@ -754,6 +755,7 @@ export type Database = {
           photo_path?: string | null
           posthumous_name?: string | null
           search_text?: string | null
+          todo_excluded?: boolean
           updated_at?: string
         }
         Update: {
@@ -792,6 +794,7 @@ export type Database = {
           photo_path?: string | null
           posthumous_name?: string | null
           search_text?: string | null
+          todo_excluded?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -1231,6 +1234,10 @@ export type Database = {
       restore_audit_entry: { Args: { audit_id: string }; Returns: undefined }
       set_my_self_person: {
         Args: { p_clan_id: string; p_person_id: string }
+        Returns: undefined
+      }
+      set_person_todo_excluded: {
+        Args: { p_excluded: boolean; p_person_id: string }
         Returns: undefined
       }
       show_limit: { Args: never; Returns: number }
