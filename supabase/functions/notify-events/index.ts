@@ -21,6 +21,7 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getLunarDate, getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
+import webpush from "npm:web-push@3.6.7";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -28,6 +29,19 @@ const CRON_TOKEN = Deno.env.get("CRON_TOKEN") ?? "";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const RESEND_FROM =
   Deno.env.get("RESEND_FROM") ?? "Gia phả <noreply@giapha.local>";
+const APP_BASE_URL =
+  Deno.env.get("APP_BASE_URL") ?? "https://giapha.app";
+const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
+const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
+const VAPID_SUBJECT =
+  Deno.env.get("VAPID_SUBJECT") ?? "mailto:noreply@giapha.local";
+
+// Configure web-push once if VAPID env is set — when missing (dry-run /
+// local dev without push), all push dispatch becomes a no-op.
+const PUSH_READY = !!VAPID_PUBLIC_KEY && !!VAPID_PRIVATE_KEY;
+if (PUSH_READY) {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -503,13 +517,33 @@ Deno.serve(async (req) => {
   failed += monthlyResult.failed;
   for (const e of monthlyResult.errors) errors.push(e);
 
+  // ── Web Push fan-out (rides along email fires) ───────────────────
+  // For every email fire and the monthly-lunar event of the day, if
+  // the user has notify_via_push enabled we also push to all their
+  // browser subscriptions. Dedupe via notification_log channel='webpush'.
+  const pushResult = await dispatchWebPush({
+    supabase,
+    fires,
+    monthlyKey: monthlyResult.monthlyEventKey,
+    monthlyOccasion: monthlyResult.monthlyOccasion,
+    monthlyLunarMonth: monthlyResult.monthlyLunarMonth,
+    alreadySent,
+    clanName,
+  });
+  sent += pushResult.sent;
+  failed += pushResult.failed;
+  for (const e of pushResult.errors) errors.push(e);
+
   return json({
     today,
     processed: fires.length + monthlyResult.processed,
     sent,
     failed,
+    pushSent: pushResult.sent,
+    pushFailed: pushResult.failed,
     errors: errors.slice(0, 5),
     dryRun: !RESEND_API_KEY,
+    pushReady: PUSH_READY,
   });
 });
 
@@ -520,7 +554,17 @@ async function dispatchMonthlyLunar(opts: {
   today: string;
   todayDate: Date;
   alreadySent: Set<string>;
-}): Promise<{ processed: number; sent: number; failed: number; errors: string[] }> {
+}): Promise<{
+  processed: number;
+  sent: number;
+  failed: number;
+  errors: string[];
+  /** When non-null, today is mùng 1 or rằm — these expose the event
+   *  metadata so the web-push dispatcher can fan out a parallel push. */
+  monthlyEventKey: string | null;
+  monthlyOccasion: string | null;
+  monthlyLunarMonth: number | null;
+}> {
   const { supabase, today, todayDate, alreadySent } = opts;
   // Compute today's lunar day to decide whether this is mùng 1 or rằm.
   const lunar = getLunarDate(
@@ -531,7 +575,15 @@ async function dispatchMonthlyLunar(opts: {
   const isMung1 = lunar.day === 1;
   const isRam = lunar.day === 15;
   if (!isMung1 && !isRam) {
-    return { processed: 0, sent: 0, failed: 0, errors: [] };
+    return {
+      processed: 0,
+      sent: 0,
+      failed: 0,
+      errors: [],
+      monthlyEventKey: null,
+      monthlyOccasion: null,
+      monthlyLunarMonth: null,
+    };
   }
   const eventKey = `monthly_lunar:${today}`;
   const occasion = isMung1 ? "Mùng 1" : "Rằm";
@@ -544,13 +596,29 @@ async function dispatchMonthlyLunar(opts: {
     .eq("notify_monthly_lunar", true)
     .eq("is_suspended", false);
   if (profErr) {
-    return { processed: 0, sent: 0, failed: 0, errors: [profErr.message] };
+    return {
+      processed: 0,
+      sent: 0,
+      failed: 0,
+      errors: [profErr.message],
+      monthlyEventKey: eventKey,
+      monthlyOccasion: occasion,
+      monthlyLunarMonth: lunarMonth,
+    };
   }
   const recipientIds = (profiles ?? []).map(
     (p: { id: string }) => p.id,
   );
   if (recipientIds.length === 0) {
-    return { processed: 0, sent: 0, failed: 0, errors: [] };
+    return {
+      processed: 0,
+      sent: 0,
+      failed: 0,
+      errors: [],
+      monthlyEventKey: eventKey,
+      monthlyOccasion: occasion,
+      monthlyLunarMonth: lunarMonth,
+    };
   }
 
   // Pick a sentinel clan_id per recipient — notification_log.clan_id
@@ -613,7 +681,15 @@ async function dispatchMonthlyLunar(opts: {
       if (result.error) errors.push(result.error);
     }
   }
-  return { processed, sent, failed, errors };
+  return {
+    processed,
+    sent,
+    failed,
+    errors,
+    monthlyEventKey: eventKey,
+    monthlyOccasion: occasion,
+    monthlyLunarMonth: lunarMonth,
+  };
 }
 
 function monthlyLunarHtml(opts: {
@@ -661,6 +737,303 @@ async function sendMonthlyEmail(
     return {
       ok: false,
       error: `network: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
+}
+
+// ─── Web Push dispatch ─────────────────────────────────────────────
+//
+// Runs AFTER email dispatch. For every (userId, eventKey) that was just
+// fired via email, plus the monthly-lunar event when active, also fan
+// out a web push to each of the user's registered push_subscriptions —
+// IF the user has flipped `notify_via_push` on.
+//
+// Concurrency: chunks of 50 via Promise.allSettled to keep wall-clock
+// bounded for clans with hundreds of subscribers. Per-sub errors are
+// captured and either delete the row (410/404 = gone) or bump
+// failure_count (other errors).
+
+interface PushFire {
+  userId: string;
+  eventKey: string;
+  title: string;
+  body: string;
+  url: string;
+  tag: string;
+}
+
+interface SubRow {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  failure_count: number;
+}
+
+const PUSH_CHUNK = 50;
+const FAILURE_THRESHOLD = 5;
+
+async function dispatchWebPush(opts: {
+  supabase: ReturnType<typeof createClient>;
+  fires: FireItem[];
+  monthlyKey: string | null;
+  monthlyOccasion: string | null;
+  monthlyLunarMonth: number | null;
+  alreadySent: Set<string>;
+  clanName: Map<string, string>;
+}): Promise<{ sent: number; failed: number; errors: string[] }> {
+  const {
+    supabase,
+    fires,
+    monthlyKey,
+    monthlyOccasion,
+    monthlyLunarMonth,
+    alreadySent,
+    clanName,
+  } = opts;
+
+  if (!PUSH_READY) {
+    return { sent: 0, failed: 0, errors: [] };
+  }
+
+  // Collect candidate (userId, eventKey) pairs from email fires +
+  // the monthly-lunar event.
+  const candidates: PushFire[] = [];
+  for (const f of fires) {
+    if (f.channel !== "email") continue;
+    candidates.push({
+      userId: f.userId,
+      eventKey: f.eventKey,
+      title: buildPushTitle(f),
+      body: buildPushBody(f, clanName.get(f.clanId) ?? ""),
+      url: f.personId
+        ? `${APP_BASE_URL}/clans/${f.clanId}/people/${f.personId}`
+        : `${APP_BASE_URL}/clans/${f.clanId}/today`,
+      tag: f.eventKey,
+    });
+  }
+
+  if (monthlyKey && monthlyOccasion && monthlyLunarMonth) {
+    const { data: monthlyProfiles } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("notify_monthly_lunar", true)
+      .eq("is_suspended", false);
+    for (const p of monthlyProfiles ?? []) {
+      candidates.push({
+        userId: (p as { id: string }).id,
+        eventKey: monthlyKey,
+        title: `${monthlyOccasion} tháng ${monthlyLunarMonth} âm`,
+        body: "Đừng quên thắp hương lên bàn thờ tổ tiên hôm nay.",
+        url: `${APP_BASE_URL}/`,
+        tag: monthlyKey,
+      });
+    }
+  }
+
+  if (candidates.length === 0) {
+    return { sent: 0, failed: 0, errors: [] };
+  }
+
+  // Filter to users with notify_via_push = true.
+  const userIds = [...new Set(candidates.map((c) => c.userId))];
+  const { data: profileRows, error: profErr } = await supabase
+    .from("profiles")
+    .select("id, notify_via_push, is_suspended")
+    .in("id", userIds);
+  if (profErr) return { sent: 0, failed: 0, errors: [profErr.message] };
+
+  const enabled = new Set<string>();
+  for (const r of profileRows ?? []) {
+    const row = r as {
+      id: string;
+      notify_via_push: boolean;
+      is_suspended: boolean;
+    };
+    if (row.notify_via_push && !row.is_suspended) enabled.add(row.id);
+  }
+
+  // Dedupe vs notification_log (same Set used by email dispatch — channel
+  // 'webpush' rows are already loaded from today's log range).
+  const pending = candidates.filter((c) => {
+    if (!enabled.has(c.userId)) return false;
+    return !alreadySent.has(`${c.userId}:${c.eventKey}:webpush`);
+  });
+
+  if (pending.length === 0) return { sent: 0, failed: 0, errors: [] };
+
+  // Load all subs for the targeted users in one query.
+  const targetUserIds = [...new Set(pending.map((c) => c.userId))];
+  const { data: subRows, error: subErr } = await supabase
+    .from("push_subscriptions")
+    .select("id, user_id, endpoint, p256dh, auth, failure_count")
+    .in("user_id", targetUserIds);
+  if (subErr) return { sent: 0, failed: 0, errors: [subErr.message] };
+
+  const subsByUser = new Map<string, SubRow[]>();
+  for (const s of (subRows ?? []) as SubRow[]) {
+    const list = subsByUser.get(s.user_id) ?? [];
+    list.push(s);
+    subsByUser.set(s.user_id, list);
+  }
+
+  let sent = 0;
+  let failed = 0;
+  const errors: string[] = [];
+
+  // Reserve notification_log rows up front (one per fire) to keep the
+  // dispatcher idempotent across cron re-runs. ON CONFLICT DO NOTHING
+  // makes the insert a no-op when the same (user, event, channel)
+  // already landed earlier today.
+  const reservations = pending.map((p) => ({
+    user_id: p.userId,
+    // Pick a sentinel clan_id later if it's a monthly_lunar event with
+    // no person attached. For event fires we already have a clan_id
+    // via the original FireItem — look it up.
+    event_key: p.eventKey,
+    channel: "webpush",
+  }));
+
+  // Fan out by-user so multi-device delivery uses the same payload.
+  for (let i = 0; i < pending.length; i += PUSH_CHUNK) {
+    const chunk = pending.slice(i, i + PUSH_CHUNK);
+    const tasks = chunk.flatMap((c) => {
+      const subs = subsByUser.get(c.userId) ?? [];
+      return subs.map((s) =>
+        sendOnePush(s, c).then(
+          async (result) => {
+            if (result.ok) {
+              await supabase
+                .from("push_subscriptions")
+                .update({
+                  last_success_at: new Date().toISOString(),
+                  failure_count: 0,
+                })
+                .eq("id", s.id);
+              sent++;
+            } else if (result.kind === "gone") {
+              await supabase.from("push_subscriptions").delete().eq("id", s.id);
+              failed++;
+            } else {
+              const nextCount = s.failure_count + 1;
+              if (nextCount >= FAILURE_THRESHOLD) {
+                await supabase.from("push_subscriptions").delete().eq("id", s.id);
+              } else {
+                await supabase
+                  .from("push_subscriptions")
+                  .update({ failure_count: nextCount })
+                  .eq("id", s.id);
+              }
+              failed++;
+              if (result.error) errors.push(result.error);
+            }
+          },
+        ),
+      );
+    });
+    await Promise.allSettled(tasks);
+  }
+
+  // After dispatch attempts (some subs may have been deleted), log
+  // ONE notification_log row per (user, event, webpush) regardless of
+  // multi-device fan-out — the dedupe key is per-user not per-sub.
+  // Use service-role bulk insert with ON CONFLICT DO NOTHING via raw
+  // .upsert() on the unique index.
+  // We need a clan_id for the log row; for event fires take it from
+  // FireItem, for monthly use the user's first clan.
+  const fireClanByUserEvent = new Map<string, string>();
+  for (const f of fires) {
+    fireClanByUserEvent.set(`${f.userId}:${f.eventKey}`, f.clanId);
+  }
+  let firstClanByUser: Map<string, string> = new Map();
+  if (monthlyKey) {
+    const monthlyUsers = pending
+      .filter((c) => c.eventKey === monthlyKey)
+      .map((c) => c.userId);
+    if (monthlyUsers.length > 0) {
+      const { data: memberRows } = await supabase
+        .from("clan_members")
+        .select("user_id, clan_id")
+        .in("user_id", monthlyUsers);
+      for (const m of memberRows ?? []) {
+        const r = m as { user_id: string; clan_id: string };
+        if (!firstClanByUser.has(r.user_id)) {
+          firstClanByUser.set(r.user_id, r.clan_id);
+        }
+      }
+    }
+  }
+
+  for (const r of reservations) {
+    const clanId =
+      fireClanByUserEvent.get(`${r.user_id}:${r.event_key}`) ??
+      firstClanByUser.get(r.user_id);
+    if (!clanId) continue;
+    await supabase.from("notification_log").upsert(
+      {
+        user_id: r.user_id,
+        clan_id: clanId,
+        event_key: r.event_key,
+        channel: r.channel,
+        status: "sent",
+      },
+      {
+        onConflict: "user_id,event_key,channel",
+        ignoreDuplicates: true,
+      },
+    );
+  }
+
+  return { sent, failed, errors };
+}
+
+function buildPushTitle(f: FireItem): string {
+  const when =
+    f.leadDays === 0 ? "Hôm nay" : f.leadDays === 1 ? "Ngày mai" : `${f.leadDays} ngày nữa`;
+  return `${when}: ${f.title}`;
+}
+
+function buildPushBody(f: FireItem, clanName: string): string {
+  const kind =
+    f.kind === "birthday"
+      ? "Sinh nhật"
+      : f.kind === "anniversary"
+        ? "Ngày giỗ"
+        : "Sự kiện";
+  return clanName ? `${kind} · ${clanName}` : kind;
+}
+
+type PushResult =
+  | { ok: true }
+  | { ok: false; kind: "gone" | "transient"; error?: string };
+
+async function sendOnePush(sub: SubRow, fire: PushFire): Promise<PushResult> {
+  try {
+    const payload = JSON.stringify({
+      title: fire.title,
+      body: fire.body,
+      url: fire.url,
+      tag: fire.tag,
+    });
+    await webpush.sendNotification(
+      {
+        endpoint: sub.endpoint,
+        keys: { p256dh: sub.p256dh, auth: sub.auth },
+      },
+      payload,
+      { TTL: 24 * 60 * 60 },
+    );
+    return { ok: true };
+  } catch (e: unknown) {
+    const err = e as { statusCode?: number; message?: string };
+    if (err.statusCode === 404 || err.statusCode === 410) {
+      return { ok: false, kind: "gone" };
+    }
+    return {
+      ok: false,
+      kind: "transient",
+      error: `push ${err.statusCode ?? "?"}: ${err.message ?? String(e)}`,
     };
   }
 }

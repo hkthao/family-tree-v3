@@ -827,6 +827,7 @@ export type Database = {
           is_suspended: boolean
           max_clans: number
           notify_monthly_lunar: boolean
+          notify_via_push: boolean
         }
         Insert: {
           created_at?: string
@@ -836,6 +837,7 @@ export type Database = {
           is_suspended?: boolean
           max_clans?: number
           notify_monthly_lunar?: boolean
+          notify_via_push?: boolean
         }
         Update: {
           created_at?: string
@@ -845,6 +847,43 @@ export type Database = {
           is_suspended?: boolean
           max_clans?: number
           notify_monthly_lunar?: boolean
+          notify_via_push?: boolean
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          failure_count: number
+          id: string
+          last_success_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          failure_count?: number
+          id?: string
+          last_success_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          failure_count?: number
+          id?: string
+          last_success_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1068,6 +1107,10 @@ export type Database = {
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
       delete_my_account: { Args: never; Returns: undefined }
+      delete_my_push_subscription: {
+        Args: { p_endpoint: string }
+        Returns: undefined
+      }
       f_unaccent: { Args: { "": string }; Returns: string }
       get_clan_members_info: {
         Args: { target_clan: string }
@@ -1166,6 +1209,15 @@ export type Database = {
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       unaccent: { Args: { "": string }; Returns: string }
+      upsert_my_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_agent?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

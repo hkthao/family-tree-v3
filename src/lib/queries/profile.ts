@@ -11,6 +11,7 @@ export interface MyProfile {
   is_platform_admin: boolean;
   is_suspended: boolean;
   notify_monthly_lunar: boolean;
+  notify_via_push: boolean;
 }
 
 export async function getMyProfile(
@@ -20,7 +21,7 @@ export async function getMyProfile(
   const { data, error } = await client
     .from("profiles")
     .select(
-      "id, display_name, is_platform_admin, is_suspended, notify_monthly_lunar",
+      "id, display_name, is_platform_admin, is_suspended, notify_monthly_lunar, notify_via_push",
     )
     .eq("id", userId)
     .maybeSingle();
