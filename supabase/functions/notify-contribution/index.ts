@@ -29,6 +29,7 @@
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -37,6 +38,15 @@ const RESEND_FROM =
   Deno.env.get("RESEND_FROM") ?? "Gia phả <noreply@giapha.local>";
 const APP_BASE_URL =
   Deno.env.get("APP_BASE_URL") ?? "http://localhost:5173";
+
+const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
+const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY") ?? "";
+const VAPID_SUBJECT =
+  Deno.env.get("VAPID_SUBJECT") ?? "mailto:noreply@giapha.local";
+const PUSH_READY = !!VAPID_PUBLIC_KEY && !!VAPID_PRIVATE_KEY;
+if (PUSH_READY) {
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -325,6 +335,16 @@ Deno.serve(async (req) => {
       const r = await sendOne({ to, subject: tpl.subject, html: tpl.html });
       sent.push({ to, ...r });
     }
+    // Fan out web push to admins who opted in (notify_via_push=true).
+    await pushContribution({
+      sb,
+      userIds: adminIds,
+      title: tpl.subject.replace(/^\[Gia phả [^\]]+\]\s*/, ""),
+      body: `${c.submitter_name ?? "Thành viên"} đề xuất ${contribTypeLabel.toLowerCase()}${personName ? " cho " + personName : ""}.`,
+      url: contribLink,
+      eventKey: `contrib:${c.id}:pending`,
+      clanId: c.clan_id as string,
+    });
   } else if (
     c.status === "approved" ||
     c.status === "rejected" ||
@@ -352,9 +372,170 @@ Deno.serve(async (req) => {
     });
     const r = await sendOne({ to, subject: tpl.subject, html: tpl.html });
     sent.push({ to, ...r });
+    // Push the same decision to the submitter, when an authenticated
+    // user. Guest contributions have no user_id so they only get email.
+    if (c.submitter_user_id) {
+      const verb =
+        c.status === "approved"
+          ? "đã được duyệt"
+          : c.status === "rejected"
+            ? "bị từ chối"
+            : "cần thêm thông tin";
+      await pushContribution({
+        sb,
+        userIds: [c.submitter_user_id as string],
+        title: `Đề xuất ${verb}`,
+        body: `${contribTypeLabel}${personName ? " cho " + personName : ""} — ${clanName}.`,
+        url: personLink,
+        eventKey: `contrib:${c.id}:${c.status}`,
+        clanId: c.clan_id as string,
+      });
+    }
   } else {
     return json({ ok: true, skipped: `unknown-status:${c.status}` });
   }
 
   return json({ ok: true, sent });
 });
+
+// ─── Web Push fan-out ──────────────────────────────────────────────
+// Shared dispatcher used by both the "new contribution → admins" and
+// "decision → submitter" branches. Same idempotency + drift cleanup
+// pattern as notify-events: dedupe via notification_log channel='webpush',
+// drop subscriptions on 404/410, bump failure_count otherwise.
+
+const PUSH_CHUNK = 50;
+const FAILURE_THRESHOLD = 5;
+
+interface PushSubRow {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  failure_count: number;
+}
+
+async function pushContribution(opts: {
+  sb: ReturnType<typeof createClient>;
+  userIds: string[];
+  title: string;
+  body: string;
+  url: string;
+  eventKey: string;
+  clanId: string;
+}): Promise<void> {
+  if (!PUSH_READY || opts.userIds.length === 0) return;
+
+  // Filter to opted-in, non-suspended users.
+  const { data: profiles } = await opts.sb
+    .from("profiles")
+    .select("id, notify_via_push, is_suspended")
+    .in("id", opts.userIds);
+  const enabled = new Set<string>();
+  for (const r of profiles ?? []) {
+    const row = r as {
+      id: string;
+      notify_via_push: boolean;
+      is_suspended: boolean;
+    };
+    if (row.notify_via_push && !row.is_suspended) enabled.add(row.id);
+  }
+  if (enabled.size === 0) return;
+  const targetUsers = [...enabled];
+
+  // Dedupe: skip users already pushed for this exact (eventKey).
+  const { data: logRows } = await opts.sb
+    .from("notification_log")
+    .select("user_id")
+    .eq("event_key", opts.eventKey)
+    .eq("channel", "webpush")
+    .in("user_id", targetUsers);
+  const alreadyPushed = new Set(
+    (logRows ?? []).map((r) => (r as { user_id: string }).user_id),
+  );
+  const toPush = targetUsers.filter((u) => !alreadyPushed.has(u));
+  if (toPush.length === 0) return;
+
+  // Fetch every subscription owned by the to-push users.
+  const { data: subRows } = await opts.sb
+    .from("push_subscriptions")
+    .select("id, user_id, endpoint, p256dh, auth, failure_count")
+    .in("user_id", toPush);
+  const subsByUser = new Map<string, PushSubRow[]>();
+  for (const s of (subRows ?? []) as PushSubRow[]) {
+    const list = subsByUser.get(s.user_id) ?? [];
+    list.push(s);
+    subsByUser.set(s.user_id, list);
+  }
+
+  // Fan out, chunked.
+  const payload = JSON.stringify({
+    title: opts.title,
+    body: opts.body,
+    url: opts.url,
+    tag: opts.eventKey,
+  });
+  const allSubs = Array.from(subsByUser.values()).flat();
+  for (let i = 0; i < allSubs.length; i += PUSH_CHUNK) {
+    const chunk = allSubs.slice(i, i + PUSH_CHUNK);
+    await Promise.allSettled(
+      chunk.map(async (s) => {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: s.endpoint,
+              keys: { p256dh: s.p256dh, auth: s.auth },
+            },
+            payload,
+            { TTL: 24 * 60 * 60 },
+          );
+          await opts.sb
+            .from("push_subscriptions")
+            .update({
+              last_success_at: new Date().toISOString(),
+              failure_count: 0,
+            })
+            .eq("id", s.id);
+        } catch (e: unknown) {
+          const err = e as { statusCode?: number };
+          if (err.statusCode === 404 || err.statusCode === 410) {
+            await opts.sb.from("push_subscriptions").delete().eq("id", s.id);
+          } else {
+            const next = s.failure_count + 1;
+            if (next >= FAILURE_THRESHOLD) {
+              await opts.sb
+                .from("push_subscriptions")
+                .delete()
+                .eq("id", s.id);
+            } else {
+              await opts.sb
+                .from("push_subscriptions")
+                .update({ failure_count: next })
+                .eq("id", s.id);
+            }
+          }
+        }
+      }),
+    );
+  }
+
+  // Reserve notification_log rows AFTER dispatch so a transient failure
+  // mid-fan-out doesn't permanently swallow the event. Insert one row
+  // per (user, event_key, webpush) with ON CONFLICT DO NOTHING.
+  for (const uid of toPush) {
+    await opts.sb.from("notification_log").upsert(
+      {
+        user_id: uid,
+        clan_id: opts.clanId,
+        event_key: opts.eventKey,
+        channel: "webpush",
+        status: "sent",
+      },
+      {
+        onConflict: "user_id,event_key,channel",
+        ignoreDuplicates: true,
+      },
+    );
+  }
+}
