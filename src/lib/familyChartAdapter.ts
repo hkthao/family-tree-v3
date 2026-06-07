@@ -77,6 +77,13 @@ export function toFamilyChart(
   photoUrlByPath?: Map<string, string>,
 ): F3Datum[] {
   const familyById = new Map(families.map((f) => [f.id, f]));
+  // Set of LIVE person ids (already filtered by the query to
+  // deleted_at IS NULL). Families don't have their husband_id/wife_id
+  // cleared when a person is soft-deleted, so we defensively skip any
+  // family-side reference that no longer resolves — otherwise
+  // family-chart crashes with "Cannot read properties of undefined
+  // (reading 'id')" when it tries to render the missing partner.
+  const livePersonIds = new Set(persons.map((p) => p.id));
 
   // For each person, find the families they belong to as a partner.
   const familiesOf = new Map<string, FamilyForTree[]>();
@@ -103,18 +110,20 @@ export function toFamilyChart(
     if (p.birth_family_id) {
       const fam = familyById.get(p.birth_family_id);
       if (fam) {
-        if (fam.husband_id) parents.push(fam.husband_id);
-        if (fam.wife_id) parents.push(fam.wife_id);
+        if (fam.husband_id && livePersonIds.has(fam.husband_id))
+          parents.push(fam.husband_id);
+        if (fam.wife_id && livePersonIds.has(fam.wife_id))
+          parents.push(fam.wife_id);
       }
     }
 
     const myFamilies = familiesOf.get(p.id) ?? [];
     const spouses = myFamilies
       .map((f) => (f.husband_id === p.id ? f.wife_id : f.husband_id))
-      .filter((id): id is string => id !== null);
-    const children = myFamilies.flatMap(
-      (f) => childrenByFamily.get(f.id) ?? [],
-    );
+      .filter((id): id is string => id !== null && livePersonIds.has(id));
+    const children = myFamilies
+      .flatMap((f) => childrenByFamily.get(f.id) ?? [])
+      .filter((id) => livePersonIds.has(id));
 
     const uploaded =
       p.photo_path && photoUrlByPath?.get(p.photo_path);
