@@ -9,6 +9,10 @@ import {
 import { SearchInput } from "@/components/SearchInput";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { fetchShareView } from "@/lib/queries/share-view";
 
@@ -378,38 +382,24 @@ export default function Share() {
                   </ul>
                 )}
               </div>
-              <div
-                className="inline-flex rounded-md border bg-card overflow-hidden"
-                role="group"
-                aria-label="Hướng cây"
-              >
-                <button
-                  type="button"
+              <SegmentedControl ariaLabel="Hướng cây">
+                <SegmentedButton
+                  active={orientation === "vertical"}
                   onClick={() => setOrientation("vertical")}
-                  aria-pressed={orientation === "vertical"}
-                  className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
-                    orientation === "vertical"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted/50"
-                  }`}
+                  className="inline-flex items-center gap-1.5 px-3"
                 >
                   <IconLayoutVertical className="h-4 w-4" />
                   Dọc
-                </button>
-                <button
-                  type="button"
+                </SegmentedButton>
+                <SegmentedButton
+                  active={orientation === "horizontal"}
                   onClick={() => setOrientation("horizontal")}
-                  aria-pressed={orientation === "horizontal"}
-                  className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
-                    orientation === "horizontal"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted/50"
-                  }`}
+                  className="inline-flex items-center gap-1.5 px-3"
                 >
                   <IconLayoutHorizontal className="h-4 w-4" />
                   Ngang
-                </button>
-              </div>
+                </SegmentedButton>
+              </SegmentedControl>
             </div>
 
             <div

@@ -17,6 +17,10 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
@@ -162,38 +166,20 @@ export default function Inlaws() {
         </Button>
       </header>
 
-      <div
-        className="inline-flex rounded-md border bg-card overflow-hidden"
-        role="group"
-        aria-label="Tab trạng thái"
-      >
-        <button
-          type="button"
+      <SegmentedControl ariaLabel="Tab trạng thái">
+        <SegmentedButton
+          active={tab === "confirmed"}
           onClick={() => setTab("confirmed")}
-          aria-pressed={tab === "confirmed"}
-          className={
-            "px-4 h-10 text-sm " +
-            (tab === "confirmed"
-              ? "bg-primary text-primary-foreground"
-              : "hover:bg-muted/50")
-          }
         >
           Đã liên kết ({confirmed.length})
-        </button>
-        <button
-          type="button"
+        </SegmentedButton>
+        <SegmentedButton
+          active={tab === "pending"}
           onClick={() => setTab("pending")}
-          aria-pressed={tab === "pending"}
-          className={
-            "px-4 h-10 text-sm border-l " +
-            (tab === "pending"
-              ? "bg-primary text-primary-foreground"
-              : "hover:bg-muted/50")
-          }
         >
           Đang chờ ({pendingTotal})
-        </button>
-      </div>
+        </SegmentedButton>
+      </SegmentedControl>
 
       {isLoading && (
         <p className="text-muted-foreground text-sm">Đang tải…</p>

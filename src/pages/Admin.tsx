@@ -19,6 +19,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import {
   adminAction,
@@ -75,35 +79,32 @@ export default function Admin() {
           <h1 className="clan-name text-2xl sm:text-3xl font-semibold sm:flex-1">
             Quản trị nền tảng
           </h1>
-          <div className="flex sm:inline-flex rounded-md border bg-card overflow-hidden shrink-0">
-            <button
-              type="button"
+          <SegmentedControl
+            ariaLabel="Tab quản trị"
+            className="flex sm:inline-flex shrink-0"
+          >
+            <SegmentedButton
+              active={tab === "users"}
               onClick={() => setTab("users")}
-              className={`flex-1 sm:flex-none px-4 h-10 text-sm ${
-                tab === "users" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
-              }`}
+              className="flex-1 sm:flex-none"
             >
               Người dùng
-            </button>
-            <button
-              type="button"
+            </SegmentedButton>
+            <SegmentedButton
+              active={tab === "clans"}
               onClick={() => setTab("clans")}
-              className={`flex-1 sm:flex-none px-4 h-10 text-sm border-l ${
-                tab === "clans" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
-              }`}
+              className="flex-1 sm:flex-none"
             >
               Dòng họ
-            </button>
-            <button
-              type="button"
+            </SegmentedButton>
+            <SegmentedButton
+              active={tab === "health"}
               onClick={() => setTab("health")}
-              className={`flex-1 sm:flex-none px-4 h-10 text-sm border-l ${
-                tab === "health" ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
-              }`}
+              className="flex-1 sm:flex-none"
             >
               Hệ thống
-            </button>
-          </div>
+            </SegmentedButton>
+          </SegmentedControl>
         </div>
 
         {tab === "users" && <UsersTab callerId={user.id} />}

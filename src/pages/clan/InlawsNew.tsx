@@ -24,6 +24,10 @@ import {
   listCommunityClans,
   type ClanSummary,
 } from "@/lib/queries/clans";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
   notifyInlaw,
@@ -32,7 +36,6 @@ import {
   isInlawCacheKey,
   type PersonLink,
 } from "@/lib/queries/person-links";
-import { cn } from "@/lib/utils";
 
 /**
  * Propose-link page. Two modes:
@@ -309,37 +312,20 @@ function ModeStep(props: ModeStepProps) {
       {/* Mode tabs */}
       <div className="space-y-1">
         <Label>Bước 2: Cách đề nghị</Label>
-        <div
-          className="inline-flex rounded-md border bg-card overflow-hidden"
-          role="group"
-        >
-          <button
-            type="button"
+        <SegmentedControl ariaLabel="Cách đề nghị">
+          <SegmentedButton
+            active={mode === "token"}
             onClick={() => setMode("token")}
-            aria-pressed={mode === "token"}
-            className={cn(
-              "px-4 h-10 text-sm",
-              mode === "token"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50",
-            )}
           >
             Gửi mã mời
-          </button>
-          <button
-            type="button"
+          </SegmentedButton>
+          <SegmentedButton
+            active={mode === "direct"}
             onClick={() => setMode("direct")}
-            aria-pressed={mode === "direct"}
-            className={cn(
-              "px-4 h-10 text-sm border-l",
-              mode === "direct"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50",
-            )}
           >
             Tìm dòng họ công khai
-          </button>
-        </div>
+          </SegmentedButton>
+        </SegmentedControl>
         <p className="text-xs text-muted-foreground">
           {mode === "token"
             ? "Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư."
