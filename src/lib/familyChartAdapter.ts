@@ -1,3 +1,4 @@
+import type { InlawGhostSpouse } from "@/lib/queries/person-links";
 import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
 
 /**
@@ -28,6 +29,14 @@ export interface F3Datum {
     generation?: number | null;
     /** SVG data-URI consumed by family-chart's <image href=…/> path. */
     avatar?: string;
+    /** Ghost-spouse fields. Set ONLY on synthetic nodes representing a
+     *  spouse who lives in a peer clan via a confirmed inlaw link. The
+     *  tree's onCardUpdate hook styles these with a dashed border + a
+     *  "Họ X" tag and routes clicks to the inlaw badge dialog. */
+    is_ghost?: boolean;
+    ghost_link_id?: string;
+    ghost_peer_clan_name?: string;
+    ghost_local_person_id?: string;
   };
   rels: {
     /** At most 2 — birth_family's husband + wife. */
@@ -124,6 +133,73 @@ export function toFamilyChart(
       rels: { parents, spouses, children },
     } satisfies F3Datum;
   });
+}
+
+/**
+ * Build the synthetic ghost-spouse F3Datum id for a ghost. Stable +
+ * unique across reloads — keyed off (linkId, peerSpouseId) which the
+ * RPC already returns.
+ */
+export function ghostSpouseId(linkId: string, peerSpouseId: string): string {
+  return `ghost:${linkId}:${peerSpouseId}`;
+}
+
+/**
+ * Mutate the F3Datum array in-place:
+ *  - append one synthetic node per ghost candidate,
+ *  - register the ghost id as a spouse of the local person.
+ *
+ * Returns the same array so callers can chain. Idempotent — calling
+ * twice with the same input no-ops the second time.
+ */
+export function addInlawGhosts(
+  data: F3Datum[],
+  ghosts: InlawGhostSpouse[],
+): F3Datum[] {
+  if (ghosts.length === 0) return data;
+
+  const byId = new Map(data.map((d) => [d.id, d]));
+  for (const g of ghosts) {
+    const local = byId.get(g.localPersonId);
+    if (!local) continue;
+
+    const id = ghostSpouseId(g.linkId, g.spouseId);
+    if (byId.has(id)) continue;
+
+    const displayName = g.masked
+      ? "Người còn sống"
+      : g.spouseFullName ?? "?";
+
+    const ghost: F3Datum = {
+      id,
+      data: {
+        gender: g.spouseGender,
+        "full name": displayName,
+        birthday: g.spouseBirthYear ? String(g.spouseBirthYear) : undefined,
+        death_year: g.spouseDeathYear ? String(g.spouseDeathYear) : undefined,
+        is_living: g.spouseIsLiving,
+        is_root: false,
+        generation: null,
+        avatar: g.spouseGender === "M" ? "/avatars/male.png" : "/avatars/female.png",
+        is_ghost: true,
+        ghost_link_id: g.linkId,
+        ghost_peer_clan_name: g.peerClanName,
+        ghost_local_person_id: g.localPersonId,
+      },
+      // Ghost is a stub — no parents/children in this clan; only
+      // attached to the local anchor as a spouse.
+      rels: { parents: [], spouses: [g.localPersonId], children: [] },
+    };
+    data.push(ghost);
+    byId.set(id, ghost);
+
+    // Wire ghost as a spouse of the local person, dedupe to avoid
+    // doubling on re-render.
+    if (!local.rels.spouses.includes(id)) {
+      local.rels.spouses.push(id);
+    }
+  }
+  return data;
 }
 
 /**

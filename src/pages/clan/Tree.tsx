@@ -25,10 +25,15 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
+import {
+  addInlawGhosts,
+  pickDefaultFocal,
+  toFamilyChart,
+} from "@/lib/familyChartAdapter";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
 import {
+  getInlawGhostSpouses,
   listLinksForClan,
   listLinksForPerson,
 } from "@/lib/queries/person-links";
@@ -147,10 +152,26 @@ export default function Tree() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Ghost spouses: peer-clan spouses of locally-mirrored inlaws,
+  // synthesised onto the local tree as dashed-border placeholder
+  // cards. Loaded in parallel with the main tree data — when missing,
+  // the tree still renders without ghosts so a slow Edge call never
+  // blocks the main view.
+  const { data: ghostSpouses } = useQuery({
+    queryKey: queryKeys.inlawGhostSpouses(clan.id, userId),
+    queryFn: () => getInlawGhostSpouses(clan.id),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+
   const f3Data = useMemo(() => {
     if (!data) return null;
-    return toFamilyChart(data.persons, data.families, photoUrls);
-  }, [data, photoUrls]);
+    const base = toFamilyChart(data.persons, data.families, photoUrls);
+    if (ghostSpouses && ghostSpouses.length > 0) {
+      addInlawGhosts(base, ghostSpouses);
+    }
+    return base;
+  }, [data, photoUrls, ghostSpouses]);
 
   // Persons with an active cross-clan in-law link — used to decorate
   // their card with a "↔" badge. We only need the set of ids; the
@@ -264,6 +285,7 @@ export default function Tree() {
             const datum = d.data as DatumNode | undefined;
             const fields = datum?.data ?? {};
             const personId = datum?.id;
+            const isGhost = fields["is_ghost"] === true;
 
             const tspans = this.querySelectorAll<SVGTSpanElement>(
               ".card-text text tspan",
@@ -273,6 +295,74 @@ export default function Tree() {
               meta.setAttribute("text-anchor", "start");
               meta.setAttribute("x", "0");
               meta.setAttribute("dy", "18");
+            }
+
+            // Ghost-spouse styling: dashed bronze border + "Họ X" tag
+            // along the top edge. Re-apply on every update because
+            // family-chart owns the inner DOM and may rebuild it.
+            if (isGhost) {
+              const rect = this.querySelector(".card-body rect");
+              if (rect) {
+                rect.setAttribute("stroke", "#B8862A");
+                rect.setAttribute("stroke-dasharray", "4 3");
+                rect.setAttribute("stroke-width", "1.5");
+                rect.setAttribute("fill", "#FBF7F0");
+              }
+              this.querySelector(".ghost-clan-tag")?.remove();
+              const clanName =
+                (fields["ghost_peer_clan_name"] as string | undefined) ?? "";
+              if (clanName) {
+                const ns = "http://www.w3.org/2000/svg";
+                const tag = document.createElementNS(ns, "g");
+                tag.setAttribute("class", "ghost-clan-tag");
+                const tagW = 10 + clanName.length * 6;
+                const bg = document.createElementNS(ns, "rect");
+                bg.setAttribute("x", "64");
+                bg.setAttribute("y", "-9");
+                bg.setAttribute("rx", "4");
+                bg.setAttribute("ry", "4");
+                bg.setAttribute("height", "14");
+                bg.setAttribute("width", String(tagW));
+                bg.setAttribute("fill", "#B8862A");
+                const txt = document.createElementNS(ns, "text");
+                txt.setAttribute("x", String(64 + tagW / 2));
+                txt.setAttribute("y", "0");
+                txt.setAttribute("text-anchor", "middle");
+                txt.setAttribute("fill", "#FFFFFF");
+                txt.setAttribute("font-size", "9");
+                txt.setAttribute("font-weight", "600");
+                txt.textContent = clanName;
+                tag.appendChild(bg);
+                tag.appendChild(txt);
+                this.querySelector(".card-body")?.appendChild(tag);
+              }
+              // Clickable transparent overlay → open the badge dialog
+              // for the LOCAL anchor person (dialog already shows
+              // peer family card). Remove the old overlay first to
+              // avoid handler accumulation across re-renders.
+              const localId = fields["ghost_local_person_id"] as
+                | string
+                | undefined;
+              this.querySelector(".ghost-click-overlay")?.remove();
+              if (localId) {
+                const ns = "http://www.w3.org/2000/svg";
+                const overlay = document.createElementNS(ns, "rect");
+                overlay.setAttribute("class", "ghost-click-overlay");
+                overlay.setAttribute("x", "0");
+                overlay.setAttribute("y", "0");
+                overlay.setAttribute("width", "260");
+                overlay.setAttribute("height", "72");
+                overlay.setAttribute("fill", "transparent");
+                overlay.style.cursor = "pointer";
+                overlay.addEventListener("click", (e) => {
+                  e.stopPropagation();
+                  setBadgePersonRef.current(localId);
+                });
+                this.querySelector(".card-body")?.appendChild(overlay);
+              }
+              // Skip the gen badge / inlaw badge / edit actions for
+              // ghosts — they're stubs, not real persons in this clan.
+              return;
             }
 
             // Generation badge — small pill in the top-right corner.
