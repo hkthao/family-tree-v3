@@ -20,7 +20,7 @@
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
+import { getLunarDate, getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -302,9 +302,10 @@ Deno.serve(async (req) => {
   if (subErr) return json({ error: subErr.message }, { status: 500 });
 
   const subscriptions = (subs ?? []) as SubscriptionLite[];
-  if (subscriptions.length === 0) {
-    return json({ today, processed: 0, sent: 0, skipped: 0 });
-  }
+  // Don't short-circuit when subscriptions is empty — the monthly-
+  // lunar reminder runs from a separate per-user flag and needs to
+  // fire even when nobody has any event_subscriptions configured.
+  // The downstream computeFireList just returns [] in that case.
 
   // 2) Pull the relevant clans' data (persons + events + anniversaries)
   //    in one round-trip per clan referenced by the subs.
@@ -487,12 +488,179 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ── Mùng 1 / Rằm reminders ──────────────────────────────────────
+  // Independent of event_subscriptions: a per-user toggle on the
+  // profiles row. Fires on lunar day 1 (mùng 1) and lunar day 15
+  // (rằm) for every user who opted in. Reuses the notification_log
+  // dedupe via a single event_key per date.
+  const monthlyResult = await dispatchMonthlyLunar({
+    supabase,
+    today,
+    todayDate,
+    alreadySent,
+  });
+  sent += monthlyResult.sent;
+  failed += monthlyResult.failed;
+  for (const e of monthlyResult.errors) errors.push(e);
+
   return json({
     today,
-    processed: fires.length,
+    processed: fires.length + monthlyResult.processed,
     sent,
     failed,
     errors: errors.slice(0, 5),
     dryRun: !RESEND_API_KEY,
   });
 });
+
+// ─── Mùng 1 / Rằm dispatch helper ─────────────────────────────────
+
+async function dispatchMonthlyLunar(opts: {
+  supabase: ReturnType<typeof createClient>;
+  today: string;
+  todayDate: Date;
+  alreadySent: Set<string>;
+}): Promise<{ processed: number; sent: number; failed: number; errors: string[] }> {
+  const { supabase, today, todayDate, alreadySent } = opts;
+  // Compute today's lunar day to decide whether this is mùng 1 or rằm.
+  const lunar = getLunarDate(
+    todayDate.getUTCDate(),
+    todayDate.getUTCMonth() + 1,
+    todayDate.getUTCFullYear(),
+  );
+  const isMung1 = lunar.day === 1;
+  const isRam = lunar.day === 15;
+  if (!isMung1 && !isRam) {
+    return { processed: 0, sent: 0, failed: 0, errors: [] };
+  }
+  const eventKey = `monthly_lunar:${today}`;
+  const occasion = isMung1 ? "Mùng 1" : "Rằm";
+  const lunarMonth = lunar.month;
+
+  // Opted-in profiles. Skip suspended accounts.
+  const { data: profiles, error: profErr } = await supabase
+    .from("profiles")
+    .select("id, display_name")
+    .eq("notify_monthly_lunar", true)
+    .eq("is_suspended", false);
+  if (profErr) {
+    return { processed: 0, sent: 0, failed: 0, errors: [profErr.message] };
+  }
+  const recipientIds = (profiles ?? []).map(
+    (p: { id: string }) => p.id,
+  );
+  if (recipientIds.length === 0) {
+    return { processed: 0, sent: 0, failed: 0, errors: [] };
+  }
+
+  // Pick a sentinel clan_id per recipient — notification_log.clan_id
+  // is NOT NULL, but this reminder isn't clan-specific. Use whichever
+  // clan the user is a member of (any one will do).
+  const { data: memberRows } = await supabase
+    .from("clan_members")
+    .select("user_id, clan_id")
+    .in("user_id", recipientIds);
+  const firstClanByUser = new Map<string, string>();
+  for (const m of memberRows ?? []) {
+    const r = m as { user_id: string; clan_id: string };
+    if (!firstClanByUser.has(r.user_id)) {
+      firstClanByUser.set(r.user_id, r.clan_id);
+    }
+  }
+
+  let sent = 0;
+  let failed = 0;
+  const errors: string[] = [];
+  let processed = 0;
+
+  for (const uid of recipientIds) {
+    const dedupeKey = `${uid}:${eventKey}:email`;
+    if (alreadySent.has(dedupeKey)) continue;
+    const clanId = firstClanByUser.get(uid);
+    if (!clanId) continue; // orphan user with no clan membership
+    processed++;
+
+    // Resolve email via auth admin (same pattern as the main loop's
+    // emails map — we deferred this lookup until we knew who's
+    // actually eligible to keep the API calls bounded).
+    const { data: u } = await supabase.auth.admin.getUserById(uid);
+    const to = u?.user?.email;
+    if (!to) {
+      await supabase.from("notification_log").insert({
+        user_id: uid,
+        clan_id: clanId,
+        event_key: eventKey,
+        channel: "email",
+        status: "failed",
+      });
+      failed++;
+      continue;
+    }
+
+    const subject = `[Gia phả] ${occasion} tháng ${lunarMonth} âm — Thắp hương`;
+    const html = monthlyLunarHtml({ occasion, lunarMonth });
+    const result = await sendMonthlyEmail(to, subject, html);
+    await supabase.from("notification_log").insert({
+      user_id: uid,
+      clan_id: clanId,
+      event_key: eventKey,
+      channel: "email",
+      status: result.ok ? "sent" : "failed",
+    });
+    if (result.ok) sent++;
+    else {
+      failed++;
+      if (result.error) errors.push(result.error);
+    }
+  }
+  return { processed, sent, failed, errors };
+}
+
+function monthlyLunarHtml(opts: {
+  occasion: string;
+  lunarMonth: number;
+}): string {
+  return `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1F1A17;background:#FBF7F0;margin:0;padding:24px;">
+    <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;padding:24px;border:1px solid #D8CFC2;">
+      <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#6F665F;margin:0 0 4px;">Gia phả</p>
+      <h1 style="font-size:22px;color:#7A2230;margin:0 0 14px;">Hôm nay là ${opts.occasion} tháng ${opts.lunarMonth} âm lịch</h1>
+      <p style="font-size:15px;margin:0 0 12px;">Đừng quên thắp hương lên bàn thờ tổ tiên hôm nay.</p>
+      <p style="font-size:13px;color:#6F665F;margin:14px 0 0;">
+        Bạn có thể tắt nhắc này trong trang Tài khoản của app.
+      </p>
+      <hr style="border:none;border-top:1px solid #D8CFC2;margin:24px 0 8px;" />
+      <p style="font-size:11px;color:#6F665F;margin:0;">Email tự động từ ứng dụng Gia phả.</p>
+    </div></body></html>`;
+}
+
+async function sendMonthlyEmail(
+  to: string,
+  subject: string,
+  html: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!RESEND_API_KEY) return { ok: false, error: "no-api-key (dry-run)" };
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: RESEND_FROM,
+        to,
+        subject,
+        html,
+      }),
+    });
+    if (!res.ok) {
+      return { ok: false, error: `resend ${res.status}: ${await res.text()}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: `network: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
+}

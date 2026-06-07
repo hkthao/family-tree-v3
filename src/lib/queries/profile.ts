@@ -10,6 +10,7 @@ export interface MyProfile {
   display_name: string | null;
   is_platform_admin: boolean;
   is_suspended: boolean;
+  notify_monthly_lunar: boolean;
 }
 
 export async function getMyProfile(
@@ -18,11 +19,25 @@ export async function getMyProfile(
 ): Promise<MyProfile | null> {
   const { data, error } = await client
     .from("profiles")
-    .select("id, display_name, is_platform_admin, is_suspended")
+    .select(
+      "id, display_name, is_platform_admin, is_suspended, notify_monthly_lunar",
+    )
     .eq("id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data as MyProfile | null;
+}
+
+export async function updateMyMonthlyLunarPref(
+  userId: string,
+  enabled: boolean,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("profiles")
+    .update({ notify_monthly_lunar: enabled })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
 }
 
 export async function updateMyDisplayName(

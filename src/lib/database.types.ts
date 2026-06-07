@@ -826,6 +826,7 @@ export type Database = {
           is_platform_admin: boolean
           is_suspended: boolean
           max_clans: number
+          notify_monthly_lunar: boolean
         }
         Insert: {
           created_at?: string
@@ -834,6 +835,7 @@ export type Database = {
           is_platform_admin?: boolean
           is_suspended?: boolean
           max_clans?: number
+          notify_monthly_lunar?: boolean
         }
         Update: {
           created_at?: string
@@ -842,6 +844,7 @@ export type Database = {
           is_platform_admin?: boolean
           is_suspended?: boolean
           max_clans?: number
+          notify_monthly_lunar?: boolean
         }
         Relationships: []
       }
