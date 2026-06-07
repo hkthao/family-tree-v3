@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,8 +9,10 @@ import {
   IconArrowRight,
   IconCheck,
   IconScroll,
+  IconX,
 } from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +21,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import {
   getClanTodoItems,
   getClanTodoSummary,
+  setPersonTodoExcluded,
   TODO_CATEGORIES,
   type TodoCategory,
   type TodoItemRow,
@@ -80,6 +83,31 @@ export default function Todo() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const excludeMutation = useMutation({
+    mutationFn: (personId: string) => setPersonTodoExcluded(personId, true),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.clanTodoSummary(clan.id, userId),
+        }),
+        queryClient.invalidateQueries({
+          predicate: (q) =>
+            Array.isArray(q.queryKey) &&
+            q.queryKey[0] === "clan-todo-items" &&
+            q.queryKey[1] === clan.id,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.clanTodoCount(clan.id, userId),
+        }),
+      ]);
+      toast.success("Đã loại khỏi danh sách");
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
+  });
 
   const [category, setCategory] = useState<TodoCategory>("missing_parents");
   // 1-based for consistency with Audit/Clans/People pagination.
@@ -238,11 +266,14 @@ export default function Todo() {
       {rows && rows.length > 0 && (
         <ul className="divide-y rounded-md border bg-card">
           {rows.map((row) => (
-            <li key={row.person_id}>
+            <li
+              key={row.person_id}
+              className="flex items-center gap-1 hover:bg-muted/50"
+            >
               <button
                 type="button"
                 onClick={() => openItem(row)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50"
+                className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left min-w-0"
               >
                 <PersonAvatar gender={row.gender} size={36} />
                 <div className="min-w-0 flex-1">
@@ -282,6 +313,18 @@ export default function Todo() {
                   →
                 </span>
               </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => excludeMutation.mutate(row.person_id)}
+                  disabled={excludeMutation.isPending}
+                  className="shrink-0 mr-2 inline-flex items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground rounded-md hover:bg-background hover:text-foreground"
+                  title="Loại khỏi danh sách (không hiện ở đây nữa)"
+                >
+                  <IconX className="h-3.5 w-3.5" />
+                  Bỏ qua
+                </button>
+              )}
             </li>
           ))}
         </ul>

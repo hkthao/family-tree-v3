@@ -53,6 +53,7 @@ export default function EditPerson() {
   const [nickname, setNickname] = useState("");
   const [posthumousName, setPosthumousName] = useState("");
   const [bio, setBio] = useState("");
+  const [todoExcluded, setTodoExcluded] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -85,6 +86,7 @@ export default function EditPerson() {
     setNickname(person.nickname ?? "");
     setPosthumousName(person.posthumous_name ?? "");
     setBio(person.bio ?? "");
+    setTodoExcluded(person.todo_excluded ?? false);
   }, [person]);
 
   const mutation = useMutation({
@@ -97,6 +99,7 @@ export default function EditPerson() {
         gender,
         is_living: isLiving,
         is_root: isRoot,
+        todo_excluded: todoExcluded,
         birth_date: birthCols.solar_date,
         birth_date_precision: birthCols.solar_precision,
         death_date: deathCols.solar_date,
@@ -276,6 +279,25 @@ export default function EditPerson() {
                 <span className="font-medium">Thuỷ tổ</span>
                 <span className="block text-sm text-muted-foreground">
                   Khi bật, đời = 1; trigger tự cập nhật đời cho con cháu.
+                </span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={todoExcluded}
+                onChange={(e) => setTodoExcluded(e.target.checked)}
+                className="mt-1 h-5 w-5 accent-primary shrink-0"
+              />
+              <span>
+                <span className="font-medium">
+                  Loại khỏi "Việc cần làm"
+                </span>
+                <span className="block text-sm text-muted-foreground">
+                  Bật khi gap dữ liệu là <em>cố ý</em> hoặc không thể bổ
+                  sung (vd. thuỷ tổ không có cha mẹ, người mất tích
+                  không rõ năm sinh/mất). App sẽ không nhắc nữa.
                 </span>
               </span>
             </label>
