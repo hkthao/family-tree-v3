@@ -1057,6 +1057,7 @@ export type Database = {
       }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
       clan_role: { Args: { target_clan: string }; Returns: string }
+      clear_failed_notification: { Args: { p_id: string }; Returns: undefined }
       confirm_link_by_token: {
         Args: { p_clan_b: string; p_person_b: string; p_token: string }
         Returns: string
