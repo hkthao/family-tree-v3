@@ -1093,6 +1093,10 @@ export type Database = {
         Returns: Json
       }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
+      assign_person_to_family: {
+        Args: { p_family_id: string; p_person_id: string }
+        Returns: undefined
+      }
       bulk_import_persons: {
         Args: { payload: Json; target_clan: string }
         Returns: Json
