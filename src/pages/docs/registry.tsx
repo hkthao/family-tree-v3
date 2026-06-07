@@ -127,6 +127,13 @@ export const DOCS_SECTIONS: DocSection[] = [
         Body: Community.Contributions,
       },
       {
+        slug: "viec-can-lam",
+        title: "Việc cần làm (gap board)",
+        summary:
+          "App tự dò ai thiếu năm sinh, ai chưa có cha/mẹ, nhánh nghi sót — cả họ cùng bổ sung.",
+        Body: Community.Todo,
+      },
+      {
         slug: "lien-ket-thong-gia",
         title: "Liên kết thông gia giữa các dòng họ",
         summary:

@@ -54,6 +54,26 @@ export function Today() {
         Email gửi từ địa chỉ dòng họ đã cấu hình. Không cần đăng nhập app vẫn
         nhận được nhắc.
       </Callout>
+
+      <H2>Xuất ra lịch điện thoại (.ics)</H2>
+      <P>
+        Trên trang <Code>Sự kiện</Code> có nút <Strong>Xuất lịch</Strong> — tải
+        về một file <Code>.ics</Code> chứa toàn bộ giỗ + sinh nhật của họ.
+        Nhập file này vào Google Calendar (web → Settings → Import) hoặc Apple
+        Calendar (kéo thả vào Calendar.app) → ngày giỗ tự hiện trên lịch quen
+        thuộc, kèm nhắc 9h sáng. Giỗ âm lịch được tính sẵn 10 năm tới và
+        đính kèm dạng nhiều ngày riêng (RDATE) thay vì RRULE năm, để tránh
+        sai lệch dương/âm theo năm nhuận.
+      </P>
+
+      <H2>Nhắc thắp hương mùng 1 / rằm âm lịch</H2>
+      <P>
+        Vào trang <Code>Tài khoản</Code>, bật tuỳ chọn{" "}
+        <Strong>Nhắc mùng 1 và rằm âm lịch</Strong>. Cron mỗi sáng kiểm tra
+        ngày âm lịch — nếu là mùng 1 hoặc 15 sẽ gửi email nhắc thắp hương.
+        Lựa chọn này độc lập với <Code>Theo dõi</Code> ở từng sự kiện vì nó
+        không gắn với người cụ thể trong họ.
+      </P>
     </>
   );
 }
@@ -228,7 +248,75 @@ export function Contributions() {
   );
 }
 
-// ─── E. Liên kết thông gia ───────────────────────────────────────
+// ─── E. Việc cần làm (Todo) ──────────────────────────────────────
+
+export function Todo() {
+  return (
+    <>
+      <Lead>
+        Sổ gia phả nào cũng còn chỗ trống — thiếu năm sinh, thiếu bố
+        mẹ, có ông cụ chắc còn con cháu chưa ghi vào. Trang{" "}
+        <Code>Việc cần làm</Code> tự dò các chỗ trống này và liệt kê
+        ra để cả họ cùng bổ sung dần.
+      </Lead>
+
+      <H2>4 nhóm việc app tự dò</H2>
+      <UL>
+        <LI>
+          <Strong>Thiếu cha/mẹ</Strong> — người chưa có bố/mẹ trong
+          cây và không phải tổ. Đây là chỗ trống quan trọng nhất vì
+          không gắn được vào đúng đời, đúng nhánh.
+        </LI>
+        <LI>
+          <Strong>Thiếu năm sinh/mất</Strong> — không có cả ngày
+          dương lẫn âm; hoặc đã mất nhưng chưa biết năm mất, chưa
+          biết ngày giỗ.
+        </LI>
+        <LI>
+          <Strong>Nhánh nghi sót</Strong> — đã có vợ/chồng, đủ tuổi
+          30+, nhưng chưa ghi con nào. Khả năng cao là quên ghi —
+          app gợi ý để kiểm tra lại.
+        </LI>
+        <LI>
+          <Strong>Thiếu ảnh / âm lịch</Strong> — chưa có ảnh đại
+          diện, hoặc đã có ngày dương mà chưa quy đổi âm lịch. Nhẹ
+          ký nhất, ai cũng có thể đóng góp.
+        </LI>
+      </UL>
+
+      <H2>Ai thấy được trang này</H2>
+      <P>
+        Mọi thành viên của dòng họ đều thấy. Sidebar có badge số
+        việc cần xử lý (cap 99+) để nhắc — chỉ đếm 3 nhóm{" "}
+        <Strong>quan trọng</Strong> (cha/mẹ, ngày, nhánh nghi sót).
+        Nhóm <Code>thiếu ảnh/âm lịch</Code> không tính vào badge để
+        khỏi nhiễu.
+      </P>
+
+      <H2>Bấm vào 1 mục thì sao?</H2>
+      <UL>
+        <LI>
+          <Strong>Admin / Editor</Strong> → mở thẳng trang{" "}
+          <Code>Sửa</Code> của người đó, sửa rồi lưu.
+        </LI>
+        <LI>
+          <Strong>Member chỉ xem</Strong> → mở trang chi tiết, bấm
+          nút <Strong>Đề xuất bổ sung</Strong> ở góc → app gửi đề
+          xuất qua <Code>Đóng góp có duyệt</Code>. Admin duyệt thì
+          dữ liệu được cập nhật.
+        </LI>
+      </UL>
+
+      <Callout>
+        Số liệu ở từng tab cập nhật theo thời gian thực sau khi sửa
+        — chỉ cần đóng/mở lại trang. Đây là động lực để cả họ cùng
+        đầy đầy số liệu, thấy số việc cần làm giảm dần là vui.
+      </Callout>
+    </>
+  );
+}
+
+// ─── F. Liên kết thông gia ───────────────────────────────────────
 
 export function Inlaws() {
   return (
