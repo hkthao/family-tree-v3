@@ -1065,6 +1065,7 @@ export type Database = {
         Args: { p_clan_b: string; p_person_b: string; p_token: string }
         Returns: string
       }
+      count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
       delete_my_account: { Args: never; Returns: undefined }
       f_unaccent: { Args: { "": string }; Returns: string }
@@ -1091,6 +1092,32 @@ export type Database = {
           males: number
           max_generation: number
           total_persons: number
+        }[]
+      }
+      get_clan_todo_items: {
+        Args: {
+          p_category: string
+          p_clan_id: string
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: {
+          birth_year: number
+          death_year: number
+          full_name: string
+          gender: string
+          generation: number
+          is_living: boolean
+          missing: string[]
+          person_id: string
+          photo_path: string
+        }[]
+      }
+      get_clan_todo_summary: {
+        Args: { p_clan_id: string }
+        Returns: {
+          category: string
+          count: number
         }[]
       }
       get_inlaw_peer_relatives: { Args: { p_link_id: string }; Returns: Json }

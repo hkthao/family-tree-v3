@@ -31,6 +31,7 @@ import PersonDetail from "@/pages/clan/PersonDetail";
 import QrExport from "@/pages/clan/QrExport";
 import Settings from "@/pages/clan/Settings";
 import Today from "@/pages/clan/Today";
+import Todo from "@/pages/clan/Todo";
 import Tree from "@/pages/clan/Tree";
 import InlawsConfirm from "@/pages/InlawsConfirm";
 import Login from "@/pages/Login";
@@ -92,6 +93,7 @@ export default function App() {
           <Route path="qr-export" element={<QrExport />} />
           <Route path="my-lineage" element={<MyLineage />} />
           <Route path="today" element={<Today />} />
+          <Route path="todo" element={<Todo />} />
           <Route path="contributions" element={<Contributions />} />
           <Route path="contributions/:contribId" element={<ContributionDetail />} />
           <Route path="inlaws" element={<Inlaws />} />

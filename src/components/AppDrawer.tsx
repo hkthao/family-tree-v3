@@ -34,6 +34,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { countPendingContributions } from "@/lib/queries/contributions";
 import { countPendingPersonLinks } from "@/lib/queries/person-links";
 import { getMyProfile, type MyProfile } from "@/lib/queries/profile";
+import { countClanTodo } from "@/lib/queries/todo";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -93,6 +94,15 @@ export function AppDrawer({ open, onClose }: Props) {
     enabled: !!userId && !!clanId && canSeeInlaws,
     staleTime: 30_000,
   });
+  // Todo count — every clan member can see it. RPC gates on
+  // is_clan_member so platform admin gets it too.
+  const canSeeTodo = !!clan && (clan.isPlatformAdmin || clan.myRole !== null);
+  const { data: todoCount } = useQuery({
+    queryKey: queryKeys.clanTodoCount(clanId ?? "", userId),
+    queryFn: () => countClanTodo(clanId!),
+    enabled: !!userId && !!clanId && canSeeTodo,
+    staleTime: 60_000,
+  });
 
   // On mobile, lock body scroll while the drawer is open so the page
   // doesn't scroll out from under the user on iOS. On desktop (≥lg) the
@@ -123,6 +133,7 @@ export function AppDrawer({ open, onClose }: Props) {
     profile ?? null,
     pendingContribCount ?? 0,
     pendingInlawCount ?? 0,
+    todoCount ?? 0,
   );
 
   return (
@@ -277,6 +288,12 @@ export function AppDrawer({ open, onClose }: Props) {
   );
 }
 
+/** Cap badge display at 99+ so a noisy count doesn't blow out the
+ *  row width. The number itself is still accurate on the page. */
+function formatBadge(n: number): string | number {
+  return n > 99 ? "99+" : n;
+}
+
 function initialOf(name: string): string {
   const trimmed = name.trim();
   if (!trimmed) return "?";
@@ -335,6 +352,7 @@ function buildSections(
   profile: MyProfile | null,
   pendingContribCount: number,
   pendingInlawCount: number,
+  todoCount: number,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -423,6 +441,12 @@ function buildSections(
         to: `/clans/${clanId}/my-lineage`,
         label: "Đường trực hệ",
         icon: <IconUser className={ic} />,
+      });
+      browseItems.push({
+        to: `/clans/${clanId}/todo`,
+        label: "Việc cần làm",
+        icon: <IconScroll className={ic} />,
+        badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
       });
       browseItems.push({
         to: `/clans/${clanId}/audit`,
