@@ -352,37 +352,43 @@ function ConfirmedRow({
   });
 
   return (
-    <li className="p-3 space-y-2">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="text-sm min-w-0 flex-1">
-          <p className="font-medium">
-            {localPerson?.full_name ?? "—"}{" "}
-            <span className="text-muted-foreground">↔</span>{" "}
-            {peek?.full_name ?? "(người bên kia)"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {peek ? <PeekMeta peek={peek} /> : "Đang tải…"}
-          </p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {peek && !peek.masked && (
-            <Button asChild variant="outline" size="sm">
-              <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
-                Xem trang
-              </Link>
-            </Button>
-          )}
+    <li className="p-3 space-y-3">
+      {/* Identity — full row width so long Vietnamese names don't
+          wrap character-per-line when squeezed by sibling buttons. */}
+      <div className="text-sm min-w-0">
+        <p className="font-medium">
+          {localPerson?.full_name ?? "—"}{" "}
+          <span className="text-muted-foreground">↔</span>{" "}
+          {peek?.full_name ?? "(người bên kia)"}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {peek ? <PeekMeta peek={peek} /> : "Đang tải…"}
+        </p>
+      </div>
+      {/* Actions — 50/50 split on mobile, hug content on sm+. */}
+      <div className="flex gap-2 flex-wrap">
+        {peek && !peek.masked && (
           <Button
+            asChild
             variant="outline"
             size="sm"
-            className="text-destructive"
-            onClick={onRevoke}
-            disabled={revoking}
+            className="flex-1 sm:flex-none"
           >
-            <IconUndo className="h-4 w-4 mr-1.5" />
-            Thu hồi
+            <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
+              Xem trang
+            </Link>
           </Button>
-        </div>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 sm:flex-none text-destructive"
+          onClick={onRevoke}
+          disabled={revoking}
+        >
+          <IconUndo className="h-4 w-4 mr-1.5" />
+          Thu hồi
+        </Button>
       </div>
     </li>
   );
@@ -496,14 +502,19 @@ function IncomingPendingRow({
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        <Button size="sm" onClick={onAccept} disabled={busy}>
+        <Button
+          size="sm"
+          onClick={onAccept}
+          disabled={busy}
+          className="flex-1 sm:flex-none"
+        >
           <IconCheck className="h-4 w-4 mr-1.5" />
           Xác nhận
         </Button>
         <Button
           size="sm"
           variant="outline"
-          className="text-destructive"
+          className="flex-1 sm:flex-none text-destructive"
           onClick={onReject}
           disabled={busy}
         >
@@ -557,21 +568,19 @@ function PendingRow({
   }
 
   return (
-    <li className="p-3 space-y-2">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className="text-sm min-w-0 flex-1">
-          <p className="font-medium">{localPerson?.full_name ?? "—"}</p>
-          {link.person_b_name_hint && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Gợi ý người bên kia: {link.person_b_name_hint}
-            </p>
-          )}
-          {link.note && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Ghi chú: {link.note}
-            </p>
-          )}
-        </div>
+    <li className="p-3 space-y-3">
+      <div className="text-sm min-w-0">
+        <p className="font-medium">{localPerson?.full_name ?? "—"}</p>
+        {link.person_b_name_hint && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Gợi ý người bên kia: {link.person_b_name_hint}
+          </p>
+        )}
+        {link.note && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Ghi chú: {link.note}
+          </p>
+        )}
       </div>
 
       {link.invite_token ? (
@@ -607,7 +616,7 @@ function PendingRow({
         <Button
           size="sm"
           variant="outline"
-          className="text-destructive"
+          className="flex-1 sm:flex-none text-destructive"
           onClick={onCancel}
           disabled={canceling}
         >
