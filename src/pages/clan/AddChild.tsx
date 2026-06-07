@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
@@ -51,7 +51,22 @@ export default function AddChild() {
     enabled: !!personId,
   });
 
+  // Default to the first spouse — silently leaving the picker on
+  // SOLO_VALUE used to create a phantom "parent + null" family unit
+  // even when the focal already had a real spouse, which produced
+  // an empty "?" placeholder on the tree. User can still flip back
+  // to solo for unknown / single-parent cases.
   const [otherParent, setOtherParent] = useState<string>(SOLO_VALUE);
+  // Lock-in flag: once the user explicitly touches the picker, stop
+  // the auto-prefill effect from overriding their choice.
+  const [otherParentTouched, setOtherParentTouched] = useState(false);
+  useEffect(() => {
+    if (otherParentTouched) return;
+    const first = rels?.spouses[0];
+    if (first && otherParent === SOLO_VALUE) {
+      setOtherParent(first.id);
+    }
+  }, [rels, otherParent, otherParentTouched]);
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
   const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
@@ -134,7 +149,10 @@ export default function AddChild() {
             <select
               id="other_parent"
               value={otherParent}
-              onChange={(e) => setOtherParent(e.target.value)}
+              onChange={(e) => {
+                setOtherParent(e.target.value);
+                setOtherParentTouched(true);
+              }}
               className="flex h-12 w-full rounded-md border border-input bg-background px-3 text-base"
             >
               <option value={SOLO_VALUE}>
@@ -146,6 +164,20 @@ export default function AddChild() {
                 </option>
               ))}
             </select>
+            {rels?.spouses && rels.spouses.length > 0 &&
+              otherParent === SOLO_VALUE && (
+                <Alert>
+                  <AlertDescription>
+                    {focal?.full_name ?? "Người này"} đã có{" "}
+                    {rels.spouses.length === 1
+                      ? `vợ/chồng (${rels.spouses[0].full_name})`
+                      : `${rels.spouses.length} vợ/chồng`}
+                    {" "}— chọn để con được gắn đúng. Chỉ giữ "đơn thân" nếu
+                    người con này thực sự không cùng cha mẹ với những anh
+                    chị em hiện có.
+                  </AlertDescription>
+                </Alert>
+              )}
             <p className="text-sm text-muted-foreground">
               Nếu cần một người chưa có trong cây, hãy thêm vợ/chồng trước.
             </p>
