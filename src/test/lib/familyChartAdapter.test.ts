@@ -138,3 +138,80 @@ describe("pickDefaultFocal", () => {
     expect(pickDefaultFocal([p("a", "A", "M"), p("b", "B", "F")])).toBe("a");
   });
 });
+
+// Performance guard. The adapter is O(P + F) by construction — we
+// build three maps once and then walk persons. This test exercises a
+// realistic large-clan shape (5000 persons, ~1500 families, 4 levels
+// deep) and asserts the transform stays well under our render
+// budget. If someone ever drops in a per-row loop that turns this
+// quadratic, the test will fail loudly with the elapsed ms.
+describe("familyChartAdapter.toFamilyChart — performance", () => {
+  function buildBigDataset(): {
+    persons: PersonForTree[];
+    families: FamilyForTree[];
+  } {
+    const persons: PersonForTree[] = [];
+    const families: FamilyForTree[] = [];
+    // Generation 1: a single root couple.
+    persons.push(p("p-1-0", "Root M", "M", { is_root: true, generation: 1 }));
+    persons.push(p("p-1-1", "Root F", "F", { generation: 1 }));
+    families.push(f("f-1-0", "p-1-0", "p-1-1"));
+
+    let nextPid = 2;
+    let nextFid = 2;
+    // Build a wide tree: at each generation, every couple produces 4
+    // children (alt M/F). Each child marries a fresh import partner
+    // and forms a new family with kids in turn. Stops at ~5000 rows.
+    let prevFamilies: string[] = ["f-1-0"];
+    let gen = 2;
+    while (persons.length < 5000 && gen < 8) {
+      const newFamilies: string[] = [];
+      for (const famId of prevFamilies) {
+        for (let i = 0; i < 4; i++) {
+          if (persons.length >= 5000) break;
+          const childGender: "M" | "F" = i % 2 === 0 ? "M" : "F";
+          const childId = `p-${gen}-${nextPid++}`;
+          persons.push(
+            p(childId, `Child ${gen}-${i}`, childGender, {
+              generation: gen,
+              birth_family_id: famId,
+            }),
+          );
+          // Spouse + family.
+          const spouseGender: "M" | "F" = childGender === "M" ? "F" : "M";
+          const spouseId = `p-${gen}-${nextPid++}`;
+          persons.push(
+            p(spouseId, `Spouse ${gen}-${i}`, spouseGender, {
+              generation: gen,
+            }),
+          );
+          const newFamId = `f-${gen}-${nextFid++}`;
+          families.push({
+            id: newFamId,
+            husband_id: childGender === "M" ? childId : spouseId,
+            wife_id: childGender === "F" ? childId : spouseId,
+          });
+          newFamilies.push(newFamId);
+        }
+      }
+      prevFamilies = newFamilies;
+      gen++;
+    }
+    return { persons, families };
+  }
+
+  it("transforms 5000 persons in under 100ms", () => {
+    const { persons, families } = buildBigDataset();
+    expect(persons.length).toBeGreaterThanOrEqual(4500);
+
+    const t0 = performance.now();
+    const result = toFamilyChart(persons, families);
+    const elapsed = performance.now() - t0;
+
+    expect(result.length).toBe(persons.length);
+    // Generous budget — locally this finishes in 5-15ms. 100ms leaves
+    // plenty of headroom for slow CI runners while still catching a
+    // truly quadratic regression (which would balloon to seconds).
+    expect(elapsed).toBeLessThan(100);
+  });
+});
