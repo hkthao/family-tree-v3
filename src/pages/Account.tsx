@@ -36,7 +36,7 @@ import {
   updateMyDisplayName,
   updateMyMonthlyLunarPref,
 } from "@/lib/queries/profile";
-import { updateMyNotifyViaPush } from "@/lib/queries/push";
+import { sendTestPush, updateMyNotifyViaPush } from "@/lib/queries/push";
 import { supabase } from "@/lib/supabase";
 
 export default function Account() {
@@ -626,31 +626,46 @@ function PushNotifyCard({
   } else {
     const isOn = enabled && push.state === "subscribed";
     body = (
-      <label className="flex items-start gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={isOn}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setShowPrePrompt(true);
-            } else {
-              void handleDisable();
-            }
-          }}
-          disabled={updatePref.isPending}
-          className="mt-1 h-5 w-5 accent-primary shrink-0"
-        />
-        <div>
-          <p className="font-medium">
-            {isOn ? "Đang bật trên thiết bị này" : "Tắt"}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {isOn
-              ? "Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại."
-              : "Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt."}
-          </p>
-        </div>
-      </label>
+      <div className="space-y-3">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isOn}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setShowPrePrompt(true);
+              } else {
+                void handleDisable();
+              }
+            }}
+            disabled={updatePref.isPending}
+            className="mt-1 h-5 w-5 accent-primary shrink-0"
+          />
+          <div>
+            <p className="font-medium">
+              {isOn ? "Đang bật trên thiết bị này" : "Tắt"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {isOn
+                ? "Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại."
+                : "Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt."}
+            </p>
+          </div>
+        </label>
+
+        {isOn && <TestPushButton />}
+
+        <p className="text-xs text-muted-foreground">
+          Cần trợ giúp? Xem{" "}
+          <Link
+            to="/docs/web-push"
+            className="underline underline-offset-2 hover:text-foreground"
+          >
+            hướng dẫn thông báo đẩy
+          </Link>
+          .
+        </p>
+      </div>
     );
   }
 
@@ -672,6 +687,42 @@ function PushNotifyCard({
         {body}
       </CardContent>
     </Card>
+  );
+}
+
+// ─── Test push button — fires a one-shot notification to verify ───
+
+function TestPushButton() {
+  const toast = useToast();
+  const m = useMutation({
+    mutationFn: sendTestPush,
+    onSuccess: (res) => {
+      if (res.sent > 0) {
+        toast.success("Đã gửi push test", {
+          description: `${res.sent} thiết bị nhận được${res.failed > 0 ? ` · ${res.failed} thất bại` : ""}.`,
+        });
+      } else {
+        toast.error("Chưa nhận được", {
+          description:
+            res.message === "no-subscriptions"
+              ? "Chưa có thiết bị nào đăng ký push trên tài khoản này."
+              : "Push không gửi được — thử tắt rồi bật lại.",
+        });
+      }
+    },
+    onError: (e) =>
+      toast.error("Lỗi khi test", { description: (e as Error).message }),
+  });
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => m.mutate()}
+      disabled={m.isPending}
+    >
+      {m.isPending ? "Đang gửi…" : "Gửi thông báo test"}
+    </Button>
   );
 }
 

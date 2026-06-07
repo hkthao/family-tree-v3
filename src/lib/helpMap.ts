@@ -15,7 +15,7 @@ export function helpSlugFor(pathname: string): string | null {
   // Top-level pages outside a clan
   if (pathname === "/" || pathname === "/clans") return "tong-quan";
   if (pathname === "/clans/new") return "tao-dong-ho";
-  if (pathname.startsWith("/account")) return "dang-nhap";
+  if (pathname.startsWith("/account")) return "web-push";
   if (pathname.startsWith("/admin")) return "vai-tro";
   if (pathname.startsWith("/inlaws/confirm/")) return "lien-ket-thong-gia";
   if (pathname.startsWith("/login") || pathname.startsWith("/signup"))
