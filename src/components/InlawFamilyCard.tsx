@@ -108,8 +108,6 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
 
       <FocalRow focal={data.peer} peerClanId={data.peer_clan_id} />
 
-      <FocalRow focal={data.peer} peerClanId={data.peer_clan_id} />
-
       {data.spouses.length > 0 && (
         <RelativeGroup
           label="Vợ / chồng"
@@ -149,11 +147,7 @@ function FocalRow({
 }) {
   return (
     <div className="rounded-md border-2 border-primary bg-primary/5 p-3 flex items-center gap-3">
-      {focal.masked ? (
-        <PersonAvatar gender={focal.gender} photoUrl={null} size={48} />
-      ) : (
-        <PersonAvatar gender={focal.gender} photoUrl={null} size={48} />
-      )}
+      <PersonAvatar gender={focal.gender} photoUrl={null} size={48} />
       <div className="min-w-0 flex-1">
         <p className="font-semibold">
           {focal.masked ? "Người còn sống" : (focal.full_name ?? "—")}

@@ -29,6 +29,7 @@ import {
   notifyInlaw,
   proposeLink,
   proposeLinkDirect,
+  isInlawCacheKey,
   type PersonLink,
 } from "@/lib/queries/person-links";
 import { cn } from "@/lib/utils";
@@ -83,10 +84,7 @@ export default function InlawsNew() {
       }),
     onSuccess: (link) => {
       setCreatedLink(link);
-      qc.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
-      });
+      qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       toast.success("Đã tạo mã mời");
     },
     onError: (e) =>
@@ -104,10 +102,7 @@ export default function InlawsNew() {
         createdBy: userId,
       }),
     onSuccess: (link) => {
-      qc.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) && q.queryKey[0] === "person-links",
-      });
+      qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       toast.success("Đã gửi đề nghị tới " + (peerClan?.name ?? ""), {
         description: "Bên kia sẽ nhận email và xem trong /inlaws.",
       });

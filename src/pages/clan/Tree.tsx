@@ -24,7 +24,10 @@ import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
-import { listLinksForClan } from "@/lib/queries/person-links";
+import {
+  listLinksForClan,
+  listLinksForPerson,
+} from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
 import { getTreeData } from "@/lib/queries/tree";
 
@@ -659,6 +662,7 @@ export default function Tree() {
 
       <InlawBadgeDialog
         personId={badgePersonId}
+        userId={userId}
         onClose={() => setBadgePersonId(null)}
       />
     </div>
@@ -675,9 +679,11 @@ export default function Tree() {
  */
 function InlawBadgeDialog({
   personId,
+  userId,
   onClose,
 }: {
   personId: string | null;
+  userId: string;
   onClose: () => void;
 }) {
   const open = !!personId;
@@ -724,28 +730,29 @@ function InlawBadgeDialog({
           </button>
         </header>
         <div className="p-5">
-          <InlawBadgeBody personId={personId!} />
+          <InlawBadgeBody personId={personId!} userId={userId} />
         </div>
       </div>
     </div>
   );
 }
 
-function InlawBadgeBody({ personId }: { personId: string }) {
+function InlawBadgeBody({
+  personId,
+  userId,
+}: {
+  personId: string;
+  userId: string;
+}) {
+  // Reuse PersonDetail's typed helper + the canonical "person-links"
+  // cache prefix so mutations (revoke / accept / propose) invalidate
+  // this query too. The earlier one-off ["tree-inlaw-dialog", personId]
+  // key sat outside the inlaws invalidation set and went stale after
+  // every state change.
   const { data: links, isLoading } = useQuery({
-    queryKey: ["tree-inlaw-dialog", personId],
-    queryFn: async () => {
-      const { data, error } = await import("@/lib/supabase").then(
-        ({ supabase }) =>
-          supabase
-            .from("person_links")
-            .select("id, status")
-            .eq("status", "confirmed")
-            .or(`person_a_id.eq.${personId},person_b_id.eq.${personId}`),
-      );
-      if (error) throw new Error(error.message);
-      return data;
-    },
+    queryKey: queryKeys.personLinksForPerson(personId, userId),
+    queryFn: () => listLinksForPerson(personId),
+    enabled: !!userId,
   });
   if (isLoading)
     return <p className="text-sm text-muted-foreground">Đang tải…</p>;

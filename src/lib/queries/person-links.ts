@@ -69,6 +69,38 @@ export async function countPendingPersonLinks(
   return count ?? 0;
 }
 
+/**
+ * Predicate that matches every React Query key touched by the in-law
+ * links feature. Used by every mutation's onSuccess to drop ALL
+ * caches whose data might have shifted — list views, count badges,
+ * single-link peeks, token previews, family-card relatives, and
+ * Tree.tsx's badge-dialog one-off. Centralising it ensures the next
+ * person adding a query under one of these prefixes gets
+ * invalidated for free, instead of silently going stale.
+ *
+ * Each prefix corresponds to a queryKey[0] used somewhere in the
+ * codebase. Add new prefixes here when introducing a new query.
+ */
+const INLAW_QUERY_PREFIXES = new Set([
+  "person-links",
+  "person-link-peek",
+  "person-link-token",
+  "inlaw-peer-relatives",
+  "tree-inlaw-dialog",
+  "tree-inlaw-peek",
+  "inlaw-proposal-preview",
+  "inlaw-local-person",
+  "inlaw-confirm-search",
+  "inlaws-people-search",
+  "inlaws-peer-clans",
+  "inlaws-peer-persons",
+]);
+
+export function isInlawCacheKey(queryKey: readonly unknown[]): boolean {
+  const head = queryKey[0];
+  return typeof head === "string" && INLAW_QUERY_PREFIXES.has(head);
+}
+
 /** List every link involving the given clan (either side). */
 export async function listLinksForClan(
   clanId: string,
