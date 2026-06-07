@@ -68,6 +68,53 @@ export async function listMyPushSubscriptions(
   return (data ?? []) as PushSubscriptionRow[];
 }
 
+/**
+ * Fire a one-shot test push to every subscription owned by the caller.
+ * Returns the dispatch summary so the UI can show "đã gửi đến N
+ * thiết bị" or surface "chưa có thiết bị nào đăng ký".
+ */
+export async function sendTestPush(): Promise<{
+  ok: boolean;
+  sent: number;
+  failed: number;
+  message?: string;
+}> {
+  const base = import.meta.env.VITE_SUPABASE_URL;
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!base || !anon) {
+    throw new Error("Thiếu cấu hình Supabase");
+  }
+  const sessionRes = await defaultClient.auth.getSession();
+  const accessToken = sessionRes.data.session?.access_token;
+  if (!accessToken) throw new Error("Chưa đăng nhập");
+
+  const res = await fetch(`${base}/functions/v1/send-test-push`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: anon,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({}),
+  });
+  const body = (await res.json().catch(() => ({}))) as {
+    ok?: boolean;
+    sent?: number;
+    failed?: number;
+    message?: string;
+    error?: string;
+  };
+  if (!res.ok && res.status !== 404) {
+    throw new Error(body.error ?? `send-test-push (${res.status})`);
+  }
+  return {
+    ok: !!body.ok,
+    sent: body.sent ?? 0,
+    failed: body.failed ?? 0,
+    message: body.message,
+  };
+}
+
 /** Toggle the caller's notify_via_push column. */
 export async function updateMyNotifyViaPush(
   userId: string,

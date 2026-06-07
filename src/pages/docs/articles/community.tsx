@@ -420,3 +420,122 @@ export function Inlaws() {
     </>
   );
 }
+
+// ─── F. Web Push ─────────────────────────────────────────────────
+
+export function WebPush() {
+  return (
+    <>
+      <Lead>
+        Thông báo đẩy (Web Push) là <Strong>lớp nhắc bổ sung</Strong> —
+        chạy ngay cả khi app đang đóng. App vẫn hữu ích nếu bạn không
+        bật: trang <Code>Hôm nay</Code>, email nhắc, và xuất lịch{" "}
+        <Code>.ics</Code> vẫn chạy.
+      </Lead>
+
+      <H2>Bật ở đâu</H2>
+      <Steps>
+        <LI>
+          Vào trang <Code>Tài khoản</Code> → mục <Strong>Thông báo đẩy
+          (Web Push)</Strong>.
+        </LI>
+        <LI>
+          Bấm vào ô check để bật. App hiện một dòng giải thích trước —
+          bấm <Strong>Cho phép thông báo</Strong> để mở prompt hệ thống.
+        </LI>
+        <LI>
+          Trình duyệt hỏi quyền → chọn <Strong>Allow</Strong>. Nếu lỡ
+          bấm <Strong>Block</Strong>, vào Cài đặt trình duyệt → Quyền →
+          Thông báo → bỏ chặn cho app này rồi quay lại.
+        </LI>
+        <LI>
+          Sau khi bật, bấm <Strong>Gửi thông báo test</Strong> để kiểm
+          tra ngay — thông báo "Test thông báo Gia phả" sẽ hiện trên
+          điện thoại trong vài giây.
+        </LI>
+      </Steps>
+
+      <H2>Khi nào sẽ nhận thông báo</H2>
+      <UL>
+        <LI>
+          <Strong>Giỗ và sinh nhật</Strong> — đúng ngày (07:05 sáng VN)
+          hoặc trước N ngày tuỳ cấu hình <Code>Theo dõi</Code> ở trang
+          Sự kiện.
+        </LI>
+        <LI>
+          <Strong>Mùng 1 / rằm âm lịch</Strong> — nếu bật toggle "Nhắc
+          mùng 1 và rằm" cùng trang Tài khoản.
+        </LI>
+        <LI>
+          <Strong>Đóng góp mới</Strong> (chỉ admin) — khi có người gửi
+          đề xuất sửa cây, push tới mọi admin của dòng họ.
+        </LI>
+        <LI>
+          <Strong>Kết quả đóng góp</Strong> (cho người gửi) — khi admin
+          duyệt/từ chối đề xuất của bạn.
+        </LI>
+      </UL>
+
+      <H2>iOS — quan trọng phải cài app vào màn hình chính</H2>
+      <P>
+        iOS chỉ hỗ trợ Web Push <Strong>từ phiên bản 16.4 trở lên</Strong>{" "}
+        VÀ <Strong>bắt buộc app phải được thêm vào màn hình chính</Strong>{" "}
+        (Add to Home Screen). Mở app bằng Safari thường thì <Strong>không
+        push được</Strong>.
+      </P>
+      <Steps>
+        <LI>Trên iOS, mở app bằng Safari.</LI>
+        <LI>
+          Bấm nút Share (mũi tên đi lên trong khung) →{" "}
+          <Strong>Add to Home Screen</Strong>.
+        </LI>
+        <LI>
+          Mở app từ icon vừa cài (không phải Safari) → vào{" "}
+          <Code>Tài khoản</Code> → bật push như bước thông thường.
+        </LI>
+      </Steps>
+      <Callout>
+        Nếu iOS dưới 16.4 hoặc không cài được PWA → dùng phương án{" "}
+        <Code>Xuất lịch .ics</Code> ở trang Sự kiện thay thế. Lịch
+        điện thoại quen thuộc sẽ nhắc giỗ/sinh nhật.
+      </Callout>
+
+      <H2>Tắt push</H2>
+      <P>
+        Vào lại <Code>Tài khoản</Code>, bỏ tích ô. App sẽ huỷ
+        subscription trên thiết bị này. Bật/tắt độc lập theo từng
+        thiết bị — bật trên điện thoại không tự động bật trên máy
+        tính.
+      </P>
+
+      <H2>Vì sao push không tới?</H2>
+      <UL>
+        <LI>
+          <Strong>iOS chưa cài PWA</Strong> — xem mục trên.
+        </LI>
+        <LI>
+          <Strong>Quyền bị Block</Strong> trong trình duyệt → bỏ chặn
+          ở Cài đặt → Quyền → Thông báo cho app này.
+        </LI>
+        <LI>
+          <Strong>Chế độ tiết kiệm pin</Strong> trên Android có thể trì
+          hoãn / gộp push. Đây là giới hạn của hệ điều hành.
+        </LI>
+        <LI>
+          <Strong>Không có sự kiện hôm nay</Strong> — push chỉ chạy khi
+          có giỗ/sinh nhật/đóng góp/rằm. Test push để kiểm tra đường
+          gửi đang ok.
+        </LI>
+      </UL>
+
+      <H2>Quyền riêng tư</H2>
+      <Callout>
+        Payload thông báo đẩy bị giới hạn 4KB và được mã hoá đầu-cuối.
+        App chỉ gửi tối thiểu (tiêu đề + 1 dòng + link mở), không nhét
+        dữ liệu nhạy cảm. Người sống được áp đúng quy tắc ẩn
+        <Code>hide_living_for_nonmembers</Code> — nội dung push không
+        lộ thông tin mà bạn không được phép thấy trong app.
+      </Callout>
+    </>
+  );
+}

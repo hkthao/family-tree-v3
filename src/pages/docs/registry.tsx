@@ -147,6 +147,13 @@ export const DOCS_SECTIONS: DocSection[] = [
           "Nối dâu/rể với cùng người đó ở dòng họ bên kia. Cần admin 2 bên đồng ý.",
         Body: Community.Inlaws,
       },
+      {
+        slug: "web-push",
+        title: "Thông báo đẩy (Web Push)",
+        summary:
+          "Nhận nhắc giỗ/sinh nhật/đóng góp đẩy thẳng vào điện thoại — kể cả khi app đóng.",
+        Body: Community.WebPush,
+      },
     ],
   },
   {

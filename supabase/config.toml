@@ -426,6 +426,12 @@ verify_jwt = false
 # echoed in the response → safe to be anon-callable.
 verify_jwt = false
 
+[functions.send-test-push]
+# Authenticated user → push to their own subscriptions only. We need
+# the JWT to identify the caller (auth.getUser); verify_jwt=true makes
+# Supabase reject unauthenticated calls before the function even runs.
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
