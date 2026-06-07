@@ -15,6 +15,17 @@ initSentry();
 initTheme();
 initPwa();
 
+// iOS Safari: block pinch-zoom + double-tap-zoom. The viewport meta
+// `user-scalable=no` is ignored on iOS 10+; the only reliable knob
+// is preventing the proprietary gesturestart/gesturechange events.
+// Tree page's family-chart container opts back in via touch-action:none.
+if (typeof window !== "undefined") {
+  const block = (e: Event) => e.preventDefault();
+  window.addEventListener("gesturestart", block);
+  window.addEventListener("gesturechange", block);
+  window.addEventListener("gestureend", block);
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Sentry.ErrorBoundary

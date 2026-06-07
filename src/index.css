@@ -120,6 +120,12 @@
     font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto,
       sans-serif;
     line-height: 1.6;
+    /* iOS Safari ignores user-scalable=no since iOS 10, so the
+       viewport meta alone can't block pinch-zoom. Disabling pinch
+       at the touch-action level still works there. pan-y keeps
+       vertical scrolling; family-chart's own pinch/pan is handled
+       by an inner element with its own touch-action override. */
+    touch-action: pan-y;
   }
 
   h1,
