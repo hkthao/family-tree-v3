@@ -64,4 +64,14 @@ export const queryKeys = {
     ["contribution", id, userId] as const,
   pendingContributionsCount: (clanId: string, userId: string) =>
     ["pending-contributions-count", clanId, userId] as const,
+  clanTodoSummary: (clanId: string, userId: string) =>
+    ["clan-todo-summary", clanId, userId] as const,
+  clanTodoItems: (
+    clanId: string,
+    userId: string,
+    category: string,
+    page: number,
+  ) => ["clan-todo-items", clanId, userId, category, page] as const,
+  clanTodoCount: (clanId: string, userId: string) =>
+    ["clan-todo-count", clanId, userId] as const,
 };

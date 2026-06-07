@@ -1,0 +1,297 @@
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { BackLink } from "@/components/BackLink";
+import { EmptyState } from "@/components/EmptyState";
+import { IconCheck, IconScroll } from "@/components/icons";
+import { PersonAvatar } from "@/components/PersonAvatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { queryKeys } from "@/lib/queries/keys";
+import {
+  getClanTodoItems,
+  getClanTodoSummary,
+  TODO_CATEGORIES,
+  type TodoCategory,
+  type TodoItemRow,
+  type TodoSummaryRow,
+} from "@/lib/queries/todo";
+
+const PAGE_SIZE = 50;
+
+const CATEGORY_META: Record<
+  TodoCategory,
+  { label: string; description: string }
+> = {
+  missing_parents: {
+    label: "Thiếu cha/mẹ",
+    description:
+      "Người chưa có bố/mẹ trong cây — bổ sung để gắn vào đúng đời và nhánh.",
+  },
+  missing_dates: {
+    label: "Thiếu năm sinh/mất",
+    description:
+      "Không có cả dương lẫn âm lịch năm sinh, hoặc đã mất mà chưa biết năm mất/giỗ.",
+  },
+  dead_end: {
+    label: "Nhánh nghi sót",
+    description:
+      "Đã có vợ/chồng và đủ tuổi (30+) nhưng chưa ghi con — nhiều khả năng còn thiếu.",
+  },
+  missing_media: {
+    label: "Thiếu ảnh / âm lịch",
+    description:
+      "Người chưa có ảnh, hoặc đã có ngày dương nhưng chưa quy đổi âm lịch.",
+  },
+};
+
+const MISSING_LABEL: Record<string, string> = {
+  parents: "thiếu cha/mẹ",
+  birth_year: "thiếu năm sinh",
+  death_year: "thiếu năm mất",
+  dead_end: "chưa ghi con",
+  photo: "thiếu ảnh",
+  birth_lunar: "thiếu âm lịch ngày sinh",
+  death_lunar: "thiếu âm lịch ngày mất",
+};
+
+/**
+ * /clans/:id/todo — gap-detection board.
+ *
+ * Visible to all clan members. The action when a row is clicked
+ * depends on the viewer:
+ *   - Admin/editor → /people/:id/edit (fix directly).
+ *   - Member       → /people/:id     (read context + open ContributeDialog).
+ *
+ * Counts come from get_clan_todo_summary; items pull paginated rows
+ * via get_clan_todo_items.
+ */
+export default function Todo() {
+  const navigate = useNavigate();
+  const { clan } = useClanContext();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+  const canEdit = canEditClan(clan);
+
+  const [category, setCategory] = useState<TodoCategory>("missing_parents");
+  const [page, setPage] = useState(0);
+
+  const {
+    data: summary,
+    error: summaryError,
+    isLoading: summaryLoading,
+  } = useQuery({
+    queryKey: queryKeys.clanTodoSummary(clan.id, userId),
+    queryFn: () => getClanTodoSummary(clan.id),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+
+  const {
+    data: rows,
+    error: itemsError,
+    isLoading: itemsLoading,
+  } = useQuery({
+    queryKey: queryKeys.clanTodoItems(clan.id, userId, category, page),
+    queryFn: () =>
+      getClanTodoItems(clan.id, category, PAGE_SIZE, page * PAGE_SIZE),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+
+  const countByCategory = useMemo(() => {
+    const m = new Map<TodoCategory, number>();
+    (summary ?? []).forEach((r: TodoSummaryRow) => m.set(r.category, r.count));
+    return m;
+  }, [summary]);
+
+  function openItem(item: TodoItemRow) {
+    const path = canEdit
+      ? `/clans/${clan.id}/people/${item.person_id}/edit`
+      : `/clans/${clan.id}/people/${item.person_id}`;
+    navigate(path);
+  }
+
+  const totalLoadBearing =
+    (countByCategory.get("missing_parents") ?? 0) +
+    (countByCategory.get("missing_dates") ?? 0) +
+    (countByCategory.get("dead_end") ?? 0);
+
+  return (
+    <div className="space-y-5">
+      <nav>
+        <BackLink fallback={`/clans/${clan.id}`} />
+      </nav>
+
+      <header className="flex items-start gap-3">
+        <IconScroll className="h-7 w-7 text-primary shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <h1 className="clan-name text-xl sm:text-2xl font-semibold leading-tight">
+            Việc cần làm
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung. Bấm
+            vào một người để {canEdit ? "sửa thẳng." : "đề xuất bổ sung."}
+          </p>
+          {summary && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Tổng {totalLoadBearing.toLocaleString("vi-VN")} mục cần xử
+              lý trong họ.
+            </p>
+          )}
+        </div>
+      </header>
+
+      {summaryError && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {(summaryError as Error).message}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Tabs — wrap horizontally on narrow viewports so labels stay
+          readable. Each tab carries its current count as a pill. */}
+      <div
+        className="flex flex-wrap gap-2"
+        role="tablist"
+        aria-label="Nhóm việc cần làm"
+      >
+        {TODO_CATEGORIES.map((cat) => {
+          const count = countByCategory.get(cat) ?? 0;
+          const active = cat === category;
+          return (
+            <button
+              key={cat}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => {
+                setCategory(cat);
+                setPage(0);
+              }}
+              className={`inline-flex items-center gap-2 px-3 h-9 text-sm rounded-md border transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-input bg-background hover:bg-muted/50"
+              }`}
+            >
+              <span>{CATEGORY_META[cat].label}</span>
+              <span
+                className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
+                  active
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {summaryLoading ? "…" : count.toLocaleString("vi-VN")}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        {CATEGORY_META[category].description}
+      </p>
+
+      {itemsError && (
+        <Alert variant="destructive">
+          <AlertDescription>{(itemsError as Error).message}</AlertDescription>
+        </Alert>
+      )}
+
+      {itemsLoading && <p className="text-muted-foreground">Đang tải…</p>}
+
+      {rows && rows.length === 0 && !itemsLoading && (
+        <EmptyState
+          icon={<IconCheck className="h-10 w-10" />}
+          title="Sạch sẽ ở nhóm này"
+          description="Không còn mục nào thiếu thuộc nhóm đã chọn."
+        />
+      )}
+
+      {rows && rows.length > 0 && (
+        <ul className="divide-y rounded-md border bg-card">
+          {rows.map((row) => (
+            <li key={row.person_id}>
+              <button
+                type="button"
+                onClick={() => openItem(row)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50"
+              >
+                <PersonAvatar gender={row.gender} size={36} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-medium truncate">
+                      {row.full_name}
+                    </span>
+                    {row.generation !== null && (
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        Đời {row.generation}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-x-3 gap-y-1">
+                    {row.birth_year && (
+                      <span>Sinh {row.birth_year}</span>
+                    )}
+                    {row.death_year && (
+                      <span>Mất {row.death_year}</span>
+                    )}
+                    {!row.is_living &&
+                      !row.death_year &&
+                      !row.birth_year && (
+                        <span>Đã mất, chưa rõ năm</span>
+                      )}
+                    {row.missing.map((m) => (
+                      <span
+                        key={m}
+                        className="inline-flex items-center text-amber-700 dark:text-amber-400"
+                      >
+                        • {MISSING_LABEL[m] ?? m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <span className="text-muted-foreground text-sm shrink-0">
+                  →
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Pagination — only render when there's evidence of a next
+          page (full page returned) or when offset>0. Item RPC doesn't
+          return a total so we infer "has next" from page-size hit. */}
+      {(page > 0 || (rows && rows.length === PAGE_SIZE)) && (
+        <div className="flex items-center justify-between pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page === 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+          >
+            ← Trước
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Trang {page + 1}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!rows || rows.length < PAGE_SIZE}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Sau →
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
