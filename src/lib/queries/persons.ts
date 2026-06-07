@@ -272,6 +272,10 @@ export interface UpdatePersonInput {
   posthumous_name?: string | null;
   nickname?: string | null;
   photo_path?: string | null;
+  /** Birth family — pointing here re-parents the person. Used by
+   *  AddParent flow's "new" mode to attach a freshly-created parent
+   *  family to the focal. */
+  birth_family_id?: string | null;
   // Lunar columns — write through unchanged when undefined; explicit
   // null means "clear" (e.g., user switched a day-precision solar to
   // year-only so we drop the previously-derived lunar values).

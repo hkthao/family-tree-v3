@@ -246,3 +246,46 @@ export async function assignPersonToFamily(
   });
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Pair the focal with an existing clan member as spouse. Server-side:
+ *   - validates clan match + opposite genders,
+ *   - refuses if spouse is in focal's ancestor OR descendant chain
+ *     (no incest cycles),
+ *   - returns the family id (existing or freshly created).
+ */
+export async function assignExistingSpouse(
+  personId: string,
+  spouseId: string,
+  client: Client = defaultClient,
+): Promise<string> {
+  const { data, error } = await client.rpc("assign_existing_spouse", {
+    p_person_id: personId,
+    p_spouse_id: spouseId,
+  });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
+/**
+ * Set an existing clan member as the focal's father or mother (slot
+ * inferred from gender). Server-side:
+ *   - validates clan match,
+ *   - refuses if parent is in focal's descendant chain — the exact
+ *     "ông nội là con của cháu" cycle case,
+ *   - reuses focal's current birth_family when present (filling the
+ *     husband_id or wife_id slot), otherwise creates a new family and
+ *     points focal.birth_family_id at it.
+ */
+export async function assignExistingParent(
+  personId: string,
+  parentId: string,
+  client: Client = defaultClient,
+): Promise<string> {
+  const { data, error } = await client.rpc("assign_existing_parent", {
+    p_person_id: personId,
+    p_parent_id: parentId,
+  });
+  if (error) throw new Error(error.message);
+  return data as string;
+}

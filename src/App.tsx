@@ -11,6 +11,7 @@ import Admin from "@/pages/Admin";
 import Clans from "@/pages/Clans";
 import Docs from "@/pages/Docs";
 import AddChild from "@/pages/clan/AddChild";
+import AddParent from "@/pages/clan/AddParent";
 import AddSpouse from "@/pages/clan/AddSpouse";
 import AiGenerate from "@/pages/clan/AiGenerate";
 import Audit from "@/pages/clan/Audit";
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="people/:personId/edit" element={<EditPerson />} />
           <Route path="people/:personId/add-spouse" element={<AddSpouse />} />
           <Route path="people/:personId/add-child" element={<AddChild />} />
+          <Route path="people/:personId/add-parent" element={<AddParent />} />
           <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
           <Route path="events" element={<Events />} />

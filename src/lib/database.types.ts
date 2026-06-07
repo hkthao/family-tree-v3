@@ -1092,7 +1092,27 @@ export type Database = {
         }
         Returns: Json
       }
+      _person_ancestors: {
+        Args: { p_root: string }
+        Returns: {
+          id: string
+        }[]
+      }
+      _person_descendants: {
+        Args: { p_root: string }
+        Returns: {
+          id: string
+        }[]
+      }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
+      assign_existing_parent: {
+        Args: { p_parent_id: string; p_person_id: string }
+        Returns: string
+      }
+      assign_existing_spouse: {
+        Args: { p_person_id: string; p_spouse_id: string }
+        Returns: string
+      }
       assign_person_to_family: {
         Args: { p_family_id: string; p_person_id: string }
         Returns: undefined

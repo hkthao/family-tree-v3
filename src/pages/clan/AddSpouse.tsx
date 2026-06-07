@@ -1,11 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconX } from "@/components/icons";
+import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +22,12 @@ import {
   EMPTY_CALENDAR_DATE,
   type CalendarDateValue,
 } from "@/lib/personDates";
-import { findOrCreateFamily } from "@/lib/queries/families";
+import {
+  assignExistingSpouse,
+  findOrCreateFamily,
+} from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
+import { getKinshipIndex } from "@/lib/queries/kinship";
 import { createPerson, getPerson } from "@/lib/queries/persons";
 
 export default function AddSpouse() {
@@ -40,14 +49,24 @@ export default function AddSpouse() {
     enabled: !!personId,
   });
 
-  // Auto-default to opposite gender (covers ~99% of Vietnamese genealogy cases)
   const defaultGender: "M" | "F" = focal?.gender === "M" ? "F" : "M";
 
+  const [mode, setMode] = useState<"new" | "existing">("new");
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">(defaultGender);
   const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [isLiving, setIsLiving] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Existing-mode state
+  const [existingFilter, setExistingFilter] = useState("");
+  const [existingId, setExistingId] = useState<string | null>(null);
+  const { data: clanIndex } = useQuery({
+    queryKey: queryKeys.kinshipIndex(clanId ?? "", userId),
+    queryFn: () => getKinshipIndex(clanId!),
+    enabled: !!userId && !!clanId && mode === "existing",
+    staleTime: 5 * 60_000,
+  });
 
   // Refresh gender default once `focal` loads
   if (
@@ -59,24 +78,42 @@ export default function AddSpouse() {
     setGender(defaultGender);
   }
 
+  // Eligible candidates: opposite gender of focal, not focal himself,
+  // not already a spouse. Server still enforces ancestor/descendant
+  // cycle guards.
+  const candidates = useMemo(() => {
+    if (!clanIndex || !focal) return [];
+    const oppositeGender = focal.gender === "M" ? "F" : "M";
+    const f = existingFilter.trim().toLowerCase();
+    return clanIndex.ordered
+      .filter((p) => p.id !== focal.id && p.gender === oppositeGender)
+      .filter((p) => (f ? p.full_name.toLowerCase().includes(f) : true))
+      .slice(0, 200);
+  }, [clanIndex, focal, existingFilter]);
+
   const mutation = useMutation({
     mutationFn: async () => {
       if (!clanId || !focal) throw new Error("Thiếu thông tin");
+
+      if (mode === "existing") {
+        if (!existingId) throw new Error("Chưa chọn người để gắn");
+        await assignExistingSpouse(focal.id, existingId);
+        return { id: existingId };
+      }
+
       const birthCols = buildPersonDateColumns(birth);
-      const spouse = await createPerson(
-        {
-          clan_id: clanId,
-          full_name: fullName.trim(),
-          gender,
-          is_living: isLiving,
-          birth_date: birthCols.solar_date,
-          birth_date_precision: birthCols.solar_precision,
-          birth_lunar_year: birthCols.lunar_year,
-          birth_lunar_month: birthCols.lunar_month,
-          birth_lunar_day: birthCols.lunar_day,
-          birth_lunar_is_leap: birthCols.lunar_is_leap,
-        },
-      );
+      const spouse = await createPerson({
+        clan_id: clanId,
+        full_name: fullName.trim(),
+        gender,
+        is_living: isLiving,
+        birth_date: birthCols.solar_date,
+        birth_date_precision: birthCols.solar_precision,
+        birth_lunar_year: birthCols.lunar_year,
+        birth_lunar_month: birthCols.lunar_month,
+        birth_lunar_day: birthCols.lunar_day,
+        birth_lunar_is_leap: birthCols.lunar_is_leap,
+      });
       await findOrCreateFamily({
         clanId,
         partnerA: { id: focal.id, gender: focal.gender },
@@ -84,11 +121,16 @@ export default function AddSpouse() {
       });
       return spouse;
     },
-    onSuccess: async (spouse) => {
+    onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
-      toast.success("Đã thêm vợ/chồng", {
-        description: spouse?.id ? `${fullName.trim()}` : undefined,
-      });
+      const label =
+        mode === "existing"
+          ? clanIndex?.byId.get(existingId ?? "")?.full_name ?? "người đã chọn"
+          : fullName.trim();
+      toast.success(
+        mode === "existing" ? "Đã gắn vợ/chồng" : "Đã thêm vợ/chồng",
+        { description: label },
+      );
       navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
     },
     onError: (e) =>
@@ -104,16 +146,15 @@ export default function AddSpouse() {
       </nav>
 
       <h1 className="text-2xl font-semibold">Thêm vợ / chồng</h1>
-        {focal && (
-          <p className="text-muted-foreground mb-6">
-            Cho {focal.full_name}
-          </p>
-        )}
+      {focal && (
+        <p className="text-muted-foreground mb-6">Cho {focal.full_name}</p>
+      )}
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setFormError(null);
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          setFormError(null);
+          if (mode === "new") {
             if (!fullName.trim()) return;
             try {
               buildPersonDateColumns(birth);
@@ -121,97 +162,179 @@ export default function AddSpouse() {
               setFormError((err as Error).message);
               return;
             }
-            mutation.mutate();
-          }}
-          className="space-y-6"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Họ và tên</Label>
-            <Input
-              id="full_name"
-              required
-              autoFocus
-              maxLength={200}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Vd: Nguyễn Thị B"
-            />
-          </div>
+          } else if (!existingId) {
+            setFormError("Chọn người trong danh sách để gắn");
+            return;
+          }
+          mutation.mutate();
+        }}
+        className="space-y-6"
+      >
+        <SegmentedControl ariaLabel="Chế độ thêm vợ/chồng">
+          <SegmentedButton
+            active={mode === "new"}
+            onClick={() => setMode("new")}
+          >
+            Người mới
+          </SegmentedButton>
+          <SegmentedButton
+            active={mode === "existing"}
+            onClick={() => setMode("existing")}
+          >
+            Chọn người đã có
+          </SegmentedButton>
+        </SegmentedControl>
 
-          <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">Giới tính</legend>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={gender === "M"}
-                  onChange={() => setGender("M")}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>Nam</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={gender === "F"}
-                  onChange={() => setGender("F")}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>Nữ</span>
-              </label>
+        {mode === "new" ? (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Họ và tên</Label>
+              <Input
+                id="full_name"
+                required
+                autoFocus
+                maxLength={200}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Vd: Nguyễn Thị B"
+              />
             </div>
-          </fieldset>
 
-          <CalendarDateInput
-            label="Ngày sinh (tuỳ chọn)"
-            idPrefix="birth"
-            value={birth}
-            onChange={setBirth}
-            helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
-          />
+            <fieldset className="space-y-3">
+              <legend className="text-base font-medium mb-2">Giới tính</legend>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={gender === "M"}
+                    onChange={() => setGender("M")}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span>Nam</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={gender === "F"}
+                    onChange={() => setGender("F")}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span>Nữ</span>
+                </label>
+              </div>
+            </fieldset>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!isLiving}
-              onChange={(e) => setIsLiving(!e.target.checked)}
-              className="h-5 w-5 accent-primary shrink-0"
+            <CalendarDateInput
+              label="Ngày sinh (tuỳ chọn)"
+              idPrefix="birth"
+              value={birth}
+              onChange={setBirth}
+              helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
             />
-            <span>Đã mất</span>
-          </label>
 
-          {(formError || mutation.error) && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                {formError ?? (mutation.error as Error).message}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="submit"
-              className="flex-1 sm:flex-none"
-              disabled={mutation.isPending || !fullName.trim()}
-            >
-              {mutation.isPending ? (
-                "Đang lưu…"
-              ) : (
-                <>
-                  <IconCheck className="h-4 w-4 mr-1.5" />
-                  Lưu
-                </>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!isLiving}
+                onChange={(e) => setIsLiving(!e.target.checked)}
+                className="h-5 w-5 accent-primary shrink-0"
+              />
+              <span>Đã mất</span>
+            </label>
+          </>
+        ) : (
+          <div className="space-y-3">
+            <Label>
+              Tìm người đã có (khác giới với {focal?.full_name ?? "người gốc"})
+            </Label>
+            <Input
+              value={existingFilter}
+              onChange={(e) => setExistingFilter(e.target.value)}
+              placeholder="Gõ tên để lọc"
+            />
+            <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
+              {candidates.length === 0 && (
+                <li className="px-3 py-2 text-muted-foreground italic">
+                  {clanIndex
+                    ? "Không có người khớp giới tính + tên."
+                    : "Đang tải…"}
+                </li>
               )}
-            </Button>
-            <Button asChild variant="outline" className="flex-1 sm:flex-none">
-              <Link to={`/clans/${clanId}/people/${personId}${fromQs}`}>
-                <IconX className="h-4 w-4 mr-1.5" />
-                Hủy
-              </Link>
+              {candidates.map((p) => {
+                const active = p.id === existingId;
+                return (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onClick={() => setExistingId(p.id)}
+                      className={`w-full text-left px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/50 ${
+                        active ? "bg-primary/10" : ""
+                      }`}
+                    >
+                      <PersonAvatar gender={p.gender} size={32} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline gap-2">
+                          <span
+                            className={`truncate ${active ? "font-semibold text-primary" : "font-medium"}`}
+                          >
+                            {p.full_name}
+                          </span>
+                          {p.birth_year && (
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              {p.birth_year}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {active && (
+                        <IconCheck className="h-4 w-4 text-primary shrink-0" />
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="text-xs text-muted-foreground">
+              Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người
+              đã chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép.
+            </p>
+          </div>
+        )}
+
+        {(formError || mutation.error) && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {formError ?? (mutation.error as Error).message}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          <Button
+            type="submit"
+            className="flex-1 sm:flex-none"
+            disabled={
+              mutation.isPending ||
+              (mode === "new" ? !fullName.trim() : !existingId)
+            }
+          >
+            {mutation.isPending ? (
+              "Đang lưu…"
+            ) : (
+              <>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                Lưu
+              </>
+            )}
+          </Button>
+          <Button asChild variant="outline" className="flex-1 sm:flex-none">
+            <Link to={`/clans/${clanId}/people/${personId}${fromQs}`}>
+              <IconX className="h-4 w-4 mr-1.5" />
+              Hủy
+            </Link>
           </Button>
         </div>
       </form>
     </div>
   );
 }
-

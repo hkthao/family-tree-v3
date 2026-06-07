@@ -275,6 +275,18 @@ export default function PersonDetail() {
                     items={relationships.parents}
                     clanId={clanId}
                     emptyHint="Chưa nhập cha mẹ"
+                    action={
+                      canEdit && relationships.parents.length < 2 ? (
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            to={`/clans/${clanId}/people/${personId}/add-parent${fromQs}`}
+                          >
+                            <IconPlus className="h-4 w-4 mr-1" />
+                            Thêm
+                          </Link>
+                        </Button>
+                      ) : null
+                    }
                   />
                   <RelationshipGroup
                     label="Vợ / chồng"
