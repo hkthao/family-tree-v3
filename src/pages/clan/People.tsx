@@ -33,6 +33,10 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
@@ -304,40 +308,26 @@ export default function People() {
           <option value="generation">Sắp: Đời</option>
           <option value="birth">Sắp: Năm sinh</option>
         </select>
-        <div
-          className="inline-flex rounded-md border bg-card overflow-hidden"
-          role="group"
-          aria-label="Chế độ hiển thị"
-        >
-          <button
-            type="button"
+        <SegmentedControl ariaLabel="Chế độ hiển thị">
+          <SegmentedButton
+            active={viewMode === "list"}
             onClick={() => setViewMode("list")}
             title="Danh sách"
-            aria-label="Danh sách"
-            className={`inline-flex items-center justify-center w-10 h-10 ${
-              viewMode === "list"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50"
-            }`}
-            aria-pressed={viewMode === "list"}
+            ariaLabel="Danh sách"
+            variant="icon-md"
           >
             <IconList className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </SegmentedButton>
+          <SegmentedButton
+            active={viewMode === "grid"}
             onClick={() => setViewMode("grid")}
             title="Thẻ"
-            aria-label="Thẻ"
-            className={`inline-flex items-center justify-center w-10 h-10 border-l ${
-              viewMode === "grid"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50"
-            }`}
-            aria-pressed={viewMode === "grid"}
+            ariaLabel="Thẻ"
+            variant="icon-md"
           >
             <IconGrid className="h-4 w-4" />
-          </button>
-        </div>
+          </SegmentedButton>
+        </SegmentedControl>
       </div>
 
       {/* Results — guard against the (rare but real) state where the

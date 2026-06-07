@@ -3,13 +3,16 @@ import { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
+import {
   convertPartsAcrossCalendars,
   type CalendarDateValue,
   type CalendarMode,
 } from "@/lib/personDates";
 import { formatLunarDate, solarStringToLunar } from "@/lib/lunarDate";
 import { dateFromParts, formatPartialDate } from "@/lib/partialDate";
-import { cn } from "@/lib/utils";
 
 interface Props {
   /** Visible legend, e.g. "Ngày sinh". */
@@ -82,38 +85,22 @@ export function CalendarDateInput({
         <p className="text-sm text-muted-foreground">{helperText}</p>
       )}
 
-      <div
-        className="inline-flex rounded-md border bg-card overflow-hidden"
-        role="group"
-        aria-label="Chọn lịch"
-      >
-        <button
-          type="button"
+      <SegmentedControl ariaLabel="Chọn lịch">
+        <SegmentedButton
+          active={!isLunar}
           onClick={() => setMode("solar")}
-          aria-pressed={!isLunar}
-          className={cn(
-            "px-3 h-9 text-sm min-w-[72px]",
-            !isLunar
-              ? "bg-primary text-primary-foreground"
-              : "hover:bg-muted/50",
-          )}
+          className="px-3 h-9 min-w-[72px]"
         >
           Dương
-        </button>
-        <button
-          type="button"
+        </SegmentedButton>
+        <SegmentedButton
+          active={isLunar}
           onClick={() => setMode("lunar")}
-          aria-pressed={isLunar}
-          className={cn(
-            "px-3 h-9 text-sm border-l min-w-[72px]",
-            isLunar
-              ? "bg-primary text-primary-foreground"
-              : "hover:bg-muted/50",
-          )}
+          className="px-3 h-9 min-w-[72px]"
         >
           Âm
-        </button>
-      </div>
+        </SegmentedButton>
+      </SegmentedControl>
 
       <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2 max-w-md">
         <div className="space-y-1">

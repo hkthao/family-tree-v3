@@ -6,6 +6,10 @@ import { IconGrid, IconList } from "@/components/icons";
 import { InlawMiniTree } from "@/components/InlawMiniTree";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
+import {
   getInlawPeerRelatives,
   type InlawFocalCard,
   type InlawPeerRelatives,
@@ -49,40 +53,26 @@ function FamilyView({ data }: { data: InlawPeerRelatives }) {
         <p className="text-xs text-muted-foreground uppercase tracking-wider">
           {data.peer_clan_name}
         </p>
-        <div
-          className="inline-flex rounded-md border bg-card overflow-hidden"
-          role="group"
-          aria-label="Chế độ hiển thị"
-        >
-          <button
-            type="button"
+        <SegmentedControl ariaLabel="Chế độ hiển thị">
+          <SegmentedButton
+            active={view === "list"}
             onClick={() => setView("list")}
-            aria-pressed={view === "list"}
             title="Danh sách"
-            className={cn(
-              "inline-flex items-center justify-center w-8 h-8",
-              view === "list"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50",
-            )}
+            ariaLabel="Danh sách"
+            variant="icon-sm"
           >
             <IconList className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </SegmentedButton>
+          <SegmentedButton
+            active={view === "tree"}
             onClick={() => setView("tree")}
-            aria-pressed={view === "tree"}
             title="Cây gia phả"
-            className={cn(
-              "inline-flex items-center justify-center w-8 h-8 border-l",
-              view === "tree"
-                ? "bg-primary text-primary-foreground"
-                : "hover:bg-muted/50",
-            )}
+            ariaLabel="Cây gia phả"
+            variant="icon-sm"
           >
             <IconGrid className="h-4 w-4" />
-          </button>
-        </div>
+          </SegmentedButton>
+        </SegmentedControl>
       </header>
 
       {view === "tree" ? (

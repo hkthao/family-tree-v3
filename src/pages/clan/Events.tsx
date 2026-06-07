@@ -20,6 +20,10 @@ import { SubscriptionSettings } from "@/components/SubscriptionSettings";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -120,40 +124,26 @@ export default function Events() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <h2 className="text-2xl font-semibold sm:flex-1">Sự kiện</h2>
         <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
-          <div
-            className="inline-flex rounded-md border bg-card overflow-hidden"
-            role="group"
-            aria-label="Chế độ hiển thị"
-          >
-            <button
-              type="button"
+          <SegmentedControl ariaLabel="Chế độ hiển thị">
+            <SegmentedButton
+              active={view === "list"}
               onClick={() => setView("list")}
-              aria-pressed={view === "list"}
-              aria-label="Danh sách"
-              className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm ${
-                view === "list"
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted/50"
-              }`}
+              ariaLabel="Danh sách"
+              className="inline-flex items-center gap-1.5 px-3"
             >
               <IconList className="h-4 w-4" />
               <span className="hidden sm:inline">Danh sách</span>
-            </button>
-            <button
-              type="button"
+            </SegmentedButton>
+            <SegmentedButton
+              active={view === "calendar"}
               onClick={() => setView("calendar")}
-              aria-pressed={view === "calendar"}
-              aria-label="Lịch"
-              className={`inline-flex items-center gap-1.5 px-3 h-10 text-sm border-l ${
-                view === "calendar"
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted/50"
-              }`}
+              ariaLabel="Lịch"
+              className="inline-flex items-center gap-1.5 px-3"
             >
               <IconGrid className="h-4 w-4" />
               <span className="hidden sm:inline">Lịch</span>
-            </button>
-          </div>
+            </SegmentedButton>
+          </SegmentedControl>
           <RefreshButton
             clanId={clan.id}
             cachedVersion={clan.data_version}
@@ -166,27 +156,21 @@ export default function Events() {
           on mobile (each pill flex-1) so taps are large; auto-width
           on sm+ where the row has plenty of room. */}
       {view === "list" && (
-        <div
-          className="flex sm:inline-flex rounded-md border bg-card overflow-hidden"
-          role="group"
-          aria-label="Khoảng thời gian"
+        <SegmentedControl
+          ariaLabel="Khoảng thời gian"
+          className="flex sm:inline-flex"
         >
           {LOOKAHEAD_OPTIONS.map((opt) => (
-            <button
+            <SegmentedButton
               key={opt.value}
-              type="button"
+              active={daysAhead === opt.value}
               onClick={() => setDaysAhead(opt.value)}
-              aria-pressed={daysAhead === opt.value}
-              className={`flex-1 sm:flex-none px-3 h-10 text-sm border-l first:border-l-0 ${
-                daysAhead === opt.value
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted/50"
-              }`}
+              className="flex-1 sm:flex-none px-3"
             >
               {opt.label}
-            </button>
+            </SegmentedButton>
           ))}
-        </div>
+        </SegmentedControl>
       )}
 
       {/* Upcoming list / calendar */}
