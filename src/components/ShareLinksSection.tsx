@@ -276,12 +276,14 @@ function ShareLinkItem({
     ? `QR cá nhân · ${personName ?? "—"}`
     : "Link cây gia phả";
 
+  const active = !link.is_revoked && !expired;
   return (
-    <li className="p-3 space-y-2 first:rounded-t-md last:rounded-b-md">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
+    <li className="p-3 space-y-3 first:rounded-t-md last:rounded-b-md">
+      {/* Header — status + scope on one wrapping line, expiry below */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2 flex-wrap text-xs">
           <span
-            className={`text-xs font-medium ${
+            className={`font-medium ${
               status.tone === "destructive"
                 ? "text-destructive"
                 : status.tone === "muted"
@@ -291,43 +293,50 @@ function ShareLinkItem({
           >
             {status.label}
           </span>
-          <span className="text-xs text-muted-foreground">·</span>
-          <span className="text-xs font-medium text-foreground">
-            {scopeLabel}
-          </span>
+          <span className="text-muted-foreground">·</span>
+          <span className="font-medium text-foreground">{scopeLabel}</span>
         </div>
-        <span className="text-xs text-muted-foreground">
-          Hết hạn {new Date(link.expires_at).toLocaleDateString("vi-VN")}
-        </span>
+        <p className="text-xs text-muted-foreground">
+          Hết hạn{" "}
+          {new Date(link.expires_at).toLocaleDateString("vi-VN")}
+        </p>
       </div>
-      <div className="flex gap-2 items-stretch">
+
+      {/* URL field — copy button sits inside as an icon adornment so
+          the URL gets the full row width instead of being squeezed by
+          a separate "Chép" button. */}
+      <div className="relative">
         <Input
           readOnly
           value={shareUrl}
-          className="font-mono text-sm"
+          className="font-mono text-xs pr-10"
           onFocus={(e) => e.currentTarget.select()}
         />
-        <Button size="sm" variant="outline" onClick={copyToClipboard}>
+        <button
+          type="button"
+          onClick={copyToClipboard}
+          aria-label={copied ? "Đã chép" : "Chép link"}
+          title={copied ? "Đã chép" : "Chép link"}
+          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+        >
           {copied ? (
-            <>
-              <IconCheck className="h-4 w-4 mr-1.5" />
-              Đã chép
-            </>
+            <IconCheck className="h-4 w-4" />
           ) : (
-            <>
-              <IconCopy className="h-4 w-4 mr-1.5" />
-              Chép
-            </>
+            <IconCopy className="h-4 w-4" />
           )}
-        </Button>
+        </button>
       </div>
+
+      {/* Action row — equal-width buttons in a single row. flex-wrap
+          kicks in only when content actually overflows. */}
       <div className="flex gap-2 flex-wrap">
-        {!link.is_revoked && !expired && (
+        {active && (
           <>
             <Button
               size="sm"
               variant="outline"
               onClick={() => setQrOpen(true)}
+              className="flex-1 min-w-[80px]"
             >
               <IconQrCode className="h-4 w-4 mr-1.5" />
               QR
@@ -337,6 +346,7 @@ function ShareLinkItem({
               variant="outline"
               onClick={() => revokeM.mutate()}
               disabled={revokeM.isPending}
+              className="flex-1 min-w-[80px]"
             >
               <IconUndo className="h-4 w-4 mr-1.5" />
               Thu hồi
@@ -346,7 +356,7 @@ function ShareLinkItem({
         <Button
           size="sm"
           variant="outline"
-          className="text-destructive"
+          className="flex-1 min-w-[80px] text-destructive"
           onClick={async () => {
             const ok = await confirm({
               title: "Xoá link này vĩnh viễn?",
