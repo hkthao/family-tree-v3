@@ -23,14 +23,31 @@ import {
   type CalendarDateValue,
 } from "@/lib/personDates";
 import {
-  assignExistingSpouse,
+  assignExistingParent,
   findOrCreateFamily,
+  getPersonRelationships,
 } from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
-import { createPerson, getPerson } from "@/lib/queries/persons";
+import { createPerson, getPerson, updatePerson } from "@/lib/queries/persons";
 
-export default function AddSpouse() {
+/**
+ * /clans/:id/people/:personId/add-parent
+ *
+ * Add a father or mother to the focal person. Mirrors AddChild/
+ * AddSpouse with the same "Người mới / Chọn người đã có" toggle.
+ *
+ * For "new" mode:
+ *   1. Create the parent person.
+ *   2. Find or create the focal's birth_family with that parent in the
+ *      appropriate husband/wife slot.
+ *   3. Point focal.birth_family_id at the resulting family.
+ *
+ * For "existing" mode:
+ *   Delegate to assign_existing_parent RPC which handles slot picking,
+ *   family creation, AND cycle prevention (no descendants-as-parents).
+ */
+export default function AddParent() {
   const { clanId, personId } = useParams<{
     clanId: string;
     personId: string;
@@ -48,17 +65,34 @@ export default function AddSpouse() {
     queryFn: () => getPerson(personId!),
     enabled: !!personId,
   });
+  const { data: rels } = useQuery({
+    queryKey: queryKeys.personRelationships(personId ?? "", userId),
+    queryFn: () => getPersonRelationships(personId!),
+    enabled: !!personId,
+  });
 
-  const defaultGender: "M" | "F" = focal?.gender === "M" ? "F" : "M";
+  const hasFather = !!rels?.parents.find((p) => p.gender === "M");
+  const hasMother = !!rels?.parents.find((p) => p.gender === "F");
+  const defaultRole: "M" | "F" = !hasFather ? "M" : !hasMother ? "F" : "M";
 
   const [mode, setMode] = useState<"new" | "existing">("new");
+  // For "new" mode, role IS the gender of the parent being created.
+  const [role, setRole] = useState<"M" | "F">(defaultRole);
   const [fullName, setFullName] = useState("");
-  const [gender, setGender] = useState<"M" | "F">(defaultGender);
   const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [isLiving, setIsLiving] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Existing-mode state
+  // Refresh role default once rels loads.
+  if (
+    rels &&
+    role !== defaultRole &&
+    fullName === "" &&
+    !birth.parts.year
+  ) {
+    setRole(defaultRole);
+  }
+
   const [existingFilter, setExistingFilter] = useState("");
   const [existingId, setExistingId] = useState<string | null>(null);
   const { data: clanIndex } = useQuery({
@@ -68,28 +102,21 @@ export default function AddSpouse() {
     staleTime: 5 * 60_000,
   });
 
-  // Refresh gender default once `focal` loads
-  if (
-    focal &&
-    gender !== defaultGender &&
-    fullName === "" &&
-    !birth.parts.year
-  ) {
-    setGender(defaultGender);
-  }
-
-  // Eligible candidates: opposite gender of focal, not focal himself,
-  // not already a spouse. Server still enforces ancestor/descendant
-  // cycle guards.
+  // Existing-mode candidates: exclude focal, exclude any current
+  // parents (they're already in the family slot), and exclude focal's
+  // direct spouses (a spouse can't also be the focal's parent).
+  // Server still cycle-checks against the full descendant chain.
   const candidates = useMemo(() => {
     if (!clanIndex || !focal) return [];
-    const oppositeGender = focal.gender === "M" ? "F" : "M";
+    const excluded = new Set<string>([focal.id]);
+    for (const p of rels?.parents ?? []) excluded.add(p.id);
+    for (const sp of rels?.spouses ?? []) excluded.add(sp.id);
     const f = existingFilter.trim().toLowerCase();
     return clanIndex.ordered
-      .filter((p) => p.id !== focal.id && p.gender === oppositeGender)
+      .filter((p) => !excluded.has(p.id))
       .filter((p) => (f ? p.full_name.toLowerCase().includes(f) : true))
       .slice(0, 200);
-  }, [clanIndex, focal, existingFilter]);
+  }, [clanIndex, focal, rels, existingFilter]);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -97,15 +124,15 @@ export default function AddSpouse() {
 
       if (mode === "existing") {
         if (!existingId) throw new Error("Chưa chọn người để gắn");
-        await assignExistingSpouse(focal.id, existingId);
-        return { id: existingId };
+        await assignExistingParent(focal.id, existingId);
+        return;
       }
 
       const birthCols = buildPersonDateColumns(birth);
-      const spouse = await createPerson({
+      const parent = await createPerson({
         clan_id: clanId,
         full_name: fullName.trim(),
-        gender,
+        gender: role,
         is_living: isLiving,
         birth_date: birthCols.solar_date,
         birth_date_precision: birthCols.solar_precision,
@@ -114,12 +141,21 @@ export default function AddSpouse() {
         birth_lunar_day: birthCols.lunar_day,
         birth_lunar_is_leap: birthCols.lunar_is_leap,
       });
-      await findOrCreateFamily({
+
+      // Use existing other-parent slot if focal already has the other
+      // gender as parent — keeps a single family unit.
+      const existingOther = rels?.parents.find((p) => p.gender !== role);
+      const family = await findOrCreateFamily({
         clanId,
-        partnerA: { id: focal.id, gender: focal.gender },
-        partnerB: { id: spouse.id, gender },
+        partnerA: { id: parent.id, gender: role },
+        partnerB: existingOther
+          ? { id: existingOther.id, gender: existingOther.gender }
+          : null,
       });
-      return spouse;
+
+      // Point focal at this family. updatePerson handles the partial
+      // birth_family_id update via RPC.
+      await updatePerson(focal.id, { birth_family_id: family.id });
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
@@ -128,7 +164,7 @@ export default function AddSpouse() {
           ? clanIndex?.byId.get(existingId ?? "")?.full_name ?? "người đã chọn"
           : fullName.trim();
       toast.success(
-        mode === "existing" ? "Đã gắn vợ/chồng" : "Đã thêm vợ/chồng",
+        mode === "existing" ? "Đã gắn cha/mẹ" : "Đã thêm cha/mẹ",
         { description: label },
       );
       navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
@@ -145,10 +181,12 @@ export default function AddSpouse() {
         <BackLink fallback={`/clans/${clanId}/people/${personId}${fromQs}`} />
       </nav>
 
-      <h1 className="text-2xl font-semibold">Thêm vợ / chồng</h1>
-      {focal && (
-        <p className="text-muted-foreground mb-6">Cho {focal.full_name}</p>
-      )}
+      <div>
+        <h1 className="text-2xl font-semibold">Thêm cha / mẹ</h1>
+        {focal && (
+          <p className="text-muted-foreground">Cho {focal.full_name}</p>
+        )}
+      </div>
 
       <form
         onSubmit={(e) => {
@@ -170,7 +208,7 @@ export default function AddSpouse() {
         }}
         className="space-y-6"
       >
-        <SegmentedControl ariaLabel="Chế độ thêm vợ/chồng">
+        <SegmentedControl ariaLabel="Chế độ thêm cha/mẹ">
           <SegmentedButton
             active={mode === "new"}
             onClick={() => setMode("new")}
@@ -187,6 +225,36 @@ export default function AddSpouse() {
 
         {mode === "new" ? (
           <>
+            <fieldset className="space-y-3">
+              <legend className="text-base font-medium mb-2">Vai trò</legend>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={role === "M"}
+                    onChange={() => setRole("M")}
+                    disabled={hasFather}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span>
+                    Cha {hasFather && "(đã có)"}
+                  </span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={role === "F"}
+                    onChange={() => setRole("F")}
+                    disabled={hasMother}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span>
+                    Mẹ {hasMother && "(đã có)"}
+                  </span>
+                </label>
+              </div>
+            </fieldset>
+
             <div className="space-y-2">
               <Label htmlFor="full_name">Họ và tên</Label>
               <Input
@@ -196,33 +264,9 @@ export default function AddSpouse() {
                 maxLength={200}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Vd: Nguyễn Thị B"
+                placeholder={role === "M" ? "Vd: Nguyễn Văn A" : "Vd: Phạm Thị B"}
               />
             </div>
-
-            <fieldset className="space-y-3">
-              <legend className="text-base font-medium mb-2">Giới tính</legend>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={gender === "M"}
-                    onChange={() => setGender("M")}
-                    className="h-4 w-4 accent-primary"
-                  />
-                  <span>Nam</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={gender === "F"}
-                    onChange={() => setGender("F")}
-                    className="h-4 w-4 accent-primary"
-                  />
-                  <span>Nữ</span>
-                </label>
-              </div>
-            </fieldset>
 
             <CalendarDateInput
               label="Ngày sinh (tuỳ chọn)"
@@ -244,9 +288,7 @@ export default function AddSpouse() {
           </>
         ) : (
           <div className="space-y-3">
-            <Label>
-              Tìm người đã có (khác giới với {focal?.full_name ?? "người gốc"})
-            </Label>
+            <Label>Tìm người đã có trong dòng họ</Label>
             <Input
               value={existingFilter}
               onChange={(e) => setExistingFilter(e.target.value)}
@@ -255,9 +297,7 @@ export default function AddSpouse() {
             <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
               {candidates.length === 0 && (
                 <li className="px-3 py-2 text-muted-foreground italic">
-                  {clanIndex
-                    ? "Không có người khớp giới tính + tên."
-                    : "Đang tải…"}
+                  {clanIndex ? "Không có người nào khớp." : "Đang tải…"}
                 </li>
               )}
               {candidates.map((p) => {
@@ -295,8 +335,9 @@ export default function AddSpouse() {
               })}
             </ul>
             <p className="text-xs text-muted-foreground">
-              Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người
-              đã chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép.
+              App chặn nếu người đã chọn là con cháu của {focal?.full_name ?? "người này"} —
+              tránh vòng lặp "ông nội là con của cháu". Vai trò cha/mẹ
+              được suy ra theo giới tính của người được chọn.
             </p>
           </div>
         )}
@@ -315,7 +356,9 @@ export default function AddSpouse() {
             className="flex-1 sm:flex-none"
             disabled={
               mutation.isPending ||
-              (mode === "new" ? !fullName.trim() : !existingId)
+              (mode === "new"
+                ? !fullName.trim() || (role === "M" ? hasFather : hasMother)
+                : !existingId)
             }
           >
             {mutation.isPending ? (
