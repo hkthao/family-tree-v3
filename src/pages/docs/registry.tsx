@@ -95,6 +95,13 @@ export const DOCS_SECTIONS: DocSection[] = [
         summary: "Khi 2 dòng dữ liệu cùng một người — gộp lại còn một.",
         Body: Persons.Merge,
       },
+      {
+        slug: "xung-ho",
+        title: "Tra cứu xưng hô",
+        summary:
+          "Chọn 2 người, app tính cách xưng hô theo phong tục Việt — anh/em/chú/bác/cô/cậu/dì.",
+        Body: Persons.Kinship,
+      },
     ],
   },
   {

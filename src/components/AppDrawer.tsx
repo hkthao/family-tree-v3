@@ -449,6 +449,11 @@ function buildSections(
         badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
       });
       browseItems.push({
+        to: `/clans/${clanId}/kinship`,
+        label: "Tra cứu xưng hô",
+        icon: <IconUsers className={ic} />,
+      });
+      browseItems.push({
         to: `/clans/${clanId}/audit`,
         label: "Nhật ký",
         icon: <IconScroll className={ic} />,
