@@ -78,6 +78,28 @@ export function initPwa(): void {
           // Network blip is fine — try again on the next interval.
         });
       }, UPDATE_CHECK_INTERVAL_MS);
+
+      // iOS PWA (Add to Home Screen) doesn't fire `focus` reliably
+      // when the user re-opens the app from the home screen — the
+      // standalone-mode app gets a `visibilitychange` to "visible"
+      // and a `pageshow` (often with persisted=true from bfcache).
+      // Trigger an update check on both so users see new builds the
+      // next time they open the PWA rather than waiting up to 60min
+      // for the interval to tick. Throttle to once per 5 seconds to
+      // avoid burst-firing during rapid focus toggles.
+      let lastCheck = 0;
+      const maybeUpdate = () => {
+        if (document.visibilityState !== "visible") return;
+        const now = Date.now();
+        if (now - lastCheck < 5000) return;
+        lastCheck = now;
+        registration.update().catch(() => {
+          /* network blip — try again next event */
+        });
+      };
+      document.addEventListener("visibilitychange", maybeUpdate);
+      window.addEventListener("pageshow", maybeUpdate);
+      window.addEventListener("focus", maybeUpdate);
     },
   });
 }

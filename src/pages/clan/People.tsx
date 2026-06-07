@@ -449,7 +449,7 @@ export default function People() {
           />
         )
       ) : viewMode === "list" ? (
-        <ul className="divide-y rounded-lg border bg-card">
+        <ul className="divide-y rounded-lg border bg-card overflow-hidden">
           {canEdit && (
             <li className="px-3 py-2 bg-muted/30">
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
@@ -637,7 +637,7 @@ function PersonListItem({
       )}
       <Link
         to={`/clans/${clanId}/people/${person.id}`}
-        className="flex flex-1 items-start gap-3 p-3 hover:bg-muted/40 transition-colors"
+        className="flex flex-1 min-w-0 items-start gap-3 p-3 hover:bg-muted/40 transition-colors"
       >
         <PersonAvatar
           gender={person.gender}
