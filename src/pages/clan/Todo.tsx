@@ -4,7 +4,12 @@ import { useNavigate } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { EmptyState } from "@/components/EmptyState";
-import { IconCheck, IconScroll } from "@/components/icons";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconCheck,
+  IconScroll,
+} from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -77,7 +82,8 @@ export default function Todo() {
   const canEdit = canEditClan(clan);
 
   const [category, setCategory] = useState<TodoCategory>("missing_parents");
-  const [page, setPage] = useState(0);
+  // 1-based for consistency with Audit/Clans/People pagination.
+  const [page, setPage] = useState(1);
 
   const {
     data: summary,
@@ -90,23 +96,38 @@ export default function Todo() {
     staleTime: 60_000,
   });
 
-  const {
-    data: rows,
-    error: itemsError,
-    isLoading: itemsLoading,
-  } = useQuery({
-    queryKey: queryKeys.clanTodoItems(clan.id, userId, category, page),
-    queryFn: () =>
-      getClanTodoItems(clan.id, category, PAGE_SIZE, page * PAGE_SIZE),
-    enabled: !!userId,
-    staleTime: 60_000,
-  });
-
   const countByCategory = useMemo(() => {
     const m = new Map<TodoCategory, number>();
     (summary ?? []).forEach((r: TodoSummaryRow) => m.set(r.category, r.count));
     return m;
   }, [summary]);
+
+  const totalForCategory = countByCategory.get(category) ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalForCategory / PAGE_SIZE));
+  // Clamp the requested page against current totals so a stale page
+  // index (e.g. after switching tabs or items disappearing under us)
+  // re-queries the last valid page instead of returning an empty slice.
+  const safePage = Math.min(page, totalPages);
+
+  const {
+    data: rows,
+    error: itemsError,
+    isLoading: itemsLoading,
+    isFetching: itemsFetching,
+  } = useQuery({
+    queryKey: queryKeys.clanTodoItems(clan.id, userId, category, safePage),
+    queryFn: () =>
+      getClanTodoItems(
+        clan.id,
+        category,
+        PAGE_SIZE,
+        (safePage - 1) * PAGE_SIZE,
+      ),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+  const startIdx = totalForCategory === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const endIdx = Math.min(totalForCategory, safePage * PAGE_SIZE);
 
   function openItem(item: TodoItemRow) {
     const path = canEdit
@@ -171,7 +192,7 @@ export default function Todo() {
               aria-selected={active}
               onClick={() => {
                 setCategory(cat);
-                setPage(0);
+                setPage(1);
               }}
               className={`inline-flex items-center gap-2 px-3 h-9 text-sm rounded-md border transition-colors ${
                 active
@@ -266,30 +287,46 @@ export default function Todo() {
         </ul>
       )}
 
-      {/* Pagination — only render when there's evidence of a next
-          page (full page returned) or when offset>0. Item RPC doesn't
-          return a total so we infer "has next" from page-size hit. */}
-      {(page > 0 || (rows && rows.length === PAGE_SIZE)) && (
-        <div className="flex items-center justify-between pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-          >
-            ← Trước
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            Trang {page + 1}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!rows || rows.length < PAGE_SIZE}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Sau →
-          </Button>
+      {totalForCategory > 0 && (
+        <div className="flex items-center justify-between text-sm pt-2">
+          <div className="text-muted-foreground">
+            {totalForCategory.toLocaleString("vi-VN")} mục
+            {totalForCategory > 0 && (
+              <span className="hidden sm:inline">
+                {" "}
+                — đang xem {startIdx.toLocaleString("vi-VN")}–
+                {endIdx.toLocaleString("vi-VN")}
+              </span>
+            )}
+            {itemsFetching && !itemsLoading && (
+              <span className="ml-2 italic">đang tải…</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage <= 1}
+              onClick={() => setPage(safePage - 1)}
+              aria-label="Trang trước"
+            >
+              <IconArrowLeft className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Trước</span>
+            </Button>
+            <span className="px-2 tabular-nums">
+              {safePage}/{totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage >= totalPages}
+              onClick={() => setPage(safePage + 1)}
+              aria-label="Trang sau"
+            >
+              <span className="hidden sm:inline">Sau</span>
+              <IconArrowRight className="h-4 w-4 sm:ml-1" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
