@@ -202,12 +202,12 @@ function PickLocalPersonStep({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Bước 1: Chọn người trong dòng họ này</Label>
-        <p className="text-sm text-muted-foreground">
-          Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của
-          bên kia.
-        </p>
+      <div className="space-y-3">
+        <StepHeader
+          number={1}
+          title="Chọn người trong dòng họ này"
+          description="Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của bên kia."
+        />
         <SearchInput
           label="Tìm theo tên"
           value={search}
@@ -309,19 +309,26 @@ function ModeStep(props: ModeStepProps) {
         </Button>
       </div>
 
-      {/* Mode tabs */}
-      <div className="space-y-1">
-        <Label>Bước 2: Cách đề nghị</Label>
-        <SegmentedControl ariaLabel="Cách đề nghị">
+      {/* Step 2 header — rendered as a block heading so the inline-flex
+          SegmentedControl below doesn't sit on the same row as the
+          label (previous issue). */}
+      <div className="space-y-3">
+        <StepHeader number={2} title="Cách đề nghị" />
+        <SegmentedControl
+          ariaLabel="Cách đề nghị"
+          className="w-full sm:w-auto"
+        >
           <SegmentedButton
             active={mode === "token"}
             onClick={() => setMode("token")}
+            className="flex-1 sm:flex-none"
           >
             Gửi mã mời
           </SegmentedButton>
           <SegmentedButton
             active={mode === "direct"}
             onClick={() => setMode("direct")}
+            className="flex-1 sm:flex-none"
           >
             Tìm dòng họ công khai
           </SegmentedButton>
@@ -766,6 +773,41 @@ function CreatedTokenView({
           <Link to={`/clans/${clanId}/inlaws/new`}>Tạo thêm</Link>
         </Button>
       </div>
+    </div>
+  );
+}
+
+// ─── StepHeader ─────────────────────────────────────────────────────
+// Block-level step heading used by Bước 1 + Bước 2. A small numeric
+// pill on the left + bold title; optional one-line description below.
+// Replaces the previous bare `<Label>Bước N: …</Label>` which rendered
+// inline (since radix Label is a `<label>` element) and collided with
+// any sibling inline-flex control on the same row.
+function StepHeader({
+  number,
+  title,
+  description,
+}: {
+  number: number;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-baseline gap-2.5">
+        <span
+          aria-hidden="true"
+          className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold shrink-0"
+        >
+          {number}
+        </span>
+        <h3 className="text-base font-semibold">{title}</h3>
+      </div>
+      {description && (
+        <p className="text-sm text-muted-foreground mt-1.5 ml-8">
+          {description}
+        </p>
+      )}
     </div>
   );
 }
