@@ -731,6 +731,10 @@ export default function Tree() {
                 "--male-color": "var(--tree-card-male)",
                 "--female-color": "var(--tree-card-female)",
                 "--genderless-color": "var(--tree-card-genderless)",
+                // Re-enable native pinch/pan inside the chart even though
+                // body restricts to pan-y. family-chart owns the canvas
+                // here and handles multi-touch + zoom internally.
+                touchAction: "none",
               } as React.CSSProperties
             }
             aria-label="Cây gia phả tương tác"
