@@ -71,6 +71,7 @@ jobs:
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
             VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
             VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+            VITE_VAPID_PUBLIC_KEY=${{ secrets.VITE_VAPID_PUBLIC_KEY }}
             GITHUB_SHA=${{ github.sha }}
           # Buildx cache via GH Actions registry for warmer
           # subsequent builds (mostly the node_modules layer).

@@ -56,6 +56,11 @@ export default defineConfig({
       registerType: "prompt",
       injectRegister: false,
       workbox: {
+        // Custom push + notificationclick handlers live in
+        // /public/push-handler.js. importScripts inserts an
+        // importScripts() call at the top of the generated SW so we
+        // don't have to switch the whole project to injectManifest.
+        importScripts: ["/push-handler.js"],
         // Precache the built app shell.
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,webmanifest}"],
         // Don't ship Workbox debug files in prod.

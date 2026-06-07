@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { clearAllCache } from "@/lib/queryClient";
 import { signOutAndClearCache } from "@/lib/auth-actions";
 import { queryKeys } from "@/lib/queries/keys";
@@ -35,6 +36,7 @@ import {
   updateMyDisplayName,
   updateMyMonthlyLunarPref,
 } from "@/lib/queries/profile";
+import { updateMyNotifyViaPush } from "@/lib/queries/push";
 import { supabase } from "@/lib/supabase";
 
 export default function Account() {
@@ -84,6 +86,12 @@ export default function Account() {
         <MonthlyLunarCard
           userId={userId}
           enabled={profile?.notify_monthly_lunar ?? false}
+          queryClient={queryClient}
+        />
+
+        <PushNotifyCard
+          userId={userId}
+          enabled={profile?.notify_via_push ?? false}
           queryClient={queryClient}
         />
 
@@ -518,6 +526,150 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
             </div>
           </>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Web Push toggle ──────────────────────────────────────────────
+
+function PushNotifyCard({
+  userId,
+  enabled,
+  queryClient,
+}: {
+  userId: string;
+  enabled: boolean;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const toast = useToast();
+  const push = usePushSubscription();
+  const [showPrePrompt, setShowPrePrompt] = useState(false);
+
+  const updatePref = useMutation({
+    mutationFn: (next: boolean) => updateMyNotifyViaPush(userId, next),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.myProfile(userId),
+      });
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  async function handleEnable() {
+    setShowPrePrompt(false);
+    await push.enable();
+    if (push.error) return;
+    // Only flip the DB toggle if browser-level subscribe succeeded —
+    // otherwise the cron has no endpoint to push to.
+    updatePref.mutate(true);
+  }
+
+  async function handleDisable() {
+    await push.disable();
+    updatePref.mutate(false);
+  }
+
+  // ─── Render: branch by capability state ────────────────────────
+  let body: ReactNode;
+  if (push.state === "loading") {
+    body = (
+      <p className="text-sm text-muted-foreground">Đang kiểm tra trình duyệt…</p>
+    );
+  } else if (push.state === "unsupported") {
+    body = (
+      <Alert>
+        <AlertDescription>
+          Trình duyệt này không hỗ trợ thông báo đẩy. Hãy dùng Xuất lịch
+          (.ics) ở trang Sự kiện để nhận nhắc qua lịch điện thoại quen
+          thuộc.
+        </AlertDescription>
+      </Alert>
+    );
+  } else if (push.state === "ios-not-standalone") {
+    body = (
+      <Alert>
+        <AlertDescription>
+          Trên iOS, để nhận thông báo đẩy, cần <strong>Thêm app vào màn
+          hình chính</strong> rồi mở app từ icon đó (không phải Safari).
+          Sau khi cài, quay lại đây để bật.
+        </AlertDescription>
+      </Alert>
+    );
+  } else if (push.state === "denied") {
+    body = (
+      <Alert>
+        <AlertDescription>
+          Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt
+          trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây.
+          Hoặc dùng Xuất lịch (.ics) làm thay thế.
+        </AlertDescription>
+      </Alert>
+    );
+  } else if (showPrePrompt && !enabled) {
+    body = (
+      <div className="space-y-3">
+        <p className="text-sm">
+          Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày
+          giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả
+          khi app đang đóng. Bạn có thể tắt bất cứ lúc nào.
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={handleEnable}>Cho phép thông báo</Button>
+          <Button variant="outline" onClick={() => setShowPrePrompt(false)}>
+            Không bây giờ
+          </Button>
+        </div>
+      </div>
+    );
+  } else {
+    const isOn = enabled && push.state === "subscribed";
+    body = (
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={isOn}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setShowPrePrompt(true);
+            } else {
+              void handleDisable();
+            }
+          }}
+          disabled={updatePref.isPending}
+          className="mt-1 h-5 w-5 accent-primary shrink-0"
+        />
+        <div>
+          <p className="font-medium">
+            {isOn ? "Đang bật trên thiết bị này" : "Tắt"}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {isOn
+              ? "Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại."
+              : "Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt."}
+          </p>
+        </div>
+      </label>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Thông báo đẩy (Web Push)</CardTitle>
+        <CardDescription>
+          Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt
+          + (trên iOS) đã cài app vào màn hình chính.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {push.error && (
+          <Alert variant="destructive" className="mb-3">
+            <AlertDescription>{push.error}</AlertDescription>
+          </Alert>
+        )}
+        {body}
       </CardContent>
     </Card>
   );
