@@ -133,6 +133,17 @@ export interface CronJobStatus {
   } | null;
 }
 
+export interface FailedNotification {
+  id: string;
+  event_key: string;
+  channel: "email" | "sms";
+  sent_at: string;
+  clan_id: string | null;
+  clan_name: string | null;
+  user_id: string | null;
+  user_email: string | null;
+}
+
 export interface PlatformDbStats {
   rows: Record<string, number>;
   sizes_bytes: Record<string, number>;
@@ -154,7 +165,18 @@ export interface PlatformDbStats {
     users_suspended: number;
   };
   cron: CronJobStatus[];
+  recent_failed_notifications: FailedNotification[];
   generated_at: string;
+}
+
+export async function clearFailedNotification(
+  notificationId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client.rpc("clear_failed_notification", {
+    p_id: notificationId,
+  });
+  if (error) throw new Error(error.message);
 }
 
 export async function getPlatformDbStats(

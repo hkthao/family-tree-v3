@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import {
   adminAction,
+  clearFailedNotification,
   getPlatformDbStats,
   listAllClans,
   listAllProfiles,
@@ -30,6 +31,7 @@ import {
   updateProfileMaxClans,
   type AdminClanRow,
   type AdminProfileRow,
+  type FailedNotification,
 } from "@/lib/queries/admin";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
@@ -779,7 +781,103 @@ function HealthTab() {
           </ul>
         )}
       </section>
+
+      <FailedNotificationsSection
+        rows={data.recent_failed_notifications}
+        total={data.states.notifications_failed_total}
+        onChanged={() => refetch()}
+      />
     </div>
+  );
+}
+
+function FailedNotificationsSection({
+  rows,
+  total,
+  onChanged,
+}: {
+  rows: FailedNotification[];
+  total: number;
+  onChanged: () => void;
+}) {
+  const toast = useToast();
+  const confirm = useConfirm();
+  const clearM = useMutation({
+    mutationFn: (id: string) => clearFailedNotification(id),
+    onSuccess: () => {
+      toast.success("Đã xoá — lần cron tới sẽ thử lại");
+      onChanged();
+    },
+    onError: (e) =>
+      toast.error("Không xoá được", { description: (e as Error).message }),
+  });
+
+  if (total === 0) {
+    return (
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Email/SMS thất bại</h2>
+        <p className="text-sm text-muted-foreground">
+          Không có lượt gửi nào thất bại. 👌
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-2">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="text-lg font-semibold">Email/SMS thất bại</h2>
+        <p className="text-xs text-muted-foreground">
+          10 lần gần nhất trong tổng {formatNumber(total)} lượt
+        </p>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Đếm tổng có {formatNumber(total)} nhưng không lấy được context —
+          có thể row đã bị cascade xoá.
+        </p>
+      ) : (
+        <ul className="rounded-md border bg-background divide-y">
+          {rows.map((n) => (
+            <li key={n.id} className="p-3 space-y-1">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0 text-sm">
+                  <p className="font-medium">
+                    {n.user_email ?? "(người dùng đã xoá)"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-foreground">
+                      {n.clan_name ?? "(clan đã xoá)"}
+                    </span>{" "}
+                    · {n.channel} ·{" "}
+                    <span className="font-mono">{n.event_key}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(n.sent_at).toLocaleString("vi-VN")}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={clearM.isPending}
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: "Xoá log thất bại?",
+                      description:
+                        "Sau khi xoá, lần cron tới (mặc định mỗi tối) sẽ thử gửi lại sự kiện này.",
+                      confirmLabel: "Xoá để thử lại",
+                    });
+                    if (ok) clearM.mutate(n.id);
+                  }}
+                >
+                  Xoá để thử lại
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
