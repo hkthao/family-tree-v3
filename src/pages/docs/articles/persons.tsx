@@ -337,3 +337,66 @@ export function Merge() {
     </>
   );
 }
+
+// ─── Tra cứu xưng hô ─────────────────────────────────────────────
+
+export function Kinship() {
+  return (
+    <>
+      <Lead>
+        Trang <Code>Tra cứu xưng hô</Code> trả lời câu hỏi "tôi gọi
+        người đó là gì". Chọn hai người trong họ → app tính cách
+        xưng hô theo phong tục Việt — anh/em ruột, chú/bác/cô/cậu/dì,
+        anh em họ, ông bà nội/ngoại…
+      </Lead>
+
+      <H2>App dùng quy tắc gì</H2>
+      <UL>
+        <LI>
+          <Strong>Trực hệ</Strong> — cha mẹ / con / ông bà nội ngoại /
+          cháu / cụ / chắt. Bên <Strong>nội</Strong> nếu đi qua đường
+          cha, bên <Strong>ngoại</Strong> nếu đi qua đường mẹ.
+        </LI>
+        <LI>
+          <Strong>Anh chị em ruột</Strong> — cùng cha cùng mẹ. App
+          phân biệt cả <Strong>cùng cha khác mẹ</Strong> /{" "}
+          <Strong>cùng mẹ khác cha</Strong> nếu dữ liệu khớp.
+        </LI>
+        <LI>
+          <Strong>Chú / bác / cô</Strong> (bên nội) — anh chị em ruột
+          của bố. <Code>Bác</Code> = anh của bố, <Code>chú</Code> = em
+          trai của bố, <Code>cô</Code> = chị/em gái của bố (gọi chung).
+        </LI>
+        <LI>
+          <Strong>Cậu / dì</Strong> (bên ngoại) — anh chị em ruột của
+          mẹ.
+        </LI>
+        <LI>
+          <Strong>Anh em họ</Strong> — có cùng ông/bà (bên nội hoặc
+          ngoại). Phân biệt anh / em theo năm sinh.
+        </LI>
+      </UL>
+
+      <H2>Cần dữ liệu gì</H2>
+      <P>
+        App đọc bố/mẹ của mỗi người (từ trường <Code>birth_family</Code>)
+        và năm sinh. Người chưa có cha/mẹ trong cây sẽ không tính
+        được — vào trang <Code>Việc cần làm</Code> nhóm "Thiếu cha/mẹ"
+        để bổ sung trước.
+      </P>
+
+      <Callout>
+        MVP chưa hỗ trợ xưng hô qua hôn nhân (thím / mợ / dượng / dâu /
+        rể) và xưng hô họ hàng xa (kỵ, sơ, anh em họ đời xa hơn). Khi
+        không tính được, app trả "họ hàng xa" để không nói sai.
+      </Callout>
+
+      <H2>Mở nhanh từ trang chi tiết</H2>
+      <P>
+        Trên trang chi tiết một người, bấm nút <Strong>Xưng hô</Strong>{" "}
+        ở góc → app mở Tra cứu xưng hô với người đó đã chọn sẵn ở ô
+        thứ nhất. Chỉ cần chọn người thứ hai.
+      </P>
+    </>
+  );
+}

@@ -10,6 +10,7 @@ import {
   IconQrCode,
   IconScroll,
   IconTrash,
+  IconUsers,
 } from "@/components/icons";
 import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -317,7 +318,7 @@ export default function PersonDetail() {
 
             <InLawLinksSection personId={personId!} userId={userId} />
 
-            {(canEdit || canCreateQr || canContribute) && (
+            {(
               <div className="flex flex-wrap gap-3">
                 {canEdit && (
                   <Button asChild variant="outline" className="flex-1 sm:flex-none">
@@ -350,6 +351,12 @@ export default function PersonDetail() {
                     QR cá nhân
                   </Button>
                 )}
+                <Button asChild variant="outline" className="flex-1 sm:flex-none">
+                  <Link to={`/clans/${clanId}/kinship?a=${personId}`}>
+                    <IconUsers className="h-4 w-4 mr-1.5" />
+                    Xưng hô
+                  </Link>
+                </Button>
                 {canEdit && (
                   <Button
                     variant="destructive"

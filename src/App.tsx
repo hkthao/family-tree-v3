@@ -22,6 +22,7 @@ import Events from "@/pages/clan/Events";
 import Import from "@/pages/clan/Import";
 import Inlaws from "@/pages/clan/Inlaws";
 import InlawsNew from "@/pages/clan/InlawsNew";
+import Kinship from "@/pages/clan/Kinship";
 import Members from "@/pages/clan/Members";
 import Merge from "@/pages/clan/Merge";
 import MyLineage from "@/pages/clan/MyLineage";
@@ -94,6 +95,7 @@ export default function App() {
           <Route path="my-lineage" element={<MyLineage />} />
           <Route path="today" element={<Today />} />
           <Route path="todo" element={<Todo />} />
+          <Route path="kinship" element={<Kinship />} />
           <Route path="contributions" element={<Contributions />} />
           <Route path="contributions/:contribId" element={<ContributionDetail />} />
           <Route path="inlaws" element={<Inlaws />} />
