@@ -328,7 +328,7 @@ export default function PersonDetail() {
               </Card>
             )}
 
-            <InLawLinksSection personId={personId!} userId={userId} />
+            <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
 
             {(
               <div className="flex flex-wrap gap-3">
@@ -600,9 +600,11 @@ function RelationshipGroup({
 function InLawLinksSection({
   personId,
   userId,
+  viewingClanId,
 }: {
   personId: string;
   userId: string;
+  viewingClanId: string;
 }) {
   const { data: links } = useQuery({
     queryKey: queryKeys.personLinksForPerson(personId, userId),
@@ -620,7 +622,12 @@ function InLawLinksSection({
       </CardHeader>
       <CardContent className="space-y-3">
         {links.map((l) => (
-          <InLawLinkRow key={l.id} link={l} userId={userId} />
+          <InLawLinkRow
+            key={l.id}
+            link={l}
+            userId={userId}
+            viewingClanId={viewingClanId}
+          />
         ))}
       </CardContent>
     </Card>
@@ -630,9 +637,11 @@ function InLawLinksSection({
 function InLawLinkRow({
   link,
   userId,
+  viewingClanId,
 }: {
   link: PersonLink;
   userId: string;
+  viewingClanId: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const { data: peek, isLoading } = useQuery({
@@ -697,7 +706,7 @@ function InLawLinkRow({
       </div>
       {expanded && (
         <div className="pt-2 border-t">
-          <InlawFamilyCard linkId={link.id} />
+          <InlawFamilyCard linkId={link.id} viewingClanId={viewingClanId} />
         </div>
       )}
     </div>

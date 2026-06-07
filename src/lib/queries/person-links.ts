@@ -411,10 +411,12 @@ export interface InlawPeerRelatives {
  */
 export async function getInlawPeerRelatives(
   linkId: string,
+  viewingClanId: string | null,
   client: Client = defaultClient,
 ): Promise<InlawPeerRelatives> {
   const { data, error } = await client.rpc("get_inlaw_peer_relatives", {
     p_link_id: linkId,
+    p_viewing_clan_id: viewingClanId ?? undefined,
   });
   if (error) throw new Error(error.message);
   return data as unknown as InlawPeerRelatives;
@@ -484,10 +486,14 @@ export async function getInlawGhostSpouses(
   }
 
   // Fetch peer relatives in parallel — one round-trip per link.
+  // Pass the viewing clan so the RPC picks the right peer side for
+  // users who are members of BOTH clans (otherwise the dual-membership
+  // is_clan_member heuristic picks the wrong side and we ghost the
+  // wrong person).
   const peers = await Promise.all(
     confirmed.map(async (link) => {
       try {
-        const rel = await getInlawPeerRelatives(link.id, client);
+        const rel = await getInlawPeerRelatives(link.id, clanId, client);
         return { link, rel };
       } catch {
         // RPC may raise if peer clan revoked / data went away —
