@@ -110,6 +110,10 @@ export default defineConfig({
         // navigation requests untouched so Vite HMR still works.
         enabled: true,
         type: "module",
+        // Skip the workbox precache glob during dev — the dev-dist
+        // dir is empty until first SW rebuild and the noisy "glob
+        // doesn't match any files" warning is harmless dev clutter.
+        suppressWarnings: true,
       },
     }),
   ],

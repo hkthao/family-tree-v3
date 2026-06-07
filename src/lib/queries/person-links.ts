@@ -94,6 +94,7 @@ const INLAW_QUERY_PREFIXES = new Set([
   "inlaws-people-search",
   "inlaws-peer-clans",
   "inlaws-peer-persons",
+  "inlaw-ghost-spouses",
 ]);
 
 export function isInlawCacheKey(queryKey: readonly unknown[]): boolean {
@@ -417,6 +418,93 @@ export async function getInlawPeerRelatives(
   });
   if (error) throw new Error(error.message);
   return data as unknown as InlawPeerRelatives;
+}
+
+/** One peer-spouse to ghost onto the local clan's tree. */
+export interface InlawGhostSpouse {
+  /** Local person (in the rendering clan) whose card the ghost
+   *  attaches to as a spouse. */
+  localPersonId: string;
+  linkId: string;
+  /** Peer clan info — used for the "Họ X" tag on the ghost card. */
+  peerClanId: string;
+  peerClanName: string;
+  /** Peer-clan spouse who is the actual real-world partner. */
+  spouseId: string;
+  spouseFullName: string | null;
+  spouseGender: "M" | "F";
+  spouseBirthYear: number | null;
+  spouseDeathYear: number | null;
+  spouseIsLiving: boolean;
+  /** True when peer-clan masking redacted the name (living person on
+   *  a clan that hides living non-members). */
+  masked: boolean;
+}
+
+/**
+ * Pre-compute every "ghost spouse" to render on this clan's tree.
+ *
+ * For each confirmed inlaw link the clan is part of, look up the peer
+ * person's spouses (in the OTHER clan). Those spouses are the people
+ * who married into our local person from across the border — their
+ * record lives in the peer clan but they belong on OUR tree next to
+ * the local half of the link.
+ *
+ * Returns one entry per ghost candidate (a local person can have
+ * multiple ghosts if their peer-side counterpart has multiple
+ * spouses). N round-trips because each link gets its own peek RPC —
+ * fine up to ~100 links; for bigger clans this would warrant a
+ * single SQL function returning the whole bundle.
+ */
+export async function getInlawGhostSpouses(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<InlawGhostSpouse[]> {
+  const links = await listLinksForClan(clanId, client);
+  const confirmed = links.filter(
+    (l) => l.status === "confirmed" && l.person_a_id && l.person_b_id,
+  );
+  if (confirmed.length === 0) return [];
+
+  // Fetch peer relatives in parallel — one round-trip per link.
+  const peers = await Promise.all(
+    confirmed.map(async (link) => {
+      try {
+        const rel = await getInlawPeerRelatives(link.id, client);
+        return { link, rel };
+      } catch {
+        // RPC may raise if peer clan revoked / data went away —
+        // skip silently and the ghost simply doesn't show.
+        return null;
+      }
+    }),
+  );
+
+  const out: InlawGhostSpouse[] = [];
+  for (const entry of peers) {
+    if (!entry) continue;
+    const { link, rel } = entry;
+    const localPersonId =
+      link.clan_a_id === clanId ? link.person_a_id : link.person_b_id;
+    if (!localPersonId) continue;
+
+    for (const spouse of rel.spouses ?? []) {
+      out.push({
+        localPersonId,
+        linkId: link.id,
+        peerClanId: rel.peer_clan_id,
+        peerClanName: rel.peer_clan_name,
+        spouseId: spouse.id,
+        spouseFullName: spouse.full_name ?? null,
+        spouseGender: spouse.gender,
+        spouseBirthYear: spouse.birth_year ?? null,
+        spouseDeathYear: spouse.death_year ?? null,
+        spouseIsLiving: spouse.is_living,
+        masked: spouse.masked,
+      });
+    }
+  }
+  return out;
 }
 
 export interface InlawExportEntry {

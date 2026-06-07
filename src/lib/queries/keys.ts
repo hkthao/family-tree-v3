@@ -76,4 +76,6 @@ export const queryKeys = {
     ["clan-todo-count", clanId, userId] as const,
   kinshipIndex: (clanId: string, userId: string) =>
     ["kinship-index", clanId, userId] as const,
+  inlawGhostSpouses: (clanId: string, userId: string) =>
+    ["inlaw-ghost-spouses", clanId, userId] as const,
 };
