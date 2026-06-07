@@ -222,3 +222,27 @@ export async function addChildToFamily(
   if (error) throw new Error(error.message);
   return { id: data.id };
 }
+
+/**
+ * Link an EXISTING person as a child of `familyId`. Companion to
+ * `addChildToFamily` (which creates a fresh row); use this when the
+ * person already exists in the clan but was attached to the wrong
+ * (or no) birth_family.
+ *
+ * The RPC enforces:
+ *   - caller is admin/editor of the clan,
+ *   - person + family are in the same clan and both non-deleted,
+ *   - person isn't a parent of the target family (no self-as-child),
+ *   - no cycle (person isn't an ancestor of either parent).
+ */
+export async function assignPersonToFamily(
+  personId: string,
+  familyId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client.rpc("assign_person_to_family", {
+    p_person_id: personId,
+    p_family_id: familyId,
+  });
+  if (error) throw new Error(error.message);
+}

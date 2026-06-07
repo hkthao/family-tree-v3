@@ -1,11 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconX } from "@/components/icons";
+import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,10 +24,12 @@ import {
 } from "@/lib/personDates";
 import {
   addChildToFamily,
+  assignPersonToFamily,
   findOrCreateFamily,
   getPersonRelationships,
 } from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
+import { getKinshipIndex } from "@/lib/queries/kinship";
 import { getPerson } from "@/lib/queries/persons";
 
 const SOLO_VALUE = "__solo__";
@@ -67,15 +74,41 @@ export default function AddChild() {
       setOtherParent(first.id);
     }
   }, [rels, otherParent, otherParentTouched]);
+  // Mode: create a brand-new person OR link an existing clan member as
+  // child of the resolved family. Default = "new" (the common case).
+  const [mode, setMode] = useState<"new" | "existing">("new");
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
   const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [isLiving, setIsLiving] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Existing-mode state: search filter + selected candidate id.
+  const [existingFilter, setExistingFilter] = useState("");
+  const [existingId, setExistingId] = useState<string | null>(null);
+  const { data: clanIndex } = useQuery({
+    queryKey: queryKeys.kinshipIndex(clanId ?? "", userId),
+    queryFn: () => getKinshipIndex(clanId!),
+    enabled: !!userId && !!clanId && mode === "existing",
+    staleTime: 5 * 60_000,
+  });
+
+  // Build candidate list, exclude focal + spouse (those become parents,
+  // not children) + persons already attached to a non-conflicting
+  // family. Server still cycle-checks on submit.
+  const candidates = useMemo(() => {
+    if (!clanIndex) return [];
+    const excluded = new Set<string>([focal?.id ?? ""]);
+    for (const sp of rels?.spouses ?? []) excluded.add(sp.id);
+    const f = existingFilter.trim().toLowerCase();
+    return clanIndex.ordered
+      .filter((p) => !excluded.has(p.id))
+      .filter((p) => (f ? p.full_name.toLowerCase().includes(f) : true))
+      .slice(0, 200);
+  }, [clanIndex, focal, rels, existingFilter]);
+
   const mutation = useMutation({
     mutationFn: async () => {
-      const birthCols = buildPersonDateColumns(birth);
       if (!clanId || !focal) throw new Error("Thiếu thông tin");
 
       // Resolve other parent (a spouse from the list) or null for single parent
@@ -91,6 +124,13 @@ export default function AddChild() {
         partnerB,
       });
 
+      if (mode === "existing") {
+        if (!existingId) throw new Error("Chưa chọn người để gắn");
+        await assignPersonToFamily(existingId, family.id);
+        return { id: existingId };
+      }
+
+      const birthCols = buildPersonDateColumns(birth);
       return addChildToFamily({
         clanId,
         family_id: family.id,
@@ -107,7 +147,14 @@ export default function AddChild() {
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
-      toast.success("Đã thêm con", { description: fullName.trim() });
+      const label =
+        mode === "existing"
+          ? clanIndex?.byId.get(existingId ?? "")?.full_name ?? "người đã chọn"
+          : fullName.trim();
+      toast.success(
+        mode === "existing" ? "Đã gắn làm con" : "Đã thêm con",
+        { description: label },
+      );
       navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
     },
     onError: (e) =>
@@ -133,17 +180,38 @@ export default function AddChild() {
           onSubmit={(e) => {
             e.preventDefault();
             setFormError(null);
-            if (!fullName.trim()) return;
-            try {
-              buildPersonDateColumns(birth);
-            } catch (err) {
-              setFormError((err as Error).message);
-              return;
+            if (mode === "new") {
+              if (!fullName.trim()) return;
+              try {
+                buildPersonDateColumns(birth);
+              } catch (err) {
+                setFormError((err as Error).message);
+                return;
+              }
+            } else {
+              if (!existingId) {
+                setFormError("Chọn người trong danh sách để gắn làm con");
+                return;
+              }
             }
             mutation.mutate();
           }}
           className="space-y-6"
         >
+          <SegmentedControl ariaLabel="Chế độ thêm con">
+            <SegmentedButton
+              active={mode === "new"}
+              onClick={() => setMode("new")}
+            >
+              Người mới
+            </SegmentedButton>
+            <SegmentedButton
+              active={mode === "existing"}
+              onClick={() => setMode("existing")}
+            >
+              Chọn người đã có
+            </SegmentedButton>
+          </SegmentedControl>
           <div className="space-y-2">
             <Label htmlFor="other_parent">Người đồng-cha-mẹ</Label>
             <select
@@ -183,60 +251,127 @@ export default function AddChild() {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Tên con</Label>
-            <Input
-              id="full_name"
-              required
-              autoFocus
-              maxLength={200}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Vd: Nguyễn Văn C"
-            />
-          </div>
+          {mode === "new" ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="full_name">Tên con</Label>
+                <Input
+                  id="full_name"
+                  required
+                  autoFocus
+                  maxLength={200}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Vd: Nguyễn Văn C"
+                />
+              </div>
 
-          <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">Giới tính</legend>
-            <div className="flex gap-6">
+              <fieldset className="space-y-3">
+                <legend className="text-base font-medium mb-2">Giới tính</legend>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={gender === "M"}
+                      onChange={() => setGender("M")}
+                      className="h-4 w-4 accent-primary"
+                    />
+                    <span>Nam</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={gender === "F"}
+                      onChange={() => setGender("F")}
+                      className="h-4 w-4 accent-primary"
+                    />
+                    <span>Nữ</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <CalendarDateInput
+                label="Ngày sinh (tuỳ chọn)"
+                idPrefix="birth"
+                helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
+                value={birth}
+                onChange={setBirth}
+              />
+
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
-                  type="radio"
-                  checked={gender === "M"}
-                  onChange={() => setGender("M")}
-                  className="h-4 w-4 accent-primary"
+                  type="checkbox"
+                  checked={!isLiving}
+                  onChange={(e) => setIsLiving(!e.target.checked)}
+                  className="h-5 w-5 accent-primary shrink-0"
                 />
-                <span>Nam</span>
+                <span>Đã mất</span>
               </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={gender === "F"}
-                  onChange={() => setGender("F")}
-                  className="h-4 w-4 accent-primary"
-                />
-                <span>Nữ</span>
-              </label>
+            </>
+          ) : (
+            <div className="space-y-3">
+              <Label>Tìm người đã có trong dòng họ</Label>
+              <Input
+                value={existingFilter}
+                onChange={(e) => setExistingFilter(e.target.value)}
+                placeholder="Gõ tên để lọc"
+              />
+              <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
+                {candidates.length === 0 && (
+                  <li className="px-3 py-2 text-muted-foreground italic">
+                    {clanIndex ? "Không có người nào khớp." : "Đang tải…"}
+                  </li>
+                )}
+                {candidates.map((p) => {
+                  const active = p.id === existingId;
+                  const hasOtherFamily = !!p.father_id || !!p.mother_id;
+                  return (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => setExistingId(p.id)}
+                        className={`w-full text-left px-3 py-2.5 flex items-center gap-2.5 hover:bg-muted/50 ${
+                          active ? "bg-primary/10" : ""
+                        }`}
+                      >
+                        <PersonAvatar gender={p.gender} size={32} />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-baseline gap-2">
+                            <span
+                              className={`truncate ${active ? "font-semibold text-primary" : "font-medium"}`}
+                            >
+                              {p.full_name}
+                            </span>
+                            {p.birth_year && (
+                              <span className="text-xs text-muted-foreground shrink-0">
+                                {p.birth_year}
+                              </span>
+                            )}
+                          </div>
+                          {hasOtherFamily && (
+                            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                              Đang có bố/mẹ khác — sẽ ghi đè khi gắn.
+                            </p>
+                          )}
+                        </div>
+                        {active && (
+                          <IconCheck className="h-4 w-4 text-primary shrink-0" />
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                Người đã chọn sẽ trở thành con của family hiện tại
+                ({focal?.full_name}
+                {otherParent !== SOLO_VALUE
+                  ? ` + ${rels?.spouses.find((s) => s.id === otherParent)?.full_name ?? ""}`
+                  : " — đơn thân"}
+                ). Nếu trước đó họ đã có bố/mẹ, dữ liệu cũ sẽ bị thay thế.
+              </p>
             </div>
-          </fieldset>
-
-          <CalendarDateInput
-            label="Ngày sinh (tuỳ chọn)"
-            idPrefix="birth"
-            helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
-            value={birth}
-            onChange={setBirth}
-          />
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={!isLiving}
-              onChange={(e) => setIsLiving(!e.target.checked)}
-              className="h-5 w-5 accent-primary shrink-0"
-            />
-            <span>Đã mất</span>
-          </label>
+          )}
 
           {(formError || mutation.error) && (
             <Alert variant="destructive">
@@ -250,7 +385,10 @@ export default function AddChild() {
             <Button
               type="submit"
               className="flex-1 sm:flex-none"
-              disabled={mutation.isPending || !fullName.trim()}
+              disabled={
+                mutation.isPending ||
+                (mode === "new" ? !fullName.trim() : !existingId)
+              }
             >
               {mutation.isPending ? (
                 "Đang lưu…"
