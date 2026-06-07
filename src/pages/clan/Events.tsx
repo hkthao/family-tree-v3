@@ -10,7 +10,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { BackLink } from "@/components/BackLink";
-import { IconBellOff } from "@/components/icons";
+import { IconBellOff, IconDownload } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
@@ -46,6 +46,7 @@ import {
   listEvents,
   type EventRow,
 } from "@/lib/queries/events";
+import { downloadClanIcs, type IcsPerson } from "@/lib/icalExport";
 import { queryKeys } from "@/lib/queries/keys";
 import { getTreeData } from "@/lib/queries/tree";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
@@ -67,6 +68,7 @@ export default function Events() {
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
   const qc = useQueryClient();
+  const toast = useToast();
 
   const [daysAhead, setDaysAhead] = useState<number>(90);
   const [view, setView] = useState<"list" | "calendar">("list");
@@ -113,6 +115,46 @@ export default function Events() {
     );
   }, [tree, events, anniversaries, effectiveDays]);
 
+  function handleExportIcs() {
+    if (!tree || !events || !anniversaries) return;
+    // Stitch the giỗ-lunar fields (from listAnniversaryCandidates)
+    // onto the tree's persons by id — tree query doesn't include
+    // death_anniv_lunar_* in its lighter projection.
+    const annivById = new Map(
+      anniversaries.map((a) => [a.id, a]),
+    );
+    const persons: IcsPerson[] = tree.persons.map((p) => {
+      const a = annivById.get(p.id);
+      return {
+        id: p.id,
+        full_name: p.full_name,
+        generation: p.generation,
+        is_living: p.is_living,
+        birth_date: p.birth_date,
+        death_anniv_lunar_month: a?.death_anniv_lunar_month ?? null,
+        death_anniv_lunar_day: a?.death_anniv_lunar_day ?? null,
+        death_anniv_lunar_is_leap: a?.death_anniv_lunar_is_leap ?? false,
+      };
+    });
+    const { filename } = downloadClanIcs({
+      clanName: clan.name,
+      clanId: clan.id,
+      appBaseUrl: window.location.origin,
+      persons,
+      customEvents: events.map((e) => ({
+        id: e.id,
+        title: e.title,
+        date_solar: e.date_solar,
+        lunar_month: e.lunar_month,
+        lunar_day: e.lunar_day,
+        lunar_is_leap: e.lunar_is_leap,
+        is_yearly: e.is_yearly,
+        related_person_id: e.related_person_id,
+      })),
+    });
+    toast.success("Đã tải file lịch", { description: filename });
+  }
+
   return (
     <div className="space-y-4">
       <nav>
@@ -144,6 +186,17 @@ export default function Events() {
               <span className="hidden sm:inline">Lịch</span>
             </SegmentedButton>
           </SegmentedControl>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-10"
+            onClick={handleExportIcs}
+            disabled={!tree || !events || !anniversaries}
+            title="Tải file .ics — import vào Google / Apple Calendar để nhận nhắc trực tiếp trên lịch điện thoại"
+          >
+            <IconDownload className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">Xuất lịch</span>
+          </Button>
           <RefreshButton
             clanId={clan.id}
             cachedVersion={clan.data_version}
