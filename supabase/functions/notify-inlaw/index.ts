@@ -235,22 +235,81 @@ async function sendOne(email: OutEmail): Promise<{ ok: boolean; error?: string }
   }
 }
 
-async function adminEmailsForClan(
+interface AdminContact {
+  user_id: string;
+  email: string;
+}
+
+async function adminContactsForClan(
   sb: ReturnType<typeof createClient>,
   clanId: string,
-): Promise<string[]> {
+): Promise<AdminContact[]> {
   const { data: admins } = await sb
     .from("clan_members")
     .select("user_id")
     .eq("clan_id", clanId)
     .eq("role", "admin");
   const ids = (admins ?? []).map((a: { user_id: string }) => a.user_id);
-  const emails: string[] = [];
+  const out: AdminContact[] = [];
   for (const id of ids) {
     const { data: u } = await sb.auth.admin.getUserById(id);
-    if (u?.user?.email) emails.push(u.user.email);
+    if (u?.user?.email) out.push({ user_id: id, email: u.user.email });
   }
-  return emails;
+  return out;
+}
+
+/**
+ * Send the template to every recipient, gated by `notification_log`
+ * dedupe. The UNIQUE (user_id, event_key, channel) constraint on
+ * notification_log is the rate-limit primitive: we INSERT optimistically
+ * with status='sent' BEFORE sending — if the row already exists the
+ * insert fails on the constraint and we skip the network call. After
+ * a failed Resend response, we UPDATE the row to status='failed' so
+ * the admin can clear it later (via /admin Hệ thống tab) to retry.
+ *
+ * Without this gate, an anon caller could replay {link_id} to fan out
+ * unlimited emails to clan admins. With it, each (user, event_key)
+ * pair gets at most one email regardless of how many POSTs hit the
+ * function.
+ */
+async function deliverWithDedupe(
+  sb: ReturnType<typeof createClient>,
+  recipients: AdminContact[],
+  clanIdForLog: string,
+  eventKey: string,
+  tpl: { subject: string; html: string },
+  sent: Array<{ to: string; ok: boolean; error?: string }>,
+): Promise<void> {
+  for (const r of recipients) {
+    // Reserve dedupe slot first. If this fails (UNIQUE collision),
+    // an earlier call already handled this recipient/event combo.
+    const { error: reserveErr } = await sb.from("notification_log").insert({
+      clan_id: clanIdForLog,
+      user_id: r.user_id,
+      event_key: eventKey,
+      channel: "email",
+      status: "sent",
+    });
+    if (reserveErr) {
+      sent.push({ to: r.email, ok: false, error: "deduped" });
+      continue;
+    }
+    const result = await sendOne({
+      to: r.email,
+      subject: tpl.subject,
+      html: tpl.html,
+    });
+    if (!result.ok) {
+      // Downgrade the row so the admin retry UI picks it up.
+      await sb
+        .from("notification_log")
+        .update({ status: "failed" })
+        .eq("user_id", r.user_id)
+        .eq("event_key", eventKey)
+        .eq("channel", "email");
+    }
+    sent.push({ to: r.email, ...result });
+  }
 }
 
 Deno.serve(async (req) => {
@@ -316,8 +375,8 @@ Deno.serve(async (req) => {
     if (!l.clan_b_id) {
       return json({ ok: true, skipped: "pending-token-mode" });
     }
-    const bEmails = await adminEmailsForClan(sb, l.clan_b_id);
-    if (bEmails.length === 0) {
+    const bContacts = await adminContactsForClan(sb, l.clan_b_id);
+    if (bContacts.length === 0) {
       return json({ ok: true, skipped: "no-admin-emails-b" });
     }
     const tpl = buildPendingEmail({
@@ -328,14 +387,18 @@ Deno.serve(async (req) => {
       note: l.note ?? null,
       link: `${APP_BASE_URL}/clans/${l.clan_b_id}/inlaws`,
     });
-    for (const to of bEmails) {
-      const r = await sendOne({ to, subject: tpl.subject, html: tpl.html });
-      sent.push({ to, ...r });
-    }
+    await deliverWithDedupe(
+      sb,
+      bContacts,
+      l.clan_b_id,
+      `inlaw:${l.id}:pending`,
+      tpl,
+      sent,
+    );
   } else if (l.status === "confirmed") {
     // Email clan A admins — they proposed and have been waiting.
-    const aEmails = await adminEmailsForClan(sb, l.clan_a_id);
-    if (aEmails.length === 0) {
+    const aContacts = await adminContactsForClan(sb, l.clan_a_id);
+    if (aContacts.length === 0) {
       return json({ ok: true, skipped: "no-admin-emails-a" });
     }
     const tpl = buildConfirmedEmail({
@@ -345,10 +408,14 @@ Deno.serve(async (req) => {
       peerPersonName: personBName,
       link: `${APP_BASE_URL}/clans/${l.clan_a_id}/inlaws`,
     });
-    for (const to of aEmails) {
-      const r = await sendOne({ to, subject: tpl.subject, html: tpl.html });
-      sent.push({ to, ...r });
-    }
+    await deliverWithDedupe(
+      sb,
+      aContacts,
+      l.clan_a_id,
+      `inlaw:${l.id}:confirmed`,
+      tpl,
+      sent,
+    );
   } else if (l.status === "revoked") {
     // Token-mode revoke (admin A cancels a pending invite before any
     // clan B accepted) has clan_b_id null — nobody else even knew
@@ -361,28 +428,36 @@ Deno.serve(async (req) => {
     // Email admins of BOTH sides — schema doesn't track who revoked,
     // so we err on the side of transparency over avoiding duplicates.
     // (The revoker also gets the email, useful as confirmation.)
-    const [aEmails, bEmails] = await Promise.all([
-      adminEmailsForClan(sb, l.clan_a_id),
-      adminEmailsForClan(sb, l.clan_b_id),
+    const [aContacts, bContacts] = await Promise.all([
+      adminContactsForClan(sb, l.clan_a_id),
+      adminContactsForClan(sb, l.clan_b_id),
     ]);
-    for (const to of aEmails) {
-      const tpl = buildRevokedEmail({
-        recipientClanName: clanAName,
-        peerClanName: clanBName,
-        link: `${APP_BASE_URL}/clans/${l.clan_a_id}/inlaws`,
-      });
-      const r = await sendOne({ to, subject: tpl.subject, html: tpl.html });
-      sent.push({ to, ...r });
-    }
-    for (const to of bEmails) {
-      const tpl = buildRevokedEmail({
-        recipientClanName: clanBName,
-        peerClanName: clanAName,
-        link: `${APP_BASE_URL}/clans/${l.clan_b_id}/inlaws`,
-      });
-      const r = await sendOne({ to, subject: tpl.subject, html: tpl.html });
-      sent.push({ to, ...r });
-    }
+    const tplA = buildRevokedEmail({
+      recipientClanName: clanAName,
+      peerClanName: clanBName,
+      link: `${APP_BASE_URL}/clans/${l.clan_a_id}/inlaws`,
+    });
+    await deliverWithDedupe(
+      sb,
+      aContacts,
+      l.clan_a_id,
+      `inlaw:${l.id}:revoked`,
+      tplA,
+      sent,
+    );
+    const tplB = buildRevokedEmail({
+      recipientClanName: clanBName,
+      peerClanName: clanAName,
+      link: `${APP_BASE_URL}/clans/${l.clan_b_id}/inlaws`,
+    });
+    await deliverWithDedupe(
+      sb,
+      bContacts,
+      l.clan_b_id,
+      `inlaw:${l.id}:revoked`,
+      tplB,
+      sent,
+    );
     if (sent.length === 0) {
       return json({ ok: true, skipped: "no-admin-emails" });
     }

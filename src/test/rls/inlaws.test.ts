@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
@@ -77,7 +78,7 @@ describe("RLS: cross-clan in-law links", () => {
   // ── INSERT (propose) ────────────────────────────────────────────
 
   it("admin A can propose a pending link with a token", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const { data, error } = await adminA.client
       .from("person_links")
       .insert({
@@ -98,7 +99,7 @@ describe("RLS: cross-clan in-law links", () => {
     const { error } = await viewerA.client.from("person_links").insert({
       clan_a_id: clanA,
       person_a_id: personA,
-      invite_token: `t-${Math.random()}`,
+      invite_token: `t-${randomUUID()}-${randomUUID()}`,
       created_by: viewerA.id,
     });
     expect(error).not.toBeNull();
@@ -108,7 +109,7 @@ describe("RLS: cross-clan in-law links", () => {
     const { error } = await adminA.client.from("person_links").insert({
       clan_a_id: clanA,
       person_a_id: personA,
-      invite_token: `t-${Math.random()}`,
+      invite_token: `t-${randomUUID()}-${randomUUID()}`,
       created_by: adminB.id, // not me — policy pins to auth.uid()
     });
     expect(error).not.toBeNull();
@@ -117,7 +118,7 @@ describe("RLS: cross-clan in-law links", () => {
   // ── confirm_link_by_token ───────────────────────────────────────
 
   it("admin B can confirm a pending token; afterwards token is dead", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -160,7 +161,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("admin A CANNOT confirm their own proposal (must be admin of clan B)", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -196,7 +197,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("viewer B CANNOT confirm even with valid token", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -225,7 +226,7 @@ describe("RLS: cross-clan in-law links", () => {
   // ── get_link_peek ──────────────────────────────────────────────
 
   it("pending link: get_link_peek raises (no data hé)", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -250,7 +251,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("confirmed link: member sees peer projection, NOT full persons row", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -291,7 +292,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("stranger (member of neither clan) CANNOT peek", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -335,7 +336,7 @@ describe("RLS: cross-clan in-law links", () => {
       .single();
     const peerB = pbFresh.data!.id;
 
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -377,7 +378,7 @@ describe("RLS: cross-clan in-law links", () => {
   // ── Revoke / soft-delete ────────────────────────────────────────
 
   it("revoke breaks the peek; both clans' persons rows survive", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -435,7 +436,7 @@ describe("RLS: cross-clan in-law links", () => {
       .single();
     const tmpId = tmpIns.data!.id;
 
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -471,7 +472,7 @@ describe("RLS: cross-clan in-law links", () => {
   // ── Immutability ────────────────────────────────────────────────
 
   it("trigger blocks rolling status from confirmed back to pending", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -508,7 +509,7 @@ describe("RLS: cross-clan in-law links", () => {
 
   it("propose + confirm + revoke each write one audit_log row under clan_a", async () => {
     const admin = adminClient();
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -555,7 +556,7 @@ describe("RLS: cross-clan in-law links", () => {
 
   it("audit insert action carries the after-jsonb snapshot", async () => {
     const admin = adminClient();
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -818,7 +819,7 @@ describe("RLS: cross-clan in-law links", () => {
     ).data!.id;
 
     // Confirm a link between personA (clan A) and peer (clan B)
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -913,7 +914,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("get_inlaw_peer_relatives raises for stranger / pending link", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -966,7 +967,7 @@ describe("RLS: cross-clan in-law links", () => {
         .single()
     ).data!.id;
 
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -998,7 +999,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("admin A CANNOT change confirmed_by/confirmed_at after confirm", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -1027,7 +1028,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("get_inlaw_proposal_preview returns 'not found' for revoked links", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -1117,7 +1118,7 @@ describe("RLS: cross-clan in-law links", () => {
         .single()
     ).data!.id;
 
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
@@ -1172,7 +1173,7 @@ describe("RLS: cross-clan in-law links", () => {
   });
 
   it("anon can call resolve_link_token but only for active pending tokens", async () => {
-    const token = `t-${Math.random()}`;
+    const token = `t-${randomUUID()}-${randomUUID()}`;
     const ins = await adminA.client
       .from("person_links")
       .insert({
