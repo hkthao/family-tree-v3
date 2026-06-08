@@ -34,24 +34,42 @@ export interface UploadResult {
  * Caller is responsible for updating `persons.photo_path = result.path`
  * — done separately so the storage upload + DB write can be wrapped in
  * a single mutation.
+ *
+ * `onProgress` is called with two phases so the UI can show a smooth
+ * 0–100 bar across both compress + upload: `phase` is "compress" while
+ * browser-image-compression runs (it reports its own 0–100), then
+ * "upload" once we hand the bytes to Supabase storage.
  */
+export interface UploadProgress {
+  phase: "compress" | "upload";
+  /** 0–100. During the upload phase Supabase doesn't stream progress, so
+   *  this just toggles 0 → 100 on start/finish. */
+  percent: number;
+}
+
 export async function uploadPersonPhoto(
   clanId: string,
   personId: string,
   file: File,
+  onProgress?: (p: UploadProgress) => void,
 ): Promise<UploadResult> {
   if (!file.type.startsWith("image/")) {
     throw new Error("File phải là ảnh (JPG / PNG / WebP / HEIC)");
   }
 
+  onProgress?.({ phase: "compress", percent: 0 });
   const compressed = await imageCompression(file, {
     maxSizeMB: TARGET_BYTES / 1024 / 1024,
     maxWidthOrHeight: MAX_DIMENSION,
     useWebWorker: true,
     initialQuality: 0.8,
     fileType: "image/jpeg",
+    onProgress: (percent: number) => {
+      onProgress?.({ phase: "compress", percent });
+    },
   });
 
+  onProgress?.({ phase: "upload", percent: 0 });
   const path = `${clanId}/${personId}.jpg`;
   const { error } = await supabase.storage
     .from(BUCKET)
@@ -61,6 +79,7 @@ export async function uploadPersonPhoto(
       contentType: "image/jpeg",
     });
   if (error) throw new Error(`upload: ${error.message}`);
+  onProgress?.({ phase: "upload", percent: 100 });
 
   return { path, bytes: compressed.size };
 }
