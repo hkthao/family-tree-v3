@@ -84,6 +84,10 @@ export function CalendarDateInput({
       {helperText && (
         <p className="text-sm text-muted-foreground">{helperText}</p>
       )}
+      <p className="text-xs text-muted-foreground">
+        Không nhớ đủ thì bỏ trống ngày, hoặc cả ngày-tháng — chỉ năm
+        cũng được.
+      </p>
 
       <SegmentedControl ariaLabel="Chọn lịch">
         <SegmentedButton
