@@ -109,6 +109,14 @@ export function IconArrowLeft(p: IconProps) {
   );
 }
 
+export function IconChevronUp(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <polyline points="18 15 12 9 6 15" />
+    </Svg>
+  );
+}
+
 export function IconArrowRight(p: IconProps) {
   return (
     <Svg {...p}>

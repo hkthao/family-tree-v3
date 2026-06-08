@@ -253,7 +253,7 @@ export default function EditPerson() {
               idPrefix="birth"
               value={birth}
               onChange={setBirth}
-              helperText="Chọn lịch Dương hoặc Âm. Bia mộ thường ghi ngày âm — chuyển tab Âm rồi gõ thẳng. Lịch dương cho phép bỏ trống ngày/tháng nếu chỉ biết năm."
+              helperText="Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu bia mộ ghi ngày âm."
             />
 
             <CalendarDateInput

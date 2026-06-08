@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +49,12 @@ export function CalendarDateInput({
   helperText,
 }: Props) {
   const isLunar = value.mode === "lunar";
+  // Hide the Dương/Âm tab strip + leap checkbox by default so older
+  // users see only the 3 plain inputs. The toggle reveals lunar
+  // controls. If the incoming value is already lunar (editing an old
+  // record) we auto-expand so the user can see what's set.
+  const [lunarUiOpen, setLunarUiOpen] = useState(isLunar);
+  const showLunarControls = lunarUiOpen || isLunar;
 
   function setMode(nextMode: CalendarMode) {
     if (nextMode === value.mode) return;
@@ -89,22 +95,32 @@ export function CalendarDateInput({
         cũng được.
       </p>
 
-      <SegmentedControl ariaLabel="Chọn lịch">
-        <SegmentedButton
-          active={!isLunar}
-          onClick={() => setMode("solar")}
-          className="px-3 h-9 min-w-[72px]"
+      {showLunarControls ? (
+        <SegmentedControl ariaLabel="Chọn lịch">
+          <SegmentedButton
+            active={!isLunar}
+            onClick={() => setMode("solar")}
+            className="px-3 h-9 min-w-[72px]"
+          >
+            Dương
+          </SegmentedButton>
+          <SegmentedButton
+            active={isLunar}
+            onClick={() => setMode("lunar")}
+            className="px-3 h-9 min-w-[72px]"
+          >
+            Âm
+          </SegmentedButton>
+        </SegmentedControl>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setLunarUiOpen(true)}
+          className="text-sm text-primary hover:underline underline-offset-2"
         >
-          Dương
-        </SegmentedButton>
-        <SegmentedButton
-          active={isLunar}
-          onClick={() => setMode("lunar")}
-          className="px-3 h-9 min-w-[72px]"
-        >
-          Âm
-        </SegmentedButton>
-      </SegmentedControl>
+          Nhập theo lịch Âm
+        </button>
+      )}
 
       <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2 max-w-md">
         <div className="space-y-1">
