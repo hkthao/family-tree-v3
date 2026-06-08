@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import {
   buildDeathAnniversary,
@@ -129,6 +130,7 @@ export default function EditPerson() {
       });
     },
     onSuccess: async () => {
+      track("person_edited");
       await invalidateClanData(queryClient, clanId!);
       toast.success("Đã lưu thay đổi");
       navigate(`/clans/${clanId}/people/${personId}${fromQs}`);

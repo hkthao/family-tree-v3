@@ -28,6 +28,7 @@ import {
   SegmentedButton,
   SegmentedControl,
 } from "@/components/ui/segmented-control";
+import { track } from "@/lib/analytics";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
   notifyInlaw,
@@ -88,6 +89,7 @@ export default function InlawsNew() {
     onSuccess: (link) => {
       setCreatedLink(link);
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
+      track("inlaw_proposed", { mode: "token" });
       toast.success("Đã tạo mã mời");
     },
     onError: (e) =>
@@ -106,6 +108,7 @@ export default function InlawsNew() {
       }),
     onSuccess: (link) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
+      track("inlaw_proposed", { mode: "direct" });
       toast.success("Đã gửi đề nghị tới " + (peerClan?.name ?? ""), {
         description: "Bên kia sẽ nhận email và xem trong /inlaws.",
       });

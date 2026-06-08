@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import { track } from "@/lib/analytics";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   acceptLinkDirect,
@@ -99,6 +100,7 @@ export default function Inlaws() {
     mutationFn: (id: string) => revokeLink(id),
     onSuccess: (_void, id) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
+      track("inlaw_revoked");
       toast.success("Đã thu hồi liên kết");
       // Fire-and-forget — both sides get an email so the side that
       // didn't revoke learns the link is gone.
@@ -123,6 +125,7 @@ export default function Inlaws() {
     mutationFn: (id: string) => acceptLinkDirect(id),
     onSuccess: (_void, id) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
+      track("inlaw_confirmed");
       toast.success("Đã xác nhận liên kết");
       notifyInlaw(id);
     },

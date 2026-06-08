@@ -39,6 +39,7 @@ import {
   listLinksForPerson,
 } from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
+import { track } from "@/lib/analytics";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { getTreeData } from "@/lib/queries/tree";
 
@@ -874,6 +875,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
     try {
       const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
       await downloadClanBookPdf(clan, { tree: true, detail: true });
+      track("export", { kind: "clan_book_pdf", from: "tree" });
       toast.success("Đã tải sổ PDF");
     } catch (e) {
       toast.error("Không xuất được", {

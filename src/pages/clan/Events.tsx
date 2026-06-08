@@ -48,6 +48,7 @@ import {
 } from "@/lib/queries/events";
 import { downloadClanIcs, type IcsPerson } from "@/lib/icalExport";
 import { queryKeys } from "@/lib/queries/keys";
+import { track } from "@/lib/analytics";
 import { getTreeData } from "@/lib/queries/tree";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
 import {
@@ -152,6 +153,7 @@ export default function Events() {
         related_person_id: e.related_person_id,
       })),
     });
+    track("export", { kind: "ics" });
     toast.success("Đã tải file lịch", { description: filename });
   }
 

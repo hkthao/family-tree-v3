@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 
 import App from "./App";
+import { initAnalytics } from "./lib/analytics";
 import { initPwa } from "./lib/pwa";
 import { persister, queryClient } from "./lib/queryClient";
 import { initSentry } from "./lib/sentry";
@@ -14,6 +15,7 @@ import "./index.css";
 initSentry();
 initTheme();
 initPwa();
+initAnalytics();
 
 // iOS Safari: block pinch-zoom + double-tap-zoom. The viewport meta
 // `user-scalable=no` is ignored on iOS 10+; the only reliable knob

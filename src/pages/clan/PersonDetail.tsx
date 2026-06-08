@@ -46,6 +46,7 @@ import {
   lunarToSolarString,
   solarStringToLunar,
 } from "@/lib/lunarDate";
+import { track } from "@/lib/analytics";
 import { formatPartialDate } from "@/lib/partialDate";
 import { queryKeys } from "@/lib/queries/keys";
 import {
@@ -101,6 +102,7 @@ export default function PersonDetail() {
   const deleteMutation = useMutation({
     mutationFn: () => deletePerson(personId!),
     onSuccess: async () => {
+      track("person_deleted");
       await invalidateClanData(queryClient, clanId!);
       toast.success(`Đã xoá ${person?.full_name ?? "người này"}`, {
         description: "Có thể khôi phục từ nhật ký.",
