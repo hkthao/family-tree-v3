@@ -137,6 +137,44 @@ export async function getOrCreatePersonShareLink(
   );
 }
 
+const TREE_SCOPE = "tree_view";
+const TREE_SHARE_TTL_DAYS = 90;
+
+/**
+ * Return an active (non-revoked, non-expired) clan-wide tree share
+ * link — root_person_id IS NULL means "share the whole tree, viewer
+ * picks the focal". Used by the "Chia sẻ cây" button on /tree so
+ * repeated taps reuse the same URL instead of creating duplicates.
+ *
+ * Different from getOrCreatePersonShareLink which is scoped to a
+ * single person (used for QR engraved on tombstones).
+ */
+export async function getOrCreateTreeShareLink(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<ShareLink> {
+  const nowIso = new Date().toISOString();
+  const { data: existing, error: selErr } = await client
+    .from("share_links")
+    .select(
+      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+    )
+    .eq("clan_id", clanId)
+    .is("root_person_id", null)
+    .eq("scope", TREE_SCOPE)
+    .eq("is_revoked", false)
+    .gt("expires_at", nowIso)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (selErr) throw new Error(selErr.message);
+  if (existing && existing.length > 0) return existing[0] as ShareLink;
+
+  return createShareLink(
+    { clan_id: clanId, ttlDays: TREE_SHARE_TTL_DAYS, scope: TREE_SCOPE },
+    client,
+  );
+}
+
 export async function revokeShareLink(
   linkId: string,
   client: Client = defaultClient,
