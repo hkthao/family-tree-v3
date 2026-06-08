@@ -37,20 +37,24 @@ export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
 
   const inner = (
     <div
-      className={`flex items-center justify-between gap-3 p-3 rounded-md border bg-card hover:border-primary transition-colors ${
-        emphasised ? "border-primary/40 shadow-sm" : ""
+      className={`flex items-center justify-between gap-3 p-3 sm:p-4 rounded-md border bg-card hover:border-primary transition-colors ${
+        emphasised ? "border-primary/40 shadow-sm bg-primary/5" : ""
       }`}
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         <div
-          className={`flex-shrink-0 text-center ${
-            emphasised ? "w-14" : "w-12"
+          className={`flex-shrink-0 text-center rounded-md ${
+            emphasised
+              ? "w-16 py-1 bg-primary/10"
+              : "w-14"
           }`}
         >
           <div className="text-xs text-muted-foreground">Th {month}</div>
           <div
             className={`font-semibold leading-none ${
-              emphasised ? "text-2xl text-primary" : "text-xl"
+              emphasised
+                ? "text-3xl text-primary mt-0.5"
+                : "text-2xl"
             }`}
           >
             {day}
@@ -58,18 +62,18 @@ export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
         </div>
         <div className="min-w-0">
           <p
-            className={`font-medium truncate ${
-              emphasised ? "text-base" : ""
+            className={`font-semibold truncate ${
+              emphasised ? "text-lg" : "text-base"
             }`}
           >
             {event.title}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {kindLabel(event.kind)}
             {event.subtitle ? ` • ${event.subtitle}` : ""}
           </p>
           {canChi && (
-            <p className="text-[11px] text-muted-foreground/80 truncate">
+            <p className="text-xs text-muted-foreground/80 truncate">
               {formatCanChiShort(canChi)}
             </p>
           )}
@@ -77,7 +81,7 @@ export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
       </div>
       {!emphasised && (
         <span
-          className={`text-xs whitespace-nowrap ${
+          className={`text-sm whitespace-nowrap ${
             event.daysUntil <= 1
               ? "text-primary font-semibold"
               : event.daysUntil <= 7
