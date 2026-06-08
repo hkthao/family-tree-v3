@@ -335,10 +335,10 @@ function CustomEventItem({
       : "—";
 
   return (
-    <li className="px-3 py-2.5 flex items-center justify-between gap-3">
+    <li className="px-3 py-3 flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <p className="font-medium truncate">{event.title}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="font-semibold line-clamp-2 text-base">{event.title}</p>
+        <p className="text-sm text-muted-foreground">
           {when} {event.is_yearly ? "• lặp hằng năm" : ""}
         </p>
       </div>
