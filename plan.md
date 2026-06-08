@@ -1129,10 +1129,10 @@ chỉ membership). Banner "bạn đang xem với quyền platform admin".
 
 ### 26.11 Còn chưa làm
 
-- SMS provider cho channel `sms` (đã có trong schema event_subscriptions nhưng chưa wire).
-- OCR ảnh gia phả cũ (skip ở v1).
-- Kinship calculator ("máy tính xưng hô") — bảng rules xưng hô VN (cô/dì/chú/bác/cậu). Lineage đã làm (26.12), kinship là bước kế.
+- ~~Kinship calculator ("máy tính xưng hô")~~ — ✅ ship dạng "Tra cứu xưng hô" (commit `ae72ccf`). Logic BFS LCA + bảng rule cô/dì/chú/bác/cậu/anh-chị-em-họ + trang riêng + nút shortcut trên PersonDetail.
 - ~~Lunar input cho **AddSpouse / AddChild** (quick-add form)~~ — ✅ đã port sang `CalendarDateInput` (2026-06-06). `PartialDateInput` cũ deleted, 4 form (NewPerson / EditPerson / AddSpouse / AddChild) nay đều hỗ trợ tab Dương / Âm + checkbox tháng nhuận + preview line. `addChildToFamily` query mở rộng nhận `birth_lunar_*`.
+
+> Đã bỏ khỏi roadmap: **SMS provider** cho channel `sms` (chưa có vendor, có phí; channel còn trong schema nhưng không wire) — và **OCR ảnh gia phả cũ** (effort cao, ROI thấp; user nhập tay vẫn nhanh hơn cho dataset Vietnamese nhiều bút lông).
 
 > Đã làm trước đây (sửa log cũ): hiển thị âm-dương song song trên PersonDetail (`LunarDetailRow`) — milestone A của Phase 3, commit `116a7fe` + `54ed0b0`. Cột schema `*_lunar_*` đã được cả import Excel/GEDCOM lẫn UI tự derive khi solar=day-precision.
 
@@ -1857,10 +1857,93 @@ Một migration + extend notify-events + 1 hook + 1 Account card + SW handler + 
 7. **iOS A2HS banner + doc article hướng dẫn.**
 8. **RLS test + integration test.**
 
-### 29.15 Ngoài phạm vi v1
+### 29.15 Ngoài phạm vi v1 (đề xuất Phase sau)
 
-- Push tương tác 2 chiều (trả lời từ notification).
-- Cá nhân hoá giờ gửi theo múi giờ user (mặc định giờ VN 07:05).
-- Gom digest theo tuần.
-- SMS nhắc (tốn phí — cân nhắc riêng).
-- Push cho contributions pending (admin) — Phase tiếp.
+#### A. Push 2-chiều — trả lời thẳng từ notification
+
+**Bài toán**: hiện push chỉ là **1-chiều** — user mở app → vào trang
+liên quan → tương tác. Push 2-chiều cho phép user **xử lý ngay
+trên notification** mà không cần mở app, tận dụng Web Notifications
+API `actions` (Android) và iOS 16.4+ action buttons.
+
+**Use cases cụ thể**:
+- Notification "Có đề xuất sửa cho ông Nguyễn Văn A" → 2 nút **Duyệt** /
+  **Xem chi tiết**. Bấm "Duyệt" → service worker gọi `apply_contribution`
+  RPC luôn, không cần mở app.
+- Notification "Lời mời thông gia từ Họ Nguyễn" → nút **Xác nhận** /
+  **Từ chối** → SW gọi `confirm_link_by_token` / `revoke`.
+- Notification "Hôm nay là rằm — đã thắp hương chưa?" → nút **Đã thắp**
+  / **Nhắc sau 2h** → SW log + reschedule.
+
+**Schema bổ sung**:
+- `notifications` table giữ payload đầy đủ (id, user_id, kind, target_id,
+  actions, created_at) — push payload bị giới hạn ~4KB nên không thể
+  nhét đủ context.
+- SW khi nhận push → `notifications` row id → đọc bằng service-role RPC
+  để hiển thị actions tuỳ context.
+- Action click → SW fetch chính phải tới Edge Function `push-action`
+  (verify_jwt=true) → function dispatch theo `action_id` (approve_contrib,
+  reject_contrib, confirm_inlaw, etc.).
+
+**Rào cản**:
+- iOS chỉ hỗ trợ `actions[]` từ 16.4+; Safari trên macOS hoàn toàn
+  không. Phải graceful fallback (click → mở app như cũ).
+- SW không có session — cần token tách rời để xác thực action click.
+  Tự sinh + lưu trong `notifications.action_token` thì OK.
+- UX phức tạp khi action thất bại (mất mạng) — SW phải queue + retry.
+
+**Effort**: L. Phase ưu tiên trung bình — value cao cho admin nhận
+nhiều contribution/inlaw, thấp cho user thường.
+
+---
+
+#### B. Weekly digest + Per-user timezone
+
+**Bài toán hiện tại**: cron chạy 07:05 sáng VN (00:05 UTC). User
+ở Mỹ/Châu Âu nhận push lúc nửa đêm. User cộng đồng cuối tuần không
+muốn bị quấy mỗi sáng — họ muốn 1 email tóm tắt vào sáng thứ Hai.
+
+**Tính năng "Múi giờ user"**:
+- `profiles.timezone text default 'Asia/Ho_Chi_Minh'` — IANA name.
+- `/account` thêm dropdown chọn múi giờ (default detect qua
+  `Intl.DateTimeFormat().resolvedOptions().timeZone`).
+- `notify-events` cron đổi từ "fixed 07:05 UTC" → chạy **hourly**.
+  Mỗi giờ, query users có `extract(hour from now() at time zone tz)
+  = 7` → dispatch cho họ. Tốn 24× số lần chạy nhưng mỗi lần ít user.
+- Quy đổi lunar anniversary phải theo `tz` của user (lunar day rơi
+  vào solar day nào tuỳ múi giờ).
+
+**Tính năng "Weekly digest"**:
+- `event_subscriptions` thêm cột `digest_mode text default 'realtime'
+  check (digest_mode in ('realtime', 'weekly'))`.
+- User chọn `weekly` → notify-events skip user trong daily run, thay
+  vào đó **monday-only** dispatch gom toàn bộ sự kiện 7 ngày tới:
+  - 1 email duy nhất, layout dạng table "Thứ 2: ngày sinh X, Thứ 4:
+    giỗ Y..."
+  - 1 push duy nhất với link tới `/today` đã pre-filtered.
+- `notification_log.event_key = 'digest:YYYY-MM-DD'` (lần chạy thứ 2
+  của tuần) để dedupe.
+- Cron mới `notify-digest-weekly` (mỗi thứ 2 sáng) — tách khỏi
+  `notify-events-daily` để logic không lẫn nhau.
+
+**Rào cản**:
+- DST (giờ mùa hè) ở user nước ngoài — `extract(hour ... at time zone)`
+  đã xử lý đúng nếu dùng IANA name (vd "America/New_York"), không
+  được dùng offset tĩnh ("UTC-5").
+- Test: phải mock `current_setting('TIMEZONE')` trong RPC OR đổi
+  `now()` để giả lập "thứ 2 sáng" — phức tạp hơn current test.
+- Lunar engine: `@dqcai/vn-lunar` không native timezone-aware, phải
+  pass `Date` đã convert sẵn (giờ VN cho người VN, giờ local cho
+  user khác — quyết định: giỗ luôn dùng giờ VN vì là phong tục VN,
+  sinh nhật theo giờ user).
+
+**Effort**: M (timezone) + M (digest) — có thể ship cùng vì share
+schema/cron rewrite.
+
+---
+
+#### C. Skip vĩnh viễn (đã loại khỏi roadmap)
+
+- ~~SMS nhắc~~ — channel còn trong schema nhưng không wire (chưa
+  có vendor; có phí). Email + push đã cover use case.
+- ~~Push cho contributions pending (admin)~~ — đã ship `f2d6567`.
