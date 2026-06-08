@@ -4,6 +4,7 @@ import { ClanLayout } from "@/components/ClanLayout";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { RequireAuth } from "@/components/RequireAuth";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import Account from "@/pages/Account";
@@ -44,6 +45,7 @@ import Signup from "@/pages/Signup";
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ToastProvider>
       <ConfirmDialogProvider>
         <Routes>
