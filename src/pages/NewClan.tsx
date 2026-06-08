@@ -57,7 +57,9 @@ export default function NewClan() {
           className="space-y-5"
         >
           <div className="space-y-2">
-            <Label htmlFor="name">Tên dòng họ</Label>
+            <Label htmlFor="name" required>
+              Tên dòng họ
+            </Label>
             <Input
               id="name"
               required

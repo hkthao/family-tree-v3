@@ -54,7 +54,9 @@ export default function Signup() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" required>
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -66,7 +68,9 @@ export default function Signup() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Mật khẩu</Label>
+          <Label htmlFor="password" required>
+            Mật khẩu
+          </Label>
           <Input
             id="password"
             type="password"

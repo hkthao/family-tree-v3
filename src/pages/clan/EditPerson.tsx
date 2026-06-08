@@ -179,7 +179,9 @@ export default function EditPerson() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="full_name">Họ và tên</Label>
+              <Label htmlFor="full_name" required>
+                Họ và tên
+              </Label>
               <Input
                 id="full_name"
                 required
@@ -299,7 +301,6 @@ export default function EditPerson() {
                 value={birthOrder}
                 onChange={(e) => setBirthOrder(e.target.value)}
                 placeholder="Vd: 1 = con cả, 2 = thứ hai…"
-                className="max-w-[200px]"
               />
               <p className="text-sm text-muted-foreground">
                 Thứ tự anh chị em trong gia đình. Bỏ trống nếu không
@@ -319,9 +320,9 @@ export default function EditPerson() {
                   Loại khỏi "Việc cần làm"
                 </span>
                 <span className="block text-sm text-muted-foreground">
-                  Bật khi gap dữ liệu là <em>cố ý</em> hoặc không thể bổ
-                  sung (vd. thuỷ tổ không có cha mẹ, người mất tích
-                  không rõ năm sinh/mất). App sẽ không nhắc nữa.
+                  Bật khi thông tin thiếu là <em>cố ý</em> hoặc không
+                  thể bổ sung (vd. thuỷ tổ không có cha mẹ, người mất
+                  tích không rõ năm sinh/mất). App sẽ không nhắc nữa.
                 </span>
               </span>
             </label>

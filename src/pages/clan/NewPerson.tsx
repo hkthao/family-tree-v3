@@ -191,7 +191,9 @@ export default function NewPerson() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="full_name">Họ và tên</Label>
+          <Label htmlFor="full_name" required>
+            Họ và tên
+          </Label>
           <Input
             id="full_name"
             required

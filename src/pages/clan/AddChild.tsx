@@ -267,7 +267,9 @@ export default function AddChild() {
           {mode === "new" ? (
             <>
               <div className="space-y-2">
-                <Label htmlFor="full_name">Tên con</Label>
+                <Label htmlFor="full_name" required>
+                  Tên con
+                </Label>
                 <Input
                   id="full_name"
                   required
@@ -314,7 +316,6 @@ export default function AddChild() {
                   value={birthOrder}
                   onChange={(e) => setBirthOrder(e.target.value)}
                   placeholder="Vd: 1 = con cả"
-                  className="max-w-[200px]"
                 />
                 <p className="text-sm text-muted-foreground">
                   App gợi ý dựa trên số con đã có. Sửa nếu cần.
