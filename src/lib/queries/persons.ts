@@ -172,6 +172,8 @@ export interface CreatePersonInput {
   death_anniv_lunar_month?: number | null;
   death_anniv_lunar_day?: number | null;
   death_anniv_lunar_is_leap?: boolean;
+  /** Sibling rank ("con thứ mấy"). 1 = oldest, null = unspecified. */
+  birth_order?: number | null;
 }
 
 export async function createPerson(
@@ -211,6 +213,7 @@ export async function createPerson(
       death_anniv_lunar_month: input.death_anniv_lunar_month ?? null,
       death_anniv_lunar_day: input.death_anniv_lunar_day ?? null,
       death_anniv_lunar_is_leap: input.death_anniv_lunar_is_leap ?? false,
+      birth_order: input.birth_order ?? null,
     })
     .select("id")
     .single();
@@ -237,10 +240,11 @@ export interface PersonDetail extends PersonRow {
   death_anniv_lunar_month: number | null;
   death_anniv_lunar_day: number | null;
   todo_excluded: boolean;
+  birth_order: number | null;
 }
 
 const DETAIL_COLS =
-  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, todo_excluded";
+  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, todo_excluded, birth_order";
 
 export async function getPerson(
   personId: string,
@@ -279,6 +283,8 @@ export interface UpdatePersonInput {
   birth_family_id?: string | null;
   /** Skip this person in /todo (no gap surfaces, no badge count). */
   todo_excluded?: boolean;
+  /** Sibling rank ("con thứ mấy"). 1 = oldest, null = unspecified. */
+  birth_order?: number | null;
   // Lunar columns — write through unchanged when undefined; explicit
   // null means "clear" (e.g., user switched a day-precision solar to
   // year-only so we drop the previously-derived lunar values).

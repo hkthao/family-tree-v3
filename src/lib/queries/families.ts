@@ -116,7 +116,11 @@ export async function getPersonRelationships(
       .select("id, full_name, gender, is_living, birth_date, death_date, birth_family_id")
       .in("birth_family_id", familyIds)
       .is("deleted_at", null)
-      .order("birth_date", { ascending: true, nullsFirst: false });
+      // birth_order ("con thứ mấy") is the explicit Vietnamese
+      // sibling rank when set; birth_date is the legacy fallback.
+      .order("birth_order", { ascending: true, nullsFirst: false })
+      .order("birth_date", { ascending: true, nullsFirst: false })
+      .order("full_name", { ascending: true });
     children = (kids ?? []).map((k) => ({
       ...(k as Relationship),
       via_family_id: (k as { birth_family_id: string }).birth_family_id,
@@ -195,6 +199,7 @@ export interface AddChildInput {
   birth_lunar_month?: number | null;
   birth_lunar_day?: number | null;
   birth_lunar_is_leap?: boolean;
+  birth_order?: number | null;
 }
 
 export async function addChildToFamily(
@@ -216,6 +221,7 @@ export async function addChildToFamily(
       birth_lunar_month: input.birth_lunar_month ?? null,
       birth_lunar_day: input.birth_lunar_day ?? null,
       birth_lunar_is_leap: input.birth_lunar_is_leap ?? false,
+      birth_order: input.birth_order ?? null,
     })
     .select("id")
     .single();

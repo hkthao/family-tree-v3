@@ -17,6 +17,12 @@ export interface PersonForTree {
   birth_family_id: string | null;
   branch_id: string | null;
   photo_path: string | null;
+  /** Explicit sibling rank ("con thứ mấy"). 1 = oldest, 2 = next, …
+   *  Null when not set — adapter falls back to birth_date sort.
+   *  Optional so legacy callers that build PersonForTree without the
+   *  new column (Share lineage payload, MyLineage adapter, tests)
+   *  still typecheck. */
+  birth_order?: number | null;
 }
 
 export interface FamilyForTree {
@@ -55,7 +61,7 @@ export async function getTreeData(
     client
       .from("persons")
       .select(
-        "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, branch_id, photo_path",
+        "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, branch_id, photo_path, birth_order",
       )
       .eq("clan_id", clanId)
       .is("deleted_at", null)

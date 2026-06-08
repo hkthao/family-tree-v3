@@ -81,7 +81,17 @@ export default function AddChild() {
   const [gender, setGender] = useState<"M" | "F">("M");
   const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
   const [isLiving, setIsLiving] = useState(true);
+  const [birthOrder, setBirthOrder] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Suggest next sibling rank — count existing children whose
+  // birth_family includes the focal as a parent. Auto-fills the
+  // "Con thứ" input on mount; the user can override.
+  useEffect(() => {
+    if (mode !== "new" || birthOrder !== "" || !rels) return;
+    const next = rels.children.length + 1;
+    setBirthOrder(String(next));
+  }, [mode, birthOrder, rels]);
 
   // Existing-mode state: search filter + selected candidate id.
   const [existingFilter, setExistingFilter] = useState("");
@@ -143,6 +153,9 @@ export default function AddChild() {
         birth_lunar_day: birthCols.lunar_day,
         birth_lunar_is_leap: birthCols.lunar_is_leap,
         is_living: isLiving,
+        birth_order: birthOrder.trim()
+          ? Math.max(1, Math.floor(Number(birthOrder)))
+          : null,
       });
     },
     onSuccess: async () => {
@@ -289,6 +302,24 @@ export default function AddChild() {
                   </label>
                 </div>
               </fieldset>
+
+              <div className="space-y-2">
+                <Label htmlFor="birth_order">Con thứ mấy</Label>
+                <Input
+                  id="birth_order"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={50}
+                  value={birthOrder}
+                  onChange={(e) => setBirthOrder(e.target.value)}
+                  placeholder="Vd: 1 = con cả"
+                  className="max-w-[200px]"
+                />
+                <p className="text-sm text-muted-foreground">
+                  App gợi ý dựa trên số con đã có. Sửa nếu cần.
+                </p>
+              </div>
 
               <CalendarDateInput
                 label="Ngày sinh (tuỳ chọn)"
