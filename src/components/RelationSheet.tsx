@@ -39,8 +39,14 @@ export function RelationSheet({
   if (!open) return null;
 
   return (
+    // Outer is always a flex container — on mobile it's a column that
+    // makes the inner card stretch via flex-1 (no need for the 100dvh
+    // trick, which iOS Safari gets wrong with the dynamic toolbar);
+    // on desktop it centers the inner card with sm:items-center +
+    // sm:justify-center. inset-0 already guarantees the outer fills
+    // the visual viewport, so the inner inherits a stable height.
     <div
-      className="fixed inset-0 z-50 sm:flex sm:items-center sm:justify-center sm:bg-black/40 sm:p-4 animate-in fade-in"
+      className="fixed inset-0 z-50 flex flex-col bg-black/40 sm:items-center sm:justify-center sm:p-4 animate-in fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -49,9 +55,9 @@ export function RelationSheet({
       <div
         onClick={(e) => e.stopPropagation()}
         className="
-          bg-card shadow-lg flex flex-col border
-          h-[100dvh] w-full
-          sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-lg sm:rounded-lg
+          bg-card shadow-lg flex flex-col border min-h-0
+          flex-1 w-full
+          sm:flex-none sm:max-h-[90vh] sm:max-w-lg sm:rounded-lg
         "
         style={{
           paddingTop: "env(safe-area-inset-top)",
@@ -77,8 +83,16 @@ export function RelationSheet({
         {/* Body scroll. Intentionally NO padding-bottom: forms inside
             this sheet have a sticky action bar at the bottom, and any
             pb here would leave a gap where scrolling content peeks
-            below the bar. Sticky bars carry their own padding. */}
-        <div className="overflow-y-auto px-5 pt-4 flex-1">{children}</div>
+            below the bar. Sticky bars carry their own padding.
+
+            `min-h-0` is required for the inner overflow to actually
+            scroll inside a flex-col parent — flex items default to
+            min-height:auto which makes them grow to content size and
+            silently disables overflow. EditPerson is the first form
+            in this sheet long enough to surface the bug. */}
+        <div className="overflow-y-auto px-5 pt-4 flex-1 min-h-0">
+          {children}
+        </div>
       </div>
     </div>
   );
