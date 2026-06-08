@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Link,
   useNavigate,
@@ -9,7 +9,7 @@ import {
 
 import { BackLink } from "@/components/BackLink";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconCopy, IconX } from "@/components/icons";
+import { IconCheck, IconChevronUp, IconCopy, IconPlus, IconX } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,14 @@ export default function NewPerson() {
   // Track whether prefill ran once so re-renders don't clobber user edits
   // if the source query refetches.
   const [prefilled, setPrefilled] = useState(false);
+  // Set right before mutate() to tell onSuccess whether to navigate
+  // away or reset the form for another entry. Ref instead of state so
+  // a re-render between click and mutate doesn't race.
+  const andContinueRef = useRef(false);
+  // Progressive disclosure — optional fields (tên tự/húy/thuỵ, ngày
+  // mất, nơi sinh/an táng, tiểu sử) are hidden by default to keep the
+  // form short for the common case of "just add a name + birth year".
+  const [showOptional, setShowOptional] = useState(false);
 
   useEffect(() => {
     if (!source || prefilled) return;
@@ -99,6 +107,20 @@ export default function NewPerson() {
     setNickname(source.nickname ?? "");
     setPosthumousName(source.posthumous_name ?? "");
     setBio(source.bio ?? "");
+    // Reveal optional fields if the source had any of them set —
+    // hiding prefilled data behind a collapsed section would be
+    // misleading.
+    if (
+      source.courtesy_name ||
+      source.nickname ||
+      source.posthumous_name ||
+      source.birth_place ||
+      source.burial_place ||
+      source.bio ||
+      source.death_date
+    ) {
+      setShowOptional(true);
+    }
     setPrefilled(true);
   }, [source, prefilled]);
 
@@ -139,8 +161,31 @@ export default function NewPerson() {
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
       track("person_added", { copy: isCopy });
+      const savedName = fullName.trim();
+      if (andContinueRef.current) {
+        andContinueRef.current = false;
+        // Reset the form for the next entry. Keep `isRoot` cleared and
+        // gender at the previous choice — a user batch-entering
+        // siblings usually keeps gender steady.
+        setFullName("");
+        setCourtesyName("");
+        setNickname("");
+        setPosthumousName("");
+        setBirth(EMPTY_CALENDAR_DATE);
+        setDeath(EMPTY_CALENDAR_DATE);
+        setIsLiving(true);
+        setIsRoot(false);
+        setBirthPlace("");
+        setBurialPlace("");
+        setBio("");
+        setFormError(null);
+        toast.success("Đã thêm. Tiếp tục…", { description: savedName });
+        // Refocus the name input so the user can type immediately.
+        document.getElementById("full_name")?.focus();
+        return;
+      }
       toast.success(isCopy ? "Đã tạo bản sao" : "Đã thêm người", {
-        description: fullName.trim(),
+        description: savedName,
       });
       navigate(`/clans/${clanId}/people`);
     },
@@ -150,7 +195,7 @@ export default function NewPerson() {
 
   if (!clanId || !user) return null;
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent, andContinue: boolean) {
     e.preventDefault();
     setFormError(null);
     if (!fullName.trim()) return;
@@ -162,6 +207,7 @@ export default function NewPerson() {
       setFormError((err as Error).message);
       return;
     }
+    andContinueRef.current = andContinue;
     mutation.mutate();
   }
 
@@ -191,7 +237,7 @@ export default function NewPerson() {
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="full_name" required>
             Họ và tên
@@ -205,39 +251,6 @@ export default function NewPerson() {
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Vd: Nguyễn Văn A"
           />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="courtesy_name">Tên tự</Label>
-            <Input
-              id="courtesy_name"
-              maxLength={100}
-              value={courtesyName}
-              onChange={(e) => setCourtesyName(e.target.value)}
-              placeholder="(tuỳ chọn)"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="nickname">Tên húy / biệt hiệu</Label>
-            <Input
-              id="nickname"
-              maxLength={100}
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="(tuỳ chọn)"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="posthumous_name">Tên thụy</Label>
-            <Input
-              id="posthumous_name"
-              maxLength={100}
-              value={posthumousName}
-              onChange={(e) => setPosthumousName(e.target.value)}
-              placeholder="(tuỳ chọn)"
-            />
-          </div>
         </div>
 
         <fieldset className="space-y-3">
@@ -273,18 +286,7 @@ export default function NewPerson() {
           idPrefix="birth"
           value={birth}
           onChange={setBirth}
-          helperText="Chọn lịch Dương hoặc Âm tuỳ nguồn dữ liệu (bia mộ thường ghi ngày âm). Có thể bỏ trống ngày, tháng ở lịch dương nếu chỉ biết năm."
-        />
-
-        <CalendarDateInput
-          label="Ngày mất (nếu đã mất)"
-          idPrefix="death"
-          value={death}
-          onChange={(next) => {
-            setDeath(next);
-            if (next.parts.year) setIsLiving(false);
-          }}
-          helperText="Để trống nếu còn sống. Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
+          helperText="Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
         />
 
         <label className="flex items-center gap-3 cursor-pointer">
@@ -313,40 +315,123 @@ export default function NewPerson() {
           </span>
         </label>
 
-        <div className="space-y-2">
-          <Label htmlFor="birth_place">Nơi sinh</Label>
-          <Input
-            id="birth_place"
-            maxLength={200}
-            value={birthPlace}
-            onChange={(e) => setBirthPlace(e.target.value)}
-            placeholder="(tuỳ chọn)"
-          />
-        </div>
+        {!showOptional ? (
+          <button
+            type="button"
+            onClick={() => setShowOptional(true)}
+            className="w-full text-left rounded-md border border-dashed bg-muted/30 px-4 py-3 hover:bg-muted/60 hover:border-primary transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <IconPlus className="h-5 w-5 mt-0.5 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="font-medium text-foreground">
+                  Thêm chi tiết khác
+                </div>
+                <div className="text-sm text-muted-foreground mt-0.5">
+                  Bấm để nhập các thông tin tuỳ chọn nếu bạn có:
+                  tên tự, tên húy, tên thụy, ngày mất, nơi sinh,
+                  nơi an táng, tiểu sử. Bỏ qua nếu chưa cần — vẫn
+                  lưu được người mới.
+                </div>
+              </div>
+            </div>
+          </button>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b pb-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                Chi tiết bổ sung
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowOptional(false)}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <IconChevronUp className="h-3.5 w-3.5" />
+                Thu gọn
+              </button>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="burial_place">Nơi an táng</Label>
-          <Input
-            id="burial_place"
-            maxLength={200}
-            value={burialPlace}
-            onChange={(e) => setBurialPlace(e.target.value)}
-            placeholder="(tuỳ chọn)"
-          />
-        </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="courtesy_name">Tên tự</Label>
+                <Input
+                  id="courtesy_name"
+                  maxLength={100}
+                  value={courtesyName}
+                  onChange={(e) => setCourtesyName(e.target.value)}
+                  placeholder="(tuỳ chọn)"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nickname">Tên húy / biệt hiệu</Label>
+                <Input
+                  id="nickname"
+                  maxLength={100}
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="(tuỳ chọn)"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="posthumous_name">Tên thụy</Label>
+                <Input
+                  id="posthumous_name"
+                  maxLength={100}
+                  value={posthumousName}
+                  onChange={(e) => setPosthumousName(e.target.value)}
+                  placeholder="(tuỳ chọn)"
+                />
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="bio">Tiểu sử</Label>
-          <textarea
-            id="bio"
-            rows={4}
-            maxLength={5000}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="(tuỳ chọn)"
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
+            <CalendarDateInput
+              label="Ngày mất (nếu đã mất)"
+              idPrefix="death"
+              value={death}
+              onChange={(next) => {
+                setDeath(next);
+                if (next.parts.year) setIsLiving(false);
+              }}
+              helperText="Để trống nếu còn sống. Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
+            />
+
+            <div className="space-y-2">
+              <Label htmlFor="birth_place">Nơi sinh</Label>
+              <Input
+                id="birth_place"
+                maxLength={200}
+                value={birthPlace}
+                onChange={(e) => setBirthPlace(e.target.value)}
+                placeholder="(tuỳ chọn)"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="burial_place">Nơi an táng</Label>
+              <Input
+                id="burial_place"
+                maxLength={200}
+                value={burialPlace}
+                onChange={(e) => setBurialPlace(e.target.value)}
+                placeholder="(tuỳ chọn)"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio">Tiểu sử</Label>
+              <textarea
+                id="bio"
+                rows={4}
+                maxLength={5000}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="(tuỳ chọn)"
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+          </div>
+        )}
 
         {(formError || mutation.error) && (
           <Alert variant="destructive">
@@ -356,25 +441,45 @@ export default function NewPerson() {
           </Alert>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="sticky bottom-0 -mx-1 px-1 py-3 bg-background border-t flex flex-nowrap gap-2 sm:gap-3 z-10">
           <Button
             type="submit"
-            className="flex-1 sm:flex-none"
+            className="flex-1 min-w-0 sm:flex-none px-2 sm:px-4"
             disabled={mutation.isPending || !fullName.trim()}
           >
-            {mutation.isPending ? (
-              "Đang lưu…"
+            {mutation.isPending && !andContinueRef.current ? (
+              <span className="truncate">Đang lưu…</span>
             ) : (
               <>
-                <IconCheck className="h-4 w-4 mr-1.5" />
-                Lưu
+                <IconCheck className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
+                <span className="truncate">Lưu</span>
               </>
             )}
           </Button>
-          <Button asChild variant="outline" className="flex-1 sm:flex-none">
+          {!isCopy && (
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1 min-w-0 sm:flex-none px-2 sm:px-4"
+              disabled={mutation.isPending || !fullName.trim()}
+              onClick={(e) => handleSubmit(e, true)}
+              title="Lưu rồi tiếp tục thêm người khác (giữ giới tính)"
+            >
+              {mutation.isPending && andContinueRef.current ? (
+                <span className="truncate">Đang lưu…</span>
+              ) : (
+                <>
+                  <IconPlus className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
+                  <span className="truncate sm:hidden">Thêm nữa</span>
+                  <span className="hidden sm:inline">Lưu & thêm nữa</span>
+                </>
+              )}
+            </Button>
+          )}
+          <Button asChild variant="outline" className="flex-1 min-w-0 sm:flex-none px-2 sm:px-4">
             <Link to={`/clans/${clanId}/people`}>
-              <IconX className="h-4 w-4 mr-1.5" />
-              Hủy
+              <IconX className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
+              <span className="truncate">Hủy</span>
             </Link>
           </Button>
         </div>

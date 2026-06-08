@@ -310,7 +310,7 @@ export function AddChildForm({
           <CalendarDateInput
             label="Ngày sinh (tuỳ chọn)"
             idPrefix="birth"
-            helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
+            helperText="Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
             value={birth}
             onChange={setBirth}
           />

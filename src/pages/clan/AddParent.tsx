@@ -262,7 +262,7 @@ export function AddParentForm({
             idPrefix="birth"
             value={birth}
             onChange={setBirth}
-            helperText="Chọn Dương hoặc Âm tuỳ nguồn dữ liệu."
+            helperText="Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
           />
 
           <label className="flex items-center gap-3 cursor-pointer">
