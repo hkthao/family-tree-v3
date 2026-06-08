@@ -239,19 +239,25 @@
   fill: #FFFFFF;
 }
 
-/* Card quick-action icons (edit, add) — hidden until the card is
-   hovered or focused so they don't compete with the name + lifespan
-   text. The `.card_cont` group is family-chart's per-card wrapper;
-   hovering anywhere on the card reveals the action cluster. */
+/* Card quick-action icons (edit, add) — kept always visible on
+   touch devices (no hover event) and hidden-until-hover on devices
+   that have a real pointer. Without the @media (hover: hover) gate
+   mobile users could never see / tap the icons.
+   The `.card_cont` group is family-chart's per-card wrapper;
+   hovering or focusing it reveals the action cluster on desktop. */
 .f3 svg.main_svg .card-actions {
-  opacity: 0;
-  pointer-events: none;
   transition: opacity 0.15s;
 }
-.f3 svg.main_svg .card_cont:hover .card-actions,
-.f3 svg.main_svg .card_cont:focus-within .card-actions {
-  opacity: 1;
-  pointer-events: auto;
+@media (hover: hover) {
+  .f3 svg.main_svg .card-actions {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .f3 svg.main_svg .card_cont:hover .card-actions,
+  .f3 svg.main_svg .card_cont:focus-within .card-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 .f3 svg.main_svg .card-action {
   cursor: pointer;
