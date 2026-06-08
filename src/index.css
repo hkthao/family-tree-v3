@@ -128,6 +128,23 @@
     touch-action: pan-y;
   }
 
+  /* Hide scrollbars on touch-only devices (mobile / most tablets).
+     Scroll still works; just no persistent grey track. Desktop and
+     hover-capable tablets keep native scrollbars so users have a
+     visible scroll indicator. */
+  @media (hover: none) {
+    html,
+    body,
+    *::-webkit-scrollbar {
+      scrollbar-width: none; /* Firefox */
+    }
+    *::-webkit-scrollbar {
+      display: none; /* WebKit / Blink */
+      width: 0;
+      height: 0;
+    }
+  }
+
   h1,
   h2,
   h3,

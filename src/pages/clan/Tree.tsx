@@ -41,6 +41,7 @@ import {
 } from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
 import { RelationSheet } from "@/components/RelationSheet";
+import { ShareTreeButton } from "@/components/ShareTreeButton";
 import { EditPersonForm } from "@/pages/clan/EditPerson";
 import { track } from "@/lib/analytics";
 import { matchesName } from "@/lib/unaccent";
@@ -120,6 +121,20 @@ export default function Tree() {
   const chartRef = useRef<F3Chart | null>(null);
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  // Touch-mode gate: on phones, the chart starts "locked" so the
+  // user can scroll the page past it with one finger; tapping the
+  // overlay unlocks pan/zoom. Desktops (hover-capable pointers) keep
+  // the chart unlocked since there's no scroll-conflict with a mouse.
+  const [chartActive, setChartActive] = useState(true);
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(hover: none)").matches
+    ) {
+      setChartActive(false);
+    }
+  }, []);
   const [orientation, setOrientation] = useState<Orientation>(() =>
     readOrientation(),
   );
@@ -208,6 +223,26 @@ export default function Tree() {
   useEffect(() => {
     setBadgePersonRef.current = setBadgePersonId;
   }, [setBadgePersonId]);
+
+  // Zoom helpers wired to the family-chart d3.zoom instance. The
+  // library stashes its zoom object on `__zoomObj` of the listener
+  // element (the main SVG); we use scaleBy via dynamic-import d3 to
+  // avoid pulling d3 into the initial bundle.
+  async function zoomBy(factor: number) {
+    const root = containerRef.current;
+    if (!root) return;
+    const svg = root.querySelector("svg.main_svg") as SVGSVGElement | null;
+    if (!svg) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const zoomObj = (svg as any).__zoomObj || (svg.parentElement as any | null)?.__zoomObj;
+    if (!zoomObj) return;
+    const { select } = await import("d3-selection");
+    await import("d3-transition");
+    select(svg as Element)
+      .transition()
+      .duration(200)
+      .call(zoomObj.scaleBy, factor);
+  }
 
   // Pencil-icon edit opens an inline sheet instead of navigating away
   // — the d3 card closure reads `setEditPersonRef.current` so it can
@@ -635,17 +670,19 @@ export default function Tree() {
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 print-hide">
         <h2 className="text-2xl font-semibold sm:flex-1">Cây gia phả</h2>
-        <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
-          <ExportBookButton clan={clan} />
+        <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end">
           {/* Orientation toggle — vertical (top-down) vs horizontal
               (left-right). Re-inits the chart via the orientation dep
-              on the init effect so the layout flips immediately. */}
+              on the init effect so the layout flips immediately.
+              Pinned to the left of the toolbar — used several times
+              per session, deserves the easiest-reach slot. Text labels
+              kept on mobile per request. */}
           <SegmentedControl ariaLabel="Hướng cây">
             <SegmentedButton
               active={orientation === "vertical"}
               onClick={() => setOrientation("vertical")}
               title="Dọc — gốc ở trên, đời con xuống dưới"
-              className="inline-flex items-center gap-1.5 px-3"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
             >
               <IconLayoutVertical className="h-4 w-4" />
               Dọc
@@ -654,17 +691,21 @@ export default function Tree() {
               active={orientation === "horizontal"}
               onClick={() => setOrientation("horizontal")}
               title="Ngang — gốc ở trái, đời con sang phải"
-              className="inline-flex items-center gap-1.5 px-3"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
             >
               <IconLayoutHorizontal className="h-4 w-4" />
               Ngang
             </SegmentedButton>
           </SegmentedControl>
-          <RefreshButton
-            clanId={clan.id}
-            cachedVersion={clan.data_version}
-            compact
-          />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <ExportBookButton clan={clan} />
+            <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+            <RefreshButton
+              clanId={clan.id}
+              cachedVersion={clan.data_version}
+              compact
+            />
+          </div>
         </div>
       </div>
 
@@ -767,33 +808,86 @@ export default function Tree() {
             )}
           </div>
 
-          <div
-            ref={containerRef}
-            // The `f3` class is required — family-chart's stylesheet scopes
-            // `svg.main_svg { width:100%; height:100% }` under it. Without
-            // the class, the SVG (and the f3Canvas it lives in) renders at
-            // intrinsic size and the cards clump in the corner.
-            //
-            // CSS-var overrides shift the default saturated blue/pink card
-            // fills toward the paper/oxblood palette from plan §10:
-            // male = cool muted, female = warm muted, text in ink colour.
-            className="f3 rounded-lg border bg-card overflow-hidden h-[70vh] min-h-[480px] max-h-[820px] text-foreground"
-            style={
-              {
-                "--male-color": "var(--tree-card-male)",
-                "--female-color": "var(--tree-card-female)",
-                "--genderless-color": "var(--tree-card-genderless)",
-                // Re-enable native pinch/pan inside the chart even though
-                // body restricts to pan-y. family-chart owns the canvas
-                // here and handles multi-touch + zoom internally.
-                touchAction: "none",
-              } as React.CSSProperties
-            }
-            aria-label="Cây gia phả tương tác"
-          />
+          <div className="relative">
+            <div
+              ref={containerRef}
+              // The `f3` class is required — family-chart's stylesheet scopes
+              // `svg.main_svg { width:100%; height:100% }` under it. Without
+              // the class, the SVG (and the f3Canvas it lives in) renders at
+              // intrinsic size and the cards clump in the corner.
+              //
+              // CSS-var overrides shift the default saturated blue/pink card
+              // fills toward the paper/oxblood palette from plan §10:
+              // male = cool muted, female = warm muted, text in ink colour.
+              className="f3 rounded-lg border bg-card overflow-hidden h-[70vh] min-h-[480px] max-h-[820px] text-foreground"
+              style={
+                {
+                  "--male-color": "var(--tree-card-male)",
+                  "--female-color": "var(--tree-card-female)",
+                  "--genderless-color": "var(--tree-card-genderless)",
+                  // Only opt out of native scroll when the chart is
+                  // "active" — otherwise we let the page scroll
+                  // through, important on phones where the chart
+                  // takes up the entire viewport.
+                  touchAction: chartActive ? "none" : "auto",
+                } as React.CSSProperties
+              }
+              aria-label="Cây gia phả tương tác"
+            />
+            {!chartActive && (
+              <button
+                type="button"
+                onClick={() => setChartActive(true)}
+                className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-card/40 backdrop-blur-[1px] print-hide"
+                style={{ touchAction: "pan-y" }}
+                aria-label="Mở chế độ di chuyển cây"
+              >
+                <span className="px-4 py-2 rounded-full bg-card border shadow text-sm font-medium">
+                  Chạm để di chuyển / phóng to cây
+                </span>
+              </button>
+            )}
+            {chartActive && (
+              <div
+                className="absolute bottom-2 right-2 z-10 flex flex-col gap-1 print-hide"
+                aria-label="Phóng to / thu nhỏ cây"
+              >
+                <button
+                  type="button"
+                  onClick={() => zoomBy(1.3)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
+                  aria-label="Phóng to"
+                  title="Phóng to"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  onClick={() => zoomBy(1 / 1.3)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
+                  aria-label="Thu nhỏ"
+                  title="Thu nhỏ"
+                >
+                  −
+                </button>
+              </div>
+            )}
+            {chartActive && (
+              <button
+                type="button"
+                onClick={() => setChartActive(false)}
+                className="hidden [@media(hover:none)]:inline-flex absolute top-2 right-2 z-10 items-center gap-1 px-2.5 py-1.5 rounded-md bg-card/90 border shadow text-xs font-medium backdrop-blur-sm print-hide"
+                style={{ touchAction: "pan-y" }}
+                title="Tắt chế độ di chuyển cây để cuộn trang"
+              >
+                Khoá để cuộn trang
+              </button>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground print-hide">
-            Vuốt để di chuyển, kéo 2 ngón để phóng to/thu nhỏ. Chạm vào thẻ
-            người để mở rộng nhánh.
+            {chartActive
+              ? 'Vuốt để di chuyển, kéo 2 ngón để phóng to/thu nhỏ. Chạm vào thẻ người để mở rộng nhánh.'
+              : 'Khoá để cuộn trang. Chạm vào ảnh cây để mở chế độ di chuyển.'}
           </p>
         </>
       )}
@@ -964,13 +1058,16 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
       type="button"
       variant="outline"
       size="sm"
-      className="h-10"
+      className="h-10 px-2.5 sm:px-3"
       onClick={onClick}
       disabled={busy}
+      aria-label="Xuất sổ PDF"
       title="Xuất toàn bộ thông tin dòng họ thành sổ PDF"
     >
-      <IconDownload className="h-4 w-4 mr-1.5" />
-      {busy ? "Đang xuất…" : "Xuất sổ"}
+      <IconDownload className="h-4 w-4 sm:mr-1.5" />
+      <span className="hidden sm:inline">
+        {busy ? "Đang xuất…" : "Xuất sổ"}
+      </span>
     </Button>
   );
 }
