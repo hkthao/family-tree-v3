@@ -2,6 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
+import { AddSpouseForm } from "@/pages/clan/AddSpouse";
+import { AddChildForm } from "@/pages/clan/AddChild";
+import { AddParentForm } from "@/pages/clan/AddParent";
+import { RelationSheet } from "@/components/RelationSheet";
+
 import {
   IconBell,
   IconLink,
@@ -115,6 +120,10 @@ export default function PersonDetail() {
 
   const [qrOpen, setQrOpen] = useState(false);
   const [contribOpen, setContribOpen] = useState(false);
+  // Which inline relation sheet is open. null = none.
+  const [addSheet, setAddSheet] = useState<"parent" | "spouse" | "child" | null>(
+    null,
+  );
   const qrM = useMutation({
     mutationFn: () => getOrCreatePersonShareLink(clanId!, personId!),
     onError: (e) =>
@@ -279,13 +288,13 @@ export default function PersonDetail() {
                     emptyHint="Chưa nhập cha mẹ"
                     action={
                       canEdit && relationships.parents.length < 2 ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link
-                            to={`/clans/${clanId}/people/${personId}/add-parent${fromQs}`}
-                          >
-                            <IconPlus className="h-4 w-4 mr-1" />
-                            Thêm
-                          </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAddSheet("parent")}
+                        >
+                          <IconPlus className="h-4 w-4 mr-1" />
+                          Thêm
                         </Button>
                       ) : null
                     }
@@ -297,13 +306,13 @@ export default function PersonDetail() {
                     emptyHint="Chưa có vợ / chồng."
                     action={
                       canEdit ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link
-                            to={`/clans/${clanId}/people/${personId}/add-spouse${fromQs}`}
-                          >
-                            <IconPlus className="h-4 w-4 mr-1" />
-                            Thêm
-                          </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAddSheet("spouse")}
+                        >
+                          <IconPlus className="h-4 w-4 mr-1" />
+                          Thêm
                         </Button>
                       ) : null
                     }
@@ -315,13 +324,13 @@ export default function PersonDetail() {
                     emptyHint="Chưa có con cái."
                     action={
                       canEdit ? (
-                        <Button asChild variant="outline" size="sm">
-                          <Link
-                            to={`/clans/${clanId}/people/${personId}/add-child${fromQs}`}
-                          >
-                            <IconPlus className="h-4 w-4 mr-1" />
-                            Thêm
-                          </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAddSheet("child")}
+                        >
+                          <IconPlus className="h-4 w-4 mr-1" />
+                          Thêm
                         </Button>
                       ) : null
                     }
@@ -459,6 +468,50 @@ export default function PersonDetail() {
                   {(deleteMutation.error as Error).message}
                 </AlertDescription>
               </Alert>
+            )}
+
+            {canEdit && (
+              <>
+                <RelationSheet
+                  open={addSheet === "parent"}
+                  title="Thêm cha / mẹ"
+                  subtitle={`Cho ${person.full_name}`}
+                  onClose={() => setAddSheet(null)}
+                >
+                  <AddParentForm
+                    clanId={clanId!}
+                    personId={personId!}
+                    onSaved={() => setAddSheet(null)}
+                    onCancel={() => setAddSheet(null)}
+                  />
+                </RelationSheet>
+                <RelationSheet
+                  open={addSheet === "spouse"}
+                  title="Thêm vợ / chồng"
+                  subtitle={`Cho ${person.full_name}`}
+                  onClose={() => setAddSheet(null)}
+                >
+                  <AddSpouseForm
+                    clanId={clanId!}
+                    personId={personId!}
+                    onSaved={() => setAddSheet(null)}
+                    onCancel={() => setAddSheet(null)}
+                  />
+                </RelationSheet>
+                <RelationSheet
+                  open={addSheet === "child"}
+                  title="Thêm con"
+                  subtitle={`Cho ${person.full_name}`}
+                  onClose={() => setAddSheet(null)}
+                >
+                  <AddChildForm
+                    clanId={clanId!}
+                    personId={personId!}
+                    onSaved={() => setAddSheet(null)}
+                    onCancel={() => setAddSheet(null)}
+                  />
+                </RelationSheet>
+              </>
             )}
         </>
       )}

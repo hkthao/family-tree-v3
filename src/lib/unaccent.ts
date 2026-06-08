@@ -16,3 +16,15 @@ export function unaccent(s: string): string {
     .toLowerCase()
     .trim();
 }
+
+/**
+ * Diacritic-insensitive substring match for Vietnamese names. Empty
+ * query matches everything — callers can short-circuit "no filter" by
+ * passing `""`. Use this for client-side person pickers; the server-
+ * side list query already does the same on `full_name_unaccent`.
+ */
+export function matchesName(fullName: string, query: string): boolean {
+  const needle = unaccent(query);
+  if (!needle) return true;
+  return unaccent(fullName).includes(needle);
+}
