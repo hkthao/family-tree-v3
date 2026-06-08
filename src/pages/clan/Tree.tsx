@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import {
   IconDownload,
+  IconHome,
   IconLayoutHorizontal,
   IconLayoutVertical,
   IconPlus,
@@ -221,11 +222,24 @@ export default function Tree() {
     linkedIdsRef.current = linkedPersonIds;
   }, [linkedPersonIds]);
 
-  // Pick default focal once data lands
+  // Compute the default focal (Thuỷ tổ, or oldest if none flagged).
+  // Cached so the "Về mặc định" button can compare cheaply and the
+  // initialisation effect below doesn't recompute on every render.
+  const defaultFocal = useMemo(
+    () => (data ? pickDefaultFocal(data.persons) : null),
+    [data],
+  );
   useEffect(() => {
-    if (data && focal === null) {
-      setFocal(pickDefaultFocal(data.persons));
+    if (defaultFocal && focal === null) {
+      setFocal(defaultFocal);
     }
+  }, [defaultFocal, focal]);
+
+  // Human-readable name of the current focal — used in the "Về mặc
+  // định" hint so the user knows what they're switching away from.
+  const focalName = useMemo(() => {
+    if (!data || !focal) return null;
+    return data.persons.find((p) => p.id === focal)?.full_name ?? null;
   }, [data, focal]);
 
   // Initialize / re-render the family-chart instance
@@ -596,12 +610,14 @@ export default function Tree() {
   }, []);
 
   // Search-by-name → set focal. Diacritic-insensitive so "Hung" finds
-  // "Hùng".
-  const matches = useMemo(() => {
-    if (!data || !search.trim()) return [];
-    return data.persons
-      .filter((p) => matchesName(p.full_name, search))
-      .slice(0, 8);
+  // "Hùng". 8 results was too few for a big clan ("Nguyễn" often hits
+  // hundreds); cap at 50 and scroll inside the popover so the list
+  // stays compact but reachable.
+  const SEARCH_CAP = 50;
+  const { matches, totalMatched } = useMemo(() => {
+    if (!data || !search.trim()) return { matches: [], totalMatched: 0 };
+    const filtered = data.persons.filter((p) => matchesName(p.full_name, search));
+    return { matches: filtered.slice(0, SEARCH_CAP), totalMatched: filtered.length };
   }, [data, search]);
 
   return (
@@ -687,35 +703,67 @@ export default function Tree() {
 
       {data && data.persons.length > 0 && (
         <>
-          <div className="space-y-2 print-hide">
-            <SearchInput
-              label="Đặt người trung tâm"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Đặt người trung tâm — gõ tên để tìm…"
-            />
+          <div className="relative print-hide">
+            <div className="flex items-end gap-2">
+              <div className="flex-1 min-w-0">
+                <SearchInput
+                  label="Đặt người trung tâm"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Đặt người trung tâm — gõ tên để tìm…"
+                />
+              </div>
+              {defaultFocal && focal !== defaultFocal && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-10 shrink-0 w-10 sm:w-auto px-0 sm:px-3"
+                  onClick={() => {
+                    setFocal(defaultFocal);
+                    setSearch("");
+                  }}
+                  aria-label="Về Thuỷ tổ"
+                  title={
+                    focalName
+                      ? `Đang chính giữa là ${focalName}. Bấm để về Thuỷ tổ.`
+                      : "Về Thuỷ tổ"
+                  }
+                >
+                  <IconHome className="h-4 w-4 sm:mr-1.5 shrink-0" />
+                  <span className="hidden sm:inline">Về Thuỷ tổ</span>
+                </Button>
+              )}
+            </div>
             {matches.length > 0 && (
-              <ul className="rounded-md border bg-card divide-y">
-                {matches.map((m) => (
-                  <li key={m.id}>
-                    <button
-                      type="button"
-                      className="w-full text-left px-3 py-2 hover:bg-muted/40"
-                      onClick={() => {
-                        setFocal(m.id);
-                        setSearch("");
-                      }}
-                    >
-                      <span className="font-medium">{m.full_name}</span>
-                      {m.generation !== null && (
-                        <span className="ml-2 text-sm text-muted-foreground">
-                          Đời {m.generation}
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <div className="absolute left-0 right-0 top-full mt-1 rounded-md border bg-card shadow-lg z-20">
+                <div className="px-3 py-1.5 text-xs text-muted-foreground border-b bg-muted/30">
+                  {totalMatched > SEARCH_CAP
+                    ? `Hiện ${SEARCH_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp`
+                    : `${totalMatched} kết quả`}
+                </div>
+                <ul className="max-h-80 overflow-y-auto divide-y">
+                  {matches.map((m) => (
+                    <li key={m.id}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-3 py-2 hover:bg-muted/40"
+                        onClick={() => {
+                          setFocal(m.id);
+                          setSearch("");
+                        }}
+                      >
+                        <span className="font-medium">{m.full_name}</span>
+                        {m.generation !== null && (
+                          <span className="ml-2 text-sm text-muted-foreground">
+                            Đời {m.generation}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
 

@@ -4,7 +4,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconX } from "@/components/icons";
+import { IconCheck, IconChevronUp, IconPlus, IconX } from "@/components/icons";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -68,6 +68,10 @@ export function EditPersonForm({
   const [todoExcluded, setTodoExcluded] = useState(false);
   const [birthOrder, setBirthOrder] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
+  // Progressive disclosure for the optional fields. Auto-opens when
+  // any of them is already filled so existing data isn't hidden after
+  // the person loads.
+  const [showOptional, setShowOptional] = useState(false);
 
   useEffect(() => {
     if (!person) return;
@@ -101,6 +105,19 @@ export function EditPersonForm({
     setBio(person.bio ?? "");
     setTodoExcluded(person.todo_excluded ?? false);
     setBirthOrder(person.birth_order != null ? String(person.birth_order) : "");
+    if (
+      person.courtesy_name ||
+      person.nickname ||
+      person.posthumous_name ||
+      person.birth_place ||
+      person.burial_place ||
+      person.bio ||
+      person.death_date ||
+      person.birth_order != null ||
+      person.todo_excluded
+    ) {
+      setShowOptional(true);
+    }
   }, [person]);
 
   const mutation = useMutation({
@@ -195,37 +212,6 @@ export function EditPersonForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="courtesy_name">Tên tự</Label>
-        <Input
-          id="courtesy_name"
-          maxLength={100}
-          value={courtesyName}
-          onChange={(e) => setCourtesyName(e.target.value)}
-          placeholder="Tên đặt khi trưởng thành, dùng nơi trang trọng"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="nickname">Tên húy</Label>
-        <Input
-          id="nickname"
-          maxLength={100}
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="Tên khai sinh, kiêng gọi sau khi mất"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="posthumous_name">Tên thụy</Label>
-        <Input
-          id="posthumous_name"
-          maxLength={100}
-          value={posthumousName}
-          onChange={(e) => setPosthumousName(e.target.value)}
-          placeholder="Tên đặt khi mất, dùng trong văn cúng"
-        />
-      </div>
-
       <fieldset className="space-y-3">
         <legend className="text-base font-medium mb-2">Giới tính</legend>
         <div className="flex gap-6">
@@ -258,17 +244,6 @@ export function EditPersonForm({
         helperText="Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu bia mộ ghi ngày âm."
       />
 
-      <CalendarDateInput
-        label="Ngày mất (nếu đã mất)"
-        idPrefix="death"
-        value={death}
-        onChange={(next) => {
-          setDeath(next);
-          if (next.parts.year) setIsLiving(false);
-        }}
-        helperText="Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
-      />
-
       <label className="flex items-center gap-3 cursor-pointer">
         <input
           type="checkbox"
@@ -294,71 +269,150 @@ export function EditPersonForm({
         </span>
       </label>
 
-      <div className="space-y-2">
-        <Label htmlFor="birth_order">Con thứ mấy (tuỳ chọn)</Label>
-        <Input
-          id="birth_order"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={50}
-          value={birthOrder}
-          onChange={(e) => setBirthOrder(e.target.value)}
-          placeholder="Vd: 1 = con cả, 2 = thứ hai…"
-        />
-        <p className="text-sm text-muted-foreground">
-          Thứ tự anh chị em trong gia đình. Bỏ trống nếu không
-          rõ — app tự xếp theo năm sinh.
-        </p>
-      </div>
+      {!showOptional ? (
+        <button
+          type="button"
+          onClick={() => setShowOptional(true)}
+          className="w-full text-left rounded-md border border-dashed bg-muted/30 px-4 py-3 hover:bg-muted/60 hover:border-primary transition-colors"
+        >
+          <div className="flex items-start gap-3">
+            <IconPlus className="h-5 w-5 mt-0.5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="font-medium text-foreground">
+                Sửa chi tiết khác
+              </div>
+              <div className="text-sm text-muted-foreground mt-0.5">
+                Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy,
+                nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần.
+              </div>
+            </div>
+          </div>
+        </button>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b pb-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              Chi tiết bổ sung
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowOptional(false)}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <IconChevronUp className="h-3.5 w-3.5" />
+              Thu gọn
+            </button>
+          </div>
 
-      <label className="flex items-start gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={todoExcluded}
-          onChange={(e) => setTodoExcluded(e.target.checked)}
-          className="mt-1 h-5 w-5 accent-primary shrink-0"
-        />
-        <span>
-          <span className="font-medium">
-            Loại khỏi "Việc cần làm"
-          </span>
-          <span className="block text-sm text-muted-foreground">
-            Bật khi thông tin thiếu là <em>cố ý</em> hoặc không
-            thể bổ sung (vd. thuỷ tổ không có cha mẹ, người mất
-            tích không rõ năm sinh/mất). App sẽ không nhắc nữa.
-          </span>
-        </span>
-      </label>
+          <div className="space-y-2">
+            <Label htmlFor="courtesy_name">Tên tự</Label>
+            <Input
+              id="courtesy_name"
+              maxLength={100}
+              value={courtesyName}
+              onChange={(e) => setCourtesyName(e.target.value)}
+              placeholder="Tên đặt khi trưởng thành, dùng nơi trang trọng"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nickname">Tên húy</Label>
+            <Input
+              id="nickname"
+              maxLength={100}
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="Tên khai sinh, kiêng gọi sau khi mất"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="posthumous_name">Tên thụy</Label>
+            <Input
+              id="posthumous_name"
+              maxLength={100}
+              value={posthumousName}
+              onChange={(e) => setPosthumousName(e.target.value)}
+              placeholder="Tên đặt khi mất, dùng trong văn cúng"
+            />
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="birth_place">Nơi sinh</Label>
-        <Input
-          id="birth_place"
-          value={birthPlace}
-          onChange={(e) => setBirthPlace(e.target.value)}
-        />
-      </div>
+          <CalendarDateInput
+            label="Ngày mất (nếu đã mất)"
+            idPrefix="death"
+            value={death}
+            onChange={(next) => {
+              setDeath(next);
+              if (next.parts.year) setIsLiving(false);
+            }}
+            helperText="Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
+          />
 
-      <div className="space-y-2">
-        <Label htmlFor="burial_place">Nơi an táng</Label>
-        <Input
-          id="burial_place"
-          value={burialPlace}
-          onChange={(e) => setBurialPlace(e.target.value)}
-        />
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="birth_order">Con thứ mấy (tuỳ chọn)</Label>
+            <Input
+              id="birth_order"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={50}
+              value={birthOrder}
+              onChange={(e) => setBirthOrder(e.target.value)}
+              placeholder="Vd: 1 = con cả, 2 = thứ hai…"
+            />
+            <p className="text-sm text-muted-foreground">
+              Thứ tự anh chị em trong gia đình. Bỏ trống nếu không
+              rõ — app tự xếp theo năm sinh.
+            </p>
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="bio">Tiểu sử</Label>
-        <textarea
-          id="bio"
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          rows={4}
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={todoExcluded}
+              onChange={(e) => setTodoExcluded(e.target.checked)}
+              className="mt-1 h-5 w-5 accent-primary shrink-0"
+            />
+            <span>
+              <span className="font-medium">
+                Loại khỏi "Việc cần làm"
+              </span>
+              <span className="block text-sm text-muted-foreground">
+                Bật khi thông tin thiếu là <em>cố ý</em> hoặc không
+                thể bổ sung (vd. thuỷ tổ không có cha mẹ, người mất
+                tích không rõ năm sinh/mất). App sẽ không nhắc nữa.
+              </span>
+            </span>
+          </label>
+
+          <div className="space-y-2">
+            <Label htmlFor="birth_place">Nơi sinh</Label>
+            <Input
+              id="birth_place"
+              value={birthPlace}
+              onChange={(e) => setBirthPlace(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="burial_place">Nơi an táng</Label>
+            <Input
+              id="burial_place"
+              value={burialPlace}
+              onChange={(e) => setBurialPlace(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bio">Tiểu sử</Label>
+            <textarea
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={4}
+              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+        </div>
+      )}
 
       {(formError || mutation.error) && (
         <Alert variant="destructive">
