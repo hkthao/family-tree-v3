@@ -136,6 +136,58 @@ export async function listPersons(
   };
 }
 
+/**
+ * Return the IDs of every person matching the same filters as
+ * listPersons, ignoring pagination. Used by the "Chọn tất cả N kết
+ * quả" bulk action in /people so the user can select across pages.
+ * Capped at 9999 (same as kinship index) — bigger clans should
+ * filter first.
+ */
+export async function listMatchingPersonIds(
+  clanId: string,
+  params: Pick<
+    ListPersonsParams,
+    "search" | "branchId" | "generation" | "source"
+  >,
+  client: Client = defaultClient,
+): Promise<string[]> {
+  const MAX_ROWS = 9999;
+  const source: PersonsSource = params.source ?? "persons";
+
+  let q =
+    source === "persons_public_safe"
+      ? client
+          .from("persons_public_safe")
+          .select("id")
+          .eq("clan_id", clanId)
+          .range(0, MAX_ROWS)
+      : client
+          .from("persons")
+          .select("id")
+          .eq("clan_id", clanId)
+          .is("deleted_at", null)
+          .range(0, MAX_ROWS);
+
+  if (params.search && params.search.trim()) {
+    const needle = unaccent(params.search);
+    if (source === "persons_public_safe") {
+      q = q.ilike("full_name_unaccent", `%${needle}%`);
+    } else {
+      q = q.ilike("search_text", `%${needle}%`);
+    }
+  }
+  if (params.branchId !== undefined && params.branchId !== null) {
+    q = q.eq("branch_id", params.branchId);
+  }
+  if (params.generation !== undefined && params.generation !== null) {
+    q = q.eq("generation", params.generation);
+  }
+
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => (r as { id: string }).id);
+}
+
 export interface CreatePersonInput {
   clan_id: string;
   full_name: string;
