@@ -74,7 +74,11 @@ export function RelationSheet({
             <IconX className="h-5 w-5" />
           </button>
         </header>
-        <div className="overflow-y-auto px-5 py-4 flex-1">{children}</div>
+        {/* Body scroll. Intentionally NO padding-bottom: forms inside
+            this sheet have a sticky action bar at the bottom, and any
+            pb here would leave a gap where scrolling content peeks
+            below the bar. Sticky bars carry their own padding. */}
+        <div className="overflow-y-auto px-5 pt-4 flex-1">{children}</div>
       </div>
     </div>
   );

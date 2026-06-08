@@ -39,6 +39,8 @@ import {
   listLinksForPerson,
 } from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
+import { RelationSheet } from "@/components/RelationSheet";
+import { EditPersonForm } from "@/pages/clan/EditPerson";
 import { track } from "@/lib/analytics";
 import { matchesName } from "@/lib/unaccent";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
@@ -205,6 +207,15 @@ export default function Tree() {
   useEffect(() => {
     setBadgePersonRef.current = setBadgePersonId;
   }, [setBadgePersonId]);
+
+  // Pencil-icon edit opens an inline sheet instead of navigating away
+  // — the d3 card closure reads `setEditPersonRef.current` so it can
+  // call the latest setter without forcing a chart rebuild.
+  const [editPersonId, setEditPersonId] = useState<string | null>(null);
+  const setEditPersonRef = useRef(setEditPersonId);
+  useEffect(() => {
+    setEditPersonRef.current = setEditPersonId;
+  }, [setEditPersonId]);
   const linkedIdsRef = useRef<Set<string>>(linkedPersonIds);
   useEffect(() => {
     linkedIdsRef.current = linkedPersonIds;
@@ -453,9 +464,7 @@ export default function Tree() {
               const editEl = actions.querySelector(".card-action-edit");
               editEl?.addEventListener("click", (e) => {
                 e.stopPropagation();
-                navigate(
-                  `/clans/${clanId}/people/${personId}/edit${fromQs}`,
-                );
+                setEditPersonRef.current(personId);
               });
 
               const addEl = actions.querySelector(".card-action-add");
@@ -747,6 +756,21 @@ export default function Tree() {
         viewingClanId={clan.id}
         onClose={() => setBadgePersonId(null)}
       />
+
+      <RelationSheet
+        open={editPersonId !== null}
+        title="Sửa thông tin"
+        onClose={() => setEditPersonId(null)}
+      >
+        {editPersonId && (
+          <EditPersonForm
+            clanId={clan.id}
+            personId={editPersonId}
+            onSaved={() => setEditPersonId(null)}
+            onCancel={() => setEditPersonId(null)}
+          />
+        )}
+      </RelationSheet>
     </div>
   );
 }
