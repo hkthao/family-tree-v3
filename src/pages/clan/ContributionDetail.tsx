@@ -24,6 +24,7 @@ import {
   rejectContribution,
   type ContributionStatus,
 } from "@/lib/queries/contributions";
+import { track } from "@/lib/analytics";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson } from "@/lib/queries/persons";
 
@@ -89,6 +90,7 @@ export default function ContributionDetail() {
       qc.invalidateQueries({
         queryKey: queryKeys.pendingContributionsCount(clan.id, userId),
       });
+      track("contribution_approved");
       toast.success("Đã duyệt — cây gia phả đã cập nhật");
     },
     onError: (e) =>
@@ -98,7 +100,8 @@ export default function ContributionDetail() {
   const rejectM = useMutation({
     mutationFn: (args: { status: "rejected" | "needs_info"; note: string }) =>
       rejectContribution(contribId!, args.status, args.note || null),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
+      track("contribution_rejected", { status: vars.status });
       qc.invalidateQueries({
         queryKey: queryKeys.contribution(contribId!, userId),
       });

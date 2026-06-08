@@ -1,0 +1,65 @@
+# Umami self-hosted analytics for giapha.thaohk.com
+#
+# Deployment notes: this file lives in the repo only as documentation.
+# On the VPS we ship the same compose via SCP into /opt/umami/ and
+# bring it up alongside the existing app stack. The Caddy reverse
+# proxy serves Umami at analytics.thaohk.com.
+#
+# One-time setup (from VPS as root):
+#   1. mkdir -p /opt/umami && cd /opt/umami
+#   2. scp deploy/umami/docker-compose.yml root@VPS:/opt/umami/
+#   3. export UMAMI_DB_PASSWORD="$(openssl rand -hex 16)"
+#      export UMAMI_APP_SECRET="$(openssl rand -hex 32)"
+#      (persist these somewhere — same shell that runs `up`)
+#   4. docker compose up -d
+#   5. Add `analytics.thaohk.com { reverse_proxy umami:3000 }` to
+#      the Caddyfile (or set up an external Caddy entry that routes
+#      to host:3000). Reload Caddy.
+#   6. Open https://analytics.thaohk.com → first run prompts admin
+#      signup. Default credentials displayed in container logs ARE
+#      "admin / umami" — change immediately.
+#   7. Create a website entry "Gia phả prod", domain giapha.thaohk.com.
+#      Copy the website-id UUID.
+#   8. Set VITE_UMAMI_URL=https://analytics.thaohk.com and
+#      VITE_UMAMI_WEBSITE_ID=<uuid> in GitHub repo secrets, then
+#      re-trigger the deploy workflow so the SPA bundle picks them up.
+
+services:
+  umami-db:
+    image: postgres:16-alpine
+    container_name: umami-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD}
+    volumes:
+      - umami-db-data:/var/lib/postgresql/data
+    networks: [umami]
+
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: umami
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      DATABASE_URL: postgresql://umami:${UMAMI_DB_PASSWORD}@umami-db:5432/umami
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      # Tracker script will be served as `/script.js` (default).
+      # Set TRACKER_SCRIPT_NAME if you want to defeat ad-blockers
+      # that recognise "/script.js" as Umami.
+      # TRACKER_SCRIPT_NAME: gp-stats
+      # Disable telemetry pings home.
+      DISABLE_TELEMETRY: "1"
+    depends_on:
+      - umami-db
+    networks: [umami]
+
+networks:
+  umami:
+    driver: bridge
+
+volumes:
+  umami-db-data:

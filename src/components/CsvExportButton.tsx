@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/Toast";
 import { IconDownload } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/analytics";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 interface Props {
@@ -28,10 +29,12 @@ export function CsvExportButton({ clan }: Props) {
       const data = await getClanBookData(clan.id);
       return downloadClanCsv(clan, data);
     },
-    onSuccess: (res) =>
+    onSuccess: (res) => {
+      track("export", { kind: "csv" });
       toast.success("Đã xuất CSV", {
         description: `${res.filename} (${Math.round(res.bytes / 1024)} KB)`,
-      }),
+      });
+    },
     onError: (e) =>
       toast.error("Không xuất được", { description: (e as Error).message }),
   });

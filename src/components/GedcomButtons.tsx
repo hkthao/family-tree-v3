@@ -5,6 +5,7 @@ import { useToast } from "@/components/Toast";
 import { IconDownload, IconUpload } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
@@ -27,10 +28,12 @@ export function GedcomButtons({ clan }: Props) {
       const { downloadClanGedcom } = await import("@/lib/gedcom/exportClan");
       return downloadClanGedcom(clan);
     },
-    onSuccess: (res) =>
+    onSuccess: (res) => {
+      track("export", { kind: "gedcom" });
       toast.success("Đã xuất GEDCOM", {
         description: `${res.filename} (${Math.round(res.bytes / 1024)} KB)`,
-      }),
+      });
+    },
     onError: (e) =>
       toast.error("Không xuất được", { description: (e as Error).message }),
   });

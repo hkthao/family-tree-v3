@@ -25,6 +25,7 @@ import {
   type CalendarDateValue,
 } from "@/lib/personDates";
 import { queryKeys } from "@/lib/queries/keys";
+import { track } from "@/lib/analytics";
 import { createPerson, getPerson } from "@/lib/queries/persons";
 
 export default function NewPerson() {
@@ -137,6 +138,7 @@ export default function NewPerson() {
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
+      track("person_added", { copy: isCopy });
       toast.success(isCopy ? "Đã tạo bản sao" : "Đã thêm người", {
         description: fullName.trim(),
       });

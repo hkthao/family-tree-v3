@@ -29,6 +29,7 @@ import {
   listAnniversaryCandidates,
   listEvents,
 } from "@/lib/queries/events";
+import { track } from "@/lib/analytics";
 import { queryKeys } from "@/lib/queries/keys";
 import { getTreeData } from "@/lib/queries/tree";
 import {
@@ -258,6 +259,7 @@ function ExportPdfTile({ clan }: { clan: ClanDetail }) {
     try {
       const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
       await downloadClanBookPdf(clan, { tree: true, detail: true });
+      track("export", { kind: "clan_book_pdf", from: "dashboard" });
     } catch (e) {
       setErr((e as Error).message);
     } finally {
