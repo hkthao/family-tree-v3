@@ -1,9 +1,15 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconCopy, IconList } from "@/components/icons";
+import {
+  IconCheck,
+  IconCopy,
+  IconList,
+  IconUpload,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +21,15 @@ import {
 } from "@/components/ui/card";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { buildAiPrompt, type PromptFormat } from "@/lib/aiPrompt";
+import { invalidateClanData } from "@/lib/cache";
+import { parseCsvText } from "@/lib/excel";
+import { parseGedcom } from "@/lib/gedcom/parse";
+import { importGedcomIntoClan } from "@/lib/gedcom/import";
+import {
+  planImport,
+  type ImportPlan,
+} from "@/lib/importPersons";
+import { bulkImportPersons } from "@/lib/queries/import";
 
 const EXAMPLE_NARRATIVE = `Họ Nguyễn ở Hà Nam. Thuỷ tổ là cụ Nguyễn Văn An, sinh 1900, mất 1970, vợ là cụ Trần Thị Bình (1905-1980). Hai cụ sinh được 3 người con:
 - Nguyễn Văn Cường, sinh 1930, làm nông, lấy bà Lê Thị Dung (sinh 1932). Anh Cường có 2 con: Nguyễn Văn Dũng (1960) và Nguyễn Thị Em (1962).
@@ -25,11 +40,22 @@ export default function AiGenerate() {
   const { clanId } = useParams<{ clanId: string }>();
   const { clan } = useClanContext();
   const toast = useToast();
+  const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const [format, setFormat] = useState<PromptFormat>("csv");
   const [narrative, setNarrative] = useState("");
   const [prompt, setPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // AI-response paste-back state: textarea content + parsed plan (CSV
+  // path) + GEDCOM parse + error. Lets the user round-trip through AI
+  // entirely inside one page — no save-to-file step, which is the
+  // sticking point on mobile.
+  const [aiResponse, setAiResponse] = useState("");
+  const [csvPlan, setCsvPlan] = useState<ImportPlan | null>(null);
+  const [gedcomText, setGedcomText] = useState<string | null>(null);
+  const [parseError, setParseError] = useState<string | null>(null);
 
   const canEdit = canEditClan(clan);
   if (!canEdit) return <Navigate to={`/clans/${clanId}`} replace />;
@@ -58,6 +84,81 @@ export default function AiGenerate() {
       toast.error("Không chép được", { description: (e as Error).message });
     }
   }
+
+  function parseAiResponse() {
+    setParseError(null);
+    setCsvPlan(null);
+    setGedcomText(null);
+    const text = aiResponse.trim();
+    if (!text) {
+      setParseError("Dán nội dung AI trả về vào ô bên trên trước.");
+      return;
+    }
+    try {
+      if (format === "csv") {
+        const rows = parseCsvText(text);
+        if (rows.length === 0) {
+          setParseError(
+            "Không đọc được dòng nào. Kiểm tra lại có đúng định dạng CSV không.",
+          );
+          return;
+        }
+        setCsvPlan(planImport(rows));
+      } else {
+        // Strip markdown fence if present so the parser sees pure GEDCOM.
+        const fence = text.match(/^```(?:gedcom|ged|txt)?\s*\n([\s\S]*?)\n?```\s*$/i);
+        const cleaned = fence ? fence[1] : text;
+        // Quick sanity check — every GEDCOM starts with "0 HEAD" line.
+        if (!/^0\s+HEAD/m.test(cleaned)) {
+          setParseError(
+            'Nội dung không giống GEDCOM (phải bắt đầu bằng "0 HEAD"). Có thể AI trả về CSV — đổi định dạng ở mục 1.',
+          );
+          return;
+        }
+        // Validate by parsing — discard result, we re-parse during import.
+        parseGedcom(cleaned);
+        setGedcomText(cleaned);
+      }
+    } catch (e) {
+      setParseError((e as Error).message);
+    }
+  }
+
+  const importM = useMutation({
+    mutationFn: async () => {
+      if (!clanId) throw new Error("Thiếu clan id");
+      if (format === "csv") {
+        if (!csvPlan?.payload) throw new Error("Chưa có payload để nhập.");
+        return bulkImportPersons(clanId, csvPlan.payload);
+      }
+      if (!gedcomText) throw new Error("Chưa có GEDCOM để nhập.");
+      const parsed = parseGedcom(gedcomText);
+      const res = await importGedcomIntoClan(clanId, parsed);
+      return {
+        imported_persons: res.personsCreated,
+        imported_families: res.familiesCreated,
+        imported_branches: res.branchesCreated,
+      };
+    },
+    onSuccess: async (res) => {
+      await invalidateClanData(qc, clanId!);
+      toast.success(`Đã tạo ${res.imported_persons} người`, {
+        description: `${res.imported_families} gia đình, ${res.imported_branches} chi.`,
+      });
+      navigate(`/clans/${clanId}/people`);
+    },
+    onError: (e) =>
+      toast.error("Không tạo được", { description: (e as Error).message }),
+  });
+
+  const csvErrorCount =
+    csvPlan?.issues.filter((i) => i.severity === "error").length ?? 0;
+  const csvWarningCount =
+    csvPlan?.issues.filter((i) => i.severity === "warning").length ?? 0;
+  const canImport =
+    format === "csv"
+      ? !!csvPlan?.payload && csvErrorCount === 0
+      : !!gedcomText;
 
   return (
     <div className="space-y-6">
@@ -177,32 +278,152 @@ export default function AiGenerate() {
             />
 
             <Alert>
-              <AlertDescription className="space-y-1.5 text-sm">
-                <p className="font-medium">Sau khi AI trả về:</p>
-                <ol className="list-decimal list-inside space-y-1">
-                  <li>Copy toàn bộ nội dung AI trả về (từ dòng đầu tới dòng cuối).</li>
-                  <li>
-                    Tạo file mới <code>.{format}</code> trên máy (vd notepad / TextEdit) → paste vào → save.
-                  </li>
-                  <li>
-                    {format === "csv" ? (
-                      <>Mở <Link to={`/clans/${clanId}/import`} className="underline">Nhập từ Excel</Link> → chọn file <code>.csv</code> → review → nhập.</>
-                    ) : (
-                      <>Mở <Link to={`/clans/${clanId}/settings`} className="underline">Cài đặt → GEDCOM</Link> → bấm "Nhập GEDCOM" → chọn file.</>
-                    )}
-                  </li>
-                </ol>
+              <AlertDescription className="text-sm">
+                Copy toàn bộ nội dung AI trả về rồi dán vào ô ở mục 4
+                bên dưới — không cần tạo file. (Hoặc lưu thành file{" "}
+                <code>.{format}</code> rồi nhập qua{" "}
+                {format === "csv" ? (
+                  <Link
+                    to={`/clans/${clanId}/import`}
+                    className="underline"
+                  >
+                    Nhập từ Excel
+                  </Link>
+                ) : (
+                  <Link
+                    to={`/clans/${clanId}/settings`}
+                    className="underline"
+                  >
+                    Cài đặt → GEDCOM
+                  </Link>
+                )}{" "}
+                nếu bạn muốn.)
               </AlertDescription>
             </Alert>
+          </CardContent>
+        </Card>
+      )}
 
-            <div className="flex gap-3 flex-wrap">
-              <Button asChild variant="outline" size="sm">
-                <Link to={`/clans/${clanId}/import`}>
-                  <IconList className="h-4 w-4 mr-1.5" />
-                  Mở trang Nhập từ Excel
-                </Link>
+      {prompt && (
+        <Card>
+          <CardHeader>
+            <CardTitle>4. Dán kết quả AI vào đây</CardTitle>
+            <CardDescription>
+              Copy toàn bộ phản hồi của ChatGPT/Gemini/Claude và dán
+              thẳng vào ô này — bao gồm cả markdown ``` cũng được, app
+              tự bỏ. Không cần lưu thành file.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <textarea
+              value={aiResponse}
+              onChange={(e) => {
+                setAiResponse(e.target.value);
+                // Invalidate previous parse so the user re-validates
+                // after editing.
+                if (csvPlan || gedcomText || parseError) {
+                  setCsvPlan(null);
+                  setGedcomText(null);
+                  setParseError(null);
+                }
+              }}
+              placeholder={
+                format === "csv"
+                  ? "Dán nội dung CSV ở đây — ID,Họ tên,Giới tính,…"
+                  : "Dán nội dung GEDCOM ở đây — bắt đầu bằng 0 HEAD…"
+              }
+              rows={10}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-ring resize-y"
+            />
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={parseAiResponse}
+                disabled={!aiResponse.trim() || importM.isPending}
+              >
+                Phân tích & xem trước
               </Button>
+              {(csvPlan || gedcomText) && (
+                <Button
+                  type="button"
+                  onClick={() => importM.mutate()}
+                  disabled={!canImport || importM.isPending}
+                >
+                  <IconUpload className="h-4 w-4 mr-1.5" />
+                  {importM.isPending
+                    ? "Đang tạo…"
+                    : format === "csv"
+                      ? `Tạo ${csvPlan?.payload?.persons.length ?? 0} người`
+                      : "Tạo thành viên từ GEDCOM"}
+                </Button>
+              )}
             </div>
+
+            {parseError && (
+              <Alert variant="destructive">
+                <AlertDescription>{parseError}</AlertDescription>
+              </Alert>
+            )}
+
+            {format === "csv" && csvPlan && (
+              <Alert variant={csvErrorCount > 0 ? "destructive" : "default"}>
+                <AlertDescription>
+                  {csvPlan.rows.length} dòng • {csvErrorCount} lỗi •{" "}
+                  {csvWarningCount} cảnh báo
+                  {csvPlan.payload && (
+                    <>
+                      {" "}
+                      → sẽ tạo {csvPlan.payload.persons.length} người,{" "}
+                      {csvPlan.payload.families.length} gia đình,{" "}
+                      {csvPlan.payload.branches.length} chi.
+                    </>
+                  )}
+                  {csvErrorCount > 0 && (
+                    <>
+                      {" "}
+                      <Link
+                        to={`/clans/${clanId}/import`}
+                        className="underline"
+                      >
+                        Sửa qua trang Nhập từ Excel
+                      </Link>{" "}
+                      để xem chi tiết lỗi.
+                    </>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {format === "gedcom" && gedcomText && (
+              <Alert>
+                <AlertDescription>
+                  GEDCOM hợp lệ. Bấm "Tạo thành viên từ GEDCOM" để nhập.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {importM.error && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  {(importM.error as Error).message}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              Hoặc nếu muốn nhập theo cách truyền thống, lưu file rồi
+              mở{" "}
+              <Link
+                to={`/clans/${clanId}/import`}
+                className="underline inline-flex items-center gap-1"
+              >
+                <IconList className="h-3.5 w-3.5" />
+                Nhập từ Excel
+              </Link>
+              .
+            </p>
           </CardContent>
         </Card>
       )}
