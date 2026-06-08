@@ -3,14 +3,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
+  IconDownload,
   IconLayoutHorizontal,
   IconLayoutVertical,
   IconPlus,
-  IconPrinter,
   IconUpload,
 } from "@/components/icons";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
+import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import {
   SegmentedButton,
@@ -38,6 +39,7 @@ import {
   listLinksForPerson,
 } from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
+import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { getTreeData } from "@/lib/queries/tree";
 
 import "family-chart/styles/family-chart.css";
@@ -607,16 +609,7 @@ export default function Tree() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 print-hide">
         <h2 className="text-2xl font-semibold sm:flex-1">Cây gia phả</h2>
         <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10"
-            onClick={() => window.print()}
-            title="In trang này (Ctrl/Cmd+P)"
-          >
-            <IconPrinter className="h-4 w-4 mr-1.5" />
-            In
-          </Button>
+          <ExportBookButton clan={clan} />
           {/* Orientation toggle — vertical (top-down) vs horizontal
               (left-right). Re-inits the chart via the orientation dep
               on the init effect so the layout flips immediately. */}
@@ -864,5 +857,45 @@ function InlawBadgeBody({
         </div>
       ))}
     </div>
+  );
+}
+
+// ─── Export sổ PDF button ──────────────────────────────────────────
+// Lazy-imports the PDF renderer (react-pdf bundle is heavy) so the
+// Tree page still loads quickly when the user never clicks export.
+
+function ExportBookButton({ clan }: { clan: ClanDetail }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+
+  async function onClick() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
+      await downloadClanBookPdf(clan, { tree: true, detail: true });
+      toast.success("Đã tải sổ PDF");
+    } catch (e) {
+      toast.error("Không xuất được", {
+        description: (e as Error).message,
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="h-10"
+      onClick={onClick}
+      disabled={busy}
+      title="Xuất toàn bộ thông tin dòng họ thành sổ PDF"
+    >
+      <IconDownload className="h-4 w-4 mr-1.5" />
+      {busy ? "Đang xuất…" : "Xuất sổ"}
+    </Button>
   );
 }
