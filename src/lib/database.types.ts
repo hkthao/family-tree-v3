@@ -689,6 +689,7 @@ export type Database = {
           birth_lunar_is_leap: boolean
           birth_lunar_month: number | null
           birth_lunar_year: number | null
+          birth_order: number | null
           birth_place: string | null
           branch_id: string | null
           burial_place: string | null
@@ -728,6 +729,7 @@ export type Database = {
           birth_lunar_is_leap?: boolean
           birth_lunar_month?: number | null
           birth_lunar_year?: number | null
+          birth_order?: number | null
           birth_place?: string | null
           branch_id?: string | null
           burial_place?: string | null
@@ -767,6 +769,7 @@ export type Database = {
           birth_lunar_is_leap?: boolean
           birth_lunar_month?: number | null
           birth_lunar_year?: number | null
+          birth_order?: number | null
           birth_place?: string | null
           branch_id?: string | null
           burial_place?: string | null

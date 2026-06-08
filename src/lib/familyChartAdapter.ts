@@ -96,13 +96,52 @@ export function toFamilyChart(
     }
   }
 
-  // Children index: family_id → list of child person ids
+  // Children index: family_id → list of child person ids, sorted by
+  // birth_order ("con thứ mấy") first, then birth_date asc — matches
+  // queries/families.ts's ORDER BY exactly so PersonDetail's children
+  // list and tree-card sibling order stay aligned. Birth_order is
+  // the explicit Vietnamese sibling rank when set; legacy data
+  // without the column falls back to birth_date then full_name.
+  const personMeta = new Map<
+    string,
+    {
+      birth_order: number | null;
+      birth_date: string | null;
+      full_name: string;
+    }
+  >();
+  for (const p of persons) {
+    personMeta.set(p.id, {
+      birth_order: p.birth_order ?? null,
+      birth_date: p.birth_date,
+      full_name: p.full_name,
+    });
+  }
   const childrenByFamily = new Map<string, string[]>();
   for (const p of persons) {
     if (!p.birth_family_id) continue;
     const arr = childrenByFamily.get(p.birth_family_id) ?? [];
     arr.push(p.id);
     childrenByFamily.set(p.birth_family_id, arr);
+  }
+  for (const arr of childrenByFamily.values()) {
+    arr.sort((a, b) => {
+      const ma = personMeta.get(a);
+      const mb = personMeta.get(b);
+      const oa = ma?.birth_order ?? null;
+      const ob = mb?.birth_order ?? null;
+      if (oa !== null && ob !== null) return oa - ob;
+      if (oa !== null) return -1;
+      if (ob !== null) return 1;
+      const da = ma?.birth_date ?? null;
+      const db = mb?.birth_date ?? null;
+      if (da && db) return da < db ? -1 : da > db ? 1 : 0;
+      if (da) return -1;
+      if (db) return 1;
+      const na = ma?.full_name ?? "";
+      const nb = mb?.full_name ?? "";
+      return na.localeCompare(nb, "vi");
+    });
   }
 
   return persons.map((p) => {

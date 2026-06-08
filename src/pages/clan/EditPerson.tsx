@@ -54,6 +54,7 @@ export default function EditPerson() {
   const [posthumousName, setPosthumousName] = useState("");
   const [bio, setBio] = useState("");
   const [todoExcluded, setTodoExcluded] = useState(false);
+  const [birthOrder, setBirthOrder] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function EditPerson() {
     setPosthumousName(person.posthumous_name ?? "");
     setBio(person.bio ?? "");
     setTodoExcluded(person.todo_excluded ?? false);
+    setBirthOrder(person.birth_order != null ? String(person.birth_order) : "");
   }, [person]);
 
   const mutation = useMutation({
@@ -100,6 +102,9 @@ export default function EditPerson() {
         is_living: isLiving,
         is_root: isRoot,
         todo_excluded: todoExcluded,
+        birth_order: birthOrder.trim()
+          ? Math.max(1, Math.floor(Number(birthOrder)))
+          : null,
         birth_date: birthCols.solar_date,
         birth_date_precision: birthCols.solar_precision,
         death_date: deathCols.solar_date,
@@ -282,6 +287,25 @@ export default function EditPerson() {
                 </span>
               </span>
             </label>
+
+            <div className="space-y-2">
+              <Label htmlFor="birth_order">Con thứ mấy (tuỳ chọn)</Label>
+              <Input
+                id="birth_order"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={50}
+                value={birthOrder}
+                onChange={(e) => setBirthOrder(e.target.value)}
+                placeholder="Vd: 1 = con cả, 2 = thứ hai…"
+                className="max-w-[200px]"
+              />
+              <p className="text-sm text-muted-foreground">
+                Thứ tự anh chị em trong gia đình. Bỏ trống nếu không
+                rõ — app tự xếp theo năm sinh.
+              </p>
+            </div>
 
             <label className="flex items-start gap-3 cursor-pointer">
               <input
