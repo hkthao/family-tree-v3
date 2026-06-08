@@ -336,6 +336,8 @@ Deno.serve(async (req) => {
       sent.push({ to, ...r });
     }
     // Fan out web push to admins who opted in (notify_via_push=true).
+    // pending → push carries action buttons (approve / reject) so
+    // admin can dispatch from the notification itself.
     await pushContribution({
       sb,
       userIds: adminIds,
@@ -344,6 +346,9 @@ Deno.serve(async (req) => {
       url: contribLink,
       eventKey: `contrib:${c.id}:pending`,
       clanId: c.clan_id as string,
+      kind: "contribution_pending",
+      targetId: c.id as string,
+      actions: ["approve", "reject"],
     });
   } else if (
     c.status === "approved" ||
@@ -416,6 +421,14 @@ interface PushSubRow {
   failure_count: number;
 }
 
+// Token of ≥22 chars; 32 bytes random hex = 64 chars — safely beyond
+// the migration's CHECK length(action_token) >= 22.
+function generateActionToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function pushContribution(opts: {
   sb: ReturnType<typeof createClient>;
   userIds: string[];
@@ -424,6 +437,12 @@ async function pushContribution(opts: {
   url: string;
   eventKey: string;
   clanId: string;
+  /** Optional interactive-notification kind. When set together with
+   *  `targetId` + non-empty `actions`, the dispatcher inserts a
+   *  notifications row and the SW will render action buttons. */
+  kind?: string;
+  targetId?: string;
+  actions?: string[];
 }): Promise<void> {
   if (!PUSH_READY || opts.userIds.length === 0) return;
 
@@ -469,14 +488,48 @@ async function pushContribution(opts: {
     subsByUser.set(s.user_id, list);
   }
 
-  // Fan out, chunked.
-  const payload = JSON.stringify({
-    title: opts.title,
-    body: opts.body,
-    url: opts.url,
-    tag: opts.eventKey,
-  });
+  // When interactive: insert per-user notification rows up front, so
+  // each user's push carries their OWN action_token (one-time secret).
+  // Skipping users who already have a non-consumed row for the same
+  // event would require a join — for MVP we accept that a re-run of
+  // notify-contribution generates a fresh notification row per call.
+  const interactiveTokens = new Map<string, { id: string; token: string }>();
+  if (opts.kind && opts.targetId && (opts.actions?.length ?? 0) > 0) {
+    for (const uid of toPush) {
+      const token = generateActionToken();
+      const ins = await opts.sb
+        .from("notifications")
+        .insert({
+          user_id: uid,
+          kind: opts.kind,
+          target_id: opts.targetId,
+          payload: { title: opts.title, body: opts.body, url: opts.url },
+          actions: opts.actions,
+          action_token: token,
+        })
+        .select("id")
+        .single();
+      if (!ins.error && ins.data) {
+        interactiveTokens.set(uid, { id: ins.data.id as string, token });
+      }
+    }
+  }
+
+  // Fan out, chunked. Build payload per-subscription so each user
+  // gets their own notification_id + action_token.
   const allSubs = Array.from(subsByUser.values()).flat();
+  function payloadFor(userId: string): string {
+    const t = interactiveTokens.get(userId);
+    return JSON.stringify({
+      title: opts.title,
+      body: opts.body,
+      url: opts.url,
+      tag: opts.eventKey,
+      ...(t
+        ? { notification_id: t.id, action_token: t.token }
+        : {}),
+    });
+  }
   for (let i = 0; i < allSubs.length; i += PUSH_CHUNK) {
     const chunk = allSubs.slice(i, i + PUSH_CHUNK);
     await Promise.allSettled(
@@ -487,7 +540,7 @@ async function pushContribution(opts: {
               endpoint: s.endpoint,
               keys: { p256dh: s.p256dh, auth: s.auth },
             },
-            payload,
+            payloadFor(s.user_id),
             { TTL: 24 * 60 * 60 },
           );
           await opts.sb

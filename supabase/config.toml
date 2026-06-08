@@ -432,6 +432,12 @@ verify_jwt = false
 # Supabase reject unauthenticated calls before the function even runs.
 verify_jwt = true
 
+[functions.push-action]
+# Service-worker hits this from a notification action button. SW has
+# no user JWT (the action token in the body IS the auth — a one-time
+# unguessable secret bound to the notification row).
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
