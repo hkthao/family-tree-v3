@@ -596,6 +596,48 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_token: string
+          actions: string[]
+          consumed_action: string | null
+          consumed_at: string | null
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          read_at: string | null
+          target_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_token: string
+          actions?: string[]
+          consumed_action?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json
+          read_at?: string | null
+          target_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_token?: string
+          actions?: string[]
+          consumed_action?: string | null
+          consumed_at?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          read_at?: string | null
+          target_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       person_links: {
         Row: {
           clan_a_id: string
@@ -1134,6 +1176,14 @@ export type Database = {
         Args: { p_clan_b: string; p_person_b: string; p_token: string }
         Returns: string
       }
+      consume_notification_action: {
+        Args: {
+          p_action: string
+          p_action_token: string
+          p_notification_id: string
+        }
+        Returns: boolean
+      }
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
       delete_my_account: { Args: never; Returns: undefined }
@@ -1199,6 +1249,10 @@ export type Database = {
       }
       get_inlaw_proposal_preview: { Args: { p_link_id: string }; Returns: Json }
       get_link_peek: { Args: { p_link_id: string }; Returns: Json }
+      get_notification_by_token: {
+        Args: { p_action_token: string; p_notification_id: string }
+        Returns: Json
+      }
       get_platform_db_stats: { Args: never; Returns: Json }
       get_profile_emails: {
         Args: { user_ids: string[] }
@@ -1221,6 +1275,10 @@ export type Database = {
       }
       prune_audit_log: { Args: { retention_days?: number }; Returns: number }
       prune_notification_log: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
+      prune_notifications: {
         Args: { retention_days?: number }
         Returns: number
       }

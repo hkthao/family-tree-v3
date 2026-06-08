@@ -68,6 +68,29 @@ export function initPwa(): void {
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
       currentRegistration = registration;
+      // Hand the SW its Supabase base + anon key so it can talk to
+      // the action endpoints (get_notification_by_token / push-action)
+      // without hardcoding env into the static SW file. Wait for the
+      // SW to be active before posting.
+      const send = (sw: ServiceWorker | null) => {
+        if (!sw) return;
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        if (!url || !anon) return;
+        sw.postMessage({
+          type: "sw-config",
+          supabaseUrl: url,
+          supabaseAnonKey: anon,
+        });
+      };
+      send(registration.active);
+      registration.addEventListener("updatefound", () => {
+        const nw = registration.installing;
+        if (!nw) return;
+        nw.addEventListener("statechange", () => {
+          if (nw.state === "activated") send(nw);
+        });
+      });
       // Periodic update poll so installed-PWA users (who may keep
       // the tab open for days without refocusing) eventually see
       // new builds. registration.update() asks the browser to refetch
