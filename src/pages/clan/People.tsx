@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { invalidateClanData } from "@/lib/cache";
 import {
   deletePersonsBulk,
+  listMatchingPersonIds,
   updatePersonsBranchBulk,
 } from "@/lib/queries/persons";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -100,11 +101,13 @@ export default function People() {
     setPage(1);
   }, [branchId, generation, sort, pageSize]);
 
-  // Drop the selection when the visible page changes — selecting
-  // across pages is rarely intended and produces confusing toolbars.
+  // Drop the selection when the *result set* changes (different
+  // filter / sort). Page changes preserve the selection now that the
+  // toolbar shows "Đã chọn N/total" + an explicit "Chọn tất cả X kết
+  // quả" action, so cross-page selection is intentional and visible.
   useEffect(() => {
     setSelected(new Set());
-  }, [page, debounced, branchId, generation, sort, pageSize]);
+  }, [debounced, branchId, generation, sort]);
 
   const qc = useQueryClient();
   const confirm = useConfirm();
@@ -128,6 +131,25 @@ export default function People() {
     },
     onError: (e) => toast.error("Không đổi được chi", { description: (e as Error).message }),
   });
+  // Pull every id matching the current filter (across pages) so the
+  // user can bulk-select past the current visible window. Lazy: only
+  // fires when the user clicks "Chọn tất cả N kết quả".
+  const selectAllMatchingM = useMutation({
+    mutationFn: () =>
+      listMatchingPersonIds(clan.id, {
+        search: debounced,
+        branchId: branchId || null,
+        generation: generation ? Number(generation) : null,
+        source,
+      }),
+    onSuccess: (ids) => {
+      setSelected(new Set(ids));
+      toast.success(`Đã chọn ${ids.length} người khớp bộ lọc`);
+    },
+    onError: (e) =>
+      toast.error("Không chọn được", { description: (e as Error).message }),
+  });
+
   const bulkDeleteM = useMutation({
     mutationFn: () => deletePersonsBulk([...selected]),
     onSuccess: async (res) => {
@@ -338,7 +360,8 @@ export default function People() {
       {canEdit && selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border bg-primary/5 px-3 py-2 text-sm">
           <span className="font-medium mr-1">
-            Đã chọn {selected.size} người
+            Đã chọn {selected.size}
+            {total > 0 ? ` / ${total}` : ""} người
           </span>
           <select
             value={bulkBranch}
@@ -451,7 +474,7 @@ export default function People() {
       ) : viewMode === "list" ? (
         <ul className="divide-y rounded-lg border bg-card overflow-hidden">
           {canEdit && (
-            <li className="px-3 py-2 bg-muted/30">
+            <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 bg-muted/30">
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="checkbox"
@@ -464,8 +487,20 @@ export default function People() {
                   }
                   className="h-4 w-4 accent-primary"
                 />
-                Chọn tất cả trên trang này
+                Chọn cả trang này ({data.rows.length})
               </label>
+              {total > data.rows.length && selected.size < total && (
+                <button
+                  type="button"
+                  onClick={() => selectAllMatchingM.mutate()}
+                  disabled={selectAllMatchingM.isPending}
+                  className="text-sm text-primary hover:underline underline-offset-2"
+                >
+                  {selectAllMatchingM.isPending
+                    ? "Đang chọn…"
+                    : `Chọn tất cả ${total} kết quả khớp bộ lọc`}
+                </button>
+              )}
             </li>
           )}
           {data.rows.map((p) => (

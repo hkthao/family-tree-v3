@@ -9,6 +9,7 @@ import {
   IconList,
   IconUpload,
 } from "@/components/icons";
+import { downloadIssuesCsv } from "@/lib/csv/exportImportIssues";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -156,7 +157,21 @@ export default function Import() {
                   </AlertDescription>
                 </Alert>
               ) : (
-                <IssueList issues={plan.issues} />
+                <div className="space-y-3">
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadIssuesCsv(fileName, plan.issues)}
+                      title="Tải toàn bộ lỗi và cảnh báo về CSV để mở trong Excel cùng file gốc và sửa hàng loạt"
+                    >
+                      <IconDownload className="h-4 w-4 mr-1.5" />
+                      Tải file lỗi ({plan.issues.length})
+                    </Button>
+                  </div>
+                  <IssueList issues={plan.issues} />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -245,10 +260,12 @@ export default function Import() {
 
 // ---------------------------------------------------------------------------
 
+const ISSUE_PREVIEW_CAP = 200;
+
 function IssueList({ issues }: { issues: ImportIssue[] }) {
   return (
     <ul className="space-y-2">
-      {issues.slice(0, 50).map((iss, i) => (
+      {issues.slice(0, ISSUE_PREVIEW_CAP).map((iss, i) => (
         <li
           key={i}
           className={`p-2 rounded border-l-4 text-sm ${
@@ -264,9 +281,10 @@ function IssueList({ issues }: { issues: ImportIssue[] }) {
           {iss.message}
         </li>
       ))}
-      {issues.length > 50 && (
+      {issues.length > ISSUE_PREVIEW_CAP && (
         <li className="text-sm text-muted-foreground italic">
-          (còn {issues.length - 50} vấn đề khác — sửa file rồi tải lại)
+          (còn {issues.length - ISSUE_PREVIEW_CAP} vấn đề khác — bấm{" "}
+          <strong>Tải file lỗi</strong> ở trên để xem hết)
         </li>
       )}
     </ul>
