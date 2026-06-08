@@ -68,7 +68,9 @@ export default function Login() {
     <AuthLayout title="Đăng nhập" subtitle="Truy cập dòng họ của bạn">
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" required>
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
@@ -82,7 +84,9 @@ export default function Login() {
 
         {mode === "password" && (
           <div className="space-y-2">
-            <Label htmlFor="password">Mật khẩu</Label>
+            <Label htmlFor="password" required>
+              Mật khẩu
+            </Label>
             <Input
               id="password"
               type="password"
