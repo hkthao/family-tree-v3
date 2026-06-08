@@ -40,6 +40,7 @@ import {
 } from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
 import { track } from "@/lib/analytics";
+import { matchesName } from "@/lib/unaccent";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { getTreeData } from "@/lib/queries/tree";
 
@@ -585,12 +586,12 @@ export default function Tree() {
     };
   }, []);
 
-  // Search-by-name → set focal
+  // Search-by-name → set focal. Diacritic-insensitive so "Hung" finds
+  // "Hùng".
   const matches = useMemo(() => {
     if (!data || !search.trim()) return [];
-    const needle = search.toLowerCase().trim();
     return data.persons
-      .filter((p) => p.full_name.toLowerCase().includes(needle))
+      .filter((p) => matchesName(p.full_name, search))
       .slice(0, 8);
   }, [data, search]);
 

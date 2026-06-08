@@ -11,6 +11,9 @@ import { useClanContext } from "@/hooks/useClanContext";
 import { computeKinship, type KinshipPerson } from "@/lib/kinship";
 import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
+import { matchesName } from "@/lib/unaccent";
+
+const PICKER_CAP = 1000;
 
 /**
  * /clans/:id/kinship — "máy tính xưng hô".
@@ -152,12 +155,11 @@ function PersonPicker({
   onChange: (id: string) => void;
 }) {
   const [filter, setFilter] = useState("");
-  const filtered = useMemo(() => {
-    const f = filter.trim().toLowerCase();
-    if (!f) return persons.slice(0, 200);
-    return persons
-      .filter((p) => p.full_name.toLowerCase().includes(f))
-      .slice(0, 200);
+  const { filtered, totalMatched } = useMemo(() => {
+    const matched = filter.trim()
+      ? persons.filter((p) => matchesName(p.full_name, filter))
+      : persons;
+    return { filtered: matched.slice(0, PICKER_CAP), totalMatched: matched.length };
   }, [filter, persons]);
   const selected = value ? persons.find((p) => p.id === value) ?? null : null;
 
@@ -187,8 +189,15 @@ function PersonPicker({
       <Input
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        placeholder={selected ? "Đổi người…" : "Tìm theo tên"}
+        placeholder={selected ? "Đổi người…" : "Tìm theo tên (không cần dấu)"}
       />
+      {totalMatched > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {totalMatched > PICKER_CAP
+            ? `Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
+            : `Hiện ${totalMatched} kết quả.`}
+        </p>
+      )}
       <ul className="max-h-64 overflow-y-auto border rounded-md divide-y text-sm">
         {filtered.length === 0 && (
           <li className="px-2 py-2 text-muted-foreground italic">
