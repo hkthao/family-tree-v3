@@ -19,6 +19,29 @@ export async function parseSpreadsheet(
   const wb = isText
     ? XLSX.read(new TextDecoder("utf-8").decode(buf), { type: "string", raw: false })
     : XLSX.read(buf, { type: "array" });
+  return parseWorkbookFirstSheet(wb);
+}
+
+/**
+ * Parse a pasted-in CSV string (e.g. from an AI chat response) and
+ * return the same row-object shape as parseSpreadsheet. Strips common
+ * markdown wrappers (```csv … ```) since LLMs tend to include them
+ * even when asked not to.
+ */
+export function parseCsvText(text: string): Record<string, unknown>[] {
+  // Drop markdown code fences if present. Handle both ```csv and bare ```.
+  let cleaned = text.trim();
+  const fence = cleaned.match(/^```(?:csv|tsv|txt)?\s*\n([\s\S]*?)\n?```\s*$/i);
+  if (fence) cleaned = fence[1];
+  if (!cleaned.trim()) return [];
+
+  const wb = XLSX.read(cleaned, { type: "string", raw: false });
+  return parseWorkbookFirstSheet(wb);
+}
+
+function parseWorkbookFirstSheet(
+  wb: XLSX.WorkBook,
+): Record<string, unknown>[] {
   const sheetName = wb.SheetNames[0];
   if (!sheetName) return [];
   const sheet = wb.Sheets[sheetName];
