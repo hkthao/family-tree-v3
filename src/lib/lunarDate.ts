@@ -66,9 +66,18 @@ export function lunarToSolarString(input: LunarYMD): string | null {
  * Returns "" when all fields are null/undefined.
  */
 export function formatLunarDate(input: Partial<LunarYMD> | null | undefined): string {
-  if (!input || !input.year || !input.month || !input.day) return "";
-  const leap = input.isLeap ? " nhuận" : "";
+  if (!input || !input.year) return "";
   const canChi = getYearCanChi(input.year);
+  // Year-only and year+month variants — render gracefully without
+  // assuming the user knows the exact day. Lunar entries from old
+  // sổ tay often only have the year (canh-chi).
+  if (!input.month) {
+    return `năm ${canChi} ÂL (${input.year})`;
+  }
+  const leap = input.isLeap ? " nhuận" : "";
+  if (!input.day) {
+    return `tháng ${input.month}${leap} năm ${canChi} ÂL`;
+  }
   return `${input.day}/${input.month}${leap} ÂL — năm ${canChi}`;
 }
 

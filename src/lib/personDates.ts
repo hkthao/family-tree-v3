@@ -59,15 +59,17 @@ export function loadCalendarDateValue(input: {
   lunarIsLeap?: boolean | null;
 }): CalendarDateValue {
   const hasSolar = !!(input.solarDate && input.solarPrecision);
-  const hasLunar = !!(input.lunarYear && input.lunarMonth && input.lunarDay);
+  // Lunar-only entry needs at minimum a year; month + day are
+  // optional now (partial lunar dates are supported).
+  const hasLunar = !!input.lunarYear;
 
   if (!hasSolar && hasLunar) {
     return {
       mode: "lunar",
       parts: {
         year: String(input.lunarYear),
-        month: String(input.lunarMonth),
-        day: String(input.lunarDay),
+        month: input.lunarMonth != null ? String(input.lunarMonth) : "",
+        day: input.lunarDay != null ? String(input.lunarDay) : "",
       },
       isLeap: !!input.lunarIsLeap,
     };
@@ -151,29 +153,61 @@ export function buildPersonDateColumns(
     };
   }
 
-  // mode === "lunar" — must be a full ymd; lunar partials aren't
-  // supported (see file header). Reuse dateFromParts for the basic
-  // range checks (year/month 1..12/day 1..30 because lunar months max
-  // out at 30) — we tighten the day cap below.
+  // mode === "lunar" — full ymd preferred (lets us also derive a
+  // solar_date), but partials are accepted now (user feedback: many
+  // legacy entries only know the lunar year, sometimes year+month).
+  // When partial, solar_date stays null; the structured lunar_year /
+  // lunar_month columns still carry the info.
   const yRaw = value.parts.year.trim();
   const mRaw = value.parts.month.trim();
   const dRaw = value.parts.day.trim();
-  if (!yRaw || !mRaw || !dRaw) {
+  if (!yRaw) {
     throw new Error(
-      "Nhập ngày âm cần đủ ngày, tháng, năm. Nếu chỉ có năm, hãy đổi sang lịch dương.",
+      "Nhập ngày âm cần ít nhất là năm âm lịch.",
     );
   }
   const lunarYear = Number(yRaw);
-  const lunarMonth = Number(mRaw);
-  const lunarDay = Number(dRaw);
   if (!Number.isInteger(lunarYear) || lunarYear < 1 || lunarYear > 9999) {
     throw new Error("Năm âm không hợp lệ.");
   }
-  if (!Number.isInteger(lunarMonth) || lunarMonth < 1 || lunarMonth > 12) {
-    throw new Error("Tháng âm phải nằm trong 1–12.");
+  let lunarMonth: number | null = null;
+  let lunarDay: number | null = null;
+  if (mRaw) {
+    const m = Number(mRaw);
+    if (!Number.isInteger(m) || m < 1 || m > 12) {
+      throw new Error("Tháng âm phải nằm trong 1–12.");
+    }
+    lunarMonth = m;
   }
-  if (!Number.isInteger(lunarDay) || lunarDay < 1 || lunarDay > 30) {
-    throw new Error("Ngày âm phải nằm trong 1–30.");
+  if (dRaw) {
+    if (!mRaw) {
+      throw new Error(
+        "Đã nhập ngày âm thì cũng cần điền tháng âm.",
+      );
+    }
+    const d = Number(dRaw);
+    if (!Number.isInteger(d) || d < 1 || d > 30) {
+      throw new Error("Ngày âm phải nằm trong 1–30.");
+    }
+    lunarDay = d;
+  }
+
+  // Partial input — store the year (and optional month) only,
+  // leaving solar_date null.
+  if (lunarDay === null) {
+    return {
+      ...empty,
+      lunar_year: lunarYear,
+      lunar_month: lunarMonth,
+      lunar_day: null,
+      lunar_is_leap: !!(value.isLeap && lunarMonth),
+    };
+  }
+  // Past this point lunarDay and lunarMonth are both non-null
+  // (the !mRaw + dRaw guard above ensured month is set whenever
+  // day is set). Re-affirm for the type narrowing.
+  if (lunarMonth === null) {
+    throw new Error("Thiếu tháng âm.");
   }
 
   const lunarValue: LunarYMD = {
