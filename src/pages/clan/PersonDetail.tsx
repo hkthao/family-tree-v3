@@ -341,70 +341,78 @@ export default function PersonDetail() {
 
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
 
-            {(
-              <div className="flex flex-wrap gap-3">
-                {canEdit && (
-                  <Button asChild variant="outline" className="flex-1 sm:flex-none">
-                    <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
-                      <IconPencil className="h-4 w-4 mr-1.5" />
-                      Sửa
-                    </Link>
-                  </Button>
-                )}
-                {canContribute && (
+            {/* Primary action row — Sửa (editors) or Đề xuất sửa
+                (non-editors). Admins don't need a "suggest" path
+                since they can edit directly. */}
+            <div className="flex flex-wrap gap-3">
+              {canEdit ? (
+                <Button asChild className="flex-1 sm:flex-none">
+                  <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
+                    <IconPencil className="h-4 w-4 mr-1.5" />
+                    Sửa thông tin
+                  </Link>
+                </Button>
+              ) : (
+                canContribute && (
                   <Button
-                    variant="outline"
                     className="flex-1 sm:flex-none"
                     onClick={() => setContribOpen(true)}
                   >
                     <IconScroll className="h-4 w-4 mr-1.5" />
                     Đề xuất sửa
                   </Button>
-                )}
-                {canCreateQr && (
-                  <Button
-                    variant="outline"
-                    className="flex-1 sm:flex-none"
-                    onClick={() => {
-                      setQrOpen(true);
-                      if (!qrM.data) qrM.mutate();
-                    }}
-                  >
-                    <IconQrCode className="h-4 w-4 mr-1.5" />
-                    QR cá nhân
-                  </Button>
-                )}
-                <Button asChild variant="outline" className="flex-1 sm:flex-none">
-                  <Link to={`/clans/${clanId}/kinship?a=${personId}`}>
-                    <IconUsers className="h-4 w-4 mr-1.5" />
-                    Xưng hô
-                  </Link>
+                )
+              )}
+              <Button asChild variant="outline" className="flex-1 sm:flex-none">
+                <Link to={`/clans/${clanId}/kinship?a=${personId}`}>
+                  <IconUsers className="h-4 w-4 mr-1.5" />
+                  Xưng hô
+                </Link>
+              </Button>
+              {canCreateQr && (
+                <Button
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  onClick={() => {
+                    setQrOpen(true);
+                    if (!qrM.data) qrM.mutate();
+                  }}
+                >
+                  <IconQrCode className="h-4 w-4 mr-1.5" />
+                  QR cá nhân
                 </Button>
-                {canEdit && (
-                  <Button
-                    variant="destructive"
-                    className="flex-1 sm:flex-none"
-                    onClick={async () => {
-                      const ok = await askConfirm({
-                        title: `Xoá ${person.full_name}?`,
-                        description: "Có thể khôi phục từ nhật ký.",
-                        confirmLabel: "Xoá",
-                        destructive: true,
-                      });
-                      if (ok) deleteMutation.mutate();
-                    }}
-                    disabled={deleteMutation.isPending}
-                  >
-                    {deleteMutation.isPending ? (
-                      "Đang xoá…"
-                    ) : (
-                      <>
-                        <IconTrash className="h-4 w-4 mr-1.5" />
-                        Xoá
-                      </>
-                    )}
-                  </Button>
-                )}
+              )}
+            </div>
+
+            {/* Destructive action — separated from the primary row so
+                it's harder to mis-tap and visually doesn't compete
+                with the common actions. Same size as the row above
+                so the page reads as a single coherent action stack. */}
+            {canEdit && (
+              <div className="pt-3 border-t">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={async () => {
+                    const ok = await askConfirm({
+                      title: `Xoá ${person.full_name}?`,
+                      description: "Có thể khôi phục từ nhật ký.",
+                      confirmLabel: "Xoá",
+                      destructive: true,
+                    });
+                    if (ok) deleteMutation.mutate();
+                  }}
+                  disabled={deleteMutation.isPending}
+                >
+                  {deleteMutation.isPending ? (
+                    "Đang xoá…"
+                  ) : (
+                    <>
+                      <IconTrash className="h-4 w-4 mr-1.5" />
+                      Xoá người này
+                    </>
+                  )}
+                </Button>
               </div>
             )}
 

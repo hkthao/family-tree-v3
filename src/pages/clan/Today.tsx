@@ -92,20 +92,22 @@ export default function Today() {
       </nav>
 
       <header className="flex items-start gap-3">
-        <IconCalendar className="h-7 w-7 text-primary shrink-0 mt-0.5" />
+        <IconCalendar className="h-8 w-8 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0">
-          <h1 className="clan-name text-xl sm:text-2xl font-semibold leading-tight">
+          <h1 className="clan-name text-2xl sm:text-3xl font-semibold leading-tight">
             Hôm nay
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-base text-muted-foreground mt-1">
             {todayHeader}
           </p>
         </div>
       </header>
 
-      {/* Section: today */}
+      {/* Section: today — biggest header since it's the primary
+          focus of the page. */}
       <Section
         title="Hôm nay"
+        titleClassName="text-xl sm:text-2xl"
         emptyHint="Không có sinh nhật hay ngày giỗ nào hôm nay."
         events={todayEvents}
         clanId={clan.id}
@@ -148,12 +150,14 @@ export default function Today() {
 
 function Section({
   title,
+  titleClassName,
   events,
   clanId,
   emptyHint,
   emphasised,
 }: {
   title: string;
+  titleClassName?: string;
   events: UpcomingEvent[];
   clanId: string;
   emptyHint: string;
@@ -162,8 +166,10 @@ function Section({
   return (
     <section className="space-y-2">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <span className="text-xs text-muted-foreground">
+        <h2 className={`font-semibold ${titleClassName ?? "text-lg"}`}>
+          {title}
+        </h2>
+        <span className="text-sm text-muted-foreground">
           {events.length === 0 ? "—" : `${events.length} sự kiện`}
         </span>
       </div>
