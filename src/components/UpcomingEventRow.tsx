@@ -62,7 +62,7 @@ export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
         </div>
         <div className="min-w-0">
           <p
-            className={`font-semibold truncate ${
+            className={`font-semibold line-clamp-2 ${
               emphasised ? "text-lg" : "text-base"
             }`}
           >
