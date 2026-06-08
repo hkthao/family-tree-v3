@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
@@ -14,7 +14,14 @@ import {
   deletePersonPhoto,
   getSignedPhotoUrl,
   uploadPersonPhoto,
+  type UploadProgress,
 } from "@/lib/photoUpload";
+
+// File-size cushion above which we warn the user that compression
+// will take a while. iPhone 13+ photos are routinely 5–8MB; anything
+// past this is usually a screenshot at full resolution or a downloaded
+// raw, and the user benefits from knowing it won't be instant.
+const LARGE_FILE_THRESHOLD = 8 * 1024 * 1024;
 
 interface Props {
   clanId: string;
@@ -47,6 +54,8 @@ export function PhotoUploadField({
   const confirm = useConfirm();
   const toast = useToast();
   const [stats, setStats] = useState<{ bytes: number } | null>(null);
+  const [progress, setProgress] = useState<UploadProgress | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: signedUrl } = useQuery({
     queryKey: ["signed-photo", personId, photoPath],
@@ -57,11 +66,18 @@ export function PhotoUploadField({
 
   const uploadM = useMutation({
     mutationFn: async (file: File) => {
-      const res = await uploadPersonPhoto(clanId, personId, file);
+      if (file.size > LARGE_FILE_THRESHOLD) {
+        toast.info("File khá lớn — đang nén, có thể mất vài giây", {
+          description: `${Math.round(file.size / 1024 / 1024)} MB`,
+        });
+      }
+      setProgress({ phase: "compress", percent: 0 });
+      const res = await uploadPersonPhoto(clanId, personId, file, setProgress);
       await updatePerson(personId, { photo_path: res.path });
       return res;
     },
     onSuccess: async (res) => {
+      setProgress(null);
       setStats({ bytes: res.bytes });
       await qc.invalidateQueries({
         queryKey: queryKeys.person(personId, userId),
@@ -75,8 +91,10 @@ export function PhotoUploadField({
         description: `${Math.round(res.bytes / 1024)} KB sau khi nén.`,
       });
     },
-    onError: (e) =>
-      toast.error("Tải ảnh thất bại", { description: (e as Error).message }),
+    onError: (e) => {
+      setProgress(null);
+      toast.error("Tải ảnh thất bại", { description: (e as Error).message });
+    },
   });
 
   const deleteM = useMutation({
@@ -110,30 +128,36 @@ export function PhotoUploadField({
         ) : (
           <PersonAvatar gender={gender} size={96} />
         )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) uploadM.mutate(file);
+            e.target.value = "";
+          }}
+        />
         <div className="flex flex-wrap gap-2">
-          <label className="inline-block">
-            <input
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) uploadM.mutate(file);
-                e.target.value = "";
-              }}
-            />
-            <span className="inline-flex h-10 px-3 items-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted cursor-pointer text-sm">
-              <IconUpload className="h-4 w-4" />
-              {uploadM.isPending
-                ? "Đang nén & tải lên…"
-                : photoPath
-                  ? "Đổi ảnh"
-                  : "Tải ảnh lên"}
-            </span>
-          </label>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploadM.isPending}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <IconUpload className="h-4 w-4 mr-1.5" />
+            {uploadM.isPending
+              ? progress?.phase === "upload"
+                ? "Đang tải lên…"
+                : "Đang nén ảnh…"
+              : photoPath
+                ? "Đổi ảnh"
+                : "Tải ảnh lên"}
+          </Button>
           {photoPath && (
             <Button
-              size="sm"
+              type="button"
               variant="outline"
               className="text-destructive"
               onClick={async () => {
@@ -152,6 +176,21 @@ export function PhotoUploadField({
           )}
         </div>
       </div>
+      {progress && (
+        <div className="space-y-1">
+          <div className="h-1.5 w-full max-w-xs rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-primary transition-[width] duration-150"
+              style={{ width: `${Math.round(progress.percent)}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {progress.phase === "compress"
+              ? `Đang nén ảnh… ${Math.round(progress.percent)}%`
+              : "Đang tải lên server…"}
+          </p>
+        </div>
+      )}
       <p className="text-xs text-muted-foreground">
         Ảnh sẽ được nén còn tối đa 512×512, ≈ 80 KB (JPEG). Định dạng
         gốc: JPG, PNG, WebP, HEIC.
