@@ -28,6 +28,7 @@ import {
 } from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
 import { createPerson, getPerson, updatePerson } from "@/lib/queries/persons";
+import { inferGenderFromName } from "@/lib/nameGender";
 
 type Relation = "child" | "spouse" | "parent";
 
@@ -333,8 +334,20 @@ function QuickAddChild({
   // Single-mode state.
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
+  // Once the user manually picks a gender we stop auto-flipping from
+  // name inference — they've made an explicit choice we shouldn't
+  // second-guess on every keystroke.
+  const [genderTouched, setGenderTouched] = useState(false);
   const [birthOrder, setBirthOrder] = useState<string>("");
   const nameRef = useRef<HTMLInputElement>(null);
+
+  function onSingleNameChange(v: string) {
+    setName(v);
+    if (!genderTouched) {
+      const inferred = inferGenderFromName(v);
+      if (inferred) setGender(inferred);
+    }
+  }
 
   useEffect(() => {
     if (!bulkMode && birthOrder === "" && rels) {
@@ -360,12 +373,13 @@ function QuickAddChild({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focal, rels]);
 
-  // Bulk-mode state: list of rows.
-  type Row = { name: string; gender: "M" | "F" };
+  // Bulk-mode state: list of rows. `genderTouched` is tracked per
+  // row so manual picks aren't clobbered by subsequent name edits.
+  type Row = { name: string; gender: "M" | "F"; genderTouched: boolean };
   const [rows, setRows] = useState<Row[]>([
-    { name: "", gender: "M" },
-    { name: "", gender: "M" },
-    { name: "", gender: "M" },
+    { name: "", gender: "M", genderTouched: false },
+    { name: "", gender: "M", genderTouched: false },
+    { name: "", gender: "M", genderTouched: false },
   ]);
   const bulkInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const bulkInitRef = useRef(false);
@@ -375,9 +389,9 @@ function QuickAddChild({
     if (!focal || !rels) return;
     const p = deriveNamePrefix(focal, children, "M");
     setRows([
-      { name: p, gender: "M" },
-      { name: p, gender: "M" },
-      { name: p, gender: "M" },
+      { name: p, gender: "M", genderTouched: false },
+      { name: p, gender: "M", genderTouched: false },
+      { name: p, gender: "M", genderTouched: false },
     ]);
     bulkInitRef.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -451,9 +465,9 @@ function QuickAddChild({
       toast.success(`Đã thêm ${n} người con`);
       const p = deriveNamePrefix(focal, children, "M");
       setRows([
-        { name: p, gender: "M" },
-        { name: p, gender: "M" },
-        { name: p, gender: "M" },
+        { name: p, gender: "M", genderTouched: false },
+        { name: p, gender: "M", genderTouched: false },
+        { name: p, gender: "M", genderTouched: false },
       ]);
       setTimeout(() => focusAtEnd(bulkInputRefs.current[0]), 0);
     },
@@ -476,7 +490,10 @@ function QuickAddChild({
   function addRow() {
     const lastGender = rows[rows.length - 1]?.gender ?? "M";
     const p = deriveNamePrefix(focal, children, lastGender);
-    setRows((prev) => [...prev, { name: p, gender: lastGender }]);
+    setRows((prev) => [
+      ...prev,
+      { name: p, gender: lastGender, genderTouched: false },
+    ]);
     setTimeout(() => {
       const idx = bulkInputRefs.current.length - 1;
       focusAtEnd(bulkInputRefs.current[idx]);
@@ -485,6 +502,20 @@ function QuickAddChild({
 
   function updateRow(i: number, patch: Partial<Row>) {
     setRows((prev) => prev.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  }
+
+  function onBulkNameChange(i: number, v: string) {
+    setRows((prev) =>
+      prev.map((r, j) => {
+        if (j !== i) return r;
+        const next = { ...r, name: v };
+        if (!r.genderTouched) {
+          const inferred = inferGenderFromName(v);
+          if (inferred) next.gender = inferred;
+        }
+        return next;
+      }),
+    );
   }
 
   function removeRow(i: number) {
@@ -568,14 +599,20 @@ function QuickAddChild({
               autoFocus
               maxLength={200}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => onSingleNameChange(e.target.value)}
               placeholder="Vd: Nguyễn Văn C"
             />
           </div>
 
           <div className="flex flex-col items-start gap-2">
             <Label>Giới tính</Label>
-            <GenderToggle value={gender} onChange={setGender} />
+            <GenderToggle
+              value={gender}
+              onChange={(g) => {
+                setGender(g);
+                setGenderTouched(true);
+              }}
+            />
           </div>
 
           <BirthOrderPicker
@@ -624,7 +661,7 @@ function QuickAddChild({
                     bulkInputRefs.current[i] = el;
                   }}
                   value={r.name}
-                  onChange={(e) => updateRow(i, { name: e.target.value })}
+                  onChange={(e) => onBulkNameChange(i, e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -638,7 +675,9 @@ function QuickAddChild({
                 />
                 <GenderToggle
                   value={r.gender}
-                  onChange={(g) => updateRow(i, { gender: g })}
+                  onChange={(g) =>
+                    updateRow(i, { gender: g, genderTouched: true })
+                  }
                 />
                 <IconButton
                   onClick={() => moveRow(i, -1)}
@@ -881,6 +920,18 @@ function QuickAddParent({
   }, [focal]);
 
   const bothFilled = hasFather && hasMother;
+  // Auto-infer Cha/Mẹ from the typed name, but only when both slots
+  // are still empty. Once one slot is filled the other role is forced
+  // anyway (the opposite button is disabled), so inference would just
+  // fight the user.
+  const canInferRole = !hasFather && !hasMother;
+  function onParentNameChange(v: string) {
+    setName(v);
+    if (!roleTouched && canInferRole) {
+      const inferred = inferGenderFromName(v);
+      if (inferred) setRole(inferred);
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -959,7 +1010,7 @@ function QuickAddParent({
           autoFocus
           maxLength={200}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => onParentNameChange(e.target.value)}
           placeholder={role === "M" ? "Vd: Nguyễn Văn A" : "Vd: Trần Thị B"}
         />
       </div>
