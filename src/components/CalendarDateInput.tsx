@@ -7,6 +7,12 @@ import {
   SegmentedControl,
 } from "@/components/ui/segmented-control";
 import {
+  canChiToYears,
+  parseCanChi,
+  yearToCanChi,
+  type CanChi,
+} from "@/lib/canChi";
+import {
   convertPartsAcrossCalendars,
   type CalendarDateValue,
   type CalendarMode,
@@ -22,6 +28,14 @@ interface Props {
   value: CalendarDateValue;
   onChange: (next: CalendarDateValue) => void;
   helperText?: string;
+  /**
+   * Year to bias can-chi disambiguation toward (Bính Thìn matches
+   * 1856/1916/1976/2036 — we pick the candidate nearest to this).
+   * Pass focal's birth year for edit, or focal ± ~25 when adding a
+   * child / parent. Defaults to "30 years ago", a reasonable guess
+   * for adults in a gia phả.
+   */
+  referenceYear?: number;
 }
 
 /**
@@ -47,6 +61,7 @@ export function CalendarDateInput({
   value,
   onChange,
   helperText,
+  referenceYear,
 }: Props) {
   const isLunar = value.mode === "lunar";
   // Hide the Dương/Âm tab strip + leap checkbox by default so older
@@ -55,6 +70,44 @@ export function CalendarDateInput({
   // record) we auto-expand so the user can see what's set.
   const [lunarUiOpen, setLunarUiOpen] = useState(isLunar);
   const showLunarControls = lunarUiOpen || isLunar;
+
+  // Optional can-chi field — hidden by default. Reveals on demand
+  // for users who only remember "Bính Thìn" instead of the Gregorian
+  // year. The numeric year input stays primary so mobile keeps its
+  // number pad.
+  const [canChiUiOpen, setCanChiUiOpen] = useState(false);
+  const [canChiInput, setCanChiInput] = useState("");
+  // Stores the parsed pair so the chip can offer ±60y siblings
+  // without re-parsing.
+  const [canChi, setCanChi] = useState<CanChi | null>(null);
+  const defaultReferenceYear =
+    referenceYear ?? new Date().getFullYear() - 30;
+
+  function onCanChiBlur() {
+    const text = canChiInput.trim();
+    if (!text) {
+      setCanChi(null);
+      return;
+    }
+    const parsed = parseCanChi(text);
+    if (!parsed) return; // garbage — leave the chip / year as-is
+    const years = canChiToYears(parsed);
+    if (years.length === 0) return;
+    let best = years[0];
+    let bestDist = Math.abs(best - defaultReferenceYear);
+    for (const y of years) {
+      const d = Math.abs(y - defaultReferenceYear);
+      if (d < bestDist) {
+        best = y;
+        bestDist = d;
+      }
+    }
+    setCanChi(parsed);
+    onChange({
+      ...value,
+      parts: { ...value.parts, year: String(best) },
+    });
+  }
 
   function setMode(nextMode: CalendarMode) {
     if (nextMode === value.mode) return;
@@ -182,6 +235,50 @@ export function CalendarDateInput({
         </div>
       </div>
 
+      {/* Can-chi entry is OFF by default — the numeric keyboard is the
+          right default for the common case (gõ 1976). Old users who
+          only remember "Bính Thìn" can opt in. */}
+      {!canChiUiOpen && !canChi ? (
+        <button
+          type="button"
+          onClick={() => setCanChiUiOpen(true)}
+          className="text-sm text-primary hover:underline underline-offset-2"
+        >
+          Nhập theo can-chi (Bính Thìn…)
+        </button>
+      ) : (
+        <div className="space-y-2">
+          <Label htmlFor={`${idPrefix}-canchi`} className="text-xs">
+            Can-chi
+          </Label>
+          <Input
+            id={`${idPrefix}-canchi`}
+            value={canChiInput}
+            onChange={(e) => setCanChiInput(e.target.value)}
+            onBlur={onCanChiBlur}
+            placeholder="vd: Bính Thìn"
+            className="max-w-[240px]"
+          />
+          {canChi && /^\d+$/.test(value.parts.year) && (
+            <CanChiChip
+              parsed={canChi}
+              pickedYear={Number(value.parts.year)}
+              onPick={(y) =>
+                onChange({
+                  ...value,
+                  parts: { ...value.parts, year: String(y) },
+                })
+              }
+              onDismiss={() => {
+                setCanChi(null);
+                setCanChiInput("");
+                setCanChiUiOpen(false);
+              }}
+            />
+          )}
+        </div>
+      )}
+
       {isLunar && (
         <label className="flex items-center gap-3 cursor-pointer">
           <input
@@ -198,6 +295,57 @@ export function CalendarDateInput({
         <p className="text-xs text-muted-foreground">{preview}</p>
       )}
     </fieldset>
+  );
+}
+
+function CanChiChip({
+  parsed,
+  pickedYear,
+  onPick,
+  onDismiss,
+}: {
+  parsed: CanChi;
+  pickedYear: number;
+  onPick: (y: number) => void;
+  onDismiss: () => void;
+}) {
+  const label = yearToCanChi(pickedYear);
+  // Surface ±1 cycle (60y) on each side of the pick so users can
+  // bump to "đời trước" / "đời sau" without re-typing. Showing all
+  // 4-5 candidates in [1700, now+5] would be noisy.
+  const candidates = canChiToYears(parsed).filter(
+    (y) => Math.abs(y - pickedYear) <= 60,
+  );
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm">
+      <span>
+        Hiểu là <strong>{pickedYear}</strong> ({label}) — bấm để đổi đời:
+      </span>
+      <div className="flex flex-wrap gap-1">
+        {candidates.map((y) => (
+          <button
+            key={y}
+            type="button"
+            onClick={() => onPick(y)}
+            aria-pressed={y === pickedYear}
+            className={`px-2 py-0.5 rounded border text-xs ${
+              y === pickedYear
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-card hover:bg-muted/50"
+            }`}
+          >
+            {y}
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={onDismiss}
+        className="ml-auto text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+      >
+        Bỏ qua
+      </button>
+    </div>
   );
 }
 

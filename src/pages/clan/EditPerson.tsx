@@ -345,6 +345,11 @@ export function EditPersonForm({
               if (next.parts.year) setIsLiving(false);
             }}
             helperText="Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
+            referenceYear={
+              birth.parts.year && /^\d+$/.test(birth.parts.year)
+                ? Number(birth.parts.year) + 70
+                : undefined
+            }
           />
 
           <BirthOrderPicker value={birthOrder} onChange={setBirthOrder} />
