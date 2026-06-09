@@ -79,6 +79,44 @@ export async function countClanTodo(
   return Number(data ?? 0);
 }
 
+export interface ClanCompletion {
+  /** Total non-deleted persons that aren't `todo_excluded`. */
+  total: number;
+  /** Subset of `total` that have at least one open gap. */
+  withGaps: number;
+  /** `total - withGaps`. Pre-computed for UI convenience. */
+  complete: number;
+  /** Integer percentage (0-100). `null` when `total === 0`. */
+  percent: number | null;
+}
+
+/**
+ * Aggregate progress for the clan-level "Việc cần làm" page —
+ * combines the existing todo count with a denominator count taken
+ * from the persons table directly. Both numbers ignore deleted
+ * persons + `todo_excluded` (the latter is the explicit "accept this
+ * gap" opt-out so it shouldn't drag the percentage down).
+ */
+export async function getClanCompletion(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<ClanCompletion> {
+  const [totalRes, withGaps] = await Promise.all([
+    client
+      .from("persons")
+      .select("id", { count: "exact", head: true })
+      .eq("clan_id", clanId)
+      .is("deleted_at", null)
+      .eq("todo_excluded", false),
+    countClanTodo(clanId, client),
+  ]);
+  if (totalRes.error) throw new Error(totalRes.error.message);
+  const total = totalRes.count ?? 0;
+  const complete = Math.max(0, total - withGaps);
+  const percent = total > 0 ? Math.round((complete / total) * 100) : null;
+  return { total, withGaps, complete, percent };
+}
+
 /**
  * Flip the todo_excluded flag for a single person. When true the
  * person stops appearing on /todo across every category and is no
