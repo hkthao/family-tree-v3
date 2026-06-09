@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import {
   IconDownload,
@@ -40,6 +40,7 @@ import {
   listLinksForPerson,
 } from "@/lib/queries/person-links";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
+import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { RelationSheet } from "@/components/RelationSheet";
 import { ShareTreeButton } from "@/components/ShareTreeButton";
 import { EditPersonForm } from "@/pages/clan/EditPerson";
@@ -112,7 +113,6 @@ function readOrientation(): Orientation {
 
 export default function Tree() {
   const { clan } = useClanContext();
-  const navigate = useNavigate();
   const canEdit = canEditClan(clan);
   const clanId = clan.id;
   const { user } = useAuth();
@@ -252,6 +252,15 @@ export default function Tree() {
   useEffect(() => {
     setEditPersonRef.current = setEditPersonId;
   }, [setEditPersonId]);
+
+  // "+" button opens the quick-add sheet (relation picker + mini-form
+  // for con/vợ-chồng/cha-mẹ). Same ref-bridge pattern as edit above so
+  // the d3 closure doesn't pin a stale setter.
+  const [quickAddPersonId, setQuickAddPersonId] = useState<string | null>(null);
+  const setQuickAddRef = useRef(setQuickAddPersonId);
+  useEffect(() => {
+    setQuickAddRef.current = setQuickAddPersonId;
+  }, [setQuickAddPersonId]);
   const linkedIdsRef = useRef<Set<string>>(linkedPersonIds);
   useEffect(() => {
     linkedIdsRef.current = linkedPersonIds;
@@ -508,8 +517,9 @@ export default function Tree() {
 
               // Carry `?from=tree` so PersonDetail / EditPerson know
               // to render the breadcrumb as "← Cây gia phả" and to
-              // navigate back to /tree on cancel/save.
-              const fromQs = "?from=tree";
+              // navigate back to /tree on cancel/save. Edit still opens
+              // the full sheet; "+" opens the lightweight quick-add
+              // sheet (relation picker + name-only mini-form).
               const editEl = actions.querySelector(".card-action-edit");
               editEl?.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -519,7 +529,7 @@ export default function Tree() {
               const addEl = actions.querySelector(".card-action-add");
               addEl?.addEventListener("click", (e) => {
                 e.stopPropagation();
-                navigate(`/clans/${clanId}/people/${personId}${fromQs}`);
+                setQuickAddRef.current(personId);
               });
 
               this.querySelector(".card-body")?.appendChild(actions);
@@ -913,6 +923,13 @@ export default function Tree() {
           />
         )}
       </RelationSheet>
+
+      <QuickAddSheet
+        open={quickAddPersonId !== null}
+        onClose={() => setQuickAddPersonId(null)}
+        clanId={clan.id}
+        personId={quickAddPersonId ?? ""}
+      />
     </div>
   );
 }

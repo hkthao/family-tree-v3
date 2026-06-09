@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
+import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconX } from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -290,22 +291,11 @@ export function AddChildForm({
             </div>
           </fieldset>
 
-          <div className="space-y-2">
-            <Label htmlFor="birth_order">Con thứ mấy</Label>
-            <Input
-              id="birth_order"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={50}
-              value={birthOrder}
-              onChange={(e) => setBirthOrder(e.target.value)}
-              placeholder="Vd: 1 = con cả"
-            />
-            <p className="text-sm text-muted-foreground">
-              App gợi ý dựa trên số con đã có. Sửa nếu cần.
-            </p>
-          </div>
+          <BirthOrderPicker
+            value={birthOrder}
+            onChange={setBirthOrder}
+            helper="App gợi ý dựa trên số con đã có. Sửa nếu cần."
+          />
 
           <CalendarDateInput
             label="Ngày sinh (tuỳ chọn)"
