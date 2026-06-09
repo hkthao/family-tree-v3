@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
+import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconChevronUp, IconPlus, IconX } from "@/components/icons";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
@@ -346,23 +347,7 @@ export function EditPersonForm({
             helperText="Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
           />
 
-          <div className="space-y-2">
-            <Label htmlFor="birth_order">Con thứ mấy (tuỳ chọn)</Label>
-            <Input
-              id="birth_order"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={50}
-              value={birthOrder}
-              onChange={(e) => setBirthOrder(e.target.value)}
-              placeholder="Vd: 1 = con cả, 2 = thứ hai…"
-            />
-            <p className="text-sm text-muted-foreground">
-              Thứ tự anh chị em trong gia đình. Bỏ trống nếu không
-              rõ — app tự xếp theo năm sinh.
-            </p>
-          </div>
+          <BirthOrderPicker value={birthOrder} onChange={setBirthOrder} />
 
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -477,3 +462,4 @@ export default function EditPerson() {
     </div>
   );
 }
+
