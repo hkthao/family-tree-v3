@@ -137,7 +137,7 @@ function commonWordPrefix(names: string[]): string[] {
 }
 
 function deriveNamePrefix(
-  focal: { full_name: string } | undefined,
+  focal: { full_name: string } | null | undefined,
   children: { full_name: string; gender: "M" | "F" }[],
   gender: "M" | "F",
 ): string {
