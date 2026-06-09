@@ -74,6 +74,8 @@ export const queryKeys = {
   ) => ["clan-todo-items", clanId, userId, category, page] as const,
   clanTodoCount: (clanId: string, userId: string) =>
     ["clan-todo-count", clanId, userId] as const,
+  clanCompletion: (clanId: string, userId: string) =>
+    ["clan-completion", clanId, userId] as const,
   kinshipIndex: (clanId: string, userId: string) =>
     ["kinship-index", clanId, userId] as const,
   inlawGhostSpouses: (clanId: string, userId: string) =>

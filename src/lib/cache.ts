@@ -29,6 +29,10 @@ export async function invalidateClanData(
       if (head === "events" && second === clanId) return true;
       if (head === "anniversaries" && second === clanId) return true;
       if (head === "relatives-index" && second === clanId) return true;
+      if (head === "clan-todo-summary" && second === clanId) return true;
+      if (head === "clan-todo-items" && second === clanId) return true;
+      if (head === "clan-todo-count" && second === clanId) return true;
+      if (head === "clan-completion" && second === clanId) return true;
       // person + person-relationships are keyed by personId, not clanId,
       // so we invalidate broadly. Cheap — these queries are small.
       if (head === "person" || head === "person-relationships") return true;

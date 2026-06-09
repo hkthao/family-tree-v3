@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import {
+  getClanCompletion,
   getClanTodoItems,
   getClanTodoSummary,
   setPersonTodoExcluded,
@@ -102,6 +103,9 @@ export default function Todo() {
         queryClient.invalidateQueries({
           queryKey: queryKeys.clanTodoCount(clan.id, userId),
         }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.clanCompletion(clan.id, userId),
+        }),
       ]);
       toast.success("Đã loại khỏi danh sách");
     },
@@ -120,6 +124,13 @@ export default function Todo() {
   } = useQuery({
     queryKey: queryKeys.clanTodoSummary(clan.id, userId),
     queryFn: () => getClanTodoSummary(clan.id),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+
+  const { data: completion } = useQuery({
+    queryKey: queryKeys.clanCompletion(clan.id, userId),
+    queryFn: () => getClanCompletion(clan.id),
     enabled: !!userId,
     staleTime: 60_000,
   });
@@ -193,6 +204,10 @@ export default function Todo() {
           )}
         </div>
       </header>
+
+      {completion && completion.total > 0 && completion.percent !== null && (
+        <CompletionProgress completion={completion} />
+      )}
 
       {summaryError && (
         <Alert variant="destructive">
@@ -373,5 +388,54 @@ export default function Todo() {
         </div>
       )}
     </div>
+  );
+}
+
+function CompletionProgress({
+  completion,
+}: {
+  completion: import("@/lib/queries/todo").ClanCompletion;
+}) {
+  const { total, complete, percent } = completion;
+  // Bias the bar color so the empty middle range doesn't read like
+  // a failure — gia phả completion is a long-tail effort and the
+  // tone here should be encouraging.
+  const tone =
+    (percent ?? 0) >= 90
+      ? "bg-emerald-500"
+      : (percent ?? 0) >= 50
+        ? "bg-primary"
+        : "bg-amber-500";
+  return (
+    <section
+      aria-label="Tiến độ hoàn thiện gia phả"
+      className="rounded-lg border bg-card p-4 sm:p-5 space-y-3"
+    >
+      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+        <h2 className="font-medium">Họ ta đã hoàn thành</h2>
+        <span className="text-2xl sm:text-3xl font-semibold tabular-nums">
+          {percent}%
+        </span>
+      </div>
+      <div
+        className="h-2.5 w-full rounded-full bg-muted overflow-hidden"
+        role="progressbar"
+        aria-valuenow={percent ?? 0}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div
+          className={`h-full ${tone} transition-[width] duration-500`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <p className="text-sm text-muted-foreground">
+        <span className="tabular-nums">
+          {complete.toLocaleString("vi-VN")}
+        </span>{" "}
+        / {total.toLocaleString("vi-VN")} người đã đủ thông tin. Cùng
+        nhau bổ sung để kéo lên 100%.
+      </p>
+    </section>
   );
 }
