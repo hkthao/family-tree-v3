@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { EmptyState } from "@/components/EmptyState";
+import { QuickDateFixSheet } from "@/components/QuickDateFixSheet";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -168,7 +169,17 @@ export default function Todo() {
   const startIdx = totalForCategory === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
   const endIdx = Math.min(totalForCategory, safePage * PAGE_SIZE);
 
+  // Inline quick-fix for the `missing_dates` category — by far the
+  // most common gap and the cheapest to close (year-only). Other
+  // categories still hop to the full edit/detail page since fixing
+  // them needs more context than a single field.
+  const [quickFix, setQuickFix] = useState<TodoItemRow | null>(null);
+
   function openItem(item: TodoItemRow) {
+    if (canEdit && category === "missing_dates") {
+      setQuickFix(item);
+      return;
+    }
     const path = canEdit
       ? `/clans/${clan.id}/people/${item.person_id}/edit`
       : `/clans/${clan.id}/people/${item.person_id}`;
@@ -387,6 +398,14 @@ export default function Todo() {
           </div>
         </div>
       )}
+
+      <QuickDateFixSheet
+        open={quickFix !== null}
+        onClose={() => setQuickFix(null)}
+        clanId={clan.id}
+        personId={quickFix?.person_id ?? ""}
+        missing={quickFix?.missing ?? []}
+      />
     </div>
   );
 }
