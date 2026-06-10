@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import {
@@ -73,6 +74,59 @@ export function EditPersonForm({
   // any of them is already filled so existing data isn't hidden after
   // the person loads.
   const [showOptional, setShowOptional] = useState(false);
+
+  // Draft persistence — debounce-saves form state into localStorage
+  // so a network drop / accidental tab close doesn't nuke half an
+  // hour of work. Restoration is opt-in via the banner so the user
+  // isn't surprised by stale values.
+  const formState = {
+    fullName,
+    gender,
+    isLiving,
+    isRoot,
+    birth,
+    death,
+    birthPlace,
+    burialPlace,
+    courtesyName,
+    nickname,
+    posthumousName,
+    bio,
+    todoExcluded,
+    birthOrder,
+  };
+  const { existing: existingDraft, clearDraft } = useFormDraft({
+    key: `edit-person:${personId}`,
+    current: formState,
+    enabled: !!person,
+  });
+  const [draftDismissed, setDraftDismissed] = useState(false);
+
+  function restoreDraft() {
+    if (!existingDraft) return;
+    const d = existingDraft.data;
+    setFullName(d.fullName);
+    setGender(d.gender);
+    setIsLiving(d.isLiving);
+    setIsRoot(d.isRoot);
+    setBirth(d.birth);
+    setDeath(d.death);
+    setBirthPlace(d.birthPlace);
+    setBurialPlace(d.burialPlace);
+    setCourtesyName(d.courtesyName);
+    setNickname(d.nickname);
+    setPosthumousName(d.posthumousName);
+    setBio(d.bio);
+    setTodoExcluded(d.todoExcluded);
+    setBirthOrder(d.birthOrder);
+    setDraftDismissed(true);
+    clearDraft();
+  }
+
+  function dismissDraft() {
+    setDraftDismissed(true);
+    clearDraft();
+  }
 
   useEffect(() => {
     if (!person) return;
@@ -160,6 +214,7 @@ export function EditPersonForm({
     },
     onSuccess: async () => {
       track("person_edited");
+      clearDraft();
       await invalidateClanData(queryClient, clanId);
       toast.success("Đã lưu thay đổi");
       onSaved();
@@ -190,6 +245,40 @@ export function EditPersonForm({
       }}
       className="space-y-6"
     >
+      {existingDraft && !draftDismissed && (
+        <div className="rounded-md border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20 p-3 flex items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">
+              Có bản nháp chưa lưu
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {formatDraftAge(existingDraft.savedAt)} · Bạn đã sửa hồ
+              sơ này nhưng chưa bấm Lưu lần trước.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={restoreDraft}
+            className="shrink-0"
+          >
+            Khôi phục
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={dismissDraft}
+            className="shrink-0"
+            title="Bỏ bản nháp"
+            aria-label="Bỏ bản nháp"
+          >
+            <IconX className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label>Ảnh đại diện</Label>
         <PhotoUploadField
@@ -466,5 +555,16 @@ export default function EditPerson() {
       />
     </div>
   );
+}
+
+function formatDraftAge(savedAt: number): string {
+  const ageMs = Date.now() - savedAt;
+  if (ageMs < 60_000) return "Vài giây trước";
+  const mins = Math.floor(ageMs / 60_000);
+  if (mins < 60) return `${mins} phút trước`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  return `${days} ngày trước`;
 }
 
