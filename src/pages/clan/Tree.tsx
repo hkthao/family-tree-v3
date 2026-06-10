@@ -316,12 +316,13 @@ export default function Tree() {
           }
         ).createChart(node, f3Data);
 
-        // Vietnamese gia phả routinely don't name wives — without
-        // this, family-chart auto-renders a card-sized "?" beside
-        // every husband that elderly users mistake for a real missing
-        // person. Override the label so the placeholder reads
-        // "Chưa rõ" instead. (Library default label is "Unknown".)
-        built.setSingleParentEmptyCard(true, { label: "Chưa rõ" });
+        // Vietnamese gia phả routinely don't record wives — the lib's
+        // default "?" placeholder makes the tree look broken on those
+        // families. Turn it off entirely: single-parent families draw
+        // children straight under the recorded parent (no phantom
+        // partner), and multi-parent families still show both cards
+        // normally — the lib supports both shapes on the same tree.
+        built.setSingleParentEmptyCard(false);
 
         // setCardSvg returns a CardSvg instance — every config call
         // (setCardDisplay, setCardDim, …) must chain off THAT, not the
