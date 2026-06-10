@@ -80,6 +80,30 @@ Bảng tổng hợp ai thấy gì:
 
 "Thông tin nhạy cảm của người còn sống" = `birth_date`, `birth_lunar`, `photo_path`, `bio`, `birth_place`, `burial_place` và mọi thông tin liên hệ. Với người sống, khách/người ngoài chỉ thấy `full_name`, `gender`, `generation`, `branch`.
 
+### UI-level gating (defense-in-depth)
+
+RLS ở DB layer là chốt cứng — không ai dựng request bypass được. Nhưng UI cũng cần gate đúng để không hiện nút action chỉ để bấm xong báo 403. Tóm tắt route + action nào cho ai (non-member của clan `public` là trường hợp gây nhầm nhất):
+
+| Surface | Non-member (public clan) | Member (viewer+) | Editor / Admin |
+|---|---|---|---|
+| `/tree` | Xem (masked view) | Xem đầy đủ | + thêm/sửa/xoá người trên cây |
+| `/people` | Xem list (masked view) | Xem + lọc + search | + bulk edit, gán nhánh, etc. |
+| Dashboard | Xem (stats fallback từ tree khi RPC trả 0) | Xem đầy đủ | + nút import / thêm người |
+| `/events` | Xem lịch (RLS broaden) | + theo dõi | + tạo/sửa sự kiện |
+| `/today` | Redirect về Dashboard | Xem | — |
+| `/person/:id` | Xem (masked view) | Xem đầy đủ | + sửa, QR (admin), xoá |
+| **Action bị ẩn cho non-member**: |  |  |  |
+| Nút "Xuất sổ PDF" (Tree + Dashboard) | ❌ | ✅ | ✅ |
+| Nút "Chia sẻ" (Tree) | ❌ | ✅ | ✅ |
+| Nút "Xuất lịch (.ics)" (Events) | ❌ | ✅ | ✅ |
+| Tab "Việc cần làm" (`/todo`) | Redirect | ✅ | ✅ |
+| `/kinship` máy tính xưng hô | Redirect | ✅ | ✅ |
+| `/admin` / `/settings` / `/members` / `/audit` / `/inlaws` / `/contributions` | Redirect | Tùy role | ✅ |
+| `/import`, `/ai-generate`, `/new`, `/edit` | Redirect | Viewer redirect; editor+ vào | ✅ |
+| Drawer todo badge dot, milestone toast | Ẩn | Hiện | Hiện |
+
+Quy tắc chung: nếu một route/RPC raise `42501` cho non-member (vd `count_clan_todo`, `count_clan_completion_gaps`, `get_clan_todo_summary`), UI phải gate query bằng `enabled: !!userId && effectiveRole(clan) !== null`. Nếu nguyên trang là member-only, redirect bằng `<Navigate to={\`/clans/\${clan.id}\`} replace />` ngay sau khi `useClanContext` đã load — tránh hiện trang đầy lỗi 403 trong console rồi mới chuyển hướng.
+
 ---
 
 ## 5. Phân quyền & vai trò
@@ -301,21 +325,45 @@ Bật `alter table ... enable row level security` trên: `clans`, `clan_members`
 - `bump_data_version` (after insert/update/delete **statement-level** trên `persons`,`families`,`branches`): bump 1 lần / statement, không 1 lần / row. Với bulk import 7.000 hàng: chỉ 1 update `clans` thay vì 7.000 → tránh bloat MVCC và serialize. Cân nhắc tách bảng `clan_data_versions(clan_id, version)` riêng để giảm bloat trên `clans`.
 
 ### Lọc người sống cho người ngoài (clan `public`)
-Ưu tiên dùng **view** `persons_public_safe` thay vì RPC SECURITY DEFINER (bypass RLS = rủi ro lộ dữ liệu nếu có bug). View masking column-level:
+Ưu tiên dùng **view** `persons_public_safe` thay vì RPC SECURITY DEFINER (bypass RLS = rủi ro lộ dữ liệu nếu có bug). View masking column-level cho các cột nhạy cảm khi `is_living = true`:
 
 ```sql
 create view persons_public_safe as
-select id, clan_id, full_name, gender, generation, branch_id, is_living,
+select id, clan_id, full_name, gender, generation, branch_id, is_living, is_root,
   case when is_living then null else birth_date end as birth_date,
   case when is_living then null else birth_place end as birth_place,
   case when is_living then null else photo_path end as photo_path,
   case when is_living then null else bio end as bio,
-  -- ... các cột nhạy cảm khác
+  -- … (toàn bộ field tên/nơi/ngày sinh+mất + lunar variants)
+  birth_family_id,            -- cần để Tree vẽ parent-child link
+  birth_order                 -- cần để xếp anh chị em
 from persons
-where deleted_at is null;
+where deleted_at is null
+  and exists (
+    select 1 from clans c
+    where c.id = persons.clan_id
+      and (c.visibility = 'public' or is_clan_member(c.id) or is_platform_admin())
+  );
 ```
 
-RLS trên view: `SELECT` cho `is_clan_member(clan_id) OR (select visibility from clans where id = clan_id) = 'public'`. Thành viên vẫn select trực tiếp `persons` (bảng) để lấy đầy đủ; người ngoài chỉ select được view. Frontend chọn nguồn theo `viewerScope`.
+`security_invoker = false` — view chạy với quyền owner. Toàn bộ visibility check do WHERE clause trên view tự lo. GRANT SELECT chỉ cho `authenticated`; REVOKE từ `anon`.
+
+Có một view chị em `families_public_safe` cùng pattern — chỉ expose `id, clan_id, husband_id, wife_id, union_type` (không có thông tin cá nhân). Tree cần cả 2 view để vẽ được cho non-member.
+
+Thành viên (`is_clan_member`) vẫn select trực tiếp `persons`/`families` để lấy đầy đủ (vd `todo_excluded`, `full_name_unaccent`); người ngoài chỉ select được view. Frontend chọn nguồn ở client qua hook `effectiveRole(clan) === null` rồi thread `source: "persons" | "persons_public_safe"` qua `getTreeData`, `getPerson`, `getPersonRelationships`, `listPersons` — kèm trong `queryKey` để cache không poison giữa hai nhánh.
+
+### Visibility cho các bảng phụ trợ
+
+Các bảng/policy đặc biệt khác cần đồng pattern (chỉ thành viên mới được SELECT, hoặc public clan mới được peek):
+
+- **`families` / `branches`**: members-only SELECT (giống `persons`). Non-member của public clan đọc qua `families_public_safe`.
+- **`events`**: ban đầu là members-only (`events_member_select`). Đã đổi sang policy `events_select` rộng hơn — cho phép `visibility='public'` (xem migration `20260610030000_events_public_select.sql`). Write policies (insert/update/delete) vẫn `can_edit_clan`. Non-member của public clan thấy lịch sự kiện read-only; vẫn không xuất `.ics` được (gate ở UI).
+- **`event_subscriptions`**: chỉ chủ subscription, write/read đều `auth.uid() = user_id`.
+- **`audit_log`**: members-only SELECT (`is_clan_member`); restore RPC `is_clan_admin`.
+- **`clan_members`**: SELECT cho member của cùng clan (để thấy đồng nghiệp) + platform_admin.
+- **`person_links`** (cross-clan in-law): xem mục 28 — admin-only mặc định, có cấu hình riêng.
+- **`feedback`**: anyone INSERT (kể cả anon — early users chưa login), chỉ platform_admin SELECT.
+- **`contributions`**: anyone đã login INSERT (đề xuất sửa), admin/editor SELECT/UPDATE để duyệt.
 
 ### Storage RLS (ảnh thành viên)
 Bucket `person-photos` đường dẫn: `{clan_id}/{person_id}.jpg`. Policies:
