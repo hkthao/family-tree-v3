@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { QuickDateFixSheet } from "@/components/QuickDateFixSheet";
@@ -88,36 +89,95 @@ export default function Todo() {
   const canEdit = canEditClan(clan);
   const queryClient = useQueryClient();
   const toast = useToast();
+  const confirm = useConfirm();
+
+  // Bulk-select state, reset whenever the user switches categories or
+  // pages — selecting "Ông A" on `missing_dates` shouldn't survive a
+  // jump to `missing_parents`, even if the same row would appear there.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function invalidateTodoQueries() {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clanTodoSummary(clan.id, userId),
+      }),
+      queryClient.invalidateQueries({
+        predicate: (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey[0] === "clan-todo-items" &&
+          q.queryKey[1] === clan.id,
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clanTodoCount(clan.id, userId),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clanCompletion(clan.id, userId),
+      }),
+    ]);
+  }
 
   const excludeMutation = useMutation({
     mutationFn: (personId: string) => setPersonTodoExcluded(personId, true),
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.clanTodoSummary(clan.id, userId),
-        }),
-        queryClient.invalidateQueries({
-          predicate: (q) =>
-            Array.isArray(q.queryKey) &&
-            q.queryKey[0] === "clan-todo-items" &&
-            q.queryKey[1] === clan.id,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.clanTodoCount(clan.id, userId),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.clanCompletion(clan.id, userId),
-        }),
-      ]);
+      await invalidateTodoQueries();
       toast.success("Đã loại khỏi danh sách");
     },
     onError: (e) =>
       toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
+  // Sequential rather than Promise.all — Supabase rate-limits the RPC
+  // path and a 50-row burst would round-trip 50× anyway. The toast at
+  // the end is the user-visible signal; intermediate state stays inside
+  // the mutation.
+  const bulkExcludeMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      for (const id of ids) {
+        await setPersonTodoExcluded(id, true);
+      }
+      return ids.length;
+    },
+    onSuccess: async (count) => {
+      setSelected(new Set());
+      await invalidateTodoQueries();
+      toast.success(`Đã loại ${count} người khỏi danh sách`);
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  async function onBulkExclude() {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const ok = await confirm({
+      title: `Loại ${ids.length} người khỏi danh sách?`,
+      description:
+        "Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa.",
+      confirmLabel: "Loại",
+      destructive: true,
+    });
+    if (ok) bulkExcludeMutation.mutate(ids);
+  }
+
   const [category, setCategory] = useState<TodoCategory>("missing_parents");
   // 1-based for consistency with Audit/Clans/People pagination.
   const [page, setPage] = useState(1);
+
+  // Clear bulk selection on category / page change — a row only
+  // exists on one (category, page) tuple, so carrying selection over
+  // would invisibly target rows the user can no longer see.
+  useEffect(() => {
+    setSelected(new Set());
+  }, [category, page]);
 
   const {
     data: summary,
@@ -298,6 +358,38 @@ export default function Todo() {
         />
       )}
 
+      {canEdit && selected.size > 0 && (
+        <div className="sticky top-0 z-10 -mx-4 sm:mx-0 px-4 sm:px-3 py-2 bg-card border-y sm:border sm:rounded-md flex items-center gap-3 shadow-sm">
+          <span className="text-sm">
+            Đã chọn <strong className="tabular-nums">{selected.size}</strong>{" "}
+            người
+          </span>
+          <div className="flex-1" />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setSelected(new Set())}
+            className="h-9"
+          >
+            Bỏ chọn
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={onBulkExclude}
+            disabled={bulkExcludeMutation.isPending}
+            className="h-9"
+          >
+            <IconX className="h-4 w-4 mr-1.5" />
+            {bulkExcludeMutation.isPending
+              ? "Đang loại…"
+              : `Loại khỏi DS`}
+          </Button>
+        </div>
+      )}
+
       {rows && rows.length > 0 && (
         <ul className="divide-y rounded-md border bg-card">
           {rows.map((row) => (
@@ -305,6 +397,24 @@ export default function Todo() {
               key={row.person_id}
               className="flex items-center gap-1 hover:bg-muted/50"
             >
+              {canEdit && (
+                <label
+                  className="shrink-0 pl-3 py-2.5 cursor-pointer inline-flex items-center"
+                  title={
+                    selected.has(row.person_id)
+                      ? "Bỏ chọn"
+                      : "Chọn để xử lý hàng loạt"
+                  }
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.has(row.person_id)}
+                    onChange={() => toggleSelected(row.person_id)}
+                    className="h-5 w-5 accent-primary"
+                    aria-label={`Chọn ${row.full_name}`}
+                  />
+                </label>
+              )}
               <button
                 type="button"
                 onClick={() => openItem(row)}
