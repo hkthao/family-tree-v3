@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ClanLayout } from "@/components/ClanLayout";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { MascotTip } from "@/components/MascotTip";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -145,6 +146,7 @@ export default function App() {
         </Routes>
         <OfflineIndicator />
         <FeedbackButton />
+        <MascotTip />
         <UpdateBanner />
       </ConfirmDialogProvider>
       </ToastProvider>
