@@ -102,16 +102,30 @@ export interface AnniversaryCandidate {
 export async function listAnniversaryCandidates(
   clanId: string,
   client: Client = defaultClient,
+  source: "persons" | "persons_public_safe" = "persons",
 ): Promise<AnniversaryCandidate[]> {
-  const { data, error } = await client
-    .from("persons")
-    .select(
-      "id, full_name, generation, branch_id, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap",
-    )
-    .eq("clan_id", clanId)
-    .eq("is_living", false)
-    .not("death_anniv_lunar_month", "is", null)
-    .is("deleted_at", null);
-  if (error) throw new Error(error.message);
-  return (data ?? []) as AnniversaryCandidate[];
+  // Non-members of a public clan read through the masked view (raw
+  // persons RLS would return 0 rows for them). The view already
+  // filters deleted_at internally so we drop that chain on the safe
+  // path. Deceased persons' anniversary fields are not masked, so
+  // the data is identical between the two sources for this query.
+  const cols =
+    "id, full_name, generation, branch_id, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap";
+  const res =
+    source === "persons_public_safe"
+      ? await client
+          .from("persons_public_safe")
+          .select(cols)
+          .eq("clan_id", clanId)
+          .eq("is_living", false)
+          .not("death_anniv_lunar_month", "is", null)
+      : await client
+          .from("persons")
+          .select(cols)
+          .eq("clan_id", clanId)
+          .eq("is_living", false)
+          .not("death_anniv_lunar_month", "is", null)
+          .is("deleted_at", null);
+  if (res.error) throw new Error(res.error.message);
+  return (res.data ?? []) as AnniversaryCandidate[];
 }
