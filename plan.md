@@ -2346,3 +2346,194 @@ Bản này đã áp các fix critical từ review:
 **Phase 2 / sau launch.** Bản tập trung tối giản: text → helper (admin
 hoặc nhóm nhỏ tin cậy) dựng tay → duyệt → phát hành. Không mở cộng đồng.
 
+---
+
+## 31. Linh vật gợi ý sử dụng (mascot tip system)
+
+> Người dùng (đặc biệt người lớn tuổi) **ít khi vào /docs đọc hướng dẫn**.
+> Cần một kênh chủ động đẩy gợi ý ngay trong app, không xâm phạm, không
+> spam. Thay vì onboarding tour cứng (1 lần lúc đăng ký xong là quên),
+> dùng "linh vật" pop tip rải rác trong phiên dùng — đúng lúc, đúng
+> ngữ cảnh, tắt được, không lặp.
+
+### 31.1. Bối cảnh & mục tiêu
+
+- Đã có `/docs` + `HelpButton` ở header (mục 10) — passive, user phải
+  tự bấm. Đa số không bấm.
+- Đã có `UpdateBanner` (mục 17 PWA) — chỉ thông báo khi có app version
+  mới, không có gợi ý feature khác.
+- Mục tiêu: kênh **proactive** nhưng **nhẹ nhàng** — pop tip dạng
+  tooltip cạnh một biểu tượng linh vật ở góc, user bấm để xem chi
+  tiết hoặc dismiss. Phiên dùng có 0-2 tip, không bao giờ chen ngang
+  thao tác.
+
+### 31.2. Nguyên tắc (anti-banner-blindness)
+
+1. **Ít hơn 1 tip / phiên đầu**, và ≤1 tip / route load sau đó.
+2. **Mỗi tip chỉ pop 1 lần** trong vòng đời user (lưu seen-ids trong
+   `localStorage`). Đã dismiss = vĩnh viễn không pop lại.
+3. **Cooldown giữa các tip**: ≥48h kể từ tip cuối — để tip không
+   thành stream of nags.
+4. **Context-aware**: tip về "Thêm Thuỷ tổ" chỉ pop khi `/tree` đang
+   rỗng. Tip về "can-chi" chỉ pop khi user vừa mở `EditPerson`. Tip
+   về update chỉ pop khi có version mới.
+5. **Dismissible tức thì**: 1 nút "×" trên tooltip, hoặc bấm ra
+   ngoài. Không có "snooze for 24h" — quá phức tạp.
+6. **Không pop khi user đang thao tác**: nếu modal/sheet đang mở,
+   form đang dirty, hoặc user đang scroll → skip.
+7. **Linh vật bản thân không animation chen ngang**. Chỉ một icon
+   nhỏ tĩnh (≤32px) ở góc, có chấm đỏ subtle khi đang có tip mới
+   chưa xem.
+
+### 31.3. State + storage
+
+Không cần migration DB — toàn bộ state phía client:
+
+```typescript
+// localStorage key: "ftv3:tips"
+interface TipsState {
+  seenIds: string[];          // tip ids đã dismiss / shown
+  lastShownAt: number | null; // ms timestamp; cooldown gate
+  mascotMuted: boolean;       // user explicitly muted (settings option)
+}
+```
+
+Tip pool (catalogue) là **static TypeScript file** — không cần admin
+UI để soạn tip. Bump phiên bản tip → release mới.
+
+### 31.4. Catalogue tip (sample)
+
+`src/lib/tipCatalogue.ts`:
+
+```typescript
+export interface Tip {
+  id: string;                              // stable, lưu trong seenIds
+  title: string;
+  body: string;
+  /** Pop điều kiện. Tip chỉ pop khi predicate trả true. */
+  when: (ctx: TipContext) => boolean;
+  /** Optional: button "Mở" dẫn user đến route cụ thể. */
+  action?: { label: string; to: string };
+  /** Priority cao hơn = pop trước nếu nhiều tip cùng eligible. */
+  priority?: number;
+}
+
+export interface TipContext {
+  route: string;
+  hasAnyClan: boolean;
+  currentClan: { id: string; isEmpty: boolean; canEdit: boolean } | null;
+  appVersion: string;       // __APP_VERSION__
+  lastSeenVersion: string;  // user's last-seen version (localStorage)
+}
+```
+
+Tip mẫu (~10-15 đủ cover các use case chính):
+
+| id | Khi pop | Nội dung |
+|---|---|---|
+| `welcome-new-user` | route=`/clans` + `hasAnyClan=false` | "Bạn đã tạo dòng họ đầu tiên chưa?" + action /clans/new |
+| `tree-add-root` | route=`/tree` + `isEmpty=true` + canEdit | "Bắt đầu bằng cách thêm Thuỷ tổ" + action /people/new |
+| `try-can-chi` | route=`/people/*/edit` + first 5 edits | "Không nhớ năm dương? Gõ can-chi (vd Bính Thìn)" |
+| `try-quick-add` | route=`/tree` + clan có ≥3 người | "Bấm dấu + trên card để thêm con/vợ-chồng nhanh" |
+| `try-todo` | có gap ≥5 và chưa vào /todo | "Có 5+ chỗ thiếu thông tin — xem 'Việc cần làm'" |
+| `try-share` | route=`/tree` + clan public + admin | "Có thể chia sẻ cây qua nút Chia sẻ ở trên" |
+| `lunar-calendar` | bao giờ đó | "Ô năm sinh / mất cho cả dương + âm — bấm 'Nhập theo lịch Âm'" |
+| `feedback-button` | sau 5 phút dùng | "Gặp lỗi? Bấm nút Góp ý ở góc dưới" |
+| `app-updated` | `appVersion !== lastSeenVersion` | "App có cập nhật v{version} — tải lại để áp dụng" + action reload |
+| `import-excel` | clan empty + canEdit + sau 2 phút | "Có file Excel danh sách? Nhập hàng loạt một lần" + action /import |
+| `theme-toggle` | route=`/clans` + sau dark hour | "Đổi sang chế độ tối ở góc trên" |
+| `mute-mascot` | sau tip thứ 5 | "Không muốn xem gợi ý? Tắt linh vật ở /account" |
+
+### 31.5. Triggers & scheduling
+
+```typescript
+// src/hooks/useMascotTip.ts
+export function useMascotTip(): { tip: Tip | null; dismiss: (id: string) => void };
+```
+
+Gọi từ một component invisible (giống `MilestoneWatcher` đã có ở
+`ClanLayout`) — mount toàn cục, scan tip catalogue mỗi khi:
+- Route thay đổi (`useLocation`),
+- `clanCompletion` / `tree` data refresh,
+- App focus (visibilitychange).
+
+Thuật toán pick tip:
+1. Lọc tip có `when(ctx) === true`.
+2. Loại tip đã có trong `seenIds`.
+3. Nếu `Date.now() - lastShownAt < 48h` → return null.
+4. Pick tip có `priority` cao nhất; tie-break by id ổn định.
+5. Show tooltip + chấm đỏ trên mascot. Sau khi shown → push id vào
+   `seenIds` + update `lastShownAt`.
+
+### 31.6. UI
+
+```
+┌─────────────────────────────────────────┐
+│                                          │
+│  [trang nội dung]                       │
+│                                          │
+│                                          │
+│           ┌──────────────────────────┐   │
+│           │ Bạn đã tạo dòng họ chưa? × │
+│           │ Bấm để tạo cây gia phả     │   │
+│           │ [Mở →]                     │   │
+│           └────────────────────────┐  │   │
+│                                    \ │   │
+│                                    [🐉]  │  ← linh vật góc dưới-trái
+│                                          │  (tránh FeedbackButton bên phải)
+│  ●           [Góp ý]                    │
+└─────────────────────────────────────────┘
+```
+
+- Linh vật: 1 emoji hoặc SVG nhỏ (≤32px). Vd `🐉` (rồng — biểu tượng
+  dòng họ VN), hoặc 1 hình mascot riêng. Tĩnh, có chấm đỏ subtle
+  khi đang có tip chưa xem.
+- Tooltip: bubble với title + body + button action (nếu có) + nút ×.
+- Click ngoài / scroll mạnh → dismiss tooltip nhưng không mark
+  seen (lần sau vẫn pop lại nếu user chưa thấy hết).
+- Linh vật bấm vào → hiện tip cuối cùng (nếu chưa dismiss hẳn)
+  hoặc dropdown "Mẹo đã xem" / settings.
+
+### 31.7. Settings + mute
+
+`/account` (hoặc `/settings`) thêm 1 toggle "Linh vật gợi ý" — bật/
+tắt. Mặc định ON. User tắt → mascot ẩn hoàn toàn, không pop tip nào.
+
+Tip `mute-mascot` (id 12 ở bảng trên) chỉ pop sau khi đã hiển thị
+≥5 tip khác — để user khám phá feature trước khi được mời tắt.
+
+### 31.8. Tích hợp với code hiện có
+
+- **Vị trí mount**: bên cạnh `<FeedbackButton />` trong `App.tsx`
+  (toàn cục, không phụ thuộc route hay clan).
+- **Tip context**: dùng `useLocation()`, `useAuth()`, optionally
+  `useClanContext()` qua một wrapper (vì mascot mount ngoài
+  ClanLayout — có thể parse `clanId` từ pathname).
+- **Reuse `__APP_VERSION__`**: đã được vite inject (mục 17).
+- **Reuse `MilestoneWatcher` pattern**: invisible component
+  watcher.
+
+### 31.9. Test
+
+- Tip seen → không pop lại (refresh page → không pop).
+- Cooldown 48h: pop tip A → set system time +24h → không pop tip B.
+- `mascotMuted=true` → mascot ẩn, không pop bất cứ tip nào.
+- `when(ctx)` thay đổi (vd: user thêm clan đầu tiên) → tip
+  `welcome-new-user` không pop nữa.
+- Multiple tips eligible → priority cao hơn pop trước.
+- Action button dẫn đúng route.
+- Storage corrupted (parse error) → gracefully reset (không crash app).
+
+### 31.10. Phase & ngoài phạm vi
+
+- **Phase 2 (sau launch).** Có thể ship cùng phase với mục 30 vì
+  không phụ thuộc lẫn nhau.
+- **Ngoài phạm vi v1**:
+  - A/B test tip wording (cần analytics infra).
+  - Personalize per user-segment (cần backend tracking).
+  - Animated mascot / voice / mascot character full-body.
+  - Tip soạn từ admin UI (lúc nào schema thay đổi mới quá nhiều
+    để hard-code).
+  - Push tip qua notification khi user offline lâu (lẫn lộn với
+    Web Push mục 29 — dễ thành spam).
+
