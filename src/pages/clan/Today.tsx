@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
@@ -40,13 +40,15 @@ export default function Today() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
 
-  if (effectiveRole(clan) === null) {
-    return <Navigate to={`/clans/${clan.id}`} replace />;
-  }
-
+  // Non-members of a public clan read through the masked view (same
+  // source-selection pattern as /tree, /events, Dashboard). "Hôm
+  // nay" is fundamentally just a different layout of the events +
+  // anniversaries data — no reason to hide it from public visitors.
+  const treeSource =
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
   const { data: tree } = useQuery({
-    queryKey: queryKeys.treeData(clan.id, userId),
-    queryFn: () => getTreeData(clan.id),
+    queryKey: queryKeys.treeData(clan.id, userId, treeSource),
+    queryFn: () => getTreeData(clan.id, treeSource),
     enabled: !!userId,
   });
   const { data: events } = useQuery({
@@ -55,8 +57,12 @@ export default function Today() {
     enabled: !!userId,
   });
   const { data: anniversaries } = useQuery({
-    queryKey: queryKeys.anniversaries(clan.id, userId),
-    queryFn: () => listAnniversaryCandidates(clan.id),
+    queryKey: [
+      ...queryKeys.anniversaries(clan.id, userId),
+      treeSource,
+    ] as const,
+    queryFn: () =>
+      listAnniversaryCandidates(clan.id, undefined, treeSource),
     enabled: !!userId,
   });
 
@@ -131,10 +137,16 @@ export default function Today() {
       />
 
       <div className="rounded-md border bg-card p-3 text-sm flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <IconBell className="h-4 w-4" />
-          <span>Bật nhắc qua email ở trang Sự kiện hoặc trên từng người.</span>
-        </div>
+        {effectiveRole(clan) !== null ? (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <IconBell className="h-4 w-4" />
+            <span>Bật nhắc qua email ở trang Sự kiện hoặc trên từng người.</span>
+          </div>
+        ) : (
+          <div className="text-muted-foreground">
+            Bạn đang xem dòng họ ở chế độ công khai.
+          </div>
+        )}
         <Link
           to={`/clans/${clan.id}/events`}
           className="text-sm text-primary hover:underline whitespace-nowrap"
