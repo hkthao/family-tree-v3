@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { ClanLayout } from "@/components/ClanLayout";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { RequireAuth } from "@/components/RequireAuth";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -143,6 +144,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/clans" replace />} />
         </Routes>
         <OfflineIndicator />
+        <FeedbackButton />
         <UpdateBanner />
       </ConfirmDialogProvider>
       </ToastProvider>
