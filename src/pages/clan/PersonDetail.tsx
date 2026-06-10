@@ -200,6 +200,14 @@ export default function PersonDetail() {
               )}
             </header>
 
+            {canEdit && (
+              <MissingFieldsHint
+                person={person}
+                parentsCount={relationships?.parents.length ?? null}
+                editHref={`/clans/${clanId}/people/${personId}/edit`}
+              />
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle>Thông tin cơ bản</CardTitle>
@@ -785,6 +793,56 @@ function InLawLinkRow({
         </div>
       )}
     </div>
+  );
+}
+
+// Subtle inline hint listing the missing-but-fixable fields. Pure
+// gentle nudge — no full progress bar here. We only flag the hard
+// gaps that drive the clan-wide completion percentage (năm sinh,
+// năm mất/giỗ, cha/mẹ) plus `ảnh` because it's a one-tap upload
+// that pays off visually. Excluded persons (todo_excluded = true)
+// are intentionally silent — admin has already said "leave them
+// alone".
+function MissingFieldsHint({
+  person,
+  parentsCount,
+  editHref,
+}: {
+  person: PersonDetailT;
+  /** null = relationships still loading, [] = loaded with no parents. */
+  parentsCount: number | null;
+  editHref: string;
+}) {
+  if (person.todo_excluded) return null;
+
+  const missing: string[] = [];
+
+  if (!person.birth_date && !person.birth_lunar_year) {
+    missing.push("năm sinh");
+  }
+  if (!person.is_living) {
+    const hasDeath =
+      !!person.death_date ||
+      !!person.death_lunar_year ||
+      !!person.death_anniv_lunar_month;
+    if (!hasDeath) missing.push("năm mất/giỗ");
+  }
+  if (!person.is_root && parentsCount === 0) {
+    missing.push("cha/mẹ");
+  }
+  if (!person.photo_path) missing.push("ảnh");
+
+  if (missing.length === 0) return null;
+
+  return (
+    <Link
+      to={editHref}
+      className="block rounded-md border border-dashed bg-muted/30 px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+    >
+      <span className="text-muted-foreground">Hồ sơ này còn thiếu: </span>
+      <span>{missing.join(" · ")}</span>
+      <span className="text-primary ml-1.5">→ Sửa</span>
+    </Link>
   );
 }
 
