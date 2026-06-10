@@ -116,12 +116,18 @@ export function ClanLayout() {
 
   return (
     <div className="min-h-dvh bg-background pb-20 lg:pb-0 lg:pl-72">
-      <MilestoneWatcher clanId={clan.id} />
+      {/* Member-only signals — non-member visitors of a public clan
+          shouldn't trigger the milestone toast or the drawer badge,
+          and those queries 403 for them anyway. */}
+      {(clan.myRole !== null || clan.isPlatformAdmin) && (
+        <MilestoneWatcher clanId={clan.id} />
+      )}
       <header className="border-b bg-background sticky top-0 z-30">
         <div className="container max-w-4xl flex items-center justify-between gap-3 px-4 h-[64px]">
           <DrawerToggle
             clanId={clan.id}
             userId={userId ?? ""}
+            isMember={clan.myRole !== null || clan.isPlatformAdmin}
             onOpen={() => setDrawerOpen(true)}
           />
           <div className="flex-1 min-w-0 text-center">
@@ -174,16 +180,21 @@ function MilestoneWatcher({ clanId }: { clanId: string }) {
 function DrawerToggle({
   clanId,
   userId,
+  isMember,
   onOpen,
 }: {
   clanId: string;
   userId: string;
+  isMember: boolean;
   onOpen: () => void;
 }) {
+  // count_clan_todo is member-only (raises 42501 otherwise). Skip the
+  // query entirely for non-member visitors so they don't see a 403 in
+  // the console; the badge dot is hidden either way.
   const { data: todoCount } = useQuery({
     queryKey: queryKeys.clanTodoCount(clanId, userId),
     queryFn: () => countClanTodo(clanId),
-    enabled: !!userId,
+    enabled: !!userId && isMember,
     staleTime: 60_000,
   });
   const hasWork = (todoCount ?? 0) > 0;

@@ -220,10 +220,12 @@ export default function People() {
   });
   const maxGen = stats?.max_generation ?? null;
 
+  // Member-only RPC; skip for non-members of public clans to avoid
+  // a 403 in the console (they don't see the strip anyway).
   const { data: completion } = useQuery({
     queryKey: queryKeys.clanCompletion(clan.id, userId),
     queryFn: () => getClanCompletion(clan.id),
-    enabled: !!userId,
+    enabled: !!userId && effectiveRole(clan) !== null,
     staleTime: 60_000,
   });
 
