@@ -276,7 +276,10 @@ export default function Dashboard() {
                   />
                 </>
               )}
-              <PdfActionTile clan={clan} />
+              {/* PDF export is member-only — bulk-downloading the whole
+                  clan book is owner territory, not for non-member
+                  public-clan visitors. */}
+              {isMember && <PdfActionTile clan={clan} />}
             </div>
           </section>
 
