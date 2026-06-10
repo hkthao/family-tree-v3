@@ -76,8 +76,11 @@ export default function Dashboard() {
     enabled: !!userId,
   });
   const { data: anniversaries } = useQuery({
-    queryKey: queryKeys.anniversaries(clan.id, userId),
-    queryFn: () => listAnniversaryCandidates(clan.id),
+    queryKey: [
+      ...queryKeys.anniversaries(clan.id, userId),
+      treeSource,
+    ] as const,
+    queryFn: () => listAnniversaryCandidates(clan.id, undefined, treeSource),
     enabled: !!userId,
   });
   const { data: completion } = useQuery({
