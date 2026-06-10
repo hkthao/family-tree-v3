@@ -57,7 +57,10 @@ interface F3Chart {
   setOrientationHorizontal?: () => F3Chart;
   setOrientationVertical?: () => F3Chart;
   setTransitionTime: (n: number) => F3Chart;
-  setSingleParentEmptyCard: (b: boolean) => F3Chart;
+  setSingleParentEmptyCard: (
+    b: boolean,
+    opts?: { label?: string },
+  ) => F3Chart;
   updateTree: (opts: { initial?: boolean }) => void;
   updateMainId?: (id: string) => void;
   // setCardSvg / setCardHtml return a NEW Card instance (CardSvg /
@@ -312,6 +315,13 @@ export default function Tree() {
             createChart: (el: HTMLElement | string, data: unknown) => F3Chart;
           }
         ).createChart(node, f3Data);
+
+        // Vietnamese gia phả routinely don't name wives — without
+        // this, family-chart auto-renders a card-sized "?" beside
+        // every husband that elderly users mistake for a real missing
+        // person. Override the label so the placeholder reads
+        // "Chưa rõ" instead. (Library default label is "Unknown".)
+        built.setSingleParentEmptyCard(true, { label: "Chưa rõ" });
 
         // setCardSvg returns a CardSvg instance — every config call
         // (setCardDisplay, setCardDim, …) must chain off THAT, not the
