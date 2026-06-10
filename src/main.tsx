@@ -80,8 +80,12 @@ createRoot(document.getElementById("root")!).render(
           maxAge: 1000 * 60 * 60 * 24,
           // Bump when query key shapes change to invalidate old caches.
           // v2: clan-detail now includes data_version (cache freshness);
-          // dashboard + clan-stats added.
-          buster: "v2",
+          //     dashboard + clan-stats added.
+          // v3: tree-data query path now branches on member vs non-member
+          //     (persons_public_safe view). Pre-fix browsers cached the
+          //     blocked-by-RLS empty result for public-clan visitors; this
+          //     bust forces a clean refetch through the new code path.
+          buster: "v3",
         }}
       >
         <App />
