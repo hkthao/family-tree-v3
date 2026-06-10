@@ -14,7 +14,9 @@ import { checkForUpdate, hasPendingUpdate } from "@/lib/pwa";
  * existing UpdateBanner takes over and prompts to apply. If not,
  * we tell the user they're already on the latest.
  */
-export function CheckUpdateButton() {
+export function CheckUpdateButton({
+  compact = false,
+}: { compact?: boolean } = {}) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
 
@@ -44,6 +46,26 @@ export function CheckUpdateButton() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (compact) {
+    // Drawer-footer variant — sits on one row with the QR / Góp ý
+    // siblings, so labels stay tight ("Cập nhật" vs the full
+    // "Kiểm tra cập nhật").
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={busy}
+        title={busy ? "Đang kiểm tra…" : "Kiểm tra cập nhật"}
+        className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted disabled:opacity-50 px-2 h-10 text-sm"
+      >
+        <IconRefresh
+          className={`h-4 w-4 shrink-0 ${busy ? "animate-spin" : ""}`}
+        />
+        {busy ? "…" : "Cập nhật"}
+      </button>
+    );
   }
 
   return (

@@ -19,9 +19,14 @@ export function MascotTip() {
   const { tip, dismiss, hide, peek, muted } = useMascotTip();
   const [showBubble, setShowBubble] = useState(false);
   // Tracks the "đã xem hết" state — when user clicks the mascot but
-  // no eligible tip is left (or all in cooldown), we still want to
-  // give visible feedback instead of a dead button.
+  // no eligible tip is left, we still want visible feedback rather
+  // than a dead button.
   const [showAllClear, setShowAllClear] = useState(false);
+  // Tips already shown in this open-bubble session, so each click
+  // cycles to a NEW one instead of re-showing the same. Resets when
+  // the bubble closes (dismiss / hide / muted), so future opens
+  // start fresh.
+  const [shownThisSession, setShownThisSession] = useState<string[]>([]);
 
   useEffect(() => {
     if (tip) {
@@ -35,25 +40,51 @@ export function MascotTip() {
   const hasTip = tip !== null;
 
   function onMascotClick() {
-    if (showBubble || showAllClear) {
-      // Already open — close.
-      setShowBubble(false);
+    // Bubble already open: cycle to the next unseen tip instead of
+    // closing. Users said "mỗi lần click hiện tip với nội dung khác
+    // nhau" — repeated clicks should keep delivering content until
+    // the catalogue is exhausted for this session.
+    if (showBubble && tip) {
+      const skip = [...shownThisSession, tip.id];
+      const next = peek(skip);
+      if (next) {
+        setShownThisSession(skip);
+      } else {
+        setShownThisSession([]);
+        setShowBubble(false);
+        setShowAllClear(true);
+      }
+      return;
+    }
+    if (showAllClear) {
       setShowAllClear(false);
+      setShownThisSession([]);
       return;
     }
     if (tip) {
       setShowBubble(true);
+      setShownThisSession([tip.id]);
       return;
     }
     // No active tip — bypass cooldown and try to surface one. If
-    // there's nothing eligible, show a friendly "all clear" note so
-    // the user knows the button isn't broken.
+    // nothing's eligible, show the all-clear note so the user knows
+    // the button isn't broken.
     const next = peek();
     if (next) {
       setShowBubble(true);
+      setShownThisSession([next.id]);
     } else {
       setShowAllClear(true);
     }
+  }
+
+  function onDismissTip() {
+    dismiss();
+    setShownThisSession([]);
+  }
+  function onHideTip() {
+    hide();
+    setShownThisSession([]);
   }
 
   return (
@@ -63,12 +94,11 @@ export function MascotTip() {
         onClick={onMascotClick}
         aria-label={hasTip ? "Có gợi ý mới — bấm để xem" : "Linh vật"}
         className={cn(
-          // Stacked above the "Góp ý" pill on the right. Both clear
-          // the mobile BottomTabBar; on lg+ the drawer is pinned on
-          // the LEFT so the right edge is always free.
-          //   Góp ý       → bottom 20 (mobile) / bottom 4 (desktop)
-          //   Mascot icon → bottom 32 (mobile) / bottom 16 (desktop)
-          "fixed right-3 bottom-32 lg:bottom-16 z-30",
+          // Bottom-right, above the mobile BottomTabBar (h-14) on
+          // phones; tucks into the corner on desktop. Feedback button
+          // has been moved into the drawer footer so the mascot now
+          // owns this slot on its own.
+          "fixed right-3 bottom-20 lg:bottom-4 z-30",
           "h-10 w-10 inline-flex items-center justify-center rounded-full",
           "border bg-card shadow-md hover:bg-muted transition-colors",
           "text-xl",
@@ -92,7 +122,7 @@ export function MascotTip() {
             // Anchored to the same right edge as the mascot, popping
             // above it. Width caps at 18rem so on desktop the bubble
             // hugs the corner instead of slicing across the page.
-            "fixed right-3 bottom-44 lg:bottom-28 z-30",
+            "fixed right-3 bottom-32 lg:bottom-16 z-30",
             "w-[min(18rem,calc(100vw-1.5rem))]",
             "rounded-lg border bg-card shadow-xl p-3 space-y-2",
             "animate-in fade-in slide-in-from-bottom-2",
@@ -107,14 +137,14 @@ export function MascotTip() {
             </div>
             <button
               type="button"
-              onClick={dismiss}
+              onClick={onDismissTip}
               aria-label="Bỏ qua gợi ý"
               className="shrink-0 -mt-1 -mr-1 h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <IconX className="h-4 w-4" />
             </button>
           </div>
-          <TipActions tip={tip} onDismiss={dismiss} onHide={hide} />
+          <TipActions tip={tip} onDismiss={onDismissTip} onHide={onHideTip} />
         </div>
       )}
 
@@ -123,7 +153,7 @@ export function MascotTip() {
           role="dialog"
           aria-label="Không có gợi ý mới"
           className={cn(
-            "fixed right-3 bottom-44 lg:bottom-28 z-30",
+            "fixed right-3 bottom-32 lg:bottom-16 z-30",
             "w-[min(18rem,calc(100vw-1.5rem))]",
             "rounded-lg border bg-card shadow-xl p-3 space-y-2",
             "animate-in fade-in slide-in-from-bottom-2",

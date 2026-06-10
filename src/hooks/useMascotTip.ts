@@ -65,9 +65,11 @@ export interface UseMascotTipResult {
    *  Tip will re-appear if eligible on next route. */
   hide: () => void;
   /** User clicked the mascot directly — bypass cooldown and pick
-   *  any unseen eligible tip right now. Returns the tip (or null if
-   *  the user has truly seen everything that applies). */
-  peek: () => Tip | null;
+   *  any unseen eligible tip right now. `excludeIds` skips tips
+   *  already shown in the current open session (so repeated clicks
+   *  cycle to fresh content). Returns null when the catalogue is
+   *  exhausted relative to the current context. */
+  peek: (excludeIds?: string[]) => Tip | null;
   /** Toggle the user-level mute. */
   setMuted: (muted: boolean) => void;
   muted: boolean;
@@ -159,32 +161,49 @@ export function useMascotTip(): UseMascotTipResult {
     setTip(null);
   }, []);
 
-  const peek = useCallback((): Tip | null => {
-    if (typeof window === "undefined") return null;
-    const clanMatch = CLAN_ID_RE.exec(window.location.pathname);
-    const ctx: TipContext = {
-      route: window.location.pathname,
-      appVersion: typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "",
-      lastSeenVersion: state.lastSeenVersion,
-      clanId: clanMatch ? clanMatch[1] : null,
-      sessionAgeMs: state.firstSessionAt
-        ? Date.now() - state.firstSessionAt
-        : 0,
-      seenCount: state.seenIds.length,
-    };
-    const eligible = TIP_CATALOGUE.filter((t) => !state.seenIds.includes(t.id))
-      .filter((t) => {
-        try {
-          return t.when(ctx);
-        } catch {
-          return false;
-        }
-      })
-      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-    const next = eligible[0] ?? null;
-    setTip(next);
-    return next;
-  }, [state]);
+  const peek = useCallback(
+    (excludeIds: string[] = []): Tip | null => {
+      if (typeof window === "undefined") return null;
+      const clanMatch = CLAN_ID_RE.exec(window.location.pathname);
+      const ctx: TipContext = {
+        route: window.location.pathname,
+        appVersion:
+          typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "",
+        lastSeenVersion: state.lastSeenVersion,
+        clanId: clanMatch ? clanMatch[1] : null,
+        sessionAgeMs: state.firstSessionAt
+          ? Date.now() - state.firstSessionAt
+          : 0,
+        seenCount: state.seenIds.length,
+      };
+      const eligible = TIP_CATALOGUE.filter(
+        (t) => !state.seenIds.includes(t.id) && !excludeIds.includes(t.id),
+      )
+        .filter((t) => {
+          try {
+            return t.when(ctx);
+          } catch {
+            return false;
+          }
+        })
+        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+      // Fall back to any eligible tip route-agnostically when nothing
+      // matches the current route — user clicked the mascot looking
+      // for content, give them content. Welcome / mute hints / app-
+      // updated work anywhere so this almost always has something.
+      let next = eligible[0] ?? null;
+      if (!next) {
+        const fallback = TIP_CATALOGUE.filter(
+          (t) =>
+            !state.seenIds.includes(t.id) && !excludeIds.includes(t.id),
+        ).sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+        next = fallback[0] ?? null;
+      }
+      setTip(next);
+      return next;
+    },
+    [state],
+  );
 
   const setMuted = useCallback(
     (muted: boolean) => {
