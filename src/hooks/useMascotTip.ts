@@ -64,6 +64,10 @@ export interface UseMascotTipResult {
   /** Hide the bubble without marking seen (e.g. click outside).
    *  Tip will re-appear if eligible on next route. */
   hide: () => void;
+  /** User clicked the mascot directly — bypass cooldown and pick
+   *  any unseen eligible tip right now. Returns the tip (or null if
+   *  the user has truly seen everything that applies). */
+  peek: () => Tip | null;
   /** Toggle the user-level mute. */
   setMuted: (muted: boolean) => void;
   muted: boolean;
@@ -155,6 +159,33 @@ export function useMascotTip(): UseMascotTipResult {
     setTip(null);
   }, []);
 
+  const peek = useCallback((): Tip | null => {
+    if (typeof window === "undefined") return null;
+    const clanMatch = CLAN_ID_RE.exec(window.location.pathname);
+    const ctx: TipContext = {
+      route: window.location.pathname,
+      appVersion: typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "",
+      lastSeenVersion: state.lastSeenVersion,
+      clanId: clanMatch ? clanMatch[1] : null,
+      sessionAgeMs: state.firstSessionAt
+        ? Date.now() - state.firstSessionAt
+        : 0,
+      seenCount: state.seenIds.length,
+    };
+    const eligible = TIP_CATALOGUE.filter((t) => !state.seenIds.includes(t.id))
+      .filter((t) => {
+        try {
+          return t.when(ctx);
+        } catch {
+          return false;
+        }
+      })
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    const next = eligible[0] ?? null;
+    setTip(next);
+    return next;
+  }, [state]);
+
   const setMuted = useCallback(
     (muted: boolean) => {
       const next = { ...state, mascotMuted: muted };
@@ -169,6 +200,7 @@ export function useMascotTip(): UseMascotTipResult {
     tip,
     dismiss,
     hide,
+    peek,
     setMuted,
     muted: state.mascotMuted,
   };

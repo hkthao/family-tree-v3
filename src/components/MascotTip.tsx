@@ -16,29 +16,51 @@ import { cn } from "@/lib/utils";
  * BottomTabBar via `bottom-20 lg:bottom-4`.
  */
 export function MascotTip() {
-  const { tip, dismiss, hide, muted } = useMascotTip();
+  const { tip, dismiss, hide, peek, muted } = useMascotTip();
   const [showBubble, setShowBubble] = useState(false);
+  // Tracks the "đã xem hết" state — when user clicks the mascot but
+  // no eligible tip is left (or all in cooldown), we still want to
+  // give visible feedback instead of a dead button.
+  const [showAllClear, setShowAllClear] = useState(false);
 
-  // Auto-show the bubble when a new tip arrives. Don't fight the user
-  // if they close it — the hook keeps `tip` non-null until they
-  // dismiss explicitly, but we hide the bubble locally so we don't
-  // re-open every render.
   useEffect(() => {
-    if (tip) setShowBubble(true);
+    if (tip) {
+      setShowBubble(true);
+      setShowAllClear(false);
+    }
   }, [tip]);
 
   if (muted) return null;
 
   const hasTip = tip !== null;
 
+  function onMascotClick() {
+    if (showBubble || showAllClear) {
+      // Already open — close.
+      setShowBubble(false);
+      setShowAllClear(false);
+      return;
+    }
+    if (tip) {
+      setShowBubble(true);
+      return;
+    }
+    // No active tip — bypass cooldown and try to surface one. If
+    // there's nothing eligible, show a friendly "all clear" note so
+    // the user knows the button isn't broken.
+    const next = peek();
+    if (next) {
+      setShowBubble(true);
+    } else {
+      setShowAllClear(true);
+    }
+  }
+
   return (
     <>
       <button
         type="button"
-        onClick={() => {
-          if (!tip) return;
-          setShowBubble((v) => !v);
-        }}
+        onClick={onMascotClick}
         aria-label={hasTip ? "Có gợi ý mới — bấm để xem" : "Linh vật"}
         className={cn(
           // Stacked above the "Góp ý" pill on the right. Both clear
@@ -93,6 +115,45 @@ export function MascotTip() {
             </button>
           </div>
           <TipActions tip={tip} onDismiss={dismiss} onHide={hide} />
+        </div>
+      )}
+
+      {showAllClear && (
+        <div
+          role="dialog"
+          aria-label="Không có gợi ý mới"
+          className={cn(
+            "fixed right-3 bottom-44 lg:bottom-28 z-30",
+            "w-[min(18rem,calc(100vw-1.5rem))]",
+            "rounded-lg border bg-card shadow-xl p-3 space-y-2",
+            "animate-in fade-in slide-in-from-bottom-2",
+          )}
+        >
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-sm">Bạn đã xem hết gợi ý</p>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                Linh vật sẽ pop lên khi có cập nhật hoặc tính năng mới.
+                Trong lúc đó, mở{" "}
+                <Link
+                  to="/docs"
+                  onClick={() => setShowAllClear(false)}
+                  className="text-primary hover:underline"
+                >
+                  Hướng dẫn
+                </Link>{" "}
+                nếu cần.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAllClear(false)}
+              aria-label="Đóng"
+              className="shrink-0 -mt-1 -mr-1 h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <IconX className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       )}
     </>
