@@ -91,27 +91,39 @@ export interface ClanCompletion {
 }
 
 /**
- * Aggregate progress for the clan-level "Việc cần làm" page —
- * combines the existing todo count with a denominator count taken
- * from the persons table directly. Both numbers ignore deleted
- * persons + `todo_excluded` (the latter is the explicit "accept this
- * gap" opt-out so it shouldn't drag the percentage down).
+ * Aggregate progress for the clan-level "Họ ta đã hoàn thành X%"
+ * widget. `withGaps` comes from `count_clan_completion_gaps` — a
+ * DISTINCT-person count across the two load-bearing categories
+ * (parents + dates). We deliberately skip the soft categories
+ * (dead_end heuristic, missing photo / lunar) because they would
+ * always drag a real gia phả's percentage to 0 — almost no clan
+ * has photos of pre-1900 ancestors.
+ *
+ * Don't substitute `count_clan_todo` here: it SUMS category counts,
+ * so a person in both `missing_parents` AND `missing_dates` is
+ * double-counted and the headline drops below zero (clamped to 0%).
+ *
+ * Both numerator and denominator skip `todo_excluded` so the
+ * explicit "we accept this gap" opt-out doesn't drag the score down
+ * forever.
  */
 export async function getClanCompletion(
   clanId: string,
   client: Client = defaultClient,
 ): Promise<ClanCompletion> {
-  const [totalRes, withGaps] = await Promise.all([
+  const [totalRes, gapsRes] = await Promise.all([
     client
       .from("persons")
       .select("id", { count: "exact", head: true })
       .eq("clan_id", clanId)
       .is("deleted_at", null)
       .eq("todo_excluded", false),
-    countClanTodo(clanId, client),
+    client.rpc("count_clan_completion_gaps", { p_clan_id: clanId }),
   ]);
   if (totalRes.error) throw new Error(totalRes.error.message);
+  if (gapsRes.error) throw new Error(gapsRes.error.message);
   const total = totalRes.count ?? 0;
+  const withGaps = Number(gapsRes.data ?? 0);
   const complete = Math.max(0, total - withGaps);
   const percent = total > 0 ? Math.round((complete / total) * 100) : null;
   return { total, withGaps, complete, percent };

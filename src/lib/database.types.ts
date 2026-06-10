@@ -1228,6 +1228,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      count_clan_completion_gaps: {
+        Args: { p_clan_id: string }
+        Returns: number
+      }
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
       delete_my_account: { Args: never; Returns: undefined }

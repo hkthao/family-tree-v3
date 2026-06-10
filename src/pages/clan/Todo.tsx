@@ -433,8 +433,8 @@ function CompletionProgress({
         <span className="tabular-nums">
           {complete.toLocaleString("vi-VN")}
         </span>{" "}
-        / {total.toLocaleString("vi-VN")} người đã đủ thông tin. Cùng
-        nhau bổ sung để kéo lên 100%.
+        / {total.toLocaleString("vi-VN")} người có đủ năm sinh và quan
+        hệ cha/mẹ. Cùng nhau bổ sung để kéo lên 100%.
       </p>
     </section>
   );
