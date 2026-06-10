@@ -1150,6 +1150,7 @@ export type Database = {
           clan_id: string | null
           courtesy_name: string | null
           death_anniv_lunar_day: number | null
+          death_anniv_lunar_is_leap: boolean | null
           death_anniv_lunar_month: number | null
           death_date: string | null
           death_date_precision: string | null
@@ -1182,6 +1183,7 @@ export type Database = {
           clan_id?: string | null
           courtesy_name?: never
           death_anniv_lunar_day?: never
+          death_anniv_lunar_is_leap?: boolean | null
           death_anniv_lunar_month?: never
           death_date?: never
           death_date_precision?: never
@@ -1214,6 +1216,7 @@ export type Database = {
           clan_id?: string | null
           courtesy_name?: never
           death_anniv_lunar_day?: never
+          death_anniv_lunar_is_leap?: boolean | null
           death_anniv_lunar_month?: never
           death_date?: never
           death_date_precision?: never
