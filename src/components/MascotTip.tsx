@@ -41,12 +41,12 @@ export function MascotTip() {
         }}
         aria-label={hasTip ? "Có gợi ý mới — bấm để xem" : "Linh vật"}
         className={cn(
-          // Mobile (drawer hidden behind hamburger): bottom-left,
-          // above the BottomTabBar.
-          // Desktop (lg+, drawer pinned w-72=288px on the left):
-          // push past the drawer so the mascot floats over the
-          // content area, not over the menu.
-          "fixed left-3 lg:left-[300px] bottom-20 lg:bottom-4 z-30",
+          // Stacked above the "Góp ý" pill on the right. Both clear
+          // the mobile BottomTabBar; on lg+ the drawer is pinned on
+          // the LEFT so the right edge is always free.
+          //   Góp ý       → bottom 20 (mobile) / bottom 4 (desktop)
+          //   Mascot icon → bottom 32 (mobile) / bottom 16 (desktop)
+          "fixed right-3 bottom-32 lg:bottom-16 z-30",
           "h-10 w-10 inline-flex items-center justify-center rounded-full",
           "border bg-card shadow-md hover:bg-muted transition-colors",
           "text-xl",
@@ -67,11 +67,11 @@ export function MascotTip() {
           role="dialog"
           aria-label={tip.title}
           className={cn(
-            // Match the icon's horizontal offset on each breakpoint
-            // so the bubble doesn't drift off the drawer onto the
-            // menu column.
-            "fixed left-3 lg:left-[300px] bottom-32 lg:bottom-16 z-30",
-            "w-[min(20rem,calc(100vw-1.5rem))]",
+            // Anchored to the same right edge as the mascot, popping
+            // above it. Width caps at 18rem so on desktop the bubble
+            // hugs the corner instead of slicing across the page.
+            "fixed right-3 bottom-44 lg:bottom-28 z-30",
+            "w-[min(18rem,calc(100vw-1.5rem))]",
             "rounded-lg border bg-card shadow-xl p-3 space-y-2",
             "animate-in fade-in slide-in-from-bottom-2",
           )}
