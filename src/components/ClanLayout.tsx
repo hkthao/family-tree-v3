@@ -18,6 +18,7 @@ import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanRealtime } from "@/hooks/useClanRealtime";
+import { useCompletionMilestone } from "@/hooks/useCompletionMilestone";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
 
@@ -114,6 +115,7 @@ export function ClanLayout() {
 
   return (
     <div className="min-h-dvh bg-background pb-20 lg:pb-0 lg:pl-72">
+      <MilestoneWatcher clanId={clan.id} />
       <header className="border-b bg-background sticky top-0 z-30">
         <div className="container max-w-4xl flex items-center justify-between gap-3 px-4 h-[64px]">
           <button
@@ -156,4 +158,13 @@ export function ClanLayout() {
       <CommandPalette clan={clan} />
     </div>
   );
+}
+
+// Invisible sibling that drives milestone celebration toasts via
+// the shared completion query. Kept as a separate component so the
+// hook can short-circuit on its own re-renders without dragging
+// the whole layout along.
+function MilestoneWatcher({ clanId }: { clanId: string }) {
+  useCompletionMilestone(clanId);
+  return null;
 }
