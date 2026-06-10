@@ -43,6 +43,7 @@ import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanConte
 import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
+import { getClanCompletion, type ClanCompletion } from "@/lib/queries/todo";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
@@ -219,6 +220,13 @@ export default function People() {
   });
   const maxGen = stats?.max_generation ?? null;
 
+  const { data: completion } = useQuery({
+    queryKey: queryKeys.clanCompletion(clan.id, userId),
+    queryFn: () => getClanCompletion(clan.id),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+
   // Clan-wide relatives lookup (father / mother / spouses by id).
   // Only members + platform admin should see relatives; non-members of a
   // public clan get hidden relatives because the query reads `persons`
@@ -311,6 +319,10 @@ export default function People() {
         )}
         </div>
       </div>
+
+      {completion && completion.total > 0 && completion.percent !== null && (
+        <CompactCompletion clanId={clan.id} completion={completion} />
+      )}
 
       {/* Search row — full width, owns one line. */}
       <SearchInput
@@ -853,5 +865,53 @@ function PersonGridCard({
         </div>
       </Link>
     </li>
+  );
+}
+
+// Single-line inline strip — fills the width above the search row.
+// Intentionally NO card chrome: too much visual weight here competes
+// with the action buttons and the filter row. Whole strip is the
+// link so the target area is generous.
+function CompactCompletion({
+  clanId,
+  completion,
+}: {
+  clanId: string;
+  completion: ClanCompletion;
+}) {
+  const { percent, withGaps } = completion;
+  if (percent === null) return null;
+  const tone =
+    percent >= 90
+      ? "bg-emerald-500"
+      : percent >= 50
+        ? "bg-primary"
+        : "bg-amber-500";
+  return (
+    <Link
+      to={`/clans/${clanId}/todo`}
+      aria-label={`Đã hoàn thành ${percent}%, mở Việc cần làm`}
+      className="flex items-center gap-3 -mx-2 px-2 py-1.5 rounded-md hover:bg-muted/40 transition-colors text-sm"
+    >
+      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div
+          className={`h-full ${tone} transition-[width] duration-500`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <span className="tabular-nums font-medium">{percent}%</span>
+      {withGaps > 0 ? (
+        <>
+          <span className="text-muted-foreground text-xs">
+            <span className="tabular-nums">{withGaps}</span> việc còn
+          </span>
+          <span className="text-primary" aria-hidden="true">
+            →
+          </span>
+        </>
+      ) : (
+        <span className="text-xs text-emerald-600">đầy đủ ✓</span>
+      )}
+    </Link>
   );
 }
