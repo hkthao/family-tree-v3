@@ -1947,3 +1947,354 @@ schema/cron rewrite.
 - ~~SMS nhắc~~ — channel còn trong schema nhưng không wire (chưa
   có vendor; có phí). Email + push đã cover use case.
 - ~~Push cho contributions pending (admin)~~ — đã ship `f2d6567`.
+
+---
+
+## 30. Hỗ trợ lập gia phả từ mô tả text thuần (người giúp, KHÔNG dùng AI)
+
+**Phase 2 / sau launch.** Đã qua review một lượt — phần Schema/RLS dưới
+đây đã bake-in các fix critical so với bản nháp gốc (xem 30.12).
+
+### 30.1. Bối cảnh & mục tiêu
+
+Nhiều người muốn có gia phả nhưng **không biết bắt đầu từ đâu** — chỉ có
+ký ức rời rạc, ngại form/cấu trúc cây. Mọi cửa vào hiện tại (form, import,
+thêm tại node) đều giả định người dùng *đã hiểu* cấu trúc.
+
+> Người dùng gõ **text thuần** mô tả dòng họ → vào **hàng chờ** → một
+> **người giúp** (admin / tình nguyện viên tin cậy) dựng cây **thủ công**
+> trong không gian nháp → người yêu cầu **xem lại & xác nhận** → **phát
+> hành** thành dòng họ của họ.
+
+**Không tích hợp AI** — người giúp dựng cây bằng tay, tái dùng UI thêm/sửa
+người sẵn có. Bản thô chỉ là dữ liệu *chờ xử lý*, **chưa** tạo `person`
+thật cho tới khi phát hành.
+
+### 30.2. Nguyên tắc kiến trúc (để không phá RLS hiện có)
+
+- **"Cây nháp" là một clan riêng do NGƯỜI YÊU CẦU sở hữu**, ở trạng thái
+  `draft`. Không tạo "siêu admin xem được mọi clan".
+- **Người giúp chỉ được quyền TẠM THỜI vào đúng clan nháp đó** (qua
+  `clan_helpers`, thu hồi được, tự gỡ khi phát hành). Tái dùng mô hình
+  `clan_members` + RLS sẵn có.
+- **Người yêu cầu luôn là chủ** clan; người giúp chỉ là *thợ tạm*.
+- **Dữ liệu thô chứa người thật (có thể đang sống)** → bản nháp + brief
+  chỉ requester + helper đã `claim` được thấy.
+- **Giai đoạn đầu = TẬP TRUNG**: nhóm helper là người tin cậy (do platform
+  admin add). Mô hình "cộng đồng giúp" để **sau** vì cần kiểm duyệt.
+
+### 30.3. Schema
+
+```sql
+-- clans thêm trạng thái draft
+alter table clans add column status text not null default 'active'
+  check (status in ('draft','active','archived'));
+create index clans_status_idx on clans (status) where status <> 'active';
+
+-- Nhóm người giúp tin cậy (giai đoạn đầu: platform_admin add từng người)
+create table genealogy_helpers (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  added_by   uuid references auth.users(id),
+  created_at timestamptz not null default now()
+);
+-- (Đặt tên có prefix domain để không clash; bản nháp gốc dùng `helpers`
+--  — quá generic.)
+
+-- Yêu cầu lập gia phả
+create table genealogy_help_requests (
+  id            uuid primary key default gen_random_uuid(),
+  clan_id       uuid not null references clans(id) on delete cascade,
+                -- clan nháp tạo cho yêu cầu này; 1-1
+  requester_id  uuid not null references auth.users(id) on delete cascade,
+  brief         text not null
+                  check (char_length(brief) between 1 and 10000),
+  brief_summary text                       -- ≤140 char; hiện ở hàng chờ
+                  check (brief_summary is null
+                         or char_length(brief_summary) <= 140),
+  status        text not null default 'open'
+    check (status in ('open','in_progress','review','published','cancelled')),
+  claimed_by    uuid references auth.users(id),
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  claimed_at    timestamptz,
+  submitted_at  timestamptz,
+  published_at  timestamptz,
+  cancelled_at  timestamptz
+);
+create index ghr_status_idx on genealogy_help_requests (status);
+
+-- Quyền helper TẠM THỜI vào một clan nháp (revoke được)
+create table clan_helpers (
+  id          uuid primary key default gen_random_uuid(),
+  clan_id     uuid not null references clans(id) on delete cascade,
+  helper_id   uuid not null references auth.users(id) on delete cascade,
+  status      text not null default 'active'
+                check (status in ('active','revoked')),
+  assigned_at timestamptz not null default now(),
+  revoked_at  timestamptz,
+  unique (clan_id, helper_id)
+);
+
+-- Defense-in-depth: chỉ cho phép INSERT clan_helpers nếu clan đang draft
+create or replace function public.assert_clan_helpers_target_is_draft()
+  returns trigger language plpgsql as $$
+begin
+  if not exists (
+    select 1 from clans where id = NEW.clan_id and status = 'draft'
+  ) then
+    raise exception 'clan_helpers chỉ cho phép trỏ tới clan đang draft'
+      using errcode = '42501';
+  end if;
+  return NEW;
+end $$;
+create trigger clan_helpers_only_draft_ins
+  before insert on clan_helpers
+  for each row execute function assert_clan_helpers_target_is_draft();
+
+-- Trao đổi qua lại
+create table clan_draft_messages (
+  id         uuid primary key default gen_random_uuid(),
+  request_id uuid not null references genealogy_help_requests(id)
+               on delete cascade,
+  author_id  uuid not null references auth.users(id),
+  body       text not null check (char_length(body) between 1 and 5000),
+  created_at timestamptz not null default now()
+);
+
+-- updated_at auto-maintain (dùng pattern set_updated_at() có sẵn)
+create trigger ghr_set_updated_at
+  before update on genealogy_help_requests
+  for each row execute function public.set_updated_at();
+```
+
+### 30.4. Mở rộng hàm RLS
+
+`can_access_clan` mở rộng để helper `active` truy cập được clan nháp:
+
+```sql
+create or replace function public.can_access_clan(p_clan uuid)
+  returns boolean
+  language sql stable security definer
+  set search_path = public, pg_temp as $$
+  select
+    is_clan_member(p_clan)
+    or exists (
+      select 1 from clan_helpers ch
+      where ch.clan_id = p_clan
+        and ch.helper_id = auth.uid()
+        and ch.status = 'active'
+    );
+$$;
+revoke all on function public.can_access_clan(uuid) from public, anon;
+grant execute on function public.can_access_clan(uuid) to authenticated;
+```
+
+Các policy đọc/ghi `persons`/`families` của clan **nháp** dùng
+`can_access_clan(clan_id)`. Clan `active` dùng RLS cũ — nhánh helper
+**chỉ activate khi clan đang draft** (đảm bảo bởi trigger ở 30.3 + revoke
+trong `publish_draft_clan`).
+
+Helper **không** xuất hiện trong danh sách "thành viên dòng họ" của UI
+(UI lọc theo `clan_members`, không theo `clan_helpers`).
+
+### 30.5. RLS các bảng mới
+
+```sql
+-- genealogy_helpers: chỉ platform_admin add, ai cũng đọc được trạng thái
+-- của mình
+alter table genealogy_helpers enable row level security;
+create policy helpers_select_own_or_admin on genealogy_helpers
+  for select using (
+    user_id = auth.uid() or public.is_platform_admin()
+  );
+create policy helpers_insert_admin on genealogy_helpers
+  for insert with check ( public.is_platform_admin() );
+create policy helpers_delete_admin on genealogy_helpers
+  for delete using ( public.is_platform_admin() );
+
+alter table genealogy_help_requests enable row level security;
+
+-- Requester thấy yêu cầu của mình; helper đã claim thấy cái mình nhận
+create policy ghr_owner on genealogy_help_requests for select
+  using ( requester_id = auth.uid() or claimed_by = auth.uid() );
+
+-- Helper trong nhóm thấy hàng chờ — NHƯNG chỉ trường brief_summary
+-- (không phải brief đầy đủ). Tạo một view tách brief để enforce ở
+-- column-level vì RLS Postgres không có column-level granularity.
+create view genealogy_help_queue_v as
+  select id, clan_id, requester_id, brief_summary, status, created_at
+  from genealogy_help_requests
+  where status = 'open';
+-- Cấp execute cho view (RLS chạy theo bảng nền nên cần policy đọc
+-- cho status='open' dành cho helper)
+create policy ghr_queue_helpers on genealogy_help_requests for select
+  using (
+    status = 'open'
+    and exists (select 1 from genealogy_helpers h where h.user_id = auth.uid())
+  );
+-- ↑ Khi đọc qua view, helper thấy được cả `brief` của hàng chờ. Để
+-- chặt hơn, tạo SECURITY DEFINER RPC `list_open_help_requests()` trả
+-- về summary thôi, và REVOKE select trực tiếp trên bảng cho helper khi
+-- chưa claim. Khuyến nghị làm theo cách này.
+
+-- INSERT: chính người dùng
+create policy ghr_insert on genealogy_help_requests for insert
+  with check ( requester_id = auth.uid() );
+
+alter table clan_helpers enable row level security;
+create policy chelp_visible on clan_helpers for select
+  using ( helper_id = auth.uid() or public.is_clan_admin(clan_id) );
+
+alter table clan_draft_messages enable row level security;
+create policy cdm_participants on clan_draft_messages for all
+  using ( exists (
+    select 1 from genealogy_help_requests r
+    where r.id = request_id
+      and (r.requester_id = auth.uid() or r.claimed_by = auth.uid())
+  ));
+```
+
+### 30.6. Luồng & RPC (`SECURITY DEFINER` cho mọi chuyển trạng thái)
+
+1. **`create_help_request(brief, brief_summary)`**:
+   - Tạo `clans` mới `status='draft'`; insert `clan_members` (owner = caller).
+   - Insert `genealogy_help_requests` (`status='open'`).
+   - Chưa có helper, chưa có `person`.
+
+2. **`list_open_help_requests()`** (helper-only):
+   - Trả về `id, requester_display_name, brief_summary, created_at`.
+   - **KHÔNG** trả `brief` đầy đủ. Helper xem brief đầy đủ chỉ sau khi claim.
+
+3. **`claim_help_request(request_id)`**:
+   - Chỉ user trong `genealogy_helpers`; chỉ khi `status='open'`.
+   - Update với `WHERE status='open'` để chống race (2 helpers cùng claim).
+   - Set `claimed_by`, `status='in_progress'`, `claimed_at=now()`.
+   - Insert `clan_helpers(active)` → helper có quyền tạm vào clan nháp.
+
+4. **Helper dựng cây THỦ CÔNG**: reuse UI `/clans/:id/tree`, `EditPerson`,
+   `AddChild`, etc. Chat qua `clan_draft_messages`.
+
+5. **`submit_for_review(request_id)`**:
+   - Chỉ `claimed_by`; chỉ khi `status='in_progress'`.
+   - Set `status='review'`, `submitted_at=now()`.
+   - Tạo notification cho requester (dùng `notifications` table sẵn có).
+
+6. **`publish_draft_clan(request_id)`**:
+   - Chỉ requester; chỉ khi `status='review'`.
+   - **Idempotent**: nếu đã `published`, return success quietly.
+   - Atomically:
+     - `clans.status='active'`,
+     - `request.status='published'`, `published_at=now()`,
+     - **Revoke toàn bộ `clan_helpers`** của clan này.
+   - Generation: trigger sẵn có trên `persons` đã maintain `generation` từ
+     parent links — KHÔNG cần code thêm khi publish.
+
+7. **`cancel_help_request(request_id)`**:
+   - Requester gọi. Set `status='cancelled'`, revoke helpers.
+   - Tuỳ chọn: archive clan (`status='archived'`) hoặc xoá vĩnh viễn.
+
+### 30.7. UI
+
+- **Onboarding mới**: ai mở app mà chưa có clan nào → ngoài "Tạo dòng họ /
+  Import", thêm **"Tôi chưa biết bắt đầu — nhờ giúp"** → text area lớn +
+  ví dụ mẫu ("Ông nội tôi tên…, có 3 con…"). Cửa vào cho người ngại
+  cấu trúc.
+- **Trang trạng thái** (requester): đang chờ / đang được dựng / **mời xem
+  lại** + chat bổ sung.
+- **Bảng việc cho helper**: hàng chờ `open` (chỉ summary) + việc đang làm.
+- **Màn hình duyệt**: requester xem cây nháp, sửa được, bấm **"Xác nhận
+  & phát hành"**.
+
+### 30.8. Quy tắc bắt buộc (riêng tư)
+
+- **Brief + cây nháp chứa người thật, có thể đang sống.** Chỉ requester +
+  helper đã claim thấy đầy đủ.
+- **Hàng chờ chỉ lộ `brief_summary` (≤140 ký tự)**, brief đầy đủ hiện
+  sau khi `claim`. Schema + RPC bake-in ràng buộc này (xem 30.5/30.6).
+- **Phát hành = gỡ quyền helper.** Sau publish, helper không còn thấy
+  dữ liệu.
+
+### 30.9. Tích hợp với phần còn lại của app
+
+- **Lọc draft khỏi các nơi không nên thấy** — audit và thêm filter
+  `status='active'`:
+  - `src/lib/queries/clans.ts` `listClans`
+  - Share-view Edge Function (refuse nếu clan đang draft)
+  - Dashboard recent activity panel
+  - Admin clan list (admin nên thấy cả draft, nhưng badge phân biệt)
+- **Block cross-clan `person_links` cho draft clan** — trigger insert
+  refuse nếu side A hoặc B thuộc clan `status='draft'`.
+- **Audit log**: claim / submit_for_review / publish / cancel ghi vào
+  `audit_log` (entity_type = `'help_request'` mới, hoặc reuse `'clan'`
+  với action chuyên biệt).
+
+### 30.10. Gom chung "pipeline nháp"
+
+Tính năng này, **import**, và (nếu sau làm) **chụp gia phả giấy** đều
+cùng dạng: *dữ liệu thô → dựng nháp → duyệt → phát hành*. Gom **một
+pipeline nháp duy nhất**: cùng khái niệm `clan status='draft'`, cùng
+RPC `publish_draft_clan`. Nguồn nháp khác nhau (text + helper / file /
+ảnh) đổ về cùng bước phát hành.
+
+### 30.11. Test (RLS + nghiệp vụ)
+
+- Requester tạo yêu cầu → có clan `draft` do mình owner; chưa helper nào
+  truy cập được.
+- Chỉ user trong `genealogy_helpers` mới `claim` được; user thường claim
+  → 42501.
+- 2 helpers race claim cùng lúc → đúng 1 thắng (optimistic via WHERE
+  status='open').
+- Sau claim: helper đọc/sửa được **đúng** clan nháp đó; **không** đọc
+  được clan nháp/active khác (`can_access_clan` với clan khác → false).
+- Trigger `clan_helpers_only_draft_ins`: insert `clan_helpers` cho clan
+  active → 42501 (defense-in-depth).
+- `publish_draft_clan`: chỉ requester gọi được; sau publish clan thành
+  `active`, **mọi `clan_helpers` bị revoke**, helper truy cập lại → bị
+  chặn.
+- Gọi `publish_draft_clan` lần 2 → success quietly (idempotent).
+- Cancel → revoke helper, dữ liệu nháp không rò.
+- Brief / cây nháp KHÔNG xuất hiện ở share-link / public list.
+- Hàng chờ: helper khi chưa claim chỉ thấy `brief_summary`, không thấy
+  `brief`.
+- Cross-clan link: `person_link` insert giữa draft clan và active clan
+  → bị refuse.
+- Brief có HTML/markdown → render escape, no XSS (FE test).
+
+### 30.12. Khác biệt so với bản nháp gốc
+
+Bản này đã áp các fix critical từ review:
+
+1. **`helpers` → `genealogy_helpers`** (tránh tên generic) + RLS policy
+   (chỉ platform_admin INSERT, mình SELECT row của mình).
+2. **`can_access_clan` defense-in-depth**: trigger
+   `clan_helpers_only_draft_ins` đảm bảo helper không bao giờ được gán
+   vào clan active, kể cả khi `publish_draft_clan` có bug.
+3. **Tách `brief_summary` từ đầu**: schema, không phải convention. Helper
+   chưa claim KHÔNG đọc được brief đầy đủ (qua RPC riêng).
+4. **`brief` size limit**: ≤10000 char; `clan_draft_messages.body` ≤5000.
+5. **`updated_at` trigger** + thêm `claimed_at` / `submitted_at` /
+   `cancelled_at` cho audit.
+6. **`publish_draft_clan` idempotent**.
+7. **Generation note**: clarify dùng trigger sẵn có, không cần code thêm.
+8. **Audit log integration**: ghi claim/publish/cancel vào `audit_log`.
+9. **Touchpoints filter `status='active'`**: enumerate những nơi cần
+   audit (clan list, share-view, dashboard, admin).
+10. **Cross-clan person_link block**: trigger refuse draft clan.
+
+### 30.13. Ngoài phạm vi v1 (phase 2.x)
+
+- **Notification push** cho helper khi có request mới + cho requester khi
+  helper submit_for_review. Dùng `notifications` table + Web Push sẵn có.
+- **Auto-expire abandoned drafts**: cron 90d email reminder, 180d auto
+  cancel.
+- **AI** dựng nháp (đã loại theo yêu cầu — không tích hợp AI API).
+- **Cộng đồng giúp** mở cho người lạ nhận việc (cần kiểm duyệt + rating).
+- **Nhiều helper cùng dựng một cây** (collab editing).
+- **Chấm điểm/khen thưởng người giúp** (rủi ro lệch văn hoá thờ tự,
+  xem cảnh báo ở mục Progress 30 / leaderboard).
+
+### 30.14. Phase
+
+**Phase 2 / sau launch.** Bản tập trung tối giản: text → helper (admin
+hoặc nhóm nhỏ tin cậy) dựng tay → duyệt → phát hành. Không mở cộng đồng.
+
