@@ -88,27 +88,30 @@ export function MascotTip() {
         title={hasTip ? "Có gợi ý mới" : "Linh vật"}
         className={cn(
           "mascot-icon",
+          hasTip && !showBubble && "mascot-has-tip",
           "fixed right-3 bottom-20 lg:bottom-4 z-30",
-          "h-10 w-10 inline-flex items-center justify-center rounded-full",
+          // Slightly bigger than the 40px the FeedbackButton uses
+          // so the dragon swim is legible, but not so big it looks
+          // like a primary CTA. 48px is the middle ground.
+          // p-1.5 keeps the SVG from touching the button border.
+          "h-12 w-12 p-1.5 inline-flex items-center justify-center rounded-full",
           "border bg-card shadow-md hover:bg-muted transition-colors",
-          "text-xl",
+          "overflow-hidden",
         )}
       >
-        <span
+        {/* Vietnamese dragon SVG — vector, scales sharply at any
+            button size. CSS in index.css gives it a gentle
+            swimming sway. */}
+        <img
+          src="/mascot/dragon.svg"
+          alt=""
           aria-hidden="true"
           className={cn(
             "mascot-emoji",
-            hasTip && !showBubble && "mascot-emoji-attention",
+            "h-full w-full object-contain pointer-events-none select-none",
           )}
-        >
-          🐉
-        </span>
-        {hasTip && !showBubble && (
-          <span
-            aria-hidden="true"
-            className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-background"
-          />
-        )}
+          draggable={false}
+        />
       </button>
 
       {tip && showBubble && (
@@ -118,8 +121,15 @@ export function MascotTip() {
           onMouseEnter={clearAutoHide}
           onMouseLeave={startAutoHide}
           className={cn(
-            "fixed right-3 bottom-32 lg:bottom-16 z-30",
-            "w-[min(18rem,calc(100vw-1.5rem))]",
+            // Bubble's bottom-RIGHT corner anchors near the mascot's
+            // top-LEFT corner with a 4px gap so the bubble visually
+            // "points" at the dragon. Mascot is h-12 w-12 (48px) at
+            // right-3 bottom-20 / lg:bottom-4 — so:
+            //   right offset = 12 (right-3) + 48 + 4 = 64px
+            //   bottom mobile  = 80 (bottom-20) + 48 + 4 = 132px
+            //   bottom desktop = 16 (bottom-4) + 48 + 4 = 68px
+            "fixed right-[64px] bottom-[132px] lg:bottom-[68px] z-30",
+            "w-[min(18rem,calc(100vw-5rem))]",
             "rounded-lg border bg-card shadow-xl p-3 space-y-2",
             "animate-in fade-in slide-in-from-bottom-2",
           )}

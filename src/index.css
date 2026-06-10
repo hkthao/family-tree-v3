@@ -394,41 +394,44 @@
 }
 
 /* ─── Mascot animations ────────────────────────────────────────────
- * Subtle "alive" feel for the floating 🐉:
- *   - idle: slow continuous sway, like the dragon is breathing
- *   - has-tip: bouncier wiggle to catch the eye
- *   - hover/active: small scale-up so it feels tactile
- *
- * Reduced-motion safe: prefers-reduced-motion users see a static
- * mascot.
+ * The dragon is a static SVG; CSS gives it life:
+ *   - idle: a slow up-down bob + tiny scaleY breath so it reads as
+ *     a swimming creature treading water, not a frozen sticker
+ *   - has-tip: button itself pulses an amber ring (box-shadow) so
+ *     the cue lands without distorting the dragon shape
+ *   - hover/active: small scale step for tactile feel
  */
-@keyframes mascot-idle {
-  0%, 100% { transform: rotate(-3deg); }
-  50%      { transform: rotate(3deg); }
+@keyframes mascot-attention-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
+  50%      { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
 }
-@keyframes mascot-attention {
-  0%, 100% { transform: translateY(0) rotate(-6deg); }
-  25%      { transform: translateY(-3px) rotate(6deg); }
-  50%      { transform: translateY(0) rotate(-6deg); }
-  75%      { transform: translateY(-3px) rotate(6deg); }
+@keyframes mascot-swim {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  25%      { transform: translateY(-2px) scaleY(0.97); }
+  50%      { transform: translateY(0) scaleY(1.03); }
+  75%      { transform: translateY(2px) scaleY(0.97); }
 }
 .mascot-emoji {
   display: inline-block;
-  animation: mascot-idle 4s ease-in-out infinite;
+  animation: mascot-swim 3.5s ease-in-out infinite;
   transition: transform 0.2s ease-out;
 }
-.mascot-emoji-attention {
-  animation: mascot-attention 1.4s ease-in-out infinite;
+.mascot-icon {
+  transition: transform 0.15s ease-out, box-shadow 0.2s ease-out;
+}
+.mascot-icon.mascot-has-tip {
+  animation: mascot-attention-pulse 1.8s ease-in-out infinite;
 }
 .mascot-icon:hover .mascot-emoji {
-  transform: scale(1.2) rotate(-10deg);
+  animation-play-state: paused;
+  transform: scale(1.12);
 }
-.mascot-icon:active .mascot-emoji {
-  transform: scale(0.9);
+.mascot-icon:active {
+  transform: scale(0.92);
 }
 @media (prefers-reduced-motion: reduce) {
-  .mascot-emoji,
-  .mascot-emoji-attention {
+  .mascot-icon.mascot-has-tip,
+  .mascot-emoji {
     animation: none;
   }
 }
