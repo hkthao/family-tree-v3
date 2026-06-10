@@ -21,6 +21,7 @@ import { useClanRealtime } from "@/hooks/useClanRealtime";
 import { useCompletionMilestone } from "@/hooks/useCompletionMilestone";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
+import { countClanTodo } from "@/lib/queries/todo";
 
 interface OutletContext {
   clan: ClanDetail;
@@ -118,14 +119,11 @@ export function ClanLayout() {
       <MilestoneWatcher clanId={clan.id} />
       <header className="border-b bg-background sticky top-0 z-30">
         <div className="container max-w-4xl flex items-center justify-between gap-3 px-4 h-[64px]">
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Mở menu"
-            className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0 lg:hidden"
-          >
-            <span className="text-2xl leading-none" aria-hidden="true">☰</span>
-          </button>
+          <DrawerToggle
+            clanId={clan.id}
+            userId={userId ?? ""}
+            onOpen={() => setDrawerOpen(true)}
+          />
           <div className="flex-1 min-w-0 text-center">
             <h1 className="clan-name text-lg sm:text-xl font-semibold truncate">
               {clan.name}
@@ -167,4 +165,48 @@ export function ClanLayout() {
 function MilestoneWatcher({ clanId }: { clanId: string }) {
   useCompletionMilestone(clanId);
   return null;
+}
+
+// Mobile-only drawer button with a subtle red dot when there's open
+// work in /todo. Desktop (lg+) gets the full number-badge inside the
+// always-pinned drawer, so we don't need a hint here. Dot only, no
+// number — the precise count lives one tap away.
+function DrawerToggle({
+  clanId,
+  userId,
+  onOpen,
+}: {
+  clanId: string;
+  userId: string;
+  onOpen: () => void;
+}) {
+  const { data: todoCount } = useQuery({
+    queryKey: queryKeys.clanTodoCount(clanId, userId),
+    queryFn: () => countClanTodo(clanId),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+  const hasWork = (todoCount ?? 0) > 0;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={
+        hasWork
+          ? `Mở menu — có ${todoCount} việc cần làm`
+          : "Mở menu"
+      }
+      className="relative h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0 lg:hidden"
+    >
+      <span className="text-2xl leading-none" aria-hidden="true">
+        ☰
+      </span>
+      {hasWork && (
+        <span
+          aria-hidden="true"
+          className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-background"
+        />
+      )}
+    </button>
+  );
 }
