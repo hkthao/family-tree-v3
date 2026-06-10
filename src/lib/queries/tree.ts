@@ -46,33 +46,58 @@ export interface TreeData {
  */
 const TREE_FETCH_MAX = 9999;
 
+export type TreeSource = "persons" | "persons_public_safe";
+
 /**
  * Fetch every (non-deleted) person + family in a clan in a single round-trip.
  *
  * Reasonable up to a few thousand persons (each row is small). For very
  * large clans we'll add ancestry/progeny filters at the server level later,
  * but family-chart already prunes via main_id + depth client-side.
+ *
+ * `source` lets non-members of a public clan render the tree: they read
+ * the masked `persons_public_safe` view (living persons' personal data
+ * blanked) plus `families_public_safe`. Members + admins keep using the
+ * raw tables — same shape, no `deleted_at` filter needed (the view
+ * already applies it). Mirrors People page's source-selection pattern.
  */
 export async function getTreeData(
   clanId: string,
+  source: TreeSource = "persons",
   client: Client = defaultClient,
 ): Promise<TreeData> {
-  const [{ data: persons, error: pErr }, { data: families, error: fErr }] = await Promise.all([
-    client
-      .from("persons")
-      .select(
-        "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, branch_id, photo_path, birth_order",
-      )
-      .eq("clan_id", clanId)
-      .is("deleted_at", null)
-      .range(0, TREE_FETCH_MAX),
-    client
-      .from("families")
-      .select("id, husband_id, wife_id")
-      .eq("clan_id", clanId)
-      .is("deleted_at", null)
-      .range(0, TREE_FETCH_MAX),
-  ]);
+  const personCols =
+    "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, branch_id, photo_path, birth_order";
+  const personsQuery =
+    source === "persons_public_safe"
+      ? client
+          .from("persons_public_safe")
+          .select(personCols)
+          .eq("clan_id", clanId)
+          .range(0, TREE_FETCH_MAX)
+      : client
+          .from("persons")
+          .select(personCols)
+          .eq("clan_id", clanId)
+          .is("deleted_at", null)
+          .range(0, TREE_FETCH_MAX);
+
+  const familiesQuery =
+    source === "persons_public_safe"
+      ? client
+          .from("families_public_safe")
+          .select("id, husband_id, wife_id")
+          .eq("clan_id", clanId)
+          .range(0, TREE_FETCH_MAX)
+      : client
+          .from("families")
+          .select("id, husband_id, wife_id")
+          .eq("clan_id", clanId)
+          .is("deleted_at", null)
+          .range(0, TREE_FETCH_MAX);
+
+  const [{ data: persons, error: pErr }, { data: families, error: fErr }] =
+    await Promise.all([personsQuery, familiesQuery]);
   if (pErr) throw new Error(pErr.message);
   if (fErr) throw new Error(fErr.message);
 
