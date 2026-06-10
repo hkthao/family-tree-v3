@@ -26,7 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import {
   addInlawGhosts,
   pickDefaultFocal,
@@ -149,9 +149,14 @@ export default function Tree() {
     }
   }, [orientation]);
 
+  // Non-members of a public clan need the masked views — same pattern
+  // as /people. Without this the tree shows "no data" on public clans
+  // for visitors who aren't joined yet.
+  const treeSource =
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
   const { data, isLoading } = useQuery({
     queryKey: queryKeys.treeData(clan.id, userId),
-    queryFn: () => getTreeData(clan.id),
+    queryFn: () => getTreeData(clan.id, treeSource),
     enabled: !!userId,
   });
 

@@ -895,6 +895,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "persons_birth_family_fk"
+            columns: ["birth_family_id"]
+            isOneToOne: false
+            referencedRelation: "families_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "persons_branch_fk"
             columns: ["branch_id"]
             isOneToOne: false
@@ -1067,14 +1074,76 @@ export type Database = {
       }
     }
     Views: {
+      families_public_safe: {
+        Row: {
+          clan_id: string | null
+          husband_id: string | null
+          id: string | null
+          union_type: string | null
+          wife_id: string | null
+        }
+        Insert: {
+          clan_id?: string | null
+          husband_id?: string | null
+          id?: string | null
+          union_type?: string | null
+          wife_id?: string | null
+        }
+        Update: {
+          clan_id?: string | null
+          husband_id?: string | null
+          id?: string | null
+          union_type?: string | null
+          wife_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "families_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "families_husband_fk"
+            columns: ["husband_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "families_husband_fk"
+            columns: ["husband_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "families_wife_fk"
+            columns: ["wife_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "families_wife_fk"
+            columns: ["wife_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       persons_public_safe: {
         Row: {
           bio: string | null
           birth_date: string | null
           birth_date_precision: string | null
+          birth_family_id: string | null
           birth_lunar_day: number | null
           birth_lunar_month: number | null
           birth_lunar_year: number | null
+          birth_order: number | null
           birth_place: string | null
           branch_id: string | null
           burial_place: string | null
@@ -1102,9 +1171,11 @@ export type Database = {
           bio?: never
           birth_date?: never
           birth_date_precision?: never
+          birth_family_id?: string | null
           birth_lunar_day?: never
           birth_lunar_month?: never
           birth_lunar_year?: never
+          birth_order?: number | null
           birth_place?: never
           branch_id?: string | null
           burial_place?: never
@@ -1132,9 +1203,11 @@ export type Database = {
           bio?: never
           birth_date?: never
           birth_date_precision?: never
+          birth_family_id?: string | null
           birth_lunar_day?: never
           birth_lunar_month?: never
           birth_lunar_year?: never
+          birth_order?: number | null
           birth_place?: never
           branch_id?: string | null
           burial_place?: never
@@ -1159,6 +1232,20 @@ export type Database = {
           posthumous_name?: never
         }
         Relationships: [
+          {
+            foreignKeyName: "persons_birth_family_fk"
+            columns: ["birth_family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "persons_birth_family_fk"
+            columns: ["birth_family_id"]
+            isOneToOne: false
+            referencedRelation: "families_public_safe"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "persons_branch_fk"
             columns: ["branch_id"]
