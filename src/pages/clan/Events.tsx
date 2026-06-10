@@ -192,17 +192,23 @@ export default function Events() {
               <span className="hidden sm:inline">Lịch</span>
             </SegmentedButton>
           </SegmentedControl>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-10"
-            onClick={handleExportIcs}
-            disabled={!tree || !events || !anniversaries}
-            title="Tải file .ics — import vào Google / Apple Calendar để nhận nhắc trực tiếp trên lịch điện thoại"
-          >
-            <IconDownload className="h-4 w-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Xuất lịch</span>
-          </Button>
+          {/* Xuất lịch (.ics) is member-only — same reasoning as the
+              PDF book / share-link buttons on /tree: bulk-downloading
+              the clan's full event stream is owner territory, not for
+              non-member public-clan visitors. */}
+          {effectiveRole(clan) !== null && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10"
+              onClick={handleExportIcs}
+              disabled={!tree || !events || !anniversaries}
+              title="Tải file .ics — import vào Google / Apple Calendar để nhận nhắc trực tiếp trên lịch điện thoại"
+            >
+              <IconDownload className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Xuất lịch</span>
+            </Button>
+          )}
           <RefreshButton
             clanId={clan.id}
             cachedVersion={clan.data_version}
