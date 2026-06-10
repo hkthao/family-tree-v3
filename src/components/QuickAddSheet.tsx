@@ -37,6 +37,14 @@ interface QuickAddSheetProps {
   onClose: () => void;
   clanId: string;
   personId: string;
+  /**
+   * Skip the relation picker and jump straight into a specific mini-
+   * form. Used by /todo when we already know which gap is being
+   * fixed (e.g. clicking a `missing_parents` row pre-selects
+   * "parent"). When set, the "Đổi quan hệ" back link is hidden so
+   * the user can't drift away from the fix.
+   */
+  defaultRelation?: Relation;
 }
 
 /**
@@ -50,14 +58,17 @@ export function QuickAddSheet({
   onClose,
   clanId,
   personId,
+  defaultRelation,
 }: QuickAddSheetProps) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
-  const [relation, setRelation] = useState<Relation | null>(null);
+  const [relation, setRelation] = useState<Relation | null>(
+    defaultRelation ?? null,
+  );
 
   useEffect(() => {
-    if (open) setRelation(null);
-  }, [open]);
+    if (open) setRelation(defaultRelation ?? null);
+  }, [open, defaultRelation]);
 
   const { data: focal } = useQuery({
     queryKey: queryKeys.person(personId, userId),
@@ -85,7 +96,7 @@ export function QuickAddSheet({
         <QuickAddChild
           clanId={clanId}
           personId={personId}
-          onBack={() => setRelation(null)}
+          onBack={defaultRelation ? null : () => setRelation(null)}
           onDone={onClose}
         />
       )}
@@ -93,7 +104,7 @@ export function QuickAddSheet({
         <QuickAddSpouse
           clanId={clanId}
           personId={personId}
-          onBack={() => setRelation(null)}
+          onBack={defaultRelation ? null : () => setRelation(null)}
           onDone={onClose}
         />
       )}
@@ -101,7 +112,7 @@ export function QuickAddSheet({
         <QuickAddParent
           clanId={clanId}
           personId={personId}
-          onBack={() => setRelation(null)}
+          onBack={defaultRelation ? null : () => setRelation(null)}
           onDone={onClose}
         />
       )}
@@ -297,7 +308,7 @@ function QuickAddChild({
 }: {
   clanId: string;
   personId: string;
-  onBack: () => void;
+  onBack: (() => void) | null;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -544,7 +555,7 @@ function QuickAddChild({
   return (
     <div className="space-y-5 pb-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <BackToPickerButton onBack={onBack} />
+        {onBack && <BackToPickerButton onBack={onBack} />}
         <SegmentedControl ariaLabel="Chế độ thêm con">
           <SegmentedButton
             active={!bulkMode}
@@ -751,7 +762,7 @@ function QuickAddSpouse({
 }: {
   clanId: string;
   personId: string;
-  onBack: () => void;
+  onBack: (() => void) | null;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -809,7 +820,7 @@ function QuickAddSpouse({
       }}
       className="space-y-5 pb-6"
     >
-      <BackToPickerButton onBack={onBack} />
+      {onBack && <BackToPickerButton onBack={onBack} />}
 
       <div className="space-y-2">
         <Label htmlFor="quick_spouse_name" required>
@@ -870,7 +881,7 @@ function QuickAddParent({
 }: {
   clanId: string;
   personId: string;
-  onBack: () => void;
+  onBack: (() => void) | null;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -976,7 +987,7 @@ function QuickAddParent({
   if (bothFilled) {
     return (
       <div className="space-y-5 pb-6">
-        <BackToPickerButton onBack={onBack} />
+        {onBack && <BackToPickerButton onBack={onBack} />}
         <p className="text-sm text-muted-foreground">
           {focal?.full_name ?? "Người này"} đã có đủ cha và mẹ trên cây.
           Sửa thông tin cha/mẹ qua icon bút chì.
@@ -997,7 +1008,7 @@ function QuickAddParent({
       }}
       className="space-y-5 pb-6"
     >
-      <BackToPickerButton onBack={onBack} />
+      {onBack && <BackToPickerButton onBack={onBack} />}
 
       <div className="space-y-2">
         <Label htmlFor="quick_parent_name" required>
