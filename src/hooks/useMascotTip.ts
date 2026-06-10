@@ -1,28 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import { TIP_CATALOGUE, type Tip, type TipContext } from "@/lib/tipCatalogue";
 
 const STORAGE_KEY = "ftv3:tips";
-const COOLDOWN_MS = 48 * 60 * 60 * 1000; // 48h between any two tip pops
+// How often the mascot auto-pops a fresh tip while the user is
+// idle. Long enough not to nag, short enough to feel like a quiet
+// assistant — 3 minutes is the current calibration.
+const POP_INTERVAL_MS = 3 * 60 * 1000;
 const CLAN_ID_RE = /^\/clans\/([0-9a-f-]{36})/i;
 
 interface TipsState {
-  seenIds: string[];
-  lastShownAt: number | null;
+  /** User-level "I don't want hints" — only persistent flag we keep. */
   mascotMuted: boolean;
-  firstSessionAt: number; // ms epoch, used for sessionAgeMs
+  /** Stamp of first session so sessionAgeMs predicate is meaningful. */
+  firstSessionAt: number;
+  /** Last app version the user has clicked through a tip in. Lets
+   *  the app-updated tip pop ONCE per new version rather than on
+   *  every interval. */
   lastSeenVersion: string;
 }
 
 function defaultState(): TipsState {
-  return {
-    seenIds: [],
-    lastShownAt: null,
-    mascotMuted: false,
-    firstSessionAt: 0, // 0 = not yet stamped; load() will set it
-    lastSeenVersion: "",
-  };
+  return { mascotMuted: false, firstSessionAt: 0, lastSeenVersion: "" };
 }
 
 function loadState(): TipsState {
@@ -32,17 +32,15 @@ function loadState(): TipsState {
     if (!raw) return defaultState();
     const parsed = JSON.parse(raw) as Partial<TipsState>;
     return {
-      seenIds: Array.isArray(parsed.seenIds) ? parsed.seenIds : [],
-      lastShownAt:
-        typeof parsed.lastShownAt === "number" ? parsed.lastShownAt : null,
       mascotMuted: parsed.mascotMuted === true,
       firstSessionAt:
         typeof parsed.firstSessionAt === "number" ? parsed.firstSessionAt : 0,
       lastSeenVersion:
-        typeof parsed.lastSeenVersion === "string" ? parsed.lastSeenVersion : "",
+        typeof parsed.lastSeenVersion === "string"
+          ? parsed.lastSeenVersion
+          : "",
     };
   } catch {
-    // Corrupt blob from an older format — reset silently.
     window.localStorage.removeItem(STORAGE_KEY);
     return defaultState();
   }
@@ -53,157 +51,164 @@ function saveState(s: TipsState) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
   } catch {
-    // Quota / storage disabled — ignore. Tips are a nice-to-have.
+    /* quota / disabled — ignore */
   }
+}
+
+function buildContext(state: TipsState): TipContext {
+  const clanMatch =
+    typeof window !== "undefined"
+      ? CLAN_ID_RE.exec(window.location.pathname)
+      : null;
+  return {
+    route: typeof window !== "undefined" ? window.location.pathname : "/",
+    appVersion: typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "",
+    lastSeenVersion: state.lastSeenVersion,
+    clanId: clanMatch ? clanMatch[1] : null,
+    sessionAgeMs: state.firstSessionAt ? Date.now() - state.firstSessionAt : 0,
+    seenCount: 0,
+  };
+}
+
+function pickEligible(
+  state: TipsState,
+  recentIds: string[],
+): Tip | null {
+  const ctx = buildContext(state);
+  const eligible = TIP_CATALOGUE.filter((t) => !recentIds.includes(t.id))
+    .filter((t) => {
+      try {
+        return t.when(ctx);
+      } catch {
+        return false;
+      }
+    })
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  // No more route-matching tips left in this rotation — fall back
+  // to ANY unused tip so the user keeps getting fresh content.
+  let next: Tip | null = eligible[0] ?? null;
+  if (!next) {
+    next =
+      TIP_CATALOGUE.filter((t) => !recentIds.includes(t.id)).sort(
+        (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+      )[0] ?? null;
+  }
+  return next;
 }
 
 export interface UseMascotTipResult {
   tip: Tip | null;
-  /** Mark current tip as seen + persist. */
-  dismiss: () => void;
-  /** Hide the bubble without marking seen (e.g. click outside).
-   *  Tip will re-appear if eligible on next route. */
+  /** Hide the current bubble (without marking dismissed forever).
+   *  Next interval will pop the next-in-rotation tip. */
   hide: () => void;
-  /** User clicked the mascot directly — bypass cooldown and pick
-   *  any unseen eligible tip right now. `excludeIds` skips tips
-   *  already shown in the current open session (so repeated clicks
-   *  cycle to fresh content). Returns null when the catalogue is
-   *  exhausted relative to the current context. */
-  peek: (excludeIds?: string[]) => Tip | null;
+  /** Click on the mascot — cycle to a different unseen-in-this-
+   *  rotation tip immediately. */
+  cycle: () => Tip | null;
   /** Toggle the user-level mute. */
   setMuted: (muted: boolean) => void;
   muted: boolean;
 }
 
 /**
- * Picks one eligible tip per cycle, respects cooldown + seen-ids +
- * mute. Returns `null` when there's nothing to show.
+ * Periodic mascot tip system. Every POP_INTERVAL_MS the hook picks
+ * a fresh tip (one we haven't shown yet in this rotation), the
+ * component pops a bubble for it, auto-hides after a few seconds.
+ * Tips are never marked "dismissed forever" — the rotation just
+ * cycles through and starts over.
  *
- * Re-evaluates whenever the route changes — simplest trigger, and
- * matches how users tend to ask questions ("now I'm on this page,
- * what should I know?"). Could be extended later to also re-check
- * on focus or on a timer.
+ * The single persistent flag is `mascotMuted`: user opts out
+ * completely. Otherwise tips keep rotating.
  */
 export function useMascotTip(): UseMascotTipResult {
   const location = useLocation();
   const [state, setState] = useState<TipsState>(() => loadState());
   const [tip, setTip] = useState<Tip | null>(null);
+  // Per-rotation memory: tips already shown since the rotation
+  // started. Resets when all tips are exhausted so we loop cleanly.
+  const recentIdsRef = useRef<string[]>([]);
 
   // Stamp firstSessionAt on the very first load so sessionAgeMs
-  // works even for users who installed the app a week ago.
+  // predicates can fire.
   useEffect(() => {
     if (state.firstSessionAt !== 0) return;
-    const stamped = { ...state, firstSessionAt: Date.now() };
-    setState(stamped);
-    saveState(stamped);
+    const next = { ...state, firstSessionAt: Date.now() };
+    setState(next);
+    saveState(next);
   }, [state]);
 
-  // Pick a tip when route / state changes. Pure read — doesn't mark
-  // seen yet; that happens on dismiss so a user closing without
-  // reading isn't "considered served".
+  // Bump lastSeenVersion the first time we see this build — keeps
+  // the app-updated tip from re-firing every interval after the
+  // user has been on the new version for a while.
+  useEffect(() => {
+    if (state.mascotMuted) return;
+    const v = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "";
+    if (!v) return;
+    if (state.lastSeenVersion === v) return;
+    // Only stamp AFTER the user has been on the new version for a
+    // few minutes, so the app-updated tip has time to pop once.
+    const t = window.setTimeout(
+      () => {
+        const next = { ...state, lastSeenVersion: v };
+        setState(next);
+        saveState(next);
+      },
+      5 * 60 * 1000,
+    );
+    return () => window.clearTimeout(t);
+  }, [state]);
+
+  // The periodic timer — fires every POP_INTERVAL_MS while mounted.
+  // location.pathname is in the deps so the context refreshes when
+  // the user navigates (the next pop picks tips that match the new
+  // route).
   useEffect(() => {
     if (state.mascotMuted) {
       setTip(null);
       return;
     }
-    if (state.lastShownAt && Date.now() - state.lastShownAt < COOLDOWN_MS) {
-      setTip(null);
-      return;
+    function popNext() {
+      let next = pickEligible(state, recentIdsRef.current);
+      if (!next) {
+        // Catalogue exhausted in this rotation — reset and try again.
+        recentIdsRef.current = [];
+        next = pickEligible(state, []);
+      }
+      if (next) {
+        recentIdsRef.current = [...recentIdsRef.current, next.id];
+        setTip(next);
+      }
     }
-
-    const clanMatch = CLAN_ID_RE.exec(location.pathname);
-    const ctx: TipContext = {
-      route: location.pathname,
-      // __APP_VERSION__ is replaced at build time by vite.
-      appVersion: typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "",
-      lastSeenVersion: state.lastSeenVersion,
-      clanId: clanMatch ? clanMatch[1] : null,
-      sessionAgeMs: state.firstSessionAt
-        ? Date.now() - state.firstSessionAt
-        : 0,
-      seenCount: state.seenIds.length,
+    // Fire one tip after a short warmup so a fresh route load isn't
+    // immediately interrupted by a popup.
+    const warmup = window.setTimeout(popNext, 15_000);
+    const interval = window.setInterval(popNext, POP_INTERVAL_MS);
+    return () => {
+      window.clearTimeout(warmup);
+      window.clearInterval(interval);
     };
-
-    const eligible = TIP_CATALOGUE.filter((t) => !state.seenIds.includes(t.id))
-      .filter((t) => {
-        try {
-          return t.when(ctx);
-        } catch {
-          return false;
-        }
-      })
-      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-
-    setTip(eligible[0] ?? null);
-  }, [location.pathname, state]);
-
-  const dismiss = useCallback(() => {
-    if (!tip) return;
-    const next: TipsState = {
-      ...state,
-      seenIds: state.seenIds.includes(tip.id)
-        ? state.seenIds
-        : [...state.seenIds, tip.id],
-      lastShownAt: Date.now(),
-      // Stamp the version once user has seen any tip so the
-      // app-updated tip doesn't keep firing on every route change.
-      lastSeenVersion:
-        typeof __APP_VERSION__ !== "undefined"
-          ? __APP_VERSION__
-          : state.lastSeenVersion,
-    };
-    setState(next);
-    saveState(next);
-    setTip(null);
-  }, [state, tip]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.mascotMuted, location.pathname]);
 
   const hide = useCallback(() => {
     setTip(null);
   }, []);
 
-  const peek = useCallback(
-    (excludeIds: string[] = []): Tip | null => {
-      if (typeof window === "undefined") return null;
-      const clanMatch = CLAN_ID_RE.exec(window.location.pathname);
-      const ctx: TipContext = {
-        route: window.location.pathname,
-        appVersion:
-          typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "",
-        lastSeenVersion: state.lastSeenVersion,
-        clanId: clanMatch ? clanMatch[1] : null,
-        sessionAgeMs: state.firstSessionAt
-          ? Date.now() - state.firstSessionAt
-          : 0,
-        seenCount: state.seenIds.length,
-      };
-      const eligible = TIP_CATALOGUE.filter(
-        (t) => !state.seenIds.includes(t.id) && !excludeIds.includes(t.id),
-      )
-        .filter((t) => {
-          try {
-            return t.when(ctx);
-          } catch {
-            return false;
-          }
-        })
-        .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-      // Fall back to any eligible tip route-agnostically when nothing
-      // matches the current route — user clicked the mascot looking
-      // for content, give them content. Welcome / mute hints / app-
-      // updated work anywhere so this almost always has something.
-      let next = eligible[0] ?? null;
-      if (!next) {
-        const fallback = TIP_CATALOGUE.filter(
-          (t) =>
-            !state.seenIds.includes(t.id) && !excludeIds.includes(t.id),
-        ).sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-        next = fallback[0] ?? null;
-      }
+  const cycle = useCallback((): Tip | null => {
+    const current = tip;
+    const skip = current
+      ? [...recentIdsRef.current, current.id]
+      : recentIdsRef.current;
+    let next = pickEligible(state, skip);
+    if (!next) {
+      recentIdsRef.current = current ? [current.id] : [];
+      next = pickEligible(state, recentIdsRef.current);
+    }
+    if (next) {
+      recentIdsRef.current = [...skip, next.id];
       setTip(next);
-      return next;
-    },
-    [state],
-  );
+    }
+    return next;
+  }, [state, tip]);
 
   const setMuted = useCallback(
     (muted: boolean) => {
@@ -217,9 +222,8 @@ export function useMascotTip(): UseMascotTipResult {
 
   return {
     tip,
-    dismiss,
     hide,
-    peek,
+    cycle,
     setMuted,
     muted: state.mascotMuted,
   };
