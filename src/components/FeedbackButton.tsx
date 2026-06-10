@@ -30,14 +30,18 @@ export function FeedbackButton() {
         onClick={() => setOpen(true)}
         className={cn(
           "fixed right-3 bottom-20 lg:bottom-4 z-30",
-          "inline-flex items-center gap-1.5 rounded-full",
-          "px-4 h-10 shadow-md border bg-primary text-primary-foreground",
+          "inline-flex items-center justify-center gap-1.5 rounded-full",
+          // Icon-only square on mobile to match the mascot above it
+          // (both 40×40, stacked tight); pill with label on lg+ where
+          // there's room for context.
+          "h-10 w-10 lg:w-auto lg:px-4 shadow-md border bg-primary text-primary-foreground",
           "text-sm font-medium hover:opacity-90 transition-opacity",
         )}
         aria-label="Góp ý / báo lỗi"
+        title="Góp ý / báo lỗi"
       >
         <span aria-hidden="true">✎</span>
-        Góp ý
+        <span className="hidden lg:inline">Góp ý</span>
       </button>
       {open && <FeedbackDialog onClose={() => setOpen(false)} />}
     </>
