@@ -723,8 +723,17 @@ export default function Tree() {
             </SegmentedButton>
           </SegmentedControl>
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <ExportBookButton clan={clan} />
-            <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+            {/* Xuất sổ PDF + Chia sẻ are member-only — non-member
+                visitors of a public clan can already view the tree on
+                screen, but bulk-downloading the whole book / generating
+                share-links is owner territory. Mirrors how /people +
+                /admin actions are gated. */}
+            {effectiveRole(clan) !== null && (
+              <>
+                <ExportBookButton clan={clan} />
+                <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+              </>
+            )}
             <RefreshButton
               clanId={clan.id}
               cachedVersion={clan.data_version}
