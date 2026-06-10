@@ -128,7 +128,12 @@ export default function Dashboard() {
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
-      {stats && stats.total_persons === 0 ? (
+      {/* Empty-state check uses the tree query (which goes through the
+          masked view for non-members of public clans) — `stats` runs
+          as security_invoker so it'd return 0 for non-members even
+          when the clan has people, producing a misleading "no one in
+          this clan yet" message on real, populated public clans. */}
+      {tree && tree.persons.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Chưa có ai trong dòng họ</CardTitle>
@@ -155,19 +160,56 @@ export default function Dashboard() {
             </CardContent>
           )}
         </Card>
-      ) : stats ? (
+      ) : tree && tree.persons.length > 0 ? (
         <>
-          <section
-            aria-label="Thống kê dòng họ"
-            className="grid grid-cols-2 sm:grid-cols-3 gap-3"
-          >
-            <StatTile label="Tổng số người" value={stats.total_persons} highlight />
-            <StatTile label="Số đời" value={stats.max_generation ?? "—"} />
-            <StatTile label="Nam" value={stats.males} />
-            <StatTile label="Nữ" value={stats.females} />
-            <StatTile label="Còn sống" value={stats.living} />
-            <StatTile label="Đã mất" value={stats.deceased} muted />
-          </section>
+          {/* Stats tiles. For members, use the get_clan_stats RPC
+              (faster aggregate). For non-member visitors of public
+              clans, get_clan_stats returns 0 across the board because
+              it runs as security_invoker against persons-RLS — so we
+              fall back to client-side counting from the masked tree
+              data they already have. */}
+          {(() => {
+            const useStatsRpc = isMember && stats && stats.total_persons > 0;
+            const counts = useStatsRpc
+              ? {
+                  total: stats!.total_persons,
+                  maxGen: stats!.max_generation,
+                  males: stats!.males,
+                  females: stats!.females,
+                  living: stats!.living,
+                  deceased: stats!.deceased,
+                }
+              : {
+                  total: tree.persons.length,
+                  maxGen:
+                    tree.persons.reduce<number | null>(
+                      (m, p) =>
+                        p.generation == null
+                          ? m
+                          : m == null || p.generation > m
+                            ? p.generation
+                            : m,
+                      null,
+                    ),
+                  males: tree.persons.filter((p) => p.gender === "M").length,
+                  females: tree.persons.filter((p) => p.gender === "F").length,
+                  living: tree.persons.filter((p) => p.is_living).length,
+                  deceased: tree.persons.filter((p) => !p.is_living).length,
+                };
+            return (
+              <section
+                aria-label="Thống kê dòng họ"
+                className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+              >
+                <StatTile label="Tổng số người" value={counts.total} highlight />
+                <StatTile label="Số đời" value={counts.maxGen ?? "—"} />
+                <StatTile label="Nam" value={counts.males} />
+                <StatTile label="Nữ" value={counts.females} />
+                <StatTile label="Còn sống" value={counts.living} />
+                <StatTile label="Đã mất" value={counts.deceased} muted />
+              </section>
+            );
+          })()}
 
           {completion && completion.total > 0 && (
             <CompletionTile
