@@ -11,44 +11,60 @@ import { submitFeedback } from "@/lib/queries/feedback";
 import { cn } from "@/lib/utils";
 
 /**
- * Floating "Góp ý" pill — visible on every page so a user hitting a
- * bug or confused by a flow has somewhere to speak. Works for anon
- * + authenticated; the page URL, user agent, and app version are
- * stamped server-side via the query helper.
+ * Inline "Góp ý" trigger — meant to be embedded in places that
+ * already have layout (drawer footer, page header, etc) rather
+ * than floating over content.
  *
- * Position mirrors OfflineIndicator's `bottom-20 lg:bottom-4` so it
- * sits ABOVE the mobile BottomTabBar on phones and tucks into the
- * corner on desktop. Lives on the right; OfflineIndicator (when
- * shown) lives on the left.
+ * Started life as a floating bottom-right pill but the mascot now
+ * lives there + the duplicate corner-cluster was eating screen on
+ * mobile. Behaviour (anon-friendly insert, page URL stamping) is
+ * unchanged — just the chrome moved.
  */
-export function FeedbackButton() {
+export function FeedbackButton({
+  className,
+}: {
+  className?: string;
+} = {}) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={cn(
-          "fixed right-3 bottom-20 lg:bottom-4 z-30",
-          "inline-flex items-center justify-center gap-1.5 rounded-full",
-          // Icon-only square on mobile to match the mascot above it
-          // (both 40×40, stacked tight); pill with label on lg+ where
-          // there's room for context.
-          "h-10 w-10 lg:w-auto lg:px-4 shadow-md border bg-primary text-primary-foreground",
-          "text-sm font-medium hover:opacity-90 transition-opacity",
-        )}
+        className={
+          className ??
+          cn(
+            "h-10 inline-flex items-center justify-center gap-1.5 rounded-md border px-3 text-sm",
+            "hover:bg-muted transition-colors",
+          )
+        }
         aria-label="Góp ý / báo lỗi"
         title="Góp ý / báo lỗi"
       >
-        <span aria-hidden="true">✎</span>
-        <span className="hidden lg:inline">Góp ý</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="shrink-0"
+        >
+          <path d="M22 2L11 13" />
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+        </svg>
+        <span>Góp ý</span>
       </button>
       {open && <FeedbackDialog onClose={() => setOpen(false)} />}
     </>
   );
 }
 
-function FeedbackDialog({ onClose }: { onClose: () => void }) {
+export function FeedbackDialog({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const { pathname } = useLocation();
   const [message, setMessage] = useState("");

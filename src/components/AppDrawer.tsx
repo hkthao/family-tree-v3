@@ -24,6 +24,7 @@ import {
   IconUsers,
 } from "@/components/icons";
 import { CheckUpdateButton } from "@/components/CheckUpdateButton";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
@@ -227,11 +228,19 @@ export function AppDrawer({ open, onClose }: Props) {
             nav body roomy. Logout is icon-only with a tooltip; the row
             itself is the visible "I'm signed in as X" cue. */}
         <footer className="border-t p-3 space-y-3">
+          {/* All four utility actions share one row so the drawer
+              footer doesn't waste vertical space — buttons are
+              `flex-1 min-w-0` and labels short-form ("QR" not "Chia
+              sẻ QR") so 3-4 fit on the 288-wide drawer without
+              clipping. InstallAppButton self-hides when not
+              installable, so on most desktop browsers this is just
+              QR / Góp ý / Cập nhật. */}
           <div className="flex gap-2">
             <InstallAppButton />
             <ShareAppQrButton />
+            <FeedbackButton className="flex-1 min-w-0 h-10 inline-flex items-center justify-center gap-1.5 rounded-md border bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity" />
+            <CheckUpdateButton compact />
           </div>
-          <CheckUpdateButton />
           {profile ? (
             <div className="flex items-center gap-3">
               <div
