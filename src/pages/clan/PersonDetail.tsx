@@ -85,15 +85,25 @@ export default function PersonDetail() {
 
   // Clan comes from the layout, not a duplicate fetch.
   const { clan } = useClanContext();
+  // Non-members of a public clan read through the masked view —
+  // same source-selection pattern as /tree and /people. Without
+  // this they'd hit "Không tìm thấy người này" the moment they
+  // clicked a card on the public tree, even though they can see
+  // the same card on screen.
+  const personSource =
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
   const { data: person, isLoading } = useQuery({
-    queryKey: queryKeys.person(personId ?? "", userId),
-    queryFn: () => getPerson(personId!),
+    queryKey: [...queryKeys.person(personId ?? "", userId), personSource],
+    queryFn: () => getPerson(personId!, undefined, personSource),
     enabled: !!personId,
   });
 
   const { data: relationships } = useQuery({
-    queryKey: queryKeys.personRelationships(personId ?? "", userId),
-    queryFn: () => getPersonRelationships(personId!),
+    queryKey: [
+      ...queryKeys.personRelationships(personId ?? "", userId),
+      personSource,
+    ],
+    queryFn: () => getPersonRelationships(personId!, undefined, personSource),
     enabled: !!personId && !!person,
   });
 

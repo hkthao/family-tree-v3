@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { IconUser, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { computeKinship, type KinshipPerson } from "@/lib/kinship";
 import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
@@ -33,6 +33,15 @@ export default function Kinship() {
   const [params, setParams] = useSearchParams();
   const aId = params.get("a") ?? "";
   const bId = params.get("b") ?? "";
+
+  // Máy tính xưng hô needs the full person + family graph, which
+  // raw RLS hides from non-members. Could be supported via the
+  // masked views, but the use case ("what should I call this
+  // distant uncle") is fundamentally a member-of-the-family feature.
+  // Redirect non-member visitors back to the public surface.
+  if (effectiveRole(clan) === null) {
+    return <Navigate to={`/clans/${clan.id}`} replace />;
+  }
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.kinshipIndex(clan.id, userId),

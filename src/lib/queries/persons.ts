@@ -295,22 +295,47 @@ export interface PersonDetail extends PersonRow {
   birth_order: number | null;
 }
 
-const DETAIL_COLS =
-  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, todo_excluded, birth_order";
+// Columns the masked view exposes (subset of raw `persons` — no
+// todo_excluded, no full_name_unaccent). Used when reading on
+// behalf of a non-member of a public clan.
+const DETAIL_COLS_SAFE =
+  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, birth_order";
+// Raw table adds member-only columns (todo_excluded).
+const DETAIL_COLS = `${DETAIL_COLS_SAFE}, todo_excluded`;
 
 export async function getPerson(
   personId: string,
   client: Client = defaultClient,
+  source: "persons" | "persons_public_safe" = "persons",
 ): Promise<PersonDetail | null> {
-  const { data, error } = await client
-    .from("persons")
-    .select(DETAIL_COLS)
-    .eq("id", personId)
-    .is("deleted_at", null)
-    .maybeSingle();
+  // Non-members of a public clan can't see the raw row (RLS); they
+  // read the masked view that already gates on clan visibility +
+  // blanks living-person personal fields. Caller decides which path
+  // via the `source` arg — mirror the Tree / People pattern.
+  const query =
+    source === "persons_public_safe"
+      ? client
+          .from("persons_public_safe")
+          .select(DETAIL_COLS_SAFE)
+          .eq("id", personId)
+      : client
+          .from("persons")
+          .select(DETAIL_COLS)
+          .eq("id", personId)
+          .is("deleted_at", null);
 
+  const { data, error } = await query.maybeSingle();
   if (error) throw new Error(error.message);
-  return (data as PersonDetail | null) ?? null;
+  if (!data) return null;
+  // `todo_excluded` isn't on the safe view; default to false so the
+  // PersonDetail "thiếu gì" hint check still works for non-members
+  // (the hint itself is already gated on canEdit, so non-members
+  // won't see it regardless).
+  const detail = data as Partial<PersonDetail> & { id: string };
+  return {
+    ...detail,
+    todo_excluded: detail.todo_excluded ?? false,
+  } as PersonDetail;
 }
 
 export interface UpdatePersonInput {
