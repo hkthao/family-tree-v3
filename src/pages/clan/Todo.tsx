@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { EmptyState } from "@/components/EmptyState";
+import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { QuickDateFixSheet } from "@/components/QuickDateFixSheet";
 import {
   IconArrowLeft,
@@ -169,15 +170,23 @@ export default function Todo() {
   const startIdx = totalForCategory === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
   const endIdx = Math.min(totalForCategory, safePage * PAGE_SIZE);
 
-  // Inline quick-fix for the `missing_dates` category — by far the
-  // most common gap and the cheapest to close (year-only). Other
-  // categories still hop to the full edit/detail page since fixing
-  // them needs more context than a single field.
-  const [quickFix, setQuickFix] = useState<TodoItemRow | null>(null);
+  // Inline quick-fix sheets — open the right primitive depending on
+  // which category the row belongs to. Cuts the navigate-edit-save-
+  // navigate-back loop down to one tap. Categories that need more
+  // context than a single field can hold (dead_end / media) still
+  // navigate.
+  const [quickDateFix, setQuickDateFix] = useState<TodoItemRow | null>(null);
+  const [quickParentFix, setQuickParentFix] = useState<TodoItemRow | null>(
+    null,
+  );
 
   function openItem(item: TodoItemRow) {
     if (canEdit && category === "missing_dates") {
-      setQuickFix(item);
+      setQuickDateFix(item);
+      return;
+    }
+    if (canEdit && category === "missing_parents") {
+      setQuickParentFix(item);
       return;
     }
     const path = canEdit
@@ -400,11 +409,19 @@ export default function Todo() {
       )}
 
       <QuickDateFixSheet
-        open={quickFix !== null}
-        onClose={() => setQuickFix(null)}
+        open={quickDateFix !== null}
+        onClose={() => setQuickDateFix(null)}
         clanId={clan.id}
-        personId={quickFix?.person_id ?? ""}
-        missing={quickFix?.missing ?? []}
+        personId={quickDateFix?.person_id ?? ""}
+        missing={quickDateFix?.missing ?? []}
+      />
+
+      <QuickAddSheet
+        open={quickParentFix !== null}
+        onClose={() => setQuickParentFix(null)}
+        clanId={clan.id}
+        personId={quickParentFix?.person_id ?? ""}
+        defaultRelation="parent"
       />
     </div>
   );
