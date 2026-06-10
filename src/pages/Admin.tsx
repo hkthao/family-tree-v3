@@ -37,11 +37,12 @@ import {
   type AdminProfileRow,
   type FailedNotification,
 } from "@/lib/queries/admin";
+import { listFeedback, type FeedbackRow } from "@/lib/queries/feedback";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 import { unaccent } from "@/lib/unaccent";
 
-type Tab = "users" | "clans" | "health";
+type Tab = "users" | "clans" | "health" | "feedback";
 
 const PAGE_SIZE = 20;
 
@@ -104,12 +105,20 @@ export default function Admin() {
             >
               Hệ thống
             </SegmentedButton>
+            <SegmentedButton
+              active={tab === "feedback"}
+              onClick={() => setTab("feedback")}
+              className="flex-1 sm:flex-none"
+            >
+              Góp ý
+            </SegmentedButton>
           </SegmentedControl>
         </div>
 
         {tab === "users" && <UsersTab callerId={user.id} />}
         {tab === "clans" && <ClansTab />}
         {tab === "health" && <HealthTab />}
+        {tab === "feedback" && <FeedbackTab />}
       </main>
     </div>
   );
@@ -963,4 +972,157 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+// ───────────── Feedback tab ─────────────────────────────────────────
+
+function FeedbackTab() {
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: queryKeys.adminFeedback(),
+    queryFn: () => listFeedback(),
+    staleTime: 30_000,
+  });
+  const [search, setSearch] = useState("");
+
+  const filtered = useMemo(() => {
+    if (!data) return [];
+    if (!search.trim()) return data;
+    const needle = unaccent(search);
+    return data.filter((r) => {
+      const hay = unaccent(
+        `${r.message} ${r.contact ?? ""} ${r.page_url ?? ""}`,
+      );
+      return hay.includes(needle);
+    });
+  }, [data, search]);
+
+  if (isLoading) {
+    return <p className="text-muted-foreground">Đang tải…</p>;
+  }
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{(error as Error).message}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <section className="space-y-4">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <p className="text-sm text-muted-foreground">
+          Tổng <strong>{data?.length ?? 0}</strong> phản hồi
+          {(data?.length ?? 0) >= 500 && " (đang giới hạn 500 mới nhất)"}
+          .
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isFetching}
+        >
+          {isFetching ? "Đang tải…" : "Tải lại"}
+        </Button>
+      </div>
+      <SearchInput
+        label="Tìm trong nội dung / liên hệ / URL"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Tìm theo nội dung, email/SĐT, hoặc URL…"
+      />
+      {filtered.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">
+          {data?.length === 0
+            ? "Chưa có phản hồi nào — chờ early users gửi."
+            : "Không khớp tìm kiếm."}
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {filtered.map((row) => (
+            <FeedbackRowCard key={row.id} row={row} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function FeedbackRowCard({ row }: { row: FeedbackRow }) {
+  // Pull the clan id out of page_url so admins can jump straight to
+  // the tree that was on screen. Falls back to the raw URL when the
+  // user submitted from a non-clan page (login, account, etc.).
+  const clanMatch = row.page_url?.match(
+    /\/clans\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
+  );
+  return (
+    <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-2">
+      <div className="flex items-baseline justify-between gap-2 flex-wrap">
+        <p className="whitespace-pre-wrap text-sm leading-relaxed flex-1 min-w-0">
+          {row.message}
+        </p>
+        <time
+          className="text-xs text-muted-foreground shrink-0 tabular-nums"
+          dateTime={row.created_at}
+          title={row.created_at}
+        >
+          {new Date(row.created_at).toLocaleString("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </time>
+      </div>
+      <dl className="text-xs text-muted-foreground grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5">
+        {row.contact && (
+          <>
+            <dt>Liên lạc:</dt>
+            <dd className="break-all">{row.contact}</dd>
+          </>
+        )}
+        {row.user_id ? (
+          <>
+            <dt>Người gửi:</dt>
+            <dd className="font-mono break-all">{row.user_id}</dd>
+          </>
+        ) : (
+          <>
+            <dt>Người gửi:</dt>
+            <dd className="italic">khách (chưa đăng nhập)</dd>
+          </>
+        )}
+        {clanMatch ? (
+          <>
+            <dt>Clan:</dt>
+            <dd>
+              <Link
+                to={`/clans/${clanMatch[1]}`}
+                className="text-primary hover:underline font-mono break-all"
+              >
+                {clanMatch[1]} ↗
+              </Link>
+            </dd>
+          </>
+        ) : row.page_url ? (
+          <>
+            <dt>URL:</dt>
+            <dd className="break-all">{row.page_url}</dd>
+          </>
+        ) : null}
+        {row.app_version && (
+          <>
+            <dt>Phiên bản:</dt>
+            <dd className="font-mono">{row.app_version}</dd>
+          </>
+        )}
+        {row.user_agent && (
+          <>
+            <dt>UA:</dt>
+            <dd className="break-all opacity-70">{row.user_agent}</dd>
+          </>
+        )}
+      </dl>
+    </li>
+  );
 }
