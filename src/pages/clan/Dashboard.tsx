@@ -50,6 +50,11 @@ export default function Dashboard() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
+  // Todo + completion RPCs are member-only (they raise 42501 for
+  // anyone not in clan_members). Skip the queries entirely for
+  // non-member visitors of a public clan — they shouldn't see the
+  // progress tile anyway, and the 403s pollute the console.
+  const isMember = effectiveRole(clan) !== null;
 
   const { data: stats, isLoading } = useQuery({
     queryKey: queryKeys.clanStats(clan.id, userId),
@@ -74,13 +79,13 @@ export default function Dashboard() {
   const { data: completion } = useQuery({
     queryKey: queryKeys.clanCompletion(clan.id, userId),
     queryFn: () => getClanCompletion(clan.id),
-    enabled: !!userId,
+    enabled: !!userId && isMember,
     staleTime: 60_000,
   });
   const { data: todoSummary } = useQuery({
     queryKey: queryKeys.clanTodoSummary(clan.id, userId),
     queryFn: () => getClanTodoSummary(clan.id),
-    enabled: !!userId,
+    enabled: !!userId && isMember,
     staleTime: 60_000,
   });
 
