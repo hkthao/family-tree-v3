@@ -238,7 +238,7 @@ export function AppDrawer({ open, onClose }: Props) {
           <div className="flex gap-2">
             <InstallAppButton />
             <ShareAppQrButton />
-            <FeedbackButton className="flex-1 min-w-0 h-10 inline-flex items-center justify-center gap-1.5 rounded-md border bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity" />
+            <FeedbackButton className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm whitespace-nowrap" />
             <CheckUpdateButton compact />
           </div>
           {profile ? (

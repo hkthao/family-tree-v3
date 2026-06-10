@@ -96,10 +96,11 @@ export function InstallAppButton() {
       type="button"
       onClick={click}
       title="Cài app lên màn hình chính"
-      className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm"
+      aria-label="Cài app"
+      className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm whitespace-nowrap"
     >
       <IconPhoneDownload className="h-4 w-4 shrink-0" />
-      Cài app
+      <span className="sr-only">Cài app</span>
     </button>
   );
 }

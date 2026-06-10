@@ -58,12 +58,15 @@ export function CheckUpdateButton({
         onClick={onClick}
         disabled={busy}
         title={busy ? "Đang kiểm tra…" : "Kiểm tra cập nhật"}
-        className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted disabled:opacity-50 px-2 h-10 text-sm"
+        aria-label="Kiểm tra cập nhật"
+        className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted disabled:opacity-50 px-2 h-10 text-sm whitespace-nowrap"
       >
         <IconRefresh
           className={`h-4 w-4 shrink-0 ${busy ? "animate-spin" : ""}`}
         />
-        {busy ? "…" : "Cập nhật"}
+        <span className="sr-only">
+          {busy ? "Đang kiểm tra cập nhật" : "Kiểm tra cập nhật"}
+        </span>
       </button>
     );
   }
