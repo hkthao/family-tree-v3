@@ -36,20 +36,36 @@ const PERSON_BRIEF =
 
 /**
  * Fetches parents / spouses / children for a person.
- * Three sequential queries — RLS filters them naturally to the caller's clans.
+ *
+ * `source` lets non-members of public clans read through the masked
+ * views (mirrors getPerson / getTreeData / listPersons pattern). The
+ * raw path uses `persons` + `families` with `deleted_at IS NULL`; the
+ * safe path uses `persons_public_safe` + `families_public_safe`, both
+ * of which already filter deleted rows internally so we drop the
+ * `.is("deleted_at", null)` chain in that branch.
  */
 export async function getPersonRelationships(
   personId: string,
   client: Client = defaultClient,
+  source: "persons" | "persons_public_safe" = "persons",
 ): Promise<PersonRelationships> {
+  const useSafe = source === "persons_public_safe";
+
   // 1. Get the person + their birth_family_id
-  const { data: me, error: meErr } = await client
-    .from("persons")
-    .select("id, birth_family_id, clan_id")
-    .eq("id", personId)
-    .is("deleted_at", null)
-    .maybeSingle();
-  if (meErr) throw new Error(meErr.message);
+  const meRes = useSafe
+    ? await client
+        .from("persons_public_safe")
+        .select("id, birth_family_id, clan_id")
+        .eq("id", personId)
+        .maybeSingle()
+    : await client
+        .from("persons")
+        .select("id, birth_family_id, clan_id")
+        .eq("id", personId)
+        .is("deleted_at", null)
+        .maybeSingle();
+  if (meRes.error) throw new Error(meRes.error.message);
+  const me = meRes.data;
   if (!me) {
     return { parents: [], spouses: [], children: [] };
   }
@@ -57,34 +73,51 @@ export async function getPersonRelationships(
   // 2. Parents from birth_family
   let parents: Relationship[] = [];
   if (me.birth_family_id) {
-    const { data: fam } = await client
-      .from("families")
-      .select("husband_id, wife_id")
-      .eq("id", me.birth_family_id)
-      .is("deleted_at", null)
-      .maybeSingle();
-
+    const famRes = useSafe
+      ? await client
+          .from("families_public_safe")
+          .select("husband_id, wife_id")
+          .eq("id", me.birth_family_id)
+          .maybeSingle()
+      : await client
+          .from("families")
+          .select("husband_id, wife_id")
+          .eq("id", me.birth_family_id)
+          .is("deleted_at", null)
+          .maybeSingle();
+    const fam = famRes.data;
     if (fam) {
       const parentIds = [fam.husband_id, fam.wife_id].filter(
         (id): id is string => id !== null,
       );
       if (parentIds.length > 0) {
-        const { data: ps } = await client
-          .from("persons")
-          .select(PERSON_BRIEF)
-          .in("id", parentIds)
-          .is("deleted_at", null);
-        parents = (ps ?? []) as Relationship[];
+        const psRes = useSafe
+          ? await client
+              .from("persons_public_safe")
+              .select(PERSON_BRIEF)
+              .in("id", parentIds)
+          : await client
+              .from("persons")
+              .select(PERSON_BRIEF)
+              .in("id", parentIds)
+              .is("deleted_at", null);
+        parents = (psRes.data ?? []) as Relationship[];
       }
     }
   }
 
   // 3. Spouses: families where person is husband_id or wife_id
-  const { data: ownFamilies } = await client
-    .from("families")
-    .select("id, husband_id, wife_id")
-    .or(`husband_id.eq.${personId},wife_id.eq.${personId}`)
-    .is("deleted_at", null);
+  const ownFamRes = useSafe
+    ? await client
+        .from("families_public_safe")
+        .select("id, husband_id, wife_id")
+        .or(`husband_id.eq.${personId},wife_id.eq.${personId}`)
+    : await client
+        .from("families")
+        .select("id, husband_id, wife_id")
+        .or(`husband_id.eq.${personId},wife_id.eq.${personId}`)
+        .is("deleted_at", null);
+  const ownFamilies = ownFamRes.data;
 
   const familyIds = (ownFamilies ?? []).map((f) => f.id);
   const spousePersonIds = (ownFamilies ?? [])
@@ -93,17 +126,24 @@ export async function getPersonRelationships(
 
   let spouses: SpouseRelationship[] = [];
   if (spousePersonIds.length > 0) {
-    const { data: spersons } = await client
-      .from("persons")
-      .select(PERSON_BRIEF)
-      .in("id", spousePersonIds)
-      .is("deleted_at", null);
-    const byId = new Map((spersons ?? []).map((p) => [p.id, p]));
+    const spRes = useSafe
+      ? await client
+          .from("persons_public_safe")
+          .select(PERSON_BRIEF)
+          .in("id", spousePersonIds)
+      : await client
+          .from("persons")
+          .select(PERSON_BRIEF)
+          .in("id", spousePersonIds)
+          .is("deleted_at", null);
+    const byId = new Map(
+      (spRes.data ?? []).map((p) => [p.id, p as Relationship]),
+    );
     spouses = (ownFamilies ?? [])
       .map((f) => {
         const spouseId = f.husband_id === personId ? f.wife_id : f.husband_id;
         const sp = spouseId ? byId.get(spouseId) : null;
-        return sp ? { ...(sp as Relationship), family_id: f.id } : null;
+        return sp ? { ...sp, family_id: f.id } : null;
       })
       .filter((s): s is SpouseRelationship => s !== null);
   }
@@ -111,17 +151,27 @@ export async function getPersonRelationships(
   // 4. Children: persons whose birth_family_id is in our family list
   let children: ChildRelationship[] = [];
   if (familyIds.length > 0) {
-    const { data: kids } = await client
-      .from("persons")
-      .select("id, full_name, gender, is_living, birth_date, death_date, birth_family_id")
-      .in("birth_family_id", familyIds)
-      .is("deleted_at", null)
-      // birth_order ("con thứ mấy") is the explicit Vietnamese
-      // sibling rank when set; birth_date is the legacy fallback.
-      .order("birth_order", { ascending: true, nullsFirst: false })
-      .order("birth_date", { ascending: true, nullsFirst: false })
-      .order("full_name", { ascending: true });
-    children = (kids ?? []).map((k) => ({
+    const childCols =
+      "id, full_name, gender, is_living, birth_date, death_date, birth_family_id";
+    const kidsRes = useSafe
+      ? await client
+          .from("persons_public_safe")
+          .select(childCols)
+          .in("birth_family_id", familyIds)
+          // birth_order ("con thứ mấy") is the explicit Vietnamese
+          // sibling rank when set; birth_date is the legacy fallback.
+          .order("birth_order", { ascending: true, nullsFirst: false })
+          .order("birth_date", { ascending: true, nullsFirst: false })
+          .order("full_name", { ascending: true })
+      : await client
+          .from("persons")
+          .select(childCols)
+          .in("birth_family_id", familyIds)
+          .is("deleted_at", null)
+          .order("birth_order", { ascending: true, nullsFirst: false })
+          .order("birth_date", { ascending: true, nullsFirst: false })
+          .order("full_name", { ascending: true });
+    children = (kidsRes.data ?? []).map((k) => ({
       ...(k as Relationship),
       via_family_id: (k as { birth_family_id: string }).birth_family_id,
     }));

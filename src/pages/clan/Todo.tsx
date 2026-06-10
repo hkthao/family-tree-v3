@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -19,7 +19,7 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   getClanCompletion,
@@ -90,6 +90,15 @@ export default function Todo() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const confirm = useConfirm();
+
+  // Việc cần làm is a member-only feature: the underlying RPCs all
+  // raise 42501 for non-members (they explicitly check is_clan_member),
+  // and the whole point of the page — surfacing gaps you can fix — is
+  // moot for someone who can't edit the clan. Redirect them back to
+  // the public view rather than show a broken page full of 403s.
+  if (effectiveRole(clan) === null) {
+    return <Navigate to={`/clans/${clan.id}`} replace />;
+  }
 
   // Bulk-select state, reset whenever the user switches categories or
   // pages — selecting "Ông A" on `missing_dates` shouldn't survive a
