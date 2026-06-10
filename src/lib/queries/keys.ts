@@ -57,6 +57,7 @@ export const queryKeys = {
   adminProfiles: () => ["admin-profiles"] as const,
   platformDbStats: () => ["platform-db-stats"] as const,
   adminClans: () => ["admin-clans"] as const,
+  adminFeedback: () => ["admin-feedback"] as const,
   adminUserClans: (userId: string) => ["admin-user-clans", userId] as const,
   contributions: (clanId: string, userId: string, params: unknown) =>
     ["contributions", clanId, userId, params] as const,

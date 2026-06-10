@@ -46,3 +46,38 @@ export async function submitFeedback(
   });
   if (error) throw new Error(error.message);
 }
+
+export interface FeedbackRow {
+  id: string;
+  user_id: string | null;
+  clan_id: string | null;
+  message: string;
+  contact: string | null;
+  page_url: string | null;
+  user_agent: string | null;
+  app_version: string | null;
+  created_at: string;
+}
+
+/**
+ * Admin-only firehose. RLS already gates SELECT to platform admins;
+ * a non-admin caller gets back an empty array (the policy filters
+ * row-by-row, no error). Newest first.
+ *
+ * Capped at 500 — cheap to read, and if we ever blow past that the
+ * UX needs date-range filters anyway.
+ */
+export async function listFeedback(
+  limit = 500,
+  client: Client = defaultClient,
+): Promise<FeedbackRow[]> {
+  const { data, error } = await client
+    .from("feedback")
+    .select(
+      "id, user_id, clan_id, message, contact, page_url, user_agent, app_version, created_at",
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as FeedbackRow[];
+}
