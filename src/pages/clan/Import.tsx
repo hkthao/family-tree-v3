@@ -1,6 +1,10 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+
+import { useAuth } from "@/hooks/useAuth";
+import { queryKeys } from "@/lib/queries/keys";
+import { getClanCompletion } from "@/lib/queries/todo";
 
 import { BackLink } from "@/components/BackLink";
 import {
@@ -34,6 +38,8 @@ import { bulkImportPersons } from "@/lib/queries/import";
 export default function Import() {
   const { clanId } = useParams<{ clanId: string }>();
   const { clan } = useClanContext();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -41,6 +47,10 @@ export default function Import() {
   const [plan, setPlan] = useState<ImportPlan | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
+  // Captured at the moment of mutation so we can show "+12%" in the
+  // success card. Null when completion wasn't in cache yet (first
+  // visit before query loads).
+  const [prePercent, setPrePercent] = useState<number | null>(null);
 
   const canEdit = canEditClan(clan);
   if (!canEdit) return <Navigate to={`/clans/${clanId}`} replace />;
@@ -63,10 +73,20 @@ export default function Import() {
     }
   }
 
+  const { data: completion } = useQuery({
+    queryKey: queryKeys.clanCompletion(clanId!, userId),
+    queryFn: () => getClanCompletion(clanId!),
+    enabled: !!userId && !!clanId,
+    staleTime: 60_000,
+  });
+
   const importM = useMutation({
     mutationFn: () => {
       if (!plan?.payload) throw new Error("Không có payload để nhập.");
       return bulkImportPersons(clanId!, plan.payload);
+    },
+    onMutate: () => {
+      setPrePercent(completion?.percent ?? null);
     },
     onSuccess: async (res) => {
       await invalidateClanData(qc, clanId!);
@@ -210,13 +230,11 @@ export default function Import() {
                 </Alert>
               )}
               {importM.isSuccess && importM.data && (
-                <Alert>
-                  <AlertDescription>
-                    Đã nhập {importM.data.imported_persons} người,{" "}
-                    {importM.data.imported_families} gia đình,{" "}
-                    {importM.data.imported_branches} chi.
-                  </AlertDescription>
-                </Alert>
+                <ImportSuccessCard
+                  result={importM.data}
+                  completion={completion}
+                  prePercent={prePercent}
+                />
               )}
               <div className="flex gap-3">
                 <Button
@@ -322,6 +340,81 @@ function PreviewTable({ rows }: { rows: NormalisedRow[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+function ImportSuccessCard({
+  result,
+  completion,
+  prePercent,
+}: {
+  result: {
+    imported_persons: number;
+    imported_families: number;
+    imported_branches: number;
+  };
+  completion: import("@/lib/queries/todo").ClanCompletion | undefined;
+  prePercent: number | null;
+}) {
+  const post = completion?.percent ?? null;
+  const delta = prePercent !== null && post !== null ? post - prePercent : null;
+  const tone =
+    post === null
+      ? "bg-primary"
+      : post >= 90
+        ? "bg-emerald-500"
+        : post >= 50
+          ? "bg-primary"
+          : "bg-amber-500";
+  return (
+    <div className="rounded-lg border bg-emerald-500/5 border-emerald-500/30 p-4 space-y-3">
+      <div className="flex items-start gap-2">
+        <IconCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+        <p className="text-sm">
+          Đã nhập <strong>{result.imported_persons}</strong> người,{" "}
+          {result.imported_families} gia đình, {result.imported_branches} chi.
+        </p>
+      </div>
+      {post !== null && (
+        <>
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="text-sm text-muted-foreground">
+              Họ ta giờ đã hoàn thành
+            </span>
+            <span className="text-xl font-semibold tabular-nums">
+              {post}%
+              {delta !== null && delta > 0 && (
+                <span className="ml-1.5 text-sm font-medium text-emerald-600">
+                  +{delta}%
+                </span>
+              )}
+            </span>
+          </div>
+          <div
+            className="h-2 w-full rounded-full bg-muted overflow-hidden"
+            role="progressbar"
+            aria-valuenow={post}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div
+              className={`h-full ${tone} transition-[width] duration-700`}
+              style={{ width: `${post}%` }}
+            />
+          </div>
+          {delta !== null && delta < 0 && (
+            // Imports with gaps drag the percentage down. Reframe it
+            // as the next step instead of a regret.
+            <p className="text-xs text-muted-foreground">
+              Hồ sơ mới có chỗ chưa đầy đủ — bấm <em>Việc cần làm</em>{" "}
+              để bổ sung dần.
+            </p>
+          )}
+        </>
+      )}
     </div>
   );
 }

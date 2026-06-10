@@ -29,6 +29,13 @@ import {
   listAnniversaryCandidates,
   listEvents,
 } from "@/lib/queries/events";
+import {
+  getClanCompletion,
+  getClanTodoSummary,
+  type ClanCompletion,
+  type TodoCategory,
+  type TodoSummaryRow,
+} from "@/lib/queries/todo";
 import { track } from "@/lib/analytics";
 import { queryKeys } from "@/lib/queries/keys";
 import { getTreeData } from "@/lib/queries/tree";
@@ -63,6 +70,18 @@ export default function Dashboard() {
     queryKey: queryKeys.anniversaries(clan.id, userId),
     queryFn: () => listAnniversaryCandidates(clan.id),
     enabled: !!userId,
+  });
+  const { data: completion } = useQuery({
+    queryKey: queryKeys.clanCompletion(clan.id, userId),
+    queryFn: () => getClanCompletion(clan.id),
+    enabled: !!userId,
+    staleTime: 60_000,
+  });
+  const { data: todoSummary } = useQuery({
+    queryKey: queryKeys.clanTodoSummary(clan.id, userId),
+    queryFn: () => getClanTodoSummary(clan.id),
+    enabled: !!userId,
+    staleTime: 60_000,
   });
 
   // Bumped to a year so the calendar (below) has data across months.
@@ -140,6 +159,14 @@ export default function Dashboard() {
             <StatTile label="Còn sống" value={stats.living} />
             <StatTile label="Đã mất" value={stats.deceased} muted />
           </section>
+
+          {completion && completion.total > 0 && (
+            <CompletionTile
+              clanId={clan.id}
+              completion={completion}
+              summary={todoSummary ?? []}
+            />
+          )}
 
           {upcoming.length > 0 && (
             <section aria-label="Lịch sự kiện" className="space-y-2">
@@ -417,5 +444,92 @@ function StatTile({ label, value, highlight, muted }: StatTileProps) {
       </p>
       <p className="text-sm text-muted-foreground mt-1">{label}</p>
     </div>
+  );
+}
+
+// Short hint surfaced after the percentage — "Còn 12 người thiếu
+// năm sinh →". Phrasing is intentionally inclusive ("còn") not
+// accusatory ("bạn còn thiếu"). Picks the single biggest gap; the
+// /todo page handles the rest.
+const CATEGORY_CTA: Record<TodoCategory, string> = {
+  missing_parents: "thiếu cha/mẹ",
+  missing_dates: "thiếu năm sinh/mất",
+  dead_end: "có thể còn thiếu con",
+  missing_media: "thiếu ảnh / âm lịch",
+};
+
+function CompletionTile({
+  clanId,
+  completion,
+  summary,
+}: {
+  clanId: string;
+  completion: ClanCompletion;
+  summary: TodoSummaryRow[];
+}) {
+  const { percent, complete, total } = completion;
+  if (percent === null) return null;
+  const tone =
+    percent >= 90
+      ? "bg-emerald-500"
+      : percent >= 50
+        ? "bg-primary"
+        : "bg-amber-500";
+
+  // Largest open gap → headline CTA. Skip soft categories when a
+  // hard one exists so we don't say "thiếu ảnh" while parents are
+  // still missing.
+  const HARD_ORDER: TodoCategory[] = ["missing_parents", "missing_dates"];
+  const counts = new Map<TodoCategory, number>(
+    summary.map((r) => [r.category, r.count]),
+  );
+  const top =
+    HARD_ORDER.map((c) => ({ category: c, count: counts.get(c) ?? 0 }))
+      .filter((r) => r.count > 0)
+      .sort((a, b) => b.count - a.count)[0] ??
+    [...summary].sort((a, b) => b.count - a.count).find((r) => r.count > 0);
+
+  return (
+    <Link
+      to={`/clans/${clanId}/todo`}
+      aria-label="Mở trang Việc cần làm để bổ sung thông tin"
+      className="block rounded-lg border bg-card p-4 sm:p-5 space-y-3 hover:bg-muted/30 transition-colors"
+    >
+      <div className="flex items-baseline justify-between gap-3 flex-wrap">
+        <h3 className="font-medium">Họ ta đã hoàn thành</h3>
+        <span className="text-2xl sm:text-3xl font-semibold tabular-nums">
+          {percent}%
+        </span>
+      </div>
+      <div
+        className="h-2 w-full rounded-full bg-muted overflow-hidden"
+        role="progressbar"
+        aria-valuenow={percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div
+          className={`h-full ${tone} transition-[width] duration-500`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <p className="text-sm">
+        {top ? (
+          <>
+            <span className="text-muted-foreground">
+              Còn{" "}
+              <span className="tabular-nums">{top.count}</span> người{" "}
+              {CATEGORY_CTA[top.category]}
+            </span>
+            <span className="text-primary"> →</span>
+          </>
+        ) : (
+          <span className="text-muted-foreground tabular-nums">
+            {complete.toLocaleString("vi-VN")} /{" "}
+            {total.toLocaleString("vi-VN")} người đã đủ thông tin.
+          </span>
+        )}
+      </p>
+    </Link>
   );
 }
