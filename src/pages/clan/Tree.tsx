@@ -158,7 +158,7 @@ export default function Tree() {
   const treeSource =
     effectiveRole(clan) === null ? "persons_public_safe" : "persons";
   const { data, isLoading } = useQuery({
-    queryKey: queryKeys.treeData(clan.id, userId),
+    queryKey: queryKeys.treeData(clan.id, userId, treeSource),
     queryFn: () => getTreeData(clan.id, treeSource),
     enabled: !!userId,
   });

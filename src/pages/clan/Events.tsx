@@ -74,9 +74,13 @@ export default function Events() {
   const [daysAhead, setDaysAhead] = useState<number>(90);
   const [view, setView] = useState<"list" | "calendar">("list");
 
+  // Non-members of a public clan need the masked view; raw `persons`
+  // RLS would return zero rows. Same pattern as /tree and Dashboard.
+  const treeSource =
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
   const { data: tree } = useQuery({
-    queryKey: queryKeys.treeData(clan.id, userId),
-    queryFn: () => getTreeData(clan.id),
+    queryKey: queryKeys.treeData(clan.id, userId, treeSource),
+    queryFn: () => getTreeData(clan.id, treeSource),
     enabled: !!userId,
   });
   const { data: events } = useQuery({

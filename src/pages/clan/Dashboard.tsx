@@ -61,9 +61,13 @@ export default function Dashboard() {
     queryFn: () => getClanStats(clan.id),
     enabled: !!userId,
   });
+  // Non-members of a public clan need the masked view; raw `persons`
+  // RLS would return zero rows for them. Same pattern as /tree.
+  const treeSource =
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
   const { data: tree } = useQuery({
-    queryKey: queryKeys.treeData(clan.id, userId),
-    queryFn: () => getTreeData(clan.id),
+    queryKey: queryKeys.treeData(clan.id, userId, treeSource),
+    queryFn: () => getTreeData(clan.id, treeSource),
     enabled: !!userId,
   });
   const { data: events } = useQuery({
