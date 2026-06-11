@@ -196,6 +196,7 @@ function PersonPicker({
         </div>
       )}
       <Input
+        data-testid={`kinship-picker-${label === "Người A" ? "a" : "b"}-input`}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder={selected ? "Đổi người…" : "Tìm theo tên (không cần dấu)"}
