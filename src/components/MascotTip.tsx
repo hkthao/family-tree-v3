@@ -24,40 +24,40 @@ function isHiddenRoute(pathname: string): boolean {
 
 // ─── Draggable position state ────────────────────────────────────────
 //
-// Like iOS AssistiveTouch: button có thể kéo bất kỳ đâu, thả ra tự
-// snap sang mép trái hoặc phải gần nhất, giữ y position.
+// Floating button có thể kéo BẤT KỲ ĐÂU và GIỮ NGUYÊN vị trí khi thả
+// — không snap sang mép. Persist localStorage qua reload.
 //
-// Persist sang localStorage để position còn nguyên qua reload.
+// Clamp x/y vào viewport để khi resize / xoay máy không bay ra ngoài.
 
 const STORAGE_KEY = "mascot:position";
 const BUTTON_SIZE = 48; // h-12 w-12
-const EDGE_MARGIN = 12; // 0.75rem
+const EDGE_MARGIN = 12; // 0.75rem — lề tối thiểu cách viewport edge
 const DRAG_THRESHOLD = 5; // px movement = drag, không phải click
-// Drawer trên lg+ rộng 18rem = 288px luôn mở; mascot snap left phải
-// nằm sau drawer, không bị che.
-const LG_DRAWER_WIDTH = 288;
-
-function leftEdgeMargin(): number {
-  if (typeof window === "undefined") return EDGE_MARGIN;
-  return window.innerWidth >= 1024
-    ? LG_DRAWER_WIDTH + EDGE_MARGIN
-    : EDGE_MARGIN;
-}
 
 interface MascotPosition {
-  side: "left" | "right";
-  top: number; // px from top of viewport
+  x: number; // px from left of viewport
+  y: number; // px from top of viewport
+}
+
+function clamp(pos: MascotPosition): MascotPosition {
+  if (typeof window === "undefined") return pos;
+  const maxX = window.innerWidth - BUTTON_SIZE - EDGE_MARGIN;
+  const maxY = window.innerHeight - BUTTON_SIZE - EDGE_MARGIN;
+  return {
+    x: Math.max(EDGE_MARGIN, Math.min(pos.x, maxX)),
+    y: Math.max(EDGE_MARGIN, Math.min(pos.y, maxY)),
+  };
 }
 
 function defaultPosition(): MascotPosition {
   // Đáy phải, trên bottom-tab-bar (mobile) / 16px lề (desktop).
-  if (typeof window === "undefined") return { side: "right", top: 600 };
+  if (typeof window === "undefined") return { x: 600, y: 600 };
   const isMobile = window.innerWidth < 1024;
   const bottomOffset = isMobile ? 80 : 16;
-  return {
-    side: "right",
-    top: window.innerHeight - BUTTON_SIZE - bottomOffset,
-  };
+  return clamp({
+    x: window.innerWidth - BUTTON_SIZE - EDGE_MARGIN,
+    y: window.innerHeight - BUTTON_SIZE - bottomOffset,
+  });
 }
 
 function loadPosition(): MascotPosition {
@@ -65,13 +65,15 @@ function loadPosition(): MascotPosition {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultPosition();
-    const parsed = JSON.parse(raw) as MascotPosition;
-    // Clamp y vào viewport hiện tại (resize / xoay màn hình).
-    const maxTop = window.innerHeight - BUTTON_SIZE - EDGE_MARGIN;
-    return {
-      side: parsed.side === "left" ? "left" : "right",
-      top: Math.max(EDGE_MARGIN, Math.min(parsed.top, maxTop)),
+    const parsed = JSON.parse(raw) as Partial<MascotPosition> & {
+      // Backward-compat: position cũ dùng {side, top} — drop nó.
+      side?: string;
+      top?: number;
     };
+    if (typeof parsed.x !== "number" || typeof parsed.y !== "number") {
+      return defaultPosition();
+    }
+    return clamp({ x: parsed.x, y: parsed.y });
   } catch {
     return defaultPosition();
   }
@@ -131,13 +133,7 @@ export function MascotTip() {
   // Re-clamp position khi viewport resize (xoay máy, mở keyboard…).
   useEffect(() => {
     function onResize() {
-      setPosition((prev) => {
-        const maxTop = window.innerHeight - BUTTON_SIZE - EDGE_MARGIN;
-        return {
-          side: prev.side,
-          top: Math.max(EDGE_MARGIN, Math.min(prev.top, maxTop)),
-        };
-      });
+      setPosition((prev) => clamp(prev));
     }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -196,15 +192,10 @@ export function MascotTip() {
         return;
       }
 
-      // Drag end — snap to nearest edge.
+      // Drag end — giữ nguyên vị trí thả, chỉ clamp vào viewport.
       const finalX = e.clientX - info.offsetX;
       const finalY = e.clientY - info.offsetY;
-      const centerX = finalX + BUTTON_SIZE / 2;
-      const side: "left" | "right" =
-        centerX < window.innerWidth / 2 ? "left" : "right";
-      const maxTop = window.innerHeight - BUTTON_SIZE - EDGE_MARGIN;
-      const top = Math.max(EDGE_MARGIN, Math.min(finalY, maxTop));
-      const next: MascotPosition = { side, top };
+      const next = clamp({ x: finalX, y: finalY });
       setPosition(next);
       setDragPos(null);
       savePosition(next);
@@ -240,41 +231,37 @@ export function MascotTip() {
     setShowBubble(false);
   }
 
-  // Compute style: trong khi drag → free position; ngược lại → snap
-  // bám mép trái hoặc phải.
-  const buttonStyle: React.CSSProperties = dragPos
-    ? {
-        left: dragPos.x,
-        top: dragPos.y,
-        right: "auto",
-        transition: "none",
-      }
-    : position.side === "right"
-      ? {
-          right: EDGE_MARGIN,
-          top: position.top,
-          left: "auto",
-        }
-      : {
-          left: leftEdgeMargin(),
-          top: position.top,
-          right: "auto",
-        };
+  // Compute style: dùng left/top trực tiếp (không snap edge).
+  const activeX = dragPos ? dragPos.x : position.x;
+  const activeY = dragPos ? dragPos.y : position.y;
+  const buttonStyle: React.CSSProperties = {
+    left: activeX,
+    top: activeY,
+    right: "auto",
+    bottom: "auto",
+  };
 
-  // Bubble vị trí bám theo mascot — bên trái nếu mascot ở phải,
-  // ngược lại.
-  const bubbleStyle: React.CSSProperties =
-    position.side === "right"
-      ? {
-          right: EDGE_MARGIN + BUTTON_SIZE + 4,
-          top: position.top,
-          left: "auto",
-        }
-      : {
-          left: leftEdgeMargin() + BUTTON_SIZE + 4,
-          top: position.top,
-          right: "auto",
-        };
+  // Bubble bám theo mascot — bên trái nếu mascot ở nửa phải viewport,
+  // ngược lại. Bubble width ~288px nên cần check để không tràn ra
+  // ngoài viewport.
+  const mascotIsOnRightHalf =
+    typeof window !== "undefined"
+      ? activeX + BUTTON_SIZE / 2 > window.innerWidth / 2
+      : true;
+  const bubbleStyle: React.CSSProperties = mascotIsOnRightHalf
+    ? {
+        right:
+          typeof window !== "undefined"
+            ? window.innerWidth - activeX + 4
+            : "auto",
+        top: activeY,
+        left: "auto",
+      }
+    : {
+        left: activeX + BUTTON_SIZE + 4,
+        top: activeY,
+        right: "auto",
+      };
 
   return (
     <>
@@ -296,8 +283,6 @@ export function MascotTip() {
           "h-12 w-12 p-1.5 inline-flex items-center justify-center rounded-full",
           "border bg-card shadow-md hover:bg-muted",
           "overflow-hidden touch-none select-none",
-          // Animate snap khi không drag.
-          !dragPos && "transition-[left,right,top] duration-200",
         )}
       >
         <img
