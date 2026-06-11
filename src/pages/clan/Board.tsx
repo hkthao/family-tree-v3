@@ -4,6 +4,7 @@ import { useSearchParams, Link, useParams } from "react-router-dom";
 import { ClanPostCard } from "@/components/ClanPostCard";
 import { IconScroll } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -113,32 +114,14 @@ export default function Board() {
         ))}
       </ul>
 
-      {totalPages > 1 && (
-        <nav
-          className="flex items-center justify-between pt-3 border-t"
-          aria-label="Phân trang"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(page - 1)}
-            disabled={page <= 1}
-          >
-            ← Trang trước
-          </Button>
-          <span className="text-sm text-muted-foreground tabular-nums">
-            Trang {page} / {totalPages} · {total} bài
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => goToPage(page + 1)}
-            disabled={page >= totalPages}
-          >
-            Trang sau →
-          </Button>
-        </nav>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={PAGE_SIZE}
+        unit="bài"
+        onPageChange={goToPage}
+      />
     </div>
   );
 }

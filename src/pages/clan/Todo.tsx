@@ -9,12 +9,11 @@ import { EmptyState } from "@/components/EmptyState";
 import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { QuickDateFixSheet } from "@/components/QuickDateFixSheet";
 import {
-  IconArrowLeft,
-  IconArrowRight,
   IconCheck,
   IconScroll,
   IconX,
 } from "@/components/icons";
+import { Pagination } from "@/components/Pagination";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -237,9 +236,6 @@ export default function Todo() {
     enabled: !!userId,
     staleTime: 60_000,
   });
-  const startIdx = totalForCategory === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
-  const endIdx = Math.min(totalForCategory, safePage * PAGE_SIZE);
-
   // Inline quick-fix sheets — open the right primitive depending on
   // which category the row belongs to. Cuts the navigate-edit-save-
   // navigate-back loop down to one tap. Categories that need more
@@ -488,46 +484,15 @@ export default function Todo() {
       )}
 
       {totalForCategory > 0 && (
-        <div className="flex items-center justify-between text-sm pt-2">
-          <div className="text-muted-foreground">
-            {totalForCategory.toLocaleString("vi-VN")} mục
-            {totalForCategory > 0 && (
-              <span className="hidden sm:inline">
-                {" "}
-                — đang xem {startIdx.toLocaleString("vi-VN")}–
-                {endIdx.toLocaleString("vi-VN")}
-              </span>
-            )}
-            {itemsFetching && !itemsLoading && (
-              <span className="ml-2 italic">đang tải…</span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={safePage <= 1}
-              onClick={() => setPage(safePage - 1)}
-              aria-label="Trang trước"
-            >
-              <IconArrowLeft className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Trước</span>
-            </Button>
-            <span className="px-2 tabular-nums">
-              {safePage}/{totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={safePage >= totalPages}
-              onClick={() => setPage(safePage + 1)}
-              aria-label="Trang sau"
-            >
-              <span className="hidden sm:inline">Sau</span>
-              <IconArrowRight className="h-4 w-4 sm:ml-1" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          page={safePage}
+          totalPages={totalPages}
+          total={totalForCategory}
+          pageSize={PAGE_SIZE}
+          unit="mục"
+          isFetching={itemsFetching && !itemsLoading}
+          onPageChange={setPage}
+        />
       )}
 
       <QuickDateFixSheet

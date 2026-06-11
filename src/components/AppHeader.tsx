@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { AppDrawer } from "@/components/AppDrawer";
 import { AppLogo } from "@/components/AppLogo";
 import { NotificationBell } from "@/components/NotificationBell";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 
 export function AppHeader() {
@@ -34,7 +33,6 @@ export function AppHeader() {
           </Link>
           <div className="hidden lg:block flex-1" aria-hidden="true" />
           <div className="flex items-center gap-1">
-            <PageHelpVideo />
             <NotificationBell />
             <ThemeQuickToggle />
           </div>

@@ -7,13 +7,12 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
 import {
-  IconArrowLeft,
-  IconArrowRight,
   IconChevronUp,
   IconRefresh,
   IconUndo,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -149,39 +148,15 @@ export default function Audit() {
         </ul>
       )}
 
-      <div className="flex items-center justify-between text-sm">
-        <div className="text-muted-foreground">
-          {data?.total ? `${data.total} thay đổi` : ""}
-          {isFetching && <span className="ml-2 italic">đang tải…</span>}
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
-            aria-label="Trang trước"
-            title="Trang trước"
-            className="h-9 w-9 p-0"
-          >
-            <IconArrowLeft className="h-4 w-4" />
-          </Button>
-          <span className="px-2 text-sm tabular-nums">
-            {page}/{totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
-            aria-label="Trang sau"
-            title="Trang sau"
-            className="h-9 w-9 p-0"
-          >
-            <IconArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={data?.total ?? 0}
+        pageSize={PAGE_SIZE}
+        unit="thay đổi"
+        isFetching={isFetching}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

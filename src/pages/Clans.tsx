@@ -4,8 +4,6 @@ import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import {
-  IconArrowLeft,
-  IconArrowRight,
   IconBuildings,
   IconPlus,
   IconSearch,
@@ -14,6 +12,7 @@ import {
 } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import {
@@ -250,37 +249,16 @@ export default function Clans() {
           </ul>
         )}
 
-        {/* Pagination */}
         {total > 0 && (
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <div className="text-muted-foreground">
-              {`${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} / ${total}`}
-              {active.isFetching && <span className="ml-2 italic">đang tải…</span>}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-              >
-                <IconArrowLeft className="h-4 w-4 mr-1" />
-                Trước
-              </Button>
-              <span className="px-2">
-                {page}/{totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
-              >
-                Sau
-                <IconArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={PAGE_SIZE}
+            unit="dòng họ"
+            isFetching={active.isFetching}
+            onPageChange={setPage}
+          />
         )}
       </main>
     </div>

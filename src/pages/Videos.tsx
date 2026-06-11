@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { VideoModal } from "@/components/HelpVideoButton";
-import { IconArrowLeft, IconArrowRight, IconPlay } from "@/components/icons";
+import { IconPlay } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/Pagination";
 import { unaccent } from "@/lib/unaccent";
 import {
   formatDuration,
@@ -114,38 +114,14 @@ export default function Videos() {
           </ul>
         )}
 
-        {totalPages > 1 && (
-          <nav
-            className="flex items-center justify-between pt-3 border-t"
-            aria-label="Phân trang"
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-              aria-label="Trang trước"
-              title="Trang trước"
-              className="h-9 w-9 p-0"
-            >
-              <IconArrowLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-muted-foreground tabular-nums">
-              Trang {page} / {totalPages} · {filtered.length} video
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              aria-label="Trang sau"
-              title="Trang sau"
-              className="h-9 w-9 p-0"
-            >
-              <IconArrowRight className="h-4 w-4" />
-            </Button>
-          </nav>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={filtered.length}
+          pageSize={PAGE_SIZE}
+          unit="video"
+          onPageChange={setPage}
+        />
       </main>
 
       {playing && (

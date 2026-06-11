@@ -10,8 +10,6 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
 import {
-  IconArrowLeft,
-  IconArrowRight,
   IconCheck,
   IconCopy,
   IconLink,
@@ -21,6 +19,7 @@ import {
   IconUndo,
 } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
+import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -177,37 +176,15 @@ export function ShareLinksSection({ clanId }: Props) {
       ) : null}
 
       {total > 0 && (
-        <div className="flex items-center justify-between text-sm">
-          <div className="text-muted-foreground">
-            {total} link
-            {isFetching && <span className="ml-2 italic">đang tải…</span>}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage(page - 1)}
-              aria-label="Trang trước"
-            >
-              <IconArrowLeft className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Trước</span>
-            </Button>
-            <span className="px-2">
-              {page}/{totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage(page + 1)}
-              aria-label="Trang sau"
-            >
-              <span className="hidden sm:inline">Sau</span>
-              <IconArrowRight className="h-4 w-4 sm:ml-1" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={PAGE_SIZE}
+          unit="link"
+          isFetching={isFetching}
+          onPageChange={setPage}
+        />
       )}
     </div>
   );
