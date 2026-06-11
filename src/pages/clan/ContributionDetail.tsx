@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ContributionDiffView } from "@/components/ContributionDiffView";
 import { useToast } from "@/components/Toast";
@@ -119,9 +119,13 @@ export default function ContributionDetail() {
 
   return (
     <div className="space-y-5">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}/contributions`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Đóng góp", to: `/clans/${clan.id}/contributions` },
+          { label: "Chi tiết" },
+        ]}
+      />
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
       {error && (

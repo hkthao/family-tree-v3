@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconX } from "@/components/icons";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
   buildPersonDateColumns,
@@ -440,6 +441,7 @@ export default function AddChild() {
 
   const { user } = useAuth();
   const userId = user?.id ?? "";
+  const { clan } = useClanContext();
   const { data: focal } = useQuery({
     queryKey: queryKeys.person(personId ?? "", userId),
     queryFn: () => getPerson(personId!),
@@ -451,9 +453,14 @@ export default function AddChild() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={back} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: focal?.full_name ?? "Người", to: back.split("?")[0] },
+          { label: "Thêm con" },
+        ]}
+      />
 
       <div>
         <h1 className="text-2xl font-semibold">Thêm con</h1>

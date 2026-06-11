@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import {
   IconBuildings,
   IconCheck,
@@ -121,9 +121,13 @@ export default function InlawsNew() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}/inlaws`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Liên kết thông gia", to: `/clans/${clan.id}/inlaws` },
+          { label: "Đề nghị mới" },
+        ]}
+      />
 
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
