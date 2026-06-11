@@ -358,6 +358,7 @@ function UserRow({
               />
             </div>
             <Button
+              variant="outline"
               onClick={() => updateLimits.mutate()}
               disabled={
                 updateLimits.isPending ||
@@ -632,6 +633,7 @@ function ClanRow({
           />
         </div>
         <Button
+          variant="outline"
           onClick={() => m.mutate()}
           disabled={m.isPending || !changed}
           className="col-span-2 sm:col-span-1"
@@ -1270,6 +1272,7 @@ function FeedbackRowCard({ row }: { row: FeedbackRow }) {
               mutation.mutate({ admin_note: note.trim() || null })
             }
           >
+            <IconCheck className="h-4 w-4 mr-1.5" />
             Lưu ghi chú
           </Button>
         </div>
