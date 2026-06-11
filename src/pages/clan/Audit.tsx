@@ -87,6 +87,7 @@ export default function Audit() {
         icon={<IconRefresh className="h-7 w-7" />}
         title="Nhật ký"
         description="Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
+        actionsBelow
         actions={
           <>
             <select

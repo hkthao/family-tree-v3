@@ -59,6 +59,7 @@ export default function Board() {
         icon={<IconScroll className="h-7 w-7" />}
         title="Bảng tin"
         description="Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc."
+        actionsBelow
         actions={
           <>
             {admin && (pendingQ.data?.length ?? 0) > 0 && (

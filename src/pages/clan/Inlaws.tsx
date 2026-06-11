@@ -157,6 +157,7 @@ export default function Inlaws() {
         icon={<IconLink className="h-7 w-7" />}
         title="Liên kết thông gia"
         description="Nối dâu/rể của dòng họ này với cùng người ở dòng họ khác. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi."
+        actionsBelow
         actions={
           <Button asChild size="sm" className="h-10">
             <Link to={`/clans/${clan.id}/inlaws/new`}>

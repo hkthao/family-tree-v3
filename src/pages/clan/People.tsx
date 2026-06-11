@@ -269,6 +269,7 @@ export default function People() {
         icon={<IconUsers className="h-7 w-7" />}
         title="Danh bạ"
         description="Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
+        actionsBelow
         actions={
           <>
             <RefreshButton

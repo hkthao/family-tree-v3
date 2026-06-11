@@ -701,6 +701,7 @@ export default function Tree() {
           icon={<IconTree className="h-7 w-7" />}
           title="Cây gia phả"
           description="Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."
+          actionsBelow
           actions={
             <>
               <SegmentedControl ariaLabel="Hướng cây">
