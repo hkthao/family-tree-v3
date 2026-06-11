@@ -13,10 +13,9 @@ import {
 } from "@/components/icons";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { RefreshButton } from "@/components/RefreshButton";
-import { Button } from "@/components/ui/button";
+import { VideoEmptyState } from "@/components/VideoEmptyState";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -136,35 +135,24 @@ export default function Dashboard() {
           when the clan has people, producing a misleading "no one in
           this clan yet" message on real, populated public clans. */}
       {tree && tree.persons.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Chưa có ai trong dòng họ</CardTitle>
-            <CardDescription>
-              {canEdit
-                ? "Bắt đầu bằng cách thêm thuỷ tổ hoặc nhập từ Excel."
-                : "Quản trị/biên tập viên sẽ thêm thành viên trước."}
-            </CardDescription>
-          </CardHeader>
-          {canEdit && (
-            <CardContent className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link
-                  to={`/clans/${clan.id}/people/new`}
-                  data-testid="dashboard-add-person-link"
-                >
-                  <IconPlus className="h-4 w-4 mr-1.5" />
-                  Thêm người
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to={`/clans/${clan.id}/import`}>
-                  <IconUpload className="h-4 w-4 mr-1.5" />
-                  Nhập từ Excel
-                </Link>
-              </Button>
-            </CardContent>
-          )}
-        </Card>
+        canEdit ? (
+          <VideoEmptyState
+            videoId="them-thuy-to"
+            title="Chưa có ai trong dòng họ"
+            description="Bắt đầu bằng cách thêm Thuỷ tổ. Xem video 1 phút bên dưới rồi vào trang Thêm người."
+            ctaLabel="Thêm Thuỷ tổ"
+            ctaTo={`/clans/${clan.id}/people/new`}
+          />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Chưa có ai trong dòng họ</CardTitle>
+              <CardDescription>
+                Quản trị/biên tập viên sẽ thêm thành viên trước.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )
       ) : tree && tree.persons.length > 0 ? (
         <>
           {/* Stats tiles. For members, use the get_clan_stats RPC

@@ -16,6 +16,7 @@ import {
   IconLink,
   IconList,
   IconPencil,
+  IconPlay,
   IconPlus,
   IconQrCode,
   IconScroll,
@@ -398,6 +399,11 @@ function buildSections(
       to: "/docs",
       label: "Hướng dẫn",
       icon: <IconBook className={ic} />,
+    },
+    {
+      to: "/huong-dan-video",
+      label: "Video hướng dẫn",
+      icon: <IconPlay className={ic} />,
     },
   ];
   if (profile?.is_platform_admin) {
