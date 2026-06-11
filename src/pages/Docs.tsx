@@ -3,7 +3,8 @@ import { Link, NavLink, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconSearch } from "@/components/icons";
+import { IconBook, IconScroll, IconSearch } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { unaccent } from "@/lib/unaccent";
 
 import {
@@ -60,12 +61,12 @@ function Index() {
     : DOCS_SECTIONS;
 
   return (
-    <div className="space-y-6">
-      <h1 className="clan-name text-3xl font-semibold">Hướng dẫn sử dụng</h1>
-      <p className="text-muted-foreground">
-        Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ
-        khoá (gõ không dấu cũng được).
-      </p>
+    <div className="space-y-4">
+      <PageHeader
+        icon={<IconBook className="h-7 w-7" />}
+        title="Hướng dẫn sử dụng"
+        description="Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được)."
+      />
 
       <div className="relative">
         <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -134,14 +135,11 @@ function ArticleView({ article }: { article: DocArticle }) {
           ]}
         />
 
-        <header className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">
-            {sectionLabelOf(article.slug)}
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-semibold">
-            {article.title}
-          </h1>
-        </header>
+        <PageHeader
+          icon={<IconScroll className="h-7 w-7" />}
+          title={article.title}
+          description={sectionLabelOf(article.slug)}
+        />
 
         <article className="max-w-2xl">
           <article.Body />
