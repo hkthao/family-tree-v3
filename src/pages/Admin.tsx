@@ -97,49 +97,58 @@ export default function Admin() {
           icon={<IconShield className="h-7 w-7" />}
           title="Quản trị nền tảng"
           description="Người dùng, dòng họ, sức khoẻ hệ thống, góp ý, thông báo."
-          actions={
-            <SegmentedControl
-              ariaLabel="Tab quản trị"
-              className="flex sm:inline-flex shrink-0"
-            >
-            <SegmentedButton
-              active={tab === "users"}
-              onClick={() => setTab("users")}
-              className="flex-1 sm:flex-none"
-            >
-              Người dùng
-            </SegmentedButton>
-            <SegmentedButton
-              active={tab === "clans"}
-              onClick={() => setTab("clans")}
-              className="flex-1 sm:flex-none"
-            >
-              Dòng họ
-            </SegmentedButton>
-            <SegmentedButton
-              active={tab === "health"}
-              onClick={() => setTab("health")}
-              className="flex-1 sm:flex-none"
-            >
-              Hệ thống
-            </SegmentedButton>
-            <SegmentedButton
-              active={tab === "feedback"}
-              onClick={() => setTab("feedback")}
-              className="flex-1 sm:flex-none"
-            >
-              Góp ý
-            </SegmentedButton>
-            <SegmentedButton
-              active={tab === "announcements"}
-              onClick={() => setTab("announcements")}
-              className="flex-1 sm:flex-none"
-            >
-              Thông báo
-            </SegmentedButton>
-            </SegmentedControl>
-          }
         />
+
+        {/* Mobile: native select (5 tabs không vừa segmented control
+            ở chiều rộng phone). Desktop (sm+): segmented control. */}
+        <select
+          className="sm:hidden h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-medium"
+          value={tab}
+          onChange={(e) => setTab(e.target.value as Tab)}
+          aria-label="Tab quản trị"
+        >
+          <option value="users">Người dùng</option>
+          <option value="clans">Dòng họ</option>
+          <option value="health">Hệ thống</option>
+          <option value="feedback">Góp ý</option>
+          <option value="announcements">Thông báo</option>
+        </select>
+
+        <SegmentedControl
+          ariaLabel="Tab quản trị"
+          className="hidden sm:inline-flex"
+        >
+          <SegmentedButton
+            active={tab === "users"}
+            onClick={() => setTab("users")}
+          >
+            Người dùng
+          </SegmentedButton>
+          <SegmentedButton
+            active={tab === "clans"}
+            onClick={() => setTab("clans")}
+          >
+            Dòng họ
+          </SegmentedButton>
+          <SegmentedButton
+            active={tab === "health"}
+            onClick={() => setTab("health")}
+          >
+            Hệ thống
+          </SegmentedButton>
+          <SegmentedButton
+            active={tab === "feedback"}
+            onClick={() => setTab("feedback")}
+          >
+            Góp ý
+          </SegmentedButton>
+          <SegmentedButton
+            active={tab === "announcements"}
+            onClick={() => setTab("announcements")}
+          >
+            Thông báo
+          </SegmentedButton>
+        </SegmentedControl>
 
         {tab === "users" && <UsersTab callerId={user.id} />}
         {tab === "clans" && <ClansTab />}
