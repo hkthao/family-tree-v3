@@ -44,17 +44,21 @@ export default function Announcements() {
   const { user } = useAuth();
   const qc = useQueryClient();
 
+  // Khi user vào trang thông báo, luôn fetch fresh — list ngắn nên
+  // tốn ít. staleTime ngắn để tránh persisted cache cũ.
   const listQ = useQuery({
     queryKey: queryKeys.announcements(),
     queryFn: () => listAnnouncements(),
-    staleTime: 60_000,
+    staleTime: 10_000,
+    refetchOnMount: "always",
   });
 
   const readsQ = useQuery({
     queryKey: queryKeys.announcementReads(),
     queryFn: () => listMyAnnouncementReads(),
     enabled: !!user,
-    staleTime: 60_000,
+    staleTime: 10_000,
+    refetchOnMount: "always",
   });
 
   const markAllM = useMutation({
