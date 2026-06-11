@@ -147,7 +147,7 @@ function AnnouncementCard({
         />
       )}
 
-      <div className="px-5 py-4 space-y-3">
+      <div className="px-5 py-3 space-y-1.5">
         <h3
           className={`text-lg leading-snug ${
             isRead ? "font-medium text-foreground/80" : "font-semibold"
@@ -160,7 +160,7 @@ function AnnouncementCard({
           {row.body}
         </p>
 
-        <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
+        <div className="flex items-center gap-2 flex-wrap text-xs pt-0.5">
           {row.published_at && (
             <time
               className="text-muted-foreground tabular-nums"
