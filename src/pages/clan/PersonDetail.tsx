@@ -368,33 +368,41 @@ export default function PersonDetail() {
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
             <RelatedPostsSection personId={personId!} clanId={clan.id} />
 
-            {/* Primary action row — Sửa (editors) or Đề xuất sửa
-                (non-editors). Admins don't need a "suggest" path
-                since they can edit directly. */}
-            <div className="flex flex-wrap gap-3">
+            {/* Actions row — đồng bộ outline, text rút gọn, 1 row dạt
+                phải. Xoá tách màu destructive nhưng cùng row. */}
+            <div className="flex flex-wrap items-center gap-2 justify-end">
               {canEdit ? (
-                <Button asChild className="flex-1 sm:flex-none">
+                <Button asChild variant="outline" size="sm">
                   <Link
                     to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}
                     data-testid="edit-person-link"
+                    aria-label="Sửa thông tin"
+                    title="Sửa thông tin"
                   >
                     <IconPencil className="h-4 w-4 mr-1.5" />
-                    Sửa thông tin
+                    Sửa
                   </Link>
                 </Button>
               ) : (
                 canContribute && (
                   <Button
-                    className="flex-1 sm:flex-none"
+                    variant="outline"
+                    size="sm"
                     onClick={() => setContribOpen(true)}
+                    aria-label="Đề xuất sửa"
+                    title="Đề xuất sửa"
                   >
                     <IconScroll className="h-4 w-4 mr-1.5" />
-                    Đề xuất sửa
+                    Đề xuất
                   </Button>
                 )
               )}
-              <Button asChild variant="outline" className="flex-1 sm:flex-none">
-                <Link to={`/clans/${clanId}/kinship?a=${personId}`}>
+              <Button asChild variant="outline" size="sm">
+                <Link
+                  to={`/clans/${clanId}/kinship?a=${personId}`}
+                  aria-label="Tra cứu xưng hô"
+                  title="Tra cứu xưng hô"
+                >
                   <IconUsers className="h-4 w-4 mr-1.5" />
                   Xưng hô
                 </Link>
@@ -402,29 +410,25 @@ export default function PersonDetail() {
               {canCreateQr && (
                 <Button
                   variant="outline"
+                  size="sm"
                   data-testid="person-qr-button"
-                  className="flex-1 sm:flex-none"
                   onClick={() => {
                     setQrOpen(true);
                     if (!qrM.data) qrM.mutate();
                   }}
+                  aria-label="QR cá nhân"
+                  title="QR cá nhân"
                 >
                   <IconQrCode className="h-4 w-4 mr-1.5" />
-                  QR cá nhân
+                  QR
                 </Button>
               )}
-            </div>
-
-            {/* Destructive action — separated from the primary row so
-                it's harder to mis-tap and visually doesn't compete
-                with the common actions. Same size as the row above
-                so the page reads as a single coherent action stack. */}
-            {canEdit && (
-              <div className="pt-3 border-t">
+              {canEdit && (
                 <Button
                   variant="outline"
+                  size="sm"
                   data-testid="delete-person-button"
-                  className="w-full sm:w-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={async () => {
                     const ok = await askConfirm({
                       title: `Xoá ${person.full_name}?`,
@@ -435,18 +439,14 @@ export default function PersonDetail() {
                     if (ok) deleteMutation.mutate();
                   }}
                   disabled={deleteMutation.isPending}
+                  aria-label="Xoá người này"
+                  title="Xoá người này"
                 >
-                  {deleteMutation.isPending ? (
-                    "Đang xoá…"
-                  ) : (
-                    <>
-                      <IconTrash className="h-4 w-4 mr-1.5" />
-                      Xoá người này
-                    </>
-                  )}
+                  <IconTrash className="h-4 w-4 mr-1.5" />
+                  {deleteMutation.isPending ? "Đang xoá…" : "Xoá"}
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
 
             <QrCodeModal
               open={qrOpen}
