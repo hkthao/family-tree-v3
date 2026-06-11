@@ -1515,19 +1515,7 @@ function AnnouncementEditor({
       }}
       className="rounded-lg border bg-card p-4 space-y-4"
     >
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">
-          {row ? "Sửa tin" : "Tin mới"}
-        </h3>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={onClose}
-        >
-          Đóng
-        </Button>
-      </div>
+      <h3 className="font-semibold">{row ? "Sửa tin" : "Tin mới"}</h3>
 
       <div className="space-y-2">
         <Label htmlFor="ann-title" required>
