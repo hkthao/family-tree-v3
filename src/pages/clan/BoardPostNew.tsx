@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
 import { BoardPostForm } from "@/components/BoardPostForm";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useClanContext } from "@/hooks/useClanContext";
 
 /**
@@ -14,9 +14,13 @@ export default function BoardPostNew() {
 
   return (
     <div className="space-y-3">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}/board`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Bảng tin", to: `/clans/${clanId}/board` },
+          { label: "Đăng bài mới" },
+        ]}
+      />
 
       <h2 className="text-2xl font-semibold">Đăng bài mới</h2>
 

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -81,9 +81,12 @@ export default function AnnouncementDetail() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <nav>
-          <BackLink fallback="/announcements" />
-        </nav>
+        <Breadcrumb
+          items={[
+            { label: "Thông báo", to: "/announcements" },
+            { label: row?.title ?? "Chi tiết" },
+          ]}
+        />
 
         {listQ.isLoading && (
           <p className="text-muted-foreground">Đang tải…</p>
