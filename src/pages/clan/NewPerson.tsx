@@ -320,6 +320,7 @@ export default function NewPerson() {
         {!showOptional ? (
           <button
             type="button"
+            data-testid="show-optional-fields"
             onClick={() => setShowOptional(true)}
             className="w-full text-left rounded-md border border-dashed bg-muted/30 px-4 py-3 hover:bg-muted/60 hover:border-primary transition-colors"
           >
