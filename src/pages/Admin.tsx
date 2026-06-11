@@ -403,7 +403,7 @@ function UserRow({
             </Alert>
           )}
 
-          {/* Footer: icon-only actions — giống AnnouncementAdminCard */}
+          {/* Footer: icon + text ngắn (1-2 chữ) — giống AnnouncementAdminCard */}
           <div className="flex items-center justify-between gap-2 pt-2 border-t">
             <span className="text-xs text-muted-foreground">Hành động</span>
             <div className="flex gap-1.5">
@@ -412,14 +412,18 @@ function UserRow({
                 variant="outline"
                 disabled={isSelf || suspendM.isPending}
                 onClick={() => suspendM.mutate(!profile.is_suspended)}
-                aria-label={profile.is_suspended ? "Mở khoá" : "Khoá tài khoản"}
                 title={profile.is_suspended ? "Mở khoá" : "Khoá tài khoản"}
-                className="h-9 w-9 p-0"
               >
                 {profile.is_suspended ? (
-                  <IconUnlock className="h-4 w-4" />
+                  <>
+                    <IconUnlock className="h-4 w-4 mr-1" />
+                    Mở khoá
+                  </>
                 ) : (
-                  <IconLock className="h-4 w-4" />
+                  <>
+                    <IconLock className="h-4 w-4 mr-1" />
+                    Khoá
+                  </>
                 )}
               </Button>
               <Button
@@ -427,19 +431,14 @@ function UserRow({
                 variant="outline"
                 disabled={isSelf || grantM.isPending}
                 onClick={() => grantM.mutate(!profile.is_platform_admin)}
-                aria-label={
-                  profile.is_platform_admin
-                    ? "Thu hồi quyền admin"
-                    : "Cấp quyền admin"
-                }
                 title={
                   profile.is_platform_admin
                     ? "Thu hồi quyền platform admin"
                     : "Cấp quyền platform admin"
                 }
-                className="h-9 w-9 p-0"
               >
-                <IconShield className="h-4 w-4" />
+                <IconShield className="h-4 w-4 mr-1" />
+                Quyền
               </Button>
               <Button
                 size="sm"
@@ -455,11 +454,11 @@ function UserRow({
                   });
                   if (ok) deleteM.mutate();
                 }}
-                aria-label="Xoá tài khoản"
                 title="Xoá tài khoản"
-                className="h-9 w-9 p-0 text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive"
               >
-                <IconTrash className="h-4 w-4" />
+                <IconTrash className="h-4 w-4 mr-1" />
+                Xoá
               </Button>
             </div>
           </div>
