@@ -444,6 +444,11 @@ function buildSections(
         label: "Sự kiện",
         icon: <IconCalendar className={ic} />,
       },
+      {
+        to: `/clans/${clanId}/board`,
+        label: "Bảng tin",
+        icon: <IconScroll className={ic} />,
+      },
     ];
     if (isMember) {
       browseItems.push({
