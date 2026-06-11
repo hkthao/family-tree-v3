@@ -22,10 +22,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import {
   adminAction,
@@ -60,6 +56,14 @@ import { getMyProfile } from "@/lib/queries/profile";
 import { unaccent } from "@/lib/unaccent";
 
 type Tab = "users" | "clans" | "health" | "feedback" | "announcements";
+
+const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
+  { value: "users", label: "Người dùng" },
+  { value: "clans", label: "Dòng họ" },
+  { value: "health", label: "Hệ thống" },
+  { value: "feedback", label: "Góp ý" },
+  { value: "announcements", label: "Thông báo" },
+];
 
 const PAGE_SIZE = 20;
 
@@ -99,56 +103,38 @@ export default function Admin() {
           description="Người dùng, dòng họ, sức khoẻ hệ thống, góp ý, thông báo."
         />
 
-        {/* Mobile: native select (5 tabs không vừa segmented control
-            ở chiều rộng phone). Desktop (sm+): segmented control. */}
-        <select
-          className="sm:hidden h-10 w-full rounded-md border border-input bg-background px-3 text-sm font-medium"
-          value={tab}
-          onChange={(e) => setTab(e.target.value as Tab)}
-          aria-label="Tab quản trị"
-        >
-          <option value="users">Người dùng</option>
-          <option value="clans">Dòng họ</option>
-          <option value="health">Hệ thống</option>
-          <option value="feedback">Góp ý</option>
-          <option value="announcements">Thông báo</option>
-        </select>
+        {/* Tabs kiểu underline (Linear / Vercel / GitHub) — horizontal
+            scroll trên mobile, full-width trên desktop. Active tab có
+            border-b primary để chỉ rõ.
 
-        <SegmentedControl
-          ariaLabel="Tab quản trị"
-          className="hidden sm:inline-flex"
+            Hide scrollbar: scrollbar-hide là util mặc cần plugin; thay
+            bằng inline style cross-browser. */}
+        <div
+          role="tablist"
+          aria-label="Tab quản trị"
+          className="flex items-stretch border-b overflow-x-auto -mx-1 px-1"
+          style={{ scrollbarWidth: "none" }}
         >
-          <SegmentedButton
-            active={tab === "users"}
-            onClick={() => setTab("users")}
-          >
-            Người dùng
-          </SegmentedButton>
-          <SegmentedButton
-            active={tab === "clans"}
-            onClick={() => setTab("clans")}
-          >
-            Dòng họ
-          </SegmentedButton>
-          <SegmentedButton
-            active={tab === "health"}
-            onClick={() => setTab("health")}
-          >
-            Hệ thống
-          </SegmentedButton>
-          <SegmentedButton
-            active={tab === "feedback"}
-            onClick={() => setTab("feedback")}
-          >
-            Góp ý
-          </SegmentedButton>
-          <SegmentedButton
-            active={tab === "announcements"}
-            onClick={() => setTab("announcements")}
-          >
-            Thông báo
-          </SegmentedButton>
-        </SegmentedControl>
+          {TABS.map((t) => {
+            const active = tab === t.value;
+            return (
+              <button
+                key={t.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTab(t.value)}
+                className={`shrink-0 px-4 h-10 -mb-px text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+                  active
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
 
         {tab === "users" && <UsersTab callerId={user.id} />}
         {tab === "clans" && <ClansTab />}
