@@ -6,8 +6,6 @@ import { AppHeader } from "@/components/AppHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import {
-  IconArrowLeft,
-  IconArrowRight,
   IconCheck,
   IconLock,
   IconPencil,
@@ -18,6 +16,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -212,7 +211,8 @@ function UsersTab({ callerId }: { callerId: string }) {
           page={page}
           totalPages={totalPages}
           total={total}
-          onChange={setPage}
+          pageSize={PAGE_SIZE}
+          onPageChange={setPage}
         />
       )}
     </div>
@@ -528,54 +528,10 @@ function ClansTab() {
           page={page}
           totalPages={totalPages}
           total={total}
-          onChange={setPage}
+          pageSize={PAGE_SIZE}
+          onPageChange={setPage}
         />
       )}
-    </div>
-  );
-}
-
-function Pagination({
-  page,
-  totalPages,
-  total,
-  onChange,
-}: {
-  page: number;
-  totalPages: number;
-  total: number;
-  onChange: (p: number) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <div className="text-muted-foreground">
-        {`${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} / ${total}`}
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page <= 1}
-          onClick={() => onChange(page - 1)}
-          aria-label="Trang trước"
-        >
-          <IconArrowLeft className="h-4 w-4 sm:mr-1" />
-          <span className="hidden sm:inline">Trước</span>
-        </Button>
-        <span className="px-2">
-          {page}/{totalPages}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page >= totalPages}
-          onClick={() => onChange(page + 1)}
-          aria-label="Trang sau"
-        >
-          <span className="hidden sm:inline">Sau</span>
-          <IconArrowRight className="h-4 w-4 sm:ml-1" />
-        </Button>
-      </div>
     </div>
   );
 }

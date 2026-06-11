@@ -18,8 +18,6 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
-  IconArrowLeft,
-  IconArrowRight,
   IconCopy,
   IconGrid,
   IconList,
@@ -31,6 +29,7 @@ import {
 } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
@@ -587,54 +586,17 @@ export default function People() {
         </ul>
       )}
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between flex-wrap gap-3 text-sm">
-        <div className="text-muted-foreground">
-          {total > 0
-            ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} / ${total} người`
-            : "—"}
-          {isFetching && <span className="ml-2 italic">đang tải…</span>}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <label className="text-muted-foreground">
-            <span className="sr-only">Số dòng mỗi trang</span>
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-              className="ml-1 h-10 rounded-md border border-input bg-background px-2"
-            >
-              {PAGE_SIZE_OPTIONS.map((n) => (
-                <option key={n} value={n}>
-                  {n}/trang
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
-          >
-            <IconArrowLeft className="h-4 w-4 mr-1" />
-            Trước
-          </Button>
-          <span className="px-2">
-            {page}/{totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
-          >
-            Sau
-            <IconArrowRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={pageSize}
+        unit="người"
+        isFetching={isFetching}
+        onPageChange={setPage}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 }
