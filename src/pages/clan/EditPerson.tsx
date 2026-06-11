@@ -382,7 +382,7 @@ export function EditPersonForm({
           </div>
         </button>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-3">
           <div className="flex items-center justify-between border-b pb-2">
             <span className="text-sm font-medium text-muted-foreground">
               Chi tiết bổ sung
@@ -545,7 +545,7 @@ export default function EditPerson() {
   const back = `/clans/${clanId}/people/${personId}${fromQs}`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },

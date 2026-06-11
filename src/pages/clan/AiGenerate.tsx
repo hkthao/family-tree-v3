@@ -163,7 +163,7 @@ export default function AiGenerate() {
       : !!gedcomText;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },

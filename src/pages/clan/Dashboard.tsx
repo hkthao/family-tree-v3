@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import {
+  IconCalendar,
   IconCheck,
   IconDownload,
   IconHome,
@@ -262,6 +263,11 @@ export default function Dashboard() {
                 to={`/clans/${clan.id}/tree`}
                 icon={<IconTree />}
                 title="Phả hệ"
+              />
+              <ActionTile
+                to={`/clans/${clan.id}/events`}
+                icon={<IconCalendar />}
+                title="Sự kiện"
               />
               <ActionTile
                 to={`/clans/${clan.id}/board`}
