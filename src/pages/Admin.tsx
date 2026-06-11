@@ -404,8 +404,7 @@ function UserRow({
           )}
 
           {/* Footer: icon + text ngắn (1-2 chữ) — giống AnnouncementAdminCard */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t">
-            <span className="text-xs text-muted-foreground">Hành động</span>
+          <div className="flex items-center justify-end gap-2 pt-2 border-t">
             <div className="flex gap-1.5">
               <Button
                 size="sm"
