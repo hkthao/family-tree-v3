@@ -94,7 +94,7 @@ export default function Admin() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-6">
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
         {/* Title + tab switcher on one row at sm+ (tabs right-aligned)
             — saves a row of vertical space on desktop. Stacked on
             mobile so the tabs still get full width. */}
@@ -744,7 +744,7 @@ function HealthTab() {
   if (!data) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           Cập nhật lúc {new Date(data.generated_at).toLocaleString("vi-VN")}

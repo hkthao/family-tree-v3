@@ -15,7 +15,6 @@ import {
   IconQrCode,
   IconScroll,
   IconTrash,
-  IconUsers,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -157,7 +156,7 @@ export default function PersonDetail() {
     !!user && (clan.isPlatformAdmin || clan.myRole !== null);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
@@ -368,11 +367,12 @@ export default function PersonDetail() {
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
             <RelatedPostsSection personId={personId!} clanId={clan.id} />
 
-            {/* Actions row — đồng bộ outline, text rút gọn, 1 row dạt
-                phải. Xoá tách màu destructive nhưng cùng row. */}
-            <div className="flex flex-wrap items-center gap-2 justify-end">
+            {/* Actions row — buttons fix width 100px để cân nhau, dạt
+                phải, 1 hàng. Xưng hô đã chuyển xuống "Quan hệ" card
+                (mỗi người thân đã có nút tra cứu cạnh tên), bỏ ở đây. */}
+            <div className="flex items-center gap-2 justify-end">
               {canEdit ? (
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="w-[100px]">
                   <Link
                     to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}
                     data-testid="edit-person-link"
@@ -388,6 +388,7 @@ export default function PersonDetail() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="w-[100px]"
                     onClick={() => setContribOpen(true)}
                     aria-label="Đề xuất sửa"
                     title="Đề xuất sửa"
@@ -397,20 +398,11 @@ export default function PersonDetail() {
                   </Button>
                 )
               )}
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  to={`/clans/${clanId}/kinship?a=${personId}`}
-                  aria-label="Tra cứu xưng hô"
-                  title="Tra cứu xưng hô"
-                >
-                  <IconUsers className="h-4 w-4 mr-1.5" />
-                  Xưng hô
-                </Link>
-              </Button>
               {canCreateQr && (
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-[100px]"
                   data-testid="person-qr-button"
                   onClick={() => {
                     setQrOpen(true);
@@ -428,7 +420,7 @@ export default function PersonDetail() {
                   variant="outline"
                   size="sm"
                   data-testid="delete-person-button"
-                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  className="w-[100px] text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={async () => {
                     const ok = await askConfirm({
                       title: `Xoá ${person.full_name}?`,

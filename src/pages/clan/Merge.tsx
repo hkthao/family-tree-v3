@@ -89,7 +89,7 @@ export default function Merge() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },

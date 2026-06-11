@@ -104,7 +104,7 @@ export default function Import() {
   const canSubmit = !!plan?.payload && errorCount === 0 && !importM.isPending && !importM.isSuccess;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },

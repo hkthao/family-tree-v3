@@ -710,7 +710,7 @@ function PersonListItem({
   if (person.generation !== null) metaBits.push(`Đời ${person.generation}`);
 
   return (
-    <li className="flex items-start gap-2">
+    <li className="relative flex items-start gap-2">
       {selectable && (
         <label className="pl-3 pt-4 cursor-pointer">
           <input
@@ -733,7 +733,10 @@ function PersonListItem({
           className={person.is_living ? "" : "opacity-80"}
         />
         <div className="min-w-0 flex-1">
-          <p className="font-medium truncate">
+          {/* Name line: pr-9 chừa chỗ cho copy button (absolute top-right).
+              Các dòng meta + cha/mẹ/vợ phía dưới full width → hiển thị
+              được nhiều hơn vì copy button ko còn chiếm 1 cột bên phải. */}
+          <p className={`font-medium truncate ${canCopy ? "pr-9" : ""}`}>
             {person.full_name}
             {person.is_root && (
               <span className="ml-2 text-xs text-accent font-medium">
@@ -780,7 +783,7 @@ function PersonListItem({
           to={`/clans/${clanId}/people/new?from=${person.id}`}
           aria-label={`Sao chép ${person.full_name}`}
           title="Sao chép thành người mới"
-          className="self-center mr-2 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
+          className="absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
         >
           <IconCopy className="h-4 w-4" />
         </Link>
