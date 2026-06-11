@@ -11,6 +11,7 @@ import {
   IconCheck,
   IconLock,
   IconPencil,
+  IconRefresh,
   IconShield,
   IconTrash,
   IconUnlock,
@@ -753,8 +754,13 @@ function HealthTab() {
           variant="outline"
           onClick={() => refetch()}
           disabled={isFetching}
+          aria-label="Làm mới"
+          title={isFetching ? "Đang tải…" : "Làm mới"}
+          className="h-9 w-9 p-0"
         >
-          {isFetching ? "Đang tải…" : "Làm mới"}
+          <IconRefresh
+            className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+          />
         </Button>
       </div>
 
@@ -1115,12 +1121,17 @@ function FeedbackTab() {
           .
         </p>
         <Button
-          variant="outline"
           size="sm"
+          variant="outline"
           onClick={() => refetch()}
           disabled={isFetching}
+          aria-label="Tải lại"
+          title={isFetching ? "Đang tải…" : "Tải lại"}
+          className="h-9 w-9 p-0"
         >
-          {isFetching ? "Đang tải…" : "Tải lại"}
+          <IconRefresh
+            className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+          />
         </Button>
       </div>
       <div className="flex flex-wrap gap-1.5">
