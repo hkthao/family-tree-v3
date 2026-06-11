@@ -64,7 +64,7 @@ export function CriticalBanner() {
   return (
     <div
       role="alert"
-      className="border-b bg-destructive/10 border-destructive/30 text-destructive-foreground"
+      className="border-b bg-destructive/10 border-destructive/30 text-destructive-foreground lg:pl-72"
     >
       <div className="container max-w-4xl flex items-start gap-3 px-4 py-3">
         <span
