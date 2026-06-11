@@ -24,7 +24,7 @@ fi
 
 : "${VPS_HOST:?Cần VPS_HOST (set ở .env.deploy)}"
 : "${VPS_USER:?Cần VPS_USER (set ở .env.deploy)}"
-VIDEOS_PATH="${VIDEOS_PATH:-/var/www/giapha/static/videos}"
+VIDEOS_PATH="${VIDEOS_PATH:-/opt/gia-pha/videos}"
 
 LOCAL_DIR="$ROOT/videos/_dist"
 if [ ! -d "$LOCAL_DIR" ]; then
