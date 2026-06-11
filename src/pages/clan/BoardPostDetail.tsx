@@ -12,6 +12,7 @@ import {
   IconCheck,
   IconLock,
   IconPencil,
+  IconSend,
   IconUnlock,
   IconX,
 } from "@/components/icons";
@@ -165,8 +166,8 @@ export default function BoardPostDetail() {
             </p>
           )}
 
-          {/* Actions row — flex-1 cho mỗi nút để width bằng nhau */}
-          <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t [&>*]:flex-1">
+          {/* Actions row — gọn, dạt lề phải */}
+          <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t justify-end">
             {canEdit && (
               <Button asChild variant="outline" size="sm">
                 <Link to={`/clans/${clanId}/board/${post.id}/edit`}>
@@ -381,7 +382,7 @@ function Comments({
             e.preventDefault();
             if (body.trim()) createM.mutate();
           }}
-          className="flex gap-2"
+          className="relative"
         >
           <input
             type="text"
@@ -389,15 +390,17 @@ function Comments({
             onChange={(e) => setBody(e.target.value)}
             placeholder="Viết bình luận…"
             maxLength={4000}
-            className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full h-10 rounded-md border border-input bg-background pl-3 pr-11 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <Button
+          <button
             type="submit"
-            size="sm"
             disabled={!body.trim() || createM.isPending}
+            aria-label="Gửi bình luận"
+            title="Gửi"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:opacity-30 disabled:hover:bg-transparent"
           >
-            Gửi
-          </Button>
+            <IconSend className="h-4 w-4" />
+          </button>
         </form>
       )}
     </section>

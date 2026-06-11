@@ -476,3 +476,12 @@ export function IconSparkles(p: IconProps) {
     </Svg>
   );
 }
+
+export function IconSend(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M22 2L11 13" />
+      <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+    </Svg>
+  );
+}
