@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
 import {
   IconBell,
@@ -93,10 +92,6 @@ export default function Today() {
 
   return (
     <div className="space-y-5">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
-
       <header className="flex items-start gap-3">
         <IconCalendar className="h-8 w-8 text-primary shrink-0 mt-0.5" />
         <div className="min-w-0">
