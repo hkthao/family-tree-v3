@@ -98,7 +98,7 @@ export default function Board() {
         </p>
       )}
 
-      <ul className="space-y-4">
+      <ul className="space-y-2">
         {(postsQ.data?.rows ?? []).map((post) => (
           <li key={post.id}>
             <ClanPostCard post={post} clan={clan} />
