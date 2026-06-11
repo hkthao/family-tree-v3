@@ -80,8 +80,8 @@ export default function AnnouncementDetail() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-2xl py-10 px-4">
-        <nav className="mb-8">
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
+        <nav>
           <BackLink fallback="/announcements" />
         </nav>
 
@@ -105,7 +105,7 @@ export default function AnnouncementDetail() {
         )}
 
         {row && (
-          <article>
+          <article className="max-w-2xl">
             {/* Eyebrow — level + public flag, nhỏ và mảnh */}
             <div className="flex items-center gap-2 flex-wrap text-xs uppercase tracking-wider text-muted-foreground">
               <span
@@ -118,7 +118,7 @@ export default function AnnouncementDetail() {
 
             {/* Title — font serif Noto Serif (clan-name class) cho cảm
                 giác "đang đọc bài" như báo / blog. */}
-            <h1 className="clan-name text-3xl sm:text-4xl font-semibold leading-tight mt-4 mb-3">
+            <h1 className="clan-name text-3xl sm:text-4xl font-semibold leading-tight mt-3 mb-2">
               {row.title}
             </h1>
 
@@ -137,14 +137,14 @@ export default function AnnouncementDetail() {
               </time>
             )}
 
-            <hr className="my-6 border-border" />
+            <hr className="my-5 border-border" />
 
             <div className="text-[17px] leading-[1.75] whitespace-pre-line text-foreground/90">
               {row.body}
             </div>
 
             {row.expires_at && (
-              <p className="text-xs text-muted-foreground mt-10 pt-4 border-t italic">
+              <p className="text-xs text-muted-foreground mt-8 pt-4 border-t italic">
                 Thông báo này sẽ hết hạn vào{" "}
                 <strong className="not-italic">
                   {new Date(row.expires_at).toLocaleString("vi-VN")}
