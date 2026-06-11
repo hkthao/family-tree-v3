@@ -370,22 +370,23 @@ function UserRow({
             </Button>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               size="sm"
               variant="outline"
               disabled={isSelf || suspendM.isPending}
               onClick={() => suspendM.mutate(!profile.is_suspended)}
+              title={profile.is_suspended ? "Mở khoá" : "Khoá tài khoản"}
             >
               {profile.is_suspended ? (
                 <>
-                  <IconUnlock className="h-4 w-4 mr-1.5" />
-                  Mở khoá
+                  <IconUnlock className="h-4 w-4 mr-1.5 shrink-0" />
+                  <span className="truncate">Mở khoá</span>
                 </>
               ) : (
                 <>
-                  <IconLock className="h-4 w-4 mr-1.5" />
-                  Khoá
+                  <IconLock className="h-4 w-4 mr-1.5 shrink-0" />
+                  <span className="truncate">Khoá</span>
                 </>
               )}
             </Button>
@@ -394,10 +395,16 @@ function UserRow({
               variant="outline"
               disabled={isSelf || grantM.isPending}
               onClick={() => grantM.mutate(!profile.is_platform_admin)}
+              title={
+                profile.is_platform_admin
+                  ? "Thu quyền platform admin"
+                  : "Cấp quyền platform admin"
+              }
             >
-              <IconShield className="h-4 w-4 mr-1.5" />
-              {profile.is_platform_admin ? "Thu quyền" : "Cấp quyền"}
-              <span className="hidden sm:inline">&nbsp;platform admin</span>
+              <IconShield className="h-4 w-4 mr-1.5 shrink-0" />
+              <span className="truncate">
+                {profile.is_platform_admin ? "Thu quyền" : "Cấp quyền"}
+              </span>
             </Button>
             <Button
               size="sm"
@@ -414,9 +421,10 @@ function UserRow({
                 });
                 if (ok) deleteM.mutate();
               }}
+              title="Xoá tài khoản"
             >
-              <IconTrash className="h-4 w-4 mr-1.5" />
-              Xoá
+              <IconTrash className="h-4 w-4 mr-1.5 shrink-0" />
+              <span className="truncate">Xoá</span>
             </Button>
           </div>
 
