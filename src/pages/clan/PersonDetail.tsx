@@ -17,7 +17,7 @@ import {
   IconTrash,
   IconUsers,
 } from "@/components/icons";
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ContributeDialog } from "@/components/ContributeDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -158,9 +158,13 @@ export default function PersonDetail() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={backTo} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: person?.full_name ?? "Người" },
+        ]}
+      />
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 

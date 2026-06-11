@@ -7,7 +7,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconChevronUp, IconCopy, IconPlus, IconX } from "@/components/icons";
 import { useToast } from "@/components/Toast";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
   buildDeathAnniversary,
@@ -35,6 +36,7 @@ export default function NewPerson() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { user } = useAuth();
+  const { clan } = useClanContext();
   const userId = user?.id ?? "";
 
   // When ?from=<personId> is present, this is a "copy" flow: fetch the
@@ -213,9 +215,13 @@ export default function NewPerson() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}/people`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: isCopy ? "Sao chép người" : "Thêm người" },
+        ]}
+      />
 
       <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
         {isCopy ? (

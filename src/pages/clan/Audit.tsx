@@ -2,7 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
@@ -75,9 +75,12 @@ export default function Audit() {
 
   return (
     <div className="space-y-3">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Nhật ký" },
+        ]}
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
         <h2 className="text-2xl font-semibold sm:flex-1">Nhật ký</h2>

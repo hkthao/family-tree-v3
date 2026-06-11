@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { BranchesSection } from "@/components/BranchesSection";
 import { CsvExportButton } from "@/components/CsvExportButton";
 import { GedcomButtons } from "@/components/GedcomButtons";
@@ -80,9 +80,12 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Cài đặt dòng họ" },
+        ]}
+      />
       <h2 className="text-2xl font-semibold">Cài đặt dòng họ</h2>
 
       <Card>

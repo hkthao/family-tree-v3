@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { QuickAddSheet } from "@/components/QuickAddSheet";
@@ -271,9 +271,12 @@ export default function Todo() {
 
   return (
     <div className="space-y-5">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Việc cần làm" },
+        ]}
+      />
 
       <header className="flex items-start gap-3">
         <IconScroll className="h-7 w-7 text-primary shrink-0 mt-0.5" />
