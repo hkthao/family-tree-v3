@@ -11,6 +11,7 @@ import { ToastProvider } from "@/components/Toast";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import Account from "@/pages/Account";
 import Admin from "@/pages/Admin";
+import AnnouncementDetail from "@/pages/AnnouncementDetail";
 import Announcements from "@/pages/Announcements";
 import Changelog from "@/pages/Changelog";
 import Clans from "@/pages/Clans";
@@ -68,6 +69,14 @@ export default function App() {
           element={
             <RequireAuth>
               <Announcements />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/announcements/:id"
+          element={
+            <RequireAuth>
+              <AnnouncementDetail />
             </RequireAuth>
           }
         />
