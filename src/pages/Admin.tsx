@@ -37,7 +37,13 @@ import {
   type AdminProfileRow,
   type FailedNotification,
 } from "@/lib/queries/admin";
-import { listFeedback, type FeedbackRow } from "@/lib/queries/feedback";
+import {
+  listFeedback,
+  updateFeedback,
+  type FeedbackCategory,
+  type FeedbackRow,
+  type FeedbackStatus,
+} from "@/lib/queries/feedback";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 import { unaccent } from "@/lib/unaccent";
@@ -976,6 +982,27 @@ function formatBytes(bytes: number): string {
 
 // ───────────── Feedback tab ─────────────────────────────────────────
 
+const FEEDBACK_STATUS_LABEL: Record<FeedbackStatus, string> = {
+  new: "Mới",
+  seen: "Đã xem",
+  resolved: "Đã xử lý",
+  spam: "Spam",
+};
+
+const FEEDBACK_CATEGORY_LABEL: Record<FeedbackCategory, string> = {
+  bug: "Lỗi",
+  idea: "Ý kiến",
+  question: "Câu hỏi",
+  other: "Khác",
+};
+
+const FEEDBACK_STATUS_BADGE: Record<FeedbackStatus, string> = {
+  new: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  seen: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
+  resolved: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+  spam: "bg-muted text-muted-foreground border-border",
+};
+
 function FeedbackTab() {
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: queryKeys.adminFeedback(),
@@ -983,18 +1010,25 @@ function FeedbackTab() {
     staleTime: 30_000,
   });
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<FeedbackStatus | "all">("new");
 
   const filtered = useMemo(() => {
     if (!data) return [];
-    if (!search.trim()) return data;
-    const needle = unaccent(search);
-    return data.filter((r) => {
-      const hay = unaccent(
-        `${r.message} ${r.contact ?? ""} ${r.page_url ?? ""}`,
-      );
-      return hay.includes(needle);
-    });
-  }, [data, search]);
+    let rows = data;
+    if (statusFilter !== "all") {
+      rows = rows.filter((r) => r.status === statusFilter);
+    }
+    if (search.trim()) {
+      const needle = unaccent(search);
+      rows = rows.filter((r) => {
+        const hay = unaccent(
+          `${r.message} ${r.contact ?? ""} ${r.page_path ?? ""} ${r.admin_note ?? ""}`,
+        );
+        return hay.includes(needle);
+      });
+    }
+    return rows;
+  }, [data, search, statusFilter]);
 
   if (isLoading) {
     return <p className="text-muted-foreground">Đang tải…</p>;
@@ -1006,6 +1040,17 @@ function FeedbackTab() {
       </Alert>
     );
   }
+
+  const counts = useMemo(() => {
+    const c: Record<FeedbackStatus, number> = {
+      new: 0,
+      seen: 0,
+      resolved: 0,
+      spam: 0,
+    };
+    for (const r of data ?? []) c[r.status]++;
+    return c;
+  }, [data]);
 
   return (
     <section className="space-y-4">
@@ -1024,17 +1069,41 @@ function FeedbackTab() {
           {isFetching ? "Đang tải…" : "Tải lại"}
         </Button>
       </div>
+      <div className="flex flex-wrap gap-1.5">
+        {(["all", "new", "seen", "resolved", "spam"] as const).map((s) => {
+          const active = statusFilter === s;
+          const label = s === "all" ? "Tất cả" : FEEDBACK_STATUS_LABEL[s];
+          const count = s === "all" ? data?.length ?? 0 : counts[s];
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStatusFilter(s)}
+              className={`px-3 h-9 rounded-md border text-sm transition-colors ${
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "hover:bg-muted/40"
+              }`}
+            >
+              {label}{" "}
+              <span className={active ? "opacity-80" : "text-muted-foreground"}>
+                ({count})
+              </span>
+            </button>
+          );
+        })}
+      </div>
       <SearchInput
-        label="Tìm trong nội dung / liên hệ / URL"
+        label="Tìm trong nội dung / liên hệ / ghi chú"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm theo nội dung, email/SĐT, hoặc URL…"
+        placeholder="Tìm theo nội dung, email/SĐT, hoặc ghi chú admin…"
       />
       {filtered.length === 0 ? (
         <p className="text-sm text-muted-foreground italic">
           {data?.length === 0
             ? "Chưa có phản hồi nào — chờ early users gửi."
-            : "Không khớp tìm kiếm."}
+            : "Không khớp bộ lọc hiện tại."}
         </p>
       ) : (
         <ul className="space-y-3">
@@ -1048,18 +1117,30 @@ function FeedbackTab() {
 }
 
 function FeedbackRowCard({ row }: { row: FeedbackRow }) {
-  // Pull the clan id out of page_url so admins can jump straight to
-  // the tree that was on screen. Falls back to the raw URL when the
-  // user submitted from a non-clan page (login, account, etc.).
-  const clanMatch = row.page_url?.match(
-    /\/clans\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i,
-  );
+  const qc = useQueryClient();
+  const [note, setNote] = useState(row.admin_note ?? "");
+  const [showNote, setShowNote] = useState(!!row.admin_note);
+
+  const mutation = useMutation({
+    mutationFn: (patch: { status?: FeedbackStatus; admin_note?: string | null }) =>
+      updateFeedback(row.id, patch),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: queryKeys.adminFeedback() }),
+  });
+
   return (
-    <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-2">
-      <div className="flex items-baseline justify-between gap-2 flex-wrap">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed flex-1 min-w-0">
-          {row.message}
-        </p>
+    <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-3">
+      <div className="flex items-start justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${FEEDBACK_STATUS_BADGE[row.status]}`}
+          >
+            {FEEDBACK_STATUS_LABEL[row.status]}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {FEEDBACK_CATEGORY_LABEL[row.category]}
+          </span>
+        </div>
         <time
           className="text-xs text-muted-foreground shrink-0 tabular-nums"
           dateTime={row.created_at}
@@ -1074,6 +1155,11 @@ function FeedbackRowCard({ row }: { row: FeedbackRow }) {
           })}
         </time>
       </div>
+
+      <p className="whitespace-pre-wrap text-sm leading-relaxed">
+        {row.message}
+      </p>
+
       <dl className="text-xs text-muted-foreground grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5">
         {row.contact && (
           <>
@@ -1092,24 +1178,25 @@ function FeedbackRowCard({ row }: { row: FeedbackRow }) {
             <dd className="italic">khách (chưa đăng nhập)</dd>
           </>
         )}
-        {clanMatch ? (
+        {row.clan_id && (
           <>
             <dt>Clan:</dt>
             <dd>
               <Link
-                to={`/clans/${clanMatch[1]}`}
+                to={`/clans/${row.clan_id}`}
                 className="text-primary hover:underline font-mono break-all"
               >
-                {clanMatch[1]} ↗
+                {row.clan_id} ↗
               </Link>
             </dd>
           </>
-        ) : row.page_url ? (
+        )}
+        {row.page_path && (
           <>
-            <dt>URL:</dt>
-            <dd className="break-all">{row.page_url}</dd>
+            <dt>Trang:</dt>
+            <dd className="font-mono break-all">{row.page_path}</dd>
           </>
-        ) : null}
+        )}
         {row.app_version && (
           <>
             <dt>Phiên bản:</dt>
@@ -1123,6 +1210,54 @@ function FeedbackRowCard({ row }: { row: FeedbackRow }) {
           </>
         )}
       </dl>
+
+      <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t">
+        {(["seen", "resolved", "spam"] as FeedbackStatus[]).map((s) => {
+          const active = row.status === s;
+          return (
+            <Button
+              key={s}
+              size="sm"
+              variant={active ? "default" : "outline"}
+              disabled={mutation.isPending}
+              onClick={() => mutation.mutate({ status: s })}
+            >
+              {active ? "✓ " : ""}
+              {FEEDBACK_STATUS_LABEL[s]}
+            </Button>
+          );
+        })}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowNote((v) => !v)}
+        >
+          {showNote ? "Ẩn ghi chú" : "Ghi chú"}
+        </Button>
+      </div>
+
+      {showNote && (
+        <div className="space-y-2">
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Ghi chú nội bộ (chỉ admin xem)…"
+            rows={2}
+            maxLength={4000}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={mutation.isPending || note === (row.admin_note ?? "")}
+            onClick={() =>
+              mutation.mutate({ admin_note: note.trim() || null })
+            }
+          >
+            Lưu ghi chú
+          </Button>
+        </div>
+      )}
     </li>
   );
 }
