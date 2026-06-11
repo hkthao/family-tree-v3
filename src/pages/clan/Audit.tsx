@@ -7,6 +7,7 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
 import {
+  IconArrowRight,
   IconChevronUp,
   IconRefresh,
   IconUndo,
