@@ -190,9 +190,11 @@ export const VIDEO_BY_ID: Record<string, VideoTutorial> = Object.fromEntries(
   VIDEO_TUTORIALS.map((v) => [v.id, v]),
 );
 
+// Default URL = prod VPS. Dev cũng load từ đó (static assets, không
+// có privacy concern). Override qua env nếu cần test bản local.
 const BASE_URL = (
   (import.meta.env.VITE_VIDEOS_BASE_URL as string | undefined) ??
-  "/static/videos"
+  "https://giapha.thaohk.com/static/videos"
 ).replace(/\/$/, "");
 
 export type Viewport = "mobile" | "desktop";
