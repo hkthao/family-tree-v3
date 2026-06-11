@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
+import { BackLink } from "@/components/BackLink";
 import { ClanPostCard } from "@/components/ClanPostCard";
 import { ClanPostComposer } from "@/components/ClanPostComposer";
+import { IconScroll } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
@@ -37,12 +39,21 @@ export default function Board() {
   const isMember = clan.myRole !== null || clan.isPlatformAdmin;
 
   return (
-    <div className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-semibold">Bảng tin dòng họ</h1>
-        <p className="text-sm text-muted-foreground">
-          Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc.
-        </p>
+    <div className="space-y-5">
+      <nav>
+        <BackLink fallback={`/clans/${clanId}`} />
+      </nav>
+
+      <header className="flex items-start gap-3">
+        <IconScroll className="h-8 w-8 text-primary shrink-0 mt-0.5" />
+        <div className="min-w-0">
+          <h1 className="clan-name text-2xl sm:text-3xl font-semibold leading-tight">
+            Bảng tin
+          </h1>
+          <p className="text-base text-muted-foreground mt-1">
+            Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc.
+          </p>
+        </div>
       </header>
 
       {!isMember && (
