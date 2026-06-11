@@ -48,26 +48,41 @@ const POST_COLUMNS =
 const COMMENT_COLUMNS =
   "id, post_id, clan_id, author_id, body, status, created_at";
 
+export interface PaginatedPosts {
+  rows: ClanPost[];
+  total: number;
+}
+
 /**
  * Bảng tin clan — RLS lọc theo member + status. Sắp xếp: pinned trước,
- * sau đó mới nhất trước. UI dùng cho `/clan/:id/bang-tin`.
+ * sau đó mới nhất trước. Có phân trang qua range — count='exact' để
+ * UI biết tổng số trang.
  *
- * Bao gồm cả `pending` của chính author (RLS cho phép) — cho phép tự
- * xem lại bài đang chờ duyệt.
+ * Bao gồm cả `pending` của chính author (RLS cho phép) — author thấy
+ * bài đang chờ duyệt của mình; bài người khác pending không hiện.
  */
 export async function listClanPosts(
   clanId: string,
+  opts: { page?: number; pageSize?: number } = {},
   client: Client = defaultClient,
-): Promise<ClanPost[]> {
-  const { data, error } = await client
+): Promise<PaginatedPosts> {
+  const page = Math.max(1, opts.page ?? 1);
+  const pageSize = Math.max(1, opts.pageSize ?? 20);
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const { data, error, count } = await client
     .from("clan_posts")
-    .select(POST_COLUMNS)
+    .select(POST_COLUMNS, { count: "exact" })
     .eq("clan_id", clanId)
     .neq("status", "hidden")
     .order("pinned", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
   if (error) throw new Error(error.message);
-  return (data ?? []) as ClanPost[];
+  return {
+    rows: (data ?? []) as ClanPost[],
+    total: count ?? 0,
+  };
 }
 
 /**

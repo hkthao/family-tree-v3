@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useSearchParams, Link, useParams } from "react-router-dom";
 
 import { ClanPostCard } from "@/components/ClanPostCard";
-import { ClanPostComposer } from "@/components/ClanPostComposer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,9 +9,11 @@ import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listClanPosts, listPendingPosts } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
+const PAGE_SIZE = 10;
+
 /**
- * `/clans/:clanId/board` — bảng tin dòng họ. Feed + composer + comment.
- * Moderation queue ở `/clans/:clanId/board/moderation` (admin only).
+ * `/clans/:clanId/board` — bảng tin dòng họ. Có phân trang qua
+ * `?page=N`. Thêm bài → `/board/new`; xem chi tiết → `/board/:id`.
  */
 export default function Board() {
   const { clanId } = useParams<{ clanId: string }>();
@@ -21,9 +21,12 @@ export default function Board() {
   const { clan } = useClanContext();
   const admin = isClanAdmin(clan);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(1, Number(searchParams.get("page") ?? "1") || 1);
+
   const postsQ = useQuery({
-    queryKey: queryKeys.clanPosts(clanId!),
-    queryFn: () => listClanPosts(clanId!),
+    queryKey: [...queryKeys.clanPosts(clanId!), page],
+    queryFn: () => listClanPosts(clanId!, { page, pageSize: PAGE_SIZE }),
     enabled: !!clanId,
     staleTime: 30_000,
   });
@@ -37,7 +40,16 @@ export default function Board() {
   });
 
   const isMember = clan.myRole !== null || clan.isPlatformAdmin;
-  const [composerOpen, setComposerOpen] = useState(false);
+  const total = postsQ.data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  function goToPage(next: number) {
+    if (next < 1 || next > totalPages) return;
+    const params = new URLSearchParams(searchParams);
+    if (next === 1) params.delete("page");
+    else params.set("page", String(next));
+    setSearchParams(params);
+  }
 
   return (
     <div className="space-y-3">
@@ -52,13 +64,9 @@ export default function Board() {
               ⏳ {pendingQ.data!.length} chờ duyệt
             </Link>
           )}
-          {isMember && user && !composerOpen && (
-            <Button
-              size="sm"
-              className="h-10"
-              onClick={() => setComposerOpen(true)}
-            >
-              + Đăng bài mới
+          {isMember && user && (
+            <Button asChild size="sm" className="h-10">
+              <Link to={`/clans/${clanId}/board/new`}>+ Đăng bài mới</Link>
             </Button>
           )}
         </div>
@@ -73,14 +81,6 @@ export default function Board() {
         </Alert>
       )}
 
-      {isMember && user && (
-        <ClanPostComposer
-          clan={clan}
-          open={composerOpen}
-          onOpenChange={setComposerOpen}
-        />
-      )}
-
       {postsQ.isLoading && (
         <p className="text-muted-foreground">Đang tải…</p>
       )}
@@ -92,19 +92,46 @@ export default function Board() {
         </Alert>
       )}
 
-      {postsQ.data?.length === 0 && !postsQ.isLoading && (
+      {total === 0 && !postsQ.isLoading && (
         <p className="text-muted-foreground italic">
           Chưa có bài viết nào. Hãy là người đầu tiên đăng tin cho cả họ.
         </p>
       )}
 
       <ul className="space-y-4">
-        {(postsQ.data ?? []).map((post) => (
+        {(postsQ.data?.rows ?? []).map((post) => (
           <li key={post.id}>
             <ClanPostCard post={post} clan={clan} />
           </li>
         ))}
       </ul>
+
+      {totalPages > 1 && (
+        <nav
+          className="flex items-center justify-between pt-3 border-t"
+          aria-label="Phân trang"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(page - 1)}
+            disabled={page <= 1}
+          >
+            ← Trang trước
+          </Button>
+          <span className="text-sm text-muted-foreground tabular-nums">
+            Trang {page} / {totalPages} · {total} bài
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => goToPage(page + 1)}
+            disabled={page >= totalPages}
+          >
+            Trang sau →
+          </Button>
+        </nav>
+      )}
     </div>
   );
 }

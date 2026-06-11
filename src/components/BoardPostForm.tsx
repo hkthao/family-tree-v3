@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin } from "@/hooks/useClanContext";
+import type { ClanDetail } from "@/lib/queries/clan-detail";
 import {
   createClanPost,
+  updateClanPost,
+  type ClanPost,
   type ClanPostType,
 } from "@/lib/queries/clan_posts";
-import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
 
 const TYPE_OPTIONS: Array<{ value: ClanPostType; label: string }> = [
@@ -24,98 +26,94 @@ const TYPE_OPTIONS: Array<{ value: ClanPostType; label: string }> = [
 ];
 
 /**
- * Composer cho bảng tin. Member thường gửi → `pending` (chờ duyệt);
- * admin gửi → `published` luôn. UI khác biệt để người dùng biết.
+ * Form chung cho cả "Đăng bài mới" và "Sửa bài". Khi `post` truyền
+ * vào → edit mode, không thì create.
+ *
+ * Khi non-admin tạo bài mới → ép status='pending' (RLS chặn nếu sai).
+ * Khi edit, status không thay đổi qua form này — trigger guard 32.3.t2
+ * chặn non-admin đổi status; admin moderate qua RPC riêng.
  */
-export function ClanPostComposer({
+export function BoardPostForm({
   clan,
-  open,
-  onOpenChange,
+  post,
+  onDone,
+  onCancel,
 }: {
   clan: ClanDetail;
-  /** Controlled open state — Board lift state lên để có nút mở ở
-   *  header row riêng. Nếu không truyền → tự quản (button + form). */
-  open?: boolean;
-  onOpenChange?: (next: boolean) => void;
+  /** Có giá trị → edit; null/undef → create. */
+  post?: ClanPost | null;
+  /** Sau khi save thành công — Page điều hướng. */
+  onDone: (postId: string) => void;
+  onCancel: () => void;
 }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const toast = useToast();
   const admin = isClanAdmin(clan);
+  const isEdit = !!post;
 
-  const [internalOpen, setInternalOpen] = useState(false);
-  const isControlled = open !== undefined;
-  const effectiveOpen = isControlled ? open : internalOpen;
-  const setOpen = (next: boolean) => {
-    if (isControlled) onOpenChange?.(next);
-    else setInternalOpen(next);
-  };
+  const [type, setType] = useState<ClanPostType>(post?.type ?? "news");
+  const [title, setTitle] = useState(post?.title ?? "");
+  const [body, setBody] = useState(post?.body ?? "");
+  const [eventDate, setEventDate] = useState(post?.event_date ?? "");
 
-  const [type, setType] = useState<ClanPostType>("news");
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [eventDate, setEventDate] = useState("");
-
-  const reset = () => {
-    setType("news");
-    setTitle("");
-    setBody("");
-    setEventDate("");
-  };
-
-  const createM = useMutation({
-    mutationFn: () =>
-      createClanPost({
+  const saveM = useMutation({
+    mutationFn: async (): Promise<string> => {
+      if (isEdit && post) {
+        await updateClanPost(post.id, {
+          type,
+          title: title.trim() || null,
+          body: body.trim(),
+          event_date: eventDate || null,
+        });
+        return post.id;
+      }
+      if (!user) throw new Error("Not authenticated");
+      const created = await createClanPost({
         clanId: clan.id,
-        authorId: user!.id,
+        authorId: user.id,
         type,
         title: title.trim() || null,
         body: body.trim(),
         eventDate: eventDate || null,
         // KEY: non-admin BUỘC 'pending' (RLS chặn nếu sai).
         status: admin ? "published" : "pending",
-      }),
-    onSuccess: () => {
-      toast.success(
-        admin ? "Đã đăng bài" : "Đã gửi — chờ admin duyệt",
-        {
-          description: title.trim() || body.slice(0, 60),
-        },
-      );
-      reset();
-      setOpen(false);
-      qc.invalidateQueries({ queryKey: queryKeys.clanPosts(clan.id) });
-      qc.invalidateQueries({
-        queryKey: queryKeys.clanPostsPending(clan.id),
       });
+      return created.id;
+    },
+    onSuccess: (postId) => {
+      toast.success(
+        isEdit
+          ? "Đã lưu bài"
+          : admin
+            ? "Đã đăng bài"
+            : "Đã gửi — chờ admin duyệt",
+        { description: title.trim() || body.slice(0, 60) },
+      );
+      qc.invalidateQueries({ queryKey: queryKeys.clanPosts(clan.id) });
+      qc.invalidateQueries({ queryKey: queryKeys.clanPostsPending(clan.id) });
+      if (isEdit) {
+        qc.invalidateQueries({ queryKey: queryKeys.clanPost(postId) });
+      }
+      onDone(postId);
     },
     onError: (e) =>
-      toast.error("Không gửi được", { description: (e as Error).message }),
+      toast.error("Không lưu được", { description: (e as Error).message }),
   });
-
-  if (!user) return null;
-
-  if (!effectiveOpen) {
-    // Khi controlled thì Board tự dựng nút ngoài → composer ẩn.
-    if (isControlled) return null;
-    return (
-      <Button onClick={() => setOpen(true)} size="sm">
-        + Đăng bài mới
-      </Button>
-    );
-  }
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (body.trim()) createM.mutate();
+        if (body.trim()) saveM.mutate();
       }}
       className="rounded-lg border bg-card p-4 space-y-4"
     >
-      <h3 className="font-semibold">Đăng bài mới</h3>
+      <h3 className="font-semibold">
+        {isEdit ? "Sửa bài" : "Đăng bài mới"}
+      </h3>
 
-      {!admin && (
+      {!admin && !isEdit && (
         <Alert>
           <AlertDescription>
             Bài sẽ chuyển vào hàng chờ duyệt. Admin của dòng họ sẽ kiểm tra
@@ -168,7 +166,7 @@ export function ClanPostComposer({
           id="post-body"
           required
           maxLength={20000}
-          rows={5}
+          rows={6}
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Viết tin cho cả họ đọc…"
@@ -191,22 +189,17 @@ export function ClanPostComposer({
       <div className="flex gap-2 pt-2 border-t">
         <Button
           type="submit"
-          disabled={!body.trim() || createM.isPending}
+          disabled={!body.trim() || saveM.isPending}
         >
-          {createM.isPending
-            ? "Đang gửi…"
-            : admin
-              ? "Đăng"
-              : "Gửi duyệt"}
+          {saveM.isPending
+            ? "Đang lưu…"
+            : isEdit
+              ? "Cập nhật"
+              : admin
+                ? "Đăng"
+                : "Gửi duyệt"}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            reset();
-            setOpen(false);
-          }}
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           Huỷ
         </Button>
       </div>
