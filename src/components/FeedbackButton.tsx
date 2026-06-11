@@ -7,7 +7,10 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { submitFeedback } from "@/lib/queries/feedback";
+import {
+  submitFeedback,
+  type FeedbackCategory,
+} from "@/lib/queries/feedback";
 import { cn } from "@/lib/utils";
 
 /**
@@ -64,11 +67,19 @@ export function FeedbackButton({
   );
 }
 
+const CATEGORY_OPTIONS: Array<{ value: FeedbackCategory; label: string }> = [
+  { value: "bug", label: "Lỗi / sự cố" },
+  { value: "idea", label: "Đề xuất / ý kiến" },
+  { value: "question", label: "Câu hỏi" },
+  { value: "other", label: "Khác" },
+];
+
 export function FeedbackDialog({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const { pathname } = useLocation();
   const [message, setMessage] = useState("");
   const [contact, setContact] = useState("");
+  const [category, setCategory] = useState<FeedbackCategory>("other");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Pull clan_id out of /clans/:uuid/... so admins can land on the
@@ -97,6 +108,7 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
     mutationFn: () =>
       submitFeedback({
         message: message.trim(),
+        category,
         contact: contact.trim() || null,
         clanId,
         pageUrl:
@@ -156,6 +168,32 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
         </header>
 
         <div className="overflow-y-auto px-5 py-4 space-y-4 flex-1 min-h-0">
+          <fieldset className="space-y-2">
+            <legend className="text-base font-medium">Loại phản hồi</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {CATEGORY_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer text-sm ${
+                    category === opt.value
+                      ? "border-primary bg-primary/5"
+                      : "hover:bg-muted/40"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="feedback-category"
+                    value={opt.value}
+                    checked={category === opt.value}
+                    onChange={() => setCategory(opt.value)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="space-y-2">
             <Label htmlFor="feedback-message" required>
               Bạn muốn nói gì?
