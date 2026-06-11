@@ -292,50 +292,73 @@ function UserRow({
     suspendM.error ?? grantM.error ?? deleteM.error ?? updateLimits.error;
 
   return (
-    <li className="rounded-md border bg-card p-3 space-y-2">
+    <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-2">
+      {/* Header: tên + email, click toggle expand */}
       <button
         type="button"
         onClick={() => setExpanded((x) => !x)}
-        className="w-full text-left flex items-center justify-between gap-3 flex-wrap"
+        className="w-full text-left flex items-start justify-between gap-3"
       >
-        <div className="min-w-0">
-          <p className="font-medium truncate">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-semibold truncate">
             {profile.display_name ?? profile.email ?? profile.id}
-            {profile.is_platform_admin && (
-              <span className="ml-2 text-xs text-accent">platform admin</span>
-            )}
-            {profile.is_suspended && (
-              <span className="ml-2 text-xs text-destructive">đã khoá</span>
-            )}
-            {isSelf && (
-              <span className="ml-2 text-xs text-muted-foreground">(bạn)</span>
-            )}
-          </p>
-          <p className="text-xs text-muted-foreground truncate">
-            {profile.email ?? "—"} • max clans: {profile.max_clans}
+          </h3>
+          <p className="text-sm text-muted-foreground truncate">
+            {profile.email ?? "—"}
           </p>
         </div>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground shrink-0 mt-0.5">
           {expanded ? "▴" : "▾"}
         </span>
       </button>
 
+      {/* Status badges — luôn hiển thị (cả lúc collapsed) */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {profile.is_platform_admin && (
+          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-accent/10 text-accent">
+            Platform admin
+          </span>
+        )}
+        {profile.is_suspended && (
+          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-destructive/10 text-destructive">
+            Đã khoá
+          </span>
+        )}
+        {isSelf && (
+          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-muted text-muted-foreground">
+            Bạn
+          </span>
+        )}
+        <span className="text-xs text-muted-foreground">
+          Max clan: {profile.max_clans}
+        </span>
+      </div>
+
       {expanded && (
-        <div className="space-y-4 pt-2 border-t">
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Thuộc dòng họ:</p>
+        <div className="space-y-3 pt-2 border-t">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground">
+              Thuộc dòng họ
+            </p>
             {clans === undefined ? (
               <p className="text-xs text-muted-foreground">Đang tải…</p>
             ) : clans.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Không thuộc dòng họ nào.</p>
+              <p className="text-xs text-muted-foreground">
+                Không thuộc dòng họ nào.
+              </p>
             ) : (
               <ul className="text-sm space-y-0.5">
                 {clans.map((c) => (
                   <li key={c.clan_id}>
-                    <Link to={`/clans/${c.clan_id}`} className="hover:underline">
+                    <Link
+                      to={`/clans/${c.clan_id}`}
+                      className="hover:underline"
+                    >
                       {c.clan_name}
                     </Link>{" "}
-                    <span className="text-xs text-muted-foreground">({c.role})</span>
+                    <span className="text-xs text-muted-foreground">
+                      ({c.role})
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -358,6 +381,7 @@ function UserRow({
               />
             </div>
             <Button
+              size="sm"
               variant="outline"
               onClick={() => updateLimits.mutate()}
               disabled={
@@ -370,62 +394,74 @@ function UserRow({
             </Button>
           </div>
 
-          {/* Mobile: vertical stack — text đầy đủ, dễ chạm.
-              Desktop (sm+): horizontal row 3 col đều. */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={isSelf || suspendM.isPending}
-              onClick={() => suspendM.mutate(!profile.is_suspended)}
-            >
-              {profile.is_suspended ? (
-                <>
-                  <IconUnlock className="h-4 w-4 mr-1.5 shrink-0" />
-                  Mở khoá
-                </>
-              ) : (
-                <>
-                  <IconLock className="h-4 w-4 mr-1.5 shrink-0" />
-                  Khoá
-                </>
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={isSelf || grantM.isPending}
-              onClick={() => grantM.mutate(!profile.is_platform_admin)}
-            >
-              <IconShield className="h-4 w-4 mr-1.5 shrink-0" />
-              {profile.is_platform_admin ? "Thu quyền admin" : "Cấp quyền admin"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-destructive"
-              disabled={isSelf || deleteM.isPending}
-              onClick={async () => {
-                const ok = await confirm({
-                  title: `Xoá vĩnh viễn ${profile.display_name ?? profile.email ?? "user này"}?`,
-                  description:
-                    "Mọi clan họ sở hữu sẽ thành owner_id = null. Không khôi phục được.",
-                  confirmLabel: "Xoá tài khoản",
-                  destructive: true,
-                });
-                if (ok) deleteM.mutate();
-              }}
-            >
-              <IconTrash className="h-4 w-4 mr-1.5 shrink-0" />
-              Xoá tài khoản
-            </Button>
-          </div>
-
           {lastError && (
             <Alert variant="destructive">
-              <AlertDescription>{(lastError as Error).message}</AlertDescription>
+              <AlertDescription>
+                {(lastError as Error).message}
+              </AlertDescription>
             </Alert>
           )}
+
+          {/* Footer: icon-only actions — giống AnnouncementAdminCard */}
+          <div className="flex items-center justify-between gap-2 pt-2 border-t">
+            <span className="text-xs text-muted-foreground">Hành động</span>
+            <div className="flex gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isSelf || suspendM.isPending}
+                onClick={() => suspendM.mutate(!profile.is_suspended)}
+                aria-label={profile.is_suspended ? "Mở khoá" : "Khoá tài khoản"}
+                title={profile.is_suspended ? "Mở khoá" : "Khoá tài khoản"}
+                className="h-9 w-9 p-0"
+              >
+                {profile.is_suspended ? (
+                  <IconUnlock className="h-4 w-4" />
+                ) : (
+                  <IconLock className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isSelf || grantM.isPending}
+                onClick={() => grantM.mutate(!profile.is_platform_admin)}
+                aria-label={
+                  profile.is_platform_admin
+                    ? "Thu hồi quyền admin"
+                    : "Cấp quyền admin"
+                }
+                title={
+                  profile.is_platform_admin
+                    ? "Thu hồi quyền platform admin"
+                    : "Cấp quyền platform admin"
+                }
+                className="h-9 w-9 p-0"
+              >
+                <IconShield className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isSelf || deleteM.isPending}
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: `Xoá vĩnh viễn ${profile.display_name ?? profile.email ?? "user này"}?`,
+                    description:
+                      "Mọi clan họ sở hữu sẽ thành owner_id = null. Không khôi phục được.",
+                    confirmLabel: "Xoá tài khoản",
+                    destructive: true,
+                  });
+                  if (ok) deleteM.mutate();
+                }}
+                aria-label="Xoá tài khoản"
+                title="Xoá tài khoản"
+                className="h-9 w-9 p-0 text-destructive hover:text-destructive"
+              >
+                <IconTrash className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </li>
