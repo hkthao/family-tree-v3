@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
 import {
   IconBell,
@@ -93,18 +93,11 @@ export default function Today() {
 
   return (
     <div className="space-y-5">
-      <header className="flex items-start gap-3">
-        <IconCalendar className="h-8 w-8 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-2xl sm:text-3xl font-semibold leading-tight">
-            Hôm nay
-          </h1>
-          <p className="text-base text-muted-foreground mt-1">
-            {todayHeader}
-          </p>
-          <PageHelpVideo size="text" />
-        </div>
-      </header>
+      <PageHeader
+        icon={<IconCalendar className="h-7 w-7" />}
+        title="Hôm nay"
+        description={todayHeader}
+      />
 
       {/* Section: today — biggest header since it's the primary
           focus of the page. */}

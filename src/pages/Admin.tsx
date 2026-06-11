@@ -14,6 +14,7 @@ import {
   IconShield,
   IconTrash,
   IconUnlock,
+  IconX,
 } from "@/components/icons";
 import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -1634,11 +1635,16 @@ function AnnouncementEditor({
       </div>
 
       <div className="flex gap-2 pt-2 border-t">
-        <Button type="submit" disabled={saveM.isPending || !title.trim() || !body.trim()}>
+        <Button
+          type="submit"
+          variant="outline"
+          disabled={saveM.isPending || !title.trim() || !body.trim()}
+        >
           <IconCheck className="h-4 w-4 mr-1.5" />
           {saveM.isPending ? "Đang lưu…" : row ? "Cập nhật" : "Tạo"}
         </Button>
         <Button type="button" variant="outline" onClick={onClose}>
+          <IconX className="h-4 w-4 mr-1.5" />
           Huỷ
         </Button>
       </div>

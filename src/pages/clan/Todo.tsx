@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { QuickDateFixSheet } from "@/components/QuickDateFixSheet";
@@ -279,27 +279,23 @@ export default function Todo() {
         ]}
       />
 
-      <header className="flex items-start gap-3">
-        <IconScroll className="h-7 w-7 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-xl sm:text-2xl font-semibold leading-tight">
-            Việc cần làm
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+      <PageHeader
+        icon={<IconScroll className="h-7 w-7" />}
+        title="Việc cần làm"
+        description={
+          <>
             App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung. Bấm
             vào một người để {canEdit ? "sửa thẳng." : "đề xuất bổ sung."}
-          </p>
-          <div className="mt-1">
-            <PageHelpVideo size="text" />
-          </div>
-          {summary && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Tổng {totalLoadBearing.toLocaleString("vi-VN")} mục cần xử
-              lý trong họ.
-            </p>
-          )}
-        </div>
-      </header>
+            {summary && (
+              <>
+                {" "}
+                Tổng <strong>{totalLoadBearing.toLocaleString("vi-VN")}</strong>{" "}
+                mục cần xử lý trong họ.
+              </>
+            )}
+          </>
+        }
+      />
 
       {completion && completion.total > 0 && completion.percent !== null && (
         <CompletionProgress completion={completion} />

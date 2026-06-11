@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconSearch, IconX } from "@/components/icons";
+import { IconCheck, IconCopy, IconSearch, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -96,16 +96,17 @@ export default function Merge() {
           { label: "Gộp người trùng" },
         ]}
       />
-      <div className="space-y-0.5">
-        <h2 className="text-2xl font-semibold">Gộp người trùng</h2>
-        <PageHelpVideo size="text" />
-        <p className="text-muted-foreground mt-1">
-          Chọn người <span className="font-medium">giữ lại</span> bên trái và
-          người <span className="font-medium">gộp vào</span> bên phải. Mọi
-          quan hệ (vợ/chồng, con, sự kiện) sẽ trỏ về người giữ lại; người
-          còn lại bị xoá mềm (có thể khôi phục từ nhật ký).
-        </p>
-      </div>
+      <PageHeader
+        icon={<IconCopy className="h-7 w-7" />}
+        title="Gộp người trùng"
+        description={
+          <>
+            Chọn người <strong>giữ lại</strong> bên trái và{" "}
+            <strong>gộp vào</strong> bên phải. Mọi quan hệ trỏ về người
+            giữ lại; người còn lại xoá mềm (khôi phục từ nhật ký).
+          </>
+        }
+      />
 
       {candidates.length > 0 && (
         <SuggestionPanel

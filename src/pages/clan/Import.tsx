@@ -7,7 +7,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getClanCompletion } from "@/lib/queries/todo";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import {
   IconCheck,
   IconDownload,
@@ -111,17 +111,18 @@ export default function Import() {
           { label: "Nhập từ Excel" },
         ]}
       />
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <div className="sm:flex-1 space-y-0.5">
-          <h2 className="text-2xl font-semibold">Nhập từ Excel</h2>
-          <PageHelpVideo size="text" />
-        </div>
-        <Button asChild variant="outline" size="sm" className="h-10 sm:w-auto">
-          <Link to={`/clans/${clanId}/ai-generate`}>
-            Sinh file bằng AI →
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        icon={<IconUpload className="h-7 w-7" />}
+        title="Nhập từ Excel"
+        description="Import gia phả lớn từ file .xlsx hoặc .csv."
+        actions={
+          <Button asChild variant="outline" size="sm" className="h-10">
+            <Link to={`/clans/${clanId}/ai-generate`}>
+              Sinh file bằng AI →
+            </Link>
+          </Button>
+        }
+      />
 
         <Card>
           <CardHeader>

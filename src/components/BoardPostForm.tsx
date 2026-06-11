@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useToast } from "@/components/Toast";
+import { IconCheck, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -189,8 +190,10 @@ export function BoardPostForm({
       <div className="flex gap-2 pt-2 border-t">
         <Button
           type="submit"
+          variant="outline"
           disabled={!body.trim() || saveM.isPending}
         >
+          <IconCheck className="h-4 w-4 mr-1.5" />
           {saveM.isPending
             ? "Đang lưu…"
             : isEdit
@@ -200,6 +203,7 @@ export function BoardPostForm({
                 : "Gửi duyệt"}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
+          <IconX className="h-4 w-4 mr-1.5" />
           Huỷ
         </Button>
       </div>

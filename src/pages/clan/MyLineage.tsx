@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
@@ -67,21 +67,11 @@ export default function MyLineage() {
         ]}
       />
 
-      <header className="flex items-start gap-3">
-        <IconUsers className="h-7 w-7 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-xl sm:text-2xl font-semibold leading-tight">
-            Đường trực hệ
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Từ tôi về thuỷ tổ — mặc định đi theo bên nội, có thể đổi
-            sang bên ngoại ở từng đời.
-          </p>
-          <div className="mt-1">
-            <PageHelpVideo size="text" />
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        icon={<IconUsers className="h-7 w-7" />}
+        title="Đường trực hệ"
+        description="Từ tôi về thuỷ tổ — mặc định đi theo bên nội, có thể đổi sang bên ngoại ở từng đời."
+      />
 
       {!myMember?.self_person_id && tree && (
         <ChoosePersonView
