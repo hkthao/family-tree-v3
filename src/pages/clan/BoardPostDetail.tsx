@@ -88,7 +88,7 @@ export default function BoardPostDetail() {
       )}
 
       {post && (
-        <article className="max-w-2xl">
+        <article>
           <div className="flex items-center gap-2 flex-wrap text-xs uppercase tracking-wider text-muted-foreground">
             <span
               className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium normal-case ${TYPE_BADGE[post.type]}`}
@@ -109,7 +109,7 @@ export default function BoardPostDetail() {
           </div>
 
           {post.title && (
-            <h1 className="clan-name text-3xl sm:text-4xl font-semibold leading-tight mt-3 mb-2">
+            <h1 className="clan-name text-2xl sm:text-3xl font-semibold leading-tight mt-3 mb-2">
               {post.title}
             </h1>
           )}
