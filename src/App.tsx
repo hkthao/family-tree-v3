@@ -20,6 +20,8 @@ import AddParent from "@/pages/clan/AddParent";
 import AddSpouse from "@/pages/clan/AddSpouse";
 import AiGenerate from "@/pages/clan/AiGenerate";
 import Audit from "@/pages/clan/Audit";
+import Board from "@/pages/clan/Board";
+import BoardModeration from "@/pages/clan/BoardModeration";
 import ContributionDetail from "@/pages/clan/ContributionDetail";
 import Contributions from "@/pages/clan/Contributions";
 import Dashboard from "@/pages/clan/Dashboard";
@@ -120,6 +122,8 @@ export default function App() {
           <Route path="contributions/:contribId" element={<ContributionDetail />} />
           <Route path="inlaws" element={<Inlaws />} />
           <Route path="inlaws/new" element={<InlawsNew />} />
+          <Route path="board" element={<Board />} />
+          <Route path="board/moderation" element={<BoardModeration />} />
         </Route>
 
         <Route
