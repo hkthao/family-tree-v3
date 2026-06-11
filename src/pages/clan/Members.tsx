@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconTrash, IconUserPlus } from "@/components/icons";
@@ -128,9 +128,12 @@ export default function Members() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}/settings`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Thành viên" },
+        ]}
+      />
 
       <h1 className="text-2xl font-semibold">Thành viên</h1>
 

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconSearch, IconX } from "@/components/icons";
@@ -89,9 +89,12 @@ export default function Merge() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}/people`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Gộp người trùng" },
+        ]}
+      />
       <div>
         <h2 className="text-2xl font-semibold">Gộp người trùng</h2>
         <p className="text-muted-foreground mt-1">

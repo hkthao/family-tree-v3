@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { IconUser, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -67,9 +67,12 @@ export default function Kinship() {
 
   return (
     <div className="space-y-5">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Tra cứu xưng hô" },
+        ]}
+      />
 
       <header className="flex items-start gap-3">
         <IconUsers className="h-7 w-7 text-primary shrink-0 mt-0.5" />

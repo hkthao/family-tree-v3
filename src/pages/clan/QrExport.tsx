@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconDownload, IconQrCode } from "@/components/icons";
@@ -124,9 +124,12 @@ export default function QrExport() {
 
   return (
     <div className="space-y-5">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Xuất QR cá nhân" },
+        ]}
+      />
 
       <header className="flex items-start gap-3">
         <IconQrCode className="h-7 w-7 text-primary shrink-0 mt-0.5" />

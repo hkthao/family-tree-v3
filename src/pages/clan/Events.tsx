@@ -9,7 +9,7 @@ import {
   IconTrash,
   IconX,
 } from "@/components/icons";
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { IconBellOff, IconDownload } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -167,9 +167,12 @@ export default function Events() {
 
   return (
     <div className="space-y-4">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Sự kiện" },
+        ]}
+      />
       {/* Header: title + view toggle + refresh in one row on sm+,
           stacked on mobile. View toggle is icon-only on mobile to
           leave room for the look-ahead pills underneath. */}

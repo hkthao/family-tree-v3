@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
@@ -59,9 +59,12 @@ export default function MyLineage() {
 
   return (
     <div className="space-y-5">
-      <nav>
-        <BackLink fallback={`/clans/${clan.id}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Đường trực hệ" },
+        ]}
+      />
 
       <header className="flex items-start gap-3">
         <IconUsers className="h-7 w-7 text-primary shrink-0 mt-0.5" />

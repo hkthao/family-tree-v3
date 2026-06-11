@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconChevronUp, IconPlus, IconX } from "@/components/icons";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useClanContext } from "@/hooks/useClanContext";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
@@ -534,6 +535,7 @@ export function EditPersonForm({
 
 export default function EditPerson() {
   const { clanId, personId } = useParams<{ clanId: string; personId: string }>();
+  const { clan } = useClanContext();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromQs = searchParams.get("from") === "tree" ? "?from=tree" : "";
@@ -543,9 +545,14 @@ export default function EditPerson() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={back} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: "Người", to: back.split("?")[0] },
+          { label: "Sửa" },
+        ]}
+      />
 
       <h1 className="text-2xl font-semibold">Sửa thông tin</h1>
 
