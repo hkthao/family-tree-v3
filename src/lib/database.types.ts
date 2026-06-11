@@ -553,35 +553,53 @@ export type Database = {
       }
       feedback: {
         Row: {
+          admin_note: string | null
           app_version: string | null
+          category: Database["public"]["Enums"]["feedback_category"]
           clan_id: string | null
           contact: string | null
           created_at: string
           id: string
           message: string
+          page_path: string | null
           page_url: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["feedback_status"]
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
+          admin_note?: string | null
           app_version?: string | null
+          category?: Database["public"]["Enums"]["feedback_category"]
           clan_id?: string | null
           contact?: string | null
           created_at?: string
           id?: string
           message: string
+          page_path?: string | null
           page_url?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["feedback_status"]
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
+          admin_note?: string | null
           app_version?: string | null
+          category?: Database["public"]["Enums"]["feedback_category"]
           clan_id?: string | null
           contact?: string | null
           created_at?: string
           id?: string
           message?: string
+          page_path?: string | null
           page_url?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["feedback_status"]
           user_agent?: string | null
           user_id?: string | null
         }
@@ -1453,7 +1471,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      feedback_category: "bug" | "idea" | "question" | "other"
+      feedback_status: "new" | "seen" | "resolved" | "spam"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1583,6 +1602,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      feedback_category: ["bug", "idea", "question", "other"],
+      feedback_status: ["new", "seen", "resolved", "spam"],
+    },
   },
 } as const
