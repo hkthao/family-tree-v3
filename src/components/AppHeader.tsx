@@ -3,13 +3,10 @@ import { Link } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { AppLogo } from "@/components/AppLogo";
-import { HelpButton } from "@/components/HelpButton";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
-import { useAuth } from "@/hooks/useAuth";
 
 export function AppHeader() {
-  const { user } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -35,12 +32,8 @@ export function AppHeader() {
             Gia phả
           </Link>
           <div className="hidden lg:block flex-1" aria-hidden="true" />
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline text-sm text-muted-foreground truncate max-w-[160px]">
-              {user?.user_metadata?.display_name ?? user?.email}
-            </span>
+          <div className="flex items-center gap-1">
             <NotificationBell />
-            <HelpButton />
             <ThemeQuickToggle />
           </div>
         </div>
