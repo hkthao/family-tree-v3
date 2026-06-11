@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import { IconUser, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -75,21 +75,11 @@ export default function Kinship() {
         ]}
       />
 
-      <header className="flex items-start gap-3">
-        <IconUsers className="h-7 w-7 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-xl sm:text-2xl font-semibold leading-tight">
-            Tra cứu xưng hô
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền
-            thống Việt — anh/em ruột, chú/bác/cô/cậu/dì, anh em họ…
-          </p>
-          <div className="mt-1">
-            <PageHelpVideo size="text" />
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        icon={<IconUsers className="h-7 w-7" />}
+        title="Tra cứu xưng hô"
+        description="Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền thống Việt — anh/em, chú/bác/cô/cậu/dì, anh em họ…"
+      />
 
       {error && (
         <Alert variant="destructive">

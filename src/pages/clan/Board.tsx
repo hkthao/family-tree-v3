@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 
 import { ClanPostCard } from "@/components/ClanPostCard";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { IconScroll } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,27 +55,28 @@ export default function Board() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <div className="sm:flex-1 space-y-0.5">
-          <h2 className="text-2xl font-semibold">Bảng tin</h2>
-          <PageHelpVideo size="text" />
-        </div>
-        <div className="flex items-center gap-1.5 sm:gap-2 justify-end">
-          {admin && (pendingQ.data?.length ?? 0) > 0 && (
-            <Link
-              to={`/clans/${clanId}/board/moderation`}
-              className="h-10 inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
-            >
-              ⏳ {pendingQ.data!.length} chờ duyệt
-            </Link>
-          )}
-          {isMember && user && (
-            <Button asChild size="sm" className="h-10">
-              <Link to={`/clans/${clanId}/board/new`}>+ Đăng bài mới</Link>
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        icon={<IconScroll className="h-7 w-7" />}
+        title="Bảng tin"
+        description="Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc."
+        actions={
+          <>
+            {admin && (pendingQ.data?.length ?? 0) > 0 && (
+              <Link
+                to={`/clans/${clanId}/board/moderation`}
+                className="h-10 inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+              >
+                ⏳ {pendingQ.data!.length} chờ duyệt
+              </Link>
+            )}
+            {isMember && user && (
+              <Button asChild size="sm" className="h-10">
+                <Link to={`/clans/${clanId}/board/new`}>+ Đăng bài mới</Link>
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {!isMember && (
         <Alert>

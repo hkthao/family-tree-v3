@@ -13,7 +13,7 @@ import {
   IconRefresh,
   IconUndo,
 } from "@/components/icons";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -83,43 +83,44 @@ export default function Audit() {
         ]}
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <div className="sm:flex-1 space-y-0.5">
-          <h2 className="text-2xl font-semibold">Nhật ký</h2>
-          <PageHelpVideo size="text" />
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <select
-            aria-label="Lọc theo đối tượng"
-            value={entityType}
-            onChange={(e) => {
-              setEntityType(e.target.value as AuditEntity | "");
-              setPage(1);
-            }}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
-          >
-            <option value="">Mọi đối tượng</option>
-            <option value="person">Người</option>
-            <option value="family">Gia đình</option>
-            <option value="branch">Chi</option>
-            <option value="person_link">Liên kết thông gia</option>
-          </select>
-          <select
-            aria-label="Lọc theo hành động"
-            value={action}
-            onChange={(e) => {
-              setAction(e.target.value as AuditAction | "");
-              setPage(1);
-            }}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
-          >
-            <option value="">Mọi hành động</option>
-            <option value="insert">Thêm mới</option>
-            <option value="update">Sửa</option>
-            <option value="delete">Xoá</option>
-          </select>
-        </div>
-      </div>
+      <PageHeader
+        icon={<IconRefresh className="h-7 w-7" />}
+        title="Nhật ký"
+        description="Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
+        actions={
+          <>
+            <select
+              aria-label="Lọc theo đối tượng"
+              value={entityType}
+              onChange={(e) => {
+                setEntityType(e.target.value as AuditEntity | "");
+                setPage(1);
+              }}
+              className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
+            >
+              <option value="">Mọi đối tượng</option>
+              <option value="person">Người</option>
+              <option value="family">Gia đình</option>
+              <option value="branch">Chi</option>
+              <option value="person_link">Liên kết thông gia</option>
+            </select>
+            <select
+              aria-label="Lọc theo hành động"
+              value={action}
+              onChange={(e) => {
+                setAction(e.target.value as AuditAction | "");
+                setPage(1);
+              }}
+              className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
+            >
+              <option value="">Mọi hành động</option>
+              <option value="insert">Thêm mới</option>
+              <option value="update">Sửa</option>
+              <option value="delete">Xoá</option>
+            </select>
+          </>
+        }
+      />
 
       {!data ? (
         <p className="text-muted-foreground">Đang tải…</p>

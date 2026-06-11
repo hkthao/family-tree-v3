@@ -231,6 +231,7 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
         <div className="flex gap-2 px-5 py-3 border-t shrink-0 bg-card">
           <Button
             type="submit"
+            variant="outline"
             className="flex-1"
             disabled={mutation.isPending || !message.trim()}
           >
@@ -243,6 +244,7 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
             onClick={onClose}
             className="shrink-0"
           >
+            <IconX className="h-4 w-4 mr-1.5" />
             Huỷ
           </Button>
         </div>

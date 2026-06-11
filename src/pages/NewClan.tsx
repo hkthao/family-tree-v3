@@ -136,6 +136,7 @@ export default function NewClan() {
           <div className="flex gap-3 pt-2">
             <Button
               type="submit"
+              variant="outline"
               data-testid="clan-submit-button"
               disabled={mutation.isPending || !name.trim()}
             >

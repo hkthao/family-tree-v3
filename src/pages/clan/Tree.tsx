@@ -8,9 +8,10 @@ import {
   IconLayoutHorizontal,
   IconLayoutVertical,
   IconPlus,
+  IconTree,
   IconUpload,
 } from "@/components/icons";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { PageHeader } from "@/components/PageHeader";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
@@ -695,57 +696,47 @@ export default function Tree() {
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 print-hide">
-        <div className="sm:flex-1 space-y-0.5">
-          <h2 className="text-2xl font-semibold">Cây gia phả</h2>
-          <PageHelpVideo size="text" />
-        </div>
-        <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end">
-          {/* Orientation toggle — vertical (top-down) vs horizontal
-              (left-right). Re-inits the chart via the orientation dep
-              on the init effect so the layout flips immediately.
-              Pinned to the left of the toolbar — used several times
-              per session, deserves the easiest-reach slot. Text labels
-              kept on mobile per request. */}
-          <SegmentedControl ariaLabel="Hướng cây">
-            <SegmentedButton
-              active={orientation === "vertical"}
-              onClick={() => setOrientation("vertical")}
-              title="Dọc — gốc ở trên, đời con xuống dưới"
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
-            >
-              <IconLayoutVertical className="h-4 w-4" />
-              Dọc
-            </SegmentedButton>
-            <SegmentedButton
-              active={orientation === "horizontal"}
-              onClick={() => setOrientation("horizontal")}
-              title="Ngang — gốc ở trái, đời con sang phải"
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
-            >
-              <IconLayoutHorizontal className="h-4 w-4" />
-              Ngang
-            </SegmentedButton>
-          </SegmentedControl>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Xuất sổ PDF + Chia sẻ are member-only — non-member
-                visitors of a public clan can already view the tree on
-                screen, but bulk-downloading the whole book / generating
-                share-links is owner territory. Mirrors how /people +
-                /admin actions are gated. */}
-            {effectiveRole(clan) !== null && (
-              <>
-                <ExportBookButton clan={clan} />
-                <ShareTreeButton clanId={clan.id} clanName={clan.name} />
-              </>
-            )}
-            <RefreshButton
-              clanId={clan.id}
-              cachedVersion={clan.data_version}
-              compact
-            />
-          </div>
-        </div>
+      <div className="print-hide">
+        <PageHeader
+          icon={<IconTree className="h-7 w-7" />}
+          title="Cây gia phả"
+          description="Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."
+          actions={
+            <>
+              <SegmentedControl ariaLabel="Hướng cây">
+                <SegmentedButton
+                  active={orientation === "vertical"}
+                  onClick={() => setOrientation("vertical")}
+                  title="Dọc — gốc ở trên, đời con xuống dưới"
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
+                >
+                  <IconLayoutVertical className="h-4 w-4" />
+                  Dọc
+                </SegmentedButton>
+                <SegmentedButton
+                  active={orientation === "horizontal"}
+                  onClick={() => setOrientation("horizontal")}
+                  title="Ngang — gốc ở trái, đời con sang phải"
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
+                >
+                  <IconLayoutHorizontal className="h-4 w-4" />
+                  Ngang
+                </SegmentedButton>
+              </SegmentedControl>
+              {effectiveRole(clan) !== null && (
+                <>
+                  <ExportBookButton clan={clan} />
+                  <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+                </>
+              )}
+              <RefreshButton
+                clanId={clan.id}
+                cachedVersion={clan.data_version}
+                compact
+              />
+            </>
+          }
+        />
       </div>
 
       {isLoading && (
