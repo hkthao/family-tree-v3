@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { ClanPostCard } from "@/components/ClanPostCard";
 import { ClanPostComposer } from "@/components/ClanPostComposer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listClanPosts, listPendingPosts } from "@/lib/queries/clan_posts";
@@ -35,6 +37,7 @@ export default function Board() {
   });
 
   const isMember = clan.myRole !== null || clan.isPlatformAdmin;
+  const [composerOpen, setComposerOpen] = useState(false);
 
   return (
     <div className="space-y-3">
@@ -49,6 +52,15 @@ export default function Board() {
               ⏳ {pendingQ.data!.length} chờ duyệt
             </Link>
           )}
+          {isMember && user && !composerOpen && (
+            <Button
+              size="sm"
+              className="h-10"
+              onClick={() => setComposerOpen(true)}
+            >
+              + Đăng bài mới
+            </Button>
+          )}
         </div>
       </div>
 
@@ -61,7 +73,13 @@ export default function Board() {
         </Alert>
       )}
 
-      {isMember && user && <ClanPostComposer clan={clan} />}
+      {isMember && user && (
+        <ClanPostComposer
+          clan={clan}
+          open={composerOpen}
+          onOpenChange={setComposerOpen}
+        />
+      )}
 
       {postsQ.isLoading && (
         <p className="text-muted-foreground">Đang tải…</p>
