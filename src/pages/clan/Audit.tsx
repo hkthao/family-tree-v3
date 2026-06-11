@@ -6,7 +6,13 @@ import { BackLink } from "@/components/BackLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
-import { IconArrowLeft, IconArrowRight, IconRefresh, IconUndo } from "@/components/icons";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconChevronUp,
+  IconRefresh,
+  IconUndo,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -145,18 +151,19 @@ export default function Audit() {
           {data?.total ? `${data.total} thay đổi` : ""}
           {isFetching && <span className="ml-2 italic">đang tải…</span>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="sm"
             disabled={page <= 1}
             onClick={() => setPage(page - 1)}
             aria-label="Trang trước"
+            title="Trang trước"
+            className="h-9 w-9 p-0"
           >
-            <IconArrowLeft className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">Trước</span>
+            <IconArrowLeft className="h-4 w-4" />
           </Button>
-          <span className="px-2">
+          <span className="px-2 text-sm tabular-nums">
             {page}/{totalPages}
           </span>
           <Button
@@ -165,9 +172,10 @@ export default function Audit() {
             disabled={page >= totalPages}
             onClick={() => setPage(page + 1)}
             aria-label="Trang sau"
+            title="Trang sau"
+            className="h-9 w-9 p-0"
           >
-            <span className="hidden sm:inline">Sau</span>
-            <IconArrowRight className="h-4 w-4 sm:ml-1" />
+            <IconArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -231,18 +239,26 @@ function AuditItem({
         <span className="text-xs text-muted-foreground">{date}</span>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex items-center gap-1">
         <Button
           size="sm"
-          variant="outline"
+          variant="ghost"
           onClick={() => setExpanded((x) => !x)}
+          aria-label={expanded ? "Thu gọn" : "Xem chi tiết"}
+          title={expanded ? "Thu gọn" : "Xem chi tiết"}
+          aria-expanded={expanded}
+          className="h-8 w-8 p-0"
         >
-          {expanded ? "Thu gọn" : "Chi tiết"}
+          <IconChevronUp
+            className={`h-4 w-4 transition-transform ${
+              expanded ? "" : "rotate-180"
+            }`}
+          />
         </Button>
         {canRestore && isRestorableEntity(row.entity_type) && (
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             data-testid="audit-restore-button"
             disabled={restoreM.isPending}
             onClick={async () => {
@@ -254,19 +270,17 @@ function AuditItem({
               });
               if (ok) restoreM.mutate();
             }}
+            aria-label="Khôi phục"
+            title={
+              restoreM.isPending ? "Đang khôi phục…" : "Khôi phục bản ghi"
+            }
+            className="h-8 w-8 p-0 text-primary disabled:opacity-50"
           >
-            {restoreM.isPending ? (
-              "Đang khôi phục…"
-            ) : (
-              <>
-                <IconUndo className="h-4 w-4 mr-1.5" />
-                Khôi phục
-              </>
-            )}
+            <IconUndo className="h-4 w-4" />
           </Button>
         )}
         {restoreM.isSuccess && (
-          <span className="self-center text-xs text-accent">Đã khôi phục</span>
+          <span className="text-xs text-accent ml-1">✓ đã khôi phục</span>
         )}
       </div>
 
