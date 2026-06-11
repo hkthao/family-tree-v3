@@ -8,7 +8,13 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { useToast } from "@/components/Toast";
-import { IconPencil } from "@/components/icons";
+import {
+  IconCheck,
+  IconLock,
+  IconPencil,
+  IconUnlock,
+  IconX,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -159,8 +165,8 @@ export default function BoardPostDetail() {
             </p>
           )}
 
-          {/* Actions row */}
-          <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t">
+          {/* Actions row — flex-1 cho mỗi nút để width bằng nhau */}
+          <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t [&>*]:flex-1">
             {canEdit && (
               <Button asChild variant="outline" size="sm">
                 <Link to={`/clans/${clanId}/board/${post.id}/edit`}>
@@ -238,7 +244,8 @@ function ModerationActions({
           onClick={() => moderateM.mutate("publish")}
           disabled={moderateM.isPending}
         >
-          ✓ Duyệt
+          <IconCheck className="h-4 w-4 mr-1.5" />
+          Duyệt
         </Button>
         <Button
           size="sm"
@@ -247,7 +254,8 @@ function ModerationActions({
           onClick={() => moderateM.mutate("reject")}
           disabled={moderateM.isPending}
         >
-          ✕ Từ chối
+          <IconX className="h-4 w-4 mr-1.5" />
+          Từ chối
         </Button>
       </>
     );
@@ -262,6 +270,7 @@ function ModerationActions({
             onClick={() => moderateM.mutate("unpin")}
             disabled={moderateM.isPending}
           >
+            <span className="mr-1.5" aria-hidden="true">📌</span>
             Bỏ ghim
           </Button>
         ) : (
@@ -271,6 +280,7 @@ function ModerationActions({
             onClick={() => moderateM.mutate("pin")}
             disabled={moderateM.isPending}
           >
+            <span className="mr-1.5" aria-hidden="true">📌</span>
             Ghim
           </Button>
         )}
@@ -281,6 +291,7 @@ function ModerationActions({
           onClick={() => moderateM.mutate("hide")}
           disabled={moderateM.isPending}
         >
+          <IconLock className="h-4 w-4 mr-1.5" />
           Ẩn
         </Button>
       </>
@@ -294,6 +305,7 @@ function ModerationActions({
         onClick={() => moderateM.mutate("unhide")}
         disabled={moderateM.isPending}
       >
+        <IconUnlock className="h-4 w-4 mr-1.5" />
         Hiện lại
       </Button>
     );
