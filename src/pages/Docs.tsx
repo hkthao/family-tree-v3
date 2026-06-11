@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { IconSearch } from "@/components/icons";
 import { unaccent } from "@/lib/unaccent";
 
@@ -127,9 +127,12 @@ function ArticleView({ article }: { article: DocArticle }) {
       </aside>
 
       <div className="space-y-4">
-        <nav>
-          <BackLink fallback="/docs" />
-        </nav>
+        <Breadcrumb
+          items={[
+            { label: "Hướng dẫn", to: "/docs" },
+            { label: article.title },
+          ]}
+        />
 
         <header className="space-y-1">
           <p className="text-xs text-muted-foreground uppercase tracking-wider">

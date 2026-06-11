@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { IconCheck } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -72,9 +72,7 @@ export default function Contact() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <nav>
-          <BackLink fallback="/clans" />
-        </nav>
+        <Breadcrumb items={[{ label: "Liên hệ / phản hồi" }]} />
 
         <h2 className="text-2xl font-semibold">Liên hệ / phản hồi</h2>
         <p className="text-sm text-muted-foreground">

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
 import {
   IconCheck,
@@ -162,9 +162,13 @@ export default function AiGenerate() {
 
   return (
     <div className="space-y-6">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}/people`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Nhập từ Excel", to: `/clans/${clanId}/import` },
+          { label: "Sinh dữ liệu bằng AI" },
+        ]}
+      />
       <div>
         <h2 className="text-2xl font-semibold">Sinh dữ liệu bằng AI</h2>
         <p className="text-sm text-muted-foreground mt-1">

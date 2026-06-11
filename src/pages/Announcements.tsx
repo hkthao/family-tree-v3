@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,9 +73,7 @@ export default function Announcements() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <nav>
-          <BackLink fallback="/clans" />
-        </nav>
+        <Breadcrumb items={[{ label: "Thông báo hệ thống" }]} />
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <h2 className="text-2xl font-semibold sm:flex-1">

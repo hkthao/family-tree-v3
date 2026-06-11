@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -43,11 +43,16 @@ export default function NewClan() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-6">
-        <nav className="mb-4">
-          <BackLink fallback="/clans" />
-        </nav>
+        <Breadcrumb
+          items={[
+            { label: "Dòng họ", to: "/clans" },
+            { label: "Tạo dòng họ mới" },
+          ]}
+        />
 
-        <h1 className="clan-name text-3xl font-semibold mb-6">Tạo dòng họ mới</h1>
+        <h1 className="clan-name text-3xl font-semibold mt-4 mb-6">
+          Tạo dòng họ mới
+        </h1>
 
         <form
           onSubmit={(e) => {
