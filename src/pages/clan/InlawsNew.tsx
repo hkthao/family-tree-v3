@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import {
   IconBuildings,
   IconCheck,
@@ -129,17 +130,11 @@ export default function InlawsNew() {
         ]}
       />
 
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
-          <IconLink className="h-6 w-6 text-primary" />
-          Đề nghị liên kết thông gia
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-xl">
-          Chọn dâu/rể trong dòng họ này, rồi chọn cách đề nghị: gửi mã
-          mời cho admin bên kia, hoặc tìm thẳng dòng họ công khai trên
-          nền tảng.
-        </p>
-      </header>
+      <PageHeader
+        icon={<IconLink className="h-7 w-7" />}
+        title="Đề nghị liên kết thông gia"
+        description="Chọn dâu/rể trong dòng họ này, rồi chọn cách đề nghị: gửi mã mời cho admin bên kia, hoặc tìm thẳng dòng họ công khai."
+      />
 
       {createdLink ? (
         <CreatedTokenView

@@ -3,6 +3,8 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { BoardPostForm } from "@/components/BoardPostForm";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { IconPencil } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
@@ -62,7 +64,10 @@ export default function BoardPostEdit() {
         ]}
       />
 
-      <h2 className="text-2xl font-semibold">Sửa bài</h2>
+      <PageHeader
+        icon={<IconPencil className="h-7 w-7" />}
+        title="Sửa bài"
+      />
 
       <BoardPostForm
         clan={clan}

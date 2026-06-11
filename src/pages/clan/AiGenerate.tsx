@@ -8,8 +8,10 @@ import {
   IconCheck,
   IconCopy,
   IconList,
+  IconSparkles,
   IconUpload,
 } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -169,14 +171,21 @@ export default function AiGenerate() {
           { label: "Sinh dữ liệu bằng AI" },
         ]}
       />
-      <div>
-        <h2 className="text-2xl font-semibold">Sinh dữ liệu bằng AI</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Mô tả gia đình bằng lời, ta sinh prompt mẫu — paste vào ChatGPT
-          / Gemini / Claude, AI trả về file CSV hoặc GEDCOM, sau đó nhập
-          file qua trang <Link to={`/clans/${clanId}/import`} className="underline">Nhập từ Excel</Link>.
-        </p>
-      </div>
+      <PageHeader
+        icon={<IconSparkles className="h-7 w-7" />}
+        title="Sinh dữ liệu bằng AI"
+        description={
+          <>
+            Mô tả gia đình bằng lời, ta sinh prompt mẫu — paste vào
+            ChatGPT/Gemini/Claude, AI trả file CSV/GEDCOM, sau đó nhập
+            qua trang{" "}
+            <Link to={`/clans/${clanId}/import`} className="underline">
+              Nhập từ Excel
+            </Link>
+            .
+          </>
+        }
+      />
 
       <Card>
         <CardHeader>

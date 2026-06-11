@@ -4,8 +4,9 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconChevronUp, IconPlus, IconX } from "@/components/icons";
+import { IconCheck, IconChevronUp, IconPencil, IconPlus, IconX } from "@/components/icons";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -554,7 +555,10 @@ export default function EditPerson() {
         ]}
       />
 
-      <h1 className="text-2xl font-semibold">Sửa thông tin</h1>
+      <PageHeader
+        icon={<IconPencil className="h-7 w-7" />}
+        title="Sửa thông tin"
+      />
 
       <EditPersonForm
         clanId={clanId}

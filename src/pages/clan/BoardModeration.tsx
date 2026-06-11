@@ -3,6 +3,8 @@ import { Link, Navigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ClanPostCard } from "@/components/ClanPostCard";
+import { IconCheck } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listPendingPosts } from "@/lib/queries/clan_posts";
@@ -37,11 +39,11 @@ export default function BoardModeration() {
         ]}
       />
 
-      <h2 className="text-2xl font-semibold">Duyệt bài</h2>
-      <p className="text-sm text-muted-foreground">
-        Bài chờ duyệt từ thành viên. Bấm "Duyệt" để đăng, hoặc "Từ chối"
-        để ẩn (vẫn lưu lại — có thể hiện lại sau).
-      </p>
+      <PageHeader
+        icon={<IconCheck className="h-7 w-7" />}
+        title="Duyệt bài"
+        description='Bài chờ duyệt từ thành viên. Bấm "Duyệt" để đăng, hoặc "Từ chối" để ẩn (vẫn lưu lại — có thể hiện lại sau).'
+      />
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
       {error && (
