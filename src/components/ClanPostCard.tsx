@@ -43,7 +43,7 @@ export function ClanPostCard({
 
   return (
     <article
-      className={`relative overflow-hidden rounded-lg border bg-card shadow-sm transition-colors hover:bg-muted/30 ${
+      className={`relative h-full overflow-hidden rounded-lg border bg-card shadow-sm transition-colors hover:bg-muted/30 ${
         isHidden ? "opacity-60" : ""
       }`}
     >
@@ -57,12 +57,15 @@ export function ClanPostCard({
         />
       )}
 
+      {/* Flex column với meta-row pinned ở đáy (mt-auto). Title +
+          body chiếm phần trên với height cố định qua line-clamp →
+          mọi card cùng height. */}
       <Link
         to={`/clans/${post.clan_id}/board/${post.id}`}
-        className="block px-5 py-3 space-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+        className="flex flex-col h-full px-5 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
       >
-        {post.title && (
-          <h3 className="text-lg leading-snug font-semibold">
+        {post.title ? (
+          <h3 className="text-base leading-snug font-semibold line-clamp-1">
             {post.pinned && (
               <span
                 className="text-primary mr-1.5"
@@ -74,26 +77,18 @@ export function ClanPostCard({
             )}
             {post.title}
           </h3>
+        ) : (
+          // Không có title — placeholder height để khớp card có title.
+          <h3 aria-hidden="true" className="text-base leading-snug">
+            &nbsp;
+          </h3>
         )}
 
-        <p className="text-sm whitespace-pre-line leading-relaxed text-muted-foreground line-clamp-3">
+        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground line-clamp-2">
           {post.body}
         </p>
 
-        {post.event_date && (
-          <p className="text-sm">
-            <span className="text-muted-foreground">Ngày diễn ra: </span>
-            <strong>
-              {new Date(post.event_date).toLocaleDateString("vi-VN", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              })}
-            </strong>
-          </p>
-        )}
-
-        <div className="flex items-center gap-2 flex-wrap text-xs pt-0.5">
+        <div className="mt-auto pt-3 flex items-center gap-2 flex-wrap text-xs">
           <time
             className="text-muted-foreground tabular-nums"
             dateTime={post.created_at}
