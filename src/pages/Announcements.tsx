@@ -71,24 +71,20 @@ export default function Announcements() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-2xl py-6 px-4 space-y-6">
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
         <nav>
           <BackLink fallback="/clans" />
         </nav>
 
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <header className="space-y-1 flex-1 min-w-0">
-            <h1 className="clan-name text-2xl sm:text-3xl font-semibold">
-              Thông báo hệ thống
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Tính năng mới, bảo trì, sửa lỗi quan trọng.
-            </p>
-          </header>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <h2 className="text-2xl font-semibold sm:flex-1">
+            Thông báo hệ thống
+          </h2>
           {user && unreadCount > 0 && (
             <Button
               variant="outline"
               size="sm"
+              className="h-10"
               onClick={() => markAllM.mutate()}
               disabled={markAllM.isPending}
             >
