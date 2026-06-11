@@ -436,20 +436,39 @@
   }
 }
 
-/* Native date/datetime picker icon — đẩy về inner-right cho khớp với
-   chevron của select. Mặc định Chromium ghim icon ngay sau text → khi
-   input rộng hơn placeholder, icon "trôi" giữa thay vì sát bên phải.
-   `margin-left: auto` đẩy icon về cuối flex track của input shadow. */
+/* Native date/datetime picker icon — đẩy về inner-right.
+ *
+ * Mặc định Chromium ghim icon ngay sau text spinner (dd/mm/yyyy …) →
+ * input rộng hơn nội dung thì icon "trôi" giữa. Cách fix:
+ *   1. Bản thân `<input>` set `position: relative` để pseudo dùng làm
+ *      anchor.
+ *   2. Picker indicator `position: absolute` ghim right.
+ *   3. Padding-right để text không chui dưới icon.
+ *
+ * Chỉ áp dụng cho date/datetime/time/month/week — không động vào
+ * type=text v.v. */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+input[type="week"] {
+  position: relative;
+  padding-right: 2.25rem;
+}
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator,
 input[type="month"]::-webkit-calendar-picker-indicator,
 input[type="week"]::-webkit-calendar-picker-indicator {
-  margin-left: auto;
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
   opacity: 0.7;
 }
 input[type="date"]::-webkit-calendar-picker-indicator:hover,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
