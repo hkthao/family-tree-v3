@@ -35,12 +35,11 @@ const TYPE_BADGE: Record<ClanPostType, string> = {
 };
 
 /**
- * Card hiển 1 bài bảng tin. Bao gồm:
- *  - Badge type + status (chỉ hiện badge status khi không phải published)
- *  - Comments lazy-load khi click "Bình luận (N)"
- *  - Admin actions (publish/hide/pin/unpin) qua dropdown
- *
- * Tin `pending` của chính author: hiện kèm note vàng "Đang chờ duyệt".
+ * Card hiển 1 bài bảng tin — pattern khớp AnnouncementCard:
+ *  - Dải accent màu mép trái khi pending/pinned (visual indicator)
+ *  - Title text-lg trên đầu, body muted phía dưới
+ *  - Meta row ở cuối: thời gian + status + type badge (ml-auto)
+ *  - Admin actions + comments toggle ở footer riêng border-t
  */
 export function ClanPostCard({
   post,
@@ -59,75 +58,95 @@ export function ClanPostCard({
 
   return (
     <article
-      className={`rounded-lg border bg-card p-4 space-y-3 ${
-        post.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""
-      } ${isPending ? "border-amber-500/40" : ""} ${
-        isHidden ? "opacity-60 border-dashed" : ""
+      className={`relative overflow-hidden rounded-lg border bg-card shadow-sm transition-colors hover:bg-muted/30 ${
+        isHidden ? "opacity-60" : ""
       }`}
     >
-      <header className="flex items-start gap-2 flex-wrap">
+      {/* Dải accent mép trái — amber khi pending, primary khi pinned.
+          Cùng pattern AnnouncementCard. */}
+      {(isPending || post.pinned) && (
         <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${TYPE_BADGE[post.type]}`}
-        >
-          {TYPE_LABEL[post.type]}
-        </span>
-        {post.pinned && (
-          <span className="inline-flex items-center text-xs text-primary font-medium">
-            📌 Ghim
-          </span>
-        )}
-        {isPending && (
-          <span className="text-xs text-amber-700 dark:text-amber-300 font-medium">
-            ⏳ Đang chờ duyệt
-          </span>
-        )}
-        {isHidden && (
-          <span className="text-xs text-muted-foreground italic">
-            Đã ẩn
-          </span>
-        )}
-        <time
-          className="text-xs text-muted-foreground ml-auto tabular-nums"
-          dateTime={post.created_at}
-        >
-          {new Date(post.created_at).toLocaleString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </time>
-      </header>
-
-      {post.title && <h3 className="font-semibold text-base">{post.title}</h3>}
-      <p className="whitespace-pre-line text-sm leading-relaxed">{post.body}</p>
-
-      {post.event_date && (
-        <p className="text-sm">
-          <span className="text-muted-foreground">Ngày diễn ra: </span>
-          <strong>
-            {new Date(post.event_date).toLocaleDateString("vi-VN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })}
-          </strong>
-        </p>
+          aria-hidden="true"
+          className={`absolute left-0 top-0 bottom-0 w-1 ${
+            isPending ? "bg-amber-500/70" : "bg-primary/80"
+          }`}
+        />
       )}
 
-      {post.person_id && (
-        <p className="text-xs">
-          <Link
-            to={`/clans/${post.clan_id}/people/${post.person_id}`}
-            className="text-primary hover:underline"
+      <div className="px-5 py-3 space-y-1.5">
+        {post.title && (
+          <h3 className="text-lg leading-snug font-semibold">
+            {post.pinned && (
+              <span
+                className="text-primary mr-1.5"
+                title="Đã ghim"
+                aria-label="Đã ghim"
+              >
+                📌
+              </span>
+            )}
+            {post.title}
+          </h3>
+        )}
+
+        <p className="text-sm whitespace-pre-line leading-relaxed text-muted-foreground">
+          {post.body}
+        </p>
+
+        {post.event_date && (
+          <p className="text-sm">
+            <span className="text-muted-foreground">Ngày diễn ra: </span>
+            <strong>
+              {new Date(post.event_date).toLocaleDateString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </strong>
+          </p>
+        )}
+
+        {post.person_id && (
+          <p className="text-xs">
+            <Link
+              to={`/clans/${post.clan_id}/people/${post.person_id}`}
+              className="text-primary hover:underline"
+            >
+              Xem trang người liên quan →
+            </Link>
+          </p>
+        )}
+
+        <div className="flex items-center gap-2 flex-wrap text-xs pt-0.5">
+          <time
+            className="text-muted-foreground tabular-nums"
+            dateTime={post.created_at}
+            title={new Date(post.created_at).toLocaleString("vi-VN")}
           >
-            Xem trang người liên quan →
-          </Link>
-        </p>
-      )}
+            {formatRelative(post.created_at)}
+          </time>
+          {(isAuthor || isAdmin) && (
+            <span className="text-muted-foreground">
+              · {isAuthor ? "bạn" : post.author_id.slice(0, 8)}
+            </span>
+          )}
+          {isPending && (
+            <span className="text-amber-700 dark:text-amber-300 font-medium">
+              · Chờ duyệt
+            </span>
+          )}
+          {isHidden && (
+            <span className="text-muted-foreground italic">· Đã ẩn</span>
+          )}
+          <span
+            className={`ml-auto inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${TYPE_BADGE[post.type]}`}
+          >
+            {TYPE_LABEL[post.type]}
+          </span>
+        </div>
+      </div>
 
-      <footer className="flex items-center gap-2 pt-2 border-t">
+      <div className="flex items-center gap-2 px-5 py-2 border-t bg-muted/10">
         <Button
           variant="outline"
           size="sm"
@@ -138,16 +157,39 @@ export function ClanPostCard({
         {isAdmin && (
           <AdminActions post={post} canPin={post.status === "published"} />
         )}
-        {(isAuthor || isAdmin) && (
-          <span className="text-xs text-muted-foreground ml-auto">
-            Tác giả: {isAuthor ? "bạn" : post.author_id.slice(0, 8)}
-          </span>
-        )}
-      </footer>
+      </div>
 
-      {showComments && <CommentsSection postId={post.id} clan={clan} />}
+      {showComments && (
+        <div className="px-5 pb-4">
+          <CommentsSection postId={post.id} clan={clan} />
+        </div>
+      )}
     </article>
   );
+}
+
+/**
+ * Relative time format — khớp Announcements: "vừa xong" / "10 phút
+ * trước" / "Hôm qua" / "5 ngày trước" / "11/06/2026".
+ */
+function formatRelative(iso: string): string {
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diffMs = now - then;
+  const diffMin = Math.round(diffMs / 60_000);
+  const diffHr = Math.round(diffMs / 3_600_000);
+  const diffDay = Math.round(diffMs / 86_400_000);
+
+  if (diffMin < 1) return "vừa xong";
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffHr < 24) return `${diffHr} giờ trước`;
+  if (diffDay === 1) return "Hôm qua";
+  if (diffDay < 7) return `${diffDay} ngày trước`;
+  return new Date(iso).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 function AdminActions({
