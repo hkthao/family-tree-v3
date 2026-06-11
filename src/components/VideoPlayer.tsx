@@ -36,13 +36,14 @@ export function VideoPlayer({
 
   const src = getVideoUrl(tutorial.spec, viewport);
   const poster = getPosterUrl(tutorial.spec, viewport);
-  // Aspect ratio khác giữa mobile và desktop — wrapper hỗ trợ cả 2.
-  const aspect = viewport === "mobile" ? "390/844" : "16/10";
 
+  // Mobile video (390×844 portrait) cao gấp 2× rộng. Áp `aspectRatio`
+  // sẽ bắt wrapper cao tới >700px trên màn 390px → tràn modal.
+  // Dùng max-h trên <video> để browser native scale, giữ aspect tự
+  // động.
   return (
     <div
-      className={`rounded-lg overflow-hidden bg-black ${className}`}
-      style={{ aspectRatio: aspect }}
+      className={`flex items-center justify-center bg-black rounded-lg overflow-hidden ${className}`}
     >
       <video
         key={src}
@@ -52,7 +53,7 @@ export function VideoPlayer({
         preload="metadata"
         autoPlay={autoPlay}
         playsInline
-        className="w-full h-full"
+        className="max-h-[min(70vh,640px)] max-w-full w-auto h-auto"
       >
         Trình duyệt của bạn không hỗ trợ video. Cập nhật trình duyệt
         hoặc xem trang{" "}
