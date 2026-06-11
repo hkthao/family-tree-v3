@@ -309,6 +309,7 @@ export default function PersonDetail() {
                         <Button
                           variant="outline"
                           size="sm"
+                          data-testid="add-parent-button"
                           onClick={() => setAddSheet("parent")}
                         >
                           <IconPlus className="h-4 w-4 mr-1" />
@@ -327,6 +328,7 @@ export default function PersonDetail() {
                         <Button
                           variant="outline"
                           size="sm"
+                          data-testid="add-spouse-button"
                           onClick={() => setAddSheet("spouse")}
                         >
                           <IconPlus className="h-4 w-4 mr-1" />
@@ -345,6 +347,7 @@ export default function PersonDetail() {
                         <Button
                           variant="outline"
                           size="sm"
+                          data-testid="add-child-button"
                           onClick={() => setAddSheet("child")}
                         >
                           <IconPlus className="h-4 w-4 mr-1" />
@@ -365,7 +368,10 @@ export default function PersonDetail() {
             <div className="flex flex-wrap gap-3">
               {canEdit ? (
                 <Button asChild className="flex-1 sm:flex-none">
-                  <Link to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}>
+                  <Link
+                    to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}
+                    data-testid="edit-person-link"
+                  >
                     <IconPencil className="h-4 w-4 mr-1.5" />
                     Sửa thông tin
                   </Link>
@@ -410,6 +416,7 @@ export default function PersonDetail() {
               <div className="pt-3 border-t">
                 <Button
                   variant="outline"
+                  data-testid="delete-person-button"
                   className="w-full sm:w-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={async () => {
                     const ok = await askConfirm({

@@ -116,10 +116,39 @@ export async function pause(page: Page, ms: number): Promise<void> {
 export async function createEmptyClan(
   page: Page,
   name: string,
-): Promise<void> {
+): Promise<string> {
   await page.goto("/clans/new");
   const nameInput = page.getByTestId("clan-name-input");
   await nameInput.fill(name);
   await page.getByTestId("clan-submit-button").click();
   await page.waitForURL(/\/clans\/[0-9a-f-]+$/, { timeout: 15_000 });
+  return page.url().match(/\/clans\/([0-9a-f-]+)$/)?.[1] ?? "";
+}
+
+/**
+ * Setup im lặng cho mọi video cần một Thuỷ tổ sẵn. Tạo clan rỗng +
+ * thêm 1 người root + điều hướng vào PersonDetail của người đó.
+ *
+ * Dùng `.fill()` thay `.pressSequentially()` để chạy nhanh (đây là
+ * setup không cần demo).
+ */
+export async function createClanWithRoot(
+  page: Page,
+  clanName: string,
+  rootName: string,
+  rootYear = "1850",
+): Promise<{ clanId: string; personId: string }> {
+  const clanId = await createEmptyClan(page, clanName);
+  await page.getByTestId("dashboard-add-person-link").click();
+  await page.waitForURL(/\/people\/new$/);
+  await page.getByTestId("person-name-input").fill(rootName);
+  await page.getByTestId("birth-year-input").fill(rootYear);
+  await page.getByTestId("person-is-root-checkbox").check();
+  await page.getByTestId("person-submit-button").click();
+  await page.waitForURL(/\/people$/, { timeout: 15_000 });
+  // Click vào person card mới tạo để vào PersonDetail.
+  await page.locator(`a[href*="/people/"]`, { hasText: rootName }).first().click();
+  await page.waitForURL(/\/people\/[0-9a-f-]+$/);
+  const personId = page.url().match(/\/people\/([0-9a-f-]+)$/)?.[1] ?? "";
+  return { clanId, personId };
 }
