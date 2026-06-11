@@ -8,7 +8,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import {
   listAnnouncements,
-  listMyAnnouncementReads,
   type AnnouncementLevel,
 } from "@/lib/queries/announcements";
 import { queryKeys } from "@/lib/queries/keys";
