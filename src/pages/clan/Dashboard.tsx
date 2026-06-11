@@ -5,10 +5,13 @@ import { Link } from "react-router-dom";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import {
+  IconCheck,
   IconDownload,
   IconHome,
+  IconLink,
   IconList,
   IconPlus,
+  IconScroll,
   IconTree,
   IconUpload,
 } from "@/components/icons";
@@ -30,6 +33,7 @@ import {
   listEvents,
 } from "@/lib/queries/events";
 import {
+  countClanTodo,
   getClanCompletion,
   getClanTodoSummary,
   type ClanCompletion,
@@ -92,6 +96,12 @@ export default function Dashboard() {
   const { data: todoSummary } = useQuery({
     queryKey: queryKeys.clanTodoSummary(clan.id, userId),
     queryFn: () => getClanTodoSummary(clan.id),
+    enabled: !!userId && isMember,
+    staleTime: 60_000,
+  });
+  const { data: todoCount } = useQuery({
+    queryKey: queryKeys.clanTodoCount(clan.id, userId),
+    queryFn: () => countClanTodo(clan.id),
     enabled: !!userId && isMember,
     staleTime: 60_000,
   });
@@ -239,32 +249,51 @@ export default function Dashboard() {
 
           <section aria-label="Thao tác nhanh" className="space-y-2">
             <h3 className="text-lg font-semibold">Thao tác nhanh</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {/* 3 cột cố định, auto-rows-fr để mọi item cùng chiều cao
+                kể cả khi badge xuất hiện. Text ngắn 1 từ / 1-2 chữ
+                để ko rớt dòng. */}
+            <div className="grid grid-cols-3 gap-2 auto-rows-fr">
               <ActionTile
                 to={`/clans/${clan.id}/people`}
-                icon={<IconList className="h-5 w-5" />}
+                icon={<IconList />}
                 title="Danh bạ"
-                desc="Xem & lọc thành viên"
               />
               <ActionTile
                 to={`/clans/${clan.id}/tree`}
-                icon={<IconTree className="h-5 w-5" />}
-                title="Cây gia phả"
-                desc="Sơ đồ phả hệ"
+                icon={<IconTree />}
+                title="Phả hệ"
               />
+              <ActionTile
+                to={`/clans/${clan.id}/board`}
+                icon={<IconScroll />}
+                title="Bảng tin"
+              />
+              {isMember && (
+                <>
+                  <ActionTile
+                    to={`/clans/${clan.id}/todo`}
+                    icon={<IconCheck />}
+                    title="Việc làm"
+                    badge={todoCount}
+                  />
+                  <ActionTile
+                    to={`/clans/${clan.id}/inlaws`}
+                    icon={<IconLink />}
+                    title="Thông gia"
+                  />
+                </>
+              )}
               {canEdit && (
                 <>
                   <ActionTile
                     to={`/clans/${clan.id}/people/new`}
-                    icon={<IconPlus className="h-5 w-5" />}
+                    icon={<IconPlus />}
                     title="Thêm người"
-                    desc="Tạo bản ghi mới"
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/import`}
-                    icon={<IconUpload className="h-5 w-5" />}
+                    icon={<IconUpload />}
                     title="Nhập Excel"
-                    desc="Import hàng loạt"
                   />
                 </>
               )}
@@ -295,23 +324,31 @@ function ActionTile({
   to,
   icon,
   title,
-  desc,
+  badge,
 }: {
   to: string;
   icon: React.ReactNode;
   title: string;
-  desc: string;
+  /** Optional badge số đếm (vd. todo count). 0/undefined → không hiển thị. */
+  badge?: number;
 }) {
   return (
     <Link
       to={to}
-      className="group flex flex-col gap-1 rounded-lg border bg-card p-4 hover:border-primary hover:bg-muted/30 transition-colors"
+      className="group relative flex h-full flex-col items-center justify-center gap-1.5 rounded-lg border bg-card p-3 text-center hover:border-primary hover:bg-muted/30 transition-colors"
     >
-      <span className="text-primary" aria-hidden="true">
+      <span
+        className="text-primary [&>svg]:h-6 [&>svg]:w-6"
+        aria-hidden="true"
+      >
         {icon}
       </span>
-      <span className="font-medium leading-tight">{title}</span>
-      <span className="text-xs text-muted-foreground">{desc}</span>
+      <span className="text-sm font-medium leading-tight">{title}</span>
+      {badge !== undefined && badge > 0 && (
+        <span className="absolute top-1.5 right-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary text-primary-foreground text-xs px-1 tabular-nums">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
     </Link>
   );
 }
@@ -345,16 +382,17 @@ function ExportPdfTile({ clan }: { clan: ClanDetail }) {
       type="button"
       onClick={onClick}
       disabled={busy}
-      className="text-left flex flex-col gap-1 rounded-lg border bg-card p-4 hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
+      title={err ?? undefined}
+      className="group relative flex h-full flex-col items-center justify-center gap-1.5 rounded-lg border bg-card p-3 text-center hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
     >
-      <span className="text-primary" aria-hidden="true">
-        <IconDownload className="h-5 w-5" />
+      <span
+        className="text-primary [&>svg]:h-6 [&>svg]:w-6"
+        aria-hidden="true"
+      >
+        <IconDownload />
       </span>
-      <span className="font-medium leading-tight">
-        {busy ? "Đang xuất…" : "Xuất sổ PDF"}
-      </span>
-      <span className="text-xs text-muted-foreground">
-        {err ? `Lỗi: ${err.slice(0, 40)}` : "Sách gia phả PDF"}
+      <span className="text-sm font-medium leading-tight">
+        {busy ? "Đang xuất…" : "Xuất PDF"}
       </span>
     </button>
   );
