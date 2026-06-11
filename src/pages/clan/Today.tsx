@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
 import {
   IconBell,
@@ -101,6 +102,7 @@ export default function Today() {
           <p className="text-base text-muted-foreground mt-1">
             {todayHeader}
           </p>
+          <PageHelpVideo size="text" />
         </div>
       </header>
 

@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { EmptyState } from "@/components/EmptyState";
 import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { QuickDateFixSheet } from "@/components/QuickDateFixSheet";
@@ -288,6 +289,9 @@ export default function Todo() {
             App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung. Bấm
             vào một người để {canEdit ? "sửa thẳng." : "đề xuất bổ sung."}
           </p>
+          <div className="mt-1">
+            <PageHelpVideo size="text" />
+          </div>
           {summary && (
             <p className="text-xs text-muted-foreground mt-1">
               Tổng {totalLoadBearing.toLocaleString("vi-VN")} mục cần xử

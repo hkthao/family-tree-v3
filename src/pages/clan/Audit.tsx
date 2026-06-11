@@ -13,6 +13,7 @@ import {
   IconRefresh,
   IconUndo,
 } from "@/components/icons";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -83,7 +84,10 @@ export default function Audit() {
       />
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <h2 className="text-2xl font-semibold sm:flex-1">Nhật ký</h2>
+        <div className="sm:flex-1 space-y-0.5">
+          <h2 className="text-2xl font-semibold">Nhật ký</h2>
+          <PageHelpVideo size="text" />
+        </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <select
             aria-label="Lọc theo đối tượng"

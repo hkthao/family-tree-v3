@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 
 import { ClanPostCard } from "@/components/ClanPostCard";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -54,7 +55,10 @@ export default function Board() {
   return (
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <h2 className="text-2xl font-semibold sm:flex-1">Bảng tin</h2>
+        <div className="sm:flex-1 space-y-0.5">
+          <h2 className="text-2xl font-semibold">Bảng tin</h2>
+          <PageHelpVideo size="text" />
+        </div>
         <div className="flex items-center gap-1.5 sm:gap-2 justify-end">
           {admin && (pendingQ.data?.length ?? 0) > 0 && (
             <Link

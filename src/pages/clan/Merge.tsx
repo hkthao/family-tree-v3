@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconSearch, IconX } from "@/components/icons";
@@ -95,8 +96,9 @@ export default function Merge() {
           { label: "Gộp người trùng" },
         ]}
       />
-      <div>
+      <div className="space-y-0.5">
         <h2 className="text-2xl font-semibold">Gộp người trùng</h2>
+        <PageHelpVideo size="text" />
         <p className="text-muted-foreground mt-1">
           Chọn người <span className="font-medium">giữ lại</span> bên trái và
           người <span className="font-medium">gộp vào</span> bên phải. Mọi

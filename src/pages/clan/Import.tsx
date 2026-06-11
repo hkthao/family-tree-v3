@@ -7,6 +7,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getClanCompletion } from "@/lib/queries/todo";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import {
   IconCheck,
   IconDownload,
@@ -111,7 +112,10 @@ export default function Import() {
         ]}
       />
       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <h2 className="text-2xl font-semibold sm:flex-1">Nhập từ Excel</h2>
+        <div className="sm:flex-1 space-y-0.5">
+          <h2 className="text-2xl font-semibold">Nhập từ Excel</h2>
+          <PageHelpVideo size="text" />
+        </div>
         <Button asChild variant="outline" size="sm" className="h-10 sm:w-auto">
           <Link to={`/clans/${clanId}/ai-generate`}>
             Sinh file bằng AI →

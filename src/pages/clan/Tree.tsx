@@ -10,6 +10,7 @@ import {
   IconPlus,
   IconUpload,
 } from "@/components/icons";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
@@ -695,7 +696,10 @@ export default function Tree() {
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 print-hide">
-        <h2 className="text-2xl font-semibold sm:flex-1">Cây gia phả</h2>
+        <div className="sm:flex-1 space-y-0.5">
+          <h2 className="text-2xl font-semibold">Cây gia phả</h2>
+          <PageHelpVideo size="text" />
+        </div>
         <div className="flex items-center gap-1.5 sm:gap-2 justify-between sm:justify-end">
           {/* Orientation toggle — vertical (top-down) vs horizontal
               (left-right). Re-inits the chart via the orientation dep

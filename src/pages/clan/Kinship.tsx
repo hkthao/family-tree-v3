@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { IconUser, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -84,6 +85,9 @@ export default function Kinship() {
             Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền
             thống Việt — anh/em ruột, chú/bác/cô/cậu/dì, anh em họ…
           </p>
+          <div className="mt-1">
+            <PageHelpVideo size="text" />
+          </div>
         </div>
       </header>
 
