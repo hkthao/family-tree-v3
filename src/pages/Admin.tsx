@@ -1407,7 +1407,26 @@ function AnnouncementAdminCard({
 
   return (
     <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-2">
-      <div className="flex items-start justify-between gap-2 flex-wrap">
+      <h3 className="font-semibold">{row.title}</h3>
+      <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-3">
+        {row.body}
+      </p>
+      <dl className="text-xs text-muted-foreground grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5">
+        {row.published_at && (
+          <>
+            <dt>Đăng:</dt>
+            <dd>{new Date(row.published_at).toLocaleString("vi-VN")}</dd>
+          </>
+        )}
+        {row.expires_at && (
+          <>
+            <dt>Hết hạn:</dt>
+            <dd>{new Date(row.expires_at).toLocaleString("vi-VN")}</dd>
+          </>
+        )}
+      </dl>
+
+      <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t">
         <div className="flex items-center gap-2 flex-wrap">
           <span
             className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${statusClass}`}
@@ -1445,24 +1464,6 @@ function AnnouncementAdminCard({
           </Button>
         </div>
       </div>
-      <h3 className="font-semibold">{row.title}</h3>
-      <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-3">
-        {row.body}
-      </p>
-      <dl className="text-xs text-muted-foreground grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5">
-        {row.published_at && (
-          <>
-            <dt>Đăng:</dt>
-            <dd>{new Date(row.published_at).toLocaleString("vi-VN")}</dd>
-          </>
-        )}
-        {row.expires_at && (
-          <>
-            <dt>Hết hạn:</dt>
-            <dd>{new Date(row.expires_at).toLocaleString("vi-VN")}</dd>
-          </>
-        )}
-      </dl>
     </li>
   );
 }
