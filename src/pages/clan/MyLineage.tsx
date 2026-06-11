@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHelpVideo } from "@/components/PageHelpVideo";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
@@ -76,6 +77,9 @@ export default function MyLineage() {
             Từ tôi về thuỷ tổ — mặc định đi theo bên nội, có thể đổi
             sang bên ngoại ở từng đời.
           </p>
+          <div className="mt-1">
+            <PageHelpVideo size="text" />
+          </div>
         </div>
       </header>
 
