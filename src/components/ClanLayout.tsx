@@ -5,11 +5,10 @@ import { Link, Navigate, Outlet, useParams } from "react-router-dom";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
-import { HelpButton } from "@/components/HelpButton";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   IconCalendar,
   IconHome,
-  IconSettings,
   IconSun,
   IconTree,
   IconUsers,
@@ -135,19 +134,9 @@ export function ClanLayout() {
               {clan.name}
             </h1>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <HelpButton />
+          <div className="flex items-center gap-1 shrink-0">
+            <NotificationBell />
             <ThemeQuickToggle />
-            {(clan.myRole === "admin" || clan.isPlatformAdmin) && (
-              <Link
-                to={`/clans/${clanId}/settings`}
-                aria-label="Cài đặt"
-                title="Cài đặt"
-                className="h-10 w-10 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <IconSettings className="h-5 w-5" />
-              </Link>
-            )}
           </div>
         </div>
       </header>
