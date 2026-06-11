@@ -33,6 +33,16 @@ const STORAGE_KEY = "mascot:position";
 const BUTTON_SIZE = 48; // h-12 w-12
 const EDGE_MARGIN = 12; // 0.75rem
 const DRAG_THRESHOLD = 5; // px movement = drag, không phải click
+// Drawer trên lg+ rộng 18rem = 288px luôn mở; mascot snap left phải
+// nằm sau drawer, không bị che.
+const LG_DRAWER_WIDTH = 288;
+
+function leftEdgeMargin(): number {
+  if (typeof window === "undefined") return EDGE_MARGIN;
+  return window.innerWidth >= 1024
+    ? LG_DRAWER_WIDTH + EDGE_MARGIN
+    : EDGE_MARGIN;
+}
 
 interface MascotPosition {
   side: "left" | "right";
@@ -246,7 +256,7 @@ export function MascotTip() {
           left: "auto",
         }
       : {
-          left: EDGE_MARGIN,
+          left: leftEdgeMargin(),
           top: position.top,
           right: "auto",
         };
@@ -261,7 +271,7 @@ export function MascotTip() {
           left: "auto",
         }
       : {
-          left: EDGE_MARGIN + BUTTON_SIZE + 4,
+          left: leftEdgeMargin() + BUTTON_SIZE + 4,
           top: position.top,
           right: "auto",
         };
@@ -280,7 +290,7 @@ export function MascotTip() {
         className={cn(
           "mascot-icon",
           hasTip && !showBubble && "mascot-has-tip",
-          "fixed z-30",
+          "fixed z-50",
           dragPos ? "cursor-grabbing" : "cursor-grab",
           // 48px tròn — vừa to để dễ chạm, không quá to thành CTA.
           "h-12 w-12 p-1.5 inline-flex items-center justify-center rounded-full",
@@ -310,7 +320,7 @@ export function MascotTip() {
           onMouseLeave={startAutoHide}
           style={bubbleStyle}
           className={cn(
-            "fixed z-30",
+            "fixed z-50",
             "w-[min(18rem,calc(100vw-5rem))]",
             "rounded-lg border bg-card shadow-xl p-3 space-y-2",
             "animate-in fade-in slide-in-from-bottom-2",
