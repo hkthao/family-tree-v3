@@ -10,6 +10,7 @@ import {
   IconArrowRight,
   IconCheck,
   IconLock,
+  IconPencil,
   IconShield,
   IconTrash,
   IconUnlock,
@@ -1421,17 +1422,26 @@ function AnnouncementAdminCard({
             <span className="text-xs text-primary">Public</span>
           )}
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={onEdit}>
-            Sửa
+        <div className="flex gap-1.5">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onEdit}
+            aria-label="Sửa tin"
+            title="Sửa"
+            className="h-9 w-9 p-0"
+          >
+            <IconPencil className="h-4 w-4" />
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={onDelete}
-            className="text-destructive"
+            aria-label="Xoá tin"
+            title="Xoá"
+            className="h-9 w-9 p-0 text-destructive hover:text-destructive"
           >
-            Xoá
+            <IconTrash className="h-4 w-4" />
           </Button>
         </div>
       </div>
