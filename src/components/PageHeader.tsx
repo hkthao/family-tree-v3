@@ -57,7 +57,7 @@ export function PageHeader({
     return (
       <div className="space-y-2 [&:not(:first-child)]:!mt-2">
         {header}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2 flex-wrap">
           {actions}
         </div>
       </div>
