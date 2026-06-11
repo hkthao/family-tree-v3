@@ -175,13 +175,14 @@ export default function Events() {
           { label: "Sự kiện" },
         ]}
       />
-      {/* Header: title + view toggle + refresh in one row on sm+,
-          stacked on mobile. View toggle is icon-only on mobile to
-          leave room for the look-ahead pills underneath. */}
+      {/* Header: actions xuống hàng riêng do số lượng action (segmented
+          control + xuất .ics + refresh) + description dài → inline sẽ
+          ép description wrap nhiều dòng. */}
       <PageHeader
         icon={<IconCalendar className="h-7 w-7" />}
         title="Sự kiện"
         description="Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar."
+        actionsBelow
         actions={
           <>
             <SegmentedControl ariaLabel="Chế độ hiển thị">
