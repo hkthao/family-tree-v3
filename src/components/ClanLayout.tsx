@@ -6,7 +6,6 @@ import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationBell } from "@/components/NotificationBell";
-import { PageHelpVideo } from "@/components/PageHelpVideo";
 import {
   IconCalendar,
   IconHome,
@@ -136,7 +135,6 @@ export function ClanLayout() {
             </h1>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <PageHelpVideo />
             <NotificationBell />
             <ThemeQuickToggle />
           </div>
