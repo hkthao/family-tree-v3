@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { ClanLayout } from "@/components/ClanLayout";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
+import { CriticalBanner } from "@/components/CriticalBanner";
 import { MascotTip } from "@/components/MascotTip";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { RequireAuth } from "@/components/RequireAuth";
@@ -10,6 +11,8 @@ import { ToastProvider } from "@/components/Toast";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import Account from "@/pages/Account";
 import Admin from "@/pages/Admin";
+import Announcements from "@/pages/Announcements";
+import Changelog from "@/pages/Changelog";
 import Clans from "@/pages/Clans";
 import Docs from "@/pages/Docs";
 import AddChild from "@/pages/clan/AddChild";
@@ -50,12 +53,22 @@ export default function App() {
       <ScrollToTop />
       <ToastProvider>
       <ConfirmDialogProvider>
+        <CriticalBanner />
         <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/share/:token" element={<Share />} />
         <Route path="/lien-he" element={<Contact />} />
+        <Route path="/changelog" element={<Changelog />} />
         <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />
+        <Route
+          path="/announcements"
+          element={
+            <RequireAuth>
+              <Announcements />
+            </RequireAuth>
+          }
+        />
 
         <Route
           path="/clans"

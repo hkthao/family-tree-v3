@@ -34,6 +34,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_public: boolean
+          level: Database["public"]["Enums"]["announcement_level"]
+          published_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_public?: boolean
+          level?: Database["public"]["Enums"]["announcement_level"]
+          published_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_public?: boolean
+          level?: Database["public"]["Enums"]["announcement_level"]
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -1304,6 +1369,8 @@ export type Database = {
           id: string
         }[]
       }
+      announcements_mark_all_read: { Args: never; Returns: number }
+      announcements_unread_count: { Args: never; Returns: number }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
       assign_existing_parent: {
         Args: { p_parent_id: string; p_person_id: string }
@@ -1471,6 +1538,7 @@ export type Database = {
       }
     }
     Enums: {
+      announcement_level: "info" | "update" | "warning" | "critical"
       feedback_category: "bug" | "idea" | "question" | "other"
       feedback_status: "new" | "seen" | "resolved" | "spam"
     }
@@ -1603,6 +1671,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      announcement_level: ["info", "update", "warning", "critical"],
       feedback_category: ["bug", "idea", "question", "other"],
       feedback_status: ["new", "seen", "resolved", "spam"],
     },

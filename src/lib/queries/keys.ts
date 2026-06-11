@@ -58,6 +58,11 @@ export const queryKeys = {
   platformDbStats: () => ["platform-db-stats"] as const,
   adminClans: () => ["admin-clans"] as const,
   adminFeedback: () => ["admin-feedback"] as const,
+  announcements: () => ["announcements"] as const,
+  announcementsUnreadCount: () => ["announcements-unread-count"] as const,
+  announcementReads: () => ["announcement-reads"] as const,
+  adminAnnouncements: () => ["admin-announcements"] as const,
+  publicAnnouncements: () => ["public-announcements"] as const,
   adminUserClans: (userId: string) => ["admin-user-clans", userId] as const,
   contributions: (clanId: string, userId: string, params: unknown) =>
     ["contributions", clanId, userId, params] as const,
