@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
 import { ClanPostCard } from "@/components/ClanPostCard";
 import { ClanPostComposer } from "@/components/ClanPostComposer";
-import { IconScroll } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
@@ -39,22 +37,20 @@ export default function Board() {
   const isMember = clan.myRole !== null || clan.isPlatformAdmin;
 
   return (
-    <div className="space-y-5">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}`} />
-      </nav>
-
-      <header className="flex items-start gap-3">
-        <IconScroll className="h-8 w-8 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-2xl sm:text-3xl font-semibold leading-tight">
-            Bảng tin
-          </h1>
-          <p className="text-base text-muted-foreground mt-1">
-            Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc.
-          </p>
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <h2 className="text-2xl font-semibold sm:flex-1">Bảng tin</h2>
+        <div className="flex items-center gap-1.5 sm:gap-2 justify-end">
+          {admin && (pendingQ.data?.length ?? 0) > 0 && (
+            <Link
+              to={`/clans/${clanId}/board/moderation`}
+              className="h-10 inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
+            >
+              ⏳ {pendingQ.data!.length} chờ duyệt
+            </Link>
+          )}
         </div>
-      </header>
+      </div>
 
       {!isMember && (
         <Alert>
@@ -65,17 +61,7 @@ export default function Board() {
         </Alert>
       )}
 
-      <div className="flex items-center gap-3 flex-wrap">
-        {isMember && user && <ClanPostComposer clan={clan} />}
-        {admin && (pendingQ.data?.length ?? 0) > 0 && (
-          <Link
-            to={`/clans/${clanId}/board/moderation`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
-          >
-            ⏳ {pendingQ.data!.length} bài chờ duyệt →
-          </Link>
-        )}
-      </div>
+      {isMember && user && <ClanPostComposer clan={clan} />}
 
       {postsQ.isLoading && (
         <p className="text-muted-foreground">Đang tải…</p>
