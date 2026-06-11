@@ -134,36 +134,88 @@ function AnnouncementCard({
 }) {
   return (
     <li
-      className={`rounded-lg border bg-card p-4 space-y-2 ${
-        isRead ? "opacity-75" : "border-primary/40"
+      className={`relative overflow-hidden rounded-lg border bg-card shadow-sm transition-colors hover:bg-muted/30 ${
+        isRead ? "opacity-80" : ""
       }`}
     >
-      <div className="flex items-start justify-between gap-2 flex-wrap">
+      {/* Dải accent màu theo level ở mép trái — chỉ hiện khi chưa đọc.
+          Đã đọc thì card chìm xuống, không cần thanh accent. */}
+      {!isRead && (
         <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${LEVEL_BADGE[row.level]}`}
-        >
-          {LEVEL_LABEL[row.level]}
-        </span>
-        {!isRead && (
-          <span className="text-xs text-primary font-medium">● Chưa đọc</span>
-        )}
-        {row.published_at && (
-          <time
-            className="text-xs text-muted-foreground ml-auto tabular-nums"
-            dateTime={row.published_at}
+          aria-hidden="true"
+          className={`absolute left-0 top-0 bottom-0 w-1 ${LEVEL_ACCENT[row.level]}`}
+        />
+      )}
+
+      <div className="px-5 py-4 space-y-2.5">
+        <div className="flex items-center gap-2 flex-wrap text-xs">
+          <span
+            className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${LEVEL_BADGE[row.level]}`}
           >
-            {new Date(row.published_at).toLocaleString("vi-VN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </time>
-        )}
+            {LEVEL_LABEL[row.level]}
+          </span>
+          {row.is_public && (
+            <span className="text-muted-foreground">· Public</span>
+          )}
+          {row.published_at && (
+            <time
+              className="ml-auto text-muted-foreground tabular-nums"
+              dateTime={row.published_at}
+              title={new Date(row.published_at).toLocaleString("vi-VN")}
+            >
+              {formatRelative(row.published_at)}
+            </time>
+          )}
+        </div>
+
+        <h3
+          className={`text-lg leading-snug ${
+            isRead ? "font-medium text-foreground/80" : "font-semibold"
+          }`}
+        >
+          {row.title}
+        </h3>
+
+        <p className="text-sm whitespace-pre-line leading-relaxed text-muted-foreground">
+          {row.body}
+        </p>
       </div>
-      <h2 className="font-semibold text-base">{row.title}</h2>
-      <p className="text-sm whitespace-pre-line leading-relaxed">{row.body}</p>
     </li>
   );
+}
+
+/**
+ * Dải accent ngang 4px ở mép trái — màu theo level. Cùng tone với
+ * LEVEL_BADGE nhưng đậm hơn để stand-out như indicator unread.
+ */
+const LEVEL_ACCENT: Record<AnnouncementLevel, string> = {
+  info: "bg-blue-500/60",
+  update: "bg-primary/80",
+  warning: "bg-amber-500/70",
+  critical: "bg-destructive",
+};
+
+/**
+ * Format thời gian theo "relative" cho ngắn: "vừa xong", "10 phút",
+ * "3 giờ", "Hôm qua", "5 ngày" — sau 7 ngày fallback về dd/MM/yyyy.
+ * Có tooltip kèm thời gian đầy đủ qua attribute `title`.
+ */
+function formatRelative(iso: string): string {
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diffMs = now - then;
+  const diffMin = Math.round(diffMs / 60_000);
+  const diffHr = Math.round(diffMs / 3_600_000);
+  const diffDay = Math.round(diffMs / 86_400_000);
+
+  if (diffMin < 1) return "vừa xong";
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffHr < 24) return `${diffHr} giờ trước`;
+  if (diffDay === 1) return "Hôm qua";
+  if (diffDay < 7) return `${diffDay} ngày trước`;
+  return new Date(iso).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
