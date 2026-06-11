@@ -274,6 +274,169 @@ export type Database = {
           },
         ]
       }
+      clan_post_audit: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: number
+          new_status: Database["public"]["Enums"]["clan_post_status"] | null
+          note: string | null
+          old_status: Database["public"]["Enums"]["clan_post_status"] | null
+          post_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: number
+          new_status?: Database["public"]["Enums"]["clan_post_status"] | null
+          note?: string | null
+          old_status?: Database["public"]["Enums"]["clan_post_status"] | null
+          post_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: number
+          new_status?: Database["public"]["Enums"]["clan_post_status"] | null
+          note?: string | null
+          old_status?: Database["public"]["Enums"]["clan_post_status"] | null
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_post_audit_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "clan_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clan_post_comments: {
+        Row: {
+          author_id: string
+          body: string
+          clan_id: string
+          created_at: string
+          id: string
+          post_id: string
+          status: Database["public"]["Enums"]["clan_comment_status"]
+        }
+        Insert: {
+          author_id: string
+          body: string
+          clan_id: string
+          created_at?: string
+          id?: string
+          post_id: string
+          status?: Database["public"]["Enums"]["clan_comment_status"]
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          clan_id?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          status?: Database["public"]["Enums"]["clan_comment_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_post_comments_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "clan_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clan_posts: {
+        Row: {
+          author_id: string
+          body: string
+          clan_id: string
+          created_at: string
+          event_date: string | null
+          event_id: string | null
+          id: string
+          person_id: string | null
+          pinned: boolean
+          status: Database["public"]["Enums"]["clan_post_status"]
+          title: string | null
+          type: Database["public"]["Enums"]["clan_post_type"]
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          clan_id: string
+          created_at?: string
+          event_date?: string | null
+          event_id?: string | null
+          id?: string
+          person_id?: string | null
+          pinned?: boolean
+          status?: Database["public"]["Enums"]["clan_post_status"]
+          title?: string | null
+          type?: Database["public"]["Enums"]["clan_post_type"]
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          clan_id?: string
+          created_at?: string
+          event_date?: string | null
+          event_id?: string | null
+          id?: string
+          person_id?: string | null
+          pinned?: boolean
+          status?: Database["public"]["Enums"]["clan_post_status"]
+          title?: string | null
+          type?: Database["public"]["Enums"]["clan_post_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_posts_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_posts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_posts_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_posts_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clans: {
         Row: {
           created_at: string
@@ -1389,6 +1552,10 @@ export type Database = {
         Returns: Json
       }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
+      clan_post_moderate: {
+        Args: { p_action: string; p_note?: string; p_post_id: string }
+        Returns: undefined
+      }
       clan_role: { Args: { target_clan: string }; Returns: string }
       clear_failed_notification: { Args: { p_id: string }; Returns: undefined }
       confirm_link_by_token: {
@@ -1539,6 +1706,9 @@ export type Database = {
     }
     Enums: {
       announcement_level: "info" | "update" | "warning" | "critical"
+      clan_comment_status: "published" | "hidden"
+      clan_post_status: "published" | "pending" | "hidden"
+      clan_post_type: "news" | "event" | "birth" | "death" | "notice"
       feedback_category: "bug" | "idea" | "question" | "other"
       feedback_status: "new" | "seen" | "resolved" | "spam"
     }
@@ -1672,6 +1842,9 @@ export const Constants = {
   public: {
     Enums: {
       announcement_level: ["info", "update", "warning", "critical"],
+      clan_comment_status: ["published", "hidden"],
+      clan_post_status: ["published", "pending", "hidden"],
+      clan_post_type: ["news", "event", "birth", "death", "notice"],
       feedback_category: ["bug", "idea", "question", "other"],
       feedback_status: ["new", "seen", "resolved", "spam"],
     },
