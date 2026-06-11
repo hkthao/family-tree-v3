@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -152,25 +153,19 @@ export default function Inlaws() {
         ]}
       />
 
-      <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
-            <IconLink className="h-6 w-6 text-primary" />
-            Liên kết thông gia
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Đề nghị nối dâu/rể của dòng họ này với cùng người đó ở một
-            dòng họ khác trên nền tảng. Quyền sở hữu dữ liệu mỗi bên
-            không đổi — link chỉ là chú thích, có thể thu hồi.
-          </p>
-        </div>
-        <Button asChild>
-          <Link to={`/clans/${clan.id}/inlaws/new`}>
-            <IconPlus className="h-4 w-4 mr-1.5" />
-            Đề nghị mới
-          </Link>
-        </Button>
-      </header>
+      <PageHeader
+        icon={<IconLink className="h-7 w-7" />}
+        title="Liên kết thông gia"
+        description="Nối dâu/rể của dòng họ này với cùng người ở dòng họ khác. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi."
+        actions={
+          <Button asChild size="sm" className="h-10">
+            <Link to={`/clans/${clan.id}/inlaws/new`}>
+              <IconPlus className="h-4 w-4 mr-1.5" />
+              Đề nghị mới
+            </Link>
+          </Button>
+        }
+      />
 
       <SegmentedControl ariaLabel="Tab trạng thái">
         <SegmentedButton

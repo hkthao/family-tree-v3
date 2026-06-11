@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconTrash, IconUserPlus } from "@/components/icons";
@@ -135,7 +136,11 @@ export default function Members() {
         ]}
       />
 
-      <h1 className="text-2xl font-semibold">Thành viên</h1>
+      <PageHeader
+        icon={<IconUserPlus className="h-7 w-7" />}
+        title="Thành viên"
+        description="Mời người, đổi vai trò, gỡ thành viên."
+      />
 
         <Card>
           <CardHeader>

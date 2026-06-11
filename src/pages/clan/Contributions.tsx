@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { IconScroll } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -73,18 +74,11 @@ export default function Contributions() {
         ]}
       />
 
-      <header className="flex items-start gap-3">
-        <IconScroll className="h-7 w-7 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-xl sm:text-2xl font-semibold leading-tight">
-            Đóng góp từ cộng đồng
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Người xem đề xuất sửa hoặc thêm thông tin — admin duyệt
-            trước khi áp dụng vào gia phả.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        icon={<IconScroll className="h-7 w-7" />}
+        title="Đóng góp từ cộng đồng"
+        description="Người xem đề xuất sửa hoặc thêm thông tin — admin duyệt trước khi áp dụng vào gia phả."
+      />
 
       <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => (
