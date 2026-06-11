@@ -111,18 +111,29 @@ describe("RLS: feedback table", () => {
     }
   });
 
-  it("regular user CANNOT select feedback (not even their own)", async () => {
+  it("regular user CAN select their own feedback (history)", async () => {
+    // Plan §32.4 — added `feedback_select_owner` policy so users can
+    // see their own submissions ("Đã gửi" history). Other users'
+    // rows still hidden.
     const { data, error } = await user.client
       .from("feedback")
       .select("id, user_id");
-    if (error) {
-      expect(error).toBeTruthy();
-    } else {
-      // RLS silently returns 0 rows for non-admins, including for the
-      // user's own submissions. Privacy: feedback isn't a self-service
-      // archive.
-      expect(data).toEqual([]);
+    expect(error).toBeNull();
+    const rows = data ?? [];
+    expect(rows.length).toBeGreaterThan(0);
+    for (const r of rows) {
+      expect(r.user_id).toBe(user.id);
     }
+  });
+
+  it("regular user CANNOT see other users' feedback", async () => {
+    // Other user has not inserted anything, but more importantly: the
+    // SELECT must not leak `user_id=null` (anon) or other users' rows.
+    const { data, error } = await otherUser.client
+      .from("feedback")
+      .select("id, user_id");
+    expect(error).toBeNull();
+    expect(data ?? []).toEqual([]);
   });
 
   it("platform admin CAN select all feedback", async () => {
@@ -136,6 +147,53 @@ describe("RLS: feedback table", () => {
   });
 
   // ─── UPDATE / DELETE ───────────────────────────────────────────
+
+  // ─── Sanitize trigger (§32.4) ──────────────────────────────────
+
+  it("page_url is sanitized to page_path with origin stripped + IDs masked", async () => {
+    const rawUrl =
+      "https://family-tree.example.com/clans/8846cf08-1e93-4fa2-9a82-e17e5677e544/people/12345?token=secret";
+    const { error: insertErr } = await anonClient().from("feedback").insert({
+      message: "sanitize check",
+      page_url: rawUrl,
+    });
+    expect(insertErr).toBeNull();
+
+    const { data } = await adminClient()
+      .from("feedback")
+      .select("page_path, page_url")
+      .eq("message", "sanitize check")
+      .limit(1)
+      .single();
+    expect(data?.page_url).toBeNull();
+    expect(data?.page_path).toBe("/clans/:id/people/:id");
+  });
+
+  // ─── Admin update (§32.4) ──────────────────────────────────────
+
+  it("platform admin CAN update status + admin_note", async () => {
+    const { data: rows } = await adminClient()
+      .from("feedback")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+    const rowId = rows?.[0]?.id;
+    expect(rowId).toBeTruthy();
+
+    const { error } = await admin.client
+      .from("feedback")
+      .update({ status: "resolved", admin_note: "đã trả lời" })
+      .eq("id", rowId!);
+    expect(error).toBeNull();
+
+    const { data: after } = await adminClient()
+      .from("feedback")
+      .select("status, admin_note")
+      .eq("id", rowId!)
+      .single();
+    expect(after?.status).toBe("resolved");
+    expect(after?.admin_note).toBe("đã trả lời");
+  });
 
   it("regular user CANNOT update or delete their own feedback", async () => {
     // Find a row this user inserted via the admin client (since they
