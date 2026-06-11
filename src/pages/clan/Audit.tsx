@@ -74,50 +74,44 @@ export default function Audit() {
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <nav>
         <BackLink fallback={`/clans/${clan.id}`} />
       </nav>
-      <h2 className="text-2xl font-semibold">Nhật ký chỉnh sửa</h2>
-      <p className="text-sm text-muted-foreground">
-        Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể
-        khôi phục bằng một nút bấm — soft-delete giữ dữ liệu nguyên vẹn.
-      </p>
 
-      {/* Filters in a single row at every viewport (2-col grid).
-          Labels are dropped; the first option of each select serves
-          as a prompt ("Mọi đối tượng" / "Mọi hành động") so the
-          filter purpose is still clear without eating a label row. */}
-      <div className="grid grid-cols-2 gap-2">
-        <select
-          aria-label="Lọc theo đối tượng"
-          value={entityType}
-          onChange={(e) => {
-            setEntityType(e.target.value as AuditEntity | "");
-            setPage(1);
-          }}
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">Mọi đối tượng</option>
-          <option value="person">Người</option>
-          <option value="family">Gia đình</option>
-          <option value="branch">Chi</option>
-          <option value="person_link">Liên kết thông gia</option>
-        </select>
-        <select
-          aria-label="Lọc theo hành động"
-          value={action}
-          onChange={(e) => {
-            setAction(e.target.value as AuditAction | "");
-            setPage(1);
-          }}
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">Mọi hành động</option>
-          <option value="insert">Thêm mới</option>
-          <option value="update">Sửa</option>
-          <option value="delete">Xoá</option>
-        </select>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <h2 className="text-2xl font-semibold sm:flex-1">Nhật ký</h2>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <select
+            aria-label="Lọc theo đối tượng"
+            value={entityType}
+            onChange={(e) => {
+              setEntityType(e.target.value as AuditEntity | "");
+              setPage(1);
+            }}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
+          >
+            <option value="">Mọi đối tượng</option>
+            <option value="person">Người</option>
+            <option value="family">Gia đình</option>
+            <option value="branch">Chi</option>
+            <option value="person_link">Liên kết thông gia</option>
+          </select>
+          <select
+            aria-label="Lọc theo hành động"
+            value={action}
+            onChange={(e) => {
+              setAction(e.target.value as AuditAction | "");
+              setPage(1);
+            }}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
+          >
+            <option value="">Mọi hành động</option>
+            <option value="insert">Thêm mới</option>
+            <option value="update">Sửa</option>
+            <option value="delete">Xoá</option>
+          </select>
+        </div>
       </div>
 
       {!data ? (
@@ -129,7 +123,7 @@ export default function Audit() {
           description="Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm."
         />
       ) : (
-        <ul className="space-y-3">
+        <ul className="rounded-lg border bg-card divide-y overflow-hidden">
           {data.rows.map((r) => (
             <AuditItem
               key={r.id}
@@ -215,77 +209,114 @@ function AuditItem({
     (row.after as Record<string, unknown> | null)?.name ??
     null;
 
-  const date = new Date(row.changed_at).toLocaleString("vi-VN");
+  const dateFull = new Date(row.changed_at).toLocaleString("vi-VN");
+  const dateShort = formatAuditRelative(row.changed_at);
+  const canRestoreEntry =
+    canRestore && isRestorableEntity(row.entity_type);
+  const canViewDetail = row.entity_type === "person";
 
   return (
-    <li className="rounded-md border bg-card p-3 space-y-2">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="text-sm">
-          <span
-            className={`font-medium ${
-              row.action === "delete"
-                ? "text-destructive"
-                : row.action === "insert"
-                  ? "text-accent"
-                  : ""
-            }`}
-          >
-            {ACTION_LABEL[row.action]} {ENTITY_LABEL[row.entity_type]}
+    <li className="hover:bg-muted/20 transition-colors">
+      {/* Compact row — 1 dòng cho mọi info chính */}
+      <div className="flex items-center gap-3 px-3 sm:px-4 py-2.5">
+        {/* Action badge */}
+        <span
+          className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium shrink-0 ${ACTION_BADGE[row.action]}`}
+          title={`Hành động: ${ACTION_LABEL[row.action]}`}
+        >
+          {ACTION_LABEL[row.action]}
+        </span>
+
+        {/* Entity + name */}
+        <div className="flex-1 min-w-0 flex items-baseline gap-1.5 truncate">
+          <span className="text-xs text-muted-foreground shrink-0">
+            {ENTITY_LABEL[row.entity_type]}
           </span>
           {name !== null && (
-            <span className="ml-2 text-muted-foreground">— {String(name)}</span>
+            <span className="text-sm font-medium truncate">
+              {String(name)}
+            </span>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">{date}</span>
-      </div>
 
-      <div className="flex items-center gap-1">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setExpanded((x) => !x)}
-          aria-label={expanded ? "Thu gọn" : "Xem chi tiết"}
-          title={expanded ? "Thu gọn" : "Xem chi tiết"}
-          aria-expanded={expanded}
-          className="h-8 w-8 p-0"
+        {/* Date */}
+        <time
+          className="hidden sm:block text-xs text-muted-foreground tabular-nums shrink-0"
+          dateTime={row.changed_at}
+          title={dateFull}
         >
-          <IconChevronUp
-            className={`h-4 w-4 transition-transform ${
-              expanded ? "" : "rotate-180"
-            }`}
-          />
-        </Button>
-        {canRestore && isRestorableEntity(row.entity_type) && (
+          {dateShort}
+        </time>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          {canViewDetail && (
+            <Button
+              asChild
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <Link
+                to={`/clans/${row.clan_id}/people/${row.entity_id}`}
+                aria-label="Xem trang chi tiết"
+                title="Xem trang chi tiết"
+              >
+                <IconArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+          {canRestoreEntry && (
+            <Button
+              size="sm"
+              variant="ghost"
+              data-testid="audit-restore-button"
+              disabled={restoreM.isPending}
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Khôi phục về trạng thái ${
+                    row.action === "delete" ? "trước khi xoá" : "trước khi sửa"
+                  }?`,
+                  confirmLabel: "Khôi phục",
+                });
+                if (ok) restoreM.mutate();
+              }}
+              aria-label="Khôi phục"
+              title={
+                restoreM.isPending
+                  ? "Đang khôi phục…"
+                  : "Khôi phục về trạng thái trước"
+              }
+              className="h-8 w-8 p-0 text-primary disabled:opacity-50"
+            >
+              <IconUndo className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"
-            data-testid="audit-restore-button"
-            disabled={restoreM.isPending}
-            onClick={async () => {
-              const ok = await confirm({
-                title: `Khôi phục về trạng thái ${
-                  row.action === "delete" ? "trước khi xoá" : "trước khi sửa"
-                }?`,
-                confirmLabel: "Khôi phục",
-              });
-              if (ok) restoreM.mutate();
-            }}
-            aria-label="Khôi phục"
-            title={
-              restoreM.isPending ? "Đang khôi phục…" : "Khôi phục bản ghi"
-            }
-            className="h-8 w-8 p-0 text-primary disabled:opacity-50"
+            onClick={() => setExpanded((x) => !x)}
+            aria-label={expanded ? "Thu gọn" : "Xem JSON diff"}
+            title={expanded ? "Thu gọn" : "Xem JSON diff trước/sau"}
+            aria-expanded={expanded}
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
           >
-            <IconUndo className="h-4 w-4" />
+            <IconChevronUp
+              className={`h-4 w-4 transition-transform ${
+                expanded ? "" : "rotate-180"
+              }`}
+            />
           </Button>
-        )}
-        {restoreM.isSuccess && (
-          <span className="text-xs text-accent ml-1">✓ đã khôi phục</span>
-        )}
+        </div>
       </div>
 
+      {restoreM.isSuccess && (
+        <p className="px-4 pb-2 text-xs text-accent">
+          ✓ Đã khôi phục
+        </p>
+      )}
       {restoreM.error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mx-3 mb-2">
           <AlertDescription>
             {(restoreM.error as Error).message}
           </AlertDescription>
@@ -293,35 +324,62 @@ function AuditItem({
       )}
 
       {expanded && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-          {row.before && (
-            <div>
-              <p className="font-medium mb-1">Trước</p>
-              <pre className="bg-muted/40 rounded p-2 overflow-x-auto max-h-64">
-                {JSON.stringify(row.before, null, 2)}
-              </pre>
-            </div>
-          )}
-          {row.after && (
-            <div>
-              <p className="font-medium mb-1">Sau</p>
-              <pre className="bg-muted/40 rounded p-2 overflow-x-auto max-h-64">
-                {JSON.stringify(row.after, null, 2)}
-              </pre>
-            </div>
-          )}
+        <div className="border-t bg-muted/10 px-3 sm:px-4 py-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            {row.before && (
+              <div>
+                <p className="font-medium mb-1 text-muted-foreground">
+                  Trước
+                </p>
+                <pre className="bg-card rounded p-2 overflow-x-auto max-h-64 border">
+                  {JSON.stringify(row.before, null, 2)}
+                </pre>
+              </div>
+            )}
+            {row.after && (
+              <div>
+                <p className="font-medium mb-1 text-muted-foreground">
+                  Sau
+                </p>
+                <pre className="bg-card rounded p-2 overflow-x-auto max-h-64 border">
+                  {JSON.stringify(row.after, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
       )}
-
-      <div className="text-xs text-muted-foreground">
-        <Link
-          to={`/clans/${row.clan_id}/people/${row.entity_id}`}
-          className="hover:underline"
-          hidden={row.entity_type !== "person"}
-        >
-          Xem trang chi tiết →
-        </Link>
-      </div>
     </li>
   );
+}
+
+const ACTION_BADGE: Record<AuditAction, string> = {
+  insert:
+    "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
+  update: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/30",
+  delete:
+    "bg-destructive/10 text-destructive border border-destructive/30",
+};
+
+/**
+ * "vừa xong" / "10 phút" / "Hôm qua" / "5 ngày" / dd/MM/yyyy — khớp
+ * format relative dùng ở Board + Announcements.
+ */
+function formatAuditRelative(iso: string): string {
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diffMs = now - then;
+  const diffMin = Math.round(diffMs / 60_000);
+  const diffHr = Math.round(diffMs / 3_600_000);
+  const diffDay = Math.round(diffMs / 86_400_000);
+  if (diffMin < 1) return "vừa xong";
+  if (diffMin < 60) return `${diffMin} phút`;
+  if (diffHr < 24) return `${diffHr} giờ`;
+  if (diffDay === 1) return "Hôm qua";
+  if (diffDay < 7) return `${diffDay} ngày`;
+  return new Date(iso).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
