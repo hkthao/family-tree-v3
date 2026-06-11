@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { IconX } from "@/components/icons";
 import { useMascotTip } from "@/hooks/useMascotTip";
@@ -16,8 +16,24 @@ const AUTO_HIDE_MS = 5000;
  * the × button just closes (tips are never marked permanently
  * dismissed — they keep rotating).
  */
+/**
+ * Routes mà linh vật KHÔNG xuất hiện — các trang công khai / pre-auth
+ * (login/signup) hoặc share-view chỉ-đọc. Linh vật mang tip dành cho
+ * user đăng nhập, đứng cạnh form đăng nhập trông lạc lõng + che nút.
+ */
+const HIDE_ON_ROUTES = ["/login", "/signup", "/lien-he", "/changelog"];
+
+function isHiddenRoute(pathname: string): boolean {
+  return (
+    HIDE_ON_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
+    pathname.startsWith("/share/") ||
+    pathname.startsWith("/inlaws/confirm/")
+  );
+}
+
 export function MascotTip() {
   const { tip, cycle, muted } = useMascotTip();
+  const { pathname } = useLocation();
   const [showBubble, setShowBubble] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
 
@@ -50,6 +66,7 @@ export function MascotTip() {
   }, [tip]);
 
   if (muted) return null;
+  if (isHiddenRoute(pathname)) return null;
 
   const hasTip = tip !== null;
 
