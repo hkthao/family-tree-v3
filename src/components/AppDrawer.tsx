@@ -404,11 +404,13 @@ function buildSections(
   sections.push({ label: "Chung", items: global });
 
   // -- Clan-scoped sections ------------------------------------------------
-  // Split the clan menu into three semantic groups so the list of ~13 items
-  // is scannable instead of one long undifferentiated column:
-  //   1. <clan name>   — read-only views every member can use
-  //   2. Cập nhật      — data-entry tools (editor+)
-  //   3. Quản trị      — clan administration (admin)
+  // 4 nhóm semantic — danh sách 13-14 items chia thành cụm 3-5 dễ scan:
+  //   1. <clan name>  — trang chủ + giao tiếp (Tổng quan / Hôm nay /
+  //      Bảng tin / Sự kiện)
+  //   2. Dữ liệu      — tra cứu người (Danh bạ / Cây / Trực hệ / Xưng hô)
+  //   3. Cập nhật     — data-entry tools cho editor+ (gồm Việc cần làm,
+  //      Đóng góp, Nhập Excel, Gộp, Nhật ký)
+  //   4. Quản trị     — chỉ admin (Thành viên / Thông gia / QR / Cài đặt)
   if (clanId && clan) {
     const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
     const canEdit =
@@ -417,18 +419,36 @@ function buildSections(
       clan.myRole === "editor";
     const isMember = clan.isPlatformAdmin || clan.myRole !== null;
 
-    const browseItems: DrawerItem[] = [
-      {
-        to: `/clans/${clanId}`,
-        label: "Tổng quan",
-        icon: <IconHome className={ic} />,
-        end: true,
-      },
-      {
-        to: `/clans/${clanId}/today`,
-        label: "Hôm nay",
-        icon: <IconCalendar className={ic} />,
-      },
+    // ─── Section 1: <clan name> — trang chủ + giao tiếp ───────────
+    sections.push({
+      label: clan.name,
+      items: [
+        {
+          to: `/clans/${clanId}`,
+          label: "Tổng quan",
+          icon: <IconHome className={ic} />,
+          end: true,
+        },
+        {
+          to: `/clans/${clanId}/today`,
+          label: "Hôm nay",
+          icon: <IconCalendar className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/board`,
+          label: "Bảng tin",
+          icon: <IconScroll className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/events`,
+          label: "Sự kiện",
+          icon: <IconCalendar className={ic} />,
+        },
+      ],
+    });
+
+    // ─── Section 2: Dữ liệu — tra cứu người ────────────────────────
+    const dataItems: DrawerItem[] = [
       {
         to: `/clans/${clanId}/people`,
         label: "Danh bạ",
@@ -439,66 +459,76 @@ function buildSections(
         label: "Cây gia phả",
         icon: <IconTree className={ic} />,
       },
-      {
-        to: `/clans/${clanId}/events`,
-        label: "Sự kiện",
-        icon: <IconCalendar className={ic} />,
-      },
-      {
-        to: `/clans/${clanId}/board`,
-        label: "Bảng tin",
-        icon: <IconScroll className={ic} />,
-      },
     ];
     if (isMember) {
-      browseItems.push({
+      dataItems.push({
         to: `/clans/${clanId}/my-lineage`,
         label: "Đường trực hệ",
         icon: <IconUser className={ic} />,
       });
-      browseItems.push({
-        to: `/clans/${clanId}/todo`,
-        label: "Việc cần làm",
-        icon: <IconScroll className={ic} />,
-        badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
-      });
-      browseItems.push({
+      dataItems.push({
         to: `/clans/${clanId}/kinship`,
         label: "Tra cứu xưng hô",
         icon: <IconUsers className={ic} />,
       });
-      browseItems.push({
-        to: `/clans/${clanId}/audit`,
-        label: "Nhật ký",
-        icon: <IconScroll className={ic} />,
-      });
     }
-    sections.push({ label: clan.name, items: browseItems });
+    sections.push({ label: "Dữ liệu", items: dataItems });
 
+    // ─── Section 3: Cập nhật — data-entry cho editor+ ─────────────
     if (canEdit) {
+      const updateItems: DrawerItem[] = [
+        {
+          to: `/clans/${clanId}/todo`,
+          label: "Việc cần làm",
+          icon: <IconScroll className={ic} />,
+          badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
+        },
+        {
+          to: `/clans/${clanId}/contributions`,
+          label: "Đóng góp",
+          icon: <IconScroll className={ic} />,
+          badge:
+            pendingContribCount > 0 ? pendingContribCount : undefined,
+        },
+        {
+          to: `/clans/${clanId}/import`,
+          label: "Nhập từ Excel",
+          icon: <IconDownload className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/merge`,
+          label: "Gộp người trùng",
+          icon: <IconLink className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/audit`,
+          label: "Nhật ký",
+          icon: <IconScroll className={ic} />,
+        },
+      ];
+      sections.push({ label: "Cập nhật", items: updateItems });
+    } else if (isMember) {
+      // Member thường (viewer): vẫn cho thấy Việc cần làm + Nhật ký
+      // dù không sửa được — để xem tiến độ chung của họ.
       sections.push({
         label: "Cập nhật",
         items: [
           {
-            to: `/clans/${clanId}/contributions`,
-            label: "Đóng góp",
+            to: `/clans/${clanId}/todo`,
+            label: "Việc cần làm",
             icon: <IconScroll className={ic} />,
-            badge: pendingContribCount > 0 ? pendingContribCount : undefined,
+            badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
           },
           {
-            to: `/clans/${clanId}/import`,
-            label: "Nhập từ Excel",
-            icon: <IconDownload className={ic} />,
-          },
-          {
-            to: `/clans/${clanId}/merge`,
-            label: "Gộp người trùng",
-            icon: <IconLink className={ic} />,
+            to: `/clans/${clanId}/audit`,
+            label: "Nhật ký",
+            icon: <IconScroll className={ic} />,
           },
         ],
       });
     }
 
+    // ─── Section 4: Quản trị — admin only ─────────────────────────
     if (isAdmin) {
       sections.push({
         label: "Quản trị",
@@ -512,7 +542,8 @@ function buildSections(
             to: `/clans/${clanId}/inlaws`,
             label: "Liên kết thông gia",
             icon: <IconLink className={ic} />,
-            badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
+            badge:
+              pendingInlawCount > 0 ? pendingInlawCount : undefined,
           },
           {
             to: `/clans/${clanId}/qr-export`,
