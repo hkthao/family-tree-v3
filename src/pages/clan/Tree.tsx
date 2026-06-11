@@ -872,6 +872,7 @@ export default function Tree() {
             {!chartActive && (
               <button
                 type="button"
+                data-testid="tree-activate-overlay"
                 onClick={() => setChartActive(true)}
                 className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-card/40 backdrop-blur-[1px] print-hide"
                 style={{ touchAction: "pan-y" }}
@@ -889,6 +890,7 @@ export default function Tree() {
               >
                 <button
                   type="button"
+                  data-testid="tree-zoom-in"
                   onClick={() => zoomBy(1.3)}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
                   aria-label="Phóng to"
@@ -898,6 +900,7 @@ export default function Tree() {
                 </button>
                 <button
                   type="button"
+                  data-testid="tree-zoom-out"
                   onClick={() => zoomBy(1 / 1.3)}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
                   aria-label="Thu nhỏ"
