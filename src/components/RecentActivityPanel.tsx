@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
-import { IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queries/keys";
-import { listAudit, type AuditRow } from "@/lib/queries/audit";
+import { listAudit, type AuditAction, type AuditRow } from "@/lib/queries/audit";
 
 interface Props {
   clanId: string;
@@ -12,53 +11,47 @@ interface Props {
 }
 
 const ENTITY_LABEL: Record<string, string> = {
-  person: "người",
-  family: "gia đình",
-  branch: "chi",
+  person: "Người",
+  family: "Gia đình",
+  branch: "Chi",
+  person_link: "Thông gia",
 };
+
 const ACTION_LABEL: Record<string, string> = {
-  insert: "Thêm",
-  update: "Cập nhật",
+  insert: "Thêm mới",
+  update: "Sửa",
   delete: "Xoá",
 };
 
 /**
- * Per-action visual treatment for the circle that leads each row.
- * Using a small coloured icon avatar instead of a full-row pill keeps
- * the feed scannable — the eye can pick out a delete (red) or an
- * insert (green) without the row screaming for attention.
+ * Badge color theo action — khớp `/audit` để 2 panel cùng visual:
+ *   insert = emerald, update = blue, delete = destructive.
  */
-const ACTION_VISUAL: Record<
-  string,
-  { icon: React.ReactNode; classes: string }
-> = {
-  insert: {
-    icon: <IconPlus className="h-4 w-4" />,
-    classes: "bg-accent/20 text-accent",
-  },
-  update: {
-    icon: <IconPencil className="h-4 w-4" />,
-    classes: "bg-primary/15 text-primary",
-  },
-  delete: {
-    icon: <IconTrash className="h-4 w-4" />,
-    classes: "bg-destructive/15 text-destructive",
-  },
+const ACTION_BADGE: Record<string, string> = {
+  insert:
+    "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
+  update:
+    "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/30",
+  delete:
+    "bg-destructive/10 text-destructive border border-destructive/30",
 };
 
-function timeAgo(iso: string): string {
+function formatRelative(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();
-  const sec = Math.floor((now - then) / 1000);
-  if (sec < 60) return "vừa xong";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min} phút trước`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr} giờ trước`;
-  const d = Math.floor(hr / 24);
-  if (d < 7) return `${d} ngày trước`;
-  // Fall back to absolute date past a week.
-  return new Date(iso).toLocaleDateString("vi-VN");
+  const diffMin = Math.round((now - then) / 60_000);
+  const diffHr = Math.round((now - then) / 3_600_000);
+  const diffDay = Math.round((now - then) / 86_400_000);
+  if (diffMin < 1) return "vừa xong";
+  if (diffMin < 60) return `${diffMin} phút`;
+  if (diffHr < 24) return `${diffHr} giờ`;
+  if (diffDay === 1) return "Hôm qua";
+  if (diffDay < 7) return `${diffDay} ngày`;
+  return new Date(iso).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 function entityName(r: AuditRow): string {
@@ -68,6 +61,12 @@ function entityName(r: AuditRow): string {
   return "(không tên)";
 }
 
+/**
+ * "Hoạt động gần đây" trên Dashboard — same visual contract như trang
+ * `/audit`: flat list, badge action color-coded, time relative dạt
+ * phải. Chỉ ngắn (limit=8) và không có nút Khôi phục / Xem JSON
+ * (those live in /audit).
+ */
 export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -99,41 +98,41 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
           Xem nhật ký →
         </Link>
       </div>
-      <ul className="space-y-1">
+      <ul className="rounded-lg border bg-card divide-y overflow-hidden">
         {data.rows.map((r) => {
-          const action = ACTION_LABEL[r.action] ?? r.action;
-          const entity = ENTITY_LABEL[r.entity_type] ?? r.entity_type;
-          const visual = ACTION_VISUAL[r.action] ?? {
-            icon: null,
-            classes: "bg-muted text-muted-foreground",
-          };
+          const action = (r.action as AuditAction) || "update";
           const linkTarget =
             r.entity_type === "person"
               ? `/clans/${clanId}/people/${r.entity_id}`
               : `/clans/${clanId}/audit`;
           return (
-            <li key={r.id}>
+            <li key={r.id} className="hover:bg-muted/20 transition-colors">
               <Link
                 to={linkTarget}
-                className="flex items-center gap-3 rounded-md px-2 py-2 -mx-2 hover:bg-muted/40"
+                className="flex items-center gap-3 px-3 sm:px-4 py-2.5"
               >
                 <span
-                  className={`h-8 w-8 rounded-full inline-flex items-center justify-center shrink-0 ${visual.classes}`}
-                  aria-hidden="true"
+                  className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium shrink-0 ${ACTION_BADGE[action] ?? "bg-muted"}`}
                 >
-                  {visual.icon}
+                  {ACTION_LABEL[action] ?? action}
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">
+
+                <div className="flex-1 min-w-0 flex items-baseline gap-1.5 truncate">
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {ENTITY_LABEL[r.entity_type] ?? r.entity_type}
+                  </span>
+                  <span className="text-sm font-medium truncate">
                     {entityName(r)}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {action} {entity}
-                  </p>
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-                  {timeAgo(r.changed_at)}
-                </span>
+
+                <time
+                  className="text-xs text-muted-foreground tabular-nums shrink-0"
+                  dateTime={r.changed_at}
+                  title={new Date(r.changed_at).toLocaleString("vi-VN")}
+                >
+                  {formatRelative(r.changed_at)}
+                </time>
               </Link>
             </li>
           );
