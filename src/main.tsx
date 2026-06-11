@@ -88,7 +88,10 @@ createRoot(document.getElementById("root")!).render(
           // v4: clan_posts query shape thay đổi từ ClanPost[] sang
           //     {rows, total} cho pagination; persisted cache cũ dạng
           //     array khiến postsQ.data.total undefined → "no posts".
-          buster: "v4",
+          // v5: announcements list cũ cached empty (trước khi seed prod);
+          //     bell count refresh từ RPC nhưng list query dính cache
+          //     → "Chưa có thông báo" dù badge hiện 1.
+          buster: "v5",
         }}
       >
         <App />
