@@ -335,6 +335,7 @@ function PersonPicker({
             <div className="relative">
               <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
+                data-testid={`merge-picker-${title === "Giữ lại" ? "winner" : "loser"}-input`}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Tên người…"
