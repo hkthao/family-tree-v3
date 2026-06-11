@@ -25,10 +25,10 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+    <div className="flex flex-col sm:flex-row sm:items-start gap-1.5">
       <header className="flex items-start gap-2 flex-1 min-w-0">
         <span
-          className="text-primary shrink-0 mt-1 [&>svg]:h-5 [&>svg]:w-5 sm:[&>svg]:h-6 sm:[&>svg]:w-6"
+          className="text-primary shrink-0 mt-0.5 [&>svg]:h-5 [&>svg]:w-5 sm:[&>svg]:h-6 sm:[&>svg]:w-6"
           aria-hidden="true"
         >
           {icon}
@@ -38,13 +38,11 @@ export function PageHeader({
             {title}
           </h1>
           {description && (
-            <p className="text-sm text-muted-foreground leading-snug mt-0.5">
+            <p className="text-sm text-muted-foreground leading-snug">
               {description}
             </p>
           )}
-          <div className="mt-0.5">
-            <PageHelpVideo size="text" />
-          </div>
+          <PageHelpVideo size="text" />
         </div>
       </header>
       {actions && (
