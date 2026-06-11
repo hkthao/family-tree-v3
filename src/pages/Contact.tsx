@@ -71,20 +71,16 @@ export default function Contact() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-2xl py-6 px-4 space-y-6">
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
         <nav>
           <BackLink fallback="/clans" />
         </nav>
 
-        <header className="space-y-1">
-          <h1 className="clan-name text-2xl sm:text-3xl font-semibold">
-            Liên hệ / phản hồi
-          </h1>
-          <p className="text-muted-foreground">
-            Mọi ý kiến đều giúp app tốt hơn. Không cần ngại — viết ngắn cũng
-            được. Có thể gửi không cần đăng nhập.
-          </p>
-        </header>
+        <h2 className="text-2xl font-semibold">Liên hệ / phản hồi</h2>
+        <p className="text-sm text-muted-foreground">
+          Mọi ý kiến đều giúp app tốt hơn. Không cần ngại — viết ngắn cũng
+          được. Có thể gửi không cần đăng nhập.
+        </p>
 
         {sent && (
           <Alert>

@@ -46,7 +46,7 @@ export default function Changelog() {
   return (
     <div className="min-h-dvh bg-background">
       <header className="border-b bg-background sticky top-0 z-30">
-        <div className="container max-w-3xl flex items-center justify-between gap-2 px-4 h-[64px]">
+        <div className="container max-w-4xl flex items-center justify-between gap-2 px-4 h-[64px]">
           <Link
             to="/"
             className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
@@ -65,13 +65,11 @@ export default function Changelog() {
         </div>
       </header>
 
-      <main className="container max-w-3xl py-8 px-4 space-y-6">
-        <header className="space-y-2">
-          <h1 className="clan-name text-3xl font-semibold">Cập nhật mới</h1>
-          <p className="text-muted-foreground">
-            Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app.
-          </p>
-        </header>
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
+        <h2 className="text-2xl font-semibold">Cập nhật mới</h2>
+        <p className="text-sm text-muted-foreground">
+          Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app.
+        </p>
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
         {error && (
