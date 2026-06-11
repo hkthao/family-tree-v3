@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
 import { BoardPostForm } from "@/components/BoardPostForm";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
@@ -50,9 +50,17 @@ export default function BoardPostEdit() {
 
   return (
     <div className="space-y-3">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}/board/${postId}`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Bảng tin", to: `/clans/${clanId}/board` },
+          {
+            label: post.title ?? "Bài viết",
+            to: `/clans/${clanId}/board/${postId}`,
+          },
+          { label: "Sửa" },
+        ]}
+      />
 
       <h2 className="text-2xl font-semibold">Sửa bài</h2>
 

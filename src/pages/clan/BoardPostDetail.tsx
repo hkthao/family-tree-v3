@@ -6,7 +6,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
 import {
   IconCheck,
@@ -76,9 +76,13 @@ export default function BoardPostDetail() {
 
   return (
     <div className="space-y-3">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}/board`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Bảng tin", to: `/clans/${clanId}/board` },
+          { label: post?.title ?? "Bài viết" },
+        ]}
+      />
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
       {error && (

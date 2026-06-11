@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, Navigate, useParams } from "react-router-dom";
 
-import { BackLink } from "@/components/BackLink";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { ClanPostCard } from "@/components/ClanPostCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
@@ -29,9 +29,13 @@ export default function BoardModeration() {
 
   return (
     <div className="space-y-3">
-      <nav>
-        <BackLink fallback={`/clans/${clanId}/board`} />
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Bảng tin", to: `/clans/${clanId}/board` },
+          { label: "Duyệt bài" },
+        ]}
+      />
 
       <h2 className="text-2xl font-semibold">Duyệt bài</h2>
       <p className="text-sm text-muted-foreground">
