@@ -80,8 +80,8 @@ export default function AnnouncementDetail() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <nav>
+      <main className="container max-w-2xl py-10 px-4">
+        <nav className="mb-8">
           <BackLink fallback="/announcements" />
         </nav>
 
@@ -105,50 +105,53 @@ export default function AnnouncementDetail() {
         )}
 
         {row && (
-          <article className="rounded-lg border bg-card shadow-sm overflow-hidden">
-            <div className="px-5 py-5 space-y-3">
-              <div className="flex items-center gap-2 flex-wrap text-xs">
-                <span
-                  className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${LEVEL_BADGE[row.level]}`}
-                >
-                  {LEVEL_LABEL[row.level]}
-                </span>
-                {row.is_public && (
-                  <span className="text-muted-foreground">· Public</span>
-                )}
-                {row.published_at && (
-                  <time
-                    className="ml-auto text-muted-foreground tabular-nums"
-                    dateTime={row.published_at}
-                  >
-                    {new Date(row.published_at).toLocaleString("vi-VN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </time>
-                )}
-              </div>
-
-              <h1 className="text-2xl font-semibold leading-snug">
-                {row.title}
-              </h1>
-
-              <div className="prose-sm max-w-none">
-                <p className="text-base whitespace-pre-line leading-relaxed">
-                  {row.body}
-                </p>
-              </div>
-
-              {row.expires_at && (
-                <p className="text-xs text-muted-foreground border-t pt-3">
-                  Hết hạn:{" "}
-                  {new Date(row.expires_at).toLocaleString("vi-VN")}
-                </p>
-              )}
+          <article>
+            {/* Eyebrow — level + public flag, nhỏ và mảnh */}
+            <div className="flex items-center gap-2 flex-wrap text-xs uppercase tracking-wider text-muted-foreground">
+              <span
+                className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium normal-case ${LEVEL_BADGE[row.level]}`}
+              >
+                {LEVEL_LABEL[row.level]}
+              </span>
+              {row.is_public && <span>Public</span>}
             </div>
+
+            {/* Title — font serif Noto Serif (clan-name class) cho cảm
+                giác "đang đọc bài" như báo / blog. */}
+            <h1 className="clan-name text-3xl sm:text-4xl font-semibold leading-tight mt-4 mb-3">
+              {row.title}
+            </h1>
+
+            {row.published_at && (
+              <time
+                className="block text-sm text-muted-foreground tabular-nums"
+                dateTime={row.published_at}
+              >
+                {new Date(row.published_at).toLocaleString("vi-VN", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </time>
+            )}
+
+            <hr className="my-6 border-border" />
+
+            <div className="text-[17px] leading-[1.75] whitespace-pre-line text-foreground/90">
+              {row.body}
+            </div>
+
+            {row.expires_at && (
+              <p className="text-xs text-muted-foreground mt-10 pt-4 border-t italic">
+                Thông báo này sẽ hết hạn vào{" "}
+                <strong className="not-italic">
+                  {new Date(row.expires_at).toLocaleString("vi-VN")}
+                </strong>
+                .
+              </p>
+            )}
           </article>
         )}
       </main>
