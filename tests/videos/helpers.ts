@@ -18,9 +18,12 @@ import type { Locator, Page } from "@playwright/test";
 export const SEED_EMAIL = "admin@example.test";
 export const SEED_PASSWORD = "demo-password-1234";
 
-export async function login(page: Page): Promise<void> {
+export async function login(
+  page: Page,
+  email: string = SEED_EMAIL,
+): Promise<void> {
   await page.goto("/login");
-  await page.getByLabel("Email").fill(SEED_EMAIL);
+  await page.getByLabel("Email").fill(email);
   await page.getByLabel("Mật khẩu").fill(SEED_PASSWORD);
   await page.getByRole("button", { name: /Đăng nhập$/ }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/login"), {
