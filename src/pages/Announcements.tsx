@@ -73,7 +73,12 @@ export default function Announcements() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <Breadcrumb items={[{ label: "Thông báo hệ thống" }]} />
+        <Breadcrumb
+          items={[
+            { label: "Dòng họ", to: "/clans" },
+            { label: "Thông báo hệ thống" },
+          ]}
+        />
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-2">
           <h2 className="text-2xl font-semibold sm:flex-1">

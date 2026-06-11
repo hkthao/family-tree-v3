@@ -72,7 +72,12 @@ export default function Contact() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <Breadcrumb items={[{ label: "Liên hệ / phản hồi" }]} />
+        <Breadcrumb
+          items={[
+            { label: "Dòng họ", to: "/clans" },
+            { label: "Liên hệ / phản hồi" },
+          ]}
+        />
 
         <h2 className="text-2xl font-semibold">Liên hệ / phản hồi</h2>
         <p className="text-sm text-muted-foreground">
