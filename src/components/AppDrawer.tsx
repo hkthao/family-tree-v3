@@ -10,15 +10,21 @@ import {
   IconBook,
   IconBuildings,
   IconCalendar,
-  IconDownload,
+  IconCopy,
+  IconHelp,
   IconHome,
   IconLink,
+  IconList,
+  IconPencil,
   IconPlus,
   IconQrCode,
   IconScroll,
   IconSettings,
   IconShield,
+  IconSparkles,
+  IconSun,
   IconTree,
+  IconUpload,
   IconUser,
   IconUserPlus,
   IconUsers,
@@ -432,12 +438,12 @@ function buildSections(
         {
           to: `/clans/${clanId}/today`,
           label: "Hôm nay",
-          icon: <IconCalendar className={ic} />,
+          icon: <IconSun className={ic} />,
         },
         {
           to: `/clans/${clanId}/board`,
           label: "Bảng tin",
-          icon: <IconScroll className={ic} />,
+          icon: <IconSparkles className={ic} />,
         },
         {
           to: `/clans/${clanId}/events`,
@@ -469,7 +475,7 @@ function buildSections(
       dataItems.push({
         to: `/clans/${clanId}/kinship`,
         label: "Tra cứu xưng hô",
-        icon: <IconUsers className={ic} />,
+        icon: <IconHelp className={ic} />,
       });
     }
     sections.push({ label: "Dữ liệu", items: dataItems });
@@ -480,25 +486,25 @@ function buildSections(
         {
           to: `/clans/${clanId}/todo`,
           label: "Việc cần làm",
-          icon: <IconScroll className={ic} />,
+          icon: <IconList className={ic} />,
           badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
         },
         {
           to: `/clans/${clanId}/contributions`,
           label: "Đóng góp",
-          icon: <IconScroll className={ic} />,
+          icon: <IconPencil className={ic} />,
           badge:
             pendingContribCount > 0 ? pendingContribCount : undefined,
         },
         {
           to: `/clans/${clanId}/import`,
           label: "Nhập từ Excel",
-          icon: <IconDownload className={ic} />,
+          icon: <IconUpload className={ic} />,
         },
         {
           to: `/clans/${clanId}/merge`,
           label: "Gộp người trùng",
-          icon: <IconLink className={ic} />,
+          icon: <IconCopy className={ic} />,
         },
         {
           to: `/clans/${clanId}/audit`,
@@ -516,7 +522,7 @@ function buildSections(
           {
             to: `/clans/${clanId}/todo`,
             label: "Việc cần làm",
-            icon: <IconScroll className={ic} />,
+            icon: <IconList className={ic} />,
             badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
           },
           {
