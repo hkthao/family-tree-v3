@@ -704,6 +704,7 @@ async function seedClanPosts(
       clan_id: demoClan.clanId,
       author_id: demoClan.ownerId,
       type: "event",
+      pinned: false,
       title: "Tảo mộ Thanh Minh",
       body:
         "Hẹn 7h sáng tại nhà thờ. Mang theo nhang đèn — quỹ họ lo hoa quả.",
@@ -715,6 +716,7 @@ async function seedClanPosts(
       clan_id: demoClan.clanId,
       author_id: demoClan.ownerId,
       type: "news",
+      pinned: false,
       body:
         "Đã hoàn tất sửa cổng nhà thờ tổ. Cảm ơn anh chị em đóng góp.",
       status: "published",
@@ -727,6 +729,7 @@ async function seedClanPosts(
       clan_id: demoClan.clanId,
       author_id: demoClan.ownerId,
       type: "death",
+      pinned: false,
       title: `Cáo phó: ${deceasedPerson.full_name}`,
       body: `Trân trọng báo tin cụ ${deceasedPerson.full_name} đã từ trần. Gia đình thông báo để bà con đến viếng.`,
       person_id: deceasedPerson.id,
@@ -740,6 +743,7 @@ async function seedClanPosts(
       clan_id: demoClan.clanId,
       author_id: demoClan.ownerId,
       type: "birth",
+      pinned: false,
       title: `Tin mừng: ${livingPerson.full_name} đã sinh con`,
       body: `Cháu khoẻ mạnh, cả nhà bình an. Xin báo tin để cả họ vui chung.`,
       person_id: livingPerson.id,
@@ -754,6 +758,7 @@ async function seedClanPosts(
     clan_id: demoClan.clanId,
     author_id: platformAdminId,
     type: "news",
+    pinned: false,
     body:
       "(Demo bài chờ duyệt) Em xin đề xuất họp họ qua Zoom cho người ở xa.",
     status: "pending",
