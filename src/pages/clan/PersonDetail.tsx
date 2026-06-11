@@ -53,6 +53,7 @@ import {
 } from "@/lib/lunarDate";
 import { track } from "@/lib/analytics";
 import { formatPartialDate } from "@/lib/partialDate";
+import { listPostsForPerson } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   getPersonRelationships,
@@ -361,6 +362,7 @@ export default function PersonDetail() {
             )}
 
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
+            <RelatedPostsSection personId={personId!} clanId={clan.id} />
 
             {/* Primary action row — Sửa (editors) or Đề xuất sửa
                 (non-editors). Admins don't need a "suggest" path
@@ -861,6 +863,65 @@ function MissingFieldsHint({
       <span>{missing.join(" · ")}</span>
       <span className="text-primary ml-1.5">→ Sửa</span>
     </Link>
+  );
+}
+
+/**
+ * Bài bảng tin đính kèm người này — cáo phó (`type='death'`), tin sinh
+ * (`type='birth'`), hoặc bất kỳ post nào set `person_id`. Chỉ
+ * `published`. Ẩn khi không có gì để khỏi tạo card rỗng.
+ */
+function RelatedPostsSection({
+  personId,
+  clanId,
+}: {
+  personId: string;
+  clanId: string;
+}) {
+  const { data } = useQuery({
+    queryKey: queryKeys.clanPostsForPerson(personId),
+    queryFn: () => listPostsForPerson(personId),
+    staleTime: 60_000,
+  });
+
+  if (!data || data.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Tin liên quan</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-3">
+          {data.map((p) => (
+            <li
+              key={p.id}
+              className="border-l-2 border-primary/40 pl-3 space-y-1"
+            >
+              <Link
+                to={`/clans/${clanId}/board`}
+                className="font-medium hover:underline block"
+              >
+                {p.title ?? (p.type === "death" ? "Cáo phó" : "Tin")}
+              </Link>
+              <p className="text-sm text-muted-foreground line-clamp-2 whitespace-pre-line">
+                {p.body}
+              </p>
+              <time
+                className="text-xs text-muted-foreground tabular-nums"
+                dateTime={p.created_at}
+              >
+                {new Date(p.created_at).toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
+              </time>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 

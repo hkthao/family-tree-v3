@@ -88,6 +88,50 @@ export async function listPendingPosts(
   return (data ?? []) as ClanPost[];
 }
 
+/**
+ * Bài đã `published` đính kèm 1 person (cáo phó/sinh) — hiện ở
+ * PersonDetail làm "Tin liên quan". RLS đã chặn cross-clan + ẩn bài
+ * pending/hidden cho non-author.
+ */
+export async function listPostsForPerson(
+  personId: string,
+  limit = 5,
+  client: Client = defaultClient,
+): Promise<ClanPost[]> {
+  const { data, error } = await client
+    .from("clan_posts")
+    .select(POST_COLUMNS)
+    .eq("person_id", personId)
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ClanPost[];
+}
+
+/**
+ * Bài type='event'/'notice' có `event_date` trong cửa sổ [from, to].
+ * Today.tsx dùng để gom vào danh sách sự kiện sắp tới.
+ */
+export async function listUpcomingEventPosts(
+  clanId: string,
+  fromIso: string,
+  toIso: string,
+  client: Client = defaultClient,
+): Promise<ClanPost[]> {
+  const { data, error } = await client
+    .from("clan_posts")
+    .select(POST_COLUMNS)
+    .eq("clan_id", clanId)
+    .eq("status", "published")
+    .in("type", ["event", "notice"])
+    .gte("event_date", fromIso)
+    .lte("event_date", toIso)
+    .order("event_date", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ClanPost[];
+}
+
 export async function getClanPost(
   id: string,
   client: Client = defaultClient,
