@@ -15,7 +15,8 @@
     "db:types": "supabase gen types typescript --local 2>/dev/null | awk '/^export type Json =/{seen=1} seen{print} /^} as const$/{exit}' > src/lib/database.types.ts",
     "test": "vitest",
     "test:rls": "vitest run src/test/rls",
-    "seed": "tsx scripts/seed-fixtures.ts"
+    "seed": "tsx scripts/seed-fixtures.ts",
+    "videos": "playwright test"
   },
   "dependencies": {
     "@dqcai/vn-lunar": "^1.0.1",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^10.4.0",
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/d3": "^7.4.3",

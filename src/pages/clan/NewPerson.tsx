@@ -244,6 +244,7 @@ export default function NewPerson() {
           </Label>
           <Input
             id="full_name"
+            data-testid="person-name-input"
             required
             autoFocus
             maxLength={200}
@@ -302,6 +303,7 @@ export default function NewPerson() {
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
+            data-testid="person-is-root-checkbox"
             checked={isRoot}
             onChange={(e) => setIsRoot(e.target.checked)}
             className="mt-1 h-5 w-5 accent-primary shrink-0"
@@ -444,6 +446,7 @@ export default function NewPerson() {
         <div className="sticky bottom-0 -mx-1 px-1 py-3 bg-background border-t flex flex-nowrap gap-2 sm:gap-3 z-10">
           <Button
             type="submit"
+            data-testid="person-submit-button"
             className="flex-1 min-w-0 sm:flex-none px-2 sm:px-4"
             disabled={mutation.isPending || !fullName.trim()}
           >
