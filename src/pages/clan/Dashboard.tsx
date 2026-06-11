@@ -6,11 +6,13 @@ import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import {
   IconDownload,
+  IconHome,
   IconList,
   IconPlus,
   IconTree,
   IconUpload,
 } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { RefreshButton } from "@/components/RefreshButton";
 import { VideoEmptyState } from "@/components/VideoEmptyState";
@@ -116,14 +118,18 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-2xl font-semibold">Tổng quan</h2>
-        <RefreshButton
-          clanId={clan.id}
-          cachedVersion={clan.data_version}
-          compact
-        />
-      </div>
+      <PageHeader
+        icon={<IconHome className="h-7 w-7" />}
+        title="Tổng quan"
+        description={`Trang chủ của ${clan.name}.`}
+        actions={
+          <RefreshButton
+            clanId={clan.id}
+            cachedVersion={clan.data_version}
+            compact
+          />
+        }
+      />
 
       {clan.description && <ClanDescription text={clan.description} />}
 

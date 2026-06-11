@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { VideoModal } from "@/components/HelpVideoButton";
-import { IconArrowLeft, IconArrowRight } from "@/components/icons";
+import { IconArrowLeft, IconArrowRight, IconPlay } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { unaccent } from "@/lib/unaccent";
 import {
@@ -59,15 +60,11 @@ export default function Videos() {
           ]}
         />
 
-        <header className="space-y-1">
-          <h1 className="clan-name text-2xl sm:text-3xl font-semibold">
-            Video hướng dẫn
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {VIDEO_TUTORIALS.length} video ngắn (~30-70 giây). Bấm card
-            để xem.
-          </p>
-        </header>
+        <PageHeader
+          icon={<IconPlay className="h-7 w-7" />}
+          title="Video hướng dẫn"
+          description={`${VIDEO_TUTORIALS.length} video ngắn (~30-70 giây). Bấm card để xem.`}
+        />
 
         {/* Search */}
         <input

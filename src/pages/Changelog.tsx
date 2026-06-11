@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import { AppLogo } from "@/components/AppLogo";
+import { IconSparkles } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   listPublicAnnouncements,
@@ -66,10 +68,11 @@ export default function Changelog() {
       </header>
 
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <h2 className="text-2xl font-semibold">Cập nhật mới</h2>
-        <p className="text-sm text-muted-foreground">
-          Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app.
-        </p>
+        <PageHeader
+          icon={<IconSparkles className="h-7 w-7" />}
+          title="Cập nhật mới"
+          description="Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app."
+        />
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
         {error && (
