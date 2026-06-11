@@ -396,6 +396,7 @@ export default function PersonDetail() {
               {canCreateQr && (
                 <Button
                   variant="outline"
+                  data-testid="person-qr-button"
                   className="flex-1 sm:flex-none"
                   onClick={() => {
                     setQrOpen(true);
