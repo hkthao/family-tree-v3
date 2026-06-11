@@ -23,6 +23,9 @@ import AiGenerate from "@/pages/clan/AiGenerate";
 import Audit from "@/pages/clan/Audit";
 import Board from "@/pages/clan/Board";
 import BoardModeration from "@/pages/clan/BoardModeration";
+import BoardPostDetail from "@/pages/clan/BoardPostDetail";
+import BoardPostEdit from "@/pages/clan/BoardPostEdit";
+import BoardPostNew from "@/pages/clan/BoardPostNew";
 import ContributionDetail from "@/pages/clan/ContributionDetail";
 import Contributions from "@/pages/clan/Contributions";
 import Dashboard from "@/pages/clan/Dashboard";
@@ -132,7 +135,10 @@ export default function App() {
           <Route path="inlaws" element={<Inlaws />} />
           <Route path="inlaws/new" element={<InlawsNew />} />
           <Route path="board" element={<Board />} />
+          <Route path="board/new" element={<BoardPostNew />} />
           <Route path="board/moderation" element={<BoardModeration />} />
+          <Route path="board/:postId" element={<BoardPostDetail />} />
+          <Route path="board/:postId/edit" element={<BoardPostEdit />} />
         </Route>
 
         <Route

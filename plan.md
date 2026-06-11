@@ -2537,3 +2537,721 @@ Tip `mute-mascot` (id 12 ở bảng trên) chỉ pop sau khi đã hiển thị
   - Push tip qua notification khi user offline lâu (lẫn lộn với
     Web Push mục 29 — dễ thành spam).
 
+## 32. Lớp giao tiếp: Thông báo hệ thống · Bảng tin dòng họ · Liên hệ/Phản hồi
+
+> Đề xuất chèn vào `plan.md` ngay sau §31 (Mascot). Văn bản tiếng Việt; tên bảng/cột/hàm tiếng Anh để khớp với phần còn lại của repo. Đánh số bên trong là `32.x` để không đụng các section cũ.
+>
+> **Quan trọng — đã tận dụng những gì có sẵn:**
+> - `is_platform_admin()`, `is_clan_admin(uuid)`, `is_clan_member(uuid)`, `is_caller_suspended()` đã tồn tại (`20260530131033_rls_policies.sql`, `20260530141401_member_management.sql`, `20260605130000_lineage_platform_admin.sql`).
+> - Bảng `feedback` đã có MVP (`20260610000000_feedback.sql`) — §32.4 là **nâng cấp**, không tạo mới.
+> - Web Push fan-out + `push_subscriptions` đã có (`20260607220000_web_push.sql`); §32.3 chỉ thêm event type, không xây lại pipeline.
+> - Trang **Hôm nay** đã tồn tại (`src/pages/clan/Today.tsx`); §32.3 đẩy thêm "tin mới + sự kiện sắp tới" lên đó.
+> - Edge Functions có sẵn pattern: `notify-events`, `notify-contribution`, `notify-inlaw`, `admin-action` — §32.6 thêm `notify-feedback` và mở rộng `notify-events` cho `clan_posts`.
+
+---
+
+### 32.1. Bối cảnh
+
+App đã public, mạnh ở **dữ liệu** (cây, người, quan hệ), thiếu **lớp giao tiếp giữa con người**. Ba kênh khác hẳn nhau, làm dần:
+
+| Lớp | Ai → ai | Giải quyết | Trạng thái hiện tại |
+|---|---|---|---|
+| **1. Thông báo hệ thống** | Platform admin → toàn bộ user | Tính năng mới, bảo trì, sửa lỗi | **Chưa có** |
+| **2. Bảng tin dòng họ** | Thành viên ↔ thành viên (trong 1 clan) | Họp họ, giỗ, tảo mộ, sinh, mất → giữ chân | **Chưa có** |
+| **3. Liên hệ / Phản hồi** | User → platform admin | Báo lỗi, góp ý, hỏi đáp | **MVP đã có**, cần nâng cấp |
+
+Không cần thêm khái niệm "platform admin" — đã có sẵn. Không cần thêm `is_clan_member` / `is_clan_admin` — đã có sẵn. Mỗi RLS dưới đây dùng đúng các helper này.
+
+---
+
+### 32.2. Module 1 — Thông báo hệ thống (làm trước)
+
+Migration mới: `supabase/migrations/<ts>_announcements.sql`.
+
+```sql
+-- 32.2 Announcements — broadcast channel from platform admin to all users.
+-- Cũng dùng làm nguồn duy nhất cho trang changelog public (xem 32.9 — Tối ưu).
+
+create type public.announcement_level
+  as enum ('info','update','warning','critical');
+
+create table public.announcements (
+  id           uuid primary key default gen_random_uuid(),
+  title        text not null,
+  body         text not null,
+  level        public.announcement_level not null default 'info',
+  published_at timestamptz,                    -- null = nháp; có giá trị = đã đăng
+  expires_at   timestamptz,                    -- null = không hết hạn
+  is_public    boolean not null default false, -- true = hiện cả ở trang changelog public (chưa đăng nhập)
+  created_by   uuid not null references auth.users(id),
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  constraint announcements_title_len check (char_length(btrim(title)) between 1 and 200),
+  constraint announcements_body_len  check (char_length(btrim(body))  between 1 and 20000),
+  constraint announcements_expires_after_published
+    check (expires_at is null or published_at is null or expires_at > published_at)
+);
+
+create index announcements_published_idx
+  on public.announcements (published_at desc) where published_at is not null;
+
+create trigger announcements_set_updated_at
+  before update on public.announcements
+  for each row execute function public.set_updated_at();   -- helper đã có
+
+-- Đánh dấu đã đọc, cho badge "chưa đọc" trên chuông.
+create table public.announcement_reads (
+  user_id         uuid not null references auth.users(id) on delete cascade,
+  announcement_id uuid not null references public.announcements(id) on delete cascade,
+  read_at         timestamptz not null default now(),
+  primary key (user_id, announcement_id)
+);
+
+create index announcement_reads_ann_idx
+  on public.announcement_reads (announcement_id);
+```
+
+**RLS — khoá theo role tường minh (`to anon` / `to authenticated`):**
+
+```sql
+alter table public.announcements enable row level security;
+
+-- Authenticated user đọc thông báo đã đăng & chưa hết hạn.
+create policy announcements_read_auth
+  on public.announcements for select
+  to authenticated
+  using (
+    published_at is not null and published_at <= now()
+    and (expires_at is null or expires_at > now())
+  );
+
+-- Anon đọc CHỈ thông báo được mark is_public = true (dùng cho trang changelog public).
+create policy announcements_read_anon
+  on public.announcements for select
+  to anon
+  using (
+    is_public = true
+    and published_at is not null and published_at <= now()
+    and (expires_at is null or expires_at > now())
+  );
+
+-- Platform admin xem được cả bản nháp (mọi row).
+create policy announcements_admin_read
+  on public.announcements for select
+  to authenticated
+  using (public.is_platform_admin());
+
+-- Chỉ platform admin tạo/sửa/xoá.
+create policy announcements_admin_write
+  on public.announcements for all
+  to authenticated
+  using (public.is_platform_admin())
+  with check (public.is_platform_admin());
+
+alter table public.announcement_reads enable row level security;
+create policy announcement_reads_owner
+  on public.announcement_reads for all
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+```
+
+**RPC count chưa đọc** (tránh client tự ghép 2 query):
+
+```sql
+create or replace function public.announcements_unread_count()
+  returns integer
+  language sql stable security definer set search_path = public, pg_temp
+  as $$
+    select count(*)::int
+    from public.announcements a
+    where a.published_at is not null and a.published_at <= now()
+      and (a.expires_at is null or a.expires_at > now())
+      and not exists (
+        select 1 from public.announcement_reads r
+        where r.announcement_id = a.id and r.user_id = auth.uid()
+      );
+  $$;
+
+create or replace function public.announcements_mark_all_read()
+  returns integer
+  language plpgsql security definer set search_path = public, pg_temp
+  as $$
+  declare n integer;
+  begin
+    if auth.uid() is null then raise exception 'Not authenticated'; end if;
+    insert into public.announcement_reads(user_id, announcement_id)
+    select auth.uid(), a.id
+    from public.announcements a
+    where a.published_at is not null and a.published_at <= now()
+      and (a.expires_at is null or a.expires_at > now())
+    on conflict do nothing;
+    get diagnostics n = row_count;
+    return n;
+  end; $$;
+
+revoke all on function public.announcements_unread_count() from public, anon;
+revoke all on function public.announcements_mark_all_read() from public, anon;
+grant execute on function public.announcements_unread_count() to authenticated;
+grant execute on function public.announcements_mark_all_read() to authenticated;
+```
+
+**UI**
+- Biểu tượng **chuông** ở header (`src/components/AppShell.tsx` hoặc tương đương) + badge số chưa đọc — gọi `announcements_unread_count()` lúc load + poll 60s (hoặc Realtime — xem 32.9).
+- `level='critical'` chưa đọc → render **banner** đỏ trên cùng app.
+- Trang `src/pages/Announcements.tsx`: danh sách + nút "đánh dấu đã đọc tất cả" (gọi `announcements_mark_all_read`).
+- Trang admin: `src/pages/admin/Announcements.tsx` (CRUD + preview + nút publish/expire).
+
+---
+
+### 32.3. Module 2 — Bảng tin dòng họ
+
+Migration: `supabase/migrations/<ts>_clan_posts.sql`.
+
+```sql
+create type public.clan_post_type
+  as enum ('news','event','birth','death','notice');
+
+create type public.clan_post_status
+  as enum ('published','pending','hidden');
+
+create type public.clan_comment_status
+  as enum ('published','hidden');
+
+create table public.clan_posts (
+  id          uuid primary key default gen_random_uuid(),
+  clan_id     uuid not null references public.clans(id) on delete cascade,
+  author_id   uuid not null references auth.users(id),
+  type        public.clan_post_type not null default 'news',
+  title       text,
+  body        text not null,
+  -- Liên kết tuỳ chọn tới person/event đã có trong cùng clan.
+  -- Cho phép "bài cáo phó" đính kèm person, "bài sự kiện" đính kèm event giỗ.
+  person_id   uuid references public.persons(id) on delete set null,
+  event_id    uuid references public.events(id)  on delete set null,
+  event_date  date,                              -- override nếu chưa nối với events
+  status      public.clan_post_status not null default 'published',
+  pinned      boolean not null default false,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  constraint clan_posts_title_len check (title is null or char_length(btrim(title)) <= 200),
+  constraint clan_posts_body_len  check (char_length(btrim(body)) between 1 and 20000)
+);
+
+create index clan_posts_clan_recent_idx
+  on public.clan_posts (clan_id, pinned desc, created_at desc)
+  where status = 'published';
+
+create index clan_posts_clan_pending_idx
+  on public.clan_posts (clan_id, created_at desc)
+  where status = 'pending';
+
+create trigger clan_posts_set_updated_at
+  before update on public.clan_posts
+  for each row execute function public.set_updated_at();
+
+create table public.clan_post_comments (
+  id         uuid primary key default gen_random_uuid(),
+  post_id    uuid not null references public.clan_posts(id) on delete cascade,
+  -- Denormalized cho RLS gọn. KHÔNG cho client set: trigger 32.3.t1 ghi đè.
+  clan_id    uuid not null references public.clans(id) on delete cascade,
+  author_id  uuid not null references auth.users(id),
+  body       text not null,
+  status     public.clan_comment_status not null default 'published',
+  created_at timestamptz not null default now(),
+  constraint clan_post_comments_body_len check (char_length(btrim(body)) between 1 and 4000)
+);
+
+create index clan_post_comments_post_idx
+  on public.clan_post_comments (post_id, created_at);
+
+-- Trigger 32.3.t1: ép clan_id của comment = clan_id của post.
+-- Lý do: tránh client gửi clan_id sai để bypass RLS chéo clan.
+create or replace function public.clan_post_comments_sync_clan()
+  returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
+  begin
+    new.clan_id := (select clan_id from public.clan_posts where id = new.post_id);
+    if new.clan_id is null then
+      raise exception 'Bài không tồn tại';
+    end if;
+    return new;
+  end; $$;
+
+create trigger clan_post_comments_sync_clan_ins
+  before insert on public.clan_post_comments
+  for each row execute function public.clan_post_comments_sync_clan();
+```
+
+**RLS — bám đúng vai trò sẵn có + chặn anon + chặn user bị treo:**
+
+```sql
+alter table public.clan_posts enable row level security;
+
+-- READ: thành viên clan. Người thường chỉ thấy 'published';
+-- author thấy bài 'pending' của chính mình; admin clan thấy mọi status.
+create policy clan_posts_read
+  on public.clan_posts for select
+  to authenticated
+  using (
+    (public.is_clan_member(clan_id) or public.is_platform_admin())
+    and (
+      status = 'published'
+      or author_id = auth.uid()
+      or public.is_clan_admin(clan_id)
+      or public.is_platform_admin()
+    )
+  );
+
+-- INSERT:
+--   - admin clan đăng tin chính thức (published) hoặc draft (pending) tuỳ ý
+--   - thành viên thường BUỘC 'pending' (chờ duyệt) — chống loạn & spam
+--   - user bị treo: không cho post
+create policy clan_posts_insert
+  on public.clan_posts for insert
+  to authenticated
+  with check (
+    public.is_clan_member(clan_id)
+    and author_id = auth.uid()
+    and not public.is_caller_suspended()
+    and (
+      public.is_clan_admin(clan_id)
+      or public.is_platform_admin()
+      or status = 'pending'
+    )
+  );
+
+-- UPDATE:
+--   - admin clan / platform admin: cập nhật bất kỳ cột nào (bao gồm duyệt, ghim, ẩn).
+--   - author: CHỈ được sửa nội dung của mình; KHÔNG được tự đổi 'status'/'pinned'.
+--     Để bảo vệ moderation gate, dùng trigger 32.3.t2 ép cột bất biến cho non-admin.
+create policy clan_posts_update
+  on public.clan_posts for update
+  to authenticated
+  using (
+    public.is_clan_admin(clan_id) or public.is_platform_admin() or author_id = auth.uid()
+  )
+  with check (
+    public.is_clan_admin(clan_id) or public.is_platform_admin() or author_id = auth.uid()
+  );
+
+-- Trigger 32.3.t2: chặn author non-admin đổi status/pinned/clan_id/author_id.
+-- Đây là KEY SECURITY GUARD — RLS một mình không enforce được "cột nào sửa được".
+create or replace function public.clan_posts_guard_update()
+  returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
+  declare is_priv boolean;
+  begin
+    is_priv := public.is_clan_admin(new.clan_id) or public.is_platform_admin();
+    if not is_priv then
+      -- Author non-admin: khoá các cột nhạy cảm.
+      new.status     := old.status;
+      new.pinned     := old.pinned;
+      new.clan_id    := old.clan_id;
+      new.author_id  := old.author_id;
+      -- Cho phép sửa title/body/type/person_id/event_id/event_date.
+    end if;
+    return new;
+  end; $$;
+
+create trigger clan_posts_guard_update_trg
+  before update on public.clan_posts
+  for each row execute function public.clan_posts_guard_update();
+
+-- DELETE: KHÔNG expose. Chính sách soft-delete = status='hidden'.
+-- Để dữ liệu lịch sử + audit không mất.
+
+alter table public.clan_post_comments enable row level security;
+
+create policy clan_post_comments_read
+  on public.clan_post_comments for select
+  to authenticated
+  using (
+    (public.is_clan_member(clan_id) or public.is_platform_admin())
+    and (status = 'published' or author_id = auth.uid() or public.is_clan_admin(clan_id))
+  );
+
+create policy clan_post_comments_insert
+  on public.clan_post_comments for insert
+  to authenticated
+  with check (
+    public.is_clan_member(clan_id)
+    and author_id = auth.uid()
+    and not public.is_caller_suspended()
+  );
+
+create policy clan_post_comments_update
+  on public.clan_post_comments for update
+  to authenticated
+  using (public.is_clan_admin(clan_id) or author_id = auth.uid())
+  with check (public.is_clan_admin(clan_id) or author_id = auth.uid());
+
+-- Guard tương tự cho comment: non-admin không đổi status được.
+create or replace function public.clan_post_comments_guard_update()
+  returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
+  begin
+    if not (public.is_clan_admin(new.clan_id) or public.is_platform_admin()) then
+      new.status   := old.status;
+      new.clan_id  := old.clan_id;
+      new.post_id  := old.post_id;
+      new.author_id:= old.author_id;
+    end if;
+    return new;
+  end; $$;
+
+create trigger clan_post_comments_guard_update_trg
+  before update on public.clan_post_comments
+  for each row execute function public.clan_post_comments_guard_update();
+```
+
+**Audit log moderation** — bám pattern `20260606205259_inlaws_audit.sql`:
+
+```sql
+create table public.clan_post_audit (
+  id         bigserial primary key,
+  post_id    uuid not null references public.clan_posts(id) on delete cascade,
+  actor_id   uuid not null references auth.users(id),
+  action     text not null check (action in ('publish','reject','hide','unhide','pin','unpin','edit')),
+  old_status public.clan_post_status,
+  new_status public.clan_post_status,
+  note       text,
+  created_at timestamptz not null default now()
+);
+create index clan_post_audit_post_idx on public.clan_post_audit (post_id, created_at desc);
+
+alter table public.clan_post_audit enable row level security;
+create policy clan_post_audit_read
+  on public.clan_post_audit for select to authenticated
+  using (
+    public.is_platform_admin()
+    or public.is_clan_admin((select clan_id from public.clan_posts where id = post_id))
+  );
+-- Không cho INSERT trực tiếp; chỉ trigger sau ghi.
+```
+
+**RPC moderation** — chuyển trạng thái phải đi qua RPC để vừa enforce vừa log:
+
+```sql
+create or replace function public.clan_post_moderate(
+  p_post_id uuid,
+  p_action  text,        -- 'publish' | 'reject' | 'hide' | 'unhide' | 'pin' | 'unpin'
+  p_note    text default null
+) returns void
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  v_post public.clan_posts;
+  v_old  public.clan_post_status;
+  v_new  public.clan_post_status;
+  v_pin  boolean;
+begin
+  select * into v_post from public.clan_posts where id = p_post_id;
+  if not found then raise exception 'Không thấy bài'; end if;
+
+  if not (public.is_clan_admin(v_post.clan_id) or public.is_platform_admin()) then
+    raise exception 'Không có quyền' using errcode = '42501';
+  end if;
+
+  v_old := v_post.status;
+  v_new := v_old;
+  v_pin := v_post.pinned;
+
+  case p_action
+    when 'publish' then v_new := 'published';
+    when 'reject' then  v_new := 'hidden';
+    when 'hide' then    v_new := 'hidden';
+    when 'unhide' then  v_new := 'published';
+    when 'pin' then     v_pin := true;
+    when 'unpin' then   v_pin := false;
+    else raise exception 'Action không hợp lệ';
+  end case;
+
+  update public.clan_posts set status = v_new, pinned = v_pin where id = p_post_id;
+
+  insert into public.clan_post_audit(post_id, actor_id, action, old_status, new_status, note)
+  values (p_post_id, auth.uid(), p_action, v_old, v_new, p_note);
+end; $$;
+
+revoke all on function public.clan_post_moderate(uuid, text, text) from public, anon;
+grant execute on function public.clan_post_moderate(uuid, text, text) to authenticated;
+```
+
+**Tích hợp với phần đã có:**
+- Bài `type='death'`/`'birth'` + `person_id` đã set → trang person hiển thị card "Tin liên quan".
+- Bài `type='event'` + `event_id` → đẩy lên trang `Today.tsx` cùng nguồn với events giỗ (đã có pattern âm lịch trong `notify_events_cron`).
+- Bài mới `status='published'` → web push fan-out cho thành viên đã opt-in. Mở rộng `notify-events` Edge Function: thêm event source `clan_post_published` (xem §32.6).
+- Mascot tip §31: trigger thêm "bạn có **3 bài chờ duyệt** trong họ X" cho admin clan.
+
+---
+
+### 32.4. Module 3 — Nâng cấp Feedback (không tạo mới)
+
+Migration: `supabase/migrations/<ts>_feedback_upgrade.sql`. Giữ MVP đã có, chỉ bổ sung.
+
+```sql
+-- Thêm phân loại & trạng thái xử lý.
+create type public.feedback_category as enum ('bug','idea','question','other');
+create type public.feedback_status   as enum ('new','seen','resolved','spam');
+
+alter table public.feedback
+  add column category    public.feedback_category not null default 'other',
+  add column status      public.feedback_status   not null default 'new',
+  add column page_path   text,                         -- ĐÃ làm sạch (xem trigger)
+  add column resolved_at timestamptz,
+  add column resolved_by uuid references auth.users(id),
+  add column admin_note  text;
+
+create index feedback_status_idx on public.feedback (status, created_at desc);
+
+-- Trigger 32.4.t1: sanitize page_url → page_path.
+-- Bỏ origin, tham số query nhạy cảm, thay UUID/số ID thành :id.
+create or replace function public.feedback_sanitize_path()
+  returns trigger language plpgsql as $$
+  declare p text;
+  begin
+    p := coalesce(new.page_url, '');
+    -- bỏ origin + query
+    p := regexp_replace(p, '^https?://[^/]+', '');
+    p := regexp_replace(p, '\?.*$', '');
+    -- UUID → :id
+    p := regexp_replace(p, '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', ':id', 'g');
+    -- Số dài (ID) → :id
+    p := regexp_replace(p, '/\d{2,}', '/:id', 'g');
+    if char_length(p) > 200 then p := substring(p from 1 for 200); end if;
+    new.page_path := nullif(p, '');
+    -- Không tin page_url của client cho mục đích long-term: drop raw để không rò tên/id.
+    new.page_url := null;
+    return new;
+  end; $$;
+
+create trigger feedback_sanitize_path_trg
+  before insert on public.feedback
+  for each row execute function public.feedback_sanitize_path();
+
+-- Chính sách cho phép user đọc lại feedback của chính mình (lịch sử "đã gửi").
+-- Policy hiện tại chỉ cho platform admin select → thêm policy owner riêng,
+-- KHÔNG drop policy cũ.
+create policy feedback_select_owner
+  on public.feedback for select
+  to authenticated
+  using (user_id is not null and user_id = auth.uid());
+
+-- UPDATE: chỉ platform admin (đổi status/admin_note/resolved_*).
+create policy feedback_update_admin
+  on public.feedback for update
+  to authenticated
+  using (public.is_platform_admin())
+  with check (public.is_platform_admin());
+```
+
+**Edge Function `notify-feedback`** (chi tiết §32.6): trigger từ `after insert on feedback`, đẩy email/Telegram cho platform admin.
+
+**Anon spam** — `feedback_insert_anyone` đang mở cho `anon`. Đừng siết ở DB, chặn ở edge:
+- Đếm theo IP trong 1 giờ qua Edge Function trung gian (`submit-feedback`); reject nếu > N. Tránh cho frontend gọi RLS trực tiếp khi anon.
+- Hoặc trước mắt: thêm `created_at` index + cron cứng "xoá feedback anon > 30 ngày chưa được flag" để không phình DB.
+
+---
+
+### 32.5. Bẫy riêng tư & vận hành (vì app đã public)
+
+1. **RLS chéo clan**: mọi policy ở §32.3 đã có `to authenticated` + `is_clan_member`. Test thủ công + Playwright (xem §32.8).
+2. **`page_path` sanitize ở DB, không tin client** (§32.4.t1).
+3. **`clan_id` của comment ép server-side** (§32.3.t1) — không cho client gửi.
+4. **Cột nhạy cảm khoá trong trigger guard** (§32.3.t2) — không dùng RLS để chặn từng cột; nó không đủ.
+5. **Không expose DELETE** cho bài/comment — soft delete bằng `status='hidden'`.
+6. **Audit moderation đầy đủ** — ai duyệt/ẩn/ghim, lúc nào, ghi chú gì.
+7. **User suspended không đăng/comment được** (`is_caller_suspended()` trong policy insert).
+8. **Anon vào announcements** chỉ qua flag `is_public=true`; tin nội bộ default `false`.
+9. **Tin "bé Z chào đời" / "cụ Y vừa mất"** là dữ liệu người sống — không ra ngoài clan, không index public, không qua `share-view`.
+10. **Rate limit edge** cho `submit-feedback` + (về sau) cho insert `clan_posts` để chặn spam.
+
+---
+
+### 32.6. Edge Functions
+
+Bám pattern `notify-events` / `notify-contribution` đã có.
+
+**`supabase/functions/notify-feedback/index.ts`** — chạy khi có feedback mới:
+- Trigger SQL: `after insert on feedback` → gọi `pg_net.http_post` tới function (đúng pattern `notify-contribution`).
+- Body: email/Telegram cho platform admin (env `FEEDBACK_ALERT_EMAIL`, `FEEDBACK_ALERT_TG_CHAT`).
+- Payload **không** chứa `body` raw nếu length > 500 — chỉ link tới `/admin/feedback/<id>`.
+
+**Mở rộng `notify-events/index.ts`** — thêm source `clan_post_published`:
+- Khi `clan_posts.status` chuyển sang `published` (via RPC `clan_post_moderate`), enqueue 1 record vào bảng outbox để function fan-out push tới thành viên clan đã opt-in (`profiles.notify_via_push = true`).
+- Reuse `push_subscriptions` + concurrency cap đã có ở §29.12.
+- **Không** push cho author (đỡ phiền).
+- Nếu là `type='death'`/`'birth'`/`'event'` → priority cao hơn (icon riêng, title "Tin họ <name>").
+
+**`supabase/functions/submit-feedback/index.ts`** — entry public cho anon:
+- Rate limit theo IP (KV / Postgres counter); 5 req/h/IP cho anon.
+- Validate length + sanitize trước khi insert qua service role.
+- Lý do dùng edge thay vì RLS trực tiếp: edge thấy IP, DB không.
+
+---
+
+### 32.7. UI
+
+**Frontend mới (chèn vào router hiện có):**
+
+| Route | File | Ai dùng |
+|---|---|---|
+| `/announcements` | `src/pages/Announcements.tsx` | Mọi user — danh sách tin hệ thống |
+| `/changelog` | `src/pages/Changelog.tsx` | Public — render `is_public=true` |
+| `/lien-he` | `src/pages/Contact.tsx` | Public + user — form feedback (đã có nút floating, thêm trang riêng) |
+| `/clan/:id/bang-tin` | `src/pages/clan/Board.tsx` | Thành viên clan — feed + post + comment |
+| `/clan/:id/bang-tin/duyet` | `src/pages/clan/BoardModeration.tsx` | Admin clan — queue `pending` |
+| `/admin/announcements` | `src/pages/admin/Announcements.tsx` | Platform admin |
+| `/admin/feedback` | `src/pages/admin/Feedback.tsx` | Platform admin — inbox + filter category/status |
+
+**Component dùng chung:**
+- `src/components/NotificationBell.tsx` — gọi `announcements_unread_count()`, badge, click mở `/announcements`.
+- `src/components/CriticalBanner.tsx` — đọc 1 announcement `level='critical'` chưa đọc, hiện trên cùng app shell.
+- `src/components/ClanPostCard.tsx` / `ClanPostComposer.tsx` / `ModerationActions.tsx` (dùng `clan_post_moderate` RPC).
+
+**Mascot integration (§31):**
+- Tip mới: "bạn có **N tin chưa đọc**" (khi N ≥ 3).
+- Tip cho admin clan: "có **N bài chờ duyệt**".
+- Tip cho platform admin: "có **N feedback mới**".
+
+---
+
+### 32.8. Test (RLS + nghiệp vụ)
+
+Bám pattern test SQL ở `tests/` đã có (xem `tests/rls/` nếu có; nếu chưa thì tạo thư mục theo cùng phong cách).
+
+**Module 1 — announcements:**
+- T1.1: user thường đọc được tin đã `published_at <= now()`, **không** thấy nháp.
+- T1.2: tin `expires_at < now()` không hiện.
+- T1.3: anon **không** thấy tin `is_public=false`, **thấy** tin `is_public=true`.
+- T1.4: chỉ platform admin INSERT/UPDATE/DELETE được.
+- T1.5: `announcements_unread_count()` đúng sau khi mark.
+- T1.6: `announcements_mark_all_read()` idempotent (conflict do nothing).
+
+**Module 2 — clan_posts:**
+- T2.1: thành viên clan A **không** đọc được bài clan B (test cross-clan).
+- T2.2: thành viên thường INSERT → status bị ép `pending`; thử insert thẳng `published` → policy reject.
+- T2.3: author non-admin UPDATE thử đổi `status='published'` → trigger guard giữ nguyên `pending`. **(blocker của bản plan cũ)**
+- T2.4: admin clan gọi `clan_post_moderate('publish')` → status đổi + audit row được tạo.
+- T2.5: comment client gửi `clan_id` sai → trigger ép lại.
+- T2.6: user `is_caller_suspended()` → INSERT bị reject.
+- T2.7: bài/comment `hidden` không hiện cho non-admin (kể cả author? — quyết định nghiệp vụ: hiện cho author kèm note "đã ẩn", **không** hiện cho người khác).
+- T2.8: DELETE bị từ chối ở mọi role.
+
+**Module 3 — feedback:**
+- T3.1: anon gửi được; user_id null OK.
+- T3.2: user đăng nhập đọc được feedback của chính mình; **không** đọc của người khác.
+- T3.3: platform admin đọc tất cả.
+- T3.4: `page_url='https://x.com/clan/1691/person/abc-uuid'` → trigger sanitize ra `page_path='/clan/:id/person/:id'`, `page_url` null.
+- T3.5: chỉ admin update status được.
+
+**E2E (Playwright):**
+- Đăng tin hệ thống → user thấy banner critical + badge chuông.
+- Thành viên đăng bài → admin clan vào queue duyệt → bài hiện trên bảng tin + push gửi (mock fetch).
+- Gửi feedback anon → admin /admin/feedback thấy ngay.
+
+---
+
+### 32.9. Tối ưu (gợi ý nâng cao, làm dần)
+
+**O1. Realtime thay vì poll.**
+- `supabase.channel('clan-board-<clanId>')` subscribe `postgres_changes` cho `clan_posts` + `clan_post_comments`. Tránh poll 30s như chuông announcements.
+- Áp dụng cho 3 chỗ: bảng tin clan, danh sách `pending` (admin queue), badge announcement (nếu user mở app lâu).
+- Lưu ý: realtime đi qua RLS — bài clan B không lọt sang client clan A.
+
+**O2. Counter cache cho chuông.**
+- Nếu `announcements_unread_count()` chạy thường, thêm cột `profiles.last_announcement_seen_at timestamptz` rồi đếm `where published_at > last_seen`. Chỉ 1 query, không phải anti-join.
+- Đổi `announcements_mark_all_read()` thành update `last_announcement_seen_at = now()`. Bảng `announcement_reads` vẫn giữ để biết per-announcement read (cho analytics) hoặc bỏ hẳn nếu không cần.
+
+**O3. Full-text search bài bảng tin.**
+- Tận dụng `f_unaccent()` đã có (xem `member_management.sql`).
+- Thêm `search_tsv tsvector generated always as (to_tsvector('simple', f_unaccent(coalesce(title,'')||' '||body))) stored` + GIN index. Trang `/clan/:id/bang-tin?q=...`.
+
+**O4. Single Source of Truth cho changelog.**
+- Trang `/changelog` public **chỉ** đọc `announcements where is_public=true`. Bỏ ý định maintain MD/docs song song.
+- Tip mascot khi user vào sau 7 ngày: "có N cập nhật mới kể từ lần trước" (so với `profiles.last_changelog_seen_at`).
+
+**O5. Per-clan notification opt-out.**
+- `clan_members.notify_clan_posts boolean not null default true`. Một số người trong họ to thì không muốn nhận push mỗi bài.
+- Edge function fan-out check cờ này trước khi push.
+
+**O6. Reaction / "đã đọc" nhẹ cho bài.**
+- Không làm reactions emoji vội — bẫy moderation. Nhưng `clan_post_views(post_id, user_id)` để hiện "12 người đã xem" → tạo cảm giác cộng đồng, không tạo nội dung mới phải duyệt.
+
+**O7. Mention `@thành viên`.**
+- Parse `@username` server-side trong `clan_post_comments.body` (lookup `clan_members → profiles.display_name`), thêm push priority cao cho người được mention. Đây là "nhẹ" nhất để tăng tương tác.
+- Index: dùng `profiles.display_name` đã có.
+
+**O8. Outbox pattern cho push.**
+- Đừng để trigger SQL gọi pg_net trực tiếp khi `clan_post_moderate('publish')`. Đẩy 1 row vào bảng `notification_outbox` (đã có / cần tạo), cron `notify-events` mỗi 30s rút ra fan-out. Tránh blocking transaction, tránh retry storm.
+- Pattern này đã dùng ở `notify-events`, chỉ cần extend `event_kind`.
+
+**O9. Soft "draft" cho bài thành viên thường.**
+- Thành viên thường đăng bài lần đầu — nếu chưa hoàn chỉnh, lưu local (`localStorage`) trước, chỉ INSERT khi bấm "gửi duyệt". Đỡ tạo `pending` rác.
+
+**O10. Public /changelog → SEO.**
+- Server-side render (hoặc prerender) `/changelog` để search engine index "cập nhật gia phả tháng X". Nguồn tự nhiên kéo người mới về app — đỡ phải maintain blog ngoài.
+
+**O11. Email digest cho thành viên im lặng.**
+- Cron tuần 1 lần: với mỗi user `notify_via_email = true` không login > 14 ngày, gửi tổng hợp "5 tin mới nhất trong họ X". Reuse table `clan_posts`.
+- Pattern giống §29.15.B (weekly digest).
+
+**O12. `event_date` ↔ `events` linkage.**
+- Nếu bài có `event_date` mà không có `event_id`, tạo RPC `clan_post_attach_event` để admin clan "tạo event từ bài này" (1 click). Tránh hai cách quản lý event song song.
+
+**O13. Limit số bài `pending` mỗi user.**
+- `check (...)` không làm được; dùng trigger: nếu user đang có > 5 bài `pending` chưa duyệt trong clan này → reject INSERT mới. Chặn spam tự nhiên.
+
+**O14. Banner critical có "đã đọc 1 lần là tắt".**
+- Lưu read vào `announcement_reads` ngay khi user click "Đã hiểu", không phải khi mở trang `/announcements`. Đỡ banner đeo bám.
+
+---
+
+### 32.10. Lộ trình triển khai
+
+**Phase A — gấp (1 tuần):**
+- §32.4 nâng cấp `feedback` (alter table, trigger sanitize, RLS owner, edge `notify-feedback`).
+- `src/pages/Contact.tsx` + nâng cấp floating "Góp ý" hiện có.
+- `src/pages/admin/Feedback.tsx` (đơn giản: list + đổi status + ghi note).
+
+**Phase B — tuần kế (1–2 tuần):**
+- §32.2 announcements (table + RLS + RPC + 2 trang).
+- `NotificationBell`, `CriticalBanner` vào AppShell.
+- Trang `/changelog` public.
+
+**Phase C — sau khi A+B ổn (2–3 tuần):**
+- §32.3 clan_posts đầy đủ (enum + bảng + RLS + trigger guard + audit + RPC).
+- Trang `/clan/:id/bang-tin` + queue duyệt.
+- Edge mở rộng `notify-events` cho `clan_post_published`.
+- Mascot tip §31 thêm 3 case mới.
+
+**Phase D — tối ưu (làm dần khi có tín hiệu):**
+- §32.9 O1 (realtime), O2 (counter cache), O3 (search), O5 (per-clan opt-out), O7 (mention).
+- Các O còn lại theo nhu cầu thực tế.
+
+---
+
+### 32.11. Ngoài phạm vi (đợt đầu)
+
+- Chat 1-1 giữa các thành viên.
+- Reactions emoji (like/heart/…) — bẫy moderation, chưa làm.
+- Bảng tin liên-dòng-họ (thông gia) — đợi §28 stable trước.
+- Feedback dạng ticket có thread trả lời qua lại (chỉ status + admin_note phase đầu).
+- Edit lịch sử bài / version control cho post.
+- Attachment ảnh trong bài bảng tin — đợi bucket storage strategy (xem §27 deploy).
+- Polling/voting trong bảng tin (ví dụ "ngày họp họ ai chọn ngày nào").
+
+---
+
+### 32.12. Khác biệt so với bản nháp gốc (cho người review)
+
+1. **Bỏ phần tạo lại `platform_admins`/`is_platform_admin()`** — đã có.
+2. **Bỏ phần tạo lại `feedback`** — đã có MVP, chuyển thành "nâng cấp".
+3. **Vá lỗ moderation bypass**: trigger `clan_posts_guard_update` khoá `status`/`pinned` cho non-admin (RLS một mình không đủ).
+4. **Chuyển status change qua RPC `clan_post_moderate`** + audit log.
+5. **`clan_id` của comment do trigger ép**, không tin client.
+6. **`page_url` sanitize bằng trigger DB**, không tin client.
+7. **Thêm `to authenticated`/`to anon`** tường minh ở mọi policy.
+8. **Thêm `is_caller_suspended()`** vào policy insert post/comment.
+9. **`announcements_unread_count` / `mark_all_read` thành RPC**, không để client tự ghép.
+10. **Liên kết person/event** trong `clan_posts` qua FK + RPC, không sync ngầm.
+11. **Dùng enum thay text + check** (đồng bộ pattern dự án).
+12. **Index có điều kiện** (`where status = 'published'` v.v.) cho query nóng.
+13. **Mục §32.9 — 14 đề xuất tối ưu** (realtime, counter cache, FTS, mention, outbox, digest, anti-spam …).
+14. **Lộ trình A→D rõ tuần**, gán Phase A vào nâng cấp feedback (rẻ nhất, có sẵn 80%).

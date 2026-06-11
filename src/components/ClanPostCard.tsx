@@ -1,20 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { useToast } from "@/components/Toast";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin } from "@/hooks/useClanContext";
-import {
-  createComment,
-  listCommentsForPost,
-  moderateClanPost,
-  type ClanPost,
-  type ClanPostType,
-} from "@/lib/queries/clan_posts";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
-import { queryKeys } from "@/lib/queries/keys";
+import { type ClanPost, type ClanPostType } from "@/lib/queries/clan_posts";
 
 const TYPE_LABEL: Record<ClanPostType, string> = {
   news: "Tin",
@@ -35,11 +24,9 @@ const TYPE_BADGE: Record<ClanPostType, string> = {
 };
 
 /**
- * Card hiển 1 bài bảng tin — pattern khớp AnnouncementCard:
- *  - Dải accent màu mép trái khi pending/pinned (visual indicator)
- *  - Title text-lg trên đầu, body muted phía dưới
- *  - Meta row ở cuối: thời gian + status + type badge (ml-auto)
- *  - Admin actions + comments toggle ở footer riêng border-t
+ * Card preview ở trang feed. Click → trang chi tiết để xem đầy đủ +
+ * comment + admin actions. Card này KHÔNG còn inline comment/admin
+ * — pattern AnnouncementCard.
  */
 export function ClanPostCard({
   post,
@@ -54,16 +41,13 @@ export function ClanPostCard({
   const isPending = post.status === "pending";
   const isHidden = post.status === "hidden";
 
-  const [showComments, setShowComments] = useState(false);
-
   return (
     <article
       className={`relative overflow-hidden rounded-lg border bg-card shadow-sm transition-colors hover:bg-muted/30 ${
         isHidden ? "opacity-60" : ""
       }`}
     >
-      {/* Dải accent mép trái — amber khi pending, primary khi pinned.
-          Cùng pattern AnnouncementCard. */}
+      {/* Dải accent mép trái: amber cho pending, primary cho pinned. */}
       {(isPending || post.pinned) && (
         <span
           aria-hidden="true"
@@ -73,7 +57,10 @@ export function ClanPostCard({
         />
       )}
 
-      <div className="px-5 py-3 space-y-1.5">
+      <Link
+        to={`/clans/${post.clan_id}/board/${post.id}`}
+        className="block px-5 py-3 space-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+      >
         {post.title && (
           <h3 className="text-lg leading-snug font-semibold">
             {post.pinned && (
@@ -89,7 +76,7 @@ export function ClanPostCard({
           </h3>
         )}
 
-        <p className="text-sm whitespace-pre-line leading-relaxed text-muted-foreground">
+        <p className="text-sm whitespace-pre-line leading-relaxed text-muted-foreground line-clamp-3">
           {post.body}
         </p>
 
@@ -103,17 +90,6 @@ export function ClanPostCard({
                 year: "numeric",
               })}
             </strong>
-          </p>
-        )}
-
-        {post.person_id && (
-          <p className="text-xs">
-            <Link
-              to={`/clans/${post.clan_id}/people/${post.person_id}`}
-              className="text-primary hover:underline"
-            >
-              Xem trang người liên quan →
-            </Link>
           </p>
         )}
 
@@ -144,34 +120,11 @@ export function ClanPostCard({
             {TYPE_LABEL[post.type]}
           </span>
         </div>
-      </div>
-
-      <div className="flex items-center gap-2 px-5 py-2 border-t bg-muted/10">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowComments((v) => !v)}
-        >
-          {showComments ? "Ẩn bình luận" : "Bình luận"}
-        </Button>
-        {isAdmin && (
-          <AdminActions post={post} canPin={post.status === "published"} />
-        )}
-      </div>
-
-      {showComments && (
-        <div className="px-5 pb-4">
-          <CommentsSection postId={post.id} clan={clan} />
-        </div>
-      )}
+      </Link>
     </article>
   );
 }
 
-/**
- * Relative time format — khớp Announcements: "vừa xong" / "10 phút
- * trước" / "Hôm qua" / "5 ngày trước" / "11/06/2026".
- */
 function formatRelative(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();
@@ -190,191 +143,4 @@ function formatRelative(iso: string): string {
     month: "2-digit",
     year: "numeric",
   });
-}
-
-function AdminActions({
-  post,
-  canPin,
-}: {
-  post: ClanPost;
-  canPin: boolean;
-}) {
-  const qc = useQueryClient();
-  const toast = useToast();
-
-  const moderateM = useMutation({
-    mutationFn: (action: Parameters<typeof moderateClanPost>[1]) =>
-      moderateClanPost(post.id, action),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.clanPosts(post.clan_id) });
-      qc.invalidateQueries({
-        queryKey: queryKeys.clanPostsPending(post.clan_id),
-      });
-      qc.invalidateQueries({ queryKey: queryKeys.clanPostAudit(post.id) });
-      toast.success("Đã cập nhật");
-    },
-    onError: (e) =>
-      toast.error("Không cập nhật được", { description: (e as Error).message }),
-  });
-
-  return (
-    <div className="flex items-center gap-1.5">
-      {post.status === "pending" && (
-        <>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => moderateM.mutate("publish")}
-            disabled={moderateM.isPending}
-          >
-            ✓ Duyệt
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => moderateM.mutate("reject")}
-            disabled={moderateM.isPending}
-            className="text-destructive"
-          >
-            ✕ Từ chối
-          </Button>
-        </>
-      )}
-      {post.status === "published" && (
-        <>
-          {canPin &&
-            (post.pinned ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => moderateM.mutate("unpin")}
-                disabled={moderateM.isPending}
-              >
-                Bỏ ghim
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => moderateM.mutate("pin")}
-                disabled={moderateM.isPending}
-              >
-                Ghim
-              </Button>
-            ))}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => moderateM.mutate("hide")}
-            disabled={moderateM.isPending}
-            className="text-destructive"
-          >
-            Ẩn
-          </Button>
-        </>
-      )}
-      {post.status === "hidden" && (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => moderateM.mutate("unhide")}
-          disabled={moderateM.isPending}
-        >
-          Hiện lại
-        </Button>
-      )}
-    </div>
-  );
-}
-
-function CommentsSection({
-  postId,
-  clan,
-}: {
-  postId: string;
-  clan: ClanDetail;
-}) {
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  const [body, setBody] = useState("");
-
-  const commentsQ = useQuery({
-    queryKey: queryKeys.clanPostComments(postId),
-    queryFn: () => listCommentsForPost(postId),
-    staleTime: 30_000,
-  });
-
-  const createM = useMutation({
-    mutationFn: () => createComment(postId, body.trim()),
-    onSuccess: () => {
-      setBody("");
-      qc.invalidateQueries({ queryKey: queryKeys.clanPostComments(postId) });
-    },
-  });
-
-  const canComment = !!user && (clan.myRole !== null || clan.isPlatformAdmin);
-
-  return (
-    <div className="space-y-3 pt-3 border-t">
-      {commentsQ.isLoading && (
-        <p className="text-xs text-muted-foreground">Đang tải bình luận…</p>
-      )}
-      <ul className="space-y-2">
-        {(commentsQ.data ?? []).map((c) => (
-          <li
-            key={c.id}
-            className="rounded-md bg-muted/40 px-3 py-2 text-sm space-y-1"
-          >
-            <p className="whitespace-pre-line">{c.body}</p>
-            <p className="text-xs text-muted-foreground">
-              {c.author_id === user?.id
-                ? "bạn"
-                : c.author_id.slice(0, 8)}{" "}
-              ·{" "}
-              {new Date(c.created_at).toLocaleString("vi-VN", {
-                hour: "2-digit",
-                minute: "2-digit",
-                day: "2-digit",
-                month: "2-digit",
-              })}
-              {c.status === "hidden" && (
-                <span className="ml-2 italic">đã ẩn</span>
-              )}
-            </p>
-          </li>
-        ))}
-        {(commentsQ.data ?? []).length === 0 && !commentsQ.isLoading && (
-          <li className="text-xs text-muted-foreground italic">
-            Chưa có bình luận.
-          </li>
-        )}
-      </ul>
-
-      {canComment && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (body.trim()) createM.mutate();
-          }}
-          className="flex gap-2"
-        >
-          <input
-            type="text"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Viết bình luận…"
-            maxLength={4000}
-            className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!body.trim() || createM.isPending}
-          >
-            Gửi
-          </Button>
-        </form>
-      )}
-    </div>
-  );
 }

@@ -572,6 +572,201 @@ async function seedInlawLinks(seeded: SeededClan[]): Promise<void> {
   console.log("  In-law links seeded.");
 }
 
+// ─── §32.2 Announcements ─────────────────────────────────────────
+
+async function seedAnnouncements(platformAdminId: string): Promise<void> {
+  console.log("  Seeding announcements…");
+
+  const now = new Date();
+  const past = (mins: number) =>
+    new Date(now.getTime() - mins * 60_000).toISOString();
+  const future = (days: number) =>
+    new Date(now.getTime() + days * 86400_000).toISOString();
+
+  // Cleanup trước để re-run không double.
+  await admin.from("announcements").delete().gte("created_at", "1970-01-01");
+
+  const rows = await admin
+    .from("announcements")
+    .insert([
+      {
+        title: "🎉 Bảng tin dòng họ đã có",
+        body:
+          "Phase C đã xong: vào dòng họ → Bảng tin để đăng tin, sự kiện, sinh, mất, cáo phó. Thành viên thường gửi bài → admin duyệt.",
+        level: "update",
+        is_public: true,
+        published_at: past(60),
+        created_by: platformAdminId,
+      },
+      {
+        title: "Thông báo đẩy (Web Push) sẵn sàng",
+        body:
+          "Vào Sự kiện → cuộn xuống mục 'Đăng ký nhận thông báo' để bật nhận push trên điện thoại — kể cả khi app đóng.",
+        level: "info",
+        is_public: true,
+        published_at: past(60 * 24 * 3),
+        created_by: platformAdminId,
+      },
+      {
+        title: "⚠ Bảo trì cuối tuần",
+        body:
+          "Hệ thống có thể chậm trong 10 phút vào Chủ Nhật 21:00 do migration.",
+        level: "warning",
+        is_public: false,
+        published_at: past(60 * 6),
+        expires_at: future(7),
+        created_by: platformAdminId,
+      },
+      {
+        title: "🚨 Sự cố Supabase đã giải quyết",
+        body:
+          "5h sáng ngày 11/06 có downtime 3 phút bên Supabase. Mọi bài viết / sửa trong khoảng đó đã được auto-retry.",
+        level: "critical",
+        is_public: false,
+        published_at: past(60 * 2),
+        // Critical thường để hết hạn sớm — banner đeo bám lâu gây phiền.
+        expires_at: future(1),
+        created_by: platformAdminId,
+      },
+      // Nháp (chưa publish) — chỉ admin thấy trong Admin tab.
+      {
+        title: "(Nháp) Roadmap quý 3",
+        body: "Draft sẽ bổ sung sau.",
+        level: "info",
+        is_public: false,
+        published_at: null,
+        created_by: platformAdminId,
+      },
+      // Đã expired — không hiện cho user, hiện cho admin với badge.
+      {
+        title: "Đã hết hạn — Black Friday giảm phí",
+        body: "Khuyến mại cũ. Để test view 'Hết hạn' bên admin.",
+        level: "info",
+        is_public: false,
+        published_at: past(60 * 24 * 30),
+        expires_at: past(60 * 24 * 10),
+        created_by: platformAdminId,
+      },
+    ])
+    .select("id");
+
+  if (rows.error) throw new Error(`announcements: ${rows.error.message}`);
+  console.log(`  ${rows.data?.length ?? 0} announcements seeded.`);
+}
+
+// ─── §32.3 Clan posts ─────────────────────────────────────────────
+
+async function seedClanPosts(
+  seeded: SeededClan[],
+  platformAdminId: string,
+): Promise<void> {
+  console.log("  Seeding clan posts…");
+  if (seeded.length === 0) return;
+
+  // Demo trên clan đầu tiên — small (50 người).
+  const demoClan = seeded[0];
+
+  // Cleanup trước để re-run sạch.
+  await admin
+    .from("clan_posts")
+    .delete()
+    .eq("clan_id", demoClan.clanId);
+
+  // Lấy 2 person id để gắn person_id cho cáo phó/sinh.
+  const { data: persons } = await admin
+    .from("persons")
+    .select("id, full_name, is_living")
+    .eq("clan_id", demoClan.clanId)
+    .limit(20);
+  const livingPerson = (persons ?? []).find((p) => p.is_living);
+  const deceasedPerson = (persons ?? []).find((p) => !p.is_living);
+
+  const now = new Date();
+  const past = (days: number) =>
+    new Date(now.getTime() - days * 86400_000).toISOString();
+  const dateAhead = (days: number) =>
+    new Date(now.getTime() + days * 86400_000).toISOString().slice(0, 10);
+
+  const rows: Array<Record<string, unknown>> = [
+    {
+      clan_id: demoClan.clanId,
+      author_id: demoClan.ownerId,
+      type: "notice",
+      title: "📌 Họp họ định kỳ Rằm tháng 7",
+      body:
+        "Mời cả họ về nhà thờ tổ vào Rằm tháng Bảy (Âm lịch) để cùng cúng giỗ. Anh em xa nhớ thu xếp.",
+      event_date: dateAhead(14),
+      status: "published",
+      pinned: true,
+      created_at: past(2),
+    },
+    {
+      clan_id: demoClan.clanId,
+      author_id: demoClan.ownerId,
+      type: "event",
+      title: "Tảo mộ Thanh Minh",
+      body:
+        "Hẹn 7h sáng tại nhà thờ. Mang theo nhang đèn — quỹ họ lo hoa quả.",
+      event_date: dateAhead(45),
+      status: "published",
+      created_at: past(1),
+    },
+    {
+      clan_id: demoClan.clanId,
+      author_id: demoClan.ownerId,
+      type: "news",
+      body:
+        "Đã hoàn tất sửa cổng nhà thờ tổ. Cảm ơn anh chị em đóng góp.",
+      status: "published",
+      created_at: past(5),
+    },
+  ];
+
+  if (deceasedPerson) {
+    rows.push({
+      clan_id: demoClan.clanId,
+      author_id: demoClan.ownerId,
+      type: "death",
+      title: `Cáo phó: ${deceasedPerson.full_name}`,
+      body: `Trân trọng báo tin cụ ${deceasedPerson.full_name} đã từ trần. Gia đình thông báo để bà con đến viếng.`,
+      person_id: deceasedPerson.id,
+      status: "published",
+      created_at: past(7),
+    });
+  }
+
+  if (livingPerson) {
+    rows.push({
+      clan_id: demoClan.clanId,
+      author_id: demoClan.ownerId,
+      type: "birth",
+      title: `Tin mừng: ${livingPerson.full_name} đã sinh con`,
+      body: `Cháu khoẻ mạnh, cả nhà bình an. Xin báo tin để cả họ vui chung.`,
+      person_id: livingPerson.id,
+      status: "published",
+      created_at: past(10),
+    });
+  }
+
+  // Bài chờ duyệt (giả member thường gửi — dùng platform admin làm
+  // author tạm; trong thực tế member thường gửi qua UI).
+  rows.push({
+    clan_id: demoClan.clanId,
+    author_id: platformAdminId,
+    type: "news",
+    body:
+      "(Demo bài chờ duyệt) Em xin đề xuất họp họ qua Zoom cho người ở xa.",
+    status: "pending",
+    created_at: past(0.3),
+  });
+
+  const ins = await admin.from("clan_posts").insert(rows).select("id");
+  if (ins.error) throw new Error(`clan_posts: ${ins.error.message}`);
+  console.log(
+    `  ${ins.data?.length ?? 0} clan posts seeded ở clan ${demoClan.label}.`,
+  );
+}
+
 async function main() {
   console.log("Seeding fixtures…");
   const t0 = Date.now();
@@ -635,6 +830,8 @@ async function main() {
   }
 
   await seedInlawLinks(seededClans);
+  await seedAnnouncements(platformAdmin);
+  await seedClanPosts(seededClans, platformAdmin);
 
   const totalSize = roster.reduce((acc, s) => acc + s.size, 0);
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
