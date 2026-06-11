@@ -365,11 +365,11 @@ function UserRow({
             )}
           </div>
 
-          <div className="flex items-end gap-2">
-            <div className="space-y-1">
-              <Label htmlFor={`maxc-${profile.id}`} className="text-xs">
-                Giới hạn dòng họ
-              </Label>
+          <div className="space-y-1">
+            <Label htmlFor={`maxc-${profile.id}`} className="text-xs">
+              Giới hạn dòng họ
+            </Label>
+            <div className="relative">
               <Input
                 id={`maxc-${profile.id}`}
                 type="number"
@@ -377,21 +377,22 @@ function UserRow({
                 max={100}
                 value={maxClans}
                 onChange={(e) => setMaxClans(e.target.value)}
-                className="w-24"
+                className="w-full pr-12"
               />
+              <button
+                type="button"
+                onClick={() => updateLimits.mutate()}
+                disabled={
+                  updateLimits.isPending ||
+                  String(profile.max_clans) === maxClans
+                }
+                aria-label="Lưu giới hạn"
+                title="Lưu"
+                className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <IconCheck className="h-4 w-4" />
+              </button>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => updateLimits.mutate()}
-              disabled={
-                updateLimits.isPending ||
-                String(profile.max_clans) === maxClans
-              }
-            >
-              <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu
-            </Button>
           </div>
 
           {lastError && (
