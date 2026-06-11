@@ -147,27 +147,7 @@ function AnnouncementCard({
         />
       )}
 
-      <div className="px-5 py-4 space-y-2.5">
-        <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${LEVEL_BADGE[row.level]}`}
-          >
-            {LEVEL_LABEL[row.level]}
-          </span>
-          {row.is_public && (
-            <span className="text-muted-foreground">· Public</span>
-          )}
-          {row.published_at && (
-            <time
-              className="ml-auto text-muted-foreground tabular-nums"
-              dateTime={row.published_at}
-              title={new Date(row.published_at).toLocaleString("vi-VN")}
-            >
-              {formatRelative(row.published_at)}
-            </time>
-          )}
-        </div>
-
+      <div className="px-5 py-4 space-y-3">
         <h3
           className={`text-lg leading-snug ${
             isRead ? "font-medium text-foreground/80" : "font-semibold"
@@ -179,6 +159,26 @@ function AnnouncementCard({
         <p className="text-sm whitespace-pre-line leading-relaxed text-muted-foreground">
           {row.body}
         </p>
+
+        <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
+          {row.published_at && (
+            <time
+              className="text-muted-foreground tabular-nums"
+              dateTime={row.published_at}
+              title={new Date(row.published_at).toLocaleString("vi-VN")}
+            >
+              {formatRelative(row.published_at)}
+            </time>
+          )}
+          {row.is_public && (
+            <span className="text-muted-foreground">· Public</span>
+          )}
+          <span
+            className={`ml-auto inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${LEVEL_BADGE[row.level]}`}
+          >
+            {LEVEL_LABEL[row.level]}
+          </span>
+        </div>
       </div>
     </li>
   );
