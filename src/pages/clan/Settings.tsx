@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { BranchesSection } from "@/components/BranchesSection";
 import { CsvExportButton } from "@/components/CsvExportButton";
 import { GedcomButtons } from "@/components/GedcomButtons";
@@ -10,6 +11,7 @@ import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconList,
+  IconSettings,
   IconUsers,
 } from "@/components/icons";
 import { ShareLinksSection } from "@/components/ShareLinksSection";
@@ -86,7 +88,11 @@ export default function Settings() {
           { label: "Cài đặt dòng họ" },
         ]}
       />
-      <h2 className="text-2xl font-semibold">Cài đặt dòng họ</h2>
+      <PageHeader
+        icon={<IconSettings className="h-7 w-7" />}
+        title="Cài đặt dòng họ"
+        description="Cấu hình, share links, xuất dữ liệu, xoá dòng họ."
+      />
 
       <Card>
         <CardHeader>

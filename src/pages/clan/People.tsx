@@ -30,6 +30,7 @@ import {
   IconUsers,
 } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
@@ -264,64 +265,68 @@ export default function People() {
       {/* Header row — title + icon refresh + add + import buttons.
           All wrap onto a second line on viewports too narrow for
           one row. h-10 across so they line up. */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <h2 className="text-2xl font-semibold sm:flex-1">Danh bạ</h2>
-        <div className="flex items-center gap-1.5 sm:gap-2 justify-end">
-        <RefreshButton
-          clanId={clan.id}
-          cachedVersion={clan.data_version}
-          compact
-        />
-        {canEdit && (
+      <PageHeader
+        icon={<IconUsers className="h-7 w-7" />}
+        title="Danh bạ"
+        description="Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
+        actions={
           <>
-            <Button
-              asChild
-              size="sm"
-              className="h-10 px-2.5 sm:px-3"
-            >
-              <Link
-                to={`/clans/${clan.id}/people/new`}
-                aria-label="Thêm người"
-                data-testid="add-person-link"
-              >
-                <IconPlus className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">Thêm người</span>
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="h-10 px-2.5 sm:px-3"
-            >
-              <Link
-                to={`/clans/${clan.id}/import`}
-                aria-label="Nhập Excel"
-                title="Nhập từ Excel"
-              >
-                <IconUpload className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">Nhập Excel</span>
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="h-10 px-2.5 sm:px-3"
-            >
-              <Link
-                to={`/clans/${clan.id}/ai-generate`}
-                aria-label="Sinh bằng AI"
-                title="Mô tả gia đình → AI sinh dữ liệu → dán vào và tạo hàng loạt"
-              >
-                <IconSparkles className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">Sinh bằng AI</span>
-              </Link>
-            </Button>
+            <RefreshButton
+              clanId={clan.id}
+              cachedVersion={clan.data_version}
+              compact
+            />
+            {canEdit && (
+              <>
+                <Button
+                  asChild
+                  size="sm"
+                  className="h-10 px-2.5 sm:px-3"
+                >
+                  <Link
+                    to={`/clans/${clan.id}/people/new`}
+                    aria-label="Thêm người"
+                    data-testid="add-person-link"
+                  >
+                    <IconPlus className="h-4 w-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Thêm người</span>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="h-10 px-2.5 sm:px-3"
+                >
+                  <Link
+                    to={`/clans/${clan.id}/import`}
+                    aria-label="Nhập Excel"
+                    title="Nhập từ Excel"
+                  >
+                    <IconUpload className="h-4 w-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Nhập Excel</span>
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="h-10 px-2.5 sm:px-3"
+                >
+                  <Link
+                    to={`/clans/${clan.id}/ai-generate`}
+                    aria-label="Sinh bằng AI"
+                    title="Mô tả gia đình → AI sinh dữ liệu"
+                  >
+                    <IconSparkles className="h-4 w-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Sinh bằng AI</span>
+                  </Link>
+                </Button>
+              </>
+            )}
           </>
-        )}
-        </div>
-      </div>
+        }
+      />
 
       {completion && completion.total > 0 && completion.percent !== null && (
         <CompactCompletion clanId={clan.id} completion={completion} />

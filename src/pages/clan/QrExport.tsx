@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconDownload, IconQrCode } from "@/components/icons";
@@ -131,17 +132,11 @@ export default function QrExport() {
         ]}
       />
 
-      <header className="flex items-start gap-3">
-        <IconQrCode className="h-7 w-7 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-xl sm:text-2xl font-semibold leading-tight">
-            Xuất QR cá nhân hàng loạt
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Mỗi người 1 thẻ A6 — 4 thẻ / trang A4. In ra cắt theo đường viền.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        icon={<IconQrCode className="h-7 w-7" />}
+        title="Xuất QR cá nhân hàng loạt"
+        description="Mỗi người 1 thẻ A6 — 4 thẻ / trang A4. In ra cắt theo đường viền."
+      />
 
       {/* Filter row — single flex-wrap line, matching the People page
           toolbar so admin tools feel like one family. */}

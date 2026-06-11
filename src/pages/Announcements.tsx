@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { IconBell } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -80,24 +82,26 @@ export default function Announcements() {
           ]}
         />
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-          <h2 className="text-2xl font-semibold sm:flex-1">
-            Thông báo hệ thống
-          </h2>
-          {user && unreadCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-10"
-              onClick={() => markAllM.mutate()}
-              disabled={markAllM.isPending}
-            >
-              {markAllM.isPending
-                ? "Đang lưu…"
-                : `Đánh dấu tất cả (${unreadCount})`}
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          icon={<IconBell className="h-7 w-7" />}
+          title="Thông báo hệ thống"
+          description="Tính năng mới, bảo trì, sửa lỗi quan trọng."
+          actions={
+            user && unreadCount > 0 ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10"
+                onClick={() => markAllM.mutate()}
+                disabled={markAllM.isPending}
+              >
+                {markAllM.isPending
+                  ? "Đang lưu…"
+                  : `Đánh dấu tất cả (${unreadCount})`}
+              </Button>
+            ) : undefined
+          }
+        />
 
         {listQ.isLoading && (
           <p className="text-muted-foreground">Đang tải…</p>

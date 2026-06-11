@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 
 import {
   IconBell,
+  IconCalendar,
   IconGrid,
   IconList,
   IconPlus,
@@ -10,6 +11,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { IconBellOff, IconDownload } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -176,53 +178,53 @@ export default function Events() {
       {/* Header: title + view toggle + refresh in one row on sm+,
           stacked on mobile. View toggle is icon-only on mobile to
           leave room for the look-ahead pills underneath. */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        <h2 className="text-2xl font-semibold sm:flex-1">Sự kiện</h2>
-        <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
-          <SegmentedControl ariaLabel="Chế độ hiển thị">
-            <SegmentedButton
-              active={view === "list"}
-              onClick={() => setView("list")}
-              ariaLabel="Danh sách"
-              className="inline-flex items-center gap-1.5 px-3"
-            >
-              <IconList className="h-4 w-4" />
-              <span className="hidden sm:inline">Danh sách</span>
-            </SegmentedButton>
-            <SegmentedButton
-              active={view === "calendar"}
-              onClick={() => setView("calendar")}
-              ariaLabel="Lịch"
-              className="inline-flex items-center gap-1.5 px-3"
-            >
-              <IconGrid className="h-4 w-4" />
-              <span className="hidden sm:inline">Lịch</span>
-            </SegmentedButton>
-          </SegmentedControl>
-          {/* Xuất lịch (.ics) is member-only — same reasoning as the
-              PDF book / share-link buttons on /tree: bulk-downloading
-              the clan's full event stream is owner territory, not for
-              non-member public-clan visitors. */}
-          {effectiveRole(clan) !== null && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-10"
-              onClick={handleExportIcs}
-              disabled={!tree || !events || !anniversaries}
-              title="Tải file .ics — import vào Google / Apple Calendar để nhận nhắc trực tiếp trên lịch điện thoại"
-            >
-              <IconDownload className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Xuất lịch</span>
-            </Button>
-          )}
-          <RefreshButton
-            clanId={clan.id}
-            cachedVersion={clan.data_version}
-            compact
-          />
-        </div>
-      </div>
+      <PageHeader
+        icon={<IconCalendar className="h-7 w-7" />}
+        title="Sự kiện"
+        description="Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar."
+        actions={
+          <>
+            <SegmentedControl ariaLabel="Chế độ hiển thị">
+              <SegmentedButton
+                active={view === "list"}
+                onClick={() => setView("list")}
+                ariaLabel="Danh sách"
+                className="inline-flex items-center gap-1.5 px-3"
+              >
+                <IconList className="h-4 w-4" />
+                <span className="hidden sm:inline">Danh sách</span>
+              </SegmentedButton>
+              <SegmentedButton
+                active={view === "calendar"}
+                onClick={() => setView("calendar")}
+                ariaLabel="Lịch"
+                className="inline-flex items-center gap-1.5 px-3"
+              >
+                <IconGrid className="h-4 w-4" />
+                <span className="hidden sm:inline">Lịch</span>
+              </SegmentedButton>
+            </SegmentedControl>
+            {effectiveRole(clan) !== null && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10"
+                onClick={handleExportIcs}
+                disabled={!tree || !events || !anniversaries}
+                title="Tải file .ics — import vào Google / Apple Calendar"
+              >
+                <IconDownload className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Xuất lịch</span>
+              </Button>
+            )}
+            <RefreshButton
+              clanId={clan.id}
+              cachedVersion={clan.data_version}
+              compact
+            />
+          </>
+        }
+      />
 
       {/* Look-ahead pills — only meaningful in list view. Full-width
           on mobile (each pill flex-1) so taps are large; auto-width

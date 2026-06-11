@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconCheck } from "@/components/icons";
+import { IconCheck, IconHelp } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -79,11 +80,11 @@ export default function Contact() {
           ]}
         />
 
-        <h2 className="text-2xl font-semibold">Liên hệ / phản hồi</h2>
-        <p className="text-sm text-muted-foreground">
-          Mọi ý kiến đều giúp app tốt hơn. Không cần ngại — viết ngắn cũng
-          được. Có thể gửi không cần đăng nhập.
-        </p>
+        <PageHeader
+          icon={<IconHelp className="h-7 w-7" />}
+          title="Liên hệ / phản hồi"
+          description="Mọi ý kiến đều giúp app tốt hơn. Không cần ngại — viết ngắn cũng được. Có thể gửi không cần đăng nhập."
+        />
 
         {sent && (
           <Alert>

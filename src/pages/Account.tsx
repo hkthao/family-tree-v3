@@ -11,8 +11,10 @@ import {
   IconLogOut,
   IconShield,
   IconTrash,
+  IconUser,
   IconX,
 } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,7 +57,11 @@ export default function Account() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-6">
-        <h1 className="clan-name text-3xl font-semibold">Tài khoản</h1>
+        <PageHeader
+          icon={<IconUser className="h-7 w-7" />}
+          title="Tài khoản"
+          description="Email, mật khẩu, theme, QR đăng nhập sang máy khác."
+        />
 
         {profile?.is_platform_admin && (
           <Card className="border-accent/40">
