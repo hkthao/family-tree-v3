@@ -5,7 +5,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconX } from "@/components/icons";
+import { IconCheck, IconPlus, IconX } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,9 +51,11 @@ export default function NewClan() {
           ]}
         />
 
-        <h1 className="clan-name text-3xl font-semibold mt-4 mb-6">
-          Tạo dòng họ mới
-        </h1>
+        <PageHeader
+          icon={<IconPlus className="h-7 w-7" />}
+          title="Tạo dòng họ mới"
+          description="3 bước để có dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
+        />
 
         <form
           onSubmit={(e) => {

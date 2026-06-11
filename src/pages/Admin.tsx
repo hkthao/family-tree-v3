@@ -16,6 +16,7 @@ import {
   IconUnlock,
   IconX,
 } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -92,14 +93,15 @@ export default function Admin() {
         {/* Title + tab switcher on one row at sm+ (tabs right-aligned)
             — saves a row of vertical space on desktop. Stacked on
             mobile so the tabs still get full width. */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <h1 className="clan-name text-2xl sm:text-3xl font-semibold sm:flex-1">
-            Quản trị nền tảng
-          </h1>
-          <SegmentedControl
-            ariaLabel="Tab quản trị"
-            className="flex sm:inline-flex shrink-0"
-          >
+        <PageHeader
+          icon={<IconShield className="h-7 w-7" />}
+          title="Quản trị nền tảng"
+          description="Người dùng, dòng họ, sức khoẻ hệ thống, góp ý, thông báo."
+          actions={
+            <SegmentedControl
+              ariaLabel="Tab quản trị"
+              className="flex sm:inline-flex shrink-0"
+            >
             <SegmentedButton
               active={tab === "users"}
               onClick={() => setTab("users")}
@@ -135,8 +137,9 @@ export default function Admin() {
             >
               Thông báo
             </SegmentedButton>
-          </SegmentedControl>
-        </div>
+            </SegmentedControl>
+          }
+        />
 
         {tab === "users" && <UsersTab callerId={user.id} />}
         {tab === "clans" && <ClansTab />}

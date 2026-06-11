@@ -6,12 +6,14 @@ import { AppHeader } from "@/components/AppHeader";
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconBuildings,
   IconPlus,
   IconSearch,
   IconTree,
   IconUsers,
 } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import {
@@ -113,9 +115,15 @@ export default function Clans() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-6">
-        <h1 className="clan-name text-2xl sm:text-3xl font-semibold">
-          {isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
-        </h1>
+        <PageHeader
+          icon={<IconBuildings className="h-7 w-7" />}
+          title={isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
+          description={
+            isPlatformAdmin
+              ? "Mọi dòng họ trên nền tảng — bạn xem được tất cả."
+              : "Dòng họ bạn tham gia hoặc đang theo dõi."
+          }
+        />
 
         {/* Tabs left + create-clan CTA right on the same row. Tabs
             already eat ~230 px with the count badges, so the CTA
