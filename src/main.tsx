@@ -85,7 +85,10 @@ createRoot(document.getElementById("root")!).render(
           //     (persons_public_safe view). Pre-fix browsers cached the
           //     blocked-by-RLS empty result for public-clan visitors; this
           //     bust forces a clean refetch through the new code path.
-          buster: "v3",
+          // v4: clan_posts query shape thay đổi từ ClanPost[] sang
+          //     {rows, total} cho pagination; persisted cache cũ dạng
+          //     array khiến postsQ.data.total undefined → "no posts".
+          buster: "v4",
         }}
       >
         <App />
