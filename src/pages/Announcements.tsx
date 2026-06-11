@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { BackLink } from "@/components/BackLink";
@@ -147,7 +148,10 @@ function AnnouncementCard({
         />
       )}
 
-      <div className="px-5 py-3 space-y-1.5">
+      <Link
+        to={`/announcements/${row.id}`}
+        className="block px-5 py-3 space-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
+      >
         <h3
           className={`text-lg leading-snug ${
             isRead ? "font-medium text-foreground/80" : "font-semibold"
@@ -179,7 +183,7 @@ function AnnouncementCard({
             {LEVEL_LABEL[row.level]}
           </span>
         </div>
-      </div>
+      </Link>
     </li>
   );
 }
