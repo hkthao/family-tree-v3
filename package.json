@@ -16,6 +16,7 @@
     "test": "vitest",
     "test:rls": "vitest run src/test/rls",
     "seed": "tsx scripts/seed-fixtures.ts",
+    "seed:board": "tsx scripts/seed-board.ts",
     "videos": "playwright test"
   },
   "dependencies": {
