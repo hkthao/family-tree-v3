@@ -11,7 +11,6 @@ import {
   IconTree,
   IconUpload,
 } from "@/components/icons";
-import { EventsCalendar } from "@/components/EventsCalendar";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { RefreshButton } from "@/components/RefreshButton";
 import { Button } from "@/components/ui/button";
@@ -117,7 +116,7 @@ export default function Dashboard() {
   const upcomingTop5 = upcoming.slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-2xl font-semibold">Tổng quan</h2>
         <RefreshButton
@@ -225,10 +224,10 @@ export default function Dashboard() {
             />
           )}
 
-          {upcoming.length > 0 && (
-            <section aria-label="Lịch sự kiện" className="space-y-2">
+          {upcomingTop5.length > 0 && (
+            <section aria-label="Sự kiện sắp tới" className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Lịch sự kiện</h3>
+                <h3 className="text-lg font-semibold">Sự kiện sắp tới</h3>
                 <Link
                   to={`/clans/${clan.id}/events`}
                   className="text-sm text-primary hover:underline"
@@ -236,13 +235,6 @@ export default function Dashboard() {
                   Xem tất cả →
                 </Link>
               </div>
-              <EventsCalendar events={upcoming} clanId={clan.id} />
-            </section>
-          )}
-
-          {upcomingTop5.length > 0 && (
-            <section aria-label="Sự kiện sắp tới" className="space-y-2">
-              <h3 className="text-lg font-semibold">Sự kiện sắp tới</h3>
               <ul className="space-y-1.5">
                 {upcomingTop5.map((e) => (
                   <UpcomingRow key={e.key} event={e} clanId={clan.id} />
