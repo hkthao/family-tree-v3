@@ -258,6 +258,7 @@ export function AddChildForm({
             </Label>
             <Input
               id="full_name"
+              data-testid="child-name-input"
               required
               autoFocus
               maxLength={200}
@@ -398,6 +399,7 @@ export function AddChildForm({
       <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-3 z-10">
         <Button
           type="submit"
+          data-testid="child-submit-button"
           className="flex-1 sm:flex-none"
           disabled={
             mutation.isPending ||
