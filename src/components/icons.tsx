@@ -485,3 +485,13 @@ export function IconSend(p: IconProps) {
     </Svg>
   );
 }
+
+export function IconMore(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="19" r="1" />
+    </Svg>
+  );
+}

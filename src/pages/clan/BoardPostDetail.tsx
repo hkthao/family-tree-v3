@@ -3,7 +3,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
@@ -11,13 +11,13 @@ import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconLock,
+  IconMore,
   IconPencil,
   IconSend,
   IconUnlock,
   IconX,
 } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import {
@@ -96,22 +96,40 @@ export default function BoardPostDetail() {
 
       {post && (
         <article>
-          <div className="flex items-center gap-2 flex-wrap text-xs uppercase tracking-wider text-muted-foreground">
-            <span
-              className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium normal-case ${TYPE_BADGE[post.type]}`}
-            >
-              {TYPE_LABEL[post.type]}
-            </span>
-            {post.pinned && (
-              <span className="text-primary normal-case">📌 Đã ghim</span>
-            )}
-            {isPending && (
-              <span className="text-amber-700 dark:text-amber-300 normal-case">
-                Chờ duyệt
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 flex-wrap text-xs uppercase tracking-wider text-muted-foreground min-w-0">
+              <span
+                className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium normal-case ${TYPE_BADGE[post.type]}`}
+              >
+                {TYPE_LABEL[post.type]}
               </span>
-            )}
-            {isHidden && (
-              <span className="italic normal-case">Đã ẩn</span>
+              {post.pinned && (
+                <span className="text-primary normal-case">📌 Đã ghim</span>
+              )}
+              {isPending && (
+                <span className="text-amber-700 dark:text-amber-300 normal-case">
+                  Chờ duyệt
+                </span>
+              )}
+              {isHidden && (
+                <span className="italic normal-case">Đã ẩn</span>
+              )}
+            </div>
+
+            {(canEdit || isAdmin) && (
+              <PostActionsMenu
+                postId={post.id}
+                clanId={post.clan_id}
+                status={post.status}
+                pinned={post.pinned}
+                canEdit={canEdit}
+                isAdmin={isAdmin}
+                onAfter={(action) => {
+                  if (action === "reject" || action === "hide") {
+                    navigate(`/clans/${clanId}/board`);
+                  }
+                }}
+              />
             )}
           </div>
 
@@ -166,31 +184,6 @@ export default function BoardPostDetail() {
             </p>
           )}
 
-          {/* Actions row — gọn, dạt lề phải */}
-          <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t justify-end">
-            {canEdit && (
-              <Button asChild variant="outline" size="sm">
-                <Link to={`/clans/${clanId}/board/${post.id}/edit`}>
-                  <IconPencil className="h-4 w-4 mr-1.5" />
-                  Sửa
-                </Link>
-              </Button>
-            )}
-            {isAdmin && (
-              <ModerationActions
-                postId={post.id}
-                status={post.status}
-                pinned={post.pinned}
-                clanId={post.clan_id}
-                onAfter={(action) => {
-                  if (action === "reject" || action === "hide") {
-                    navigate(`/clans/${clanId}/board`);
-                  }
-                }}
-              />
-            )}
-          </div>
-
           <Comments
             postId={post.id}
             isMember={clan.myRole !== null || clan.isPlatformAdmin}
@@ -201,23 +194,61 @@ export default function BoardPostDetail() {
   );
 }
 
-// ─── Moderation actions ────────────────────────────────────────────
+// ─── Post actions menu ────────────────────────────────────────────
+//
+// Kebab dropdown ở top-right article — pattern quen thuộc của
+// Facebook / Medium / WordPress. Gom Sửa + mọi moderation action
+// vào 1 menu thay vì cụm 3 nút chiếm chỗ.
 
-function ModerationActions({
+interface MenuItem {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  destructive?: boolean;
+}
+
+function PostActionsMenu({
   postId,
+  clanId,
   status,
   pinned,
-  clanId,
+  canEdit,
+  isAdmin,
   onAfter,
 }: {
   postId: string;
+  clanId: string;
   status: string;
   pinned: boolean;
-  clanId: string;
+  canEdit: boolean;
+  isAdmin: boolean;
   onAfter: (action: ClanPostModerateAction) => void;
 }) {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Click ngoài menu → đóng. Bám phổ thông UX của dropdown.
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
 
   const moderateM = useMutation({
     mutationFn: (action: ClanPostModerateAction) =>
@@ -229,6 +260,7 @@ function ModerationActions({
         queryKey: queryKeys.clanPostsPending(clanId),
       });
       toast.success("Đã cập nhật");
+      setOpen(false);
       onAfter(action);
     },
     onError: (e) =>
@@ -237,81 +269,99 @@ function ModerationActions({
       }),
   });
 
-  if (status === "pending") {
-    return (
-      <>
-        <Button
-          size="sm"
-          onClick={() => moderateM.mutate("publish")}
-          disabled={moderateM.isPending}
-        >
-          <IconCheck className="h-4 w-4 mr-1.5" />
-          Duyệt
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-destructive"
-          onClick={() => moderateM.mutate("reject")}
-          disabled={moderateM.isPending}
-        >
-          <IconX className="h-4 w-4 mr-1.5" />
-          Từ chối
-        </Button>
-      </>
-    );
+  const items: MenuItem[] = [];
+  if (canEdit) {
+    items.push({
+      key: "edit",
+      label: "Sửa",
+      icon: <IconPencil className="h-4 w-4" />,
+      onClick: () => {
+        setOpen(false);
+        navigate(`/clans/${clanId}/board/${postId}/edit`);
+      },
+    });
   }
-  if (status === "published") {
-    return (
-      <>
-        {pinned ? (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => moderateM.mutate("unpin")}
-            disabled={moderateM.isPending}
-          >
-            <span className="mr-1.5" aria-hidden="true">📌</span>
-            Bỏ ghim
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => moderateM.mutate("pin")}
-            disabled={moderateM.isPending}
-          >
-            <span className="mr-1.5" aria-hidden="true">📌</span>
-            Ghim
-          </Button>
-        )}
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-destructive"
-          onClick={() => moderateM.mutate("hide")}
-          disabled={moderateM.isPending}
-        >
-          <IconLock className="h-4 w-4 mr-1.5" />
-          Ẩn
-        </Button>
-      </>
-    );
+  if (isAdmin) {
+    if (status === "pending") {
+      items.push({
+        key: "publish",
+        label: "Duyệt đăng",
+        icon: <IconCheck className="h-4 w-4" />,
+        onClick: () => moderateM.mutate("publish"),
+      });
+      items.push({
+        key: "reject",
+        label: "Từ chối",
+        icon: <IconX className="h-4 w-4" />,
+        onClick: () => moderateM.mutate("reject"),
+        destructive: true,
+      });
+    }
+    if (status === "published") {
+      items.push({
+        key: pinned ? "unpin" : "pin",
+        label: pinned ? "Bỏ ghim" : "Ghim lên đầu",
+        icon: <span aria-hidden="true">📌</span>,
+        onClick: () => moderateM.mutate(pinned ? "unpin" : "pin"),
+      });
+      items.push({
+        key: "hide",
+        label: "Ẩn bài",
+        icon: <IconLock className="h-4 w-4" />,
+        onClick: () => moderateM.mutate("hide"),
+        destructive: true,
+      });
+    }
+    if (status === "hidden") {
+      items.push({
+        key: "unhide",
+        label: "Hiện lại",
+        icon: <IconUnlock className="h-4 w-4" />,
+        onClick: () => moderateM.mutate("unhide"),
+      });
+    }
   }
-  if (status === "hidden") {
-    return (
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => moderateM.mutate("unhide")}
-        disabled={moderateM.isPending}
+
+  if (items.length === 0) return null;
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="Hành động"
+        title="Hành động"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
       >
-        <IconUnlock className="h-4 w-4 mr-1.5" />
-        Hiện lại
-      </Button>
-    );
-  }
-  return null;
+        <IconMore className="h-5 w-5" />
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full mt-1 w-48 z-20 rounded-md border bg-card shadow-lg py-1"
+        >
+          {items.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              role="menuitem"
+              onClick={item.onClick}
+              disabled={moderateM.isPending}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-muted disabled:opacity-50 ${
+                item.destructive ? "text-destructive" : ""
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── Comments ──────────────────────────────────────────────────────
