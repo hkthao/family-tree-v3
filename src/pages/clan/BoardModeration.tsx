@@ -3,7 +3,6 @@ import { Link, Navigate, useParams } from "react-router-dom";
 
 import { BackLink } from "@/components/BackLink";
 import { ClanPostCard } from "@/components/ClanPostCard";
-import { IconScroll } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listPendingPosts } from "@/lib/queries/clan_posts";
@@ -29,23 +28,16 @@ export default function BoardModeration() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <nav>
         <BackLink fallback={`/clans/${clanId}/board`} />
       </nav>
 
-      <header className="flex items-start gap-3">
-        <IconScroll className="h-8 w-8 text-primary shrink-0 mt-0.5" />
-        <div className="min-w-0">
-          <h1 className="clan-name text-2xl sm:text-3xl font-semibold leading-tight">
-            Duyệt bài
-          </h1>
-          <p className="text-base text-muted-foreground mt-1">
-            Bài chờ duyệt từ thành viên. Bấm "Duyệt" để đăng, hoặc "Từ
-            chối" để ẩn (vẫn lưu lại — có thể hiện lại sau).
-          </p>
-        </div>
-      </header>
+      <h2 className="text-2xl font-semibold">Duyệt bài</h2>
+      <p className="text-sm text-muted-foreground">
+        Bài chờ duyệt từ thành viên. Bấm "Duyệt" để đăng, hoặc "Từ chối"
+        để ẩn (vẫn lưu lại — có thể hiện lại sau).
+      </p>
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
       {error && (
