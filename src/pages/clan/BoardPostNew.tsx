@@ -2,6 +2,8 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { BoardPostForm } from "@/components/BoardPostForm";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { IconPlus } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { useClanContext } from "@/hooks/useClanContext";
 
 /**
@@ -22,7 +24,10 @@ export default function BoardPostNew() {
         ]}
       />
 
-      <h2 className="text-2xl font-semibold">Đăng bài mới</h2>
+      <PageHeader
+        icon={<IconPlus className="h-7 w-7" />}
+        title="Đăng bài mới"
+      />
 
       <BoardPostForm
         clan={clan}

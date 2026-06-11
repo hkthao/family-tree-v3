@@ -4,7 +4,8 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconX } from "@/components/icons";
+import { IconCheck, IconUserPlus, IconX } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
 import {
@@ -413,12 +414,11 @@ export default function AddParent() {
         ]}
       />
 
-      <div>
-        <h1 className="text-2xl font-semibold">Thêm cha / mẹ</h1>
-        {focal && (
-          <p className="text-muted-foreground">Cho {focal.full_name}</p>
-        )}
-      </div>
+      <PageHeader
+        icon={<IconUserPlus className="h-7 w-7" />}
+        title="Thêm cha / mẹ"
+        description={focal ? `Cho ${focal.full_name}` : undefined}
+      />
 
       <AddParentForm
         clanId={clanId}

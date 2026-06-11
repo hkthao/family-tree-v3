@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/PageHeader";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
 import { IconCheck, IconChevronUp, IconCopy, IconPlus, IconX } from "@/components/icons";
 import { useToast } from "@/components/Toast";
@@ -223,16 +224,15 @@ export default function NewPerson() {
         ]}
       />
 
-      <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
-        {isCopy ? (
-          <>
-            <IconCopy className="h-5 w-5" />
-            Sao chép người
-          </>
-        ) : (
-          "Thêm người"
-        )}
-      </h1>
+      <PageHeader
+        icon={isCopy ? <IconCopy className="h-7 w-7" /> : <IconPlus className="h-7 w-7" />}
+        title={isCopy ? "Sao chép người" : "Thêm người"}
+        description={
+          isCopy
+            ? "Tạo bản sao thông tin — không sao chép quan hệ."
+            : "Thêm 1 người vào dòng họ. Có thể đánh dấu Thuỷ tổ."
+        }
+      />
       {isCopy && source && (
         <Alert>
           <AlertDescription>
