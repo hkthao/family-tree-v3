@@ -7,8 +7,8 @@ import { PageHelpVideo } from "@/components/PageHelpVideo";
  *   [Icon] Title (clan-name serif) — Description (text-sm muted)
  *           ? Xem hướng dẫn M:SS  (auto via PageHelpVideo)
  *
- * Bên phải (sm+) optionally chứa action buttons. Mobile: actions
- * xuống dòng dưới title.
+ * Bên phải optionally chứa action buttons — luôn cùng hàng với title
+ * (cả mobile) để tiết kiệm chiều dọc.
  *
  * Icon size bị override về h-5 w-5 (sm: h-6 w-6) để mọi page nhất
  * quán, không phụ thuộc kích thước className caller truyền vào.
@@ -29,7 +29,10 @@ export function PageHeader({
     // override mt-3/mt-6 do parent space-y-* gây ra, ép gap = 8px.
     // Đứng đầu (không Breadcrumb) thì selector ko match, parent layout
     // giữ nguyên hành vi mặc định.
-    <div className="flex flex-col sm:flex-row sm:items-start gap-1.5 [&:not(:first-child)]:!mt-2">
+    // flex-row luôn (cả mobile) để actions (refresh button…) cùng hàng
+    // với title, tiết kiệm dọc. Title block flex-1 + min-w-0 nên text
+    // dài tự wrap, không đè lên actions.
+    <div className="flex flex-row items-start gap-2 [&:not(:first-child)]:!mt-2">
       <header className="flex items-start gap-2 flex-1 min-w-0">
         <span
           className="text-primary shrink-0 mt-0.5 [&>svg]:h-5 [&>svg]:w-5 sm:[&>svg]:h-6 sm:[&>svg]:w-6"
