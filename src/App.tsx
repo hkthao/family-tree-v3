@@ -37,6 +37,7 @@ import Settings from "@/pages/clan/Settings";
 import Today from "@/pages/clan/Today";
 import Todo from "@/pages/clan/Todo";
 import Tree from "@/pages/clan/Tree";
+import Contact from "@/pages/Contact";
 import InlawsConfirm from "@/pages/InlawsConfirm";
 import Login from "@/pages/Login";
 import NewClan from "@/pages/NewClan";
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/share/:token" element={<Share />} />
+        <Route path="/lien-he" element={<Contact />} />
         <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />
 
         <Route
