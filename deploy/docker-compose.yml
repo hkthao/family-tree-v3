@@ -13,6 +13,12 @@ services:
     image: ${APP_IMAGE:-hkthao/family-tree-v3:latest}
     container_name: family-tree-v3
     restart: unless-stopped
+    volumes:
+      # Tutorial videos — bind-mount host folder vào dist nginx root để
+      # serve qua https://giapha.thaohk.com/static/videos/<spec>.mp4
+      # mà không phải bake vào Docker image (mỗi lần update video sẽ
+      # phải rebuild image). Upload qua scripts/upload-videos.sh.
+      - /opt/gia-pha/videos:/usr/share/nginx/html/static/videos:ro
     networks:
       # Join genealogy's docker network so nginx can reach us
       # via the alias `family-tree-v3`.
