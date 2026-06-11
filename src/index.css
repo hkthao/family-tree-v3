@@ -435,3 +435,21 @@
     animation: none;
   }
 }
+
+/* Native date/datetime picker icon — đẩy về inner-right cho khớp với
+   chevron của select. Mặc định Chromium ghim icon ngay sau text → khi
+   input rộng hơn placeholder, icon "trôi" giữa thay vì sát bên phải.
+   `margin-left: auto` đẩy icon về cuối flex track của input shadow. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="week"]::-webkit-calendar-picker-indicator {
+  margin-left: auto;
+  cursor: pointer;
+  opacity: 0.7;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
