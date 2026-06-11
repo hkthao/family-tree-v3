@@ -62,6 +62,7 @@ export default function NewClan() {
             </Label>
             <Input
               id="name"
+              data-testid="clan-name-input"
               required
               maxLength={100}
               value={name}
@@ -74,6 +75,7 @@ export default function NewClan() {
             <Label htmlFor="description">Mô tả (tuỳ chọn)</Label>
             <Input
               id="description"
+              data-testid="clan-description-input"
               maxLength={500}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -127,7 +129,11 @@ export default function NewClan() {
           )}
 
           <div className="flex gap-3 pt-2">
-            <Button type="submit" disabled={mutation.isPending || !name.trim()}>
+            <Button
+              type="submit"
+              data-testid="clan-submit-button"
+              disabled={mutation.isPending || !name.trim()}
+            >
               {mutation.isPending ? (
                 "Đang tạo…"
               ) : (

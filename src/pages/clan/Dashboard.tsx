@@ -149,7 +149,10 @@ export default function Dashboard() {
           {canEdit && (
             <CardContent className="flex flex-wrap gap-3">
               <Button asChild>
-                <Link to={`/clans/${clan.id}/people/new`}>
+                <Link
+                  to={`/clans/${clan.id}/people/new`}
+                  data-testid="dashboard-add-person-link"
+                >
                   <IconPlus className="h-4 w-4 mr-1.5" />
                   Thêm người
                 </Link>

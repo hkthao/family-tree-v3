@@ -220,6 +220,7 @@ export function CalendarDateInput({
           </Label>
           <Input
             id={`${idPrefix}-year`}
+            data-testid={`${idPrefix}-year-input`}
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={4}

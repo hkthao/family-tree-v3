@@ -282,6 +282,7 @@ export default function People() {
               <Link
                 to={`/clans/${clan.id}/people/new`}
                 aria-label="Thêm người"
+                data-testid="add-person-link"
               >
                 <IconPlus className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">Thêm người</span>

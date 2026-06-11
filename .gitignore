@@ -29,6 +29,7 @@ supabase/.temp
 coverage
 playwright-report
 test-results
+/videos/
 .env.deploy
 
 # Local Netlify folder
