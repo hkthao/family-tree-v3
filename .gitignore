@@ -34,3 +34,4 @@ test-results
 
 # Local Netlify folder
 .netlify
+/videos/_dist/

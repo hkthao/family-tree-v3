@@ -495,3 +495,11 @@ export function IconMore(p: IconProps) {
     </Svg>
   );
 }
+
+export function IconPlay(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <polygon points="6 4 20 12 6 20 6 4" />
+    </Svg>
+  );
+}

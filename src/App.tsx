@@ -14,6 +14,7 @@ import Admin from "@/pages/Admin";
 import AnnouncementDetail from "@/pages/AnnouncementDetail";
 import Announcements from "@/pages/Announcements";
 import Changelog from "@/pages/Changelog";
+import Videos from "@/pages/Videos";
 import Clans from "@/pages/Clans";
 import Docs from "@/pages/Docs";
 import AddChild from "@/pages/clan/AddChild";
@@ -170,6 +171,14 @@ export default function App() {
           element={
             <RequireAuth>
               <Docs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/huong-dan-video"
+          element={
+            <RequireAuth>
+              <Videos />
             </RequireAuth>
           }
         />
