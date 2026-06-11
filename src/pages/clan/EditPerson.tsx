@@ -295,6 +295,7 @@ export function EditPersonForm({
         </Label>
         <Input
           id="full_name"
+          data-testid="edit-person-name-input"
           required
           maxLength={200}
           value={fullName}
@@ -504,6 +505,7 @@ export function EditPersonForm({
       <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-3 z-10">
         <Button
           type="submit"
+          data-testid="edit-person-submit-button"
           className="flex-1 sm:flex-none"
           disabled={mutation.isPending || !fullName.trim()}
         >
