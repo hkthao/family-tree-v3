@@ -370,23 +370,24 @@ function UserRow({
             </Button>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          {/* Mobile: vertical stack — text đầy đủ, dễ chạm.
+              Desktop (sm+): horizontal row 3 col đều. */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <Button
               size="sm"
               variant="outline"
               disabled={isSelf || suspendM.isPending}
               onClick={() => suspendM.mutate(!profile.is_suspended)}
-              title={profile.is_suspended ? "Mở khoá" : "Khoá tài khoản"}
             >
               {profile.is_suspended ? (
                 <>
                   <IconUnlock className="h-4 w-4 mr-1.5 shrink-0" />
-                  <span className="truncate">Mở khoá</span>
+                  Mở khoá
                 </>
               ) : (
                 <>
                   <IconLock className="h-4 w-4 mr-1.5 shrink-0" />
-                  <span className="truncate">Khoá</span>
+                  Khoá
                 </>
               )}
             </Button>
@@ -395,16 +396,9 @@ function UserRow({
               variant="outline"
               disabled={isSelf || grantM.isPending}
               onClick={() => grantM.mutate(!profile.is_platform_admin)}
-              title={
-                profile.is_platform_admin
-                  ? "Thu quyền platform admin"
-                  : "Cấp quyền platform admin"
-              }
             >
               <IconShield className="h-4 w-4 mr-1.5 shrink-0" />
-              <span className="truncate">
-                {profile.is_platform_admin ? "Thu quyền" : "Cấp quyền"}
-              </span>
+              {profile.is_platform_admin ? "Thu quyền admin" : "Cấp quyền admin"}
             </Button>
             <Button
               size="sm"
@@ -421,10 +415,9 @@ function UserRow({
                 });
                 if (ok) deleteM.mutate();
               }}
-              title="Xoá tài khoản"
             >
               <IconTrash className="h-4 w-4 mr-1.5 shrink-0" />
-              <span className="truncate">Xoá</span>
+              Xoá tài khoản
             </Button>
           </div>
 
