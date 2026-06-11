@@ -27,13 +27,30 @@ const TYPE_OPTIONS: Array<{ value: ClanPostType; label: string }> = [
  * Composer cho bảng tin. Member thường gửi → `pending` (chờ duyệt);
  * admin gửi → `published` luôn. UI khác biệt để người dùng biết.
  */
-export function ClanPostComposer({ clan }: { clan: ClanDetail }) {
+export function ClanPostComposer({
+  clan,
+  open,
+  onOpenChange,
+}: {
+  clan: ClanDetail;
+  /** Controlled open state — Board lift state lên để có nút mở ở
+   *  header row riêng. Nếu không truyền → tự quản (button + form). */
+  open?: boolean;
+  onOpenChange?: (next: boolean) => void;
+}) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const toast = useToast();
   const admin = isClanAdmin(clan);
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = open !== undefined;
+  const effectiveOpen = isControlled ? open : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (isControlled) onOpenChange?.(next);
+    else setInternalOpen(next);
+  };
+
   const [type, setType] = useState<ClanPostType>("news");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -78,7 +95,9 @@ export function ClanPostComposer({ clan }: { clan: ClanDetail }) {
 
   if (!user) return null;
 
-  if (!open) {
+  if (!effectiveOpen) {
+    // Khi controlled thì Board tự dựng nút ngoài → composer ẩn.
+    if (isControlled) return null;
     return (
       <Button onClick={() => setOpen(true)} size="sm">
         + Đăng bài mới
