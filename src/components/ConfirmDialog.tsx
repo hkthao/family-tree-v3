@@ -96,6 +96,7 @@ export function ConfirmDialogProvider({
               </Button>
               <Button
                 size="sm"
+                data-testid="confirm-dialog-confirm"
                 variant={pending.opts.destructive ? "destructive" : "default"}
                 onClick={() => close(true)}
                 autoFocus

@@ -243,6 +243,7 @@ function AuditItem({
           <Button
             size="sm"
             variant="outline"
+            data-testid="audit-restore-button"
             disabled={restoreM.isPending}
             onClick={async () => {
               const ok = await confirm({
