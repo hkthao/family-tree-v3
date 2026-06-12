@@ -23,13 +23,21 @@ for arg in "$@"; do
 done
 
 count=0
-for dir in videos/*-mobile/ videos/*-desktop/; do
+for dir in videos/*-mobile/ videos/*-desktop/ videos/*-mobile-fullhd/; do
   [ -d "$dir" ] || continue
   src="${dir}video.webm"
   [ -f "$src" ] || continue
   name=$(basename "$dir")
   mp4="$OUT/${name}.mp4"
   poster="$OUT/${name}.jpg"
+
+  # mobile-fullhd: upscale viewport 540×960 → 1080×1920 bằng lanczos
+  # cho video gửi đại trà. Các project khác giữ nguyên kích thước.
+  if [[ "$name" == *-mobile-fullhd ]]; then
+    vf_args=(-vf "scale=1080:1920:flags=lanczos")
+  else
+    vf_args=()
+  fi
 
   if [ ! -f "$mp4" ] || [ "$src" -nt "$mp4" ]; then
     echo "→ Convert $name"
@@ -38,6 +46,7 @@ for dir in videos/*-mobile/ videos/*-desktop/; do
     # -an = drop audio (videos câm — Playwright không record audio).
     ffmpeg -y -hide_banner -loglevel error \
       -i "$src" \
+      "${vf_args[@]}" \
       -c:v libx264 -crf 23 -preset slow -movflags +faststart \
       -pix_fmt yuv420p -an \
       "$mp4"

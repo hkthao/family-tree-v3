@@ -46,6 +46,18 @@ export default defineConfig({
       },
     },
     {
+      // Mobile FullHD (1080×1920) cho video gửi đại trà — viewport
+      // 540×960 vẫn dưới breakpoint md:768 nên app render layout mobile
+      // y hệt, aspect 9:16 khớp portrait FullHD. ffmpeg ở
+      // scripts/build-videos.sh sẽ upscale 2× (lanczos) thành 1080×1920.
+      name: "mobile-fullhd",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 540, height: 960 },
+        deviceScaleFactor: 2,
+      },
+    },
+    {
       name: "desktop",
       use: {
         ...devices["Desktop Chrome"],
