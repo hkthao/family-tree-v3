@@ -136,7 +136,7 @@ export default function NewClan() {
             </Alert>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-2 justify-end">
             <Button
               type="submit"
               variant="outline"

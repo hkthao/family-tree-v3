@@ -200,19 +200,22 @@ export default function Settings() {
               </Alert>
             )}
 
-            <Button
-              type="submit"
-              disabled={mutation.isPending || !name.trim()}
-            >
-              {mutation.isPending ? (
-                "Đang lưu…"
-              ) : (
-                <>
-                  <IconCheck className="h-4 w-4 mr-1.5" />
-                  Lưu thay đổi
-                </>
-              )}
-            </Button>
+            <div className="flex gap-3 pt-2 justify-end">
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={mutation.isPending || !name.trim()}
+              >
+                {mutation.isPending ? (
+                  "Đang lưu…"
+                ) : (
+                  <>
+                    <IconCheck className="h-4 w-4 mr-1.5" />
+                    Lưu thay đổi
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

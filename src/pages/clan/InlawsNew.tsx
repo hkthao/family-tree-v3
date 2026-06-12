@@ -385,8 +385,9 @@ function TokenBody(props: ModeStepProps) {
         </Alert>
       )}
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-2 justify-end">
         <Button
+          variant="outline"
           onClick={props.submitToken}
           disabled={props.submittingToken}
         >

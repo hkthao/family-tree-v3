@@ -348,10 +348,10 @@ export function AddParentForm({
         </Alert>
       )}
 
-      <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-3 z-10">
+      <div className="flex gap-3 pt-2 justify-end">
         <Button
           type="submit"
-          className="flex-1 sm:flex-none"
+          variant="outline"
           disabled={
             mutation.isPending ||
             (mode === "new"
@@ -371,7 +371,6 @@ export function AddParentForm({
         <Button
           type="button"
           variant="outline"
-          className="flex-1 sm:flex-none"
           onClick={onCancel}
         >
           <IconX className="h-4 w-4 mr-1.5" />

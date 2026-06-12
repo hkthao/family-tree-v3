@@ -450,46 +450,44 @@ export default function NewPerson() {
           </Alert>
         )}
 
-        <div className="sticky bottom-0 -mx-1 px-1 py-3 bg-background border-t flex flex-nowrap gap-2 sm:gap-3 z-10">
+        <div className="flex gap-3 pt-2 justify-end">
           <Button
             type="submit"
+            variant="outline"
             data-testid="person-submit-button"
-            className="flex-1 min-w-0 sm:flex-none px-2 sm:px-4"
             disabled={mutation.isPending || !fullName.trim()}
           >
             {mutation.isPending && !andContinueRef.current ? (
-              <span className="truncate">Đang lưu…</span>
+              "Đang lưu…"
             ) : (
               <>
-                <IconCheck className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
-                <span className="truncate">Lưu</span>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                Lưu
               </>
             )}
           </Button>
           {!isCopy && (
             <Button
               type="button"
-              variant="secondary"
-              className="flex-1 min-w-0 sm:flex-none px-2 sm:px-4"
+              variant="outline"
               disabled={mutation.isPending || !fullName.trim()}
               onClick={(e) => handleSubmit(e, true)}
               title="Lưu rồi tiếp tục thêm người khác (giữ giới tính)"
             >
               {mutation.isPending && andContinueRef.current ? (
-                <span className="truncate">Đang lưu…</span>
+                "Đang lưu…"
               ) : (
                 <>
-                  <IconPlus className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
-                  <span className="truncate sm:hidden">Thêm nữa</span>
-                  <span className="hidden sm:inline">Lưu & thêm nữa</span>
+                  <IconPlus className="h-4 w-4 mr-1.5" />
+                  Lưu & thêm nữa
                 </>
               )}
             </Button>
           )}
-          <Button asChild variant="outline" className="flex-1 min-w-0 sm:flex-none px-2 sm:px-4">
+          <Button asChild variant="outline">
             <Link to={`/clans/${clanId}/people`}>
-              <IconX className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
-              <span className="truncate">Hủy</span>
+              <IconX className="h-4 w-4 mr-1.5" />
+              Hủy
             </Link>
           </Button>
         </div>
