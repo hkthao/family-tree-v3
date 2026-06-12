@@ -159,9 +159,10 @@ export default function Contact() {
             </p>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-2 justify-end">
             <Button
               type="submit"
+              variant="outline"
               disabled={mutation.isPending || !message.trim()}
             >
               <IconCheck className="h-4 w-4 mr-1.5" />
