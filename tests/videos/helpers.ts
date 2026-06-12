@@ -108,6 +108,50 @@ export async function pause(page: Page, ms: number): Promise<void> {
 }
 
 /**
+ * Splash toàn màn hình hiển thị logo + tên app + slogan. Dùng để mở
+ * đầu / kết thúc video tour. Caller tự `pause()` sau khi gọi để giữ
+ * splash trên màn rồi gọi `hideSplash()` để dọn (hoặc để navigation
+ * tự xoá DOM khi page.goto sau đó).
+ */
+export async function splash(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const id = "__ft_splash__";
+    document.getElementById(id)?.remove();
+    const el = document.createElement("div");
+    el.id = id;
+    el.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483646",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "justify-content:center",
+      "gap:28px",
+      "background:linear-gradient(180deg,#fef7e6 0%,#f6e8c4 100%)",
+      "font-family:'Be Vietnam Pro',system-ui,sans-serif",
+      "color:#3a2a14",
+    ].join(";");
+    el.innerHTML = [
+      '<img src="/icons/app-icon-512.png" ',
+      'style="width:200px;height:200px;border-radius:40px;',
+      'box-shadow:0 18px 50px rgba(60,40,10,0.25)" />',
+      '<div style="font-size:48px;font-weight:700;letter-spacing:0.5px">Gia phả</div>',
+      '<div style="font-size:22px;color:#6a4d20;text-align:center;padding:0 32px">',
+      "Quản lý cây dòng họ Việt",
+      "</div>",
+    ].join("");
+    document.body.appendChild(el);
+  });
+}
+
+export async function hideSplash(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    document.getElementById("__ft_splash__")?.remove();
+  });
+}
+
+/**
  * Tạo nhanh một dòng họ rỗng cho video tiếp theo dùng làm điểm xuất
  * phát "sạch". Bước này KHÔNG nên có narrate() — nó là setup, không
  * phải nội dung hướng dẫn. Người xem chỉ thấy 4-5 giây thao tác im
