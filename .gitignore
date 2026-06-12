@@ -32,6 +32,10 @@ test-results
 /videos/
 .env.deploy
 
+# One-off migration data (contains user emails + temp passwords)
+scripts/.migration-recipients.json
+scripts/.clan-admin-assignments.json
+
 # Local Netlify folder
 .netlify
 /videos/_dist/
