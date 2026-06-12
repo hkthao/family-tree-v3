@@ -31,6 +31,20 @@ export async function login(
   });
 }
 
+/**
+ * Bật vùng an toàn (safe area) cho phụ đề: video mobile-fullhd
+ * 1080×1920 phát lên Reels/TikTok/FB Watch thì UI nền tảng (avatar,
+ * tên page, like/comment/share, caption hệ thống) che ~250px trên +
+ * ~350px dưới. Viewport playwright là 540×960 → ffmpeg upscale 2× →
+ * cần chừa ≥175px dưới + ≥125px trên trong toạ độ viewport. Gọi 1
+ * lần đầu spec, narrate()/highlight tự đọc cờ này khi đặt vị trí.
+ */
+export async function enableSafeArea(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    (window as unknown as { __ftSafeArea?: boolean }).__ftSafeArea = true;
+  });
+}
+
 export async function narrate(
   page: Page,
   text: string,
@@ -38,6 +52,11 @@ export async function narrate(
 ): Promise<void> {
   await page.evaluate((t) => {
     const id = "__ft_caption__";
+    const safe = (window as unknown as { __ftSafeArea?: boolean }).__ftSafeArea === true;
+    // Vùng an toàn: bottom 190px ở viewport 540×960 ≈ 380px khi
+    // upscale lên 1080×1920 — vừa nằm trên vùng 350px Reels/TikTok
+    // chiếm. Còn 16px là mặc định cũ cho desktop / mobile thường.
+    const bottom = safe ? "190px" : "16px";
     let el = document.getElementById(id) as HTMLDivElement | null;
     if (!el) {
       el = document.createElement("div");
@@ -46,7 +65,7 @@ export async function narrate(
         "position:fixed",
         "left:12px",
         "right:12px",
-        "bottom:16px",
+        `bottom:${bottom}`,
         "z-index:2147483647",
         "padding:10px 14px",
         "border-radius:10px",
@@ -60,6 +79,8 @@ export async function narrate(
         "overflow:hidden",
       ].join(";");
       document.body.appendChild(el);
+    } else {
+      el.style.bottom = bottom;
     }
     el.textContent = t;
   }, text);
@@ -198,4 +219,172 @@ export async function createClanWithRoot(
   await page.waitForURL(/\/people\/[0-9a-f-]+$/);
   const personId = page.url().match(/\/people\/([0-9a-f-]+)$/)?.[1] ?? "";
   return { clanId, personId };
+}
+
+/**
+ * Mở drawer trái (nút ☰) rồi click vào item có nhãn `label`. Highlight
+ * cả hai bước để người xem hiểu "đây là chỗ bấm". Đợi URL khớp
+ * `urlPattern` nếu truyền — không truyền thì chỉ đợi navigation bất
+ * kỳ.
+ *
+ * Dùng thay cho `page.goto(...)` trong các video tour: mục đích video
+ * là DẠY người xem thao tác app, không phải nhảy tắt.
+ */
+export async function navigateViaDrawer(
+  page: Page,
+  label: string | RegExp,
+  urlPattern?: RegExp,
+): Promise<void> {
+  // 1) Mở drawer: nút ☰ ở header. aria-label bắt đầu bằng "Mở menu"
+  //    (DrawerToggle trong ClanLayout.tsx). Trên desktop ≥lg drawer
+  //    luôn mở nên nút bị `lg:hidden` — viewport video toàn ≤960
+  //    height nhưng width 540 < 1024 nên vẫn nhìn thấy nút.
+  const toggle = page.locator('button[aria-label^="Mở menu"]').first();
+  if (await toggle.isVisible().catch(() => false)) {
+    await highlight(toggle, { ms: 800 });
+    await toggle.click();
+    // Drawer dùng transition 200ms — chờ để ai cũng kịp thấy nó trượt vào.
+    await page.waitForTimeout(450);
+  }
+
+  // 2) Click item theo nhãn. Drawer là <nav> chứa <NavLink> với text
+  //    trong <span class="flex-1">. Dùng getByRole('link', {name})
+  //    match cả text lẫn aria-label.
+  const item = page.getByRole("link", { name: label }).first();
+  await highlight(item, { ms: 1100 });
+  await item.click();
+
+  if (urlPattern) {
+    await page.waitForURL(urlPattern, { timeout: 12_000 });
+  }
+  // Drawer tự đóng (onClose() được gọi qua `pick()` trong AppDrawer).
+  await pause(page, 800);
+}
+
+/**
+ * Mô phỏng pinch 2 ngón trên cây gia phả: vẽ 2 chấm tròn ở giữa
+ * `svg.main_svg`, animate tách ra (zoom in) hoặc thu vào (zoom out)
+ * trong ~1.4s — đồng thời dispatch chuỗi `WheelEvent` với
+ * `ctrlKey:true` vào SVG để d3.zoom (family-chart dùng) thực sự
+ * scale-by. Browser map "trackpad pinch" thành wheel+ctrlKey nên
+ * d3.zoom handler không phân biệt được — chart zoom thật.
+ *
+ * Yêu cầu: `svg.main_svg` đã render (gọi sau khi `.f3 svg` waitFor).
+ */
+export async function pinchZoom(
+  page: Page,
+  direction: "in" | "out" = "in",
+  opts: { steps?: number } = {},
+): Promise<void> {
+  const steps = opts.steps ?? 14;
+  await page.evaluate(
+    async ({ dir, steps }) => {
+      const svg = document.querySelector("svg.main_svg") as SVGSVGElement | null;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      // 2 chấm tròn ghost-finger. Bắt đầu sát nhau (zoom in) hoặc xa
+      // nhau (zoom out), kết thúc ngược lại — viewer thấy 2 ngón tách
+      // ra / chụm vào trên cây.
+      const startGap = dir === "in" ? 40 : 220;
+      const endGap = dir === "in" ? 220 : 40;
+      const mk = (id: string) => {
+        const el = document.createElement("div");
+        el.id = id;
+        el.style.cssText = [
+          "position:fixed",
+          "width:56px",
+          "height:56px",
+          "border-radius:50%",
+          "background:rgba(239,68,68,0.35)",
+          "border:3px solid #ef4444",
+          "box-shadow:0 0 0 6px rgba(239,68,68,0.18)",
+          "pointer-events:none",
+          "z-index:2147483646",
+          "transition:left 1300ms ease, top 1300ms ease",
+          "transform:translate(-50%,-50%)",
+        ].join(";");
+        document.body.appendChild(el);
+        return el;
+      };
+      const a = mk("__ft_finger_a__");
+      const b = mk("__ft_finger_b__");
+      const place = (gap: number) => {
+        a.style.left = `${cx - gap}px`;
+        a.style.top = `${cy}px`;
+        b.style.left = `${cx + gap}px`;
+        b.style.top = `${cy}px`;
+      };
+      place(startGap);
+      // 1 tick để browser commit style ban đầu trước khi đặt style đích.
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+      place(endGap);
+
+      // Dispatch wheel+ctrlKey để d3.zoom scale-by. Spread đều trong
+      // ~1.3s khớp animation 2 ngón.
+      const totalMs = 1300;
+      const delta = dir === "in" ? -22 : 22;
+      for (let i = 0; i < steps; i++) {
+        const ev = new WheelEvent("wheel", {
+          clientX: cx,
+          clientY: cy,
+          deltaY: delta,
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+        svg.dispatchEvent(ev);
+        await new Promise((r) => setTimeout(r, totalMs / steps));
+      }
+      await new Promise((r) => setTimeout(r, 200));
+      a.remove();
+      b.remove();
+    },
+    { dir: direction, steps },
+  );
+}
+
+/**
+ * Trên mobile nhiều trang dài quá viewport — chỉ chụp khung trên thì
+ * người xem không thấy hết nội dung. Helper này cuộn nhẹ xuống đáy
+ * rồi cuộn lại đầu trong ~3.5s để viewer kịp lướt qua.
+ *
+ * Dùng `window.scrollBy` thay `mouse.wheel` vì narrate overlay sẽ
+ * không cuộn theo — caption vẫn cố định ở đáy.
+ */
+export async function scrollTour(
+  page: Page,
+  opts: { downMs?: number; upMs?: number } = {},
+): Promise<void> {
+  const downMs = opts.downMs ?? 2100;
+  const upMs = opts.upMs ?? 1300;
+  await page.evaluate(
+    async ({ downMs, upMs }) => {
+      const total = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        0,
+      );
+      if (total < 40) return; // không có gì để cuộn
+      const easeDown = async (dur: number, from: number, to: number) => {
+        const start = performance.now();
+        return new Promise<void>((resolve) => {
+          const tick = () => {
+            const t = Math.min(1, (performance.now() - start) / dur);
+            // easeInOutQuad
+            const k = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            window.scrollTo(0, from + (to - from) * k);
+            if (t < 1) requestAnimationFrame(tick);
+            else resolve();
+          };
+          requestAnimationFrame(tick);
+        });
+      };
+      await easeDown(downMs, 0, total);
+      await new Promise((r) => setTimeout(r, 350));
+      await easeDown(upMs, total, 0);
+    },
+    { downMs, upMs },
+  );
 }
