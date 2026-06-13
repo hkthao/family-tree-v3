@@ -358,8 +358,10 @@ export async function scrollTour(
   page: Page,
   opts: { downMs?: number; upMs?: number } = {},
 ): Promise<void> {
-  const downMs = opts.downMs ?? 2100;
-  const upMs = opts.upMs ?? 1300;
+  // Người lớn tuổi đọc chậm + UI Reels che caption ở đáy → cuộn 3.5s
+  // xuống + 2.4s lên đủ cho mắt theo dõi mà không thấy bị giật.
+  const downMs = opts.downMs ?? 3500;
+  const upMs = opts.upMs ?? 2400;
   await page.evaluate(
     async ({ downMs, upMs }) => {
       const total = Math.max(
@@ -387,4 +389,139 @@ export async function scrollTour(
     },
     { downMs, upMs },
   );
+}
+
+/**
+ * Hiển thị toàn bộ trang trong file PDF đã tải về — chiếu từng trang
+ * như flipbook, overlay fullscreen lên app page. Mỗi trang hiển thị
+ * `perPageMs` giây trước khi chuyển. Nội dung dài thì cuộn nhẹ trong
+ * trang trước khi sang trang kế.
+ *
+ * Cách render: gọi `scripts/pdf-to-pngs.swift` (CoreGraphics —
+ * không cần poppler/imagemagick) sinh page-001.png, page-002.png,
+ * ... → đọc từng PNG dạng base64 → set vào `<img>` overlay theo
+ * tuần tự. Caption + safe-area giữ nguyên vì không rời app page.
+ *
+ * Tại sao không `page.goto("file://...pdf")`? Chromium headless tải
+ * xuống PDF chứ không render qua PDFium (chỉ bật cho headed mode).
+ */
+export async function viewPdfFile(
+  page: Page,
+  filePath: string,
+  opts: { perPageMs?: number; maxPages?: number } = {},
+): Promise<void> {
+  const perPageMs = opts.perPageMs ?? 4500;
+  const maxPages = opts.maxPages ?? 8;
+  const { execSync } = await import("node:child_process");
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const os = await import("node:os");
+
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "ft-pdf-pages-"));
+  // Playwright chạy từ repo root → script path tương đối là ổn.
+  const scriptPath = path.join(process.cwd(), "scripts/pdf-to-pngs.swift");
+  execSync(
+    `swift "${scriptPath}" "${filePath}" "${tmpDir}" 1080`,
+    { stdio: "pipe" },
+  );
+
+  const files = (await fs.readdir(tmpDir))
+    .filter((f) => f.startsWith("page-") && f.endsWith(".png"))
+    .sort();
+  const pages = files.slice(0, maxPages);
+  if (pages.length === 0) return;
+
+  // Khung viewer — wrap div fullscreen, 1 <img> đổi src theo từng trang.
+  await page.evaluate(() => {
+    const old = document.getElementById("__ft_pdf_view__");
+    old?.remove();
+    const wrap = document.createElement("div");
+    wrap.id = "__ft_pdf_view__";
+    wrap.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "z-index:2147483645",
+      "background:#0d0d0d",
+      "display:flex",
+      "align-items:flex-start",
+      "justify-content:center",
+      // Vùng an toàn Reels: 60px top + 200px bottom — caption đáy
+      // không bị che, UI nền tảng cũng không che ảnh PDF.
+      "padding:60px 12px 200px",
+      "overflow:auto",
+      "scroll-behavior:smooth",
+    ].join(";");
+    const img = document.createElement("img");
+    img.id = "__ft_pdf_img__";
+    img.style.cssText = [
+      "width:100%",
+      "max-width:520px",
+      "height:auto",
+      "box-shadow:0 8px 40px rgba(255,255,255,0.18)",
+      "background:#fff",
+      "border-radius:4px",
+      "transition:opacity 250ms ease",
+    ].join(";");
+    wrap.appendChild(img);
+
+    // Badge "Trang X/Y" góc trên trái — hiển thị tiến độ.
+    const badge = document.createElement("div");
+    badge.id = "__ft_pdf_badge__";
+    badge.style.cssText = [
+      "position:fixed",
+      "top:16px",
+      "left:16px",
+      "z-index:2147483646",
+      "padding:6px 12px",
+      "border-radius:14px",
+      "background:rgba(0,0,0,0.7)",
+      "color:#fff",
+      "font:500 13px/1 'Be Vietnam Pro',system-ui,sans-serif",
+      "pointer-events:none",
+    ].join(";");
+    document.body.appendChild(wrap);
+    document.body.appendChild(badge);
+  });
+
+  for (let i = 0; i < pages.length; i++) {
+    const file = pages[i];
+    const bytes = await fs.readFile(path.join(tmpDir, file));
+    const b64 = bytes.toString("base64");
+    await page.evaluate(
+      ({ b64, idx, total }) => {
+        const img = document.getElementById("__ft_pdf_img__") as
+          | HTMLImageElement
+          | null;
+        const badge = document.getElementById("__ft_pdf_badge__");
+        const wrap = document.getElementById("__ft_pdf_view__");
+        if (img) {
+          img.style.opacity = "0";
+          // Đổi src sau 200ms để fade-out kịp commit.
+          setTimeout(() => {
+            img.src = "data:image/png;base64," + b64;
+            img.onload = () => {
+              img.style.opacity = "1";
+              wrap?.scrollTo({ top: 0 });
+            };
+          }, 200);
+        }
+        if (badge) badge.textContent = `Trang ${idx + 1}/${total}`;
+      },
+      { b64, idx: i, total: pages.length },
+    );
+    // Hiện trang ổn định: pause nửa thời gian, sau đó cuộn xuống đáy
+    // ảnh (nếu trang dài hơn viewport), pause nốt rồi mới chuyển.
+    await pause(page, Math.floor(perPageMs * 0.45));
+    await page.evaluate(() => {
+      const wrap = document.getElementById("__ft_pdf_view__");
+      if (!wrap) return;
+      wrap.scrollTo({ top: wrap.scrollHeight, behavior: "smooth" });
+    });
+    await pause(page, Math.floor(perPageMs * 0.55));
+  }
+
+  await page.evaluate(() => {
+    document.getElementById("__ft_pdf_view__")?.remove();
+    document.getElementById("__ft_pdf_badge__")?.remove();
+  });
 }
