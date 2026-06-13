@@ -107,9 +107,12 @@ plan.md                   thiết kế chi tiết (1003 dòng)
 ## Trạng thái phát triển
 
 - ✅ **Phase 0** — Setup, schema, RLS, triggers, RLS tests, auth pages, seed, CI
-- 🚧 **Phase 1** — CRUD clan/persons/families, danh bạ list+grid, family-chart tree, import Excel, dashboard, cache (React Query + IndexedDB + data_version)
-- ⏳ **Phase 2** — Share-link + Edge Function, audit/restore, platform admin UI, PDF sách
-- ⏳ **Phase 3** — Quy đổi lịch âm, sự kiện & thông báo, PDF sơ đồ cây, GEDCOM, OCR
+- ✅ **Phase 1** — CRUD clan/persons/families, danh bạ list+grid, family-chart tree, import Excel, dashboard, cache (React Query + IndexedDB + data_version), tài khoản cá nhân
+- ✅ **Phase 2** — Share-link + Edge Function, audit/restore, platform admin UI, xuất PDF sổ gia phả
+- ✅ **Phase 3** — Quy đổi lịch âm, sự kiện + thông báo (email + web push), kinship UI, GEDCOM import/export, đường trực hệ
+- 🚧 **Đang mở rộng** — Bảng tin/posts, đóng góp (contributions workflow), thông gia (in-laws), QR cá nhân, gộp người trùng, AI gợi ý mô tả, video hướng dẫn
+
+App đã chạy production tại <https://giapha.thaohk.com> — vẫn tiếp tục thêm tính năng theo phản hồi cộng đồng.
 
 Lộ trình chi tiết: xem `plan.md` mục 21.
 
