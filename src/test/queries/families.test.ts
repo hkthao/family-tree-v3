@@ -137,4 +137,53 @@ describe("queries: families & relationships", () => {
       .single();
     expect(sonRow?.generation).toBe(2);
   });
+
+  it("spouse 'kết hôn vào' inherits generation from partner", async () => {
+    // Fresh user + clan để khỏi đụng max_clans=1 limit và để root cũ
+    // trong clan của owner không nhiễu sang phép tính đời.
+    const owner2 = await createTestUser({ displayName: "Owner2" });
+    cleanup.push(owner2.id);
+    const { id: c2 } = await createClan(
+      { name: "Generation spouse test" },
+      owner2.id,
+      owner2.client,
+    );
+    const ancestor = await createPerson(
+      { clan_id: c2, full_name: "Cụ tổ", gender: "M", is_root: true },
+      owner2.client,
+    );
+    const ancestorFam = await findOrCreateFamily(
+      {
+        clanId: c2,
+        partnerA: { id: ancestor.id, gender: "M" },
+        partnerB: null,
+      },
+      owner2.client,
+    );
+    const son = await addChildToFamily(
+      { clanId: c2, family_id: ancestorFam.id, full_name: "Con", gender: "M" },
+      owner2.client,
+    );
+    // Vợ "ngoài" — không có birth_family_id trong clan này.
+    const wife = await createPerson(
+      { clan_id: c2, full_name: "Con dâu", gender: "F" },
+      owner2.client,
+    );
+    await findOrCreateFamily(
+      {
+        clanId: c2,
+        partnerA: { id: son.id, gender: "M" },
+        partnerB: { id: wife.id, gender: "F" },
+      },
+      owner2.client,
+    );
+
+    const { data: wifeRow } = await owner2.client
+      .from("persons")
+      .select("generation")
+      .eq("id", wife.id)
+      .single();
+    // Trước fix: generation = null. Sau fix: copy từ son (đời 2).
+    expect(wifeRow?.generation).toBe(2);
+  });
 });

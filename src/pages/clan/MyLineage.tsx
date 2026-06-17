@@ -395,14 +395,14 @@ function LineageView({
             (d) => lifespan(d as DatumNode),
           ])
           .setCardDim({
-            w: 260,
-            h: 72,
+            w: 220,
+            h: 64,
             text_x: 64,
-            text_y: 20,
+            text_y: 18,
             img_w: 50,
             img_h: 50,
             img_x: 8,
-            img_y: 11,
+            img_y: 7,
           })
           .setOnCardUpdate(function (d) {
             const datum = d.data as DatumNode | undefined;
@@ -426,9 +426,9 @@ function LineageView({
               );
               badge.setAttribute("class", "gen-badge");
               badge.innerHTML = `
-                <rect x="212" y="6" width="42" height="18" rx="9"
+                <rect x="172" y="6" width="42" height="18" rx="9"
                       fill="#7A2E2E" />
-                <text x="233" y="19" text-anchor="middle"
+                <text x="193" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700">
                   Đời ${gen}
                 </text>`;
@@ -446,7 +446,7 @@ function LineageView({
 
         built.setTransitionTime(200);
         built.setOrientationVertical?.();
-        built.setCardXSpacing(290).setCardYSpacing(140);
+        built.setCardXSpacing(250).setCardYSpacing(132);
         // Suppress the "ghost" empty card slot family-chart draws when
         // only one parent is on a family — our synthetic families have
         // exactly one parent each by design.
