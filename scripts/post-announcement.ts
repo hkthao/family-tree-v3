@@ -39,21 +39,17 @@ async function main() {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
 
-  const body = `Vừa cập nhật một loạt tính năng mới — mời cả nhà thử:
+  const body = `Vừa cập nhật vài điểm nhỏ để cả nhà xem gia phả dễ chịu hơn:
 
-• Bảng tin dòng họ — đăng tin, sự kiện, cáo phó, tin sinh, thông báo họp họ. Thành viên gửi bài → admin duyệt.
-• Thông báo hệ thống — chuông trên thanh tiêu đề, banner đỏ cho tin quan trọng, mark đã đọc / đánh dấu tất cả.
-• Video hướng dẫn — 19 clip ngắn (30-70 giây). Vào "Video hướng dẫn" ở menu, hoặc nhấn "Xem hướng dẫn" trên từng trang.
-• Linh vật góc dưới — bây giờ có thể kéo đặt ở bất kỳ chỗ nào trên màn hình.
-• Liên hệ / phản hồi — trang /lien-he đầy đủ + phân loại Lỗi / Ý kiến / Câu hỏi.
-• Giao diện đồng bộ — mỗi trang có icon + tiêu đề + mô tả + link video tương ứng.
+• Khi sắp xếp danh sách theo "Đời", vợ giờ đứng cùng hàng với chồng — không còn rơi xuống cuối hoặc lệch đời nữa. Người lấy về cũng được tính cùng đời với người trong họ.
+• Khung tên trong cây gia phả thu gọn lại một chút — nhìn được nhiều người trong họ hơn trên cùng một màn hình, in ra giấy cũng vừa khung hơn.
 
-Có lỗi hoặc góp ý — nhấn nút Góp ý ở menu trái hoặc vào trang Liên hệ.`;
+Nếu cả nhà thấy còn điểm nào chưa ổn, bấm nút "Góp ý" ở menu hoặc vào trang Liên hệ. Cảm ơn cả nhà đã dùng và phản hồi.`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "🎉 Cập nhật lớn — Bảng tin, Thông báo, Video hướng dẫn",
+      title: "🎉 Cập nhật mới — Cây gia phả gọn hơn, sắp xếp vợ chồng đúng đời",
       body,
       level: "update",
       is_public: true,
