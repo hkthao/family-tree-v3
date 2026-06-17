@@ -455,6 +455,8 @@ export default function Tree() {
             }
 
             // Generation badge — small pill in the top-right corner.
+            // DB lưu generation thực (1-based); trừ clan.generation_offset
+            // khi render để tôn trọng cài đặt "Thủy tổ là Đời 0".
             const gen = fields["generation"];
             if (typeof gen === "number" && gen > 0) {
               this.querySelector(".gen-badge")?.remove();
@@ -468,7 +470,7 @@ export default function Tree() {
                       fill="#7A2E2E" />
                 <text x="193" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700">
-                  Đời ${gen}
+                  Đời ${gen - clan.generation_offset}
                 </text>`;
               this.querySelector(".card-body")?.appendChild(badge);
             }
@@ -614,7 +616,7 @@ export default function Tree() {
       chartRef.current = null;
       node.innerHTML = "";
     };
-  }, [f3Data, focal, orientation]);
+  }, [f3Data, focal, orientation, clan.generation_offset]);
 
   // Before the OS print dialog opens (either via our "In" button or
   // OS-level Cmd/Ctrl+P), refit the tree to the printable area.

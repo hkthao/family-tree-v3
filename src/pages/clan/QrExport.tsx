@@ -46,15 +46,21 @@ export default function QrExport() {
   const [deceasedOnly, setDeceasedOnly] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  // genMin/genMax là display values (user gõ theo cách clan hiển thị).
+  // Convert sang raw generation = display + offset trước khi query.
   const filters = useMemo(
     () => ({
       branchId: branchId || null,
-      generationMin: genMin ? Number(genMin) : null,
-      generationMax: genMax ? Number(genMax) : null,
+      generationMin: genMin
+        ? Number(genMin) + clan.generation_offset
+        : null,
+      generationMax: genMax
+        ? Number(genMax) + clan.generation_offset
+        : null,
       deceasedOnly,
       limit: MAX_PER_EXPORT,
     }),
-    [branchId, genMin, genMax, deceasedOnly],
+    [branchId, genMin, genMax, deceasedOnly, clan.generation_offset],
   );
 
   const { data: branches } = useQuery({
@@ -82,7 +88,12 @@ export default function QrExport() {
           personId: r.id,
           fullName: r.full_name,
           courtesyName: r.courtesy_name,
-          generation: r.generation,
+          // generation = display value (đã trừ offset của clan),
+          // QR PDF chỉ in lại con số này.
+          generation:
+            r.generation !== null
+              ? r.generation - clan.generation_offset
+              : null,
           birthYear: r.birth_date?.slice(0, 4) ?? null,
           deathYear: r.death_date?.slice(0, 4) ?? null,
           isLiving: r.is_living,
@@ -245,6 +256,7 @@ export default function QrExport() {
             <PersonRow
               key={p.id}
               p={p}
+              genOffset={clan.generation_offset}
               checked={selected.has(p.id)}
               onToggle={() => toggleOne(p.id)}
             />
@@ -257,10 +269,12 @@ export default function QrExport() {
 
 function PersonRow({
   p,
+  genOffset,
   checked,
   onToggle,
 }: {
   p: QrExportRow;
+  genOffset: number;
   checked: boolean;
   onToggle: () => void;
 }) {
@@ -283,7 +297,8 @@ function PersonRow({
           <p className="font-medium truncate">{p.full_name}</p>
           <p className="text-xs text-muted-foreground truncate">
             {p.gender === "M" ? "Nam" : "Nữ"}
-            {p.generation !== null && ` · Đời ${p.generation}`}
+            {p.generation !== null &&
+              ` · Đời ${p.generation - genOffset}`}
             {!p.is_living
               ? ` · đã mất${deathYear ? ` ${deathYear}` : ""}`
               : birthYear

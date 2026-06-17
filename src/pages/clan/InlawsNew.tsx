@@ -143,12 +143,17 @@ export default function InlawsNew() {
           navigate={navigate}
         />
       ) : !picked ? (
-        <PickLocalPersonStep clanId={clan.id} onPick={setPicked} />
+        <PickLocalPersonStep
+          clanId={clan.id}
+          genOffset={clan.generation_offset}
+          onPick={setPicked}
+        />
       ) : (
         <ModeStep
           mode={mode}
           setMode={setMode}
           local={picked}
+          localGenOffset={clan.generation_offset}
           onBackToPick={() => setPicked(null)}
           // token mode
           hint={hint}
@@ -177,9 +182,11 @@ export default function InlawsNew() {
 
 function PickLocalPersonStep({
   clanId,
+  genOffset,
   onPick,
 }: {
   clanId: string;
+  genOffset: number;
   onPick: (p: PersonRow) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -247,7 +254,9 @@ function PickLocalPersonStep({
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
                     {p.gender === "M" ? "Nam" : "Nữ"}
-                    {p.generation !== null ? ` · Đời ${p.generation}` : ""}
+                    {p.generation !== null
+                      ? ` · Đời ${p.generation - genOffset}`
+                      : ""}
                     {p.birth_date
                       ? ` · sinh ${p.birth_date.slice(0, 4)}`
                       : ""}
@@ -268,6 +277,7 @@ interface ModeStepProps {
   mode: Mode;
   setMode: (m: Mode) => void;
   local: PersonRow;
+  localGenOffset: number;
   onBackToPick: () => void;
   // token mode
   hint: string;
@@ -289,7 +299,7 @@ interface ModeStepProps {
 }
 
 function ModeStep(props: ModeStepProps) {
-  const { mode, setMode, local, onBackToPick } = props;
+  const { mode, setMode, local, localGenOffset, onBackToPick } = props;
 
   return (
     <div className="space-y-5">
@@ -300,7 +310,9 @@ function ModeStep(props: ModeStepProps) {
           <p className="font-medium">{local.full_name}</p>
           <p className="text-xs text-muted-foreground">
             {local.gender === "M" ? "Nam" : "Nữ"}
-            {local.generation !== null ? ` · Đời ${local.generation}` : ""}
+            {local.generation !== null
+              ? ` · Đời ${local.generation - localGenOffset}`
+              : ""}
             {local.birth_date
               ? ` · sinh ${local.birth_date.slice(0, 4)}`
               : ""}
@@ -576,7 +588,9 @@ function PickPeerPersonStep({
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
                     {p.gender === "M" ? "Nam" : "Nữ"}
-                    {p.generation !== null ? ` · Đời ${p.generation}` : ""}
+                    {p.generation !== null
+                      ? ` · Đời ${p.generation - peerClan.generation_offset}`
+                      : ""}
                     {p.birth_date
                       ? ` · sinh ${p.birth_date.slice(0, 4)}`
                       : ""}
@@ -643,7 +657,7 @@ function PeerConfirmStep({
               <p className="text-xs text-muted-foreground">
                 {peerPerson.gender === "M" ? "Nam" : "Nữ"}
                 {peerPerson.generation !== null
-                  ? ` · Đời ${peerPerson.generation}`
+                  ? ` · Đời ${peerPerson.generation - peerClan.generation_offset}`
                   : ""}
                 {peerPerson.birth_date
                   ? ` · sinh ${peerPerson.birth_date.slice(0, 4)}`

@@ -311,6 +311,8 @@ export interface LinkPeek {
   masked: boolean;
   clan_id: string;
   clan_name: string;
+  /** Offset hiển thị đời của peer clan (0 = mặc định, 1 = Thủy tổ là Đời 0). */
+  generation_offset: number;
   person_id: string;
   full_name?: string;
   gender?: "M" | "F";
@@ -398,6 +400,8 @@ export interface InlawPeerRelatives {
   link_id: string;
   peer_clan_id: string;
   peer_clan_name: string;
+  /** Offset hiển thị đời của peer clan (0 hoặc 1). */
+  peer_clan_generation_offset: number;
   peer: InlawFocalCard;
   parents: InlawRelativeCard[];
   spouses: InlawRelativeCard[];

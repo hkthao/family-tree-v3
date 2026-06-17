@@ -79,9 +79,10 @@ export default function Today() {
       today,
       daysAhead: 30,
       anniversaries,
+      generationOffset: clan.generation_offset,
     });
     return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil);
-  }, [tree, events, anniversaries]);
+  }, [tree, events, anniversaries, clan.generation_offset]);
 
   const todayEvents = upcoming.filter((e) => e.daysUntil === 0);
   const weekEvents = upcoming.filter((e) => e.daysUntil >= 1 && e.daysUntil <= 6);

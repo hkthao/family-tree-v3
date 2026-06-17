@@ -15,6 +15,8 @@ export interface ClanSummary {
   max_users: number;
   owner_id: string | null;
   person_count: number;
+  /** Offset hiển thị đời (0 mặc định; 1 = Thủy tổ là Đời 0). */
+  generation_offset: number;
   /** null on community-list rows where the caller is not a member. */
   role: "admin" | "editor" | "viewer" | null;
 }
@@ -50,7 +52,7 @@ export interface ListClansResult {
 }
 
 const COLS =
-  "id, name, description, visibility, max_persons, max_users, owner_id, person_count";
+  "id, name, description, visibility, max_persons, max_users, owner_id, person_count, generation_offset";
 
 async function isPlatformAdmin(userId: string, client: Client): Promise<boolean> {
   const { data } = await client

@@ -189,7 +189,9 @@ export default function PersonDetail() {
                   {person.is_root && (
                     <span className="text-accent font-medium">Thuỷ tổ • </span>
                   )}
-                  {person.generation !== null && <>Đời {person.generation}</>}
+                  {person.generation !== null && (
+                    <>Đời {person.generation - clan.generation_offset}</>
+                  )}
                   {!person.is_living && (
                     <span>
                       {person.generation !== null && " • "}
@@ -459,7 +461,12 @@ export default function PersonDetail() {
                     personId: person.id,
                     fullName: person.full_name,
                     courtesyName: person.courtesy_name,
-                    generation: person.generation,
+                    // generation = display value (đã trừ offset),
+                    // PDF chỉ in lại như-là.
+                    generation:
+                      person.generation !== null
+                        ? person.generation - clan.generation_offset
+                        : null,
                     birthYear: person.birth_date?.slice(0, 4) ?? null,
                     deathYear: person.death_date?.slice(0, 4) ?? null,
                     isLiving: person.is_living,
@@ -744,7 +751,9 @@ function InLawLinkRow({
   const metaBits: string[] = [peek.clan_name];
   if (!peek.masked) {
     if (peek.gender) metaBits.push(peek.gender === "M" ? "Nam" : "Nữ");
-    if (peek.generation) metaBits.push(`Đời ${peek.generation}`);
+    if (peek.generation !== null && peek.generation !== undefined) {
+      metaBits.push(`Đời ${peek.generation - (peek.generation_offset ?? 0)}`);
+    }
     if (peek.birth_year && peek.death_year) {
       metaBits.push(`${peek.birth_year}–${peek.death_year}`);
     } else if (peek.birth_year) {

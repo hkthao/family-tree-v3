@@ -212,7 +212,7 @@ export default function Share() {
                       fill="#7A2E2E" />
                 <text x="193" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700">
-                  Đời ${gen}
+                  Đời ${gen - (data?.generation_offset ?? 0)}
                 </text>`;
               this.querySelector(".card-body")?.appendChild(badge);
             }
@@ -260,7 +260,7 @@ export default function Share() {
       resizeObserver?.disconnect();
       node.innerHTML = "";
     };
-  }, [f3Data, orientation]);
+  }, [f3Data, orientation, data?.generation_offset]);
 
   // Smoothly re-centre when focal changes without re-creating the chart.
   useEffect(() => {
@@ -301,6 +301,7 @@ export default function Share() {
               focal={focalPerson}
               persons={data.persons}
               families={data.families}
+              genOffset={data.generation_offset ?? 0}
               clanId={data.clan_id}
               shareToken={token}
             />
@@ -373,7 +374,7 @@ export default function Share() {
                               ? ` · sinh ${m.birth_date.slice(0, 4)}`
                               : ""}
                             {m.generation !== null
-                              ? ` · Đời ${m.generation}`
+                              ? ` · Đời ${m.generation - (data.generation_offset ?? 0)}`
                               : ""}
                           </p>
                         </button>

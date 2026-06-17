@@ -270,6 +270,9 @@ function ConfirmForm({
       {clanBId && (
         <PickPerson
           clanId={clanBId}
+          genOffset={
+            adminClans.find((c) => c.id === clanBId)?.generation_offset ?? 0
+          }
           picked={picked}
           onPick={setPicked}
         />
@@ -308,10 +311,12 @@ function ConfirmForm({
 
 function PickPerson({
   clanId,
+  genOffset,
   picked,
   onPick,
 }: {
   clanId: string;
+  genOffset: number;
   picked: PersonRow | null;
   onPick: (p: PersonRow | null) => void;
 }) {
@@ -341,7 +346,9 @@ function PickPerson({
           <p className="font-medium">{picked.full_name}</p>
           <p className="text-xs text-muted-foreground">
             {picked.gender === "M" ? "Nam" : "Nữ"}
-            {picked.generation !== null ? ` · Đời ${picked.generation}` : ""}
+            {picked.generation !== null
+              ? ` · Đời ${picked.generation - genOffset}`
+              : ""}
             {picked.birth_date
               ? ` · sinh ${picked.birth_date.slice(0, 4)}`
               : ""}
@@ -386,7 +393,9 @@ function PickPerson({
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
                     {p.gender === "M" ? "Nam" : "Nữ"}
-                    {p.generation !== null ? ` · Đời ${p.generation}` : ""}
+                    {p.generation !== null
+                      ? ` · Đời ${p.generation - genOffset}`
+                      : ""}
                     {p.birth_date
                       ? ` · sinh ${p.birth_date.slice(0, 4)}`
                       : ""}

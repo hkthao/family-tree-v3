@@ -45,6 +45,11 @@ export interface ShareViewPayload {
   root_person_id: string | null;
   /** 'tree_view' (default) or 'single_person'. Drives client rendering. */
   scope: string;
+  /**
+   * Per-clan display offset cho "Đời N". 0 (mặc định) = Thủy tổ là Đời 1;
+   * 1 = Thủy tổ là Đời 0. FE trừ offset khi render.
+   */
+  generation_offset: number;
   persons: ShareViewPerson[];
   families: ShareViewFamily[];
 }

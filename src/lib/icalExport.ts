@@ -54,6 +54,8 @@ export interface BuildIcsOptions {
   appBaseUrl: string;
   persons: IcsPerson[];
   customEvents?: IcsCustomEvent[];
+  /** Offset hiển thị đời của clan (0 mặc định; 1 = Thủy tổ là Đời 0). */
+  generationOffset?: number;
   /** How many years of lunar→solar mappings to bake in. Default 10. */
   yearsAhead?: number;
   /** Seed for VEVENT UIDs + DTSTAMP. Provide for deterministic tests. */
@@ -145,6 +147,7 @@ export function buildClanIcs(opts: BuildIcsOptions): string {
   const dtstamp = dtstampNow(now);
   const yearsAhead = opts.yearsAhead ?? 10;
   const thisYear = now.getUTCFullYear();
+  const genOffset = opts.generationOffset ?? 0;
   const personLink = (id: string) =>
     `${opts.appBaseUrl}/clans/${opts.clanId}/people/${id}`;
 
@@ -190,7 +193,9 @@ export function buildClanIcs(opts: BuildIcsOptions): string {
         }
       }
       if (solarDates.length > 0) {
-        const gen = p.generation ? ` (Đời ${p.generation})` : "";
+        const gen = p.generation
+          ? ` (Đời ${p.generation - genOffset})`
+          : "";
         events.push({
           uid: `gio-${p.id}@giapha`,
           dtstamp,

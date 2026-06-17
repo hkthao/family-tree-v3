@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { invalidateClanData } from "@/lib/cache";
+import { displayGen } from "@/lib/displayGeneration";
 import {
   deletePersonsBulk,
   listMatchingPersonIds,
@@ -366,7 +367,7 @@ export default function People() {
           {maxGen
             ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
                 <option key={g} value={g}>
-                  Đời {g}
+                  Đời {g - clan.generation_offset}
                 </option>
               ))
             : null}
@@ -559,6 +560,7 @@ export default function People() {
               key={p.id}
               person={p}
               clanId={clan.id}
+              genOffset={clan.generation_offset}
               relatives={relatives}
               photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
               selectable={canEdit}
@@ -575,6 +577,7 @@ export default function People() {
               key={p.id}
               person={p}
               clanId={clan.id}
+              genOffset={clan.generation_offset}
               relatives={relatives}
               photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
               selectable={canEdit}
@@ -649,6 +652,7 @@ function lookupRelatives(
 function PersonListItem({
   person,
   clanId,
+  genOffset,
   relatives,
   photoUrl,
   selectable,
@@ -658,6 +662,7 @@ function PersonListItem({
 }: {
   person: PersonRow;
   clanId: string;
+  genOffset: number;
   relatives: RelativesIndex | undefined;
   photoUrl: string | null;
   selectable?: boolean;
@@ -669,7 +674,8 @@ function PersonListItem({
   const life = lifespan(person);
   const metaBits = [genderLabel(person.gender)];
   if (life) metaBits.push(life);
-  if (person.generation !== null) metaBits.push(`Đời ${person.generation}`);
+  const dispGen = displayGen(person.generation, genOffset);
+  if (dispGen !== null) metaBits.push(`Đời ${dispGen}`);
 
   return (
     <li className="relative flex items-start gap-2">
@@ -757,6 +763,7 @@ function PersonListItem({
 function PersonGridCard({
   person,
   clanId,
+  genOffset,
   relatives,
   photoUrl,
   selectable,
@@ -766,6 +773,7 @@ function PersonGridCard({
 }: {
   person: PersonRow;
   clanId: string;
+  genOffset: number;
   relatives: RelativesIndex | undefined;
   photoUrl: string | null;
   selectable?: boolean;
@@ -775,6 +783,7 @@ function PersonGridCard({
 }) {
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
+  const dispGen = displayGen(person.generation, genOffset);
 
   return (
     <li className="relative">
@@ -822,9 +831,9 @@ function PersonGridCard({
             {genderLabel(person.gender)}
             {life ? ` · ${life}` : ""}
           </p>
-          {person.generation !== null && (
+          {dispGen !== null && (
             <p className="text-xs text-muted-foreground truncate">
-              Đời {person.generation}
+              Đời {dispGen}
             </p>
           )}
           {rel.spouses.length > 0 && (

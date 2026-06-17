@@ -12,6 +12,11 @@ export interface ClanDetail {
   visibility: "private" | "public";
   hide_living_for_nonmembers: boolean;
   hide_photos_in_share: boolean;
+  /**
+   * Offset hiển thị "Đời N" — 0 (mặc định) = Thủy tổ là Đời 1;
+   * 1 = Thủy tổ là Đời 0. DB vẫn lưu generation thực (1-based).
+   */
+  generation_offset: number;
   max_persons: number;
   max_users: number;
   data_version: number;
@@ -44,7 +49,7 @@ export async function getClanDetail(
     client
       .from("clans")
       .select(
-        "id, name, description, visibility, hide_living_for_nonmembers, hide_photos_in_share, max_persons, max_users, data_version, owner_id",
+        "id, name, description, visibility, hide_living_for_nonmembers, hide_photos_in_share, generation_offset, max_persons, max_users, data_version, owner_id",
       )
       .eq("id", clanId)
       .maybeSingle(),

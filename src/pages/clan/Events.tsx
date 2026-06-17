@@ -151,6 +151,7 @@ export default function Events() {
       clanName: clan.name,
       clanId: clan.id,
       appBaseUrl: window.location.origin,
+      generationOffset: clan.generation_offset,
       persons,
       customEvents: events.map((e) => ({
         id: e.id,

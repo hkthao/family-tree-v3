@@ -117,6 +117,7 @@ function ChoosePersonView({
     generation: number | null;
   }>;
 }) {
+  const { clan } = useClanContext();
   const qc = useQueryClient();
   const toast = useToast();
   const [search, setSearch] = useState("");
@@ -181,7 +182,8 @@ function ChoosePersonView({
                     <p className="font-medium truncate">{p.full_name}</p>
                     <p className="text-xs text-muted-foreground truncate">
                       {p.gender === "M" ? "Nam" : "Nữ"}
-                      {p.generation !== null && ` · Đời ${p.generation}`}
+                      {p.generation !== null &&
+                        ` · Đời ${p.generation - clan.generation_offset}`}
                       {p.is_living && p.birth_date
                         ? ` · sinh ${p.birth_date.slice(0, 4)}`
                         : !p.is_living && p.death_date
@@ -277,6 +279,7 @@ function LineageView({
   tree: TreeShape;
   verified: boolean;
 }) {
+  const { clan } = useClanContext();
   const qc = useQueryClient();
   const toast = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -430,7 +433,7 @@ function LineageView({
                       fill="#7A2E2E" />
                 <text x="193" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700">
-                  Đời ${gen}
+                  Đời ${gen - clan.generation_offset}
                 </text>`;
               this.querySelector(".card-body")?.appendChild(badge);
             }
@@ -481,7 +484,7 @@ function LineageView({
       resizeObserver?.disconnect();
       node.innerHTML = "";
     };
-  }, [f3Data, selfPersonId, clanId]);
+  }, [f3Data, selfPersonId, clanId, clan.generation_offset]);
 
   // For the toolbar fork toggles. lineage.steps order is [self, ...,
   // root]. A fork exists at step i (0 ≤ i < len-1) iff the child at
@@ -553,7 +556,7 @@ function LineageView({
                   <span className="text-xs text-muted-foreground">
                     {f.child.full_name}
                     {f.child.generation !== null
-                      ? ` (Đời ${f.child.generation})`
+                      ? ` (Đời ${f.child.generation - clan.generation_offset})`
                       : ""}
                     :
                   </span>

@@ -506,6 +506,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
                     motherOf,
                     personById,
                     branchById,
+                    clan.generation_offset,
                     photoByPersonId,
                   )}
                 </View>
@@ -563,6 +564,7 @@ function renderPersonCard(
   motherOf: Map<string, string>,
   personById: Map<string, PersonDetail>,
   branchById: Map<string, string>,
+  genOffset: number,
   photoByPersonId?: Map<string, string>,
 ): React.ReactNode {
   const birthSolar = formatPartialDate({
@@ -603,7 +605,8 @@ function renderPersonCard(
   const vaiVe = order === 0 ? "trưởng" : "thứ";
 
   const metaParts: string[] = [];
-  if (p.generation !== null) metaParts.push(`Đời ${p.generation}`);
+  if (p.generation !== null)
+    metaParts.push(`Đời ${p.generation - genOffset}`);
   metaParts.push(`${p.gender === "M" ? "Nam" : "Nữ"} (${vaiVe})`);
   if (!p.is_living) metaParts.push("đã mất");
   if (branchName) metaParts.push(`chi ${branchName}`);

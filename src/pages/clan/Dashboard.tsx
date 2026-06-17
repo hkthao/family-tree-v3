@@ -122,9 +122,10 @@ export default function Dashboard() {
       today,
       daysAhead: 365,
       anniversaries,
+      generationOffset: clan.generation_offset,
     });
     return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil);
-  }, [tree, events, anniversaries]);
+  }, [tree, events, anniversaries, clan.generation_offset]);
   const upcomingTop5 = upcoming.slice(0, 5);
 
   return (

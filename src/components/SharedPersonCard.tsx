@@ -21,6 +21,8 @@ interface Props {
   focal: ShareViewPerson;
   persons: ShareViewPerson[];
   families: ShareViewFamily[];
+  /** Offset hiển thị đời của clan share (0 hoặc 1). */
+  genOffset: number;
   /** Pass the share link token so guests can submit contributions
    *  via the submit-contribution edge function. Omit to hide the
    *  contribution UI entirely. */
@@ -41,6 +43,7 @@ export function SharedPersonCard({
   focal,
   persons,
   families,
+  genOffset,
   clanId,
   shareToken,
 }: Props) {
@@ -108,7 +111,9 @@ export function SharedPersonCard({
             {focal.is_root && (
               <span className="text-accent font-medium">Thuỷ tổ • </span>
             )}
-            {focal.generation !== null && <>Đời {focal.generation}</>}
+            {focal.generation !== null && (
+              <>Đời {focal.generation - genOffset}</>
+            )}
             {!focal.is_living && (
               <span>
                 {focal.generation !== null && " • "}đã mất

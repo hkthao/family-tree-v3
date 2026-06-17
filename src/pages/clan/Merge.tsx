@@ -111,6 +111,7 @@ export default function Merge() {
       {candidates.length > 0 && (
         <SuggestionPanel
           candidates={candidates}
+          genOffset={clan.generation_offset}
           onPick={(winner, loser) => {
             setWinnerId(winner);
             setLoserId(loser);
@@ -121,6 +122,7 @@ export default function Merge() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <PersonPicker
           clanId={clan.id}
+          genOffset={clan.generation_offset}
           title="Giữ lại"
           person={winner ?? null}
           selectedId={winnerId}
@@ -130,6 +132,7 @@ export default function Merge() {
         />
         <PersonPicker
           clanId={clan.id}
+          genOffset={clan.generation_offset}
           title="Gộp vào"
           person={loser ?? null}
           selectedId={loserId}
@@ -173,9 +176,11 @@ export default function Merge() {
 
 function SuggestionPanel({
   candidates,
+  genOffset,
   onPick,
 }: {
   candidates: DuplicateCandidate[];
+  genOffset: number;
   onPick: (winnerId: string, loserId: string) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
@@ -217,8 +222,8 @@ function SuggestionPanel({
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <PersonChip person={c.a} />
-                <PersonChip person={c.b} />
+                <PersonChip person={c.a} genOffset={genOffset} />
+                <PersonChip person={c.b} genOffset={genOffset} />
               </div>
 
               <div className="flex justify-end">
@@ -248,16 +253,26 @@ function SuggestionPanel({
   );
 }
 
-function personMeta(p: DuplicateCandidate["a"]): string {
+function personMeta(
+  p: DuplicateCandidate["a"],
+  genOffset: number,
+): string {
   const parts: string[] = [];
   if (p.birth_date) parts.push(`sinh ${p.birth_date.slice(0, 4)}`);
-  if (p.generation !== null) parts.push(`Đời ${p.generation}`);
+  if (p.generation !== null)
+    parts.push(`Đời ${p.generation - genOffset}`);
   if (!p.is_living) parts.push("đã mất");
   return parts.length > 0 ? `· ${parts.join(" · ")}` : "";
 }
 
-function PersonChip({ person }: { person: DuplicateCandidate["a"] }) {
-  const meta = personMeta(person).replace(/^·\s*/, "");
+function PersonChip({
+  person,
+  genOffset,
+}: {
+  person: DuplicateCandidate["a"];
+  genOffset: number;
+}) {
+  const meta = personMeta(person, genOffset).replace(/^·\s*/, "");
   return (
     <div className="rounded-md bg-card border px-3 py-2 min-w-0">
       <p className="font-medium truncate">{person.full_name}</p>
@@ -274,6 +289,7 @@ function PersonChip({ person }: { person: DuplicateCandidate["a"] }) {
 
 function PersonPicker({
   clanId,
+  genOffset,
   title,
   person,
   selectedId,
@@ -282,6 +298,7 @@ function PersonPicker({
   excludeId,
 }: {
   clanId: string;
+  genOffset: number;
   title: string;
   person: PersonDetail | null;
   selectedId: string | null;
@@ -328,7 +345,9 @@ function PersonPicker({
               <p className="text-xs text-muted-foreground">
                 {person.gender === "M" ? "Nam" : "Nữ"}
                 {person.birth_date ? ` · sinh ${person.birth_date.slice(0, 4)}` : ""}
-                {person.generation !== null ? ` · Đời ${person.generation}` : ""}
+                {person.generation !== null
+                  ? ` · Đời ${person.generation - genOffset}`
+                  : ""}
                 {!person.is_living ? " · đã mất" : ""}
               </p>
             </div>
@@ -363,7 +382,9 @@ function PersonPicker({
                         <p className="text-xs text-muted-foreground">
                           {p.gender === "M" ? "Nam" : "Nữ"}
                           {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
-                          {p.generation !== null ? ` · Đời ${p.generation}` : ""}
+                          {p.generation !== null
+                            ? ` · Đời ${p.generation - genOffset}`
+                            : ""}
                           {!p.is_living ? " · đã mất" : ""}
                         </p>
                       </button>

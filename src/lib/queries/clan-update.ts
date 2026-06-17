@@ -11,6 +11,8 @@ export interface UpdateClanInput {
   visibility?: "private" | "public";
   hide_living_for_nonmembers?: boolean;
   hide_photos_in_share?: boolean;
+  /** 0 = Thủy tổ là Đời 1 (default); 1 = Thủy tổ là Đời 0. */
+  generation_offset?: number;
 }
 
 /**
