@@ -442,6 +442,7 @@ export type Database = {
           created_at: string
           data_version: number
           description: string | null
+          generation_offset: number
           hide_living_for_nonmembers: boolean
           hide_photos_in_share: boolean
           id: string
@@ -457,6 +458,7 @@ export type Database = {
           created_at?: string
           data_version?: number
           description?: string | null
+          generation_offset?: number
           hide_living_for_nonmembers?: boolean
           hide_photos_in_share?: boolean
           id?: string
@@ -472,6 +474,7 @@ export type Database = {
           created_at?: string
           data_version?: number
           description?: string | null
+          generation_offset?: number
           hide_living_for_nonmembers?: boolean
           hide_photos_in_share?: boolean
           id?: string

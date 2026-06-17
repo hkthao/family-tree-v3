@@ -44,12 +44,16 @@ export default function Settings() {
   const [hidePhotosInShare, setHidePhotosInShare] = useState(
     clan.hide_photos_in_share,
   );
+  const [rootIsGenZero, setRootIsGenZero] = useState(
+    clan.generation_offset === 1,
+  );
 
   useEffect(() => {
     setName(clan.name);
     setDescription(clan.description ?? "");
     setVisibility(clan.visibility);
     setHidePhotosInShare(clan.hide_photos_in_share);
+    setRootIsGenZero(clan.generation_offset === 1);
   }, [clan.id]);
 
   const mutation = useMutation({
@@ -59,6 +63,7 @@ export default function Settings() {
         description: description.trim() || null,
         visibility,
         hide_photos_in_share: hidePhotosInShare,
+        generation_offset: rootIsGenZero ? 1 : 0,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -158,6 +163,29 @@ export default function Settings() {
                   <p className="text-sm text-muted-foreground">
                     Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn
                     thông tin nhạy cảm.
+                  </p>
+                </div>
+              </label>
+            </fieldset>
+
+            <fieldset className="space-y-2">
+              <legend className="text-base font-medium mb-2">
+                Cách đánh số đời
+              </legend>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rootIsGenZero}
+                  onChange={(e) => setRootIsGenZero(e.target.checked)}
+                  className="mt-1 h-5 w-5 accent-primary shrink-0"
+                />
+                <div>
+                  <p className="font-medium">Thủy tổ là Đời 0</p>
+                  <p className="text-sm text-muted-foreground">
+                    Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4…
+                    Bật tuỳ chọn này nếu dòng họ quen tính Thủy tổ là
+                    Đời 0 — con cháu sẽ là Đời 1, 2, 3… Chỉ thay đổi
+                    cách hiển thị, không động vào dữ liệu gốc.
                   </p>
                 </div>
               </label>

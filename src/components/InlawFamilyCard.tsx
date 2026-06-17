@@ -97,6 +97,7 @@ function FamilyView({ data }: { data: InlawPeerRelatives }) {
 }
 
 function FamilyListView({ data }: { data: InlawPeerRelatives }) {
+  const genOffset = data.peer_clan_generation_offset ?? 0;
   return (
     <div className="space-y-4">
       {data.parents.length > 0 && (
@@ -104,17 +105,23 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
           label="Cha mẹ"
           rows={data.parents}
           peerClanId={data.peer_clan_id}
+          genOffset={genOffset}
           callerIsMember={data.peer.caller_can_visit}
         />
       )}
 
-      <FocalRow focal={data.peer} peerClanId={data.peer_clan_id} />
+      <FocalRow
+        focal={data.peer}
+        peerClanId={data.peer_clan_id}
+        genOffset={genOffset}
+      />
 
       {data.spouses.length > 0 && (
         <RelativeGroup
           label="Vợ / chồng"
           rows={data.spouses}
           peerClanId={data.peer_clan_id}
+          genOffset={genOffset}
           callerIsMember={data.peer.caller_can_visit}
         />
       )}
@@ -123,6 +130,7 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
           label="Con"
           rows={data.children}
           peerClanId={data.peer_clan_id}
+          genOffset={genOffset}
           callerIsMember={data.peer.caller_can_visit}
         />
       )}
@@ -143,9 +151,11 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
 function FocalRow({
   focal,
   peerClanId,
+  genOffset,
 }: {
   focal: InlawFocalCard;
   peerClanId: string;
+  genOffset: number;
 }) {
   return (
     <div className="rounded-md border-2 border-primary bg-primary/5 p-3 flex items-center gap-3">
@@ -155,7 +165,7 @@ function FocalRow({
           {focal.masked ? "Người còn sống" : (focal.full_name ?? "—")}
         </p>
         <p className="text-xs text-muted-foreground">
-          {focal.masked ? "Họ này chưa công khai" : metaLine(focal)}
+          {focal.masked ? "Họ này chưa công khai" : metaLine(focal, genOffset)}
         </p>
       </div>
       {!focal.masked && focal.caller_can_visit && (
@@ -176,11 +186,13 @@ function RelativeGroup({
   label,
   rows,
   peerClanId,
+  genOffset,
   callerIsMember,
 }: {
   label: string;
   rows: InlawRelativeCard[];
   peerClanId: string;
+  genOffset: number;
   callerIsMember: boolean;
 }) {
   return (
@@ -192,6 +204,7 @@ function RelativeGroup({
             <RelativeRow
               row={r}
               peerClanId={peerClanId}
+              genOffset={genOffset}
               callerIsMember={callerIsMember}
             />
           </li>
@@ -204,10 +217,12 @@ function RelativeGroup({
 function RelativeRow({
   row,
   peerClanId,
+  genOffset,
   callerIsMember,
 }: {
   row: InlawRelativeCard;
   peerClanId: string;
+  genOffset: number;
   callerIsMember: boolean;
 }) {
   const content = (
@@ -223,7 +238,7 @@ function RelativeRow({
           {row.masked ? "Người còn sống" : (row.full_name ?? "—")}
         </p>
         <p className="text-[11px] text-muted-foreground truncate">
-          {row.masked ? "chưa công khai" : metaLine(row)}
+          {row.masked ? "chưa công khai" : metaLine(row, genOffset)}
         </p>
       </div>
     </div>
@@ -238,10 +253,12 @@ function RelativeRow({
   return content;
 }
 
-function metaLine(p: InlawRelativeCard): string {
+function metaLine(p: InlawRelativeCard, genOffset: number): string {
   const bits: string[] = [];
   bits.push(p.gender === "M" ? "Nam" : "Nữ");
-  if (p.generation) bits.push(`Đời ${p.generation}`);
+  if (p.generation !== null && p.generation !== undefined) {
+    bits.push(`Đời ${p.generation - genOffset}`);
+  }
   if (p.birth_year && p.death_year) {
     bits.push(`${p.birth_year}–${p.death_year}`);
   } else if (p.birth_year) {

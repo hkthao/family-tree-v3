@@ -215,10 +215,13 @@ export function computeUpcomingAnniversaries({
   today,
   daysAhead,
   anniversaries,
+  generationOffset = 0,
 }: {
   today: Date;
   daysAhead: number;
   anniversaries: PersonAnniversary[];
+  /** Offset hiển thị đời (0 mặc định; 1 = Thủy tổ là Đời 0). */
+  generationOffset?: number;
 }): UpcomingEvent[] {
   const out: UpcomingEvent[] = [];
   for (const p of anniversaries) {
@@ -244,7 +247,10 @@ export function computeUpcomingAnniversaries({
         daysUntil: days,
         personId: p.id,
         branchId: p.branch_id ?? null,
-        subtitle: p.generation !== null ? `Đời ${p.generation}` : undefined,
+        subtitle:
+          p.generation !== null
+            ? `Đời ${p.generation - generationOffset}`
+            : undefined,
       });
       break;
     }

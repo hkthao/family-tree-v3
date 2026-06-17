@@ -417,7 +417,10 @@ function PeekMeta({ peek }: { peek: LinkPeek }) {
     <>
       <span className="text-foreground">{peek.clan_name}</span> ·{" "}
       {peek.gender === "M" ? "Nam" : "Nữ"}
-      {peek.generation ? ` · Đời ${peek.generation}` : ""} · {lifespan}
+      {peek.generation !== null && peek.generation !== undefined
+        ? ` · Đời ${peek.generation - (peek.generation_offset ?? 0)}`
+        : ""}{" "}
+      · {lifespan}
     </>
   );
 }

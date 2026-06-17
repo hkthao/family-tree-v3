@@ -179,7 +179,9 @@ export function CommandPalette({ clan }: { clan: ClanDetail }) {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">{p.full_name}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {p.generation !== null ? `Đời ${p.generation}` : ""}
+                        {p.generation !== null
+                          ? `Đời ${p.generation - clan.generation_offset}`
+                          : ""}
                         {!p.is_living && p.generation !== null ? " · " : ""}
                         {!p.is_living ? "đã mất" : ""}
                       </p>

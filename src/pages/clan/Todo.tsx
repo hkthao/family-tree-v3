@@ -436,7 +436,7 @@ export default function Todo() {
                     </span>
                     {row.generation !== null && (
                       <span className="text-xs text-muted-foreground shrink-0">
-                        Đời {row.generation}
+                        Đời {row.generation - clan.generation_offset}
                       </span>
                     )}
                   </div>

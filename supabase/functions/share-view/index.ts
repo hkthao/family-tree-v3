@@ -136,13 +136,14 @@ Deno.serve(async (req) => {
     return err("Link đã hết hạn.", 410);
   }
 
-  // ---- 2b. Fetch clan-level toggles that affect masking ----
+  // ---- 2b. Fetch clan-level toggles that affect masking + display ----
   const { data: clanRow } = await sb
     .from("clans")
-    .select("hide_photos_in_share")
+    .select("hide_photos_in_share, generation_offset")
     .eq("id", link.clan_id)
     .maybeSingle();
   const hidePhotos = !!clanRow?.hide_photos_in_share;
+  const generationOffset = clanRow?.generation_offset ?? 0;
 
   // ---- 3. Fetch persons + families ----
   const personSelect =
@@ -355,6 +356,7 @@ Deno.serve(async (req) => {
     clan_id: link.clan_id,
     root_person_id: link.root_person_id,
     scope: link.scope,
+    generation_offset: generationOffset,
     persons: masked,
     families: scopedFamilies,
   });
