@@ -1636,12 +1636,10 @@ export type Database = {
           count: number
         }[]
       }
-      get_inlaw_peer_relatives:
-        | { Args: { p_link_id: string }; Returns: Json }
-        | {
-            Args: { p_link_id: string; p_viewing_clan_id?: string }
-            Returns: Json
-          }
+      get_inlaw_peer_relatives: {
+        Args: { p_link_id: string; p_viewing_clan_id?: string }
+        Returns: Json
+      }
       get_inlaw_proposal_preview: { Args: { p_link_id: string }; Returns: Json }
       get_link_peek: { Args: { p_link_id: string }; Returns: Json }
       get_notification_by_token: {
