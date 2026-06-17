@@ -356,21 +356,19 @@ export default function Tree() {
             (d) => String((d as DatumNode).data?.["full name"] ?? ""),
             (d) => lifespan(d as DatumNode),
           ])
-          // Wider card so Vietnamese full names ("Huỳnh Thanh Châu")
-          // fit; a touch taller so the two text lines breathe.
-          // Tighter card: 50px circular avatar with small inset, text
-          // starts at x=64 so name + meta line take the remaining
-          // ~190px. h=72 keeps both rows close without crowding the
-          // generation badge in the corner.
+          // Card 220×64: vừa đủ tên Việt 3-4 từ + lifespan, tiết kiệm
+          // ~15% diện tích vẽ. 50px circular avatar inset 8px, text bắt
+          // đầu ở x=64 (avatar + 6px gap) → 156px còn lại cho name +
+          // meta line. Avatar img_y=7 để center theo trục y với h=64.
           .setCardDim({
-            w: 260,
-            h: 72,
+            w: 220,
+            h: 64,
             text_x: 64,
-            text_y: 20,
+            text_y: 18,
             img_w: 50,
             img_h: 50,
             img_x: 8,
-            img_y: 11,
+            img_y: 7,
           })
           .setOnCardUpdate(function (d) {
             const datum = d.data as DatumNode | undefined;
@@ -441,8 +439,8 @@ export default function Tree() {
                 overlay.setAttribute("class", "ghost-click-overlay");
                 overlay.setAttribute("x", "0");
                 overlay.setAttribute("y", "0");
-                overlay.setAttribute("width", "260");
-                overlay.setAttribute("height", "72");
+                overlay.setAttribute("width", "220");
+                overlay.setAttribute("height", "64");
                 overlay.setAttribute("fill", "transparent");
                 overlay.style.cursor = "pointer";
                 overlay.addEventListener("click", (e) => {
@@ -466,9 +464,9 @@ export default function Tree() {
               );
               badge.setAttribute("class", "gen-badge");
               badge.innerHTML = `
-                <rect x="212" y="6" width="42" height="18" rx="9"
+                <rect x="172" y="6" width="42" height="18" rx="9"
                       fill="#7A2E2E" />
-                <text x="233" y="19" text-anchor="middle"
+                <text x="193" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700">
                   Đời ${gen}
                 </text>`;
@@ -489,9 +487,9 @@ export default function Tree() {
               );
               inlaw.setAttribute("class", "inlaw-badge");
               inlaw.innerHTML = `
-                <circle cx="200" cy="15" r="9" fill="#B8862A"
+                <circle cx="160" cy="15" r="9" fill="#B8862A"
                         stroke="#FBF7F0" stroke-width="1" />
-                <text x="200" y="19" text-anchor="middle"
+                <text x="160" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="12" font-weight="700">↔</text>
                 <title>Liên kết thông gia — bấm để xem</title>`;
               inlaw.style.cursor = "pointer";
@@ -517,7 +515,7 @@ export default function Tree() {
               actions.setAttribute("class", "card-actions");
               actions.innerHTML = `
                 <g class="card-action card-action-add"
-                   transform="translate(208, 46)">
+                   transform="translate(168, 38)">
                   <circle cx="11" cy="11" r="11" fill="#FBF7F0"
                           stroke="#7A2E2E" stroke-width="1.5" />
                   <path d="M11 6 V16 M6 11 H16" stroke="#7A2E2E"
@@ -525,7 +523,7 @@ export default function Tree() {
                         fill="none" />
                 </g>
                 <g class="card-action card-action-edit"
-                   transform="translate(234, 46)">
+                   transform="translate(194, 38)">
                   <circle cx="11" cy="11" r="11" fill="#FBF7F0"
                           stroke="#7A2E2E" stroke-width="1.5" />
                   <path d="M7 15 L7 13 L13 7 L15 9 L9 15 Z"
@@ -559,21 +557,20 @@ export default function Tree() {
         // gap each axis enforces *on screen* stays consistent:
         //   X = horizontal screen distance,
         //   Y = vertical screen distance.
-        // Our cards are 260×72, so X needs ≥ ~290 to avoid horizontal
-        // overlap in either mode, and Y ≥ ~100 to clear the card
-        // height. Vertical mode allows tighter Y because siblings
-        // stack horizontally instead.
+        // Cards are 220×64, so X ≥ ~250 to avoid horizontal overlap
+        // and Y ≥ ~92 to clear the card height. Vertical mode allows
+        // tighter Y because siblings stack horizontally instead.
         built.setTransitionTime(200);
         if (orientation === "horizontal") {
           built.setOrientationHorizontal?.();
           // Generations flow left→right → X must clear card width.
           // Siblings stack top→bottom → Y must clear card height.
-          built.setCardXSpacing(320).setCardYSpacing(100);
+          built.setCardXSpacing(280).setCardYSpacing(92);
         } else {
           built.setOrientationVertical?.();
           // Siblings stack left→right → X must clear card width.
           // Generations flow top→bottom → Y must clear card height.
-          built.setCardXSpacing(290).setCardYSpacing(160);
+          built.setCardXSpacing(250).setCardYSpacing(152);
         }
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
