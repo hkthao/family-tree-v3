@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 
 import { IconCheck, IconX } from "@/components/icons";
@@ -133,7 +134,12 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
   // Standalone modal (don't reuse RelationSheet — feedback should be
   // available on auth pages too, where the sheet's surrounding
   // context isn't relevant).
-  return (
+  //
+  // Portal lên document.body để dialog không bị giam trong containing
+  // block của parent có `transform` (AppDrawer dùng translateX để
+  // slide → mọi `fixed` con bị reanchor vào aside 288px). Lift lên
+  // body → fixed thực sự cover full viewport.
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -249,6 +255,7 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
           </Button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body,
   );
 }
