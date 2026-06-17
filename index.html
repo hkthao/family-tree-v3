@@ -35,6 +35,9 @@
     <script>
       // Apply theme class BEFORE first paint so dark-mode users
       // don't flash the light palette while the React bundle loads.
+      // Cũng sync meta theme-color (status bar iOS Safari + address
+      // bar Android Chrome) — đỏ rượu vang trong dark mode quá chói
+      // nên dark dùng warm-ink #1A1612 hợp với background.
       // Mirrors lib/theme.ts; keep these in sync if either changes.
       (function () {
         try {
@@ -47,6 +50,10 @@
           document.documentElement.style.colorScheme = dark
             ? "dark"
             : "light";
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute("content", dark ? "#1A1612" : "#7A2230");
+          }
         } catch (e) {
           /* private mode — leave default light */
         }

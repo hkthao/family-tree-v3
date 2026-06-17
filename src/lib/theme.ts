@@ -40,11 +40,28 @@ function effectiveDark(t: Theme): boolean {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
+/** Status bar / address-bar color cho iOS Safari + Android Chrome.
+ *  Light dùng đỏ rượu vang (primary), dark dùng "warm ink" để hợp
+ *  background tối — đỏ rượu vang quá chói trong dark mode. */
+const THEME_COLOR_LIGHT = "#7A2230";
+const THEME_COLOR_DARK = "#1A1612";
+
+function syncMetaThemeColor(dark: boolean): void {
+  if (typeof document === "undefined") return;
+  const meta = document.querySelector<HTMLMetaElement>(
+    'meta[name="theme-color"]',
+  );
+  if (meta) {
+    meta.setAttribute("content", dark ? THEME_COLOR_DARK : THEME_COLOR_LIGHT);
+  }
+}
+
 function apply(t: Theme): void {
   if (typeof document === "undefined") return;
   const dark = effectiveDark(t);
   document.documentElement.classList.toggle("dark", dark);
   document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  syncMetaThemeColor(dark);
 }
 
 export function getTheme(): Theme {
