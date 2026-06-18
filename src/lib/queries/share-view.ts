@@ -9,6 +9,7 @@ export interface ShareViewPerson {
   generation: number | null;
   branch_id: string | null;
   birth_family_id: string | null;
+  birth_order: number | null;
   birth_date: string | null;
   birth_date_precision: "day" | "month" | "year" | null;
   death_date: string | null;

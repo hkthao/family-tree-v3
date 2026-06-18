@@ -50,6 +50,7 @@ interface PersonRow {
   generation: number | null;
   branch_id: string | null;
   birth_family_id: string | null;
+  birth_order: number | null;
   birth_date: string | null;
   birth_date_precision: string | null;
   death_date: string | null;
@@ -147,7 +148,7 @@ Deno.serve(async (req) => {
 
   // ---- 3. Fetch persons + families ----
   const personSelect =
-    "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_date, birth_date_precision, death_date, death_date_precision, photo_path, courtesy_name, posthumous_name, nickname, birth_place, burial_place, bio, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day";
+    "id, full_name, gender, is_living, is_root, generation, branch_id, birth_family_id, birth_order, birth_date, birth_date_precision, death_date, death_date_precision, photo_path, courtesy_name, posthumous_name, nickname, birth_place, burial_place, bio, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day";
   const { data: persons, error: pErr } = await sb
     .from("persons")
     .select(personSelect)
@@ -310,6 +311,7 @@ Deno.serve(async (req) => {
         generation: p.generation,
         branch_id: p.branch_id,
         birth_family_id: p.birth_family_id,
+        birth_order: p.birth_order,
         birth_date: null,
         birth_date_precision: null,
         death_date: null,
@@ -326,6 +328,7 @@ Deno.serve(async (req) => {
       generation: p.generation,
       branch_id: p.branch_id,
       birth_family_id: p.birth_family_id,
+      birth_order: p.birth_order,
       birth_date: p.birth_date,
       birth_date_precision: p.birth_date_precision,
       death_date: p.death_date,
