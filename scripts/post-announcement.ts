@@ -39,19 +39,16 @@ async function main() {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
 
-  const body = `Mỗi dòng họ quen một cách đánh số đời khác nhau:
+  const body = `Trước đây, khi mở link chia sẻ cây gia phả ra ngoài, các anh chị em trong cùng một nhà đôi khi bị xếp sai thứ tự — không đúng "con thứ mấy" mà cả nhà đã nhập.
 
-• Nhiều họ tính Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… (mặc định của app trước nay).
-• Có họ lại quen tính Thủy tổ là Đời 0, con cháu mới là Đời 1, 2, 3…
+Nay đã sửa xong: màn hình chia sẻ cây gia phả sắp xếp anh chị em đúng theo thứ tự con trưởng → con thứ → con út, khớp y hệt với cây gia phả bên trong tài khoản.
 
-Giờ cả nhà tự chọn được. Vào "Cài đặt dòng họ" (chỉ quản trị clan thấy) → tích vào ô "Thủy tổ là Đời 0" → mọi nơi hiển thị số đời sẽ trừ đi 1 ngay tức thì: cây gia phả, danh bạ, in PDF, cuốn sổ gia phả, trang QR cá nhân, mọi chỗ khác.
-
-Cách đánh số này chỉ thay đổi hiển thị — dữ liệu gốc giữ nguyên, có thể bật / tắt lại bất cứ lúc nào.`;
+Cả nhà không cần làm gì thêm — chỉ cần mở lại link chia sẻ (nếu thấy chưa đổi, hãy tải lại trang một lần).`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "🎉 Tuỳ chọn mới — Thủy tổ là Đời 0 hay Đời 1?",
+      title: "🔧 Đã sửa: thứ tự anh chị em trên màn hình chia sẻ cây gia phả",
       body,
       level: "update",
       is_public: true,
