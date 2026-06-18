@@ -127,6 +127,7 @@ export default function Share() {
         gender: p.gender,
         is_living: p.is_living,
         is_root: p.is_root,
+        birth_order: p.birth_order,
         birth_date: p.birth_date,
         death_date: p.death_date,
         generation: p.generation,
