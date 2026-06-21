@@ -5,11 +5,13 @@ import type { Database } from "@/lib/database.types";
 
 type Client = SupabaseClient<Database>;
 
+export type EventType = "custom" | "reunion" | "memorial" | "tomb_visit";
+
 export interface EventRow {
   id: string;
   clan_id: string;
   title: string;
-  event_type: "custom" | "reunion" | "memorial";
+  event_type: EventType;
   date_solar: string | null;
   lunar_year: number | null;
   lunar_month: number | null;
@@ -17,6 +19,7 @@ export interface EventRow {
   lunar_is_leap: boolean;
   is_yearly: boolean;
   related_person_id: string | null;
+  resting_place_id: string | null;
   notes: string | null;
   created_at: string;
 }
@@ -28,7 +31,7 @@ export async function listEvents(
   const { data, error } = await client
     .from("events")
     .select(
-      "id, clan_id, title, event_type, date_solar, lunar_year, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id, notes, created_at",
+      "id, clan_id, title, event_type, date_solar, lunar_year, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id, resting_place_id, notes, created_at",
     )
     .eq("clan_id", clanId)
     .order("created_at", { ascending: false });
@@ -39,7 +42,7 @@ export async function listEvents(
 export interface CreateEventInput {
   clan_id: string;
   title: string;
-  event_type?: "custom" | "reunion" | "memorial";
+  event_type?: EventType;
   /** Exactly one of date_solar OR lunar_month is required (CHECK constraint). */
   date_solar?: string | null;
   lunar_year?: number | null;
@@ -48,6 +51,7 @@ export interface CreateEventInput {
   lunar_is_leap?: boolean;
   is_yearly?: boolean;
   related_person_id?: string | null;
+  resting_place_id?: string | null;
   notes?: string | null;
 }
 
@@ -68,6 +72,7 @@ export async function createEvent(
       lunar_is_leap: input.lunar_is_leap ?? false,
       is_yearly: input.is_yearly ?? true,
       related_person_id: input.related_person_id ?? null,
+      resting_place_id: input.resting_place_id ?? null,
       notes: input.notes ?? null,
     })
     .select("id")

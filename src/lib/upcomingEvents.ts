@@ -19,13 +19,15 @@ import type { PersonForTree } from "@/lib/queries/tree";
  * tests can run with deterministic input without mocking the clock.
  */
 
-export type UpcomingKind = "birthday" | "anniversary" | "custom";
+export type UpcomingKind = "birthday" | "anniversary" | "custom" | "tomb_visit";
 
 export interface UpcomingEvent {
   /** Stable id for React keys + dedupe ("kind:source_id:yyyy-mm-dd"). */
   key: string;
   kind: UpcomingKind;
   title: string;
+  /** Resting place id when the event is a tảo mộ / chạp họ tied to a mộ. */
+  restingPlaceId?: string | null;
   /** ISO yyyy-mm-dd this event lands on (in the local year). */
   date: string;
   /** Days from `today` until `date`. 0 = today. */
@@ -148,12 +150,13 @@ export function computeUpcomingEvents({
       const days = diffDays(today, iso);
       if (days < 0 || days > daysAhead) continue;
       out.push({
-        key: `custom:${e.id}:${iso}`,
-        kind: "custom",
+        key: `${e.event_type === "tomb_visit" ? "tomb_visit" : "custom"}:${e.id}:${iso}`,
+        kind: e.event_type === "tomb_visit" ? "tomb_visit" : "custom",
         title: e.title,
         date: iso,
         daysUntil: days,
         personId: e.related_person_id ?? undefined,
+        restingPlaceId: e.resting_place_id ?? null,
         branchId: e.related_person_id
           ? (personBranch.get(e.related_person_id) ?? null)
           : null,
@@ -181,12 +184,13 @@ export function computeUpcomingEvents({
         const days = diffDays(today, iso);
         if (days < 0 || days > daysAhead) continue;
         out.push({
-          key: `custom:${e.id}:${iso}`,
-          kind: "custom",
+          key: `${e.event_type === "tomb_visit" ? "tomb_visit" : "custom"}:${e.id}:${iso}`,
+          kind: e.event_type === "tomb_visit" ? "tomb_visit" : "custom",
           title: e.title,
           date: iso,
           daysUntil: days,
           personId: e.related_person_id ?? undefined,
+          restingPlaceId: e.resting_place_id ?? null,
         });
         break; // first matching solar year is enough
       }

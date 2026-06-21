@@ -33,6 +33,7 @@ const LEAD_OPTIONS = [
 const TYPE_OPTIONS: { value: SubEventType; label: string }[] = [
   { value: "birthday", label: "Sinh nhật" },
   { value: "death_anniversary", label: "Ngày giỗ" },
+  { value: "tomb_visit", label: "Tảo mộ / Chạp họ" },
   { value: "custom", label: "Sự kiện tuỳ chỉnh" },
 ];
 

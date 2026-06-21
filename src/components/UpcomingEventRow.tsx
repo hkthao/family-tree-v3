@@ -95,6 +95,13 @@ export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
     </div>
   );
 
+  if (event.restingPlaceId) {
+    return (
+      <Link to={`/clans/${clanId}/graves/${event.restingPlaceId}`} className="block">
+        {inner}
+      </Link>
+    );
+  }
   if (event.personId) {
     return (
       <Link to={`/clans/${clanId}/people/${event.personId}`} className="block">
@@ -111,6 +118,8 @@ function kindLabel(k: UpcomingEvent["kind"]): string {
       return "Sinh nhật";
     case "anniversary":
       return "Ngày giỗ";
+    case "tomb_visit":
+      return "Tảo mộ / Chạp họ";
     case "custom":
       return "Sự kiện";
   }
