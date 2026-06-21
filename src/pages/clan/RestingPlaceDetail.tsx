@@ -29,10 +29,12 @@ import { getOrCreateRestingPlaceShareLink } from "@/lib/queries/share-links";
 import { getSignedPhotoUrlMap, uploadRestingPlacePhoto } from "@/lib/photoUpload";
 import {
   addPhoto,
+  addRelocation,
   deleteRestingPlace,
   directionsUrl,
   getRestingPlace,
   removePhoto,
+  removeRelocation,
   RESTING_PLACE_KIND_LABEL,
   RESTING_PLACE_STATUS_LABEL,
 } from "@/lib/queries/restingPlaces";
@@ -125,6 +127,34 @@ export default function RestingPlaceDetail() {
     rTitle.trim() &&
     Number(rMonth) >= 1 && Number(rMonth) <= 12 &&
     Number(rDay) >= 1 && Number(rDay) <= 30;
+
+  // Lịch sử cải táng
+  const [relOpen, setRelOpen] = useState(false);
+  const [relFrom, setRelFrom] = useState("");
+  const [relDate, setRelDate] = useState("");
+  const [relNote, setRelNote] = useState("");
+  const addRelM = useMutation({
+    mutationFn: () =>
+      addRelocation(graveId!, {
+        from_label: relFrom.trim() || null,
+        moved_on: relDate || null,
+        note: relNote.trim() || null,
+      }),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Đã thêm lần cải táng");
+      setRelOpen(false);
+      setRelFrom("");
+      setRelDate("");
+      setRelNote("");
+    },
+    onError: (e) => toast.error("Không thêm được", { description: (e as Error).message }),
+  });
+  const removeRelM = useMutation({
+    mutationFn: (id: string) => removeRelocation(id),
+    onSuccess: invalidate,
+    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+  });
 
   // QR tại mộ (clan admin) — public share link of this resting place.
   const canAdmin = isClanAdmin(clan);
@@ -309,6 +339,91 @@ export default function RestingPlaceDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Lịch sử cải táng */}
+      {(place.relocations.length > 0 || canEdit) && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>Lịch sử cải táng</CardTitle>
+            {canEdit && !relOpen && (
+              <Button size="sm" variant="outline" onClick={() => setRelOpen(true)}>
+                <IconPlus className="h-4 w-4 mr-1" /> Thêm
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {place.relocations.length === 0 && !relOpen && (
+              <p className="text-sm text-muted-foreground">
+                Chưa ghi lần cải táng nào (bốc mộ / sang cát).
+              </p>
+            )}
+            {place.relocations.length > 0 && (
+              <ol className="space-y-2 border-l pl-4">
+                {place.relocations.map((r) => (
+                  <li key={r.id} className="relative">
+                    <span className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-primary" />
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm">
+                          {r.moved_on && (
+                            <span className="font-medium">{r.moved_on}</span>
+                          )}
+                          {r.from_label && (
+                            <span> · cải táng từ {r.from_label}</span>
+                          )}
+                        </p>
+                        {r.note && (
+                          <p className="text-xs text-muted-foreground">{r.note}</p>
+                        )}
+                      </div>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          aria-label="Xoá"
+                          onClick={() => removeRelM.mutate(r.id)}
+                          className="shrink-0 text-muted-foreground hover:text-foreground"
+                        >
+                          <IconX className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+            {relOpen && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addRelM.mutate();
+                }}
+                className="space-y-3 border-t pt-3"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="rel-from">Nơi cũ (trước khi dời về đây)</Label>
+                  <Input id="rel-from" value={relFrom} onChange={(e) => setRelFrom(e.target.value)} placeholder="vd: Nghĩa trang X, lô 3" />
+                </div>
+                <div className="space-y-2 max-w-[200px]">
+                  <Label htmlFor="rel-date">Ngày cải táng (tuỳ chọn)</Label>
+                  <Input id="rel-date" type="date" value={relDate} onChange={(e) => setRelDate(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rel-note">Ghi chú</Label>
+                  <Input id="rel-note" value={relNote} onChange={(e) => setRelNote(e.target.value)} placeholder="vd: bốc mộ sang cát, người chủ trì…" />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" size="sm" variant="outline" disabled={addRelM.isPending || (!relFrom.trim() && !relDate && !relNote.trim())}>
+                    {addRelM.isPending ? "Đang lưu…" : "Lưu"}
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setRelOpen(false)}>
+                    Huỷ
+                  </Button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Nhắc tảo mộ / chạp họ */}
       {canEdit && (

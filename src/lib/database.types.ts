@@ -1438,6 +1438,51 @@ export type Database = {
           },
         ]
       }
+      resting_place_relocations: {
+        Row: {
+          clan_id: string
+          created_at: string
+          from_label: string | null
+          id: string
+          moved_on: string | null
+          note: string | null
+          resting_place_id: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          from_label?: string | null
+          id?: string
+          moved_on?: string | null
+          note?: string | null
+          resting_place_id: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          from_label?: string | null
+          id?: string
+          moved_on?: string | null
+          note?: string | null
+          resting_place_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resting_place_relocations_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resting_place_relocations_resting_place_id_fkey"
+            columns: ["resting_place_id"]
+            isOneToOne: false
+            referencedRelation: "resting_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resting_places: {
         Row: {
           address: string | null

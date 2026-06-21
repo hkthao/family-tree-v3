@@ -89,6 +89,12 @@ export interface RestingPlacePhoto {
   caption: string | null;
   sort: number;
 }
+export interface Relocation {
+  id: string;
+  from_label: string | null;
+  moved_on: string | null;
+  note: string | null;
+}
 export interface RestingPlaceListItem extends RestingPlace {
   occupant_count: number;
   first_photo_path: string | null;
@@ -96,6 +102,7 @@ export interface RestingPlaceListItem extends RestingPlace {
 export interface RestingPlaceDetail extends RestingPlace {
   occupants: OccupantBrief[];
   photos: RestingPlacePhoto[];
+  relocations: Relocation[];
 }
 
 const COLS =
@@ -146,7 +153,8 @@ export async function getRestingPlace(
     .select(
       `${COLS},
        resting_place_occupants(id, note, person:persons(id, full_name, gender, is_living)),
-       resting_place_photos(id, path, caption, sort)`,
+       resting_place_photos(id, path, caption, sort),
+       resting_place_relocations(id, from_label, moved_on, note)`,
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -154,7 +162,7 @@ export async function getRestingPlace(
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const { resting_place_occupants, resting_place_photos, ...rest } = data;
+  const { resting_place_occupants, resting_place_photos, resting_place_relocations, ...rest } = data;
   // deno-lint shape: person may be object or null
   const occupants: OccupantBrief[] = (resting_place_occupants ?? [])
     .map((o) => {
@@ -173,7 +181,10 @@ export async function getRestingPlace(
   const photos = ((resting_place_photos ?? []) as RestingPlacePhoto[]).sort(
     (a, b) => a.sort - b.sort,
   );
-  return { ...(rest as RestingPlace), occupants, photos };
+  const relocations = ((resting_place_relocations ?? []) as Relocation[]).sort(
+    (a, b) => (a.moved_on ?? "").localeCompare(b.moved_on ?? ""),
+  );
+  return { ...(rest as RestingPlace), occupants, photos, relocations };
 }
 
 export type RestingPlaceInput = Partial<
@@ -268,6 +279,31 @@ export async function removePhoto(
     .eq("id", photoId);
   if (error) throw new Error(error.message);
   await deletePersonPhoto(path).catch(() => {}); // best-effort storage cleanup
+}
+
+export async function addRelocation(
+  restingPlaceId: string,
+  input: { from_label?: string | null; moved_on?: string | null; note?: string | null },
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client.from("resting_place_relocations").insert({
+    resting_place_id: restingPlaceId,
+    clan_id: "00000000-0000-0000-0000-000000000000", // synced by trigger
+    from_label: input.from_label ?? null,
+    moved_on: input.moved_on || null,
+    note: input.note ?? null,
+  });
+  if (error) throw new Error(error.message);
+}
+export async function removeRelocation(
+  id: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("resting_place_relocations")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 /** Resting places a given person is recorded in — for the PersonDetail link. */
