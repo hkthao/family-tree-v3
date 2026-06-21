@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import {
@@ -20,6 +20,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlPatch } from "@/hooks/useUrlState";
 import {
   CLAN_SIZE_BUCKETS,
   listCommunityClans,
@@ -44,23 +45,35 @@ export default function Clans() {
   });
   const isPlatformAdmin = !!profile?.is_platform_admin;
 
-  const [tab, setTab] = useState<Tab>("mine");
-  const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
-  const [sizeBucket, setSizeBucket] = useState<ClanSizeBucket | "">("");
-  const [page, setPage] = useState(1);
+  // Filters live in the URL so Back from a clan detail restores the
+  // tab + search instead of resetting them. See useUrlState.ts.
+  const [sp] = useSearchParams();
+  const patch = useUrlPatch();
+  const tab: Tab = sp.get("tab") === "community" ? "community" : "mine";
+  const sizeBucket = (sp.get("size") ?? "") as ClanSizeBucket | "";
+  const debounced = sp.get("q") ?? "";
+  const page = Math.max(1, Number(sp.get("page")) || 1);
+
+  // The text box keeps its own live value (seeded from the URL); only
+  // the debounced value is pushed to the URL + used for the query.
+  const [search, setSearch] = useState(debounced);
+
+  const setTab = (next: Tab) =>
+    patch({ tab: next === "mine" ? null : next, page: null });
+  const setSizeBucket = (next: ClanSizeBucket | "") =>
+    patch({ size: next || null, page: null });
+  const setPage = (next: number) =>
+    patch({ page: next <= 1 ? null : String(next) });
 
   useEffect(() => {
     const h = setTimeout(() => {
-      setDebounced(search);
-      setPage(1);
+      // Skip the initial run (search === URL value) so a Back that
+      // restored ?page=2 isn't immediately reset to page 1.
+      if (search !== debounced) patch({ q: search || null, page: null });
     }, 300);
     return () => clearTimeout(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [tab, sizeBucket]);
 
   const params = {
     page,
