@@ -146,13 +146,18 @@ export function EditPersonForm({
       }),
     );
     setDeath(
-      loadCalendarDateValue({
-        solarDate: person.death_date,
-        solarPrecision: person.death_date_precision,
-        lunarYear: person.death_lunar_year,
-        lunarMonth: person.death_lunar_month,
-        lunarDay: person.death_lunar_day,
-      }),
+      loadCalendarDateValue(
+        {
+          solarDate: person.death_date,
+          solarPrecision: person.death_date_precision,
+          lunarYear: person.death_lunar_year,
+          lunarMonth: person.death_lunar_month,
+          lunarDay: person.death_lunar_day,
+        },
+        // Ưu tiên nhập âm lịch cho ngày mất (giỗ thường chỉ có
+        // tháng/ngày âm, không có năm).
+        true,
+      ),
     );
     setBirthPlace(person.birth_place ?? "");
     setBurialPlace(person.burial_place ?? "");
@@ -170,6 +175,10 @@ export function EditPersonForm({
       person.burial_place ||
       person.bio ||
       person.death_date ||
+      // Người chỉ có giỗ âm (tháng/ngày, không năm) → death_date NULL
+      // nhưng vẫn có ngày mất đã ghi.
+      person.death_lunar_month != null ||
+      person.death_anniv_lunar_month != null ||
       person.birth_order != null ||
       person.todo_excluded
     ) {
@@ -434,9 +443,10 @@ export function EditPersonForm({
             value={death}
             onChange={(next) => {
               setDeath(next);
-              if (next.parts.year) setIsLiving(false);
+              if (next.parts.year || next.parts.month || next.parts.day)
+                setIsLiving(false);
             }}
-            helperText="Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
+            helperText="Ưu tiên ghi ngày âm. Chỉ cần nhớ ngày giỗ là đủ — điền tháng/ngày âm, bỏ trống năm cũng được."
             referenceYear={
               birth.parts.year && /^\d+$/.test(birth.parts.year)
                 ? Number(birth.parts.year) + 70

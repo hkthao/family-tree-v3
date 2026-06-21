@@ -23,6 +23,7 @@ import {
   buildDeathAnniversary,
   buildPersonDateColumns,
   EMPTY_CALENDAR_DATE,
+  EMPTY_LUNAR_CALENDAR_DATE,
   loadCalendarDateValue,
   type CalendarDateValue,
 } from "@/lib/personDates";
@@ -58,7 +59,9 @@ export default function NewPerson() {
   const [isLiving, setIsLiving] = useState(true);
   const [isRoot, setIsRoot] = useState(false);
   const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
-  const [death, setDeath] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
+  const [death, setDeath] = useState<CalendarDateValue>(
+    EMPTY_LUNAR_CALENDAR_DATE,
+  );
   const [birthPlace, setBirthPlace] = useState("");
   const [burialPlace, setBurialPlace] = useState("");
   const [courtesyName, setCourtesyName] = useState("");
@@ -96,13 +99,16 @@ export default function NewPerson() {
       }),
     );
     setDeath(
-      loadCalendarDateValue({
-        solarDate: source.death_date,
-        solarPrecision: source.death_date_precision,
-        lunarYear: source.death_lunar_year,
-        lunarMonth: source.death_lunar_month,
-        lunarDay: source.death_lunar_day,
-      }),
+      loadCalendarDateValue(
+        {
+          solarDate: source.death_date,
+          solarPrecision: source.death_date_precision,
+          lunarYear: source.death_lunar_year,
+          lunarMonth: source.death_lunar_month,
+          lunarDay: source.death_lunar_day,
+        },
+        true,
+      ),
     );
     setBirthPlace(source.birth_place ?? "");
     setBurialPlace(source.burial_place ?? "");
@@ -175,7 +181,7 @@ export default function NewPerson() {
         setNickname("");
         setPosthumousName("");
         setBirth(EMPTY_CALENDAR_DATE);
-        setDeath(EMPTY_CALENDAR_DATE);
+        setDeath(EMPTY_LUNAR_CALENDAR_DATE);
         setIsLiving(true);
         setIsRoot(false);
         setBirthPlace("");
@@ -400,9 +406,10 @@ export default function NewPerson() {
               value={death}
               onChange={(next) => {
                 setDeath(next);
-                if (next.parts.year) setIsLiving(false);
+                if (next.parts.year || next.parts.month || next.parts.day)
+                  setIsLiving(false);
               }}
-              helperText="Để trống nếu còn sống. Khi nhập ngày âm đầy đủ, ngày giỗ tự sinh từ tháng/ngày âm."
+              helperText="Để trống nếu còn sống. Ưu tiên ghi ngày âm — chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
             />
 
             <div className="space-y-2">
