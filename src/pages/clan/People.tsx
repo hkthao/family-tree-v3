@@ -4,7 +4,7 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { invalidateClanData } from "@/lib/cache";
@@ -40,6 +40,7 @@ import {
   SegmentedControl,
 } from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlPatch } from "@/hooks/useUrlState";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
@@ -69,13 +70,32 @@ export default function People() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
-  const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
-  const [branchId, setBranchId] = useState<string>("");
-  const [generation, setGeneration] = useState<string>("");
-  const [sort, setSort] = useState<"name" | "generation" | "birth">("name");
+  // Filters / paging live in the URL so Back from a person detail
+  // restores the search + filters instead of resetting them. See
+  // useUrlState.ts. A single action that also resets the page writes
+  // both params in one patch() call to avoid clobbering.
+  const [sp] = useSearchParams();
+  const patch = useUrlPatch();
+  const page = Math.max(1, Number(sp.get("page")) || 1);
+  const pageSize = Math.max(1, Number(sp.get("ps")) || 50);
+  const debounced = sp.get("q") ?? "";
+  const branchId = sp.get("branch") ?? "";
+  const generation = sp.get("gen") ?? "";
+  const sortRaw = sp.get("sort") ?? "name";
+  const sort: "name" | "generation" | "birth" =
+    sortRaw === "generation" || sortRaw === "birth" ? sortRaw : "name";
+
+  const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
+  const setPageSize = (n: number) =>
+    patch({ ps: n === 50 ? null : String(n), page: null });
+  const setBranchId = (v: string) => patch({ branch: v || null, page: null });
+  const setGeneration = (v: string) => patch({ gen: v || null, page: null });
+  const setSort = (v: "name" | "generation" | "birth") =>
+    patch({ sort: v === "name" ? null : v, page: null });
+
+  // The text box keeps its own live value (seeded from the URL); only
+  // the debounced value is pushed to the URL + used for the query.
+  const [search, setSearch] = useState(debounced);
   const [viewMode, setViewMode] = useState<ViewMode>(() => readViewMode());
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [bulkBranch, setBulkBranch] = useState<string>("");
@@ -89,19 +109,15 @@ export default function People() {
     }
   }, [viewMode]);
 
-  // Debounce search input
+  // Debounce search input → URL. Skip the initial run (search === URL
+  // value) so a Back that restored ?page=2 isn't reset to page 1.
   useEffect(() => {
     const h = setTimeout(() => {
-      setDebounced(search);
-      setPage(1);
+      if (search !== debounced) patch({ q: search || null, page: null });
     }, 300);
     return () => clearTimeout(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
-
-  // Reset to page 1 when any filter besides search changes
-  useEffect(() => {
-    setPage(1);
-  }, [branchId, generation, sort, pageSize]);
 
   // Drop the selection when the *result set* changes (different
   // filter / sort). Page changes preserve the selection now that the
@@ -484,8 +500,7 @@ export default function People() {
               label: "Xoá bộ lọc",
               onClick: () => {
                 setSearch("");
-                setBranchId("");
-                setGeneration("");
+                patch({ q: null, branch: null, gen: null, page: null });
               },
             }}
           />
