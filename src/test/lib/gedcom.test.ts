@@ -95,6 +95,7 @@ describe("GEDCOM serialize → parse round-trip", () => {
       persons,
       families: [{ id: "f1", husband_id: "p1", wife_id: "p2" }],
       branches: [],
+      restingPlaces: [],
       childToFamily: { p3: "f1" },
     };
 
@@ -159,6 +160,7 @@ describe("GEDCOM serialize → parse round-trip", () => {
       persons,
       families: [],
       branches: [],
+      restingPlaces: [],
       childToFamily: {},
     });
     expect(ged).toMatch(/1 BIRT[^]*?2 DATE JUN 1950/);
@@ -181,6 +183,7 @@ describe("GEDCOM serialize → parse round-trip", () => {
       persons,
       families: [],
       branches: [],
+      restingPlaces: [],
       childToFamily: {},
     };
     const ged = serializeClanToGedcom(clan, data, [

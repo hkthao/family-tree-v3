@@ -17,10 +17,22 @@ export interface ClanBookBranch {
   name: string;
 }
 
+export interface ClanBookRestingPlace {
+  id: string;
+  kind: "grave" | "ashes_temple" | "columbarium" | "scattered" | "other";
+  name: string | null;
+  location_name: string | null;
+  location_detail: string | null;
+  address: string | null;
+  status: "existing" | "relocated" | "lost";
+  occupant_names: string[];
+}
+
 export interface ClanBookData {
   persons: PersonDetail[];
   families: ClanBookFamily[];
   branches: ClanBookBranch[];
+  restingPlaces: ClanBookRestingPlace[];
   /** child_id → family_id (their birth family). */
   childToFamily: Record<string, string>;
 }
@@ -44,7 +56,7 @@ export async function getClanBookData(
   // queries. Used by PDF export + GEDCOM — both want every row,
   // not the first 1000. Same defensive ceiling as getTreeData.
   const MAX_ROWS = 9999;
-  const [pq, fq, bq] = await Promise.all([
+  const [pq, fq, bq, rq] = await Promise.all([
     client
       .from("persons")
       .select(`${DETAIL_COLS}, birth_family_id`)
@@ -65,11 +77,21 @@ export async function getClanBookData(
       .eq("clan_id", clanId)
       .order("name")
       .range(0, MAX_ROWS),
+    client
+      .from("resting_places")
+      .select(
+        "id, kind, name, location_name, location_detail, address, status, resting_place_occupants(person:persons(full_name))",
+      )
+      .eq("clan_id", clanId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true })
+      .range(0, MAX_ROWS),
   ]);
 
   if (pq.error) throw new Error(pq.error.message);
   if (fq.error) throw new Error(fq.error.message);
   if (bq.error) throw new Error(bq.error.message);
+  if (rq.error) throw new Error(rq.error.message);
 
   const persons = (pq.data ?? []) as (PersonDetail & {
     birth_family_id: string | null;
@@ -79,10 +101,21 @@ export async function getClanBookData(
     if (p.birth_family_id) childToFamily[p.id] = p.birth_family_id;
   }
 
+  // deno-lint shape: occupants embed → flat name list.
+  const restingPlaces: ClanBookRestingPlace[] = (rq.data ?? []).map((r) => {
+    const occ = (r as { resting_place_occupants?: { person: { full_name: string } | null }[] }).resting_place_occupants ?? [];
+    const { resting_place_occupants: _o, ...rest } = r as ClanBookRestingPlace & { resting_place_occupants?: unknown };
+    return {
+      ...(rest as Omit<ClanBookRestingPlace, "occupant_names">),
+      occupant_names: occ.map((o) => o.person?.full_name).filter((n): n is string => !!n),
+    };
+  });
+
   return {
     persons: persons.map(({ birth_family_id: _b, ...rest }) => rest as PersonDetail),
     families: (fq.data ?? []) as ClanBookFamily[],
     branches: (bq.data ?? []) as ClanBookBranch[],
+    restingPlaces,
     childToFamily,
   };
 }
