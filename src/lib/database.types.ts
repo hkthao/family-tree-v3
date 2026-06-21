@@ -1515,6 +1515,7 @@ export type Database = {
           id: string
           is_revoked: boolean
           root_person_id: string | null
+          root_resting_place_id: string | null
           scope: string
           token: string
         }
@@ -1526,6 +1527,7 @@ export type Database = {
           id?: string
           is_revoked?: boolean
           root_person_id?: string | null
+          root_resting_place_id?: string | null
           scope?: string
           token: string
         }
@@ -1537,6 +1539,7 @@ export type Database = {
           id?: string
           is_revoked?: boolean
           root_person_id?: string | null
+          root_resting_place_id?: string | null
           scope?: string
           token?: string
         }
@@ -1567,6 +1570,13 @@ export type Database = {
             columns: ["root_person_id"]
             isOneToOne: false
             referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "share_links_root_resting_place_id_fkey"
+            columns: ["root_resting_place_id"]
+            isOneToOne: false
+            referencedRelation: "resting_places"
             referencedColumns: ["id"]
           },
         ]

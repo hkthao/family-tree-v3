@@ -57,6 +57,26 @@ export interface ShareViewRestingPlace {
   photo_urls: string[];
 }
 
+export interface ShareViewRestingPlaceFull {
+  id: string;
+  clan_id: string;
+  kind: "grave" | "ashes_temple" | "columbarium" | "scattered" | "other";
+  name: string | null;
+  location_name: string | null;
+  location_detail: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  status: "existing" | "relocated" | "lost";
+  photo_urls: string[];
+  occupants: {
+    full_name: string;
+    gender: "M" | "F";
+    is_living: boolean;
+    note: string | null;
+  }[];
+}
+
 export interface ShareViewPayload {
   clan_id: string;
   root_person_id: string | null;
@@ -70,6 +90,8 @@ export interface ShareViewPayload {
   persons: ShareViewPerson[];
   families: ShareViewFamily[];
   resting_places?: ShareViewRestingPlace[];
+  /** Present only when scope='resting_place' (QR tại mộ). */
+  resting_place?: ShareViewRestingPlaceFull;
 }
 
 /**
@@ -105,7 +127,8 @@ export async function fetchShareView(token: string): Promise<ShareViewPayload> {
   const fixUrl = (u: string) => (u.startsWith("/") ? `${base}${u}` : u);
   return {
     ...payload,
-    persons: payload.persons.map((p) => ({
+    // scope='resting_place' returns no persons/families.
+    persons: (payload.persons ?? []).map((p) => ({
       ...p,
       photo_url: p.photo_url ? fixUrl(p.photo_url) : p.photo_url,
     })),
@@ -113,6 +136,9 @@ export async function fetchShareView(token: string): Promise<ShareViewPayload> {
       ...rp,
       photo_urls: rp.photo_urls.map(fixUrl),
     })),
+    resting_place: payload.resting_place
+      ? { ...payload.resting_place, photo_urls: payload.resting_place.photo_urls.map(fixUrl) }
+      : undefined,
   };
 }
 

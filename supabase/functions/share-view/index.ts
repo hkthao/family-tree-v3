@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
   // ---- 2. Validate token ----
   const { data: link, error: linkErr } = await sb
     .from("share_links")
-    .select("clan_id, root_person_id, expires_at, is_revoked, scope")
+    .select("clan_id, root_person_id, root_resting_place_id, expires_at, is_revoked, scope")
     .eq("token", token)
     .maybeSingle();
   if (linkErr) return err(linkErr.message, 500);
@@ -147,6 +147,54 @@ Deno.serve(async (req) => {
     .maybeSingle();
   const hidePhotos = !!clanRow?.hide_photos_in_share;
   const generationOffset = clanRow?.generation_offset ?? 0;
+
+  // ---- scope='resting_place': QR tại mộ → trả thẳng thông tin nơi an
+  // nghỉ + người an nghỉ (che tên người còn sống) + ảnh. Bỏ qua pipeline
+  // persons/families bên dưới.
+  if (link.scope === "resting_place" && link.root_resting_place_id) {
+    const { data: rp } = await sb
+      .from("resting_places")
+      .select(
+        "id, clan_id, kind, name, location_name, location_detail, address, latitude, longitude, status, deleted_at, resting_place_occupants(note, person:persons(full_name, gender, is_living)), resting_place_photos(path, sort)",
+      )
+      .eq("id", link.root_resting_place_id)
+      .maybeSingle();
+    if (!rp || rp.deleted_at) return err("Nơi an nghỉ không còn.", 404);
+
+    // deno-lint-ignore no-explicit-any
+    const photos = [...((rp as any).resting_place_photos ?? [])].sort(
+      (a: { sort: number }, b: { sort: number }) => a.sort - b.sort,
+    );
+    let photo_urls: string[] = [];
+    if (!hidePhotos && photos.length > 0) {
+      const { data: signed } = await sb.storage
+        .from("person-photos")
+        .createSignedUrls(photos.map((p: { path: string }) => p.path), 3600);
+      photo_urls = (signed ?? [])
+        .filter((s) => s.signedUrl)
+        .map((s) => stripOrigin(s.signedUrl!));
+    }
+    // deno-lint-ignore no-explicit-any
+    const occupants = ((rp as any).resting_place_occupants ?? [])
+      .map((o: { note: string | null; person: { full_name: string; gender: string; is_living: boolean } | null }) => {
+        if (!o.person) return null;
+        return {
+          full_name: o.person.is_living ? "(Người đang sống)" : o.person.full_name,
+          gender: o.person.gender,
+          is_living: o.person.is_living,
+          note: o.note,
+        };
+      })
+      .filter(Boolean);
+
+    // deno-lint-ignore no-explicit-any
+    const { resting_place_occupants: _o, resting_place_photos: _p, deleted_at: _d, ...rpFields } = rp as any;
+    return json({
+      clan_id: link.clan_id,
+      scope: "resting_place",
+      resting_place: { ...rpFields, photo_urls, occupants },
+    });
+  }
 
   // ---- 3. Fetch persons + families ----
   const personSelect =

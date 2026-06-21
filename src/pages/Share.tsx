@@ -8,6 +8,7 @@ import {
 } from "@/components/icons";
 import { SearchInput } from "@/components/SearchInput";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
+import { SharedRestingPlaceCard } from "@/components/SharedRestingPlaceCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   SegmentedButton,
@@ -278,6 +279,25 @@ export default function Share() {
       .filter((p) => normalize(p.full_name).includes(needle))
       .slice(0, 5);
   }, [data, search]);
+
+  // QR tại mộ — scope='resting_place' renders the grave card.
+  if (data && data.scope === "resting_place" && data.resting_place) {
+    return (
+      <div className="min-h-dvh bg-background flex flex-col">
+        <header className="border-b py-3 px-4 shrink-0">
+          <h1 className="clan-name text-xl font-semibold text-center">
+            Mộ phần / tro cốt
+          </h1>
+          <p className="text-xs text-center text-muted-foreground mt-1">
+            Đang xem qua liên kết chia sẻ.
+          </p>
+        </header>
+        <main className="flex-1 min-h-0">
+          <SharedRestingPlaceCard rp={data.resting_place} />
+        </main>
+      </div>
+    );
+  }
 
   // Personal QR branch — bypass the family-chart and render a card.
   // The focal is whichever person matches data.root_person_id (always
