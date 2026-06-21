@@ -15,12 +15,23 @@ import { formatPartialDate } from "@/lib/partialDate";
 import type {
   ShareViewFamily,
   ShareViewPerson,
+  ShareViewRestingPlace,
 } from "@/lib/queries/share-view";
+
+const RP_KIND_LABEL: Record<ShareViewRestingPlace["kind"], string> = {
+  grave: "Mộ / chôn cất",
+  ashes_temple: "Gửi tro cốt ở chùa",
+  columbarium: "Nhà lưu tro / tháp cốt",
+  scattered: "Rải tro",
+  other: "Khác",
+};
 
 interface Props {
   focal: ShareViewPerson;
   persons: ShareViewPerson[];
   families: ShareViewFamily[];
+  /** Resting places returned by share-view (single_person scope). */
+  restingPlaces?: ShareViewRestingPlace[];
   /** Offset hiển thị đời của clan share (0 hoặc 1). */
   genOffset: number;
   /** Pass the share link token so guests can submit contributions
@@ -46,9 +57,13 @@ export function SharedPersonCard({
   genOffset,
   clanId,
   shareToken,
+  restingPlaces,
 }: Props) {
   const [contribOpen, setContribOpen] = useState(false);
   const byId = new Map(persons.map((p) => [p.id, p]));
+  const myPlaces = (restingPlaces ?? []).filter((rp) =>
+    rp.person_ids.includes(focal.id),
+  );
 
   // Parents — via focal.birth_family_id. Either may be null in the data.
   const birthFamily = focal.birth_family_id
@@ -172,6 +187,44 @@ export function SharedPersonCard({
           )}
           <Row label="Nơi sinh" value={focal.birth_place ?? null} />
           <Row label="Nơi an táng" value={focal.burial_place ?? null} />
+          {myPlaces.map((rp) => (
+            <div key={rp.id} className="pt-2">
+              <p className="text-sm text-muted-foreground mb-1">
+                Mộ phần / tro cốt
+              </p>
+              <p className="font-medium">
+                {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {RP_KIND_LABEL[rp.kind]}
+                {rp.location_name ? ` · ${rp.location_name}` : ""}
+                {rp.location_detail ? ` · ${rp.location_detail}` : ""}
+              </p>
+              {rp.address && <p className="text-sm">{rp.address}</p>}
+              {rp.latitude != null && rp.longitude != null && (
+                <a
+                  href={`https://www.google.com/maps?q=${rp.latitude},${rp.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  Chỉ đường
+                </a>
+              )}
+              {rp.photo_urls.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {rp.photo_urls.map((u, i) => (
+                    <img
+                      key={i}
+                      src={u}
+                      alt=""
+                      className="aspect-square w-full rounded-md object-cover"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
           {focal.bio && (
             <div className="pt-2">
               <p className="text-sm text-muted-foreground mb-1">Tiểu sử</p>

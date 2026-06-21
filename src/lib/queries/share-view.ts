@@ -43,6 +43,20 @@ export interface ShareViewFamily {
   created_at: string | null;
 }
 
+export interface ShareViewRestingPlace {
+  id: string;
+  kind: "grave" | "ashes_temple" | "columbarium" | "scattered" | "other";
+  name: string | null;
+  location_name: string | null;
+  location_detail: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  status: "existing" | "relocated" | "lost";
+  person_ids: string[];
+  photo_urls: string[];
+}
+
 export interface ShareViewPayload {
   clan_id: string;
   root_person_id: string | null;
@@ -55,6 +69,7 @@ export interface ShareViewPayload {
   generation_offset: number;
   persons: ShareViewPerson[];
   families: ShareViewFamily[];
+  resting_places?: ShareViewRestingPlace[];
 }
 
 /**
@@ -87,14 +102,16 @@ export async function fetchShareView(token: string): Promise<ShareViewPayload> {
   // The function returns photo_url as a path-only string (no origin),
   // because the storage helper inside Supabase Local would otherwise
   // bake Docker-internal hostnames. Prepend our reachable base.
+  const fixUrl = (u: string) => (u.startsWith("/") ? `${base}${u}` : u);
   return {
     ...payload,
     persons: payload.persons.map((p) => ({
       ...p,
-      photo_url:
-        p.photo_url && p.photo_url.startsWith("/")
-          ? `${base}${p.photo_url}`
-          : p.photo_url,
+      photo_url: p.photo_url ? fixUrl(p.photo_url) : p.photo_url,
+    })),
+    resting_places: payload.resting_places?.map((rp) => ({
+      ...rp,
+      photo_urls: rp.photo_urls.map(fixUrl),
     })),
   };
 }
