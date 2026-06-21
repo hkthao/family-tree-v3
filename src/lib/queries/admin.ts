@@ -218,22 +218,35 @@ export async function adminAction(
 export interface GiaPhaImportResult {
   ok: true;
   clanId: string;
-  clanName: string;
   counts: { persons: number; families: number };
   warnings: { ambiguousMothers: number; missingGender: number; note: string };
 }
+export interface GiaPhaJobProgress {
+  jobId: string;
+  clanId: string;
+  clanName?: string;
+  total: number;
+  scraped: number;
+  status: "scraping" | "ready" | "importing" | "done" | "error";
+}
 
 /**
- * Invoke the giapha-import Edge Function. Re-reads the response body on
- * error so the admin sees the precise reason (same trick as adminAction).
+ * Invoke the staged giapha-import Edge Function. The import is a job:
+ * `start` lists every person + creates the clan/job, `step` scrapes one
+ * batch (call until status='ready'), `finalize` imports in one txn.
+ * Splitting it this way keeps each call under the Edge timeout so even
+ * a 5000-person tree imports, and the server-side job means a closed
+ * tab can be resumed. Re-reads the error body for a precise message.
  */
-export async function importGiaPha(
-  body: { sourceUrl: string; clanId?: string; clanName?: string; replace?: boolean },
-  client: Client = defaultClient,
-): Promise<GiaPhaImportResult> {
+// deno-lint-ignore-no-explicit-any not applicable (TS): use unknown-ish
+async function invokeImport(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body: Record<string, any>,
+  client: Client,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> {
   const { data, error } = await client.functions.invoke("giapha-import", { body });
-  if (!error) return data as GiaPhaImportResult;
-
+  if (!error) return data;
   const ctx = (error as { context?: Response }).context;
   if (ctx instanceof Response) {
     try {
@@ -244,6 +257,25 @@ export async function importGiaPha(
     }
   }
   throw new Error(error.message);
+}
+
+export function giaPhaImportStart(
+  body: { sourceUrl: string; clanId?: string; clanName?: string; replace?: boolean },
+  client: Client = defaultClient,
+): Promise<GiaPhaJobProgress> {
+  return invokeImport({ action: "start", ...body }, client);
+}
+export function giaPhaImportStep(
+  jobId: string,
+  client: Client = defaultClient,
+): Promise<GiaPhaJobProgress> {
+  return invokeImport({ action: "step", jobId }, client);
+}
+export function giaPhaImportFinalize(
+  jobId: string,
+  client: Client = defaultClient,
+): Promise<GiaPhaImportResult> {
+  return invokeImport({ action: "finalize", jobId }, client);
 }
 
 /**

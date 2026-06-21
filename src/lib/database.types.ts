@@ -847,6 +847,95 @@ export type Database = {
           },
         ]
       }
+      giapha_import_chunks: {
+        Row: {
+          job_id: string
+          people: Json
+          seq: number
+        }
+        Insert: {
+          job_id: string
+          people: Json
+          seq: number
+        }
+        Update: {
+          job_id?: string
+          people?: Json
+          seq?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "giapha_import_chunks_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "giapha_import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      giapha_import_jobs: {
+        Row: {
+          all_ids: Json
+          clan_id: string | null
+          created_at: string
+          created_by: string | null
+          error: string | null
+          id: string
+          result: Json | null
+          scraped: number
+          source_id: string
+          source_url: string | null
+          status: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          all_ids?: Json
+          clan_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          result?: Json | null
+          scraped?: number
+          source_id: string
+          source_url?: string | null
+          status?: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          all_ids?: Json
+          clan_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          result?: Json | null
+          scraped?: number
+          source_id?: string
+          source_url?: string | null
+          status?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "giapha_import_jobs_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "giapha_import_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_log: {
         Row: {
           channel: string
@@ -1543,6 +1632,10 @@ export type Database = {
         Returns: {
           id: string
         }[]
+      }
+      admin_import_giapha: {
+        Args: { p_clan_id: string; p_families: Json; p_persons: Json }
+        Returns: Json
       }
       admin_wipe_clan_directory: { Args: { p_clan_id: string }; Returns: Json }
       announcements_mark_all_read: { Args: never; Returns: number }

@@ -285,31 +285,30 @@ const deathCols = (p: PersonRec) =>
   : p.deathLunarYear ? { date: `${p.deathLunarYear}-01-01`, precision: "year" }
   : { date: null, precision: null };
 
-// deno-lint-ignore no-explicit-any
-async function doImport(sb: any, clanId: string, people: PersonRec[], fams: FamUnit[]) {
+/** Build the (persons, families) JSONB payloads for admin_import_giapha. */
+function buildPayload(people: PersonRec[], fams: FamUnit[]) {
   const idMap = new Map<number, string>();
   for (const p of people) idMap.set(p.oldId, crypto.randomUUID());
-  const fk = (f: FamUnit) => `${f.husband}|${f.wife}`;
+  const fkey = (f: FamUnit) => `${f.husband}|${f.wife}`;
   const famId = new Map<string, string>();
   const childFamily = new Map<number, string>();
   for (const f of fams) {
     const id = crypto.randomUUID();
-    famId.set(fk(f), id);
+    famId.set(fkey(f), id);
     for (const c of f.children) childFamily.set(c, id);
   }
-  const famRows = fams.map((f) => ({
-    id: famId.get(fk(f)), clan_id: clanId, husband_id: null, wife_id: null,
-    union_type: "marriage", spouse_order: f.spouseOrder,
+  const families = fams.map((f) => ({
+    id: famId.get(fkey(f)),
+    husband_id: f.husband != null ? idMap.get(f.husband) ?? null : null,
+    wife_id: f.wife != null ? idMap.get(f.wife) ?? null : null,
+    spouse_order: f.spouseOrder,
   }));
-  for (let i = 0; i < famRows.length; i += 100) {
-    const { error } = await sb.from("families").insert(famRows.slice(i, i + 100));
-    if (error) throw new Error(`families: ${error.message}`);
-  }
-  const personRows = people.map((p) => {
-    const b = birthCols(p); const d = deathCols(p);
+  const persons = people.map((p) => {
+    const b = birthCols(p);
+    const d = deathCols(p);
     const hasDeath = !!(p.deathSolar || p.deathYear || p.deathLunarDay || p.deathLunarMonth);
     return {
-      id: idMap.get(p.oldId), clan_id: clanId,
+      id: idMap.get(p.oldId),
       full_name: p.fullName, gender: p.gender ?? "M",
       is_living: !hasDeath,
       is_root: p.fatherId == null && p.motherId == null && p.generation === 1 && p.gender === "M",
@@ -324,106 +323,155 @@ async function doImport(sb: any, clanId: string, people: PersonRec[], fams: FamU
       birth_place: p.birthPlace, burial_place: p.burialPlace, bio: p.bio,
     };
   });
-  for (let i = 0; i < personRows.length; i += 50) {
-    const { error } = await sb.from("persons").insert(personRows.slice(i, i + 50));
-    if (error) throw new Error(`persons@${i}: ${error.message}`);
-  }
-  for (const f of fams) {
-    await sb.from("families").update({
-      husband_id: f.husband != null ? idMap.get(f.husband) ?? null : null,
-      wife_id: f.wife != null ? idMap.get(f.wife) ?? null : null,
-    }).eq("id", famId.get(fk(f)));
-  }
+  return { persons, families };
 }
 
-// ─── handler ─────────────────────────────────────────────────────────
+// ─── handler: staged job (start → step×N → finalize) ────────────────
+
+const BASE = "https://vietnamgiapha.com";
+const BATCH = 60; // detail pages per step (keeps each call well under timeout)
+
+// deno-lint-ignore no-explicit-any
+async function requireAdmin(svc: any, req: Request) {
+  const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
+  const { data: { user } } = await svc.auth.getUser(token);
+  if (!user) return { user: null, error: err("unauthorized", 401) };
+  const { data: prof } = await svc.from("profiles").select("is_platform_admin").eq("id", user.id).maybeSingle();
+  if (!prof?.is_platform_admin) return { user: null, error: err("Chỉ admin hệ thống dùng được chức năng này.", 403) };
+  return { user, error: null };
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return err("method not allowed", 405);
 
   const svc = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+  const { user, error: authErr } = await requireAdmin(svc, req);
+  if (authErr) return authErr;
 
-  // auth → platform admin only
-  const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "");
-  const { data: { user } } = await svc.auth.getUser(token);
-  if (!user) return err("unauthorized", 401);
-  const { data: prof } = await svc.from("profiles").select("is_platform_admin").eq("id", user.id).maybeSingle();
-  if (!prof?.is_platform_admin) return err("Chỉ admin hệ thống dùng được chức năng này.", 403);
-
-  let body: { sourceUrl?: string; clanId?: string; clanName?: string; replace?: boolean };
+  // deno-lint-ignore no-explicit-any
+  let body: any;
   try { body = await req.json(); } catch { return err("invalid JSON", 400); }
-  const { sourceUrl, clanId, clanName, replace } = body;
-  if (!sourceUrl) return err("Thiếu sourceUrl", 400);
-
-  // SSRF guard
-  let srcId: string;
-  try {
-    const u = new URL(sourceUrl);
-    if (!/(^|\.)vietnamgiapha\.com$/.test(u.hostname))
-      return err("Chỉ hỗ trợ link từ vietnamgiapha.com", 400);
-    const m = u.pathname.match(/\/(\d+)(\/|$)/);
-    if (!m) return err("Không nhận ra mã gia phả trong link", 400);
-    srcId = m[1];
-  } catch {
-    return err("Link không hợp lệ", 400);
-  }
-  const BASE = "https://vietnamgiapha.com";
+  const action = body.action ?? "start";
 
   try {
-    // scrape
-    const overviewHtml = await fetchText(`${BASE}/XemGiaPha/${srcId}/giapha.html`);
-    const treeHtml = await fetchText(`${BASE}/XemPhaHe/${srcId}/pha_he.html`);
-    const ids = idsFromTree(treeHtml);
-    if (ids.length === 0) return err("Không tìm thấy người nào trong gia phả này", 422);
+    // ── start: tree → ids, create job + target clan ──
+    if (action === "start") {
+      const { sourceUrl, clanId, clanName, replace } = body;
+      if (!sourceUrl) return err("Thiếu sourceUrl", 400);
+      let srcId: string;
+      try {
+        const u = new URL(sourceUrl);
+        if (!/(^|\.)vietnamgiapha\.com$/.test(u.hostname))
+          return err("Chỉ hỗ trợ link từ vietnamgiapha.com", 400);
+        const m = u.pathname.match(/\/(\d+)(\/|$)/);
+        if (!m) return err("Không nhận ra mã gia phả trong link", 400);
+        srcId = m[1];
+      } catch { return err("Link không hợp lệ", 400); }
 
-    const details = await pool(ids, CONCURRENCY, (id) =>
-      fetchText(`${BASE}/XemChiTietTungNguoi/${srcId}/${id}/giapha.html`).then((h) => ({ id, h })),
-    );
-    const people: PersonRec[] = [];
-    for (const { id, h } of details) {
-      const rec = parsePerson(id, h);
-      if (rec) people.push(rec);
-    }
-    const fams = buildRelationships(people);
-    const clanMeta = parseClan(overviewHtml);
+      const overviewHtml = await fetchText(`${BASE}/XemGiaPha/${srcId}/giapha.html`);
+      const treeHtml = await fetchText(`${BASE}/XemPhaHe/${srcId}/pha_he.html`);
+      const ids = idsFromTree(treeHtml);
+      if (ids.length === 0) return err("Không tìm thấy người nào trong gia phả này", 422);
+      const clanMeta = parseClan(overviewHtml);
 
-    // target clan
-    let targetClanId = clanId ?? null;
-    if (targetClanId) {
-      if (replace) {
-        await svc.from("persons").delete().eq("clan_id", targetClanId);
-        await svc.from("families").delete().eq("clan_id", targetClanId);
+      let targetClanId: string | null = clanId ?? null;
+      if (targetClanId) {
+        if (replace) {
+          await svc.from("persons").delete().eq("clan_id", targetClanId);
+          await svc.from("families").delete().eq("clan_id", targetClanId);
+        }
+      } else {
+        const name = (clanName?.trim() || clanMeta.name).replace(/^Gia phả:\s*/i, "").trim();
+        const desc = [
+          clanMeta.location ? `Quê / nhà thờ tổ: ${clanMeta.location}` : null,
+          `Nhập từ vietnamgiapha.com (gia phả #${srcId}).`,
+        ].filter(Boolean).join("\n\n");
+        const { data: clanRow, error } = await svc.from("clans").insert({
+          name, description: desc, owner_id: user.id, visibility: "private",
+          max_persons: Math.max(500, ids.length + 100), max_users: 10,
+        }).select("id").single();
+        if (error) throw new Error(`create clan: ${error.message}`);
+        targetClanId = clanRow.id;
       }
-    } else {
-      const name = (clanName?.trim() || clanMeta.name).replace(/^Gia phả:\s*/i, "").trim();
-      const desc = [
-        clanMeta.location ? `Quê / nhà thờ tổ: ${clanMeta.location}` : null,
-        `Nhập từ vietnamgiapha.com (gia phả #${srcId}).`,
-      ].filter(Boolean).join("\n\n");
-      const { data: clanRow, error } = await svc.from("clans").insert({
-        name, description: desc, owner_id: user.id, visibility: "private",
-        max_persons: Math.max(500, people.length + 100), max_users: 10,
+
+      const { data: job, error: jErr } = await svc.from("giapha_import_jobs").insert({
+        created_by: user.id, clan_id: targetClanId, source_id: srcId, source_url: sourceUrl,
+        all_ids: ids, total: ids.length, scraped: 0, status: "scraping",
       }).select("id").single();
-      if (error) throw new Error(`create clan: ${error.message}`);
-      targetClanId = clanRow.id;
+      if (jErr) throw new Error(`create job: ${jErr.message}`);
+
+      return json({
+        jobId: job.id, clanId: targetClanId, clanName: clanMeta.name,
+        total: ids.length, scraped: 0, status: "scraping",
+      });
     }
 
-    await doImport(svc, targetClanId!, people, fams);
+    // ── step: scrape+parse next batch, append a chunk ──
+    if (action === "step") {
+      const { jobId } = body;
+      if (!jobId) return err("Thiếu jobId", 400);
+      const { data: job } = await svc.from("giapha_import_jobs").select("*").eq("id", jobId).maybeSingle();
+      if (!job) return err("Job không tồn tại", 404);
+      if (job.status !== "scraping")
+        return json({ jobId, total: job.total, scraped: job.scraped, status: job.status });
 
-    const ambMothers = people.filter((p) => p.motherAmbiguous).length;
-    const noGender = people.filter((p) => !p.gender).length;
-    return json({
-      ok: true,
-      clanId: targetClanId,
-      clanName: clanMeta.name,
-      counts: { persons: people.length, families: fams.length },
-      warnings: {
-        ambiguousMothers: ambMothers,
-        missingGender: noGender,
-        note: "Người không có ngày mất được mặc định 'còn sống' — nên rà lại.",
-      },
-    });
+      const allIds: number[] = job.all_ids;
+      const slice = allIds.slice(job.scraped, job.scraped + BATCH);
+      const details = await pool(slice, CONCURRENCY, (id) =>
+        fetchText(`${BASE}/XemChiTietTungNguoi/${job.source_id}/${id}/giapha.html`).then((h) => ({ id, h })));
+      const people: PersonRec[] = [];
+      for (const { id, h } of details) { const r = parsePerson(id, h); if (r) people.push(r); }
+
+      const seq = Math.floor(job.scraped / BATCH);
+      await svc.from("giapha_import_chunks").upsert({ job_id: jobId, seq, people });
+      const scraped = Math.min(job.scraped + BATCH, job.total);
+      const status = scraped >= job.total ? "ready" : "scraping";
+      await svc.from("giapha_import_jobs")
+        .update({ scraped, status, updated_at: new Date().toISOString() }).eq("id", jobId);
+      return json({ jobId, total: job.total, scraped, status });
+    }
+
+    // ── finalize: assemble chunks → import in one txn ──
+    if (action === "finalize") {
+      const { jobId } = body;
+      if (!jobId) return err("Thiếu jobId", 400);
+      const { data: job } = await svc.from("giapha_import_jobs").select("*").eq("id", jobId).maybeSingle();
+      if (!job) return err("Job không tồn tại", 404);
+      if (job.status === "done") return json(job.result);
+      if (job.status !== "ready" && job.status !== "importing")
+        return err(`Job chưa tải xong (status=${job.status})`, 409);
+
+      await svc.from("giapha_import_jobs").update({ status: "importing" }).eq("id", jobId);
+      const { data: chunks } = await svc.from("giapha_import_chunks")
+        .select("seq, people").eq("job_id", jobId).order("seq");
+      const people: PersonRec[] = [];
+      for (const c of chunks ?? []) for (const p of c.people as PersonRec[]) people.push(p);
+      const fams = buildRelationships(people);
+      const { persons, families } = buildPayload(people, fams);
+
+      const { error: impErr } = await svc.rpc("admin_import_giapha", {
+        p_clan_id: job.clan_id, p_persons: persons, p_families: families,
+      });
+      if (impErr) {
+        await svc.from("giapha_import_jobs").update({ status: "error", error: impErr.message }).eq("id", jobId);
+        throw new Error(impErr.message);
+      }
+      const result = {
+        ok: true, clanId: job.clan_id,
+        counts: { persons: people.length, families: fams.length },
+        warnings: {
+          ambiguousMothers: people.filter((p) => p.motherAmbiguous).length,
+          missingGender: people.filter((p) => !p.gender).length,
+          note: "Người không có ngày mất được mặc định 'còn sống' — nên rà lại.",
+        },
+      };
+      await svc.from("giapha_import_jobs").update({ status: "done", result }).eq("id", jobId);
+      await svc.from("giapha_import_chunks").delete().eq("job_id", jobId);
+      return json(result);
+    }
+
+    return err("action không hợp lệ", 400);
   } catch (e) {
     return err(`Import lỗi: ${(e as Error).message}`, 500);
   }
