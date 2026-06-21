@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useUrlState } from "@/hooks/useUrlState";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
+import { listCemeteries } from "@/lib/queries/cemeteries";
 import {
   directionsUrl,
   listRestingPlaces,
@@ -34,6 +35,13 @@ export default function RestingPlaces() {
   const kind = (KINDS.includes(kindRaw as RestingPlaceKind) ? kindRaw : "") as
     | RestingPlaceKind
     | "";
+  const [cemeteryId, setCemeteryId] = useUrlState("cemetery", "");
+
+  const { data: cemeteries } = useQuery({
+    queryKey: ["cemeteries", clan.id, userId],
+    queryFn: () => listCemeteries(clan.id),
+    enabled: !!userId,
+  });
 
   useEffect(() => setSearch(debounced), []); // seed input from URL on mount
   useEffect(() => {
@@ -45,8 +53,13 @@ export default function RestingPlaces() {
   }, [search]);
 
   const { data: places, isLoading } = useQuery({
-    queryKey: ["resting-places", clan.id, userId, debounced, kind],
-    queryFn: () => listRestingPlaces(clan.id, { search: debounced, kind: kind || null }),
+    queryKey: ["resting-places", clan.id, userId, debounced, kind, cemeteryId],
+    queryFn: () =>
+      listRestingPlaces(clan.id, {
+        search: debounced,
+        kind: kind || null,
+        cemeteryId: cemeteryId || null,
+      }),
     enabled: !!userId,
   });
 
@@ -73,12 +86,19 @@ export default function RestingPlaces() {
         description="Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ."
         actionsBelow
         actions={
-          canEdit ? (
-            <Button size="sm" onClick={() => navigate(`/clans/${clan.id}/graves/new`)}>
-              <IconPlus className="h-4 w-4 mr-1" />
-              Thêm
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" asChild>
+              <Link to={`/clans/${clan.id}/graves/cemeteries`}>
+                <IconMapPin className="h-4 w-4 mr-1" /> Cơ sở
+              </Link>
             </Button>
-          ) : undefined
+            {canEdit && (
+              <Button size="sm" onClick={() => navigate(`/clans/${clan.id}/graves/new`)}>
+                <IconPlus className="h-4 w-4 mr-1" />
+                Thêm
+              </Button>
+            )}
+          </div>
         }
       />
 
@@ -104,6 +124,19 @@ export default function RestingPlaces() {
             </option>
           ))}
         </select>
+        {(cemeteries ?? []).length > 0 && (
+          <select
+            value={cemeteryId}
+            onChange={(e) => setCemeteryId(e.target.value)}
+            aria-label="Lọc theo cơ sở"
+            className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
+          >
+            <option value="">Mọi cơ sở</option>
+            {(cemeteries ?? []).map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
@@ -151,7 +184,11 @@ export default function RestingPlaces() {
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
                       {RESTING_PLACE_KIND_LABEL[p.kind]}
-                      {p.location_name ? ` · ${p.location_name}` : ""}
+                      {p.cemetery_name
+                        ? ` · ${p.cemetery_name}`
+                        : p.location_name
+                          ? ` · ${p.location_name}`
+                          : ""}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {p.occupant_count} người an nghỉ

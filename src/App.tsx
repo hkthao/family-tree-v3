@@ -41,6 +41,7 @@ import Merge from "@/pages/clan/Merge";
 import RestingPlaces from "@/pages/clan/RestingPlaces";
 import RestingPlaceDetail from "@/pages/clan/RestingPlaceDetail";
 import RestingPlaceForm from "@/pages/clan/RestingPlaceForm";
+import Cemeteries from "@/pages/clan/Cemeteries";
 import MyLineage from "@/pages/clan/MyLineage";
 import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
@@ -124,6 +125,7 @@ export default function App() {
           <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
           <Route path="graves" element={<RestingPlaces />} />
+          <Route path="graves/cemeteries" element={<Cemeteries />} />
           <Route path="graves/new" element={<RestingPlaceForm />} />
           <Route path="graves/:graveId" element={<RestingPlaceDetail />} />
           <Route path="graves/:graveId/edit" element={<RestingPlaceForm />} />

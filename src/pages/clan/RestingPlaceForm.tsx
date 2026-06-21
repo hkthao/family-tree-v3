@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { IconCheck, IconGrave, IconMapPin, IconX } from "@/components/icons";
@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
+import { listCemeteries } from "@/lib/queries/cemeteries";
 import {
   ADDRESS_PLACEHOLDER,
   addOccupant,
@@ -62,6 +63,7 @@ export default function RestingPlaceForm() {
   const [builtYear, setBuiltYear] = useState("");
   const [material, setMaterial] = useState("");
   const [notes, setNotes] = useState("");
+  const [cemeteryId, setCemeteryId] = useState("");
   const [occupants, setOccupants] = useState<StagedOccupant[]>([]);
   const [origOccupants, setOrigOccupants] = useState<StagedOccupant[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -88,6 +90,7 @@ export default function RestingPlaceForm() {
     setBuiltYear(existing.built_year != null ? String(existing.built_year) : "");
     setMaterial(existing.material ?? "");
     setNotes(existing.notes ?? "");
+    setCemeteryId(existing.cemetery_id ?? "");
     const occ = existing.occupants.map((o) => ({
       personId: o.person_id, name: o.full_name, gender: o.gender, occupantId: o.occupant_id,
     }));
@@ -100,6 +103,11 @@ export default function RestingPlaceForm() {
     queryFn: () => getKinshipIndex(clan.id),
     enabled: !!userId && pickerOpen,
     staleTime: 5 * 60_000,
+  });
+  const { data: cemeteries } = useQuery({
+    queryKey: ["cemeteries", clan.id, userId],
+    queryFn: () => listCemeteries(clan.id),
+    enabled: !!userId,
   });
   const candidates = useMemo(() => {
     if (!clanIndex) return [];
@@ -126,6 +134,7 @@ export default function RestingPlaceForm() {
         built_year: builtYear.trim() ? Math.floor(Number(builtYear)) : null,
         material: material.trim() || null,
         notes: notes.trim() || null,
+        cemetery_id: cemeteryId || null,
       };
       let id = graveId ?? "";
       if (isEdit) {
@@ -243,6 +252,28 @@ export default function RestingPlaceForm() {
         <div className="space-y-2">
           <Label htmlFor="address">Địa chỉ</Label>
           <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={ADDRESS_PLACEHOLDER} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="cemetery">Cơ sở / nghĩa trang (tuỳ chọn)</Label>
+          <select
+            id="cemetery"
+            value={cemeteryId}
+            onChange={(e) => setCemeteryId(e.target.value)}
+            className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">— Không gắn —</option>
+            {(cemeteries ?? []).map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">
+            Quản lý danh sách cơ sở ở{" "}
+            <Link to={`/clans/${clan.id}/graves/cemeteries`} className="text-primary hover:underline">
+              Cơ sở / nghĩa trang
+            </Link>
+            .
+          </p>
         </div>
 
         <div className="space-y-2">
