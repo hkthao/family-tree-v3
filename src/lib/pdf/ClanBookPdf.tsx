@@ -306,7 +306,7 @@ function VineBorder({
 interface Props {
   clan: ClanDetail;
   data: ClanBookData;
-  include?: { tree?: boolean; detail?: boolean };
+  include?: { tree?: boolean; detail?: boolean; restingPlaces?: boolean };
   /**
    * Optional personId → JPEG data URI map for embedding real avatar
    * photos. Persons not in the map fall back to the gendered
@@ -321,6 +321,20 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
 
   const showTree = include?.tree ?? true;
   const showDetail = include?.detail ?? true;
+  const showRestingPlaces = include?.restingPlaces ?? true;
+
+  const RP_KIND_LABEL: Record<string, string> = {
+    grave: "Mộ / chôn cất",
+    ashes_temple: "Gửi tro cốt ở chùa",
+    columbarium: "Nhà lưu tro / tháp cốt",
+    scattered: "Rải tro",
+    other: "Khác",
+  };
+  const RP_STATUS_LABEL: Record<string, string> = {
+    existing: "Hiện hữu",
+    relocated: "Đã cải táng",
+    lost: "Thất lạc",
+  };
 
   const { persons, families } = data;
   const branchById = new Map(data.branches.map((b) => [b.id, b.name]));
@@ -547,6 +561,47 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
               ))}
             </View>
           ))}
+        </Page>
+      )}
+
+      {/* ─── Mộ phần & tro cốt ──────────────────────────────── */}
+      {showRestingPlaces && data.restingPlaces.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <VineBorder />
+          <Text style={styles.h1}>Mộ phần &amp; tro cốt</Text>
+          <View style={styles.h1Underline} />
+          <Text style={styles.intro}>
+            Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ.
+          </Text>
+          {data.restingPlaces.map((rp) => {
+            const loc = [rp.location_name, rp.location_detail]
+              .filter(Boolean)
+              .join(" · ");
+            return (
+              <View key={rp.id} wrap={false} style={{ marginBottom: 9 }}>
+                <Text style={{ fontSize: 11, fontWeight: 700 }}>
+                  {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
+                </Text>
+                <Text style={{ fontSize: 9.5, color: "#6F665F" }}>
+                  {RP_KIND_LABEL[rp.kind]}
+                  {loc ? ` — ${loc}` : ""}
+                  {rp.status !== "existing"
+                    ? ` (${RP_STATUS_LABEL[rp.status]})`
+                    : ""}
+                </Text>
+                {rp.address ? (
+                  <Text style={{ fontSize: 9.5, color: "#6F665F" }}>
+                    {rp.address}
+                  </Text>
+                ) : null}
+                {rp.occupant_names.length > 0 ? (
+                  <Text style={{ fontSize: 9.5 }}>
+                    Người an nghỉ: {rp.occupant_names.join(", ")}
+                  </Text>
+                ) : null}
+              </View>
+            );
+          })}
         </Page>
       )}
     </Document>

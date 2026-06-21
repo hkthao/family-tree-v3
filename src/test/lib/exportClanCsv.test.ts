@@ -97,6 +97,7 @@ describe("buildClanCsv → planImport round-trip", () => {
       persons: [],
       families: [],
       branches: [],
+      restingPlaces: [],
       childToFamily: {},
     });
     expect(csv.split("\r\n")[0]).toBe(
@@ -139,6 +140,7 @@ describe("buildClanCsv → planImport round-trip", () => {
       ],
       families: [{ id: "f1", husband_id: "u-dad", wife_id: "u-mom" }],
       branches: [{ id: "br1", name: "Chi cả" }],
+      restingPlaces: [],
       childToFamily: { "u-kid": "f1" },
     };
 
@@ -176,6 +178,7 @@ describe("buildClanCsv → planImport round-trip", () => {
       ],
       families: [],
       branches: [],
+      restingPlaces: [],
       childToFamily: {},
     };
     const parsed = parseCsv(buildClanCsv(data));
@@ -193,6 +196,7 @@ describe("buildClanCsv → planImport round-trip", () => {
       ],
       families: [],
       branches: [],
+      restingPlaces: [],
       childToFamily: {},
     };
     const csv = buildClanCsv(data);
