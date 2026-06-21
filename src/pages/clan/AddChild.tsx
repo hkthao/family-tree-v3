@@ -39,6 +39,27 @@ import { matchesName } from "@/lib/unaccent";
 const PICKER_CAP = 1000;
 const SOLO_VALUE = "__solo__";
 
+// Thứ tự vợ/chồng → "cả, hai, ba…" (khớp thứ tự spouse_order do query
+// trả về). Quá 10 thì rơi về "thứ N".
+const SPOUSE_ORDINALS = [
+  "cả",
+  "hai",
+  "ba",
+  "tư",
+  "năm",
+  "sáu",
+  "bảy",
+  "tám",
+  "chín",
+  "mười",
+];
+
+function spouseRankLabel(spouseGender: "M" | "F", index: number): string {
+  const noun = spouseGender === "F" ? "vợ" : "chồng";
+  const ord = SPOUSE_ORDINALS[index] ?? `thứ ${index + 1}`;
+  return `${noun} ${ord}`;
+}
+
 interface AddChildFormProps {
   clanId: string;
   personId: string;
@@ -214,7 +235,7 @@ export function AddChildForm({
         </SegmentedButton>
       </SegmentedControl>
       <div className="space-y-2">
-        <Label htmlFor="other_parent">Người đồng-cha-mẹ</Label>
+        <Label htmlFor="other_parent">Con chung với ai?</Label>
         <select
           id="other_parent"
           value={otherParent}
@@ -227,9 +248,12 @@ export function AddChildForm({
           <option value={SOLO_VALUE}>
             Chưa rõ / đơn thân (chỉ {focal?.full_name ?? "người này"})
           </option>
-          {rels?.spouses.map((s) => (
+          {rels?.spouses.map((s, i) => (
             <option key={s.id} value={s.id}>
               {s.full_name}
+              {rels.spouses.length > 1
+                ? ` (${spouseRankLabel(s.gender, i)})`
+                : ""}
             </option>
           ))}
         </select>
@@ -248,7 +272,9 @@ export function AddChildForm({
             </Alert>
           )}
         <p className="text-sm text-muted-foreground">
-          Nếu cần một người chưa có trong cây, hãy thêm vợ/chồng trước.
+          Ví dụ: người chồng có 2 đời vợ — muốn nhập con của vợ hai thì
+          chọn đúng vợ hai ở trên. Nếu vợ/chồng đó chưa có trong cây,
+          hãy thêm bằng "Thêm vợ/chồng" trước.
         </p>
       </div>
 
