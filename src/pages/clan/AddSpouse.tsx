@@ -288,7 +288,11 @@ export function AddSpouseForm({
           )}
         </>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Nối một người đã có sẵn trong cây làm vợ/chồng (thay vì tạo mới) —
+            tránh trùng người.
+          </p>
           <Label>
             Tìm người đã có (khác giới với {focal?.full_name ?? "người gốc"})
           </Label>
