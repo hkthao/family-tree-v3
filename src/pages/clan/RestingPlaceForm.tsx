@@ -195,18 +195,28 @@ export default function RestingPlaceForm() {
         }}
         className="space-y-6"
       >
-        <div className="space-y-2">
-          <Label htmlFor="kind">Hình thức</Label>
-          <select
-            id="kind"
-            value={kind}
-            onChange={(e) => setKind(e.target.value as RestingPlaceKind)}
-            className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
-          >
-            {KINDS.map((k) => (
-              <option key={k} value={k}>{RESTING_PLACE_KIND_LABEL[k]}</option>
-            ))}
-          </select>
+        {/* Hình thức + Trạng thái — 2 trường ngắn, ghép 1 hàng */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="kind">Hình thức</Label>
+            <select
+              id="kind"
+              value={kind}
+              onChange={(e) => setKind(e.target.value as RestingPlaceKind)}
+              className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              {KINDS.map((k) => (
+                <option key={k} value={k}>{RESTING_PLACE_KIND_LABEL[k]}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Trạng thái</Label>
+            <select id="status" value={status} onChange={(e) => setStatus(e.target.value as RestingPlaceStatus)}
+              className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm">
+              {STATUSES.map((s) => <option key={s} value={s}>{RESTING_PLACE_STATUS_LABEL[s]}</option>)}
+            </select>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -215,17 +225,19 @@ export default function RestingPlaceForm() {
             placeholder="vd: Mộ cụ Tổ, Tháp họ Cao" maxLength={200} />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="loc-name">{labels.name}</Label>
-          <Input id="loc-name" value={locationName} onChange={(e) => setLocationName(e.target.value)} />
-        </div>
-
-        {labels.detail && (
+        {/* Nơi + vị trí chi tiết — ghép 1 hàng khi có cả hai */}
+        <div className={labels.detail ? "grid gap-4 sm:grid-cols-2" : "space-y-2"}>
           <div className="space-y-2">
-            <Label htmlFor="loc-detail">{labels.detail}</Label>
-            <Input id="loc-detail" value={locationDetail} onChange={(e) => setLocationDetail(e.target.value)} />
+            <Label htmlFor="loc-name">{labels.name}</Label>
+            <Input id="loc-name" value={locationName} onChange={(e) => setLocationName(e.target.value)} />
           </div>
-        )}
+          {labels.detail && (
+            <div className="space-y-2">
+              <Label htmlFor="loc-detail">{labels.detail}</Label>
+              <Input id="loc-detail" value={locationDetail} onChange={(e) => setLocationDetail(e.target.value)} />
+            </div>
+          )}
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="address">Địa chỉ</Label>
@@ -244,24 +256,21 @@ export default function RestingPlaceForm() {
           <p className="text-xs text-muted-foreground">Đứng tại nơi an nghỉ rồi bấm "Lấy vị trí hiện tại" để lưu toạ độ chỉ đường.</p>
         </div>
 
-        {kind === "grave" && (
-          <div className="space-y-2">
-            <Label htmlFor="orientation">Hướng mộ (tuỳ chọn)</Label>
-            <Input id="orientation" value={orientation} onChange={(e) => setOrientation(e.target.value)} placeholder="vd: hướng Đông Nam" />
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <select id="status" value={status} onChange={(e) => setStatus(e.target.value as RestingPlaceStatus)}
-              className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm">
-              {STATUSES.map((s) => <option key={s} value={s}>{RESTING_PLACE_STATUS_LABEL[s]}</option>)}
-            </select>
-          </div>
+        {/* Các trường ngắn còn lại — ghép lưới 2 cột */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          {kind === "grave" && (
+            <div className="space-y-2">
+              <Label htmlFor="orientation">Hướng mộ (tuỳ chọn)</Label>
+              <Input id="orientation" value={orientation} onChange={(e) => setOrientation(e.target.value)} placeholder="vd: hướng Đông Nam" />
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="year">Năm xây (tuỳ chọn)</Label>
             <Input id="year" inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)} placeholder="vd: 1990" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="material">Vật liệu (tuỳ chọn)</Label>
+            <Input id="material" value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="vd: đá granit, xi măng" />
           </div>
         </div>
 
