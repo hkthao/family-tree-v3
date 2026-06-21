@@ -51,7 +51,9 @@ export default function Board() {
     const params = new URLSearchParams(searchParams);
     if (next === 1) params.delete("page");
     else params.set("page", String(next));
-    setSearchParams(params);
+    // replace (not push) so paging doesn't stack history entries and
+    // Back from a post detail returns to the page you were on.
+    setSearchParams(params, { replace: true });
   }
 
   return (
