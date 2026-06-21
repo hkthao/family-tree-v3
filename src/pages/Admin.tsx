@@ -1046,17 +1046,6 @@ function FeedbackTab() {
     return rows;
   }, [data, search, statusFilter]);
 
-  if (isLoading) {
-    return <p className="text-muted-foreground">Đang tải…</p>;
-  }
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>{(error as Error).message}</AlertDescription>
-      </Alert>
-    );
-  }
-
   const counts = useMemo(() => {
     const c: Record<FeedbackStatus, number> = {
       new: 0,
@@ -1067,6 +1056,17 @@ function FeedbackTab() {
     for (const r of data ?? []) c[r.status]++;
     return c;
   }, [data]);
+
+  if (isLoading) {
+    return <p className="text-muted-foreground">Đang tải…</p>;
+  }
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{(error as Error).message}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <section className="space-y-4">
