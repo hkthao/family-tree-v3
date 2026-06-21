@@ -1,0 +1,263 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { useConfirm } from "@/components/ConfirmDialog";
+import {
+  IconGrave,
+  IconMapPin,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+  IconX,
+} from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
+import { PersonAvatar } from "@/components/PersonAvatar";
+import { useToast } from "@/components/Toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { getSignedPhotoUrlMap, uploadRestingPlacePhoto } from "@/lib/photoUpload";
+import {
+  addPhoto,
+  deleteRestingPlace,
+  directionsUrl,
+  getRestingPlace,
+  removePhoto,
+  RESTING_PLACE_KIND_LABEL,
+  RESTING_PLACE_STATUS_LABEL,
+} from "@/lib/queries/restingPlaces";
+
+export default function RestingPlaceDetail() {
+  const { clan } = useClanContext();
+  const { graveId } = useParams<{ graveId: string }>();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const askConfirm = useConfirm();
+  const canEdit = canEditClan(clan);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const { data: place, isLoading } = useQuery({
+    queryKey: ["resting-place", graveId, userId],
+    queryFn: () => getRestingPlace(graveId!),
+    enabled: !!graveId,
+  });
+
+  const { data: photoUrls } = useQuery({
+    queryKey: ["resting-place-photos", graveId, (place?.photos ?? []).map((p) => p.path).join(",")],
+    queryFn: () => getSignedPhotoUrlMap((place?.photos ?? []).map((p) => p.path)),
+    enabled: !!place && place.photos.length > 0,
+  });
+
+  const invalidate = () =>
+    qc.invalidateQueries({ queryKey: ["resting-place", graveId] });
+
+  const uploadM = useMutation({
+    mutationFn: async (file: File) => {
+      const sort = (place?.photos.length ?? 0);
+      const { path } = await uploadRestingPlacePhoto(clan.id, graveId!, file);
+      await addPhoto(graveId!, path, null, sort);
+    },
+    onSuccess: () => {
+      invalidate();
+      toast.success("Đã thêm ảnh");
+    },
+    onError: (e) => toast.error("Không thêm được ảnh", { description: (e as Error).message }),
+  });
+
+  const removePhotoM = useMutation({
+    mutationFn: ({ id, path }: { id: string; path: string }) => removePhoto(id, path),
+    onSuccess: invalidate,
+    onError: (e) => toast.error("Không xoá được ảnh", { description: (e as Error).message }),
+  });
+
+  const deleteM = useMutation({
+    mutationFn: () => deleteRestingPlace(graveId!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["resting-places", clan.id] });
+      toast.success("Đã xoá");
+      navigate(`/clans/${clan.id}/graves`);
+    },
+    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+  });
+
+  if (isLoading) return <p className="text-muted-foreground">Đang tải…</p>;
+  if (!place) return <p className="text-muted-foreground">Không tìm thấy.</p>;
+
+  const dir = directionsUrl(place.latitude, place.longitude);
+  const title = place.name || place.location_name || RESTING_PLACE_KIND_LABEL[place.kind];
+
+  return (
+    <div className="space-y-3">
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Mộ phần & tro cốt", to: `/clans/${clan.id}/graves` },
+          { label: title },
+        ]}
+      />
+      <PageHeader
+        icon={<IconGrave className="h-7 w-7" />}
+        title={title}
+        description={RESTING_PLACE_KIND_LABEL[place.kind]}
+        actionsBelow
+        actions={
+          canEdit ? (
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" asChild>
+                <Link to={`/clans/${clan.id}/graves/${place.id}/edit`}>
+                  <IconPencil className="h-4 w-4 mr-1" /> Sửa
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  askConfirm({
+                    title: "Xoá nơi an nghỉ này?",
+                    description: "Xoá bản ghi mộ phần / tro cốt (không xoá hồ sơ người).",
+                    confirmLabel: "Xoá",
+                    destructive: true,
+                  }).then((ok) => ok && deleteM.mutate())
+                }
+              >
+                <IconTrash className="h-4 w-4 mr-1" /> Xoá
+              </Button>
+            </div>
+          ) : undefined
+        }
+      />
+
+      {/* Photos */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Hình ảnh</CardTitle>
+          {canEdit && (
+            <>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadM.mutate(f);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={uploadM.isPending}
+                onClick={() => fileRef.current?.click()}
+              >
+                <IconPlus className="h-4 w-4 mr-1" />
+                {uploadM.isPending ? "Đang tải…" : "Thêm ảnh"}
+              </Button>
+            </>
+          )}
+        </CardHeader>
+        <CardContent>
+          {place.photos.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Chưa có ảnh.</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {place.photos.map((ph) => (
+                <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md bg-muted">
+                  {photoUrls?.get(ph.path) ? (
+                    <img src={photoUrls.get(ph.path)} alt={ph.caption ?? ""} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full grid place-items-center">
+                      <IconGrave className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => removePhotoM.mutate({ id: ph.id, path: ph.path })}
+                      className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background"
+                      aria-label="Xoá ảnh"
+                    >
+                      <IconX className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Thông tin */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Thông tin</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <Row label="Hình thức" value={RESTING_PLACE_KIND_LABEL[place.kind]} />
+          <Row label="Nơi" value={place.location_name} />
+          <Row label="Vị trí chi tiết" value={place.location_detail} />
+          <Row label="Địa chỉ" value={place.address} />
+          {place.orientation && <Row label="Hướng" value={place.orientation} />}
+          <Row label="Trạng thái" value={RESTING_PLACE_STATUS_LABEL[place.status]} />
+          {place.built_year && <Row label="Năm xây" value={String(place.built_year)} />}
+          {place.material && <Row label="Vật liệu" value={place.material} />}
+          {place.notes && <Row label="Ghi chú" value={place.notes} />}
+          {dir && (
+            <div className="pt-1">
+              <Button size="sm" variant="outline" asChild>
+                <a href={dir} target="_blank" rel="noopener noreferrer">
+                  <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
+                </a>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Người an nghỉ */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Người an nghỉ ({place.occupants.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {place.occupants.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Chưa gắn người nào. Bấm Sửa để thêm.</p>
+          ) : (
+            <ul className="space-y-1.5">
+              {place.occupants.map((o) => (
+                <li key={o.occupant_id}>
+                  <Link
+                    to={`/clans/${clan.id}/people/${o.person_id}`}
+                    className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
+                  >
+                    <PersonAvatar gender={o.gender} photoUrl={null} size={36} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{o.full_name}</p>
+                      {o.note && <p className="text-xs text-muted-foreground truncate">{o.note}</p>}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex gap-3">
+      <span className="w-32 shrink-0 text-muted-foreground">{label}</span>
+      <span className="min-w-0 flex-1 break-words">{value}</span>
+    </div>
+  );
+}
