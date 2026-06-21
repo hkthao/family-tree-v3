@@ -357,6 +357,57 @@ Deno.serve(async (req) => {
     };
   });
 
+  // ---- 7. Resting places (mộ phần & tro cốt) — single_person only ----
+  // Mirrors burial_place: only ride along on the detailed single-person
+  // card, not the generic tree payload.
+  // deno-lint-ignore no-explicit-any
+  let restingPlaces: any[] = [];
+  if (includeExtras) {
+    const deceasedIds = scopedPersons.filter((p) => !p.is_living).map((p) => p.id);
+    if (deceasedIds.length > 0) {
+      const { data: occ } = await sb
+        .from("resting_place_occupants")
+        .select(
+          "person_id, resting_place:resting_places(id, kind, name, location_name, location_detail, address, latitude, longitude, status, deleted_at, resting_place_photos(path, sort))",
+        )
+        .in("person_id", deceasedIds);
+      // deno-lint-ignore no-explicit-any
+      const byId = new Map<string, any>();
+      const photoPaths = new Set<string>();
+      for (const o of occ ?? []) {
+        // deno-lint-ignore no-explicit-any
+        const rp = (o as any).resting_place;
+        if (!rp || rp.deleted_at) continue;
+        if (!byId.has(rp.id)) {
+          byId.set(rp.id, { ...rp, person_ids: [] as string[] });
+          for (const ph of rp.resting_place_photos ?? []) photoPaths.add(ph.path);
+        }
+        byId.get(rp.id).person_ids.push((o as { person_id: string }).person_id);
+      }
+      const signedMap = new Map<string, string>();
+      if (photoPaths.size > 0) {
+        const { data: signed } = await sb.storage
+          .from("person-photos")
+          .createSignedUrls([...photoPaths], 3600);
+        for (const row of signed ?? []) {
+          if (row.signedUrl && row.path) signedMap.set(row.path, stripOrigin(row.signedUrl));
+        }
+      }
+      restingPlaces = [...byId.values()].map((rp) => {
+        const photos = [...(rp.resting_place_photos ?? [])].sort(
+          (a: { sort: number }, b: { sort: number }) => a.sort - b.sort,
+        );
+        const { resting_place_photos: _p, deleted_at: _d, ...rest } = rp;
+        return {
+          ...rest,
+          photo_urls: photos
+            .map((ph: { path: string }) => signedMap.get(ph.path))
+            .filter((u: string | undefined): u is string => !!u),
+        };
+      });
+    }
+  }
+
   return json({
     clan_id: link.clan_id,
     root_person_id: link.root_person_id,
@@ -364,5 +415,6 @@ Deno.serve(async (req) => {
     generation_offset: generationOffset,
     persons: masked,
     families: scopedFamilies,
+    resting_places: restingPlaces,
   });
 });

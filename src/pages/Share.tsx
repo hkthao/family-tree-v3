@@ -305,6 +305,7 @@ export default function Share() {
               genOffset={data.generation_offset ?? 0}
               clanId={data.clan_id}
               shareToken={token}
+              restingPlaces={data.resting_places}
             />
           ) : (
             <p className="p-8 text-center text-muted-foreground">
