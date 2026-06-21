@@ -39,6 +39,9 @@ import {
   RESTING_PLACE_STATUS_LABEL,
 } from "@/lib/queries/restingPlaces";
 
+// Giới hạn ảnh / nơi an nghỉ — chặn phình dung lượng storage Supabase.
+const MAX_GRAVE_PHOTOS = 12;
+
 export default function RestingPlaceDetail() {
   const { clan } = useClanContext();
   const { graveId } = useParams<{ graveId: string }>();
@@ -68,7 +71,8 @@ export default function RestingPlaceDetail() {
 
   const uploadM = useMutation({
     mutationFn: async (file: File) => {
-      const sort = (place?.photos.length ?? 0);
+      const sort = place?.photos.length ?? 0;
+      if (sort >= MAX_GRAVE_PHOTOS) throw new Error(`Tối đa ${MAX_GRAVE_PHOTOS} ảnh mỗi nơi an nghỉ.`);
       const { path } = await uploadRestingPlacePhoto(clan.id, graveId!, file);
       await addPhoto(graveId!, path, null, sort);
     },
@@ -227,7 +231,7 @@ export default function RestingPlaceDetail() {
       {/* Photos */}
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Hình ảnh</CardTitle>
+          <CardTitle>Hình ảnh{place.photos.length > 0 ? ` (${place.photos.length}/${MAX_GRAVE_PHOTOS})` : ""}</CardTitle>
           {canEdit && (
             <>
               <input
@@ -244,8 +248,9 @@ export default function RestingPlaceDetail() {
               <Button
                 size="sm"
                 variant="outline"
-                disabled={uploadM.isPending}
+                disabled={uploadM.isPending || place.photos.length >= MAX_GRAVE_PHOTOS}
                 onClick={() => fileRef.current?.click()}
+                title={place.photos.length >= MAX_GRAVE_PHOTOS ? `Tối đa ${MAX_GRAVE_PHOTOS} ảnh` : undefined}
               >
                 <IconPlus className="h-4 w-4 mr-1" />
                 {uploadM.isPending ? "Đang tải…" : "Thêm ảnh"}
