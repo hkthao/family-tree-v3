@@ -201,7 +201,7 @@ export default function RestingPlaceForm() {
             id="kind"
             value={kind}
             onChange={(e) => setKind(e.target.value as RestingPlaceKind)}
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             {KINDS.map((k) => (
               <option key={k} value={k}>{RESTING_PLACE_KIND_LABEL[k]}</option>
@@ -237,7 +237,7 @@ export default function RestingPlaceForm() {
           <div className="flex flex-wrap items-center gap-2">
             <Input className="w-32" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="vĩ độ" />
             <Input className="w-32" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="kinh độ" />
-            <Button type="button" size="sm" variant="outline" onClick={useCurrentLocation}>
+            <Button type="button" variant="outline" onClick={useCurrentLocation}>
               <IconMapPin className="h-4 w-4 mr-1" /> Lấy vị trí hiện tại
             </Button>
           </div>
@@ -255,7 +255,7 @@ export default function RestingPlaceForm() {
           <div className="space-y-2">
             <Label htmlFor="status">Trạng thái</Label>
             <select id="status" value={status} onChange={(e) => setStatus(e.target.value as RestingPlaceStatus)}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+              className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm">
               {STATUSES.map((s) => <option key={s} value={s}>{RESTING_PLACE_STATUS_LABEL[s]}</option>)}
             </select>
           </div>
@@ -273,7 +273,7 @@ export default function RestingPlaceForm() {
 
         {/* Người an nghỉ */}
         <div className="space-y-2">
-          <Label>Người an nghỉ tại đây</Label>
+          <Label className="block">Người an nghỉ tại đây</Label>
           {occupants.length > 0 && (
             <ul className="space-y-1.5">
               {occupants.map((o) => (
