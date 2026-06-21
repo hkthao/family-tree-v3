@@ -20,8 +20,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
+  buildDeathAnniversary,
   buildPersonDateColumns,
   EMPTY_CALENDAR_DATE,
+  EMPTY_LUNAR_CALENDAR_DATE,
   type CalendarDateValue,
 } from "@/lib/personDates";
 import {
@@ -74,6 +76,9 @@ export function AddSpouseForm({
   // every render.
   const [genderTouched, setGenderTouched] = useState(false);
   const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
+  const [death, setDeath] = useState<CalendarDateValue>(
+    EMPTY_LUNAR_CALENDAR_DATE,
+  );
   const [isLiving, setIsLiving] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -115,6 +120,8 @@ export function AddSpouseForm({
       }
 
       const birthCols = buildPersonDateColumns(birth);
+      const deathCols = buildPersonDateColumns(death);
+      const anniv = buildDeathAnniversary(death);
       const spouse = await createPerson({
         clan_id: clanId,
         full_name: fullName.trim(),
@@ -126,6 +133,15 @@ export function AddSpouseForm({
         birth_lunar_month: birthCols.lunar_month,
         birth_lunar_day: birthCols.lunar_day,
         birth_lunar_is_leap: birthCols.lunar_is_leap,
+        death_date: deathCols.solar_date,
+        death_date_precision: deathCols.solar_precision,
+        death_lunar_year: deathCols.lunar_year,
+        death_lunar_month: deathCols.lunar_month,
+        death_lunar_day: deathCols.lunar_day,
+        death_lunar_is_leap: deathCols.lunar_is_leap,
+        death_anniv_lunar_month: anniv.death_anniv_lunar_month,
+        death_anniv_lunar_day: anniv.death_anniv_lunar_day,
+        death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
       });
       await findOrCreateFamily({
         clanId,
@@ -159,6 +175,7 @@ export function AddSpouseForm({
           if (!fullName.trim()) return;
           try {
             buildPersonDateColumns(birth);
+            buildPersonDateColumns(death);
           } catch (err) {
             setFormError((err as Error).message);
             return;
@@ -246,11 +263,29 @@ export function AddSpouseForm({
             <input
               type="checkbox"
               checked={!isLiving}
-              onChange={(e) => setIsLiving(!e.target.checked)}
+              onChange={(e) => {
+                const deceased = e.target.checked;
+                setIsLiving(!deceased);
+                if (!deceased) setDeath(EMPTY_LUNAR_CALENDAR_DATE);
+              }}
               className="h-5 w-5 accent-primary shrink-0"
             />
             <span>Đã mất</span>
           </label>
+
+          {!isLiving && (
+            <CalendarDateInput
+              label="Ngày mất (nếu đã mất)"
+              idPrefix="death"
+              value={death}
+              onChange={(next) => {
+                setDeath(next);
+                if (next.parts.year || next.parts.month || next.parts.day)
+                  setIsLiving(false);
+              }}
+              helperText="Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+            />
+          )}
         </>
       ) : (
         <div className="space-y-3">
