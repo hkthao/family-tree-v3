@@ -28,8 +28,14 @@ function p(
   };
 }
 
-function f(id: string, h: string | null, w: string | null): FamilyForTree {
-  return { id, husband_id: h, wife_id: w };
+function f(
+  id: string,
+  h: string | null,
+  w: string | null,
+  spouse_order: number | null = null,
+  created_at: string | null = null,
+): FamilyForTree {
+  return { id, husband_id: h, wife_id: w, spouse_order, created_at };
 }
 
 describe("familyChartAdapter.toFamilyChart", () => {
@@ -190,6 +196,8 @@ describe("familyChartAdapter.toFamilyChart — performance", () => {
             id: newFamId,
             husband_id: childGender === "M" ? childId : spouseId,
             wife_id: childGender === "F" ? childId : spouseId,
+            spouse_order: null,
+            created_at: null,
           });
           newFamilies.push(newFamId);
         }

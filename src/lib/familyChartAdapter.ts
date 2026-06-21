@@ -1,3 +1,4 @@
+import { compareBySpouseOrder } from "@/lib/queries/families";
 import type { InlawGhostSpouse } from "@/lib/queries/person-links";
 import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
 
@@ -85,7 +86,9 @@ export function toFamilyChart(
   // (reading 'id')" when it tries to render the missing partner.
   const livePersonIds = new Set(persons.map((p) => p.id));
 
-  // For each person, find the families they belong to as a partner.
+  // For each person, find the families they belong to as a partner,
+  // ordered by spouse_order (vợ cả/hai/ba) then created_at so the tree
+  // lists spouses the same way PersonDetail does.
   const familiesOf = new Map<string, FamilyForTree[]>();
   for (const f of families) {
     for (const pid of [f.husband_id, f.wife_id]) {
@@ -94,6 +97,9 @@ export function toFamilyChart(
       arr.push(f);
       familiesOf.set(pid, arr);
     }
+  }
+  for (const arr of familiesOf.values()) {
+    arr.sort(compareBySpouseOrder);
   }
 
   // Children index: family_id → list of child person ids, sorted by

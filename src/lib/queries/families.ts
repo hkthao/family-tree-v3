@@ -35,6 +35,27 @@ const PERSON_BRIEF =
   "id, full_name, gender, is_living, birth_date, death_date";
 
 /**
+ * Order a person's marriages by explicit rank (vợ cả/hai/ba) then by
+ * creation time. NULL `spouse_order` sorts last so unranked marriages
+ * keep their old creation order behind the ranked ones. Shared by the
+ * relationship query and the family-chart adapter so PersonDetail and
+ * the tree agree on spouse order.
+ */
+export function compareBySpouseOrder(
+  a: { spouse_order: number | null; created_at: string | null },
+  b: { spouse_order: number | null; created_at: string | null },
+): number {
+  const oa = a.spouse_order;
+  const ob = b.spouse_order;
+  if (oa != null && ob != null && oa !== ob) return oa - ob;
+  if (oa != null && ob == null) return -1;
+  if (oa == null && ob != null) return 1;
+  const ca = a.created_at ?? "";
+  const cb = b.created_at ?? "";
+  return ca < cb ? -1 : ca > cb ? 1 : 0;
+}
+
+/**
  * Fetches parents / spouses / children for a person.
  *
  * `source` lets non-members of public clans read through the masked
@@ -106,18 +127,21 @@ export async function getPersonRelationships(
     }
   }
 
-  // 3. Spouses: families where person is husband_id or wife_id
+  // 3. Spouses: families where person is husband_id or wife_id,
+  // ordered by spouse_order (vợ cả/hai/ba) then created_at.
   const ownFamRes = useSafe
     ? await client
         .from("families_public_safe")
-        .select("id, husband_id, wife_id")
+        .select("id, husband_id, wife_id, spouse_order, created_at")
         .or(`husband_id.eq.${personId},wife_id.eq.${personId}`)
     : await client
         .from("families")
-        .select("id, husband_id, wife_id")
+        .select("id, husband_id, wife_id, spouse_order, created_at")
         .or(`husband_id.eq.${personId},wife_id.eq.${personId}`)
         .is("deleted_at", null);
-  const ownFamilies = ownFamRes.data;
+  const ownFamilies = (ownFamRes.data ?? [])
+    .slice()
+    .sort(compareBySpouseOrder);
 
   const familyIds = (ownFamilies ?? []).map((f) => f.id);
   const spousePersonIds = (ownFamilies ?? [])
@@ -344,4 +368,28 @@ export async function assignExistingParent(
   });
   if (error) throw new Error(error.message);
   return data as string;
+}
+
+/**
+ * Persist the order of a person's marriages. `orderedFamilyIds` is the
+ * full spouse list in the desired order (vợ cả first); each family's
+ * `spouse_order` is rewritten to its 1-based position so the ranking
+ * is dense and unambiguous. Updates run in parallel — the rank lives
+ * on the marriage row, so writing it doesn't depend on which partner
+ * triggered the reorder.
+ */
+export async function reorderSpouseFamilies(
+  orderedFamilyIds: string[],
+  client: Client = defaultClient,
+): Promise<void> {
+  const results = await Promise.all(
+    orderedFamilyIds.map((id, i) =>
+      client
+        .from("families")
+        .update({ spouse_order: i + 1 })
+        .eq("id", id),
+    ),
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
 }
