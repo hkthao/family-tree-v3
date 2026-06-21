@@ -45,33 +45,59 @@ export const EMPTY_CALENDAR_DATE: CalendarDateValue = {
 };
 
 /**
+ * Empty value that opens on the lunar tab. Used for the death date,
+ * where the giỗ is recorded in âm lịch by convention.
+ */
+export const EMPTY_LUNAR_CALENDAR_DATE: CalendarDateValue = {
+  mode: "lunar",
+  parts: { year: "", month: "", day: "" },
+  isLeap: false,
+};
+
+/**
  * Build the form-state value from existing DB columns. Pick the mode
  * the row was most likely captured in: if the solar date is missing
  * but lunar is filled, start in lunar mode so the user sees what was
  * imported (e.g. from a tombstone via Excel/GEDCOM). Otherwise solar.
+ *
+ * `preferLunarWhenEmpty` biases an *empty* field toward the lunar tab —
+ * used for the death date, where the gia phả convention is to record
+ * the giỗ in âm lịch (often just tháng/ngày, no year).
  */
-export function loadCalendarDateValue(input: {
-  solarDate: string | null;
-  solarPrecision: DatePrecision | null;
-  lunarYear: number | null;
-  lunarMonth: number | null;
-  lunarDay: number | null;
-  lunarIsLeap?: boolean | null;
-}): CalendarDateValue {
+export function loadCalendarDateValue(
+  input: {
+    solarDate: string | null;
+    solarPrecision: DatePrecision | null;
+    lunarYear: number | null;
+    lunarMonth: number | null;
+    lunarDay: number | null;
+    lunarIsLeap?: boolean | null;
+  },
+  preferLunarWhenEmpty = false,
+): CalendarDateValue {
   const hasSolar = !!(input.solarDate && input.solarPrecision);
-  // Lunar-only entry needs at minimum a year; month + day are
-  // optional now (partial lunar dates are supported).
-  const hasLunar = !!input.lunarYear;
+  // Lunar entry can be just the year, just tháng/ngày (a giỗ with no
+  // year), or any partial — treat any structured lunar field as "this
+  // row was captured in âm lịch".
+  const hasLunar = !!(input.lunarYear || input.lunarMonth || input.lunarDay);
 
   if (!hasSolar && hasLunar) {
     return {
       mode: "lunar",
       parts: {
-        year: String(input.lunarYear),
+        year: input.lunarYear != null ? String(input.lunarYear) : "",
         month: input.lunarMonth != null ? String(input.lunarMonth) : "",
         day: input.lunarDay != null ? String(input.lunarDay) : "",
       },
       isLeap: !!input.lunarIsLeap,
+    };
+  }
+
+  if (!hasSolar && !hasLunar && preferLunarWhenEmpty) {
+    return {
+      mode: "lunar",
+      parts: { year: "", month: "", day: "" },
+      isLeap: false,
     };
   }
 
@@ -153,22 +179,24 @@ export function buildPersonDateColumns(
     };
   }
 
-  // mode === "lunar" — full ymd preferred (lets us also derive a
-  // solar_date), but partials are accepted now (user feedback: many
-  // legacy entries only know the lunar year, sometimes year+month).
-  // When partial, solar_date stays null; the structured lunar_year /
-  // lunar_month columns still carry the info.
+  // mode === "lunar" — every field is optional. The year is NOT
+  // required: the gia phả convention is that ancestors many đời back
+  // were handed down only a giỗ (tháng + ngày âm), no year (user
+  // feedback). So we accept tháng/ngày alone and store it in the
+  // structured lunar_month / lunar_day columns; solar_date stays null
+  // because a lunar→solar conversion needs the year. A full ymd
+  // (incl. year) additionally derives solar_date for sort/reminders.
   const yRaw = value.parts.year.trim();
   const mRaw = value.parts.month.trim();
   const dRaw = value.parts.day.trim();
-  if (!yRaw) {
-    throw new Error(
-      "Nhập ngày âm cần ít nhất là năm âm lịch.",
-    );
-  }
-  const lunarYear = Number(yRaw);
-  if (!Number.isInteger(lunarYear) || lunarYear < 1 || lunarYear > 9999) {
-    throw new Error("Năm âm không hợp lệ.");
+
+  let lunarYear: number | null = null;
+  if (yRaw) {
+    const y = Number(yRaw);
+    if (!Number.isInteger(y) || y < 1 || y > 9999) {
+      throw new Error("Năm âm không hợp lệ.");
+    }
+    lunarYear = y;
   }
   let lunarMonth: number | null = null;
   let lunarDay: number | null = null;
@@ -192,44 +220,41 @@ export function buildPersonDateColumns(
     lunarDay = d;
   }
 
-  // Partial input — store the year (and optional month) only,
-  // leaving solar_date null.
-  if (lunarDay === null) {
+  const isLeap = !!(value.isLeap && lunarMonth);
+
+  // Full ymd → also derive a solar_date (enables sort + event
+  // reminders). Anything less stays lunar-only.
+  if (lunarYear !== null && lunarMonth !== null && lunarDay !== null) {
+    const lunarValue: LunarYMD = {
+      year: lunarYear,
+      month: lunarMonth,
+      day: lunarDay,
+      isLeap,
+    };
+    const solarString = lunarToSolarString(lunarValue);
+    if (!solarString) {
+      throw new Error(
+        "Ngày âm này không quy đổi ra được dương lịch — kiểm tra lại tháng nhuận / ngày trong tháng.",
+      );
+    }
     return {
-      ...empty,
+      solar_date: solarString,
+      solar_precision: "day",
       lunar_year: lunarYear,
       lunar_month: lunarMonth,
-      lunar_day: null,
-      lunar_is_leap: !!(value.isLeap && lunarMonth),
+      lunar_day: lunarDay,
+      lunar_is_leap: isLeap,
     };
   }
-  // Past this point lunarDay and lunarMonth are both non-null
-  // (the !mRaw + dRaw guard above ensured month is set whenever
-  // day is set). Re-affirm for the type narrowing.
-  if (lunarMonth === null) {
-    throw new Error("Thiếu tháng âm.");
-  }
 
-  const lunarValue: LunarYMD = {
-    year: lunarYear,
-    month: lunarMonth,
-    day: lunarDay,
-    isLeap: value.isLeap,
-  };
-  const solarString = lunarToSolarString(lunarValue);
-  if (!solarString) {
-    throw new Error(
-      "Ngày âm này không quy đổi ra được dương lịch — kiểm tra lại tháng nhuận / ngày trong tháng.",
-    );
-  }
-
+  // Partial input (missing year and/or day) — store the structured
+  // lunar fields only, solar_date null.
   return {
-    solar_date: solarString,
-    solar_precision: "day",
+    ...empty,
     lunar_year: lunarYear,
     lunar_month: lunarMonth,
     lunar_day: lunarDay,
-    lunar_is_leap: value.isLeap,
+    lunar_is_leap: isLeap,
   };
 }
 
