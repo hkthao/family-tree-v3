@@ -47,7 +47,12 @@ import {
   listAnniversaryCandidates,
   listEvents,
   type EventRow,
+  type EventType,
 } from "@/lib/queries/events";
+import {
+  listRestingPlaces,
+  RESTING_PLACE_KIND_LABEL,
+} from "@/lib/queries/restingPlaces";
 import { downloadClanIcs, type IcsPerson } from "@/lib/icalExport";
 import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
@@ -397,6 +402,8 @@ function AddEventForm({
 }) {
   const toast = useToast();
   const [title, setTitle] = useState("");
+  const [eventType, setEventType] = useState<EventType>("custom");
+  const [restingPlaceId, setRestingPlaceId] = useState("");
   const [calendar, setCalendar] = useState<"solar" | "lunar">("solar");
   const [dateSolar, setDateSolar] = useState("");
   const [lunarMonth, setLunarMonth] = useState("");
@@ -404,22 +411,29 @@ function AddEventForm({
   const [isYearly, setIsYearly] = useState(true);
   const [open, setOpen] = useState(false);
 
+  const { data: places } = useQuery({
+    queryKey: ["resting-places", clanId, "mini"],
+    queryFn: () => listRestingPlaces(clanId),
+    enabled: open && eventType === "tomb_visit",
+  });
+
   const m = useMutation({
     mutationFn: () => {
-      if (calendar === "solar") {
-        return createEvent({
-          clan_id: clanId,
-          title: title.trim(),
-          date_solar: dateSolar,
-          is_yearly: isYearly,
-        });
-      }
-      return createEvent({
+      const common = {
         clan_id: clanId,
         title: title.trim(),
+        event_type: eventType,
+        resting_place_id:
+          eventType === "tomb_visit" && restingPlaceId ? restingPlaceId : null,
+        is_yearly: isYearly,
+      };
+      if (calendar === "solar") {
+        return createEvent({ ...common, date_solar: dateSolar });
+      }
+      return createEvent({
+        ...common,
         lunar_month: Number(lunarMonth),
         lunar_day: Number(lunarDay),
-        is_yearly: isYearly,
       });
     },
     onSuccess: () => {
@@ -467,10 +481,44 @@ function AddEventForm({
           id="evt-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Họp họ, kỷ niệm…"
+          placeholder="Họp họ, tảo mộ, chạp họ, kỷ niệm…"
           maxLength={150}
         />
       </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="evt-type">Loại</Label>
+        <select
+          id="evt-type"
+          value={eventType}
+          onChange={(e) => setEventType(e.target.value as EventType)}
+          className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
+        >
+          <option value="custom">Tuỳ chỉnh</option>
+          <option value="reunion">Họp họ</option>
+          <option value="memorial">Giỗ chung</option>
+          <option value="tomb_visit">Tảo mộ / Chạp họ</option>
+        </select>
+      </div>
+
+      {eventType === "tomb_visit" && (
+        <div className="space-y-2">
+          <Label htmlFor="evt-grave">Gắn nơi an nghỉ (tuỳ chọn)</Label>
+          <select
+            id="evt-grave"
+            value={restingPlaceId}
+            onChange={(e) => setRestingPlaceId(e.target.value)}
+            className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">— Không gắn —</option>
+            {(places ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name || p.location_name || RESTING_PLACE_KIND_LABEL[p.kind]}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <fieldset className="flex gap-4">
         <label className="flex items-center gap-2 cursor-pointer text-sm">

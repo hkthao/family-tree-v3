@@ -34,6 +34,7 @@ function ev(over: Partial<EventRow> & Pick<EventRow, "id" | "title">): EventRow 
     lunar_is_leap: false,
     is_yearly: true,
     related_person_id: null,
+    resting_place_id: null,
     notes: null,
     created_at: "2024-01-01T00:00:00Z",
     ...over,

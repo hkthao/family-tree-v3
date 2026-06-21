@@ -66,6 +66,7 @@ const KIND_TO_EVENT_TYPE: Record<UpcomingEvent["kind"], SubEventType> = {
   birthday: "birthday",
   anniversary: "death_anniversary",
   custom: "custom",
+  tomb_visit: "tomb_visit",
 };
 
 function daysBetween(fromIso: string, toIso: string): number {

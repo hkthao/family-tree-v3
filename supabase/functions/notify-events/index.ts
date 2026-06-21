@@ -64,8 +64,8 @@ function json(body: unknown, init: ResponseInit = {}): Response {
 // ─── Shared matcher inlined (Edge runtime can't import from src/) ──
 
 type SubChannel = "email" | "sms";
-type SubEventType = "birthday" | "death_anniversary" | "custom";
-type UpcomingKind = "birthday" | "anniversary" | "custom";
+type SubEventType = "birthday" | "death_anniversary" | "custom" | "tomb_visit";
+type UpcomingKind = "birthday" | "anniversary" | "custom" | "tomb_visit";
 
 interface SubscriptionLite {
   id: string;
@@ -105,6 +105,7 @@ const KIND_TO_EVENT_TYPE: Record<UpcomingKind, SubEventType> = {
   birthday: "birthday",
   anniversary: "death_anniversary",
   custom: "custom",
+  tomb_visit: "tomb_visit",
 };
 
 function daysBetween(fromIso: string, toIso: string): number {
@@ -227,7 +228,9 @@ function emailHtml(item: FireItem, clanName: string): string {
       ? "Sinh nhật"
       : item.kind === "anniversary"
         ? "Ngày giỗ"
-        : "Sự kiện";
+        : item.kind === "tomb_visit"
+          ? "Tảo mộ / Chạp họ"
+          : "Sự kiện";
   return `<!doctype html>
 <html lang="vi"><head><meta charset="utf-8"/></head>
 <body style="font-family: -apple-system, Segoe UI, sans-serif; background:#FBF7F0; padding:24px; color:#1F1A17;">
@@ -424,8 +427,16 @@ Deno.serve(async (req) => {
     }
   }
 
-  // Custom events from the events table
+  // Custom + tảo-mộ/chạp-họ events from the events table. tomb_visit
+  // events get their own kind so reminders are labelled "Tảo mộ / Chạp
+  // họ" and followed as a separate subscription type.
   for (const ev of events) {
+    const evKind: UpcomingKind =
+      ev.event_type === "tomb_visit" ? "tomb_visit" : "custom";
+    const branchId = ev.related_person_id
+      ? (personBranch.get(ev.related_person_id as string) ?? null)
+      : null;
+    // Solar
     if (ev.date_solar) {
       const iso = ev.is_yearly
         ? nextOccurrenceOfMonthDay(
@@ -438,15 +449,43 @@ Deno.serve(async (req) => {
       const days = daysBetween(today, iso);
       if (days < 0 || days > lookaheadDays) continue;
       upcoming.push({
-        key: `custom:${ev.id}:${iso}`,
-        kind: "custom",
+        key: `${evKind}:${ev.id}:${iso}`,
+        kind: evKind,
         title: ev.title,
         date: iso,
         personId: ev.related_person_id ?? undefined,
-        branchId: ev.related_person_id
-          ? (personBranch.get(ev.related_person_id as string) ?? null)
-          : null,
+        branchId,
       });
+      continue;
+    }
+    // Lunar (e.g. chạp họ mùng 10 tháng Chạp). Falls in this or next
+    // calendar year depending on Tết — try both, keep first in range.
+    if (ev.lunar_month && ev.lunar_day) {
+      const candidateYears = ev.is_yearly
+        ? [todayDate.getUTCFullYear(), todayDate.getUTCFullYear() + 1]
+        : ev.lunar_year
+          ? [ev.lunar_year]
+          : [];
+      for (const yr of candidateYears) {
+        const iso = lunarAnniversaryInSolarYear(
+          ev.lunar_month,
+          ev.lunar_day,
+          !!ev.lunar_is_leap,
+          yr,
+        );
+        if (!iso) continue;
+        const days = daysBetween(today, iso);
+        if (days < 0 || days > lookaheadDays) continue;
+        upcoming.push({
+          key: `${evKind}:${ev.id}:${iso}`,
+          kind: evKind,
+          title: ev.title,
+          date: iso,
+          personId: ev.related_person_id ?? undefined,
+          branchId,
+        });
+        break;
+      }
     }
   }
 
@@ -1000,7 +1039,9 @@ function buildPushBody(f: FireItem, clanName: string): string {
       ? "Sinh nhật"
       : f.kind === "anniversary"
         ? "Ngày giỗ"
-        : "Sự kiện";
+        : f.kind === "tomb_visit"
+          ? "Tảo mộ / Chạp họ"
+          : "Sự kiện";
   return clanName ? `${kind} · ${clanName}` : kind;
 }
 

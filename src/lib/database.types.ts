@@ -657,6 +657,7 @@ export type Database = {
           lunar_year: number | null
           notes: string | null
           related_person_id: string | null
+          resting_place_id: string | null
           title: string
         }
         Insert: {
@@ -672,6 +673,7 @@ export type Database = {
           lunar_year?: number | null
           notes?: string | null
           related_person_id?: string | null
+          resting_place_id?: string | null
           title: string
         }
         Update: {
@@ -687,6 +689,7 @@ export type Database = {
           lunar_year?: number | null
           notes?: string | null
           related_person_id?: string | null
+          resting_place_id?: string | null
           title?: string
         }
         Relationships: [
@@ -709,6 +712,13 @@ export type Database = {
             columns: ["related_person_id"]
             isOneToOne: false
             referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_resting_place_id_fkey"
+            columns: ["resting_place_id"]
+            isOneToOne: false
+            referencedRelation: "resting_places"
             referencedColumns: ["id"]
           },
         ]

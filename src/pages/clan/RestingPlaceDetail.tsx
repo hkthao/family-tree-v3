@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
+  IconBell,
   IconGrave,
   IconMapPin,
   IconPencil,
@@ -17,8 +18,11 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { createEvent } from "@/lib/queries/events";
 import { getSignedPhotoUrlMap, uploadRestingPlacePhoto } from "@/lib/photoUpload";
 import {
   addPhoto,
@@ -85,6 +89,39 @@ export default function RestingPlaceDetail() {
     },
     onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
   });
+
+  // Đặt nhắc tảo mộ / chạp họ — tạo 1 sự kiện âm-lịch lặp hằng năm gắn
+  // với nơi an nghỉ này (tái dùng hệ events + notify-events).
+  const [reminderOpen, setReminderOpen] = useState(false);
+  const [rTitle, setRTitle] = useState("");
+  const [rMonth, setRMonth] = useState("");
+  const [rDay, setRDay] = useState("");
+  const reminderM = useMutation({
+    mutationFn: () =>
+      createEvent({
+        clan_id: clan.id,
+        title: rTitle.trim(),
+        event_type: "tomb_visit",
+        resting_place_id: graveId!,
+        lunar_month: Number(rMonth),
+        lunar_day: Number(rDay),
+        is_yearly: true,
+      }),
+    onSuccess: () => {
+      toast.success("Đã đặt nhắc tảo mộ / chạp họ", {
+        description: "Cả họ theo dõi sẽ được nhắc trước (xem ở Sự kiện).",
+      });
+      setReminderOpen(false);
+      setRTitle("");
+      setRMonth("");
+      setRDay("");
+    },
+    onError: (e) => toast.error("Không đặt được", { description: (e as Error).message }),
+  });
+  const canRemind =
+    rTitle.trim() &&
+    Number(rMonth) >= 1 && Number(rMonth) <= 12 &&
+    Number(rDay) >= 1 && Number(rDay) <= 30;
 
   if (isLoading) return <p className="text-muted-foreground">Đang tải…</p>;
   if (!place) return <p className="text-muted-foreground">Không tìm thấy.</p>;
@@ -248,6 +285,68 @@ export default function RestingPlaceDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Nhắc tảo mộ / chạp họ */}
+      {canEdit && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between">
+            <CardTitle className="inline-flex items-center gap-2">
+              <IconBell className="h-5 w-5" /> Nhắc tảo mộ / chạp họ
+            </CardTitle>
+            {!reminderOpen && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setRTitle(`Tảo mộ ${title}`);
+                  setReminderOpen(true);
+                }}
+              >
+                <IconPlus className="h-4 w-4 mr-1" /> Đặt nhắc
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {!reminderOpen ? (
+              <p className="text-sm text-muted-foreground">
+                Đặt ngày âm lịch (vd mùng 10 tháng Chạp) — cả họ theo dõi sẽ
+                được nhắc trước qua email/thông báo hằng năm.
+              </p>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (canRemind) reminderM.mutate();
+                }}
+                className="space-y-3"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="r-title">Tên dịp</Label>
+                  <Input id="r-title" value={rTitle} onChange={(e) => setRTitle(e.target.value)} maxLength={150} />
+                </div>
+                <div className="grid grid-cols-2 gap-3 max-w-xs">
+                  <div className="space-y-2">
+                    <Label htmlFor="r-day">Ngày âm</Label>
+                    <Input id="r-day" inputMode="numeric" value={rDay} onChange={(e) => setRDay(e.target.value)} placeholder="1–30" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="r-month">Tháng âm</Label>
+                    <Input id="r-month" inputMode="numeric" value={rMonth} onChange={(e) => setRMonth(e.target.value)} placeholder="1–12" />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" size="sm" variant="outline" disabled={!canRemind || reminderM.isPending}>
+                    {reminderM.isPending ? "Đang lưu…" : "Lưu nhắc"}
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setReminderOpen(false)}>
+                    Huỷ
+                  </Button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

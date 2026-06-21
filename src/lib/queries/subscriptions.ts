@@ -7,7 +7,11 @@ type Client = SupabaseClient<Database>;
 
 export type SubScope = "clan" | "branch" | "person";
 export type SubChannel = "email" | "sms";
-export type SubEventType = "birthday" | "death_anniversary" | "custom";
+export type SubEventType =
+  | "birthday"
+  | "death_anniversary"
+  | "custom"
+  | "tomb_visit";
 
 export interface SubscriptionRow {
   id: string;
@@ -27,6 +31,7 @@ export const DEFAULT_LEAD_DAYS = [7, 1];
 export const DEFAULT_EVENT_TYPES: SubEventType[] = [
   "birthday",
   "death_anniversary",
+  "tomb_visit",
 ];
 
 /** All subscriptions the current user has in a given clan. */
