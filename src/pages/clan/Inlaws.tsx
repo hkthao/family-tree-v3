@@ -40,6 +40,7 @@ import {
   type PersonLink,
 } from "@/lib/queries/person-links";
 import { supabase } from "@/lib/supabase";
+import { useUrlState } from "@/hooks/useUrlState";
 
 /**
  * Cross-clan in-law links manager. Two tabs:
@@ -63,7 +64,9 @@ export default function Inlaws() {
     return <Navigate to={`/clans/${clan.id}`} replace />;
   }
 
-  const [tab, setTab] = useState<"confirmed" | "pending">("confirmed");
+  const [tabRaw, setTab] = useUrlState("tab", "confirmed");
+  const tab: "confirmed" | "pending" =
+    tabRaw === "pending" ? "pending" : "confirmed";
 
   const { data: links, isLoading } = useQuery({
     queryKey: queryKeys.personLinksForClan(clan.id, userId),

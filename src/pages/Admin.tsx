@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlPatch, useUrlState } from "@/hooks/useUrlState";
 import {
   adminAction,
   clearFailedNotification,
@@ -78,7 +79,23 @@ export default function Admin() {
     enabled: !!userId,
   });
 
-  const [tab, setTab] = useState<Tab>("users");
+  // Tab lives in the URL so refresh / Back keeps you on the same tab.
+  // Switching tabs also clears the per-tab list params (q/page/status)
+  // so a search from one tab doesn't bleed into the next — written in
+  // one patch() to avoid clobbering.
+  const [sp] = useSearchParams();
+  const patch = useUrlPatch();
+  const tabRaw = sp.get("tab") ?? "users";
+  const tab: Tab = TABS.some((t) => t.value === tabRaw)
+    ? (tabRaw as Tab)
+    : "users";
+  const setTab = (next: Tab) =>
+    patch({
+      tab: next === "users" ? null : next,
+      q: null,
+      page: null,
+      status: null,
+    });
 
   if (loading || meLoading) {
     return (
@@ -149,8 +166,12 @@ export default function Admin() {
 // ---------------------------------------------------------------------------
 
 function UsersTab({ callerId }: { callerId: string }) {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [sp] = useSearchParams();
+  const patch = useUrlPatch();
+  const search = sp.get("q") ?? "";
+  const page = Math.max(1, Number(sp.get("page")) || 1);
+  const setSearch = (v: string) => patch({ q: v || null, page: null });
+  const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
   const qc = useQueryClient();
 
   const { data: profiles, isLoading } = useQuery({
@@ -168,10 +189,6 @@ function UsersTab({ callerId }: { callerId: string }) {
       return name.includes(needle) || email.includes(needle);
     });
   }, [profiles, search]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -471,8 +488,12 @@ function UserRow({
 // ---------------------------------------------------------------------------
 
 function ClansTab() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const [sp] = useSearchParams();
+  const patch = useUrlPatch();
+  const search = sp.get("q") ?? "";
+  const page = Math.max(1, Number(sp.get("page")) || 1);
+  const setSearch = (v: string) => patch({ q: v || null, page: null });
+  const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
   const qc = useQueryClient();
 
   const { data: clans, isLoading } = useQuery({
@@ -486,10 +507,6 @@ function ClansTab() {
     const needle = unaccent(search);
     return clans.filter((c) => unaccent(c.name).includes(needle));
   }, [clans, search]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search]);
 
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -1025,8 +1042,13 @@ function FeedbackTab() {
     queryFn: () => listFeedback(),
     staleTime: 30_000,
   });
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<FeedbackStatus | "all">("new");
+  const [search, setSearch] = useUrlState("q", "");
+  const [statusRaw, setStatusFilter] = useUrlState("status", "new");
+  const statusFilter = (
+    ["all", "new", "seen", "resolved", "spam"].includes(statusRaw)
+      ? statusRaw
+      : "new"
+  ) as FeedbackStatus | "all";
 
   const filtered = useMemo(() => {
     if (!data) return [];
