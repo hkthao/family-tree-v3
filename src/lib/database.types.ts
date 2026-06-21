@@ -1327,6 +1327,175 @@ export type Database = {
         }
         Relationships: []
       }
+      resting_place_occupants: {
+        Row: {
+          clan_id: string
+          created_at: string
+          id: string
+          note: string | null
+          person_id: string
+          resting_place_id: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          person_id: string
+          resting_place_id: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          person_id?: string
+          resting_place_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resting_place_occupants_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resting_place_occupants_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resting_place_occupants_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resting_place_occupants_resting_place_id_fkey"
+            columns: ["resting_place_id"]
+            isOneToOne: false
+            referencedRelation: "resting_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resting_place_photos: {
+        Row: {
+          caption: string | null
+          clan_id: string
+          created_at: string
+          id: string
+          path: string
+          resting_place_id: string
+          sort: number
+        }
+        Insert: {
+          caption?: string | null
+          clan_id: string
+          created_at?: string
+          id?: string
+          path: string
+          resting_place_id: string
+          sort?: number
+        }
+        Update: {
+          caption?: string | null
+          clan_id?: string
+          created_at?: string
+          id?: string
+          path?: string
+          resting_place_id?: string
+          sort?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resting_place_photos_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resting_place_photos_resting_place_id_fkey"
+            columns: ["resting_place_id"]
+            isOneToOne: false
+            referencedRelation: "resting_places"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resting_places: {
+        Row: {
+          address: string | null
+          built_year: number | null
+          clan_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          kind: Database["public"]["Enums"]["resting_place_kind"]
+          latitude: number | null
+          location_detail: string | null
+          location_name: string | null
+          longitude: number | null
+          material: string | null
+          name: string | null
+          notes: string | null
+          orientation: string | null
+          status: Database["public"]["Enums"]["resting_place_status"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          built_year?: number | null
+          clan_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["resting_place_kind"]
+          latitude?: number | null
+          location_detail?: string | null
+          location_name?: string | null
+          longitude?: number | null
+          material?: string | null
+          name?: string | null
+          notes?: string | null
+          orientation?: string | null
+          status?: Database["public"]["Enums"]["resting_place_status"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          built_year?: number | null
+          clan_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["resting_place_kind"]
+          latitude?: number | null
+          location_detail?: string | null
+          location_name?: string | null
+          longitude?: number | null
+          material?: string | null
+          name?: string | null
+          notes?: string | null
+          orientation?: string | null
+          status?: Database["public"]["Enums"]["resting_place_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resting_places_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       share_links: {
         Row: {
           clan_id: string
@@ -1817,6 +1986,13 @@ export type Database = {
       clan_post_type: "news" | "event" | "birth" | "death" | "notice"
       feedback_category: "bug" | "idea" | "question" | "other"
       feedback_status: "new" | "seen" | "resolved" | "spam"
+      resting_place_kind:
+        | "grave"
+        | "ashes_temple"
+        | "columbarium"
+        | "scattered"
+        | "other"
+      resting_place_status: "existing" | "relocated" | "lost"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1953,6 +2129,14 @@ export const Constants = {
       clan_post_type: ["news", "event", "birth", "death", "notice"],
       feedback_category: ["bug", "idea", "question", "other"],
       feedback_status: ["new", "seen", "resolved", "spam"],
+      resting_place_kind: [
+        "grave",
+        "ashes_temple",
+        "columbarium",
+        "scattered",
+        "other",
+      ],
+      resting_place_status: ["existing", "relocated", "lost"],
     },
   },
 } as const
