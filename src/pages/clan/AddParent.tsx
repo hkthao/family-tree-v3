@@ -313,7 +313,11 @@ export function AddParentForm({
           )}
         </>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            Nối một người đã có sẵn trong cây làm cha/mẹ của người này (thay vì
+            tạo mới) — tránh trùng người.
+          </p>
           <Label>Tìm người đã có trong dòng họ</Label>
           <Input
             value={existingFilter}
