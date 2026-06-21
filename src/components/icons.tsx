@@ -117,6 +117,27 @@ export function IconChevronUp(p: IconProps) {
   );
 }
 
+export function IconGrave(p: IconProps) {
+  // Headstone: rounded-top slab on a base.
+  return (
+    <Svg {...p}>
+      <path d="M7 21V8a5 5 0 0 1 10 0v13" />
+      <line x1="5" y1="21" x2="19" y2="21" />
+      <line x1="12" y1="10" x2="12" y2="15" />
+      <line x1="9.5" y1="12.5" x2="14.5" y2="12.5" />
+    </Svg>
+  );
+}
+
+export function IconMapPin(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </Svg>
+  );
+}
+
 export function IconChevronDown(p: IconProps) {
   return (
     <Svg {...p}>

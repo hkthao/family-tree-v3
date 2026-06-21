@@ -24,6 +24,7 @@ import {
   IconShield,
   IconSparkles,
   IconSun,
+  IconGrave,
   IconTree,
   IconUpload,
   IconUser,
@@ -470,6 +471,11 @@ function buildSections(
         to: `/clans/${clanId}/tree`,
         label: "Cây gia phả",
         icon: <IconTree className={ic} />,
+      },
+      {
+        to: `/clans/${clanId}/graves`,
+        label: "Mộ phần & tro cốt",
+        icon: <IconGrave className={ic} />,
       },
     ];
     if (isMember) {

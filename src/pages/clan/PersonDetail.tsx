@@ -62,6 +62,10 @@ import {
   type Relationship,
 } from "@/lib/queries/families";
 import {
+  getRestingPlacesForPerson,
+  RESTING_PLACE_KIND_LABEL,
+} from "@/lib/queries/restingPlaces";
+import {
   deletePerson,
   getPerson,
   type PersonDetail as PersonDetailT,
@@ -99,6 +103,12 @@ export default function PersonDetail() {
     queryKey: [...queryKeys.person(personId ?? "", userId), personSource],
     queryFn: () => getPerson(personId!, undefined, personSource),
     enabled: !!personId,
+  });
+
+  const { data: restingPlaces } = useQuery({
+    queryKey: ["person-resting-places", personId, userId],
+    queryFn: () => getRestingPlacesForPerson(personId!),
+    enabled: !!personId && effectiveRole(clan) !== null,
   });
 
   const { data: relationships } = useQuery({
@@ -316,6 +326,27 @@ export default function PersonDetail() {
                 )}
                 <DetailRow label="Nơi sinh" value={person.birth_place} />
                 <DetailRow label="Nơi an táng" value={person.burial_place} />
+                {restingPlaces && restingPlaces.length > 0 && (
+                  <DetailRow
+                    label="Mộ phần / tro cốt"
+                    value={
+                      <span className="flex flex-col gap-0.5">
+                        {restingPlaces.map((rp) => (
+                          <Link
+                            key={rp.id}
+                            to={`/clans/${clanId}/graves/${rp.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            {rp.name || rp.location_name || RESTING_PLACE_KIND_LABEL[rp.kind]}
+                            <span className="text-muted-foreground">
+                              {" "}· {RESTING_PLACE_KIND_LABEL[rp.kind]}
+                            </span>
+                          </Link>
+                        ))}
+                      </span>
+                    }
+                  />
+                )}
                 {person.bio && (
                   <div className="pt-2">
                     <p className="text-sm text-muted-foreground mb-1">Tiểu sử</p>

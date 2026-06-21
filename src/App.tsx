@@ -38,6 +38,9 @@ import InlawsNew from "@/pages/clan/InlawsNew";
 import Kinship from "@/pages/clan/Kinship";
 import Members from "@/pages/clan/Members";
 import Merge from "@/pages/clan/Merge";
+import RestingPlaces from "@/pages/clan/RestingPlaces";
+import RestingPlaceDetail from "@/pages/clan/RestingPlaceDetail";
+import RestingPlaceForm from "@/pages/clan/RestingPlaceForm";
 import MyLineage from "@/pages/clan/MyLineage";
 import NewPerson from "@/pages/clan/NewPerson";
 import People from "@/pages/clan/People";
@@ -120,6 +123,10 @@ export default function App() {
           <Route path="people/:personId/add-parent" element={<AddParent />} />
           <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
+          <Route path="graves" element={<RestingPlaces />} />
+          <Route path="graves/new" element={<RestingPlaceForm />} />
+          <Route path="graves/:graveId" element={<RestingPlaceDetail />} />
+          <Route path="graves/:graveId/edit" element={<RestingPlaceForm />} />
           <Route path="events" element={<Events />} />
           <Route path="settings" element={<Settings />} />
           <Route path="import" element={<Import />} />
