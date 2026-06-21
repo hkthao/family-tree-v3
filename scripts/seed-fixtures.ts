@@ -198,6 +198,79 @@ async function createUser(email: string, displayName: string, opts?: { isPlatfor
   return data.user.id;
 }
 
+/**
+ * Seed sample resting places (mộ phần & tro cốt) for a clan: a grave
+ * with GPS + a relocation, a clan stupa (tháp họ) holding several
+ * people, and an ashes-at-temple — plus one tảo mộ / chạp họ reminder
+ * event. Occupants are picked from the clan's deceased persons.
+ */
+async function seedRestingPlaces(clanId: string): Promise<void> {
+  const { data: dead } = await admin
+    .from("persons")
+    .select("id, full_name")
+    .eq("clan_id", clanId)
+    .eq("is_living", false)
+    .is("deleted_at", null)
+    .limit(8);
+  if (!dead || dead.length === 0) return;
+
+  const addOcc = async (rpId: string, personId: string, note: string | null = null) => {
+    await admin.from("resting_place_occupants").insert({
+      resting_place_id: rpId,
+      person_id: personId,
+      clan_id: clanId, // trigger re-syncs; fine
+      note,
+    });
+  };
+  const lat = () => Number((faker.number.float({ min: 9.5, max: 22.5 })).toFixed(6));
+  const lng = () => Number((faker.number.float({ min: 102, max: 109.5 })).toFixed(6));
+
+  // 1. Mộ chôn cất (GPS + cải táng)
+  const grave = randomUUID();
+  await admin.from("resting_places").insert({
+    id: grave, clan_id: clanId, kind: "grave",
+    name: `Mộ ${dead[0].full_name}`,
+    location_name: "Nghĩa trang quê", location_detail: "Lô 3, hàng 5",
+    address: "xã Bình Minh, huyện Khoái Châu, tỉnh Hưng Yên",
+    latitude: lat(), longitude: lng(), status: "existing", built_year: 1995,
+  });
+  await addOcc(grave, dead[0].id);
+  await admin.from("resting_place_relocations").insert({
+    resting_place_id: grave, clan_id: clanId,
+    from_label: "Nghĩa trang cũ ven sông", moved_on: "2008-11-20",
+    note: "Bốc mộ sang cát, cải táng về khu mộ họ.",
+  });
+
+  // 2. Tháp họ (columbarium) — nhiều người an nghỉ
+  const tower = randomUUID();
+  await admin.from("resting_places").insert({
+    id: tower, clan_id: clanId, kind: "columbarium",
+    name: "Tháp họ", location_name: "Hoa viên Bình An",
+    location_detail: "Tầng 2, kệ A", latitude: lat(), longitude: lng(),
+    status: "existing",
+  });
+  for (let i = 1; i < Math.min(dead.length, 4); i++) {
+    await addOcc(tower, dead[i].id, `Hũ số ${i}`);
+  }
+
+  // 3. Gửi tro cốt ở chùa
+  if (dead.length > 4) {
+    const temple = randomUUID();
+    await admin.from("resting_places").insert({
+      id: temple, clan_id: clanId, kind: "ashes_temple",
+      name: null, location_name: "Chùa Vĩnh Nghiêm",
+      location_detail: "Ngăn 15, tầng 3", status: "existing",
+    });
+    await addOcc(temple, dead[4].id);
+  }
+
+  // 4. Nhắc tảo mộ / chạp họ (âm lịch, lặp hằng năm) gắn với tháp họ
+  await admin.from("events").insert({
+    clan_id: clanId, title: "Chạp họ", event_type: "tomb_visit",
+    resting_place_id: tower, lunar_month: 12, lunar_day: 10, is_yearly: true,
+  });
+}
+
 async function seedClan(label: string, size: number, ownerId: string): Promise<string> {
   // Pick ONE surname per clan and use it for both the clan name and the
   // person names — they used to be drawn independently, producing a
@@ -346,6 +419,8 @@ async function seedClan(label: string, size: number, ownerId: string): Promise<s
       await seedPhotoForPerson(fid, clanId);
     }
   }
+
+  await seedRestingPlaces(clanId);
 
   console.log(`  ${label}: ${persons.length} persons, ${families.length} families`);
   return clanId;
