@@ -27,17 +27,34 @@ export const RESTING_PLACE_STATUS_LABEL: Record<RestingPlaceStatus, string> = {
   lost: "Thất lạc",
 };
 
-/** Per-kind labels for the two adaptive location inputs. */
+/** Per-kind labels + placeholder examples for the two adaptive location inputs. */
 export const KIND_LOCATION_LABELS: Record<
   RestingPlaceKind,
-  { name: string; detail: string | null }
+  { name: string; detail: string | null; namePh: string; detailPh: string }
 > = {
-  grave: { name: "Nghĩa trang / khu", detail: "Lô – hàng – số" },
-  ashes_temple: { name: "Tên chùa", detail: "Vị trí hũ (ngăn/tầng/số)" },
-  columbarium: { name: "Cơ sở lưu tro / tháp họ", detail: "Ngăn / kệ / số hũ" },
-  scattered: { name: "Nơi rải tro", detail: null },
-  other: { name: "Nơi an nghỉ", detail: "Chi tiết vị trí" },
+  grave: {
+    name: "Nghĩa trang / khu",
+    detail: "Lô – hàng – số",
+    namePh: "vd: Nghĩa trang Lạc Hồng / khu mộ họ",
+    detailPh: "vd: Lô B, hàng 3, số 12",
+  },
+  ashes_temple: {
+    name: "Tên chùa",
+    detail: "Vị trí hũ (ngăn/tầng/số)",
+    namePh: "vd: Chùa Vĩnh Nghiêm",
+    detailPh: "vd: Tầng 2, ngăn 15",
+  },
+  columbarium: {
+    name: "Cơ sở lưu tro / tháp họ",
+    detail: "Ngăn / kệ / số hũ",
+    namePh: "vd: Tháp họ Cao, Hoa viên Bình An",
+    detailPh: "vd: Kệ A, số 8",
+  },
+  scattered: { name: "Nơi rải tro", detail: null, namePh: "vd: Sông Hậu, đoạn…", detailPh: "" },
+  other: { name: "Nơi an nghỉ", detail: "Chi tiết vị trí", namePh: "", detailPh: "" },
 };
+
+export const ADDRESS_PLACEHOLDER = "vd: xã …, huyện …, tỉnh …";
 
 export interface RestingPlace {
   id: string;
