@@ -59,6 +59,7 @@ export interface CreateShareLinkInput {
   /** Days from now until link expires. */
   ttlDays: number;
   root_person_id?: string | null;
+  root_resting_place_id?: string | null;
   scope?: string;
 }
 
@@ -89,6 +90,7 @@ export async function createShareLink(
       clan_id: input.clan_id,
       token: makeToken(),
       root_person_id: input.root_person_id ?? null,
+      root_resting_place_id: input.root_resting_place_id ?? null,
       scope: input.scope ?? "tree_view",
       expires_at: expires,
     })
@@ -132,6 +134,46 @@ export async function getOrCreatePersonShareLink(
       ttlDays: PERSON_SHARE_TTL_DAYS,
       root_person_id: personId,
       scope: PERSON_SCOPE,
+    },
+    client,
+  );
+}
+
+const RESTING_PLACE_SCOPE = "resting_place";
+
+/**
+ * Active share link for a resting place (mộ / tháp họ), or create one.
+ * Reuses the same token across reprints so a QR dán/khắc tại mộ keeps
+ * resolving. Scope='resting_place' → /share/:token renders the grave's
+ * public card.
+ */
+export async function getOrCreateRestingPlaceShareLink(
+  clanId: string,
+  restingPlaceId: string,
+  client: Client = defaultClient,
+): Promise<ShareLink> {
+  const nowIso = new Date().toISOString();
+  const { data: existing, error: selErr } = await client
+    .from("share_links")
+    .select(
+      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+    )
+    .eq("clan_id", clanId)
+    .eq("root_resting_place_id", restingPlaceId)
+    .eq("scope", RESTING_PLACE_SCOPE)
+    .eq("is_revoked", false)
+    .gt("expires_at", nowIso)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (selErr) throw new Error(selErr.message);
+  if (existing && existing.length > 0) return existing[0] as ShareLink;
+
+  return createShareLink(
+    {
+      clan_id: clanId,
+      ttlDays: PERSON_SHARE_TTL_DAYS,
+      root_resting_place_id: restingPlaceId,
+      scope: RESTING_PLACE_SCOPE,
     },
     client,
   );

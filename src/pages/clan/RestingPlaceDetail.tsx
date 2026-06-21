@@ -10,19 +10,22 @@ import {
   IconMapPin,
   IconPencil,
   IconPlus,
+  IconQrCode,
   IconTrash,
   IconX,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
+import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { createEvent } from "@/lib/queries/events";
+import { getOrCreateRestingPlaceShareLink } from "@/lib/queries/share-links";
 import { getSignedPhotoUrlMap, uploadRestingPlacePhoto } from "@/lib/photoUpload";
 import {
   addPhoto,
@@ -123,6 +126,15 @@ export default function RestingPlaceDetail() {
     Number(rMonth) >= 1 && Number(rMonth) <= 12 &&
     Number(rDay) >= 1 && Number(rDay) <= 30;
 
+  // QR tại mộ (clan admin) — public share link of this resting place.
+  const canAdmin = isClanAdmin(clan);
+  const [qrOpen, setQrOpen] = useState(false);
+  const qrM = useMutation({
+    mutationFn: () => getOrCreateRestingPlaceShareLink(clan.id, graveId!),
+    onError: (e) => toast.error("Không tạo được QR", { description: (e as Error).message }),
+  });
+  const qrUrl = qrM.data ? `${window.location.origin}/share/${qrM.data.token}` : "";
+
   if (isLoading) return <p className="text-muted-foreground">Đang tải…</p>;
   if (!place) return <p className="text-muted-foreground">Không tìm thấy.</p>;
 
@@ -146,6 +158,18 @@ export default function RestingPlaceDetail() {
         actions={
           canEdit ? (
             <div className="flex gap-2">
+              {canAdmin && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQrOpen(true);
+                    if (!qrM.data) qrM.mutate();
+                  }}
+                >
+                  <IconQrCode className="h-4 w-4 mr-1" /> QR
+                </Button>
+              )}
               <Button size="sm" variant="outline" asChild>
                 <Link to={`/clans/${clan.id}/graves/${place.id}/edit`}>
                   <IconPencil className="h-4 w-4 mr-1" /> Sửa
@@ -347,6 +371,15 @@ export default function RestingPlaceDetail() {
           </CardContent>
         </Card>
       )}
+
+      <QrCodeModal
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        url={qrUrl}
+        loading={qrM.isPending}
+        title={title}
+        description="Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ."
+      />
     </div>
   );
 }
