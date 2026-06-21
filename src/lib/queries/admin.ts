@@ -25,6 +25,7 @@ export interface AdminClanRow {
   owner_id: string | null;
   data_version: number;
   created_at: string;
+  person_count: number;
 }
 
 /**
@@ -60,7 +61,7 @@ export async function listAllClans(
   const { data, error } = await client
     .from("clans")
     .select(
-      "id, name, description, visibility, max_persons, max_users, owner_id, data_version, created_at",
+      "id, name, description, visibility, max_persons, max_users, owner_id, data_version, created_at, person_count",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -210,4 +211,52 @@ export async function adminAction(
     }
   }
   throw new Error(error.message);
+}
+
+// ─── Gia-phả import (vietnamgiapha.com → clan) ──────────────────────
+
+export interface GiaPhaImportResult {
+  ok: true;
+  clanId: string;
+  clanName: string;
+  counts: { persons: number; families: number };
+  warnings: { ambiguousMothers: number; missingGender: number; note: string };
+}
+
+/**
+ * Invoke the giapha-import Edge Function. Re-reads the response body on
+ * error so the admin sees the precise reason (same trick as adminAction).
+ */
+export async function importGiaPha(
+  body: { sourceUrl: string; clanId?: string; clanName?: string; replace?: boolean },
+  client: Client = defaultClient,
+): Promise<GiaPhaImportResult> {
+  const { data, error } = await client.functions.invoke("giapha-import", { body });
+  if (!error) return data as GiaPhaImportResult;
+
+  const ctx = (error as { context?: Response }).context;
+  if (ctx instanceof Response) {
+    try {
+      const parsed = await ctx.json();
+      if (parsed && typeof parsed.error === "string") throw new Error(parsed.error);
+    } catch (e) {
+      if (e instanceof Error && e.message) throw e;
+    }
+  }
+  throw new Error(error.message);
+}
+
+/**
+ * Hard-delete every person + family of a clan (keeps the clan, members
+ * and settings). Platform-admin only, irreversible — UI must confirm.
+ */
+export async function wipeClanDirectory(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<{ deleted_persons: number; deleted_families: number }> {
+  const { data, error } = await client.rpc("admin_wipe_clan_directory", {
+    p_clan_id: clanId,
+  });
+  if (error) throw new Error(error.message);
+  return data as unknown as { deleted_persons: number; deleted_families: number };
 }
