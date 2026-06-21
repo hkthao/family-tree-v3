@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -17,6 +17,7 @@ import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useUrlPatch } from "@/hooks/useUrlState";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
@@ -54,9 +55,15 @@ export default function Audit() {
   if (effectiveRole(clan) === null)
     return <Navigate to={`/clans/${clan.id}`} replace />;
 
-  const [page, setPage] = useState(1);
-  const [entityType, setEntityType] = useState<AuditEntity | "">("");
-  const [action, setAction] = useState<AuditAction | "">("");
+  // Filters live in the URL so Back from a restore / detail keeps the
+  // page + filters. See useUrlState.ts. Each select also resets the
+  // page, written in one patch() to avoid clobbering.
+  const [sp] = useSearchParams();
+  const patch = useUrlPatch();
+  const page = Math.max(1, Number(sp.get("page")) || 1);
+  const entityType = (sp.get("type") ?? "") as AuditEntity | "";
+  const action = (sp.get("act") ?? "") as AuditAction | "";
+  const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
 
   const params = {
     page,
@@ -93,10 +100,9 @@ export default function Audit() {
             <select
               aria-label="Lọc theo đối tượng"
               value={entityType}
-              onChange={(e) => {
-                setEntityType(e.target.value as AuditEntity | "");
-                setPage(1);
-              }}
+              onChange={(e) =>
+                patch({ type: e.target.value || null, page: null })
+              }
               className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
             >
               <option value="">Mọi đối tượng</option>
@@ -108,10 +114,9 @@ export default function Audit() {
             <select
               aria-label="Lọc theo hành động"
               value={action}
-              onChange={(e) => {
-                setAction(e.target.value as AuditAction | "");
-                setPage(1);
-              }}
+              onChange={(e) =>
+                patch({ act: e.target.value || null, page: null })
+              }
               className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
             >
               <option value="">Mọi hành động</option>
