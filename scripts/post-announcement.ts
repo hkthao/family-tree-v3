@@ -39,16 +39,22 @@ async function main() {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
 
-  const body = `Trước đây, khi mở link chia sẻ cây gia phả ra ngoài, các anh chị em trong cùng một nhà đôi khi bị xếp sai thứ tự — không đúng "con thứ mấy" mà cả nhà đã nhập.
+  const body = `Vài cải tiến giúp ghi chép gia phả đúng và nhanh hơn:
 
-Nay đã sửa xong: màn hình chia sẻ cây gia phả sắp xếp anh chị em đúng theo thứ tự con trưởng → con thứ → con út, khớp y hệt với cây gia phả bên trong tài khoản.
+• Thứ tự vợ/chồng: với người có nhiều đời vợ, nay có thể sắp xếp vợ cả – vợ hai – vợ ba bằng nút mũi tên ngay trong trang của người đó.
 
-Cả nhà không cần làm gì thêm — chỉ cần mở lại link chia sẻ (nếu thấy chưa đổi, hãy tải lại trang một lần).`;
+• Ngày mất theo âm lịch: ưu tiên nhập ngày âm. Các cụ đời trước thường chỉ còn nhớ ngày giỗ — nay chỉ cần điền ngày và tháng âm, không bắt buộc nhập năm.
+
+• Thêm con của vợ thứ dễ hơn: khi thêm con, chọn rõ "con chung với ai" (vợ cả hay vợ hai). Các ô thêm vợ/chồng và cha/mẹ nay cũng nhập được ngày mất.
+
+• Tiện hơn trên điện thoại: sau khi xem chi tiết rồi bấm Quay lại, danh sách vẫn giữ nguyên tab, ô tìm kiếm và đúng vị trí đang xem — không phải tìm lại từ đầu.
+
+Cả nhà không cần làm gì thêm. Chúc cả nhà ghi chép gia phả vui và đầy đủ!`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "🔧 Đã sửa: thứ tự anh chị em trên màn hình chia sẻ cây gia phả",
+      title: "✨ Cập nhật: sắp xếp thứ tự vợ, ngày giỗ âm lịch & nhập liệu dễ hơn",
       body,
       level: "update",
       is_public: true,
