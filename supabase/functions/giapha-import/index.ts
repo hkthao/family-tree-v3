@@ -41,6 +41,7 @@ interface PersonRec {
   fullName: string;
   gender: "M" | "F" | null;
   nickname: string | null;
+  courtesyName: string | null;
   generation: number | null;
   birthSolar: string | null;
   birthYear: number | null;
@@ -133,6 +134,11 @@ function parseVietDate(raw: string): ParsedDate {
     const lw = raw.match(/(\d{1,2})\s*tháng\s*(giêng|chạp)/i);
     if (lw) { out.lDay = Number(lw[1]); out.lMonth = /chạp/i.test(lw[2]) ? 12 : 1; }
   }
+  // "18-8 âm lịch" — ngày-tháng âm dạng số, không có chữ "tháng"
+  if (out.lDay === null && out.solar === null && /âm/i.test(raw)) {
+    const am = raw.match(/\b(\d{1,2})[-/](\d{1,2})\b/);
+    if (am) { out.lDay = Number(am[1]); out.lMonth = Number(am[2]); }
+  }
   const cc = raw.match(/năm\s+([A-Za-zÀ-ỹ]+)\s+([A-Za-zÀ-ỹ]+)/);
   if (cc) out.lYear = canChiToYearNear(cc[1], cc[2], out.solar ? Number(out.solar.slice(0, 4)) : 1920);
   if (!out.solar) {
@@ -170,6 +176,16 @@ function idLinks(ul: El): number[] {
   return ids;
 }
 
+function cleanName(raw: string): { fullName: string; gender: "M" | "F" | null } {
+  const gm = raw.match(/\((Nam|Nữ)\)\s*$/);
+  const gender = gm ? (gm[1] === "Nam" ? "M" : "F") : null;
+  let name = (gm ? raw.slice(0, gm.index) : raw).trim();
+  name = name.replace(/^\s*(cụ|bà|ông|cố)(\s[^:]*)?:\s*/i, "");
+  name = name.replace(/^(hiệu|tự|huý|húy|tên thường)\s+/i, "");
+  name = name.replace(/\s*\([^)]*(?:sinh|\d{4})[^)]*\)\s*$/i, "").trim();
+  return { fullName: name, gender };
+}
+
 function parsePerson(oldId: number, html: string): PersonRec | null {
   if (!html.trim()) return null;
   const doc = parseDoc(html);
@@ -180,10 +196,8 @@ function parsePerson(oldId: number, html: string): PersonRec | null {
       if (kids[i].tagName === "DT" && kids[i + 1]?.tagName === "DD")
         meta[kids[i].textContent.trim()] = kids[i + 1].textContent.trim();
   }
-  const nameRaw = meta["Tên"] ?? "";
-  const gm = nameRaw.match(/^(.*?)\s*\((Nam|Nữ)\)\s*$/);
-  const fullName = (gm ? gm[1] : nameRaw).trim();
-  const gender = gm ? (gm[2] === "Nam" ? "M" : "F") : null;
+  const { fullName, gender } = cleanName(meta["Tên"] ?? "");
+  if (!fullName) return null; // empty/gap id
   const b = parseVietDate(meta["Ngày sinh"] ?? "");
   const d = parseVietDate((meta["Ngày mất"] ?? "").replace(/&#\d*;?/g, "").trim());
 
@@ -207,6 +221,7 @@ function parsePerson(oldId: number, html: string): PersonRec | null {
   return {
     oldId, fullName, gender,
     nickname: meta["Tên thường"] || meta["Tên thường gọi"] || null,
+    courtesyName: meta["Tên tự"] || null,
     generation,
     birthSolar: b.solar, birthYear: b.year,
     deathSolar: d.solar, deathYear: d.year,
@@ -305,7 +320,8 @@ async function doImport(sb: any, clanId: string, people: PersonRec[], fams: FamU
       death_anniv_lunar_month: p.deathLunarMonth, death_anniv_lunar_day: p.deathLunarDay,
       death_anniv_lunar_is_leap: false,
       birth_family_id: childFamily.get(p.oldId) ?? null,
-      nickname: p.nickname, birth_place: p.birthPlace, burial_place: p.burialPlace, bio: p.bio,
+      nickname: p.nickname, courtesy_name: p.courtesyName,
+      birth_place: p.birthPlace, burial_place: p.burialPlace, bio: p.bio,
     };
   });
   for (let i = 0; i < personRows.length; i += 50) {

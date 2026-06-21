@@ -62,6 +62,7 @@ interface PersonRec {
   fullName: string;
   gender: "M" | "F" | null;
   nickname: string | null;
+  courtesyName: string | null;
   generation: number | null;
   // dates — both calendars, partial-aware
   birthSolar: string | null; // full ISO date
@@ -215,6 +216,14 @@ function parseVietDate(raw: string): ParsedDate {
       out.lMonth = /chạp/i.test(lw[2]) ? 12 : 1;
     }
   }
+  // "18-8 âm lịch" — ngày-tháng âm dạng số, không có chữ "tháng"
+  if (out.lDay === null && out.solar === null && /âm/i.test(raw)) {
+    const am = raw.match(/\b(\d{1,2})[-/](\d{1,2})\b/);
+    if (am) {
+      out.lDay = Number(am[1]);
+      out.lMonth = Number(am[2]);
+    }
+  }
   // can-chi year
   const cc = raw.match(/năm\s+([A-Za-zÀ-ỹ]+)\s+([A-Za-zÀ-ỹ]+)/);
   if (cc) {
@@ -240,6 +249,24 @@ function idLinks(ul: Element): number[] {
   return ids;
 }
 
+/**
+ * Clean a raw "Tên" dd into {fullName, gender}. Handles both gia phả
+ * shapes: plain "Cao Tế (Nam)" and the tổ-level forms on older trees
+ * like "cụ thủy tổ: Phúc Huệ (sinh khoảng 1564-1576) (Nam)" or
+ * "bà thủy tổ họ Đỗ: hiệu Từ Tâm (Nữ)" — strips the leading honorific
+ * title (…:), a leading name-type marker (hiệu/tự/húy), and a trailing
+ * "(sinh …)" / "(year)" note while keeping real suffixes like "(Liệt Sỹ)".
+ */
+function cleanName(raw: string): { fullName: string; gender: "M" | "F" | null } {
+  const gm = raw.match(/\((Nam|Nữ)\)\s*$/);
+  const gender = gm ? (gm[1] === "Nam" ? "M" : "F") : null;
+  let name = (gm ? raw.slice(0, gm.index) : raw).trim();
+  name = name.replace(/^\s*(cụ|bà|ông|cố)(\s[^:]*)?:\s*/i, "");
+  name = name.replace(/^(hiệu|tự|huý|húy|tên thường)\s+/i, "");
+  name = name.replace(/\s*\([^)]*(?:sinh|\d{4})[^)]*\)\s*$/i, "").trim();
+  return { fullName: name, gender };
+}
+
 function parsePerson(oldId: number, html: string): PersonRec | null {
   if (!html.trim()) return null;
   const doc = new JSDOM(html).window.document;
@@ -253,10 +280,8 @@ function parsePerson(oldId: number, html: string): PersonRec | null {
     }
   }
 
-  const nameRaw = meta["Tên"] ?? "";
-  const gm = nameRaw.match(/^(.*?)\s*\((Nam|Nữ)\)\s*$/);
-  const fullName = (gm ? gm[1] : nameRaw).trim();
-  const gender = gm ? (gm[2] === "Nam" ? "M" : "F") : null;
+  const { fullName, gender } = cleanName(meta["Tên"] ?? "");
+  if (!fullName) return null; // empty/gap id
 
   const b = parseVietDate(meta["Ngày sinh"] ?? "");
   const d = parseVietDate((meta["Ngày mất"] ?? "").replace(/&#\d*;?/g, "").trim());
@@ -291,13 +316,14 @@ function parsePerson(oldId: number, html: string): PersonRec | null {
     else if (/anh|em|dâu|rể/.test(head)) siblingIds = ids;
   }
 
-  const known = new Set(["Tên", "Tên thường", "Ngày sinh", "Ngày mất", "An táng"]);
+  const known = new Set(["Tên", "Tên thường", "Tên tự", "Ngày sinh", "Ngày mất", "An táng", "Nơi sinh"]);
   const extra: Record<string, string> = {};
   for (const [k, v] of Object.entries(meta)) if (!known.has(k)) extra[k] = v;
 
   return {
     oldId, fullName, gender,
     nickname: meta["Tên thường"] || meta["Tên thường gọi"] || null,
+    courtesyName: meta["Tên tự"] || null,
     generation,
     birthSolar: b.solar, birthYear: b.year, birthRaw: meta["Ngày sinh"] || null,
     deathSolar: d.solar, deathYear: d.year,
@@ -395,7 +421,7 @@ const csvCell = (v: unknown) => {
 
 function writeCsv(people: PersonRec[], path: string): void {
   const cols = [
-    "old_id","full_name","gender","generation","nickname",
+    "old_id","full_name","gender","generation","nickname","courtesy_name",
     "birth_solar","birth_year","death_solar","death_year",
     "death_lunar_day","death_lunar_month","death_lunar_year","death_raw",
     "birth_place","burial_place","father_id","mother_id","mother_ambiguous",
@@ -403,7 +429,7 @@ function writeCsv(people: PersonRec[], path: string): void {
   ];
   const rows = people.map((p) =>
     [
-      p.oldId, p.fullName, p.gender ?? "", p.generation ?? "", p.nickname ?? "",
+      p.oldId, p.fullName, p.gender ?? "", p.generation ?? "", p.nickname ?? "", p.courtesyName ?? "",
       p.birthSolar ?? "", p.birthYear ?? "", p.deathSolar ?? "", p.deathYear ?? "",
       p.deathLunarDay ?? "", p.deathLunarMonth ?? "", p.deathLunarYear ?? "", p.deathRaw ?? "",
       p.birthPlace ?? "", p.burialPlace ?? "", p.fatherId ?? "", p.motherId ?? "",
@@ -642,6 +668,7 @@ async function importAll(): Promise<void> {
       death_anniv_lunar_is_leap: false,
       birth_family_id: childFamily.get(p.oldId) ?? null,
       nickname: p.nickname,
+      courtesy_name: p.courtesyName,
       birth_place: p.birthPlace,
       burial_place: p.burialPlace,
       bio: p.bio,
