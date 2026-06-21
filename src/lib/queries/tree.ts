@@ -29,6 +29,10 @@ export interface FamilyForTree {
   id: string;
   husband_id: string | null;
   wife_id: string | null;
+  /** Explicit spouse rank (vợ cả/hai/ba); null = unranked. */
+  spouse_order: number | null;
+  /** Tie-break for spouse ordering when rank is unset. */
+  created_at: string | null;
 }
 
 export interface TreeData {
@@ -86,12 +90,12 @@ export async function getTreeData(
     source === "persons_public_safe"
       ? client
           .from("families_public_safe")
-          .select("id, husband_id, wife_id")
+          .select("id, husband_id, wife_id, spouse_order, created_at")
           .eq("clan_id", clanId)
           .range(0, TREE_FETCH_MAX)
       : client
           .from("families")
-          .select("id, husband_id, wife_id")
+          .select("id, husband_id, wife_id, spouse_order, created_at")
           .eq("clan_id", clanId)
           .is("deleted_at", null)
           .range(0, TREE_FETCH_MAX);

@@ -39,6 +39,8 @@ export interface ShareViewFamily {
   id: string;
   husband_id: string | null;
   wife_id: string | null;
+  spouse_order: number | null;
+  created_at: string | null;
 }
 
 export interface ShareViewPayload {

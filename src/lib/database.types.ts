@@ -721,6 +721,7 @@ export type Database = {
           husband_id: string | null
           id: string
           notes: string | null
+          spouse_order: number | null
           union_type: string | null
           wife_id: string | null
         }
@@ -731,6 +732,7 @@ export type Database = {
           husband_id?: string | null
           id?: string
           notes?: string | null
+          spouse_order?: number | null
           union_type?: string | null
           wife_id?: string | null
         }
@@ -741,6 +743,7 @@ export type Database = {
           husband_id?: string | null
           id?: string
           notes?: string | null
+          spouse_order?: number | null
           union_type?: string | null
           wife_id?: string | null
         }
@@ -1326,22 +1329,28 @@ export type Database = {
       families_public_safe: {
         Row: {
           clan_id: string | null
+          created_at: string | null
           husband_id: string | null
           id: string | null
+          spouse_order: number | null
           union_type: string | null
           wife_id: string | null
         }
         Insert: {
           clan_id?: string | null
+          created_at?: string | null
           husband_id?: string | null
           id?: string | null
+          spouse_order?: number | null
           union_type?: string | null
           wife_id?: string | null
         }
         Update: {
           clan_id?: string | null
+          created_at?: string | null
           husband_id?: string | null
           id?: string | null
+          spouse_order?: number | null
           union_type?: string | null
           wife_id?: string | null
         }

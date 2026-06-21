@@ -78,6 +78,8 @@ interface FamilyRow {
   id: string;
   husband_id: string | null;
   wife_id: string | null;
+  spouse_order: number | null;
+  created_at: string | null;
 }
 
 Deno.serve(async (req) => {
@@ -157,7 +159,7 @@ Deno.serve(async (req) => {
   if (pErr) return err(pErr.message, 500);
   const { data: families, error: fErr } = await sb
     .from("families")
-    .select("id, husband_id, wife_id")
+    .select("id, husband_id, wife_id, spouse_order, created_at")
     .eq("clan_id", link.clan_id)
     .is("deleted_at", null);
   if (fErr) return err(fErr.message, 500);

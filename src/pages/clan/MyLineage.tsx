@@ -347,6 +347,8 @@ function LineageView({
       id: string;
       husband_id: string | null;
       wife_id: string | null;
+      spouse_order: number | null;
+      created_at: string | null;
     }> = [];
     for (let i = 0; i < lineage.steps.length - 1; i++) {
       const child = lineage.steps[i].person;
@@ -356,6 +358,9 @@ function LineageView({
         id: child.birth_family_id,
         husband_id: parent.arrivedVia === "father" ? parent.person.id : null,
         wife_id: parent.arrivedVia === "mother" ? parent.person.id : null,
+        // Single-chain lineage — no co-spouses to rank.
+        spouse_order: null,
+        created_at: null,
       });
     }
     return toFamilyChart(persons, families, photoUrls);

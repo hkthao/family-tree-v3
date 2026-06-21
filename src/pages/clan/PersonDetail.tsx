@@ -9,6 +9,8 @@ import { RelationSheet } from "@/components/RelationSheet";
 
 import {
   IconBell,
+  IconChevronDown,
+  IconChevronUp,
   IconLink,
   IconPencil,
   IconPlus,
@@ -56,6 +58,7 @@ import { listPostsForPerson } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   getPersonRelationships,
+  reorderSpouseFamilies,
   type Relationship,
 } from "@/lib/queries/families";
 import {
@@ -127,6 +130,29 @@ export default function PersonDetail() {
     onError: (e) =>
       toast.error("Không xoá được", { description: (e as Error).message }),
   });
+
+  const reorderSpousesMutation = useMutation({
+    mutationFn: (orderedFamilyIds: string[]) =>
+      reorderSpouseFamilies(orderedFamilyIds),
+    onSuccess: async () => {
+      await invalidateClanData(queryClient, clanId!);
+    },
+    onError: (e) =>
+      toast.error("Không đổi được thứ tự", {
+        description: (e as Error).message,
+      }),
+  });
+
+  // Swap a spouse with its neighbour and persist the whole list's
+  // ranking. `relationships.spouses` is already in display order.
+  function moveSpouse(index: number, dir: -1 | 1) {
+    if (!relationships) return;
+    const ids = relationships.spouses.map((s) => s.family_id);
+    const j = index + dir;
+    if (j < 0 || j >= ids.length) return;
+    [ids[index], ids[j]] = [ids[j], ids[index]];
+    reorderSpousesMutation.mutate(ids);
+  }
 
   const [qrOpen, setQrOpen] = useState(false);
   const [contribOpen, setContribOpen] = useState(false);
@@ -329,6 +355,14 @@ export default function PersonDetail() {
                     items={relationships.spouses}
                     clanId={clanId}
                     emptyHint="Chưa có vợ / chồng."
+                    reorder={
+                      canEdit && relationships.spouses.length > 1
+                        ? {
+                            onMove: moveSpouse,
+                            busy: reorderSpousesMutation.isPending,
+                          }
+                        : undefined
+                    }
                     action={
                       canEdit ? (
                         <Button
@@ -631,12 +665,19 @@ function RelationshipGroup({
   clanId,
   emptyHint,
   action,
+  reorder,
 }: {
   label: string;
   items: Relationship[];
   clanId: string;
   emptyHint: string;
   action?: React.ReactNode;
+  /** When set, renders ↑/↓ controls to re-rank the list (vợ cả/hai/ba).
+   *  `onMove(index, dir)` swaps the item with its neighbour. */
+  reorder?: {
+    onMove: (index: number, dir: -1 | 1) => void;
+    busy?: boolean;
+  };
 }) {
   return (
     <div className="space-y-2">
@@ -644,17 +685,22 @@ function RelationshipGroup({
         <h3 className="text-base font-semibold">{label}</h3>
         {action}
       </div>
+      {reorder && (
+        <p className="text-xs text-muted-foreground">
+          Dùng mũi tên để xếp thứ tự (vợ cả lên trên cùng).
+        </p>
+      )}
       {items.length === 0 ? (
         <div className="rounded-md border border-dashed bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
           {emptyHint}
         </div>
       ) : (
         <ul className="space-y-1.5">
-          {items.map((r) => (
-            <li key={r.id}>
+          {items.map((r, index) => (
+            <li key={r.id} className="flex items-stretch gap-1.5">
               <Link
                 to={`/clans/${clanId}/people/${r.id}`}
-                className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
+                className="flex flex-1 min-w-0 items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
               >
                 <PersonAvatar gender={r.gender} photoUrl={null} size={40} />
                 <div className="min-w-0 flex-1">
@@ -668,13 +714,39 @@ function RelationshipGroup({
                       ` · sinh ${r.birth_date.slice(0, 4)}`}
                   </p>
                 </div>
-                <span
-                  className="text-muted-foreground shrink-0"
-                  aria-hidden="true"
-                >
-                  ›
-                </span>
+                {!reorder && (
+                  <span
+                    className="text-muted-foreground shrink-0"
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                )}
               </Link>
+              {reorder && (
+                <div className="flex flex-col justify-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => reorder.onMove(index, -1)}
+                    disabled={index === 0 || reorder.busy}
+                    aria-label={`Đưa ${r.full_name} lên`}
+                    title="Lên"
+                    className="flex h-7 w-8 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-foreground hover:border-primary disabled:opacity-30 disabled:hover:border-input"
+                  >
+                    <IconChevronUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => reorder.onMove(index, 1)}
+                    disabled={index === items.length - 1 || reorder.busy}
+                    aria-label={`Đưa ${r.full_name} xuống`}
+                    title="Xuống"
+                    className="flex h-7 w-8 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-foreground hover:border-primary disabled:opacity-30 disabled:hover:border-input"
+                  >
+                    <IconChevronDown className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
