@@ -39,22 +39,26 @@ async function main() {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
 
-  const body = `Vài cải tiến giúp ghi chép gia phả đúng và nhanh hơn:
+  const body = `Gia phả nay có thêm mục "Mộ phần & tro cốt" — ghi lại nơi an nghỉ của các cụ:
 
-• Thứ tự vợ/chồng: với người có nhiều đời vợ, nay có thể sắp xếp vợ cả – vợ hai – vợ ba bằng nút mũi tên ngay trong trang của người đó.
+• Đủ hình thức: mộ phần (chôn cất), gửi tro cốt ở chùa, tháp họ (chứa tro cốt nhiều người), rải tro.
 
-• Ngày mất theo âm lịch: ưu tiên nhập ngày âm. Các cụ đời trước thường chỉ còn nhớ ngày giỗ — nay chỉ cần điền ngày và tháng âm, không bắt buộc nhập năm.
+• Lưu toạ độ → bấm "Chỉ đường" mở bản đồ dẫn tận nơi; đứng tại mộ bấm "Lấy vị trí hiện tại" để lưu nhanh.
 
-• Thêm con của vợ thứ dễ hơn: khi thêm con, chọn rõ "con chung với ai" (vợ cả hay vợ hai). Các ô thêm vợ/chồng và cha/mẹ nay cũng nhập được ngày mất.
+• Đính kèm ảnh, gắn người an nghỉ (xem qua lại với hồ sơ từng người), ghi lịch sử cải táng (bốc mộ / sang cát).
 
-• Tiện hơn trên điện thoại: sau khi xem chi tiết rồi bấm Quay lại, danh sách vẫn giữ nguyên tab, ô tìm kiếm và đúng vị trí đang xem — không phải tìm lại từ đầu.
+• Mỗi mộ / tháp có mã QR — dán hoặc khắc tại nơi an nghỉ, ai quét cũng xem được thông tin.
 
-Cả nhà không cần làm gì thêm. Chúc cả nhà ghi chép gia phả vui và đầy đủ!`;
+• Đặt nhắc Tảo mộ / Chạp họ theo ngày âm: cả họ được nhắc trước qua email/thông báo hằng năm.
+
+• Gom mộ theo nghĩa trang / chùa để dễ tra; tự động có trong sách gia phả PDF xuất ra.
+
+Vào menu "Mộ phần & tro cốt" để bắt đầu. Chúc cả nhà gìn giữ phần mộ tổ tiên đầy đủ!`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "✨ Cập nhật: sắp xếp thứ tự vợ, ngày giỗ âm lịch & nhập liệu dễ hơn",
+      title: "✨ Mới: Quản lý Mộ phần & tro cốt",
       body,
       level: "update",
       is_public: true,
