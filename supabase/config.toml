@@ -399,6 +399,11 @@ verify_jwt = false
 # function (plan §8). verify_jwt=true gives us the extra gateway layer.
 verify_jwt = true
 
+[functions.giapha-import]
+# Platform-admin only: scrapes vietnamgiapha.com + imports into a clan.
+# JWT required (we re-check is_platform_admin inside via auth.getUser).
+verify_jwt = true
+
 [functions.notify-events]
 # Cron-triggered. We don't use Supabase JWTs here because pg_cron's
 # http call sends the service-role bearer or a shared CRON_TOKEN

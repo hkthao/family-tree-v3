@@ -1544,6 +1544,7 @@ export type Database = {
           id: string
         }[]
       }
+      admin_wipe_clan_directory: { Args: { p_clan_id: string }; Returns: Json }
       announcements_mark_all_read: { Args: never; Returns: number }
       announcements_unread_count: { Args: never; Returns: number }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }

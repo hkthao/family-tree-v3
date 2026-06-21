@@ -28,11 +28,13 @@ import {
   adminAction,
   clearFailedNotification,
   getPlatformDbStats,
+  importGiaPha,
   listAllClans,
   listAllProfiles,
   listClansForUser,
   updateClanLimits,
   updateProfileMaxClans,
+  wipeClanDirectory,
   type AdminClanRow,
   type AdminProfileRow,
   type FailedNotification,
@@ -56,7 +58,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 import { unaccent } from "@/lib/unaccent";
 
-type Tab = "users" | "clans" | "health" | "feedback" | "announcements";
+type Tab = "users" | "clans" | "health" | "feedback" | "announcements" | "giapha";
 
 const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
   { value: "users", label: "Người dùng" },
@@ -64,6 +66,7 @@ const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
   { value: "health", label: "Hệ thống" },
   { value: "feedback", label: "Góp ý" },
   { value: "announcements", label: "Thông báo" },
+  { value: "giapha", label: "Nhập gia phả" },
 ];
 
 const PAGE_SIZE = 20;
@@ -158,6 +161,7 @@ export default function Admin() {
         {tab === "health" && <HealthTab />}
         {tab === "feedback" && <FeedbackTab />}
         {tab === "announcements" && <AnnouncementsAdminTab />}
+        {tab === "giapha" && <GiaPhaImportTab />}
       </main>
     </div>
   );
@@ -1675,6 +1679,234 @@ function AnnouncementEditor({
         </Button>
       </div>
     </form>
+  );
+}
+
+// ───────────── Nhập gia phả (vietnamgiapha.com) ─────────────────────
+
+function GiaPhaImportTab() {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const clansQ = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans() });
+  const clans = clansQ.data ?? [];
+
+  // import section
+  const [mode, setMode] = useState<"new" | "existing">("new");
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [newClanName, setNewClanName] = useState("");
+  const [targetClanId, setTargetClanId] = useState("");
+  const [replace, setReplace] = useState(false);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof importGiaPha>> | null>(null);
+
+  const importM = useMutation({
+    mutationFn: () =>
+      importGiaPha({
+        sourceUrl: sourceUrl.trim(),
+        clanId: mode === "existing" ? targetClanId : undefined,
+        clanName: mode === "new" ? newClanName.trim() || undefined : undefined,
+        replace: mode === "existing" ? replace : undefined,
+      }),
+    onSuccess: (res) => {
+      setResult(res);
+      qc.invalidateQueries({ queryKey: queryKeys.adminClans() });
+      toast.success("Đã nhập gia phả", {
+        description: `${res.counts.persons} người · ${res.counts.families} gia đình`,
+      });
+    },
+    onError: (e) => toast.error("Nhập thất bại", { description: (e as Error).message }),
+  });
+
+  // wipe section
+  const [wipeClanId, setWipeClanId] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+  const wipeClan = clans.find((c) => c.id === wipeClanId);
+  const canWipe = !!wipeClan && confirmText.trim() === wipeClan.name;
+  const wipeM = useMutation({
+    mutationFn: () => wipeClanDirectory(wipeClanId),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: queryKeys.adminClans() });
+      toast.success("Đã xoá toàn bộ danh bạ", {
+        description: `${r.deleted_persons} người · ${r.deleted_families} gia đình`,
+      });
+      setConfirmText("");
+    },
+    onError: (e) => toast.error("Xoá thất bại", { description: (e as Error).message }),
+  });
+
+  return (
+    <section className="space-y-6 max-w-2xl">
+      {/* ── Import ── */}
+      <div className="space-y-3 rounded-lg border p-4">
+        <h2 className="text-lg font-semibold">Nhập từ vietnamgiapha.com</h2>
+        <p className="text-sm text-muted-foreground">
+          Dán link gia phả (vd <code>https://vietnamgiapha.com/XemGiaPha/1691/giapha.html</code>)
+          rồi bấm Tạo. Hệ thống tự tải, bóc tách và tạo danh bạ. Quá trình
+          có thể mất 30–60 giây.
+        </p>
+
+        <div className="flex flex-wrap gap-1.5">
+          {(["new", "existing"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={`px-3 h-9 rounded-md border text-sm ${mode === m ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted/40"}`}
+            >
+              {m === "new" ? "Tạo dòng họ mới" : "Nhập vào dòng họ có sẵn"}
+            </button>
+          ))}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="src-url">Link gia phả</Label>
+          <Input
+            id="src-url"
+            value={sourceUrl}
+            onChange={(e) => setSourceUrl(e.target.value)}
+            placeholder="https://vietnamgiapha.com/XemGiaPha/…"
+          />
+        </div>
+
+        {mode === "new" ? (
+          <div className="space-y-1.5">
+            <Label htmlFor="new-name">Tên dòng họ (bỏ trống = tự lấy từ nguồn)</Label>
+            <Input
+              id="new-name"
+              value={newClanName}
+              onChange={(e) => setNewClanName(e.target.value)}
+              placeholder="vd: Chi họ Cao Minh Triết"
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="target-clan">Dòng họ đích</Label>
+              <select
+                id="target-clan"
+                value={targetClanId}
+                onChange={(e) => setTargetClanId(e.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">— Chọn dòng họ —</option>
+                {clans.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.person_count} người)
+                  </option>
+                ))}
+              </select>
+            </div>
+            <label className="flex items-start gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={replace}
+                onChange={(e) => setReplace(e.target.checked)}
+                className="mt-1 h-4 w-4 accent-primary"
+              />
+              <span>
+                Xoá toàn bộ danh bạ hiện tại của dòng họ này <strong>trước khi</strong> nhập
+                (tránh trùng lặp khi nhập lại).
+              </span>
+            </label>
+          </div>
+        )}
+
+        <Button
+          variant="outline"
+          disabled={
+            importM.isPending ||
+            !sourceUrl.trim() ||
+            (mode === "existing" && !targetClanId)
+          }
+          onClick={() => {
+            setResult(null);
+            importM.mutate();
+          }}
+        >
+          {importM.isPending ? "Đang nhập…" : "Tạo"}
+        </Button>
+
+        {result && (
+          <Alert>
+            <AlertDescription>
+              ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "}
+              <strong>{result.counts.families}</strong> gia đình vào{" "}
+              <Link to={`/clans/${result.clanId}`} className="text-primary underline">
+                {result.clanName}
+              </Link>
+              .
+              {(result.warnings.ambiguousMothers > 0 || result.warnings.missingGender > 0) && (
+                <span className="block mt-1 text-muted-foreground">
+                  Cần rà lại: {result.warnings.ambiguousMothers} con mẹ chưa chắc
+                  (mặc định vợ cả)
+                  {result.warnings.missingGender > 0 && `, ${result.warnings.missingGender} thiếu giới tính`}
+                  . {result.warnings.note}
+                </span>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+
+      {/* ── Danger: wipe directory ── */}
+      <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+        <h2 className="text-lg font-semibold text-destructive">
+          Xoá toàn bộ danh bạ (nguy hiểm)
+        </h2>
+        <Alert variant="destructive">
+          <AlertDescription>
+            <strong>Hành động không thể hoàn tác.</strong> Xoá vĩnh viễn{" "}
+            <strong>tất cả người và quan hệ gia đình</strong> trong dòng họ đã
+            chọn — KHÔNG khôi phục được từ nhật ký. Dòng họ, thành viên và cài
+            đặt vẫn giữ nguyên. Chỉ dùng khi muốn nhập lại từ đầu.
+          </AlertDescription>
+        </Alert>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="wipe-clan">Dòng họ cần xoá danh bạ</Label>
+          <select
+            id="wipe-clan"
+            value={wipeClanId}
+            onChange={(e) => {
+              setWipeClanId(e.target.value);
+              setConfirmText("");
+            }}
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">— Chọn dòng họ —</option>
+            {clans.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.person_count} người)
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {wipeClan && (
+          <div className="space-y-1.5">
+            <Label htmlFor="wipe-confirm">
+              Gõ đúng tên dòng họ <strong>“{wipeClan.name}”</strong> để xác nhận
+              xoá {wipeClan.person_count} người:
+            </Label>
+            <Input
+              id="wipe-confirm"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={wipeClan.name}
+              autoComplete="off"
+            />
+          </div>
+        )}
+
+        <Button
+          variant="destructive"
+          disabled={!canWipe || wipeM.isPending}
+          onClick={() => wipeM.mutate()}
+        >
+          <IconTrash className="h-4 w-4 mr-1.5" />
+          {wipeM.isPending ? "Đang xoá…" : "Xoá toàn bộ danh bạ"}
+        </Button>
+      </div>
+    </section>
   );
 }
 
