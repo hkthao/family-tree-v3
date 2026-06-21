@@ -6,7 +6,7 @@ import { CriticalBanner } from "@/components/CriticalBanner";
 import { MascotTip } from "@/components/MascotTip";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { RequireAuth } from "@/components/RequireAuth";
-import { ScrollToTop } from "@/components/ScrollToTop";
+import { ScrollManager } from "@/components/ScrollManager";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import Account from "@/pages/Account";
@@ -57,7 +57,7 @@ import Signup from "@/pages/Signup";
 export default function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
+      <ScrollManager />
       <ToastProvider>
       <ConfirmDialogProvider>
         <CriticalBanner />
