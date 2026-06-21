@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -28,7 +28,9 @@ import {
   adminAction,
   clearFailedNotification,
   getPlatformDbStats,
-  importGiaPha,
+  giaPhaImportFinalize,
+  giaPhaImportStart,
+  giaPhaImportStep,
   listAllClans,
   listAllProfiles,
   listClansForUser,
@@ -1696,25 +1698,85 @@ function GiaPhaImportTab() {
   const [newClanName, setNewClanName] = useState("");
   const [targetClanId, setTargetClanId] = useState("");
   const [replace, setReplace] = useState(false);
-  const [result, setResult] = useState<Awaited<ReturnType<typeof importGiaPha>> | null>(null);
 
-  const importM = useMutation({
-    mutationFn: () =>
-      importGiaPha({
-        sourceUrl: sourceUrl.trim(),
-        clanId: mode === "existing" ? targetClanId : undefined,
-        clanName: mode === "new" ? newClanName.trim() || undefined : undefined,
-        replace: mode === "existing" ? replace : undefined,
-      }),
-    onSuccess: (res) => {
+  // staged-job state: drive start → step×N → finalize, with progress.
+  const LS_KEY = "giapha-import-job";
+  const [running, setRunning] = useState(false);
+  const [prog, setProg] = useState<{ scraped: number; total: number; phase: string } | null>(null);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof giaPhaImportFinalize>> | null>(null);
+  const [resultClanName, setResultClanName] = useState<string | undefined>(undefined);
+  const [resumeJob, setResumeJob] = useState<{ jobId: string; total: number; clanName?: string } | null>(null);
+  const cancelRef = useRef(false);
+
+  // On mount, surface an unfinished job (e.g. tab was closed) so it can resume.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) setResumeJob(JSON.parse(raw));
+    } catch { /* ignore */ }
+  }, []);
+
+  // Loop steps until 'ready', then finalize. `jobId` already exists.
+  async function runJob(jobId: string, total: number, clanName?: string) {
+    setRunning(true);
+    cancelRef.current = false;
+    try {
+      let status = "scraping";
+      let scraped = prog?.scraped ?? 0;
+      while (status === "scraping") {
+        if (cancelRef.current) {
+          toast.info("Đã tạm dừng — có thể tiếp tục sau.");
+          setRunning(false);
+          return;
+        }
+        const r = await giaPhaImportStep(jobId);
+        status = r.status;
+        scraped = r.scraped;
+        setProg({ scraped, total: r.total, phase: "Đang tải dữ liệu" });
+      }
+      setProg({ scraped, total, phase: "Đang ghi vào dòng họ" });
+      const res = await giaPhaImportFinalize(jobId);
       setResult(res);
+      setResultClanName(clanName);
+      localStorage.removeItem(LS_KEY);
+      setResumeJob(null);
+      setProg(null);
       qc.invalidateQueries({ queryKey: queryKeys.adminClans() });
       toast.success("Đã nhập gia phả", {
         description: `${res.counts.persons} người · ${res.counts.families} gia đình`,
       });
-    },
-    onError: (e) => toast.error("Nhập thất bại", { description: (e as Error).message }),
-  });
+    } catch (e) {
+      toast.error("Nhập thất bại", { description: (e as Error).message });
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  async function startImport() {
+    setResult(null);
+    setRunning(true);
+    cancelRef.current = false;
+    try {
+      const job = await giaPhaImportStart({
+        sourceUrl: sourceUrl.trim(),
+        clanId: mode === "existing" ? targetClanId : undefined,
+        clanName: mode === "new" ? newClanName.trim() || undefined : undefined,
+        replace: mode === "existing" ? replace : undefined,
+      });
+      const ls = { jobId: job.jobId, total: job.total, clanName: job.clanName };
+      localStorage.setItem(LS_KEY, JSON.stringify(ls));
+      setProg({ scraped: 0, total: job.total, phase: "Đang tải dữ liệu" });
+      await runJob(job.jobId, job.total, job.clanName);
+    } catch (e) {
+      toast.error("Không bắt đầu được", { description: (e as Error).message });
+      setRunning(false);
+    }
+  }
+
+  function dismissResume() {
+    localStorage.removeItem(LS_KEY);
+    setResumeJob(null);
+  }
 
   // wipe section
   const [wipeClanId, setWipeClanId] = useState("");
@@ -1810,20 +1872,66 @@ function GiaPhaImportTab() {
           </div>
         )}
 
-        <Button
-          variant="outline"
-          disabled={
-            importM.isPending ||
-            !sourceUrl.trim() ||
-            (mode === "existing" && !targetClanId)
-          }
-          onClick={() => {
-            setResult(null);
-            importM.mutate();
-          }}
-        >
-          {importM.isPending ? "Đang nhập…" : "Tạo"}
-        </Button>
+        {resumeJob && !running && (
+          <Alert>
+            <AlertDescription className="flex flex-wrap items-center gap-2">
+              <span>
+                Có lần nhập đang dở{resumeJob.clanName ? ` (${resumeJob.clanName})` : ""} —
+                {resumeJob.total} người. Tiếp tục?
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => runJob(resumeJob.jobId, resumeJob.total, resumeJob.clanName)}
+              >
+                Tiếp tục nhập
+              </Button>
+              <Button size="sm" variant="ghost" onClick={dismissResume}>
+                Bỏ qua
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!running ? (
+          <Button
+            variant="outline"
+            disabled={!sourceUrl.trim() || (mode === "existing" && !targetClanId)}
+            onClick={startImport}
+          >
+            Tạo
+          </Button>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {prog?.phase ?? "Đang xử lý"}
+                {prog ? ` — ${prog.scraped}/${prog.total} người` : "…"}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  cancelRef.current = true;
+                }}
+              >
+                Tạm dừng
+              </Button>
+            </div>
+            {prog && prog.total > 0 && (
+              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full bg-primary transition-all"
+                  style={{ width: `${Math.round((prog.scraped / prog.total) * 100)}%` }}
+                />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau —
+              tiến độ được lưu trên máy chủ.
+            </p>
+          </div>
+        )}
 
         {result && (
           <Alert>
@@ -1831,7 +1939,7 @@ function GiaPhaImportTab() {
               ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "}
               <strong>{result.counts.families}</strong> gia đình vào{" "}
               <Link to={`/clans/${result.clanId}`} className="text-primary underline">
-                {result.clanName}
+                {resultClanName ?? "dòng họ"}
               </Link>
               .
               {(result.warnings.ambiguousMothers > 0 || result.warnings.missingGender > 0) && (
