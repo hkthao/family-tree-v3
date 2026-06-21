@@ -278,6 +278,7 @@ export default function RestingPlaceForm() {
         <div className="space-y-2">
           <Label htmlFor="notes">Ghi chú</Label>
           <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
+            placeholder="vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…"
             className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base" />
         </div>
 
