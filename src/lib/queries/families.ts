@@ -274,6 +274,15 @@ export interface AddChildInput {
   birth_lunar_day?: number | null;
   birth_lunar_is_leap?: boolean;
   birth_order?: number | null;
+  death_date?: string | null;
+  death_date_precision?: "day" | "month" | "year" | null;
+  death_lunar_year?: number | null;
+  death_lunar_month?: number | null;
+  death_lunar_day?: number | null;
+  death_lunar_is_leap?: boolean;
+  death_anniv_lunar_month?: number | null;
+  death_anniv_lunar_day?: number | null;
+  death_anniv_lunar_is_leap?: boolean;
 }
 
 export async function addChildToFamily(
@@ -296,6 +305,16 @@ export async function addChildToFamily(
       birth_lunar_day: input.birth_lunar_day ?? null,
       birth_lunar_is_leap: input.birth_lunar_is_leap ?? false,
       birth_order: input.birth_order ?? null,
+      death_date: input.death_date ?? null,
+      death_date_precision:
+        input.death_date_precision ?? (input.death_date ? "day" : null),
+      death_lunar_year: input.death_lunar_year ?? null,
+      death_lunar_month: input.death_lunar_month ?? null,
+      death_lunar_day: input.death_lunar_day ?? null,
+      death_lunar_is_leap: input.death_lunar_is_leap ?? false,
+      death_anniv_lunar_month: input.death_anniv_lunar_month ?? null,
+      death_anniv_lunar_day: input.death_anniv_lunar_day ?? null,
+      death_anniv_lunar_is_leap: input.death_anniv_lunar_is_leap ?? false,
     })
     .select("id")
     .single();
