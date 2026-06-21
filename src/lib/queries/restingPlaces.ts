@@ -71,6 +71,7 @@ export interface RestingPlace {
   built_year: number | null;
   material: string | null;
   notes: string | null;
+  cemetery_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -98,30 +99,33 @@ export interface Relocation {
 export interface RestingPlaceListItem extends RestingPlace {
   occupant_count: number;
   first_photo_path: string | null;
+  cemetery_name: string | null;
 }
 export interface RestingPlaceDetail extends RestingPlace {
   occupants: OccupantBrief[];
   photos: RestingPlacePhoto[];
   relocations: Relocation[];
+  cemetery_name: string | null;
 }
 
 const COLS =
-  "id, clan_id, kind, name, location_name, location_detail, address, latitude, longitude, orientation, status, built_year, material, notes, created_at, updated_at";
+  "id, clan_id, kind, name, location_name, location_detail, address, latitude, longitude, orientation, status, built_year, material, notes, cemetery_id, created_at, updated_at";
 
 export async function listRestingPlaces(
   clanId: string,
-  opts: { search?: string; kind?: RestingPlaceKind | null } = {},
+  opts: { search?: string; kind?: RestingPlaceKind | null; cemeteryId?: string | null } = {},
   client: Client = defaultClient,
 ): Promise<RestingPlaceListItem[]> {
   let q = client
     .from("resting_places")
     .select(
-      `${COLS}, resting_place_occupants(id), resting_place_photos(path, sort)`,
+      `${COLS}, resting_place_occupants(id), resting_place_photos(path, sort), cemetery:cemeteries(name)`,
     )
     .eq("clan_id", clanId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (opts.kind) q = q.eq("kind", opts.kind);
+  if (opts.cemeteryId) q = q.eq("cemetery_id", opts.cemeteryId);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
 
@@ -130,11 +134,12 @@ export async function listRestingPlaces(
     .map((r) => {
       const photos = (r.resting_place_photos ?? []) as { path: string; sort: number }[];
       photos.sort((a, b) => a.sort - b.sort);
-      const { resting_place_occupants, resting_place_photos, ...rest } = r;
+      const { resting_place_occupants, resting_place_photos, cemetery, ...rest } = r;
       return {
         ...(rest as RestingPlace),
         occupant_count: (resting_place_occupants ?? []).length,
         first_photo_path: photos[0]?.path ?? null,
+        cemetery_name: (cemetery as { name: string } | null)?.name ?? null,
       };
     })
     .filter((r) => {
@@ -154,7 +159,8 @@ export async function getRestingPlace(
       `${COLS},
        resting_place_occupants(id, note, person:persons(id, full_name, gender, is_living)),
        resting_place_photos(id, path, caption, sort),
-       resting_place_relocations(id, from_label, moved_on, note)`,
+       resting_place_relocations(id, from_label, moved_on, note),
+       cemetery:cemeteries(name)`,
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -162,7 +168,7 @@ export async function getRestingPlace(
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const { resting_place_occupants, resting_place_photos, resting_place_relocations, ...rest } = data;
+  const { resting_place_occupants, resting_place_photos, resting_place_relocations, cemetery, ...rest } = data;
   // deno-lint shape: person may be object or null
   const occupants: OccupantBrief[] = (resting_place_occupants ?? [])
     .map((o) => {
@@ -184,7 +190,13 @@ export async function getRestingPlace(
   const relocations = ((resting_place_relocations ?? []) as Relocation[]).sort(
     (a, b) => (a.moved_on ?? "").localeCompare(b.moved_on ?? ""),
   );
-  return { ...(rest as RestingPlace), occupants, photos, relocations };
+  return {
+    ...(rest as RestingPlace),
+    occupants,
+    photos,
+    relocations,
+    cemetery_name: (cemetery as { name: string } | null)?.name ?? null,
+  };
 }
 
 export type RestingPlaceInput = Partial<

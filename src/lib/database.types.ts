@@ -205,6 +205,53 @@ export type Database = {
           },
         ]
       }
+      cemeteries: {
+        Row: {
+          address: string | null
+          clan_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          clan_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          clan_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cemeteries_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clan_members: {
         Row: {
           clan_id: string
@@ -1487,6 +1534,7 @@ export type Database = {
         Row: {
           address: string | null
           built_year: number | null
+          cemetery_id: string | null
           clan_id: string
           created_at: string
           deleted_at: string | null
@@ -1506,6 +1554,7 @@ export type Database = {
         Insert: {
           address?: string | null
           built_year?: number | null
+          cemetery_id?: string | null
           clan_id: string
           created_at?: string
           deleted_at?: string | null
@@ -1525,6 +1574,7 @@ export type Database = {
         Update: {
           address?: string | null
           built_year?: number | null
+          cemetery_id?: string | null
           clan_id?: string
           created_at?: string
           deleted_at?: string | null
@@ -1542,6 +1592,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "resting_places_cemetery_id_fkey"
+            columns: ["cemetery_id"]
+            isOneToOne: false
+            referencedRelation: "cemeteries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "resting_places_clan_id_fkey"
             columns: ["clan_id"]

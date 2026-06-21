@@ -296,6 +296,17 @@ export default function RestingPlaceDetail() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <Row label="Hình thức" value={RESTING_PLACE_KIND_LABEL[place.kind]} />
+          {place.cemetery_name && (
+            <div className="flex gap-3">
+              <span className="w-32 shrink-0 text-muted-foreground">Cơ sở</span>
+              <Link
+                to={`/clans/${clan.id}/graves?cemetery=${place.cemetery_id}`}
+                className="min-w-0 flex-1 break-words text-primary hover:underline"
+              >
+                {place.cemetery_name}
+              </Link>
+            </div>
+          )}
           <Row label="Nơi" value={place.location_name} />
           <Row label="Vị trí chi tiết" value={place.location_detail} />
           <Row label="Địa chỉ" value={place.address} />
