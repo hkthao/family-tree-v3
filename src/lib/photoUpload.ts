@@ -85,6 +85,51 @@ export async function uploadPersonPhoto(
 }
 
 /**
+ * Upload one photo of a resting place (mộ / tro cốt). Reuses the same
+ * private `person-photos` bucket — storage RLS only checks
+ * `foldername[1] = clan_id`, so a path that still starts with the clan
+ * id is governed by the same member-read / editor-write policies.
+ *
+ * Path: `{clanId}/graves/{restingPlaceId}/{uuid}.jpg`. Unlike avatars a
+ * resting place can have many photos (toàn cảnh, bia, khu), so each gets
+ * a unique name instead of overwriting. Allows a larger size than
+ * avatars since these are documentary shots.
+ *
+ * Returns the storage path — caller inserts it into resting_place_photos.
+ */
+export async function uploadRestingPlacePhoto(
+  clanId: string,
+  restingPlaceId: string,
+  file: File,
+  onProgress?: (p: UploadProgress) => void,
+): Promise<UploadResult> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("File phải là ảnh (JPG / PNG / WebP / HEIC)");
+  }
+  onProgress?.({ phase: "compress", percent: 0 });
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 0.25,
+    maxWidthOrHeight: 1280,
+    useWebWorker: true,
+    initialQuality: 0.8,
+    fileType: "image/jpeg",
+    onProgress: (percent: number) => onProgress?.({ phase: "compress", percent }),
+  });
+  onProgress?.({ phase: "upload", percent: 0 });
+  const path = `${clanId}/graves/${restingPlaceId}/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, compressed, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: "image/jpeg",
+    });
+  if (error) throw new Error(`upload: ${error.message}`);
+  onProgress?.({ phase: "upload", percent: 100 });
+  return { path, bytes: compressed.size };
+}
+
+/**
  * Build a short-lived signed URL for displaying the photo. The bucket
  * is private (only clan members can SELECT), so plain public URLs
  * return 401. Signed URLs carry a token that bypasses the auth header
