@@ -193,7 +193,7 @@ export default function RestingPlaceForm() {
           }
           save.mutate();
         }}
-        className="space-y-5 max-w-xl"
+        className="space-y-6"
       >
         <div className="space-y-2">
           <Label htmlFor="kind">Hình thức</Label>
