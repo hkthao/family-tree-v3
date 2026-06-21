@@ -16,6 +16,7 @@ import { useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
 import {
+  ADDRESS_PLACEHOLDER,
   addOccupant,
   createRestingPlace,
   getRestingPlace,
@@ -229,19 +230,19 @@ export default function RestingPlaceForm() {
         <div className={labels.detail ? "grid gap-4 sm:grid-cols-2" : "space-y-2"}>
           <div className="space-y-2">
             <Label htmlFor="loc-name">{labels.name}</Label>
-            <Input id="loc-name" value={locationName} onChange={(e) => setLocationName(e.target.value)} />
+            <Input id="loc-name" value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder={labels.namePh} />
           </div>
           {labels.detail && (
             <div className="space-y-2">
               <Label htmlFor="loc-detail">{labels.detail}</Label>
-              <Input id="loc-detail" value={locationDetail} onChange={(e) => setLocationDetail(e.target.value)} />
+              <Input id="loc-detail" value={locationDetail} onChange={(e) => setLocationDetail(e.target.value)} placeholder={labels.detailPh} />
             </div>
           )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="address">Địa chỉ</Label>
-          <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
+          <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={ADDRESS_PLACEHOLDER} />
         </div>
 
         <div className="space-y-2">
