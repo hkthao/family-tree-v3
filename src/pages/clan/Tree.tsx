@@ -393,9 +393,9 @@ export default function Tree() {
           // meta line. Avatar img_y=7 để center theo trục y với h=64.
           // Khi bật chi tiết người mất, nới rộng để chứa dòng giỗ/thọ.
           .setCardDim({
-            // Rộng hơn khi hiện giỗ/thọ để dòng "… Giỗ D/M ÂL" không bị
-            // cắt mất chữ ở mép phải.
-            w: showDeceasedDetails ? 312 : showLivingDob ? 240 : 220,
+            // Nới nhẹ khi hiện giỗ/thọ; dòng đó dùng cỡ chữ nhỏ hơn (10)
+            // nên không cần rộng nhiều mà vẫn đủ chỗ cho "… Giỗ D/M ÂL".
+            w: showDeceasedDetails ? 268 : showLivingDob ? 240 : 220,
             h: showDeceasedDetails ? 82 : 64,
             text_x: 64,
             text_y: 18,
@@ -425,7 +425,7 @@ export default function Tree() {
               extra.setAttribute("text-anchor", "start");
               extra.setAttribute("x", "0");
               extra.setAttribute("dy", "16");
-              extra.setAttribute("font-size", "11");
+              extra.setAttribute("font-size", "10");
               extra.setAttribute("fill", "#8A7A66");
             }
 
@@ -613,12 +613,12 @@ export default function Tree() {
           built.setOrientationHorizontal?.();
           // Generations flow left→right → X must clear card width.
           // Siblings stack top→bottom → Y must clear card height.
-          built.setCardXSpacing(wide ? 360 : 280).setCardYSpacing(92);
+          built.setCardXSpacing(wide ? 300 : 280).setCardYSpacing(92);
         } else {
           built.setOrientationVertical?.();
           // Siblings stack left→right → X must clear card width.
           // Generations flow top→bottom → Y must clear card height.
-          built.setCardXSpacing(wide ? 342 : 250).setCardYSpacing(152);
+          built.setCardXSpacing(wide ? 282 : 250).setCardYSpacing(152);
         }
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
