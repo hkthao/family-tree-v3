@@ -16,6 +16,7 @@ import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import type { PersonDetail } from "@/lib/queries/persons";
 import { formatPartialDate } from "@/lib/partialDate";
+import { computeLifespanYears } from "@/lib/lifespan";
 import {
   formatLunarAnniversary,
   formatLunarDate,
@@ -506,6 +507,8 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
           branches: data.branches,
           childrenByParent,
           personById,
+          showDeathDetails: clan.display_death_details,
+          showLivingFullDob: clan.display_living_full_dob,
         })}
 
       {/* ─── Danh bạ chi tiết (3-card grid) ─────────────────── */}
@@ -541,6 +544,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
                     branchById,
                     clan.generation_offset,
                     photoByPersonId,
+                    clan.display_death_details,
                   )}
                 </View>
               ))}
@@ -640,6 +644,7 @@ function renderPersonCard(
   branchById: Map<string, string>,
   genOffset: number,
   photoByPersonId?: Map<string, string>,
+  showDeathDetails = false,
 ): React.ReactNode {
   const birthSolar = formatPartialDate({
     date: p.birth_date,
@@ -658,6 +663,11 @@ function renderPersonCard(
     month: p.death_anniv_lunar_month ?? undefined,
     day: p.death_anniv_lunar_day ?? undefined,
   });
+  const thoYears = computeLifespanYears(
+    p.lifespan_years,
+    p.birth_date,
+    p.death_date,
+  );
 
   const spouses = (spousesByPerson.get(p.id) ?? [])
     .map((id) => personById.get(id))
@@ -715,6 +725,9 @@ function renderPersonCard(
           <>
             <FieldLine label="Mất" value={deathSolar || null} />
             <FieldLine label="Giỗ" value={gioRow || null} />
+            {showDeathDetails && thoYears != null ? (
+              <FieldLine label="Hưởng thọ" value={`${thoYears} tuổi`} />
+            ) : null}
           </>
         )}
         <FieldLine label="Cha" value={father?.full_name ?? null} />
@@ -878,12 +891,16 @@ function renderTreePages({
   branches,
   childrenByParent,
   personById,
+  showDeathDetails = false,
+  showLivingFullDob = false,
 }: {
   bloodline: PersonDetail[];
   roots: PersonDetail[];
   branches: { id: string; name: string }[];
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
+  showDeathDetails?: boolean;
+  showLivingFullDob?: boolean;
 }): React.ReactNode {
   // ─── Strategy A: one page per chi ───────────────────────────
   const byBranch = new Map<string, PersonDetail[]>();
@@ -919,6 +936,8 @@ function renderTreePages({
             childrenByParent={childrenByParent}
             personById={personById}
             memberFilter={memberSet}
+            showDeathDetails={showDeathDetails}
+            showLivingFullDob={showLivingFullDob}
           />
         );
       });
@@ -933,6 +952,8 @@ function renderTreePages({
         roots={roots}
         childrenByParent={childrenByParent}
         personById={personById}
+        showDeathDetails={showDeathDetails}
+        showLivingFullDob={showLivingFullDob}
       />
     );
   }
@@ -978,6 +999,8 @@ function renderTreePages({
           childrenByParent={childrenByParent}
           personById={personById}
           memberFilter={universe}
+          showDeathDetails={showDeathDetails}
+          showLivingFullDob={showLivingFullDob}
         />,
       );
       return;
@@ -999,6 +1022,8 @@ function renderTreePages({
           childrenByParent={childrenByParent}
           personById={personById}
           memberFilter={universe}
+          showDeathDetails={showDeathDetails}
+          showLivingFullDob={showLivingFullDob}
         />,
       );
       return;
@@ -1017,6 +1042,8 @@ function TreeDiagramPage({
   childrenByParent,
   personById,
   memberFilter,
+  showDeathDetails = false,
+  showLivingFullDob = false,
 }: {
   title?: string;
   subtitle?: string;
@@ -1024,6 +1051,8 @@ function TreeDiagramPage({
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
   memberFilter?: Set<string>;
+  showDeathDetails?: boolean;
+  showLivingFullDob?: boolean;
 }): React.ReactNode {
   const { nodes, edges, leafCount, maxDepth } = buildTreeLayout(
     roots,
@@ -1054,7 +1083,9 @@ function TreeDiagramPage({
   // hanging off the edge.
   const lane = leafCount > 0 ? (SVG_W - SAFETY * 2) / leafCount : SVG_W;
   const CARD_W = Math.max(48, Math.min(80, lane - 6));
-  const CARD_H = 24;
+  // Người đã mất cần thêm dòng giỗ/thọ → thẻ cao hơn (vẫn nằm gọn
+  // trong khoảng cách hàng ROW ≥ 56pt nên không đè lên nhau).
+  const CARD_H = showDeathDetails ? 34 : 24;
   const ROW = Math.max(56, Math.min(110, H / Math.max(maxDepth + 1, 2)));
 
   const pxOf = (gridX: number) =>
@@ -1106,7 +1137,33 @@ function TreeDiagramPage({
           const x = cx - CARD_W / 2;
           const y = cy - CARD_H / 2;
           const fill = n.person.gender === "M" ? "#D4DDE4" : "#E8D2CC";
-          const ls = lifespanText(n.person);
+          const person = n.person;
+          // Dòng năm chính: người sống + bật "ngày sinh đủ" → hiện đầy
+          // đủ ngày sinh; còn lại giữ dạng "YYYY-YYYY".
+          let ls = lifespanText(person);
+          if (showLivingFullDob && person.is_living) {
+            const full = formatPartialDate({
+              date: person.birth_date,
+              precision: person.birth_date_precision ?? null,
+            });
+            if (full) ls = truncate(full);
+          }
+          // Dòng phụ (chỉ người đã mất, khi bật chi tiết): thọ + giỗ.
+          let extra = "";
+          if (showDeathDetails && !person.is_living) {
+            const parts: string[] = [];
+            const tho = computeLifespanYears(
+              person.lifespan_years,
+              person.birth_date,
+              person.death_date,
+            );
+            if (tho != null) parts.push(`thọ ${tho}t`);
+            if (person.death_anniv_lunar_month && person.death_anniv_lunar_day)
+              parts.push(
+                `giỗ ${person.death_anniv_lunar_day}/${person.death_anniv_lunar_month}`,
+              );
+            extra = truncate(parts.join(" · "));
+          }
           return (
             <G key={n.person.id}>
               <Rect
@@ -1145,6 +1202,20 @@ function TreeDiagramPage({
                   }}
                 >
                   {ls}
+                </Text>
+              )}
+              {extra && (
+                <Text
+                  x={cx}
+                  y={y + 28}
+                  style={{
+                    fontFamily: PDF_FONT_FAMILY,
+                    fontSize: yearFontSize,
+                    fill: COLORS.muted,
+                    textAnchor: "middle",
+                  }}
+                >
+                  {extra}
                 </Text>
               )}
             </G>
