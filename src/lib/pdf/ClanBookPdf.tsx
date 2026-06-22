@@ -396,9 +396,28 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
     assignStt(r.id, `${i + 1}`);
   });
 
-  const bloodlineSorted = [...bloodline]
-    .filter((p) => sttById.has(p.id))
-    .sort((a, b) => compareStt(sttById.get(a.id)!, sttById.get(b.id)!));
+  // Don't drop bloodline members whose parent link is missing/broken
+  // (orphaned data) — they'd silently vanish from the book. Treat each
+  // such person as an extra root and number them after the real roots,
+  // pulling in their descendants too. Guarantees every bloodline member
+  // appears, in a deterministic order.
+  let nextRoot = roots.length;
+  const orphans = bloodline
+    .filter((p) => !sttById.has(p.id))
+    .sort(
+      (a, b) =>
+        (a.generation ?? 0) - (b.generation ?? 0) || birthOrder(a, b),
+    );
+  for (const p of orphans) {
+    if (sttById.has(p.id)) continue; // picked up as a descendant meanwhile
+    orderInSiblings.set(p.id, nextRoot);
+    assignStt(p.id, `${nextRoot + 1}`);
+    nextRoot++;
+  }
+
+  const bloodlineSorted = [...bloodline].sort((a, b) =>
+    compareStt(sttById.get(a.id) ?? "999999", sttById.get(b.id) ?? "999999"),
+  );
 
   const stats = {
     bloodlineCount: bloodline.length,
