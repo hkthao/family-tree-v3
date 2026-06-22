@@ -68,6 +68,7 @@ export default function NewPerson() {
   const [nickname, setNickname] = useState("");
   const [posthumousName, setPosthumousName] = useState("");
   const [bio, setBio] = useState("");
+  const [lifespanYears, setLifespanYears] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
   // Track whether prefill ran once so re-renders don't clobber user edits
   // if the source query refetches.
@@ -165,6 +166,9 @@ export default function NewPerson() {
         nickname: nickname.trim() || null,
         posthumous_name: posthumousName.trim() || null,
         bio: bio.trim() || null,
+        lifespan_years: lifespanYears.trim()
+          ? Math.max(0, Math.min(150, Math.floor(Number(lifespanYears))))
+          : null,
       });
     },
     onSuccess: async () => {
@@ -433,6 +437,26 @@ export default function NewPerson() {
                 placeholder="(tuỳ chọn)"
               />
             </div>
+
+            {!isLiving && (
+              <div className="space-y-2">
+                <Label htmlFor="lifespan_years">Hưởng thọ (tuổi)</Label>
+                <Input
+                  id="lifespan_years"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={150}
+                  value={lifespanYears}
+                  onChange={(e) => setLifespanYears(e.target.value)}
+                  placeholder="VD: 82"
+                  className="max-w-[10rem]"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Để trống thì hệ thống tự tính từ năm sinh – năm mất.
+                </p>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="bio">Tiểu sử</Label>

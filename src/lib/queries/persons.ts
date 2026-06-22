@@ -226,6 +226,8 @@ export interface CreatePersonInput {
   death_anniv_lunar_is_leap?: boolean;
   /** Sibling rank ("con thứ mấy"). 1 = oldest, null = unspecified. */
   birth_order?: number | null;
+  /** Hưởng thọ (tuổi). Tự ghi cho người đã mất; null = không rõ. */
+  lifespan_years?: number | null;
 }
 
 export async function createPerson(
@@ -266,6 +268,7 @@ export async function createPerson(
       death_anniv_lunar_day: input.death_anniv_lunar_day ?? null,
       death_anniv_lunar_is_leap: input.death_anniv_lunar_is_leap ?? false,
       birth_order: input.birth_order ?? null,
+      lifespan_years: input.lifespan_years ?? null,
     })
     .select("id")
     .single();
@@ -293,13 +296,14 @@ export interface PersonDetail extends PersonRow {
   death_anniv_lunar_day: number | null;
   todo_excluded: boolean;
   birth_order: number | null;
+  lifespan_years: number | null;
 }
 
 // Columns the masked view exposes (subset of raw `persons` — no
 // todo_excluded, no full_name_unaccent). Used when reading on
 // behalf of a non-member of a public clan.
 const DETAIL_COLS_SAFE =
-  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, birth_order";
+  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, birth_order, lifespan_years";
 // Raw table adds member-only columns (todo_excluded).
 const DETAIL_COLS = `${DETAIL_COLS_SAFE}, todo_excluded`;
 
@@ -362,6 +366,8 @@ export interface UpdatePersonInput {
   todo_excluded?: boolean;
   /** Sibling rank ("con thứ mấy"). 1 = oldest, null = unspecified. */
   birth_order?: number | null;
+  /** Hưởng thọ (tuổi). Tự ghi cho người đã mất; null = không rõ. */
+  lifespan_years?: number | null;
   // Lunar columns — write through unchanged when undefined; explicit
   // null means "clear" (e.g., user switched a day-precision solar to
   // year-only so we drop the previously-derived lunar values).

@@ -71,6 +71,7 @@ export function EditPersonForm({
   const [bio, setBio] = useState("");
   const [todoExcluded, setTodoExcluded] = useState(false);
   const [birthOrder, setBirthOrder] = useState<string>("");
+  const [lifespanYears, setLifespanYears] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
   // Progressive disclosure for the optional fields. Auto-opens when
   // any of them is already filled so existing data isn't hidden after
@@ -96,6 +97,7 @@ export function EditPersonForm({
     bio,
     todoExcluded,
     birthOrder,
+    lifespanYears,
   };
   const { existing: existingDraft, clearDraft } = useFormDraft({
     key: `edit-person:${personId}`,
@@ -121,6 +123,7 @@ export function EditPersonForm({
     setBio(d.bio);
     setTodoExcluded(d.todoExcluded);
     setBirthOrder(d.birthOrder);
+    setLifespanYears(d.lifespanYears ?? "");
     setDraftDismissed(true);
     clearDraft();
   }
@@ -167,6 +170,9 @@ export function EditPersonForm({
     setBio(person.bio ?? "");
     setTodoExcluded(person.todo_excluded ?? false);
     setBirthOrder(person.birth_order != null ? String(person.birth_order) : "");
+    setLifespanYears(
+      person.lifespan_years != null ? String(person.lifespan_years) : "",
+    );
     if (
       person.courtesy_name ||
       person.nickname ||
@@ -180,6 +186,7 @@ export function EditPersonForm({
       person.death_lunar_month != null ||
       person.death_anniv_lunar_month != null ||
       person.birth_order != null ||
+      person.lifespan_years != null ||
       person.todo_excluded
     ) {
       setShowOptional(true);
@@ -199,6 +206,9 @@ export function EditPersonForm({
         todo_excluded: todoExcluded,
         birth_order: birthOrder.trim()
           ? Math.max(1, Math.floor(Number(birthOrder)))
+          : null,
+        lifespan_years: lifespanYears.trim()
+          ? Math.max(0, Math.min(150, Math.floor(Number(lifespanYears))))
           : null,
         birth_date: birthCols.solar_date,
         birth_date_precision: birthCols.solar_precision,
@@ -453,6 +463,27 @@ export function EditPersonForm({
                 : undefined
             }
           />
+
+          {!isLiving && (
+            <div className="space-y-2">
+              <Label htmlFor="lifespan_years">Hưởng thọ (tuổi)</Label>
+              <Input
+                id="lifespan_years"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={150}
+                placeholder="VD: 82"
+                value={lifespanYears}
+                onChange={(e) => setLifespanYears(e.target.value)}
+                className="max-w-[10rem]"
+              />
+              <p className="text-sm text-muted-foreground">
+                Tự ghi tuổi thọ cho người đã mất. Để trống thì hệ thống
+                tự tính từ năm sinh – năm mất (nếu có đủ).
+              </p>
+            </div>
+          )}
 
           <BirthOrderPicker value={birthOrder} onChange={setBirthOrder} />
 

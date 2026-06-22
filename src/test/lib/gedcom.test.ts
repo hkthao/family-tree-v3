@@ -34,6 +34,7 @@ function makePerson(over: Partial<PersonDetail> & Pick<PersonDetail, "id" | "ful
     death_anniv_lunar_day: null,
     todo_excluded: false,
     birth_order: null,
+    lifespan_years: null,
     ...over,
   };
 }

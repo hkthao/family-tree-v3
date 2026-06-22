@@ -1197,6 +1197,7 @@ export type Database = {
           id: string
           is_living: boolean
           is_root: boolean
+          lifespan_years: number | null
           nickname: string | null
           photo_path: string | null
           posthumous_name: string | null
@@ -1237,6 +1238,7 @@ export type Database = {
           id?: string
           is_living?: boolean
           is_root?: boolean
+          lifespan_years?: number | null
           nickname?: string | null
           photo_path?: string | null
           posthumous_name?: string | null
@@ -1277,6 +1279,7 @@ export type Database = {
           id?: string
           is_living?: boolean
           is_root?: boolean
+          lifespan_years?: number | null
           nickname?: string | null
           photo_path?: string | null
           posthumous_name?: string | null
