@@ -1149,7 +1149,7 @@ function TreeDiagramPage({
   const CARD_W = Math.max(48, Math.min(80, lane - 6));
   // Người đã mất cần thêm dòng thọ + dòng giỗ riêng → thẻ cao hơn (vẫn
   // nằm gọn trong khoảng cách hàng ROW ≥ 56pt nên không đè lên nhau).
-  const CARD_H = showDeathDetails ? 28 : 24;
+  const CARD_H = showDeathDetails ? 32 : 24;
   const ROW = Math.max(56, Math.min(110, H / Math.max(maxDepth + 1, 2)));
 
   const pxOf = (gridX: number) =>
@@ -1207,21 +1207,21 @@ function TreeDiagramPage({
           const y = cy - CARD_H / 2;
           const fill = n.person.gender === "M" ? "#D4DDE4" : "#E8D2CC";
           const person = n.person;
-          // Các dòng phụ dưới tên, mỗi thông tin một dòng riêng để không
-          // bị cắt mất chữ: [năm sinh-mất] / [thọ|hưởng dương] / [giỗ].
+          // Dưới tên tối đa 2 dòng phụ để thẻ nhỏ không bị chữ đè nhau.
           const metaLines: string[] = [];
-          // Dòng năm: người sống + bật "ngày sinh đủ" → ngày sinh đầy đủ;
-          // còn lại "YYYY-YYYY".
-          let yearLine = lifespanText(person);
-          if (showLivingFullDob && person.is_living) {
-            const full = formatPartialDate({
-              date: person.birth_date,
-              precision: person.birth_date_precision ?? null,
-            });
-            if (full) yearLine = full;
-          }
-          if (yearLine) metaLines.push(truncateMeta(yearLine));
+          const yearLine = (() => {
+            if (showLivingFullDob && person.is_living) {
+              const full = formatPartialDate({
+                date: person.birth_date,
+                precision: person.birth_date_precision ?? null,
+              });
+              if (full) return full;
+            }
+            return lifespanText(person); // "YYYY-YYYY" / "sinh YYYY"
+          })();
           if (showDeathDetails && !person.is_living) {
+            // Người mất: ưu tiên thọ + giỗ (bỏ dòng năm cho đỡ thừa vì
+            // "thọ X tuổi" đã thể hiện; năm đầy đủ có ở danh bạ).
             const tho = computeLifespanYears(
               person.lifespan_years,
               person.birth_date,
@@ -1239,6 +1239,11 @@ function TreeDiagramPage({
                   `giỗ ${person.death_anniv_lunar_day}/${person.death_anniv_lunar_month} ÂL`,
                 ),
               );
+            // Không có thọ lẫn giỗ → vẫn cho năm để thẻ không trống.
+            if (metaLines.length === 0 && yearLine)
+              metaLines.push(truncateMeta(yearLine));
+          } else if (yearLine) {
+            metaLines.push(truncateMeta(yearLine));
           }
           return (
             <G key={n.person.id}>
@@ -1255,7 +1260,7 @@ function TreeDiagramPage({
               />
               <Text
                 x={cx}
-                y={y + (metaLines.length ? 8 : 14)}
+                y={y + (metaLines.length ? 9 : 14)}
                 style={{
                   fontFamily: PDF_FONT_FAMILY,
                   fontSize: nameFontSize,
@@ -1270,7 +1275,7 @@ function TreeDiagramPage({
                 <Text
                   key={li}
                   x={cx}
-                  y={y + 15 + li * 7}
+                  y={y + 17 + li * 7}
                   style={{
                     fontFamily: PDF_FONT_FAMILY,
                     fontSize: yearFontSize,
