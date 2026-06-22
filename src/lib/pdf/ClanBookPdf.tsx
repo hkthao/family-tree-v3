@@ -380,6 +380,18 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
     if (parent) pushTo(childrenByParent, parent, childId);
   }
 
+  // Sắp con theo thứ tự anh chị em (con thứ mấy → ngày sinh → tên) MỘT
+  // lần, để mọi nơi đọc childrenByParent (sơ đồ cây, phân trang nhánh,
+  // đánh số, danh sách Con) đều cùng thứ tự — con cả luôn đứng đầu.
+  for (const arr of childrenByParent.values()) {
+    arr.sort((a, b) => {
+      const pa = personById.get(a);
+      const pb = personById.get(b);
+      if (!pa || !pb) return 0;
+      return birthOrder(pa, pb);
+    });
+  }
+
   // d'Aboville numbering — DFS from roots.
   const sttById = new Map<string, string>();
   const orderInSiblings = new Map<string, number>();
