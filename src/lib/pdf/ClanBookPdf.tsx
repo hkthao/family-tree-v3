@@ -357,17 +357,27 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
       pushTo(spousesByPerson, fam.wife_id, fam.husband_id);
     }
   }
+  // "Thuộc dòng máu" = Thuỷ tổ, hoặc người sinh ra trong họ (có cha mẹ
+  // trong họ → có mặt trong childToFamily). Vợ/chồng cưới vào không
+  // thoả (không phải is_root, không có cha mẹ trong họ).
+  const isLineage = (pid: string): boolean =>
+    personById.get(pid)?.is_root === true || data.childToFamily[pid] != null;
+
   for (const [childId, famId] of Object.entries(data.childToFamily)) {
     const fam = familyById.get(famId);
     if (!fam) continue;
-    if (fam.husband_id) {
-      pushTo(childrenByParent, fam.husband_id, childId);
-      fatherOf.set(childId, fam.husband_id);
-    }
-    if (fam.wife_id) {
-      pushTo(childrenByParent, fam.wife_id, childId);
-      motherOf.set(childId, fam.wife_id);
-    }
+    // Cha/mẹ sinh học — ghi cả hai để hiển thị "Cha" / "Mẹ".
+    if (fam.husband_id) fatherOf.set(childId, fam.husband_id);
+    if (fam.wife_id) motherOf.set(childId, fam.wife_id);
+    // Sơ đồ + đánh số d'Aboville + danh sách "Con": chỉ gắn con vào
+    // MỘT cha/mẹ thuộc dòng máu (ưu tiên cha) để tránh nhân đôi cả
+    // nhánh khi người hôn phối lỡ bị gán đời. Người cưới vào không
+    // hiện như một gốc song song nữa.
+    const h = fam.husband_id;
+    const w = fam.wife_id;
+    const parent =
+      h && isLineage(h) ? h : w && isLineage(w) ? w : (h ?? w ?? null);
+    if (parent) pushTo(childrenByParent, parent, childId);
   }
 
   // d'Aboville numbering — DFS from roots.
@@ -377,9 +387,14 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
     (m, p) => Math.min(m, p.generation ?? Infinity),
     Infinity,
   );
-  const roots = bloodline
-    .filter((p) => p.is_root || p.generation === minGen)
-    .sort(birthOrder);
+  // Gốc cây = Thuỷ tổ (is_root). Chỉ khi không ai được đánh dấu mới
+  // tạm lấy theo đời nhỏ nhất — tránh kéo cả vợ/chồng đời 1 thành gốc.
+  const explicitRoots = bloodline.filter((p) => p.is_root);
+  const roots = (
+    explicitRoots.length > 0
+      ? explicitRoots
+      : bloodline.filter((p) => p.generation === minGen)
+  ).sort(birthOrder);
 
   function assignStt(personId: string, prefix: string) {
     sttById.set(personId, prefix);
