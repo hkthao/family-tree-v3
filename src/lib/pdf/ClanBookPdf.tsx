@@ -1170,10 +1170,19 @@ function TreeDiagramPage({
 
   const nameFontSize = CARD_W < 56 ? 6.5 : CARD_W < 70 ? 7 : 7.5;
   const yearFontSize = nameFontSize - 1.5;
-  // Truncate to fit width: each glyph ≈ fontSize × 0.55 wide.
-  const maxChars = Math.max(6, Math.floor(CARD_W / (nameFontSize * 0.55)));
-  const truncate = (s: string) =>
-    s.length > maxChars ? s.slice(0, maxChars - 1) + "…" : s;
+  // Tên dài → thu nhỏ cỡ chữ cho vừa bề ngang thẻ thay vì cắt "…".
+  // Chỉ cắt khi đã chạm cỡ chữ tối thiểu mà vẫn tràn.
+  const fitName = (
+    name: string,
+  ): { text: string; size: number } => {
+    const avail = CARD_W - 8;
+    const est = name.length * nameFontSize * 0.52;
+    let size = nameFontSize;
+    if (est > avail) size = Math.max(5, (nameFontSize * avail) / est);
+    const max = Math.floor(avail / (size * 0.52));
+    const text = name.length > max ? name.slice(0, max - 1) + "…" : name;
+    return { text, size };
+  };
   // Dòng phụ (năm / thọ / giỗ) dùng cỡ chữ nhỏ hơn → vừa được nhiều
   // ký tự hơn trên cùng bề rộng thẻ.
   const maxCharsMeta = Math.max(8, Math.floor(CARD_W / (yearFontSize * 0.5)));
@@ -1272,13 +1281,13 @@ function TreeDiagramPage({
                 y={y + (metaLines.length ? 9 : 14)}
                 style={{
                   fontFamily: PDF_FONT_FAMILY,
-                  fontSize: nameFontSize,
+                  fontSize: fitName(person.full_name).size,
                   fontWeight: 600,
                   fill: COLORS.ink,
                   textAnchor: "middle",
                 }}
               >
-                {truncate(n.person.full_name)}
+                {fitName(person.full_name).text}
               </Text>
               {metaLines.map((line, li) => (
                 <Text
