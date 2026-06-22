@@ -393,7 +393,9 @@ export default function Tree() {
           // meta line. Avatar img_y=7 để center theo trục y với h=64.
           // Khi bật chi tiết người mất, nới rộng để chứa dòng giỗ/thọ.
           .setCardDim({
-            w: showDeceasedDetails ? 260 : showLivingDob ? 240 : 220,
+            // Rộng hơn khi hiện giỗ/thọ để dòng "… Giỗ D/M ÂL" không bị
+            // cắt mất chữ ở mép phải.
+            w: showDeceasedDetails ? 312 : showLivingDob ? 240 : 220,
             h: showDeceasedDetails ? 82 : 64,
             text_x: 64,
             text_y: 18,
@@ -604,16 +606,19 @@ export default function Tree() {
         // and Y ≥ ~92 to clear the card height. Vertical mode allows
         // tighter Y because siblings stack horizontally instead.
         built.setTransitionTime(200);
+        // Thẻ rộng hơn khi hiện giỗ/thọ (w≈312) → nới khoảng cách ngang
+        // tương ứng để các thẻ không đè lên nhau.
+        const wide = showDeceasedDetails;
         if (orientation === "horizontal") {
           built.setOrientationHorizontal?.();
           // Generations flow left→right → X must clear card width.
           // Siblings stack top→bottom → Y must clear card height.
-          built.setCardXSpacing(280).setCardYSpacing(92);
+          built.setCardXSpacing(wide ? 360 : 280).setCardYSpacing(92);
         } else {
           built.setOrientationVertical?.();
           // Siblings stack left→right → X must clear card width.
           // Generations flow top→bottom → Y must clear card height.
-          built.setCardXSpacing(250).setCardYSpacing(152);
+          built.setCardXSpacing(wide ? 342 : 250).setCardYSpacing(152);
         }
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
