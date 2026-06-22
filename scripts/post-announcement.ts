@@ -39,26 +39,22 @@ async function main() {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
 
-  const body = `Gia phả nay có thêm mục "Mộ phần & tro cốt" — ghi lại nơi an nghỉ của các cụ:
+  const body = `Cây gia phả và sổ PDF nay hiển thị được nhiều thông tin hơn về tuổi thọ và ngày giỗ:
 
-• Đủ hình thức: mộ phần (chôn cất), gửi tro cốt ở chùa, tháp họ (chứa tro cốt nhiều người), rải tro.
+• Thêm mục "Tuổi thọ" trong hồ sơ người đã mất — tự ghi cho các cụ đời trước chỉ còn nhớ tuổi, không có đủ năm sinh/năm mất.
 
-• Lưu toạ độ → bấm "Chỉ đường" mở bản đồ dẫn tận nơi; đứng tại mộ bấm "Lấy vị trí hiện tại" để lưu nhanh.
+• Hiển thị đúng phong tục: từ 60 tuổi trở lên ghi "hưởng thọ", dưới 60 tuổi ghi "hưởng dương".
 
-• Đính kèm ảnh, gắn người an nghỉ (xem qua lại với hồ sơ từng người), ghi lịch sử cải táng (bốc mộ / sang cát).
+• Cài đặt dòng họ có 2 tuỳ chọn (quản trị bật/tắt): hiện ngày giỗ + tuổi thọ của người đã mất; hiện đầy đủ ngày-tháng-năm sinh của người còn sống. Áp cho cả cây trên màn hình lẫn sổ gia phả PDF.
 
-• Mỗi mộ / tháp có mã QR — dán hoặc khắc tại nơi an nghỉ, ai quét cũng xem được thông tin.
+• Sửa lỗi xuất sổ: trước đây sổ PDF còn thiếu thành viên và sắp xếp lộn xộn — nay đầy đủ mọi người, đúng thứ tự đời và trưởng - thứ.
 
-• Đặt nhắc Tảo mộ / Chạp họ theo ngày âm: cả họ được nhắc trước qua email/thông báo hằng năm.
-
-• Gom mộ theo nghĩa trang / chùa để dễ tra; tự động có trong sách gia phả PDF xuất ra.
-
-Vào menu "Mộ phần & tro cốt" để bắt đầu. Chúc cả nhà gìn giữ phần mộ tổ tiên đầy đủ!`;
+Vào Cài đặt dòng họ để bật các tuỳ chọn hiển thị. Chúc cả nhà giữ gìn gia phả ngày một đầy đủ!`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "✨ Mới: Quản lý Mộ phần & tro cốt",
+      title: "Mới: Tuổi thọ, ngày giỗ trên cây & sửa lỗi xuất sổ",
       body,
       level: "update",
       is_public: true,
