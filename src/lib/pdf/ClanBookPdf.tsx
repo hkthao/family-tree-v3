@@ -416,8 +416,14 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
     nextRoot++;
   }
 
-  const bloodlineSorted = [...bloodline].sort((a, b) =>
-    compareStt(sttById.get(a.id) ?? "999999", sttById.get(b.id) ?? "999999"),
+  // Thứ tự danh bạ: thuỷ tổ (đời 1) trước → theo đời → trong mỗi đời
+  // theo thứ tự anh chị em (số d'Aboville giữ đúng nhánh + thứ tự con).
+  // Sắp theo generation trước, rồi compareStt, nên đọc lần lượt Đời 1,
+  // Đời 2, Đời 3… thay vì đi sâu hết một nhánh mới sang nhánh khác.
+  const bloodlineSorted = [...bloodline].sort(
+    (a, b) =>
+      (a.generation ?? 0) - (b.generation ?? 0) ||
+      compareStt(sttById.get(a.id) ?? "999999", sttById.get(b.id) ?? "999999"),
   );
 
   const stats = {
@@ -518,8 +524,9 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
           <Text style={styles.h1}>Danh bạ chi tiết</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
-            Sắp xếp theo số d'Aboville (trưởng - thứ trong từng đời).
-            Mỗi hàng ba thẻ.
+            Bắt đầu từ Thuỷ tổ, lần lượt theo từng đời; trong mỗi đời
+            xếp theo thứ tự anh - chị - em (con trưởng trước). Mỗi hàng
+            ba thẻ.
           </Text>
 
           {chunk(bloodlineSorted, 3).map((row, i) => (
@@ -1274,6 +1281,14 @@ function looksLikeDebug(s: string): boolean {
 }
 
 function birthOrder(a: PersonDetail, b: PersonDetail): number {
+  // Ưu tiên "con thứ mấy" (birth_order) như cây & hồ sơ; rồi tới ngày
+  // sinh; cuối cùng theo tên. Khớp familyChartAdapter để sổ và cây có
+  // cùng thứ tự anh chị em.
+  const oa = a.birth_order ?? null;
+  const ob = b.birth_order ?? null;
+  if (oa !== null && ob !== null && oa !== ob) return oa - ob;
+  if (oa !== null && ob === null) return -1;
+  if (oa === null && ob !== null) return 1;
   const ay = a.birth_date ?? "";
   const by = b.birth_date ?? "";
   if (ay && by) return ay.localeCompare(by);
