@@ -1088,7 +1088,7 @@ function TreeDiagramPage({
   const CARD_W = Math.max(48, Math.min(80, lane - 6));
   // Người đã mất cần thêm dòng thọ + dòng giỗ riêng → thẻ cao hơn (vẫn
   // nằm gọn trong khoảng cách hàng ROW ≥ 56pt nên không đè lên nhau).
-  const CARD_H = showDeathDetails ? 42 : 24;
+  const CARD_H = showDeathDetails ? 34 : 24;
   const ROW = Math.max(56, Math.min(110, H / Math.max(maxDepth + 1, 2)));
 
   const pxOf = (gridX: number) =>
@@ -1194,7 +1194,7 @@ function TreeDiagramPage({
               />
               <Text
                 x={cx}
-                y={y + (metaLines.length ? 10 : 14)}
+                y={y + (metaLines.length ? 9 : 14)}
                 style={{
                   fontFamily: PDF_FONT_FAMILY,
                   fontSize: nameFontSize,
@@ -1209,7 +1209,7 @@ function TreeDiagramPage({
                 <Text
                   key={li}
                   x={cx}
-                  y={y + 19 + li * 8}
+                  y={y + 17 + li * 7}
                   style={{
                     fontFamily: PDF_FONT_FAMILY,
                     fontSize: yearFontSize,
