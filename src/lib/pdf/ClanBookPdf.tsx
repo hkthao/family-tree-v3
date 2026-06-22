@@ -1041,6 +1041,45 @@ function renderTreePages({
     for (const c of children) emit(c);
   }
 
+  // Trang MỞ ĐẦU: luôn bắt đầu từ Thuỷ tổ. Sơ đồ đầy đủ quá rộng cho
+  // một trang nên trang này chỉ vẽ Thuỷ tổ + các đời kế tiếp vừa đủ bề
+  // ngang; chi tiết từng nhánh nằm ở các trang sau. Bao giờ cũng gồm
+  // đời con (đời 2) để Thuỷ tổ không đứng trơ một mình.
+  const overview = new Set<string>(roots.map((r) => r.id));
+  let frontier = roots;
+  let firstGen = true;
+  while (true) {
+    const next = frontier.flatMap((p) =>
+      (childrenByParent.get(p.id) ?? [])
+        .map((id) => personById.get(id))
+        .filter((c): c is PersonDetail => !!c && c.generation !== null),
+    );
+    if (next.length === 0) break;
+    if (!firstGen && next.length > MAX_LEAVES_PER_PAGE) break;
+    next.forEach((c) => overview.add(c.id));
+    frontier = next;
+    firstGen = false;
+  }
+  if (overview.size > roots.length) {
+    const founders = roots.filter((r) => r.is_root);
+    const founderNames = (founders.length ? founders : roots)
+      .map((r) => r.full_name)
+      .join(", ");
+    pages.push(
+      <TreeDiagramPage
+        key="overview"
+        title="Sơ đồ cây gia phả"
+        subtitle={`Bắt đầu từ Thuỷ tổ ${founderNames}`}
+        roots={roots}
+        childrenByParent={childrenByParent}
+        personById={personById}
+        memberFilter={overview}
+        showDeathDetails={showDeathDetails}
+        showLivingFullDob={showLivingFullDob}
+      />,
+    );
+  }
+
   for (const seed of seedNodes) emit(seed);
   return pages;
 }
