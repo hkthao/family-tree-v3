@@ -1209,39 +1209,36 @@ function TreeDiagramPage({
           const person = n.person;
           // Dưới tên tối đa 2 dòng phụ để thẻ nhỏ không bị chữ đè nhau.
           const metaLines: string[] = [];
-          const yearLine = (() => {
-            if (showLivingFullDob && person.is_living) {
-              const full = formatPartialDate({
-                date: person.birth_date,
-                precision: person.birth_date_precision ?? null,
-              });
-              if (full) return full;
-            }
-            return lifespanText(person); // "YYYY-YYYY" / "sinh YYYY"
-          })();
+          // Dòng năm: người sống bật "ngày sinh đủ" → ngày sinh đầy đủ;
+          // còn lại "YYYY-YYYY" / "sinh YYYY".
+          let yearLine = lifespanText(person);
+          if (showLivingFullDob && person.is_living) {
+            const full = formatPartialDate({
+              date: person.birth_date,
+              precision: person.birth_date_precision ?? null,
+            });
+            if (full) yearLine = full;
+          }
           if (showDeathDetails && !person.is_living) {
-            // Người mất: ưu tiên thọ + giỗ (bỏ dòng năm cho đỡ thừa vì
-            // "thọ X tuổi" đã thể hiện; năm đầy đủ có ở danh bạ).
+            // Người mất: dòng 1 = năm (nếu có) + thọ; dòng 2 = giỗ. Gộp
+            // năm với thọ để vẫn giữ được năm mà không quá 3 dòng.
             const tho = computeLifespanYears(
               person.lifespan_years,
               person.birth_date,
               person.death_date,
             );
-            if (tho != null)
-              metaLines.push(
-                truncateMeta(
-                  `${tho >= THO_MIN_AGE ? "thọ" : "hưởng dương"} ${tho} tuổi`,
-                ),
-              );
+            const thoStr =
+              tho != null
+                ? `${tho >= THO_MIN_AGE ? "thọ" : "hưởng dương"} ${tho}`
+                : "";
+            const line1 = [yearLine, thoStr].filter(Boolean).join(" · ");
+            if (line1) metaLines.push(truncateMeta(line1));
             if (person.death_anniv_lunar_month && person.death_anniv_lunar_day)
               metaLines.push(
                 truncateMeta(
                   `giỗ ${person.death_anniv_lunar_day}/${person.death_anniv_lunar_month} ÂL`,
                 ),
               );
-            // Không có thọ lẫn giỗ → vẫn cho năm để thẻ không trống.
-            if (metaLines.length === 0 && yearLine)
-              metaLines.push(truncateMeta(yearLine));
           } else if (yearLine) {
             metaLines.push(truncateMeta(yearLine));
           }
