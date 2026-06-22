@@ -396,13 +396,13 @@ export default function Tree() {
             // Nới nhẹ khi hiện giỗ/thọ; dòng đó dùng cỡ chữ nhỏ hơn (10)
             // nên không cần rộng nhiều mà vẫn đủ chỗ cho "… Giỗ D/M ÂL".
             w: showDeceasedDetails ? 268 : showLivingDob ? 240 : 220,
-            h: showDeceasedDetails ? 82 : 64,
+            h: showDeceasedDetails ? 74 : 64,
             text_x: 64,
             text_y: 18,
             img_w: 50,
             img_h: 50,
             img_x: 8,
-            img_y: showDeceasedDetails ? 16 : 7,
+            img_y: showDeceasedDetails ? 12 : 7,
           })
           .setOnCardUpdate(function (d) {
             const datum = d.data as DatumNode | undefined;
@@ -608,17 +608,19 @@ export default function Tree() {
         built.setTransitionTime(200);
         // Thẻ rộng hơn khi hiện giỗ/thọ (w≈312) → nới khoảng cách ngang
         // tương ứng để các thẻ không đè lên nhau.
+        // Khi bật giỗ/thọ thẻ cao hơn (h≈74) → nới cả khoảng cách dọc để
+        // vợ-chồng / anh-em xếp dọc không bị sát/chạm nhau.
         const wide = showDeceasedDetails;
         if (orientation === "horizontal") {
           built.setOrientationHorizontal?.();
           // Generations flow left→right → X must clear card width.
           // Siblings stack top→bottom → Y must clear card height.
-          built.setCardXSpacing(wide ? 300 : 280).setCardYSpacing(92);
+          built.setCardXSpacing(wide ? 300 : 280).setCardYSpacing(wide ? 116 : 92);
         } else {
           built.setOrientationVertical?.();
           // Siblings stack left→right → X must clear card width.
           // Generations flow top→bottom → Y must clear card height.
-          built.setCardXSpacing(wide ? 282 : 250).setCardYSpacing(152);
+          built.setCardXSpacing(wide ? 282 : 250).setCardYSpacing(wide ? 168 : 152);
         }
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
