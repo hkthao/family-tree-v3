@@ -1086,9 +1086,9 @@ function TreeDiagramPage({
   // hanging off the edge.
   const lane = leafCount > 0 ? (SVG_W - SAFETY * 2) / leafCount : SVG_W;
   const CARD_W = Math.max(48, Math.min(80, lane - 6));
-  // Người đã mất cần thêm dòng giỗ/thọ → thẻ cao hơn (vẫn nằm gọn
-  // trong khoảng cách hàng ROW ≥ 56pt nên không đè lên nhau).
-  const CARD_H = showDeathDetails ? 34 : 24;
+  // Người đã mất cần thêm dòng thọ + dòng giỗ riêng → thẻ cao hơn (vẫn
+  // nằm gọn trong khoảng cách hàng ROW ≥ 56pt nên không đè lên nhau).
+  const CARD_H = showDeathDetails ? 42 : 24;
   const ROW = Math.max(56, Math.min(110, H / Math.max(maxDepth + 1, 2)));
 
   const pxOf = (gridX: number) =>
@@ -1101,6 +1101,11 @@ function TreeDiagramPage({
   const maxChars = Math.max(6, Math.floor(CARD_W / (nameFontSize * 0.55)));
   const truncate = (s: string) =>
     s.length > maxChars ? s.slice(0, maxChars - 1) + "…" : s;
+  // Dòng phụ (năm / thọ / giỗ) dùng cỡ chữ nhỏ hơn → vừa được nhiều
+  // ký tự hơn trên cùng bề rộng thẻ.
+  const maxCharsMeta = Math.max(8, Math.floor(CARD_W / (yearFontSize * 0.5)));
+  const truncateMeta = (s: string) =>
+    s.length > maxCharsMeta ? s.slice(0, maxCharsMeta - 1) + "…" : s;
 
   return (
     <Page size="A4" orientation="landscape" style={styles.page}>
@@ -1141,34 +1146,38 @@ function TreeDiagramPage({
           const y = cy - CARD_H / 2;
           const fill = n.person.gender === "M" ? "#D4DDE4" : "#E8D2CC";
           const person = n.person;
-          // Dòng năm chính: người sống + bật "ngày sinh đủ" → hiện đầy
-          // đủ ngày sinh; còn lại giữ dạng "YYYY-YYYY".
-          let ls = lifespanText(person);
+          // Các dòng phụ dưới tên, mỗi thông tin một dòng riêng để không
+          // bị cắt mất chữ: [năm sinh-mất] / [thọ|hưởng dương] / [giỗ].
+          const metaLines: string[] = [];
+          // Dòng năm: người sống + bật "ngày sinh đủ" → ngày sinh đầy đủ;
+          // còn lại "YYYY-YYYY".
+          let yearLine = lifespanText(person);
           if (showLivingFullDob && person.is_living) {
             const full = formatPartialDate({
               date: person.birth_date,
               precision: person.birth_date_precision ?? null,
             });
-            if (full) ls = truncate(full);
+            if (full) yearLine = full;
           }
-          // Dòng phụ (chỉ người đã mất, khi bật chi tiết): thọ + giỗ.
-          let extra = "";
+          if (yearLine) metaLines.push(truncateMeta(yearLine));
           if (showDeathDetails && !person.is_living) {
-            const parts: string[] = [];
             const tho = computeLifespanYears(
               person.lifespan_years,
               person.birth_date,
               person.death_date,
             );
             if (tho != null)
-              parts.push(
-                `${tho >= THO_MIN_AGE ? "thọ" : "hưởng dương"} ${tho}t`,
+              metaLines.push(
+                truncateMeta(
+                  `${tho >= THO_MIN_AGE ? "thọ" : "hưởng dương"} ${tho} tuổi`,
+                ),
               );
             if (person.death_anniv_lunar_month && person.death_anniv_lunar_day)
-              parts.push(
-                `giỗ ${person.death_anniv_lunar_day}/${person.death_anniv_lunar_month}`,
+              metaLines.push(
+                truncateMeta(
+                  `giỗ ${person.death_anniv_lunar_day}/${person.death_anniv_lunar_month} ÂL`,
+                ),
               );
-            extra = truncate(parts.join(" · "));
           }
           return (
             <G key={n.person.id}>
@@ -1185,7 +1194,7 @@ function TreeDiagramPage({
               />
               <Text
                 x={cx}
-                y={y + (ls ? 10 : 14)}
+                y={y + (metaLines.length ? 10 : 14)}
                 style={{
                   fontFamily: PDF_FONT_FAMILY,
                   fontSize: nameFontSize,
@@ -1196,10 +1205,11 @@ function TreeDiagramPage({
               >
                 {truncate(n.person.full_name)}
               </Text>
-              {ls && (
+              {metaLines.map((line, li) => (
                 <Text
+                  key={li}
                   x={cx}
-                  y={y + 19}
+                  y={y + 19 + li * 8}
                   style={{
                     fontFamily: PDF_FONT_FAMILY,
                     fontSize: yearFontSize,
@@ -1207,23 +1217,9 @@ function TreeDiagramPage({
                     textAnchor: "middle",
                   }}
                 >
-                  {ls}
+                  {line}
                 </Text>
-              )}
-              {extra && (
-                <Text
-                  x={cx}
-                  y={y + 28}
-                  style={{
-                    fontFamily: PDF_FONT_FAMILY,
-                    fontSize: yearFontSize,
-                    fill: COLORS.muted,
-                    textAnchor: "middle",
-                  }}
-                >
-                  {extra}
-                </Text>
-              )}
+              ))}
             </G>
           );
         })}
