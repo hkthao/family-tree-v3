@@ -383,19 +383,19 @@ export default function Tree() {
           displayLines.push((d) => deceasedExtra(d as DatumNode));
         }
 
+        // Bề ngang thẻ — 248 để chứa tên Việt 4 chữ + chừa góc phải cho
+        // badge "Đời"/thông gia. Tên dài hơn sẽ tự thu nhỏ cỡ chữ trong
+        // onCardUpdate nên không bao giờ bị cắt/đè badge.
+        const cardW = 248;
         card
           ?.setCardDisplay(
             displayLines as unknown as Parameters<F3Card["setCardDisplay"]>[0],
           )
-          // Card 220×64: vừa đủ tên Việt 3-4 từ + lifespan, tiết kiệm
-          // ~15% diện tích vẽ. 50px circular avatar inset 8px, text bắt
-          // đầu ở x=64 (avatar + 6px gap) → 156px còn lại cho name +
-          // meta line. Avatar img_y=7 để center theo trục y với h=64.
-          // Khi bật chi tiết người mất, nới rộng để chứa dòng giỗ/thọ.
+          // Avatar tròn 50px inset 8px, text bắt đầu ở x=64 (avatar +
+          // 6px gap). Khi bật chi tiết người mất, thẻ cao hơn để chứa
+          // dòng giỗ/thọ.
           .setCardDim({
-            // Nới nhẹ khi hiện giỗ/thọ; dòng đó dùng cỡ chữ nhỏ hơn (10)
-            // nên không cần rộng nhiều mà vẫn đủ chỗ cho "… Giỗ D/M ÂL".
-            w: showDeceasedDetails ? 240 : showLivingDob ? 240 : 220,
+            w: cardW,
             h: showDeceasedDetails ? 74 : 64,
             text_x: 64,
             text_y: 18,
@@ -413,6 +413,35 @@ export default function Tree() {
             const tspans = this.querySelectorAll<SVGTSpanElement>(
               ".card-text text tspan",
             );
+            // Tên (dòng 1): tự thu nhỏ cỡ chữ nếu quá dài để không bị
+            // cắt ở mép phải hoặc đè vào badge "Đời"/thông gia ở góc.
+            const nameTspan = tspans[0];
+            if (nameTspan && typeof nameTspan.getComputedTextLength === "function") {
+              const genVal = fields["generation"];
+              const hasGen = typeof genVal === "number" && genVal > 0;
+              const hasInlaw = !!(
+                personId && linkedIdsRef.current.has(personId)
+              );
+              // Mép phải vùng tên = trước badge (inlaw nằm trái badge Đời).
+              const badgeLeft = hasInlaw
+                ? cardW - 69
+                : hasGen
+                  ? cardW - 46
+                  : cardW - 8;
+              const avail = badgeLeft - 64 - 4; // text_x=64, chừa 4px
+              nameTspan.removeAttribute("font-size"); // reset trước khi đo
+              const len = nameTspan.getComputedTextLength();
+              if (len > avail && avail > 0) {
+                const cur =
+                  parseFloat(
+                    (typeof getComputedStyle === "function"
+                      ? getComputedStyle(nameTspan).fontSize
+                      : "") || "",
+                  ) || 15;
+                const next = Math.max(10, Math.floor((cur * avail) / len));
+                nameTspan.setAttribute("font-size", String(next));
+              }
+            }
             const meta = tspans[1];
             if (meta) {
               meta.setAttribute("text-anchor", "start");
@@ -448,17 +477,20 @@ export default function Tree() {
                 const tag = document.createElementNS(ns, "g");
                 tag.setAttribute("class", "ghost-clan-tag");
                 const tagW = 10 + clanName.length * 6;
+                const cardH = showDeceasedDetails ? 74 : 64;
+                const tagX = cardW - tagW - 6;
+                const tagY = cardH - 20;
                 const bg = document.createElementNS(ns, "rect");
-                bg.setAttribute("x", "64");
-                bg.setAttribute("y", "-9");
+                bg.setAttribute("x", String(tagX));
+                bg.setAttribute("y", String(tagY));
                 bg.setAttribute("rx", "4");
                 bg.setAttribute("ry", "4");
                 bg.setAttribute("height", "14");
                 bg.setAttribute("width", String(tagW));
                 bg.setAttribute("fill", "#B8862A");
                 const txt = document.createElementNS(ns, "text");
-                txt.setAttribute("x", String(64 + tagW / 2));
-                txt.setAttribute("y", "0");
+                txt.setAttribute("x", String(tagX + tagW / 2));
+                txt.setAttribute("y", String(tagY + 10));
                 txt.setAttribute("text-anchor", "middle");
                 txt.setAttribute("fill", "#FFFFFF");
                 txt.setAttribute("font-size", "9");
@@ -482,7 +514,7 @@ export default function Tree() {
                 overlay.setAttribute("class", "ghost-click-overlay");
                 overlay.setAttribute("x", "0");
                 overlay.setAttribute("y", "0");
-                overlay.setAttribute("width", "220");
+                overlay.setAttribute("width", String(cardW));
                 overlay.setAttribute("height", "64");
                 overlay.setAttribute("fill", "transparent");
                 overlay.style.cursor = "pointer";
@@ -508,10 +540,12 @@ export default function Tree() {
                 "g",
               );
               badge.setAttribute("class", "gen-badge");
+              // Ghim sát góc trên bên phải, NẰM TRONG thẻ (y dương) để
+              // không bị mép thẻ cắt mất.
               badge.innerHTML = `
-                <rect x="172" y="6" width="42" height="18" rx="9"
+                <rect x="${cardW - 48}" y="6" width="42" height="18" rx="9"
                       fill="#7A2E2E" />
-                <text x="193" y="19" text-anchor="middle"
+                <text x="${cardW - 27}" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700">
                   Đời ${gen - clan.generation_offset}
                 </text>`;
@@ -532,9 +566,9 @@ export default function Tree() {
               );
               inlaw.setAttribute("class", "inlaw-badge");
               inlaw.innerHTML = `
-                <circle cx="160" cy="15" r="9" fill="#B8862A"
+                <circle cx="${cardW - 60}" cy="15" r="9" fill="#B8862A"
                         stroke="#FBF7F0" stroke-width="1" />
-                <text x="160" y="19" text-anchor="middle"
+                <text x="${cardW - 60}" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="12" font-weight="700">↔</text>
                 <title>Liên kết thông gia — bấm để xem</title>`;
               inlaw.style.cursor = "pointer";
@@ -560,7 +594,7 @@ export default function Tree() {
               actions.setAttribute("class", "card-actions");
               actions.innerHTML = `
                 <g class="card-action card-action-add"
-                   transform="translate(168, 38)">
+                   transform="translate(${cardW - 80}, 38)">
                   <circle cx="11" cy="11" r="11" fill="#FBF7F0"
                           stroke="#7A2E2E" stroke-width="1.5" />
                   <path d="M11 6 V16 M6 11 H16" stroke="#7A2E2E"
@@ -568,7 +602,7 @@ export default function Tree() {
                         fill="none" />
                 </g>
                 <g class="card-action card-action-edit"
-                   transform="translate(194, 38)">
+                   transform="translate(${cardW - 54}, 38)">
                   <circle cx="11" cy="11" r="11" fill="#FBF7F0"
                           stroke="#7A2E2E" stroke-width="1.5" />
                   <path d="M7 15 L7 13 L13 7 L15 9 L9 15 Z"
@@ -608,19 +642,19 @@ export default function Tree() {
         built.setTransitionTime(200);
         // Thẻ rộng hơn khi hiện giỗ/thọ (w≈312) → nới khoảng cách ngang
         // tương ứng để các thẻ không đè lên nhau.
-        // Khi bật giỗ/thọ thẻ cao hơn (h≈74) → nới cả khoảng cách dọc để
-        // vợ-chồng / anh-em xếp dọc không bị sát/chạm nhau.
+        // Thẻ rộng 248 + cao hơn khi bật giỗ/thọ → nới khoảng cách để
+        // không đè ngang (anh-em/vợ-chồng) lẫn dọc (các đời).
         const wide = showDeceasedDetails;
         if (orientation === "horizontal") {
           built.setOrientationHorizontal?.();
           // Generations flow left→right → X must clear card width.
           // Siblings stack top→bottom → Y must clear card height.
-          built.setCardXSpacing(280).setCardYSpacing(wide ? 116 : 92);
+          built.setCardXSpacing(300).setCardYSpacing(wide ? 116 : 92);
         } else {
           built.setOrientationVertical?.();
           // Siblings stack left→right → X must clear card width.
           // Generations flow top→bottom → Y must clear card height.
-          built.setCardXSpacing(wide ? 262 : 250).setCardYSpacing(wide ? 168 : 152);
+          built.setCardXSpacing(292).setCardYSpacing(wide ? 168 : 152);
         }
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
