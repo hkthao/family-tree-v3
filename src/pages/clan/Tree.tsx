@@ -395,7 +395,7 @@ export default function Tree() {
           .setCardDim({
             // Nới nhẹ khi hiện giỗ/thọ; dòng đó dùng cỡ chữ nhỏ hơn (10)
             // nên không cần rộng nhiều mà vẫn đủ chỗ cho "… Giỗ D/M ÂL".
-            w: showDeceasedDetails ? 268 : showLivingDob ? 240 : 220,
+            w: showDeceasedDetails ? 240 : showLivingDob ? 240 : 220,
             h: showDeceasedDetails ? 74 : 64,
             text_x: 64,
             text_y: 18,
@@ -615,12 +615,12 @@ export default function Tree() {
           built.setOrientationHorizontal?.();
           // Generations flow left→right → X must clear card width.
           // Siblings stack top→bottom → Y must clear card height.
-          built.setCardXSpacing(wide ? 300 : 280).setCardYSpacing(wide ? 116 : 92);
+          built.setCardXSpacing(280).setCardYSpacing(wide ? 116 : 92);
         } else {
           built.setOrientationVertical?.();
           // Siblings stack left→right → X must clear card width.
           // Generations flow top→bottom → Y must clear card height.
-          built.setCardXSpacing(wide ? 282 : 250).setCardYSpacing(wide ? 168 : 152);
+          built.setCardXSpacing(wide ? 262 : 250).setCardYSpacing(wide ? 168 : 152);
         }
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
