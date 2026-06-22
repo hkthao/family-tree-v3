@@ -54,6 +54,7 @@ import {
 } from "@/lib/lunarDate";
 import { track } from "@/lib/analytics";
 import { formatPartialDate } from "@/lib/partialDate";
+import { lifespanText } from "@/lib/lifespan";
 import { listPostsForPerson } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 import {
@@ -320,6 +321,16 @@ export default function PersonDetail() {
                           month: person.death_anniv_lunar_month ?? undefined,
                           day: person.death_anniv_lunar_day ?? undefined,
                         }) || null
+                      }
+                    />
+                    <DetailRow
+                      label="Hưởng thọ"
+                      value={
+                        lifespanText(
+                          person.lifespan_years,
+                          person.birth_date,
+                          person.death_date,
+                        ) || null
                       }
                     />
                   </>
