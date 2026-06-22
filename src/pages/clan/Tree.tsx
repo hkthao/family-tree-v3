@@ -367,8 +367,9 @@ export default function Tree() {
           const f = d.data ?? {};
           if (f["is_living"] !== false) return "";
           const parts: string[] = [];
+          // Đã gồm sẵn "Thọ …" / "Hưởng dương …" theo phong tục.
           const tho = (f["lifespan_text"] as string) || "";
-          if (tho) parts.push(`Thọ ${tho}`);
+          if (tho) parts.push(tho);
           const anniv = (f["death_anniv"] as string) || "";
           if (anniv) parts.push(`Giỗ ${anniv}`);
           return parts.join(" · ");

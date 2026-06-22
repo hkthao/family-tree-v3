@@ -440,7 +440,7 @@ export default function NewPerson() {
 
             {!isLiving && (
               <div className="space-y-2">
-                <Label htmlFor="lifespan_years">Hưởng thọ (tuổi)</Label>
+                <Label htmlFor="lifespan_years">Tuổi thọ</Label>
                 <Input
                   id="lifespan_years"
                   type="number"
@@ -454,6 +454,7 @@ export default function NewPerson() {
                 />
                 <p className="text-sm text-muted-foreground">
                   Để trống thì hệ thống tự tính từ năm sinh – năm mất.
+                  Từ 60 tuổi hiển thị "hưởng thọ", dưới 60 là "hưởng dương".
                 </p>
               </div>
             )}

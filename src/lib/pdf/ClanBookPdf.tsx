@@ -16,7 +16,7 @@ import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import type { PersonDetail } from "@/lib/queries/persons";
 import { formatPartialDate } from "@/lib/partialDate";
-import { computeLifespanYears } from "@/lib/lifespan";
+import { computeLifespanYears, lifespanLabel, THO_MIN_AGE } from "@/lib/lifespan";
 import {
   formatLunarAnniversary,
   formatLunarDate,
@@ -726,7 +726,10 @@ function renderPersonCard(
             <FieldLine label="Mất" value={deathSolar || null} />
             <FieldLine label="Giỗ" value={gioRow || null} />
             {showDeathDetails && thoYears != null ? (
-              <FieldLine label="Hưởng thọ" value={`${thoYears} tuổi`} />
+              <FieldLine
+                label={lifespanLabel(thoYears)}
+                value={`${thoYears} tuổi`}
+              />
             ) : null}
           </>
         )}
@@ -1157,7 +1160,10 @@ function TreeDiagramPage({
               person.birth_date,
               person.death_date,
             );
-            if (tho != null) parts.push(`thọ ${tho}t`);
+            if (tho != null)
+              parts.push(
+                `${tho >= THO_MIN_AGE ? "thọ" : "hưởng dương"} ${tho}t`,
+              );
             if (person.death_anniv_lunar_month && person.death_anniv_lunar_day)
               parts.push(
                 `giỗ ${person.death_anniv_lunar_day}/${person.death_anniv_lunar_month}`,

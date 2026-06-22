@@ -1,7 +1,11 @@
-// Tuổi thọ ("hưởng thọ") của người đã mất. Ưu tiên giá trị tự ghi
-// (manual) vì các cụ đời trước thường chỉ truyền lại tuổi thọ, không
-// đủ ngày sinh/mất để tính. Nếu không có thì suy ra từ năm sinh – năm
-// mất khi có đủ cả hai.
+// Tuổi thọ của người đã mất. Ưu tiên giá trị tự ghi (manual) vì các cụ
+// đời trước thường chỉ truyền lại tuổi thọ, không đủ ngày sinh/mất để
+// tính. Nếu không có thì suy ra từ năm sinh – năm mất khi có đủ cả hai.
+//
+// Phong tục xưng hô: người mất từ 60 tuổi trở lên gọi là "hưởng thọ"
+// (thọ); dưới 60 tuổi gọi là "hưởng dương".
+
+export const THO_MIN_AGE = 60;
 
 /** Tính tuổi thọ (số) — manual nếu có, ngược lại từ năm sinh/mất. */
 export function computeLifespanYears(
@@ -19,12 +23,22 @@ export function computeLifespanYears(
   return null;
 }
 
-/** Chuỗi hiển thị "hưởng thọ X tuổi" — rỗng nếu không tính được. */
-export function lifespanText(
+/** Nhãn theo phong tục: "Hưởng thọ" (≥60) hoặc "Hưởng dương" (<60). */
+export function lifespanLabel(years: number): string {
+  return years >= THO_MIN_AGE ? "Hưởng thọ" : "Hưởng dương";
+}
+
+/**
+ * Cụm chữ gọn dùng trên thẻ/cây: "Thọ 82 tuổi" hoặc
+ * "Hưởng dương 45 tuổi". Trả "" nếu không tính được tuổi thọ.
+ */
+export function lifespanPhrase(
   manual: number | null | undefined,
   birthDate: string | null | undefined,
   deathDate: string | null | undefined,
 ): string {
   const n = computeLifespanYears(manual, birthDate, deathDate);
-  return n == null ? "" : `${n} tuổi`;
+  if (n == null) return "";
+  const word = n >= THO_MIN_AGE ? "Thọ" : "Hưởng dương";
+  return `${word} ${n} tuổi`;
 }

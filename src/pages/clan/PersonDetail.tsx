@@ -54,7 +54,7 @@ import {
 } from "@/lib/lunarDate";
 import { track } from "@/lib/analytics";
 import { formatPartialDate } from "@/lib/partialDate";
-import { lifespanText } from "@/lib/lifespan";
+import { computeLifespanYears, lifespanLabel } from "@/lib/lifespan";
 import { listPostsForPerson } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 import {
@@ -323,16 +323,20 @@ export default function PersonDetail() {
                         }) || null
                       }
                     />
-                    <DetailRow
-                      label="Hưởng thọ"
-                      value={
-                        lifespanText(
-                          person.lifespan_years,
-                          person.birth_date,
-                          person.death_date,
-                        ) || null
-                      }
-                    />
+                    {(() => {
+                      // ≥60 tuổi: "Hưởng thọ"; dưới 60: "Hưởng dương".
+                      const tho = computeLifespanYears(
+                        person.lifespan_years,
+                        person.birth_date,
+                        person.death_date,
+                      );
+                      return tho == null ? null : (
+                        <DetailRow
+                          label={lifespanLabel(tho)}
+                          value={`${tho} tuổi`}
+                        />
+                      );
+                    })()}
                   </>
                 )}
                 <DetailRow label="Nơi sinh" value={person.birth_place} />

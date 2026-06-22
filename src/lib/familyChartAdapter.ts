@@ -2,7 +2,7 @@ import { compareBySpouseOrder } from "@/lib/queries/families";
 import type { InlawGhostSpouse } from "@/lib/queries/person-links";
 import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
 import { formatPartialDate } from "@/lib/partialDate";
-import { lifespanText } from "@/lib/lifespan";
+import { lifespanPhrase } from "@/lib/lifespan";
 
 /**
  * family-chart datum shape. The library wants this exact structure.
@@ -31,7 +31,8 @@ export interface F3Datum {
     /** Ngày giỗ âm lịch dạng "D/M âm lịch". Dùng cho tuỳ chọn hiện
      *  chi tiết người đã mất. "" nếu chưa ghi. */
     death_anniv?: string;
-    /** "X tuổi" — hưởng thọ (tự ghi hoặc tính). "" nếu không tính được. */
+    /** "Thọ 82 tuổi" / "Hưởng dương 45 tuổi" (tự ghi hoặc tính). ""
+     *  nếu không tính được. */
     lifespan_text?: string;
     /** Custom — we use it to render the muted "đã mất" footer. */
     is_living?: boolean;
@@ -199,7 +200,8 @@ export function toFamilyChart(
           p.death_anniv_lunar_month && p.death_anniv_lunar_day
             ? `${p.death_anniv_lunar_day}/${p.death_anniv_lunar_month} ÂL`
             : "",
-        lifespan_text: lifespanText(
+        // "Thọ 82 tuổi" / "Hưởng dương 45 tuổi" theo phong tục.
+        lifespan_text: lifespanPhrase(
           p.lifespan_years,
           p.birth_date,
           p.death_date,

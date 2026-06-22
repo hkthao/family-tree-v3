@@ -466,7 +466,7 @@ export function EditPersonForm({
 
           {!isLiving && (
             <div className="space-y-2">
-              <Label htmlFor="lifespan_years">Hưởng thọ (tuổi)</Label>
+              <Label htmlFor="lifespan_years">Tuổi thọ</Label>
               <Input
                 id="lifespan_years"
                 type="number"
@@ -480,7 +480,8 @@ export function EditPersonForm({
               />
               <p className="text-sm text-muted-foreground">
                 Tự ghi tuổi thọ cho người đã mất. Để trống thì hệ thống
-                tự tính từ năm sinh – năm mất (nếu có đủ).
+                tự tính từ năm sinh – năm mất (nếu có đủ). Từ 60 tuổi
+                hiển thị "hưởng thọ", dưới 60 là "hưởng dương".
               </p>
             </div>
           )}
