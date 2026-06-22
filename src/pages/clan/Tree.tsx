@@ -105,11 +105,6 @@ async function loadF3(): Promise<typeof import("family-chart")> {
 
 type Orientation = "vertical" | "horizontal";
 const ORIENTATION_KEY = "family-tree:tree-orientation";
-// Per-user toggles — góp ý từ người dùng: hiện ngày giỗ + tuổi thọ cho
-// người đã mất, và ngày-tháng-năm sinh đầy đủ cho người sống. Lưu theo
-// localStorage để mỗi người tự bật/tắt khi cần.
-const DECEASED_DETAILS_KEY = "family-tree:tree-show-deceased-details";
-const LIVING_DOB_KEY = "family-tree:tree-show-living-dob";
 
 function readOrientation(): Orientation {
   try {
@@ -118,14 +113,6 @@ function readOrientation(): Orientation {
       : "vertical";
   } catch {
     return "vertical";
-  }
-}
-
-function readBoolPref(key: string): boolean {
-  try {
-    return localStorage.getItem(key) === "1";
-  } catch {
-    return false;
   }
 }
 
@@ -167,28 +154,10 @@ export default function Tree() {
     }
   }, [orientation]);
 
-  // Hiện ngày giỗ + tuổi thọ cho người đã mất trên thẻ cây.
-  const [showDeceasedDetails, setShowDeceasedDetails] = useState<boolean>(() =>
-    readBoolPref(DECEASED_DETAILS_KEY),
-  );
-  // Hiện ngày-tháng-năm sinh đầy đủ cho người sống (mặc định chỉ năm).
-  const [showLivingDob, setShowLivingDob] = useState<boolean>(() =>
-    readBoolPref(LIVING_DOB_KEY),
-  );
-  useEffect(() => {
-    try {
-      localStorage.setItem(DECEASED_DETAILS_KEY, showDeceasedDetails ? "1" : "0");
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [showDeceasedDetails]);
-  useEffect(() => {
-    try {
-      localStorage.setItem(LIVING_DOB_KEY, showLivingDob ? "1" : "0");
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [showLivingDob]);
+  // Tuỳ chọn hiển thị thêm trên thẻ — nay là cài đặt cấp dòng họ (quản
+  // trị bật/tắt ở Cài đặt dòng họ), áp đồng nhất cho mọi người xem cây.
+  const showDeceasedDetails = clan.display_death_details;
+  const showLivingDob = clan.display_living_full_dob;
 
   // Non-members of a public clan need the masked views — same pattern
   // as /people. Without this the tree shows "no data" on public clans
@@ -692,8 +661,8 @@ export default function Tree() {
     focal,
     orientation,
     clan.generation_offset,
-    showDeceasedDetails,
-    showLivingDob,
+    clan.display_death_details,
+    clan.display_living_full_dob,
   ]);
 
   // Before the OS print dialog opens (either via our "In" button or
@@ -799,26 +768,6 @@ export default function Tree() {
                 >
                   <IconLayoutHorizontal className="h-4 w-4" />
                   Ngang
-                </SegmentedButton>
-              </SegmentedControl>
-              {/* Tuỳ chọn hiển thị thêm trên thẻ — mỗi người tự bật/tắt.
-                  Đây là toggle độc lập, không loại trừ nhau. */}
-              <SegmentedControl ariaLabel="Hiển thị thêm trên thẻ">
-                <SegmentedButton
-                  active={showDeceasedDetails}
-                  onClick={() => setShowDeceasedDetails((v) => !v)}
-                  title="Người đã mất: hiện ngày giỗ và tuổi thọ"
-                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
-                >
-                  Giỗ &amp; thọ
-                </SegmentedButton>
-                <SegmentedButton
-                  active={showLivingDob}
-                  onClick={() => setShowLivingDob((v) => !v)}
-                  title="Người sống: hiện đầy đủ ngày-tháng-năm sinh"
-                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
-                >
-                  Ngày sinh đủ
                 </SegmentedButton>
               </SegmentedControl>
               {effectiveRole(clan) !== null && (

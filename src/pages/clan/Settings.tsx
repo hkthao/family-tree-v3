@@ -47,6 +47,12 @@ export default function Settings() {
   const [rootIsGenZero, setRootIsGenZero] = useState(
     clan.generation_offset === 1,
   );
+  const [showDeathDetails, setShowDeathDetails] = useState(
+    clan.display_death_details,
+  );
+  const [showLivingFullDob, setShowLivingFullDob] = useState(
+    clan.display_living_full_dob,
+  );
 
   useEffect(() => {
     setName(clan.name);
@@ -54,6 +60,8 @@ export default function Settings() {
     setVisibility(clan.visibility);
     setHidePhotosInShare(clan.hide_photos_in_share);
     setRootIsGenZero(clan.generation_offset === 1);
+    setShowDeathDetails(clan.display_death_details);
+    setShowLivingFullDob(clan.display_living_full_dob);
   }, [clan.id]);
 
   const mutation = useMutation({
@@ -64,6 +72,8 @@ export default function Settings() {
         visibility,
         hide_photos_in_share: hidePhotosInShare,
         generation_offset: rootIsGenZero ? 1 : 0,
+        display_death_details: showDeathDetails,
+        display_living_full_dob: showLivingFullDob,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -186,6 +196,48 @@ export default function Settings() {
                     Bật tuỳ chọn này nếu dòng họ quen tính Thủy tổ là
                     Đời 0 — con cháu sẽ là Đời 1, 2, 3… Chỉ thay đổi
                     cách hiển thị, không động vào dữ liệu gốc.
+                  </p>
+                </div>
+              </label>
+            </fieldset>
+
+            <fieldset className="space-y-3">
+              <legend className="text-base font-medium mb-2">
+                Hiển thị trên cây &amp; sổ gia phả
+              </legend>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showDeathDetails}
+                  onChange={(e) => setShowDeathDetails(e.target.checked)}
+                  className="mt-1 h-5 w-5 accent-primary shrink-0"
+                />
+                <div>
+                  <p className="font-medium">
+                    Người đã mất: hiện ngày giỗ và tuổi thọ
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Thẻ người đã mất trên cây và trong sách PDF hiện
+                    thêm ngày giỗ (âm lịch) và tuổi thọ (hưởng thọ bao
+                    nhiêu tuổi).
+                  </p>
+                </div>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showLivingFullDob}
+                  onChange={(e) => setShowLivingFullDob(e.target.checked)}
+                  className="mt-1 h-5 w-5 accent-primary shrink-0"
+                />
+                <div>
+                  <p className="font-medium">
+                    Người sống: hiện đầy đủ ngày-tháng-năm sinh
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Mặc định chỉ hiện năm sinh. Bật để thẻ người còn
+                    sống hiện đủ ngày/tháng/năm sinh trên cây và trong
+                    sách PDF.
                   </p>
                 </div>
               </label>
