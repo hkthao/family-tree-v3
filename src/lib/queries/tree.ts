@@ -12,6 +12,7 @@ export interface PersonForTree {
   is_living: boolean;
   is_root: boolean;
   birth_date: string | null;
+  birth_date_precision?: "year" | "month" | "day" | null;
   death_date: string | null;
   generation: number | null;
   birth_family_id: string | null;
@@ -23,6 +24,13 @@ export interface PersonForTree {
    *  new column (Share lineage payload, MyLineage adapter, tests)
    *  still typecheck. */
   birth_order?: number | null;
+  /** Recurring giỗ (âm lịch) — tháng/ngày, lặp hằng năm. Dùng cho tuỳ
+   *  chọn hiện ngày giỗ người đã mất trên thẻ cây. Optional vì các
+   *  caller cũ (share, MyLineage, tests) không nạp cột này. */
+  death_anniv_lunar_month?: number | null;
+  death_anniv_lunar_day?: number | null;
+  /** Hưởng thọ tự ghi (tuổi). Optional, lý do như trên. */
+  lifespan_years?: number | null;
 }
 
 export interface FamilyForTree {
@@ -71,7 +79,7 @@ export async function getTreeData(
   client: Client = defaultClient,
 ): Promise<TreeData> {
   const personCols =
-    "id, full_name, gender, is_living, is_root, birth_date, death_date, generation, birth_family_id, branch_id, photo_path, birth_order";
+    "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, generation, birth_family_id, branch_id, photo_path, birth_order, death_anniv_lunar_month, death_anniv_lunar_day, lifespan_years";
   const personsQuery =
     source === "persons_public_safe"
       ? client

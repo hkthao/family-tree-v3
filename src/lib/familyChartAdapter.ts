@@ -1,6 +1,8 @@
 import { compareBySpouseOrder } from "@/lib/queries/families";
 import type { InlawGhostSpouse } from "@/lib/queries/person-links";
 import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
+import { formatPartialDate } from "@/lib/partialDate";
+import { lifespanText } from "@/lib/lifespan";
 
 /**
  * family-chart datum shape. The library wants this exact structure.
@@ -23,6 +25,14 @@ export interface F3Datum {
     /** Year of death (string, 4 digits) — kept separate so onCardUpdate
      *  can render "YYYY - YYYY" / "? - ?" without re-parsing the date. */
     death_year?: string;
+    /** Ngày sinh đầy đủ (dd/mm/yyyy theo độ chính xác). Dùng cho tuỳ
+     *  chọn "hiện ngày-tháng-năm sinh" của người sống. "" nếu không có. */
+    birth_full?: string;
+    /** Ngày giỗ âm lịch dạng "D/M âm lịch". Dùng cho tuỳ chọn hiện
+     *  chi tiết người đã mất. "" nếu chưa ghi. */
+    death_anniv?: string;
+    /** "X tuổi" — hưởng thọ (tự ghi hoặc tính). "" nếu không tính được. */
+    lifespan_text?: string;
     /** Custom — we use it to render the muted "đã mất" footer. */
     is_living?: boolean;
     is_root?: boolean;
@@ -179,6 +189,21 @@ export function toFamilyChart(
         "full name": p.full_name,
         birthday: p.birth_date?.slice(0, 4),
         death_year: p.death_date?.slice(0, 4),
+        birth_full: formatPartialDate({
+          date: p.birth_date,
+          precision: p.birth_date_precision ?? null,
+        }),
+        // Compact form for the tight tree card ("15/8 ÂL"); the full
+        // "… âm lịch" string lives on PersonDetail.
+        death_anniv:
+          p.death_anniv_lunar_month && p.death_anniv_lunar_day
+            ? `${p.death_anniv_lunar_day}/${p.death_anniv_lunar_month} ÂL`
+            : "",
+        lifespan_text: lifespanText(
+          p.lifespan_years,
+          p.birth_date,
+          p.death_date,
+        ),
         is_living: p.is_living,
         is_root: p.is_root,
         generation: p.generation,

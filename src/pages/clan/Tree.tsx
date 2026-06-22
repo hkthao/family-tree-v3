@@ -105,6 +105,11 @@ async function loadF3(): Promise<typeof import("family-chart")> {
 
 type Orientation = "vertical" | "horizontal";
 const ORIENTATION_KEY = "family-tree:tree-orientation";
+// Per-user toggles — góp ý từ người dùng: hiện ngày giỗ + tuổi thọ cho
+// người đã mất, và ngày-tháng-năm sinh đầy đủ cho người sống. Lưu theo
+// localStorage để mỗi người tự bật/tắt khi cần.
+const DECEASED_DETAILS_KEY = "family-tree:tree-show-deceased-details";
+const LIVING_DOB_KEY = "family-tree:tree-show-living-dob";
 
 function readOrientation(): Orientation {
   try {
@@ -113,6 +118,14 @@ function readOrientation(): Orientation {
       : "vertical";
   } catch {
     return "vertical";
+  }
+}
+
+function readBoolPref(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return false;
   }
 }
 
@@ -153,6 +166,29 @@ export default function Tree() {
       /* private mode — ignore */
     }
   }, [orientation]);
+
+  // Hiện ngày giỗ + tuổi thọ cho người đã mất trên thẻ cây.
+  const [showDeceasedDetails, setShowDeceasedDetails] = useState<boolean>(() =>
+    readBoolPref(DECEASED_DETAILS_KEY),
+  );
+  // Hiện ngày-tháng-năm sinh đầy đủ cho người sống (mặc định chỉ năm).
+  const [showLivingDob, setShowLivingDob] = useState<boolean>(() =>
+    readBoolPref(LIVING_DOB_KEY),
+  );
+  useEffect(() => {
+    try {
+      localStorage.setItem(DECEASED_DETAILS_KEY, showDeceasedDetails ? "1" : "0");
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [showDeceasedDetails]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(LIVING_DOB_KEY, showLivingDob ? "1" : "0");
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [showLivingDob]);
 
   // Non-members of a public clan need the masked views — same pattern
   // as /people. Without this the tree shows "no data" on public clans
@@ -343,32 +379,58 @@ export default function Tree() {
         // "YYYY - YYYY" on line 2 (centered via the onCardUpdate hook
         // below — the library hard-codes x=0 on every tspan, so we
         // post-process). Unknown years render as "?".
-        const lifespan = (d: DatumNode): string => {
+        // Line 2: năm sinh–mất. Với người sống, nếu user bật tuỳ chọn
+        // thì hiện ngày-tháng-năm sinh đầy đủ thay vì chỉ năm.
+        const dateLine = (d: DatumNode): string => {
           const f = d.data ?? {};
-          const b = (f["birthday"] as string) || "?";
           const isLiving = f["is_living"] !== false;
+          if (isLiving && showLivingDob) {
+            const full = (f["birth_full"] as string) || "";
+            if (full) return `Sinh ${full}`;
+          }
+          const b = (f["birthday"] as string) || "?";
           const death = (f["death_year"] as string) || (isLiving ? "" : "?");
           return death ? `${b} - ${death}` : b;
         };
+        // Line 3 (chỉ khi bật tuỳ chọn): ngày giỗ + tuổi thọ cho người
+        // đã mất. Người sống → dòng trống.
+        const deceasedExtra = (d: DatumNode): string => {
+          const f = d.data ?? {};
+          if (f["is_living"] !== false) return "";
+          const parts: string[] = [];
+          const tho = (f["lifespan_text"] as string) || "";
+          if (tho) parts.push(`Thọ ${tho}`);
+          const anniv = (f["death_anniv"] as string) || "";
+          if (anniv) parts.push(`Giỗ ${anniv}`);
+          return parts.join(" · ");
+        };
+
+        const displayLines: CardDisplayFn[] = [
+          (d) => String((d as DatumNode).data?.["full name"] ?? ""),
+          (d) => dateLine(d as DatumNode),
+        ];
+        if (showDeceasedDetails) {
+          displayLines.push((d) => deceasedExtra(d as DatumNode));
+        }
 
         card
-          ?.setCardDisplay([
-            (d) => String((d as DatumNode).data?.["full name"] ?? ""),
-            (d) => lifespan(d as DatumNode),
-          ])
+          ?.setCardDisplay(
+            displayLines as unknown as Parameters<F3Card["setCardDisplay"]>[0],
+          )
           // Card 220×64: vừa đủ tên Việt 3-4 từ + lifespan, tiết kiệm
           // ~15% diện tích vẽ. 50px circular avatar inset 8px, text bắt
           // đầu ở x=64 (avatar + 6px gap) → 156px còn lại cho name +
           // meta line. Avatar img_y=7 để center theo trục y với h=64.
+          // Khi bật chi tiết người mất, nới rộng để chứa dòng giỗ/thọ.
           .setCardDim({
-            w: 220,
-            h: 64,
+            w: showDeceasedDetails ? 260 : showLivingDob ? 240 : 220,
+            h: showDeceasedDetails ? 82 : 64,
             text_x: 64,
             text_y: 18,
             img_w: 50,
             img_h: 50,
             img_x: 8,
-            img_y: 7,
+            img_y: showDeceasedDetails ? 16 : 7,
           })
           .setOnCardUpdate(function (d) {
             const datum = d.data as DatumNode | undefined;
@@ -384,6 +446,15 @@ export default function Tree() {
               meta.setAttribute("text-anchor", "start");
               meta.setAttribute("x", "0");
               meta.setAttribute("dy", "18");
+            }
+            // Dòng 3 (giỗ + tuổi thọ) — đặt dưới dòng năm, chữ nhỏ + mờ.
+            const extra = tspans[2];
+            if (extra) {
+              extra.setAttribute("text-anchor", "start");
+              extra.setAttribute("x", "0");
+              extra.setAttribute("dy", "16");
+              extra.setAttribute("font-size", "11");
+              extra.setAttribute("fill", "#8A7A66");
             }
 
             // Ghost-spouse styling: dashed bronze border + "Họ X" tag
@@ -616,7 +687,14 @@ export default function Tree() {
       chartRef.current = null;
       node.innerHTML = "";
     };
-  }, [f3Data, focal, orientation, clan.generation_offset]);
+  }, [
+    f3Data,
+    focal,
+    orientation,
+    clan.generation_offset,
+    showDeceasedDetails,
+    showLivingDob,
+  ]);
 
   // Before the OS print dialog opens (either via our "In" button or
   // OS-level Cmd/Ctrl+P), refit the tree to the printable area.
@@ -721,6 +799,26 @@ export default function Tree() {
                 >
                   <IconLayoutHorizontal className="h-4 w-4" />
                   Ngang
+                </SegmentedButton>
+              </SegmentedControl>
+              {/* Tuỳ chọn hiển thị thêm trên thẻ — mỗi người tự bật/tắt.
+                  Đây là toggle độc lập, không loại trừ nhau. */}
+              <SegmentedControl ariaLabel="Hiển thị thêm trên thẻ">
+                <SegmentedButton
+                  active={showDeceasedDetails}
+                  onClick={() => setShowDeceasedDetails((v) => !v)}
+                  title="Người đã mất: hiện ngày giỗ và tuổi thọ"
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
+                >
+                  Giỗ &amp; thọ
+                </SegmentedButton>
+                <SegmentedButton
+                  active={showLivingDob}
+                  onClick={() => setShowLivingDob((v) => !v)}
+                  title="Người sống: hiện đầy đủ ngày-tháng-năm sinh"
+                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
+                >
+                  Ngày sinh đủ
                 </SegmentedButton>
               </SegmentedControl>
               {effectiveRole(clan) !== null && (
