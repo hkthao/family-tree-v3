@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -15,6 +16,20 @@ interface Props {
    * border, and removes the countdown badge (always "Hôm nay").
    */
   emphasised?: boolean;
+  /**
+   * "row" (default) = ngang, cho danh sách 1 cột. "card" = dọc, đều
+   * chiều cao, cho chế độ xem lưới nhiều cột.
+   */
+  variant?: "row" | "card";
+}
+
+/** Lớp màu cho nhãn "Còn N ngày" theo độ gấp. */
+function countdownClass(daysUntil: number): string {
+  return daysUntil <= 1
+    ? "text-primary font-semibold"
+    : daysUntil <= 7
+      ? "text-accent font-medium"
+      : "text-muted-foreground";
 }
 
 /**
@@ -23,7 +38,12 @@ interface Props {
  * in the middle, countdown badge on the right. Clicking navigates
  * to the person's detail page when the event is tied to one.
  */
-export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
+export function UpcomingEventRow({
+  event,
+  clanId,
+  emphasised,
+  variant = "row",
+}: Props) {
   const dt = new Date(event.date + "T00:00:00");
   const day = dt.getDate();
   const month = dt.getMonth() + 1;
@@ -34,6 +54,53 @@ export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
         ? "Ngày mai"
         : `Còn ${event.daysUntil} ngày`;
   const canChi = getCanChiForSolarDate(event.date);
+
+  const wrap = (node: ReactNode) => {
+    if (event.restingPlaceId)
+      return (
+        <Link to={`/clans/${clanId}/graves/${event.restingPlaceId}`} className="block h-full">
+          {node}
+        </Link>
+      );
+    if (event.personId)
+      return (
+        <Link to={`/clans/${clanId}/people/${event.personId}`} className="block h-full">
+          {node}
+        </Link>
+      );
+    return node;
+  };
+
+  // ── Card dọc (chế độ lưới) ──────────────────────────────────────
+  if (variant === "card") {
+    return wrap(
+      <div className="flex h-full flex-col gap-2 p-4 rounded-lg border bg-card hover:border-primary transition-colors">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-shrink-0 w-12 text-center rounded-md bg-muted/40 py-1">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              Th {month}
+            </div>
+            <div className="text-2xl font-semibold leading-none">{day}</div>
+          </div>
+          <span className={`text-xs whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
+            {countdown}
+          </span>
+        </div>
+        <p className="font-semibold leading-snug line-clamp-2">{event.title}</p>
+        <div className="mt-auto">
+          <p className="text-sm text-muted-foreground">
+            {kindLabel(event.kind)}
+            {event.subtitle ? ` • ${event.subtitle}` : ""}
+          </p>
+          {canChi && (
+            <p className="text-xs text-muted-foreground/80 truncate">
+              {formatCanChiShort(canChi)}
+            </p>
+          )}
+        </div>
+      </div>,
+    );
+  }
 
   const inner = (
     <div
@@ -80,36 +147,14 @@ export function UpcomingEventRow({ event, clanId, emphasised }: Props) {
         </div>
       </div>
       {!emphasised && (
-        <span
-          className={`text-sm whitespace-nowrap ${
-            event.daysUntil <= 1
-              ? "text-primary font-semibold"
-              : event.daysUntil <= 7
-                ? "text-accent font-medium"
-                : "text-muted-foreground"
-          }`}
-        >
+        <span className={`text-sm whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
           {countdown}
         </span>
       )}
     </div>
   );
 
-  if (event.restingPlaceId) {
-    return (
-      <Link to={`/clans/${clanId}/graves/${event.restingPlaceId}`} className="block">
-        {inner}
-      </Link>
-    );
-  }
-  if (event.personId) {
-    return (
-      <Link to={`/clans/${clanId}/people/${event.personId}`} className="block">
-        {inner}
-      </Link>
-    );
-  }
-  return inner;
+  return wrap(inner);
 }
 
 function kindLabel(k: UpcomingEvent["kind"]): string {
