@@ -30,7 +30,7 @@ import {
 } from "@/lib/queries/audit";
 import { queryKeys } from "@/lib/queries/keys";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 15;
 
 const ENTITY_LABEL: Record<AuditEntity, string> = {
   person: "Người",

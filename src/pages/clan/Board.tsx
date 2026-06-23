@@ -12,7 +12,7 @@ import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listClanPosts, listPendingPosts } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 /**
  * `/clans/:clanId/board` — bảng tin dòng họ. Có phân trang qua

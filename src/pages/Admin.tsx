@@ -71,7 +71,7 @@ const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
   { value: "giapha", label: "Nhập gia phả" },
 ];
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 
 export default function Admin() {
   const { user, loading } = useAuth();

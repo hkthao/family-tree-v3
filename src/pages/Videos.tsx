@@ -17,7 +17,7 @@ import {
   type VideoTutorial,
 } from "@/lib/videoTutorials";
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 15;
 
 /**
  * `/huong-dan-video` — trang trung tâm tất cả video hướng dẫn.

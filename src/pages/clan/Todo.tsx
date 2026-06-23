@@ -32,7 +32,7 @@ import {
   type TodoSummaryRow,
 } from "@/lib/queries/todo";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 15;
 
 const CATEGORY_META: Record<
   TodoCategory,

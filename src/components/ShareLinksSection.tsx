@@ -40,7 +40,7 @@ interface Props {
 }
 
 const DEFAULT_TTL = 30;
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 
 export function ShareLinksSection({ clanId }: Props) {
   const { user } = useAuth();
