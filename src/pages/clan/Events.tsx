@@ -80,7 +80,7 @@ export default function Events() {
   const toast = useToast();
 
   const [daysAhead, setDaysAhead] = useState<number>(90);
-  const [view, setView] = useState<"list" | "calendar">("list");
+  const [view, setView] = useState<"list" | "grid" | "calendar">("list");
   // Phân trang danh sách sự kiện sắp tới (họ lớn có thể hàng trăm
   // sinh nhật / ngày giỗ trong khoảng đã chọn).
   const EVENTS_PAGE_SIZE = 20;
@@ -222,12 +222,21 @@ export default function Events() {
                 <span className="hidden sm:inline">Danh sách</span>
               </SegmentedButton>
               <SegmentedButton
+                active={view === "grid"}
+                onClick={() => setView("grid")}
+                ariaLabel="Lưới"
+                className="inline-flex items-center gap-1.5 px-3"
+              >
+                <IconGrid className="h-4 w-4" />
+                <span className="hidden sm:inline">Lưới</span>
+              </SegmentedButton>
+              <SegmentedButton
                 active={view === "calendar"}
                 onClick={() => setView("calendar")}
                 ariaLabel="Lịch"
                 className="inline-flex items-center gap-1.5 px-3"
               >
-                <IconGrid className="h-4 w-4" />
+                <IconCalendar className="h-4 w-4" />
                 <span className="hidden sm:inline">Lịch</span>
               </SegmentedButton>
             </SegmentedControl>
@@ -256,7 +265,7 @@ export default function Events() {
       {/* Look-ahead pills — only meaningful in list view. Full-width
           on mobile (each pill flex-1) so taps are large; auto-width
           on sm+ where the row has plenty of room. */}
-      {view === "list" && (
+      {view !== "calendar" && (
         <SegmentedControl
           ariaLabel="Khoảng thời gian"
           className="flex sm:inline-flex"
@@ -287,7 +296,13 @@ export default function Events() {
         />
       ) : (
         <>
-          <ul className="space-y-2">
+          <ul
+            className={
+              view === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"
+                : "space-y-2"
+            }
+          >
             {pagedUpcoming.map((e) => (
               <li key={e.key}>
                 <UpcomingEventRow event={e} clanId={clan.id} />
