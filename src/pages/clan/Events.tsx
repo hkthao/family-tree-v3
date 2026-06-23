@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   IconBell,
@@ -12,6 +12,7 @@ import {
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { IconBellOff, IconDownload } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -80,6 +81,10 @@ export default function Events() {
 
   const [daysAhead, setDaysAhead] = useState<number>(90);
   const [view, setView] = useState<"list" | "calendar">("list");
+  // Phân trang danh sách sự kiện sắp tới (họ lớn có thể hàng trăm
+  // sinh nhật / ngày giỗ trong khoảng đã chọn).
+  const EVENTS_PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
 
   // Non-members of a public clan need the masked view; raw `persons`
   // RLS would return zero rows. Same pattern as /tree and Dashboard.
@@ -130,6 +135,21 @@ export default function Events() {
       (a, b) => a.daysUntil - b.daysUntil,
     );
   }, [tree, events, anniversaries, effectiveDays]);
+
+  // Về trang 1 khi đổi khoảng thời gian / danh sách thay đổi.
+  useEffect(() => {
+    setPage(1);
+  }, [daysAhead, upcoming.length]);
+
+  const totalEventPages = Math.max(
+    1,
+    Math.ceil(upcoming.length / EVENTS_PAGE_SIZE),
+  );
+  const safePage = Math.min(page, totalEventPages);
+  const pagedUpcoming = upcoming.slice(
+    (safePage - 1) * EVENTS_PAGE_SIZE,
+    safePage * EVENTS_PAGE_SIZE,
+  );
 
   function handleExportIcs() {
     if (!tree || !events || !anniversaries) return;
@@ -266,13 +286,25 @@ export default function Events() {
           description={`Trong ${daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới.`}
         />
       ) : (
-        <ul className="space-y-2">
-          {upcoming.map((e) => (
-            <li key={e.key}>
-              <UpcomingEventRow event={e} clanId={clan.id} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="space-y-2">
+            {pagedUpcoming.map((e) => (
+              <li key={e.key}>
+                <UpcomingEventRow event={e} clanId={clan.id} />
+              </li>
+            ))}
+          </ul>
+          {upcoming.length > EVENTS_PAGE_SIZE && (
+            <Pagination
+              page={safePage}
+              totalPages={totalEventPages}
+              total={upcoming.length}
+              pageSize={EVENTS_PAGE_SIZE}
+              unit="sự kiện"
+              onPageChange={setPage}
+            />
+          )}
+        </>
       )}
 
       {/* Custom events management */}

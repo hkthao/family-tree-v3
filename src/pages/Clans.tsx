@@ -5,11 +5,17 @@ import { Link, useSearchParams } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import {
   IconBuildings,
+  IconGrid,
+  IconList,
   IconPlus,
   IconSearch,
   IconTree,
   IconUsers,
 } from "@/components/icons";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -53,6 +59,7 @@ export default function Clans() {
   const sizeBucket = (sp.get("size") ?? "") as ClanSizeBucket | "";
   const debounced = sp.get("q") ?? "";
   const page = Math.max(1, Number(sp.get("page")) || 1);
+  const view: "list" | "grid" = sp.get("view") === "grid" ? "grid" : "list";
 
   // The text box keeps its own live value (seeded from the URL); only
   // the debounced value is pushed to the URL + used for the query.
@@ -64,6 +71,8 @@ export default function Clans() {
     patch({ size: next || null, page: null });
   const setPage = (next: number) =>
     patch({ page: next <= 1 ? null : String(next) });
+  const setView = (next: "list" | "grid") =>
+    patch({ view: next === "list" ? null : "grid" });
 
   useEffect(() => {
     const h = setTimeout(() => {
@@ -196,6 +205,24 @@ export default function Clans() {
               ))}
             </select>
           )}
+          <SegmentedControl ariaLabel="Kiểu hiển thị">
+            <SegmentedButton
+              active={view === "list"}
+              onClick={() => setView("list")}
+              ariaLabel="Danh sách"
+              variant="icon-md"
+            >
+              <IconList className="h-4 w-4" />
+            </SegmentedButton>
+            <SegmentedButton
+              active={view === "grid"}
+              onClick={() => setView("grid")}
+              ariaLabel="Lưới"
+              variant="icon-md"
+            >
+              <IconGrid className="h-4 w-4" />
+            </SegmentedButton>
+          </SegmentedControl>
         </div>
 
         {tab === "community" && !isPlatformAdmin && (
@@ -255,11 +282,19 @@ export default function Clans() {
         )}
 
         {data && data.rows.length > 0 && (
-          <ul className="space-y-2">
-            {data.rows.map((c) => (
-              <ClanRow key={c.id} clan={c} />
-            ))}
-          </ul>
+          view === "grid" ? (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {data.rows.map((c) => (
+                <ClanCard key={c.id} clan={c} />
+              ))}
+            </ul>
+          ) : (
+            <ul className="space-y-2">
+              {data.rows.map((c) => (
+                <ClanRow key={c.id} clan={c} />
+              ))}
+            </ul>
+          )
         )}
 
         {total > 0 && (
@@ -331,6 +366,41 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
           {" • "}
           {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
         </p>
+      </Link>
+    </li>
+  );
+}
+
+function ClanCard({ clan }: { clan: ClanSummary }) {
+  return (
+    <li>
+      <Link
+        to={`/clans/${clan.id}`}
+        className="flex h-full flex-col rounded-lg border bg-card p-4 hover:border-primary transition-colors"
+      >
+        <div className="flex items-start gap-2 min-w-0">
+          <IconTree className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <h2 className="clan-name text-base font-semibold leading-snug line-clamp-2 min-w-0">
+            {clan.name}
+          </h2>
+        </div>
+        {clan.description && (
+          <p className="text-muted-foreground text-sm line-clamp-2 mt-1.5">
+            {clan.description}
+          </p>
+        )}
+        <div className="mt-auto pt-3 flex items-center justify-between text-xs text-muted-foreground">
+          <span>{clan.person_count} thành viên</span>
+          <span>
+            {clan.role ? (
+              <span className="text-foreground">{roleLabel(clan.role)}</span>
+            ) : (
+              "Khách"
+            )}
+            {" • "}
+            {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
+          </span>
+        </div>
       </Link>
     </li>
   );
