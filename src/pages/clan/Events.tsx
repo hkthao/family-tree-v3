@@ -305,7 +305,11 @@ export default function Events() {
           >
             {pagedUpcoming.map((e) => (
               <li key={e.key}>
-                <UpcomingEventRow event={e} clanId={clan.id} />
+                <UpcomingEventRow
+                  event={e}
+                  clanId={clan.id}
+                  variant={view === "grid" ? "card" : "row"}
+                />
               </li>
             ))}
           </ul>
