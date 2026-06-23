@@ -39,22 +39,24 @@ async function main() {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
 
-  const body = `Cây gia phả và sổ PDF nay hiển thị được nhiều thông tin hơn về tuổi thọ và ngày giỗ:
+  const body = `Đợt cập nhật giao diện giúp xem và tra cứu dễ hơn:
 
-• Thêm mục "Tuổi thọ" trong hồ sơ người đã mất — tự ghi cho các cụ đời trước chỉ còn nhớ tuổi, không có đủ năm sinh/năm mất.
+• Trang Dòng họ và Sự kiện có thêm chế độ xem Lưới (bấm nút Lưới ở góc) — nhìn tổng quan dạng thẻ, gọn gàng trên cả điện thoại lẫn máy tính.
 
-• Hiển thị đúng phong tục: từ 60 tuổi trở lên ghi "hưởng thọ", dưới 60 tuổi ghi "hưởng dương".
+• Danh sách sự kiện sắp tới giờ chia trang, không còn kéo dài vô tận với họ đông người.
 
-• Cài đặt dòng họ có 2 tuỳ chọn (quản trị bật/tắt): hiện ngày giỗ + tuổi thọ của người đã mất; hiện đầy đủ ngày-tháng-năm sinh của người còn sống. Áp cho cả cây trên màn hình lẫn sổ gia phả PDF.
+• Các trang danh sách (dòng họ, thành viên, sự kiện, nhật ký…) gọn lại còn 15 mục mỗi trang cho dễ nhìn; trang Thành viên vẫn đổi được số mục/trang.
 
-• Sửa lỗi xuất sổ: trước đây sổ PDF còn thiếu thành viên và sắp xếp lộn xộn — nay đầy đủ mọi người, đúng thứ tự đời và trưởng - thứ.
+• Người đã mất hiển thị đúng phong tục: từ 60 tuổi gọi "hưởng thọ", dưới 60 gọi "hưởng dương".
 
-Vào Cài đặt dòng họ để bật các tuỳ chọn hiển thị. Chúc cả nhà giữ gìn gia phả ngày một đầy đủ!`;
+• Tinh chỉnh sơ đồ cây và sổ gia phả PDF: tên dài không còn bị cắt, sơ đồ bắt đầu từ Thuỷ tổ, sắp đúng thứ tự đời và anh - chị - em.
+
+Cả nhà vào xem thử nhé!`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "Mới: Tuổi thọ, ngày giỗ trên cây & sửa lỗi xuất sổ",
+      title: "Mới: Xem dạng lưới, phân trang gọn & nhiều tinh chỉnh hiển thị",
       body,
       level: "update",
       is_public: true,
