@@ -53,7 +53,7 @@ import {
   type RelativesIndex,
 } from "@/lib/queries/relatives-index";
 
-const PAGE_SIZE_OPTIONS = [25, 50, 100];
+const PAGE_SIZE_OPTIONS = [15, 30, 50, 100];
 const VIEW_KEY = "family-tree:people-view-mode";
 type ViewMode = "list" | "grid";
 
@@ -77,7 +77,7 @@ export default function People() {
   const [sp] = useSearchParams();
   const patch = useUrlPatch();
   const page = Math.max(1, Number(sp.get("page")) || 1);
-  const pageSize = Math.max(1, Number(sp.get("ps")) || 50);
+  const pageSize = Math.max(1, Number(sp.get("ps")) || 15);
   const debounced = sp.get("q") ?? "";
   const branchId = sp.get("branch") ?? "";
   const generation = sp.get("gen") ?? "";

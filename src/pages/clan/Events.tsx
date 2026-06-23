@@ -83,7 +83,7 @@ export default function Events() {
   const [view, setView] = useState<"list" | "grid" | "calendar">("list");
   // Phân trang danh sách sự kiện sắp tới (họ lớn có thể hàng trăm
   // sinh nhật / ngày giỗ trong khoảng đã chọn).
-  const EVENTS_PAGE_SIZE = 20;
+  const EVENTS_PAGE_SIZE = 15;
   const [page, setPage] = useState(1);
 
   // Non-members of a public clan need the masked view; raw `persons`

@@ -37,7 +37,7 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 15;
 type Tab = "mine" | "community";
 
 export default function Clans() {
