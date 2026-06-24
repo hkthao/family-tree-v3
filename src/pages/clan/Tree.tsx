@@ -419,6 +419,12 @@ export default function Tree() {
         // badge "Đời"/thông gia. Tên dài hơn sẽ tự thu nhỏ cỡ chữ trong
         // onCardUpdate nên không bao giờ bị cắt/đè badge.
         const cardW = 248;
+        const cardH = showDeceasedDetails ? 74 : 64;
+        // 2 nút +/sửa neo sát góc phải-dưới thẻ (mép phải cardW-8, mép
+        // dưới cardH-4); mỗi nút tròn r=11 (22px), cách nhau 4px.
+        const actAddX = cardW - 56;
+        const actEditX = cardW - 30;
+        const actY = cardH - 26;
         card
           ?.setCardDisplay(
             displayLines as unknown as Parameters<F3Card["setCardDisplay"]>[0],
@@ -626,7 +632,7 @@ export default function Tree() {
               actions.setAttribute("class", "card-actions");
               actions.innerHTML = `
                 <g class="card-action card-action-add"
-                   transform="translate(${cardW - 80}, 38)">
+                   transform="translate(${actAddX}, ${actY})">
                   <circle cx="11" cy="11" r="11" fill="#FBF7F0"
                           stroke="#7A2E2E" stroke-width="1.5" />
                   <path d="M11 6 V16 M6 11 H16" stroke="#7A2E2E"
@@ -634,7 +640,7 @@ export default function Tree() {
                         fill="none" />
                 </g>
                 <g class="card-action card-action-edit"
-                   transform="translate(${cardW - 54}, 38)">
+                   transform="translate(${actEditX}, ${actY})">
                   <circle cx="11" cy="11" r="11" fill="#FBF7F0"
                           stroke="#7A2E2E" stroke-width="1.5" />
                   <path d="M7 15 L7 13 L13 7 L15 9 L9 15 Z"
@@ -868,8 +874,10 @@ export default function Tree() {
               />
               {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
                   lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
-                  hơn. w-full → xuống dòng riêng trên mobile. */}
-              <div className="w-full sm:w-auto flex items-center gap-2 justify-end">
+                  hơn. Mobile (order-last + w-full): xuống dòng riêng phía
+                  dưới. Desktop (sm:order-first + sm:mr-auto): căn sang
+                  trái, đẩy các nút khác sang phải. */}
+              <div className="w-full sm:w-auto order-last sm:order-first sm:mr-auto flex items-center gap-2 justify-end">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   Số đời hiển thị:
                 </span>
