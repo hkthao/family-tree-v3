@@ -58,6 +58,10 @@ interface F3Chart {
   setCardXSpacing: (n: number) => F3Chart;
   setOrientationHorizontal?: () => F3Chart;
   setOrientationVertical?: () => F3Chart;
+  // Giới hạn số đời hiển thị tính từ node tâm (xuống dưới = progeny,
+  // lên trên = ancestry). Không gọi = hiện tất cả.
+  setProgenyDepth?: (n: number) => F3Chart;
+  setAncestryDepth?: (n: number) => F3Chart;
   setTransitionTime: (n: number) => F3Chart;
   setSingleParentEmptyCard: (
     b: boolean,
@@ -116,6 +120,25 @@ function readOrientation(): Orientation {
   }
 }
 
+// Số đời hiển thị tính từ người làm tâm — giới hạn để họ lớn
+// (4000-5000 người) không render toàn bộ gây lag trên điện thoại.
+// 0 = "tất cả". Mặc định 3 đời. Lưu theo từng người (localStorage).
+const DEPTH_KEY = "family-tree:tree-depth";
+const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
+type TreeDepth = (typeof DEPTH_OPTIONS)[number];
+const DEFAULT_DEPTH: TreeDepth = 3;
+
+function readDepth(): TreeDepth {
+  try {
+    const v = Number(localStorage.getItem(DEPTH_KEY));
+    return (DEPTH_OPTIONS as readonly number[]).includes(v)
+      ? (v as TreeDepth)
+      : DEFAULT_DEPTH;
+  } catch {
+    return DEFAULT_DEPTH;
+  }
+}
+
 export default function Tree() {
   const { clan } = useClanContext();
   const canEdit = canEditClan(clan);
@@ -153,6 +176,15 @@ export default function Tree() {
       /* private mode — ignore */
     }
   }, [orientation]);
+
+  const [depth, setDepth] = useState<TreeDepth>(() => readDepth());
+  useEffect(() => {
+    try {
+      localStorage.setItem(DEPTH_KEY, String(depth));
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [depth]);
 
   // Tuỳ chọn hiển thị thêm trên thẻ — nay là cài đặt cấp dòng họ (quản
   // trị bật/tắt ở Cài đặt dòng họ), áp đồng nhất cho mọi người xem cây.
@@ -657,6 +689,14 @@ export default function Tree() {
           built.setCardXSpacing(292).setCardYSpacing(wide ? 168 : 152);
         }
 
+        // Giới hạn số đời hiển thị quanh người làm tâm. Họ lớn
+        // (4000-5000 người) render toàn bộ sẽ lag + thẻ nhỏ xíu; mặc
+        // định chỉ 3 đời. 0 = tất cả (đặt số rất lớn). Người dùng bấm
+        // vào một thẻ để đặt làm tâm rồi xem sâu tiếp.
+        const d = depth === 0 ? 999 : depth;
+        built.setProgenyDepth?.(d);
+        built.setAncestryDepth?.(d);
+
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
         // Without this, family-chart picks an arbitrary first row as
         // "main" and Đời 1 ends up collapsed off-screen.
@@ -705,6 +745,7 @@ export default function Tree() {
     clan.generation_offset,
     clan.display_death_details,
     clan.display_living_full_dob,
+    depth,
   ]);
 
   // Before the OS print dialog opens (either via our "In" button or
@@ -811,6 +852,26 @@ export default function Tree() {
                   <IconLayoutHorizontal className="h-4 w-4" />
                   Ngang
                 </SegmentedButton>
+              </SegmentedControl>
+              {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
+                  lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
+                  hơn. */}
+              <SegmentedControl ariaLabel="Số đời hiển thị">
+                {DEPTH_OPTIONS.map((d) => (
+                  <SegmentedButton
+                    key={d}
+                    active={depth === d}
+                    onClick={() => setDepth(d)}
+                    title={
+                      d === 0
+                        ? "Hiện tất cả các đời (có thể chậm với họ lớn)"
+                        : `Hiện ${d} đời tính từ người làm tâm`
+                    }
+                    className="px-2 sm:px-3"
+                  >
+                    {d === 0 ? "Tất cả" : d}
+                  </SegmentedButton>
+                ))}
               </SegmentedControl>
               {effectiveRole(clan) !== null && (
                 <>
