@@ -691,9 +691,11 @@ export default function Tree() {
 
         // Giới hạn số đời hiển thị quanh người làm tâm. Họ lớn
         // (4000-5000 người) render toàn bộ sẽ lag + thẻ nhỏ xíu; mặc
-        // định chỉ 3 đời. 0 = tất cả (đặt số rất lớn). Người dùng bấm
-        // vào một thẻ để đặt làm tâm rồi xem sâu tiếp.
-        const d = depth === 0 ? 999 : depth;
+        // định chỉ 3 đời. Người dùng bấm vào một thẻ để đặt làm tâm rồi
+        // xem sâu tiếp.
+        // family-chart đếm theo "số tầng quanh tâm", nên "3 đời" (tính
+        // cả người làm tâm) = depth - 1 tầng mỗi phía. 0 = tất cả.
+        const d = depth === 0 ? 999 : depth - 1;
         built.setProgenyDepth?.(d);
         built.setAncestryDepth?.(d);
 
@@ -853,26 +855,6 @@ export default function Tree() {
                   Ngang
                 </SegmentedButton>
               </SegmentedControl>
-              {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
-                  lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
-                  hơn. */}
-              <SegmentedControl ariaLabel="Số đời hiển thị">
-                {DEPTH_OPTIONS.map((d) => (
-                  <SegmentedButton
-                    key={d}
-                    active={depth === d}
-                    onClick={() => setDepth(d)}
-                    title={
-                      d === 0
-                        ? "Hiện tất cả các đời (có thể chậm với họ lớn)"
-                        : `Hiện ${d} đời tính từ người làm tâm`
-                    }
-                    className="px-2 sm:px-3"
-                  >
-                    {d === 0 ? "Tất cả" : d}
-                  </SegmentedButton>
-                ))}
-              </SegmentedControl>
               {effectiveRole(clan) !== null && (
                 <>
                   <ExportBookButton clan={clan} />
@@ -884,6 +866,31 @@ export default function Tree() {
                 cachedVersion={clan.data_version}
                 compact
               />
+              {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
+                  lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
+                  hơn. w-full → xuống dòng riêng trên mobile. */}
+              <div className="w-full sm:w-auto flex items-center gap-2 justify-end">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Số đời hiển thị:
+                </span>
+                <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
+                  {DEPTH_OPTIONS.map((d) => (
+                    <SegmentedButton
+                      key={d}
+                      active={depth === d}
+                      onClick={() => setDepth(d)}
+                      title={
+                        d === 0
+                          ? "Hiện tất cả các đời (có thể chậm với họ lớn)"
+                          : `Hiện ${d} đời tính từ người làm tâm`
+                      }
+                      className="px-2 sm:px-3"
+                    >
+                      {d === 0 ? "Tất cả" : d}
+                    </SegmentedButton>
+                  ))}
+                </SegmentedControl>
+              </div>
             </>
           }
         />
