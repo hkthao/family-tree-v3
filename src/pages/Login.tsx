@@ -96,6 +96,14 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <div className="text-right">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-primary hover:underline"
+              >
+                Quên mật khẩu?
+              </Link>
+            </div>
           </div>
         )}
 
