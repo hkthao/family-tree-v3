@@ -437,7 +437,7 @@ export default function Share() {
               {/* Số đời hiển thị quanh người làm tâm — mặc định 3 cho
                   nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. w-full →
                   xuống dòng riêng trên mobile. */}
-              <div className="w-full sm:w-auto flex items-center gap-2">
+              <div className="w-full sm:w-auto flex items-center gap-2 justify-end">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   Số đời hiển thị:
                 </span>
