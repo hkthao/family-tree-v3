@@ -49,6 +49,8 @@ interface F3Chart {
   setCardYSpacing: (n: number) => F3Chart;
   setOrientationVertical?: () => F3Chart;
   setOrientationHorizontal?: () => F3Chart;
+  setProgenyDepth?: (n: number) => F3Chart;
+  setAncestryDepth?: (n: number) => F3Chart;
   updateTree: (opts: { initial?: boolean }) => void;
   updateMainId?: (id: string) => void;
 }
@@ -85,6 +87,10 @@ export default function Share() {
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [orientation, setOrientation] = useState<Orientation>("vertical");
+  // Số đời hiển thị quanh người làm tâm — mặc định 3 để họ lớn không
+  // render toàn bộ gây lag trên điện thoại. 0 = tất cả.
+  const [depth, setDepth] = useState<number>(3);
+  const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["share-view", token ?? ""],
@@ -229,6 +235,10 @@ export default function Share() {
           built.setCardXSpacing(250).setCardYSpacing(152);
         }
 
+        const d = depth === 0 ? 999 : depth;
+        built.setProgenyDepth?.(d);
+        built.setAncestryDepth?.(d);
+
         if (focal && built.updateMainId) built.updateMainId(focal);
 
         // Wait one paint frame so the browser has actually laid the
@@ -262,7 +272,7 @@ export default function Share() {
       resizeObserver?.disconnect();
       node.innerHTML = "";
     };
-  }, [f3Data, orientation, data?.generation_offset]);
+  }, [f3Data, orientation, data?.generation_offset, depth]);
 
   // Smoothly re-centre when focal changes without re-creating the chart.
   useEffect(() => {
@@ -422,6 +432,25 @@ export default function Share() {
                   <IconLayoutHorizontal className="h-4 w-4" />
                   Ngang
                 </SegmentedButton>
+              </SegmentedControl>
+              {/* Số đời hiển thị quanh người làm tâm — mặc định 3 cho
+                  nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. */}
+              <SegmentedControl ariaLabel="Số đời hiển thị">
+                {DEPTH_OPTIONS.map((d) => (
+                  <SegmentedButton
+                    key={d}
+                    active={depth === d}
+                    onClick={() => setDepth(d)}
+                    title={
+                      d === 0
+                        ? "Hiện tất cả các đời"
+                        : `Hiện ${d} đời tính từ người làm tâm`
+                    }
+                    className="px-2 sm:px-3"
+                  >
+                    {d === 0 ? "Tất cả" : d}
+                  </SegmentedButton>
+                ))}
               </SegmentedControl>
             </div>
 
