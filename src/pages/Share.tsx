@@ -235,7 +235,8 @@ export default function Share() {
           built.setCardXSpacing(250).setCardYSpacing(152);
         }
 
-        const d = depth === 0 ? 999 : depth;
+        // "3 đời" tính cả người làm tâm = depth - 1 tầng mỗi phía.
+        const d = depth === 0 ? 999 : depth - 1;
         built.setProgenyDepth?.(d);
         built.setAncestryDepth?.(d);
 
@@ -434,24 +435,30 @@ export default function Share() {
                 </SegmentedButton>
               </SegmentedControl>
               {/* Số đời hiển thị quanh người làm tâm — mặc định 3 cho
-                  nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. */}
-              <SegmentedControl ariaLabel="Số đời hiển thị">
-                {DEPTH_OPTIONS.map((d) => (
-                  <SegmentedButton
-                    key={d}
-                    active={depth === d}
-                    onClick={() => setDepth(d)}
-                    title={
-                      d === 0
-                        ? "Hiện tất cả các đời"
-                        : `Hiện ${d} đời tính từ người làm tâm`
-                    }
-                    className="px-2 sm:px-3"
-                  >
-                    {d === 0 ? "Tất cả" : d}
-                  </SegmentedButton>
-                ))}
-              </SegmentedControl>
+                  nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. w-full →
+                  xuống dòng riêng trên mobile. */}
+              <div className="w-full sm:w-auto flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Số đời hiển thị:
+                </span>
+                <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
+                  {DEPTH_OPTIONS.map((d) => (
+                    <SegmentedButton
+                      key={d}
+                      active={depth === d}
+                      onClick={() => setDepth(d)}
+                      title={
+                        d === 0
+                          ? "Hiện tất cả các đời"
+                          : `Hiện ${d} đời tính từ người làm tâm`
+                      }
+                      className="px-2 sm:px-3"
+                    >
+                      {d === 0 ? "Tất cả" : d}
+                    </SegmentedButton>
+                  ))}
+                </SegmentedControl>
+              </div>
             </div>
 
             <div
