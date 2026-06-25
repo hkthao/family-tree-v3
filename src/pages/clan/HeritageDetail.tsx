@@ -404,16 +404,30 @@ export default function HeritageDetail() {
                 <option value="photo">Ảnh</option>
                 <option value="audio">Âm thanh</option>
               </select>
-              <input
-                value={extUrl}
-                onChange={(e) => { setExtUrl(e.target.value); setExtErr(null); }}
-                placeholder="Dán link https://… vào đây"
-                inputMode="url"
-                className="h-11 min-w-[200px] flex-1 rounded-md border border-input bg-background px-3 text-base"
-              />
-              <Button onClick={() => addExternalM.mutate()} disabled={addExternalM.isPending || !extUrl.trim()}>
-                {addExternalM.isPending ? "Đang thêm…" : "Thêm link"}
-              </Button>
+              {/* Nút "Thêm link" đặt LỒNG bên trong ô input (nổi bên phải). */}
+              <div className="relative min-w-[220px] flex-1">
+                <input
+                  value={extUrl}
+                  onChange={(e) => { setExtUrl(e.target.value); setExtErr(null); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && extUrl.trim() && !addExternalM.isPending) {
+                      e.preventDefault();
+                      addExternalM.mutate();
+                    }
+                  }}
+                  placeholder="Dán link https://… vào đây"
+                  inputMode="url"
+                  className="h-11 w-full rounded-md border border-input bg-background pl-3 pr-24 text-base"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => addExternalM.mutate()}
+                  disabled={addExternalM.isPending || !extUrl.trim()}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8"
+                >
+                  {addExternalM.isPending ? "Đang thêm…" : "Thêm link"}
+                </Button>
+              </div>
             </div>
             {extErr && <p className="text-sm text-red-600">{extErr}</p>}
 
