@@ -1811,6 +1811,7 @@ export type Database = {
           id: string | null
           is_living: boolean | null
           is_root: boolean | null
+          lifespan_years: number | null
           nickname: string | null
           photo_path: string | null
           posthumous_name: string | null
@@ -1844,6 +1845,7 @@ export type Database = {
           id?: string | null
           is_living?: boolean | null
           is_root?: boolean | null
+          lifespan_years?: never
           nickname?: never
           photo_path?: never
           posthumous_name?: never
@@ -1877,6 +1879,7 @@ export type Database = {
           id?: string | null
           is_living?: boolean | null
           is_root?: boolean | null
+          lifespan_years?: never
           nickname?: never
           photo_path?: never
           posthumous_name?: never
