@@ -235,6 +235,7 @@ function emailHtml(item: FireItem, clanName: string): string {
 <html lang="vi"><head><meta charset="utf-8"/></head>
 <body style="font-family: -apple-system, Segoe UI, sans-serif; background:#FBF7F0; padding:24px; color:#1F1A17;">
   <div style="max-width:520px; margin:0 auto; background:#FFFFFF; border:1px solid #D8CFC2; border-radius:8px; padding:24px;">
+    <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Gia phả" width="48" height="48" style="display:block; margin:0 0 10px; border-radius:10px;" />
     <p style="color:#6F665F; font-size:12px; letter-spacing:2px; margin:0 0 8px;">GIA PHẢ ${esc(clanName)}</p>
     <h1 style="color:#7A2230; font-size:22px; margin:0 0 6px;">${esc(item.title)}</h1>
     <p style="color:#6F665F; margin:0 0 16px;">${esc(kindLabel)} · ${esc(item.eventDate)}</p>
@@ -737,6 +738,7 @@ function monthlyLunarHtml(opts: {
 }): string {
   return `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1F1A17;background:#FBF7F0;margin:0;padding:24px;">
     <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;padding:24px;border:1px solid #D8CFC2;">
+      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Gia phả" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
       <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#6F665F;margin:0 0 4px;">Gia phả</p>
       <h1 style="font-size:22px;color:#7A2230;margin:0 0 14px;">Hôm nay là ${opts.occasion} tháng ${opts.lunarMonth} âm lịch</h1>
       <p style="font-size:15px;margin:0 0 12px;">Đừng quên thắp hương lên bàn thờ tổ tiên hôm nay.</p>
