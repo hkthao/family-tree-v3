@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import {
   IconDownload,
@@ -46,6 +46,7 @@ import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { RelationSheet } from "@/components/RelationSheet";
 import { ShareTreeButton } from "@/components/ShareTreeButton";
 import { EditPersonForm } from "@/pages/clan/EditPerson";
+import { LineageContent } from "@/pages/clan/MyLineage";
 import { track } from "@/lib/analytics";
 import { matchesName } from "@/lib/unaccent";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
@@ -145,6 +146,23 @@ export default function Tree() {
   const clanId = clan.id;
   const { user } = useAuth();
   const userId = user?.id ?? "";
+  // Chế độ xem: "tree" (cả cây) | "lineage" (đường trực hệ của tôi).
+  // Lưu ở URL (?view=lineage) để chia sẻ được + route cũ /my-lineage
+  // chuyển hướng sang đây. Chỉ thành viên mới có chế độ trực hệ.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isMember = effectiveRole(clan) !== null;
+  const view: "tree" | "lineage" =
+    isMember && searchParams.get("view") === "lineage" ? "lineage" : "tree";
+  const setView = (v: "tree" | "lineage") =>
+    setSearchParams(
+      (prev) => {
+        const p = new URLSearchParams(prev);
+        if (v === "lineage") p.set("view", "lineage");
+        else p.delete("view");
+        return p;
+      },
+      { replace: true },
+    );
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
   const [focal, setFocal] = useState<string | null>(null);
@@ -754,6 +772,8 @@ export default function Tree() {
     clan.display_death_details,
     clan.display_living_full_dob,
     depth,
+    // Vẽ lại khi quay từ "Trực hệ" về "Cả cây" (container được mount lại).
+    view,
   ]);
 
   // Before the OS print dialog opens (either via our "In" button or
@@ -837,10 +857,36 @@ export default function Tree() {
         <PageHeader
           icon={<IconTree className="h-7 w-7" />}
           title="Cây gia phả"
-          description="Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."
+          description={
+            view === "lineage"
+              ? "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời."
+              : "Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."
+          }
           actionsBelow
           actions={
             <>
+              {isMember && (
+                <SegmentedControl ariaLabel="Chế độ xem" className="w-full sm:w-auto order-first sm:mr-2">
+                  <SegmentedButton
+                    active={view === "tree"}
+                    onClick={() => setView("tree")}
+                    ariaLabel="Xem cả cây"
+                    className="flex-1 px-3"
+                  >
+                    Cả cây
+                  </SegmentedButton>
+                  <SegmentedButton
+                    active={view === "lineage"}
+                    onClick={() => setView("lineage")}
+                    ariaLabel="Xem đường trực hệ của tôi"
+                    className="flex-1 px-3"
+                  >
+                    Trực hệ của tôi
+                  </SegmentedButton>
+                </SegmentedControl>
+              )}
+              {view === "tree" && (
+              <>
               <SegmentedControl ariaLabel="Hướng cây">
                 <SegmentedButton
                   active={orientation === "vertical"}
@@ -899,11 +945,17 @@ export default function Tree() {
                   ))}
                 </SegmentedControl>
               </div>
+              </>
+              )}
             </>
           }
         />
       </div>
 
+      {view === "lineage" ? (
+        <LineageContent clanId={clanId} userId={userId} />
+      ) : (
+      <>
       {isLoading && (
         <p className="text-muted-foreground">Đang tải cây…</p>
       )}
@@ -1118,6 +1170,8 @@ export default function Tree() {
         clanId={clan.id}
         personId={quickAddPersonId ?? ""}
       />
+      </>
+      )}
     </div>
   );
 }

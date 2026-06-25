@@ -2,15 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 
-import { Breadcrumb } from "@/components/Breadcrumb";
-import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconPencil, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { toFamilyChart } from "@/lib/familyChartAdapter";
 import {
@@ -26,76 +23,73 @@ import { unaccent } from "@/lib/unaccent";
 import "family-chart/styles/family-chart.css";
 
 /**
- * Direct lineage page. Two modes:
+ * Đường trực hệ — giờ là MỘT CHẾ ĐỘ của trang Cây gia phả (gộp 2 menu
+ * thành 1). `LineageContent` là phần nội dung tái dùng, Tree.tsx nhúng
+ * vào khi người dùng gạt sang "Trực hệ của tôi".
  *
- *   1. Not yet linked → ChoosePersonView lets the user search the
- *      clan and claim a person as "me". Goes through the RPC so RLS
- *      stays admin-only on raw clan_members updates.
- *   2. Linked → LineageView shows the cards from thuỷ tổ down to self
- *      (Vietnamese convention: older at top). Each fork point (where
- *      the child has both parents recorded) gets a paternal/maternal
- *      toggle next to the parent card.
+ * Hai trạng thái bên trong:
+ *   1. Chưa gắn "tôi là ai" → ChoosePersonView để tìm + chọn (qua RPC,
+ *      RLS vẫn admin-only trên clan_members).
+ *   2. Đã gắn → LineageView vẽ chuỗi từ thuỷ tổ xuống bản thân; mỗi
+ *      điểm rẽ (con có đủ cả cha lẫn mẹ) có nút chọn bên nội / bên ngoại.
+ *
+ * Route cũ /my-lineage chuyển hướng sang /tree?view=lineage để giữ
+ * tương thích link/QR đã chia sẻ.
  */
-export default function MyLineage() {
+export function LineageContent({
+  clanId,
+  userId,
+}: {
+  clanId: string;
+  userId: string;
+}) {
   const { clan } = useClanContext();
-  const { user } = useAuth();
-  const userId = user?.id ?? "";
-
-  if (effectiveRole(clan) === null) {
-    return <Navigate to={`/clans/${clan.id}`} replace />;
-  }
+  const isMember = effectiveRole(clan) !== null;
 
   const { data: members } = useQuery({
-    queryKey: queryKeys.clanMembers(clan.id, userId),
-    queryFn: () => listClanMembers(clan.id),
-    enabled: !!userId,
+    queryKey: queryKeys.clanMembers(clanId, userId),
+    queryFn: () => listClanMembers(clanId),
+    enabled: !!userId && isMember,
   });
   const myMember = members?.find((m) => m.user_id === userId);
 
   const { data: tree, isLoading: treeLoading } = useQuery({
-    queryKey: queryKeys.treeData(clan.id, userId),
-    queryFn: () => getTreeData(clan.id),
-    enabled: !!userId,
+    queryKey: queryKeys.treeData(clanId, userId),
+    queryFn: () => getTreeData(clanId),
+    enabled: !!userId && isMember,
   });
+
+  if (!isMember) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Bạn cần là thành viên dòng họ để xem đường trực hệ.
+      </p>
+    );
+  }
 
   return (
     <div className="space-y-5">
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Đường trực hệ" },
-        ]}
-      />
-
-      <PageHeader
-        icon={<IconUsers className="h-7 w-7" />}
-        title="Đường trực hệ"
-        description="Từ tôi về thuỷ tổ — mặc định đi theo bên nội, có thể đổi sang bên ngoại ở từng đời."
-      />
-
       {!myMember?.self_person_id && tree && (
-        <ChoosePersonView
-          clanId={clan.id}
-          userId={userId}
-          persons={tree.persons}
-        />
+        <ChoosePersonView clanId={clanId} userId={userId} persons={tree.persons} />
       )}
-
       {myMember?.self_person_id && tree && (
         <LineageView
-          clanId={clan.id}
+          clanId={clanId}
           userId={userId}
           selfPersonId={myMember.self_person_id}
           tree={tree}
           verified={myMember.self_person_verified}
         />
       )}
-
-      {treeLoading && (
-        <p className="text-muted-foreground">Đang tải gia phả…</p>
-      )}
+      {treeLoading && <p className="text-muted-foreground">Đang tải gia phả…</p>}
     </div>
   );
+}
+
+/** Route cũ /my-lineage → chuyển sang chế độ trực hệ của trang Cây. */
+export default function MyLineage() {
+  const { clan } = useClanContext();
+  return <Navigate to={`/clans/${clan.id}/tree?view=lineage`} replace />;
 }
 
 // ─── Choose-person view ─────────────────────────────────────────
