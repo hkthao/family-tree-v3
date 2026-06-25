@@ -6,6 +6,12 @@ import { supabase } from "@/lib/supabase";
 
 type OAuthProvider = "google" | "facebook";
 
+// Tạm ẩn nút Facebook: app Facebook chưa trả email về GoTrue
+// ("Error getting user email from external provider") nên không tạo được
+// tài khoản. Đổi thành true khi đã bật Advanced Access cho quyền `email`
+// và chuyển app Facebook sang Live.
+const SHOW_FACEBOOK = false;
+
 interface Props {
   /** Where Supabase should redirect after the provider OAuth flow. */
   redirectTo?: string;
@@ -74,7 +80,7 @@ export function SocialAuthButtons({ redirectTo }: Props) {
         </Alert>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className={SHOW_FACEBOOK ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-2"}>
         <ProviderButton
           label="Google"
           onClick={() => signIn("google")}
@@ -82,13 +88,15 @@ export function SocialAuthButtons({ redirectTo }: Props) {
           disabled={busy !== null}
           icon={<GoogleGlyph />}
         />
-        <ProviderButton
-          label="Facebook"
-          onClick={() => signIn("facebook")}
-          busy={busy === "facebook"}
-          disabled={busy !== null}
-          icon={<FacebookGlyph />}
-        />
+        {SHOW_FACEBOOK && (
+          <ProviderButton
+            label="Facebook"
+            onClick={() => signIn("facebook")}
+            busy={busy === "facebook"}
+            disabled={busy !== null}
+            icon={<FacebookGlyph />}
+          />
+        )}
       </div>
     </div>
   );
