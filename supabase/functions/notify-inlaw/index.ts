@@ -85,6 +85,7 @@ function emailLayout(opts: {
             background:#FBF7F0;margin:0;padding:24px;">
     <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;
                 padding:24px;border:1px solid #D8CFC2;">
+      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Gia phả" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
       <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
                 color:#6F665F;margin:0 0 4px;">${esc(opts.clanName)}</p>
       <h1 style="font-size:20px;color:#7A2230;margin:0 0 16px;">${esc(opts.title)}</h1>
