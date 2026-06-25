@@ -484,11 +484,8 @@ function buildSections(
       },
     ];
     if (isMember) {
-      dataItems.push({
-        to: `/clans/${clanId}/my-lineage`,
-        label: "Đường trực hệ",
-        icon: <IconUser className={ic} />,
-      });
+      // "Đường trực hệ" đã gộp thành một chế độ trong "Cây gia phả"
+      // (nút gạt "Cả cây / Trực hệ của tôi") — không còn mục menu riêng.
       dataItems.push({
         to: `/clans/${clanId}/kinship`,
         label: "Tra cứu xưng hô",
