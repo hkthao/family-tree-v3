@@ -13,7 +13,10 @@ import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useUrlState } from "@/hooks/useUrlState";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import {
+  clanHeritageStorageBytes,
+  formatBytes,
   HERITAGE_CATEGORY_LABEL,
+  HERITAGE_CLAN_QUOTA_BYTES,
   listHeritageItems,
   type HeritageCategory,
 } from "@/lib/queries/heritage";
@@ -50,6 +53,12 @@ export default function Heritage() {
     enabled: !!userId,
   });
 
+  const { data: storageBytes } = useQuery({
+    queryKey: ["heritage-storage", clan.id, userId],
+    queryFn: () => clanHeritageStorageBytes(clan.id),
+    enabled: !!userId,
+  });
+
   const { data: photoUrls } = useQuery({
     queryKey: ["heritage-thumbs", (items ?? []).map((i) => i.cover_media_path).join(",")],
     queryFn: () =>
@@ -81,6 +90,33 @@ export default function Heritage() {
           ) : undefined
         }
       />
+
+      {/* Thanh dung lượng media của họ */}
+      {storageBytes != null && (() => {
+        const pct = Math.min(100, Math.round((storageBytes / HERITAGE_CLAN_QUOTA_BYTES) * 100));
+        const near = pct >= 90;
+        return (
+          <div className="rounded-md border bg-card px-3 py-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Dung lượng ảnh & ghi âm</span>
+              <span className={near ? "font-medium text-red-600" : "font-medium"}>
+                {formatBytes(storageBytes)} / {formatBytes(HERITAGE_CLAN_QUOTA_BYTES)}
+              </span>
+            </div>
+            <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full rounded-full ${near ? "bg-red-600" : "bg-primary"}`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            {near && (
+              <p className="mt-1 text-xs text-red-600">
+                Sắp đầy. Hãy xoá bớt ảnh/ghi âm cũ trước khi thêm mới.
+              </p>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Lọc theo loại — nút to, dễ bấm */}
       <div className="flex flex-wrap gap-2">

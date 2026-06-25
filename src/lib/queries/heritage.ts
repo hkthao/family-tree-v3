@@ -6,6 +6,19 @@ import { deletePersonPhoto } from "@/lib/photoUpload";
 
 type Client = SupabaseClient<Database>;
 
+/** Trần dung lượng media (ảnh + ghi âm) mỗi dòng họ — VPS ít storage. */
+export const HERITAGE_CLAN_QUOTA_BYTES = 500 * 1024 * 1024; // 500 MB
+
+/** Định dạng dung lượng gọn: "42 MB", "1.2 GB". */
+export function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  const kb = n / 1024;
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  const mb = kb / 1024;
+  if (mb < 1024) return `${mb < 10 ? mb.toFixed(1) : Math.round(mb)} MB`;
+  return `${(mb / 1024).toFixed(2)} GB`;
+}
+
 export type HeritageCategory = "place" | "custom" | "story" | "artifact";
 export type HeritageStatus = "active" | "draft" | "archived";
 export type HeritageMediaKind = "photo" | "audio";
