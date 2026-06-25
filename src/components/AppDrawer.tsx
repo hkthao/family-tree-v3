@@ -11,7 +11,6 @@ import {
   IconBuildings,
   IconCalendar,
   IconCopy,
-  IconHelp,
   IconHome,
   IconLink,
   IconList,
@@ -419,7 +418,7 @@ function buildSections(
   // -- Clan-scoped sections ------------------------------------------------
   // 4 nhóm semantic — mục HAY DÙNG đẩy lên nhóm đầu:
   //   1. <clan name>        — hay dùng nhất: Tổng quan / Cây gia phả /
-  //      Danh bạ / Tra cứu xưng hô / Sự kiện
+  //      Danh bạ (gồm Tra cứu xưng hô) / Sự kiện
   //   2. Cộng đồng & Di sản — Bảng tin / Hôm nay / Mộ phần / Di sản
   //   3. Cập nhật           — data-entry cho editor+ (Việc cần làm,
   //      Đóng góp, Nhập Excel, Gộp, Nhật ký)
@@ -453,13 +452,7 @@ function buildSections(
         icon: <IconUsers className={ic} />,
       },
     ];
-    if (isMember) {
-      topItems.push({
-        to: `/clans/${clanId}/kinship`,
-        label: "Tra cứu xưng hô",
-        icon: <IconHelp className={ic} />,
-      });
-    }
+    // "Tra cứu xưng hô" đã gộp thành nút gạt trong "Danh bạ".
     topItems.push({
       to: `/clans/${clanId}/events`,
       label: "Sự kiện",

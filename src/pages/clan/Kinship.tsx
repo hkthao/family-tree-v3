@@ -2,12 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 
-import { Breadcrumb } from "@/components/Breadcrumb";
-import { PageHeader } from "@/components/PageHeader";
-import { IconUser, IconUsers } from "@/components/icons";
+import { IconUser } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { computeKinship, type KinshipPerson } from "@/lib/kinship";
 import { queryKeys } from "@/lib/queries/keys";
@@ -17,37 +14,30 @@ import { matchesName } from "@/lib/unaccent";
 const PICKER_CAP = 1000;
 
 /**
- * /clans/:id/kinship — "máy tính xưng hô".
+ * "Máy tính xưng hô" — giờ là MỘT CHẾ ĐỘ của trang Danh bạ (nút gạt
+ * "Danh bạ | Xưng hô"). `KinshipContent` là phần tái dùng nhúng vào
+ * People.tsx. Chọn hai người → tính cách xưng hô theo truyền thống Việt.
  *
- * Two person pickers + a result panel showing what each calls the
- * other in Vietnamese kinship terms. Loads the full clan person +
- * family graph once (the same payload as the Tree / Danh bạ pages
- * already use, so it should already be in the TanStack cache).
- *
- * Deep-link: ?a=<personId>&b=<personId> pre-fills the pickers — used
- * by the "Xem xưng hô" button on PersonDetail.
+ * Deep-link ?a=&b= pre-fill hai ô chọn (nút "Xem xưng hô" ở PersonDetail).
+ * Route cũ /kinship chuyển hướng sang /people?view=kinship (giữ link cũ).
  */
-export default function Kinship() {
+export function KinshipContent({
+  clanId,
+  userId,
+}: {
+  clanId: string;
+  userId: string;
+}) {
   const { clan } = useClanContext();
-  const { user } = useAuth();
-  const userId = user?.id ?? "";
+  const isMember = effectiveRole(clan) !== null;
   const [params, setParams] = useSearchParams();
   const aId = params.get("a") ?? "";
   const bId = params.get("b") ?? "";
 
-  // Máy tính xưng hô needs the full person + family graph, which
-  // raw RLS hides from non-members. Could be supported via the
-  // masked views, but the use case ("what should I call this
-  // distant uncle") is fundamentally a member-of-the-family feature.
-  // Redirect non-member visitors back to the public surface.
-  if (effectiveRole(clan) === null) {
-    return <Navigate to={`/clans/${clan.id}`} replace />;
-  }
-
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.kinshipIndex(clan.id, userId),
-    queryFn: () => getKinshipIndex(clan.id),
-    enabled: !!userId,
+    queryKey: queryKeys.kinshipIndex(clanId, userId),
+    queryFn: () => getKinshipIndex(clanId),
+    enabled: !!userId && isMember,
     staleTime: 5 * 60_000,
   });
 
@@ -66,20 +56,20 @@ export default function Kinship() {
   const personA = aId ? data?.byId.get(aId) ?? null : null;
   const personB = bId ? data?.byId.get(bId) ?? null : null;
 
+  if (!isMember) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Bạn cần là thành viên dòng họ để tra cứu xưng hô.
+      </p>
+    );
+  }
+
   return (
     <div className="space-y-5">
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Tra cứu xưng hô" },
-        ]}
-      />
-
-      <PageHeader
-        icon={<IconUsers className="h-7 w-7" />}
-        title="Tra cứu xưng hô"
-        description="Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền thống Việt — anh/em, chú/bác/cô/cậu/dì, anh em họ…"
-      />
+      <p className="text-sm text-muted-foreground">
+        Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền thống Việt —
+        anh/em, chú/bác/cô/cậu/dì, anh em họ…
+      </p>
 
       {error && (
         <Alert variant="destructive">
@@ -145,6 +135,12 @@ export default function Kinship() {
       )}
     </div>
   );
+}
+
+/** Route cũ /kinship → chuyển sang chế độ xưng hô của trang Danh bạ. */
+export default function Kinship() {
+  const { clan } = useClanContext();
+  return <Navigate to={`/clans/${clan.id}/people?view=kinship`} replace />;
 }
 
 // ─── Sub-components ──────────────────────────────────────────────
