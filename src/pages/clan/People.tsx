@@ -362,7 +362,7 @@ export default function People() {
             active={view === "people"}
             onClick={() => patch({ view: null })}
             ariaLabel="Xem danh bạ"
-            className="flex-1 px-3"
+            className="flex-1 px-3 whitespace-nowrap"
           >
             Danh bạ
           </SegmentedButton>
@@ -370,9 +370,9 @@ export default function People() {
             active={view === "kinship"}
             onClick={() => patch({ view: "kinship" })}
             ariaLabel="Tra cứu xưng hô"
-            className="flex-1 px-3"
+            className="flex-1 px-3 whitespace-nowrap"
           >
-            Tra cứu xưng hô
+            Xưng hô
           </SegmentedButton>
         </SegmentedControl>
       )}

@@ -871,7 +871,7 @@ export default function Tree() {
                     active={view === "tree"}
                     onClick={() => setView("tree")}
                     ariaLabel="Xem cả cây"
-                    className="flex-1 px-3"
+                    className="flex-1 px-3 whitespace-nowrap"
                   >
                     Cả cây
                   </SegmentedButton>
@@ -879,9 +879,9 @@ export default function Tree() {
                     active={view === "lineage"}
                     onClick={() => setView("lineage")}
                     ariaLabel="Xem đường trực hệ của tôi"
-                    className="flex-1 px-3"
+                    className="flex-1 px-3 whitespace-nowrap"
                   >
-                    Trực hệ của tôi
+                    Trực hệ
                   </SegmentedButton>
                 </SegmentedControl>
               )}
