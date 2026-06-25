@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconCamera,
+  IconLink,
   IconMapPin,
   IconMicrophone,
   IconPencil,
@@ -41,6 +42,10 @@ import {
   HERITAGE_CLAN_QUOTA_BYTES,
   removeMedia,
   setCoverMedia,
+  validateExternalMedia,
+  videoEmbedUrl,
+  type HeritageMedia,
+  type HeritageMediaKind,
 } from "@/lib/queries/heritage";
 
 // Giới hạn để chặn phình dung lượng storage VPS.
@@ -76,12 +81,20 @@ export default function HeritageDetail() {
 
   const photos = (item?.media ?? []).filter((m) => m.kind === "photo");
   const audios = (item?.media ?? []).filter((m) => m.kind === "audio");
+  const videos = (item?.media ?? []).filter((m) => m.kind === "video");
+  // Chỉ ký URL cho file trong bucket; link ngoài dùng trực tiếp.
+  const bucketPaths = (item?.media ?? [])
+    .map((m) => m.path)
+    .filter((p): p is string => !!p);
 
   const { data: mediaUrls } = useQuery({
-    queryKey: ["heritage-media-urls", itemId, (item?.media ?? []).map((m) => m.path).join(",")],
-    queryFn: () => getSignedPhotoUrlMap((item?.media ?? []).map((m) => m.path)),
-    enabled: !!item && item.media.length > 0,
+    queryKey: ["heritage-media-urls", itemId, bucketPaths.join(",")],
+    queryFn: () => getSignedPhotoUrlMap(bucketPaths),
+    enabled: !!item && bucketPaths.length > 0,
   });
+  // Nguồn hiển thị của một media: link ngoài (trực tiếp) hoặc URL đã ký.
+  const srcOf = (m: HeritageMedia): string | undefined =>
+    m.external_url ?? (m.path ? mediaUrls?.get(m.path) : undefined);
 
   const { data: storageBytes } = useQuery({
     queryKey: ["heritage-storage", clan.id, userId],
@@ -126,8 +139,33 @@ export default function HeritageDetail() {
     onError: (e) => toast.error("Không lưu được ghi âm", { description: (e as Error).message }),
   });
 
+  // Thêm liên kết ngoài (ảnh/audio/video host nơi khác) — KHÔNG tốn storage VPS.
+  const [extKind, setExtKind] = useState<HeritageMediaKind>("video");
+  const [extUrl, setExtUrl] = useState("");
+  const [extErr, setExtErr] = useState<string | null>(null);
+  const addExternalM = useMutation({
+    mutationFn: async () => {
+      const check = validateExternalMedia(extKind, extUrl);
+      if (!check.ok) throw new Error(check.error);
+      const sameKind = (item?.media ?? []).filter((m) => m.kind === extKind);
+      await addMedia(itemId!, {
+        kind: extKind,
+        external_url: extUrl.trim(),
+        sort: sameKind.length,
+      });
+    },
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
+      setExtUrl("");
+      setExtErr(null);
+      toast.success("Đã thêm liên kết");
+    },
+    onError: (e) => setExtErr((e as Error).message),
+  });
+
   const removeMediaM = useMutation({
-    mutationFn: ({ id, path }: { id: string; path: string }) => removeMedia(id, path),
+    mutationFn: ({ id, path }: { id: string; path: string | null }) => removeMedia(id, path),
     onSuccess: () => {
       invalidate();
       qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
@@ -243,8 +281,8 @@ export default function HeritageDetail() {
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {photos.map((ph) => (
                 <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md bg-muted">
-                  {mediaUrls?.get(ph.path) ? (
-                    <img src={mediaUrls.get(ph.path)} alt={ph.caption ?? ""} className="h-full w-full object-cover" />
+                  {srcOf(ph) ? (
+                    <img src={srcOf(ph)} alt={ph.caption ?? ""} referrerPolicy="no-referrer" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full grid place-items-center">
                       <IconScroll className="h-5 w-5 text-muted-foreground" />
@@ -276,7 +314,7 @@ export default function HeritageDetail() {
             <ul className="space-y-2">
               {audios.map((a) => (
                 <li key={a.id} className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
-                  <audio controls preload="none" src={mediaUrls?.get(a.path) ?? undefined} className="h-9 flex-1 min-w-0" />
+                  <audio controls preload="none" src={srcOf(a)} className="h-9 flex-1 min-w-0" />
                   <span className="text-xs text-muted-foreground shrink-0">{fmtDuration(a.duration_sec)}</span>
                   {canEdit && (
                     <button type="button" aria-label="Xoá ghi âm" onClick={() => removeMediaM.mutate({ id: a.id, path: a.path })}
@@ -304,6 +342,94 @@ export default function HeritageDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Video (chỉ qua link ngoài) */}
+      {videos.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Video</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {videos.map((v) => {
+              const embed = videoEmbedUrl(v.external_url ?? "");
+              return (
+                <div key={v.id} className="space-y-1">
+                  <div className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                      {embed ? (
+                        <iframe
+                          src={embed}
+                          title="Video di sản"
+                          className="aspect-video w-full rounded-md border"
+                          allow="encrypted-media; picture-in-picture; fullscreen"
+                          allowFullScreen
+                          referrerPolicy="strict-origin-when-cross-origin"
+                        />
+                      ) : (
+                        <video controls preload="none" src={srcOf(v)} className="w-full rounded-md border" />
+                      )}
+                    </div>
+                    {canEdit && (
+                      <button type="button" aria-label="Xoá video" onClick={() => removeMediaM.mutate({ id: v.id, path: v.path })}
+                        className="shrink-0 text-muted-foreground hover:text-foreground">
+                        <IconX className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Thêm liên kết ngoài — không tốn dung lượng VPS */}
+      {canEdit && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="inline-flex items-center gap-2">
+              <IconLink className="h-5 w-5" /> Thêm liên kết ngoài
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Dán link ảnh / video / âm thanh đã đăng ở nơi khác. <strong>Không tính vào dung lượng</strong> của họ —
+              dùng khi đã đầy, hoặc muốn nhúng video YouTube.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <select
+                value={extKind}
+                onChange={(e) => { setExtKind(e.target.value as HeritageMediaKind); setExtErr(null); }}
+                className="h-11 rounded-md border border-input bg-background px-3 text-base"
+              >
+                <option value="video">Video</option>
+                <option value="photo">Ảnh</option>
+                <option value="audio">Âm thanh</option>
+              </select>
+              <input
+                value={extUrl}
+                onChange={(e) => { setExtUrl(e.target.value); setExtErr(null); }}
+                placeholder="Dán link https://… vào đây"
+                inputMode="url"
+                className="h-11 min-w-[200px] flex-1 rounded-md border border-input bg-background px-3 text-base"
+              />
+              <Button onClick={() => addExternalM.mutate()} disabled={addExternalM.isPending || !extUrl.trim()}>
+                {addExternalM.isPending ? "Đang thêm…" : "Thêm link"}
+              </Button>
+            </div>
+            {extErr && <p className="text-sm text-red-600">{extErr}</p>}
+
+            {/* Hướng dẫn nền tảng cho user tự làm */}
+            <details className="rounded-md border bg-muted/40 p-3 text-sm">
+              <summary className="cursor-pointer font-medium">Hướng dẫn lấy link (bấm để xem)</summary>
+              <div className="mt-2 space-y-2 text-muted-foreground">
+                <p><strong>🎬 Video → YouTube</strong>: tải video lên youtube.com, đặt chế độ "Không công khai (Unlisted)", rồi sao chép link trên thanh địa chỉ (dạng <code>https://youtu.be/…</code>). Dán vào đây.</p>
+                <p><strong>🖼 Ảnh → Google Drive / Google Photos</strong>: tải ảnh lên, bấm "Chia sẻ" → "Bất kỳ ai có liên kết", rồi copy link. (Hoặc dùng dịch vụ ảnh có link trực tiếp như imgur.com.)</p>
+                <p><strong>🔊 Âm thanh</strong>: tải file lên Google Drive (chia sẻ công khai) rồi dán link; hoặc dùng link file <code>.mp3</code> trực tiếp.</p>
+                <p className="text-xs">Lưu ý: link phải bắt đầu bằng <code>https://</code> và để chế độ ai có link đều xem được, nếu không người trong họ sẽ không mở được.</p>
+              </div>
+            </details>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Nội dung */}
       {(item.summary || item.body) && (

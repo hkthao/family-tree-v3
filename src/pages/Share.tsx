@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { fetchShareView } from "@/lib/queries/share-view";
-import { HERITAGE_CATEGORY_LABEL } from "@/lib/queries/heritage";
+import { HERITAGE_CATEGORY_LABEL, videoEmbedUrl } from "@/lib/queries/heritage";
 
 import "family-chart/styles/family-chart.css";
 
@@ -339,6 +339,27 @@ export default function Share() {
                 {h.photo_urls.map((u, i) => (
                   <img key={i} src={u} alt="" className="aspect-square w-full rounded-md object-cover bg-muted" />
                 ))}
+              </div>
+            )}
+
+            {h.videos.length > 0 && (
+              <div className="space-y-2">
+                {h.videos.map((v, i) => {
+                  const embed = videoEmbedUrl(v.url);
+                  return embed ? (
+                    <iframe
+                      key={i}
+                      src={embed}
+                      title="Video di sản"
+                      className="aspect-video w-full rounded-md border"
+                      allow="encrypted-media; picture-in-picture; fullscreen"
+                      allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
+                    />
+                  ) : (
+                    <video key={i} controls preload="none" src={v.url} className="w-full rounded-md border" />
+                  );
+                })}
               </div>
             )}
 

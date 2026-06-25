@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
     const { data: hi } = await sb
       .from("heritage_items")
       .select(
-        "id, clan_id, category, title, summary, body, location_name, address, latitude, longitude, built_year, deleted_at, heritage_media!heritage_media_item_id_fkey(kind, path, caption, sort, duration_sec), heritage_people(role_note, person:persons(full_name, gender, is_living))",
+        "id, clan_id, category, title, summary, body, location_name, address, latitude, longitude, built_year, deleted_at, heritage_media!heritage_media_item_id_fkey(kind, path, external_url, caption, sort, duration_sec), heritage_people(role_note, person:persons(full_name, gender, is_living))",
       )
       .eq("id", link.root_heritage_item_id)
       .maybeSingle();
@@ -212,31 +212,42 @@ Deno.serve(async (req) => {
     const media = [...((hi as any).heritage_media ?? [])].sort(
       (a: { sort: number }, b: { sort: number }) => a.sort - b.sort,
     );
-    const photoItems = media.filter((m: { kind: string }) => m.kind === "photo");
-    const audioItems = media.filter((m: { kind: string }) => m.kind === "audio");
-    // Ảnh chịu cờ ẩn ảnh; ghi âm luôn cho phép (không phải ảnh người sống).
-    const toSign = [
-      ...(hidePhotos ? [] : photoItems),
-      ...audioItems,
-    ];
+    type MediaRow = { kind: string; path: string | null; external_url: string | null; duration_sec: number | null };
+    const photoItems = media.filter((m: MediaRow) => m.kind === "photo");
+    const audioItems = media.filter((m: MediaRow) => m.kind === "audio");
+    const videoItems = media.filter((m: MediaRow) => m.kind === "video");
+    // Chỉ ký URL cho file trong bucket; link ngoài dùng thẳng. Ảnh chịu cờ
+    // ẩn ảnh; audio/video luôn cho phép.
+    const toSign = [...(hidePhotos ? [] : photoItems), ...audioItems].filter(
+      (m: MediaRow) => !!m.path,
+    );
     const signedMap = new Map<string, string>();
     if (toSign.length > 0) {
       const { data: signed } = await sb.storage
         .from("person-photos")
-        .createSignedUrls(toSign.map((m: { path: string }) => m.path), 3600);
+        .createSignedUrls(toSign.map((m: MediaRow) => m.path as string), 3600);
       (signed ?? []).forEach((s, i) => {
-        if (s.signedUrl) signedMap.set(toSign[i].path, stripOrigin(s.signedUrl));
+        if (s.signedUrl) signedMap.set(toSign[i].path as string, stripOrigin(s.signedUrl));
       });
     }
-    const photo_urls = photoItems
-      .map((m: { path: string }) => signedMap.get(m.path))
-      .filter(Boolean);
+    // Link ngoài chỉ chấp nhận https (phòng XSS/mixed-content), khớp client.
+    const safeExt = (u: string | null): string | undefined => {
+      if (!u) return undefined;
+      try {
+        return new URL(u).protocol === "https:" ? u : undefined;
+      } catch {
+        return undefined;
+      }
+    };
+    const srcOf = (m: MediaRow): string | undefined =>
+      safeExt(m.external_url) ?? (m.path ? signedMap.get(m.path) : undefined);
+    const photo_urls = hidePhotos ? [] : photoItems.map(srcOf).filter(Boolean);
     const audios = audioItems
-      .map((m: { path: string; duration_sec: number | null }) => ({
-        url: signedMap.get(m.path),
-        duration_sec: m.duration_sec,
-      }))
+      .map((m: MediaRow) => ({ url: srcOf(m), duration_sec: m.duration_sec }))
       .filter((a: { url: string | undefined }) => !!a.url);
+    const videos = videoItems
+      .map((m: MediaRow) => ({ url: safeExt(m.external_url) }))
+      .filter((v: { url: string | undefined }) => !!v.url);
     // deno-lint-ignore no-explicit-any
     const people = ((hi as any).heritage_people ?? [])
       .map((l: { role_note: string | null; person: { full_name: string; gender: string; is_living: boolean } | null }) => {
@@ -254,7 +265,7 @@ Deno.serve(async (req) => {
     return json({
       clan_id: link.clan_id,
       scope: "heritage_item",
-      heritage_item: { ...hiFields, photo_urls, audios, people },
+      heritage_item: { ...hiFields, photo_urls, audios, videos, people },
     });
   }
 

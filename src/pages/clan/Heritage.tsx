@@ -176,7 +176,8 @@ export default function Heritage() {
       {items && items.length > 0 && (
         <ul className="grid gap-2 sm:grid-cols-2">
           {items.map((i) => {
-            const thumb = i.cover_media_path ? photoUrls?.get(i.cover_media_path) : null;
+            const thumb = i.cover_external_url
+              ?? (i.cover_media_path ? photoUrls?.get(i.cover_media_path) : null);
             return (
               <li key={i.id}>
                 <Link
@@ -203,6 +204,7 @@ export default function Heritage() {
                       {[
                         i.photo_count ? `${i.photo_count} ảnh` : null,
                         i.audio_count ? `${i.audio_count} ghi âm` : null,
+                        i.video_count ? `${i.video_count} video` : null,
                         i.people_count ? `${i.people_count} người` : null,
                       ]
                         .filter(Boolean)

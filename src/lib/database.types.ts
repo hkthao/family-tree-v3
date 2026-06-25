@@ -1091,10 +1091,11 @@ export type Database = {
           clan_id: string
           created_at: string
           duration_sec: number | null
+          external_url: string | null
           id: string
           item_id: string
           kind: Database["public"]["Enums"]["heritage_media_kind"]
-          path: string
+          path: string | null
           sort: number
         }
         Insert: {
@@ -1103,10 +1104,11 @@ export type Database = {
           clan_id: string
           created_at?: string
           duration_sec?: number | null
+          external_url?: string | null
           id?: string
           item_id: string
           kind: Database["public"]["Enums"]["heritage_media_kind"]
-          path: string
+          path?: string | null
           sort?: number
         }
         Update: {
@@ -1115,10 +1117,11 @@ export type Database = {
           clan_id?: string
           created_at?: string
           duration_sec?: number | null
+          external_url?: string | null
           id?: string
           item_id?: string
           kind?: Database["public"]["Enums"]["heritage_media_kind"]
-          path?: string
+          path?: string | null
           sort?: number
         }
         Relationships: [
@@ -2326,7 +2329,7 @@ export type Database = {
       feedback_category: "bug" | "idea" | "question" | "other"
       feedback_status: "new" | "seen" | "resolved" | "spam"
       heritage_category: "place" | "custom" | "story" | "artifact"
-      heritage_media_kind: "photo" | "audio"
+      heritage_media_kind: "photo" | "audio" | "video"
       heritage_status: "active" | "draft" | "archived"
       resting_place_kind:
         | "grave"
@@ -2472,7 +2475,7 @@ export const Constants = {
       feedback_category: ["bug", "idea", "question", "other"],
       feedback_status: ["new", "seen", "resolved", "spam"],
       heritage_category: ["place", "custom", "story", "artifact"],
-      heritage_media_kind: ["photo", "audio"],
+      heritage_media_kind: ["photo", "audio", "video"],
       heritage_status: ["active", "draft", "archived"],
       resting_place_kind: [
         "grave",
