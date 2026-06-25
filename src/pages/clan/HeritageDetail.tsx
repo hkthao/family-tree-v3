@@ -32,10 +32,13 @@ import {
 } from "@/lib/photoUpload";
 import {
   addMedia,
+  clanHeritageStorageBytes,
   deleteHeritageItem,
+  formatBytes,
   getHeritageItem,
   heritageDirectionsUrl,
   HERITAGE_CATEGORY_LABEL,
+  HERITAGE_CLAN_QUOTA_BYTES,
   removeMedia,
   setCoverMedia,
 } from "@/lib/queries/heritage";
@@ -80,11 +83,22 @@ export default function HeritageDetail() {
     enabled: !!item && item.media.length > 0,
   });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["heritage-item", itemId] });
+  const { data: storageBytes } = useQuery({
+    queryKey: ["heritage-storage", clan.id, userId],
+    queryFn: () => clanHeritageStorageBytes(clan.id),
+    enabled: !!userId,
+  });
+  const overQuota = (storageBytes ?? 0) >= HERITAGE_CLAN_QUOTA_BYTES;
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["heritage-item", itemId] });
+    qc.invalidateQueries({ queryKey: ["heritage-storage", clan.id] });
+  };
 
   const uploadPhotoM = useMutation({
     mutationFn: async (file: File) => {
       if (photos.length >= MAX_PHOTOS) throw new Error(`Tối đa ${MAX_PHOTOS} ảnh mỗi mục.`);
+      if (overQuota) throw new Error(`Dòng họ đã dùng hết ${formatBytes(HERITAGE_CLAN_QUOTA_BYTES)}. Hãy xoá bớt ảnh/ghi âm cũ.`);
       const { path, bytes } = await uploadHeritagePhoto(clan.id, itemId!, file);
       const { id } = await addMedia(itemId!, { kind: "photo", path, bytes, sort: photos.length });
       // ảnh đầu tiên → đặt làm ảnh đại diện
@@ -101,6 +115,7 @@ export default function HeritageDetail() {
   const uploadAudioM = useMutation({
     mutationFn: async ({ blob, ext, durationSec }: { blob: Blob; ext: string; durationSec: number }) => {
       if (audios.length >= MAX_AUDIO) throw new Error(`Tối đa ${MAX_AUDIO} đoạn ghi âm mỗi mục.`);
+      if (overQuota) throw new Error(`Dòng họ đã dùng hết ${formatBytes(HERITAGE_CLAN_QUOTA_BYTES)}. Hãy xoá bớt ảnh/ghi âm cũ.`);
       const { path, bytes } = await uploadHeritageAudio(clan.id, itemId!, blob, ext);
       await addMedia(itemId!, { kind: "audio", path, bytes, duration_sec: durationSec, sort: audios.length });
     },
@@ -209,11 +224,11 @@ export default function HeritageDetail() {
               <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS}
+                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
                   onClick={() => cameraRef.current?.click()}>
                   <IconCamera className="h-4 w-4 mr-1" /> Chụp ảnh
                 </Button>
-                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS}
+                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
                   onClick={() => fileRef.current?.click()}>
                   <IconPlus className="h-4 w-4 mr-1" /> {uploadPhotoM.isPending ? "Đang tải…" : "Tải ảnh"}
                 </Button>
@@ -273,11 +288,16 @@ export default function HeritageDetail() {
               ))}
             </ul>
           )}
-          {canEdit && audios.length < MAX_AUDIO && (
+          {canEdit && audios.length < MAX_AUDIO && !overQuota && (
             <AudioRecorder
               disabled={uploadAudioM.isPending}
               onSave={(blob, ext, durationSec) => uploadAudioM.mutate({ blob, ext, durationSec })}
             />
+          )}
+          {canEdit && overQuota && (
+            <p className="text-sm text-red-600">
+              Dòng họ đã dùng hết {formatBytes(HERITAGE_CLAN_QUOTA_BYTES)} — hãy xoá bớt ảnh/ghi âm cũ trước khi thêm.
+            </p>
           )}
           {audios.length === 0 && !canEdit && (
             <p className="text-sm text-muted-foreground">Chưa có ghi âm.</p>
