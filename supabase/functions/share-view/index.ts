@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
     const { data: hi } = await sb
       .from("heritage_items")
       .select(
-        "id, clan_id, category, title, summary, body, location_name, address, latitude, longitude, built_year, deleted_at, heritage_media(kind, path, caption, sort, duration_sec), heritage_people(role_note, person:persons(full_name, gender, is_living))",
+        "id, clan_id, category, title, summary, body, location_name, address, latitude, longitude, built_year, deleted_at, heritage_media!heritage_media_item_id_fkey(kind, path, caption, sort, duration_sec), heritage_people(role_note, person:persons(full_name, gender, is_living))",
       )
       .eq("id", link.root_heritage_item_id)
       .maybeSingle();

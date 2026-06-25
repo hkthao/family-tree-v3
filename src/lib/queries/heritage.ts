@@ -118,7 +118,9 @@ export async function listHeritageItems(
 ): Promise<HeritageListItem[]> {
   let q = client
     .from("heritage_items")
-    .select(`${COLS}, heritage_media(id, kind, path, sort), heritage_people(id)`)
+    .select(
+      `${COLS}, heritage_media!heritage_media_item_id_fkey(id, kind, path, sort), heritage_people(id)`,
+    )
     .eq("clan_id", clanId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
@@ -162,7 +164,7 @@ export async function getHeritageItem(
     .from("heritage_items")
     .select(
       `${COLS},
-       heritage_media(id, kind, path, caption, sort, bytes, duration_sec),
+       heritage_media!heritage_media_item_id_fkey(id, kind, path, caption, sort, bytes, duration_sec),
        heritage_people(id, role_note, person:persons(id, full_name, gender, is_living))`,
     )
     .eq("id", id)
