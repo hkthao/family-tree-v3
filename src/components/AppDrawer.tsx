@@ -417,13 +417,13 @@ function buildSections(
   sections.push({ label: "Chung", items: global });
 
   // -- Clan-scoped sections ------------------------------------------------
-  // 4 nhóm semantic — danh sách 13-14 items chia thành cụm 3-5 dễ scan:
-  //   1. <clan name>  — trang chủ + giao tiếp (Tổng quan / Hôm nay /
-  //      Bảng tin / Sự kiện)
-  //   2. Dữ liệu      — tra cứu người (Danh bạ / Cây / Trực hệ / Xưng hô)
-  //   3. Cập nhật     — data-entry tools cho editor+ (gồm Việc cần làm,
+  // 4 nhóm semantic — mục HAY DÙNG đẩy lên nhóm đầu:
+  //   1. <clan name>        — hay dùng nhất: Tổng quan / Cây gia phả /
+  //      Danh bạ / Tra cứu xưng hô / Sự kiện
+  //   2. Cộng đồng & Di sản — Bảng tin / Hôm nay / Mộ phần / Di sản
+  //   3. Cập nhật           — data-entry cho editor+ (Việc cần làm,
   //      Đóng góp, Nhập Excel, Gộp, Nhật ký)
-  //   4. Quản trị     — chỉ admin (Thành viên / Thông gia / QR / Cài đặt)
+  //   4. Quản trị           — chỉ admin (Thành viên / Thông gia / QR / Cài đặt)
   if (clanId && clan) {
     const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
     const canEdit =
@@ -432,40 +432,15 @@ function buildSections(
       clan.myRole === "editor";
     const isMember = clan.isPlatformAdmin || clan.myRole !== null;
 
-    // ─── Section 1: <clan name> — trang chủ + giao tiếp ───────────
-    sections.push({
-      label: clan.name,
-      items: [
-        {
-          to: `/clans/${clanId}`,
-          label: "Tổng quan",
-          icon: <IconHome className={ic} />,
-          end: true,
-        },
-        {
-          to: `/clans/${clanId}/today`,
-          label: "Hôm nay",
-          icon: <IconSun className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/board`,
-          label: "Bảng tin",
-          icon: <IconSparkles className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/events`,
-          label: "Sự kiện",
-          icon: <IconCalendar className={ic} />,
-        },
-      ],
-    });
-
-    // ─── Section 2: Dữ liệu — tra cứu người ────────────────────────
-    const dataItems: DrawerItem[] = [
+    // ─── Section 1: <clan name> — những mục HAY DÙNG NHẤT lên trên ──
+    // Cây gia phả + Danh bạ (trái tim của app) được đẩy lên đầu, cạnh
+    // Tổng quan + Sự kiện. "Đường trực hệ" đã gộp vào Cây (nút gạt).
+    const topItems: DrawerItem[] = [
       {
-        to: `/clans/${clanId}/people`,
-        label: "Danh bạ",
-        icon: <IconUsers className={ic} />,
+        to: `/clans/${clanId}`,
+        label: "Tổng quan",
+        icon: <IconHome className={ic} />,
+        end: true,
       },
       {
         to: `/clans/${clanId}/tree`,
@@ -473,26 +448,51 @@ function buildSections(
         icon: <IconTree className={ic} />,
       },
       {
-        to: `/clans/${clanId}/graves`,
-        label: "Mộ phần & tro cốt",
-        icon: <IconGrave className={ic} />,
-      },
-      {
-        to: `/clans/${clanId}/heritage`,
-        label: "Di sản & Văn hoá",
-        icon: <IconScroll className={ic} />,
+        to: `/clans/${clanId}/people`,
+        label: "Danh bạ",
+        icon: <IconUsers className={ic} />,
       },
     ];
     if (isMember) {
-      // "Đường trực hệ" đã gộp thành một chế độ trong "Cây gia phả"
-      // (nút gạt "Cả cây / Trực hệ của tôi") — không còn mục menu riêng.
-      dataItems.push({
+      topItems.push({
         to: `/clans/${clanId}/kinship`,
         label: "Tra cứu xưng hô",
         icon: <IconHelp className={ic} />,
       });
     }
-    sections.push({ label: "Dữ liệu", items: dataItems });
+    topItems.push({
+      to: `/clans/${clanId}/events`,
+      label: "Sự kiện",
+      icon: <IconCalendar className={ic} />,
+    });
+    sections.push({ label: clan.name, items: topItems });
+
+    // ─── Section 2: Cộng đồng & Di sản ─────────────────────────────
+    sections.push({
+      label: "Cộng đồng & Di sản",
+      items: [
+        {
+          to: `/clans/${clanId}/board`,
+          label: "Bảng tin",
+          icon: <IconSparkles className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/today`,
+          label: "Hôm nay",
+          icon: <IconSun className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/graves`,
+          label: "Mộ phần & tro cốt",
+          icon: <IconGrave className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/heritage`,
+          label: "Di sản & Văn hoá",
+          icon: <IconScroll className={ic} />,
+        },
+      ],
+    });
 
     // ─── Section 3: Cập nhật — data-entry cho editor+ ─────────────
     if (canEdit) {
