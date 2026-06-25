@@ -91,6 +91,7 @@ export interface ShareViewHeritageItemFull {
   built_year: number | null;
   photo_urls: string[];
   audios: { url: string; duration_sec: number | null }[];
+  videos: { url: string }[];
   people: { full_name: string; gender: "M" | "F"; role_note: string | null }[];
 }
 
@@ -163,6 +164,8 @@ export async function fetchShareView(token: string): Promise<ShareViewPayload> {
           ...payload.heritage_item,
           photo_urls: payload.heritage_item.photo_urls.map(fixUrl),
           audios: payload.heritage_item.audios.map((a) => ({ ...a, url: fixUrl(a.url) })),
+          // Video là link ngoài (YouTube/file) — giữ nguyên, không prefix base.
+          videos: payload.heritage_item.videos ?? [],
         }
       : undefined,
   };

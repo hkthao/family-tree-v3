@@ -19,9 +19,76 @@ export function formatBytes(n: number): string {
   return `${(mb / 1024).toFixed(2)} GB`;
 }
 
+// ─── Bảo mật link ngoài ──────────────────────────────────────────
+// Link ngoài do người dùng dán → phải kiểm tra để tránh XSS
+// (javascript:/data:/vbscript:) và chỉ nhúng iframe từ nguồn tin cậy.
+
+/** Chỉ chấp nhận URL https hợp lệ (chặn mọi scheme nguy hiểm + mixed content). */
+export function isSafeHttpsUrl(raw: string): boolean {
+  let u: URL;
+  try {
+    u = new URL(raw.trim());
+  } catch {
+    return false;
+  }
+  return u.protocol === "https:";
+}
+
+/**
+ * Trả URL nhúng (embed) an toàn cho YouTube/Vimeo — CHỈ host trong danh
+ * sách trắng mới được iframe. Trả null nếu không phải (caller sẽ dùng thẻ
+ * <video> cho link file trực tiếp thay vì iframe bừa bãi).
+ */
+export function videoEmbedUrl(raw: string): string | null {
+  let u: URL;
+  try {
+    u = new URL(raw.trim());
+  } catch {
+    return null;
+  }
+  if (u.protocol !== "https:") return null;
+  const host = u.hostname.replace(/^www\./, "");
+  if (host === "youtube.com" || host === "m.youtube.com") {
+    const id = u.searchParams.get("v");
+    if (id && /^[\w-]{11}$/.test(id)) return `https://www.youtube.com/embed/${id}`;
+  }
+  if (host === "youtube-nocookie.com") {
+    const id = u.searchParams.get("v");
+    if (id && /^[\w-]{11}$/.test(id)) return `https://www.youtube-nocookie.com/embed/${id}`;
+  }
+  if (host === "youtu.be") {
+    const id = u.pathname.slice(1);
+    if (/^[\w-]{11}$/.test(id)) return `https://www.youtube.com/embed/${id}`;
+  }
+  if (host === "vimeo.com") {
+    const id = u.pathname.split("/").filter(Boolean)[0] ?? "";
+    if (/^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
+  }
+  return null;
+}
+
+/** Kiểm tra link người dùng dán theo loại; trả lỗi tiếng Việt nếu không hợp lệ. */
+export function validateExternalMedia(
+  kind: HeritageMediaKind,
+  raw: string,
+): { ok: true } | { ok: false; error: string } {
+  const url = raw.trim();
+  if (!url) return { ok: false, error: "Hãy dán đường link." };
+  if (!isSafeHttpsUrl(url)) {
+    return { ok: false, error: "Link phải bắt đầu bằng https:// và là địa chỉ hợp lệ." };
+  }
+  if (kind === "video" && !videoEmbedUrl(url)) {
+    // Ngoài YouTube/Vimeo chỉ cho phép link file video https trực tiếp.
+    if (!/\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url)) {
+      return { ok: false, error: "Video chỉ hỗ trợ YouTube, Vimeo, hoặc link file .mp4/.webm." };
+    }
+  }
+  return { ok: true };
+}
+
 export type HeritageCategory = "place" | "custom" | "story" | "artifact";
 export type HeritageStatus = "active" | "draft" | "archived";
-export type HeritageMediaKind = "photo" | "audio";
+export type HeritageMediaKind = "photo" | "audio" | "video";
 
 export const HERITAGE_CATEGORY_LABEL: Record<HeritageCategory, string> = {
   place: "Từ đường / đền / chùa",
@@ -93,7 +160,10 @@ export interface HeritageItem {
 export interface HeritageMedia {
   id: string;
   kind: HeritageMediaKind;
-  path: string;
+  /** Đường dẫn trong bucket (file tải lên) — null nếu là link ngoài. */
+  path: string | null;
+  /** Link ngoài (YouTube/URL ảnh/audio…) — null nếu là file tải lên. */
+  external_url: string | null;
   caption: string | null;
   sort: number;
   bytes: number | null;
@@ -110,9 +180,13 @@ export interface HeritagePersonLink {
 }
 
 export interface HeritageListItem extends HeritageItem {
+  /** Ảnh đại diện: đường dẫn bucket (cần ký) — null nếu cover là link ngoài/không có. */
   cover_media_path: string | null;
+  /** Ảnh đại diện là link ngoài (dùng trực tiếp). */
+  cover_external_url: string | null;
   photo_count: number;
   audio_count: number;
+  video_count: number;
   people_count: number;
 }
 
@@ -132,7 +206,7 @@ export async function listHeritageItems(
   let q = client
     .from("heritage_items")
     .select(
-      `${COLS}, heritage_media!heritage_media_item_id_fkey(id, kind, path, sort), heritage_people(id)`,
+      `${COLS}, heritage_media!heritage_media_item_id_fkey(id, kind, path, external_url, sort), heritage_people(id)`,
     )
     .eq("clan_id", clanId)
     .is("deleted_at", null)
@@ -147,18 +221,20 @@ export async function listHeritageItems(
       const media = (r.heritage_media ?? []) as {
         id: string;
         kind: HeritageMediaKind;
-        path: string;
+        path: string | null;
+        external_url: string | null;
         sort: number;
       }[];
       const photos = media.filter((m) => m.kind === "photo").sort((a, b) => a.sort - b.sort);
-      const cover =
-        photos.find((p) => p.id === r.cover_media_id)?.path ?? photos[0]?.path ?? null;
+      const coverPhoto = photos.find((p) => p.id === r.cover_media_id) ?? photos[0] ?? null;
       const { heritage_media, heritage_people, ...rest } = r;
       return {
         ...(rest as HeritageItem),
-        cover_media_path: cover,
+        cover_media_path: coverPhoto?.path ?? null,
+        cover_external_url: coverPhoto?.external_url ?? null,
         photo_count: photos.length,
         audio_count: media.filter((m) => m.kind === "audio").length,
+        video_count: media.filter((m) => m.kind === "video").length,
         people_count: (heritage_people ?? []).length,
       };
     })
@@ -177,7 +253,7 @@ export async function getHeritageItem(
     .from("heritage_items")
     .select(
       `${COLS},
-       heritage_media!heritage_media_item_id_fkey(id, kind, path, caption, sort, bytes, duration_sec),
+       heritage_media!heritage_media_item_id_fkey(id, kind, path, external_url, caption, sort, bytes, duration_sec),
        heritage_people(id, role_note, person:persons(id, full_name, gender, is_living))`,
     )
     .eq("id", id)
@@ -254,7 +330,9 @@ export async function addMedia(
   itemId: string,
   input: {
     kind: HeritageMediaKind;
-    path: string;
+    /** Một trong hai: file đã tải (path) hoặc link ngoài (external_url). */
+    path?: string | null;
+    external_url?: string | null;
     caption?: string | null;
     sort?: number;
     bytes?: number | null;
@@ -262,16 +340,21 @@ export async function addMedia(
   },
   client: Client = defaultClient,
 ): Promise<{ id: string }> {
+  if (!input.path && !input.external_url) {
+    throw new Error("Thiếu nguồn media (file hoặc link).");
+  }
   const { data, error } = await client
     .from("heritage_media")
     .insert({
       item_id: itemId,
       clan_id: PLACEHOLDER_CLAN, // synced by trigger
       kind: input.kind,
-      path: input.path,
+      path: input.path ?? null,
+      external_url: input.external_url ?? null,
       caption: input.caption ?? null,
       sort: input.sort ?? 0,
-      bytes: input.bytes ?? null,
+      // Link ngoài không tính dung lượng (bytes = null).
+      bytes: input.path ? input.bytes ?? null : null,
       duration_sec: input.duration_sec ?? null,
     })
     .select("id")
@@ -282,12 +365,13 @@ export async function addMedia(
 
 export async function removeMedia(
   mediaId: string,
-  path: string,
+  path: string | null,
   client: Client = defaultClient,
 ): Promise<void> {
   const { error } = await client.from("heritage_media").delete().eq("id", mediaId);
   if (error) throw new Error(error.message);
-  await deletePersonPhoto(path).catch(() => {}); // best-effort storage cleanup
+  // Chỉ dọn storage cho file đã tải; link ngoài không có gì để xoá.
+  if (path) await deletePersonPhoto(path).catch(() => {});
 }
 
 export async function reorderMedia(
