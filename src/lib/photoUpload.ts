@@ -130,6 +130,74 @@ export async function uploadRestingPlacePhoto(
 }
 
 /**
+ * Upload one photo of a heritage item (di sản: từ đường, sắc phong…).
+ * Same private `person-photos` bucket, path
+ * `{clanId}/heritage/{itemId}/{uuid}.jpg`. Tight compression (≤250 KB /
+ * 1280px) — VPS storage is limited, and these are mostly documentary
+ * shots (hoành phi, gia phả cũ) that stay legible at this size.
+ *
+ * Returns the storage path + byte size — caller inserts into heritage_media.
+ */
+export async function uploadHeritagePhoto(
+  clanId: string,
+  itemId: string,
+  file: File,
+  onProgress?: (p: UploadProgress) => void,
+): Promise<UploadResult> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("File phải là ảnh (JPG / PNG / WebP / HEIC)");
+  }
+  onProgress?.({ phase: "compress", percent: 0 });
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 0.25,
+    maxWidthOrHeight: 1280,
+    useWebWorker: true,
+    initialQuality: 0.8,
+    fileType: "image/jpeg",
+    onProgress: (percent: number) => onProgress?.({ phase: "compress", percent }),
+  });
+  onProgress?.({ phase: "upload", percent: 0 });
+  const path = `${clanId}/heritage/${itemId}/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, compressed, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: "image/jpeg",
+    });
+  if (error) throw new Error(`upload: ${error.message}`);
+  onProgress?.({ phase: "upload", percent: 100 });
+  return { path, bytes: compressed.size };
+}
+
+/**
+ * Upload a recorded audio clip (kể chuyện di sản) to the heritage item.
+ * Same bucket, path `{clanId}/heritage/{itemId}/{uuid}.{ext}` where ext
+ * follows the recorded MIME (webm for Opus, m4a for Safari). The blob is
+ * already compressed client-side (see audioRecord.ts) — we just store it.
+ */
+export async function uploadHeritageAudio(
+  clanId: string,
+  itemId: string,
+  blob: Blob,
+  ext: string,
+  onProgress?: (p: UploadProgress) => void,
+): Promise<UploadResult> {
+  onProgress?.({ phase: "upload", percent: 0 });
+  const path = `${clanId}/heritage/${itemId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: blob.type || "audio/webm",
+    });
+  if (error) throw new Error(`upload: ${error.message}`);
+  onProgress?.({ phase: "upload", percent: 100 });
+  return { path, bytes: blob.size };
+}
+
+/**
  * Build a short-lived signed URL for displaying the photo. The bucket
  * is private (only clan members can SELECT), so plain public URLs
  * return 401. Signed URLs carry a token that bypasses the auth header

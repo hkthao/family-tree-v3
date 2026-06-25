@@ -477,6 +477,11 @@ function buildSections(
         label: "Mộ phần & tro cốt",
         icon: <IconGrave className={ic} />,
       },
+      {
+        to: `/clans/${clanId}/heritage`,
+        label: "Di sản & Văn hoá",
+        icon: <IconScroll className={ic} />,
+      },
     ];
     if (isMember) {
       dataItems.push({

@@ -77,6 +77,23 @@ export interface ShareViewRestingPlaceFull {
   }[];
 }
 
+export interface ShareViewHeritageItemFull {
+  id: string;
+  clan_id: string;
+  category: "place" | "custom" | "story" | "artifact";
+  title: string;
+  summary: string | null;
+  body: string | null;
+  location_name: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  built_year: number | null;
+  photo_urls: string[];
+  audios: { url: string; duration_sec: number | null }[];
+  people: { full_name: string; gender: "M" | "F"; role_note: string | null }[];
+}
+
 export interface ShareViewPayload {
   clan_id: string;
   root_person_id: string | null;
@@ -92,6 +109,8 @@ export interface ShareViewPayload {
   resting_places?: ShareViewRestingPlace[];
   /** Present only when scope='resting_place' (QR tại mộ). */
   resting_place?: ShareViewRestingPlaceFull;
+  /** Present only when scope='heritage_item' (QR di sản). */
+  heritage_item?: ShareViewHeritageItemFull;
 }
 
 /**
@@ -138,6 +157,13 @@ export async function fetchShareView(token: string): Promise<ShareViewPayload> {
     })),
     resting_place: payload.resting_place
       ? { ...payload.resting_place, photo_urls: payload.resting_place.photo_urls.map(fixUrl) }
+      : undefined,
+    heritage_item: payload.heritage_item
+      ? {
+          ...payload.heritage_item,
+          photo_urls: payload.heritage_item.photo_urls.map(fixUrl),
+          audios: payload.heritage_item.audios.map((a) => ({ ...a, url: fixUrl(a.url) })),
+        }
       : undefined,
   };
 }

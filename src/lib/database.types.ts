@@ -999,6 +999,201 @@ export type Database = {
           },
         ]
       }
+      heritage_items: {
+        Row: {
+          address: string | null
+          body: string | null
+          built_year: number | null
+          category: Database["public"]["Enums"]["heritage_category"]
+          clan_id: string
+          cover_media_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          latitude: number | null
+          location_name: string | null
+          longitude: number | null
+          sort: number
+          status: Database["public"]["Enums"]["heritage_status"]
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          body?: string | null
+          built_year?: number | null
+          category: Database["public"]["Enums"]["heritage_category"]
+          clan_id: string
+          cover_media_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          sort?: number
+          status?: Database["public"]["Enums"]["heritage_status"]
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          body?: string | null
+          built_year?: number | null
+          category?: Database["public"]["Enums"]["heritage_category"]
+          clan_id?: string
+          cover_media_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          sort?: number
+          status?: Database["public"]["Enums"]["heritage_status"]
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heritage_items_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heritage_items_cover_fk"
+            columns: ["cover_media_id"]
+            isOneToOne: false
+            referencedRelation: "heritage_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heritage_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      heritage_media: {
+        Row: {
+          bytes: number | null
+          caption: string | null
+          clan_id: string
+          created_at: string
+          duration_sec: number | null
+          id: string
+          item_id: string
+          kind: Database["public"]["Enums"]["heritage_media_kind"]
+          path: string
+          sort: number
+        }
+        Insert: {
+          bytes?: number | null
+          caption?: string | null
+          clan_id: string
+          created_at?: string
+          duration_sec?: number | null
+          id?: string
+          item_id: string
+          kind: Database["public"]["Enums"]["heritage_media_kind"]
+          path: string
+          sort?: number
+        }
+        Update: {
+          bytes?: number | null
+          caption?: string | null
+          clan_id?: string
+          created_at?: string
+          duration_sec?: number | null
+          id?: string
+          item_id?: string
+          kind?: Database["public"]["Enums"]["heritage_media_kind"]
+          path?: string
+          sort?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heritage_media_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heritage_media_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "heritage_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      heritage_people: {
+        Row: {
+          clan_id: string
+          created_at: string
+          id: string
+          item_id: string
+          person_id: string
+          role_note: string | null
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          id?: string
+          item_id: string
+          person_id: string
+          role_note?: string | null
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          person_id?: string
+          role_note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heritage_people_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heritage_people_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "heritage_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heritage_people_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heritage_people_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_log: {
         Row: {
           channel: string
@@ -1625,6 +1820,7 @@ export type Database = {
           expires_at: string
           id: string
           is_revoked: boolean
+          root_heritage_item_id: string | null
           root_person_id: string | null
           root_resting_place_id: string | null
           scope: string
@@ -1637,6 +1833,7 @@ export type Database = {
           expires_at: string
           id?: string
           is_revoked?: boolean
+          root_heritage_item_id?: string | null
           root_person_id?: string | null
           root_resting_place_id?: string | null
           scope?: string
@@ -1649,6 +1846,7 @@ export type Database = {
           expires_at?: string
           id?: string
           is_revoked?: boolean
+          root_heritage_item_id?: string | null
           root_person_id?: string | null
           root_resting_place_id?: string | null
           scope?: string
@@ -1667,6 +1865,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "share_links_root_heritage_item_id_fkey"
+            columns: ["root_heritage_item_id"]
+            isOneToOne: false
+            referencedRelation: "heritage_items"
             referencedColumns: ["id"]
           },
           {
@@ -2120,6 +2325,9 @@ export type Database = {
       clan_post_type: "news" | "event" | "birth" | "death" | "notice"
       feedback_category: "bug" | "idea" | "question" | "other"
       feedback_status: "new" | "seen" | "resolved" | "spam"
+      heritage_category: "place" | "custom" | "story" | "artifact"
+      heritage_media_kind: "photo" | "audio"
+      heritage_status: "active" | "draft" | "archived"
       resting_place_kind:
         | "grave"
         | "ashes_temple"
@@ -2263,6 +2471,9 @@ export const Constants = {
       clan_post_type: ["news", "event", "birth", "death", "notice"],
       feedback_category: ["bug", "idea", "question", "other"],
       feedback_status: ["new", "seen", "resolved", "spam"],
+      heritage_category: ["place", "custom", "story", "artifact"],
+      heritage_media_kind: ["photo", "audio"],
+      heritage_status: ["active", "draft", "archived"],
       resting_place_kind: [
         "grave",
         "ashes_temple",

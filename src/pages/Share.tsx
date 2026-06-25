@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import { fetchShareView } from "@/lib/queries/share-view";
+import { HERITAGE_CATEGORY_LABEL } from "@/lib/queries/heritage";
 
 import "family-chart/styles/family-chart.css";
 
@@ -305,6 +306,82 @@ export default function Share() {
         </header>
         <main className="flex-1 min-h-0">
           <SharedRestingPlaceCard rp={data.resting_place} />
+        </main>
+      </div>
+    );
+  }
+
+  // QR di sản — scope='heritage_item' renders the heritage card.
+  if (data && data.scope === "heritage_item" && data.heritage_item) {
+    const h = data.heritage_item;
+    const dir =
+      h.latitude != null && h.longitude != null
+        ? `https://www.google.com/maps?q=${h.latitude},${h.longitude}`
+        : null;
+    return (
+      <div className="min-h-dvh bg-background flex flex-col">
+        <header className="border-b py-3 px-4 shrink-0">
+          <h1 className="clan-name text-xl font-semibold text-center">Di sản & Văn hoá</h1>
+          <p className="text-xs text-center text-muted-foreground mt-1">
+            Đang xem qua liên kết chia sẻ.
+          </p>
+        </header>
+        <main className="flex-1 min-h-0 overflow-y-auto">
+          <div className="mx-auto max-w-2xl p-4 space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground">{HERITAGE_CATEGORY_LABEL[h.category]}</p>
+              <h2 className="text-2xl font-semibold">{h.title}</h2>
+              {h.summary && <p className="text-base mt-1">{h.summary}</p>}
+            </div>
+
+            {h.photo_urls.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {h.photo_urls.map((u, i) => (
+                  <img key={i} src={u} alt="" className="aspect-square w-full rounded-md object-cover bg-muted" />
+                ))}
+              </div>
+            )}
+
+            {h.audios.length > 0 && (
+              <div className="space-y-2">
+                <p className="font-medium">Ghi âm kể chuyện</p>
+                {h.audios.map((a, i) => (
+                  <audio key={i} controls preload="none" src={a.url} className="w-full" />
+                ))}
+              </div>
+            )}
+
+            {h.body && (
+              <p className="whitespace-pre-wrap text-base leading-relaxed">{h.body}</p>
+            )}
+
+            {(h.location_name || h.address || h.built_year || dir) && (
+              <div className="rounded-md border p-3 text-base space-y-1">
+                {h.location_name && <p><span className="text-muted-foreground">Ở đâu: </span>{h.location_name}</p>}
+                {h.address && <p><span className="text-muted-foreground">Địa chỉ: </span>{h.address}</p>}
+                {h.built_year && <p><span className="text-muted-foreground">Lập / xây năm: </span>{h.built_year}</p>}
+                {dir && (
+                  <a href={dir} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-block mt-1">
+                    Chỉ đường →
+                  </a>
+                )}
+              </div>
+            )}
+
+            {h.people.length > 0 && (
+              <div>
+                <p className="font-medium mb-1">Người liên quan</p>
+                <ul className="text-base space-y-0.5">
+                  {h.people.map((p, i) => (
+                    <li key={i}>
+                      {p.full_name}
+                      {p.role_note ? <span className="text-muted-foreground"> — {p.role_note}</span> : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </main>
       </div>
     );

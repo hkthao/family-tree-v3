@@ -1,0 +1,184 @@
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { EmptyState } from "@/components/EmptyState";
+import { IconPlus, IconScroll, IconSearch } from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
+import { SearchInput } from "@/components/SearchInput";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { useUrlState } from "@/hooks/useUrlState";
+import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
+import {
+  HERITAGE_CATEGORY_LABEL,
+  listHeritageItems,
+  type HeritageCategory,
+} from "@/lib/queries/heritage";
+
+const CATEGORIES = Object.keys(HERITAGE_CATEGORY_LABEL) as HeritageCategory[];
+
+export default function Heritage() {
+  const { clan } = useClanContext();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+  const navigate = useNavigate();
+  const canEdit = canEditClan(clan);
+
+  const [search, setSearch] = useState("");
+  const [debounced, setDebounced] = useUrlState("q", "");
+  const [catRaw, setCat] = useUrlState("loai", "");
+  const category = (CATEGORIES.includes(catRaw as HeritageCategory) ? catRaw : "") as
+    | HeritageCategory
+    | "";
+
+  useEffect(() => setSearch(debounced), []); // seed from URL on mount
+  useEffect(() => {
+    const h = setTimeout(() => {
+      if (search !== debounced) setDebounced(search);
+    }, 300);
+    return () => clearTimeout(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  const { data: items, isLoading } = useQuery({
+    queryKey: ["heritage", clan.id, userId, debounced, category],
+    queryFn: () =>
+      listHeritageItems(clan.id, { search: debounced, category: category || null }),
+    enabled: !!userId,
+  });
+
+  const { data: photoUrls } = useQuery({
+    queryKey: ["heritage-thumbs", (items ?? []).map((i) => i.cover_media_path).join(",")],
+    queryFn: () =>
+      getSignedPhotoUrlMap(
+        (items ?? []).map((i) => i.cover_media_path).filter((p): p is string => !!p),
+      ),
+    enabled: !!items && items.some((i) => i.cover_media_path),
+  });
+
+  return (
+    <div className="space-y-3">
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Di sản & Văn hoá" },
+        ]}
+      />
+      <PageHeader
+        icon={<IconScroll className="h-7 w-7" />}
+        title="Di sản & Văn hoá"
+        description="Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
+        actionsBelow
+        actions={
+          canEdit ? (
+            <Button size="sm" onClick={() => navigate(`/clans/${clan.id}/heritage/new`)}>
+              <IconPlus className="h-4 w-4 mr-1" />
+              Thêm
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {/* Lọc theo loại — nút to, dễ bấm */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setCat("")}
+          className={`rounded-full border px-4 py-1.5 text-sm ${
+            category === "" ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"
+          }`}
+        >
+          Tất cả
+        </button>
+        {CATEGORIES.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => setCat(c)}
+            className={`rounded-full border px-4 py-1.5 text-sm ${
+              category === c ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"
+            }`}
+          >
+            {HERITAGE_CATEGORY_LABEL[c]}
+          </button>
+        ))}
+      </div>
+
+      <div className="max-w-md">
+        <SearchInput
+          label="Tìm di sản"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm theo tên / nội dung…"
+        />
+      </div>
+
+      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+
+      {items && items.length === 0 && (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title={debounced || category ? "Không có mục nào khớp" : "Chưa có mục di sản nào"}
+          description={
+            debounced || category
+              ? "Thử bỏ bớt bộ lọc."
+              : canEdit
+                ? "Bấm 'Thêm' để ghi lại tục lệ, từ đường, giai thoại đầu tiên của họ."
+                : "Chưa có dữ liệu."
+          }
+          primary={
+            canEdit && !debounced && !category
+              ? { label: "Thêm", to: `/clans/${clan.id}/heritage/new`, icon: <IconPlus className="h-4 w-4 mr-1.5" /> }
+              : undefined
+          }
+        />
+      )}
+
+      {items && items.length > 0 && (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {items.map((i) => {
+            const thumb = i.cover_media_path ? photoUrls?.get(i.cover_media_path) : null;
+            return (
+              <li key={i.id}>
+                <Link
+                  to={`/clans/${clan.id}/heritage/${i.id}`}
+                  className="flex gap-3 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
+                >
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted grid place-items-center">
+                    {thumb ? (
+                      <img src={thumb} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <IconScroll className="h-6 w-6 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate">{i.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {HERITAGE_CATEGORY_LABEL[i.category]}
+                      {i.location_name ? ` · ${i.location_name}` : ""}
+                    </p>
+                    {i.summary && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{i.summary}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {[
+                        i.photo_count ? `${i.photo_count} ảnh` : null,
+                        i.audio_count ? `${i.audio_count} ghi âm` : null,
+                        i.people_count ? `${i.people_count} người` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") || "—"}
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}

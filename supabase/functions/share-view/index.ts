@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
   // ---- 2. Validate token ----
   const { data: link, error: linkErr } = await sb
     .from("share_links")
-    .select("clan_id, root_person_id, root_resting_place_id, expires_at, is_revoked, scope")
+    .select("clan_id, root_person_id, root_resting_place_id, root_heritage_item_id, expires_at, is_revoked, scope")
     .eq("token", token)
     .maybeSingle();
   if (linkErr) return err(linkErr.message, 500);
@@ -193,6 +193,68 @@ Deno.serve(async (req) => {
       clan_id: link.clan_id,
       scope: "resting_place",
       resting_place: { ...rpFields, photo_urls, occupants },
+    });
+  }
+
+  // ---- scope='heritage_item': QR di sản → trả thẳng nội dung mục di sản
+  // + ảnh + ghi âm (signed url) + người liên quan (che tên người còn sống).
+  if (link.scope === "heritage_item" && link.root_heritage_item_id) {
+    const { data: hi } = await sb
+      .from("heritage_items")
+      .select(
+        "id, clan_id, category, title, summary, body, location_name, address, latitude, longitude, built_year, deleted_at, heritage_media(kind, path, caption, sort, duration_sec), heritage_people(role_note, person:persons(full_name, gender, is_living))",
+      )
+      .eq("id", link.root_heritage_item_id)
+      .maybeSingle();
+    if (!hi || hi.deleted_at) return err("Mục di sản không còn.", 404);
+
+    // deno-lint-ignore no-explicit-any
+    const media = [...((hi as any).heritage_media ?? [])].sort(
+      (a: { sort: number }, b: { sort: number }) => a.sort - b.sort,
+    );
+    const photoItems = media.filter((m: { kind: string }) => m.kind === "photo");
+    const audioItems = media.filter((m: { kind: string }) => m.kind === "audio");
+    // Ảnh chịu cờ ẩn ảnh; ghi âm luôn cho phép (không phải ảnh người sống).
+    const toSign = [
+      ...(hidePhotos ? [] : photoItems),
+      ...audioItems,
+    ];
+    const signedMap = new Map<string, string>();
+    if (toSign.length > 0) {
+      const { data: signed } = await sb.storage
+        .from("person-photos")
+        .createSignedUrls(toSign.map((m: { path: string }) => m.path), 3600);
+      (signed ?? []).forEach((s, i) => {
+        if (s.signedUrl) signedMap.set(toSign[i].path, stripOrigin(s.signedUrl));
+      });
+    }
+    const photo_urls = photoItems
+      .map((m: { path: string }) => signedMap.get(m.path))
+      .filter(Boolean);
+    const audios = audioItems
+      .map((m: { path: string; duration_sec: number | null }) => ({
+        url: signedMap.get(m.path),
+        duration_sec: m.duration_sec,
+      }))
+      .filter((a: { url: string | undefined }) => !!a.url);
+    // deno-lint-ignore no-explicit-any
+    const people = ((hi as any).heritage_people ?? [])
+      .map((l: { role_note: string | null; person: { full_name: string; gender: string; is_living: boolean } | null }) => {
+        if (!l.person) return null;
+        return {
+          full_name: l.person.is_living ? "(Người đang sống)" : l.person.full_name,
+          gender: l.person.gender,
+          role_note: l.role_note,
+        };
+      })
+      .filter(Boolean);
+
+    // deno-lint-ignore no-explicit-any
+    const { heritage_media: _m, heritage_people: _pp, deleted_at: _d, ...hiFields } = hi as any;
+    return json({
+      clan_id: link.clan_id,
+      scope: "heritage_item",
+      heritage_item: { ...hiFields, photo_urls, audios, people },
     });
   }
 
