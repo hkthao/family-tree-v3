@@ -67,6 +67,10 @@ import {
   RESTING_PLACE_KIND_LABEL,
 } from "@/lib/queries/restingPlaces";
 import {
+  getHeritageItemsForPerson,
+  HERITAGE_CATEGORY_LABEL,
+} from "@/lib/queries/heritage";
+import {
   deletePerson,
   getPerson,
   type PersonDetail as PersonDetailT,
@@ -106,6 +110,11 @@ export default function PersonDetail() {
     enabled: !!personId,
   });
 
+  const { data: heritageItems } = useQuery({
+    queryKey: ["person-heritage", personId, userId],
+    queryFn: () => getHeritageItemsForPerson(personId!),
+    enabled: !!personId && !!userId,
+  });
   const { data: restingPlaces } = useQuery({
     queryKey: ["person-resting-places", personId, userId],
     queryFn: () => getRestingPlacesForPerson(personId!),
@@ -355,6 +364,27 @@ export default function PersonDetail() {
                             {rp.name || rp.location_name || RESTING_PLACE_KIND_LABEL[rp.kind]}
                             <span className="text-muted-foreground">
                               {" "}· {RESTING_PLACE_KIND_LABEL[rp.kind]}
+                            </span>
+                          </Link>
+                        ))}
+                      </span>
+                    }
+                  />
+                )}
+                {heritageItems && heritageItems.length > 0 && (
+                  <DetailRow
+                    label="Di sản liên quan"
+                    value={
+                      <span className="flex flex-col gap-0.5">
+                        {heritageItems.map((h) => (
+                          <Link
+                            key={h.id}
+                            to={`/clans/${clanId}/heritage/${h.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            {h.title}
+                            <span className="text-muted-foreground">
+                              {" "}· {HERITAGE_CATEGORY_LABEL[h.category]}
                             </span>
                           </Link>
                         ))}

@@ -1,0 +1,418 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { useConfirm } from "@/components/ConfirmDialog";
+import {
+  IconCamera,
+  IconMapPin,
+  IconMicrophone,
+  IconPencil,
+  IconPlus,
+  IconQrCode,
+  IconScroll,
+  IconTrash,
+  IconX,
+} from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
+import { PersonAvatar } from "@/components/PersonAvatar";
+import { QrCodeModal } from "@/components/QrCodeModal";
+import { useToast } from "@/components/Toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { canEditClan, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import { useAudioRecorder, HERITAGE_AUDIO_MAX_SEC, isAudioRecordingSupported } from "@/lib/audioRecord";
+import { getOrCreateHeritageShareLink } from "@/lib/queries/share-links";
+import {
+  getSignedPhotoUrlMap,
+  uploadHeritageAudio,
+  uploadHeritagePhoto,
+} from "@/lib/photoUpload";
+import {
+  addMedia,
+  deleteHeritageItem,
+  getHeritageItem,
+  heritageDirectionsUrl,
+  HERITAGE_CATEGORY_LABEL,
+  removeMedia,
+  setCoverMedia,
+} from "@/lib/queries/heritage";
+
+// Giới hạn để chặn phình dung lượng storage VPS.
+const MAX_PHOTOS = 12;
+const MAX_AUDIO = 5;
+
+function fmtDuration(sec: number | null): string {
+  if (!sec) return "";
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+export default function HeritageDetail() {
+  const { clan } = useClanContext();
+  const { itemId } = useParams<{ itemId: string }>();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const toast = useToast();
+  const askConfirm = useConfirm();
+  const canEdit = canEditClan(clan);
+  const canAdmin = isClanAdmin(clan);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+
+  const { data: item, isLoading } = useQuery({
+    queryKey: ["heritage-item", itemId, userId],
+    queryFn: () => getHeritageItem(itemId!),
+    enabled: !!itemId,
+  });
+
+  const photos = (item?.media ?? []).filter((m) => m.kind === "photo");
+  const audios = (item?.media ?? []).filter((m) => m.kind === "audio");
+
+  const { data: mediaUrls } = useQuery({
+    queryKey: ["heritage-media-urls", itemId, (item?.media ?? []).map((m) => m.path).join(",")],
+    queryFn: () => getSignedPhotoUrlMap((item?.media ?? []).map((m) => m.path)),
+    enabled: !!item && item.media.length > 0,
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["heritage-item", itemId] });
+
+  const uploadPhotoM = useMutation({
+    mutationFn: async (file: File) => {
+      if (photos.length >= MAX_PHOTOS) throw new Error(`Tối đa ${MAX_PHOTOS} ảnh mỗi mục.`);
+      const { path, bytes } = await uploadHeritagePhoto(clan.id, itemId!, file);
+      const { id } = await addMedia(itemId!, { kind: "photo", path, bytes, sort: photos.length });
+      // ảnh đầu tiên → đặt làm ảnh đại diện
+      if (!item?.cover_media_id && photos.length === 0) await setCoverMedia(itemId!, id);
+    },
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
+      toast.success("Đã thêm ảnh");
+    },
+    onError: (e) => toast.error("Không thêm được ảnh", { description: (e as Error).message }),
+  });
+
+  const uploadAudioM = useMutation({
+    mutationFn: async ({ blob, ext, durationSec }: { blob: Blob; ext: string; durationSec: number }) => {
+      if (audios.length >= MAX_AUDIO) throw new Error(`Tối đa ${MAX_AUDIO} đoạn ghi âm mỗi mục.`);
+      const { path, bytes } = await uploadHeritageAudio(clan.id, itemId!, blob, ext);
+      await addMedia(itemId!, { kind: "audio", path, bytes, duration_sec: durationSec, sort: audios.length });
+    },
+    onSuccess: () => {
+      invalidate();
+      toast.success("Đã lưu đoạn ghi âm");
+    },
+    onError: (e) => toast.error("Không lưu được ghi âm", { description: (e as Error).message }),
+  });
+
+  const removeMediaM = useMutation({
+    mutationFn: ({ id, path }: { id: string; path: string }) => removeMedia(id, path),
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
+    },
+    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+  });
+
+  const deleteM = useMutation({
+    mutationFn: () => deleteHeritageItem(itemId!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
+      toast.success("Đã xoá");
+      navigate(`/clans/${clan.id}/heritage`);
+    },
+    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+  });
+
+  // QR chia sẻ công khai
+  const [qrOpen, setQrOpen] = useState(false);
+  const qrM = useMutation({
+    mutationFn: () => getOrCreateHeritageShareLink(clan.id, itemId!),
+    onError: (e) => toast.error("Không tạo được QR", { description: (e as Error).message }),
+  });
+  const qrUrl = qrM.data ? `${window.location.origin}/share/${qrM.data.token}` : "";
+
+  if (isLoading) return <p className="text-muted-foreground">Đang tải…</p>;
+  if (!item) return <p className="text-muted-foreground">Không tìm thấy.</p>;
+
+  const dir = heritageDirectionsUrl(item.latitude, item.longitude);
+
+  return (
+    <div className="space-y-3">
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: "Di sản & Văn hoá", to: `/clans/${clan.id}/heritage` },
+          { label: item.title },
+        ]}
+      />
+      <PageHeader
+        icon={<IconScroll className="h-7 w-7" />}
+        title={item.title}
+        description={HERITAGE_CATEGORY_LABEL[item.category]}
+        actionsBelow
+        actions={
+          <div className="flex gap-2">
+            {canAdmin && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setQrOpen(true);
+                  if (!qrM.data) qrM.mutate();
+                }}
+              >
+                <IconQrCode className="h-4 w-4 mr-1" /> Chia sẻ
+              </Button>
+            )}
+            {canEdit && (
+              <>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to={`/clans/${clan.id}/heritage/${item.id}/edit`}>
+                    <IconPencil className="h-4 w-4 mr-1" /> Sửa
+                  </Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    askConfirm({
+                      title: "Xoá mục di sản này?",
+                      description: "Xoá cả ảnh và ghi âm kèm theo.",
+                      confirmLabel: "Xoá",
+                      destructive: true,
+                    }).then((ok) => ok && deleteM.mutate())
+                  }
+                >
+                  <IconTrash className="h-4 w-4 mr-1" /> Xoá
+                </Button>
+              </>
+            )}
+          </div>
+        }
+      />
+
+      {/* Ảnh */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Hình ảnh{photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}</CardTitle>
+          {canEdit && (
+            <>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS}
+                  onClick={() => cameraRef.current?.click()}>
+                  <IconCamera className="h-4 w-4 mr-1" /> Chụp ảnh
+                </Button>
+                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS}
+                  onClick={() => fileRef.current?.click()}>
+                  <IconPlus className="h-4 w-4 mr-1" /> {uploadPhotoM.isPending ? "Đang tải…" : "Tải ảnh"}
+                </Button>
+              </div>
+            </>
+          )}
+        </CardHeader>
+        <CardContent>
+          {photos.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Chưa có ảnh.</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {photos.map((ph) => (
+                <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md bg-muted">
+                  {mediaUrls?.get(ph.path) ? (
+                    <img src={mediaUrls.get(ph.path)} alt={ph.caption ?? ""} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full grid place-items-center">
+                      <IconScroll className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  {canEdit && (
+                    <button type="button" onClick={() => removeMediaM.mutate({ id: ph.id, path: ph.path })}
+                      className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background" aria-label="Xoá ảnh">
+                      <IconX className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Ghi âm kể chuyện */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle className="inline-flex items-center gap-2">
+            <IconMicrophone className="h-5 w-5" /> Ghi âm kể chuyện
+            {audios.length > 0 ? ` (${audios.length}/${MAX_AUDIO})` : ""}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {audios.length > 0 && (
+            <ul className="space-y-2">
+              {audios.map((a) => (
+                <li key={a.id} className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
+                  <audio controls preload="none" src={mediaUrls?.get(a.path) ?? undefined} className="h-9 flex-1 min-w-0" />
+                  <span className="text-xs text-muted-foreground shrink-0">{fmtDuration(a.duration_sec)}</span>
+                  {canEdit && (
+                    <button type="button" aria-label="Xoá ghi âm" onClick={() => removeMediaM.mutate({ id: a.id, path: a.path })}
+                      className="shrink-0 text-muted-foreground hover:text-foreground">
+                      <IconX className="h-4 w-4" />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {canEdit && audios.length < MAX_AUDIO && (
+            <AudioRecorder
+              disabled={uploadAudioM.isPending}
+              onSave={(blob, ext, durationSec) => uploadAudioM.mutate({ blob, ext, durationSec })}
+            />
+          )}
+          {audios.length === 0 && !canEdit && (
+            <p className="text-sm text-muted-foreground">Chưa có ghi âm.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Nội dung */}
+      {(item.summary || item.body) && (
+        <Card>
+          <CardHeader><CardTitle>Nội dung</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {item.summary && <p className="text-base font-medium">{item.summary}</p>}
+            {item.body && (
+              <p className="whitespace-pre-wrap text-base leading-relaxed">{item.body}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Thông tin nơi (place) */}
+      {item.category === "place" && (item.location_name || item.address || item.built_year || dir) && (
+        <Card>
+          <CardHeader><CardTitle>Thông tin</CardTitle></CardHeader>
+          <CardContent className="space-y-2 text-base">
+            <Row label="Ở đâu" value={item.location_name} />
+            <Row label="Địa chỉ" value={item.address} />
+            {item.built_year && <Row label="Lập / xây năm" value={String(item.built_year)} />}
+            {dir && (
+              <div className="pt-1">
+                <Button size="sm" variant="outline" asChild>
+                  <a href={dir} target="_blank" rel="noopener noreferrer">
+                    <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
+                  </a>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Người liên quan */}
+      {item.people.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Người liên quan ({item.people.length})</CardTitle></CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5">
+              {item.people.map((p) => (
+                <li key={p.link_id}>
+                  <Link to={`/clans/${clan.id}/people/${p.person_id}`}
+                    className="flex items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors">
+                    <PersonAvatar gender={p.gender} photoUrl={null} size={36} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{p.full_name}</p>
+                      {p.role_note && <p className="text-xs text-muted-foreground truncate">{p.role_note}</p>}
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      <QrCodeModal
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        url={qrUrl}
+        loading={qrM.isPending}
+        title={item.title}
+        description="Quét QR để xem mục di sản này — chia sẻ với con cháu trong họ."
+      />
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex gap-3">
+      <span className="w-32 shrink-0 text-muted-foreground">{label}</span>
+      <span className="min-w-0 flex-1 break-words">{value}</span>
+    </div>
+  );
+}
+
+/** Bộ ghi âm cho người lớn tuổi: nút to, hiện đồng hồ, nghe thử trước khi lưu. */
+function AudioRecorder({
+  disabled,
+  onSave,
+}: {
+  disabled: boolean;
+  onSave: (blob: Blob, ext: string, durationSec: number) => void;
+}) {
+  const rec = useAudioRecorder(HERITAGE_AUDIO_MAX_SEC);
+
+  if (!isAudioRecordingSupported()) {
+    return <p className="text-sm text-muted-foreground">Thiết bị/trình duyệt này không hỗ trợ ghi âm.</p>;
+  }
+
+  if (rec.state === "recorded" && rec.result) {
+    return (
+      <div className="space-y-2 rounded-md border p-3">
+        <p className="text-sm font-medium">Nghe thử trước khi lưu ({fmtDuration(rec.result.durationSec)}):</p>
+        <audio controls src={rec.result.url} className="w-full" />
+        <div className="flex gap-2">
+          <Button size="sm" disabled={disabled}
+            onClick={() => { onSave(rec.result!.blob, rec.result!.ext, rec.result!.durationSec); rec.reset(); }}>
+            {disabled ? "Đang lưu…" : "Lưu đoạn này"}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={rec.reset} disabled={disabled}>Ghi lại</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (rec.state === "recording") {
+    return (
+      <div className="flex items-center gap-3 rounded-md border p-3">
+        <span className="inline-flex items-center gap-2 text-base font-medium text-red-600">
+          <span className="h-3 w-3 animate-pulse rounded-full bg-red-600" />
+          Đang ghi… {fmtDuration(rec.seconds)} / {fmtDuration(rec.maxSeconds)}
+        </span>
+        <Button size="sm" variant="outline" className="ml-auto" onClick={rec.stop}>Dừng & nghe lại</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      <Button type="button" variant="outline" onClick={rec.start} disabled={disabled}>
+        <IconMicrophone className="h-4 w-4 mr-1.5" /> Bắt đầu ghi âm
+      </Button>
+      {rec.error && <p className="text-sm text-red-600">{rec.error}</p>}
+      <p className="text-sm text-muted-foreground">Tối đa {Math.round(HERITAGE_AUDIO_MAX_SEC / 60)} phút mỗi đoạn. Hãy kể tự nhiên bằng lời của bạn.</p>
+    </div>
+  );
+}

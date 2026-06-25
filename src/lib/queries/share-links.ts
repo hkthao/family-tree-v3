@@ -60,6 +60,7 @@ export interface CreateShareLinkInput {
   ttlDays: number;
   root_person_id?: string | null;
   root_resting_place_id?: string | null;
+  root_heritage_item_id?: string | null;
   scope?: string;
 }
 
@@ -91,6 +92,7 @@ export async function createShareLink(
       token: makeToken(),
       root_person_id: input.root_person_id ?? null,
       root_resting_place_id: input.root_resting_place_id ?? null,
+      root_heritage_item_id: input.root_heritage_item_id ?? null,
       scope: input.scope ?? "tree_view",
       expires_at: expires,
     })
@@ -174,6 +176,46 @@ export async function getOrCreateRestingPlaceShareLink(
       ttlDays: PERSON_SHARE_TTL_DAYS,
       root_resting_place_id: restingPlaceId,
       scope: RESTING_PLACE_SCOPE,
+    },
+    client,
+  );
+}
+
+const HERITAGE_SCOPE = "heritage_item";
+
+/**
+ * Active share link for a heritage item (di sản: từ đường, tục lệ…), or
+ * create one. Reuses the same token across reprints so a QR keeps
+ * resolving. Scope='heritage_item' → /share/:token renders the item's
+ * public page.
+ */
+export async function getOrCreateHeritageShareLink(
+  clanId: string,
+  heritageItemId: string,
+  client: Client = defaultClient,
+): Promise<ShareLink> {
+  const nowIso = new Date().toISOString();
+  const { data: existing, error: selErr } = await client
+    .from("share_links")
+    .select(
+      "id, clan_id, token, root_person_id, scope, expires_at, is_revoked, created_at",
+    )
+    .eq("clan_id", clanId)
+    .eq("root_heritage_item_id", heritageItemId)
+    .eq("scope", HERITAGE_SCOPE)
+    .eq("is_revoked", false)
+    .gt("expires_at", nowIso)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (selErr) throw new Error(selErr.message);
+  if (existing && existing.length > 0) return existing[0] as ShareLink;
+
+  return createShareLink(
+    {
+      clan_id: clanId,
+      ttlDays: PERSON_SHARE_TTL_DAYS,
+      root_heritage_item_id: heritageItemId,
+      scope: HERITAGE_SCOPE,
     },
     client,
   );

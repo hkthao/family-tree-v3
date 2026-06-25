@@ -32,6 +32,9 @@ import Contributions from "@/pages/clan/Contributions";
 import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
+import Heritage from "@/pages/clan/Heritage";
+import HeritageDetail from "@/pages/clan/HeritageDetail";
+import HeritageForm from "@/pages/clan/HeritageForm";
 import Import from "@/pages/clan/Import";
 import Inlaws from "@/pages/clan/Inlaws";
 import InlawsNew from "@/pages/clan/InlawsNew";
@@ -134,6 +137,10 @@ export default function App() {
           <Route path="graves/:graveId" element={<RestingPlaceDetail />} />
           <Route path="graves/:graveId/edit" element={<RestingPlaceForm />} />
           <Route path="events" element={<Events />} />
+          <Route path="heritage" element={<Heritage />} />
+          <Route path="heritage/new" element={<HeritageForm />} />
+          <Route path="heritage/:itemId" element={<HeritageDetail />} />
+          <Route path="heritage/:itemId/edit" element={<HeritageForm />} />
           <Route path="settings" element={<Settings />} />
           <Route path="import" element={<Import />} />
           <Route path="ai-generate" element={<AiGenerate />} />
