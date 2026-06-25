@@ -52,6 +52,7 @@ import {
   getRelativesIndex,
   type RelativesIndex,
 } from "@/lib/queries/relatives-index";
+import { KinshipContent } from "@/pages/clan/Kinship";
 
 const PAGE_SIZE_OPTIONS = [15, 30, 50, 100];
 const VIEW_KEY = "family-tree:people-view-mode";
@@ -84,6 +85,12 @@ export default function People() {
   const sortRaw = sp.get("sort") ?? "name";
   const sort: "name" | "generation" | "birth" =
     sortRaw === "generation" || sortRaw === "birth" ? sortRaw : "name";
+  // Chế độ xem: "people" (danh bạ) | "kinship" (tra cứu xưng hô). Lưu ở
+  // URL (?view=kinship) — route cũ /kinship redirect sang đây. Xưng hô
+  // cần biết quan hệ nên chỉ mở cho thành viên.
+  const isMember = effectiveRole(clan) !== null;
+  const view: "people" | "kinship" =
+    isMember && sp.get("view") === "kinship" ? "kinship" : "people";
 
   const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
   const setPageSize = (n: number) =>
@@ -284,7 +291,11 @@ export default function People() {
       <PageHeader
         icon={<IconUsers className="h-7 w-7" />}
         title="Danh bạ"
-        description="Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
+        description={
+          view === "kinship"
+            ? "Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt."
+            : "Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
+        }
         actionsBelow
         actions={
           <>
@@ -345,6 +356,31 @@ export default function People() {
         }
       />
 
+      {isMember && (
+        <SegmentedControl ariaLabel="Chế độ xem" className="w-full sm:w-auto">
+          <SegmentedButton
+            active={view === "people"}
+            onClick={() => patch({ view: null })}
+            ariaLabel="Xem danh bạ"
+            className="flex-1 px-3"
+          >
+            Danh bạ
+          </SegmentedButton>
+          <SegmentedButton
+            active={view === "kinship"}
+            onClick={() => patch({ view: "kinship" })}
+            ariaLabel="Tra cứu xưng hô"
+            className="flex-1 px-3"
+          >
+            Tra cứu xưng hô
+          </SegmentedButton>
+        </SegmentedControl>
+      )}
+
+      {view === "kinship" ? (
+        <KinshipContent clanId={clan.id} userId={userId} />
+      ) : (
+      <>
       {completion && completion.total > 0 && completion.percent !== null && (
         <CompactCompletion clanId={clan.id} completion={completion} />
       )}
@@ -615,6 +651,8 @@ export default function People() {
         pageSizeOptions={PAGE_SIZE_OPTIONS}
         onPageSizeChange={setPageSize}
       />
+      </>
+      )}
     </div>
   );
 }
