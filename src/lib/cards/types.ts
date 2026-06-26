@@ -2,12 +2,13 @@
 
 export type CardFormat = "square" | "vertical";
 
-export type CardGenre = "memorial" | "story" | "invite";
+export type CardGenre = "memorial" | "story" | "invite" | "event";
 
 export const CARD_GENRE_LABEL: Record<CardGenre, string> = {
   memorial: "Tưởng niệm / Giỗ Tổ",
   story: "Câu chuyện / Giai thoại",
   invite: "Khoe gia phả & Mời",
+  event: "Sự kiện / Kính mời",
 };
 
 /** Kích thước gốc (px) theo định dạng — xuất ảnh ở đúng cỡ này. */

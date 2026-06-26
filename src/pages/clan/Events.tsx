@@ -7,10 +7,13 @@ import {
   IconGrid,
   IconList,
   IconPlus,
+  IconSparkles,
   IconTrash,
   IconX,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { ShareCardDialog } from "@/components/ShareCardDialog";
+import type { CardGenre } from "@/lib/cards/types";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { IconBellOff, IconDownload } from "@/components/icons";
@@ -347,6 +350,7 @@ export default function Events() {
                 <CustomEventItem
                   key={e.id}
                   event={e}
+                  clanName={clan.name}
                   canDelete={canEdit}
                   onDeleted={() => invalidateClanData(qc, clan.id)}
                 />
@@ -386,15 +390,18 @@ export default function Events() {
 
 function CustomEventItem({
   event,
+  clanName,
   canDelete,
   onDeleted,
 }: {
   event: EventRow;
+  clanName: string;
   canDelete: boolean;
   onDeleted: () => void;
 }) {
   const confirm = useConfirm();
   const toast = useToast();
+  const [cardOpen, setCardOpen] = useState(false);
   const delM = useMutation({
     mutationFn: () => deleteEvent(event.id),
     onSuccess: () => {
@@ -408,8 +415,13 @@ function CustomEventItem({
   const when = event.date_solar
     ? `${event.date_solar} (dương lịch)`
     : event.lunar_month
-      ? `${event.lunar_day}/${event.lunar_month}${event.lunar_is_leap ? " nhuận" : ""} âm lịch`
+      ? `Ngày ${event.lunar_day} tháng ${event.lunar_month}${event.lunar_is_leap ? " nhuận" : ""} (ÂL)`
       : "—";
+  // Ngày in lên thiệp: gọn + có "hằng năm" nếu lặp.
+  const cardDate = `${when}${event.is_yearly ? " · hằng năm" : ""}`;
+  // Thiệp sự kiện: thể loại "Sự kiện / Kính mời" (có cả mẫu Kính mời lẫn
+  // mẫu Giỗ/tảo mộ trang nghiêm để người dùng chọn).
+  const cardGenre: CardGenre = "event";
 
   return (
     <li className="px-3 py-3 flex items-center justify-between gap-3">
@@ -419,25 +431,42 @@ function CustomEventItem({
           {when} {event.is_yearly ? "• lặp hằng năm" : ""}
         </p>
       </div>
-      {canDelete && (
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-destructive shrink-0"
-          disabled={delM.isPending}
-          onClick={async () => {
-            const ok = await confirm({
-              title: `Xoá sự kiện "${event.title}"?`,
-              confirmLabel: "Xoá",
-              destructive: true,
-            });
-            if (ok) delM.mutate();
-          }}
-        >
-          <IconTrash className="h-4 w-4 mr-1" />
-          Xoá
+      <div className="flex items-center gap-2 shrink-0">
+        <Button size="sm" variant="outline" onClick={() => setCardOpen(true)}>
+          <IconSparkles className="h-4 w-4 mr-1" />
+          Thiệp
         </Button>
-      )}
+        {canDelete && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive"
+            disabled={delM.isPending}
+            onClick={async () => {
+              const ok = await confirm({
+                title: `Xoá sự kiện "${event.title}"?`,
+                confirmLabel: "Xoá",
+                destructive: true,
+              });
+              if (ok) delM.mutate();
+            }}
+          >
+            <IconTrash className="h-4 w-4 mr-1" />
+            Xoá
+          </Button>
+        )}
+      </div>
+
+      <ShareCardDialog
+        open={cardOpen}
+        onClose={() => setCardOpen(false)}
+        clanName={clanName}
+        shareUrl=""
+        initialTitle={event.title}
+        initialExcerpt={event.notes ?? ""}
+        dateText={cardDate}
+        defaultGenre={cardGenre}
+      />
     </li>
   );
 }
