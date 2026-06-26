@@ -293,7 +293,7 @@ export default function Events() {
       {!tree || !events || !anniversaries ? (
         <p className="text-muted-foreground">Đang tải…</p>
       ) : view === "calendar" ? (
-        <EventsCalendar events={upcoming} clanId={clan.id} />
+        <EventsCalendar events={upcoming} clanId={clan.id} onOpenEvent={setDetailEventId} />
       ) : upcoming.length === 0 ? (
         <EmptyState
           icon={<IconBellOff className="h-10 w-10" />}
@@ -344,10 +344,17 @@ export default function Events() {
         </CardHeader>
         <CardContent className="space-y-4">
           {canEdit && (
-            <AddEventForm
-              clanId={clan.id}
-              onCreated={() => invalidateClanData(qc, clan.id)}
-            />
+            <>
+              <LunarFestivalsQuickAdd
+                clanId={clan.id}
+                existing={events ?? []}
+                onCreated={() => invalidateClanData(qc, clan.id)}
+              />
+              <AddEventForm
+                clanId={clan.id}
+                onCreated={() => invalidateClanData(qc, clan.id)}
+              />
+            </>
           )}
           {events && events.length > 0 ? (
             <ul className="divide-y border rounded-md">
@@ -516,6 +523,78 @@ function CustomEventItem({
         defaultGenre={cardGenre}
       />
     </li>
+  );
+}
+
+// ─── Thêm nhanh lễ tiết truyền thống ────────────────────────────────
+const LUNAR_FESTIVALS = [
+  { title: "Rằm tháng Giêng (Thượng nguyên)", lunar_month: 1, lunar_day: 15 },
+  { title: "Tết Hàn thực", lunar_month: 3, lunar_day: 3 },
+  { title: "Vu Lan – Rằm tháng Bảy", lunar_month: 7, lunar_day: 15 },
+  { title: "Rằm tháng Mười (Hạ nguyên)", lunar_month: 10, lunar_day: 15 },
+  { title: "Ông Công ông Táo", lunar_month: 12, lunar_day: 23 },
+] as const;
+
+type Festival = (typeof LUNAR_FESTIVALS)[number];
+
+function LunarFestivalsQuickAdd({
+  clanId,
+  existing,
+  onCreated,
+}: {
+  clanId: string;
+  existing: EventRow[];
+  onCreated: () => void;
+}) {
+  const toast = useToast();
+  const add = useMutation({
+    mutationFn: (f: Festival) =>
+      createEvent({
+        clan_id: clanId,
+        title: f.title,
+        event_type: "custom",
+        lunar_month: f.lunar_month,
+        lunar_day: f.lunar_day,
+        is_yearly: true,
+      }),
+    onSuccess: (_d, f) => {
+      toast.success("Đã thêm lễ tiết", { description: f.title });
+      onCreated();
+    },
+    onError: (e) => toast.error("Không thêm được", { description: (e as Error).message }),
+  });
+
+  const has = (f: Festival) =>
+    existing.some((e) => e.lunar_month === f.lunar_month && e.lunar_day === f.lunar_day);
+
+  return (
+    <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+      <p className="text-sm font-medium">Thêm nhanh lễ tiết truyền thống</p>
+      <p className="text-xs text-muted-foreground">
+        Tạo sự kiện âm lịch lặp hằng năm — cả họ được nhắc trước. Giỗ Tổ / Chạp họ /
+        Tảo mộ có ngày riêng, dùng "Thêm sự kiện" bên dưới.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {LUNAR_FESTIVALS.map((f) => {
+          const added = has(f);
+          return (
+            <button
+              key={f.title}
+              type="button"
+              disabled={added || add.isPending}
+              onClick={() => add.mutate(f)}
+              className={`rounded-full border px-3 py-1.5 text-sm ${
+                added ? "opacity-50 cursor-default" : "bg-card hover:border-primary"
+              }`}
+              title={`${f.lunar_day}/${f.lunar_month} âm lịch`}
+            >
+              {added ? "✓ " : "+ "}
+              {f.title}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
