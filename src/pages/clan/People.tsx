@@ -358,34 +358,42 @@ export default function People() {
       />
 
       {isMember && (
-        <SegmentedControl ariaLabel="Chế độ xem" className="w-full sm:w-auto">
-          <SegmentedButton
-            active={view === "people"}
-            onClick={() => patch({ view: null })}
-            ariaLabel="Xem danh bạ"
-            className="flex-1 px-3 whitespace-nowrap"
-          >
-            Danh bạ
-          </SegmentedButton>
-          <SegmentedButton
-            active={view === "kinship"}
-            onClick={() => patch({ view: "kinship" })}
-            ariaLabel="Tra cứu xưng hô"
-            className="flex-1 px-3 whitespace-nowrap"
-          >
-            Xưng hô
-          </SegmentedButton>
-        </SegmentedControl>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <SegmentedControl ariaLabel="Chế độ xem" className="w-full sm:w-auto sm:shrink-0">
+            <SegmentedButton
+              active={view === "people"}
+              onClick={() => patch({ view: null })}
+              ariaLabel="Xem danh bạ"
+              className="flex-1 px-3 whitespace-nowrap"
+            >
+              Danh bạ
+            </SegmentedButton>
+            <SegmentedButton
+              active={view === "kinship"}
+              onClick={() => patch({ view: "kinship" })}
+              ariaLabel="Tra cứu xưng hô"
+              className="flex-1 px-3 whitespace-nowrap"
+            >
+              Xưng hô
+            </SegmentedButton>
+          </SegmentedControl>
+
+          {/* Thanh tiến độ — cùng hàng với toggle trên desktop. */}
+          {view === "people" &&
+            completion &&
+            completion.total > 0 &&
+            completion.percent !== null && (
+              <div className="flex-1 min-w-0">
+                <CompactCompletion clanId={clan.id} completion={completion} />
+              </div>
+            )}
+        </div>
       )}
 
       {view === "kinship" ? (
         <KinshipContent clanId={clan.id} userId={userId} />
       ) : (
       <>
-      {completion && completion.total > 0 && completion.percent !== null && (
-        <CompactCompletion clanId={clan.id} completion={completion} />
-      )}
-
       {/* Search row — full width, owns one line. */}
       <SearchInput
         label="Tìm theo tên"
