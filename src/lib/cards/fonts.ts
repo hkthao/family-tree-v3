@@ -27,7 +27,7 @@ export const DEFAULT_CARD_FONT = CARD_FONTS[0].family;
 
 // Các họ font cần đảm bảo đã tải đúng subset (gồm tiếng Việt) trước khi
 // xuất ảnh. Font đã bundle qua @fontsource (import ở src/index.css).
-const FAMILIES = ['"Playfair Display"', '"Be Vietnam Pro"', '"Dancing Script"', '"SVN-ThuPhap"'];
+const FAMILIES = ['"Playfair Display"', '"Be Vietnam Pro"', '"Dancing Script"'];
 // Mẫu chữ có dấu để ép tải đúng subset tiếng Việt.
 const SAMPLE = "Dòng họ Nguyễn — Giỗ Tổ ữỗọệ";
 

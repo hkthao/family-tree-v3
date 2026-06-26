@@ -194,13 +194,12 @@ const LAYOUTS = {
           {data.excerpt && (
             <div style={{ fontFamily: SERIF, color: t.body, fontSize: 32, lineHeight: 1.4, maxWidth: 720, opacity: 0.92 }}>{data.excerpt}</div>
           )}
-          {data.qrDataUrl && (
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 4 }}>
-              {qrImg(data.qrDataUrl, 120, `2px solid ${t.accent}`)}
-              <div style={{ color: t.body, fontSize: 26, opacity: 0.85, textAlign: "left" }}>Quét xem<br />trang cá nhân</div>
-            </div>
-          )}
         </div>
+        {data.qrDataUrl && (
+          <div style={{ position: "absolute", top: 70, right: 70 }}>
+            {qrImg(data.qrDataUrl, 104, `2px solid ${t.accent}`)}
+          </div>
+        )}
       </div>
     );
   },
@@ -221,11 +220,13 @@ const LAYOUTS = {
               {data.dateText}
             </div>
           )}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 4 }}>
-            <div style={{ fontFamily: SERIF, color: t.kicker, fontSize: 36, fontStyle: "italic" }}>{data.clanName}</div>
-            {data.qrDataUrl && qrImg(data.qrDataUrl, 104)}
-          </div>
+          <div style={{ fontFamily: SERIF, color: t.kicker, fontSize: 36, fontStyle: "italic", marginTop: 4 }}>{data.clanName}</div>
         </div>
+        {data.qrDataUrl && (
+          <div style={{ position: "absolute", top: 70, right: 70 }}>
+            {qrImg(data.qrDataUrl, 104, `2px solid ${t.accent}`)}
+          </div>
+        )}
       </div>
     );
   },
@@ -367,6 +368,11 @@ const PRESETS: Preset[] = [
   { id: "me-photo-royal", name: "Cá nhân ảnh nền · lam", genre: "personal", layout: "personalPhoto", theme: "royal", kicker: "Con cháu dòng họ" },
   { id: "me-photo-forest", name: "Cá nhân ảnh nền · rừng", genre: "personal", layout: "personalPhoto", theme: "forest", kicker: "Gốc gác dòng họ" },
   { id: "me-photo-crimson", name: "Cá nhân ảnh nền · son", genre: "personal", layout: "personalPhoto", theme: "crimson", kicker: "Tự hào gốc gác" },
+  // Thống kê vui — số liệu lớn (statText) + câu fun-fact (excerpt).
+  { id: "fact-ox", name: "Thống kê vui · oxblood", genre: "funfact", layout: "statHero", theme: "oxblood", kicker: "Thống kê vui dòng họ", ornament: "📊" },
+  { id: "fact-paper", name: "Thống kê vui · giấy", genre: "funfact", layout: "statHero", theme: "paper", kicker: "Thống kê vui dòng họ", ornament: "📊" },
+  { id: "fact-royal", name: "Thống kê vui · lam", genre: "funfact", layout: "statHero", theme: "royal", kicker: "Thống kê vui dòng họ", ornament: "📊" },
+  { id: "fact-jade", name: "Thống kê vui · ngọc", genre: "funfact", layout: "statHero", theme: "jade", kicker: "Thống kê vui dòng họ", ornament: "📊" },
 ];
 
 export const CARD_TEMPLATES: CardTemplate[] = PRESETS.map((p) => ({

@@ -53,6 +53,7 @@ import {
   type RelativesIndex,
 } from "@/lib/queries/relatives-index";
 import { KinshipContent } from "@/pages/clan/Kinship";
+import { KhoeButton } from "@/components/KhoeButton";
 
 const PAGE_SIZE_OPTIONS = [15, 30, 50, 100];
 const VIEW_KEY = "family-tree:people-view-mode";
@@ -611,7 +612,10 @@ export default function People() {
               key={p.id}
               person={p}
               clanId={clan.id}
+              clanName={clan.name}
               genOffset={clan.generation_offset}
+              canCreateQr={effectiveRole(clan) === "admin"}
+              showKhoe={isMember}
               relatives={relatives}
               photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
               selectable={canEdit}
@@ -705,7 +709,10 @@ function lookupRelatives(
 function PersonListItem({
   person,
   clanId,
+  clanName,
   genOffset,
+  canCreateQr,
+  showKhoe,
   relatives,
   photoUrl,
   selectable,
@@ -715,7 +722,10 @@ function PersonListItem({
 }: {
   person: PersonRow;
   clanId: string;
+  clanName: string;
   genOffset: number;
+  canCreateQr: boolean;
+  showKhoe?: boolean;
   relatives: RelativesIndex | undefined;
   photoUrl: string | null;
   selectable?: boolean;
@@ -808,6 +818,25 @@ function PersonListItem({
         >
           <IconCopy className="h-4 w-4" />
         </Link>
+      )}
+      {showKhoe && (
+        <KhoeButton
+          iconOnly
+          variant="ghost"
+          clanId={clanId}
+          clanName={clanName}
+          genOffset={genOffset}
+          canCreateQr={canCreateQr}
+          person={{
+            id: person.id,
+            full_name: person.full_name,
+            generation: person.generation,
+            photo_path: person.photo_path,
+          }}
+          className={`absolute right-2 z-10 h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-muted ${
+            canCopy ? "top-11" : "top-2"
+          }`}
+        />
       )}
     </li>
   );
