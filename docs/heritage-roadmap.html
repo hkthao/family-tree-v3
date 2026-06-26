@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Di sản & Văn hoá — Gợi ý mở rộng</title>
+<style>
+  :root{
+    --paper:#FBF7F0; --card:#FFFFFF; --ink:#2B2320; --muted:#6E635B;
+    --ox:#7A2E2E; --ox-soft:#F3E4E1; --gold:#B8893B; --line:#E7DDD0;
+    --green:#3F6B4C; --blue:#3A5A78;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    line-height:1.55;-webkit-text-size-adjust:100%}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
+  header.top{text-align:center;padding:18px 0 8px}
+  .kicker{color:var(--ox);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:.74rem}
+  h1{font-size:1.9rem;margin:.25rem 0 .4rem}
+  .sub{color:var(--muted);max-width:680px;margin:0 auto;font-size:1.02rem}
+  .axes{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:18px 0 6px}
+  .axis{background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:7px 14px;font-size:.86rem;font-weight:600;display:inline-flex;gap:7px;align-items:center}
+  h2{font-size:1.18rem;margin:34px 0 4px;display:flex;align-items:center;gap:9px}
+  h2 .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .secnote{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;
+    display:flex;flex-direction:column;gap:7px}
+  .card.star{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+  .ct{font-weight:700;font-size:1.02rem;display:flex;align-items:flex-start;gap:8px}
+  .ct .em{font-size:1.15rem;line-height:1.2}
+  .cd{color:var(--muted);font-size:.92rem;margin:0}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .tag{font-size:.72rem;font-weight:600;border-radius:999px;padding:3px 9px;border:1px solid var(--line);color:var(--muted)}
+  .tag.vn{background:var(--ox-soft);color:var(--ox);border-color:transparent}
+  .tag.old{background:#EAF0EB;color:var(--green);border-color:transparent}
+  .tag.viral{background:#E7EEF5;color:var(--blue);border-color:transparent}
+  .tag.eff{background:transparent}
+  .star-badge{margin-left:auto;font-size:.7rem;font-weight:800;color:var(--gold);
+    border:1px solid var(--gold);border-radius:999px;padding:2px 8px;white-space:nowrap}
+  .starter{background:linear-gradient(180deg,#fff,#FCF6EE);border:1px solid var(--gold);
+    border-radius:16px;padding:18px 18px 6px;margin:30px 0 8px}
+  .starter h2{margin-top:0}
+  ol.steps{margin:6px 0 14px;padding-left:20px}
+  ol.steps li{margin:6px 0}
+  .foot{color:var(--muted);font-size:.85rem;text-align:center;margin-top:30px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px;font-size:.8rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="kicker">Gia phả · Di sản & Văn hoá</div>
+    <h1>Gợi ý mở rộng & cải tiến</h1>
+    <p class="sub">Các ý tưởng được chọn theo 3 trục: giữ đúng <b>truyền thống Việt</b>,
+      dễ với <b>người lớn tuổi</b> (người giữ tri thức), và giúp <b>lan toả</b> tới con cháu.</p>
+    <div class="axes">
+      <span class="axis">🏮 Truyền thống Việt</span>
+      <span class="axis">👴 Người lớn tuổi</span>
+      <span class="axis">📣 Lan toả</span>
+    </div>
+    <div class="legend">
+      <span>⭐ = nên làm trước (tác động cao)</span>
+      <span>Nhãn: 🟫 truyền thống · 🟩 người già · 🟦 lan toả</span>
+    </div>
+  </header>
+
+  <!-- 1 -->
+  <h2><span class="dot" style="background:var(--ox)"></span>1 · Theo truyền thống Việt Nam</h2>
+  <p class="secnote">Đưa nghi lễ – gia phong – di sản chữ nghĩa của dòng họ vào app đúng cách.</p>
+  <div class="grid">
+    <div class="card star">
+      <div class="ct"><span class="em">📅</span> Thêm nhanh "lễ tiết truyền thống" (trên nền Sự kiện)
+        <span class="star-badge">⭐</span></div>
+      <p class="cd"><b>KHÔNG làm module mới</b> — hệ Sự kiện đã có âm lịch + lặp năm + nhắc qua cron.
+        Chỉ thêm <b>nút tạo nhanh</b>: Giỗ Tổ, Chạp họ, Thanh minh/tảo mộ, rằm tháng Giêng/Bảy/Mười,
+        ông Công ông Táo… điền sẵn ngày âm, bấm 1 cái là xong.</p>
+      <div class="tags"><span class="tag vn">truyền thống</span><span class="tag viral">lan toả</span><span class="tag eff">nhỏ · chỉ là preset cho Sự kiện</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">📜</span> Văn khấn & nghi thức mẫu</div>
+      <p class="cd">Thư viện bài khấn (giỗ, tân gia, khai trương, tạ mộ…) — mỗi họ tuỳ biến theo
+        tên tổ tiên. Người lớn tuổi rất cần "khấn cho đúng".</p>
+      <div class="tags"><span class="tag vn">truyền thống</span><span class="tag eff">nhỏ–vừa</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">㊗️</span> Hán–Nôm: hoành phi · câu đối · sắc phong</div>
+      <p class="cd">Chụp lại + lưu kèm <b>phiên âm</b> và <b>dịch nghĩa</b>. Giữ chữ nghĩa cổ của
+        nhà thờ họ mà lớp trẻ không đọc được nữa.</p>
+      <div class="tags"><span class="tag vn">truyền thống</span><span class="tag eff">nhỏ (mở rộng loại tư liệu)</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">📖</span> Gia huấn · tộc ước (lời dạy tổ tiên)</div>
+      <p class="cd">Quy ước dòng họ, lời răn, truyền thống hiếu học… dạng văn bản trang trọng,
+        con cháu đọc để noi theo.</p>
+      <div class="tags"><span class="tag vn">truyền thống</span><span class="tag eff">rất nhỏ (đã có loại 'tục lệ')</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">🏞️</span> Quê gốc & các chi / phái</div>
+      <p class="cd">Làng – xã quê gốc, lịch sử khai canh, từ đường của từng chi/phái và người trông coi.</p>
+      <div class="tags"><span class="tag vn">truyền thống</span><span class="tag eff">vừa</span></div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2><span class="dot" style="background:var(--green)"></span>2 · Cho người lớn tuổi</h2>
+  <p class="secnote">Các cụ là kho tri thức — phải để các cụ "kể" dễ như nói chuyện.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="ct"><span class="em">💡</span> Gợi ý "đọc cho máy gõ" (dùng micro bàn phím)</div>
+      <p class="cd">Bàn phím điện thoại <b>đã có sẵn nút micro</b> đọc thành chữ tiếng Việt (miễn phí) —
+        chỉ cần thêm <b>gợi ý nhỏ cạnh ô nhập</b> để các cụ biết mà dùng. Không cần xây STT riêng.</p>
+      <div class="tags"><span class="tag old">người già</span><span class="tag eff">rất nhỏ</span></div>
+    </div>
+    <div class="card" style="opacity:.7">
+      <div class="ct"><span class="em">🎙️</span> (Tự gỡ băng audio → chữ) — tạm gác</div>
+      <p class="cd">Tự chép đoạn ghi âm dài thành văn bản cần <b>API speech-to-text trả phí</b>.
+        Lợi ích nhỏ (micro bàn phím đã lo việc nhập chữ) → <b>khoan làm</b>.</p>
+      <div class="tags"><span class="tag eff">gác lại · tốn phí</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">🔊</span> Đọc to nội dung (nghe thay vì đọc)</div>
+      <p class="cd">Nút "Nghe" đọc bài viết bằng giọng tiếng Việt — cho người mắt kém.</p>
+      <div class="tags"><span class="tag old">người già</span><span class="tag eff">nhỏ (dùng giọng đọc của trình duyệt)</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">🔠</span> Chế độ chữ lớn / dễ đọc</div>
+      <p class="cd">Phóng to chữ toàn module, tương phản cao (đã hoãn ở đợt trước — có thể làm gọn).</p>
+      <div class="tags"><span class="tag old">người già</span><span class="tag eff">nhỏ</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">💬</span> "Phỏng vấn ông bà" — hỏi từng câu</div>
+      <p class="cd">Bộ câu hỏi dẫn dắt theo chủ đề (tuổi thơ, chiến tranh, nghề nghiệp, lời nhắn con cháu…)
+        → ghép thành một thiên hồi ký.</p>
+      <div class="tags"><span class="tag old">người già</span><span class="tag eff">nhỏ–vừa (mở rộng câu hỏi gợi ý)</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">🤝</span> Nhờ con cháu nhập hộ</div>
+      <p class="cd">Cụ đọc, con cháu gõ giúp; hoặc cụ gửi "yêu cầu bổ sung" để người trẻ trong họ hoàn thiện.</p>
+      <div class="tags"><span class="tag old">người già</span><span class="tag viral">lan toả</span><span class="tag eff">vừa</span></div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <h2><span class="dot" style="background:var(--blue)"></span>3 · Để lan toả tới con cháu</h2>
+  <p class="secnote"><b>Chiến lược:</b> không xây lại mạng xã hội trong app — đa số họ tộc đã có
+    <b>Facebook / Zalo group</b>. App lo phần <b>tạo nội dung & dữ liệu chuẩn, đẹp</b>, rồi
+    <b>đẩy ra Facebook/Zalo</b> để chính nơi đó làm lớp cộng đồng (bình luận, góp ý ở đó).</p>
+  <div class="grid">
+    <div class="card star">
+      <div class="ct"><span class="em">📲</span> Thiệp / ảnh chia sẻ đẹp lên Zalo · Facebook
+        <span class="star-badge">⭐</span></div>
+      <p class="cd">Mỗi mục di sản tạo được một <b>tấm thiệp ảnh đẹp</b> (ảnh + trích câu chuyện + tên họ)
+        để đăng Zalo/Facebook — nơi cả họ đang sinh hoạt. Đây là "động cơ lan toả" mạnh nhất.</p>
+      <div class="tags"><span class="tag viral">lan toả</span><span class="tag eff">vừa</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">🌟</span> "Câu chuyện tuần này"</div>
+      <p class="cd">Tự nổi bật một mục di sản trên Tổng quan + gửi thông báo nhẹ → con cháu quay lại đều.</p>
+      <div class="tags"><span class="tag viral">lan toả</span><span class="tag eff">nhỏ</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">🔖</span> QR tại từ đường (bản in đẹp)</div>
+      <p class="cd">Xuất tấm QR trang trí để dán/khắc tại nhà thờ họ — ai về giỗ quét là xem được lịch sử.</p>
+      <div class="tags"><span class="tag viral">lan toả</span><span class="tag vn">truyền thống</span><span class="tag eff">nhỏ (đã có QR)</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">📰</span> Đăng di sản lên Bảng tin</div>
+      <p class="cd">Một chạm để đưa mục di sản thành bài trên Bảng tin dòng họ.</p>
+      <div class="tags"><span class="tag viral">lan toả</span><span class="tag eff">nhỏ</span></div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <h2><span class="dot" style="background:var(--gold)"></span>4 · Nội dung phong phú & tích hợp</h2>
+  <p class="secnote">Mở rộng cách thể hiện và nối với phần đã có.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="ct"><span class="em">🗺️</span> Bản đồ di sản</div>
+      <p class="cd">Bản đồ từ đường · mộ tổ · quê gốc — chấm vị trí, bấm xem.</p>
+      <div class="tags"><span class="tag eff">vừa</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">🧭</span> Dòng thời gian lịch sử dòng họ</div>
+      <p class="cd">Các mốc lớn (khai canh, lập từ đường, sự kiện…) xếp theo năm.</p>
+      <div class="tags"><span class="tag eff">vừa</span></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="em">📕</span> Di sản trong sách PDF gia phả</div>
+      <p class="cd">Đưa mục di sản vào sổ PDF xuất ra — in tặng cả họ.</p>
+      <div class="tags"><span class="tag eff">vừa (đã có hệ PDF)</span></div>
+    </div>
+  </div>
+
+  <!-- Starter -->
+  <div class="starter">
+    <h2 style="border:0"><span class="dot" style="background:var(--gold)"></span>Bộ khởi đầu nên làm trước</h2>
+    <p class="secnote">2 việc trọng tâm (cộng đồng để Facebook/Zalo lo; nhập chữ để micro bàn phím lo):</p>
+    <ol class="steps">
+      <li><b>Nút thêm nhanh lễ tiết truyền thống</b> — preset trên nền Sự kiện sẵn có (không làm mới).</li>
+      <li><b>Thiệp ảnh chia sẻ lên Zalo / Facebook</b> — động cơ lan toả mạnh nhất; đưa di sản ra nơi cả họ đang sinh hoạt (có thể nhúng QR quay lại app).</li>
+    </ol>
+    <p class="secnote">Việc rẻ làm kèm: thêm gợi ý "🎤 đọc cho máy gõ" cạnh ô nhập nội dung.</p>
+  </div>
+
+  <p class="foot">Bản đồ ý tưởng — chọn mục nào mình sẽ lên kế hoạch chi tiết & làm. Chưa có gì được code.</p>
+</div>
+</body>
+</html>
