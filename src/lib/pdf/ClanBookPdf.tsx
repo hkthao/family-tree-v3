@@ -544,15 +544,14 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           {" "}hoá (từ đường, tục lệ, giai thoại, tư liệu của dòng họ).
         </Text>
         <Text style={styles.prefaceItem}>
-          - Mỗi người trong huyết thống có một số d'Aboville theo dạng
-          {" "}1, 1.1, 1.2.3 ... Số càng nhiều chấm thì đời càng sâu.
-          {" "}Đời thứ nhất là thuỷ tổ, mỗi đời sau là một bậc con.
+          - Mỗi người trong huyết thống ghi kèm "Đời N" — số đời tính từ
+          {" "}Thuỷ tổ. (Tuỳ cấu hình dòng họ, Thuỷ tổ được tính là Đời 1
+          {" "}hoặc Đời 0; các đời sau cộng dần.)
         </Text>
         <Text style={styles.prefaceItem}>
-          - Khi nhắc tới một người khác trong sách (cha, mẹ, con,
-          {" "}vợ/chồng), số d'Aboville đứng trước tên để tra ngược dễ.
-          {" "}Người ngoài huyết thống (dâu/rể) liệt kê ở mục riêng cuối
-          {" "}sách.
+          - Danh bạ bắt đầu từ Thuỷ tổ, lần lượt theo từng đời; trong mỗi
+          {" "}đời xếp theo thứ tự anh - chị - em (con trưởng trước). Người
+          {" "}ngoài huyết thống (dâu/rể) liệt kê ở mục riêng cuối sách.
         </Text>
         <Text style={styles.prefaceItem}>
           - Năm sinh - năm mất ghi theo dương lịch. Khi có thông tin
@@ -1279,7 +1278,7 @@ function TreeDiagramPage({
       <View style={styles.h1Underline} />
       <Text style={styles.intro}>
         {subtitle ??
-          "Mỗi ô là một thành viên trong huyết thống. Đường nối thể hiện quan hệ cha-con. Đời 1 (Thuỷ tổ) ở đầu sơ đồ, các đời sau xuôi xuống dưới."}
+          "Mỗi ô là một thành viên trong huyết thống. Đường nối thể hiện quan hệ cha-con. Thuỷ tổ ở đầu sơ đồ, các đời sau xuôi xuống dưới."}
       </Text>
       <Svg
         width={SVG_W}
