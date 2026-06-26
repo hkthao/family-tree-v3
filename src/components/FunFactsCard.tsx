@@ -11,6 +11,7 @@ import {
   IconUser,
   IconUsers,
 } from "@/components/icons";
+import { SectionHeading } from "@/components/SectionHeading";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { Button } from "@/components/ui/button";
 import { effectiveRole } from "@/hooks/useClanContext";
@@ -91,10 +92,7 @@ export function FunFactsCard({
 
   return (
     <section aria-label="Thống kê vui" className="space-y-2">
-      <h3 className="text-lg font-semibold inline-flex items-center gap-2">
-        <IconSparkles className="h-5 w-5 text-accent" />
-        Thống kê vui
-      </h3>
+      <SectionHeading icon={<IconSparkles />} title="Thống kê vui" />
       <div className="grid gap-2 sm:grid-cols-2">
         {facts.map((f) => (
           <div key={f.id} className="flex flex-col gap-2 rounded-lg border bg-card p-3">

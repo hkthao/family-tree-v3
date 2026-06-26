@@ -5,9 +5,11 @@ import { Link } from "react-router-dom";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import {
+  IconCalendar,
   IconCheck,
   IconDownload,
   IconGrave,
+  IconGrid,
   IconHome,
   IconLink,
   IconList,
@@ -17,6 +19,7 @@ import {
   IconUpload,
 } from "@/components/icons";
 import { FunFactsCard } from "@/components/FunFactsCard";
+import { SectionHeading } from "@/components/SectionHeading";
 import { PageHeader } from "@/components/PageHeader";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -240,15 +243,18 @@ export default function Dashboard() {
 
           {upcomingTop5.length > 0 && (
             <section aria-label="Sự kiện sắp tới" className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Sự kiện sắp tới</h3>
-                <Link
-                  to={`/clans/${clan.id}/events`}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Xem tất cả →
-                </Link>
-              </div>
+              <SectionHeading
+                icon={<IconCalendar />}
+                title="Sự kiện sắp tới"
+                action={
+                  <Link
+                    to={`/clans/${clan.id}/events`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Xem tất cả →
+                  </Link>
+                }
+              />
               <ul className="space-y-1.5">
                 {upcomingTop5.map((e) => (
                   <UpcomingRow key={e.key} event={e} clanId={clan.id} />
@@ -258,7 +264,7 @@ export default function Dashboard() {
           )}
 
           <section aria-label="Thao tác nhanh" className="space-y-2">
-            <h3 className="text-lg font-semibold">Thao tác nhanh</h3>
+            <SectionHeading icon={<IconGrid />} title="Thao tác nhanh" />
             {/* 3 cột cố định, auto-rows-fr để mọi item cùng chiều cao
                 kể cả khi badge xuất hiện. Text ngắn 1 từ / 1-2 chữ
                 để ko rớt dòng. */}

@@ -79,6 +79,25 @@ export async function announcementsUnreadCount(
   return (data as number) ?? 0;
 }
 
+/**
+ * Đánh dấu MỘT tin là đã đọc cho user hiện tại. Idempotent: gọi lại
+ * (đã đọc rồi) bỏ qua lỗi trùng khoá. No-op nếu chưa đăng nhập.
+ */
+export async function markAnnouncementRead(
+  id: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { data: authData } = await client.auth.getUser();
+  const uid = authData.user?.id;
+  if (!uid) return;
+  const { error } = await client
+    .from("announcement_reads")
+    .insert({ user_id: uid, announcement_id: id });
+  if (error && !/duplicate|unique/i.test(error.message)) {
+    throw new Error(error.message);
+  }
+}
+
 export async function announcementsMarkAllRead(
   client: Client = defaultClient,
 ): Promise<number> {
