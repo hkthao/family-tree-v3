@@ -99,45 +99,6 @@ export type Database = {
         }
         Relationships: []
       }
-      card_shares: {
-        Row: {
-          clan_id: string
-          created_at: string
-          created_by: string
-          expires_at: string
-          id: string
-          image_path: string
-          person_id: string | null
-          subtitle: string | null
-          title: string
-          token: string
-        }
-        Insert: {
-          clan_id: string
-          created_at?: string
-          created_by: string
-          expires_at: string
-          id?: string
-          image_path: string
-          person_id?: string | null
-          subtitle?: string | null
-          title: string
-          token: string
-        }
-        Update: {
-          clan_id?: string
-          created_at?: string
-          created_by?: string
-          expires_at?: string
-          id?: string
-          image_path?: string
-          person_id?: string | null
-          subtitle?: string | null
-          title?: string
-          token?: string
-        }
-        Relationships: []
-      }
       audit_log: {
         Row: {
           action: string
@@ -238,6 +199,67 @@ export type Database = {
           {
             foreignKeyName: "branches_head_person_fk"
             columns: ["head_person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_shares: {
+        Row: {
+          clan_id: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          image_path: string
+          person_id: string | null
+          subtitle: string | null
+          title: string
+          token: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          image_path: string
+          person_id?: string | null
+          subtitle?: string | null
+          title: string
+          token: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          image_path?: string
+          person_id?: string | null
+          subtitle?: string | null
+          title?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_shares_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_shares_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_shares_person_id_fkey"
+            columns: ["person_id"]
             isOneToOne: false
             referencedRelation: "persons_public_safe"
             referencedColumns: ["id"]
@@ -2232,6 +2254,7 @@ export type Database = {
       }
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
+      delete_expired_card_shares: { Args: never; Returns: number }
       delete_my_account: { Args: never; Returns: undefined }
       delete_my_push_subscription: {
         Args: { p_endpoint: string }
