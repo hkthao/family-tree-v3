@@ -8,6 +8,8 @@ import type { UpcomingEvent } from "@/lib/upcomingEvents";
 interface Props {
   events: UpcomingEvent[];
   clanId: string;
+  /** Sự kiện của họ (có eventId) → bấm mở chi tiết thay vì sang trang người. */
+  onOpenEvent?: (eventId: string) => void;
 }
 
 const VN_MONTHS = [
@@ -58,7 +60,7 @@ function kindLabel(k: UpcomingEvent["kind"]): string {
   }
 }
 
-export function EventsCalendar({ events, clanId }: Props) {
+export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
   const today = useMemo(() => new Date(), []);
   const todayIso = isoOf(today);
 
@@ -242,7 +244,15 @@ export function EventsCalendar({ events, clanId }: Props) {
                 );
                 return (
                   <li key={e.key}>
-                    {e.personId ? (
+                    {e.eventId && onOpenEvent ? (
+                      <button
+                        type="button"
+                        onClick={() => onOpenEvent(e.eventId!)}
+                        className="block w-full text-left"
+                      >
+                        {inner}
+                      </button>
+                    ) : e.personId ? (
                       <Link
                         to={`/clans/${clanId}/people/${e.personId}`}
                         className="block"
