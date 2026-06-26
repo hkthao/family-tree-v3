@@ -1,5 +1,5 @@
 /**
- * Tạo 1 announcement mới trên prod — public, hết hạn 3 ngày.
+ * Tạo 1 announcement mới trên prod — public, hết hạn 7 ngày.
  *
  *   npx tsx scripts/post-announcement.ts
  *
@@ -37,7 +37,7 @@ async function main() {
   );
 
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
+  const expiresAt = new Date(now.getTime() + 7 * 86_400_000);
 
   const body = `Đợt cập nhật lớn lần này thêm nhiều cách lưu giữ và lan toả nét đẹp dòng họ:
 
