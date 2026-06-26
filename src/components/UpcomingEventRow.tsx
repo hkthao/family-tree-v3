@@ -81,128 +81,119 @@ export function UpcomingEventRow({
         : `Còn ${event.daysUntil} ngày`;
   const canChi = getCanChiForSolarDate(event.date);
 
-  const wrap = (node: ReactNode) => {
+  const wrap = (node: ReactNode, className = "block h-full") => {
     // Sự kiện của dòng họ (có eventId) → mở chi tiết sự kiện.
     if (event.eventId && onOpenEvent)
       return (
-        <button
-          type="button"
-          onClick={() => onOpenEvent(event.eventId!)}
-          className="block h-full w-full text-left"
-        >
+        <button type="button" onClick={() => onOpenEvent(event.eventId!)} className={className}>
           {node}
         </button>
       );
     if (event.restingPlaceId)
       return (
-        <Link to={`/clans/${clanId}/graves/${event.restingPlaceId}`} className="block h-full">
+        <Link to={`/clans/${clanId}/graves/${event.restingPlaceId}`} className={className}>
           {node}
         </Link>
       );
     if (event.personId)
       return (
-        <Link to={`/clans/${clanId}/people/${event.personId}`} className="block h-full">
+        <Link to={`/clans/${clanId}/people/${event.personId}`} className={className}>
           {node}
         </Link>
       );
-    return node;
+    return <div className={className}>{node}</div>;
   };
 
   // ── Card dọc (chế độ lưới) ──────────────────────────────────────
   if (variant === "card") {
-    const card = wrap(
-      <div className="flex h-full flex-col gap-2 p-4 rounded-lg border bg-card hover:border-primary transition-colors">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-shrink-0 w-12 text-center rounded-md bg-muted/40 py-1">
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Th {month}
-            </div>
-            <div className="text-2xl font-semibold leading-none">{day}</div>
-          </div>
-          <span className={`text-xs whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
-            {countdown}
-          </span>
-        </div>
-        <p className="font-semibold leading-snug line-clamp-2">{event.title}</p>
-        <div className="mt-auto">
-          <p className="text-sm text-muted-foreground">
-            {kindLabel(event.kind)}
-            {event.subtitle ? ` • ${event.subtitle}` : ""}
-          </p>
-          {canChi && (
-            <p className="text-xs text-muted-foreground/80 truncate">
-              {formatCanChiShort(canChi)}
-            </p>
-          )}
-        </div>
-      </div>,
-    );
-    if (!onCreateCard) return card;
     return (
-      <div className="flex h-full flex-col gap-1.5">
-        <div className="flex-1 min-h-0">{card}</div>
+      <div className="flex h-full flex-col gap-2 p-4 rounded-lg border bg-card hover:border-primary transition-colors">
+        {wrap(
+          <>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-shrink-0 w-12 text-center rounded-md bg-muted/40 py-1">
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Th {month}
+                </div>
+                <div className="text-2xl font-semibold leading-none">{day}</div>
+              </div>
+              <span className={`text-xs whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
+                {countdown}
+              </span>
+            </div>
+            <p className="font-semibold leading-snug line-clamp-2">{event.title}</p>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                {kindLabel(event.kind)}
+                {event.subtitle ? ` • ${event.subtitle}` : ""}
+              </p>
+              {canChi && (
+                <p className="text-xs text-muted-foreground/80 truncate">
+                  {formatCanChiShort(canChi)}
+                </p>
+              )}
+            </div>
+          </>,
+          "flex flex-1 flex-col gap-2 text-left",
+        )}
         {renderThiep(true)}
       </div>
     );
   }
 
-  const inner = (
+  // Phần bấm được (ngày + tiêu đề) — nằm trái trong thẻ.
+  const clickable = wrap(
+    <>
+      <div
+        className={`flex-shrink-0 text-center rounded-md ${
+          emphasised ? "w-16 py-1 bg-primary/10" : "w-14"
+        }`}
+      >
+        <div className="text-xs text-muted-foreground">Th {month}</div>
+        <div
+          className={`font-semibold leading-none ${
+            emphasised ? "text-3xl text-primary mt-0.5" : "text-2xl"
+          }`}
+        >
+          {day}
+        </div>
+      </div>
+      <div className="min-w-0">
+        <p className={`font-semibold line-clamp-2 ${emphasised ? "text-lg" : "text-base"}`}>
+          {event.title}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {kindLabel(event.kind)}
+          {event.subtitle ? ` • ${event.subtitle}` : ""}
+        </p>
+        {canChi && (
+          <p className="text-xs text-muted-foreground/80 truncate">
+            {formatCanChiShort(canChi)}
+          </p>
+        )}
+      </div>
+    </>,
+    "flex items-center gap-3 sm:gap-4 min-w-0 flex-1 text-left",
+  );
+
+  // Cụm phải trong thẻ: "Còn N ngày" + nút Thiệp.
+  return (
     <div
       className={`flex items-center justify-between gap-3 p-3 sm:p-4 rounded-md border bg-card hover:border-primary transition-colors ${
         emphasised ? "border-primary/40 shadow-sm bg-primary/5" : ""
       }`}
     >
-      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-        <div
-          className={`flex-shrink-0 text-center rounded-md ${
-            emphasised
-              ? "w-16 py-1 bg-primary/10"
-              : "w-14"
-          }`}
-        >
-          <div className="text-xs text-muted-foreground">Th {month}</div>
-          <div
-            className={`font-semibold leading-none ${
-              emphasised
-                ? "text-3xl text-primary mt-0.5"
-                : "text-2xl"
-            }`}
-          >
-            {day}
-          </div>
-        </div>
-        <div className="min-w-0">
-          <p
-            className={`font-semibold line-clamp-2 ${
-              emphasised ? "text-lg" : "text-base"
-            }`}
-          >
-            {event.title}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {kindLabel(event.kind)}
-            {event.subtitle ? ` • ${event.subtitle}` : ""}
-          </p>
-          {canChi && (
-            <p className="text-xs text-muted-foreground/80 truncate">
-              {formatCanChiShort(canChi)}
-            </p>
+      {clickable}
+      {(onCreateCard || !emphasised) && (
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          {!emphasised && (
+            <span className={`text-sm whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
+              {countdown}
+            </span>
           )}
+          {renderThiep()}
         </div>
-      </div>
-      {!emphasised && (
-        <span className={`text-sm whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
-          {countdown}
-        </span>
       )}
-    </div>
-  );
-
-  if (!onCreateCard) return wrap(inner);
-  return (
-    <div className="flex items-stretch gap-2">
-      <div className="flex-1 min-w-0">{wrap(inner)}</div>
-      <div className="flex items-center">{renderThiep()}</div>
     </div>
   );
 }
