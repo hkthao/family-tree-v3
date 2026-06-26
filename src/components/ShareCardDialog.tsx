@@ -174,23 +174,23 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
           </button>
         </header>
 
-        <div className="p-5 grid gap-5 md:grid-cols-[300px_1fr] overflow-y-auto">
+        <div className="p-5 grid gap-5 lg:grid-cols-[280px_1fr] overflow-y-auto">
           {/* Preview */}
-          <div className="space-y-3 self-start md:sticky md:top-0">
+          <div className="space-y-3 self-start lg:sticky lg:top-0">
             <div className="mx-auto rounded-md overflow-hidden border shadow-sm"
               style={{ width: PREVIEW_W, height: dim.h * previewScale }}>
               <div style={{ width: dim.w, height: dim.h, transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
                 {tpl.render({ data, format })}
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button className="flex-1" onClick={onShare} disabled={busy}>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" className="w-full" onClick={onShare} disabled={busy}>
                 <IconSend className="h-4 w-4 mr-1.5" />
                 {busy ? "Đang tạo…" : "Chia sẻ"}
               </Button>
               <Button
                 variant="outline"
-                className="flex-1"
+                className="w-full"
                 disabled={busy}
                 onClick={async () => {
                   setBusy(true);
@@ -211,12 +211,16 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
               </Button>
             </div>
 
-            {/* Chia sẻ bằng LINK công khai (tăng lan toả) — chỉ khi có link. */}
+            {/* Chia sẻ bằng LINK công khai (tăng lan toả) — nút icon gọn. */}
             {props.shareUrl && (
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Chia sẻ link:</span>
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  size="sm"
+                  className="h-9 w-9 p-0"
+                  aria-label="Chép link"
+                  title="Chép link để dán vào nhóm họ"
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(props.shareUrl);
@@ -226,11 +230,14 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                     }
                   }}
                 >
-                  <IconLink className="h-4 w-4 mr-1.5" /> Chép link
+                  <IconLink className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  size="sm"
+                  className="h-9 w-9 p-0"
+                  aria-label="Chia sẻ lên Facebook"
+                  title="Chia sẻ lên Facebook"
                   onClick={() =>
                     window.open(
                       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(props.shareUrl)}`,
@@ -239,20 +246,18 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                     )
                   }
                 >
-                  <IconFacebook className="h-4 w-4 mr-1.5" />
-                  Facebook
+                  <IconFacebook className="h-4 w-4" />
                 </Button>
               </div>
             )}
 
             <p className="text-xs text-muted-foreground text-center">
-              Bấm "Chia sẻ" để đăng ảnh thẳng lên Zalo/Facebook; hoặc "Chép link"
-              để dán vào nhóm họ.
+              Bấm "Chia sẻ" để đăng ảnh thẳng lên Zalo/Facebook.
             </p>
           </div>
 
           {/* Controls */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:pl-5 lg:border-l lg:border-divider">
             {/* Định dạng */}
             <div className="flex gap-2">
               {(["square", "vertical"] as CardFormat[]).map((f) => (
