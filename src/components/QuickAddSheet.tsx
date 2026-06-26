@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
+import { CalendarDateInput } from "@/components/CalendarDateInput";
 import {
   IconCheck,
   IconChevronUp,
@@ -29,14 +30,19 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { createPerson, getPerson, updatePerson } from "@/lib/queries/persons";
 import { inferGenderFromName } from "@/lib/nameGender";
-import { buildPersonDateColumns, type CalendarDateValue } from "@/lib/personDates";
+import {
+  buildDeathAnniversary,
+  buildPersonDateColumns,
+  EMPTY_CALENDAR_DATE,
+  EMPTY_LUNAR_CALENDAR_DATE,
+  type CalendarDateValue,
+} from "@/lib/personDates";
 
 type Relation = "child" | "spouse" | "parent";
 
 /**
- * Năm (dương) → cột birth/death của persons. Dùng cho ô nhập nhanh
- * "Năm sinh / Năm mất" — đủ cho 90% trường hợp gia phả; ngày/tháng +
- * âm lịch nhập sau qua màn sửa. Trả null nếu để trống.
+ * Năm (dương) → cột birth/death của persons. Dùng cho ô năm nhanh ở chế
+ * độ "Nhiều người" (mỗi dòng chỉ 1 ô năm cho gọn). Trả null nếu trống.
  */
 function yearToCols(yearStr: string) {
   const y = yearStr.trim();
@@ -47,50 +53,98 @@ function yearToCols(yearStr: string) {
     isLeap: false,
   };
   const c = buildPersonDateColumns(v);
+  return { date: c.solar_date, precision: c.solar_precision };
+}
+
+/**
+ * Dựng đầy đủ các cột ngày sinh/mất (dương + âm + giỗ) từ form state —
+ * giống màn Thêm/Sửa người. Trải vào addChildToFamily / createPerson.
+ */
+function birthDeathPayload(
+  birth: CalendarDateValue,
+  death: CalendarDateValue,
+  isLiving: boolean,
+) {
+  const b = buildPersonDateColumns(birth);
+  const d = buildPersonDateColumns(death);
+  const anniv = buildDeathAnniversary(death);
   return {
-    date: c.solar_date,
-    precision: c.solar_precision,
+    birth_date: b.solar_date,
+    birth_date_precision: b.solar_precision,
+    birth_lunar_year: b.lunar_year,
+    birth_lunar_month: b.lunar_month,
+    birth_lunar_day: b.lunar_day,
+    birth_lunar_is_leap: b.lunar_is_leap,
+    is_living: isLiving,
+    death_date: d.solar_date,
+    death_date_precision: d.solar_precision,
+    death_lunar_year: d.lunar_year,
+    death_lunar_month: d.lunar_month,
+    death_lunar_day: d.lunar_day,
+    death_lunar_is_leap: d.lunar_is_leap,
+    death_anniv_lunar_month: anniv.death_anniv_lunar_month,
+    death_anniv_lunar_day: anniv.death_anniv_lunar_day,
+    death_anniv_lunar_is_leap: anniv.death_anniv_lunar_is_leap,
   };
 }
 
-/** 2 ô năm sinh / năm mất cạnh nhau cho form thêm nhanh. */
-function YearFields({
+/**
+ * Ô ngày sinh + "Đã mất" + ngày mất đầy đủ (âm/dương) — giống màn
+ * Thêm/Sửa người. Dùng cho form thêm nhanh 1 người.
+ */
+function DateFields({
   idPrefix,
-  birthYear,
-  deathYear,
-  onBirthYear,
-  onDeathYear,
+  birth,
+  death,
+  isLiving,
+  onBirth,
+  onDeath,
+  onLiving,
 }: {
   idPrefix: string;
-  birthYear: string;
-  deathYear: string;
-  onBirthYear: (v: string) => void;
-  onDeathYear: (v: string) => void;
+  birth: CalendarDateValue;
+  death: CalendarDateValue;
+  isLiving: boolean;
+  onBirth: (v: CalendarDateValue) => void;
+  onDeath: (v: CalendarDateValue) => void;
+  onLiving: (v: boolean) => void;
 }) {
-  const onlyDigits = (v: string) => v.replace(/\D/g, "").slice(0, 4);
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}_by`}>Năm sinh</Label>
-        <Input
-          id={`${idPrefix}_by`}
-          inputMode="numeric"
-          value={birthYear}
-          onChange={(e) => onBirthYear(onlyDigits(e.target.value))}
-          placeholder="vd 1950"
+    <>
+      <CalendarDateInput
+        label="Ngày sinh (tuỳ chọn)"
+        idPrefix={`${idPrefix}-birth`}
+        helperText="Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
+        value={birth}
+        onChange={onBirth}
+      />
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={!isLiving}
+          onChange={(e) => {
+            const deceased = e.target.checked;
+            onLiving(!deceased);
+            if (!deceased) onDeath(EMPTY_LUNAR_CALENDAR_DATE);
+          }}
+          className="h-5 w-5 accent-primary shrink-0"
         />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}_dy`}>Năm mất</Label>
-        <Input
-          id={`${idPrefix}_dy`}
-          inputMode="numeric"
-          value={deathYear}
-          onChange={(e) => onDeathYear(onlyDigits(e.target.value))}
-          placeholder="trống nếu còn sống"
+        <span>Đã mất</span>
+      </label>
+      {!isLiving && (
+        <CalendarDateInput
+          label="Ngày mất (nếu đã mất)"
+          idPrefix={`${idPrefix}-death`}
+          value={death}
+          onChange={(next) => {
+            onDeath(next);
+            if (next.parts.year || next.parts.month || next.parts.day)
+              onLiving(false);
+          }}
+          helperText="Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
         />
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
@@ -412,8 +466,11 @@ function QuickAddChild({
   // second-guess on every keystroke.
   const [genderTouched, setGenderTouched] = useState(false);
   const [birthOrder, setBirthOrder] = useState<string>("");
-  const [birthYear, setBirthYear] = useState("");
-  const [deathYear, setDeathYear] = useState("");
+  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
+  const [death, setDeath] = useState<CalendarDateValue>(
+    EMPTY_LUNAR_CALENDAR_DATE,
+  );
+  const [isLiving, setIsLiving] = useState(true);
   const nameRef = useRef<HTMLInputElement>(null);
 
   function onSingleNameChange(v: string) {
@@ -494,8 +551,6 @@ function QuickAddChild({
   const singleMutation = useMutation({
     mutationFn: async () => {
       const family = await findOrCreateFamily(resolveFamilyInputs());
-      const b = yearToCols(birthYear);
-      const d = yearToCols(deathYear);
       return addChildToFamily({
         clanId,
         family_id: family.id,
@@ -504,11 +559,7 @@ function QuickAddChild({
         birth_order: birthOrder.trim()
           ? Math.max(1, Math.floor(Number(birthOrder)))
           : null,
-        birth_date: b?.date ?? null,
-        birth_date_precision: b?.precision ?? null,
-        death_date: d?.date ?? null,
-        death_date_precision: d?.precision ?? null,
-        is_living: d ? false : true,
+        ...birthDeathPayload(birth, death, isLiving),
       });
     },
     onSuccess: async () => {
@@ -519,8 +570,9 @@ function QuickAddChild({
       // sharing họ + đệm.
       const next = deriveNamePrefix(focal, children, gender);
       setName(next);
-      setBirthYear("");
-      setDeathYear("");
+      setBirth(EMPTY_CALENDAR_DATE);
+      setDeath(EMPTY_LUNAR_CALENDAR_DATE);
+      setIsLiving(true);
       setBirthOrder((prev) => {
         const n = Math.max(1, Math.floor(Number(prev || existingCount + 1)));
         return String(n + 1);
@@ -711,12 +763,14 @@ function QuickAddChild({
             helper={null}
           />
 
-          <YearFields
-            idPrefix="quick_child"
-            birthYear={birthYear}
-            deathYear={deathYear}
-            onBirthYear={setBirthYear}
-            onDeathYear={setDeathYear}
+          <DateFields
+            idPrefix="qa-child"
+            birth={birth}
+            death={death}
+            isLiving={isLiving}
+            onBirth={setBirth}
+            onDeath={setDeath}
+            onLiving={setIsLiving}
           />
 
           <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
@@ -748,79 +802,85 @@ function QuickAddChild({
             {rows.map((r, i) => (
               <li
                 key={i}
-                className="flex flex-wrap items-center gap-2"
+                className="rounded-lg border bg-card p-2.5 space-y-2"
               >
-                <span className="w-6 text-xs text-muted-foreground shrink-0 text-right">
-                  ({existingCount + i + 1})
-                </span>
-                <Input
-                  ref={(el) => {
-                    bulkInputRefs.current[i] = el;
-                  }}
-                  value={r.name}
-                  onChange={(e) => onBulkNameChange(i, e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      if (i === rows.length - 1) addRow();
-                      else focusAtEnd(bulkInputRefs.current[i + 1]);
+                {/* Hàng 1: số thứ tự + họ tên + xoá */}
+                <div className="flex items-center gap-2">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted text-xs text-muted-foreground tabular-nums">
+                    {existingCount + i + 1}
+                  </span>
+                  <Input
+                    ref={(el) => {
+                      bulkInputRefs.current[i] = el;
+                    }}
+                    value={r.name}
+                    onChange={(e) => onBulkNameChange(i, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (i === rows.length - 1) addRow();
+                        else focusAtEnd(bulkInputRefs.current[i + 1]);
+                      }
+                    }}
+                    placeholder="Họ tên"
+                    maxLength={200}
+                    className="flex-1 min-w-0"
+                  />
+                  <IconButton
+                    onClick={() => removeRow(i)}
+                    disabled={rows.length === 1}
+                    label="Xoá dòng"
+                  >
+                    <IconX className="h-4 w-4" />
+                  </IconButton>
+                </div>
+                {/* Hàng 2: giới tính + năm sinh/mất + đổi thứ tự */}
+                <div className="flex items-center gap-2 pl-8">
+                  <GenderToggle
+                    value={r.gender}
+                    onChange={(g) =>
+                      updateRow(i, { gender: g, genderTouched: true })
                     }
-                  }}
-                  placeholder="Tên"
-                  maxLength={200}
-                  className="flex-1 min-w-[140px]"
-                />
-                <GenderToggle
-                  value={r.gender}
-                  onChange={(g) =>
-                    updateRow(i, { gender: g, genderTouched: true })
-                  }
-                />
-                <Input
-                  value={r.birthYear}
-                  onChange={(e) =>
-                    updateRow(i, {
-                      birthYear: e.target.value.replace(/\D/g, "").slice(0, 4),
-                    })
-                  }
-                  inputMode="numeric"
-                  placeholder="Năm sinh"
-                  aria-label="Năm sinh"
-                  className="w-[92px] shrink-0"
-                />
-                <Input
-                  value={r.deathYear}
-                  onChange={(e) =>
-                    updateRow(i, {
-                      deathYear: e.target.value.replace(/\D/g, "").slice(0, 4),
-                    })
-                  }
-                  inputMode="numeric"
-                  placeholder="Năm mất"
-                  aria-label="Năm mất"
-                  className="w-[92px] shrink-0"
-                />
-                <IconButton
-                  onClick={() => moveRow(i, -1)}
-                  disabled={i === 0}
-                  label="Lên"
-                >
-                  <IconChevronUp className="h-4 w-4" />
-                </IconButton>
-                <IconButton
-                  onClick={() => moveRow(i, 1)}
-                  disabled={i === rows.length - 1}
-                  label="Xuống"
-                >
-                  <IconChevronUp className="h-4 w-4 rotate-180" />
-                </IconButton>
-                <IconButton
-                  onClick={() => removeRow(i)}
-                  disabled={rows.length === 1}
-                  label="Xoá dòng"
-                >
-                  <IconX className="h-4 w-4" />
-                </IconButton>
+                  />
+                  <Input
+                    value={r.birthYear}
+                    onChange={(e) =>
+                      updateRow(i, {
+                        birthYear: e.target.value.replace(/\D/g, "").slice(0, 4),
+                      })
+                    }
+                    inputMode="numeric"
+                    placeholder="Năm sinh"
+                    aria-label="Năm sinh"
+                    className="flex-1 min-w-0"
+                  />
+                  <Input
+                    value={r.deathYear}
+                    onChange={(e) =>
+                      updateRow(i, {
+                        deathYear: e.target.value.replace(/\D/g, "").slice(0, 4),
+                      })
+                    }
+                    inputMode="numeric"
+                    placeholder="Năm mất"
+                    aria-label="Năm mất"
+                    className="flex-1 min-w-0"
+                  />
+                  <IconButton
+                    onClick={() => moveRow(i, -1)}
+                    disabled={i === 0}
+                    label="Lên"
+                  >
+                    <IconChevronUp className="h-4 w-4" />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => moveRow(i, 1)}
+                    disabled={i === rows.length - 1}
+                    label="Xuống"
+                  >
+                    <IconChevronUp className="h-4 w-4 rotate-180" />
+                  </IconButton>
+                </div>
               </li>
             ))}
           </ul>
@@ -890,8 +950,11 @@ function QuickAddSpouse({
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"M" | "F">(defaultGender);
   const [genderTouched, setGenderTouched] = useState(false);
-  const [birthYear, setBirthYear] = useState("");
-  const [deathYear, setDeathYear] = useState("");
+  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
+  const [death, setDeath] = useState<CalendarDateValue>(
+    EMPTY_LUNAR_CALENDAR_DATE,
+  );
+  const [isLiving, setIsLiving] = useState(true);
   const nameRef = useRef<HTMLInputElement>(null);
 
   if (focal && !genderTouched && gender !== defaultGender) {
@@ -901,17 +964,11 @@ function QuickAddSpouse({
   const mutation = useMutation({
     mutationFn: async () => {
       if (!focal) throw new Error("Thiếu thông tin");
-      const b = yearToCols(birthYear);
-      const d = yearToCols(deathYear);
       const spouse = await createPerson({
         clan_id: clanId,
         full_name: name.trim(),
         gender,
-        birth_date: b?.date ?? null,
-        birth_date_precision: b?.precision ?? null,
-        death_date: d?.date ?? null,
-        death_date_precision: d?.precision ?? null,
-        is_living: d ? false : true,
+        ...birthDeathPayload(birth, death, isLiving),
       });
       await findOrCreateFamily({
         clanId,
@@ -924,8 +981,9 @@ function QuickAddSpouse({
       await invalidateClanData(queryClient, clanId);
       toast.success("Đã thêm vợ/chồng", { description: name.trim() });
       setName("");
-      setBirthYear("");
-      setDeathYear("");
+      setBirth(EMPTY_CALENDAR_DATE);
+      setDeath(EMPTY_LUNAR_CALENDAR_DATE);
+      setIsLiving(true);
       nameRef.current?.focus();
     },
     onError: (e) =>
@@ -970,12 +1028,14 @@ function QuickAddSpouse({
         />
       </div>
 
-      <YearFields
-        idPrefix="quick_spouse"
-        birthYear={birthYear}
-        deathYear={deathYear}
-        onBirthYear={setBirthYear}
-        onDeathYear={setDeathYear}
+      <DateFields
+        idPrefix="qa-spouse"
+        birth={birth}
+        death={death}
+        isLiving={isLiving}
+        onBirth={setBirth}
+        onDeath={setDeath}
+        onLiving={setIsLiving}
       />
 
       <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
@@ -1036,8 +1096,11 @@ function QuickAddParent({
   const [name, setName] = useState("");
   const [role, setRole] = useState<"M" | "F">(defaultRole);
   const [roleTouched, setRoleTouched] = useState(false);
-  const [birthYear, setBirthYear] = useState("");
-  const [deathYear, setDeathYear] = useState("");
+  const [birth, setBirth] = useState<CalendarDateValue>(EMPTY_CALENDAR_DATE);
+  const [death, setDeath] = useState<CalendarDateValue>(
+    EMPTY_LUNAR_CALENDAR_DATE,
+  );
+  const [isLiving, setIsLiving] = useState(true);
   const nameRef = useRef<HTMLInputElement>(null);
 
   if (rels && !roleTouched && role !== defaultRole) {
@@ -1078,17 +1141,11 @@ function QuickAddParent({
   const mutation = useMutation({
     mutationFn: async () => {
       if (!focal) throw new Error("Thiếu thông tin");
-      const b = yearToCols(birthYear);
-      const d = yearToCols(deathYear);
       const parent = await createPerson({
         clan_id: clanId,
         full_name: name.trim(),
         gender: role,
-        birth_date: b?.date ?? null,
-        birth_date_precision: b?.precision ?? null,
-        death_date: d?.date ?? null,
-        death_date_precision: d?.precision ?? null,
-        is_living: d ? false : true,
+        ...birthDeathPayload(birth, death, isLiving),
       });
       const existingOther = rels?.parents.find((p) => p.gender !== role);
       const family = await findOrCreateFamily({
@@ -1115,8 +1172,9 @@ function QuickAddParent({
         setRole(roleAdded === "M" ? "F" : "M");
         setRoleTouched(true);
         setName(parentPrefix);
-        setBirthYear("");
-        setDeathYear("");
+        setBirth(EMPTY_CALENDAR_DATE);
+        setDeath(EMPTY_LUNAR_CALENDAR_DATE);
+        setIsLiving(true);
         setTimeout(() => focusAtEnd(nameRef.current), 0);
       }
     },
@@ -1192,12 +1250,14 @@ function QuickAddParent({
         </SegmentedControl>
       </div>
 
-      <YearFields
-        idPrefix="quick_parent"
-        birthYear={birthYear}
-        deathYear={deathYear}
-        onBirthYear={setBirthYear}
-        onDeathYear={setDeathYear}
+      <DateFields
+        idPrefix="qa-parent"
+        birth={birth}
+        death={death}
+        isLiving={isLiving}
+        onBirth={setBirth}
+        onDeath={setDeath}
+        onLiving={setIsLiving}
       />
 
       <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
@@ -168,32 +169,39 @@ export default function Tree() {
   const containerRef = useRef<HTMLDivElement>(null);
   const treeWrapRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
-  // Xem cây toàn màn hình (Fullscreen API trên khối chứa cây).
+  // Xem cây toàn màn hình bằng OVERLAY CSS (fixed inset-0) — KHÔNG dùng
+  // Fullscreen API vì iOS Safari không cho fullscreen phần tử thường
+  // (chỉ <video>). Cách này chạy đồng nhất mọi trình duyệt/mobile.
   const [isFullscreen, setIsFullscreen] = useState(false);
-  useEffect(() => {
-    const onChange = () => {
-      const fs = document.fullscreenElement === treeWrapRef.current;
-      setIsFullscreen(fs);
-      // family-chart đo container qua getBoundingClientRect → fit lại sau
-      // khi kích thước đổi (vào/ra fullscreen). Chờ 1 nhịp để layout xong.
-      requestAnimationFrame(() =>
-        chartRef.current?.updateTree({ initial: false }),
-      );
-    };
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
-  async function toggleFullscreen() {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else if (treeWrapRef.current?.requestFullscreen) {
-        await treeWrapRef.current.requestFullscreen();
-      }
-    } catch {
-      /* trình duyệt từ chối / không hỗ trợ — bỏ qua */
-    }
+  function toggleFullscreen() {
+    setIsFullscreen((v) => {
+      const next = !v;
+      if (next) setChartActive(true); // toàn màn hình thì cho tương tác luôn
+      return next;
+    });
   }
+  // Khoá cuộn nền + Esc để thoát + fit lại chart khi kích thước đổi.
+  useEffect(() => {
+    const refit = requestAnimationFrame(() =>
+      chartRef.current?.updateTree({ initial: false }),
+    );
+    if (!isFullscreen) return () => cancelAnimationFrame(refit);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      cancelAnimationFrame(refit);
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isFullscreen]);
+  // Toàn màn hình → portal khối cây thẳng ra <body> để phủ kín mọi thứ
+  // (kể cả header sticky), không bị kẹt trong stacking context của trang.
+  const renderTreeWrap = (node: React.ReactNode) =>
+    isFullscreen ? createPortal(node, document.body) : node;
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   // Touch-mode gate: on phones, the chart starts "locked" so the
@@ -803,6 +811,9 @@ export default function Tree() {
     depth,
     // Vẽ lại khi quay từ "Trực hệ" về "Cả cây" (container được mount lại).
     view,
+    // Vào/ra toàn màn hình → container được portal sang body (node mới)
+    // nên phải dựng lại chart vào node đó.
+    isFullscreen,
   ]);
 
   // Before the OS print dialog opens (either via our "In" button or
@@ -1084,9 +1095,14 @@ export default function Tree() {
             )}
           </div>
 
+          {renderTreeWrap(
           <div
             ref={treeWrapRef}
-            className={`relative ${isFullscreen ? "bg-background" : ""}`}
+            className={
+              isFullscreen
+                ? "fixed inset-0 z-[60] bg-background p-2"
+                : "relative"
+            }
           >
             <div
               ref={containerRef}
@@ -1100,7 +1116,7 @@ export default function Tree() {
               // male = cool muted, female = warm muted, text in ink colour.
               className={`f3 border bg-card overflow-hidden text-foreground ${
                 isFullscreen
-                  ? "h-screen max-h-none min-h-0 rounded-none border-0"
+                  ? "h-full max-h-none min-h-0 rounded-lg"
                   : "rounded-lg h-[70vh] min-h-[480px] max-h-[820px]"
               }`}
               style={
@@ -1183,7 +1199,8 @@ export default function Tree() {
                 Khoá để cuộn trang
               </button>
             )}
-          </div>
+          </div>,
+          )}
           <p className="text-xs text-muted-foreground print-hide">
             {chartActive
               ? 'Vuốt để di chuyển, kéo 2 ngón để phóng to/thu nhỏ. Chạm vào thẻ người để mở rộng nhánh.'

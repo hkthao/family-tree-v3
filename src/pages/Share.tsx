@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 
 import {
@@ -84,29 +85,29 @@ export default function Share() {
   const containerRef = useRef<HTMLDivElement>(null);
   const shareWrapRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
-  // Xem cây toàn màn hình trên trang chia sẻ công khai.
+  // Toàn màn hình bằng OVERLAY CSS (fixed inset-0) — KHÔNG dùng Fullscreen
+  // API vì iOS Safari không cho fullscreen phần tử thường. Chạy mọi nơi.
   const [isFullscreen, setIsFullscreen] = useState(false);
-  useEffect(() => {
-    const onChange = () => {
-      setIsFullscreen(document.fullscreenElement === shareWrapRef.current);
-      requestAnimationFrame(() =>
-        chartRef.current?.updateTree({ initial: false }),
-      );
-    };
-    document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
-  }, []);
-  async function toggleFullscreen() {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else if (shareWrapRef.current?.requestFullscreen) {
-        await shareWrapRef.current.requestFullscreen();
-      }
-    } catch {
-      /* không hỗ trợ — bỏ qua */
-    }
+  function toggleFullscreen() {
+    setIsFullscreen((v) => !v);
   }
+  useEffect(() => {
+    const refit = requestAnimationFrame(() =>
+      chartRef.current?.updateTree({ initial: false }),
+    );
+    if (!isFullscreen) return () => cancelAnimationFrame(refit);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsFullscreen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      cancelAnimationFrame(refit);
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [isFullscreen]);
 
   // `focal` starts as null and becomes the user's choice (or a default
   // picked from the data) once we have it. We don't gate the chart on
@@ -300,7 +301,12 @@ export default function Share() {
       resizeObserver?.disconnect();
       node.innerHTML = "";
     };
-  }, [f3Data, orientation, data?.generation_offset, depth]);
+  }, [f3Data, orientation, data?.generation_offset, depth, isFullscreen]);
+
+  // Toàn màn hình → portal khối cây ra <body> để phủ kín, không kẹt
+  // trong stacking context của trang.
+  const renderTreeWrap = (node: React.ReactNode) =>
+    isFullscreen ? createPortal(node, document.body) : node;
 
   // Smoothly re-centre when focal changes without re-creating the chart.
   useEffect(() => {
@@ -585,11 +591,14 @@ export default function Share() {
               </div>
             </div>
 
+            {renderTreeWrap(
             <div
               ref={shareWrapRef}
-              className={`relative flex-1 min-h-0 w-full ${
-                isFullscreen ? "bg-background" : ""
-              }`}
+              className={
+                isFullscreen
+                  ? "fixed inset-0 z-[60] bg-background p-2"
+                  : "relative flex-1 min-h-0 w-full"
+              }
             >
               <div
                 ref={containerRef}
@@ -615,7 +624,8 @@ export default function Share() {
                   <IconMaximize className="h-4 w-4" />
                 )}
               </button>
-            </div>
+            </div>,
+            )}
           </>
         )}
       </main>
