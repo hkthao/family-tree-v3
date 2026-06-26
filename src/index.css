@@ -5,6 +5,20 @@
 @import "@fontsource/noto-serif/400.css";
 @import "@fontsource/noto-serif/600.css";
 @import "@fontsource/noto-serif/700.css";
+/* Font cho thiệp chia sẻ — đều có subset tiếng Việt (đủ dấu). */
+@import "@fontsource/playfair-display/600.css";
+@import "@fontsource/playfair-display/700.css";
+@import "@fontsource/dancing-script/600.css";
+@import "@fontsource/dancing-script/700.css";
+
+/* Khe THƯ PHÁP tiếng Việt: đặt file vào public/fonts/svn-thuphap.woff2.
+   Chưa có file thì family này không phân giải → tự lùi về "Dancing Script". */
+@font-face {
+  font-family: "SVN-ThuPhap";
+  src: url("/fonts/svn-thuphap.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400 700;
+}
 
 @tailwind base;
 @tailwind components;

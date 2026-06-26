@@ -22,7 +22,9 @@
   "dependencies": {
     "@dqcai/vn-lunar": "^1.0.1",
     "@fontsource/be-vietnam-pro": "^5.2.8",
+    "@fontsource/dancing-script": "^5.2.8",
     "@fontsource/noto-serif": "^5.2.9",
+    "@fontsource/playfair-display": "^5.2.8",
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@react-pdf/renderer": "^4.5.1",

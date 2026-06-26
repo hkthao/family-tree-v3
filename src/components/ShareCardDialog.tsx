@@ -14,6 +14,7 @@ import {
   CARD_TEMPLATES,
   templatesByGenre,
 } from "@/lib/cards/registry";
+import { CARD_FONTS, DEFAULT_CARD_FONT, ensureCardFontsLoaded } from "@/lib/cards/fonts";
 import {
   CARD_DIMENSIONS,
   CARD_GENRE_LABEL,
@@ -53,6 +54,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
   const [photoIdx, setPhotoIdx] = useState<number>(props.photoUrls?.length ? 0 : -1);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [titleFont, setTitleFont] = useState<string>(DEFAULT_CARD_FONT);
   const [busy, setBusy] = useState(false);
 
   const exportRef = useRef<HTMLDivElement>(null);
@@ -80,6 +82,11 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     makeQrDataUrl(props.shareUrl).then((d) => alive && setQrDataUrl(d));
     return () => { alive = false; };
   }, [open, props.shareUrl]);
+
+  // Nạp font web (Google) khi mở dialog để xem trước + xuất ảnh đúng.
+  useEffect(() => {
+    if (open) ensureCardFontsLoaded();
+  }, [open]);
 
   // Ảnh đã chọn → data URL (tránh taint khi xuất).
   const photoUrl = photoIdx >= 0 ? props.photoUrls?.[photoIdx] ?? null : null;
@@ -113,8 +120,9 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
       qrDataUrl,
       dateText: props.dateText ?? null,
       statText: props.statText ?? null,
+      titleFont,
     }),
-    [props.clanName, props.initialTitle, props.dateText, props.statText, title, excerpt, photoDataUrl, qrDataUrl],
+    [props.clanName, props.initialTitle, props.dateText, props.statText, title, excerpt, photoDataUrl, qrDataUrl, titleFont],
   );
 
   const tpl = CARD_TEMPLATES.find((t) => t.id === templateId) ?? CARD_TEMPLATES[0];
@@ -126,7 +134,8 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
   async function exportPng(): Promise<Blob | null> {
     const node = exportRef.current;
     if (!node) return null;
-    // chờ 1 nhịp để ảnh/QR vẽ xong
+    await ensureCardFontsLoaded(); // font sẵn sàng → ảnh đúng kiểu chữ
+    // chờ 1 nhịp để ảnh/QR/chữ vẽ xong
     await new Promise((r) => requestAnimationFrame(() => r(null)));
     return nodeToPngBlob(node, dim.w, dim.h);
   }
@@ -245,6 +254,24 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                   </button>
                 );
               })}
+            </div>
+
+            {/* Font chữ (đặc biệt: thư pháp) */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Kiểu chữ tiêu đề</label>
+              <div className="flex flex-wrap gap-2">
+                {CARD_FONTS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setTitleFont(f.family)}
+                    style={{ fontFamily: f.family }}
+                    className={`rounded-md border px-3 py-1.5 text-base ${titleFont === f.family ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"}`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Sửa chữ */}
