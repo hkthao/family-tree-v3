@@ -54,6 +54,8 @@ export interface CardData {
   dateText?: string | null;
   /** Số liệu khoe gia phả: "12 đời · 348 người" (mẫu mời tham gia). */
   statText?: string | null;
+  /** Font-family cho tiêu đề (chọn trong trình tạo thiệp). */
+  titleFont?: string;
 }
 
 export interface CardTemplateProps {
