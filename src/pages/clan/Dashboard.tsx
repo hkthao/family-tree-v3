@@ -16,6 +16,7 @@ import {
   IconTree,
   IconUpload,
 } from "@/components/icons";
+import { FunFactsCard } from "@/components/FunFactsCard";
 import { PageHeader } from "@/components/PageHeader";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -229,6 +230,13 @@ export default function Dashboard() {
               summary={todoSummary ?? []}
             />
           )}
+
+          <FunFactsCard
+            clan={clan}
+            userId={userId}
+            persons={tree.persons}
+            families={tree.families}
+          />
 
           {upcomingTop5.length > 0 && (
             <section aria-label="Sự kiện sắp tới" className="space-y-2">

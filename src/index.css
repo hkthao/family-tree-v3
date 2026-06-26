@@ -11,14 +11,17 @@
 @import "@fontsource/dancing-script/600.css";
 @import "@fontsource/dancing-script/700.css";
 
-/* Khe THƯ PHÁP tiếng Việt: đặt file vào public/fonts/svn-thuphap.woff2.
-   Chưa có file thì family này không phân giải → tự lùi về "Dancing Script". */
+/* THƯ PHÁP tiếng Việt: hiện chưa có file font hợp lệ → dùng tạm Dancing
+   Script (nút "Thư pháp"). Khi có file, đặt vào public/fonts/svn-thuphap.woff2
+   rồi BỎ COMMENT khối @font-face dưới đây + thêm "SVN-ThuPhap" lại vào
+   src/lib/cards/fonts.ts (CARD_FONTS + FAMILIES).
 @font-face {
   font-family: "SVN-ThuPhap";
   src: url("/fonts/svn-thuphap.woff2") format("woff2");
   font-display: swap;
   font-weight: 400 700;
 }
+*/
 
 @tailwind base;
 @tailwind components;

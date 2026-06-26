@@ -8,6 +8,7 @@ import { useToast } from "@/components/Toast";
 import { IconCheck, IconPencil, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { KhoeButton } from "@/components/KhoeButton";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { toFamilyChart } from "@/lib/familyChartAdapter";
 import {
@@ -515,15 +516,35 @@ function LineageView({
             </span>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => clearSelfM.mutate()}
-          disabled={clearSelfM.isPending}
-        >
-          <IconPencil className="h-4 w-4 mr-1.5" />
-          Đổi người
-        </Button>
+        <div className="flex items-center gap-2">
+          {(() => {
+            const self = tree.persons.find((p) => p.id === selfPersonId);
+            return self ? (
+              <KhoeButton
+                clanId={clanId}
+                clanName={clan.name}
+                genOffset={clan.generation_offset}
+                canCreateQr={effectiveRole(clan) === "admin"}
+                person={{
+                  id: self.id,
+                  full_name: self.full_name,
+                  generation: self.generation,
+                  photo_path: self.photo_path,
+                }}
+                size="sm"
+              />
+            ) : null;
+          })()}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => clearSelfM.mutate()}
+            disabled={clearSelfM.isPending}
+          >
+            <IconPencil className="h-4 w-4 mr-1.5" />
+            Đổi người
+          </Button>
+        </div>
       </div>
 
       {lineage.steps.length === 1 && (

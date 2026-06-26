@@ -18,7 +18,8 @@ export type CardGenre =
   | "wisdom"
   | "event"
   | "qr"
-  | "personal";
+  | "personal"
+  | "funfact";
 
 export const CARD_GENRE_LABEL: Record<CardGenre, string> = {
   memorial: "Giỗ Tổ / Tưởng niệm",
@@ -37,6 +38,7 @@ export const CARD_GENRE_LABEL: Record<CardGenre, string> = {
   event: "Sự kiện / Kính mời",
   qr: "Áp-phích QR (in/khắc)",
   personal: "Thẻ cá nhân (khoe)",
+  funfact: "Thống kê vui",
 };
 
 /** Kích thước gốc (px) theo định dạng — xuất ảnh ở đúng cỡ này. */
