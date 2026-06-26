@@ -562,6 +562,10 @@ export type Database = {
           name_unaccent: string | null
           owner_id: string | null
           person_count: number
+          public_show_events: boolean
+          public_show_graves: boolean
+          public_show_heritage: boolean
+          public_show_tree: boolean
           visibility: string
         }
         Insert: {
@@ -580,6 +584,10 @@ export type Database = {
           name_unaccent?: string | null
           owner_id?: string | null
           person_count?: number
+          public_show_events?: boolean
+          public_show_graves?: boolean
+          public_show_heritage?: boolean
+          public_show_tree?: boolean
           visibility?: string
         }
         Update: {
@@ -598,6 +606,10 @@ export type Database = {
           name_unaccent?: string | null
           owner_id?: string | null
           person_count?: number
+          public_show_events?: boolean
+          public_show_graves?: boolean
+          public_show_heritage?: boolean
+          public_show_tree?: boolean
           visibility?: string
         }
         Relationships: [
