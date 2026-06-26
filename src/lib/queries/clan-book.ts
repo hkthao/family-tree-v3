@@ -26,6 +26,7 @@ export interface ClanBookRestingPlace {
   address: string | null;
   status: "existing" | "relocated" | "lost";
   occupant_names: string[];
+  cover_path: string | null;
 }
 
 export interface ClanBookHeritage {
@@ -37,6 +38,9 @@ export interface ClanBookHeritage {
   location_name: string | null;
   built_year: number | null;
   people_names: string[];
+  /** Ảnh bìa: đường dẫn bucket (cần ký) hoặc link ngoài (dùng trực tiếp). */
+  cover_path: string | null;
+  cover_url: string | null;
 }
 
 export interface ClanBookData {
@@ -92,7 +96,7 @@ export async function getClanBookData(
     client
       .from("resting_places")
       .select(
-        "id, kind, name, location_name, location_detail, address, status, resting_place_occupants(person:persons(full_name))",
+        "id, kind, name, location_name, location_detail, address, status, resting_place_occupants(person:persons(full_name)), resting_place_photos(path, sort)",
       )
       .eq("clan_id", clanId)
       .is("deleted_at", null)
@@ -101,7 +105,7 @@ export async function getClanBookData(
     client
       .from("heritage_items")
       .select(
-        "id, category, title, summary, body, location_name, built_year, heritage_people(person:persons(full_name))",
+        "id, category, title, summary, body, location_name, built_year, cover_media_id, heritage_people(person:persons(full_name)), heritage_media!heritage_media_item_id_fkey(id, kind, path, external_url, sort)",
       )
       .eq("clan_id", clanId)
       .is("deleted_at", null)
@@ -127,19 +131,36 @@ export async function getClanBookData(
   // deno-lint shape: occupants embed → flat name list.
   const restingPlaces: ClanBookRestingPlace[] = (rq.data ?? []).map((r) => {
     const occ = (r as { resting_place_occupants?: { person: { full_name: string } | null }[] }).resting_place_occupants ?? [];
-    const { resting_place_occupants: _o, ...rest } = r as ClanBookRestingPlace & { resting_place_occupants?: unknown };
+    const photos = ((r as { resting_place_photos?: { path: string; sort: number }[] }).resting_place_photos ?? [])
+      .slice()
+      .sort((a, b) => a.sort - b.sort);
+    const { resting_place_occupants: _o, resting_place_photos: _p, ...rest } =
+      r as ClanBookRestingPlace & { resting_place_occupants?: unknown; resting_place_photos?: unknown };
     return {
-      ...(rest as Omit<ClanBookRestingPlace, "occupant_names">),
+      ...(rest as Omit<ClanBookRestingPlace, "occupant_names" | "cover_path">),
       occupant_names: occ.map((o) => o.person?.full_name).filter((n): n is string => !!n),
+      cover_path: photos[0]?.path ?? null,
     };
   });
 
   const heritage: ClanBookHeritage[] = (hq.data ?? []).map((h) => {
-    const ppl = (h as { heritage_people?: { person: { full_name: string } | null }[] }).heritage_people ?? [];
-    const { heritage_people: _p, ...rest } = h as ClanBookHeritage & { heritage_people?: unknown };
+    const hh = h as {
+      cover_media_id: string | null;
+      heritage_people?: { person: { full_name: string } | null }[];
+      heritage_media?: { id: string; kind: string; path: string | null; external_url: string | null; sort: number }[];
+    };
+    const ppl = hh.heritage_people ?? [];
+    const photos = (hh.heritage_media ?? [])
+      .filter((m) => m.kind === "photo")
+      .sort((a, b) => a.sort - b.sort);
+    const cover = photos.find((p) => p.id === hh.cover_media_id) ?? photos[0] ?? null;
+    const { heritage_people: _p, heritage_media: _m, cover_media_id: _c, ...rest } =
+      h as ClanBookHeritage & { heritage_people?: unknown; heritage_media?: unknown; cover_media_id?: unknown };
     return {
-      ...(rest as Omit<ClanBookHeritage, "people_names">),
+      ...(rest as Omit<ClanBookHeritage, "people_names" | "cover_path" | "cover_url">),
       people_names: ppl.map((x) => x.person?.full_name).filter((n): n is string => !!n),
+      cover_path: cover?.path ?? null,
+      cover_url: cover?.external_url ?? null,
     };
   });
 

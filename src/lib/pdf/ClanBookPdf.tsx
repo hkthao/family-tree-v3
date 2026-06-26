@@ -133,6 +133,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cardLast: { marginRight: 0 },
+  // Thẻ Mộ phần / Di sản — như card người nhưng chữ canh trái + ảnh chữ nhật.
+  mediaCard: {
+    width: 152,
+    marginRight: 6,
+    padding: 8,
+    borderWidth: 0.5,
+    borderColor: COLORS.divider,
+    borderRadius: 4,
+    backgroundColor: "#FFFFFF",
+  },
+  mediaImg: { width: "100%", height: 82, borderRadius: 3, marginBottom: 5 },
+  mediaTitle: { fontSize: 10, fontWeight: 700, color: COLORS.primary, marginBottom: 1 },
+  mediaMeta: { fontSize: 8, color: COLORS.muted, marginBottom: 3 },
+  mediaSummary: { fontSize: 8.5, fontWeight: 700, marginBottom: 2 },
+  mediaText: { fontSize: 8.5, marginBottom: 2 },
+  mediaSubhead: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: COLORS.primary,
+    marginTop: 8,
+    marginBottom: 5,
+  },
   // View-based avatar (no Image — Image trips a Buffer polyfill issue
   // in this Vite bundle). A coloured circle with the first letter of
   // the given name, gendered by background colour.
@@ -315,9 +337,11 @@ interface Props {
    * the PDF render stays synchronous.
    */
   photoByPersonId?: Map<string, string>;
+  /** id mục Mộ phần / Di sản → ảnh bìa data URI (cho thẻ). */
+  coverByItemId?: Map<string, string>;
 }
 
-export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
+export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId }: Props) {
   ensurePdfFontRegistered();
 
   const showTree = include?.tree ?? true;
@@ -515,6 +539,11 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
           Một vài quy ước sử dụng trong cuốn gia phả này.
         </Text>
         <Text style={styles.prefaceItem}>
+          - Cuốn sách gồm các phần: Phả đồ (sơ đồ cây), Danh bạ chi tiết
+          {" "}từng người, Dâu/rể, Mộ phần &amp; tro cốt, và Di sản &amp; Văn
+          {" "}hoá (từ đường, tục lệ, giai thoại, tư liệu của dòng họ).
+        </Text>
+        <Text style={styles.prefaceItem}>
           - Mỗi người trong huyết thống có một số d'Aboville theo dạng
           {" "}1, 1.1, 1.2.3 ... Số càng nhiều chấm thì đời càng sâu.
           {" "}Đời thứ nhất là thuỷ tổ, mỗi đời sau là một bậc con.
@@ -533,6 +562,11 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
         <Text style={styles.prefaceItem}>
           - Vai vế "Trưởng" dành cho con cả trong nhóm anh chị em;
           {" "}"Thứ" dành cho các con sau.
+        </Text>
+        <Text style={styles.prefaceItem}>
+          - Phần Mộ phần &amp; Di sản trình bày dạng thẻ (mỗi mục một thẻ,
+          {" "}có ảnh kèm theo nếu có); Di sản được gom theo nhóm: từ đường,
+          {" "}tục lệ, giai thoại, tư liệu.
         </Text>
         <Text style={styles.prefaceItem}>
           - Trường để trống nghĩa là chưa có thông tin - chứ không
@@ -629,7 +663,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
         </Page>
       )}
 
-      {/* ─── Mộ phần & tro cốt ──────────────────────────────── */}
+      {/* ─── Mộ phần & tro cốt (lưới thẻ) ───────────────────── */}
       {showRestingPlaces && data.restingPlaces.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
@@ -638,39 +672,35 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
           <Text style={styles.intro}>
             Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ.
           </Text>
-          {data.restingPlaces.map((rp) => {
-            const loc = [rp.location_name, rp.location_detail]
-              .filter(Boolean)
-              .join(" · ");
-            return (
-              <View key={rp.id} wrap={false} style={{ marginBottom: 9 }}>
-                <Text style={{ fontSize: 11, fontWeight: 700 }}>
-                  {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
-                </Text>
-                <Text style={{ fontSize: 9.5, color: "#6F665F" }}>
-                  {RP_KIND_LABEL[rp.kind]}
-                  {loc ? ` — ${loc}` : ""}
-                  {rp.status !== "existing"
-                    ? ` (${RP_STATUS_LABEL[rp.status]})`
-                    : ""}
-                </Text>
-                {rp.address ? (
-                  <Text style={{ fontSize: 9.5, color: "#6F665F" }}>
-                    {rp.address}
-                  </Text>
-                ) : null}
-                {rp.occupant_names.length > 0 ? (
-                  <Text style={{ fontSize: 9.5 }}>
-                    Người an nghỉ: {rp.occupant_names.join(", ")}
-                  </Text>
-                ) : null}
-              </View>
-            );
-          })}
+          {chunk(data.restingPlaces, 3).map((row, i) => (
+            <View key={i} style={styles.cardRow} wrap={false}>
+              {row.map((rp, ci) => {
+                const cover = coverByItemId?.get(rp.id);
+                const loc = [rp.location_name, rp.location_detail].filter(Boolean).join(" · ");
+                return (
+                  <View key={rp.id} style={ci === row.length - 1 ? [styles.mediaCard, styles.cardLast] : styles.mediaCard}>
+                    {cover ? <Image src={cover} style={styles.mediaImg} /> : null}
+                    <Text style={styles.mediaTitle}>
+                      {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
+                    </Text>
+                    <Text style={styles.mediaMeta}>
+                      {RP_KIND_LABEL[rp.kind]}
+                      {rp.status !== "existing" ? ` · ${RP_STATUS_LABEL[rp.status]}` : ""}
+                    </Text>
+                    {loc ? <Text style={styles.mediaText}>{loc}</Text> : null}
+                    {rp.address ? <Text style={styles.mediaText}>{rp.address}</Text> : null}
+                    {rp.occupant_names.length > 0 ? (
+                      <Text style={styles.mediaMeta}>An nghỉ: {rp.occupant_names.join(", ")}</Text>
+                    ) : null}
+                  </View>
+                );
+              })}
+            </View>
+          ))}
         </Page>
       )}
 
-      {/* ─── Di sản & Văn hoá ───────────────────────────────── */}
+      {/* ─── Di sản & Văn hoá (nhóm theo loại + lưới thẻ) ────── */}
       {showHeritage && data.heritage.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
@@ -680,31 +710,35 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
             Từ đường, tục lệ, giai thoại, tư liệu — những giá trị tinh thần
             của dòng họ.
           </Text>
-          {data.heritage.map((h) => {
-            const meta = [
-              HERITAGE_CAT_LABEL[h.category],
-              h.location_name || null,
-              h.built_year ? `năm ${h.built_year}` : null,
-            ]
-              .filter(Boolean)
-              .join(" · ");
+          {(["place", "custom", "story", "artifact"] as const).map((cat) => {
+            const items = data.heritage.filter((h) => h.category === cat);
+            if (items.length === 0) return null;
             return (
-              <View key={h.id} wrap={false} style={{ marginBottom: 10 }}>
-                <Text style={{ fontSize: 11, fontWeight: 700 }}>{h.title}</Text>
-                <Text style={{ fontSize: 9.5, color: "#6F665F" }}>{meta}</Text>
-                {h.summary ? (
-                  <Text style={{ fontSize: 9.5, fontWeight: 700, marginTop: 1 }}>
-                    {h.summary}
-                  </Text>
-                ) : null}
-                {h.body ? (
-                  <Text style={{ fontSize: 9.5, marginTop: 1 }}>{h.body}</Text>
-                ) : null}
-                {h.people_names.length > 0 ? (
-                  <Text style={{ fontSize: 9.5, color: "#6F665F", marginTop: 1 }}>
-                    Người liên quan: {h.people_names.join(", ")}
-                  </Text>
-                ) : null}
+              <View key={cat}>
+                <Text style={styles.mediaSubhead}>{HERITAGE_CAT_LABEL[cat]}</Text>
+                {chunk(items, 3).map((row, i) => (
+                  <View key={i} style={styles.cardRow} wrap={false}>
+                    {row.map((h, ci) => {
+                      const cover = coverByItemId?.get(h.id);
+                      const meta = [h.location_name || null, h.built_year ? `năm ${h.built_year}` : null]
+                        .filter(Boolean)
+                        .join(" · ");
+                      const body = h.body && h.body.length > 150 ? `${h.body.slice(0, 150)}…` : h.body;
+                      return (
+                        <View key={h.id} style={ci === row.length - 1 ? [styles.mediaCard, styles.cardLast] : styles.mediaCard}>
+                          {cover ? <Image src={cover} style={styles.mediaImg} /> : null}
+                          <Text style={styles.mediaTitle}>{h.title}</Text>
+                          {meta ? <Text style={styles.mediaMeta}>{meta}</Text> : null}
+                          {h.summary ? <Text style={styles.mediaSummary}>{h.summary}</Text> : null}
+                          {body ? <Text style={styles.mediaText}>{body}</Text> : null}
+                          {h.people_names.length > 0 ? (
+                            <Text style={styles.mediaMeta}>Liên quan: {h.people_names.join(", ")}</Text>
+                          ) : null}
+                        </View>
+                      );
+                    })}
+                  </View>
+                ))}
               </View>
             );
           })}
