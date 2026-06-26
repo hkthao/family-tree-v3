@@ -420,6 +420,13 @@ function buildSections(
       clan.myRole === "editor";
     const isMember = clan.isPlatformAdmin || clan.myRole !== null;
 
+    // Người xem công khai (không phải thành viên) chỉ thấy phần admin đã
+    // bật. Thành viên thấy tất cả. Các cờ chỉ hiệu lực khi visibility=public.
+    const canTree = isMember || clan.public_show_tree;
+    const canEvents = isMember || clan.public_show_events;
+    const canGraves = isMember || clan.public_show_graves;
+    const canHeritage = isMember || clan.public_show_heritage;
+
     // ─── Section 1: <clan name> — những mục HAY DÙNG NHẤT lên trên ──
     // Cây gia phả + Danh bạ (trái tim của app) được đẩy lên đầu, cạnh
     // Tổng quan + Sự kiện. "Đường trực hệ" đã gộp vào Cây (nút gạt).
@@ -430,51 +437,66 @@ function buildSections(
         icon: <IconHome className={ic} />,
         end: true,
       },
-      {
-        to: `/clans/${clanId}/tree`,
-        label: "Cây gia phả",
-        icon: <IconTree className={ic} />,
-      },
-      {
-        to: `/clans/${clanId}/people`,
-        label: "Danh bạ",
-        icon: <IconUsers className={ic} />,
-      },
     ];
+    if (canTree) {
+      topItems.push(
+        {
+          to: `/clans/${clanId}/tree`,
+          label: "Cây gia phả",
+          icon: <IconTree className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/people`,
+          label: "Danh bạ",
+          icon: <IconUsers className={ic} />,
+        },
+      );
+    }
     // "Tra cứu xưng hô" đã gộp thành nút gạt trong "Danh bạ".
-    topItems.push({
-      to: `/clans/${clanId}/events`,
-      label: "Sự kiện",
-      icon: <IconCalendar className={ic} />,
-    });
+    if (canEvents) {
+      topItems.push({
+        to: `/clans/${clanId}/events`,
+        label: "Sự kiện",
+        icon: <IconCalendar className={ic} />,
+      });
+    }
     sections.push({ label: clan.name, items: topItems });
 
     // ─── Section 2: Cộng đồng & Di sản ─────────────────────────────
-    sections.push({
-      label: "Cộng đồng & Di sản",
-      items: [
-        {
-          to: `/clans/${clanId}/board`,
-          label: "Bảng tin",
-          icon: <IconSparkles className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/today`,
-          label: "Hôm nay",
-          icon: <IconSun className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/graves`,
-          label: "Mộ phần & tro cốt",
-          icon: <IconGrave className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/heritage`,
-          label: "Di sản & Văn hoá",
-          icon: <IconScroll className={ic} />,
-        },
-      ],
-    });
+    // Bảng tin = nội dung cộng đồng → chỉ thành viên. Các mục còn lại gate
+    // theo cờ công khai cho non-member.
+    const communityItems: DrawerItem[] = [];
+    if (isMember) {
+      communityItems.push({
+        to: `/clans/${clanId}/board`,
+        label: "Bảng tin",
+        icon: <IconSparkles className={ic} />,
+      });
+    }
+    if (canTree) {
+      communityItems.push({
+        to: `/clans/${clanId}/today`,
+        label: "Hôm nay",
+        icon: <IconSun className={ic} />,
+      });
+    }
+    if (canGraves) {
+      communityItems.push({
+        to: `/clans/${clanId}/graves`,
+        label: "Mộ phần & tro cốt",
+        icon: <IconGrave className={ic} />,
+      });
+    }
+    if (canHeritage) {
+      communityItems.push({
+        to: `/clans/${clanId}/heritage`,
+        label: "Di sản & Văn hoá",
+        icon: <IconScroll className={ic} />,
+      });
+    }
+    if (communityItems.length > 0) {
+      sections.push({ label: "Cộng đồng & Di sản", items: communityItems });
+    }
 
     // ─── Section 3: Cập nhật — data-entry cho editor+ ─────────────
     if (canEdit) {

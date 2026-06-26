@@ -15,6 +15,11 @@ export interface UpdateClanInput {
   display_living_full_dob?: boolean;
   /** 0 = Thủy tổ là Đời 1 (default); 1 = Thủy tổ là Đời 0. */
   generation_offset?: number;
+  /** Người xem công khai được xem phần nào (chỉ hiệu lực khi public). */
+  public_show_tree?: boolean;
+  public_show_heritage?: boolean;
+  public_show_graves?: boolean;
+  public_show_events?: boolean;
 }
 
 /**

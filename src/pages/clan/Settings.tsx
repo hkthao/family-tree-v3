@@ -54,6 +54,11 @@ export default function Settings() {
   const [showLivingFullDob, setShowLivingFullDob] = useState(
     clan.display_living_full_dob,
   );
+  // Người xem công khai được xem phần nào (chỉ hiệu lực khi public).
+  const [pubTree, setPubTree] = useState(clan.public_show_tree);
+  const [pubHeritage, setPubHeritage] = useState(clan.public_show_heritage);
+  const [pubGraves, setPubGraves] = useState(clan.public_show_graves);
+  const [pubEvents, setPubEvents] = useState(clan.public_show_events);
 
   useEffect(() => {
     setName(clan.name);
@@ -63,6 +68,10 @@ export default function Settings() {
     setRootIsGenZero(clan.generation_offset === 1);
     setShowDeathDetails(clan.display_death_details);
     setShowLivingFullDob(clan.display_living_full_dob);
+    setPubTree(clan.public_show_tree);
+    setPubHeritage(clan.public_show_heritage);
+    setPubGraves(clan.public_show_graves);
+    setPubEvents(clan.public_show_events);
   }, [clan.id]);
 
   const mutation = useMutation({
@@ -75,6 +84,10 @@ export default function Settings() {
         generation_offset: rootIsGenZero ? 1 : 0,
         display_death_details: showDeathDetails,
         display_living_full_dob: showLivingFullDob,
+        public_show_tree: pubTree,
+        public_show_heritage: pubHeritage,
+        public_show_graves: pubGraves,
+        public_show_events: pubEvents,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -177,6 +190,72 @@ export default function Settings() {
                   </p>
                 </div>
               </label>
+            </fieldset>
+
+            <fieldset className="space-y-3">
+              <legend className="text-base font-medium mb-1">
+                Người xem công khai được xem
+              </legend>
+              <p className="text-sm text-muted-foreground">
+                Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên)
+                xem được.
+                {visibility === "private"
+                  ? " Cần bật chế độ Công khai ở trên trước."
+                  : ""}
+              </p>
+              <div
+                className={
+                  visibility === "private"
+                    ? "space-y-3 opacity-50 pointer-events-none"
+                    : "space-y-3"
+                }
+              >
+                {(
+                  [
+                    {
+                      checked: pubTree,
+                      set: setPubTree,
+                      label: "Cây gia phả & Danh bạ",
+                      desc: "Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn).",
+                    },
+                    {
+                      checked: pubHeritage,
+                      set: setPubHeritage,
+                      label: "Di sản & Văn hoá",
+                      desc: "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh.",
+                    },
+                    {
+                      checked: pubGraves,
+                      set: setPubGraves,
+                      label: "Mộ phần & tro cốt",
+                      desc: "Xem nơi an nghỉ, người an nghỉ và ảnh mộ.",
+                    },
+                    {
+                      checked: pubEvents,
+                      set: setPubEvents,
+                      label: "Sự kiện",
+                      desc: "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết).",
+                    },
+                  ] as const
+                ).map((o) => (
+                  <label
+                    key={o.label}
+                    className="flex items-start gap-3 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={o.checked}
+                      disabled={visibility === "private"}
+                      onChange={(e) => o.set(e.target.checked)}
+                      className="mt-1 h-5 w-5 accent-primary shrink-0"
+                    />
+                    <div>
+                      <p className="font-medium">{o.label}</p>
+                      <p className="text-sm text-muted-foreground">{o.desc}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
             </fieldset>
 
             <fieldset className="space-y-2">
