@@ -37,11 +37,37 @@ export const CLAN_SIZE_BUCKETS: Record<
   large: { label: "Lớn (≥50)", min: 50, max: null },
 };
 
+export type ClanSort = "members" | "name" | "newest";
+
+export const CLAN_SORT_LABEL: Record<ClanSort, string> = {
+  members: "Số thành viên (nhiều → ít)",
+  name: "Tên (A → Z)",
+  newest: "Mới tạo",
+};
+
 export interface ListClansParams {
   page: number; // 1-based
   pageSize: number;
   search?: string;
   sizeBucket?: ClanSizeBucket | null;
+  /** Tiêu chí sắp xếp; mặc định theo số thành viên (nhiều → ít). */
+  sort?: ClanSort;
+}
+
+/** Cột + chiều sắp xếp theo tiêu chí. */
+function sortColumn(sort: ClanSort | undefined): {
+  col: string;
+  ascending: boolean;
+} {
+  switch (sort) {
+    case "name":
+      return { col: "name_unaccent", ascending: true };
+    case "newest":
+      return { col: "created_at", ascending: false };
+    case "members":
+    default:
+      return { col: "person_count", ascending: false };
+  }
 }
 
 export interface ListClansResult {
@@ -78,30 +104,42 @@ export async function listMyClans(
   const from = (params.page - 1) * params.pageSize;
   const to = from + params.pageSize - 1;
 
-  let q = client
+  // Lấy clan_id + vai trò của caller. Query clans TRỰC TIẾP (thay vì embed
+  // qua clan_members) để sắp xếp được theo cột của clans (person_count…) +
+  // phân trang phía server.
+  const { data: mem, error: memErr } = await client
     .from("clan_members")
-    .select(
-      `role, clan:clans!inner ( ${COLS}, name_unaccent )`,
-      { count: "exact" },
-    )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: true })
+    .select("clan_id, role")
+    .eq("user_id", userId);
+  if (memErr) throw new Error(memErr.message);
+  const ids = (mem ?? []).map((m) => m.clan_id);
+  const roleById = new Map(
+    (mem ?? []).map((m) => [m.clan_id, m.role as ClanSummary["role"]]),
+  );
+  if (ids.length === 0) {
+    return { rows: [], total: 0, page: params.page, pageSize: params.pageSize };
+  }
+
+  const sort = sortColumn(params.sort);
+  let q = client
+    .from("clans")
+    .select(COLS, { count: "exact" })
+    .in("id", ids)
+    .order(sort.col, { ascending: sort.ascending })
+    .order("name_unaccent", { ascending: true })
     .range(from, to);
 
   if (params.search?.trim()) {
-    const needle = `%${unaccent(params.search)}%`;
-    q = q.ilike("clan.name_unaccent", needle);
+    q = q.ilike("name_unaccent", `%${unaccent(params.search)}%`);
   }
 
   const { data, error, count } = await q;
   if (error) throw new Error(error.message);
 
-  const rows = (data ?? [])
-    .filter((row) => row.clan !== null)
-    .map((row) => ({
-      ...(row.clan as Omit<ClanSummary, "role">),
-      role: row.role as ClanSummary["role"],
-    }));
+  const rows = (data ?? []).map((c) => ({
+    ...(c as Omit<ClanSummary, "role">),
+    role: roleById.get((c as { id: string }).id) ?? null,
+  }));
   return { rows, total: count ?? 0, page: params.page, pageSize: params.pageSize };
 }
 
@@ -126,10 +164,12 @@ export async function listCommunityClans(
     .eq("user_id", userId);
   const memberIds = (mem ?? []).map((r) => r.clan_id);
 
+  const sort = sortColumn(params.sort);
   let q = client
     .from("clans")
     .select(COLS, { count: "exact" })
-    .order("created_at", { ascending: true })
+    .order(sort.col, { ascending: sort.ascending })
+    .order("name_unaccent", { ascending: true })
     .range(from, to);
 
   // Platform admin sees every non-member clan (public + private).
