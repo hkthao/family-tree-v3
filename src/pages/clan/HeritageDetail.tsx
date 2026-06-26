@@ -206,7 +206,11 @@ export default function HeritageDetail() {
     .filter((u): u is string => !!u);
   const cardExcerpt = (item.summary || item.body || "").slice(0, 240);
   const cardGenre: CardGenre =
-    item.category === "story" || item.category === "artifact" ? "story" : "memorial";
+    item.category === "place"
+      ? "shrine"
+      : item.category === "story" || item.category === "artifact"
+        ? "story"
+        : "memorial";
 
   return (
     <div className="space-y-3">
