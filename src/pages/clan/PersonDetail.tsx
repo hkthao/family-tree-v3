@@ -516,7 +516,7 @@ export default function PersonDetail() {
                   clanId={clan.id}
                   clanName={clan.name}
                   genOffset={clan.generation_offset}
-                  canCreateQr={canCreateQr}
+                  canCreateQr={effectiveRole(clan) !== null}
                   person={{
                     id: person.id,
                     full_name: person.full_name,

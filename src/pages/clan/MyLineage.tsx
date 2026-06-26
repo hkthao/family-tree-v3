@@ -524,7 +524,7 @@ function LineageView({
                 clanId={clanId}
                 clanName={clan.name}
                 genOffset={clan.generation_offset}
-                canCreateQr={effectiveRole(clan) === "admin"}
+                canCreateQr={effectiveRole(clan) !== null}
                 person={{
                   id: self.id,
                   full_name: self.full_name,

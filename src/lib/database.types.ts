@@ -99,6 +99,45 @@ export type Database = {
         }
         Relationships: []
       }
+      card_shares: {
+        Row: {
+          clan_id: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          image_path: string
+          person_id: string | null
+          subtitle: string | null
+          title: string
+          token: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          image_path: string
+          person_id?: string | null
+          subtitle?: string | null
+          title: string
+          token: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          image_path?: string
+          person_id?: string | null
+          subtitle?: string | null
+          title?: string
+          token?: string
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string

@@ -1,11 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
 import { IconSparkles } from "@/components/icons";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { Button } from "@/components/ui/button";
 import { getSignedPhotoUrl } from "@/lib/photoUpload";
-import { getOrCreatePersonShareLink } from "@/lib/queries/share-links";
 
 export interface KhoePerson {
   id: string;
@@ -19,8 +18,10 @@ export interface KhoePerson {
  * chia sẻ lên Zalo/Facebook. Đặt ở trang Người, Đường trực hệ, Tổng quan…
  * để mỗi thành viên dễ khoe gốc gác → tăng lan toả.
  *
- * QR (về trang cá nhân công khai) chỉ đính kèm khi người dùng có quyền tạo
- * link (admin); thành viên thường vẫn tạo được thẻ đẹp (không QR).
+ * Khi chia sẻ, ảnh thiệp được LƯU lại và tạo link công khai /khoe/:token
+ * (hạn ≤ 3 tháng) — QR trên thiệp trỏ về trang khoe hiển thị đúng tấm
+ * thiệp đó (không phải trang danh thiếp). `canCreateQr` = là thành viên
+ * dòng họ (RLS publish yêu cầu thành viên).
  */
 export function KhoeButton({
   clanId,
@@ -54,10 +55,10 @@ export function KhoeButton({
     enabled: open && !!person.photo_path,
   });
 
-  const qrM = useMutation({
-    mutationFn: () => getOrCreatePersonShareLink(clanId, person.id),
-  });
-  const qrUrl = qrM.data ? `${window.location.origin}/share/${qrM.data.token}` : "";
+  const genLabel =
+    person.generation !== null
+      ? `Đời thứ ${person.generation - genOffset}`
+      : null;
 
   return (
     <>
@@ -69,7 +70,6 @@ export function KhoeButton({
           e.preventDefault();
           e.stopPropagation();
           setOpen(true);
-          if (canCreateQr && !qrM.data) qrM.mutate();
         }}
         aria-label="Khoe — tạo thẻ cá nhân chia sẻ"
         title="Tạo thẻ cá nhân để khoe lên Zalo/Facebook"
@@ -82,16 +82,21 @@ export function KhoeButton({
         open={open}
         onClose={() => setOpen(false)}
         clanName={clanName}
-        shareUrl={canCreateQr ? qrUrl : ""}
+        shareUrl=""
         initialTitle={person.full_name}
         initialExcerpt=""
         photoUrls={photoUrl ? [photoUrl] : []}
-        dateText={
-          person.generation !== null
-            ? `Đời thứ ${person.generation - genOffset}`
-            : null
-        }
+        dateText={genLabel}
         defaultGenre="personal"
+        publish={
+          canCreateQr
+            ? {
+                clanId,
+                personId: person.id,
+                subtitle: genLabel ? `${genLabel} · ${clanName}` : clanName,
+              }
+            : undefined
+        }
       />
     </>
   );
