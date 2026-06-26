@@ -51,8 +51,9 @@ export default function Heritage() {
     queryFn: () =>
       listHeritageItems(clan.id, { search: debounced, category: category || null }),
     enabled: !!userId,
-    // Danh sách di sản: luôn làm mới khi mở trang (tránh hiển thị cache cũ
-    // khi dữ liệu thay đổi ở nơi khác). Vẫn hiện cache ngay, refetch nền.
+    // Danh sách di sản: luôn coi là cũ (ghi đè staleTime 4h toàn cục) → mỗi
+    // lần đổi tab lọc / mở trang đều gọi lại, không hiển thị cache rỗng cũ.
+    staleTime: 0,
     refetchOnMount: "always",
   });
 
