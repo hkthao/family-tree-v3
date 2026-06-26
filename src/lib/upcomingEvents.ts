@@ -28,6 +28,8 @@ export interface UpcomingEvent {
   title: string;
   /** Resting place id when the event is a tảo mộ / chạp họ tied to a mộ. */
   restingPlaceId?: string | null;
+  /** Id của sự kiện trong bảng events (chỉ custom / tomb_visit) — để mở chi tiết. */
+  eventId?: string;
   /** ISO yyyy-mm-dd this event lands on (in the local year). */
   date: string;
   /** Days from `today` until `date`. 0 = today. */
@@ -155,6 +157,7 @@ export function computeUpcomingEvents({
         title: e.title,
         date: iso,
         daysUntil: days,
+        eventId: e.id,
         personId: e.related_person_id ?? undefined,
         restingPlaceId: e.resting_place_id ?? null,
         branchId: e.related_person_id
@@ -189,6 +192,7 @@ export function computeUpcomingEvents({
           title: e.title,
           date: iso,
           daysUntil: days,
+          eventId: e.id,
           personId: e.related_person_id ?? undefined,
           restingPlaceId: e.resting_place_id ?? null,
         });

@@ -62,6 +62,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { getTreeData } from "@/lib/queries/tree";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
+import { EventDetailDialog } from "@/components/EventDetailDialog";
 import {
   computeUpcomingAnniversaries,
   computeUpcomingEvents,
@@ -79,6 +80,7 @@ export default function Events() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
+  const [detailEventId, setDetailEventId] = useState<string | null>(null);
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -312,6 +314,7 @@ export default function Events() {
                   event={e}
                   clanId={clan.id}
                   variant={view === "grid" ? "card" : "row"}
+                  onOpenEvent={setDetailEventId}
                 />
               </li>
             ))}
@@ -352,6 +355,7 @@ export default function Events() {
                   event={e}
                   clanName={clan.name}
                   canDelete={canEdit}
+                  onOpen={() => setDetailEventId(e.id)}
                   onDeleted={() => invalidateClanData(qc, clan.id)}
                 />
               ))}
@@ -382,6 +386,14 @@ export default function Events() {
           </CardContent>
         </Card>
       )}
+
+      <EventDetailDialog
+        open={detailEventId !== null}
+        onClose={() => setDetailEventId(null)}
+        event={(events ?? []).find((e) => e.id === detailEventId) ?? null}
+        clanId={clan.id}
+        clanName={clan.name}
+      />
     </div>
   );
 }
@@ -392,11 +404,13 @@ function CustomEventItem({
   event,
   clanName,
   canDelete,
+  onOpen,
   onDeleted,
 }: {
   event: EventRow;
   clanName: string;
   canDelete: boolean;
+  onOpen: () => void;
   onDeleted: () => void;
 }) {
   const confirm = useConfirm();
@@ -425,12 +439,12 @@ function CustomEventItem({
 
   return (
     <li className="px-3 py-3 flex items-center justify-between gap-3">
-      <div className="min-w-0">
+      <button type="button" onClick={onOpen} className="min-w-0 text-left flex-1 hover:opacity-80">
         <p className="font-semibold line-clamp-2 text-base">{event.title}</p>
         <p className="text-sm text-muted-foreground">
           {when} {event.is_yearly ? "• lặp hằng năm" : ""}
         </p>
-      </div>
+      </button>
       <div className="flex items-center gap-2 shrink-0">
         <Button size="sm" variant="outline" onClick={() => setCardOpen(true)}>
           <IconSparkles className="h-4 w-4 mr-1" />
