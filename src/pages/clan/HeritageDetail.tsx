@@ -13,12 +13,15 @@ import {
   IconPlus,
   IconQrCode,
   IconScroll,
+  IconSparkles,
   IconTrash,
   IconX,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
+import { ShareCardDialog } from "@/components/ShareCardDialog";
+import type { CardGenre } from "@/lib/cards/types";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -183,8 +186,9 @@ export default function HeritageDetail() {
     onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
-  // QR chia sẻ công khai
+  // QR chia sẻ công khai + thiệp chia sẻ
   const [qrOpen, setQrOpen] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
   const qrM = useMutation({
     mutationFn: () => getOrCreateHeritageShareLink(clan.id, itemId!),
     onError: (e) => toast.error("Không tạo được QR", { description: (e as Error).message }),
@@ -195,6 +199,14 @@ export default function HeritageDetail() {
   if (!item) return <p className="text-muted-foreground">Không tìm thấy.</p>;
 
   const dir = heritageDirectionsUrl(item.latitude, item.longitude);
+
+  // Dữ liệu cho thiệp chia sẻ.
+  const cardPhotoUrls = photos
+    .map((p) => srcOf(p))
+    .filter((u): u is string => !!u);
+  const cardExcerpt = (item.summary || item.body || "").slice(0, 240);
+  const cardGenre: CardGenre =
+    item.category === "story" || item.category === "artifact" ? "story" : "memorial";
 
   return (
     <div className="space-y-3">
@@ -213,16 +225,27 @@ export default function HeritageDetail() {
         actions={
           <div className="flex gap-2">
             {canAdmin && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setQrOpen(true);
-                  if (!qrM.data) qrM.mutate();
-                }}
-              >
-                <IconQrCode className="h-4 w-4 mr-1" /> Chia sẻ
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setCardOpen(true);
+                    if (!qrM.data) qrM.mutate();
+                  }}
+                >
+                  <IconSparkles className="h-4 w-4 mr-1" /> Tạo thiệp
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQrOpen(true);
+                    if (!qrM.data) qrM.mutate();
+                  }}
+                >
+                  <IconQrCode className="h-4 w-4 mr-1" /> QR
+                </Button>
+              </>
             )}
             {canEdit && (
               <>
@@ -509,6 +532,17 @@ export default function HeritageDetail() {
         loading={qrM.isPending}
         title={item.title}
         description="Quét QR để xem mục di sản này — chia sẻ với con cháu trong họ."
+      />
+
+      <ShareCardDialog
+        open={cardOpen}
+        onClose={() => setCardOpen(false)}
+        clanName={clan.name}
+        shareUrl={qrUrl}
+        initialTitle={item.title}
+        initialExcerpt={cardExcerpt}
+        photoUrls={cardPhotoUrls}
+        defaultGenre={cardGenre}
       />
     </div>
   );
