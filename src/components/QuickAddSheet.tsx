@@ -29,8 +29,70 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { createPerson, getPerson, updatePerson } from "@/lib/queries/persons";
 import { inferGenderFromName } from "@/lib/nameGender";
+import { buildPersonDateColumns, type CalendarDateValue } from "@/lib/personDates";
 
 type Relation = "child" | "spouse" | "parent";
+
+/**
+ * Năm (dương) → cột birth/death của persons. Dùng cho ô nhập nhanh
+ * "Năm sinh / Năm mất" — đủ cho 90% trường hợp gia phả; ngày/tháng +
+ * âm lịch nhập sau qua màn sửa. Trả null nếu để trống.
+ */
+function yearToCols(yearStr: string) {
+  const y = yearStr.trim();
+  if (!y) return null;
+  const v: CalendarDateValue = {
+    mode: "solar",
+    parts: { year: y, month: "", day: "" },
+    isLeap: false,
+  };
+  const c = buildPersonDateColumns(v);
+  return {
+    date: c.solar_date,
+    precision: c.solar_precision,
+  };
+}
+
+/** 2 ô năm sinh / năm mất cạnh nhau cho form thêm nhanh. */
+function YearFields({
+  idPrefix,
+  birthYear,
+  deathYear,
+  onBirthYear,
+  onDeathYear,
+}: {
+  idPrefix: string;
+  birthYear: string;
+  deathYear: string;
+  onBirthYear: (v: string) => void;
+  onDeathYear: (v: string) => void;
+}) {
+  const onlyDigits = (v: string) => v.replace(/\D/g, "").slice(0, 4);
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1.5">
+        <Label htmlFor={`${idPrefix}_by`}>Năm sinh</Label>
+        <Input
+          id={`${idPrefix}_by`}
+          inputMode="numeric"
+          value={birthYear}
+          onChange={(e) => onBirthYear(onlyDigits(e.target.value))}
+          placeholder="vd 1950"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${idPrefix}_dy`}>Năm mất</Label>
+        <Input
+          id={`${idPrefix}_dy`}
+          inputMode="numeric"
+          value={deathYear}
+          onChange={(e) => onDeathYear(onlyDigits(e.target.value))}
+          placeholder="trống nếu còn sống"
+        />
+      </div>
+    </div>
+  );
+}
 
 interface QuickAddSheetProps {
   open: boolean;
@@ -350,6 +412,8 @@ function QuickAddChild({
   // second-guess on every keystroke.
   const [genderTouched, setGenderTouched] = useState(false);
   const [birthOrder, setBirthOrder] = useState<string>("");
+  const [birthYear, setBirthYear] = useState("");
+  const [deathYear, setDeathYear] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
 
   function onSingleNameChange(v: string) {
@@ -386,12 +450,21 @@ function QuickAddChild({
 
   // Bulk-mode state: list of rows. `genderTouched` is tracked per
   // row so manual picks aren't clobbered by subsequent name edits.
-  type Row = { name: string; gender: "M" | "F"; genderTouched: boolean };
-  const [rows, setRows] = useState<Row[]>([
-    { name: "", gender: "M", genderTouched: false },
-    { name: "", gender: "M", genderTouched: false },
-    { name: "", gender: "M", genderTouched: false },
-  ]);
+  type Row = {
+    name: string;
+    gender: "M" | "F";
+    genderTouched: boolean;
+    birthYear: string;
+    deathYear: string;
+  };
+  const mkRow = (name: string, gender: "M" | "F" = "M"): Row => ({
+    name,
+    gender,
+    genderTouched: false,
+    birthYear: "",
+    deathYear: "",
+  });
+  const [rows, setRows] = useState<Row[]>([mkRow(""), mkRow(""), mkRow("")]);
   const bulkInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const bulkInitRef = useRef(false);
 
@@ -399,11 +472,7 @@ function QuickAddChild({
     if (bulkInitRef.current) return;
     if (!focal || !rels) return;
     const p = deriveNamePrefix(focal, children, "M");
-    setRows([
-      { name: p, gender: "M", genderTouched: false },
-      { name: p, gender: "M", genderTouched: false },
-      { name: p, gender: "M", genderTouched: false },
-    ]);
+    setRows([mkRow(p), mkRow(p), mkRow(p)]);
     bulkInitRef.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focal, rels]);
@@ -425,6 +494,8 @@ function QuickAddChild({
   const singleMutation = useMutation({
     mutationFn: async () => {
       const family = await findOrCreateFamily(resolveFamilyInputs());
+      const b = yearToCols(birthYear);
+      const d = yearToCols(deathYear);
       return addChildToFamily({
         clanId,
         family_id: family.id,
@@ -433,6 +504,11 @@ function QuickAddChild({
         birth_order: birthOrder.trim()
           ? Math.max(1, Math.floor(Number(birthOrder)))
           : null,
+        birth_date: b?.date ?? null,
+        birth_date_precision: b?.precision ?? null,
+        death_date: d?.date ?? null,
+        death_date_precision: d?.precision ?? null,
+        is_living: d ? false : true,
       });
     },
     onSuccess: async () => {
@@ -443,6 +519,8 @@ function QuickAddChild({
       // sharing họ + đệm.
       const next = deriveNamePrefix(focal, children, gender);
       setName(next);
+      setBirthYear("");
+      setDeathYear("");
       setBirthOrder((prev) => {
         const n = Math.max(1, Math.floor(Number(prev || existingCount + 1)));
         return String(n + 1);
@@ -460,12 +538,19 @@ function QuickAddChild({
       const family = await findOrCreateFamily(resolveFamilyInputs());
       let i = 0;
       for (const r of valid) {
+        const b = yearToCols(r.birthYear);
+        const d = yearToCols(r.deathYear);
         await addChildToFamily({
           clanId,
           family_id: family.id,
           full_name: r.name.trim(),
           gender: r.gender,
           birth_order: existingCount + i + 1,
+          birth_date: b?.date ?? null,
+          birth_date_precision: b?.precision ?? null,
+          death_date: d?.date ?? null,
+          death_date_precision: d?.precision ?? null,
+          is_living: d ? false : true,
         });
         i++;
       }
@@ -475,11 +560,7 @@ function QuickAddChild({
       await invalidateClanData(queryClient, clanId);
       toast.success(`Đã thêm ${n} người con`);
       const p = deriveNamePrefix(focal, children, "M");
-      setRows([
-        { name: p, gender: "M", genderTouched: false },
-        { name: p, gender: "M", genderTouched: false },
-        { name: p, gender: "M", genderTouched: false },
-      ]);
+      setRows([mkRow(p), mkRow(p), mkRow(p)]);
       setTimeout(() => focusAtEnd(bulkInputRefs.current[0]), 0);
     },
     onError: (e) =>
@@ -501,10 +582,7 @@ function QuickAddChild({
   function addRow() {
     const lastGender = rows[rows.length - 1]?.gender ?? "M";
     const p = deriveNamePrefix(focal, children, lastGender);
-    setRows((prev) => [
-      ...prev,
-      { name: p, gender: lastGender, genderTouched: false },
-    ]);
+    setRows((prev) => [...prev, mkRow(p, lastGender)]);
     setTimeout(() => {
       const idx = bulkInputRefs.current.length - 1;
       focusAtEnd(bulkInputRefs.current[idx]);
@@ -633,6 +711,14 @@ function QuickAddChild({
             helper={null}
           />
 
+          <YearFields
+            idPrefix="quick_child"
+            birthYear={birthYear}
+            deathYear={deathYear}
+            onBirthYear={setBirthYear}
+            onDeathYear={setDeathYear}
+          />
+
           <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
             <Button
               type="submit"
@@ -689,6 +775,30 @@ function QuickAddChild({
                   onChange={(g) =>
                     updateRow(i, { gender: g, genderTouched: true })
                   }
+                />
+                <Input
+                  value={r.birthYear}
+                  onChange={(e) =>
+                    updateRow(i, {
+                      birthYear: e.target.value.replace(/\D/g, "").slice(0, 4),
+                    })
+                  }
+                  inputMode="numeric"
+                  placeholder="Năm sinh"
+                  aria-label="Năm sinh"
+                  className="w-[92px] shrink-0"
+                />
+                <Input
+                  value={r.deathYear}
+                  onChange={(e) =>
+                    updateRow(i, {
+                      deathYear: e.target.value.replace(/\D/g, "").slice(0, 4),
+                    })
+                  }
+                  inputMode="numeric"
+                  placeholder="Năm mất"
+                  aria-label="Năm mất"
+                  className="w-[92px] shrink-0"
                 />
                 <IconButton
                   onClick={() => moveRow(i, -1)}
@@ -780,6 +890,8 @@ function QuickAddSpouse({
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"M" | "F">(defaultGender);
   const [genderTouched, setGenderTouched] = useState(false);
+  const [birthYear, setBirthYear] = useState("");
+  const [deathYear, setDeathYear] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
 
   if (focal && !genderTouched && gender !== defaultGender) {
@@ -789,10 +901,17 @@ function QuickAddSpouse({
   const mutation = useMutation({
     mutationFn: async () => {
       if (!focal) throw new Error("Thiếu thông tin");
+      const b = yearToCols(birthYear);
+      const d = yearToCols(deathYear);
       const spouse = await createPerson({
         clan_id: clanId,
         full_name: name.trim(),
         gender,
+        birth_date: b?.date ?? null,
+        birth_date_precision: b?.precision ?? null,
+        death_date: d?.date ?? null,
+        death_date_precision: d?.precision ?? null,
+        is_living: d ? false : true,
       });
       await findOrCreateFamily({
         clanId,
@@ -805,6 +924,8 @@ function QuickAddSpouse({
       await invalidateClanData(queryClient, clanId);
       toast.success("Đã thêm vợ/chồng", { description: name.trim() });
       setName("");
+      setBirthYear("");
+      setDeathYear("");
       nameRef.current?.focus();
     },
     onError: (e) =>
@@ -848,6 +969,14 @@ function QuickAddSpouse({
           }}
         />
       </div>
+
+      <YearFields
+        idPrefix="quick_spouse"
+        birthYear={birthYear}
+        deathYear={deathYear}
+        onBirthYear={setBirthYear}
+        onDeathYear={setDeathYear}
+      />
 
       <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
         <Button
@@ -907,6 +1036,8 @@ function QuickAddParent({
   const [name, setName] = useState("");
   const [role, setRole] = useState<"M" | "F">(defaultRole);
   const [roleTouched, setRoleTouched] = useState(false);
+  const [birthYear, setBirthYear] = useState("");
+  const [deathYear, setDeathYear] = useState("");
   const nameRef = useRef<HTMLInputElement>(null);
 
   if (rels && !roleTouched && role !== defaultRole) {
@@ -947,10 +1078,17 @@ function QuickAddParent({
   const mutation = useMutation({
     mutationFn: async () => {
       if (!focal) throw new Error("Thiếu thông tin");
+      const b = yearToCols(birthYear);
+      const d = yearToCols(deathYear);
       const parent = await createPerson({
         clan_id: clanId,
         full_name: name.trim(),
         gender: role,
+        birth_date: b?.date ?? null,
+        birth_date_precision: b?.precision ?? null,
+        death_date: d?.date ?? null,
+        death_date_precision: d?.precision ?? null,
+        is_living: d ? false : true,
       });
       const existingOther = rels?.parents.find((p) => p.gender !== role);
       const family = await findOrCreateFamily({
@@ -977,6 +1115,8 @@ function QuickAddParent({
         setRole(roleAdded === "M" ? "F" : "M");
         setRoleTouched(true);
         setName(parentPrefix);
+        setBirthYear("");
+        setDeathYear("");
         setTimeout(() => focusAtEnd(nameRef.current), 0);
       }
     },
@@ -1051,6 +1191,14 @@ function QuickAddParent({
           </SegmentedButton>
         </SegmentedControl>
       </div>
+
+      <YearFields
+        idPrefix="quick_parent"
+        birthYear={birthYear}
+        deathYear={deathYear}
+        onBirthYear={setBirthYear}
+        onDeathYear={setDeathYear}
+      />
 
       <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
         <Button
