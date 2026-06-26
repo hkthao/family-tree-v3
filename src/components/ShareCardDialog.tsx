@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { IconDownload, IconSend, IconX } from "@/components/icons";
+import { IconDownload, IconLink, IconSend, IconX } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toast";
 import {
@@ -210,8 +210,43 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 Tải ảnh
               </Button>
             </div>
+
+            {/* Chia sẻ bằng LINK công khai (tăng lan toả) — chỉ khi có link. */}
+            {props.shareUrl && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(props.shareUrl);
+                      toast.success("Đã chép link — dán vào Zalo/Facebook để chia sẻ.");
+                    } catch {
+                      toast.error("Không chép được link");
+                    }
+                  }}
+                >
+                  <IconLink className="h-4 w-4 mr-1.5" /> Chép link
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() =>
+                    window.open(
+                      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(props.shareUrl)}`,
+                      "_blank",
+                      "noopener,noreferrer",
+                    )
+                  }
+                >
+                  Facebook
+                </Button>
+              </div>
+            )}
+
             <p className="text-xs text-muted-foreground text-center">
-              Trên điện thoại bấm "Chia sẻ" để đăng thẳng lên Zalo / Facebook.
+              Bấm "Chia sẻ" để đăng ảnh thẳng lên Zalo/Facebook; hoặc "Chép link"
+              để dán vào nhóm họ.
             </p>
           </div>
 

@@ -28,11 +28,23 @@ export interface ClanBookRestingPlace {
   occupant_names: string[];
 }
 
+export interface ClanBookHeritage {
+  id: string;
+  category: "place" | "custom" | "story" | "artifact";
+  title: string;
+  summary: string | null;
+  body: string | null;
+  location_name: string | null;
+  built_year: number | null;
+  people_names: string[];
+}
+
 export interface ClanBookData {
   persons: PersonDetail[];
   families: ClanBookFamily[];
   branches: ClanBookBranch[];
   restingPlaces: ClanBookRestingPlace[];
+  heritage: ClanBookHeritage[];
   /** child_id → family_id (their birth family). */
   childToFamily: Record<string, string>;
 }
@@ -56,7 +68,7 @@ export async function getClanBookData(
   // queries. Used by PDF export + GEDCOM — both want every row,
   // not the first 1000. Same defensive ceiling as getTreeData.
   const MAX_ROWS = 9999;
-  const [pq, fq, bq, rq] = await Promise.all([
+  const [pq, fq, bq, rq, hq] = await Promise.all([
     client
       .from("persons")
       .select(`${DETAIL_COLS}, birth_family_id`)
@@ -86,12 +98,23 @@ export async function getClanBookData(
       .is("deleted_at", null)
       .order("created_at", { ascending: true })
       .range(0, MAX_ROWS),
+    client
+      .from("heritage_items")
+      .select(
+        "id, category, title, summary, body, location_name, built_year, heritage_people(person:persons(full_name))",
+      )
+      .eq("clan_id", clanId)
+      .is("deleted_at", null)
+      .order("category", { ascending: true })
+      .order("created_at", { ascending: true })
+      .range(0, MAX_ROWS),
   ]);
 
   if (pq.error) throw new Error(pq.error.message);
   if (fq.error) throw new Error(fq.error.message);
   if (bq.error) throw new Error(bq.error.message);
   if (rq.error) throw new Error(rq.error.message);
+  if (hq.error) throw new Error(hq.error.message);
 
   const persons = (pq.data ?? []) as (PersonDetail & {
     birth_family_id: string | null;
@@ -111,11 +134,21 @@ export async function getClanBookData(
     };
   });
 
+  const heritage: ClanBookHeritage[] = (hq.data ?? []).map((h) => {
+    const ppl = (h as { heritage_people?: { person: { full_name: string } | null }[] }).heritage_people ?? [];
+    const { heritage_people: _p, ...rest } = h as ClanBookHeritage & { heritage_people?: unknown };
+    return {
+      ...(rest as Omit<ClanBookHeritage, "people_names">),
+      people_names: ppl.map((x) => x.person?.full_name).filter((n): n is string => !!n),
+    };
+  });
+
   return {
     persons: persons.map(({ birth_family_id: _b, ...rest }) => rest as PersonDetail),
     families: (fq.data ?? []) as ClanBookFamily[],
     branches: (bq.data ?? []) as ClanBookBranch[],
     restingPlaces,
+    heritage,
     childToFamily,
   };
 }

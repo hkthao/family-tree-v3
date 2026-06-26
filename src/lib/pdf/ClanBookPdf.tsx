@@ -307,7 +307,7 @@ function VineBorder({
 interface Props {
   clan: ClanDetail;
   data: ClanBookData;
-  include?: { tree?: boolean; detail?: boolean; restingPlaces?: boolean };
+  include?: { tree?: boolean; detail?: boolean; restingPlaces?: boolean; heritage?: boolean };
   /**
    * Optional personId → JPEG data URI map for embedding real avatar
    * photos. Persons not in the map fall back to the gendered
@@ -323,6 +323,14 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
   const showTree = include?.tree ?? true;
   const showDetail = include?.detail ?? true;
   const showRestingPlaces = include?.restingPlaces ?? true;
+  const showHeritage = include?.heritage ?? true;
+
+  const HERITAGE_CAT_LABEL: Record<string, string> = {
+    place: "Từ đường / đền / chùa",
+    custom: "Tục lệ / gia phong",
+    story: "Giai thoại / công trạng",
+    artifact: "Tư liệu / kỷ vật",
+  };
 
   const RP_KIND_LABEL: Record<string, string> = {
     grave: "Mộ / chôn cất",
@@ -654,6 +662,47 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId }: Props) {
                 {rp.occupant_names.length > 0 ? (
                   <Text style={{ fontSize: 9.5 }}>
                     Người an nghỉ: {rp.occupant_names.join(", ")}
+                  </Text>
+                ) : null}
+              </View>
+            );
+          })}
+        </Page>
+      )}
+
+      {/* ─── Di sản & Văn hoá ───────────────────────────────── */}
+      {showHeritage && data.heritage.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <VineBorder />
+          <Text style={styles.h1}>Di sản &amp; Văn hoá</Text>
+          <View style={styles.h1Underline} />
+          <Text style={styles.intro}>
+            Từ đường, tục lệ, giai thoại, tư liệu — những giá trị tinh thần
+            của dòng họ.
+          </Text>
+          {data.heritage.map((h) => {
+            const meta = [
+              HERITAGE_CAT_LABEL[h.category],
+              h.location_name || null,
+              h.built_year ? `năm ${h.built_year}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
+            return (
+              <View key={h.id} wrap={false} style={{ marginBottom: 10 }}>
+                <Text style={{ fontSize: 11, fontWeight: 700 }}>{h.title}</Text>
+                <Text style={{ fontSize: 9.5, color: "#6F665F" }}>{meta}</Text>
+                {h.summary ? (
+                  <Text style={{ fontSize: 9.5, fontWeight: 700, marginTop: 1 }}>
+                    {h.summary}
+                  </Text>
+                ) : null}
+                {h.body ? (
+                  <Text style={{ fontSize: 9.5, marginTop: 1 }}>{h.body}</Text>
+                ) : null}
+                {h.people_names.length > 0 ? (
+                  <Text style={{ fontSize: 9.5, color: "#6F665F", marginTop: 1 }}>
+                    Người liên quan: {h.people_names.join(", ")}
                   </Text>
                 ) : null}
               </View>
