@@ -21,6 +21,11 @@ interface Props {
    * chiều cao, cho chế độ xem lưới nhiều cột.
    */
   variant?: "row" | "card";
+  /**
+   * Khi sự kiện là của dòng họ (custom / tảo mộ, có eventId) → bấm sẽ
+   * MỞ CHI TIẾT SỰ KIỆN thay vì nhảy sang trang người liên quan.
+   */
+  onOpenEvent?: (eventId: string) => void;
 }
 
 /** Lớp màu cho nhãn "Còn N ngày" theo độ gấp. */
@@ -43,6 +48,7 @@ export function UpcomingEventRow({
   clanId,
   emphasised,
   variant = "row",
+  onOpenEvent,
 }: Props) {
   const dt = new Date(event.date + "T00:00:00");
   const day = dt.getDate();
@@ -56,6 +62,17 @@ export function UpcomingEventRow({
   const canChi = getCanChiForSolarDate(event.date);
 
   const wrap = (node: ReactNode) => {
+    // Sự kiện của dòng họ (có eventId) → mở chi tiết sự kiện.
+    if (event.eventId && onOpenEvent)
+      return (
+        <button
+          type="button"
+          onClick={() => onOpenEvent(event.eventId!)}
+          className="block h-full w-full text-left"
+        >
+          {node}
+        </button>
+      );
     if (event.restingPlaceId)
       return (
         <Link to={`/clans/${clanId}/graves/${event.restingPlaceId}`} className="block h-full">
