@@ -2,12 +2,36 @@
 
 export type CardFormat = "square" | "vertical";
 
-export type CardGenre = "memorial" | "story" | "invite" | "event";
+export type CardGenre =
+  | "memorial"
+  | "grave"
+  | "vulan"
+  | "reunion"
+  | "tet"
+  | "longevity"
+  | "story"
+  | "shrine"
+  | "invite"
+  | "joy"
+  | "study"
+  | "merit"
+  | "wisdom"
+  | "event";
 
 export const CARD_GENRE_LABEL: Record<CardGenre, string> = {
-  memorial: "Tưởng niệm / Giỗ Tổ",
+  memorial: "Giỗ Tổ / Tưởng niệm",
+  grave: "Tảo mộ / Thanh minh",
+  vulan: "Vu Lan",
+  reunion: "Họp họ",
+  tet: "Tết / Mừng xuân",
+  longevity: "Mừng thọ",
   story: "Câu chuyện / Giai thoại",
+  shrine: "Từ đường / Di tích",
   invite: "Khoe gia phả & Mời",
+  joy: "Tin vui",
+  study: "Khuyến học / Vinh danh",
+  merit: "Tri ân / Công đức",
+  wisdom: "Lời hay / Gia huấn",
   event: "Sự kiện / Kính mời",
 };
 
