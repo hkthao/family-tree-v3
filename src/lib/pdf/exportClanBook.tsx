@@ -20,13 +20,20 @@ export async function downloadClanBookPdf(
   options: ExportClanBookOptions = {},
 ): Promise<{ filename: string; bytes: number }> {
   const data = await getClanBookData(clan.id);
-  const photoByPersonId = await fetchPhotoDataUris(data.persons);
+  const [photoByPersonId, coverByItemId] = await Promise.all([
+    fetchPhotoDataUris(data.persons),
+    fetchCoverDataUris([
+      ...data.heritage.map((h) => ({ id: h.id, path: h.cover_path, url: h.cover_url })),
+      ...data.restingPlaces.map((r) => ({ id: r.id, path: r.cover_path })),
+    ]),
+  ]);
   const blob = await pdf(
     <ClanBookPdf
       clan={clan}
       data={data}
       include={options}
       photoByPersonId={photoByPersonId}
+      coverByItemId={coverByItemId}
     />,
   ).toBlob();
 
@@ -95,6 +102,36 @@ async function fetchPhotoDataUris(
     }),
   );
 
+  return out;
+}
+
+/**
+ * Tải ảnh bìa (Mộ phần / Di sản) thành data URI cho @react-pdf. Nguồn có
+ * thể là bucket (ký URL) hoặc link ngoài (dùng trực tiếp). Item nào lỗi
+ * thì bỏ qua (thẻ không có ảnh).
+ */
+async function fetchCoverDataUris(
+  items: { id: string; path?: string | null; url?: string | null }[],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const bucketPaths = items
+    .map((i) => i.path)
+    .filter((p): p is string => !!p);
+  const urlMap = bucketPaths.length ? await getSignedPhotoUrlMap(bucketPaths) : new Map<string, string>();
+  await Promise.all(
+    items.map(async (i) => {
+      const src = i.path ? urlMap.get(i.path) : i.url ?? undefined;
+      if (!src) return;
+      try {
+        const res = await fetch(src);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        out.set(i.id, await blobToDataUri(blob));
+      } catch {
+        /* bỏ qua ảnh lỗi */
+      }
+    }),
+  );
   return out;
 }
 
