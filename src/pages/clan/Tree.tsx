@@ -7,6 +7,8 @@ import {
   IconHome,
   IconLayoutHorizontal,
   IconLayoutVertical,
+  IconMaximize,
+  IconMinimize,
   IconPlus,
   IconTree,
   IconUpload,
@@ -164,7 +166,34 @@ export default function Tree() {
       { replace: true },
     );
   const containerRef = useRef<HTMLDivElement>(null);
+  const treeWrapRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
+  // Xem cây toàn màn hình (Fullscreen API trên khối chứa cây).
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    const onChange = () => {
+      const fs = document.fullscreenElement === treeWrapRef.current;
+      setIsFullscreen(fs);
+      // family-chart đo container qua getBoundingClientRect → fit lại sau
+      // khi kích thước đổi (vào/ra fullscreen). Chờ 1 nhịp để layout xong.
+      requestAnimationFrame(() =>
+        chartRef.current?.updateTree({ initial: false }),
+      );
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  async function toggleFullscreen() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (treeWrapRef.current?.requestFullscreen) {
+        await treeWrapRef.current.requestFullscreen();
+      }
+    } catch {
+      /* trình duyệt từ chối / không hỗ trợ — bỏ qua */
+    }
+  }
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   // Touch-mode gate: on phones, the chart starts "locked" so the
@@ -1055,7 +1084,10 @@ export default function Tree() {
             )}
           </div>
 
-          <div className="relative">
+          <div
+            ref={treeWrapRef}
+            className={`relative ${isFullscreen ? "bg-background" : ""}`}
+          >
             <div
               ref={containerRef}
               // The `f3` class is required — family-chart's stylesheet scopes
@@ -1066,7 +1098,11 @@ export default function Tree() {
               // CSS-var overrides shift the default saturated blue/pink card
               // fills toward the paper/oxblood palette from plan §10:
               // male = cool muted, female = warm muted, text in ink colour.
-              className="f3 rounded-lg border bg-card overflow-hidden h-[70vh] min-h-[480px] max-h-[820px] text-foreground"
+              className={`f3 border bg-card overflow-hidden text-foreground ${
+                isFullscreen
+                  ? "h-screen max-h-none min-h-0 rounded-none border-0"
+                  : "rounded-lg h-[70vh] min-h-[480px] max-h-[820px]"
+              }`}
               style={
                 {
                   "--male-color": "var(--tree-card-male)",
@@ -1100,6 +1136,20 @@ export default function Tree() {
                 className="absolute bottom-2 right-2 z-10 flex flex-col gap-1 print-hide"
                 aria-label="Phóng to / thu nhỏ cây"
               >
+                <button
+                  type="button"
+                  data-testid="tree-fullscreen"
+                  onClick={toggleFullscreen}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm mb-1"
+                  aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+                  title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+                >
+                  {isFullscreen ? (
+                    <IconMinimize className="h-4 w-4" />
+                  ) : (
+                    <IconMaximize className="h-4 w-4" />
+                  )}
+                </button>
                 <button
                   type="button"
                   data-testid="tree-zoom-in"

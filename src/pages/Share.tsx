@@ -5,6 +5,8 @@ import { useParams } from "react-router-dom";
 import {
   IconLayoutHorizontal,
   IconLayoutVertical,
+  IconMaximize,
+  IconMinimize,
 } from "@/components/icons";
 import { SearchInput } from "@/components/SearchInput";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
@@ -80,7 +82,31 @@ function normalize(s: string): string {
 export default function Share() {
   const { token } = useParams<{ token: string }>();
   const containerRef = useRef<HTMLDivElement>(null);
+  const shareWrapRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
+  // Xem cây toàn màn hình trên trang chia sẻ công khai.
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    const onChange = () => {
+      setIsFullscreen(document.fullscreenElement === shareWrapRef.current);
+      requestAnimationFrame(() =>
+        chartRef.current?.updateTree({ initial: false }),
+      );
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  async function toggleFullscreen() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (shareWrapRef.current?.requestFullscreen) {
+        await shareWrapRef.current.requestFullscreen();
+      }
+    } catch {
+      /* không hỗ trợ — bỏ qua */
+    }
+  }
 
   // `focal` starts as null and becomes the user's choice (or a default
   // picked from the data) once we have it. We don't gate the chart on
@@ -560,16 +586,36 @@ export default function Share() {
             </div>
 
             <div
-              ref={containerRef}
-              className="f3 flex-1 min-h-0 w-full text-foreground"
-              style={
-                {
-                  "--male-color": "var(--tree-card-male)",
-                  "--female-color": "var(--tree-card-female)",
-                } as React.CSSProperties
-              }
-              aria-label="Cây gia phả tương tác (chỉ xem)"
-            />
+              ref={shareWrapRef}
+              className={`relative flex-1 min-h-0 w-full ${
+                isFullscreen ? "bg-background" : ""
+              }`}
+            >
+              <div
+                ref={containerRef}
+                className="f3 h-full w-full text-foreground"
+                style={
+                  {
+                    "--male-color": "var(--tree-card-male)",
+                    "--female-color": "var(--tree-card-female)",
+                  } as React.CSSProperties
+                }
+                aria-label="Cây gia phả tương tác (chỉ xem)"
+              />
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="absolute bottom-2 right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
+                aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+                title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+              >
+                {isFullscreen ? (
+                  <IconMinimize className="h-4 w-4" />
+                ) : (
+                  <IconMaximize className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </>
         )}
       </main>
