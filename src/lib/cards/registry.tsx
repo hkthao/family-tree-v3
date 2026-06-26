@@ -242,11 +242,75 @@ function InviteTree({ data, format }: CardTemplateProps) {
   );
 }
 
+// ─── 5. Sự kiện — Kính mời (ngày là điểm nhấn) ────────────────────
+function EventInvite({ data, format }: CardTemplateProps) {
+  return (
+    <div style={frame(format, { background: `linear-gradient(180deg, ${C.paper}, ${C.cream})` })}>
+      <div style={{ position: "absolute", inset: 40, border: `2px solid ${C.gold}`, borderRadius: 10 }} />
+      <div style={{
+        position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", textAlign: "center",
+        padding: "0 110px", gap: 28,
+      }}>
+        <Kicker color={C.ox}>Kính mời</Kicker>
+        <div style={{ fontFamily: SERIF, color: C.muted, fontSize: 38, fontStyle: "italic" }}>
+          {data.clanName}
+        </div>
+        <div style={{ fontFamily: SERIF, color: C.ink, fontSize: 72, fontWeight: 700, lineHeight: 1.15 }}>
+          {data.title}
+        </div>
+        {data.dateText && (
+          <div style={{
+            background: C.ox, color: C.goldLight, fontFamily: SERIF, fontWeight: 700,
+            fontSize: 46, padding: "18px 46px", borderRadius: 999, border: `2px solid ${C.gold}`,
+          }}>
+            {data.dateText}
+          </div>
+        )}
+        {data.excerpt && (
+          <div style={{ fontFamily: SERIF, color: C.ink, fontSize: 38, lineHeight: 1.5, maxWidth: 780, opacity: 0.95 }}>
+            {data.excerpt}
+          </div>
+        )}
+        {data.qrDataUrl && (
+          <div style={{ marginTop: 6 }}><QrBadge data={data} /></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── 6. Sự kiện — giỗ / tảo mộ (trang nghiêm) ─────────────────────
+function EventSolemn({ data, format }: CardTemplateProps) {
+  return (
+    <div style={frame(format, { background: `radial-gradient(circle at 50% 28%, ${C.ox}, ${C.oxDeep})` })}>
+      <div style={{ position: "absolute", inset: 44, border: `3px solid ${C.gold}`, borderRadius: 8 }} />
+      <div style={{
+        position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 110px", gap: 30,
+      }}>
+        <div style={{ fontSize: 70 }}>🕯️</div>
+        <div style={{ fontFamily: SERIF, color: C.goldLight, fontSize: 38, fontStyle: "italic" }}>{data.clanName}</div>
+        <div style={{ fontFamily: SERIF, color: C.cream, fontSize: 74, fontWeight: 700, lineHeight: 1.15 }}>{data.title}</div>
+        {data.dateText && (
+          <div style={{ color: C.goldLight, fontSize: 44, fontWeight: 700 }}>{data.dateText}</div>
+        )}
+        <Diamond />
+        {data.excerpt && (
+          <div style={{ fontFamily: SERIF, color: C.cream, fontSize: 36, lineHeight: 1.5, opacity: 0.92 }}>{data.excerpt}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export const CARD_TEMPLATES: CardTemplate[] = [
   { id: "memorial-classic", name: "Tưởng niệm — cổ điển", genre: "memorial", render: MemorialClassic },
   { id: "memorial-photo", name: "Tưởng niệm — ảnh nền", genre: "memorial", render: MemorialPhoto },
   { id: "story-paper", name: "Câu chuyện — ảnh & giấy", genre: "story", render: StoryPaper },
   { id: "invite-tree", name: "Mời tham gia — cây gia phả", genre: "invite", render: InviteTree },
+  { id: "event-invite", name: "Kính mời — trang nhã", genre: "event", render: EventInvite },
+  { id: "event-solemn", name: "Giỗ / tảo mộ — trang nghiêm", genre: "event", render: EventSolemn },
 ];
 
 export function templatesByGenre(genre: CardGenre): CardTemplate[] {
