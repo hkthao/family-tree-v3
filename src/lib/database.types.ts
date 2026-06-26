@@ -313,6 +313,57 @@ export type Database = {
           },
         ]
       }
+      clan_invites: {
+        Row: {
+          clan_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          is_revoked: boolean
+          role: string
+          token: string
+          use_count: number
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          is_revoked?: boolean
+          role: string
+          token: string
+          use_count?: number
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_revoked?: boolean
+          role?: string
+          token?: string
+          use_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clan_invites_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clan_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clan_members: {
         Row: {
           clan_id: string
@@ -2354,6 +2405,7 @@ export type Database = {
         Args: { p_loser: string; p_winner: string }
         Returns: Json
       }
+      peek_clan_invite: { Args: { p_token: string }; Returns: Json }
       prune_audit_log: { Args: { retention_days?: number }; Returns: number }
       prune_notification_log: {
         Args: { retention_days?: number }
@@ -2368,6 +2420,7 @@ export type Database = {
         Args: { target_clan: string }
         Returns: undefined
       }
+      redeem_clan_invite: { Args: { p_token: string }; Returns: string }
       reject_contribution: {
         Args: { p_id: string; p_note?: string; p_status: string }
         Returns: undefined
