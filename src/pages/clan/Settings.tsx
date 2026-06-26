@@ -11,6 +11,7 @@ import { useToast } from "@/components/Toast";
 import {
   IconCheck,
   IconList,
+  IconQrCode,
   IconSettings,
   IconUsers,
 } from "@/components/icons";
@@ -387,6 +388,23 @@ export default function Settings() {
             <Link to={`/clans/${clan.id}/audit`}>
               <IconList className="h-4 w-4 mr-1.5" />
               Mở nhật ký
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Xuất QR cá nhân</CardTitle>
+          <CardDescription>
+            Tạo mã QR cho từng người để in/khắc — quét ra trang cá nhân.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline">
+            <Link to={`/clans/${clan.id}/qr-export`}>
+              <IconQrCode className="h-4 w-4 mr-1.5" />
+              Mở xuất QR
             </Link>
           </Button>
         </CardContent>

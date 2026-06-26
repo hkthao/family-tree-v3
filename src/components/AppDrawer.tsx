@@ -10,14 +10,10 @@ import {
   IconBook,
   IconBuildings,
   IconCalendar,
-  IconCopy,
   IconHome,
   IconLink,
   IconList,
   IconPencil,
-  IconPlay,
-  IconPlus,
-  IconQrCode,
   IconScroll,
   IconSettings,
   IconShield,
@@ -25,8 +21,6 @@ import {
   IconSun,
   IconGrave,
   IconTree,
-  IconUpload,
-  IconUser,
   IconUserPlus,
   IconUsers,
 } from "@/components/icons";
@@ -250,28 +244,35 @@ export function AppDrawer({ open, onClose }: Props) {
           </div>
           {profile ? (
             <div className="flex items-center gap-3">
-              <div
-                className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium shrink-0"
-                aria-hidden="true"
+              <Link
+                to="/account"
+                onClick={onClose}
+                className="flex items-center gap-3 min-w-0 flex-1 rounded-md -m-1 p-1 hover:bg-muted/60"
+                title="Xem tài khoản"
               >
-                {initialOf(profile.display_name ?? user?.email ?? "?")}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {profile.display_name ?? user?.email ?? "—"}
-                  {profile.is_platform_admin && (
-                    <span
-                      className="ml-1.5 text-accent text-[10px] uppercase tracking-wide font-semibold"
-                      title="Platform admin"
-                    >
-                      ★
-                    </span>
-                  )}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.email}
-                </p>
-              </div>
+                <div
+                  className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium shrink-0"
+                  aria-hidden="true"
+                >
+                  {initialOf(profile.display_name ?? user?.email ?? "?")}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {profile.display_name ?? user?.email ?? "—"}
+                    {profile.is_platform_admin && (
+                      <span
+                        className="ml-1.5 text-accent text-[10px] uppercase tracking-wide font-semibold"
+                        title="Platform admin"
+                      >
+                        ★
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user?.email}
+                  </p>
+                </div>
+              </Link>
               <button
                 type="button"
                 onClick={() => {
@@ -378,6 +379,9 @@ function buildSections(
   const ic = "h-5 w-5";
 
   // -- Global section ------------------------------------------------------
+  // "Tạo dòng họ mới" bỏ khỏi menu (đã có nút ở trang Dòng họ của tôi).
+  // "Hướng dẫn" + "Video hướng dẫn" gộp thành "Trợ giúp" (trang có 2 tab),
+  // đặt cuối — người dùng cũ ít cần.
   const global: DrawerItem[] = [
     {
       to: "/clans",
@@ -386,24 +390,9 @@ function buildSections(
       end: true,
     },
     {
-      to: "/clans/new",
-      label: "Tạo dòng họ mới",
-      icon: <IconPlus className={ic} />,
-    },
-    {
-      to: "/account",
-      label: "Tài khoản",
-      icon: <IconUser className={ic} />,
-    },
-    {
       to: "/docs",
-      label: "Hướng dẫn",
+      label: "Trợ giúp",
       icon: <IconBook className={ic} />,
-    },
-    {
-      to: "/huong-dan-video",
-      label: "Video hướng dẫn",
-      icon: <IconPlay className={ic} />,
     },
   ];
   if (profile?.is_platform_admin) {
@@ -489,40 +478,8 @@ function buildSections(
 
     // ─── Section 3: Cập nhật — data-entry cho editor+ ─────────────
     if (canEdit) {
-      const updateItems: DrawerItem[] = [
-        {
-          to: `/clans/${clanId}/todo`,
-          label: "Việc cần làm",
-          icon: <IconList className={ic} />,
-          badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
-        },
-        {
-          to: `/clans/${clanId}/contributions`,
-          label: "Đóng góp",
-          icon: <IconPencil className={ic} />,
-          badge:
-            pendingContribCount > 0 ? pendingContribCount : undefined,
-        },
-        {
-          to: `/clans/${clanId}/import`,
-          label: "Nhập từ Excel",
-          icon: <IconUpload className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/merge`,
-          label: "Gộp người trùng",
-          icon: <IconCopy className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/audit`,
-          label: "Nhật ký",
-          icon: <IconScroll className={ic} />,
-        },
-      ];
-      sections.push({ label: "Cập nhật", items: updateItems });
-    } else if (isMember) {
-      // Member thường (viewer): vẫn cho thấy Việc cần làm + Nhật ký
-      // dù không sửa được — để xem tiến độ chung của họ.
+      // Việc thường xuyên giữ ở menu; công cụ ít dùng (Nhập Excel / Gộp /
+      // Sinh AI / Nhật ký) gom vào trang "Công cụ".
       sections.push({
         label: "Cập nhật",
         items: [
@@ -533,9 +490,33 @@ function buildSections(
             badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
           },
           {
-            to: `/clans/${clanId}/audit`,
-            label: "Nhật ký",
-            icon: <IconScroll className={ic} />,
+            to: `/clans/${clanId}/contributions`,
+            label: "Đóng góp",
+            icon: <IconPencil className={ic} />,
+            badge: pendingContribCount > 0 ? pendingContribCount : undefined,
+          },
+          {
+            to: `/clans/${clanId}/tools`,
+            label: "Công cụ",
+            icon: <IconSettings className={ic} />,
+          },
+        ],
+      });
+    } else if (isMember) {
+      // Member thường (viewer): xem Việc cần làm + Công cụ (chỉ có Nhật ký).
+      sections.push({
+        label: "Cập nhật",
+        items: [
+          {
+            to: `/clans/${clanId}/todo`,
+            label: "Việc cần làm",
+            icon: <IconList className={ic} />,
+            badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
+          },
+          {
+            to: `/clans/${clanId}/tools`,
+            label: "Công cụ",
+            icon: <IconSettings className={ic} />,
           },
         ],
       });
@@ -557,11 +538,6 @@ function buildSections(
             icon: <IconLink className={ic} />,
             badge:
               pendingInlawCount > 0 ? pendingInlawCount : undefined,
-          },
-          {
-            to: `/clans/${clanId}/qr-export`,
-            label: "Xuất QR cá nhân",
-            icon: <IconQrCode className={ic} />,
           },
           {
             to: `/clans/${clanId}/settings`,
