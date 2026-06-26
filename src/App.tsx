@@ -60,6 +60,7 @@ import InlawsConfirm from "@/pages/InlawsConfirm";
 import Login from "@/pages/Login";
 import NewClan from "@/pages/NewClan";
 import Share from "@/pages/Share";
+import KhoeCard from "@/pages/KhoeCard";
 import Signup from "@/pages/Signup";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
@@ -77,6 +78,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/share/:token" element={<Share />} />
+        <Route path="/khoe/:token" element={<KhoeCard />} />
         <Route path="/lien-he" element={<Contact />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />

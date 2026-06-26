@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { IconDownload, IconFacebook, IconLink, IconSend, IconX } from "@/components/icons";
+import { IconDownload, IconLink, IconShare2, IconX } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toast";
 import {
@@ -10,6 +10,7 @@ import {
   nodeToPngBlob,
   sharePngBlob,
 } from "@/lib/cards/exportCard";
+import { makeShareToken, publishKhoeCard } from "@/lib/cards/publishCard";
 import {
   CARD_TEMPLATES,
   templatesByGenre,
@@ -37,6 +38,17 @@ export interface ShareCardDialogProps {
   /** "12 đời · 348 người" cho thể loại mời tham gia. */
   statText?: string | null;
   defaultGenre?: CardGenre;
+  /**
+   * Bật chế độ "khoe": khi chia sẻ/tải/chép link sẽ LƯU ảnh thiệp vào
+   * storage + tạo link công khai /khoe/:token (hạn ≤ 3 tháng). QR trên
+   * thiệp trỏ về trang đó (đúng tấm thiệp, không phải danh thiếp).
+   */
+  publish?: {
+    clanId: string;
+    personId?: string | null;
+    /** Dòng phụ hiển thị trên trang khoe, vd "Đời thứ 4 · Họ Bùi". */
+    subtitle?: string | null;
+  };
 }
 
 const GENRES = Object.keys(CARD_GENRE_LABEL) as CardGenre[];
@@ -56,6 +68,13 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [titleFont, setTitleFont] = useState<string>(DEFAULT_CARD_FONT);
   const [busy, setBusy] = useState(false);
+  // Chế độ khoe: token cố định 1 lần/mở dialog (để QR khớp ảnh lưu) +
+  // hạn link do user chọn (≤ 90 ngày = 3 tháng).
+  const publish = props.publish;
+  const [token] = useState(() => makeShareToken());
+  const [ttlDays, setTtlDays] = useState(90);
+  const khoeUrl = publish ? `${window.location.origin}/khoe/${token}` : "";
+  const effectiveShareUrl = publish ? khoeUrl : props.shareUrl;
 
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -75,13 +94,13 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     setTemplateId((cur) => (list.some((t) => t.id === cur) ? cur : list[0]?.id ?? ""));
   }, [genre]);
 
-  // QR theo shareUrl.
+  // QR theo URL hiệu lực (khoe → /khoe/:token; còn lại → shareUrl).
   useEffect(() => {
     if (!open) return;
     let alive = true;
-    makeQrDataUrl(props.shareUrl).then((d) => alive && setQrDataUrl(d));
+    makeQrDataUrl(effectiveShareUrl).then((d) => alive && setQrDataUrl(d));
     return () => { alive = false; };
-  }, [open, props.shareUrl]);
+  }, [open, effectiveShareUrl]);
 
   // Nạp font web (Google) khi mở dialog để xem trước + xuất ảnh đúng.
   useEffect(() => {
@@ -140,11 +159,28 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     return nodeToPngBlob(node, dim.w, dim.h);
   }
 
+  // Khoe: lưu ảnh thiệp + tạo/cập nhật link công khai trước khi chia sẻ
+  // (để QR trên ảnh — trỏ /khoe/:token — quét được ngay). No-op nếu
+  // không ở chế độ publish.
+  async function ensurePublished(blob: Blob) {
+    if (!publish) return;
+    await publishKhoeCard({
+      token,
+      clanId: publish.clanId,
+      personId: publish.personId ?? null,
+      blob,
+      title: data.title,
+      subtitle: publish.subtitle ?? props.dateText ?? null,
+      ttlDays,
+    });
+  }
+
   async function onShare() {
     setBusy(true);
     try {
       const blob = await exportPng();
       if (!blob) throw new Error("Chưa tạo được ảnh.");
+      await ensurePublished(blob);
       const res = await sharePngBlob(blob, `thiep-${tpl.id}.png`, `${data.title} — ${data.clanName}`);
       if (res === "downloaded") toast.success("Đã tải ảnh — mở Zalo/Facebook để đăng.");
       else if (res === "shared") toast.success("Đã mở chia sẻ");
@@ -183,9 +219,39 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 {tpl.render({ data, format })}
               </div>
             </div>
+            {/* Khoe: chọn hạn link công khai (tối đa 3 tháng). */}
+            {publish && (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium">Link khoe có hạn</span>
+                <div className="flex gap-2">
+                  {[
+                    { d: 7, label: "1 tuần" },
+                    { d: 30, label: "1 tháng" },
+                    { d: 90, label: "3 tháng" },
+                  ].map((o) => (
+                    <button
+                      key={o.d}
+                      type="button"
+                      onClick={() => setTtlDays(o.d)}
+                      className={`flex-1 rounded-full border px-2 py-1.5 text-sm ${
+                        ttlDays === o.d
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card hover:border-primary"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Quét mã QR trên thiệp sẽ mở trang khoe này. Hết hạn link tự xoá.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-2">
               <Button variant="outline" className="w-full" onClick={onShare} disabled={busy}>
-                <IconSend className="h-4 w-4 mr-1.5" />
+                <IconShare2 className="h-4 w-4 mr-1.5 shrink-0" />
                 {busy ? "Đang tạo…" : "Chia sẻ"}
               </Button>
               <Button
@@ -197,6 +263,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                   try {
                     const blob = await exportPng();
                     if (blob) {
+                      await ensurePublished(blob);
                       const { downloadBlob } = await import("@/lib/cards/exportCard");
                       downloadBlob(blob, `thiep-${tpl.id}.png`);
                       toast.success("Đã tải ảnh thiệp");
@@ -211,49 +278,57 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
               </Button>
             </div>
 
-            {/* Chia sẻ bằng LINK công khai (tăng lan toả) — nút icon gọn. */}
-            {props.shareUrl && (
+            {/* Hướng dẫn đăng ẢNH thiệp. Facebook web không cho gắn ảnh
+                qua nút chia sẻ link → trên máy tính phải tải ảnh rồi đăng
+                như ảnh thường. */}
+            <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground space-y-1">
+              <p>
+                <span className="font-medium text-foreground">Điện thoại:</span>{" "}
+                bấm <span className="font-medium">Chia sẻ</span> để gửi thẳng
+                tấm thiệp (ảnh) sang Zalo/Facebook.
+              </p>
+              <p>
+                <span className="font-medium text-foreground">Máy tính:</span>{" "}
+                bấm <span className="font-medium">Tải ảnh</span> rồi đăng lên
+                Facebook như đăng ảnh thường (Facebook không cho gắn ảnh qua
+                nút chia sẻ nhanh).
+              </p>
+            </div>
+
+            {/* Chép link công khai để dán vào Zalo/Facebook. Ở chế độ
+                khoe phải lưu ảnh trước (publish) để link /khoe mở được. */}
+            {effectiveShareUrl && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Chia sẻ link:</span>
+                <span className="text-sm text-muted-foreground">
+                  {publish ? "Chép link khoe:" : "Gửi đường dẫn trang:"}
+                </span>
                 <Button
                   variant="outline"
                   size="sm"
                   className="h-9 w-9 p-0"
+                  disabled={busy}
                   aria-label="Chép link"
-                  title="Chép link để dán vào nhóm họ"
+                  title="Chép link để dán vào Zalo/Facebook"
                   onClick={async () => {
+                    setBusy(true);
                     try {
-                      await navigator.clipboard.writeText(props.shareUrl);
+                      if (publish) {
+                        const blob = await exportPng();
+                        if (blob) await ensurePublished(blob);
+                      }
+                      await navigator.clipboard.writeText(effectiveShareUrl);
                       toast.success("Đã chép link — dán vào Zalo/Facebook để chia sẻ.");
-                    } catch {
-                      toast.error("Không chép được link");
+                    } catch (e) {
+                      toast.error("Không chép được link", { description: (e as Error).message });
+                    } finally {
+                      setBusy(false);
                     }
                   }}
                 >
                   <IconLink className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-9 w-9 p-0"
-                  aria-label="Chia sẻ lên Facebook"
-                  title="Chia sẻ lên Facebook"
-                  onClick={() =>
-                    window.open(
-                      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(props.shareUrl)}`,
-                      "_blank",
-                      "noopener,noreferrer",
-                    )
-                  }
-                >
-                  <IconFacebook className="h-4 w-4" />
-                </Button>
               </div>
             )}
-
-            <p className="text-xs text-muted-foreground text-center">
-              Bấm "Chia sẻ" để đăng ảnh thẳng lên Zalo/Facebook.
-            </p>
           </div>
 
           {/* Controls */}

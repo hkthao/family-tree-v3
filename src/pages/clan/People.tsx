@@ -614,7 +614,7 @@ export default function People() {
               clanId={clan.id}
               clanName={clan.name}
               genOffset={clan.generation_offset}
-              canCreateQr={effectiveRole(clan) === "admin"}
+              canCreateQr={effectiveRole(clan) !== null}
               showKhoe={isMember}
               relatives={relatives}
               photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}

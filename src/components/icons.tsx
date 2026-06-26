@@ -515,6 +515,19 @@ export function IconSend(p: IconProps) {
   );
 }
 
+/** Biểu tượng "chia sẻ" quen thuộc (3 nút nối) — lucide share-2. */
+export function IconShare2(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.59 13.51l6.83 3.98" />
+      <path d="M15.41 6.51l-6.82 3.98" />
+    </Svg>
+  );
+}
+
 export function IconMore(p: IconProps) {
   return (
     <Svg {...p}>
