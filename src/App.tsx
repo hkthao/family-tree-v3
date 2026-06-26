@@ -53,6 +53,7 @@ import QrExport from "@/pages/clan/QrExport";
 import Settings from "@/pages/clan/Settings";
 import Today from "@/pages/clan/Today";
 import Todo from "@/pages/clan/Todo";
+import Tools from "@/pages/clan/Tools";
 import Tree from "@/pages/clan/Tree";
 import Contact from "@/pages/Contact";
 import InlawsConfirm from "@/pages/InlawsConfirm";
@@ -150,6 +151,7 @@ export default function App() {
           <Route path="my-lineage" element={<MyLineage />} />
           <Route path="today" element={<Today />} />
           <Route path="todo" element={<Todo />} />
+          <Route path="tools" element={<Tools />} />
           <Route path="kinship" element={<Kinship />} />
           <Route path="contributions" element={<Contributions />} />
           <Route path="contributions/:contribId" element={<ContributionDetail />} />

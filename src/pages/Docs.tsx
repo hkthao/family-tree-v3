@@ -64,9 +64,18 @@ function Index() {
     <div className="space-y-4">
       <PageHeader
         icon={<IconBook className="h-7 w-7" />}
-        title="Hướng dẫn sử dụng"
+        title="Trợ giúp"
         description="Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được)."
       />
+
+      <div className="flex gap-2">
+        <span className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm text-primary-foreground">
+          Bài viết
+        </span>
+        <Link to="/huong-dan-video" className="rounded-full border bg-card px-4 py-1.5 text-sm hover:border-primary">
+          Video
+        </Link>
+      </div>
 
       <div className="relative">
         <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />

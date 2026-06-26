@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -62,9 +63,18 @@ export default function Videos() {
 
         <PageHeader
           icon={<IconPlay className="h-7 w-7" />}
-          title="Video hướng dẫn"
+          title="Trợ giúp"
           description={`${VIDEO_TUTORIALS.length} video ngắn (~30-70 giây). Bấm card để xem.`}
         />
+
+        <div className="flex gap-2">
+          <Link to="/docs" className="rounded-full border bg-card px-4 py-1.5 text-sm hover:border-primary">
+            Bài viết
+          </Link>
+          <span className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm text-primary-foreground">
+            Video
+          </span>
+        </div>
 
         {/* Search */}
         <input
