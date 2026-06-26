@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -10,11 +10,13 @@ import {
   IconMapPin,
   IconMicrophone,
   IconPencil,
+  IconPlay,
   IconPlus,
   IconQrCode,
   IconScroll,
   IconSparkles,
   IconTrash,
+  IconUser,
   IconX,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
@@ -281,7 +283,9 @@ export default function HeritageDetail() {
       {/* Ảnh */}
       <Card>
         <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
-          <CardTitle>Hình ảnh{photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}</CardTitle>
+          <SectionTitle icon={<IconCamera className="h-4 w-4" />}>
+            Hình ảnh{photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}
+          </SectionTitle>
           {canEdit && (
             <>
               <input ref={fileRef} type="file" accept="image/*" className="hidden"
@@ -289,7 +293,7 @@ export default function HeritageDetail() {
               <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
+                <Button size="sm" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
                   onClick={() => cameraRef.current?.click()}>
                   <IconCamera className="h-4 w-4 mr-1" /> Chụp ảnh
                 </Button>
@@ -331,10 +335,9 @@ export default function HeritageDetail() {
       {/* Ghi âm kể chuyện */}
       <Card>
         <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
-          <CardTitle className="inline-flex items-center gap-2">
-            <IconMicrophone className="h-5 w-5" /> Ghi âm kể chuyện
-            {audios.length > 0 ? ` (${audios.length}/${MAX_AUDIO})` : ""}
-          </CardTitle>
+          <SectionTitle icon={<IconMicrophone className="h-4 w-4" />}>
+            Ghi âm kể chuyện{audios.length > 0 ? ` (${audios.length}/${MAX_AUDIO})` : ""}
+          </SectionTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {audios.length > 0 && (
@@ -373,7 +376,9 @@ export default function HeritageDetail() {
       {/* Video (chỉ qua link ngoài) */}
       {videos.length > 0 && (
         <Card>
-          <CardHeader><CardTitle>Video</CardTitle></CardHeader>
+          <CardHeader>
+            <SectionTitle icon={<IconPlay className="h-4 w-4" />}>Video</SectionTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
             {videos.map((v) => {
               const embed = videoEmbedUrl(v.external_url ?? "");
@@ -412,9 +417,7 @@ export default function HeritageDetail() {
       {canEdit && (
         <Card>
           <CardHeader>
-            <CardTitle className="inline-flex items-center gap-2">
-              <IconLink className="h-5 w-5" /> Thêm liên kết ngoài
-            </CardTitle>
+            <SectionTitle icon={<IconLink className="h-4 w-4" />}>Thêm liên kết ngoài</SectionTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
@@ -478,7 +481,9 @@ export default function HeritageDetail() {
       {/* Nội dung */}
       {(item.summary || item.body) && (
         <Card>
-          <CardHeader><CardTitle>Nội dung</CardTitle></CardHeader>
+          <CardHeader>
+            <SectionTitle icon={<IconScroll className="h-4 w-4" />}>Nội dung</SectionTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
             {item.summary && <p className="text-base font-medium">{item.summary}</p>}
             {item.body && (
@@ -491,7 +496,9 @@ export default function HeritageDetail() {
       {/* Thông tin nơi (place) */}
       {item.category === "place" && (item.location_name || item.address || item.built_year || dir) && (
         <Card>
-          <CardHeader><CardTitle>Thông tin</CardTitle></CardHeader>
+          <CardHeader>
+            <SectionTitle icon={<IconMapPin className="h-4 w-4" />}>Thông tin</SectionTitle>
+          </CardHeader>
           <CardContent className="space-y-2 text-base">
             <Row label="Ở đâu" value={item.location_name} />
             <Row label="Địa chỉ" value={item.address} />
@@ -512,7 +519,9 @@ export default function HeritageDetail() {
       {/* Người liên quan */}
       {item.people.length > 0 && (
         <Card>
-          <CardHeader><CardTitle>Người liên quan ({item.people.length})</CardTitle></CardHeader>
+          <CardHeader>
+            <SectionTitle icon={<IconUser className="h-4 w-4" />}>Người liên quan ({item.people.length})</SectionTitle>
+          </CardHeader>
           <CardContent>
             <ul className="space-y-1.5">
               {item.people.map((p) => (
@@ -552,6 +561,18 @@ export default function HeritageDetail() {
         defaultGenre={cardGenre}
       />
     </div>
+  );
+}
+
+/** Tiêu đề mục: huy hiệu icon (màu đồng) + chữ serif — đồng nhất, trang nhã. */
+function SectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <CardTitle className="inline-flex items-center gap-2.5">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent/15 text-accent">
+        {icon}
+      </span>
+      <span className="clan-name text-xl font-semibold">{children}</span>
+    </CardTitle>
   );
 }
 
