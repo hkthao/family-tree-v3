@@ -29,9 +29,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch } from "@/hooks/useUrlState";
 import {
   CLAN_SIZE_BUCKETS,
+  CLAN_SORT_LABEL,
   listCommunityClans,
   listMyClans,
   type ClanSizeBucket,
+  type ClanSort,
   type ClanSummary,
 } from "@/lib/queries/clans";
 import { queryKeys } from "@/lib/queries/keys";
@@ -57,6 +59,9 @@ export default function Clans() {
   const patch = useUrlPatch();
   const tab: Tab = sp.get("tab") === "community" ? "community" : "mine";
   const sizeBucket = (sp.get("size") ?? "") as ClanSizeBucket | "";
+  const rawSort = sp.get("sort");
+  const sort: ClanSort =
+    rawSort === "name" || rawSort === "newest" ? rawSort : "members";
   const debounced = sp.get("q") ?? "";
   const page = Math.max(1, Number(sp.get("page")) || 1);
   const view: "list" | "grid" = sp.get("view") === "grid" ? "grid" : "list";
@@ -69,6 +74,8 @@ export default function Clans() {
     patch({ tab: next === "mine" ? null : next, page: null });
   const setSizeBucket = (next: ClanSizeBucket | "") =>
     patch({ size: next || null, page: null });
+  const setSort = (next: ClanSort) =>
+    patch({ sort: next === "members" ? null : next, page: null });
   const setPage = (next: number) =>
     patch({ page: next <= 1 ? null : String(next) });
   const setView = (next: "list" | "grid") =>
@@ -91,6 +98,7 @@ export default function Clans() {
     // Size filter only applies to the community tab; keep "Của tôi"
     // unfiltered so the user can always find clans they joined.
     sizeBucket: tab === "community" && sizeBucket ? sizeBucket : null,
+    sort,
   };
 
   const mineQ = useQuery({
@@ -179,8 +187,8 @@ export default function Clans() {
             search icon + placeholder, and the dropdown's own default
             label, carry the meaning. h-10 is denser than the default
             h-12 since we're not the primary tap target on this page. */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex-1 min-w-[200px]">
+        <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
+          <div className="sm:flex-1 sm:min-w-[200px]">
             <SearchInput
               label="Tìm dòng họ"
               value={search}
@@ -188,41 +196,57 @@ export default function Clans() {
               placeholder="Tìm dòng họ — gõ không dấu cũng được"
             />
           </div>
-          {tab === "community" && (
+          {/* Sắp xếp + quy mô + kiểu hiển thị: 1 hàng kể cả mobile —
+              2 select co giãn chia đều (min-w-0), nút hiển thị cố định. */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <select
-              value={sizeBucket}
-              onChange={(e) =>
-                setSizeBucket(e.target.value as ClanSizeBucket | "")
-              }
-              aria-label="Lọc theo quy mô"
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as ClanSort)}
+              aria-label="Sắp xếp"
+              className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] rounded-md border border-input bg-background px-2 sm:px-3 text-sm"
             >
-              <option value="">Tất cả quy mô</option>
-              {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
+              {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
                 <option key={k} value={k}>
-                  {CLAN_SIZE_BUCKETS[k].label}
+                  {CLAN_SORT_LABEL[k]}
                 </option>
               ))}
             </select>
-          )}
-          <SegmentedControl ariaLabel="Kiểu hiển thị">
-            <SegmentedButton
-              active={view === "list"}
-              onClick={() => setView("list")}
-              ariaLabel="Danh sách"
-              variant="icon-md"
-            >
-              <IconList className="h-4 w-4" />
-            </SegmentedButton>
-            <SegmentedButton
-              active={view === "grid"}
-              onClick={() => setView("grid")}
-              ariaLabel="Lưới"
-              variant="icon-md"
-            >
-              <IconGrid className="h-4 w-4" />
-            </SegmentedButton>
-          </SegmentedControl>
+            {tab === "community" && (
+              <select
+                value={sizeBucket}
+                onChange={(e) =>
+                  setSizeBucket(e.target.value as ClanSizeBucket | "")
+                }
+                aria-label="Lọc theo quy mô"
+                className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] rounded-md border border-input bg-background px-2 sm:px-3 text-sm"
+              >
+                <option value="">Tất cả quy mô</option>
+                {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
+                  <option key={k} value={k}>
+                    {CLAN_SIZE_BUCKETS[k].label}
+                  </option>
+                ))}
+              </select>
+            )}
+            <SegmentedControl ariaLabel="Kiểu hiển thị" className="shrink-0">
+              <SegmentedButton
+                active={view === "list"}
+                onClick={() => setView("list")}
+                ariaLabel="Danh sách"
+                variant="icon-md"
+              >
+                <IconList className="h-4 w-4" />
+              </SegmentedButton>
+              <SegmentedButton
+                active={view === "grid"}
+                onClick={() => setView("grid")}
+                ariaLabel="Lưới"
+                variant="icon-md"
+              >
+                <IconGrid className="h-4 w-4" />
+              </SegmentedButton>
+            </SegmentedControl>
+          </div>
         </div>
 
         {tab === "community" && !isPlatformAdmin && (
