@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { IconDownload, IconLink, IconSend, IconX } from "@/components/icons";
+import { IconDownload, IconFacebook, IconLink, IconSend, IconX } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toast";
 import {
@@ -239,6 +239,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                     )
                   }
                 >
+                  <IconFacebook className="h-4 w-4 mr-1.5" />
                   Facebook
                 </Button>
               </div>
