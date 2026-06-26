@@ -39,24 +39,28 @@ async function main() {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 3 * 86_400_000);
 
-  const body = `Đợt cập nhật giao diện giúp xem và tra cứu dễ hơn:
+  const body = `Đợt cập nhật lớn lần này thêm nhiều cách lưu giữ và lan toả nét đẹp dòng họ:
 
-• Trang Dòng họ và Sự kiện có thêm chế độ xem Lưới (bấm nút Lưới ở góc) — nhìn tổng quan dạng thẻ, gọn gàng trên cả điện thoại lẫn máy tính.
+• DI SẢN & VĂN HOÁ — mục mới để lưu giữ những gì không có trong cây gia phả: từ đường - đền - chùa, tục lệ - gia phong, giai thoại - công trạng, tư liệu - kỷ vật. Soạn đơn giản (không cần định dạng), có câu hỏi gợi ý, chụp ảnh trực tiếp và GHI ÂM kể chuyện ngay trên điện thoại. Mỗi mục tạo được mã QR để con cháu quét xem.
 
-• Danh sách sự kiện sắp tới giờ chia trang, không còn kéo dài vô tận với họ đông người.
+• KHO THIỆP CHIA SẺ — bấm "Tạo thiệp" để làm tấm thiệp đẹp (giỗ Tổ, tảo mộ, Vu Lan, họp họ, Tết, mừng thọ, khuyến học, tin vui…) gửi thẳng sang Zalo / Facebook. Nhiều mẫu, nhiều tông màu, chọn được kiểu chữ.
 
-• Các trang danh sách (dòng họ, thành viên, sự kiện, nhật ký…) gọn lại còn 15 mục mỗi trang cho dễ nhìn; trang Thành viên vẫn đổi được số mục/trang.
+• THẺ "KHOE" CÁ NHÂN — ở trang mỗi người có nút tạo thẻ "Tôi là đời thứ N của dòng họ…", kèm ảnh và mã QR, để khoe với bạn bè.
 
-• Người đã mất hiển thị đúng phong tục: từ 60 tuổi gọi "hưởng thọ", dưới 60 gọi "hưởng dương".
+• THỐNG KÊ VUI — trang Tổng quan hiện vài con số thú vị của dòng họ (chi đông nhất, cụ cao tuổi nhất, tên đệm phổ biến…), chia sẻ được luôn.
 
-• Tinh chỉnh sơ đồ cây và sổ gia phả PDF: tên dài không còn bị cắt, sơ đồ bắt đầu từ Thuỷ tổ, sắp đúng thứ tự đời và anh - chị - em.
+• NHẮC LỄ TIẾT & SỰ KIỆN gọn hơn: thêm nhanh các ngày lễ truyền thống, xem lịch bấm vào là mở chi tiết.
 
-Cả nhà vào xem thử nhé!`;
+• SỔ GIA PHẢ PDF nay có cả phần Di sản và Mộ phần dạng thẻ kèm ảnh, trang bìa có mã QR mở dòng họ trên mạng.
+
+• Menu bên trái sắp xếp lại cho dễ tìm, các trang gọn gàng hơn.
+
+Cả nhà vào khám phá và chia sẻ cho con cháu nhé!`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "Mới: Xem dạng lưới, phân trang gọn & nhiều tinh chỉnh hiển thị",
+      title: "Mới: Di sản & Văn hoá, Kho thiệp chia sẻ, Thẻ khoe & Thống kê vui",
       body,
       level: "update",
       is_public: true,
