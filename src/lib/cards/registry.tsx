@@ -169,6 +169,66 @@ const LAYOUTS = {
       </div>
     );
   },
+  // Thẻ cá nhân "khoe": ảnh chân dung tròn + tên + Đời/chi + tên họ + QR.
+  personalCard(t: Theme, p: Preset, { data, format }: CardTemplateProps) {
+    return (
+      <div style={frame(format, t.bg)}>
+        <div style={{ position: "absolute", inset: 44, border: `3px solid ${t.accent}`, borderRadius: 10 }} />
+        <div style={{ position: "absolute", inset: 56, border: `1px solid ${t.accent}`, opacity: 0.5, borderRadius: 5 }} />
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 100px", gap: 22 }}>
+          <Kicker color={t.kicker}>{p.kicker}</Kicker>
+          <div style={{ width: 300, height: 300, borderRadius: 150, overflow: "hidden", border: `4px solid ${t.accent}`, background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {data.photoDataUrl ? (
+              <img src={data.photoDataUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span style={{ fontSize: 150 }}>👤</span>
+            )}
+          </div>
+          <div style={{ fontFamily: data.titleFont || SERIF, color: t.title, fontSize: 66, fontWeight: 700, lineHeight: 1.1 }}>{data.title}</div>
+          {data.dateText && (
+            <div style={{ background: t.accent, color: t.accentText, fontFamily: SERIF, fontWeight: 700, fontSize: 40, padding: "12px 38px", borderRadius: 999 }}>
+              {data.dateText}
+            </div>
+          )}
+          <div style={{ fontFamily: SERIF, color: t.body, fontSize: 38, fontStyle: "italic" }}>{data.clanName}</div>
+          {data.excerpt && (
+            <div style={{ fontFamily: SERIF, color: t.body, fontSize: 32, lineHeight: 1.4, maxWidth: 720, opacity: 0.92 }}>{data.excerpt}</div>
+          )}
+          {data.qrDataUrl && (
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 4 }}>
+              {qrImg(data.qrDataUrl, 120, `2px solid ${t.accent}`)}
+              <div style={{ color: t.body, fontSize: 26, opacity: 0.85, textAlign: "left" }}>Quét xem<br />trang cá nhân</div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  },
+  // Thẻ cá nhân — ảnh chân dung nền tràn viền + tên/đời ở dưới.
+  personalPhoto(t: Theme, p: Preset, { data, format }: CardTemplateProps) {
+    return (
+      <div style={frame(format, t.bg)}>
+        {data.photoDataUrl && (
+          <img src={data.photoDataUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        )}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(20,12,10,0.3) 0%, rgba(20,12,10,0.15) 35%, rgba(20,12,10,0.94) 100%)" }} />
+        <div style={{ position: "absolute", inset: 44, border: `3px solid ${t.accent}`, borderRadius: 8 }} />
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "0 90px 96px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 20 }}>
+          <Kicker color={t.kicker}>{p.kicker}</Kicker>
+          <div style={{ fontFamily: data.titleFont || SERIF, color: "#fff", fontSize: 70, fontWeight: 700, lineHeight: 1.1 }}>{data.title}</div>
+          {data.dateText && (
+            <div style={{ background: t.accent, color: t.accentText, fontFamily: SERIF, fontWeight: 700, fontSize: 40, padding: "12px 38px", borderRadius: 999 }}>
+              {data.dateText}
+            </div>
+          )}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginTop: 4 }}>
+            <div style={{ fontFamily: SERIF, color: t.kicker, fontSize: 36, fontStyle: "italic" }}>{data.clanName}</div>
+            {data.qrDataUrl && qrImg(data.qrDataUrl, 104)}
+          </div>
+        </div>
+      </div>
+    );
+  },
   // Áp-phích QR để in/khắc tại từ đường — QR lớn ở giữa, khung trang trí.
   qrPoster(t: Theme, p: Preset, { data, format }: CardTemplateProps) {
     return (
@@ -291,6 +351,22 @@ const PRESETS: Preset[] = [
   { id: "qr-ox", name: "QR từ đường · oxblood", genre: "qr", layout: "qrPoster", theme: "oxblood", kicker: "Gia phả dòng họ", ornament: "❖" },
   { id: "qr-paper", name: "QR từ đường · giấy", genre: "qr", layout: "qrPoster", theme: "paper", kicker: "Gia phả dòng họ", ornament: "🌳" },
   { id: "qr-night", name: "QR từ đường · đêm vàng", genre: "qr", layout: "qrPoster", theme: "night", kicker: "Quét xem lịch sử dòng họ", ornament: "🏮" },
+  // Thẻ cá nhân "khoe" gốc gác — share Zalo/FB. Ảnh tròn (personalCard)
+  // + ảnh nền (personalPhoto), nhiều tông màu.
+  { id: "me-ox", name: "Cá nhân · oxblood", genre: "personal", layout: "personalCard", theme: "oxblood", kicker: "Con cháu dòng họ" },
+  { id: "me-paper", name: "Cá nhân · giấy", genre: "personal", layout: "personalCard", theme: "paper", kicker: "Tự hào gốc gác" },
+  { id: "me-royal", name: "Cá nhân · lam", genre: "personal", layout: "personalCard", theme: "royal", kicker: "Con cháu dòng họ" },
+  { id: "me-gold", name: "Cá nhân · vàng kim", genre: "personal", layout: "personalCard", theme: "gold", kicker: "Tự hào gốc gác" },
+  { id: "me-jade", name: "Cá nhân · ngọc", genre: "personal", layout: "personalCard", theme: "jade", kicker: "Con cháu dòng họ" },
+  { id: "me-plum", name: "Cá nhân · mận", genre: "personal", layout: "personalCard", theme: "plum", kicker: "Gốc gác dòng họ" },
+  { id: "me-night", name: "Cá nhân · đêm vàng", genre: "personal", layout: "personalCard", theme: "night", kicker: "Con cháu dòng họ" },
+  { id: "me-lotus", name: "Cá nhân · sen", genre: "personal", layout: "personalCard", theme: "lotus", kicker: "Tự hào gốc gác" },
+  { id: "me-sky", name: "Cá nhân · thanh thiên", genre: "personal", layout: "personalCard", theme: "sky", kicker: "Thành viên dòng họ" },
+  { id: "me-photo-ox", name: "Cá nhân ảnh nền · oxblood", genre: "personal", layout: "personalPhoto", theme: "oxblood", kicker: "Con cháu dòng họ" },
+  { id: "me-photo-night", name: "Cá nhân ảnh nền · đêm", genre: "personal", layout: "personalPhoto", theme: "night", kicker: "Tự hào gốc gác" },
+  { id: "me-photo-royal", name: "Cá nhân ảnh nền · lam", genre: "personal", layout: "personalPhoto", theme: "royal", kicker: "Con cháu dòng họ" },
+  { id: "me-photo-forest", name: "Cá nhân ảnh nền · rừng", genre: "personal", layout: "personalPhoto", theme: "forest", kicker: "Gốc gác dòng họ" },
+  { id: "me-photo-crimson", name: "Cá nhân ảnh nền · son", genre: "personal", layout: "personalPhoto", theme: "crimson", kicker: "Tự hào gốc gác" },
 ];
 
 export const CARD_TEMPLATES: CardTemplate[] = PRESETS.map((p) => ({

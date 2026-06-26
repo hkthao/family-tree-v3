@@ -16,6 +16,7 @@ import {
   IconPlus,
   IconQrCode,
   IconScroll,
+  IconSparkles,
   IconTrash,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -23,6 +24,7 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { ContributeDialog } from "@/components/ContributeDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
+import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { useToast } from "@/components/Toast";
 import { getOrCreatePersonShareLink } from "@/lib/queries/share-links";
@@ -175,6 +177,7 @@ export default function PersonDetail() {
   }
 
   const [qrOpen, setQrOpen] = useState(false);
+  const [khoeOpen, setKhoeOpen] = useState(false);
   const [contribOpen, setContribOpen] = useState(false);
   // Which inline relation sheet is open. null = none.
   const [addSheet, setAddSheet] = useState<"parent" | "spouse" | "child" | null>(
@@ -510,6 +513,22 @@ export default function PersonDetail() {
                   </Button>
                 )
               )}
+              {effectiveRole(clan) !== null && (
+                <Button
+                  size="sm"
+                  className="w-[100px]"
+                  data-testid="person-khoe-button"
+                  onClick={() => {
+                    setKhoeOpen(true);
+                    if (canCreateQr && !qrM.data) qrM.mutate();
+                  }}
+                  aria-label="Khoe — tạo thẻ cá nhân chia sẻ"
+                  title="Tạo thẻ cá nhân để khoe lên Zalo/Facebook"
+                >
+                  <IconSparkles className="h-4 w-4 mr-1.5" />
+                  Khoe
+                </Button>
+              )}
               {canCreateQr && (
                 <Button
                   variant="outline"
@@ -588,6 +607,22 @@ export default function PersonDetail() {
                   });
                 }
               }}
+            />
+
+            <ShareCardDialog
+              open={khoeOpen}
+              onClose={() => setKhoeOpen(false)}
+              clanName={clan.name}
+              shareUrl={canCreateQr ? qrUrl : ""}
+              initialTitle={person.full_name}
+              initialExcerpt=""
+              photoUrls={photoUrl ? [photoUrl] : []}
+              dateText={
+                person.generation !== null
+                  ? `Đời thứ ${person.generation - clan.generation_offset}`
+                  : null
+              }
+              defaultGenre="personal"
             />
 
             {canContribute && (
