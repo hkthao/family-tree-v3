@@ -61,6 +61,7 @@ import Login from "@/pages/Login";
 import NewClan from "@/pages/NewClan";
 import Share from "@/pages/Share";
 import KhoeCard from "@/pages/KhoeCard";
+import JoinClan from "@/pages/JoinClan";
 import Signup from "@/pages/Signup";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
@@ -79,6 +80,7 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/share/:token" element={<Share />} />
         <Route path="/khoe/:token" element={<KhoeCard />} />
+        <Route path="/join/:token" element={<JoinClan />} />
         <Route path="/lien-he" element={<Contact />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />

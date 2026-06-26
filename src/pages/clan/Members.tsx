@@ -5,6 +5,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { InviteLinkCard } from "@/components/InviteLinkCard";
 import { useToast } from "@/components/Toast";
 import { IconCheck, IconTrash, IconUserPlus } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -142,9 +143,11 @@ export default function Members() {
         description="Mời người, đổi vai trò, gỡ thành viên."
       />
 
+        <InviteLinkCard clanId={clanId} clanName={clan.name} />
+
         <Card>
           <CardHeader>
-            <CardTitle>Mời thêm</CardTitle>
+            <CardTitle>Mời bằng email</CardTitle>
             <CardDescription>
               Người được mời cần có sẵn tài khoản (đã đăng ký bằng email
               tương ứng). Chưa có cơ chế gửi mail mời tự động.

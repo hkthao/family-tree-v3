@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { AuthLayout } from "@/components/AuthLayout";
 import { IconUserPlus } from "@/components/icons";
@@ -10,8 +10,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 
+function safeNext(raw: string | null): string | null {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 export default function Signup() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = safeNext(searchParams.get("next"));
+  const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : "/login";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -28,11 +36,11 @@ export default function Signup() {
         password,
         options: {
           data: { display_name: displayName || email.split("@")[0] },
-          emailRedirectTo: `${window.location.origin}/clans`,
+          emailRedirectTo: `${window.location.origin}${next ?? "/clans"}`,
         },
       });
       if (error) setError(error.message);
-      else navigate("/");
+      else navigate(next ?? "/");
     } finally {
       setBusy(false);
     }
@@ -102,12 +110,14 @@ export default function Signup() {
 
         <p className="text-center text-base text-muted-foreground">
           Đã có tài khoản?{" "}
-          <Link to="/login" className="text-primary hover:underline">
+          <Link to={loginHref} className="text-primary hover:underline">
             Đăng nhập
           </Link>
         </p>
 
-        <SocialAuthButtons />
+        <SocialAuthButtons
+          redirectTo={next ? `${window.location.origin}${next}` : undefined}
+        />
       </form>
     </AuthLayout>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { AuthLayout } from "@/components/AuthLayout";
 import { IconLogIn, IconQrCode } from "@/components/icons";
@@ -13,8 +13,17 @@ import { supabase } from "@/lib/supabase";
 
 type Mode = "password" | "magic-link";
 
+/** Chỉ nhận đường dẫn nội bộ (bắt đầu "/" nhưng không "//") để chống open-redirect. */
+function safeNext(raw: string | null): string | null {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = safeNext(searchParams.get("next"));
+  const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : "/signup";
   const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,11 +59,13 @@ export default function Login() {
       if (mode === "password") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) setError(error.message);
-        else navigate("/");
+        else navigate(next ?? "/");
       } else {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: `${window.location.origin}/clans` },
+          options: {
+            emailRedirectTo: `${window.location.origin}${next ?? "/clans"}`,
+          },
         });
         if (error) setError(error.message);
         else setInfo("Đã gửi liên kết đăng nhập. Kiểm tra email của bạn.");
@@ -157,12 +168,16 @@ export default function Login() {
 
         <p className="text-center text-base text-muted-foreground">
           Chưa có tài khoản?{" "}
-          <Link to="/signup" className="text-primary hover:underline">
+          <Link to={signupHref} className="text-primary hover:underline">
             Đăng ký
           </Link>
         </p>
 
-        <SocialAuthButtons />
+        <SocialAuthButtons
+          redirectTo={
+            next ? `${window.location.origin}${next}` : undefined
+          }
+        />
       </form>
 
       <QrScannerModal

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
@@ -23,6 +23,7 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { PageHeader } from "@/components/PageHeader";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { RefreshButton } from "@/components/RefreshButton";
+import { Button } from "@/components/ui/button";
 import { VideoEmptyState } from "@/components/VideoEmptyState";
 import {
   Card,
@@ -64,6 +65,13 @@ export default function Dashboard() {
   // non-member visitors of a public clan — they shouldn't see the
   // progress tile anyway, and the 403s pollute the console.
   const isMember = effectiveRole(clan) !== null;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showWelcome = searchParams.get("welcome") === "1" && isMember;
+  function dismissWelcome() {
+    const n = new URLSearchParams(searchParams);
+    n.delete("welcome");
+    setSearchParams(n, { replace: true });
+  }
 
   const { data: stats, isLoading } = useQuery({
     queryKey: queryKeys.clanStats(clan.id, userId),
@@ -146,6 +154,34 @@ export default function Dashboard() {
           />
         }
       />
+
+      {showWelcome && (
+        <section
+          aria-label="Chào mừng"
+          className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3"
+        >
+          <div>
+            <p className="font-semibold">
+              Chào mừng bạn đến với dòng họ {clan.name}! 🎉
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Hai bước để cùng vun đắp gia phả: cho biết bạn là ai trong cây,
+              rồi bổ sung người thân của mình.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm">
+              <Link to={`/clans/${clan.id}/tree?view=lineage`} onClick={dismissWelcome}>
+                <IconTree className="h-4 w-4 mr-1.5" />
+                Tôi là ai trong cây?
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" onClick={dismissWelcome}>
+              Để sau
+            </Button>
+          </div>
+        </section>
+      )}
 
       {clan.description && <ClanDescription text={clan.description} />}
 
