@@ -179,7 +179,10 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 <IconSend className="h-4 w-4 mr-1.5" />
                 {busy ? "Đang tạo…" : "Chia sẻ"}
               </Button>
-              <Button variant="outline" disabled={busy} aria-label="Tải ảnh"
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={busy}
                 onClick={async () => {
                   setBusy(true);
                   try {
@@ -192,8 +195,10 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                   } catch (e) {
                     toast.error("Không tải được", { description: (e as Error).message });
                   } finally { setBusy(false); }
-                }}>
-                <IconDownload className="h-4 w-4" />
+                }}
+              >
+                <IconDownload className="h-4 w-4 mr-1.5" />
+                Tải ảnh
               </Button>
             </div>
             <p className="text-xs text-muted-foreground text-center">
