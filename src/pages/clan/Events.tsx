@@ -81,6 +81,7 @@ export default function Events() {
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
   const [detailEventId, setDetailEventId] = useState<string | null>(null);
+  const [cardEvt, setCardEvt] = useState<UpcomingEvent | null>(null);
   const qc = useQueryClient();
   const toast = useToast();
 
@@ -315,6 +316,7 @@ export default function Events() {
                   clanId={clan.id}
                   variant={view === "grid" ? "card" : "row"}
                   onOpenEvent={setDetailEventId}
+                  onCreateCard={setCardEvt}
                 />
               </li>
             ))}
@@ -394,8 +396,40 @@ export default function Events() {
         clanId={clan.id}
         clanName={clan.name}
       />
+
+      {cardEvt && (
+        <ShareCardDialog
+          key={cardEvt.key}
+          open
+          onClose={() => setCardEvt(null)}
+          clanName={clan.name}
+          shareUrl=""
+          initialTitle={cardEvt.title}
+          initialExcerpt={cardEvt.subtitle ?? ""}
+          dateText={upcomingDateText(cardEvt)}
+          defaultGenre={upcomingGenre(cardEvt.kind)}
+        />
+      )}
     </div>
   );
+}
+
+// ─── Helpers cho thiệp nhanh từ sự kiện sắp tới ──────────────────────
+function upcomingGenre(kind: UpcomingEvent["kind"]): CardGenre {
+  switch (kind) {
+    case "anniversary":
+      return "memorial";
+    case "tomb_visit":
+      return "grave";
+    case "birthday":
+      return "joy";
+    default:
+      return "event";
+  }
+}
+function upcomingDateText(ev: UpcomingEvent): string {
+  const d = new Date(ev.date + "T00:00:00");
+  return `Ngày ${d.getDate()} tháng ${d.getMonth() + 1}`;
 }
 
 // ─── Items ──────────────────────────────────────────────────────────

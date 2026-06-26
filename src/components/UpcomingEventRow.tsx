@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
+import { IconSparkles } from "@/components/icons";
 import {
   formatCanChiShort,
   getCanChiForSolarDate,
@@ -26,6 +27,8 @@ interface Props {
    * MỞ CHI TIẾT SỰ KIỆN thay vì nhảy sang trang người liên quan.
    */
   onOpenEvent?: (eventId: string) => void;
+  /** Bấm "Thiệp" để tạo nhanh thiệp chia sẻ cho sự kiện này (lan toả). */
+  onCreateCard?: (ev: UpcomingEvent) => void;
 }
 
 /** Lớp màu cho nhãn "Còn N ngày" theo độ gấp. */
@@ -49,7 +52,24 @@ export function UpcomingEventRow({
   emphasised,
   variant = "row",
   onOpenEvent,
+  onCreateCard,
 }: Props) {
+  const renderThiep = (full?: boolean) =>
+    onCreateCard ? (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onCreateCard(event);
+        }}
+        className={`inline-flex items-center justify-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-sm font-medium text-primary hover:bg-primary/20 whitespace-nowrap ${full ? "w-full" : ""}`}
+        title="Tạo thiệp chia sẻ"
+      >
+        <IconSparkles className="h-4 w-4" />
+        Thiệp
+      </button>
+    ) : null;
   const dt = new Date(event.date + "T00:00:00");
   const day = dt.getDate();
   const month = dt.getMonth() + 1;
@@ -90,7 +110,7 @@ export function UpcomingEventRow({
 
   // ── Card dọc (chế độ lưới) ──────────────────────────────────────
   if (variant === "card") {
-    return wrap(
+    const card = wrap(
       <div className="flex h-full flex-col gap-2 p-4 rounded-lg border bg-card hover:border-primary transition-colors">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-shrink-0 w-12 text-center rounded-md bg-muted/40 py-1">
@@ -116,6 +136,13 @@ export function UpcomingEventRow({
           )}
         </div>
       </div>,
+    );
+    if (!onCreateCard) return card;
+    return (
+      <div className="flex h-full flex-col gap-1.5">
+        <div className="flex-1 min-h-0">{card}</div>
+        {renderThiep(true)}
+      </div>
     );
   }
 
@@ -171,7 +198,13 @@ export function UpcomingEventRow({
     </div>
   );
 
-  return wrap(inner);
+  if (!onCreateCard) return wrap(inner);
+  return (
+    <div className="flex items-stretch gap-2">
+      <div className="flex-1 min-w-0">{wrap(inner)}</div>
+      <div className="flex items-center">{renderThiep()}</div>
+    </div>
+  );
 }
 
 function kindLabel(k: UpcomingEvent["kind"]): string {
