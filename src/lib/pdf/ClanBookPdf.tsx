@@ -339,9 +339,11 @@ interface Props {
   photoByPersonId?: Map<string, string>;
   /** id mục Mộ phần / Di sản → ảnh bìa data URI (cho thẻ). */
   coverByItemId?: Map<string, string>;
+  /** QR (data URI) trỏ tới trang gia phả công khai — in ở trang bìa. */
+  coverQrDataUri?: string;
 }
 
-export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId }: Props) {
+export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri }: Props) {
   ensurePdfFontRegistered();
 
   const showTree = include?.tree ?? true;
@@ -527,6 +529,14 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
             </Text>
           ) : null}
           <Text style={styles.coverDateline}>Biên soạn ngày {todayLabel}</Text>
+          {coverQrDataUri ? (
+            <View style={{ alignItems: "center", marginTop: 18 }}>
+              <Image src={coverQrDataUri} style={{ width: 94, height: 94 }} />
+              <Text style={{ fontSize: 9, color: COLORS.muted, marginTop: 4 }}>
+                Quét để xem gia phả online
+              </Text>
+            </View>
+          ) : null}
         </View>
       </Page>
 
