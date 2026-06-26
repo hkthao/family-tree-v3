@@ -169,6 +169,30 @@ const LAYOUTS = {
       </div>
     );
   },
+  // Áp-phích QR để in/khắc tại từ đường — QR lớn ở giữa, khung trang trí.
+  qrPoster(t: Theme, p: Preset, { data, format }: CardTemplateProps) {
+    return (
+      <div style={frame(format, t.bg)}>
+        <div style={{ position: "absolute", inset: 40, border: `3px solid ${t.accent}`, borderRadius: 12 }} />
+        <div style={{ position: "absolute", inset: 54, border: `1px solid ${t.accent}`, opacity: 0.5, borderRadius: 6 }} />
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 100px", gap: 24 }}>
+          {p.ornament && <div style={{ fontSize: 78 }}>{p.ornament}</div>}
+          <Kicker color={t.kicker}>{p.kicker}</Kicker>
+          <div style={{ fontFamily: SERIF, color: t.body, fontSize: 36, fontStyle: "italic" }}>{data.clanName}</div>
+          <div style={{ fontFamily: data.titleFont || SERIF, color: t.title, fontSize: 60, fontWeight: 700, lineHeight: 1.15 }}>{data.title}</div>
+          {data.qrDataUrl ? (
+            <img src={data.qrDataUrl} alt="" width={440} height={440}
+              style={{ width: 440, height: 440, background: "#fff", padding: 18, borderRadius: 18, border: `3px solid ${t.accent}` }} />
+          ) : (
+            <div style={{ color: t.body, fontSize: 30, opacity: 0.8 }}>Bấm "Chia sẻ" để tạo mã QR công khai</div>
+          )}
+          <div style={{ fontFamily: SERIF, color: t.body, fontSize: 38, lineHeight: 1.4, maxWidth: 780 }}>
+            {data.excerpt || "Quét mã để xem gia phả & lịch sử dòng họ"}
+          </div>
+        </div>
+      </div>
+    );
+  },
   // Ảnh trên, giấy dưới.
   photoTop(t: Theme, p: Preset, { data, format }: CardTemplateProps) {
     const imgH = format === "vertical" ? 980 : 560;
@@ -263,6 +287,10 @@ const PRESETS: Preset[] = [
   { id: "event-invite", name: "Kính mời · trang nhã", genre: "event", layout: "dateHero", theme: "paper", kicker: "Kính mời", ornament: "✦" },
   { id: "event-solemn", name: "Sự kiện · trang nghiêm", genre: "event", layout: "dateHero", theme: "oxblood", kicker: "Trân trọng kính mời", ornament: "🕯️" },
   { id: "event-royal", name: "Sự kiện · trang trọng", genre: "event", layout: "centered", theme: "royal", kicker: "Sự kiện dòng họ", ornament: "✦" },
+  // Áp-phích QR tại từ đường (in/khắc) — chọn cỡ "Dọc" để in A4.
+  { id: "qr-ox", name: "QR từ đường · oxblood", genre: "qr", layout: "qrPoster", theme: "oxblood", kicker: "Gia phả dòng họ", ornament: "❖" },
+  { id: "qr-paper", name: "QR từ đường · giấy", genre: "qr", layout: "qrPoster", theme: "paper", kicker: "Gia phả dòng họ", ornament: "🌳" },
+  { id: "qr-night", name: "QR từ đường · đêm vàng", genre: "qr", layout: "qrPoster", theme: "night", kicker: "Quét xem lịch sử dòng họ", ornament: "🏮" },
 ];
 
 export const CARD_TEMPLATES: CardTemplate[] = PRESETS.map((p) => ({

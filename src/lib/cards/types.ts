@@ -16,7 +16,8 @@ export type CardGenre =
   | "study"
   | "merit"
   | "wisdom"
-  | "event";
+  | "event"
+  | "qr";
 
 export const CARD_GENRE_LABEL: Record<CardGenre, string> = {
   memorial: "Giỗ Tổ / Tưởng niệm",
@@ -33,6 +34,7 @@ export const CARD_GENRE_LABEL: Record<CardGenre, string> = {
   merit: "Tri ân / Công đức",
   wisdom: "Lời hay / Gia huấn",
   event: "Sự kiện / Kính mời",
+  qr: "Áp-phích QR (in/khắc)",
 };
 
 /** Kích thước gốc (px) theo định dạng — xuất ảnh ở đúng cỡ này. */
