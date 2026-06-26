@@ -1,9 +1,11 @@
 import { pdf } from "@react-pdf/renderer";
 
 import { ClanBookPdf } from "@/lib/pdf/ClanBookPdf";
+import { makeQrDataUrl } from "@/lib/cards/exportCard";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
 import { getClanBookData } from "@/lib/queries/clan-book";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
+import { getOrCreateTreeShareLink } from "@/lib/queries/share-links";
 
 export interface ExportClanBookOptions {
   tree?: boolean;
@@ -27,6 +29,17 @@ export async function downloadClanBookPdf(
       ...data.restingPlaces.map((r) => ({ id: r.id, path: r.cover_path })),
     ]),
   ]);
+  // QR trang bìa → link gia phả công khai (ai cũng xem được, không cần
+  // đăng nhập). Lỗi (vd không tạo được link) thì bỏ qua, không có QR.
+  let coverQrDataUri: string | undefined;
+  try {
+    const link = await getOrCreateTreeShareLink(clan.id);
+    const url = `${window.location.origin}/share/${link.token}`;
+    coverQrDataUri = (await makeQrDataUrl(url)) ?? undefined;
+  } catch {
+    /* không có QR */
+  }
+
   const blob = await pdf(
     <ClanBookPdf
       clan={clan}
@@ -34,6 +47,7 @@ export async function downloadClanBookPdf(
       include={options}
       photoByPersonId={photoByPersonId}
       coverByItemId={coverByItemId}
+      coverQrDataUri={coverQrDataUri}
     />,
   ).toBlob();
 
