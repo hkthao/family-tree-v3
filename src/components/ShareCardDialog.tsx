@@ -157,16 +157,16 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 bg-black/50 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/50"
       role="dialog"
       aria-modal="true"
       onClick={props.onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-3xl my-4 rounded-lg border bg-card shadow-lg"
+        className="w-full max-w-3xl rounded-lg border bg-card shadow-lg flex flex-col max-h-[92vh]"
       >
-        <header className="border-b px-5 py-3 flex items-center justify-between">
+        <header className="border-b px-5 py-3 flex items-center justify-between shrink-0">
           <h2 className="font-semibold">Tạo thiệp chia sẻ</h2>
           <button type="button" onClick={props.onClose} aria-label="Đóng"
             className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground">
@@ -174,9 +174,9 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
           </button>
         </header>
 
-        <div className="p-5 grid gap-5 md:grid-cols-[300px_1fr]">
+        <div className="p-5 grid gap-5 md:grid-cols-[300px_1fr] overflow-y-auto">
           {/* Preview */}
-          <div className="space-y-3">
+          <div className="space-y-3 self-start md:sticky md:top-0">
             <div className="mx-auto rounded-md overflow-hidden border shadow-sm"
               style={{ width: PREVIEW_W, height: dim.h * previewScale }}>
               <div style={{ width: dim.w, height: dim.h, transform: `scale(${previewScale})`, transformOrigin: "top left" }}>

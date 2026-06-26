@@ -227,7 +227,7 @@ export default function HeritageDetail() {
         description={HERITAGE_CATEGORY_LABEL[item.category]}
         actionsBelow
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {canAdmin && (
               <>
                 <Button
@@ -237,7 +237,7 @@ export default function HeritageDetail() {
                     if (!qrM.data) qrM.mutate();
                   }}
                 >
-                  <IconSparkles className="h-4 w-4 mr-1" /> Tạo thiệp
+                  <IconSparkles className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Thiệp</span>
                 </Button>
                 <Button
                   size="sm"
@@ -247,7 +247,7 @@ export default function HeritageDetail() {
                     if (!qrM.data) qrM.mutate();
                   }}
                 >
-                  <IconQrCode className="h-4 w-4 mr-1" /> QR
+                  <IconQrCode className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">QR</span>
                 </Button>
               </>
             )}
@@ -255,7 +255,7 @@ export default function HeritageDetail() {
               <>
                 <Button size="sm" variant="outline" asChild>
                   <Link to={`/clans/${clan.id}/heritage/${item.id}/edit`}>
-                    <IconPencil className="h-4 w-4 mr-1" /> Sửa
+                    <IconPencil className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Sửa</span>
                   </Link>
                 </Button>
                 <Button
@@ -270,7 +270,7 @@ export default function HeritageDetail() {
                     }).then((ok) => ok && deleteM.mutate())
                   }
                 >
-                  <IconTrash className="h-4 w-4 mr-1" /> Xoá
+                  <IconTrash className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Xoá</span>
                 </Button>
               </>
             )}
@@ -280,7 +280,7 @@ export default function HeritageDetail() {
 
       {/* Ảnh */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle>Hình ảnh{photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}</CardTitle>
           {canEdit && (
             <>
@@ -330,7 +330,7 @@ export default function HeritageDetail() {
 
       {/* Ghi âm kể chuyện */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="inline-flex items-center gap-2">
             <IconMicrophone className="h-5 w-5" /> Ghi âm kể chuyện
             {audios.length > 0 ? ` (${audios.length}/${MAX_AUDIO})` : ""}
@@ -444,15 +444,18 @@ export default function HeritageDetail() {
                   }}
                   placeholder="Dán link https://… vào đây"
                   inputMode="url"
-                  className="h-11 w-full rounded-md border border-input bg-background pl-3 pr-24 text-base"
+                  className="h-11 w-full rounded-md border border-input bg-background pl-3 pr-12 text-base"
                 />
                 <Button
                   size="sm"
+                  variant="outline"
                   onClick={() => addExternalM.mutate()}
                   disabled={addExternalM.isPending || !extUrl.trim()}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8"
+                  aria-label="Thêm link"
+                  title="Thêm link"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
                 >
-                  {addExternalM.isPending ? "Đang thêm…" : "Thêm link"}
+                  <IconPlus className="h-4 w-4" />
                 </Button>
               </div>
             </div>
