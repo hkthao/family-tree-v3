@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
+import { IconScroll } from "@/components/icons";
+import { SectionHeading } from "@/components/SectionHeading";
 import { useAuth } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queries/keys";
 import { listAudit, type AuditAction, type AuditRow } from "@/lib/queries/audit";
@@ -89,15 +91,18 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
 
   return (
     <section aria-label="Hoạt động gần đây" className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Hoạt động gần đây</h3>
-        <Link
-          to={`/clans/${clanId}/audit`}
-          className="text-sm text-primary hover:underline"
-        >
-          Xem nhật ký →
-        </Link>
-      </div>
+      <SectionHeading
+        icon={<IconScroll />}
+        title="Hoạt động gần đây"
+        action={
+          <Link
+            to={`/clans/${clanId}/audit`}
+            className="text-sm text-primary hover:underline"
+          >
+            Xem nhật ký →
+          </Link>
+        }
+      />
       <ul className="rounded-lg border bg-card divide-y overflow-hidden">
         {data.rows.map((r) => {
           const action = (r.action as AuditAction) || "update";
