@@ -261,7 +261,10 @@
       /* Footer */
       footer { border-top: 1px solid hsl(var(--border)); padding: 3.2rem 0 2.6rem; }
       .foot-top { display: grid; grid-template-columns: 1fr; gap: 1.8rem; }
-      @media (min-width: 720px) { .foot-top { grid-template-columns: 2fr 1fr 1fr; } }
+      @media (min-width: 720px) { .foot-top { grid-template-columns: 1.8fr 1fr 1fr auto; } }
+      .foot-qr { display: flex; flex-direction: column; align-items: center; gap: .55rem; text-align: center; }
+      .foot-qr img { width: 104px; height: 104px; border-radius: 12px; background: #fff; padding: 7px; box-shadow: 0 4px 14px hsl(var(--fg)/.12); }
+      .foot-qr small { font-size: .8rem; color: hsl(var(--muted-fg)); line-height: 1.4; }
       .foot-brand p { margin-top: .8rem; color: hsl(var(--muted-fg)); font-size: .96rem; max-width: 320px; }
       .foot-col h4 { font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; color: hsl(var(--muted-fg)); margin-bottom: .9rem; }
       .foot-col a { display: flex; align-items: center; gap: .5rem; padding: .32rem 0; }
@@ -505,6 +508,10 @@
             <a href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
             <a href="mailto:support@thaohk.com"><svg class="ico"><use href="#i-mail"/></svg>support@thaohk.com</a>
             <a href="https://www.facebook.com/donghoviet2026" target="_blank" rel="noopener"><svg class="ico"><use href="#i-facebook"/></svg>Nhóm Facebook</a>
+          </div>
+          <div class="foot-qr">
+            <img src="/assets/app-qr.png" alt="Mã QR mở ứng dụng Dòng Họ Việt trên điện thoại" width="104" height="104" loading="lazy" />
+            <small>Quét để mở app<br />trên điện thoại</small>
           </div>
         </div>
         <div class="foot-bottom">© <span id="year">2026</span> Dòng Họ Việt · Gìn giữ cội nguồn người Việt</div>
