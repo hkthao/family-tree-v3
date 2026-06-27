@@ -87,7 +87,7 @@ export function serializeClanToGedcom(
   emit(o, 0, "HEAD");
   emit(o, 1, "SOUR", "Gia-pha");
   emit(o, 2, "VERS", "1.0");
-  emit(o, 2, "NAME", "Gia phả");
+  emit(o, 2, "NAME", "Dòng Họ Việt");
   emit(o, 1, "GEDC");
   emit(o, 2, "VERS", "5.5.1");
   emit(o, 2, "FORM", "LINEAGE-LINKED");

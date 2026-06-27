@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
   }
 
   const payload = JSON.stringify({
-    title: "Test thông báo Gia phả",
+    title: "Test thông báo Dòng Họ Việt",
     body: "Push hoạt động bình thường — bạn sẽ nhận nhắc giỗ/đóng góp tương tự thế này.",
     url: `${APP_BASE_URL}/account`,
     tag: "test-push",

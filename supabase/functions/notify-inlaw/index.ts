@@ -24,7 +24,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const RESEND_FROM =
-  Deno.env.get("RESEND_FROM") ?? "Gia phả <noreply@giapha.local>";
+  Deno.env.get("RESEND_FROM") ?? "Dòng Họ Việt <noreply@giapha.local>";
 const APP_BASE_URL =
   Deno.env.get("APP_BASE_URL") ?? "http://localhost:5173";
 
@@ -85,7 +85,7 @@ function emailLayout(opts: {
             background:#FBF7F0;margin:0;padding:24px;">
     <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;
                 padding:24px;border:1px solid #D8CFC2;">
-      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Gia phả" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
+      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Dòng Họ Việt" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
       <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
                 color:#6F665F;margin:0 0 4px;">${esc(opts.clanName)}</p>
       <h1 style="font-size:20px;color:#7A2230;margin:0 0 16px;">${esc(opts.title)}</h1>
@@ -93,7 +93,7 @@ function emailLayout(opts: {
       ${cta}
       <hr style="border:none;border-top:1px solid #D8CFC2;margin:24px 0 8px;" />
       <p style="font-size:11px;color:#6F665F;margin:0;">
-        Email tự động từ ứng dụng Gia phả. Không cần trả lời.
+        Email tự động từ ứng dụng Dòng Họ Việt. Không cần trả lời.
       </p>
     </div></body></html>`;
 }
@@ -106,7 +106,7 @@ function buildPendingEmail(opts: {
   note: string | null;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Gia phả ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đề nghị liên kết thông gia`;
+  const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đề nghị liên kết thông gia`;
   const noteBlock = opts.note
     ? `<div style="border-left:4px solid #B8862A;background:#FBF7F0;padding:10px 14px;margin:14px 0;">
          <p style="font-size:11px;color:#6F665F;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px;">
@@ -148,7 +148,7 @@ function buildConfirmedEmail(opts: {
   peerPersonName: string;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Gia phả ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đã xác nhận liên kết thông gia`;
+  const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đã xác nhận liên kết thông gia`;
   const body = `
     <p>Đề xuất liên kết của bạn với <strong>${esc(opts.peerClanName)}</strong>
        vừa được admin bên đó xác nhận.</p>
@@ -178,7 +178,7 @@ function buildRevokedEmail(opts: {
   peerClanName: string;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Gia phả ${safeForHeader(opts.recipientClanName)}] Liên kết với ${safeForHeader(opts.peerClanName)} đã thu hồi`;
+  const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] Liên kết với ${safeForHeader(opts.peerClanName)} đã thu hồi`;
   const body = `
     <p>Liên kết thông gia giữa <strong>${esc(opts.recipientClanName)}</strong>
        và <strong>${esc(opts.peerClanName)}</strong> đã được thu hồi.</p>
@@ -363,8 +363,8 @@ Deno.serve(async (req) => {
         : Promise.resolve({ data: null }),
     ]);
 
-  const clanAName = (cA?.name as string) ?? "Gia phả";
-  const clanBName = (cB?.name as string) ?? "Gia phả";
+  const clanAName = (cA?.name as string) ?? "Dòng Họ Việt";
+  const clanBName = (cB?.name as string) ?? "Dòng Họ Việt";
   const personAName = (pA?.full_name as string) ?? "—";
   const personBName = (pB?.full_name as string) ?? "—";
 
@@ -421,7 +421,7 @@ Deno.serve(async (req) => {
     // Token-mode revoke (admin A cancels a pending invite before any
     // clan B accepted) has clan_b_id null — nobody else even knew
     // the invite existed, so there's nothing to "notify B" about.
-    // Skip silently to avoid rendering a "Liên kết với Gia phả đã
+    // Skip silently to avoid rendering a "Liên kết với Dòng Họ Việt đã
     // thu hồi" email with the default fallback clan name.
     if (!l.clan_b_id) {
       return json({ ok: true, skipped: "revoked-token-mode-no-peer" });

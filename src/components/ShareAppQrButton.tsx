@@ -28,7 +28,7 @@ export function ShareAppQrButton() {
         open={open}
         onClose={() => setOpen(false)}
         url={url}
-        title="Mở Gia phả trên điện thoại"
+        title="Mở Dòng Họ Việt trên điện thoại"
         description="Mở camera điện thoại, hướng vào mã QR để mở app."
       />
     </>

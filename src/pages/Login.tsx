@@ -39,7 +39,7 @@ export default function Login() {
     try {
       const url = new URL(text, window.location.origin);
       if (url.origin !== window.location.origin) {
-        setError("Mã QR không thuộc Gia phả. Bỏ qua để bảo vệ tài khoản.");
+        setError("Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản.");
         return;
       }
       // Hard-navigate so Supabase JS picks up the hash/code on

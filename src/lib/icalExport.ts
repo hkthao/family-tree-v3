@@ -65,7 +65,7 @@ export interface BuildIcsOptions {
 const ICS_HEADER = [
   "BEGIN:VCALENDAR",
   "VERSION:2.0",
-  "PRODID:-//Gia phả//VN//EN",
+  "PRODID:-//Dòng Họ Việt//VN//EN",
   "CALSCALE:GREGORIAN",
   "METHOD:PUBLISH",
 ];

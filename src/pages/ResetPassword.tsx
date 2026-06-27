@@ -101,7 +101,7 @@ export default function ResetPassword() {
             <Alert>
               <AlertDescription>
                 Đang xác thực liên kết… Nếu bạn mở trực tiếp trang này, hãy bấm
-                vào liên kết trong email "Đặt lại mật khẩu Gia phả".
+                vào liên kết trong email "Đặt lại mật khẩu Dòng Họ Việt".
               </AlertDescription>
             </Alert>
           )}

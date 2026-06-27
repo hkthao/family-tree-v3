@@ -54,7 +54,7 @@ export default function Changelog() {
             className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
           >
             <AppLogo size={28} className="rounded" />
-            Gia phả
+            Dòng Họ Việt
           </Link>
           <nav className="flex items-center gap-3 text-sm">
             <Link to="/login" className="hover:underline">

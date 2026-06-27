@@ -35,7 +35,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const RESEND_FROM =
-  Deno.env.get("RESEND_FROM") ?? "Gia phả <noreply@giapha.local>";
+  Deno.env.get("RESEND_FROM") ?? "Dòng Họ Việt <noreply@giapha.local>";
 const APP_BASE_URL =
   Deno.env.get("APP_BASE_URL") ?? "http://localhost:5173";
 
@@ -115,7 +115,7 @@ function emailLayout(opts: {
             background:#FBF7F0;margin:0;padding:24px;">
     <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;
                 padding:24px;border:1px solid #D8CFC2;">
-      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Gia phả" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
+      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Dòng Họ Việt" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
       <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
                 color:#6F665F;margin:0 0 4px;">${esc(opts.clanName)}</p>
       <h1 style="font-size:20px;color:#7A2230;margin:0 0 16px;">${esc(opts.title)}</h1>
@@ -123,7 +123,7 @@ function emailLayout(opts: {
       ${cta}
       <hr style="border:none;border-top:1px solid #D8CFC2;margin:24px 0 8px;" />
       <p style="font-size:11px;color:#6F665F;margin:0;">
-        Email tự động từ ứng dụng Gia phả. Không cần trả lời.
+        Email tự động từ ứng dụng Dòng Họ Việt. Không cần trả lời.
       </p>
     </div></body></html>`;
 }
@@ -140,7 +140,7 @@ function buildNewContributionEmail(opts: {
   const target = opts.personName
     ? `cho ${esc(opts.personName)}`
     : "(thêm người mới)";
-  const subject = `[Gia phả ${opts.clanName}] Đề xuất ${opts.contribTypeLabel} ${target}`;
+  const subject = `[Dòng Họ Việt ${opts.clanName}] Đề xuất ${opts.contribTypeLabel} ${target}`;
   const body = `
     <p>Có người vừa gửi một đề xuất sửa gia phả của bạn.</p>
     <table style="border-collapse:collapse;margin:12px 0;font-size:14px;">
@@ -180,7 +180,7 @@ function buildDecisionEmail(opts: {
 }): { subject: string; html: string } {
   const target = opts.personName ? `cho ${opts.personName}` : "(thêm người mới)";
   const statusLabel = STATUS_LABEL[opts.status];
-  const subject = `[Gia phả ${opts.clanName}] Đề xuất của bạn ${statusLabel}`;
+  const subject = `[Dòng Họ Việt ${opts.clanName}] Đề xuất của bạn ${statusLabel}`;
   const verb =
     opts.status === "approved"
       ? "đã được áp dụng vào gia phả"
@@ -278,7 +278,7 @@ Deno.serve(async (req) => {
     .select("name")
     .eq("id", c.clan_id)
     .maybeSingle();
-  const clanName = clan?.name ?? "Gia phả";
+  const clanName = clan?.name ?? "Dòng Họ Việt";
 
   // Resolve display name of the target person (for subject/title).
   let personName: string | null = null;
@@ -342,7 +342,7 @@ Deno.serve(async (req) => {
     await pushContribution({
       sb,
       userIds: adminIds,
-      title: tpl.subject.replace(/^\[Gia phả [^\]]+\]\s*/, ""),
+      title: tpl.subject.replace(/^\[Dòng Họ Việt [^\]]+\]\s*/, ""),
       body: `${c.submitter_name ?? "Thành viên"} đề xuất ${contribTypeLabel.toLowerCase()}${personName ? " cho " + personName : ""}.`,
       url: contribLink,
       eventKey: `contrib:${c.id}:pending`,

@@ -16,7 +16,7 @@ describe("icalExport.buildClanIcs", () => {
     expect(ics).toMatch(/^BEGIN:VCALENDAR\r\n/);
     expect(ics).toMatch(/END:VCALENDAR\r\n$/);
     expect(ics).toContain("VERSION:2.0");
-    expect(ics).toContain("PRODID:-//Gia phả//VN//EN");
+    expect(ics).toContain("PRODID:-//Dòng Họ Việt//VN//EN");
     expect(ics).toContain("X-WR-CALNAME:Gia phả Họ Huỳnh");
     expect(ics).toContain("X-WR-TIMEZONE:Asia/Ho_Chi_Minh");
   });

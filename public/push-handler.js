@@ -87,7 +87,7 @@ async function handlePush(event) {
     }
   }
 
-  const title = data.title || "Gia phả";
+  const title = data.title || "Dòng Họ Việt";
   const options = {
     body: data.body || "",
     icon: "/icons/icon-192.png",
@@ -186,7 +186,7 @@ async function handleAction(notificationId, actionToken, actionId, fallbackUrl) 
         : confirm.action === "rejected"
           ? "Đã từ chối đề xuất"
           : "Đã ghi nhận";
-    await self.registration.showNotification("Gia phả", {
+    await self.registration.showNotification("Dòng Họ Việt", {
       body: label,
       icon: "/icons/icon-192.png",
       badge: "/icons/badge.png",

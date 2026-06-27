@@ -504,7 +504,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   return (
     <Document
       title={`Gia phả - ${cleanName}`}
-      author="Gia phả"
+      author="Dòng Họ Việt"
       subject={`Sổ gia phả dòng họ ${cleanName}`}
     >
       {/* ─── Cover ──────────────────────────────────────────────── */}
