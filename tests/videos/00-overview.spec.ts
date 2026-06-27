@@ -79,7 +79,7 @@ test("00 — Tour giới thiệu app gia phả", async ({ page }) => {
   // ─── 1. Mở đầu ──────────────────────────────────────────────
   await narrate(
     page,
-    "Đây là ứng dụng Gia phả Việt Nam — lưu giữ và lan toả dòng họ.",
+    "Đây là ứng dụng Dòng Họ Việt Việt Nam — lưu giữ và lan toả dòng họ.",
     { ms: 4500 },
   );
   await narrate(

@@ -84,7 +84,7 @@ export function InstallAppButton() {
     }
     // iOS Safari — show the manual recipe.
     await confirm({
-      title: "Thêm Gia phả vào màn hình chính",
+      title: "Thêm Dòng Họ Việt vào màn hình chính",
       description:
         'Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn "Thêm vào Màn hình Chính". App sẽ mở như ứng dụng riêng, không có thanh URL.',
       confirmLabel: "Đã hiểu",

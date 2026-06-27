@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#7A2230" />
+
+    <link rel="icon" type="image/svg+xml" href="/assets/app-icon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/app-icon-180.png" />
+
+    <title>Dòng Họ Việt — Gia phả số gìn giữ cội nguồn dòng họ</title>
+    <meta
+      name="description"
+      content="Gia phả số cho dòng họ Việt — dễ dùng cho cả người lớn tuổi. Cả họ cùng dựng cây gia phả, nhớ ngày giỗ âm lịch, lưu giữ giọng kể và di sản của ông bà cho muôn đời sau."
+    />
+    <link rel="canonical" href="https://donghoviet.thaohk.com/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dòng Họ Việt" />
+    <meta property="og:title" content="Dòng Họ Việt — Gìn giữ cội nguồn dòng họ cho muôn đời sau" />
+    <meta
+      property="og:description"
+      content="Gia phả số cho dòng họ Việt, dễ dùng cho cả người lớn tuổi. Cả họ cùng vun đắp cây gia phả, nhớ ngày giỗ, lưu giữ di sản ông bà."
+    />
+    <meta property="og:image" content="https://donghoviet.thaohk.com/assets/og-banner.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Apply theme before first paint — mirrors app index.html, shares
+      // the same localStorage key so the choice carries to giapha.thaohk.com.
+      (function () {
+        try {
+          var v = localStorage.getItem("family-tree:theme");
+          var dark =
+            v === "dark" ||
+            ((v === "system" || !v) &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", dark ? "#1A1612" : "#7A2230");
+        } catch (e) {}
+      })();
+    </script>
+
+    <style>
+      /* ── Oxblood palette (src/index.css) ───────────────────────── */
+      :root {
+        --background: 38 60% 96%;
+        --foreground: 20 14% 14%;
+        --card: 38 56% 98%;
+        --primary: 0 45% 33%;
+        --primary-foreground: 38 60% 96%;
+        --muted: 36 30% 90%;
+        --muted-foreground: 25 9% 40%;
+        --accent: 40 64% 42%;
+        --border: 36 41% 86%;
+        --tint: 38 48% 93%;
+        --radius: 0.75rem;
+        --male: #d4dde4;
+        --female: #e8d2cc;
+        --neutral: #e8e0d2;
+        --cardink: #2a2320;
+      }
+      .dark {
+        --background: 24 14% 8%;
+        --foreground: 38 30% 92%;
+        --card: 24 14% 12%;
+        --primary: 0 60% 58%;
+        --primary-foreground: 38 30% 92%;
+        --muted: 24 12% 18%;
+        --muted-foreground: 35 18% 68%;
+        --accent: 40 65% 60%;
+        --border: 24 10% 20%;
+        --tint: 24 13% 11%;
+        --male: #2f3d48;
+        --female: #4a2f2d;
+        --neutral: #38322b;
+        --cardink: #efe9db;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 18px; scroll-behavior: smooth; }
+      @media (max-width: 640px) { html { font-size: 17px; } }
+      body {
+        font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+      h1, h2, h3, .serif { font-family: "Noto Serif", Georgia, serif; line-height: 1.18; letter-spacing: -0.01em; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: 100%; max-width: 1140px; margin: 0 auto; padding: 0 1.25rem; }
+      .ico { width: 1.4em; height: 1.4em; stroke: currentColor; fill: none; stroke-width: 1.9;
+             stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+      /* ── Buttons ──────────────────────────────────────────────── */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
+        min-height: 52px; padding: 0 1.6rem; border-radius: var(--radius);
+        font-weight: 600; font-size: 1.02rem; cursor: pointer; border: 1.5px solid transparent;
+        transition: transform .12s, filter .12s, background .12s; white-space: nowrap;
+      }
+      .btn .ico { width: 1.25em; height: 1.25em; }
+      .btn:active { transform: scale(0.97); }
+      .btn-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: 0 6px 20px hsl(var(--primary) / 0.28); }
+      .btn-primary:hover { filter: brightness(1.08); }
+      .btn-ghost { background: hsl(var(--card)); border-color: hsl(var(--border)); color: hsl(var(--foreground)); }
+      .btn-ghost:hover { background: hsl(var(--muted)); }
+      .btn-lg { min-height: 58px; font-size: 1.1rem; padding: 0 2rem; }
+
+      /* ── Header ───────────────────────────────────────────────── */
+      header {
+        position: sticky; top: 0; z-index: 50;
+        background: hsl(var(--background) / 0.88);
+        backdrop-filter: saturate(180%) blur(10px);
+        border-bottom: 1px solid hsl(var(--border));
+      }
+      .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 1rem; }
+      .brand { display: flex; align-items: center; gap: 0.6rem; font-family: "Noto Serif", serif; font-weight: 700; font-size: 1.3rem; white-space: nowrap; }
+      .brand img { width: 38px; height: 38px; border-radius: 10px; }
+      .nav-links { display: none; gap: 1.6rem; margin-left: auto; margin-right: 0.5rem; font-weight: 500; }
+      .nav-links a { color: hsl(var(--muted-foreground)); transition: color .12s; position: relative; padding: 0.35rem 0; }
+      .nav-links a:hover { color: hsl(var(--primary)); }
+      .nav-links a.active { color: hsl(var(--primary)); }
+      .nav-links a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px;
+                                   height: 2.5px; background: hsl(var(--primary)); border-radius: 2px; }
+      .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
+      .icon-btn {
+        width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center;
+        border-radius: var(--radius); border: 1.5px solid hsl(var(--border)); background: hsl(var(--card));
+        cursor: pointer; color: hsl(var(--foreground));
+      }
+      .icon-btn:hover { background: hsl(var(--muted)); }
+      .icon-btn .ico { width: 22px; height: 22px; }
+      /* Appbar: mobile = logo + theme + hamburger (kiểu app hiện đại);
+         desktop = links + CTA. */
+      .menu-btn { display: inline-flex; }
+      .nav-cta { display: none; }
+      @media (min-width: 900px) {
+        .nav-links { display: flex; }
+        .nav-cta { display: inline-flex; }
+        .menu-btn { display: none; }
+      }
+      .mobile-menu {
+        display: none; flex-direction: column;
+        padding: 0.4rem 1.25rem 1.2rem;
+        background: hsl(var(--background)); border-bottom: 1px solid hsl(var(--border));
+      }
+      .mobile-menu.open { display: flex; animation: menuDown .18s ease-out; }
+      @keyframes menuDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+      .mobile-menu a:not(.btn) {
+        padding: 0.95rem 0.3rem; font-weight: 500; font-size: 1.08rem;
+        color: hsl(var(--foreground)); border-bottom: 1px solid hsl(var(--border));
+      }
+      .mobile-menu a:not(.btn):active { color: hsl(var(--primary)); }
+      .mobile-menu .btn { width: 100%; margin-top: 0.7rem; }
+      @media (min-width: 900px) { .mobile-menu { display: none !important; } }
+      @media (max-width: 560px) {
+        .nav { gap: 0.5rem; height: 62px; }
+        .brand { font-size: 1.12rem; gap: 0.45rem; }
+        .brand img { width: 33px; height: 33px; }
+        .nav-actions { gap: 0.45rem; }
+        .icon-btn { width: 44px; height: 44px; }
+      }
+
+      /* ── Section scaffolding ──────────────────────────────────── */
+      section { padding: 4.5rem 0; }
+      .tint { background: hsl(var(--tint)); }
+      .eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; color: hsl(var(--accent));
+                 font-weight: 600; font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; }
+      .eyebrow .ico { width: 1.05em; height: 1.05em; }
+      .h-sec { font-size: clamp(1.7rem, 4.2vw, 2.6rem); font-weight: 700; margin-top: 0.6rem; }
+      .lead { font-size: 1.12rem; color: hsl(var(--muted-foreground)); max-width: 620px; margin-top: 0.9rem; }
+      .center { text-align: center; }
+      .center .lead { margin-left: auto; margin-right: auto; }
+
+      /* ── Hero ─────────────────────────────────────────────────── */
+      .hero { position: relative; overflow: hidden; padding-top: 4rem; }
+      .hero::before {
+        content: ""; position: absolute; inset: 0; z-index: -1;
+        background:
+          radial-gradient(55% 45% at 78% 8%, hsl(var(--accent) / 0.16), transparent 70%),
+          radial-gradient(50% 40% at 15% 0%, hsl(var(--primary) / 0.10), transparent 72%);
+      }
+      .hero-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center; }
+      @media (min-width: 980px) { .hero-grid { grid-template-columns: 1.05fr 1fr; gap: 3rem; } }
+      .hero-badge {
+        display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.9rem;
+        background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 999px;
+        font-size: 0.86rem; font-weight: 500; color: hsl(var(--muted-foreground)); margin-bottom: 1.3rem;
+      }
+      .hero-badge .ico { width: 1.05em; height: 1.05em; color: hsl(var(--primary)); }
+      .hero h1 { font-size: clamp(2.3rem, 6.2vw, 4rem); font-weight: 700; }
+      .hero h1 .accent { color: hsl(var(--primary)); }
+      .hero .lead { font-size: 1.22rem; max-width: 560px; }
+      .hero-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 2rem; max-width: 540px; }
+      @media (max-width: 520px) { .hero-cta { grid-template-columns: 1fr; } }
+      .hero-trust { display: flex; flex-wrap: wrap; gap: 1.2rem 1.6rem; margin-top: 1.6rem; color: hsl(var(--muted-foreground)); font-size: 0.95rem; }
+      .hero-trust span { display: inline-flex; align-items: center; gap: 0.45rem; }
+      .hero-trust .ico { width: 1.2em; height: 1.2em; color: hsl(var(--accent)); }
+
+      /* ── Hero screenshot (ảnh thật của app) ───────────────────── */
+      .hero-shot {
+        position: relative; border-radius: calc(var(--radius) * 1.4); overflow: hidden;
+        border: 1px solid hsl(var(--border));
+        box-shadow: 0 28px 64px hsl(var(--foreground) / 0.20);
+      }
+      .hero-shot img { display: block; width: 100%; height: auto; }
+      .hero-shot::after {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.04); border-radius: inherit;
+      }
+
+      /* ── Pain strip ───────────────────────────────────────────── */
+      .pain-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; margin-top: 2.5rem; }
+      @media (min-width: 760px) { .pain-grid { grid-template-columns: repeat(3, 1fr); } }
+      .pain { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-left: 4px solid hsl(var(--primary));
+              border-radius: var(--radius); padding: 1.4rem 1.4rem; }
+      .pain .ico { color: hsl(var(--primary)); width: 1.9rem; height: 1.9rem; margin-bottom: 0.7rem; }
+      .pain h3 { font-size: 1.12rem; font-weight: 600; }
+      .pain p { margin-top: 0.4rem; color: hsl(var(--muted-foreground)); font-size: 0.98rem; }
+      .pain-note { margin-top: 2rem; text-align: center; font-size: 1.05rem; font-weight: 500; color: hsl(var(--primary)); }
+
+      /* ── Steps ────────────────────────────────────────────────── */
+      .steps { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-top: 3rem; }
+      @media (min-width: 820px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+      .step { position: relative; background: hsl(var(--card)); border: 1px solid hsl(var(--border));
+              border-radius: var(--radius); padding: 2rem 1.6rem; text-align: center; }
+      .step-n { width: 54px; height: 54px; margin: 0 auto 1rem; border-radius: 50%;
+                background: hsl(var(--primary) / 0.10); color: hsl(var(--primary));
+                display: flex; align-items: center; justify-content: center; }
+      .step-n .ico { width: 26px; height: 26px; }
+      .step b.num { position: absolute; top: 0.9rem; right: 1.3rem; font: 700 2.4rem "Noto Serif";
+                    color: hsl(var(--accent)); opacity: 0.6; line-height: 1; }
+      .step h3 { font-size: 1.2rem; font-weight: 600; }
+      .step p { margin-top: 0.5rem; color: hsl(var(--muted-foreground)); }
+
+      /* ── Features ─────────────────────────────────────────────── */
+      .feat-grid { display: grid; grid-template-columns: 1fr; gap: 1.1rem; margin-top: 3rem; }
+      @media (min-width: 600px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 940px) { .feat-grid { grid-template-columns: repeat(3, 1fr); } }
+      .feat { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+              padding: 2rem 1.6rem; text-align: center; transition: transform .15s, box-shadow .15s, border-color .15s; }
+      .feat:hover { transform: translateY(-4px); box-shadow: 0 16px 34px hsl(var(--foreground) / 0.08); border-color: hsl(var(--accent) / 0.5); }
+      .feat .ic { width: 84px; height: 84px; border-radius: 22px; display: flex; align-items: center; justify-content: center;
+                  background: hsl(var(--primary) / 0.10); color: hsl(var(--primary)); margin: 0 auto 1.3rem; }
+      .feat .ic .ico { width: 44px; height: 44px; stroke-width: 1.7; }
+      .feat.hot .ic { background: hsl(var(--accent) / 0.16); color: hsl(var(--accent)); }
+      .feat .tagvn { display: inline-block; font-size: 0.72rem; font-weight: 600; color: hsl(var(--accent));
+                     background: hsl(var(--accent) / 0.12); padding: 0.12rem 0.6rem; border-radius: 999px; margin-bottom: 0.7rem; }
+      .feat h3 { font-size: 1.18rem; font-weight: 600; }
+      .feat p { margin-top: 0.5rem; color: hsl(var(--muted-foreground)); font-size: 0.97rem; }
+
+      /* ── Spotlight (wow) ──────────────────────────────────────── */
+      .spot { display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center; }
+      @media (min-width: 900px) { .spot { grid-template-columns: 1fr 1fr; gap: 3.5rem; } }
+      .spot h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; }
+      .spot p { margin-top: 1rem; font-size: 1.1rem; color: hsl(var(--muted-foreground)); }
+      .spot .quote { margin-top: 1.4rem; padding-left: 1.1rem; border-left: 3px solid hsl(var(--accent));
+                     font-family: "Noto Serif", serif; font-style: italic; font-size: 1.15rem; }
+      .audio-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+                    padding: 1.4rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 10px 30px hsl(var(--foreground)/0.08); }
+      .audio-card .play { width: 56px; height: 56px; border-radius: 50%; background: hsl(var(--primary)); color: #fff;
+                          display: flex; align-items: center; justify-content: center; flex: none; }
+      .audio-card .play .ico { width: 26px; height: 26px; }
+      .wave { display: flex; align-items: center; gap: 3px; height: 34px; margin-top: 0.4rem; }
+      .wave span { width: 4px; border-radius: 2px; background: hsl(var(--accent)); opacity: 0.8; }
+
+      /* ── Photo placeholder (thay ảnh thật) ────────────────────── */
+      .photo-ph { position: relative; border: 2px dashed hsl(var(--border)); border-radius: var(--radius);
+                  background: hsl(var(--muted)); aspect-ratio: 4 / 3; display: flex; flex-direction: column;
+                  align-items: center; justify-content: center; gap: 0.5rem; color: hsl(var(--muted-foreground)); text-align: center; padding: 1rem; }
+      .photo-ph .ico { width: 2.4rem; height: 2.4rem; opacity: 0.7; }
+      .photo-ph small { font-size: 0.82rem; max-width: 80%; }
+      .spot-photo { margin-top: 1rem; border-radius: var(--radius); overflow: hidden;
+                    border: 1px solid hsl(var(--border)); box-shadow: 0 16px 36px hsl(var(--foreground) / 0.14); }
+      .spot-photo img { display: block; width: 100%; height: auto; }
+
+      /* ── Trust ────────────────────────────────────────────────── */
+      .trust-grid { display: grid; grid-template-columns: 1fr; gap: 1.1rem; margin-top: 3rem; }
+      @media (min-width: 760px) { .trust-grid { grid-template-columns: repeat(3, 1fr); } }
+      .trust-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 2rem 1.6rem; text-align: center; }
+      .trust-card .ic { width: 84px; height: 84px; border-radius: 22px; background: hsl(var(--primary) / 0.10);
+                        color: hsl(var(--primary)); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; }
+      .trust-card .ic .ico { width: 44px; height: 44px; stroke-width: 1.7; }
+      .trust-card h3 { font-size: 1.12rem; font-weight: 600; }
+      .trust-card p { margin-top: 0.4rem; color: hsl(var(--muted-foreground)); font-size: 0.96rem; }
+      .testi-grid { display: grid; grid-template-columns: 1fr; gap: 1.1rem; margin-top: 3rem; }
+      @media (min-width: 720px) { .testi-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1000px) { .testi-grid { grid-template-columns: repeat(3, 1fr); } }
+      .tcard { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+               padding: 1.7rem; display: flex; flex-direction: column; }
+      .tcard .mark { font: 700 2.4rem "Noto Serif"; color: hsl(var(--accent)); line-height: 0.6; height: 1rem; }
+      .tcard .quote { font-family: "Noto Serif", serif; font-style: italic; font-size: 1.06rem; line-height: 1.55; flex: 1; }
+      .tcard .who { display: flex; align-items: center; gap: 0.8rem; margin-top: 1.3rem; padding-top: 1.1rem; border-top: 1px solid hsl(var(--border)); }
+      .tcard .ava2 { width: 48px; height: 48px; border-radius: 50%; background: hsl(var(--primary) / 0.12); color: hsl(var(--primary));
+                     display: flex; align-items: center; justify-content: center; font: 700 1.05rem "Noto Serif"; flex: none; }
+      .tcard .who b { font-size: 0.95rem; }
+      .tcard .who small { display: block; color: hsl(var(--muted-foreground)); font-weight: 400; font-size: 0.83rem; }
+
+      /* ── Live demo ────────────────────────────────────────────── */
+      .demo-box { margin-top: 2.5rem; background: hsl(var(--primary) / 0.06); border: 1px solid hsl(var(--primary) / 0.25);
+                  border-radius: calc(var(--radius)*1.3); padding: 2.4rem; text-align: center; }
+
+      /* ── FAQ ──────────────────────────────────────────────────── */
+      .faq { margin: 3rem auto 0; }
+      details { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+                padding: 0 1.3rem; margin-bottom: 0.8rem; }
+      details summary { list-style: none; cursor: pointer; padding: 1.2rem 0; font-weight: 600; font-size: 1.08rem;
+                        display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+      details summary::-webkit-details-marker { display: none; }
+      details summary .ico { width: 1.3rem; height: 1.3rem; color: hsl(var(--primary)); transition: transform .2s; }
+      details[open] summary .ico { transform: rotate(45deg); }
+      details .ans { padding: 0 0 1.3rem; color: hsl(var(--muted-foreground)); }
+
+      /* ── Final CTA ────────────────────────────────────────────── */
+      .cta-final { position: relative; overflow: hidden; color: #f6efe3;
+                   background: linear-gradient(135deg, #7a2e2e 0%, #5d2222 60%, #4a1d1d 100%);
+                   border-radius: calc(var(--radius)*1.6); padding: 3.8rem 2rem; text-align: center; }
+      .cta-final::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+                           background: radial-gradient(60% 80% at 85% 110%, rgba(184,134,42,0.28), transparent 70%); }
+      .cta-final > * { position: relative; }
+      .cta-final h2 { font-size: clamp(1.7rem, 4.5vw, 2.6rem); }
+      .cta-final p { margin-top: 0.9rem; opacity: 0.92; max-width: 560px; margin-inline: auto; font-size: 1.1rem; }
+      .cta-final .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin: 2rem auto 0; max-width: 540px; }
+      @media (max-width: 520px) { .cta-final .btns { grid-template-columns: 1fr; } }
+      .cta-final .btn-primary { background: #fbf7f0; color: #7a2e2e; box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
+      .cta-final .btn-primary:hover { filter: brightness(1.02); background: #fff; }
+      .cta-final .btn-zalo { background: rgba(246,239,227,0.08); border-color: rgba(246,239,227,0.55); color: #f6efe3; }
+      .cta-final .btn-zalo:hover { background: rgba(246,239,227,0.16); }
+      .cta-final .dragon { position: absolute; right: -20px; bottom: -30px; width: 190px; opacity: 0.18; pointer-events: none; }
+
+      /* ── Footer ───────────────────────────────────────────────── */
+      footer { border-top: 1px solid hsl(var(--border)); padding: 3rem 0 2.5rem; }
+      .foot-top { display: grid; grid-template-columns: 1fr; gap: 1.6rem; }
+      @media (min-width: 720px) { .foot-top { grid-template-columns: 2fr 1fr 1fr; } }
+      .foot-brand p { margin-top: 0.7rem; color: hsl(var(--muted-foreground)); font-size: 0.95rem; max-width: 320px; }
+      .foot-col h4 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground)); margin-bottom: 0.8rem; }
+      .foot-col a { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; color: hsl(var(--foreground)); }
+      .foot-col a:hover { color: hsl(var(--primary)); }
+      .foot-col .ico { width: 1.05rem; height: 1.05rem; }
+      .foot-bottom { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid hsl(var(--border));
+                     text-align: center; color: hsl(var(--muted-foreground)); font-size: 0.9rem; }
+
+      /* Ẩn thanh cuộn trên thiết bị cảm ứng (mobile/tablet) — vẫn cuộn bình thường */
+      @media (hover: none) {
+        html, body { scrollbar-width: none; -ms-overflow-style: none; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+      }
+
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    </style>
+  </head>
+
+  <body>
+    <!-- ── Icon sprite (Lucide outline) ───────────────────────────── -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-tree" viewBox="0 0 24 24"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></symbol>
+      <symbol id="i-invite" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></symbol>
+      <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></symbol>
+      <symbol id="i-landmark" viewBox="0 0 24 24"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></symbol>
+      <symbol id="i-qr" viewBox="0 0 24 24"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></symbol>
+      <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></symbol>
+      <symbol id="i-printer" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></symbol>
+      <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+      <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></symbol>
+      <symbol id="i-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></symbol>
+      <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><line x1="2" x2="22" y1="2" y2="22"/></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    </svg>
+
+    <!-- ── Header ──────────────────────────────────────────────────── -->
+    <header>
+      <div class="wrap nav">
+        <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
+        <nav class="nav-links">
+          <a href="#cau-chuyen">Vì sao</a>
+          <a href="#cach-dung">Cách dùng</a>
+          <a href="#tinh-nang">Tính năng</a>
+          <a href="#an-toan">An toàn</a>
+          <a href="#cau-hoi">Hỏi đáp</a>
+        </nav>
+        <div class="nav-actions">
+          <button class="icon-btn" id="themeToggle" aria-label="Đổi giao diện sáng/tối"><svg class="ico"><use href="#i-moon"/></svg></button>
+          <a class="btn btn-primary nav-cta" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
+          <button class="icon-btn menu-btn" id="menuBtn" aria-label="Mở menu" aria-expanded="false"><svg class="ico"><use href="#i-menu"/></svg></button>
+        </div>
+      </div>
+      <!-- Menu mobile (kiểu app hiện đại) -->
+      <div class="mobile-menu" id="mobileMenu">
+        <a href="#cau-chuyen">Vì sao</a>
+        <a href="#cach-dung">Cách dùng</a>
+        <a href="#tinh-nang">Tính năng</a>
+        <a href="#an-toan">An toàn</a>
+        <a href="#cau-hoi">Hỏi đáp</a>
+        <a class="btn btn-primary" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả dòng họ</a>
+        <a class="btn btn-ghost" href="https://zalo.me/" id="zaloMenu"><svg class="ico"><use href="#i-phone"/></svg>Liên hệ qua Zalo</a>
+      </div>
+    </header>
+
+    <main>
+      <!-- 1 ── Hero ──────────────────────────────────────────────── -->
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <span class="hero-badge"><svg class="ico"><use href="#i-heart"/></svg>Gia phả số cho dòng họ Việt</span>
+            <h1>Gìn giữ <span class="accent">cội nguồn</span> dòng họ cho muôn đời sau</h1>
+            <p class="lead">
+              Nơi cả họ cùng nhau dựng nên cây gia phả, ghi nhớ công ơn tổ tiên
+              và trao lại cho con cháu mai sau. Đơn giản, ấm áp — dùng được cho cả
+              ông bà lớn tuổi.
+            </p>
+            <div class="hero-cta">
+              <a class="btn btn-primary btn-lg" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả dòng họ</a>
+              <a class="btn btn-ghost btn-lg" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-eye"/></svg>Xem dòng họ mẫu</a>
+            </div>
+            <div class="hero-trust">
+              <span><svg class="ico"><use href="#i-heart"/></svg>Miễn phí để bắt đầu</span>
+              <span><svg class="ico"><use href="#i-lock"/></svg>Riêng tư, bạn toàn quyền</span>
+              <span><svg class="ico"><use href="#i-users"/></svg>Cả họ cùng làm</span>
+            </div>
+          </div>
+
+          <!-- Preview phả đồ — ảnh thật từ ứng dụng -->
+          <div class="hero-shot" aria-label="Cây gia phả dòng họ trong ứng dụng">
+            <img src="/assets/app-tree.png" alt="Cây gia phả nhiều đời của một dòng họ Việt trong ứng dụng Dòng Họ Việt" loading="eager" />
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 ── Nỗi đau ───────────────────────────────────────────── -->
+      <section class="tint" id="cau-chuyen">
+        <div class="wrap center">
+          <span class="eyebrow"><svg class="ico"><use href="#i-clock"/></svg>Điều ai cũng trăn trở</span>
+          <h2 class="h-sec">Có những điều, mất đi là không lấy lại được</h2>
+          <p class="lead">Gia phả là gốc rễ của một dòng họ — nhưng nó đang mai một từng ngày.</p>
+        </div>
+        <div class="wrap pain-grid">
+          <div class="pain">
+            <svg class="ico"><use href="#i-file"/></svg>
+            <h3>Gia phả giấy ố vàng, thất lạc</h3>
+            <p>Cuốn gia phả viết tay theo năm tháng phai mực, rách nát, hoặc chỉ một nhà giữ — cháy, mất là mất hẳn.</p>
+          </div>
+          <div class="pain">
+            <svg class="ico"><use href="#i-clock"/></svg>
+            <h3>Các cụ biết chuyện ngày một ít</h3>
+            <p>Người lớn tuổi nhớ rõ gốc gác, ngày giỗ, công trạng tổ tiên. Mỗi cụ về với tổ tiên là một phần ký ức dòng họ mất theo.</p>
+          </div>
+          <div class="pain">
+            <svg class="ico"><use href="#i-users"/></svg>
+            <h3>Con cháu tản mát, không biết gốc</h3>
+            <p>Họ hàng mỗi người một phương, lớp trẻ gặp nhau không biết vai vế, không biết mình thuộc chi nào, đời thứ mấy.</p>
+          </div>
+        </div>
+        <p class="wrap pain-note">Đừng để đến khi muốn ghi lại thì không còn ai để hỏi.</p>
+      </section>
+
+      <!-- 3 ── Cách hoạt động ────────────────────────────────────── -->
+      <section id="cach-dung">
+        <div class="wrap center">
+          <span class="eyebrow"><svg class="ico"><use href="#i-sparkles"/></svg>Đơn giản hơn bạn nghĩ</span>
+          <h2 class="h-sec">Cả họ cùng làm — không một mình ai gánh</h2>
+          <p class="lead">Bạn không phải ngồi nhập hàng nghìn người. Khởi tạo rồi mời cả họ, cây gia phả tự lớn lên.</p>
+        </div>
+        <div class="wrap steps">
+          <div class="step">
+            <b class="num">1</b>
+            <div class="step-n"><svg class="ico"><use href="#i-plus"/></svg></div>
+            <h3>Tạo dòng họ</h3>
+            <p>Lập dòng họ trong vài phút, thêm cụ tổ và vài đời đầu mà bạn nhớ. Không cần đầy đủ ngay.</p>
+          </div>
+          <div class="step">
+            <b class="num">2</b>
+            <div class="step-n"><svg class="ico"><use href="#i-invite"/></svg></div>
+            <h3>Mời cả họ cùng bổ sung</h3>
+            <p>Gửi một đường link qua Zalo. Mỗi người tự nhận mình và điền nhánh nhà mình — việc chia cho cả họ.</p>
+          </div>
+          <div class="step">
+            <b class="num">3</b>
+            <div class="step-n"><svg class="ico"><use href="#i-tree"/></svg></div>
+            <h3>Cây gia phả tự lớn lên</h3>
+            <p>Mỗi người góp một chút, cây nhiều đời dần hoàn chỉnh — luôn được lưu giữ an toàn, không lo mất.</p>
+          </div>
+        </div>
+        <div class="wrap center" style="margin-top:2.5rem">
+          <a class="btn btn-primary btn-lg" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-arrow"/></svg>Bắt đầu dòng họ của bạn</a>
+        </div>
+      </section>
+
+      <!-- 4 ── Tính năng (nhấn cái khác biệt Việt) ────────────────── -->
+      <section class="tint" id="tinh-nang">
+        <div class="wrap center">
+          <span class="eyebrow"><svg class="ico"><use href="#i-sparkles"/></svg>Tính năng</span>
+          <h2 class="h-sec">Hiểu dòng họ Việt — điều phần mềm ngoại không làm được</h2>
+          <p class="lead">Không chỉ vẽ cây. Được làm riêng cho tập tục, lễ nghĩa và cách xưng hô của người Việt.</p>
+        </div>
+        <div class="wrap feat-grid">
+          <div class="feat hot">
+            <span class="tagvn">Đặc trưng Việt</span>
+            <div class="ic"><svg class="ico"><use href="#i-calendar"/></svg></div>
+            <h3>Nhớ giỗ theo âm lịch</h3>
+            <p>Ghi ngày sinh, ngày mất theo cả âm lịch lẫn dương lịch. Hệ thống tự nhắc ngày giỗ, ngày kỵ — không bao giờ quên.</p>
+          </div>
+          <div class="feat hot">
+            <span class="tagvn">Đặc trưng Việt</span>
+            <div class="ic"><svg class="ico"><use href="#i-chat"/></svg></div>
+            <h3>Máy tính xưng hô họ hàng</h3>
+            <p>Hai người trong họ gọi nhau là gì? Chú, bác, cô, dì, cậu hay cháu? Tra ra ngay — lớp trẻ hết bối rối khi gặp họ hàng.</p>
+          </div>
+          <div class="feat hot">
+            <span class="tagvn">Đặc trưng Việt</span>
+            <div class="ic"><svg class="ico"><use href="#i-qr"/></svg></div>
+            <h3>Mã QR ở mộ &amp; từ đường</h3>
+            <p>In mã QR dán nơi mộ phần hoặc từ đường. Con cháu quét là hiện ngay tiểu sử, hình ảnh, công trạng của người đã khuất.</p>
+          </div>
+          <div class="feat">
+            <div class="ic"><svg class="ico"><use href="#i-link"/></svg></div>
+            <h3>Nối lại các chi thất lạc</h3>
+            <p>Liên kết các nhánh, các chi đã tản mát nhiều đời và kết nối thông gia giữa hai dòng họ.</p>
+          </div>
+          <div class="feat">
+            <div class="ic"><svg class="ico"><use href="#i-landmark"/></svg></div>
+            <h3>Mộ phần &amp; tro cốt</h3>
+            <p>Ghi nơi an nghỉ: mộ phần, gửi chùa, tháp họ chứa tro cốt nhiều người — để con cháu biết đường về thắp hương.</p>
+          </div>
+          <div class="feat">
+            <div class="ic"><svg class="ico"><use href="#i-scroll"/></svg></div>
+            <h3>Di sản &amp; văn hoá dòng họ</h3>
+            <p>Lưu giai thoại, gia phong, tục lệ, công trạng, kỷ vật — cùng thư viện ảnh và ghi âm kể chuyện của ông bà.</p>
+          </div>
+          <div class="feat">
+            <div class="ic"><svg class="ico"><use href="#i-printer"/></svg></div>
+            <h3>In sách &amp; phả đồ khổ lớn</h3>
+            <p>Xuất cây gia phả ra PDF, in thành sách gia phả hoặc phả đồ khổ lớn để treo nơi từ đường.</p>
+          </div>
+          <div class="feat">
+            <div class="ic"><svg class="ico"><use href="#i-share"/></svg></div>
+            <h3>Thiệp giới thiệu thành viên</h3>
+            <p>Tạo thiệp đẹp với phông chữ thư pháp Việt để giới thiệu, mừng thọ, chia sẻ tới cả họ.</p>
+          </div>
+          <div class="feat">
+            <div class="ic"><svg class="ico"><use href="#i-smartphone"/></svg></div>
+            <h3>Dùng ngay trên điện thoại</h3>
+            <p>Chạy thẳng trên trình duyệt điện thoại, không cần cài đặt. Chữ to, nút lớn — ông bà cũng dùng được.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 ── Khoảnh khắc "wow" ─────────────────────────────────── -->
+      <section id="di-san">
+        <div class="wrap spot">
+          <div>
+            <span class="eyebrow"><svg class="ico"><use href="#i-mic"/></svg>Điều quý giá nhất</span>
+            <h2>Lưu giữ giọng kể của ông bà — trước khi quá muộn</h2>
+            <p>
+              Không chỉ là tên và ngày tháng. Hãy ghi lại chính giọng ông bà kể về
+              gốc gác dòng họ, về tổ tiên, về những năm tháng đã qua. Đính kèm hình
+              ảnh, kỷ vật, và lời nhắn gửi cho con cháu mai sau.
+            </p>
+            <p class="quote">“Để mai này cháu chắt được nghe lại giọng cụ kể chuyện họ mình.”</p>
+            <div style="margin-top:1.6rem">
+              <a class="btn btn-primary" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-mic"/></svg>Bắt đầu lưu giữ di sản</a>
+            </div>
+          </div>
+          <div>
+            <div class="audio-card">
+              <div class="play"><svg class="ico"><use href="#i-play"/></svg></div>
+              <div style="flex:1">
+                <div style="font-weight:600">Cụ Nguyễn Văn Tổ kể về gốc tích dòng họ</div>
+                <div class="wave" id="wave"></div>
+              </div>
+            </div>
+            <div class="spot-photo">
+              <img src="/assets/family-storytelling.jpg" alt="Ông bà quây quần bên con cháu, kể chuyện gốc tích dòng họ" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 ── Niềm tin & an toàn ─────────────────────────────────── -->
+      <section class="tint" id="an-toan">
+        <div class="wrap center">
+          <span class="eyebrow"><svg class="ico"><use href="#i-shield"/></svg>Yên tâm gửi gắm</span>
+          <h2 class="h-sec">Dữ liệu dòng họ — an toàn và do bạn nắm giữ</h2>
+          <p class="lead">Đây là thông tin người thân. Chúng tôi giữ gìn cẩn trọng như chính dòng họ mình.</p>
+        </div>
+        <div class="wrap trust-grid">
+          <div class="trust-card">
+            <div class="ic"><svg class="ico"><use href="#i-database"/></svg></div>
+            <h3>Sao lưu an toàn</h3>
+            <p>Dữ liệu được lưu trữ và sao lưu định kỳ trên máy chủ riêng — không lo cháy nhà, mất sổ, hỏng máy.</p>
+          </div>
+          <div class="trust-card">
+            <div class="ic"><svg class="ico"><use href="#i-eyeoff"/></svg></div>
+            <h3>Ẩn thông tin người còn sống</h3>
+            <p>Khi chia sẻ ra ngoài, thông tin của người đang sống được tự động ẩn — bảo vệ sự riêng tư của cả họ.</p>
+          </div>
+          <div class="trust-card">
+            <div class="ic"><svg class="ico"><use href="#i-shield"/></svg></div>
+            <h3>Bạn toàn quyền kiểm soát</h3>
+            <p>Bạn quyết định ai được xem, ai được sửa, công khai hay riêng tư. Dữ liệu là của dòng họ bạn.</p>
+          </div>
+        </div>
+
+        <!-- LỜI CHỨNG THỰC — MẪU (thay bằng lời thật của trưởng họ trước khi quảng bá) -->
+        <div class="wrap testi-grid">
+          <div class="tcard">
+            <div class="mark">“</div>
+            <p class="quote">Cả họ tôi ở khắp ba miền, vậy mà chỉ sau một tháng đã cùng dựng lại được cây gia phả sáu đời — điều tôi tưởng cả đời không làm nổi.</p>
+            <div class="who"><span class="ava2">NP</span><div><b>Ông Nguyễn Văn Phúc</b><small>Trưởng tộc họ Nguyễn · Bắc Ninh</small></div></div>
+          </div>
+          <div class="tcard">
+            <div class="mark">“</div>
+            <p class="quote">Tôi kịp ghi âm giọng bà nội kể chuyện gốc tích dòng họ trước khi bà mất. Giờ cháu chắt vẫn được nghe lại — quý hơn vàng.</p>
+            <div class="who"><span class="ava2">TL</span><div><b>Bà Trần Thị Lan</b><small>Con cháu họ Trần · Nam Định</small></div></div>
+          </div>
+          <div class="tcard">
+            <div class="mark">“</div>
+            <p class="quote">Mấy cụ lớn tuổi trong họ cũng tự vào xem và bổ sung được. Chữ to, nút lớn, không hề rối — điều tôi lo nhất hoá ra lại dễ.</p>
+            <div class="who"><span class="ava2">LH</span><div><b>Ông Lê Quang Hải</b><small>Trưởng họ Lê · Hà Tĩnh</small></div></div>
+          </div>
+          <div class="tcard">
+            <div class="mark">“</div>
+            <p class="quote">Về quê giỗ tổ, lớp trẻ chúng tôi tra ngay được ai vai trên vai dưới, gọi nhau cho đúng. Vừa vui vừa đỡ ngại.</p>
+            <div class="who"><span class="ava2">PĐ</span><div><b>Anh Phạm Minh Đức</b><small>Họ Phạm · TP. Hồ Chí Minh</small></div></div>
+          </div>
+          <div class="tcard">
+            <div class="mark">“</div>
+            <p class="quote">In được cuốn gia phả và phả đồ khổ lớn treo ở từ đường. Ngày họp họ, con cháu về ai cũng trầm trồ, tự hào.</p>
+            <div class="who"><span class="ava2">VT</span><div><b>Ông Võ Đình Tâm</b><small>Trưởng họ Võ · Quảng Nam</small></div></div>
+          </div>
+          <div class="tcard">
+            <div class="mark">“</div>
+            <p class="quote">Nhờ tính năng nhắc giỗ theo âm lịch, con cháu không còn quên ngày kỵ của các cụ. Việc hương khói trong họ đều đặn hẳn lên.</p>
+            <div class="who"><span class="ava2">ĐH</span><div><b>Ông Đặng Văn Hoà</b><small>Trưởng họ Đặng · Thái Bình</small></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 ── Xem thử trực tiếp ──────────────────────────────────── -->
+      <section id="xem-thu">
+        <div class="wrap center">
+          <span class="eyebrow"><svg class="ico"><use href="#i-eye"/></svg>Thấy tận mắt</span>
+          <h2 class="h-sec">Xem thử một dòng họ mẫu ngay</h2>
+          <p class="lead">Không cần đăng ký, không cần đăng nhập. Xem trước cây gia phả, ngày giỗ và di sản hoạt động thế nào.</p>
+          <div class="demo-box">
+            <h3 class="serif" style="font-size:1.4rem">Dòng họ mẫu — mở xem tự do</h3>
+            <p style="color:hsl(var(--muted-foreground));margin-top:0.6rem">Tham quan đầy đủ trước khi tạo dòng họ của riêng bạn.</p>
+            <div style="margin-top:1.6rem;display:flex;gap:0.85rem;justify-content:center;flex-wrap:wrap">
+              <a class="btn btn-primary btn-lg" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-eye"/></svg>Xem dòng họ mẫu</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9 ── FAQ ────────────────────────────────────────────────── -->
+      <section class="tint" id="cau-hoi">
+        <div class="wrap center">
+          <span class="eyebrow"><svg class="ico"><use href="#i-chat"/></svg>Hỏi đáp</span>
+          <h2 class="h-sec">Những điều thường băn khoăn</h2>
+        </div>
+        <div class="wrap faq">
+          <details open>
+            <summary>Người lớn tuổi có dùng được không?<svg class="ico"><use href="#i-plus"/></svg></summary>
+            <div class="ans">Được. Giao diện chữ to, nút lớn, ít thao tác, tiếng Việt thuần — thiết kế ưu tiên cho người lớn tuổi. Có cả video hướng dẫn từng bước.</div>
+          </details>
+          <details>
+            <summary>Dữ liệu có an toàn không?<svg class="ico"><use href="#i-plus"/></svg></summary>
+            <div class="ans">Có. Dữ liệu lưu và sao lưu định kỳ trên máy chủ riêng. Thông tin người còn sống được ẩn khi chia sẻ ra ngoài, và bạn toàn quyền quyết định ai xem, ai sửa.</div>
+          </details>
+          <details>
+            <summary>Nhập nhiều người có cực không?<svg class="ico"><use href="#i-plus"/></svg></summary>
+            <div class="ans">Không phải làm một mình. Bạn mời cả họ qua một đường link; mỗi người tự bổ sung nhánh nhà mình. Việc được chia nhỏ cho cả dòng họ.</div>
+          </details>
+          <details>
+            <summary>Có mất phí không?<svg class="ico"><use href="#i-plus"/></svg></summary>
+            <div class="ans">Bạn bắt đầu hoàn toàn miễn phí để dựng cây gia phả và mời người thân. Các nhu cầu nâng cao như in sách gia phả, phả đồ khổ lớn có thể có chi phí riêng.</div>
+          </details>
+          <details>
+            <summary>Tôi cần hỗ trợ thì liên hệ ai?<svg class="ico"><use href="#i-plus"/></svg></summary>
+            <div class="ans">Nhắn Zalo cho chúng tôi, sẽ có người hướng dẫn tận tình từng bước — kể cả giúp dựng dòng họ đầu tiên.</div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 10 ── CTA cuối ──────────────────────────────────────────── -->
+      <section>
+        <div class="wrap">
+          <div class="cta-final">
+            <img class="dragon" src="/assets/dragon.svg" alt="" aria-hidden="true" />
+            <h2 class="serif">Bắt đầu gìn giữ dòng họ của bạn hôm nay</h2>
+            <p>Chỉ vài phút để tạo dòng họ và mời cả họ cùng vun đắp. Miễn phí, và bạn luôn được hỗ trợ.</p>
+            <div class="btns">
+              <a class="btn btn-primary btn-lg" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả dòng họ</a>
+              <a class="btn btn-zalo btn-lg" href="https://zalo.me/" id="zaloCta"><svg class="ico"><use href="#i-phone"/></svg>Liên hệ qua Zalo</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ── Footer ──────────────────────────────────────────────────── -->
+    <footer>
+      <div class="wrap">
+        <div class="foot-top">
+          <div class="foot-brand">
+            <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="" style="width:32px;height:32px;border-radius:9px"/><span>Dòng Họ Việt</span></a>
+            <p>Gia phả số gìn giữ cội nguồn dòng họ Việt — để con cháu muôn đời sau biết mình từ đâu mà đến.</p>
+          </div>
+          <div class="foot-col">
+            <h4>Khám phá</h4>
+            <a href="#tinh-nang">Tính năng</a>
+            <a href="#cach-dung">Cách dùng</a>
+            <a href="#xem-thu">Xem dòng họ mẫu</a>
+            <a href="#cau-hoi">Hỏi đáp</a>
+          </div>
+          <div class="foot-col">
+            <h4>Liên hệ &amp; bắt đầu</h4>
+            <a href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
+            <a href="https://zalo.me/" id="zaloFoot"><svg class="ico"><use href="#i-phone"/></svg>Liên hệ Zalo</a>
+            <a href="mailto:support@thaohk.com"><svg class="ico"><use href="#i-mail"/></svg>support@thaohk.com</a>
+          </div>
+        </div>
+        <div class="foot-bottom">© <span id="year">2026</span> Dòng Họ Việt · Gìn giữ cội nguồn người Việt</div>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // Sóng âm minh hoạ cho audio card
+      (function () {
+        var w = document.getElementById("wave");
+        if (!w) return;
+        var hs = [10,18,26,14,30,22,12,28,16,24,10,20,32,14,22,12,26,18,10,16,28,14];
+        hs.forEach(function (h) { var s = document.createElement("span"); s.style.height = h + "px"; w.appendChild(s); });
+      })();
+
+      // Dark-mode toggle — chung localStorage key với app
+      var root = document.documentElement;
+      var toggle = document.getElementById("themeToggle");
+      function syncIcon() {
+        toggle.querySelector("use").setAttribute("href", root.classList.contains("dark") ? "#i-sun" : "#i-moon");
+      }
+      syncIcon();
+      toggle.addEventListener("click", function () {
+        var dark = root.classList.toggle("dark");
+        root.style.colorScheme = dark ? "dark" : "light";
+        try { localStorage.setItem("family-tree:theme", dark ? "dark" : "light"); } catch (e) {}
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", dark ? "#1A1612" : "#7A2230");
+        syncIcon();
+      });
+
+      // Menu mobile (hamburger)
+      (function () {
+        var btn = document.getElementById("menuBtn");
+        var menu = document.getElementById("mobileMenu");
+        if (!btn || !menu) return;
+        function setOpen(open) {
+          menu.classList.toggle("open", open);
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+          btn.querySelector("use").setAttribute("href", open ? "#i-close" : "#i-menu");
+        }
+        btn.addEventListener("click", function () { setOpen(!menu.classList.contains("open")); });
+        Array.prototype.forEach.call(menu.querySelectorAll("a"), function (a) {
+          a.addEventListener("click", function () { setOpen(false); });
+        });
+      })();
+
+      // Scrollspy — gạch chân mục menu của section đang xem
+      (function () {
+        var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a[href^="#"]'));
+        var map = {};
+        links.forEach(function (a) {
+          var id = a.getAttribute("href").slice(1);
+          if (document.getElementById(id)) map[id] = a;
+        });
+        var ids = Object.keys(map);
+        if (!ids.length) return;
+        function onScroll() {
+          var current = null;
+          ids.forEach(function (id) {
+            if (document.getElementById(id).getBoundingClientRect().top <= 140) current = id;
+          });
+          links.forEach(function (a) { a.classList.remove("active"); });
+          if (current && map[current]) map[current].classList.add("active");
+        }
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll, { passive: true });
+        onScroll();
+      })();
+    </script>
+  </body>
+</html>

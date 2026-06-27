@@ -28,7 +28,7 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CRON_TOKEN = Deno.env.get("CRON_TOKEN") ?? "";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const RESEND_FROM =
-  Deno.env.get("RESEND_FROM") ?? "Gia phả <noreply@giapha.local>";
+  Deno.env.get("RESEND_FROM") ?? "Dòng Họ Việt <noreply@giapha.local>";
 const APP_BASE_URL =
   Deno.env.get("APP_BASE_URL") ?? "https://giapha.app";
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
@@ -219,7 +219,7 @@ function emailSubject(item: FireItem): string {
       : item.leadDays === 1
         ? "Ngày mai"
         : `Còn ${item.leadDays} ngày`;
-  return `[Gia phả] ${when}: ${item.title}`;
+  return `[Dòng Họ Việt] ${when}: ${item.title}`;
 }
 
 function emailHtml(item: FireItem, clanName: string): string {
@@ -235,13 +235,13 @@ function emailHtml(item: FireItem, clanName: string): string {
 <html lang="vi"><head><meta charset="utf-8"/></head>
 <body style="font-family: -apple-system, Segoe UI, sans-serif; background:#FBF7F0; padding:24px; color:#1F1A17;">
   <div style="max-width:520px; margin:0 auto; background:#FFFFFF; border:1px solid #D8CFC2; border-radius:8px; padding:24px;">
-    <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Gia phả" width="48" height="48" style="display:block; margin:0 0 10px; border-radius:10px;" />
+    <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Dòng Họ Việt" width="48" height="48" style="display:block; margin:0 0 10px; border-radius:10px;" />
     <p style="color:#6F665F; font-size:12px; letter-spacing:2px; margin:0 0 8px;">GIA PHẢ ${esc(clanName)}</p>
     <h1 style="color:#7A2230; font-size:22px; margin:0 0 6px;">${esc(item.title)}</h1>
     <p style="color:#6F665F; margin:0 0 16px;">${esc(kindLabel)} · ${esc(item.eventDate)}</p>
     <p>Còn <strong>${item.leadDays} ngày</strong> nữa.</p>
     <p style="color:#6F665F; font-size:11px; margin-top:24px;">
-      Bạn nhận email này vì đã theo dõi sự kiện của dòng họ trên Gia phả.
+      Bạn nhận email này vì đã theo dõi sự kiện của dòng họ trên Dòng Họ Việt.
       Tắt thông báo trong trang Sự kiện → "Theo dõi sự kiện".
     </p>
   </div>
@@ -705,7 +705,7 @@ async function dispatchMonthlyLunar(opts: {
       continue;
     }
 
-    const subject = `[Gia phả] ${occasion} tháng ${lunarMonth} âm — Thắp hương`;
+    const subject = `[Dòng Họ Việt] ${occasion} tháng ${lunarMonth} âm — Thắp hương`;
     const html = monthlyLunarHtml({ occasion, lunarMonth });
     const result = await sendMonthlyEmail(to, subject, html);
     await supabase.from("notification_log").insert({
@@ -738,15 +738,15 @@ function monthlyLunarHtml(opts: {
 }): string {
   return `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#1F1A17;background:#FBF7F0;margin:0;padding:24px;">
     <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;padding:24px;border:1px solid #D8CFC2;">
-      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Gia phả" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
-      <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#6F665F;margin:0 0 4px;">Gia phả</p>
+      <img src="https://giapha.thaohk.com/icons/app-icon-192.png" alt="Dòng Họ Việt" width="48" height="48" style="display:block;margin:0 0 10px;border-radius:10px;" />
+      <p style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#6F665F;margin:0 0 4px;">Dòng Họ Việt</p>
       <h1 style="font-size:22px;color:#7A2230;margin:0 0 14px;">Hôm nay là ${opts.occasion} tháng ${opts.lunarMonth} âm lịch</h1>
       <p style="font-size:15px;margin:0 0 12px;">Đừng quên thắp hương lên bàn thờ tổ tiên hôm nay.</p>
       <p style="font-size:13px;color:#6F665F;margin:14px 0 0;">
         Bạn có thể tắt nhắc này trong trang Tài khoản của app.
       </p>
       <hr style="border:none;border-top:1px solid #D8CFC2;margin:24px 0 8px;" />
-      <p style="font-size:11px;color:#6F665F;margin:0;">Email tự động từ ứng dụng Gia phả.</p>
+      <p style="font-size:11px;color:#6F665F;margin:0;">Email tự động từ ứng dụng Dòng Họ Việt.</p>
     </div></body></html>`;
 }
 

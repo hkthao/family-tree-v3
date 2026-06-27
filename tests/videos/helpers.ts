@@ -157,7 +157,7 @@ export async function splash(page: Page): Promise<void> {
       '<img src="/icons/app-icon-512.png" ',
       'style="width:200px;height:200px;border-radius:40px;',
       'box-shadow:0 18px 50px rgba(60,40,10,0.25)" />',
-      '<div style="font-size:48px;font-weight:700;letter-spacing:0.5px">Gia phả</div>',
+      '<div style="font-size:48px;font-weight:700;letter-spacing:0.5px">Dòng Họ Việt</div>',
       '<div style="font-size:22px;color:#6a4d20;text-align:center;padding:0 32px">',
       "Quản lý cây dòng họ Việt",
       "</div>",

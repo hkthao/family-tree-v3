@@ -70,7 +70,7 @@ export default function KhoeCard() {
             {/* CTA lan toả — mời người xem tìm hiểu / tạo gia phả họ mình. */}
             <div className="rounded-xl border bg-card p-4 text-center space-y-3">
               <p className="text-sm text-muted-foreground">
-                Trang này được tạo từ <span className="font-medium text-foreground">Gia phả dòng họ Việt</span> —
+                Trang này được tạo từ <span className="font-medium text-foreground">Dòng Họ Việt</span> —
                 nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của dòng họ.
               </p>
               <Button asChild className="w-full">

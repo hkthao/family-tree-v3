@@ -45,7 +45,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Healthcheck — Nginx is up if index.html is served.
+# Dùng 127.0.0.1 thay vì localhost: busybox wget thử ::1 (IPv6) trước,
+# mà nginx chỉ `listen 80;` (IPv4) → "Connection refused" báo unhealthy giả.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1/ || exit 1
 
 EXPOSE 80

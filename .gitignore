@@ -39,3 +39,7 @@ scripts/.clan-admin-assignments.json
 # Local Netlify folder
 .netlify
 /videos/_dist/
+backups-oldapp/
+
+# Ops/security notes (chứa thông tin hạ tầng nhạy cảm) — giữ local
+docs/security-hardening-*.md

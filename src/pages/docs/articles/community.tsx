@@ -450,7 +450,7 @@ export function WebPush() {
         </LI>
         <LI>
           Sau khi bật, bấm <Strong>Gửi thông báo test</Strong> để kiểm
-          tra ngay — thông báo "Test thông báo Gia phả" sẽ hiện trên
+          tra ngay — thông báo "Test thông báo Dòng Họ Việt" sẽ hiện trên
           điện thoại trong vài giây.
         </LI>
       </Steps>
