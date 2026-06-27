@@ -94,8 +94,8 @@
       .nav { display: flex; align-items: center; justify-content: space-between; height: 70px; gap: 1rem; }
       .brand { display: flex; align-items: center; gap: .6rem; font-family: "Noto Serif", serif; font-weight: 700; font-size: 1.3rem; white-space: nowrap; }
       .brand img { width: 38px; height: 38px; border-radius: 10px; }
-      .nav-links { display: none; gap: 1.8rem; margin-left: auto; margin-right: .6rem; font-weight: 500; }
-      .nav-links a { color: hsl(var(--muted-fg)); position: relative; padding: .35rem 0; transition: color .12s; }
+      .nav-links { display: none; gap: 1.6rem; margin-left: auto; margin-right: .8rem; font-weight: 500; }
+      .nav-links a { color: hsl(var(--muted-fg)); position: relative; padding: .35rem 0; transition: color .12s; white-space: nowrap; }
       .nav-links a:hover { color: hsl(var(--primary)); }
       .nav-links a.active { color: hsl(var(--primary)); }
       .nav-links a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 2.5px; background: hsl(var(--primary)); border-radius: 2px; }
@@ -106,7 +106,13 @@
       .icon-btn .ico { width: 22px; height: 22px; }
       .menu-btn { display: inline-flex; }
       .nav-cta { display: none; }
-      @media (min-width: 900px) { .nav-links { display: flex; } .nav-cta { display: inline-flex; } .menu-btn { display: none; } }
+      /* Nút CTA navbar chỉ hiện khi đã cuộn qua hero (hero đã có CTA riêng) */
+      @media (min-width: 900px) {
+        .nav-links { display: flex; }
+        .menu-btn { display: none; }
+        body.past-hero .nav-cta { display: inline-flex; animation: ctaIn .28s ease; }
+      }
+      @keyframes ctaIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
       .mobile-menu { display: none; flex-direction: column; padding: .4rem 1.4rem 1.3rem; background: hsl(var(--bg)); border-bottom: 1px solid hsl(var(--border)); }
       .mobile-menu.open { display: flex; }
       .mobile-menu a:not(.btn) { padding: .95rem .3rem; font-weight: 500; font-size: 1.08rem; border-bottom: 1px solid hsl(var(--border)); }
@@ -142,13 +148,15 @@
       .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 700; }
       .hero h1 .accent { color: hsl(var(--primary)); }
       .hero .lead { font-size: 1.24rem; max-width: 540px; }
-      .hero-cta { display: flex; flex-wrap: wrap; gap: .9rem; margin-top: 2rem; }
+      .hero-cta { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin-top: 2rem; max-width: 520px; }
+      @media (max-width: 520px) { .hero-cta { grid-template-columns: 1fr; } }
       .hero-trust { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; margin-top: 1.7rem; color: hsl(var(--muted-fg)); font-size: .96rem; }
       .hero-trust span { display: inline-flex; align-items: center; gap: .45rem; }
       .hero-trust .ico { width: 1.2em; height: 1.2em; color: hsl(var(--accent)); }
       .hero-photo { position: relative; border-radius: calc(var(--radius) * 1.4); overflow: hidden;
-                    box-shadow: 0 30px 70px hsl(var(--fg)/.22); aspect-ratio: 6/5; }
-      .hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+                    box-shadow: 0 30px 70px hsl(var(--fg)/.22); aspect-ratio: 4/5; }
+      @media (max-width: 940px) { .hero-photo { aspect-ratio: 5/4; max-height: 460px; margin-inline: auto; max-width: 520px; } }
+      .hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 28%; display: block; }
 
       /* Steps */
       .steps { display: grid; grid-template-columns: 1fr; gap: 2.2rem; margin-top: 3.4rem; }
@@ -519,6 +527,16 @@
         if (!("IntersectionObserver" in window)) { els.forEach(function (e) { e.classList.add("in"); }); return; }
         var io = new IntersectionObserver(function (en) { en.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }); }, { threshold: .12 });
         els.forEach(function (e) { io.observe(e); });
+      })();
+
+      // Nút CTA navbar hiện khi cuộn qua hero
+      (function () {
+        var hero = document.querySelector(".hero"); if (!hero) return;
+        if (!("IntersectionObserver" in window)) { document.body.classList.add("past-hero"); return; }
+        var io = new IntersectionObserver(function (en) {
+          document.body.classList.toggle("past-hero", !en[0].isIntersecting);
+        }, { rootMargin: "-72px 0px 0px 0px", threshold: 0 });
+        io.observe(hero);
       })();
 
       // Scrollspy
