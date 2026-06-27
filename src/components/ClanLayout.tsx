@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, Navigate, Outlet, useParams } from "react-router-dom";
+import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
+  IconArrowLeft,
   IconCalendar,
   IconHome,
   IconSun,
@@ -30,6 +31,7 @@ export function ClanLayout() {
   const { clanId } = useParams<{ clanId: string }>();
   const { user } = useAuth();
   const userId = user?.id;
+  const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // refetchOnMount: "always" — the clan-detail row is small and always
@@ -123,12 +125,23 @@ export function ClanLayout() {
       )}
       <header className="border-b bg-background sticky top-0 z-30">
         <div className="container max-w-4xl flex items-center justify-between gap-3 px-4 h-[64px]">
-          <DrawerToggle
-            clanId={clan.id}
-            userId={userId ?? ""}
-            isMember={clan.myRole !== null || clan.isPlatformAdmin}
-            onOpen={() => setDrawerOpen(true)}
-          />
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              aria-label="Quay lại"
+              title="Quay lại"
+              className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
+            >
+              <IconArrowLeft className="h-5 w-5" />
+            </button>
+            <DrawerToggle
+              clanId={clan.id}
+              userId={userId ?? ""}
+              isMember={clan.myRole !== null || clan.isPlatformAdmin}
+              onOpen={() => setDrawerOpen(true)}
+            />
+          </div>
           <div className="flex-1 min-w-0 text-center">
             <h1 className="clan-name text-lg sm:text-xl font-semibold truncate">
               {clan.name}
