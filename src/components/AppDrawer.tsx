@@ -10,10 +10,10 @@ import {
   IconBook,
   IconBuildings,
   IconCalendar,
+  IconFacebook,
   IconGlobe,
   IconHome,
   IconLink,
-  IconMail,
   IconList,
   IconPencil,
   IconScroll,
@@ -313,11 +313,13 @@ export function AppDrawer({ open, onClose }: Props) {
             </a>
             <span aria-hidden="true">·</span>
             <a
-              href="mailto:support@thaohk.com"
+              href="https://www.facebook.com/donghoviet2026"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1 hover:text-primary"
             >
-              <IconMail className="h-3.5 w-3.5" />
-              Liên hệ
+              <IconFacebook className="h-3.5 w-3.5" />
+              Fanpage
             </a>
           </div>
           <AppVersion className="text-center" />
