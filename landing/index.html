@@ -148,8 +148,9 @@
       .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 700; }
       .hero h1 .accent { color: hsl(var(--primary)); }
       .hero .lead { font-size: 1.24rem; max-width: 540px; }
-      .hero-cta { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin-top: 2rem; max-width: 520px; }
-      @media (max-width: 520px) { .hero-cta { grid-template-columns: 1fr; } }
+      .hero-cta { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: .8rem; margin-top: 2rem; max-width: 500px; }
+      .hero-cta .btn { padding: 0 1rem; }
+      @media (max-width: 520px) { .hero-cta { grid-template-columns: 1fr; } .hero-cta .btn { padding: 0 1.6rem; } }
       .hero-trust { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; margin-top: 1.7rem; color: hsl(var(--muted-fg)); font-size: .96rem; }
       .hero-trust span { display: inline-flex; align-items: center; gap: .45rem; }
       .hero-trust .ico { width: 1.2em; height: 1.2em; color: hsl(var(--accent)); }
