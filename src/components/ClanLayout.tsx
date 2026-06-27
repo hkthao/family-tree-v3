@@ -131,7 +131,7 @@ export function ClanLayout() {
               onClick={() => navigate(-1)}
               aria-label="Quay lại"
               title="Quay lại"
-              className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
+              className="h-10 w-10 hidden lg:inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
             >
               <IconArrowLeft className="h-5 w-5" />
             </button>
