@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { AppLogo } from "@/components/AppLogo";
@@ -8,11 +8,40 @@ import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 
 export function AppHeader() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // Nút Back hữu ích khi chạy dạng PWA (không có nút back của trình duyệt).
+  // Ẩn ở trang gốc để không "lùi" ra khỏi app.
+  const isHome = pathname === "/" || pathname === "/clans";
 
   return (
     <>
       <header className="border-b bg-background sticky top-0 z-30">
         <div className="container max-w-4xl flex items-center justify-between gap-2 px-4 h-[64px]">
+          {!isHome && (
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              aria-label="Quay lại"
+              title="Quay lại"
+              className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+              </svg>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}

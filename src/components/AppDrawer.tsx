@@ -10,8 +10,10 @@ import {
   IconBook,
   IconBuildings,
   IconCalendar,
+  IconGlobe,
   IconHome,
   IconLink,
+  IconMail,
   IconList,
   IconPencil,
   IconScroll,
@@ -298,6 +300,26 @@ export function AppDrawer({ open, onClose }: Props) {
               Đăng xuất
             </Button>
           )}
+          {/* Website + liên hệ hỗ trợ — meta links cuối sidebar */}
+          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+            <a
+              href="https://donghoviet.thaohk.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 hover:text-primary"
+            >
+              <IconGlobe className="h-3.5 w-3.5" />
+              Website
+            </a>
+            <span aria-hidden="true">·</span>
+            <a
+              href="mailto:support@thaohk.com"
+              className="inline-flex items-center gap-1 hover:text-primary"
+            >
+              <IconMail className="h-3.5 w-3.5" />
+              Liên hệ
+            </a>
+          </div>
           <AppVersion className="text-center" />
         </footer>
       </aside>
