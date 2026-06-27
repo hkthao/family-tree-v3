@@ -24,7 +24,7 @@ export function AppHeader() {
               onClick={() => navigate(-1)}
               aria-label="Quay lại"
               title="Quay lại"
-              className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
+              className="h-10 w-10 hidden lg:inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
