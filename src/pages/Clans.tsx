@@ -378,7 +378,7 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
           </span>
         </div>
         {clan.description && (
-          <p className="text-muted-foreground text-sm truncate mt-0.5">
+          <p className="text-muted-foreground text-sm line-clamp-2 mt-0.5">
             {clan.description}
           </p>
         )}

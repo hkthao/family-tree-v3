@@ -182,9 +182,14 @@ function UsersTab({ callerId }: { callerId: string }) {
   const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
   const qc = useQueryClient();
 
-  const { data: profiles, isLoading } = useQuery({
+  const { data: profiles, isLoading, refetch, isFetching } = useQuery({
     queryKey: queryKeys.adminProfiles(),
     queryFn: () => listAllProfiles(),
+    // Admin cần dữ liệu mới nhất; ghi đè staleTime dài toàn cục để PWA
+    // không hiển thị danh sách cũ (kéo theo tìm kiếm sai vì lọc trên
+    // tập dữ liệu cũ). Vẫn có nút Tải lại để chủ động fetch.
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const filtered = useMemo(() => {
@@ -204,10 +209,13 @@ function UsersTab({ callerId }: { callerId: string }) {
 
   return (
     <div className="space-y-3">
-      <CollapsibleHint>
-        {profiles?.length ?? 0} tài khoản. Khoá / mở khoá, đổi giới hạn,
-        gán quyền platform admin, xoá tài khoản từ đây.
-      </CollapsibleHint>
+      <div className="flex items-start justify-between gap-2">
+        <CollapsibleHint>
+          {profiles?.length ?? 0} tài khoản. Khoá / mở khoá, đổi giới hạn,
+          gán quyền platform admin, xoá tài khoản từ đây.
+        </CollapsibleHint>
+        <RefreshIconButton onClick={() => refetch()} busy={isFetching} />
+      </div>
 
       <SearchInput
         label="Tìm người dùng theo tên hoặc email"
@@ -512,9 +520,12 @@ function ClansTab() {
   const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
   const qc = useQueryClient();
 
-  const { data: clans, isLoading } = useQuery({
+  const { data: clans, isLoading, refetch, isFetching } = useQuery({
     queryKey: queryKeys.adminClans(),
     queryFn: () => listAllClans(),
+    // Xem ghi chú ở UsersTab: dữ liệu mới nhất + nút Tải lại cho PWA.
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const filtered = useMemo(() => {
@@ -530,10 +541,13 @@ function ClansTab() {
 
   return (
     <div className="space-y-3">
-      <CollapsibleHint>
-        {clans?.length ?? 0} dòng họ. Chỉnh giới hạn số người / tài khoản
-        tại đây.
-      </CollapsibleHint>
+      <div className="flex items-start justify-between gap-2">
+        <CollapsibleHint>
+          {clans?.length ?? 0} dòng họ. Chỉnh giới hạn số người / tài khoản
+          tại đây.
+        </CollapsibleHint>
+        <RefreshIconButton onClick={() => refetch()} busy={isFetching} />
+      </div>
 
       <SearchInput
         label="Tìm dòng họ theo tên"
@@ -694,6 +708,32 @@ function ClanRow({
  * thêm / Thu gọn" toggle. On sm+ it shows the full text — there's
  * enough vertical room there that hiding it is overkill.
  */
+/**
+ * Nút tải lại dùng chung cho các tab admin (Người dùng / Dòng họ).
+ * PWA hay giữ cache cũ → cho admin chủ động fetch lại dữ liệu mới nhất.
+ */
+function RefreshIconButton({
+  onClick,
+  busy,
+}: {
+  onClick: () => void;
+  busy: boolean;
+}) {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={onClick}
+      disabled={busy}
+      aria-label="Tải lại"
+      title={busy ? "Đang tải…" : "Tải lại dữ liệu mới nhất"}
+      className="h-9 w-9 p-0 shrink-0"
+    >
+      <IconRefresh className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} />
+    </Button>
+  );
+}
+
 function CollapsibleHint({ children }: { children: React.ReactNode }) {
   const [expanded, setExpanded] = useState(false);
   return (
@@ -1811,7 +1851,7 @@ function GiaPhaImportTab() {
   });
 
   return (
-    <section className="space-y-6 max-w-2xl">
+    <section className="space-y-4">
       {/* ── Import ── */}
       <div className="space-y-3 rounded-lg border p-4">
         <h2 className="text-lg font-semibold">Nhập từ vietnamgiapha.com</h2>
