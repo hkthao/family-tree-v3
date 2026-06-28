@@ -22,6 +22,7 @@ export interface EventRow {
   resting_place_id: string | null;
   notes: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export async function listEvents(
@@ -31,7 +32,7 @@ export async function listEvents(
   const { data, error } = await client
     .from("events")
     .select(
-      "id, clan_id, title, event_type, date_solar, lunar_year, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id, resting_place_id, notes, created_at",
+      "id, clan_id, title, event_type, date_solar, lunar_year, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id, resting_place_id, notes, created_at, updated_at",
     )
     .eq("clan_id", clanId)
     .order("created_at", { ascending: false });

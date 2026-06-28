@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { IconGrave, IconMapPin, IconPencil, IconPlus, IconTrash, IconX } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { RecordDates } from "@/components/RecordDates";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -95,6 +96,11 @@ export default function Cemeteries() {
                     {c.place_count} nơi an nghỉ
                     {c.latitude != null && c.longitude != null ? " · có vị trí" : ""}
                   </p>
+                  <RecordDates
+                    createdAt={c.created_at}
+                    updatedAt={c.updated_at}
+                    className="text-xs text-muted-foreground/80 mt-0.5 truncate"
+                  />
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <Link

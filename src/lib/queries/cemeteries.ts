@@ -13,12 +13,15 @@ export interface Cemetery {
   latitude: number | null;
   longitude: number | null;
   notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 export interface CemeteryListItem extends Cemetery {
   place_count: number;
 }
 
-const COLS = "id, clan_id, name, address, latitude, longitude, notes";
+const COLS =
+  "id, clan_id, name, address, latitude, longitude, notes, created_at, updated_at";
 
 export async function listCemeteries(
   clanId: string,
@@ -41,7 +44,10 @@ export async function listCemeteries(
   });
 }
 
-export type CemeteryInput = Omit<Cemetery, "id" | "clan_id">;
+export type CemeteryInput = Omit<
+  Cemetery,
+  "id" | "clan_id" | "created_at" | "updated_at"
+>;
 
 export async function createCemetery(
   clanId: string,

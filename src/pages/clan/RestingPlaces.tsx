@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { IconGrave, IconMapPin, IconPlus, IconSearch } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -198,6 +199,11 @@ export default function RestingPlaces() {
                         <IconMapPin className="h-3.5 w-3.5" /> có vị trí
                       </span>
                     )}
+                    <RecordDates
+                      createdAt={p.created_at}
+                      updatedAt={p.updated_at}
+                      className="text-xs text-muted-foreground/80 mt-1 truncate"
+                    />
                   </div>
                 </Link>
               </li>

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
+import { RecordDates } from "@/components/RecordDates";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
@@ -390,6 +391,7 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
           {" • "}
           {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
         </p>
+        <ClanDates clan={clan} className="text-xs text-muted-foreground/80 mt-0.5" />
       </Link>
     </li>
   );
@@ -425,6 +427,7 @@ function ClanCard({ clan }: { clan: ClanSummary }) {
             {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
           </span>
         </div>
+        <ClanDates clan={clan} className="mt-1 text-xs text-muted-foreground/80" />
       </Link>
     </li>
   );
@@ -432,5 +435,16 @@ function ClanCard({ clan }: { clan: ClanSummary }) {
 
 function roleLabel(role: "admin" | "editor" | "viewer"): string {
   return { admin: "Quản trị", editor: "Biên tập", viewer: "Xem" }[role];
+}
+
+/** Dòng "Tạo … • Cập nhật …" — chỉ render phần có ngày hợp lệ. */
+function ClanDates({ clan, className }: { clan: ClanSummary; className: string }) {
+  return (
+    <RecordDates
+      createdAt={clan.created_at}
+      updatedAt={clan.updated_at}
+      className={className}
+    />
+  );
 }
 
