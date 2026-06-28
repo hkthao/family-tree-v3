@@ -208,6 +208,40 @@ export async function listCommunityClans(
   };
 }
 
+/** Số liệu xếp hạng/huy hiệu chất lượng theo dòng họ (batch). */
+export interface ClanLeaderboardStat {
+  max_generation: number | null;
+  persons_total: number;
+  persons_with_birth: number;
+  persons_30d: number;
+}
+
+/**
+ * Gom số liệu (số đời, % có năm sinh, tăng trưởng 30 ngày) cho một loạt
+ * dòng họ trong 1 round-trip — dùng cho huy hiệu chất lượng ở danh sách.
+ * RPC security-definer chỉ trả số liệu tổng hợp cho họ caller được xem.
+ */
+export async function getClansLeaderboardStats(
+  clanIds: string[],
+  client: Client = defaultClient,
+): Promise<Map<string, ClanLeaderboardStat>> {
+  const out = new Map<string, ClanLeaderboardStat>();
+  if (clanIds.length === 0) return out;
+  const { data, error } = await client.rpc("get_clans_leaderboard_stats", {
+    p_clan_ids: clanIds,
+  });
+  if (error) throw new Error(error.message);
+  for (const r of data ?? []) {
+    out.set(r.clan_id, {
+      max_generation: r.max_generation,
+      persons_total: r.persons_total,
+      persons_with_birth: r.persons_with_birth,
+      persons_30d: r.persons_30d,
+    });
+  }
+  return out;
+}
+
 export interface CreateClanInput {
   name: string;
   description?: string;
