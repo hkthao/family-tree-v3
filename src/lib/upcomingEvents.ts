@@ -42,6 +42,12 @@ export interface UpcomingEvent {
    * it, branch-scope subs would silently no-op.
    */
   branchId?: string | null;
+  /**
+   * Dòng họ chứa sự kiện. Bắt buộc cho luồng notify (matcher phải khớp
+   * clan_id của subscription để không gửi nhầm sự kiện của họ khác).
+   * Optional vì các tính toán phía client luôn trong phạm vi 1 dòng họ.
+   */
+  clanId?: string;
   /** Optional secondary line, e.g. "tròn 50 tuổi" or "đời 2". */
   subtitle?: string;
 }

@@ -131,6 +131,28 @@ describe("computeFireList", () => {
     expect(fires).toHaveLength(1);
   });
 
+  it("clan-scope sub does NOT fire for an event in a different clan", () => {
+    // Regression: trước đây matcher không kiểm tra clan của sự kiện, nên
+    // sub theo dõi họ 'c1' nhận cả giỗ của người ở họ 'c2' (vd Giỗ Lê Thị
+    // Miên thuộc họ Lê Ngọc bị gửi cho người theo dõi họ Huỳnh).
+    const fires = computeFireList({
+      today: "2024-06-08",
+      subscriptions: [baseClanSub], // clan_id: "c1"
+      events: [birthday({ clanId: "c2" })],
+      alreadySent: new Set(),
+    });
+    expect(fires).toHaveLength(0);
+
+    // Cùng họ → vẫn fire bình thường.
+    const fires2 = computeFireList({
+      today: "2024-06-08",
+      subscriptions: [baseClanSub],
+      events: [birthday({ clanId: "c1" })],
+      alreadySent: new Set(),
+    });
+    expect(fires2).toHaveLength(1);
+  });
+
   it("person-scope sub only fires when the event's person matches", () => {
     const personSub: SubscriptionLite = {
       ...baseClanSub,
