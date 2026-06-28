@@ -93,11 +93,15 @@ export default function Settings() {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.clan(clan.id, userId),
       });
+      // Đổi visibility / tên / mô tả phải làm mới MỌI danh sách dòng họ:
+      // "Của tôi" + "Cộng đồng" (key[0]==="clans") và tab Quản trị
+      // (key[0]==="admin-clans"). Trước đây chỉ invalidate "mine" nên list
+      // Cộng đồng + Admin giữ nhãn cũ (vd vẫn "Công khai" sau khi chuyển
+      // sang Riêng tư).
       await queryClient.invalidateQueries({
         predicate: (q) =>
           Array.isArray(q.queryKey) &&
-          q.queryKey[0] === "clans" &&
-          q.queryKey[1] === "mine",
+          (q.queryKey[0] === "clans" || q.queryKey[0] === "admin-clans"),
       });
       toast.success("Đã lưu cài đặt");
     },
