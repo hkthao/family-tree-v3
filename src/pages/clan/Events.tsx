@@ -16,6 +16,7 @@ import { ShareCardDialog } from "@/components/ShareCardDialog";
 import type { CardGenre } from "@/lib/cards/types";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
+import { RecordDates } from "@/components/RecordDates";
 import { IconBellOff, IconDownload } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -485,6 +486,11 @@ function CustomEventItem({
         <p className="text-sm text-muted-foreground">
           {when} {event.is_yearly ? "• lặp hằng năm" : ""}
         </p>
+        <RecordDates
+          createdAt={event.created_at}
+          updatedAt={event.updated_at}
+          className="text-xs text-muted-foreground/80 mt-0.5 truncate"
+        />
       </button>
       <div className="flex items-center gap-2 shrink-0">
         <Button size="sm" variant="outline" onClick={() => setCardOpen(true)}>

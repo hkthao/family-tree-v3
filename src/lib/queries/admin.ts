@@ -25,6 +25,7 @@ export interface AdminClanRow {
   owner_id: string | null;
   data_version: number;
   created_at: string;
+  updated_at: string;
   person_count: number;
 }
 
@@ -61,7 +62,7 @@ export async function listAllClans(
   const { data, error } = await client
     .from("clans")
     .select(
-      "id, name, description, visibility, max_persons, max_users, owner_id, data_version, created_at, person_count",
+      "id, name, description, visibility, max_persons, max_users, owner_id, data_version, created_at, updated_at, person_count",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);

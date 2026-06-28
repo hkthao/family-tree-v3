@@ -21,6 +21,13 @@ export interface PersonRow {
   generation: number | null;
   branch_id: string | null;
   photo_path: string | null;
+  /**
+   * Metadata thời gian — chỉ có khi đọc bảng `persons` (thành viên).
+   * View công khai `persons_public_safe` không phơi các cột này nên
+   * khách xem dòng họ công khai sẽ nhận undefined (UI tự ẩn).
+   */
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export type PersonsSource = "persons" | "persons_public_safe";
@@ -80,7 +87,7 @@ export async function listPersons(
       : client
           .from("persons")
           .select(
-            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path",
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path, created_at, updated_at",
             { count: "exact" },
           )
           .eq("clan_id", clanId)

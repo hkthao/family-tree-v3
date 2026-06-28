@@ -17,8 +17,10 @@ import {
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
+import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { formatDate, formatDateTime } from "@/lib/formatDate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -356,6 +358,14 @@ function UserRow({
         <span className="text-xs text-muted-foreground">
           Max clan: {profile.max_clans}
         </span>
+        {formatDate(profile.created_at) && (
+          <span
+            className="text-xs text-muted-foreground"
+            title={formatDateTime(profile.created_at) ?? undefined}
+          >
+            Đăng ký {formatDate(profile.created_at)}
+          </span>
+        )}
       </div>
 
       {expanded && (
@@ -607,6 +617,11 @@ function ClanRow({
               {clan.description}
             </p>
           )}
+          <RecordDates
+            createdAt={clan.created_at}
+            updatedAt={clan.updated_at}
+            className="text-xs text-muted-foreground/80 mt-0.5 truncate"
+          />
         </div>
         <span
           className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full ${

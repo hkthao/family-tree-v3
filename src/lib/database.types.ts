@@ -617,6 +617,7 @@ export type Database = {
           public_show_graves: boolean
           public_show_heritage: boolean
           public_show_tree: boolean
+          updated_at: string
           visibility: string
         }
         Insert: {
@@ -639,6 +640,7 @@ export type Database = {
           public_show_graves?: boolean
           public_show_heritage?: boolean
           public_show_tree?: boolean
+          updated_at?: string
           visibility?: string
         }
         Update: {
@@ -661,6 +663,7 @@ export type Database = {
           public_show_graves?: boolean
           public_show_heritage?: boolean
           public_show_tree?: boolean
+          updated_at?: string
           visibility?: string
         }
         Relationships: [
@@ -836,6 +839,7 @@ export type Database = {
           related_person_id: string | null
           resting_place_id: string | null
           title: string
+          updated_at: string
         }
         Insert: {
           clan_id: string
@@ -852,6 +856,7 @@ export type Database = {
           related_person_id?: string | null
           resting_place_id?: string | null
           title: string
+          updated_at?: string
         }
         Update: {
           clan_id?: string
@@ -868,6 +873,7 @@ export type Database = {
           related_person_id?: string | null
           resting_place_id?: string | null
           title?: string
+          updated_at?: string
         }
         Relationships: [
           {

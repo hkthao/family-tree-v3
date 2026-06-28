@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { IconPlus, IconScroll, IconSearch } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -214,6 +215,11 @@ export default function Heritage() {
                         .filter(Boolean)
                         .join(" · ") || "—"}
                     </p>
+                    <RecordDates
+                      createdAt={i.created_at}
+                      updatedAt={i.updated_at}
+                      className="text-xs text-muted-foreground/80 mt-0.5 truncate"
+                    />
                   </div>
                 </Link>
               </li>

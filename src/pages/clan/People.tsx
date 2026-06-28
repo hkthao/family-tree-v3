@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 
 import { invalidateClanData } from "@/lib/cache";
 import { displayGen } from "@/lib/displayGeneration";
+import { RecordDates } from "@/components/RecordDates";
 import {
   deletePersonsBulk,
   listMatchingPersonIds,
@@ -714,6 +715,24 @@ function lookupRelatives(
   };
 }
 
+/** Dòng "Tạo … • Cập nhật …" cho một người — ẩn khi không có ngày
+ *  (vd: khách xem qua view công khai không nhận được metadata này). */
+function PersonDates({
+  person,
+  className,
+}: {
+  person: PersonRow;
+  className: string;
+}) {
+  return (
+    <RecordDates
+      createdAt={person.created_at}
+      updatedAt={person.updated_at}
+      className={className}
+    />
+  );
+}
+
 function PersonListItem({
   person,
   clanId,
@@ -815,6 +834,10 @@ function PersonListItem({
               )}
             </div>
           )}
+          <PersonDates
+            person={person}
+            className="text-xs text-muted-foreground/80 mt-1 truncate"
+          />
         </div>
       </Link>
       {canCopy && (
@@ -935,6 +958,10 @@ function PersonGridCard({
               {rel.spouses.length > 1 ? ` +${rel.spouses.length - 1}` : ""}
             </p>
           )}
+          <PersonDates
+            person={person}
+            className="text-[10px] text-muted-foreground/80 mt-1 truncate"
+          />
         </div>
       </Link>
     </li>
