@@ -2355,6 +2355,16 @@ export type Database = {
           total_persons: number
         }[]
       }
+      get_clans_leaderboard_stats: {
+        Args: { p_clan_ids: string[] }
+        Returns: {
+          clan_id: string
+          max_generation: number
+          persons_total: number
+          persons_with_birth: number
+          persons_30d: number
+        }[]
+      }
       get_clan_todo_items: {
         Args: {
           p_category: string

@@ -16,6 +16,7 @@ import {
   SegmentedButton,
   SegmentedControl,
 } from "@/components/ui/segmented-control";
+import { ClanBadges } from "@/components/ClanBadges";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
@@ -31,8 +32,10 @@ import { useUrlPatch } from "@/hooks/useUrlState";
 import {
   CLAN_SIZE_BUCKETS,
   CLAN_SORT_LABEL,
+  getClansLeaderboardStats,
   listCommunityClans,
   listMyClans,
+  type ClanLeaderboardStat,
   type ClanSizeBucket,
   type ClanSort,
   type ClanSummary,
@@ -138,8 +141,23 @@ export default function Clans() {
   const isLoading = active.isLoading;
   const error = active.error;
 
+  // Số liệu huy hiệu chất lượng cho các dòng họ đang hiển thị (1 round-trip).
+  const rowIds = (data?.rows ?? []).map((r) => r.id);
+  const { data: statsMap } = useQuery({
+    queryKey: ["clan-leaderboard-stats", rowIds],
+    queryFn: () => getClansLeaderboardStats(rowIds),
+    enabled: rowIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Huy chương thứ hạng chỉ có nghĩa khi đang xếp theo số thành viên ở tab
+  // Cộng đồng (bảng "ganh đua" toàn nền tảng). Tab "Của tôi" / sắp theo
+  // tên-mới-tạo thì không gắn medal (gây hiểu nhầm).
+  const showMedals = tab === "community" && sort === "members";
+  const rankBase = (page - 1) * PAGE_SIZE;
 
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
@@ -309,14 +327,24 @@ export default function Clans() {
         {data && data.rows.length > 0 && (
           view === "grid" ? (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {data.rows.map((c) => (
-                <ClanCard key={c.id} clan={c} />
+              {data.rows.map((c, i) => (
+                <ClanCard
+                  key={c.id}
+                  clan={c}
+                  rank={showMedals ? rankBase + i + 1 : undefined}
+                  stat={statsMap?.get(c.id)}
+                />
               ))}
             </ul>
           ) : (
             <ul className="space-y-2">
-              {data.rows.map((c) => (
-                <ClanRow key={c.id} clan={c} />
+              {data.rows.map((c, i) => (
+                <ClanRow
+                  key={c.id}
+                  clan={c}
+                  rank={showMedals ? rankBase + i + 1 : undefined}
+                  stat={statsMap?.get(c.id)}
+                />
               ))}
             </ul>
           )
@@ -362,7 +390,15 @@ function TabButton({
   );
 }
 
-function ClanRow({ clan }: { clan: ClanSummary }) {
+function ClanRow({
+  clan,
+  rank,
+  stat,
+}: {
+  clan: ClanSummary;
+  rank?: number;
+  stat?: ClanLeaderboardStat;
+}) {
   return (
     <li>
       <Link
@@ -374,7 +410,7 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
             {clan.name}
           </h2>
           <span className="text-xs text-muted-foreground shrink-0">
-            {clan.person_count} thành viên
+            {clan.person_count.toLocaleString("vi-VN")} thành viên
           </span>
         </div>
         {clan.description && (
@@ -392,12 +428,22 @@ function ClanRow({ clan }: { clan: ClanSummary }) {
           {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
         </p>
         <ClanDates clan={clan} className="text-xs text-muted-foreground/80 mt-0.5" />
+        {/* Huy hiệu ở dòng cuối, căn lề phải. */}
+        <ClanBadges clan={clan} rank={rank} stat={stat} />
       </Link>
     </li>
   );
 }
 
-function ClanCard({ clan }: { clan: ClanSummary }) {
+function ClanCard({
+  clan,
+  rank,
+  stat,
+}: {
+  clan: ClanSummary;
+  rank?: number;
+  stat?: ClanLeaderboardStat;
+}) {
   return (
     <li>
       <Link
@@ -416,7 +462,7 @@ function ClanCard({ clan }: { clan: ClanSummary }) {
           </p>
         )}
         <div className="mt-auto pt-3 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{clan.person_count} thành viên</span>
+          <span>{clan.person_count.toLocaleString("vi-VN")} thành viên</span>
           <span>
             {clan.role ? (
               <span className="text-foreground">{roleLabel(clan.role)}</span>
@@ -428,6 +474,8 @@ function ClanCard({ clan }: { clan: ClanSummary }) {
           </span>
         </div>
         <ClanDates clan={clan} className="mt-1 text-xs text-muted-foreground/80" />
+        {/* Huy hiệu ở dòng cuối, căn lề phải. */}
+        <ClanBadges clan={clan} rank={rank} stat={stat} />
       </Link>
     </li>
   );
