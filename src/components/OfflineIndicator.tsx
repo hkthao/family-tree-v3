@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { supabase } from "@/lib/supabase";
+
 /**
  * Chip góc màn báo "đang offline — đọc từ cache".
  *
@@ -8,29 +10,32 @@ import { useEffect, useState } from "react";
  * vì sự kiện `online` không phải lúc nào cũng bắn lại. Trước đây chỉ đọc
  * `navigator.onLine` nên banner hiện hoài dù đang online.
  *
- * Cách làm: khi nghi ngờ offline (onLine === false), XÁC MINH bằng một
- * request nhẹ network-only tới API (HEAD no-cors, no-store — không bị
- * service worker trả từ cache). Chỉ hiện banner khi request thật sự fail.
- * Re-check định kỳ để tự thoát trạng thái kẹt.
+ * Cách xác minh: khi onLine === false, gửi 1 truy vấn nhẹ qua chính
+ * supabase client (đã kèm JWT khi đã đăng nhập) → trả 200 thật, KHÔNG bị
+ * 401 như khi gọi thẳng /auth/v1/health không có auth. Khách chưa đăng
+ * nhập thì không gọi mạng (tránh 401) — chấp nhận tin navigator.onLine.
  */
-const PROBE_URL = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/health`;
+function isNetworkError(msg: string | undefined): boolean {
+  return !!msg && /fetch|network|load failed|timeout/i.test(msg);
+}
 
 async function reachable(): Promise<boolean> {
   // onLine === true: coi như có mạng (tránh false-positive offline). Chỉ
-  // probe khi onLine nói false.
+  // xác minh khi onLine nói false.
   if (typeof navigator !== "undefined" && navigator.onLine !== false) {
     return true;
   }
+  // getSession() đọc local, không gọi mạng. Khách (chưa đăng nhập) không
+  // probe được sạch (gateway 401 mọi request thiếu JWT) → tin onLine.
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return false;
   try {
-    // GET (không HEAD): server từ chối HEAD → 405/ERR_ABORTED gây noise +
-    // bị coi là lỗi. no-cors nên fetch RESOLVE với mọi phản hồi hoàn tất
-    // (kể cả 401 opaque) = mạng OK; chỉ REJECT khi mất kết nối thật.
-    await fetch(`${PROBE_URL}?_=${Date.now()}`, {
-      method: "GET",
-      mode: "no-cors",
-      cache: "no-store",
-    });
-    return true;
+    // Truy vấn cực nhẹ, có JWT → 200 (REST không bị service worker cache).
+    const { error } = await supabase.from("clans").select("id").limit(1);
+    // Lỗi mạng thật → offline; lỗi khác (RLS…) vẫn nghĩa là có phản hồi.
+    return !isNetworkError(error?.message);
   } catch {
     return false;
   }
