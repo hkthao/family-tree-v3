@@ -41,24 +41,38 @@ export function OfflineIndicator() {
 
   useEffect(() => {
     let cancelled = false;
+    let timer: number | undefined;
+    const clearTimer = () => {
+      if (timer !== undefined) {
+        clearInterval(timer);
+        timer = undefined;
+      }
+    };
 
     const check = async () => {
       const ok = await reachable();
-      if (!cancelled) setOffline(!ok);
+      if (cancelled) return;
+      setOffline(!ok);
+      // CHỈ poll lại khi đang offline (để phát hiện có mạng trở lại). Khi
+      // đã online thì ngừng poll → không spam request mỗi 20s (tránh lặp
+      // 401 khi navigator.onLine kẹt ở false nhưng thực ra vẫn online).
+      if (!ok && timer === undefined) {
+        timer = window.setInterval(check, 15_000);
+      } else if (ok) {
+        clearTimer();
+      }
     };
 
     check();
     const onEvt = () => check();
     window.addEventListener("online", onEvt);
     window.addEventListener("offline", onEvt);
-    // Tự kiểm tra lại để thoát trạng thái kẹt navigator.onLine.
-    const timer = window.setInterval(check, 20_000);
 
     return () => {
       cancelled = true;
+      clearTimer();
       window.removeEventListener("online", onEvt);
       window.removeEventListener("offline", onEvt);
-      clearInterval(timer);
     };
   }, []);
 
