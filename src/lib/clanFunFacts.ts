@@ -26,10 +26,10 @@ function year(d: string | null): number | null {
   return Number.isFinite(y) ? y : null;
 }
 
-function middleName(full: string): string | null {
+/** Tên gọi = token cuối của họ tên đầy đủ (vd "Nguyễn Văn Hùng" → "Hùng"). */
+function givenName(full: string): string | null {
   const parts = full.trim().split(/\s+/);
-  if (parts.length < 3) return null;
-  return parts.slice(1, parts.length - 1).join(" ");
+  return parts.length ? parts[parts.length - 1] : null;
 }
 
 function topEntry<T>(counts: Map<T, number>): { key: T; count: number } | null {
@@ -138,19 +138,20 @@ export function computeClanFunFacts(opts: {
     });
   }
 
-  // 6. Tên đệm phổ biến nhất
-  const middleCounts = new Map<string, number>();
+  // 6. Tên gọi phổ biến nhất (token cuối — tên thật, không phải tên đệm
+  //    chung như "Thị" vốn vô nghĩa vì gần như ai cũng có).
+  const givenCounts = new Map<string, number>();
   for (const p of persons) {
-    const m = middleName(p.full_name);
-    if (m) middleCounts.set(m, (middleCounts.get(m) ?? 0) + 1);
+    const g = givenName(p.full_name);
+    if (g) givenCounts.set(g, (givenCounts.get(g) ?? 0) + 1);
   }
-  const topMiddle = topEntry(middleCounts);
-  if (topMiddle && topMiddle.count >= 3) {
+  const topGiven = topEntry(givenCounts);
+  if (topGiven && topGiven.count >= 3) {
     facts.push({
-      id: "common-middle",
+      id: "common-given-name",
       icon: "✍️",
-      stat: `${topMiddle.count} người`,
-      text: `Có ${topMiddle.count} người trùng tên đệm "${topMiddle.key}".`,
+      stat: `${topGiven.count} người`,
+      text: `Tên "${topGiven.key}" được đặt nhiều nhất họ ta — ${topGiven.count} người cùng tên.`,
     });
   }
 

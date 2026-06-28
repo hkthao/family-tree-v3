@@ -34,7 +34,7 @@ function factIcon(id: string): ReactNode {
     case "oldest":
     case "eldest-living":
       return <IconUser className={c} />;
-    case "common-middle":
+    case "common-given-name":
       return <IconPencil className={c} />;
     case "birth-month":
       return <IconCalendar className={c} />;
