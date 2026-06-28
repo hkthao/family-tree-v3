@@ -61,24 +61,29 @@ describe("RLS + triggers: limits", () => {
     expect(error?.message).toMatch(/max_persons/i);
   });
 
-  it("max_users blocks 3rd member when limit=2", async () => {
+  it("max_users counts only admin/editor seats — blocks 3rd editor, viewers free", async () => {
     const owner = await createTestUser({ displayName: "Owner" });
     const member = await createTestUser({ displayName: "M1" });
-    const blocked = await createTestUser({ displayName: "Blocked" });
-    cleanupIds.push(owner.id, member.id, blocked.id);
+    const blockedEditor = await createTestUser({ displayName: "Editor3" });
+    const viewer = await createTestUser({ displayName: "Viewer" });
+    cleanupIds.push(owner.id, member.id, blockedEditor.id, viewer.id);
 
-    // Create clan with limit 2; owner is already member #1
+    // Create clan with limit 2; owner (admin) is already seat #1
     const clanId = await createTestClan(owner, { maxUsers: 2 });
 
-    // Add 2nd member (succeeds; owner+this = 2)
+    // 2nd editor seat (succeeds; owner+this = 2 seats)
     await addMember(clanId, member, "editor");
 
-    // 3rd should fail
-    const { error } = await owner.client.from("clan_members").insert({
-      clan_id: clanId,
-      user_id: blocked.id,
-      role: "viewer",
-    });
-    expect(error?.message).toMatch(/max_users/i);
+    // 3rd EDITOR seat should fail (seats full at 2)
+    const { error: editorErr } = await owner.client
+      .from("clan_members")
+      .insert({ clan_id: clanId, user_id: blockedEditor.id, role: "editor" });
+    expect(editorErr?.message).toMatch(/max_users/i);
+
+    // A VIEWER joins beyond the seat limit → allowed (read-only, free).
+    const { error: viewerErr } = await owner.client
+      .from("clan_members")
+      .insert({ clan_id: clanId, user_id: viewer.id, role: "viewer" });
+    expect(viewerErr).toBeNull();
   });
 });
