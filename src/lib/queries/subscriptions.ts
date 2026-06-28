@@ -146,3 +146,65 @@ export async function setSubscriptionEnabled(
     .eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+/** Một dòng họ user đang theo dõi sự kiện (gộp mọi subscription của họ đó). */
+export interface FollowedClan {
+  clan_id: string;
+  clan_name: string;
+  /** Số subscription (clan/chi/người) user có trong dòng họ này. */
+  subscription_count: number;
+  scopes: SubScope[];
+  /** true nếu có ít nhất 1 subscription đang bật. */
+  any_enabled: boolean;
+}
+
+/**
+ * Mọi dòng họ user đang theo dõi sự kiện — gộp theo dòng họ, kèm tên.
+ * Dùng cho trang Tài khoản để liệt kê + cho phép huỷ theo dõi.
+ */
+export async function listMyFollowedClans(
+  userId: string,
+  client: Client = defaultClient,
+): Promise<FollowedClan[]> {
+  const { data, error } = await client
+    .from("event_subscriptions")
+    .select("clan_id, scope, is_enabled, clan:clans(name)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+
+  const byClan = new Map<string, FollowedClan>();
+  for (const r of data ?? []) {
+    const cid = r.clan_id as string;
+    const name = (r.clan as { name: string } | null)?.name ?? "(dòng họ đã xoá)";
+    const cur =
+      byClan.get(cid) ??
+      ({
+        clan_id: cid,
+        clan_name: name,
+        subscription_count: 0,
+        scopes: [],
+        any_enabled: false,
+      } as FollowedClan);
+    cur.subscription_count += 1;
+    const scope = r.scope as SubScope;
+    if (!cur.scopes.includes(scope)) cur.scopes.push(scope);
+    if (r.is_enabled) cur.any_enabled = true;
+    byClan.set(cid, cur);
+  }
+  return [...byClan.values()];
+}
+
+/** Huỷ theo dõi một dòng họ — xoá MỌI subscription của user trong họ đó. */
+export async function unfollowClan(
+  clanId: string,
+  userId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("event_subscriptions")
+    .delete()
+    .eq("clan_id", clanId)
+    .eq("user_id", userId);
+  if (error) throw new Error(error.message);
+}

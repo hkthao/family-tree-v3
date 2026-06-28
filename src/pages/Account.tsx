@@ -39,6 +39,11 @@ import {
   updateMyMonthlyLunarPref,
 } from "@/lib/queries/profile";
 import { sendTestPush, updateMyNotifyViaPush } from "@/lib/queries/push";
+import {
+  listMyFollowedClans,
+  unfollowClan,
+  type SubScope,
+} from "@/lib/queries/subscriptions";
 import { supabase } from "@/lib/supabase";
 
 export default function Account() {
@@ -100,6 +105,8 @@ export default function Account() {
           enabled={profile?.notify_via_push ?? false}
           queryClient={queryClient}
         />
+
+        <FollowedClansCard userId={userId} />
 
         <EmailCard currentEmail={user?.email ?? null} />
 
@@ -163,6 +170,90 @@ export default function Account() {
 }
 
 // ---------------------------------------------------------------------------
+
+const SCOPE_LABEL: Record<SubScope, string> = {
+  clan: "cả dòng họ",
+  branch: "theo chi",
+  person: "theo người",
+};
+
+/**
+ * "Dòng họ đang theo dõi" — liệt kê các dòng họ user đăng ký nhận nhắc
+ * sự kiện (sinh nhật / ngày giỗ / sự kiện), cho phép huỷ theo dõi từng họ.
+ */
+function FollowedClansCard({ userId }: { userId: string }) {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const { data: clans, isLoading } = useQuery({
+    queryKey: ["followed-clans", userId],
+    queryFn: () => listMyFollowedClans(userId),
+    enabled: !!userId,
+  });
+
+  const unfollowM = useMutation({
+    mutationFn: (clanId: string) => unfollowClan(clanId, userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["followed-clans", userId] });
+      toast.success("Đã huỷ theo dõi dòng họ này");
+    },
+    onError: (e) =>
+      toast.error("Không huỷ được", { description: (e as Error).message }),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Dòng họ đang theo dõi</CardTitle>
+        <CardDescription>
+          Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của
+          các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Đang tải…</p>
+        ) : !clans || clans.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của một dòng họ
+            và bật “Theo dõi sự kiện”.
+          </p>
+        ) : (
+          <ul className="divide-y rounded-md border">
+            {clans.map((c) => (
+              <li
+                key={c.clan_id}
+                className="flex items-center justify-between gap-3 p-3"
+              >
+                <div className="min-w-0">
+                  <Link
+                    to={`/clans/${c.clan_id}`}
+                    className="font-medium hover:underline truncate block"
+                  >
+                    {c.clan_name}
+                  </Link>
+                  <p className="text-xs text-muted-foreground">
+                    Theo dõi: {c.scopes.map((s) => SCOPE_LABEL[s]).join(", ")}
+                    {!c.any_enabled ? " · đang tắt" : ""}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={unfollowM.isPending}
+                  onClick={() => unfollowM.mutate(c.clan_id)}
+                  className="shrink-0 text-destructive hover:text-destructive"
+                >
+                  <IconX className="h-4 w-4 mr-1" />
+                  Huỷ theo dõi
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 interface DisplayNameProps {
   userId: string;

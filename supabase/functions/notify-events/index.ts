@@ -84,6 +84,9 @@ interface UpcomingEvent {
   kind: UpcomingKind;
   title: string;
   date: string;
+  /** Dòng họ chứa sự kiện — BẮT BUỘC khớp clan_id của subscription, nếu
+   *  không một subscription scope='clan' sẽ "bắt" cả sự kiện của họ khác. */
+  clanId: string;
   personId?: string;
   branchId?: string | null;
 }
@@ -126,6 +129,13 @@ function computeFireList(
     if (sub.channels.length === 0 || sub.lead_days.length === 0) continue;
 
     for (const evt of events) {
+      // `events` (upcoming) là danh sách phẳng gộp MỌI dòng họ trong batch.
+      // Bắt buộc sự kiện phải thuộc đúng dòng họ của subscription — nếu
+      // thiếu kiểm tra này, một subscription scope='clan' sẽ nhận email
+      // cho người ở dòng họ khác (vd Giỗ "Lê Thị Miên" của họ Lê Ngọc bị
+      // gửi cho người theo dõi họ Huỳnh).
+      if (evt.clanId !== sub.clan_id) continue;
+
       if (sub.scope === "clan") {
         if (sub.target_id !== null) continue;
       } else if (sub.scope === "person") {
@@ -387,6 +397,7 @@ Deno.serve(async (req) => {
             kind: "birthday",
             title: `Sinh nhật ${p.full_name}`,
             date: next,
+            clanId: p.clan_id as string,
             personId: p.id,
             branchId: (p.branch_id as string | null) ?? null,
           });
@@ -420,6 +431,7 @@ Deno.serve(async (req) => {
           kind: "anniversary",
           title: `Giỗ ${p.full_name}`,
           date: iso,
+          clanId: p.clan_id as string,
           personId: p.id,
           branchId: (p.branch_id as string | null) ?? null,
         });
@@ -454,6 +466,7 @@ Deno.serve(async (req) => {
         kind: evKind,
         title: ev.title,
         date: iso,
+        clanId: ev.clan_id as string,
         personId: ev.related_person_id ?? undefined,
         branchId,
       });
@@ -482,6 +495,7 @@ Deno.serve(async (req) => {
           kind: evKind,
           title: ev.title,
           date: iso,
+          clanId: ev.clan_id as string,
           personId: ev.related_person_id ?? undefined,
           branchId,
         });

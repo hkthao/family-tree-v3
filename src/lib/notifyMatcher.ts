@@ -98,6 +98,11 @@ export function computeFireList(input: ComputeInput): FireItem[] {
     if (sub.channels.length === 0 || sub.lead_days.length === 0) continue;
 
     for (const evt of events) {
+      // Clan filter — `events` gộp mọi dòng họ trong batch; sự kiện phải
+      // thuộc đúng dòng họ của subscription. Thiếu guard này thì sub
+      // scope='clan' sẽ nhận cả sự kiện của họ khác (cross-clan leak).
+      if (evt.clanId !== undefined && evt.clanId !== sub.clan_id) continue;
+
       // Scope filter
       if (sub.scope === "clan") {
         if (sub.target_id !== null) continue;
