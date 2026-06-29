@@ -158,6 +158,8 @@ export default function HeritageDetail() {
   // Xem ảnh phóng to (lightbox) + thu gọn/mở rộng nội dung.
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [bodyExpanded, setBodyExpanded] = useState(false);
+  // Đoạn nội dung đang mở (accordion). Mặc định mở đoạn đầu.
+  const [openSecs, setOpenSecs] = useState<Set<number>>(() => new Set([0]));
 
   // Thêm liên kết ngoài (ảnh/audio/video host nơi khác) — KHÔNG tốn storage VPS.
   const [extKind, setExtKind] = useState<HeritageMediaKind>("video");
@@ -531,14 +533,16 @@ export default function HeritageDetail() {
       )}
 
       {/* Nội dung */}
-      {(item.summary || item.body) && (
+      {(item.summary || item.body || item.sections.length > 0) && (
         <Card>
           <CardHeader>
             <SectionTitle icon={<IconScroll className="h-4 w-4" />}>Nội dung</SectionTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {item.summary && <p className="text-base font-medium">{item.summary}</p>}
-            {item.body && (
+
+            {/* Kiểu cũ: 1 ô body (khi chưa chia đoạn) */}
+            {item.sections.length === 0 && item.body && (
               <div>
                 <p
                   className={`whitespace-pre-wrap text-base leading-relaxed ${
@@ -555,17 +559,75 @@ export default function HeritageDetail() {
                     className="mt-1.5 inline-flex items-center gap-1 text-sm text-primary hover:underline"
                   >
                     {bodyExpanded ? (
-                      <>
-                        <IconChevronUp className="h-4 w-4" /> Thu gọn
-                      </>
+                      <><IconChevronUp className="h-4 w-4" /> Thu gọn</>
                     ) : (
-                      <>
-                        <IconChevronDown className="h-4 w-4" /> Xem thêm
-                      </>
+                      <><IconChevronDown className="h-4 w-4" /> Xem thêm</>
                     )}
                   </button>
                 )}
               </div>
+            )}
+
+            {/* Kiểu mới: nhiều đoạn — mục lục + accordion */}
+            {item.sections.length > 0 && (
+              <>
+                {item.sections.length > 1 && (
+                  <nav className="rounded-md border bg-muted/30 p-3">
+                    <p className="mb-1.5 text-sm font-medium">Mục lục</p>
+                    <ol className="list-decimal space-y-0.5 pl-5 text-sm">
+                      {item.sections.map((s, i) => (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            className="text-left text-primary hover:underline"
+                            onClick={() => {
+                              setOpenSecs((prev) => new Set(prev).add(i));
+                              document
+                                .getElementById(`hsec-${i}`)
+                                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                            }}
+                          >
+                            {s.heading || `Đoạn ${i + 1}`}
+                          </button>
+                        </li>
+                      ))}
+                    </ol>
+                  </nav>
+                )}
+                <div className="space-y-2">
+                  {item.sections.map((s, i) => {
+                    const open = openSecs.has(i);
+                    return (
+                      <div key={i} id={`hsec-${i}`} className="scroll-mt-4 rounded-md border">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenSecs((prev) => {
+                              const n = new Set(prev);
+                              if (n.has(i)) n.delete(i);
+                              else n.add(i);
+                              return n;
+                            })
+                          }
+                          className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left font-medium"
+                        >
+                          <span>{s.heading || `Đoạn ${i + 1}`}</span>
+                          {open ? (
+                            <IconChevronUp className="h-4 w-4 shrink-0" />
+                          ) : (
+                            <IconChevronDown className="h-4 w-4 shrink-0" />
+                          )}
+                        </button>
+                        {open && (
+                          <p className="whitespace-pre-wrap px-3 pb-3 text-base leading-relaxed">
+                            {s.body}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

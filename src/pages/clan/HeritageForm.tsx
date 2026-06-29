@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconCheck, IconMapPin, IconScroll, IconX } from "@/components/icons";
+import { IconCheck, IconMapPin, IconPlus, IconScroll, IconX } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
@@ -19,6 +19,7 @@ import {
   addHeritagePerson,
   createHeritageItem,
   getHeritageItem,
+  type HeritageSection,
   HERITAGE_CATEGORY_HINT,
   HERITAGE_CATEGORY_LABEL,
   HERITAGE_CATEGORY_PROMPTS,
@@ -51,6 +52,7 @@ export default function HeritageForm() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [body, setBody] = useState("");
+  const [sections, setSections] = useState<HeritageSection[]>([]);
   const [locationName, setLocationName] = useState("");
   const [address, setAddress] = useState("");
   const [lat, setLat] = useState("");
@@ -73,6 +75,7 @@ export default function HeritageForm() {
     setTitle(existing.title);
     setSummary(existing.summary ?? "");
     setBody(existing.body ?? "");
+    setSections(existing.sections ?? []);
     setLocationName(existing.location_name ?? "");
     setAddress(existing.address ?? "");
     setLat(existing.latitude != null ? String(existing.latitude) : "");
@@ -108,6 +111,9 @@ export default function HeritageForm() {
         title: title.trim(),
         summary: summary.trim() || null,
         body: body.trim() || null,
+        sections: sections
+          .map((s) => ({ heading: s.heading.trim(), body: s.body.trim() }))
+          .filter((s) => s.heading || s.body),
         location_name: isPlace ? locationName.trim() || null : null,
         address: isPlace ? address.trim() || null : null,
         latitude: isPlace && lat.trim() ? Number(lat) : null,
@@ -277,6 +283,101 @@ export default function HeritageForm() {
           <p className="text-sm text-muted-foreground">
             Sau khi lưu, bạn có thể <strong>thêm ảnh</strong> và <strong>ghi âm kể chuyện</strong> ở trang chi tiết.
           </p>
+        </div>
+
+        {/* Nội dung nhiều ĐOẠN — cho tài liệu dài (Chúc thư, gia phả…) */}
+        <div className="space-y-2">
+          <Label className="block">Các đoạn nội dung (tuỳ chọn)</Label>
+          <p className="text-sm text-muted-foreground">
+            Tài liệu dài nên chia thành từng đoạn có tiêu đề (vd "Lời nói đầu",
+            "Chúc thư", "Phụ lục"…) — người đọc sẽ thấy mục lục và gập/mở từng
+            đoạn, đỡ ngợp. Để trống nếu chỉ dùng ô Nội dung ở trên.
+          </p>
+          {sections.map((sec, i) => (
+            <div key={i} className="rounded-md border bg-card p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-6 shrink-0">
+                  {i + 1}.
+                </span>
+                <Input
+                  value={sec.heading}
+                  onChange={(e) =>
+                    setSections((prev) =>
+                      prev.map((s, j) =>
+                        j === i ? { ...s, heading: e.target.value } : s,
+                      ),
+                    )
+                  }
+                  placeholder="Tiêu đề đoạn (vd Lời nói đầu)"
+                  maxLength={200}
+                  className="flex-1"
+                />
+                <button
+                  type="button"
+                  aria-label="Lên"
+                  disabled={i === 0}
+                  onClick={() =>
+                    setSections((prev) => {
+                      const a = [...prev];
+                      [a[i - 1], a[i]] = [a[i], a[i - 1]];
+                      return a;
+                    })
+                  }
+                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  aria-label="Xuống"
+                  disabled={i === sections.length - 1}
+                  onClick={() =>
+                    setSections((prev) => {
+                      const a = [...prev];
+                      [a[i + 1], a[i]] = [a[i], a[i + 1]];
+                      return a;
+                    })
+                  }
+                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                >
+                  ▼
+                </button>
+                <button
+                  type="button"
+                  aria-label="Xoá đoạn"
+                  onClick={() =>
+                    setSections((prev) => prev.filter((_, j) => j !== i))
+                  }
+                  className="px-1.5 text-muted-foreground hover:text-destructive"
+                >
+                  <IconX className="h-4 w-4" />
+                </button>
+              </div>
+              <textarea
+                value={sec.body}
+                onChange={(e) =>
+                  setSections((prev) =>
+                    prev.map((s, j) =>
+                      j === i ? { ...s, body: e.target.value } : s,
+                    ),
+                  )
+                }
+                rows={6}
+                placeholder="Nội dung đoạn này…"
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed"
+              />
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setSections((prev) => [...prev, { heading: "", body: "" }])
+            }
+          >
+            <IconPlus className="h-4 w-4 mr-1" /> Thêm đoạn
+          </Button>
         </div>
 
         {/* Người liên quan */}

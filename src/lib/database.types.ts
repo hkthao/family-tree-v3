@@ -1144,6 +1144,7 @@ export type Database = {
           latitude: number | null
           location_name: string | null
           longitude: number | null
+          sections: Json
           sort: number
           status: Database["public"]["Enums"]["heritage_status"]
           summary: string | null
@@ -1164,6 +1165,7 @@ export type Database = {
           latitude?: number | null
           location_name?: string | null
           longitude?: number | null
+          sections?: Json
           sort?: number
           status?: Database["public"]["Enums"]["heritage_status"]
           summary?: string | null
@@ -1184,6 +1186,7 @@ export type Database = {
           latitude?: number | null
           location_name?: string | null
           longitude?: number | null
+          sections?: Json
           sort?: number
           status?: Database["public"]["Enums"]["heritage_status"]
           summary?: string | null
