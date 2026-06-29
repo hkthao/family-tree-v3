@@ -62,6 +62,8 @@ export interface CardData {
   statText?: string | null;
   /** Font-family cho tiêu đề (chọn trong trình tạo thiệp). */
   titleFont?: string;
+  /** Dòng nhãn (kicker) tuỳ chỉnh, vd "Tin vui dòng họ". Rỗng = dùng mặc định mẫu. */
+  kicker?: string;
 }
 
 export interface CardTemplateProps {
