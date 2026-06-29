@@ -67,6 +67,25 @@ function qrImg(src: string, size: number, border?: string) {
   return <img src={src} alt="" width={size} height={size} style={{ width: size, height: size, background: "#fff", padding: 8, borderRadius: 12, border: border ?? "none" }} />;
 }
 
+/**
+ * Ảnh thành viên làm NỀN MỜ cho các layout khung chữ (centered/dateHero…):
+ * phủ kín thiệp rồi đè 1 lớp màu nền (theme) ~80% để chữ vẫn đọc rõ. Chỉ
+ * hiện khi đã chọn thành viên có ảnh. Trả null nếu không có ảnh.
+ */
+function framedBg(bg: string, photoDataUrl: string | null | undefined) {
+  if (!photoDataUrl) return null;
+  return (
+    <>
+      <img
+        src={photoDataUrl}
+        alt=""
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+      />
+      <div style={{ position: "absolute", inset: 0, background: bg, opacity: 0.82 }} />
+    </>
+  );
+}
+
 // ─── Layouts ──────────────────────────────────────────────────────
 interface Preset {
   id: string; name: string; genre: CardGenre;
@@ -79,6 +98,7 @@ const LAYOUTS = {
   centered(t: Theme, p: Preset, { data, format }: CardTemplateProps) {
     return (
       <div style={frame(format, t.bg)}>
+        {framedBg(t.bg, data.photoDataUrl)}
         <div style={{ position: "absolute", inset: 44, border: `3px solid ${t.accent}`, borderRadius: 8 }} />
         <div style={{ position: "absolute", inset: 56, border: `1px solid ${t.accent}`, opacity: 0.5, borderRadius: 4 }} />
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 110px", gap: 28 }}>
@@ -98,6 +118,7 @@ const LAYOUTS = {
   dateHero(t: Theme, p: Preset, { data, format }: CardTemplateProps) {
     return (
       <div style={frame(format, t.bg)}>
+        {framedBg(t.bg, data.photoDataUrl)}
         <div style={{ position: "absolute", inset: 44, border: `2px solid ${t.accent}`, borderRadius: 10 }} />
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 110px", gap: 26 }}>
           {p.ornament && <div style={{ fontSize: 72 }}>{p.ornament}</div>}

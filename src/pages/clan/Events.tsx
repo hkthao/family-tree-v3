@@ -143,6 +143,17 @@ export default function Events() {
     );
   }, [tree, events, anniversaries, effectiveDays]);
 
+  // Danh sách thành viên để chọn ảnh nền thiệp (id, tên, ảnh).
+  const cardMembers = useMemo(
+    () =>
+      (tree?.persons ?? []).map((p) => ({
+        id: p.id,
+        full_name: p.full_name,
+        photo_path: p.photo_path,
+      })),
+    [tree],
+  );
+
   // Về trang 1 khi đổi khoảng thời gian / danh sách thay đổi.
   useEffect(() => {
     setPage(1);
@@ -367,6 +378,7 @@ export default function Events() {
                   canDelete={canEdit}
                   onOpen={() => setDetailEventId(e.id)}
                   onDeleted={() => invalidateClanData(qc, clan.id)}
+                  members={cardMembers}
                 />
               ))}
             </ul>
@@ -416,6 +428,7 @@ export default function Events() {
           initialExcerpt={cardEvt.subtitle ?? ""}
           dateText={upcomingDateText(cardEvt)}
           defaultGenre={upcomingGenre(cardEvt.kind)}
+          members={cardMembers}
         />
       )}
     </div>
@@ -448,12 +461,14 @@ function CustomEventItem({
   canDelete,
   onOpen,
   onDeleted,
+  members,
 }: {
   event: EventRow;
   clanName: string;
   canDelete: boolean;
   onOpen: () => void;
   onDeleted: () => void;
+  members?: Array<{ id: string; full_name: string; photo_path?: string | null }>;
 }) {
   const confirm = useConfirm();
   const toast = useToast();
@@ -527,6 +542,7 @@ function CustomEventItem({
         initialExcerpt={event.notes ?? ""}
         dateText={cardDate}
         defaultGenre={cardGenre}
+        members={members}
       />
     </li>
   );
