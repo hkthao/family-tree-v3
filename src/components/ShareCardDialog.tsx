@@ -23,6 +23,8 @@ import {
   type CardFormat,
   type CardGenre,
 } from "@/lib/cards/types";
+import { getSignedPhotoUrl } from "@/lib/photoUpload";
+import { unaccent } from "@/lib/unaccent";
 
 export interface ShareCardDialogProps {
   open: boolean;
@@ -34,6 +36,11 @@ export interface ShareCardDialogProps {
   initialExcerpt: string;
   /** Các ảnh (signed URL) để chọn làm ảnh thiệp. */
   photoUrls?: string[];
+  /**
+   * Thành viên dòng họ để chọn lấy ảnh avatar làm nền thiệp. Khi có,
+   * dialog hiện ô "Chọn thành viên" → tự nạp ảnh đã ký của người đó.
+   */
+  members?: Array<{ id: string; full_name: string; photo_path?: string | null }>;
   dateText?: string | null;
   /** "12 đời · 348 người" cho thể loại mời tham gia. */
   statText?: string | null;
@@ -64,6 +71,10 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
   const [title, setTitle] = useState(props.initialTitle);
   const [excerpt, setExcerpt] = useState(props.initialExcerpt);
   const [photoIdx, setPhotoIdx] = useState<number>(props.photoUrls?.length ? 0 : -1);
+  // Thành viên đã chọn để lấy ảnh nền (ưu tiên hơn photoUrls).
+  const [memberSearch, setMemberSearch] = useState("");
+  const [pickedMemberId, setPickedMemberId] = useState<string | null>(null);
+  const [pickedMemberUrl, setPickedMemberUrl] = useState<string | null>(null);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [titleFont, setTitleFont] = useState<string>(DEFAULT_CARD_FONT);
@@ -85,6 +96,8 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     setTitle(props.initialTitle);
     setExcerpt(props.initialExcerpt);
     setPhotoIdx(props.photoUrls?.length ? 0 : -1);
+    setPickedMemberId(null);
+    setMemberSearch("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -107,8 +120,27 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     if (open) ensureCardFontsLoaded();
   }, [open]);
 
-  // Ảnh đã chọn → data URL (tránh taint khi xuất).
-  const photoUrl = photoIdx >= 0 ? props.photoUrls?.[photoIdx] ?? null : null;
+  // Nạp ảnh đã ký của thành viên được chọn (ưu tiên làm ảnh nền thiệp).
+  useEffect(() => {
+    if (!pickedMemberId) {
+      setPickedMemberUrl(null);
+      return;
+    }
+    const m = props.members?.find((x) => x.id === pickedMemberId);
+    if (!m?.photo_path) {
+      setPickedMemberUrl(null);
+      return;
+    }
+    let alive = true;
+    getSignedPhotoUrl(m.photo_path).then((u) => alive && setPickedMemberUrl(u));
+    return () => {
+      alive = false;
+    };
+  }, [pickedMemberId, props.members]);
+
+  // Ảnh đã chọn → data URL (tránh taint khi xuất). Ưu tiên ảnh thành viên.
+  const photoUrl =
+    pickedMemberUrl ?? (photoIdx >= 0 ? props.photoUrls?.[photoIdx] ?? null : null);
   useEffect(() => {
     if (!open) return;
     let alive = true;
@@ -389,6 +421,77 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                 ))}
               </div>
             </div>
+
+            {/* Chọn thành viên → lấy ảnh làm nền thiệp */}
+            {props.members && props.members.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Thành viên (lấy ảnh làm nền)
+                </label>
+                {pickedMemberId ? (
+                  <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                    <span className="truncate">
+                      {props.members.find((m) => m.id === pickedMemberId)
+                        ?.full_name ?? "—"}
+                      {!props.members.find((m) => m.id === pickedMemberId)
+                        ?.photo_path && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          (chưa có ảnh)
+                        </span>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPickedMemberId(null)}
+                      className="text-primary hover:underline shrink-0"
+                    >
+                      Bỏ chọn
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      value={memberSearch}
+                      onChange={(e) => setMemberSearch(e.target.value)}
+                      placeholder="Gõ tên để tìm thành viên…"
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    />
+                    {memberSearch.trim() && (
+                      <ul className="max-h-40 overflow-y-auto rounded-md border divide-y">
+                        {props.members
+                          .filter((m) =>
+                            unaccent(m.full_name).includes(
+                              unaccent(memberSearch),
+                            ),
+                          )
+                          .slice(0, 30)
+                          .map((m) => (
+                            <li key={m.id}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPickedMemberId(m.id);
+                                  setMemberSearch("");
+                                }}
+                                className="w-full px-3 py-2 text-left text-sm hover:bg-muted/50"
+                              >
+                                {m.full_name}
+                                {!m.photo_path && (
+                                  <span className="text-muted-foreground">
+                                    {" "}
+                                    · chưa có ảnh
+                                  </span>
+                                )}
+                              </button>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Sửa chữ */}
             <div className="space-y-2">
