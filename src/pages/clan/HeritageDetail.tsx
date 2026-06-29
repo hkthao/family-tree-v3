@@ -6,6 +6,8 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconCamera,
+  IconChevronDown,
+  IconChevronUp,
   IconLink,
   IconMapPin,
   IconMicrophone,
@@ -19,6 +21,7 @@ import {
   IconUser,
   IconX,
 } from "@/components/icons";
+import { ImageLightbox, type LightboxImage } from "@/components/ImageLightbox";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
@@ -101,6 +104,14 @@ export default function HeritageDetail() {
   const srcOf = (m: HeritageMedia): string | undefined =>
     m.external_url ?? (m.path ? mediaUrls?.get(m.path) : undefined);
 
+  // Danh sách ảnh (có URL) cho lightbox + cách tìm index khi click 1 ảnh.
+  const photoImages: LightboxImage[] = photos.flatMap((ph) => {
+    const src = srcOf(ph);
+    return src ? [{ src, caption: ph.caption }] : [];
+  });
+  const lightboxIndexOf = (ph: HeritageMedia) =>
+    photoImages.findIndex((im) => im.src === srcOf(ph));
+
   const { data: storageBytes } = useQuery({
     queryKey: ["heritage-storage", clan.id, userId],
     queryFn: () => clanHeritageStorageBytes(clan.id),
@@ -144,10 +155,35 @@ export default function HeritageDetail() {
     onError: (e) => toast.error("Không lưu được ghi âm", { description: (e as Error).message }),
   });
 
+  // Xem ảnh phóng to (lightbox) + thu gọn/mở rộng nội dung.
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [bodyExpanded, setBodyExpanded] = useState(false);
+
   // Thêm liên kết ngoài (ảnh/audio/video host nơi khác) — KHÔNG tốn storage VPS.
   const [extKind, setExtKind] = useState<HeritageMediaKind>("video");
   const [extUrl, setExtUrl] = useState("");
   const [extErr, setExtErr] = useState<string | null>(null);
+
+  // Thêm nhanh ảnh bằng link ngoài (nút trong khu Hình ảnh).
+  const addPhotoLinkM = useMutation({
+    mutationFn: async (url: string) => {
+      const check = validateExternalMedia("photo", url);
+      if (!check.ok) throw new Error(check.error);
+      const same = (item?.media ?? []).filter((m) => m.kind === "photo");
+      await addMedia(itemId!, {
+        kind: "photo",
+        external_url: url.trim(),
+        sort: same.length,
+      });
+    },
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
+      toast.success("Đã thêm ảnh từ liên kết");
+    },
+    onError: (e) =>
+      toast.error("Không thêm được", { description: (e as Error).message }),
+  });
   const addExternalM = useMutation({
     mutationFn: async () => {
       const check = validateExternalMedia(extKind, extUrl);
@@ -301,6 +337,15 @@ export default function HeritageDetail() {
                   onClick={() => fileRef.current?.click()}>
                   <IconPlus className="h-4 w-4 mr-1" /> {uploadPhotoM.isPending ? "Đang tải…" : "Tải ảnh"}
                 </Button>
+                <Button size="sm" variant="outline"
+                  disabled={addPhotoLinkM.isPending || photos.length >= MAX_PHOTOS}
+                  title="Dán link ảnh có sẵn trên mạng — không tốn dung lượng"
+                  onClick={() => {
+                    const u = window.prompt("Dán link ảnh (https://…):");
+                    if (u?.trim()) addPhotoLinkM.mutate(u.trim());
+                  }}>
+                  <IconLink className="h-4 w-4 mr-1" /> Liên kết ngoài
+                </Button>
               </div>
             </>
           )}
@@ -313,7 +358,14 @@ export default function HeritageDetail() {
               {photos.map((ph) => (
                 <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md bg-muted">
                   {srcOf(ph) ? (
-                    <img src={srcOf(ph)} alt={ph.caption ?? ""} referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setLightboxIdx(lightboxIndexOf(ph))}
+                      className="h-full w-full cursor-zoom-in"
+                      aria-label="Xem ảnh lớn"
+                    >
+                      <img src={srcOf(ph)} alt={ph.caption ?? ""} referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+                    </button>
                   ) : (
                     <div className="h-full w-full grid place-items-center">
                       <IconScroll className="h-5 w-5 text-muted-foreground" />
@@ -487,7 +539,33 @@ export default function HeritageDetail() {
           <CardContent className="space-y-3">
             {item.summary && <p className="text-base font-medium">{item.summary}</p>}
             {item.body && (
-              <p className="whitespace-pre-wrap text-base leading-relaxed">{item.body}</p>
+              <div>
+                <p
+                  className={`whitespace-pre-wrap text-base leading-relaxed ${
+                    bodyExpanded ? "" : "line-clamp-6"
+                  }`}
+                >
+                  {item.body}
+                </p>
+                {(item.body.length > 300 ||
+                  (item.body.match(/\n/g)?.length ?? 0) > 5) && (
+                  <button
+                    type="button"
+                    onClick={() => setBodyExpanded((v) => !v)}
+                    className="mt-1.5 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    {bodyExpanded ? (
+                      <>
+                        <IconChevronUp className="h-4 w-4" /> Thu gọn
+                      </>
+                    ) : (
+                      <>
+                        <IconChevronDown className="h-4 w-4" /> Xem thêm
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
@@ -560,6 +638,15 @@ export default function HeritageDetail() {
         photoUrls={cardPhotoUrls}
         defaultGenre={cardGenre}
       />
+
+      {lightboxIdx !== null && photoImages.length > 0 && (
+        <ImageLightbox
+          images={photoImages}
+          index={lightboxIdx}
+          onIndexChange={setLightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+        />
+      )}
     </div>
   );
 }
