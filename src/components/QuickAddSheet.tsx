@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
 import {
   addChildToFamily,
+  addChildrenToFamily,
   findOrCreateFamily,
   getPersonRelationships,
 } from "@/lib/queries/families";
@@ -588,11 +589,12 @@ function QuickAddChild({
       const valid = rows.filter((r) => r.name.trim().length > 0);
       if (valid.length === 0) throw new Error("Chưa có tên nào");
       const family = await findOrCreateFamily(resolveFamilyInputs());
-      let i = 0;
-      for (const r of valid) {
+      // 1 insert nhiều dòng thay vì lặp N round-trip — atomic, ít dính
+      // timeout/504 khi mạng yếu.
+      const inputs = valid.map((r, i) => {
         const b = yearToCols(r.birthYear);
         const d = yearToCols(r.deathYear);
-        await addChildToFamily({
+        return {
           clanId,
           family_id: family.id,
           full_name: r.name.trim(),
@@ -603,10 +605,10 @@ function QuickAddChild({
           death_date: d?.date ?? null,
           death_date_precision: d?.precision ?? null,
           is_living: d ? false : true,
-        });
-        i++;
-      }
-      return valid.length;
+        };
+      });
+      const { count } = await addChildrenToFamily(inputs);
+      return count;
     },
     onSuccess: async (n) => {
       await invalidateClanData(queryClient, clanId);

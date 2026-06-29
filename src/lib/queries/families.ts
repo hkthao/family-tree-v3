@@ -285,41 +285,64 @@ export interface AddChildInput {
   death_anniv_lunar_is_leap?: boolean;
 }
 
+/** Map AddChildInput → hàng persons (dùng chung cho add 1 và add nhiều). */
+function toChildRow(input: AddChildInput) {
+  return {
+    clan_id: input.clanId,
+    full_name: input.full_name,
+    gender: input.gender,
+    is_living: input.is_living ?? true,
+    birth_date: input.birth_date ?? null,
+    birth_date_precision:
+      input.birth_date_precision ?? (input.birth_date ? "day" : null),
+    birth_family_id: input.family_id,
+    birth_lunar_year: input.birth_lunar_year ?? null,
+    birth_lunar_month: input.birth_lunar_month ?? null,
+    birth_lunar_day: input.birth_lunar_day ?? null,
+    birth_lunar_is_leap: input.birth_lunar_is_leap ?? false,
+    birth_order: input.birth_order ?? null,
+    death_date: input.death_date ?? null,
+    death_date_precision:
+      input.death_date_precision ?? (input.death_date ? "day" : null),
+    death_lunar_year: input.death_lunar_year ?? null,
+    death_lunar_month: input.death_lunar_month ?? null,
+    death_lunar_day: input.death_lunar_day ?? null,
+    death_lunar_is_leap: input.death_lunar_is_leap ?? false,
+    death_anniv_lunar_month: input.death_anniv_lunar_month ?? null,
+    death_anniv_lunar_day: input.death_anniv_lunar_day ?? null,
+    death_anniv_lunar_is_leap: input.death_anniv_lunar_is_leap ?? false,
+  };
+}
+
 export async function addChildToFamily(
   input: AddChildInput,
   client: Client = defaultClient,
 ): Promise<{ id: string }> {
   const { data, error } = await client
     .from("persons")
-    .insert({
-      clan_id: input.clanId,
-      full_name: input.full_name,
-      gender: input.gender,
-      is_living: input.is_living ?? true,
-      birth_date: input.birth_date ?? null,
-      birth_date_precision:
-        input.birth_date_precision ?? (input.birth_date ? "day" : null),
-      birth_family_id: input.family_id,
-      birth_lunar_year: input.birth_lunar_year ?? null,
-      birth_lunar_month: input.birth_lunar_month ?? null,
-      birth_lunar_day: input.birth_lunar_day ?? null,
-      birth_lunar_is_leap: input.birth_lunar_is_leap ?? false,
-      birth_order: input.birth_order ?? null,
-      death_date: input.death_date ?? null,
-      death_date_precision:
-        input.death_date_precision ?? (input.death_date ? "day" : null),
-      death_lunar_year: input.death_lunar_year ?? null,
-      death_lunar_month: input.death_lunar_month ?? null,
-      death_lunar_day: input.death_lunar_day ?? null,
-      death_lunar_is_leap: input.death_lunar_is_leap ?? false,
-      death_anniv_lunar_month: input.death_anniv_lunar_month ?? null,
-      death_anniv_lunar_day: input.death_anniv_lunar_day ?? null,
-      death_anniv_lunar_is_leap: input.death_anniv_lunar_is_leap ?? false,
-    })
+    .insert(toChildRow(input))
     .select("id")
     .single();
   if (error) throw new Error(error.message);
   return { id: data.id };
+}
+
+/**
+ * Thêm NHIỀU con trong MỘT request (1 insert nhiều dòng) thay vì lặp N
+ * round-trip. Atomic + ít dính timeout/504 hơn hẳn khi mạng yếu (mobile).
+ * Tất cả con phải cùng family_id. Trả số lượng đã thêm.
+ */
+export async function addChildrenToFamily(
+  inputs: AddChildInput[],
+  client: Client = defaultClient,
+): Promise<{ count: number }> {
+  if (inputs.length === 0) return { count: 0 };
+  const { data, error } = await client
+    .from("persons")
+    .insert(inputs.map(toChildRow))
+    .select("id");
+  if (error) throw new Error(error.message);
+  return { count: data?.length ?? 0 };
 }
 
 /**

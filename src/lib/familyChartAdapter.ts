@@ -290,7 +290,10 @@ export function addInlawGhosts(
         death_year: g.spouseDeathYear ? String(g.spouseDeathYear) : undefined,
         is_living: g.spouseIsLiving,
         is_root: false,
-        generation: null,
+        // Vợ/chồng hiển thị cùng ĐỜI với người bạn đời trong cây NÀY, không
+        // dùng generation gốc của họ ở clan khác (số đời khác hệ quy chiếu →
+        // vô nghĩa). Lấy generation của người local (đã theo offset clan này).
+        generation: local.data.generation ?? null,
         avatar: g.spouseGender === "M" ? "/avatars/male.png" : "/avatars/female.png",
         is_ghost: true,
         ghost_link_id: g.linkId,
