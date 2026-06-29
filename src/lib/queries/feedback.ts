@@ -113,6 +113,51 @@ export async function listMyFeedback(
   return (data ?? []) as FeedbackRow[];
 }
 
+/** Thông tin nhận diện người gửi feedback (để admin biết là ai mà hỗ trợ). */
+export interface FeedbackSender {
+  display_name: string | null;
+  email: string | null;
+}
+
+/**
+ * Phân giải user_id → {tên hiển thị, email} cho danh sách feedback.
+ * Email lấy qua RPC get_profile_emails (admin-gated, giống listAllProfiles).
+ * Id không phân giải được (user đã xoá) sẽ không có trong Map.
+ */
+export async function getFeedbackSenders(
+  userIds: Array<string | null>,
+  client: Client = defaultClient,
+): Promise<Map<string, FeedbackSender>> {
+  const out = new Map<string, FeedbackSender>();
+  const ids = [...new Set(userIds.filter((x): x is string => !!x))];
+  if (ids.length === 0) return out;
+
+  const [profilesRes, emailsRes] = await Promise.all([
+    client.from("profiles").select("id, display_name").in("id", ids),
+    client.rpc("get_profile_emails", { user_ids: ids }),
+  ]);
+  if (emailsRes.error) throw new Error(emailsRes.error.message);
+
+  const emailById = new Map(
+    (emailsRes.data as { id: string; email: string }[] | null)?.map((e) => [
+      e.id,
+      e.email,
+    ]) ?? [],
+  );
+  for (const id of ids) {
+    out.set(id, { display_name: null, email: emailById.get(id) ?? null });
+  }
+  for (const p of (profilesRes.data ?? []) as {
+    id: string;
+    display_name: string | null;
+  }[]) {
+    const cur = out.get(p.id) ?? { display_name: null, email: null };
+    cur.display_name = p.display_name;
+    out.set(p.id, cur);
+  }
+  return out;
+}
+
 export interface UpdateFeedbackPatch {
   status?: FeedbackStatus;
   category?: FeedbackCategory;

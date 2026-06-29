@@ -52,10 +52,12 @@ import {
   type AnnouncementLevel,
 } from "@/lib/queries/announcements";
 import {
+  getFeedbackSenders,
   listFeedback,
   updateFeedback,
   type FeedbackCategory,
   type FeedbackRow,
+  type FeedbackSender,
   type FeedbackStatus,
 } from "@/lib/queries/feedback";
 import { queryKeys } from "@/lib/queries/keys";
@@ -1103,6 +1105,14 @@ function FeedbackTab() {
     queryFn: () => listFeedback(),
     staleTime: 30_000,
   });
+  // Phân giải người gửi (tên + email) cho mọi feedback có user_id để admin
+  // biết là ai mà hỗ trợ (vd mở khoá giới hạn dòng họ).
+  const senderIds = (data ?? []).map((r) => r.user_id);
+  const { data: senders } = useQuery({
+    queryKey: ["feedback-senders", senderIds],
+    queryFn: () => getFeedbackSenders(senderIds),
+    enabled: senderIds.some(Boolean),
+  });
   const [search, setSearch] = useUrlState("q", "");
   const [statusRaw, setStatusFilter] = useUrlState("status", "new");
   const statusFilter = (
@@ -1212,7 +1222,11 @@ function FeedbackTab() {
       ) : (
         <ul className="space-y-3">
           {filtered.map((row) => (
-            <FeedbackRowCard key={row.id} row={row} />
+            <FeedbackRowCard
+              key={row.id}
+              row={row}
+              sender={row.user_id ? senders?.get(row.user_id) : undefined}
+            />
           ))}
         </ul>
       )}
@@ -1220,7 +1234,13 @@ function FeedbackTab() {
   );
 }
 
-function FeedbackRowCard({ row }: { row: FeedbackRow }) {
+function FeedbackRowCard({
+  row,
+  sender,
+}: {
+  row: FeedbackRow;
+  sender?: FeedbackSender;
+}) {
   const qc = useQueryClient();
   const [note, setNote] = useState(row.admin_note ?? "");
   const [showNote, setShowNote] = useState(!!row.admin_note);
@@ -1274,7 +1294,25 @@ function FeedbackRowCard({ row }: { row: FeedbackRow }) {
         {row.user_id ? (
           <>
             <dt>Người gửi:</dt>
-            <dd className="font-mono break-all">{row.user_id}</dd>
+            <dd className="break-all">
+              <span className="text-foreground font-medium">
+                {sender?.display_name || sender?.email || "(đang tải…)"}
+              </span>
+              {sender?.email && sender?.display_name && (
+                <span className="text-muted-foreground"> · {sender.email}</span>
+              )}
+              {/* Mở thẳng tab Quản trị → Người dùng, lọc sẵn theo email để
+                  xem dòng họ của họ + chỉnh giới hạn (vd mở khoá max_clans). */}
+              {sender?.email && (
+                <Link
+                  to={`/admin?tab=users&q=${encodeURIComponent(sender.email)}`}
+                  className="ml-2 text-primary hover:underline"
+                >
+                  Quản lý ↗
+                </Link>
+              )}
+              <span className="block font-mono opacity-50">{row.user_id}</span>
+            </dd>
           </>
         ) : (
           <>
