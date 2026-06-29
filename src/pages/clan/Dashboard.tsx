@@ -34,6 +34,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { getClanStats } from "@/lib/queries/clan-stats";
+import { getClansInlawLinks } from "@/lib/queries/clans";
 import {
   listAnniversaryCandidates,
   listEvents,
@@ -112,6 +113,14 @@ export default function Dashboard() {
     enabled: !!userId && isMember,
     staleTime: 60_000,
   });
+  const { data: inlawMap } = useQuery({
+    queryKey: ["clan-inlaw-links", [clan.id]],
+    queryFn: () => getClansInlawLinks([clan.id]),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
+  const inlaws = inlawMap?.get(clan.id) ?? [];
+
   const { data: todoCount } = useQuery({
     queryKey: queryKeys.clanTodoCount(clan.id, userId),
     queryFn: () => countClanTodo(clan.id),
@@ -184,6 +193,26 @@ export default function Dashboard() {
       )}
 
       {clan.description && <ClanDescription text={clan.description} />}
+
+      {inlaws.length > 0 && (
+        <section className="rounded-lg border bg-card p-4">
+          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+            <IconLink className="h-4 w-4 text-primary" />
+            Đã kết thông gia với {inlaws.length} dòng họ
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {inlaws.map((c) => (
+              <Link
+                key={c.clan_id}
+                to={`/clans/${c.clan_id}`}
+                className="inline-flex items-center rounded-full border bg-muted/40 px-3 py-1 text-sm hover:border-primary transition-colors"
+              >
+                {c.clan_name}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 

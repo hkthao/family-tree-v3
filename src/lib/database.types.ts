@@ -2381,6 +2381,14 @@ export type Database = {
           count: number
         }[]
       }
+      get_clans_inlaw_links: {
+        Args: { p_clan_ids: string[] }
+        Returns: {
+          clan_id: string
+          linked_clan_id: string
+          linked_clan_name: string
+        }[]
+      }
       get_clans_leaderboard_stats: {
         Args: { p_clan_ids: string[] }
         Returns: {

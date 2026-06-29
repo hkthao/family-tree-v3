@@ -242,6 +242,34 @@ export async function getClansLeaderboardStats(
   return out;
 }
 
+/** Một dòng họ đối tác đã kết thông gia. */
+export interface InlawLinkedClan {
+  clan_id: string;
+  clan_name: string;
+}
+
+/**
+ * Các dòng họ đã kết thông gia (person_links confirmed) cho một loạt clan —
+ * 1 round-trip. Trả Map<clanId, danh sách dòng họ đối tác (distinct)>.
+ */
+export async function getClansInlawLinks(
+  clanIds: string[],
+  client: Client = defaultClient,
+): Promise<Map<string, InlawLinkedClan[]>> {
+  const out = new Map<string, InlawLinkedClan[]>();
+  if (clanIds.length === 0) return out;
+  const { data, error } = await client.rpc("get_clans_inlaw_links", {
+    p_clan_ids: clanIds,
+  });
+  if (error) throw new Error(error.message);
+  for (const r of data ?? []) {
+    const arr = out.get(r.clan_id) ?? [];
+    arr.push({ clan_id: r.linked_clan_id, clan_name: r.linked_clan_name });
+    out.set(r.clan_id, arr);
+  }
+  return out;
+}
+
 export interface CreateClanInput {
   name: string;
   description?: string;
