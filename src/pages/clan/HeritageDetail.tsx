@@ -238,6 +238,9 @@ export default function HeritageDetail() {
   if (isLoading) return <p className="text-muted-foreground">Đang tải…</p>;
   if (!item) return <p className="text-muted-foreground">Không tìm thấy.</p>;
 
+  // Phòng cache cũ (trước khi có cột sections) → sections có thể undefined.
+  const sections = item.sections ?? [];
+
   const dir = heritageDirectionsUrl(item.latitude, item.longitude);
 
   // Dữ liệu cho thiệp chia sẻ.
@@ -533,7 +536,7 @@ export default function HeritageDetail() {
       )}
 
       {/* Nội dung */}
-      {(item.summary || item.body || item.sections.length > 0) && (
+      {(item.summary || item.body || sections.length > 0) && (
         <Card>
           <CardHeader>
             <SectionTitle icon={<IconScroll className="h-4 w-4" />}>Nội dung</SectionTitle>
@@ -542,7 +545,7 @@ export default function HeritageDetail() {
             {item.summary && <p className="text-base font-medium">{item.summary}</p>}
 
             {/* Kiểu cũ: 1 ô body (khi chưa chia đoạn) */}
-            {item.sections.length === 0 && item.body && (
+            {sections.length === 0 && item.body && (
               <div>
                 <p
                   className={`whitespace-pre-wrap text-base leading-relaxed ${
@@ -569,13 +572,13 @@ export default function HeritageDetail() {
             )}
 
             {/* Kiểu mới: nhiều đoạn — mục lục + accordion */}
-            {item.sections.length > 0 && (
+            {sections.length > 0 && (
               <>
-                {item.sections.length > 1 && (
+                {sections.length > 1 && (
                   <nav className="rounded-md border bg-muted/30 p-3">
                     <p className="mb-1.5 text-sm font-medium">Mục lục</p>
                     <ol className="list-decimal space-y-0.5 pl-5 text-sm">
-                      {item.sections.map((s, i) => (
+                      {sections.map((s, i) => (
                         <li key={i}>
                           <button
                             type="button"
@@ -595,7 +598,7 @@ export default function HeritageDetail() {
                   </nav>
                 )}
                 <div className="space-y-2">
-                  {item.sections.map((s, i) => {
+                  {sections.map((s, i) => {
                     const open = openSecs.has(i);
                     return (
                       <div key={i} id={`hsec-${i}`} className="scroll-mt-4 rounded-md border">
