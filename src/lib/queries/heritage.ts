@@ -137,6 +137,16 @@ export const HERITAGE_CATEGORY_PROMPTS: Record<HeritageCategory, string[]> = {
   ],
 };
 
+/**
+ * Một đoạn nội dung di sản (tiêu đề + nội dung) — phục vụ tài liệu nhiều phần.
+ * Index signature để tương thích kiểu Json (lưu vào cột jsonb `sections`).
+ */
+export interface HeritageSection {
+  heading: string;
+  body: string;
+  [k: string]: string;
+}
+
 export interface HeritageItem {
   id: string;
   clan_id: string;
@@ -144,6 +154,8 @@ export interface HeritageItem {
   title: string;
   summary: string | null;
   body: string | null;
+  /** Nội dung nhiều đoạn [{heading, body}]. Rỗng = dùng `body` kiểu cũ. */
+  sections: HeritageSection[];
   location_name: string | null;
   address: string | null;
   latitude: number | null;
@@ -196,7 +208,7 @@ export interface HeritageDetail extends HeritageItem {
 }
 
 const COLS =
-  "id, clan_id, category, title, summary, body, location_name, address, latitude, longitude, built_year, status, sort, cover_media_id, created_by, created_at, updated_at";
+  "id, clan_id, category, title, summary, body, sections, location_name, address, latitude, longitude, built_year, status, sort, cover_media_id, created_by, created_at, updated_at";
 
 export async function listHeritageItems(
   clanId: string,
@@ -229,7 +241,8 @@ export async function listHeritageItems(
       const coverPhoto = photos.find((p) => p.id === r.cover_media_id) ?? photos[0] ?? null;
       const { heritage_media, heritage_people, ...rest } = r;
       return {
-        ...(rest as HeritageItem),
+        ...(rest as unknown as HeritageItem),
+        sections: ((rest.sections as unknown as HeritageSection[]) ?? []),
         cover_media_path: coverPhoto?.path ?? null,
         cover_external_url: coverPhoto?.external_url ?? null,
         photo_count: photos.length,
@@ -282,7 +295,12 @@ export async function getHeritageItem(
       };
     })
     .filter((x): x is HeritagePersonLink => x !== null);
-  return { ...(rest as HeritageItem), media, people };
+  return {
+    ...(rest as unknown as HeritageItem),
+    sections: ((rest.sections as unknown as HeritageSection[]) ?? []),
+    media,
+    people,
+  };
 }
 
 export type HeritageInput = Partial<
