@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import {
   IconBuildings,
   IconGrid,
+  IconLink,
   IconList,
   IconPlus,
   IconSearch,
@@ -32,6 +33,7 @@ import { useUrlPatch } from "@/hooks/useUrlState";
 import {
   CLAN_SIZE_BUCKETS,
   CLAN_SORT_LABEL,
+  getClansInlawLinks,
   getClansLeaderboardStats,
   listCommunityClans,
   listMyClans,
@@ -39,6 +41,7 @@ import {
   type ClanSizeBucket,
   type ClanSort,
   type ClanSummary,
+  type InlawLinkedClan,
 } from "@/lib/queries/clans";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
@@ -146,6 +149,13 @@ export default function Clans() {
   const { data: statsMap } = useQuery({
     queryKey: ["clan-leaderboard-stats", rowIds],
     queryFn: () => getClansLeaderboardStats(rowIds),
+    enabled: rowIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+  // Dòng họ đã kết thông gia (để hiện "Thông gia: …").
+  const { data: inlawMap } = useQuery({
+    queryKey: ["clan-inlaw-links", rowIds],
+    queryFn: () => getClansInlawLinks(rowIds),
     enabled: rowIds.length > 0,
     staleTime: 5 * 60 * 1000,
   });
@@ -333,6 +343,7 @@ export default function Clans() {
                   clan={c}
                   rank={showMedals ? rankBase + i + 1 : undefined}
                   stat={statsMap?.get(c.id)}
+                  inlaws={inlawMap?.get(c.id)}
                 />
               ))}
             </ul>
@@ -344,6 +355,7 @@ export default function Clans() {
                   clan={c}
                   rank={showMedals ? rankBase + i + 1 : undefined}
                   stat={statsMap?.get(c.id)}
+                  inlaws={inlawMap?.get(c.id)}
                 />
               ))}
             </ul>
@@ -390,14 +402,37 @@ function TabButton({
   );
 }
 
+/** Dòng "Thông gia: X, Y" — ẩn khi chưa kết thông gia với ai. */
+function InlawLine({
+  inlaws,
+  className,
+}: {
+  inlaws?: InlawLinkedClan[];
+  className: string;
+}) {
+  if (!inlaws || inlaws.length === 0) return null;
+  const names = inlaws.map((c) => c.clan_name).join(", ");
+  return (
+    <p
+      className={className}
+      title={`Đã kết thông gia với: ${names}`}
+    >
+      <IconLink className="inline h-3 w-3 mr-1 -mt-0.5" />
+      Thông gia: {names}
+    </p>
+  );
+}
+
 function ClanRow({
   clan,
   rank,
   stat,
+  inlaws,
 }: {
   clan: ClanSummary;
   rank?: number;
   stat?: ClanLeaderboardStat;
+  inlaws?: InlawLinkedClan[];
 }) {
   return (
     <li>
@@ -428,6 +463,10 @@ function ClanRow({
           {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
         </p>
         <ClanDates clan={clan} className="text-xs text-muted-foreground/80 mt-0.5" />
+        <InlawLine
+          inlaws={inlaws}
+          className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
+        />
         {/* Huy hiệu ở dòng cuối, căn lề phải. */}
         <ClanBadges clan={clan} rank={rank} stat={stat} />
       </Link>
@@ -439,10 +478,12 @@ function ClanCard({
   clan,
   rank,
   stat,
+  inlaws,
 }: {
   clan: ClanSummary;
   rank?: number;
   stat?: ClanLeaderboardStat;
+  inlaws?: InlawLinkedClan[];
 }) {
   return (
     <li>
@@ -474,6 +515,10 @@ function ClanCard({
           </span>
         </div>
         <ClanDates clan={clan} className="mt-1 text-xs text-muted-foreground/80" />
+        <InlawLine
+          inlaws={inlaws}
+          className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
+        />
         {/* Huy hiệu ở dòng cuối, căn lề phải. */}
         <ClanBadges clan={clan} rank={rank} stat={stat} />
       </Link>
