@@ -16,6 +16,8 @@ export interface CardTemplate {
   id: string;
   name: string;
   genre: CardGenre;
+  /** Dòng nhãn mặc định (vd "Tin vui dòng họ") — user sửa được trong dialog. */
+  kicker: string;
   render: (props: CardTemplateProps) => JSX.Element;
 }
 
@@ -400,7 +402,14 @@ export const CARD_TEMPLATES: CardTemplate[] = PRESETS.map((p) => ({
   id: p.id,
   name: p.name,
   genre: p.genre,
-  render: (props: CardTemplateProps) => LAYOUTS[p.layout](T[p.theme], p, props),
+  kicker: p.kicker,
+  // Cho phép ghi đè kicker từ data (user sửa "Tin vui dòng họ" → tuỳ ý).
+  render: (props: CardTemplateProps) =>
+    LAYOUTS[p.layout](
+      T[p.theme],
+      props.data.kicker?.trim() ? { ...p, kicker: props.data.kicker.trim() } : p,
+      props,
+    ),
 }));
 
 export function templatesByGenre(genre: CardGenre): CardTemplate[] {

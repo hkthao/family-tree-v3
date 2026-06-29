@@ -69,6 +69,8 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
   const [templateId, setTemplateId] = useState<string>("");
   const [format, setFormat] = useState<CardFormat>("square");
   const [title, setTitle] = useState(props.initialTitle);
+  // Dòng nhãn (kicker) — seed theo mẫu, user sửa được.
+  const [kicker, setKicker] = useState("");
   const [excerpt, setExcerpt] = useState(props.initialExcerpt);
   const [photoIdx, setPhotoIdx] = useState<number>(props.photoUrls?.length ? 0 : -1);
   // Thành viên đã chọn để lấy ảnh nền (ưu tiên hơn photoUrls).
@@ -106,6 +108,13 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
     const list = templatesByGenre(genre);
     setTemplateId((cur) => (list.some((t) => t.id === cur) ? cur : list[0]?.id ?? ""));
   }, [genre]);
+
+  // Đổi mẫu → reset dòng nhãn về mặc định của mẫu (user sửa lại nếu muốn).
+  useEffect(() => {
+    const t = CARD_TEMPLATES.find((x) => x.id === templateId);
+    if (t) setKicker(t.kicker);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId]);
 
   // QR theo URL hiệu lực (khoe → /khoe/:token; còn lại → shareUrl).
   useEffect(() => {
@@ -172,8 +181,9 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
       dateText: props.dateText ?? null,
       statText: props.statText ?? null,
       titleFont,
+      kicker,
     }),
-    [props.clanName, props.initialTitle, props.dateText, props.statText, title, excerpt, photoDataUrl, qrDataUrl, titleFont],
+    [props.clanName, props.initialTitle, props.dateText, props.statText, title, excerpt, photoDataUrl, qrDataUrl, titleFont, kicker],
   );
 
   const tpl = CARD_TEMPLATES.find((t) => t.id === templateId) ?? CARD_TEMPLATES[0];
@@ -494,6 +504,13 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
             )}
 
             {/* Sửa chữ */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Dòng nhãn (vd "Tin vui dòng họ")
+              </label>
+              <input value={kicker} onChange={(e) => setKicker(e.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" maxLength={60} />
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Tiêu đề</label>
               <input value={title} onChange={(e) => setTitle(e.target.value)}
