@@ -155,14 +155,12 @@ export default function Heritage() {
         ))}
       </div>
 
-      <div className="max-w-md">
-        <SearchInput
-          label="Tìm di sản"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm theo tên / nội dung…"
-        />
-      </div>
+      <SearchInput
+        label="Tìm di sản"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Tìm theo tên / nội dung…"
+      />
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 

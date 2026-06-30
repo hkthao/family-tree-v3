@@ -254,11 +254,22 @@ export default function HeritageForm() {
           </>
         )}
 
-        {/* Mô tả ngắn */}
-        <div className="space-y-2">
+        {/* Mô tả ngắn — textarea để dòng dài đọc/sửa dễ hơn (input 1 dòng
+            bị tràn ngang, khó đọc). */}
+        <div className="space-y-1">
           <Label htmlFor="summary">Mô tả ngắn (tuỳ chọn)</Label>
-          <Input id="summary" value={summary} onChange={(e) => setSummary(e.target.value)}
-            placeholder="Một câu tóm tắt, hiện ở danh sách" maxLength={300} className="h-12 text-base" />
+          <textarea
+            id="summary"
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            rows={2}
+            maxLength={300}
+            placeholder="Một câu tóm tắt, hiện ở danh sách"
+            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed resize-y"
+          />
+          <p className="text-right text-xs text-muted-foreground">
+            {summary.length}/300
+          </p>
         </div>
 
         {/* Nội dung + câu hỏi gợi ý (dành cho người lớn tuổi) */}
