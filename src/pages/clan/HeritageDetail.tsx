@@ -335,7 +335,7 @@ export default function HeritageDetail() {
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
               <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
-              <div className="flex gap-2">
+              <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto">
                 <Button size="sm" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
                   onClick={() => cameraRef.current?.click()}>
                   <IconCamera className="h-4 w-4 mr-1" /> Chụp ảnh

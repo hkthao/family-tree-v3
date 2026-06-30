@@ -4,6 +4,8 @@ import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
+  IconChevronDown,
+  IconChevronUp,
   IconDownload,
   IconHome,
   IconLayoutHorizontal,
@@ -11,6 +13,7 @@ import {
   IconMaximize,
   IconMinimize,
   IconPlus,
+  IconSettings,
   IconTree,
   IconUpload,
 } from "@/components/icons";
@@ -233,6 +236,9 @@ export default function Tree() {
   }, [orientation]);
 
   const [depth, setDepth] = useState<TreeDepth>(() => readDepth());
+  // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
+  // gạt để tiết kiệm chỗ; desktop luôn hiện. Mặc định ẩn trên mobile.
+  const [showOpts, setShowOpts] = useState(false);
   useEffect(() => {
     try {
       localStorage.setItem(DEPTH_KEY, String(depth));
@@ -898,9 +904,12 @@ export default function Tree() {
           icon={<IconTree className="h-7 w-7" />}
           title="Cây gia phả"
           description={
-            view === "lineage"
-              ? "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời."
-              : "Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."
+            // Ẩn dòng mô tả trên mobile để tiết kiệm chỗ (hint, không thiết yếu).
+            <span className="hidden sm:inline">
+              {view === "lineage"
+                ? "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời."
+                : "Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."}
+            </span>
           }
           actionsBelow
           actions={
@@ -925,8 +934,27 @@ export default function Tree() {
                   </SegmentedButton>
                 </SegmentedControl>
               )}
+              {/* Mobile: nút gạt mở/đóng cụm tuỳ chọn hiển thị. Desktop ẩn
+                  (luôn hiện đầy đủ). */}
               {view === "tree" && (
-              <>
+                <button
+                  type="button"
+                  onClick={() => setShowOpts((v) => !v)}
+                  className="sm:hidden inline-flex items-center gap-1 rounded-md border bg-card px-3 h-9 text-sm"
+                  aria-expanded={showOpts}
+                >
+                  <IconSettings className="h-4 w-4" /> Tuỳ chọn
+                  {showOpts ? (
+                    <IconChevronUp className="h-4 w-4" />
+                  ) : (
+                    <IconChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+              )}
+              {view === "tree" && (
+              <div
+                className={`${showOpts ? "flex" : "hidden"} w-full flex-wrap items-center justify-end gap-1.5 sm:contents`}
+              >
               <SegmentedControl ariaLabel="Hướng cây">
                 <SegmentedButton
                   active={orientation === "vertical"}
@@ -985,7 +1013,7 @@ export default function Tree() {
                   ))}
                 </SegmentedControl>
               </div>
-              </>
+              </div>
               )}
             </>
           }
