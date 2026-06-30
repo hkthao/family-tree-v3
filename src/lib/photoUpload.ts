@@ -198,17 +198,27 @@ export async function uploadHeritageAudio(
 }
 
 /**
- * Build a short-lived signed URL for displaying the photo. The bucket
- * is private (only clan members can SELECT), so plain public URLs
- * return 401. Signed URLs carry a token that bypasses the auth header
- * requirement, which `<img>` tags can't supply.
+ * Hạn URL ký mặc định = 7 ngày. URL ký càng dài thì cùng 1 URL được tái
+ * dùng càng lâu → trình duyệt cache ảnh suốt thời gian đó, giảm số lần ký
+ * lại + tải lại từ storage (giảm tải server). Bảo mật không đổi: muốn có
+ * path để ký, caller vốn đã phải là thành viên dòng họ (RLS).
+ */
+export const PHOTO_URL_TTL_SEC = 604_800;
+/** staleTime React Query nên đặt cho query ký ảnh (dưới hạn URL ký). */
+export const PHOTO_URL_STALE_MS = 6 * 24 * 60 * 60 * 1000;
+
+/**
+ * Build a signed URL for displaying the photo. The bucket is private
+ * (only clan members can SELECT), so plain public URLs return 401.
+ * Signed URLs carry a token that bypasses the auth header requirement,
+ * which `<img>` tags can't supply.
  *
  * Returns null if `photoPath` is empty/null so callers can fall back
  * to the gendered illustration.
  */
 export async function getSignedPhotoUrl(
   photoPath: string | null | undefined,
-  expiresInSec = 3600,
+  expiresInSec = PHOTO_URL_TTL_SEC,
 ): Promise<string | null> {
   if (!photoPath) return null;
   const { data, error } = await supabase.storage
@@ -226,7 +236,7 @@ export async function getSignedPhotoUrl(
  */
 export async function getSignedPhotoUrlMap(
   photoPaths: string[],
-  expiresInSec = 3600,
+  expiresInSec = PHOTO_URL_TTL_SEC,
 ): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   const cleaned = [...new Set(photoPaths.filter(Boolean))];

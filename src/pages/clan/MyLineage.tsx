@@ -15,7 +15,7 @@ import {
   traceLineage,
   type LineageVia,
 } from "@/lib/lineage";
-import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
+import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
 import { listClanMembers, setMySelfPerson } from "@/lib/queries/members";
 import { getTreeData } from "@/lib/queries/tree";
@@ -316,7 +316,7 @@ function LineageView({
     queryKey: ["signed-photos-batch", clanId, "lineage", lineagePhotoPaths],
     queryFn: () => getSignedPhotoUrlMap(lineagePhotoPaths),
     enabled: lineagePhotoPaths.length > 0,
-    staleTime: 5 * 60 * 1000,
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   // Build a filtered slice of (persons, families) representing only
