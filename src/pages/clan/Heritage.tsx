@@ -129,7 +129,7 @@ export default function Heritage() {
       {/* Lọc theo loại — mobile: 1 hàng cuộn ngang (tiết kiệm chỗ); sm+: xuống dòng.
           -mx-4 px-4 để cuộn sát mép màn; scrollbar ẩn cho gọn. */}
       <div
-        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0"
+        className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0"
         style={{ scrollbarWidth: "none" }}
       >
         <button
