@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { IconGrave, IconMapPin, IconPlus, IconSearch } from "@/components/icons";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
@@ -104,8 +105,8 @@ export default function RestingPlaces() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex-1 min-w-[200px]">
+      <div className="sm:flex sm:items-center sm:gap-2 space-y-2 sm:space-y-0">
+        <div className="sm:flex-1 sm:min-w-[200px]">
           <SearchInput
             label="Tìm mộ phần"
             value={search}
@@ -113,32 +114,38 @@ export default function RestingPlaces() {
             placeholder="Tìm theo tên / nghĩa trang / chùa…"
           />
         </div>
-        <select
-          value={kind}
-          onChange={(e) => setKind(e.target.value)}
-          aria-label="Lọc theo hình thức"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
+        <CollapsibleFilters
+          activeCount={(kind ? 1 : 0) + (cemeteryId ? 1 : 0)}
         >
-          <option value="">Mọi hình thức</option>
-          {KINDS.map((k) => (
-            <option key={k} value={k}>
-              {RESTING_PLACE_KIND_LABEL[k]}
-            </option>
-          ))}
-        </select>
-        {(cemeteries ?? []).length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
           <select
-            value={cemeteryId}
-            onChange={(e) => setCemeteryId(e.target.value)}
-            aria-label="Lọc theo cơ sở"
+            value={kind}
+            onChange={(e) => setKind(e.target.value)}
+            aria-label="Lọc theo hình thức"
             className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
           >
-            <option value="">Mọi cơ sở</option>
-            {(cemeteries ?? []).map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+            <option value="">Mọi hình thức</option>
+            {KINDS.map((k) => (
+              <option key={k} value={k}>
+                {RESTING_PLACE_KIND_LABEL[k]}
+              </option>
             ))}
           </select>
-        )}
+          {(cemeteries ?? []).length > 0 && (
+            <select
+              value={cemeteryId}
+              onChange={(e) => setCemeteryId(e.target.value)}
+              aria-label="Lọc theo cơ sở"
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
+            >
+              <option value="">Mọi cơ sở</option>
+              {(cemeteries ?? []).map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        </CollapsibleFilters>
       </div>
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}

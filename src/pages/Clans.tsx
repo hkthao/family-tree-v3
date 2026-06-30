@@ -18,6 +18,7 @@ import {
   SegmentedControl,
 } from "@/components/ui/segmented-control";
 import { ClanBadges } from "@/components/ClanBadges";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
@@ -225,8 +226,13 @@ export default function Clans() {
               placeholder="Tìm dòng họ — gõ không dấu cũng được"
             />
           </div>
-          {/* Sắp xếp + quy mô + kiểu hiển thị: 1 hàng kể cả mobile —
-              2 select co giãn chia đều (min-w-0), nút hiển thị cố định. */}
+          {/* Sắp xếp + quy mô + kiểu hiển thị. Mobile: thu gọn sau "Bộ lọc". */}
+          <CollapsibleFilters
+            activeCount={
+              (sort !== "members" ? 1 : 0) +
+              (tab === "community" && sizeBucket ? 1 : 0)
+            }
+          >
           <div className="flex items-center gap-2 sm:gap-3">
             <select
               value={sort}
@@ -276,6 +282,7 @@ export default function Clans() {
               </SegmentedButton>
             </SegmentedControl>
           </div>
+          </CollapsibleFilters>
         </div>
 
         {tab === "community" && !isPlatformAdmin && (
