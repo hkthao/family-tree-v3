@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
+import { HeritageThumb } from "@/components/HeritageThumb";
 import { IconPlus, IconScroll, IconSearch } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
@@ -67,10 +68,14 @@ export default function Heritage() {
   const { data: photoUrls } = useQuery({
     queryKey: ["heritage-thumbs", (items ?? []).map((i) => i.cover_media_path).join(",")],
     queryFn: () =>
+      // Ký URL hạn 7 ngày → cùng 1 URL được tái dùng, trình duyệt cache ảnh
+      // suốt thời gian đó, giảm tải ký lại + tải lại từ storage.
       getSignedPhotoUrlMap(
         (items ?? []).map((i) => i.cover_media_path).filter((p): p is string => !!p),
+        604_800,
       ),
     enabled: !!items && items.some((i) => i.cover_media_path),
+    staleTime: 6 * 24 * 60 * 60 * 1000, // 6 ngày (dưới hạn 7 ngày của URL ký)
   });
 
   return (
@@ -123,12 +128,16 @@ export default function Heritage() {
         );
       })()}
 
-      {/* Lọc theo loại — nút to, dễ bấm */}
-      <div className="flex flex-wrap gap-2">
+      {/* Lọc theo loại — mobile: 1 hàng cuộn ngang (tiết kiệm chỗ); sm+: xuống dòng.
+          -mx-4 px-4 để cuộn sát mép màn; scrollbar ẩn cho gọn. */}
+      <div
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0"
+        style={{ scrollbarWidth: "none" }}
+      >
         <button
           type="button"
           onClick={() => setCat("")}
-          className={`rounded-full border px-4 py-1.5 text-sm ${
+          className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm ${
             category === "" ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"
           }`}
         >
@@ -139,7 +148,7 @@ export default function Heritage() {
             key={c}
             type="button"
             onClick={() => setCat(c)}
-            className={`rounded-full border px-4 py-1.5 text-sm ${
+            className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm ${
               category === c ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"
             }`}
           >
@@ -184,18 +193,12 @@ export default function Heritage() {
             const thumb = i.cover_external_url
               ?? (i.cover_media_path ? photoUrls?.get(i.cover_media_path) : null);
             return (
-              <li key={i.id}>
+              <li key={i.id} className="min-w-0">
                 <Link
                   to={`/clans/${clan.id}/heritage/${i.id}`}
-                  className="flex gap-3 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
+                  className="flex min-w-0 gap-3 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
                 >
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted grid place-items-center">
-                    {thumb ? (
-                      <img src={thumb} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <IconScroll className="h-6 w-6 text-muted-foreground" />
-                    )}
-                  </div>
+                  <HeritageThumb category={i.category} src={thumb} />
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">{i.title}</p>
                     <p className="text-xs text-muted-foreground truncate">
