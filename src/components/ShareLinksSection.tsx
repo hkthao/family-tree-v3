@@ -160,7 +160,7 @@ export function ShareLinksSection({ clanId }: Props) {
           description="Bấm “Tạo link mới” ở trên để tạo link công khai cho cây gia phả. QR cá nhân của từng người sinh tự động ở trang chi tiết người."
         />
       ) : links && links.length > 0 ? (
-        <ul className="divide-y rounded-md border bg-background">
+        <ul className="divide-y border-t">
           {links.map((l) => (
             <ShareLinkItem
               key={l.id}
