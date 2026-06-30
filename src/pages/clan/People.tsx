@@ -29,6 +29,7 @@ import {
   IconUpload,
   IconUsers,
 } from "@/components/icons";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -403,7 +404,13 @@ export default function People() {
         placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
       />
 
-      {/* Toolbar — filters + sort + view toggle in one wrap row. */}
+      {/* Toolbar — filters + sort + view toggle. Mobile: thu gọn sau nút
+          "Bộ lọc"; desktop: luôn hiện. */}
+      <CollapsibleFilters
+        activeCount={
+          (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "name" ? 1 : 0)
+        }
+      >
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={branchId}
@@ -465,6 +472,7 @@ export default function People() {
           </SegmentedButton>
         </SegmentedControl>
       </div>
+      </CollapsibleFilters>
 
       {/* Results — guard against the (rare but real) state where the
           query is briefly disabled (e.g. while a sibling useAuth() is
