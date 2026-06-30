@@ -128,12 +128,25 @@ export default function Import() {
           <CardHeader>
             <CardTitle>1. Chọn file</CardTitle>
             <CardDescription>
-              Định dạng .xlsx hoặc .csv. Các cột cần có:
+              Định dạng .xlsx hoặc .csv. Các cột:
               <code className="block mt-2 p-2 bg-muted rounded text-sm overflow-x-auto">
-                ID | Họ tên | Giới tính | Năm sinh | Năm mất | ID Cha | ID Mẹ | Chi | Ghi chú
+                ID | Họ tên | Giới tính | Năm sinh | Năm mất | ID Cha | ID Mẹ | ID Vợ/Chồng | Thuỷ tổ | Chi | Ghi chú
               </code>
-              Cột <code>ID</code> là mã tạm bạn đặt (vd P001, P002…) — cha/mẹ
-              được nối theo ID này, không phải theo tên.
+              <span className="block mt-2 space-y-1">
+                <span className="block">
+                  • <code>ID</code>: mã tạm bạn tự đặt (vd C1, V1…) — cha/mẹ/vợ/chồng
+                  nối theo ID này, <strong>không theo tên</strong>.
+                </span>
+                <span className="block">
+                  • <code>ID Vợ/Chồng</code> <strong>(mới)</strong>: nối cặp vợ chồng
+                  trực tiếp — dâu/rể chỉ cần điền ID người trong họ, không cần qua con.
+                  Mẹo: vợ 2 đặt ID thêm chữ "b" (vd C2 → vợ V2, vợ hai V2b).
+                </span>
+                <span className="block">
+                  • <code>Thuỷ tổ</code> <strong>(mới)</strong>: đánh "x" cho đời 1
+                  (khỏi phải đánh dấu sau khi nhập). Chỉ Họ tên + Giới tính là bắt buộc.
+                </span>
+              </span>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -330,6 +343,8 @@ function PreviewTable({ rows }: { rows: NormalisedRow[] }) {
             <th className="px-2 py-2">Mất</th>
             <th className="px-2 py-2">Cha</th>
             <th className="px-2 py-2">Mẹ</th>
+            <th className="px-2 py-2">Vợ/Chồng</th>
+            <th className="px-2 py-2">Thuỷ tổ</th>
             <th className="px-2 py-2">Chi</th>
           </tr>
         </thead>
@@ -343,6 +358,8 @@ function PreviewTable({ rows }: { rows: NormalisedRow[] }) {
               <td className="px-2 py-1.5">{r.deathYear ?? "—"}</td>
               <td className="px-2 py-1.5 font-mono">{r.fatherTempId ?? "—"}</td>
               <td className="px-2 py-1.5 font-mono">{r.motherTempId ?? "—"}</td>
+              <td className="px-2 py-1.5 font-mono">{r.spouseTempId ?? "—"}</td>
+              <td className="px-2 py-1.5">{r.isRoot ? "✓" : "—"}</td>
               <td className="px-2 py-1.5">{r.branch ?? "—"}</td>
             </tr>
           ))}
