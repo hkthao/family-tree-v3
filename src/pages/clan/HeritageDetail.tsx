@@ -36,6 +36,7 @@ import { useAudioRecorder, HERITAGE_AUDIO_MAX_SEC, isAudioRecordingSupported } f
 import { getOrCreateHeritageShareLink } from "@/lib/queries/share-links";
 import {
   getSignedPhotoUrlMap,
+  PHOTO_URL_STALE_MS,
   uploadHeritageAudio,
   uploadHeritagePhoto,
 } from "@/lib/photoUpload";
@@ -99,6 +100,7 @@ export default function HeritageDetail() {
     queryKey: ["heritage-media-urls", itemId, bucketPaths.join(",")],
     queryFn: () => getSignedPhotoUrlMap(bucketPaths),
     enabled: !!item && bucketPaths.length > 0,
+    staleTime: PHOTO_URL_STALE_MS,
   });
   // Nguồn hiển thị của một media: link ngoài (trực tiếp) hoặc URL đã ký.
   const srcOf = (m: HeritageMedia): string | undefined =>

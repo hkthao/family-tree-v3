@@ -27,7 +27,7 @@ import { KhoeButton } from "@/components/KhoeButton";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { useToast } from "@/components/Toast";
 import { getOrCreatePersonShareLink } from "@/lib/queries/share-links";
-import { getSignedPhotoUrl } from "@/lib/photoUpload";
+import { getSignedPhotoUrl, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -135,7 +135,7 @@ export default function PersonDetail() {
     queryKey: ["signed-photo", personId, person?.photo_path ?? null],
     queryFn: () => getSignedPhotoUrl(person?.photo_path ?? null),
     enabled: !!person?.photo_path,
-    staleTime: 5 * 60 * 1000,
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   const deleteMutation = useMutation({

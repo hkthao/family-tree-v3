@@ -47,7 +47,7 @@ import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
 import { getClanCompletion, type ClanCompletion } from "@/lib/queries/todo";
-import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
+import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
   getRelativesIndex,
@@ -278,7 +278,7 @@ export default function People() {
     queryKey: ["signed-photos-batch", clan.id, photoPaths],
     queryFn: () => getSignedPhotoUrlMap(photoPaths),
     enabled: photoPaths.length > 0,
-    staleTime: 5 * 60 * 1000,
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   const total = data?.total ?? 0;

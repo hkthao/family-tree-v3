@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useUrlState } from "@/hooks/useUrlState";
-import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
+import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import {
   clanHeritageStorageBytes,
   formatBytes,
@@ -68,14 +68,12 @@ export default function Heritage() {
   const { data: photoUrls } = useQuery({
     queryKey: ["heritage-thumbs", (items ?? []).map((i) => i.cover_media_path).join(",")],
     queryFn: () =>
-      // Ký URL hạn 7 ngày → cùng 1 URL được tái dùng, trình duyệt cache ảnh
-      // suốt thời gian đó, giảm tải ký lại + tải lại từ storage.
+      // URL ký hạn dài (mặc định 7 ngày) → trình duyệt cache ảnh, giảm tải.
       getSignedPhotoUrlMap(
         (items ?? []).map((i) => i.cover_media_path).filter((p): p is string => !!p),
-        604_800,
       ),
     enabled: !!items && items.some((i) => i.cover_media_path),
-    staleTime: 6 * 24 * 60 * 60 * 1000, // 6 ngày (dưới hạn 7 ngày của URL ký)
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   return (

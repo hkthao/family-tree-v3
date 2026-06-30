@@ -37,7 +37,7 @@ import {
   pickDefaultFocal,
   toFamilyChart,
 } from "@/lib/familyChartAdapter";
-import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
+import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   getInlawGhostSpouses,
@@ -273,7 +273,7 @@ export default function Tree() {
     queryKey: ["signed-photos-batch", clan.id, "tree", treePhotoPaths],
     queryFn: () => getSignedPhotoUrlMap(treePhotoPaths),
     enabled: treePhotoPaths.length > 0,
-    staleTime: 5 * 60 * 1000,
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   // Ghost spouses: peer-clan spouses of locally-mirrored inlaws,

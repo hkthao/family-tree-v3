@@ -26,7 +26,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { createEvent } from "@/lib/queries/events";
 import { getOrCreateRestingPlaceShareLink } from "@/lib/queries/share-links";
-import { getSignedPhotoUrlMap, uploadRestingPlacePhoto } from "@/lib/photoUpload";
+import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS, uploadRestingPlacePhoto } from "@/lib/photoUpload";
 import {
   addPhoto,
   addRelocation,
@@ -64,6 +64,7 @@ export default function RestingPlaceDetail() {
     queryKey: ["resting-place-photos", graveId, (place?.photos ?? []).map((p) => p.path).join(",")],
     queryFn: () => getSignedPhotoUrlMap((place?.photos ?? []).map((p) => p.path)),
     enabled: !!place && place.photos.length > 0,
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   const invalidate = () =>
@@ -266,7 +267,7 @@ export default function RestingPlaceDetail() {
               {place.photos.map((ph) => (
                 <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md bg-muted">
                   {photoUrls?.get(ph.path) ? (
-                    <img src={photoUrls.get(ph.path)} alt={ph.caption ?? ""} className="h-full w-full object-cover" />
+                    <img src={photoUrls.get(ph.path)} alt={ph.caption ?? ""} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full grid place-items-center">
                       <IconGrave className="h-5 w-5 text-muted-foreground" />

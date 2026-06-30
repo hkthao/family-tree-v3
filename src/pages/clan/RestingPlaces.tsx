@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useUrlState } from "@/hooks/useUrlState";
-import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
+import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { listCemeteries } from "@/lib/queries/cemeteries";
 import {
   directionsUrl,
@@ -71,6 +71,7 @@ export default function RestingPlaces() {
         (places ?? []).map((p) => p.first_photo_path).filter((p): p is string => !!p),
       ),
     enabled: !!places && places.some((p) => p.first_photo_path),
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   return (
@@ -174,7 +175,7 @@ export default function RestingPlaces() {
                 >
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted grid place-items-center">
                     {thumb ? (
-                      <img src={thumb} alt="" className="h-full w-full object-cover" />
+                      <img src={thumb} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
                       <IconGrave className="h-6 w-6 text-muted-foreground" />
                     )}
