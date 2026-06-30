@@ -153,14 +153,20 @@ export default function Settings() {
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="description">Mô tả</Label>
-              <Input
+              {/* Textarea (cuộn) vì mô tả một số dòng họ rất dài. */}
+              <textarea
                 id="description"
                 maxLength={500}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed resize-y"
               />
+              <p className="text-right text-xs text-muted-foreground">
+                {description.length}/500
+              </p>
             </div>
 
             <fieldset className="space-y-3">
