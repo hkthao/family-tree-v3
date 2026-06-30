@@ -17,6 +17,8 @@ function row(over: Partial<Record<string, unknown>> = {}): RawRow {
     "Năm mất": "",
     "ID Cha": "",
     "ID Mẹ": "",
+    "ID Vợ/Chồng": "",
+    "Thuỷ tổ": "",
     Chi: "",
     "Ghi chú": "",
     ...over,
@@ -230,12 +232,60 @@ describe("planImport — payload assembly", () => {
     expect(b.is_living).toBe(false);
   });
 
-  it("never sets is_root automatically — Thuỷ tổ stays a manual flag", () => {
+  it("is_root false khi không đánh dấu cột Thuỷ tổ", () => {
     const p = planImport(
       [row({ ID: "P1", "Họ tên": "Orphan", "Giới tính": "M" })],
       { newId: idGen() },
     );
     expect(p.payload!.persons[0].is_root).toBe(false);
+  });
+
+  it("cột Thuỷ tổ = x → set is_root", () => {
+    const p = planImport(
+      [row({ ID: "P1", "Họ tên": "Cụ Tổ", "Giới tính": "M", "Thuỷ tổ": "x" })],
+      { newId: idGen() },
+    );
+    expect(p.payload!.persons[0].is_root).toBe(true);
+  });
+
+  it("ID Vợ/Chồng nối cặp chưa có con thành một gia đình", () => {
+    const p = planImport(
+      [
+        row({ ID: "H", "Họ tên": "Chồng", "Giới tính": "M", "ID Vợ/Chồng": "W" }),
+        row({ ID: "W", "Họ tên": "Vợ", "Giới tính": "F" }),
+      ],
+      { newId: idGen() },
+    );
+    expect(p.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+    expect(p.payload!.families).toHaveLength(1);
+    const fam = p.payload!.families[0];
+    const husband = p.payload!.persons.find((x) => x.full_name === "Chồng")!;
+    const wife = p.payload!.persons.find((x) => x.full_name === "Vợ")!;
+    expect(fam.husband_id).toBe(husband.id);
+    expect(fam.wife_id).toBe(wife.id);
+  });
+
+  it("một chồng nhiều vợ qua ID Vợ/Chồng → 2 gia đình", () => {
+    const p = planImport(
+      [
+        row({ ID: "C2", "Họ tên": "Chồng", "Giới tính": "M" }),
+        row({ ID: "V2", "Họ tên": "Vợ cả", "Giới tính": "F", "ID Vợ/Chồng": "C2" }),
+        row({ ID: "V2b", "Họ tên": "Vợ hai", "Giới tính": "F", "ID Vợ/Chồng": "C2" }),
+      ],
+      { newId: idGen() },
+    );
+    expect(p.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+    expect(p.payload!.families).toHaveLength(2);
+  });
+
+  it("ID Vợ/Chồng không tồn tại → lỗi", () => {
+    const p = planImport(
+      [row({ ID: "H", "Họ tên": "Chồng", "Giới tính": "M", "ID Vợ/Chồng": "X" })],
+      { newId: idGen() },
+    );
+    expect(
+      p.issues.some((i) => i.field === "spouseTempId" && i.severity === "error"),
+    ).toBe(true);
   });
 
   it("blocking errors → payload is null", () => {

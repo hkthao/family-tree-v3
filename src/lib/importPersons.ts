@@ -27,6 +27,12 @@ const COL = {
   deathYear: ["năm mất", "nam mat", "death year", "nm", "year of death", "death"],
   fatherTempId: ["id cha", "father id", "cha", "father", "ma cha", "id father"],
   motherTempId: ["id mẹ", "id me", "mother id", "mẹ", "me", "mother", "ma me", "id mother"],
+  spouseTempId: [
+    "id vợ/chồng", "id vo/chong", "id vợ chồng", "id vo chong",
+    "id vợ", "id vo", "id chồng", "id chong",
+    "vợ/chồng", "vo/chong", "spouse id", "id spouse", "spouse",
+  ],
+  isRoot: ["thuỷ tổ", "thuy to", "thủy tổ", "is root", "root", "thuy to?", "thuỷ tổ?"],
   branch: ["chi", "chi họ", "branch", "nhánh", "nhanh"],
   notes: ["ghi chú", "ghi chu", "notes", "tiểu sử", "bio", "note", "remark", "ghi chu", "comment"],
 } as const;
@@ -46,6 +52,10 @@ export interface NormalisedRow {
   deathYear: number | null;
   fatherTempId: string | null;
   motherTempId: string | null;
+  /** ID người bạn đời (dâu/rể nối thẳng vào người trong họ, không cần qua con). */
+  spouseTempId: string | null;
+  /** Thuỷ tổ (đời 1) — đánh dấu để set is_root khi import. */
+  isRoot: boolean;
   branch: string | null;
   notes: string | null;
 }
@@ -149,6 +159,12 @@ function asYear(v: string): number | null {
   return n;
 }
 
+/** Nhận diện đánh dấu "có" (x / có / 1 / true / yes…) cho cột Thuỷ tổ. */
+function asTruthy(v: string): boolean {
+  const s = v.trim().toLowerCase();
+  return ["x", "✓", "có", "co", "1", "true", "yes", "y", "thuỷ tổ", "thuy to"].includes(s);
+}
+
 // ---------------------------------------------------------------------------
 // Main pipeline
 
@@ -206,6 +222,8 @@ export function planImport(
     deathYear: asYear(pick(r, headerMap.deathYear)),
     fatherTempId: pick(r, headerMap.fatherTempId) || null,
     motherTempId: pick(r, headerMap.motherTempId) || null,
+    spouseTempId: pick(r, headerMap.spouseTempId) || null,
+    isRoot: asTruthy(pick(r, headerMap.isRoot)),
     branch: pick(r, headerMap.branch) || null,
     notes: pick(r, headerMap.notes) || null,
   }));
@@ -296,6 +314,22 @@ export function planImport(
         message: "Một người không thể là mẹ của chính mình.",
       });
     }
+    if (r.spouseTempId && !idsSeen.has(r.spouseTempId)) {
+      issues.push({
+        rowIndex: r.rowIndex,
+        severity: "error",
+        field: "spouseTempId",
+        message: `ID Vợ/Chồng "${r.spouseTempId}" không tồn tại trong file.`,
+      });
+    }
+    if (r.spouseTempId && r.spouseTempId === r.tempId) {
+      issues.push({
+        rowIndex: r.rowIndex,
+        severity: "error",
+        field: "spouseTempId",
+        message: "Một người không thể là vợ/chồng của chính mình.",
+      });
+    }
   }
 
   // Cycle detection: walk parent chain from each row; bail at cap=200.
@@ -361,6 +395,32 @@ export function planImport(
     }
   }
 
+  // Families từ cột "ID Vợ/Chồng" — nối cặp TRỰC TIẾP, không cần qua con
+  // (hỗ trợ cặp chưa có con + nhiều vợ). Husband = người M, wife = người F.
+  for (const r of rows) {
+    if (!r.spouseTempId) continue;
+    const partner = byTempId.get(r.spouseTempId);
+    if (!partner) continue; // đã báo lỗi FK ở trên
+    // Cần đúng 1 nam + 1 nữ để xác định husband/wife.
+    const males = [r, partner].filter((x) => x.gender === "M");
+    const females = [r, partner].filter((x) => x.gender === "F");
+    if (males.length !== 1 || females.length !== 1) {
+      issues.push({
+        rowIndex: r.rowIndex,
+        severity: "warning",
+        field: "spouseTempId",
+        message: "Cặp vợ/chồng cần 1 nam + 1 nữ — bỏ qua liên kết này.",
+      });
+      continue;
+    }
+    const fa = uuidByTempId.get(males[0].tempId)!;
+    const mo = uuidByTempId.get(females[0].tempId)!;
+    const k = familyKey(fa, mo);
+    if (!familyByKey.has(k)) {
+      familyByKey.set(k, { id: newId(), husband_id: fa, wife_id: mo });
+    }
+  }
+
   // Resolved persons
   const persons: ResolvedPerson[] = rows.map((r) => {
     const familyId = (() => {
@@ -378,10 +438,9 @@ export function planImport(
       full_name: r.fullName,
       gender: r.gender as "M" | "F", // validated above
       is_living: r.deathYear === null,
-      // is_root is the "Thuỷ tổ" flag — explicit, user-set. A row without
-      // parents in the spreadsheet might just be an unknown ancestor;
-      // leave is_root=false and let the user mark the founder later.
-      is_root: false,
+      // is_root = "Thuỷ tổ" (đời 1) — lấy từ cột Thuỷ tổ nếu user đánh dấu;
+      // không thì để false (đánh dấu sau ở trang chi tiết).
+      is_root: r.isRoot,
       birth_date: birthDate,
       birth_date_precision: birthDate ? "year" : null,
       death_date: deathDate,

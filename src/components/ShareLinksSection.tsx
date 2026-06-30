@@ -255,7 +255,7 @@ function ShareLinkItem({
 
   const active = !link.is_revoked && !expired;
   return (
-    <li className="p-3 space-y-3 first:rounded-t-md last:rounded-b-md">
+    <li className="py-3 space-y-3">
       {/* Header — status + scope on one wrapping line, expiry below */}
       <div className="space-y-1">
         <div className="flex items-center gap-2 flex-wrap text-xs">
