@@ -91,7 +91,10 @@ createRoot(document.getElementById("root")!).render(
           // v5: announcements list cũ cached empty (trước khi seed prod);
           //     bell count refresh từ RPC nhưng list query dính cache
           //     → "Chưa có thông báo" dù badge hiện 1.
-          buster: "v5",
+          // v6: URL ký ảnh đổi TTL 1h → 7 ngày + staleTime 6 ngày. Cache cũ
+          //     giữ URL ký 1h (đã hết hạn) nhưng staleTime dài chặn refetch
+          //     → ảnh lỗi InvalidJWT. Bust để bỏ URL cũ, ký lại 7 ngày.
+          buster: "v6",
         }}
       >
         <App />
