@@ -2,8 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { AppHeader } from "@/components/AppHeader";
-import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
 import { IconBook, IconPlus, IconSearch } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
@@ -64,14 +63,12 @@ export default function Customs() {
         region: region || null,
         includeUnpublished: isAdmin,
       }),
-    enabled: !!userId,
+    // Public: chạy cho cả khách chưa đăng nhập (RLS chỉ trả bài published).
     staleTime: 5 * 60 * 1000,
   });
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-3">
+    <CustomsShell>
         <PageHeader
           icon={<IconBook className="h-7 w-7" />}
           title="Sổ tay Văn hoá"
@@ -88,39 +85,46 @@ export default function Customs() {
           }
         />
 
-        <SearchInput
-          label="Tìm phong tục"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder='Gõ tình huống cũng được — vd "nhà mới", "có em bé"…'
-        />
-
-        <CollapsibleFilters
-          activeCount={(category ? 1 : 0) + (region ? 1 : 0)}
-        >
-          <div className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              <FilterPill active={category === ""} onClick={() => setCat("")}>
-                Mọi chủ đề
-              </FilterPill>
-              {CATEGORIES.map((c) => (
-                <FilterPill key={c} active={category === c} onClick={() => setCat(c)}>
-                  {CUSTOM_CATEGORY_LABEL[c]}
-                </FilterPill>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <FilterPill active={region === ""} onClick={() => setRegion("")}>
-                Mọi vùng
-              </FilterPill>
-              {CUSTOM_REGIONS.map((r) => (
-                <FilterPill key={r} active={region === r} onClick={() => setRegion(r)}>
-                  {r}
-                </FilterPill>
-              ))}
-            </div>
+        {/* Desktop: search + 2 dropdown trên 1 hàng. Mobile: 2 hàng
+            (search hàng trên, 2 dropdown hàng dưới). */}
+        <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
+          <div className="sm:flex-1 sm:min-w-[200px]">
+            <SearchInput
+              label="Tìm phong tục"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder='Gõ tình huống cũng được — vd "nhà mới", "có em bé"…'
+            />
           </div>
-        </CollapsibleFilters>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <select
+              value={category}
+              onChange={(e) => setCat(e.target.value)}
+              aria-label="Lọc theo chủ đề"
+              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-48 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">Mọi chủ đề</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {CUSTOM_CATEGORY_LABEL[c]}
+                </option>
+              ))}
+            </select>
+            <select
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              aria-label="Lọc theo vùng"
+              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-40 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">Mọi vùng</option>
+              {CUSTOM_REGIONS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
@@ -151,32 +155,7 @@ export default function Customs() {
         <p className="text-xs text-muted-foreground pt-2">
           ⚠️ Nội dung mang tính tham khảo; phong tục có thể khác nhau theo vùng.
         </p>
-      </main>
-    </div>
-  );
-}
-
-function FilterPill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-sm ${
-        active
-          ? "bg-primary text-primary-foreground border-primary"
-          : "bg-card hover:border-primary"
-      }`}
-    >
-      {children}
-    </button>
+    </CustomsShell>
   );
 }
 
@@ -185,9 +164,9 @@ function CustomCard({ entry }: { entry: CustomEntry }) {
     <li>
       <Link
         to={`/so-tay/${entry.id}`}
-        className="flex min-w-0 gap-3 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
+        className="group flex h-full min-w-0 gap-3.5 rounded-xl border bg-card p-4 transition-all hover:border-primary hover:shadow-sm"
       >
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted grid place-items-center">
+        <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-accent/10">
           {entry.cover_image_url ? (
             <img
               src={entry.cover_image_url}
@@ -198,32 +177,48 @@ function CustomCard({ entry }: { entry: CustomEntry }) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <IconBook className="h-6 w-6 text-muted-foreground" />
+            <IconBook className="h-6 w-6 text-accent" />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className="font-medium truncate">{entry.title}</p>
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="clan-name min-w-0 truncate font-semibold leading-snug group-hover:text-primary">
+              {entry.title}
+            </h2>
             {entry.status !== "published" && (
-              <span className="shrink-0 rounded bg-amber-500/15 px-1.5 text-[10px] text-amber-600 dark:text-amber-400">
+              <span className="mt-0.5 shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
                 {entry.status === "draft" ? "Nháp" : "Chờ duyệt"}
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {CUSTOM_CATEGORY_LABEL[entry.category]}
             {entry.regions.length > 0 ? ` · ${entry.regions.join(", ")}` : ""}
           </p>
           {entry.short_description && (
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+            <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
               {entry.short_description}
             </p>
           )}
-          {entry.mandatory_level && (
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}
-              {entry.reliability ? ` · độ tin cậy ${"★".repeat(entry.reliability)}` : ""}
-            </p>
+          {(entry.mandatory_level || entry.reliability != null) && (
+            <div className="mt-2 flex items-center gap-2 text-[11px]">
+              {entry.mandatory_level && (
+                <span
+                  className={`rounded-full px-2 py-0.5 ${
+                    entry.mandatory_level === "bat_buoc"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}
+                </span>
+              )}
+              {entry.reliability != null && (
+                <span className="text-accent" title="Độ tin cậy">
+                  {"★".repeat(entry.reliability)}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </Link>

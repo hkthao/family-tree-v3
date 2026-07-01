@@ -87,6 +87,9 @@ export default function App() {
         <Route path="/lien-he" element={<Contact />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />
+        {/* Sổ tay Văn hoá — route CÔNG KHAI cho link chia sẻ (không cần đăng nhập).
+            Dùng chung component với route /so-tay/:entryId (required auth). */}
+        <Route path="/xem/so-tay/:entryId" element={<CustomsDetail />} />
         <Route
           path="/announcements"
           element={

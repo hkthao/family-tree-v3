@@ -19,6 +19,7 @@ import {
   getCustomEntry,
   updateCustomEntry,
   type CustomCategory,
+  type CustomFaq,
   type CustomMandatory,
   type CustomOrigin,
   type CustomScope,
@@ -42,13 +43,13 @@ const STATUSES: { value: CustomStatus; label: string }[] = [
 export default function CustomsForm() {
   const { entryId } = useParams<{ entryId?: string }>();
   const isEdit = !!entryId;
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
 
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile } = useQuery({
     queryKey: queryKeys.myProfile(userId),
     queryFn: () => getMyProfile(userId),
     enabled: !!userId,
@@ -70,6 +71,7 @@ export default function CustomsForm() {
   const [coverUrl, setCoverUrl] = useState("");
   const [status, setStatus] = useState<CustomStatus>("needs_review");
   const [sections, setSections] = useState<CustomSection[]>([]);
+  const [faq, setFaq] = useState<CustomFaq[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
   const { data: existing } = useQuery({
@@ -95,6 +97,7 @@ export default function CustomsForm() {
     setCoverUrl(existing.cover_image_url ?? "");
     setStatus(existing.status);
     setSections(existing.sections);
+    setFaq(existing.faq);
   }, [existing]);
 
   const save = useMutation({
@@ -125,6 +128,9 @@ export default function CustomsForm() {
         sections: sections
           .map((s) => ({ heading: s.heading.trim(), body: s.body.trim() }))
           .filter((s) => s.heading || s.body),
+        faq: faq
+          .map((f) => ({ q: f.q.trim(), a: f.a.trim() }))
+          .filter((f) => f.q || f.a),
       };
       if (isEdit) {
         await updateCustomEntry(entryId!, fields);
@@ -141,8 +147,9 @@ export default function CustomsForm() {
     onError: (e) => setErr((e as Error).message),
   });
 
-  // Gate: chỉ platform admin.
-  if (profileLoading) {
+  // Gate: chỉ platform admin. Chờ auth + profile load xong mới quyết định
+  // (tránh redirect sớm khi userId/profile chưa kịp có → đá nhầm về list).
+  if (authLoading || (!!userId && profile === undefined)) {
     return (
       <Shell>
         <p className="text-muted-foreground">Đang tải…</p>
@@ -338,6 +345,41 @@ export default function CustomsForm() {
           </Button>
         </div>
 
+        {/* Câu hỏi thường gặp (tuỳ chọn) */}
+        <div className="space-y-2">
+          <Label className="block">Câu hỏi thường gặp (tuỳ chọn)</Label>
+          <p className="text-sm text-muted-foreground">
+            Mỗi mục gồm 1 câu hỏi và câu trả lời ngắn gọn.
+          </p>
+          {faq.map((item, i) => (
+            <div key={i} className="rounded-md border bg-card p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground w-6 shrink-0">{i + 1}.</span>
+                <Input value={item.q}
+                  onChange={(e) =>
+                    setFaq((p) => p.map((f, j) => (j === i ? { ...f, q: e.target.value } : f)))
+                  }
+                  placeholder="Câu hỏi" maxLength={300} className="flex-1" />
+                <button type="button" aria-label="Xoá câu hỏi"
+                  onClick={() => setFaq((p) => p.filter((_, j) => j !== i))}
+                  className="px-1.5 text-muted-foreground hover:text-destructive">
+                  <IconX className="h-4 w-4" />
+                </button>
+              </div>
+              <textarea value={item.a}
+                onChange={(e) =>
+                  setFaq((p) => p.map((f, j) => (j === i ? { ...f, a: e.target.value } : f)))
+                }
+                rows={3} placeholder="Câu trả lời…"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed" />
+            </div>
+          ))}
+          <Button type="button" variant="outline" size="sm"
+            onClick={() => setFaq((p) => [...p, { q: "", a: "" }])}>
+            <IconPlus className="h-4 w-4 mr-1" /> Thêm câu hỏi
+          </Button>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="c-sources">Nguồn tham khảo</Label>
           <Input id="c-sources" value={sources} onChange={(e) => setSources(e.target.value)} />
@@ -361,7 +403,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-3xl py-6 px-4 space-y-3">{children}</main>
+      <main className="container max-w-4xl py-6 px-4 space-y-3">{children}</main>
     </div>
   );
 }
