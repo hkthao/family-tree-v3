@@ -2298,7 +2298,7 @@ export type Database = {
         Returns: undefined
       }
       bulk_import_persons: {
-        Args: { payload: Json; target_clan: string }
+        Args: { p_finalize?: boolean; payload: Json; target_clan: string }
         Returns: Json
       }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
