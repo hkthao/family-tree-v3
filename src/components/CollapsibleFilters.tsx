@@ -20,7 +20,10 @@ export function CollapsibleFilters({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="space-y-2">
+    // sm:contents — trên desktop lớp bọc "tan biến" để `children` (thường là
+    // hàng control) thành item flex trực tiếp của parent, thẳng hàng với ô
+    // tìm kiếm y như khi chưa bọc. Trên mobile là khối space-y-2 bình thường.
+    <div className="space-y-2 sm:contents">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -40,7 +43,7 @@ export function CollapsibleFilters({
           <IconChevronDown className="h-4 w-4" />
         )}
       </button>
-      <div className={`${open ? "block" : "hidden"} sm:block`}>{children}</div>
+      <div className={`${open ? "block" : "hidden"} sm:contents`}>{children}</div>
     </div>
   );
 }
