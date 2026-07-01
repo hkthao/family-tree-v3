@@ -414,6 +414,11 @@ function buildSections(
       end: true,
     },
     {
+      to: "/so-tay",
+      label: "Sổ tay Văn hoá",
+      icon: <IconGlobe className={ic} />,
+    },
+    {
       to: "/docs",
       label: "Trợ giúp",
       icon: <IconBook className={ic} />,

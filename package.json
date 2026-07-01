@@ -17,7 +17,8 @@
     "test:rls": "vitest run src/test/rls",
     "seed": "tsx scripts/seed-fixtures.ts",
     "seed:board": "tsx scripts/seed-board.ts",
-    "videos": "playwright test"
+    "videos": "playwright test",
+    "seed:customs": "tsx scripts/seed-customs.ts"
   },
   "dependencies": {
     "@dqcai/vn-lunar": "^1.0.1",

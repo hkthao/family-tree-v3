@@ -769,6 +769,131 @@ export type Database = {
           },
         ]
       }
+      custom_bookmarks: {
+        Row: {
+          created_at: string
+          entry_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_bookmarks_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "custom_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_bookmarks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_entries: {
+        Row: {
+          aliases: string[]
+          applicable_to: string | null
+          category: Database["public"]["Enums"]["custom_category"]
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          faq: Json
+          id: string
+          lunar_month: number | null
+          mandatory_level:
+            | Database["public"]["Enums"]["custom_mandatory"]
+            | null
+          origin: Database["public"]["Enums"]["custom_origin"] | null
+          regions: string[]
+          reliability: number | null
+          scope: Database["public"]["Enums"]["custom_scope"] | null
+          search_text: string | null
+          sections: Json
+          short_description: string | null
+          sources: string | null
+          status: Database["public"]["Enums"]["custom_status"]
+          timing: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[]
+          applicable_to?: string | null
+          category: Database["public"]["Enums"]["custom_category"]
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          faq?: Json
+          id?: string
+          lunar_month?: number | null
+          mandatory_level?:
+            | Database["public"]["Enums"]["custom_mandatory"]
+            | null
+          origin?: Database["public"]["Enums"]["custom_origin"] | null
+          regions?: string[]
+          reliability?: number | null
+          scope?: Database["public"]["Enums"]["custom_scope"] | null
+          search_text?: string | null
+          sections?: Json
+          short_description?: string | null
+          sources?: string | null
+          status?: Database["public"]["Enums"]["custom_status"]
+          timing?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[]
+          applicable_to?: string | null
+          category?: Database["public"]["Enums"]["custom_category"]
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          faq?: Json
+          id?: string
+          lunar_month?: number | null
+          mandatory_level?:
+            | Database["public"]["Enums"]["custom_mandatory"]
+            | null
+          origin?: Database["public"]["Enums"]["custom_origin"] | null
+          regions?: string[]
+          reliability?: number | null
+          scope?: Database["public"]["Enums"]["custom_scope"] | null
+          search_text?: string | null
+          sections?: Json
+          short_description?: string | null
+          sources?: string | null
+          status?: Database["public"]["Enums"]["custom_status"]
+          timing?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_subscriptions: {
         Row: {
           channels: string[]
@@ -2480,6 +2605,22 @@ export type Database = {
       clan_comment_status: "published" | "hidden"
       clan_post_status: "published" | "pending" | "hidden"
       clan_post_type: "news" | "event" | "birth" | "death" | "notice"
+      custom_category:
+        | "tho_cung"
+        | "vong_doi"
+        | "le_tet"
+        | "le_hoi"
+        | "sinh_hoat"
+      custom_mandatory: "bat_buoc" | "khuyen_khich" | "dia_phuong"
+      custom_origin:
+        | "nho_giao"
+        | "phat_giao"
+        | "dao_mau"
+        | "dan_gian"
+        | "trung_hoa"
+        | "dia_phuong"
+      custom_scope: "gia_dinh" | "dong_ho" | "lang_xa" | "ton_giao"
+      custom_status: "draft" | "needs_review" | "published"
       feedback_category: "bug" | "idea" | "question" | "other"
       feedback_status: "new" | "seen" | "resolved" | "spam"
       heritage_category: "place" | "custom" | "story" | "artifact"
@@ -2626,6 +2767,24 @@ export const Constants = {
       clan_comment_status: ["published", "hidden"],
       clan_post_status: ["published", "pending", "hidden"],
       clan_post_type: ["news", "event", "birth", "death", "notice"],
+      custom_category: [
+        "tho_cung",
+        "vong_doi",
+        "le_tet",
+        "le_hoi",
+        "sinh_hoat",
+      ],
+      custom_mandatory: ["bat_buoc", "khuyen_khich", "dia_phuong"],
+      custom_origin: [
+        "nho_giao",
+        "phat_giao",
+        "dao_mau",
+        "dan_gian",
+        "trung_hoa",
+        "dia_phuong",
+      ],
+      custom_scope: ["gia_dinh", "dong_ho", "lang_xa", "ton_giao"],
+      custom_status: ["draft", "needs_review", "published"],
       feedback_category: ["bug", "idea", "question", "other"],
       feedback_status: ["new", "seen", "resolved", "spam"],
       heritage_category: ["place", "custom", "story", "artifact"],
