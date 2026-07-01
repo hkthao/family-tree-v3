@@ -111,6 +111,7 @@ plan.md                   thiết kế chi tiết (1003 dòng)
 - ✅ **Phase 2** — Share-link + Edge Function, audit/restore, platform admin UI, xuất PDF sổ gia phả
 - ✅ **Phase 3** — Quy đổi lịch âm, sự kiện + thông báo (email + web push), kinship UI, GEDCOM import/export, đường trực hệ
 - 🚧 **Đang mở rộng** — Bảng tin/posts, đóng góp (contributions workflow), thông gia (in-laws), QR cá nhân, gộp người trùng, AI gợi ý mô tả, video hướng dẫn
+- 🆕 **Sổ tay Văn hoá** (`/so-tay`, MVP) — tra cứu phong tục/nghi lễ toàn nền tảng (không theo dòng họ). Đọc: mọi user; soạn/sửa: **platform admin**. Nội dung lưu `custom_entries` (sections plain-text, không HTML → an toàn XSS). Tìm theo tình huống nhờ `src/lib/customsSynonyms.ts` (mở rộng bằng cách thêm cặp đồng nghĩa). Seed 15 bài (`npm run seed:customs`) **là nội dung tham khảo, để `status='needs_review'` — admin đọc & xác minh trước khi chuyển `published`**.
 
 App đã chạy production tại <https://giapha.thaohk.com> — vẫn tiếp tục thêm tính năng theo phản hồi cộng đồng.
 

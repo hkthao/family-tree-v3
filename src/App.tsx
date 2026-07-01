@@ -16,6 +16,9 @@ import Announcements from "@/pages/Announcements";
 import Changelog from "@/pages/Changelog";
 import Videos from "@/pages/Videos";
 import Clans from "@/pages/Clans";
+import Customs from "@/pages/Customs";
+import CustomsDetail from "@/pages/CustomsDetail";
+import CustomsForm from "@/pages/CustomsForm";
 import Docs from "@/pages/Docs";
 import AddChild from "@/pages/clan/AddChild";
 import AddParent from "@/pages/clan/AddParent";
@@ -97,6 +100,39 @@ export default function App() {
           element={
             <RequireAuth>
               <AnnouncementDetail />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/so-tay"
+          element={
+            <RequireAuth>
+              <Customs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/so-tay/new"
+          element={
+            <RequireAuth>
+              <CustomsForm />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/so-tay/:entryId"
+          element={
+            <RequireAuth>
+              <CustomsDetail />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/so-tay/:entryId/edit"
+          element={
+            <RequireAuth>
+              <CustomsForm />
             </RequireAuth>
           }
         />
