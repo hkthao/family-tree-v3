@@ -123,6 +123,73 @@ Sau fence.`;
   });
 });
 
+describe("parseCustomMarkdown — frontmatter (tuỳ chọn)", () => {
+  it("đọc metadata: key enum, nhãn tiếng Việt, mảng, số", () => {
+    const md = `---
+category: le_tet
+mandatory_level: Khuyến khích
+reliability: 4
+regions: [Miền Bắc, Miền Nam]
+origins: dan_gian, Phật giáo
+aliases: tết ông táo, 23 tháng chạp
+lunar_month: 12
+cover_image_url: https://a/x.jpg
+---
+# Ông Táo
+
+Mô tả.
+
+## Ý nghĩa
+abc`;
+    const r = parseCustomMarkdown(md);
+    expect(r.title).toBe("Ông Táo");
+    expect(r.meta.category).toBe("le_tet");
+    expect(r.meta.mandatory_level).toBe("khuyen_khich"); // khớp theo nhãn
+    expect(r.meta.reliability).toBe(4);
+    expect(r.meta.regions).toEqual(["Miền Bắc", "Miền Nam"]);
+    expect(r.meta.origins).toEqual(["dan_gian", "phat_giao"]);
+    expect(r.meta.aliases).toEqual(["tết ông táo", "23 tháng chạp"]);
+    expect(r.meta.lunar_month).toBe(12);
+    expect(r.meta.cover_image_url).toBe("https://a/x.jpg");
+    // thân bài parse như thường, không dính frontmatter
+    expect(r.sections).toHaveLength(1);
+  });
+
+  it("bỏ giá trị enum/số không hợp lệ", () => {
+    const md = `---
+category: khong_ton_tai
+reliability: 9
+cover_image_url: http://insecure/x.jpg
+---
+# X
+## A
+y`;
+    const r = parseCustomMarkdown(md);
+    expect(r.meta.category).toBeUndefined();
+    expect(r.meta.reliability).toBeUndefined();
+    expect(r.meta.cover_image_url).toBeUndefined(); // không https
+  });
+
+  it("không có frontmatter → meta rỗng", () => {
+    const r = parseCustomMarkdown("# X\n## A\nb");
+    expect(r.meta).toEqual({});
+  });
+
+  it("không nhầm '---' gạch ngang trong thân là frontmatter", () => {
+    const md = `# X
+
+## A
+Đoạn một.
+
+---
+
+Đoạn hai sau gạch ngang.`;
+    const r = parseCustomMarkdown(md);
+    expect(r.meta).toEqual({});
+    expect(r.title).toBe("X");
+  });
+});
+
 describe("extractCoverImage — ảnh minh hoạ đầu → ảnh bìa", () => {
   it("lấy ảnh đầu tiên làm bìa và gỡ khỏi đoạn đó", () => {
     const secs = [
@@ -180,5 +247,27 @@ y`;
 # không phải bài mới
 \`\`\``;
     expect(splitMarkdownEntries(md)).toHaveLength(1);
+  });
+
+  it("tách nhiều bài, mỗi bài có frontmatter riêng", () => {
+    const md = `---
+category: le_tet
+---
+# Bài một
+Nội dung 1.
+
+---
+category: vong_doi
+---
+# Bài hai
+Nội dung 2.`;
+    const chunks = splitMarkdownEntries(md);
+    expect(chunks).toHaveLength(2);
+    const a = parseCustomMarkdown(chunks[0]);
+    const b = parseCustomMarkdown(chunks[1]);
+    expect(a.title).toBe("Bài một");
+    expect(a.meta.category).toBe("le_tet");
+    expect(b.title).toBe("Bài hai");
+    expect(b.meta.category).toBe("vong_doi");
   });
 });

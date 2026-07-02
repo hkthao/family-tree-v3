@@ -3,7 +3,16 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { CustomsShell } from "@/components/CustomsShell";
 import { useConfirm } from "@/components/ConfirmDialog";
-import { IconPencil, IconShare2, IconTrash } from "@/components/icons";
+import {
+  IconBook,
+  IconCalendar,
+  IconCheck,
+  IconHelp,
+  IconPencil,
+  IconShare2,
+  IconTrash,
+  IconUsers,
+} from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +26,7 @@ import {
   getCustomEntry,
   listBookmarkedIds,
   setBookmark,
+  updateCustomEntry,
 } from "@/lib/queries/customs";
 import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
@@ -70,6 +80,17 @@ export default function CustomsDetail() {
       navigate("/so-tay");
     },
     onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+  });
+
+  // Duyệt nhanh: chuyển thẳng sang "Công khai" mà không cần mở form.
+  const approveM = useMutation({
+    mutationFn: () => updateCustomEntry(entryId!, { status: "published" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["customs"] });
+      qc.invalidateQueries({ queryKey: ["custom-entry", entryId] });
+      toast.success("Đã duyệt — bài đã công khai");
+    },
+    onError: (e) => toast.error("Không duyệt được", { description: (e as Error).message }),
   });
 
   // Chia sẻ lên mạng xã hội: Web Share API (mobile) → fallback chép link.
@@ -158,6 +179,17 @@ export default function CustomsDetail() {
               </span>
             </Button>
           )}
+          {isAdmin && entry.status !== "published" && (
+            <Button
+              size="sm"
+              onClick={() => approveM.mutate()}
+              disabled={approveM.isPending}
+              title="Duyệt & công khai"
+            >
+              <IconCheck className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Duyệt</span>
+            </Button>
+          )}
           {isAdmin && (
             <>
               <Button size="sm" variant="outline" asChild title="Sửa">
@@ -242,9 +274,19 @@ export default function CustomsDetail() {
         )}
 
         {(entry.timing || entry.applicable_to) && (
-          <div className="mt-4 space-y-1 text-base text-muted-foreground">
-            {entry.timing && <p>🗓 <b>Thời điểm:</b> {entry.timing}</p>}
-            {entry.applicable_to && <p>👥 <b>Áp dụng:</b> {entry.applicable_to}</p>}
+          <div className="mt-4 space-y-1.5 text-base text-muted-foreground">
+            {entry.timing && (
+              <p className="flex items-center gap-2">
+                <IconCalendar className="h-4 w-4 shrink-0 text-accent" />
+                <span><b>Thời điểm:</b> {entry.timing}</span>
+              </p>
+            )}
+            {entry.applicable_to && (
+              <p className="flex items-center gap-2">
+                <IconUsers className="h-4 w-4 shrink-0 text-accent" />
+                <span><b>Áp dụng:</b> {entry.applicable_to}</span>
+              </p>
+            )}
           </div>
         )}
 
@@ -270,7 +312,7 @@ export default function CustomsDetail() {
                 )}
               </figure>
             )}
-            <p className="mt-2 whitespace-pre-wrap text-[17px] sm:text-lg leading-8 text-card-foreground">
+            <p className="mt-2 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-[17px] sm:text-lg leading-8 text-card-foreground">
               {s.body}
             </p>
           </section>
@@ -286,7 +328,7 @@ export default function CustomsDetail() {
               {entry.faq.map((f, i) => (
                 <div key={i}>
                   <dt className="text-lg font-semibold text-card-foreground">{f.q}</dt>
-                  <dd className="mt-0.5 whitespace-pre-wrap text-[17px] leading-8 text-card-foreground">
+                  <dd className="mt-0.5 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-[17px] leading-8 text-card-foreground">
                     {f.a}
                   </dd>
                 </div>
@@ -317,9 +359,17 @@ export default function CustomsDetail() {
         )}
 
         <div className="mt-8 border-t pt-4 text-sm text-muted-foreground">
-          {entry.sources && <p>📚 Nguồn: {entry.sources}</p>}
-          <p className="mt-1">
-            ⚠️ Nội dung tham khảo; phong tục có thể khác nhau theo vùng/gia đình.
+          {entry.sources && (
+            <p className="flex items-start gap-2">
+              <IconBook className="mt-0.5 h-4 w-4 shrink-0" />
+              <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+                <b>Nguồn:</b> {entry.sources}
+              </span>
+            </p>
+          )}
+          <p className="mt-1.5 flex items-start gap-2">
+            <IconHelp className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>Nội dung tham khảo; phong tục có thể khác nhau theo vùng/gia đình.</span>
           </p>
         </div>
       </article>
