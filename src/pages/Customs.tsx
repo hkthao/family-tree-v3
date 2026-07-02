@@ -189,7 +189,7 @@ function CustomCard({ entry }: { entry: CustomEntry }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h2 className="clan-name min-w-0 truncate font-semibold leading-snug group-hover:text-primary">
+            <h2 className="clan-name min-w-0 line-clamp-2 font-semibold leading-snug group-hover:text-primary">
               {entry.title}
             </h2>
             {entry.status !== "published" && (
@@ -207,26 +207,28 @@ function CustomCard({ entry }: { entry: CustomEntry }) {
               {entry.short_description}
             </p>
           )}
-          {(entry.mandatory_level || entry.reliability != null) && (
-            <div className="mt-2 flex items-center gap-2 text-[11px]">
-              {entry.mandatory_level && (
-                <span
-                  className={`rounded-full px-2 py-0.5 ${
-                    entry.mandatory_level === "bat_buoc"
-                      ? "bg-primary/10 text-primary"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}
-                </span>
-              )}
-              {entry.reliability != null && (
-                <span className="text-accent" title="Độ tin cậy">
-                  {"★".repeat(entry.reliability)}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+            {entry.mandatory_level && (
+              <span
+                className={`rounded-full px-2 py-0.5 ${
+                  entry.mandatory_level === "bat_buoc"
+                    ? "bg-primary/10 text-primary"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}
+              </span>
+            )}
+            {entry.reliability != null && (
+              <span className="text-accent" title="Độ tin cậy">
+                {"★".repeat(entry.reliability)}
+                <span className="text-muted-foreground"> {entry.reliability}/5</span>
+              </span>
+            )}
+            <span className="ml-auto" title="Ngày tạo">
+              🕒 {new Date(entry.created_at).toLocaleDateString("vi-VN")}
+            </span>
+          </div>
         </div>
       </Link>
     </li>

@@ -4,7 +4,7 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { IconCheck, IconPlus, IconUpload, IconX } from "@/components/icons";
-import { parseCustomMarkdown } from "@/lib/customs/markdown";
+import { extractCoverImage, parseCustomMarkdown } from "@/lib/customs/markdown";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,14 +95,20 @@ export default function CustomsForm() {
       !window.confirm("Ghi đè tiêu đề / mô tả / các đoạn / FAQ hiện tại bằng nội dung Markdown?")
     )
       return;
+    // Thân markdown không có ảnh bìa → nếu form chưa có bìa, lấy ảnh minh hoạ
+    // đầu tiên làm bìa (card danh sách cần hình) và gỡ khỏi đoạn để khỏi trùng.
+    const { cover_image_url, sections: secs } = coverUrl.trim()
+      ? { cover_image_url: null, sections: parsed.sections }
+      : extractCoverImage(parsed.sections);
     if (parsed.title) setTitle(parsed.title);
     setShortDesc(parsed.short_description);
-    setSections(parsed.sections);
+    setSections(secs);
     setFaq(parsed.faq);
+    if (cover_image_url) setCoverUrl(cover_image_url);
     setMdOpen(false);
     setMdText("");
     toast.success(
-      `Đã nhập ${parsed.sections.length} đoạn, ${parsed.faq.length} câu hỏi — xem lại rồi Lưu.`,
+      `Đã nhập ${secs.length} đoạn, ${parsed.faq.length} câu hỏi — xem lại rồi Lưu.`,
     );
   };
 

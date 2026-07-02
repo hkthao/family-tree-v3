@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  extractCoverImage,
   parseCustomMarkdown,
   splitMarkdownEntries,
 } from "@/lib/customs/markdown";
@@ -119,6 +120,29 @@ Sau fence.`;
     // Quan trọng: `#` trong fence KHÔNG tạo section mới (fence-aware).
     expect(r.sections).toHaveLength(1);
     expect(r.sections[0].body).toContain("đây là comment");
+  });
+});
+
+describe("extractCoverImage — ảnh minh hoạ đầu → ảnh bìa", () => {
+  it("lấy ảnh đầu tiên làm bìa và gỡ khỏi đoạn đó", () => {
+    const secs = [
+      { heading: "Ý nghĩa", body: "abc" },
+      { heading: "Lễ vật", body: "def", image_url: "https://a/x.jpg", image_caption: "Mâm" },
+      { heading: "Trình tự", body: "ghi", image_url: "https://a/y.jpg" },
+    ];
+    const r = extractCoverImage(secs);
+    expect(r.cover_image_url).toBe("https://a/x.jpg");
+    // đoạn "Lễ vật" mất ảnh, các đoạn khác giữ nguyên
+    expect(r.sections[1].image_url).toBeUndefined();
+    expect(r.sections[1].image_caption).toBeUndefined();
+    expect(r.sections[2].image_url).toBe("https://a/y.jpg");
+  });
+
+  it("không có ảnh nào → cover null, giữ nguyên", () => {
+    const secs = [{ heading: "A", body: "x" }];
+    const r = extractCoverImage(secs);
+    expect(r.cover_image_url).toBeNull();
+    expect(r.sections).toBe(secs);
   });
 });
 
