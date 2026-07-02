@@ -92,8 +92,8 @@ export interface ClanCompletion {
 
 /**
  * Aggregate progress for the clan-level "Họ ta đã hoàn thành X%"
- * widget. `withGaps` comes from `count_clan_completion_gaps` — a
- * DISTINCT-person count across the two load-bearing categories
+ * widget. `withGaps` is a DISTINCT-person count across the two
+ * load-bearing categories
  * (parents + dates). We deliberately skip the soft categories
  * (dead_end heuristic, missing photo / lunar) because they would
  * always drag a real gia phả's percentage to 0 — almost no clan
@@ -111,19 +111,17 @@ export async function getClanCompletion(
   clanId: string,
   client: Client = defaultClient,
 ): Promise<ClanCompletion> {
-  const [totalRes, gapsRes] = await Promise.all([
-    client
-      .from("persons")
-      .select("id", { count: "exact", head: true })
-      .eq("clan_id", clanId)
-      .is("deleted_at", null)
-      .eq("todo_excluded", false),
-    client.rpc("count_clan_completion_gaps", { p_clan_id: clanId }),
-  ]);
-  if (totalRes.error) throw new Error(totalRes.error.message);
-  if (gapsRes.error) throw new Error(gapsRes.error.message);
-  const total = totalRes.count ?? 0;
-  const withGaps = Number(gapsRes.data ?? 0);
+  // Single security-definer RPC computes total + withGaps in one index
+  // scan (RLS bypassed). The old approach ran a PostgREST count(*) that
+  // re-evaluated the per-row is_clan_member() RLS check for every person
+  // and timed out (57014) on large clans. See migration
+  // 20260702020000_get_clan_completion.sql.
+  const { data, error } = await client
+    .rpc("get_clan_completion", { p_clan_id: clanId })
+    .single();
+  if (error) throw new Error(error.message);
+  const total = Number(data?.total ?? 0);
+  const withGaps = Number(data?.with_gaps ?? 0);
   const complete = Math.max(0, total - withGaps);
   const percent = total > 0 ? Math.round((complete / total) * 100) : null;
   return { total, withGaps, complete, percent };
