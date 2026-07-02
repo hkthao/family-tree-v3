@@ -2452,6 +2452,10 @@ export type Database = {
         Args: { p_clan_id: string }
         Returns: number
       }
+      get_clan_completion: {
+        Args: { p_clan_id: string }
+        Returns: { total: number; with_gaps: number }[]
+      }
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
       delete_expired_card_shares: { Args: never; Returns: number }
