@@ -817,8 +817,9 @@ export type Database = {
           mandatory_level:
             | Database["public"]["Enums"]["custom_mandatory"]
             | null
-          origin: Database["public"]["Enums"]["custom_origin"] | null
+          origins: Database["public"]["Enums"]["custom_origin"][]
           regions: string[]
+          related_ids: string[]
           reliability: number | null
           scope: Database["public"]["Enums"]["custom_scope"] | null
           search_text: string | null
@@ -844,8 +845,9 @@ export type Database = {
           mandatory_level?:
             | Database["public"]["Enums"]["custom_mandatory"]
             | null
-          origin?: Database["public"]["Enums"]["custom_origin"] | null
+          origins?: Database["public"]["Enums"]["custom_origin"][]
           regions?: string[]
+          related_ids?: string[]
           reliability?: number | null
           scope?: Database["public"]["Enums"]["custom_scope"] | null
           search_text?: string | null
@@ -871,8 +873,9 @@ export type Database = {
           mandatory_level?:
             | Database["public"]["Enums"]["custom_mandatory"]
             | null
-          origin?: Database["public"]["Enums"]["custom_origin"] | null
+          origins?: Database["public"]["Enums"]["custom_origin"][]
           regions?: string[]
+          related_ids?: string[]
           reliability?: number | null
           scope?: Database["public"]["Enums"]["custom_scope"] | null
           search_text?: string | null

@@ -13,6 +13,7 @@ import {
   CUSTOM_ORIGIN_LABEL,
   CUSTOM_SCOPE_LABEL,
   deleteCustomEntry,
+  getCustomEntriesByIds,
   getCustomEntry,
   listBookmarkedIds,
   setBookmark,
@@ -49,6 +50,12 @@ export default function CustomsDetail() {
     enabled: !!userId,
   });
   const bookmarked = !!entryId && !!bookmarks?.has(entryId);
+
+  const { data: related } = useQuery({
+    queryKey: ["custom-related", entry?.related_ids ?? []],
+    queryFn: () => getCustomEntriesByIds(entry!.related_ids ?? []),
+    enabled: !!entry && (entry.related_ids?.length ?? 0) > 0,
+  });
 
   const bookmarkM = useMutation({
     mutationFn: () => setBookmark(entryId!, !bookmarked),
@@ -111,7 +118,9 @@ export default function CustomsDetail() {
 
   const metaLine = [
     entry.regions.length > 0 ? entry.regions.join(", ") : null,
-    entry.origin ? `Nguồn gốc: ${CUSTOM_ORIGIN_LABEL[entry.origin]}` : null,
+    (entry.origins?.length ?? 0) > 0
+      ? `Nguồn gốc: ${(entry.origins ?? []).map((o) => CUSTOM_ORIGIN_LABEL[o]).join(", ")}`
+      : null,
     entry.scope ? `Phạm vi: ${CUSTOM_SCOPE_LABEL[entry.scope]}` : null,
   ]
     .filter(Boolean)
@@ -251,6 +260,22 @@ export default function CustomsDetail() {
             <h2 className="clan-name text-2xl font-semibold" style={{ color: "#7A2E2E" }}>
               {s.heading || `Phần ${i + 1}`}
             </h2>
+            {s.image_url && (
+              <figure className="mt-3">
+                <img
+                  src={s.image_url}
+                  alt={s.image_caption || s.heading || ""}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="w-full max-h-72 rounded-lg object-cover"
+                />
+                {s.image_caption && (
+                  <figcaption className="mt-1 text-center text-sm italic" style={{ color: "#8a7d73" }}>
+                    {s.image_caption}
+                  </figcaption>
+                )}
+              </figure>
+            )}
             <p className="mt-2 whitespace-pre-wrap text-[17px] sm:text-lg leading-8"
               style={{ color: "#2A2320" }}>
               {s.body}
@@ -274,6 +299,28 @@ export default function CustomsDetail() {
                 </div>
               ))}
             </dl>
+          </section>
+        )}
+
+        {/* Bài liên quan */}
+        {related && related.length > 0 && (
+          <section className="mt-8">
+            <h2 className="clan-name text-2xl font-semibold" style={{ color: "#7A2E2E" }}>
+              Bài liên quan
+            </h2>
+            <ul className="mt-2 space-y-1.5">
+              {related.map((r) => (
+                <li key={r.id}>
+                  <Link
+                    to={user ? `/so-tay/${r.id}` : `/xem/so-tay/${r.id}`}
+                    className="text-[17px] underline decoration-dotted underline-offset-4"
+                    style={{ color: "#7A2E2E" }}
+                  >
+                    → {r.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 

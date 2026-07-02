@@ -17,8 +17,10 @@ import {
   CUSTOM_SCOPE_LABEL,
   createCustomEntry,
   getCustomEntry,
+  listCustomEntriesLite,
   updateCustomEntry,
   type CustomCategory,
+  type CustomEntryLite,
   type CustomFaq,
   type CustomMandatory,
   type CustomOrigin,
@@ -64,7 +66,7 @@ export default function CustomsForm() {
   const [timing, setTiming] = useState("");
   const [scope, setScope] = useState<CustomScope | "">("");
   const [mandatory, setMandatory] = useState<CustomMandatory | "">("");
-  const [origin, setOrigin] = useState<CustomOrigin | "">("");
+  const [origins, setOrigins] = useState<CustomOrigin[]>([]);
   const [reliability, setReliability] = useState("");
   const [applicableTo, setApplicableTo] = useState("");
   const [sources, setSources] = useState("");
@@ -72,7 +74,16 @@ export default function CustomsForm() {
   const [status, setStatus] = useState<CustomStatus>("needs_review");
   const [sections, setSections] = useState<CustomSection[]>([]);
   const [faq, setFaq] = useState<CustomFaq[]>([]);
+  const [relatedIds, setRelatedIds] = useState<string[]>([]);
+  const [relatedQ, setRelatedQ] = useState("");
   const [err, setErr] = useState<string | null>(null);
+
+  // Danh sách bài (id, title) để chọn "bài liên quan".
+  const { data: allLite } = useQuery({
+    queryKey: ["customs-lite"],
+    queryFn: () => listCustomEntriesLite(),
+    enabled: !!userId,
+  });
 
   const { data: existing } = useQuery({
     queryKey: ["custom-entry", entryId],
@@ -90,7 +101,7 @@ export default function CustomsForm() {
     setTiming(existing.timing ?? "");
     setScope(existing.scope ?? "");
     setMandatory(existing.mandatory_level ?? "");
-    setOrigin(existing.origin ?? "");
+    setOrigins(existing.origins ?? []);
     setReliability(existing.reliability != null ? String(existing.reliability) : "");
     setApplicableTo(existing.applicable_to ?? "");
     setSources(existing.sources ?? "");
@@ -98,13 +109,17 @@ export default function CustomsForm() {
     setStatus(existing.status);
     setSections(existing.sections);
     setFaq(existing.faq);
+    setRelatedIds(existing.related_ids ?? []);
   }, [existing]);
 
   const save = useMutation({
     mutationFn: async () => {
       if (!title.trim()) throw new Error("Thiếu tiêu đề.");
       if (coverUrl.trim() && !isSafeHttpsUrl(coverUrl.trim())) {
-        throw new Error("Link ảnh phải là https://…");
+        throw new Error("Link ảnh bìa phải là https://…");
+      }
+      if (sections.some((s) => s.image_url?.trim() && !isSafeHttpsUrl(s.image_url.trim()))) {
+        throw new Error("Ảnh minh hoạ trong đoạn phải là https://…");
       }
       const fields = {
         title: title.trim(),
@@ -119,15 +134,21 @@ export default function CustomsForm() {
         timing: timing.trim() || null,
         scope: scope || null,
         mandatory_level: mandatory || null,
-        origin: origin || null,
+        origins,
+        related_ids: relatedIds,
         reliability: reliability.trim() ? Number(reliability) : null,
         applicable_to: applicableTo.trim() || null,
         sources: sources.trim() || null,
         cover_image_url: coverUrl.trim() || null,
         status,
         sections: sections
-          .map((s) => ({ heading: s.heading.trim(), body: s.body.trim() }))
-          .filter((s) => s.heading || s.body),
+          .map((s) => {
+            const out: CustomSection = { heading: s.heading.trim(), body: s.body.trim() };
+            if (s.image_url?.trim()) out.image_url = s.image_url.trim();
+            if (s.image_caption?.trim()) out.image_caption = s.image_caption.trim();
+            return out;
+          })
+          .filter((s) => s.heading || s.body || s.image_url),
         faq: faq
           .map((f) => ({ q: f.q.trim(), a: f.a.trim() }))
           .filter((f) => f.q || f.a),
@@ -162,6 +183,23 @@ export default function CustomsForm() {
     setRegions((prev) =>
       prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r],
     );
+  const toggleOrigin = (o: CustomOrigin) =>
+    setOrigins((prev) =>
+      prev.includes(o) ? prev.filter((x) => x !== o) : [...prev, o],
+    );
+
+  // Phần dẫn xuất cho picker "bài liên quan" (allLite/relatedQ là hook, khai
+  // báo ở đầu component để tôn trọng Rules of Hooks).
+  const relatedPool: CustomEntryLite[] = (allLite ?? []).filter((e) => e.id !== entryId);
+  const relatedChosen = relatedIds
+    .map((id) => relatedPool.find((e) => e.id === id))
+    .filter((x): x is CustomEntryLite => !!x);
+  const relatedMatches = relatedQ.trim()
+    ? relatedPool
+        .filter((e) => !relatedIds.includes(e.id))
+        .filter((e) => e.title.toLowerCase().includes(relatedQ.trim().toLowerCase()))
+        .slice(0, 6)
+    : [];
 
   return (
     <Shell>
@@ -237,7 +275,23 @@ export default function CustomsForm() {
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed resize-y" />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="space-y-2">
+          <Label>Nguồn gốc (chọn nhiều)</Label>
+          <div className="flex flex-wrap gap-2">
+            {ORIGINS.map((o) => (
+              <button key={o} type="button" onClick={() => toggleOrigin(o)}
+                className={`rounded-full border px-3 py-1.5 text-sm ${
+                  origins.includes(o)
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card hover:border-primary"
+                }`}>
+                {CUSTOM_ORIGIN_LABEL[o]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="c-mand">Mức bắt buộc</Label>
             <select id="c-mand" value={mandatory}
@@ -246,17 +300,6 @@ export default function CustomsForm() {
               <option value="">—</option>
               {MANDATORIES.map((m) => (
                 <option key={m} value={m}>{CUSTOM_MANDATORY_LABEL[m]}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="c-origin">Nguồn gốc</Label>
-            <select id="c-origin" value={origin}
-              onChange={(e) => setOrigin(e.target.value as CustomOrigin | "")}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-              <option value="">—</option>
-              {ORIGINS.map((o) => (
-                <option key={o} value={o}>{CUSTOM_ORIGIN_LABEL[o]}</option>
               ))}
             </select>
           </div>
@@ -337,6 +380,18 @@ export default function CustomsForm() {
                 }
                 rows={5} placeholder="Nội dung đoạn này…"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed" />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input value={sec.image_url ?? ""}
+                  onChange={(e) =>
+                    setSections((p) => p.map((s, j) => (j === i ? { ...s, image_url: e.target.value } : s)))
+                  }
+                  placeholder="Ảnh minh hoạ (https://…, tuỳ chọn)" />
+                <Input value={sec.image_caption ?? ""}
+                  onChange={(e) =>
+                    setSections((p) => p.map((s, j) => (j === i ? { ...s, image_caption: e.target.value } : s)))
+                  }
+                  placeholder="Chú thích ảnh (tuỳ chọn)" maxLength={200} />
+              </div>
             </div>
           ))}
           <Button type="button" variant="outline" size="sm"
@@ -378,6 +433,42 @@ export default function CustomsForm() {
             onClick={() => setFaq((p) => [...p, { q: "", a: "" }])}>
             <IconPlus className="h-4 w-4 mr-1" /> Thêm câu hỏi
           </Button>
+        </div>
+
+        {/* Bài liên quan */}
+        <div className="space-y-2">
+          <Label className="block">Bài liên quan (tuỳ chọn)</Label>
+          {relatedChosen.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {relatedChosen.map((r) => (
+                <span key={r.id}
+                  className="inline-flex items-center gap-1 rounded-full border bg-card px-3 py-1 text-sm">
+                  {r.title}
+                  <button type="button" aria-label="Bỏ liên kết"
+                    onClick={() => setRelatedIds((p) => p.filter((x) => x !== r.id))}
+                    className="text-muted-foreground hover:text-destructive">
+                    <IconX className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <Input value={relatedQ} onChange={(e) => setRelatedQ(e.target.value)}
+            placeholder="Gõ tên bài để tìm & thêm liên kết…" />
+          {relatedMatches.length > 0 && (
+            <ul className="rounded-md border bg-card divide-y">
+              {relatedMatches.map((r) => (
+                <li key={r.id}>
+                  <button type="button"
+                    onClick={() => { setRelatedIds((p) => [...p, r.id]); setRelatedQ(""); }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent/10">
+                    <IconPlus className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    {r.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="space-y-2">

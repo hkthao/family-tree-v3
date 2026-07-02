@@ -60,7 +60,10 @@ export const CUSTOM_REGIONS = ["Miền Bắc", "Miền Trung", "Miền Nam"] as 
 export interface CustomSection {
   heading: string;
   body: string;
-  [k: string]: string;
+  /** Ảnh minh hoạ cho đoạn (https, tuỳ chọn) — vd mâm cúng, đèn lồng… */
+  image_url?: string;
+  image_caption?: string;
+  [k: string]: string | undefined;
 }
 export interface CustomFaq {
   q: string;
@@ -79,7 +82,8 @@ export interface CustomEntry {
   timing: string | null;
   scope: CustomScope | null;
   mandatory_level: CustomMandatory | null;
-  origin: CustomOrigin | null;
+  origins: CustomOrigin[];
+  related_ids: string[];
   reliability: number | null;
   applicable_to: string | null;
   sources: string | null;
@@ -92,16 +96,55 @@ export interface CustomEntry {
 }
 
 const COLS =
-  "id, title, aliases, short_description, category, regions, lunar_month, timing, scope, mandatory_level, origin, reliability, applicable_to, sources, sections, faq, cover_image_url, status, created_at, updated_at";
+  "id, title, aliases, short_description, category, regions, lunar_month, timing, scope, mandatory_level, origins, related_ids, reliability, applicable_to, sources, sections, faq, cover_image_url, status, created_at, updated_at";
 
 function toEntry(r: Record<string, unknown>): CustomEntry {
   return {
     ...(r as unknown as CustomEntry),
     aliases: (r.aliases as string[] | null) ?? [],
     regions: (r.regions as string[] | null) ?? [],
+    origins: (r.origins as CustomOrigin[] | null) ?? [],
+    related_ids: (r.related_ids as string[] | null) ?? [],
     sections: (r.sections as unknown as CustomSection[]) ?? [],
     faq: (r.faq as unknown as CustomFaq[]) ?? [],
   };
+}
+
+/** Bản rút gọn để chọn/hiển thị bài liên quan. */
+export interface CustomEntryLite {
+  id: string;
+  title: string;
+  category: CustomCategory;
+}
+
+/** Danh sách bài (id, title, category) — dùng cho picker "bài liên quan". */
+export async function listCustomEntriesLite(
+  client: Client = defaultClient,
+): Promise<CustomEntryLite[]> {
+  const { data, error } = await client
+    .from("custom_entries")
+    .select("id, title, category")
+    .is("deleted_at", null)
+    .order("title", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as CustomEntryLite[];
+}
+
+/** Lấy các bài theo danh sách id (cho mục "Bài liên quan" ở trang xem). */
+export async function getCustomEntriesByIds(
+  ids: string[],
+  client: Client = defaultClient,
+): Promise<CustomEntryLite[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await client
+    .from("custom_entries")
+    .select("id, title, category")
+    .in("id", ids)
+    .is("deleted_at", null);
+  if (error) throw new Error(error.message);
+  // Giữ đúng thứ tự như related_ids.
+  const byId = new Map((data ?? []).map((r) => [(r as CustomEntryLite).id, r as CustomEntryLite]));
+  return ids.map((id) => byId.get(id)).filter((x): x is CustomEntryLite => !!x);
 }
 
 export interface ListCustomsParams {
