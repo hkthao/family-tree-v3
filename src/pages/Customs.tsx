@@ -159,7 +159,7 @@ export default function Customs() {
         )}
 
         {entries && entries.length > 0 && (
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {entries.map((e) => (
               <CustomCard key={e.id} entry={e} />
             ))}
@@ -210,13 +210,11 @@ function CustomCard({ entry }: { entry: CustomEntry }) {
                 </span>
               )}
             </div>
-            <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-primary/80">
-              <span className="truncate">{CUSTOM_CATEGORY_LABEL[entry.category]}</span>
-              {entry.regions.length > 0 && (
-                <span className="truncate font-normal text-muted-foreground">
-                  · {entry.regions.join(", ")}
-                </span>
-              )}
+            <p className="mt-1 truncate text-xs text-muted-foreground">
+              <span className="font-medium text-primary/80">
+                {CUSTOM_CATEGORY_LABEL[entry.category]}
+              </span>
+              {entry.regions.length > 0 ? ` · ${entry.regions.join(", ")}` : ""}
             </p>
           </div>
         </div>
@@ -228,7 +226,7 @@ function CustomCard({ entry }: { entry: CustomEntry }) {
         )}
 
         {/* Chân card: độ tin cậy · mức bắt buộc · ngày tạo */}
-        <div className="mt-auto flex items-center gap-x-3 gap-y-1 border-t pt-2.5 text-[11px] text-muted-foreground">
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-2.5 text-[11px] text-muted-foreground">
           {entry.reliability != null && (
             <span className="inline-flex items-center gap-1" title="Độ tin cậy">
               <span className="text-accent" aria-hidden>
