@@ -94,7 +94,10 @@ createRoot(document.getElementById("root")!).render(
           // v6: URL ký ảnh đổi TTL 1h → 7 ngày + staleTime 6 ngày. Cache cũ
           //     giữ URL ký 1h (đã hết hạn) nhưng staleTime dài chặn refetch
           //     → ảnh lỗi InvalidJWT. Bust để bỏ URL cũ, ký lại 7 ngày.
-          buster: "v6",
+          // v7: Sổ tay v2 đổi shape custom_entries (origin → origins[], thêm
+          //     related_ids). Bản ghi cache cũ thiếu field mới → đọc
+          //     origins.length trên undefined gây crash. Bust để bỏ shape cũ.
+          buster: "v7",
         }}
       >
         <App />
