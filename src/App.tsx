@@ -19,6 +19,7 @@ import Clans from "@/pages/Clans";
 import Customs from "@/pages/Customs";
 import CustomsDetail from "@/pages/CustomsDetail";
 import CustomsForm from "@/pages/CustomsForm";
+import CustomsImport from "@/pages/CustomsImport";
 import Docs from "@/pages/Docs";
 import AddChild from "@/pages/clan/AddChild";
 import AddParent from "@/pages/clan/AddParent";
@@ -120,6 +121,14 @@ export default function App() {
           element={
             <RequireAuth>
               <CustomsForm />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/so-tay/import"
+          element={
+            <RequireAuth>
+              <CustomsImport />
             </RequireAuth>
           }
         />

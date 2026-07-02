@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
-import { IconBook, IconPlus, IconSearch } from "@/components/icons";
+import { IconBook, IconPlus, IconSearch, IconUpload } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
@@ -76,11 +76,18 @@ export default function Customs() {
           actionsBelow
           actions={
             isAdmin ? (
-              <Button size="sm" asChild>
-                <Link to="/so-tay/new">
-                  <IconPlus className="h-4 w-4 mr-1" /> Thêm bài
-                </Link>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" asChild>
+                  <Link to="/so-tay/new">
+                    <IconPlus className="h-4 w-4 mr-1" /> Thêm bài
+                  </Link>
+                </Button>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/so-tay/import">
+                    <IconUpload className="h-4 w-4 mr-1" /> Nhập Markdown
+                  </Link>
+                </Button>
+              </div>
             ) : undefined
           }
         />
