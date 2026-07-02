@@ -188,47 +188,41 @@ export default function CustomsDetail() {
         </div>
       </div>
 
-      {/* "Trang sách": nền giấy kem, chữ serif to, dễ đọc cho người lớn tuổi.
+      {/* "Trang sách": chữ serif to, dễ đọc cho người lớn tuổi. Dùng token theme
+          (bg-card / text-*) nên tự hợp sáng-tối; theme này vốn là tông giấy ấm.
           Hiển thị đầy đủ nội dung (không gập/mở) — không bắt bấm để xem. */}
-      <article
-        className="rounded-2xl border shadow-sm px-5 py-7 sm:px-10 sm:py-10 font-serif"
-        style={{ backgroundColor: "#FBF7F0", color: "#2A2320" }}
-      >
+      <article className="rounded-2xl border shadow-sm px-5 py-7 sm:px-10 sm:py-10 font-serif bg-card text-card-foreground">
         {entry.status !== "published" && (
-          <p className="mb-3 text-center text-xs" style={{ color: "#B8862A" }}>
+          <p className="mb-3 text-center text-xs text-accent">
             — Bản {entry.status === "draft" ? "nháp" : "chờ duyệt"} —
           </p>
         )}
 
-        <h1
-          className="clan-name text-center text-3xl sm:text-4xl font-semibold leading-tight"
-          style={{ color: "#7A2E2E" }}
-        >
+        <h1 className="clan-name text-center text-3xl sm:text-4xl font-semibold leading-tight text-primary">
           {entry.title}
         </h1>
         {entry.aliases.length > 0 && (
-          <p className="mt-1 text-center text-base italic" style={{ color: "#6b5f57" }}>
+          <p className="mt-1 text-center text-base italic text-muted-foreground">
             Còn gọi: {entry.aliases.join(", ")}
           </p>
         )}
 
         {/* Nhãn nhỏ giữa trang */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm"
-          style={{ color: "#6b5f57" }}>
-          <span style={{ color: "#7A2E2E" }}>{CUSTOM_CATEGORY_LABEL[entry.category]}</span>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <span className="text-primary">{CUSTOM_CATEGORY_LABEL[entry.category]}</span>
           {entry.mandatory_level && <span>· {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}</span>}
           {entry.reliability != null && (
-            <span title="Độ tin cậy" style={{ color: "#B8862A" }}>· {"★".repeat(entry.reliability)}</span>
+            <span title="Độ tin cậy" className="text-accent">· {"★".repeat(entry.reliability)}</span>
           )}
         </div>
         {metaLine && (
-          <p className="mt-1 text-center text-sm" style={{ color: "#8a7d73" }}>{metaLine}</p>
+          <p className="mt-1 text-center text-sm text-muted-foreground">{metaLine}</p>
         )}
 
-        <div className="mx-auto my-5 flex items-center justify-center gap-3" style={{ color: "#B8862A" }}>
-          <span style={{ height: 1, width: 60, background: "#D8C9A8" }} />
+        <div className="mx-auto my-5 flex items-center justify-center gap-3 text-accent">
+          <span className="bg-border" style={{ height: 1, width: 60 }} />
           <span className="text-sm">❧</span>
-          <span style={{ height: 1, width: 60, background: "#D8C9A8" }} />
+          <span className="bg-border" style={{ height: 1, width: 60 }} />
         </div>
 
         {entry.cover_image_url && (
@@ -242,13 +236,13 @@ export default function CustomsDetail() {
         )}
 
         {entry.short_description && (
-          <p className="text-lg sm:text-xl leading-relaxed" style={{ color: "#3a322c" }}>
+          <p className="text-lg sm:text-xl leading-relaxed text-card-foreground">
             {entry.short_description}
           </p>
         )}
 
         {(entry.timing || entry.applicable_to) && (
-          <div className="mt-4 space-y-1 text-base" style={{ color: "#6b5f57" }}>
+          <div className="mt-4 space-y-1 text-base text-muted-foreground">
             {entry.timing && <p>🗓 <b>Thời điểm:</b> {entry.timing}</p>}
             {entry.applicable_to && <p>👥 <b>Áp dụng:</b> {entry.applicable_to}</p>}
           </div>
@@ -257,7 +251,7 @@ export default function CustomsDetail() {
         {/* Các đoạn nội dung — hiện đầy đủ, chữ to, giãn dòng thoáng */}
         {entry.sections.map((s, i) => (
           <section key={i} className="mt-7">
-            <h2 className="clan-name text-2xl font-semibold" style={{ color: "#7A2E2E" }}>
+            <h2 className="clan-name text-2xl font-semibold text-primary">
               {s.heading || `Phần ${i + 1}`}
             </h2>
             {s.image_url && (
@@ -270,14 +264,13 @@ export default function CustomsDetail() {
                   className="w-full max-h-72 rounded-lg object-cover"
                 />
                 {s.image_caption && (
-                  <figcaption className="mt-1 text-center text-sm italic" style={{ color: "#8a7d73" }}>
+                  <figcaption className="mt-1 text-center text-sm italic text-muted-foreground">
                     {s.image_caption}
                   </figcaption>
                 )}
               </figure>
             )}
-            <p className="mt-2 whitespace-pre-wrap text-[17px] sm:text-lg leading-8"
-              style={{ color: "#2A2320" }}>
+            <p className="mt-2 whitespace-pre-wrap text-[17px] sm:text-lg leading-8 text-card-foreground">
               {s.body}
             </p>
           </section>
@@ -286,14 +279,14 @@ export default function CustomsDetail() {
         {/* FAQ */}
         {entry.faq.length > 0 && (
           <section className="mt-8">
-            <h2 className="clan-name text-2xl font-semibold" style={{ color: "#7A2E2E" }}>
+            <h2 className="clan-name text-2xl font-semibold text-primary">
               Câu hỏi thường gặp
             </h2>
             <dl className="mt-2 space-y-3">
               {entry.faq.map((f, i) => (
                 <div key={i}>
-                  <dt className="text-lg font-semibold" style={{ color: "#3a322c" }}>{f.q}</dt>
-                  <dd className="mt-0.5 whitespace-pre-wrap text-[17px] leading-8" style={{ color: "#2A2320" }}>
+                  <dt className="text-lg font-semibold text-card-foreground">{f.q}</dt>
+                  <dd className="mt-0.5 whitespace-pre-wrap text-[17px] leading-8 text-card-foreground">
                     {f.a}
                   </dd>
                 </div>
@@ -305,7 +298,7 @@ export default function CustomsDetail() {
         {/* Bài liên quan */}
         {related && related.length > 0 && (
           <section className="mt-8">
-            <h2 className="clan-name text-2xl font-semibold" style={{ color: "#7A2E2E" }}>
+            <h2 className="clan-name text-2xl font-semibold text-primary">
               Bài liên quan
             </h2>
             <ul className="mt-2 space-y-1.5">
@@ -313,8 +306,7 @@ export default function CustomsDetail() {
                 <li key={r.id}>
                   <Link
                     to={user ? `/so-tay/${r.id}` : `/xem/so-tay/${r.id}`}
-                    className="text-[17px] underline decoration-dotted underline-offset-4"
-                    style={{ color: "#7A2E2E" }}
+                    className="text-[17px] underline decoration-dotted underline-offset-4 text-primary"
                   >
                     → {r.title}
                   </Link>
@@ -324,7 +316,7 @@ export default function CustomsDetail() {
           </section>
         )}
 
-        <div className="mt-8 border-t pt-4 text-sm" style={{ borderColor: "#E4D8BF", color: "#8a7d73" }}>
+        <div className="mt-8 border-t pt-4 text-sm text-muted-foreground">
           {entry.sources && <p>📚 Nguồn: {entry.sources}</p>}
           <p className="mt-1">
             ⚠️ Nội dung tham khảo; phong tục có thể khác nhau theo vùng/gia đình.

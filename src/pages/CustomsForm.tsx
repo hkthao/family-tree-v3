@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { IconCheck, IconPlus, IconX } from "@/components/icons";
+import { IconCheck, IconPlus, IconUpload, IconX } from "@/components/icons";
+import { parseCustomMarkdown } from "@/lib/customs/markdown";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,33 @@ export default function CustomsForm() {
   const [relatedIds, setRelatedIds] = useState<string[]>([]);
   const [relatedQ, setRelatedQ] = useState("");
   const [err, setErr] = useState<string | null>(null);
+
+  // Nhập nhanh từ Markdown (thân bài) → điền title/mô tả/đoạn/FAQ.
+  const [mdOpen, setMdOpen] = useState(false);
+  const [mdText, setMdText] = useState("");
+  const applyMarkdown = () => {
+    const parsed = parseCustomMarkdown(mdText);
+    if (!parsed.title && parsed.sections.length === 0) {
+      toast.error("Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'.");
+      return;
+    }
+    const hasContent =
+      !!title.trim() || !!shortDesc.trim() || sections.length > 0 || faq.length > 0;
+    if (
+      hasContent &&
+      !window.confirm("Ghi đè tiêu đề / mô tả / các đoạn / FAQ hiện tại bằng nội dung Markdown?")
+    )
+      return;
+    if (parsed.title) setTitle(parsed.title);
+    setShortDesc(parsed.short_description);
+    setSections(parsed.sections);
+    setFaq(parsed.faq);
+    setMdOpen(false);
+    setMdText("");
+    toast.success(
+      `Đã nhập ${parsed.sections.length} đoạn, ${parsed.faq.length} câu hỏi — xem lại rồi Lưu.`,
+    );
+  };
 
   // Danh sách bài (id, title) để chọn "bài liên quan".
   const { data: allLite } = useQuery({
@@ -206,9 +234,53 @@ export default function CustomsForm() {
       <Link to="/so-tay" className="text-sm text-primary hover:underline">
         ← Sổ tay Văn hoá
       </Link>
-      <h1 className="clan-name text-2xl font-semibold">
-        {isEdit ? "Sửa bài" : "Thêm bài phong tục"}
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="clan-name text-2xl font-semibold">
+          {isEdit ? "Sửa bài" : "Thêm bài phong tục"}
+        </h1>
+        <Button type="button" variant="outline" size="sm" onClick={() => setMdOpen((v) => !v)}>
+          <IconUpload className="h-4 w-4 mr-1" /> Nhập từ Markdown
+        </Button>
+      </div>
+
+      {mdOpen && (
+        <div className="rounded-md border bg-card p-3 space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Dán <strong>thân Markdown</strong>: <code>#</code> Tiêu đề · đoạn mở đầu là mô tả ngắn ·
+            mỗi <code>##</code> là một đoạn · <code>![chú thích](https://…)</code> làm ảnh minh hoạ ·
+            đoạn <code>## Câu hỏi thường gặp</code> với các <code>###</code> thành FAQ. Chủ đề / vùng
+            miền / nguồn gốc chọn ở form bên dưới.
+          </p>
+          <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-primary hover:underline">
+            <IconUpload className="h-4 w-4" /> Chọn file .md…
+            <input
+              type="file"
+              accept=".md,.markdown,text/markdown,text/plain"
+              className="hidden"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (f) setMdText(await f.text());
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <textarea
+            value={mdText}
+            onChange={(e) => setMdText(e.target.value)}
+            rows={10}
+            placeholder={"# Lễ nhập trạch (về nhà mới)\n\nNghi lễ báo cáo tổ tiên khi về nhà mới.\n\n## Ý nghĩa\n…\n\n## Chuẩn bị / lễ vật\n![Mâm cúng](https://…)\n…"}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm leading-relaxed resize-y"
+          />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => { setMdOpen(false); setMdText(""); }}>
+              Đóng
+            </Button>
+            <Button type="button" size="sm" disabled={!mdText.trim()} onClick={applyMarkdown}>
+              <IconCheck className="h-4 w-4 mr-1" /> Điền vào form
+            </Button>
+          </div>
+        </div>
+      )}
 
       <form
         onSubmit={(e) => {
