@@ -176,6 +176,24 @@ export function parseCustomMarkdown(md: string): ParsedCustomEntry {
 }
 
 /**
+ * Thân markdown không có ảnh bìa riêng → lấy ảnh MINH HOẠ đầu tiên làm ảnh
+ * bìa (để card danh sách có hình), đồng thời gỡ ảnh đó khỏi đoạn để trang xem
+ * không hiện trùng (bìa ở đầu + lại trong đoạn). Trả về cover + sections mới.
+ */
+export function extractCoverImage(sections: CustomSection[]): {
+  cover_image_url: string | null;
+  sections: CustomSection[];
+} {
+  const idx = sections.findIndex((s) => s.image_url);
+  if (idx === -1) return { cover_image_url: null, sections };
+  const cover_image_url = sections[idx].image_url ?? null;
+  const trimmed = sections.map((s, i) =>
+    i === idx ? { heading: s.heading, body: s.body } : s,
+  );
+  return { cover_image_url, sections: trimmed };
+}
+
+/**
  * Tách một tài liệu nhiều bài thành từng khối theo H1 (`# `). Mỗi khối bắt đầu
  * ở một dòng H1 và gồm toàn bộ nội dung tới H1 kế tiếp. Bỏ qua nội dung trước
  * H1 đầu tiên. Có nhận biết code-fence để không cắt nhầm.

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import {
+  extractCoverImage,
   parseCustomMarkdown,
   splitMarkdownEntries,
   type ParsedCustomEntry,
@@ -101,13 +102,16 @@ export default function CustomsImport() {
           continue;
         }
         try {
+          // Lấy ảnh minh hoạ đầu tiên làm ảnh bìa (card cần hình).
+          const { cover_image_url, sections } = extractCoverImage(p.sections);
           const { id } = await createCustomEntry({
             title: p.title.trim(),
             category,
             regions,
             status,
             short_description: p.short_description.trim() || null,
-            sections: p.sections,
+            cover_image_url,
+            sections,
             faq: p.faq,
           });
           res.created.push({ title: p.title.trim(), id });
