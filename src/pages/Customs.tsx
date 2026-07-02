@@ -4,7 +4,14 @@ import { Link } from "react-router-dom";
 
 import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
-import { IconBook, IconPlus, IconSearch, IconUpload } from "@/components/icons";
+import {
+  IconBook,
+  IconCalendar,
+  IconHelp,
+  IconPlus,
+  IconSearch,
+  IconUpload,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
@@ -159,76 +166,92 @@ export default function Customs() {
           </ul>
         )}
 
-        <p className="text-xs text-muted-foreground pt-2">
-          ⚠️ Nội dung mang tính tham khảo; phong tục có thể khác nhau theo vùng.
+        <p className="flex items-center gap-1.5 pt-2 text-xs text-muted-foreground">
+          <IconHelp className="h-3.5 w-3.5 shrink-0" />
+          Nội dung mang tính tham khảo; phong tục có thể khác nhau theo vùng.
         </p>
     </CustomsShell>
   );
 }
 
 function CustomCard({ entry }: { entry: CustomEntry }) {
+  const created = new Date(entry.created_at).toLocaleDateString("vi-VN");
   return (
     <li>
       <Link
         to={`/so-tay/${entry.id}`}
-        className="group flex h-full min-w-0 gap-3.5 rounded-xl border bg-card p-4 transition-all hover:border-primary hover:shadow-sm"
+        className="group flex h-full min-w-0 flex-col rounded-xl border bg-card p-4 transition-all hover:border-primary hover:shadow-md"
       >
-        <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-accent/10">
-          {entry.cover_image_url ? (
-            <img
-              src={entry.cover_image_url}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <IconBook className="h-6 w-6 text-accent" />
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="clan-name min-w-0 line-clamp-2 font-semibold leading-snug group-hover:text-primary">
-              {entry.title}
-            </h2>
-            {entry.status !== "published" && (
-              <span className="mt-0.5 shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                {entry.status === "draft" ? "Nháp" : "Chờ duyệt"}
-              </span>
+        <div className="flex min-w-0 gap-3.5">
+          {/* Ảnh bìa / placeholder — bo góc, có viền mảnh cho gọn gàng */}
+          <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted/60 ring-1 ring-border">
+            {entry.cover_image_url ? (
+              <img
+                src={entry.cover_image_url}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <IconBook className="h-6 w-6 text-muted-foreground/70" />
             )}
           </div>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {CUSTOM_CATEGORY_LABEL[entry.category]}
-            {entry.regions.length > 0 ? ` · ${entry.regions.join(", ")}` : ""}
-          </p>
-          {entry.short_description && (
-            <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
-              {entry.short_description}
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <h2 className="clan-name min-w-0 line-clamp-2 font-semibold leading-snug group-hover:text-primary">
+                {entry.title}
+              </h2>
+              {entry.status !== "published" && (
+                <span className="mt-0.5 shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">
+                  {entry.status === "draft" ? "Nháp" : "Chờ duyệt"}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-primary/80">
+              <span className="truncate">{CUSTOM_CATEGORY_LABEL[entry.category]}</span>
+              {entry.regions.length > 0 && (
+                <span className="truncate font-normal text-muted-foreground">
+                  · {entry.regions.join(", ")}
+                </span>
+              )}
             </p>
-          )}
-          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
-            {entry.mandatory_level && (
-              <span
-                className={`rounded-full px-2 py-0.5 ${
-                  entry.mandatory_level === "bat_buoc"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}
-              </span>
-            )}
-            {entry.reliability != null && (
-              <span className="text-accent" title="Độ tin cậy">
-                {"★".repeat(entry.reliability)}
-                <span className="text-muted-foreground"> {entry.reliability}/5</span>
-              </span>
-            )}
-            <span className="ml-auto" title="Ngày tạo">
-              🕒 {new Date(entry.created_at).toLocaleDateString("vi-VN")}
-            </span>
           </div>
+        </div>
+
+        {entry.short_description && (
+          <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+            {entry.short_description}
+          </p>
+        )}
+
+        {/* Chân card: độ tin cậy · mức bắt buộc · ngày tạo */}
+        <div className="mt-auto flex items-center gap-x-3 gap-y-1 border-t pt-2.5 text-[11px] text-muted-foreground">
+          {entry.reliability != null && (
+            <span className="inline-flex items-center gap-1" title="Độ tin cậy">
+              <span className="text-accent" aria-hidden>
+                {"★".repeat(entry.reliability)}
+              </span>
+              <span>{entry.reliability}/5</span>
+            </span>
+          )}
+          {entry.mandatory_level && (
+            <span
+              className={`rounded-full px-2 py-0.5 ${
+                entry.mandatory_level === "bat_buoc"
+                  ? "bg-primary/10 text-primary"
+                  : "bg-muted"
+              }`}
+            >
+              {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}
+            </span>
+          )}
+          <span className="ml-auto inline-flex shrink-0 items-center gap-1" title="Ngày tạo">
+            <IconCalendar className="h-3.5 w-3.5" />
+            {created}
+          </span>
         </div>
       </Link>
     </li>

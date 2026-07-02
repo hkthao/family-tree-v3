@@ -1,6 +1,10 @@
-// Parse "thân Markdown" (không frontmatter) thành 1 bài Sổ tay Văn hoá.
+// Parse "thân Markdown" thành 1 bài Sổ tay Văn hoá.
 //
-// Quy ước (thống nhất với editor & skill so-tay-viet-bai):
+// Quy ước:
+//   ---                  → frontmatter TUỲ CHỌN ở đầu file (category, regions,
+//   category: le_tet        mandatory_level, reliability, origins, aliases,
+//   ---                     timing, applicable_to, cover_image_url, scope…).
+//                           Có thì dùng, không có thì chọn trong app.
 //   # Tiêu đề            → title (H1 đầu tiên)
 //   đoạn mở đầu          → short_description (mọi dòng trước ## đầu tiên)
 //   ## Heading           → 1 đoạn {heading, body}
@@ -11,14 +15,137 @@
 // làm sạch cú pháp inline nhẹ (bỏ **đậm**, [text](url) → text). Không cần AST
 // markdown đầy đủ → tránh thêm dependency.
 
-import type { CustomFaq, CustomSection } from "@/lib/queries/customs";
+import {
+  CUSTOM_CATEGORY_LABEL,
+  CUSTOM_MANDATORY_LABEL,
+  CUSTOM_ORIGIN_LABEL,
+  CUSTOM_SCOPE_LABEL,
+  type CustomCategory,
+  type CustomFaq,
+  type CustomMandatory,
+  type CustomOrigin,
+  type CustomScope,
+  type CustomSection,
+} from "@/lib/queries/customs";
+
+/** Metadata tuỳ chọn lấy từ frontmatter (chỉ các trường hợp lệ mới có mặt). */
+export interface ParsedMeta {
+  category?: CustomCategory;
+  regions?: string[];
+  aliases?: string[];
+  origins?: CustomOrigin[];
+  mandatory_level?: CustomMandatory;
+  scope?: CustomScope;
+  reliability?: number;
+  lunar_month?: number;
+  timing?: string;
+  applicable_to?: string;
+  cover_image_url?: string;
+  sources?: string;
+}
 
 export interface ParsedCustomEntry {
   title: string;
   short_description: string;
   sections: CustomSection[];
   faq: CustomFaq[];
+  /** Từ frontmatter; rỗng nếu không có frontmatter. */
+  meta: ParsedMeta;
 }
+
+// ─── Frontmatter (tuỳ chọn) ─────────────────────────────────────────────────
+
+/** Tách khối frontmatter `---\n…\n---` ở đầu (nếu có) khỏi thân. */
+function splitFrontmatter(src: string): { fm: string | null; body: string } {
+  const m = src.match(/^﻿?---[ \t]*\n([\s\S]*?)\n---[ \t]*\n?/);
+  if (!m) return { fm: null, body: src };
+  return { fm: m[1], body: src.slice(m[0].length) };
+}
+
+/** Parse các dòng `key: value` trong frontmatter thành map (key thường hoá). */
+function parseFmLines(fm: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const line of fm.split("\n")) {
+    const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/);
+    if (m) out[m[1].toLowerCase()] = m[2].trim();
+  }
+  return out;
+}
+
+const fmNorm = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/đ/g, "d")
+    .toLowerCase()
+    .trim();
+
+/** Chuỗi → mảng: chấp nhận `[a, b]` hoặc `a, b`; bỏ nháy quanh phần tử. */
+function fmArray(v: string | undefined): string[] | undefined {
+  if (!v) return undefined;
+  let s = v.trim();
+  if (s.startsWith("[") && s.endsWith("]")) s = s.slice(1, -1);
+  const arr = s
+    .split(",")
+    .map((x) => x.trim().replace(/^["']|["']$/g, ""))
+    .filter(Boolean);
+  return arr.length ? arr : undefined;
+}
+
+/** Khớp giá trị (key enum HOẶC nhãn tiếng Việt) → key enum. */
+function fmEnum<T extends string>(
+  v: string | undefined,
+  labels: Record<T, string>,
+): T | undefined {
+  if (!v) return undefined;
+  const n = fmNorm(v.replace(/^["']|["']$/g, ""));
+  for (const key of Object.keys(labels) as T[]) {
+    if (fmNorm(key) === n || fmNorm(labels[key]) === n) return key;
+  }
+  return undefined;
+}
+
+/** Chuyển map frontmatter thô → ParsedMeta đã kiểm tra enum/số/https. */
+function buildMeta(raw: Record<string, string>): ParsedMeta {
+  const meta: ParsedMeta = {};
+  const cat = fmEnum(raw.category ?? raw.chu_de, CUSTOM_CATEGORY_LABEL);
+  if (cat) meta.category = cat;
+
+  const regions = fmArray(raw.regions ?? raw.vung_mien);
+  if (regions) meta.regions = regions;
+
+  const aliases = fmArray(raw.aliases ?? raw.ten_goi_khac);
+  if (aliases) meta.aliases = aliases;
+
+  const originsRaw = fmArray(raw.origins ?? raw.nguon_goc);
+  if (originsRaw) {
+    const os = originsRaw
+      .map((o) => fmEnum(o, CUSTOM_ORIGIN_LABEL))
+      .filter((o): o is CustomOrigin => !!o);
+    if (os.length) meta.origins = os;
+  }
+
+  const mand = fmEnum(raw.mandatory_level ?? raw.muc_bat_buoc, CUSTOM_MANDATORY_LABEL);
+  if (mand) meta.mandatory_level = mand;
+
+  const scope = fmEnum(raw.scope ?? raw.pham_vi, CUSTOM_SCOPE_LABEL);
+  if (scope) meta.scope = scope;
+
+  const rel = Number(raw.reliability ?? raw.do_tin_cay);
+  if (Number.isInteger(rel) && rel >= 1 && rel <= 5) meta.reliability = rel;
+
+  const lunar = Number(raw.lunar_month ?? raw.thang_am_lich);
+  if (Number.isInteger(lunar) && lunar >= 1 && lunar <= 12) meta.lunar_month = lunar;
+
+  if (raw.timing) meta.timing = raw.timing;
+  if (raw.applicable_to ?? raw.doi_tuong) meta.applicable_to = raw.applicable_to ?? raw.doi_tuong;
+  if (raw.cover_image_url && /^https:\/\//i.test(raw.cover_image_url))
+    meta.cover_image_url = raw.cover_image_url.trim();
+  if (raw.sources ?? raw.nguon) meta.sources = raw.sources ?? raw.nguon;
+  return meta;
+}
+
+// ─── Thân bài ───────────────────────────────────────────────────────────────
 
 // Heading (đã bỏ dấu, thường) coi là khối FAQ.
 const FAQ_HEADINGS = new Set([
@@ -108,7 +235,10 @@ function parseFaq(body: string): CustomFaq[] {
  * `title` rỗng để cảnh báo.
  */
 export function parseCustomMarkdown(md: string): ParsedCustomEntry {
-  const src = md.replace(/\r\n?/g, "\n");
+  const raw = md.replace(/\r\n?/g, "\n");
+  const { fm, body } = splitFrontmatter(raw);
+  const meta = fm ? buildMeta(parseFmLines(fm)) : {};
+  const src = body;
   const lines = src.split("\n");
 
   let title = "";
@@ -172,6 +302,7 @@ export function parseCustomMarkdown(md: string): ParsedCustomEntry {
     short_description: normalizeBody(intro.join("\n")),
     sections,
     faq,
+    meta,
   };
 }
 
@@ -194,9 +325,10 @@ export function extractCoverImage(sections: CustomSection[]): {
 }
 
 /**
- * Tách một tài liệu nhiều bài thành từng khối theo H1 (`# `). Mỗi khối bắt đầu
- * ở một dòng H1 và gồm toàn bộ nội dung tới H1 kế tiếp. Bỏ qua nội dung trước
- * H1 đầu tiên. Có nhận biết code-fence để không cắt nhầm.
+ * Tách một tài liệu nhiều bài thành từng khối. Mỗi bài bắt đầu ở **khối
+ * frontmatter mở** (`---` theo sau là dòng `key:`) HOẶC ở **H1** (`# `) nếu bài
+ * không có frontmatter. Bỏ nội dung trước bài đầu. Nhận biết code-fence và
+ * không nhầm `---` gạch ngang trong thân (vì đòi hỏi dòng kế là `key:`).
  */
 export function splitMarkdownEntries(md: string): string[] {
   const src = md.replace(/\r\n?/g, "\n");
@@ -204,15 +336,40 @@ export function splitMarkdownEntries(md: string): string[] {
   const chunks: string[] = [];
   let cur: string[] | null = null;
   let inFence = false;
-  for (const line of lines) {
+  let inFm = false;
+  const isFmKey = (l: string | undefined) => !!l && /^\s*[A-Za-z_][\w]*\s*:/.test(l);
+  const push = () => {
+    if (cur) chunks.push(cur.join("\n").trim());
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     if (/^\s{0,3}```/.test(line)) inFence = !inFence;
-    if (!inFence && /^#\s+.+$/.test(line)) {
-      if (cur) chunks.push(cur.join("\n").trim());
+
+    if (!inFence && !inFm && line.trim() === "---" && isFmKey(lines[i + 1])) {
+      // Mở frontmatter → bắt đầu bài mới.
+      push();
       cur = [line];
-    } else if (cur) {
-      cur.push(line);
+      inFm = true;
+      continue;
     }
+    if (!inFence && inFm && line.trim() === "---") {
+      inFm = false;
+      if (cur) cur.push(line);
+      continue;
+    }
+    if (!inFence && !inFm && /^#\s+.+$/.test(line)) {
+      // H1: bài mới, TRỪ khi khối hiện tại vừa mở bằng frontmatter và chưa có H1.
+      const curHasH1 = cur?.some((l) => /^#\s+.+$/.test(l));
+      if (!cur || curHasH1) {
+        push();
+        cur = [line];
+      } else {
+        cur.push(line);
+      }
+      continue;
+    }
+    if (cur) cur.push(line);
   }
-  if (cur) chunks.push(cur.join("\n").trim());
+  push();
   return chunks.filter(Boolean);
 }

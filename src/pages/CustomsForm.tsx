@@ -95,20 +95,41 @@ export default function CustomsForm() {
       !window.confirm("Ghi đè tiêu đề / mô tả / các đoạn / FAQ hiện tại bằng nội dung Markdown?")
     )
       return;
-    // Thân markdown không có ảnh bìa → nếu form chưa có bìa, lấy ảnh minh hoạ
-    // đầu tiên làm bìa (card danh sách cần hình) và gỡ khỏi đoạn để khỏi trùng.
-    const { cover_image_url, sections: secs } = coverUrl.trim()
-      ? { cover_image_url: null, sections: parsed.sections }
-      : extractCoverImage(parsed.sections);
+    const m = parsed.meta;
+    // Ảnh bìa: ưu tiên frontmatter; nếu không, lấy ảnh minh hoạ đầu tiên làm bìa
+    // (card cần hình) và gỡ khỏi đoạn để trang xem khỏi hiện trùng.
+    const useSectionCover = !m.cover_image_url && !coverUrl.trim();
+    const { cover_image_url, sections: secs } = useSectionCover
+      ? extractCoverImage(parsed.sections)
+      : { cover_image_url: null, sections: parsed.sections };
+
     if (parsed.title) setTitle(parsed.title);
     setShortDesc(parsed.short_description);
     setSections(secs);
     setFaq(parsed.faq);
-    if (cover_image_url) setCoverUrl(cover_image_url);
+    if (m.cover_image_url) setCoverUrl(m.cover_image_url);
+    else if (cover_image_url) setCoverUrl(cover_image_url);
+
+    // Metadata từ frontmatter (nếu có) → điền các ô tương ứng.
+    if (m.category) setCategory(m.category);
+    if (m.regions) setRegions(m.regions);
+    if (m.aliases) setAliases(m.aliases.join(", "));
+    if (m.origins) setOrigins(m.origins);
+    if (m.mandatory_level) setMandatory(m.mandatory_level);
+    if (m.scope) setScope(m.scope);
+    if (m.reliability != null) setReliability(String(m.reliability));
+    if (m.lunar_month != null) setLunarMonth(String(m.lunar_month));
+    if (m.timing) setTiming(m.timing);
+    if (m.applicable_to) setApplicableTo(m.applicable_to);
+    if (m.sources) setSources(m.sources);
+
     setMdOpen(false);
     setMdText("");
+    const metaCount = Object.keys(m).length;
     toast.success(
-      `Đã nhập ${secs.length} đoạn, ${parsed.faq.length} câu hỏi — xem lại rồi Lưu.`,
+      `Đã nhập ${secs.length} đoạn, ${parsed.faq.length} câu hỏi` +
+        (metaCount ? `, ${metaCount} thông tin` : "") +
+        " — xem lại rồi Lưu.",
     );
   };
 

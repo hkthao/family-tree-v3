@@ -102,16 +102,29 @@ export default function CustomsImport() {
           continue;
         }
         try {
-          // Lấy ảnh minh hoạ đầu tiên làm ảnh bìa (card cần hình).
-          const { cover_image_url, sections } = extractCoverImage(p.sections);
+          const m = p.meta;
+          // Ảnh bìa: ưu tiên frontmatter; nếu không, lấy ảnh minh hoạ đầu tiên.
+          const promoted = m.cover_image_url
+            ? { cover_image_url: m.cover_image_url, sections: p.sections }
+            : extractCoverImage(p.sections);
+          // Frontmatter (nếu có) override các mặc định chọn trên trang.
           const { id } = await createCustomEntry({
             title: p.title.trim(),
-            category,
-            regions,
+            category: m.category ?? category,
+            regions: m.regions ?? regions,
             status,
             short_description: p.short_description.trim() || null,
-            cover_image_url,
-            sections,
+            aliases: m.aliases,
+            origins: m.origins,
+            mandatory_level: m.mandatory_level ?? null,
+            scope: m.scope ?? null,
+            reliability: m.reliability ?? null,
+            lunar_month: m.lunar_month ?? null,
+            timing: m.timing ?? null,
+            applicable_to: m.applicable_to ?? null,
+            sources: m.sources ?? null,
+            cover_image_url: promoted.cover_image_url,
+            sections: promoted.sections,
             faq: p.faq,
           });
           res.created.push({ title: p.title.trim(), id });
