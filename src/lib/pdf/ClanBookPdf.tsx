@@ -1067,6 +1067,81 @@ function renderTreePages({
 
   const genOf = (p: PersonDetail) => displayGenLabel(p.generation, genOffset);
 
+  // ─── Chia trang theo CHIỀU SÂU ─────────────────────────────────────
+  // Cây dòng dõi dài (ít nhánh nhưng nhiều đời) nếu để một trang sẽ bị co
+  // rất nhỏ + thừa hai bên. Giới hạn số đời mỗi trang; đời sâu hơn tách
+  // sang trang tiếp, gốc mỗi trang là người ở ranh giới (lặp lại làm mốc).
+  const MAX_GEN_PER_PAGE = 6;
+
+  const kidsIn = (id: string, mf?: Set<string>): PersonDetail[] =>
+    kidsOf(id).filter((c) => !mf || mf.has(c.id));
+
+  function subtreeDepth(rootsArg: PersonDetail[], mf?: Set<string>): number {
+    let max = 1;
+    const walk = (p: PersonDetail, d: number) => {
+      if (d > max) max = d;
+      for (const c of kidsIn(p.id, mf)) walk(c, d + 1);
+    };
+    for (const r of rootsArg) walk(r, 1);
+    return max;
+  }
+
+  // Tập node trong <= maxGen đời từ rootsArg (theo mf); frontier = node ở
+  // đời cuối cùng còn con sâu hơn (để mở trang tiếp).
+  function depthSlice(
+    rootsArg: PersonDetail[],
+    mf: Set<string> | undefined,
+    maxGen: number,
+  ): { set: Set<string>; frontier: PersonDetail[] } {
+    const set = new Set<string>();
+    const frontier: PersonDetail[] = [];
+    const walk = (p: PersonDetail, depth: number) => {
+      set.add(p.id);
+      const kids = kidsIn(p.id, mf);
+      if (depth + 1 >= maxGen) {
+        if (kids.length > 0) frontier.push(p);
+        return;
+      }
+      for (const c of kids) walk(c, depth + 1);
+    };
+    for (const r of rootsArg) walk(r, 0);
+    return { set, frontier };
+  }
+
+  // Emit một cây (đã giới hạn bề ngang) — cắt thêm theo chiều sâu nếu quá
+  // nhiều đời.
+  function emitTree(
+    rootsArg: PersonDetail[],
+    mf: Set<string> | undefined,
+    title: string,
+    subtitle: string | undefined,
+    keyPrefix: string,
+  ) {
+    if (subtreeDepth(rootsArg, mf) <= MAX_GEN_PER_PAGE) {
+      mkPage(keyPrefix, rootsArg, mf, title, subtitle);
+      return;
+    }
+    const { set, frontier } = depthSlice(rootsArg, mf, MAX_GEN_PER_PAGE);
+    mkPage(
+      keyPrefix,
+      rootsArg,
+      set,
+      title,
+      subtitle ? `${subtitle} · đời sau ở trang kế` : "Đời sau tiếp ở trang kế",
+    );
+    frontier.forEach((f, i) => {
+      const sub = new Set<string>();
+      for (const d of descendantsOf(f.id)) if (!mf || mf.has(d)) sub.add(d);
+      emitTree(
+        [f],
+        sub,
+        `Phả hệ từ ${f.full_name} — ${genOf(f)} (tiếp)`,
+        undefined,
+        `${keyPrefix}d${i}`,
+      );
+    });
+  }
+
   // Gói các nhánh-con của R vào từng trang (mỗi trang: R + vài nhánh trọn
   // vẹn), nhánh-con quá lớn thì đệ quy — không bao giờ cắt đôi một nhánh.
   function emitBranchesOf(r: PersonDetail, keyPrefix: string) {
@@ -1105,7 +1180,7 @@ function renderTreePages({
         const mf = new Set<string>([r.id]);
         for (const c of g) for (const d of descendantsOf(c.id)) mf.add(d);
         const part = groups.length > 1 ? ` (phần ${gi + 1}/${groups.length})` : "";
-        mkPage(`${keyPrefix}-${gi}`, [r], mf, label, `Các nhánh con${part}`);
+        emitTree([r], mf, label, `Các nhánh con${part}`, `${keyPrefix}-${gi}`);
       });
     }
     big.forEach((c, bi) => emitBranchesOf(c, `${keyPrefix}b${bi}`));
@@ -1114,19 +1189,22 @@ function renderTreePages({
   // Cả cây vừa một trang.
   const totalLeaves = countLeaves(roots, childrenByParent, personById);
   if (totalLeaves <= budget) {
-    mkPage("tree", roots, undefined, "Sơ đồ cây gia phả");
+    emitTree(roots, undefined, "Sơ đồ cây gia phả", undefined, "tree");
     return pages;
   }
 
-  // Trang tổng quan: Thuỷ tổ + các đời kế tiếp vừa đủ bề ngang.
+  // Trang tổng quan: Thuỷ tổ + các đời kế tiếp — vừa bề ngang VÀ không quá
+  // sâu (giới hạn số đời để thẻ không bị co nhỏ).
   const overview = new Set<string>(roots.map((r) => r.id));
   let frontier = roots;
-  while (true) {
+  let ovDepth = 1;
+  while (ovDepth < MAX_GEN_PER_PAGE) {
     const next = frontier.flatMap((p) => kidsOf(p.id));
     if (next.length === 0) break;
     if (overview.size + next.length > budget) break;
     next.forEach((c) => overview.add(c.id));
     frontier = next;
+    ovDepth += 1;
   }
   if (overview.size > roots.length) {
     const founders = roots.filter((r) => kidsOf(r.id).length > 0);
@@ -1230,7 +1308,7 @@ function TreeDiagramPage({
     maxSyl = Math.max(maxSyl, sy.length);
     for (const s of sy) maxSylLen = Math.max(maxSylLen, s.length);
   }
-  maxSyl = Math.min(maxSyl, 5); // tên quá dài: gộp phần dư vào dòng cuối
+  maxSyl = Math.min(maxSyl, 6); // tên quá dài: cắt bớt (… ) ở dòng cuối
 
   const NAME_FS = 7;
   const YEAR_FS = 5;
@@ -1278,8 +1356,12 @@ function TreeDiagramPage({
       const childStart = cursor;
       for (const k of kids) childCards.push(place(k, depth + 1));
       const childrenWidth = cursor - SIBLING_GAP - childStart;
+      // Căn cha giữa các CẶP con (dùng tâm cặp, không phải ô đơn) — nếu dùng
+      // cx ô đơn, cha của 1 con-có-vợ/chồng bị đẩy lệch trái (âm → tràn mép).
       const childrenCenter =
-        (childCards[0].cx + childCards[childCards.length - 1].cx) / 2;
+        (childCards[0].coupleCenterX +
+          childCards[childCards.length - 1].coupleCenterX) /
+        2;
       if (groupWidth > childrenWidth) {
         // Cặp rộng hơn hàng con → dịch con sang phải cho cân giữa cặp.
         const shift = (groupWidth - childrenWidth) / 2;
@@ -1383,6 +1465,16 @@ function TreeDiagramPage({
     }
   }
 
+  // Chuẩn hoá: nếu có ô lệch sang trái mép (x âm), dịch cả sơ đồ về ≥ 0
+  // để không bị cắt mất mép trái.
+  const minX = cards.reduce((m, c) => Math.min(m, c.cx - CARD_W / 2), 0);
+  if (minX < 0) {
+    for (const c of cards) {
+      c.cx -= minX;
+      c.coupleCenterX -= minX;
+    }
+  }
+
   const contentW = Math.max(
     1,
     cards.reduce((m, c) => Math.max(m, c.cx + CARD_W / 2), 0),
@@ -1474,9 +1566,11 @@ function TreeDiagramPage({
                 ? "#E8D2CC"
                 : "#E8E0D2";
           const sylls = nameSyllables(p.full_name);
+          // Tên dài hơn số dòng cho phép: giữ MỖI DÒNG MỘT âm tiết (khỏi
+          // tràn ngang), dòng cuối thêm "…" báo còn nữa (tên đầy đủ ở Danh bạ).
           const lines =
             sylls.length > maxSyl
-              ? [...sylls.slice(0, maxSyl - 1), sylls.slice(maxSyl - 1).join(" ")]
+              ? [...sylls.slice(0, maxSyl - 1), sylls[maxSyl - 1] + "…"]
               : sylls;
           const yr = yearOf(p);
           return (
