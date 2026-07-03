@@ -13,6 +13,7 @@ import {
   IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,6 +74,14 @@ export default function Customs() {
     // Public: chạy cho cả khách chưa đăng nhập (RLS chỉ trả bài published).
     staleTime: 5 * 60 * 1000,
   });
+
+  // Phân trang (lọc + tìm đã ở client nên cắt trang ở client luôn).
+  const PAGE_SIZE = 12;
+  const [pageRaw, setPage] = useUrlState("trang", "");
+  const all = entries ?? [];
+  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, Number(pageRaw) || 1), totalPages);
+  const paged = all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <CustomsShell>
@@ -158,12 +167,23 @@ export default function Customs() {
           />
         )}
 
-        {entries && entries.length > 0 && (
+        {all.length > 0 && (
           <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {entries.map((e) => (
+            {paged.map((e) => (
               <CustomCard key={e.id} entry={e} />
             ))}
           </ul>
+        )}
+
+        {all.length > PAGE_SIZE && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={all.length}
+            pageSize={PAGE_SIZE}
+            unit="bài"
+            onPageChange={(p) => setPage(p <= 1 ? "" : String(p))}
+          />
         )}
 
         <p className="flex items-center gap-1.5 pt-2 text-xs text-muted-foreground">
@@ -174,7 +194,7 @@ export default function Customs() {
   );
 }
 
-function CustomCard({ entry }: { entry: CustomEntry }) {
+export function CustomCard({ entry }: { entry: CustomEntry }) {
   const created = new Date(entry.created_at).toLocaleDateString("vi-VN");
   return (
     <li>
