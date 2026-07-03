@@ -7,8 +7,11 @@ import { EmptyState } from "@/components/EmptyState";
 import { HeritageThumb } from "@/components/HeritageThumb";
 import { IconPlus, IconScroll, IconSearch } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
+import { CustomCard } from "@/pages/Customs";
+import { listCustomEntries } from "@/lib/queries/customs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
@@ -31,6 +34,10 @@ export default function Heritage() {
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const canEdit = canEditClan(clan);
+
+  // 2 tab: "clan" = di sản riêng của họ · "sotay" = Sổ tay Văn hoá chung.
+  const [tabRaw, setTab] = useUrlState("tab", "clan");
+  const tab = tabRaw === "sotay" ? "sotay" : "clan";
 
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useUrlState("q", "");
@@ -99,6 +106,36 @@ export default function Heritage() {
         }
       />
 
+      {/* 2 tab: di sản riêng của họ · nội dung chung từ Sổ tay Văn hoá */}
+      <div className="flex w-fit gap-1 rounded-lg border bg-card p-1">
+        <button
+          type="button"
+          onClick={() => setTab("clan")}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            tab === "clan"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Của dòng họ
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("sotay")}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            tab === "sotay"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Sổ tay Văn hoá
+        </button>
+      </div>
+
+      {tab === "sotay" && <SoTayTab />}
+
+      {tab === "clan" && (
+        <>
       {/* Thanh dung lượng media của họ */}
       {storageBytes != null && (() => {
         const pct = Math.min(100, Math.round((storageBytes / HERITAGE_CLAN_QUOTA_BYTES) * 100));
@@ -225,6 +262,68 @@ export default function Heritage() {
             );
           })}
         </ul>
+      )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Tab "Sổ tay Văn hoá" trong trang Di sản của họ — hiển thị nội dung
+ * phong tục CHUNG của hệ thống (bảng custom_entries, chỉ bài published),
+ * có phân trang. Bấm một bài mở trang Sổ tay.
+ */
+function SoTayTab() {
+  const { data: entries, isLoading } = useQuery({
+    queryKey: ["customs-embed"],
+    queryFn: () => listCustomEntries({}),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const PAGE_SIZE = 8;
+  const [pageRaw, setPage] = useUrlState("sp", "");
+  const all = entries ?? [];
+  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, Number(pageRaw) || 1), totalPages);
+  const paged = all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Nội dung chung về phong tục – nghi lễ Việt Nam từ Sổ tay Văn hoá của hệ thống.{" "}
+        <Link to="/so-tay" className="text-primary hover:underline">
+          Mở Sổ tay đầy đủ →
+        </Link>
+      </p>
+
+      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+
+      {!isLoading && all.length === 0 && (
+        <EmptyState
+          icon={<IconScroll className="h-10 w-10" />}
+          title="Sổ tay đang được biên soạn"
+          description="Chưa có bài phong tục nào."
+        />
+      )}
+
+      {all.length > 0 && (
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {paged.map((e) => (
+            <CustomCard key={e.id} entry={e} />
+          ))}
+        </ul>
+      )}
+
+      {all.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={all.length}
+          pageSize={PAGE_SIZE}
+          unit="bài"
+          onPageChange={(p) => setPage(p <= 1 ? "" : String(p))}
+        />
       )}
     </div>
   );

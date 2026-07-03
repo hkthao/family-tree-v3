@@ -116,7 +116,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-[360px] max-w-[calc(100vw-24px)] overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 w-[360px] max-w-[calc(100vw-24px)] origin-top-right overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-lg animate-in fade-in-0 zoom-in-95 slide-in-from-top-1 duration-150 ease-out">
           <div className="flex items-center justify-between gap-2 border-b px-4 py-2.5">
             <span className="text-sm font-semibold">Thông báo</span>
             {count > 0 && (
