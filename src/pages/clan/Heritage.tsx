@@ -95,41 +95,45 @@ export default function Heritage() {
         icon={<IconScroll className="h-7 w-7" />}
         title="Di sản & Văn hoá"
         description="Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
-        actionsBelow
-        actions={
-          canEdit ? (
-            <Button size="sm" onClick={() => navigate(`/clans/${clan.id}/heritage/new`)}>
-              <IconPlus className="h-4 w-4 mr-1" />
-              Thêm
-            </Button>
-          ) : undefined
-        }
       />
 
-      {/* 2 tab: di sản riêng của họ · nội dung chung từ Sổ tay Văn hoá */}
-      <div className="flex w-fit gap-1 rounded-lg border bg-card p-1">
-        <button
-          type="button"
-          onClick={() => setTab("clan")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-            tab === "clan"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Của dòng họ
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("sotay")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-            tab === "sotay"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          Sổ tay Văn hoá
-        </button>
+      {/* Tab + nút Thêm CÙNG MỘT HÀNG cho tiết kiệm diện tích. Nút Thêm
+          chỉ hiện ở tab "Của dòng họ" (thêm di sản của họ). */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex w-fit gap-1 rounded-lg border bg-card p-1">
+          <button
+            type="button"
+            onClick={() => setTab("clan")}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              tab === "clan"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Của dòng họ
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("sotay")}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              tab === "sotay"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Sổ tay Văn hoá
+          </button>
+        </div>
+        {tab === "clan" && canEdit && (
+          <Button
+            size="sm"
+            className="shrink-0"
+            onClick={() => navigate(`/clans/${clan.id}/heritage/new`)}
+          >
+            <IconPlus className="h-4 w-4 mr-1" />
+            Thêm
+          </Button>
+        )}
       </div>
 
       {tab === "sotay" && <SoTayTab />}
