@@ -167,7 +167,7 @@ export function NotificationBell() {
                         <span className="min-w-0 flex-1">
                           <span className="flex items-start gap-2">
                             <span
-                              className={`min-w-0 flex-1 text-sm leading-snug ${
+                              className={`line-clamp-2 min-w-0 flex-1 text-sm leading-snug ${
                                 isRead
                                   ? "font-medium text-foreground/80"
                                   : "font-semibold"
@@ -181,7 +181,7 @@ export function NotificationBell() {
                               {LEVEL_LABEL[row.level]}
                             </span>
                           </span>
-                          <span className="mt-1 block line-clamp-2 whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
+                          <span className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                             {row.body}
                           </span>
                           {row.published_at && (
