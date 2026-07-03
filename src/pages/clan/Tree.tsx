@@ -1387,17 +1387,17 @@ function InlawBadgeBody({
 // Tree page still loads quickly when the user never clicks export.
 
 const EXPORT_DENSITY: { v: number; label: string }[] = [
-  { v: 18, label: "Gọn — thẻ to, dễ đọc" },
-  { v: 40, label: "Vừa (mặc định)" },
-  { v: 80, label: "Nhiều người mỗi trang" },
-  { v: 140, label: "Tối đa — thẻ nhỏ, ít trang" },
+  { v: 12, label: "Gọn — thẻ to, dễ đọc" },
+  { v: 24, label: "Vừa (mặc định)" },
+  { v: 45, label: "Nhiều người mỗi trang" },
+  { v: 80, label: "Tối đa — thẻ nhỏ, ít trang" },
 ];
 
 function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
-  const [perPage, setPerPage] = useState(40);
+  const [perPage, setPerPage] = useState(24);
 
   async function doExport() {
     if (busy) return;
