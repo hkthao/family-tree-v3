@@ -330,7 +330,14 @@ function VineBorder({
 interface Props {
   clan: ClanDetail;
   data: ClanBookData;
-  include?: { tree?: boolean; detail?: boolean; restingPlaces?: boolean; heritage?: boolean };
+  include?: {
+    tree?: boolean;
+    detail?: boolean;
+    restingPlaces?: boolean;
+    heritage?: boolean;
+    /** Số "lá" tối đa mỗi trang sơ đồ (mật độ do user chọn). */
+    treePerPage?: number;
+  };
   /**
    * Optional personId → JPEG data URI map for embedding real avatar
    * photos. Persons not in the map fall back to the gendered
@@ -620,6 +627,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           personById,
           spousesByPerson,
           genOffset: clan.generation_offset ?? 0,
+          budget: include?.treePerPage,
           showLivingFullDob: clan.display_living_full_dob,
         })}
 
@@ -1001,6 +1009,7 @@ function renderTreePages({
   personById,
   spousesByPerson,
   genOffset,
+  budget: budgetOpt,
   showLivingFullDob = false,
 }: {
   roots: PersonDetail[];
@@ -1008,8 +1017,11 @@ function renderTreePages({
   personById: Map<string, PersonDetail>;
   spousesByPerson: Map<string, string[]>;
   genOffset: number;
+  budget?: number;
   showLivingFullDob?: boolean;
 }): React.ReactNode {
+  const budget =
+    budgetOpt && budgetOpt >= 4 ? Math.floor(budgetOpt) : TREE_LEAF_BUDGET;
   const kidsOf = (id: string): PersonDetail[] =>
     (childrenByParent.get(id) ?? [])
       .map((cid) => personById.get(cid))
@@ -1064,14 +1076,14 @@ function renderTreePages({
     let curLeaves = 0;
     for (const c of kids) {
       const cl = countLeaves([c], childrenByParent, personById);
-      if (cl > TREE_LEAF_BUDGET) {
+      if (cl > budget) {
         if (cur.length) {
           groups.push(cur);
           cur = [];
           curLeaves = 0;
         }
         big.push(c);
-      } else if (curLeaves + cl <= TREE_LEAF_BUDGET) {
+      } else if (curLeaves + cl <= budget) {
         cur.push(c);
         curLeaves += cl;
       } else {
@@ -1100,7 +1112,7 @@ function renderTreePages({
 
   // Cả cây vừa một trang.
   const totalLeaves = countLeaves(roots, childrenByParent, personById);
-  if (totalLeaves <= TREE_LEAF_BUDGET) {
+  if (totalLeaves <= budget) {
     mkPage("tree", roots, undefined, "Sơ đồ cây gia phả");
     return pages;
   }
@@ -1111,7 +1123,7 @@ function renderTreePages({
   while (true) {
     const next = frontier.flatMap((p) => kidsOf(p.id));
     if (next.length === 0) break;
-    if (overview.size + next.length > TREE_LEAF_BUDGET) break;
+    if (overview.size + next.length > budget) break;
     next.forEach((c) => overview.add(c.id));
     frontier = next;
   }
@@ -1273,7 +1285,56 @@ function TreeDiagramPage({
     for (const cc of childCards) childLinks.push({ parent: primary, child: cc });
     return primary;
   }
-  for (const r of roots) place(r, 0);
+  // Người có nhánh (có con) vẽ dạng cây; người RỜI RẠC (không con, vd dâu/
+  // rể chưa nối, dữ liệu lẻ) gom vào LƯỚI nhiều hàng bên dưới — tránh kéo
+  // cả trang rộng ra khiến chữ bé tí.
+  const connectedRoots = roots.filter((r) => kidsOf(r.id).length > 0);
+  const singleRoots = roots.filter((r) => kidsOf(r.id).length === 0);
+  for (const r of connectedRoots) place(r, 0);
+
+  if (singleRoots.length > 0) {
+    const treeBottom = cards.reduce((m, c) => Math.max(m, c.y + CARD_H), 0);
+    const gridTop = connectedRoots.length > 0 ? treeBottom + ROW_GAP * 1.4 : 0;
+    const cols = Math.max(
+      1,
+      Math.ceil(Math.sqrt(singleRoots.length * (SVG_W / SVG_H))),
+    );
+    let gx = 0;
+    let gy = gridTop;
+    let col = 0;
+    for (const s of singleRoots) {
+      const spouses = inlawsOf(s.id);
+      const gw = (1 + spouses.length) * CARD_W + spouses.length * MARRIAGE_GAP;
+      const primary: Card = {
+        person: s,
+        cx: gx + CARD_W / 2,
+        y: gy,
+        kind: "primary",
+        coupleCenterX: gx + gw / 2,
+      };
+      cards.push(primary);
+      let sx = gx + CARD_W + MARRIAGE_GAP;
+      for (const sp of spouses) {
+        const sc: Card = {
+          person: sp,
+          cx: sx + CARD_W / 2,
+          y: gy,
+          kind: "spouse",
+          coupleCenterX: sx + CARD_W / 2,
+        };
+        cards.push(sc);
+        marriageLinks.push({ a: primary, b: sc });
+        sx += CARD_W + MARRIAGE_GAP;
+      }
+      gx += gw + SIBLING_GAP;
+      col += 1;
+      if (col >= cols) {
+        col = 0;
+        gx = 0;
+        gy += CARD_H + ROW_GAP * 0.7;
+      }
+    }
+  }
 
   const contentW = Math.max(
     1,
@@ -1283,6 +1344,11 @@ function TreeDiagramPage({
     1,
     cards.reduce((m, c) => Math.max(m, c.y + CARD_H), 0),
   );
+  // Vẽ SVG đúng cỡ nội dung đã co (không letterbox) → thẻ to hết mức mà
+  // vẫn nằm gọn trong khung trang, bớt khoảng trắng thừa.
+  const fit = Math.min(SVG_W / contentW, SVG_H / contentH);
+  const drawW = Math.max(1, Math.round(contentW * fit));
+  const drawH = Math.max(1, Math.round(contentH * fit));
 
   const yearOf = (p: PersonDetail): string => {
     if (showLivingFullDob && p.is_living) {
@@ -1304,9 +1370,10 @@ function TreeDiagramPage({
         {subtitle ??
           "Mỗi ô là một thành viên; ô nhạt viền đứt là dâu/rể kết hôn vào họ. Tên đọc từ trên xuống. Thuỷ tổ ở đầu, các đời xuôi xuống dưới."}
       </Text>
+      <View style={{ alignItems: "center" }}>
       <Svg
-        width={SVG_W}
-        height={SVG_H}
+        width={drawW}
+        height={drawH}
         viewBox={`0 0 ${contentW} ${contentH}`}
         preserveAspectRatio="xMidYMin meet"
       >
@@ -1406,6 +1473,7 @@ function TreeDiagramPage({
           );
         })}
       </Svg>
+      </View>
     </Page>
   );
 }
