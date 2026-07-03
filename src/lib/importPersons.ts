@@ -23,6 +23,11 @@ const COL = {
   tempId: ["id", "id tạm", "ma", "ma so", "stt", "code", "person id"],
   fullName: ["họ tên", "ho ten", "họ và tên", "name", "tên", "full name", "fullname", "ten"],
   gender: ["giới tính", "gioi tinh", "gender", "gt", "sex"],
+  birthOrder: [
+    "thứ tự con", "thu tu con", "thứ tự", "con thứ", "con thu",
+    "stt con", "thứ tự anh chị em", "thu tu anh chi em",
+    "birth order", "sibling order", "sib order",
+  ],
   birthYear: ["năm sinh", "nam sinh", "birth year", "ns", "year of birth", "birth"],
   deathYear: ["năm mất", "nam mat", "death year", "nm", "year of death", "death"],
   fatherTempId: ["id cha", "father id", "cha", "father", "ma cha", "id father"],
@@ -48,6 +53,8 @@ export interface NormalisedRow {
   tempId: string;
   fullName: string;
   gender: "M" | "F" | null;
+  /** "Con thứ mấy" trong gia đình (1 = con cả). null = chưa rõ. */
+  birthOrder: number | null;
   birthYear: number | null;
   deathYear: number | null;
   fatherTempId: string | null;
@@ -79,6 +86,8 @@ export interface ResolvedPerson {
   death_date_precision: "day" | "month" | "year" | null;
   branch_id: string | null;
   birth_family_id: string | null;
+  /** "Con thứ mấy" — để sơ đồ/danh bạ xếp anh-chị-em đúng thứ tự. */
+  birth_order: number | null;
   bio: string | null;
 }
 
@@ -151,6 +160,14 @@ function asGender(v: string): "M" | "F" | null {
   return null;
 }
 
+/** "Con thứ mấy": số nguyên ≥ 1. Bỏ qua giá trị rác. */
+function asBirthOrder(v: string): number | null {
+  if (!v) return null;
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 1 || n > 99) return null;
+  return n;
+}
+
 function asYear(v: string): number | null {
   if (!v) return null;
   const n = Number(v);
@@ -218,6 +235,7 @@ export function planImport(
     tempId: pick(r, headerMap.tempId),
     fullName: pick(r, headerMap.fullName),
     gender: asGender(pick(r, headerMap.gender)),
+    birthOrder: asBirthOrder(pick(r, headerMap.birthOrder)),
     birthYear: asYear(pick(r, headerMap.birthYear)),
     deathYear: asYear(pick(r, headerMap.deathYear)),
     fatherTempId: pick(r, headerMap.fatherTempId) || null,
@@ -421,14 +439,35 @@ export function planImport(
     }
   }
 
+  const familyIdOf = (r: NormalisedRow): string | null => {
+    if (!r.fatherTempId && !r.motherTempId) return null;
+    const fa = r.fatherTempId ? uuidByTempId.get(r.fatherTempId)! : null;
+    const mo = r.motherTempId ? uuidByTempId.get(r.motherTempId)! : null;
+    return familyByKey.get(familyKey(fa, mo))?.id ?? null;
+  };
+
+  // Thứ tự con: ưu tiên cột "Thứ tự con" người dùng điền. Nếu MỘT gia đình
+  // không ai điền, tự xếp theo THỨ TỰ XUẤT HIỆN trong file (con nào ghi
+  // trước là con trước) → nhập xong anh-chị-em đúng thứ tự dù bỏ trống cột.
+  // Nếu gia đình có điền một phần thì tôn trọng phần điền, để trống phần
+  // còn lại (rơi về ngày sinh/tên) — không đoán bừa.
+  const famHasExplicit = new Set<string>();
+  for (const r of rows) {
+    const fid = familyIdOf(r);
+    if (fid && r.birthOrder != null) famHasExplicit.add(fid);
+  }
+  const famSeq = new Map<string, number>();
+  const effectiveBirthOrder = (r: NormalisedRow, familyId: string | null): number | null => {
+    if (r.birthOrder != null) return r.birthOrder;
+    if (!familyId || famHasExplicit.has(familyId)) return null;
+    const n = (famSeq.get(familyId) ?? 0) + 1;
+    famSeq.set(familyId, n);
+    return n;
+  };
+
   // Resolved persons
   const persons: ResolvedPerson[] = rows.map((r) => {
-    const familyId = (() => {
-      if (!r.fatherTempId && !r.motherTempId) return null;
-      const fa = r.fatherTempId ? uuidByTempId.get(r.fatherTempId)! : null;
-      const mo = r.motherTempId ? uuidByTempId.get(r.motherTempId)! : null;
-      return familyByKey.get(familyKey(fa, mo))?.id ?? null;
-    })();
+    const familyId = familyIdOf(r);
     const birthDate =
       r.birthYear !== null ? `${String(r.birthYear).padStart(4, "0")}-01-01` : null;
     const deathDate =
@@ -447,6 +486,7 @@ export function planImport(
       death_date_precision: deathDate ? "year" : null,
       branch_id: r.branch ? branchByName.get(r.branch)!.id : null,
       birth_family_id: familyId,
+      birth_order: effectiveBirthOrder(r, familyId),
       bio: r.notes,
     };
   });

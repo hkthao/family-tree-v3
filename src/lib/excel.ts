@@ -102,6 +102,7 @@ export function downloadTemplate(filename = "mau-gia-pha.xlsx"): void {
     "ID",
     "Họ tên",
     "Giới tính",
+    "Thứ tự con",
     "Năm sinh",
     "Năm mất",
     "ID Cha",
@@ -114,14 +115,14 @@ export function downloadTemplate(filename = "mau-gia-pha.xlsx"): void {
   // Ví dụ thực tế: thuỷ tổ + vợ, con trai (lấy vợ — dâu nối bằng ID Vợ/Chồng),
   // và vợ 2 (đặt ID thêm "b" cho dễ nhớ, nối bằng ID Vợ/Chồng).
   const example = [
-    // ID,   Họ tên,        GT, Sinh, Mất, Cha,  Mẹ,   Vợ/Chồng, Thuỷ tổ, Chi,     Ghi chú
-    ["C1", "Lê Cụ Tổ", "M", 1900, 1970, "", "", "V1", "x", "Chi cả", "Thuỷ tổ đời 1"],
-    ["V1", "Đỗ Thị Cụ", "F", 1905, 1980, "", "", "C1", "", "Chi cả", "Vợ cụ tổ"],
-    ["C2", "Lê Văn Một", "M", 1930, "", "C1", "V1", "V2", "", "Chi cả", "Con cụ tổ, có 2 vợ"],
-    ["V2", "Đỗ Thị Hai", "F", 1935, "", "", "", "C2", "", "Chi cả", "Vợ cả của C2"],
-    ["V2b", "Trần Thị Hai", "F", 1940, "", "", "", "C2", "", "Chi cả", "Vợ hai của C2 (ID + 'b')"],
-    ["C3", "Lê Văn Ba", "M", 1955, "", "C2", "V2", "", "", "Chi cả", "Con C2 với vợ cả"],
-    ["C4", "Lê Văn Bốn", "M", 1962, "", "C2", "V2b", "", "", "Chi cả", "Con C2 với vợ hai"],
+    // ID,   Họ tên,     GT, Thứ tự con, Sinh, Mất, Cha,  Mẹ,   Vợ/Chồng, Thuỷ tổ, Chi,   Ghi chú
+    ["C1", "Lê Cụ Tổ", "M", "", 1900, 1970, "", "", "V1", "x", "Chi cả", "Thuỷ tổ đời 1"],
+    ["V1", "Đỗ Thị Cụ", "F", "", 1905, 1980, "", "", "C1", "", "Chi cả", "Vợ cụ tổ"],
+    ["C2", "Lê Văn Một", "M", 1, 1930, "", "C1", "V1", "V2", "", "Chi cả", "Con cả cụ tổ, có 2 vợ"],
+    ["V2", "Đỗ Thị Hai", "F", "", 1935, "", "", "", "C2", "", "Chi cả", "Vợ cả của C2"],
+    ["V2b", "Trần Thị Hai", "F", "", 1940, "", "", "", "C2", "", "Chi cả", "Vợ hai của C2 (ID + 'b')"],
+    ["C3", "Lê Văn Ba", "M", 1, 1955, "", "C2", "V2", "", "", "Chi cả", "Con cả (C2 × vợ cả)"],
+    ["C4", "Lê Văn Bốn", "M", 1, 1962, "", "C2", "V2b", "", "", "Chi cả", "Con cả (C2 × vợ hai)"],
   ];
 
   const guide = [
@@ -131,6 +132,7 @@ export function downloadTemplate(filename = "mau-gia-pha.xlsx"): void {
     ["ID", "Mã tạm bạn tự đặt cho mỗi người (vd C1, V1…). Cha/mẹ/vợ/chồng nối theo ID này, KHÔNG theo tên."],
     ["Họ tên", "Họ và tên đầy đủ. (Bắt buộc)"],
     ["Giới tính", "M = Nam, F = Nữ (hoặc Nam/Nữ). (Bắt buộc)"],
+    ["Thứ tự con", "Con thứ mấy trong nhà: 1 = con cả, 2 = con thứ… (tính riêng trong mỗi gia đình cùng cha mẹ). Giúp máy xếp anh-chị-em đúng thứ tự. Bỏ trống thì máy tự xếp theo thứ tự các dòng trong file (con ghi trước là con trước); nếu vẫn trống thì theo năm sinh."],
     ["Năm sinh / Năm mất", "Chỉ cần năm (vd 1930). Bỏ trống Năm mất nếu còn sống."],
     ["ID Cha / ID Mẹ", "Điền ID của cha/mẹ (người đã có ở cột ID). Để trống nếu không rõ."],
     ["ID Vợ/Chồng", "Điền ID người bạn đời để nối cặp TRỰC TIẾP (không cần qua con). Dâu/rể chỉ cần điền ID của người trong họ vào đây."],
@@ -146,7 +148,7 @@ export function downloadTemplate(filename = "mau-gia-pha.xlsx"): void {
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([headers, ...example]);
   ws["!cols"] = [
-    { wch: 6 }, { wch: 16 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
+    { wch: 6 }, { wch: 16 }, { wch: 8 }, { wch: 10 }, { wch: 8 }, { wch: 8 },
     { wch: 8 }, { wch: 8 }, { wch: 12 }, { wch: 8 }, { wch: 10 }, { wch: 24 },
   ];
   XLSX.utils.book_append_sheet(wb, ws, "Gia pha");

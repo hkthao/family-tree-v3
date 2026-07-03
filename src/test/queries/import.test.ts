@@ -57,6 +57,7 @@ describe("queries: bulk_import_persons RPC", () => {
           death_date_precision: null,
           branch_id: branch,
           birth_family_id: null,
+          birth_order: null,
           bio: null,
         },
         {
@@ -71,6 +72,7 @@ describe("queries: bulk_import_persons RPC", () => {
           death_date_precision: null,
           branch_id: branch,
           birth_family_id: null,
+          birth_order: null,
           bio: null,
         },
         {
@@ -85,6 +87,7 @@ describe("queries: bulk_import_persons RPC", () => {
           death_date_precision: null,
           branch_id: branch,
           birth_family_id: fam,
+          birth_order: null,
           bio: "Ghi chú",
         },
       ],
@@ -128,9 +131,9 @@ describe("queries: bulk_import_persons RPC", () => {
       branches: [],
       families: [],
       persons: [
-        { id: randomUUID(), full_name: "A", gender: "M", is_living: true, is_root: false, birth_date: null, birth_date_precision: null, death_date: null, death_date_precision: null, branch_id: null, birth_family_id: null, bio: null },
-        { id: randomUUID(), full_name: "B", gender: "F", is_living: true, is_root: false, birth_date: null, birth_date_precision: null, death_date: null, death_date_precision: null, branch_id: null, birth_family_id: null, bio: null },
-        { id: randomUUID(), full_name: "C", gender: "M", is_living: true, is_root: false, birth_date: null, birth_date_precision: null, death_date: null, death_date_precision: null, branch_id: null, birth_family_id: null, bio: null },
+        { id: randomUUID(), full_name: "A", gender: "M", is_living: true, is_root: false, birth_date: null, birth_date_precision: null, death_date: null, death_date_precision: null, branch_id: null, birth_family_id: null, birth_order: null, bio: null },
+        { id: randomUUID(), full_name: "B", gender: "F", is_living: true, is_root: false, birth_date: null, birth_date_precision: null, death_date: null, death_date_precision: null, branch_id: null, birth_family_id: null, birth_order: null, bio: null },
+        { id: randomUUID(), full_name: "C", gender: "M", is_living: true, is_root: false, birth_date: null, birth_date_precision: null, death_date: null, death_date_precision: null, branch_id: null, birth_family_id: null, birth_order: null, bio: null },
       ],
     };
 
