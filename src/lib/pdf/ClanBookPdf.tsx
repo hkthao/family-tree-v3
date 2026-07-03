@@ -15,8 +15,9 @@ import {
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import type { PersonDetail } from "@/lib/queries/persons";
+import { displayGenLabel } from "@/lib/displayGeneration";
 import { formatPartialDate } from "@/lib/partialDate";
-import { computeLifespanYears, lifespanLabel, THO_MIN_AGE } from "@/lib/lifespan";
+import { computeLifespanYears, lifespanLabel } from "@/lib/lifespan";
 import {
   formatLunarAnniversary,
   formatLunarDate,
@@ -487,6 +488,34 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       compareStt(sttById.get(a.id) ?? "999999", sttById.get(b.id) ?? "999999"),
   );
 
+  // Gốc cho SƠ ĐỒ CÂY = Thuỷ tổ + mọi người huyết thống không tới được từ
+  // Thuỷ tổ (mồ côi liên kết) làm gốc phụ → không sót ai trên sơ đồ (khớp
+  // với danh bạ). Đây là lỗi "xuất thiếu thành viên" trước đây.
+  const treeCovered = new Set<string>();
+  const treeRoots: PersonDetail[] = [];
+  const addSubtree = (id: string) => {
+    const q = [id];
+    while (q.length > 0) {
+      const cur = q.shift()!;
+      if (treeCovered.has(cur)) continue;
+      treeCovered.add(cur);
+      for (const cid of childrenByParent.get(cur) ?? []) {
+        const c = personById.get(cid);
+        if (c && c.generation !== null && !treeCovered.has(cid)) q.push(cid);
+      }
+    }
+  };
+  for (const r of roots) {
+    if (treeCovered.has(r.id)) continue;
+    treeRoots.push(r);
+    addSubtree(r.id);
+  }
+  for (const p of bloodlineSorted) {
+    if (treeCovered.has(p.id)) continue;
+    treeRoots.push(p);
+    addSubtree(p.id);
+  }
+
   const stats = {
     bloodlineCount: bloodline.length,
     inLawCount: inLaws.length,
@@ -586,12 +615,11 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {/* ─── Cây phả hệ (SVG diagram, paginated) ─────────────── */}
       {showTree && bloodline.length > 0 &&
         renderTreePages({
-          bloodline,
-          roots,
-          branches: data.branches,
+          roots: treeRoots,
           childrenByParent,
           personById,
-          showDeathDetails: clan.display_death_details,
+          spousesByPerson,
+          genOffset: clan.generation_offset ?? 0,
           showLivingFullDob: clan.display_living_full_dob,
         })}
 
@@ -930,63 +958,15 @@ function renderInLawCard(
 
 // ─── Tree diagram (A4 landscape SVG) ───────────────────────────────
 
-interface TreeNode {
-  person: PersonDetail;
-  x: number; // grid coords; normalized later
-  y: number;
-  children: TreeNode[];
+/** Tách tên thành các âm tiết (mỗi âm tiết một dòng khi vẽ dọc). */
+function nameSyllables(name: string): string[] {
+  const s = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  return s.length ? s : [(name ?? "").trim() || "?"];
 }
 
-interface TreeEdge {
-  parent: TreeNode;
-  child: TreeNode;
-}
-
-function buildTreeLayout(
-  roots: PersonDetail[],
-  childrenByParent: Map<string, string[]>,
-  personById: Map<string, PersonDetail>,
-  /** Restrict the traversal to this set if provided. */
-  memberFilter?: Set<string>,
-): { nodes: TreeNode[]; edges: TreeEdge[]; leafCount: number; maxDepth: number } {
-  let leafCounter = 0;
-  const nodes: TreeNode[] = [];
-  const edges: TreeEdge[] = [];
-
-  function visit(p: PersonDetail, depth: number): TreeNode {
-    const childIds = (childrenByParent.get(p.id) ?? [])
-      .map((id) => personById.get(id))
-      .filter((c): c is PersonDetail => !!c && c.generation !== null)
-      .filter((c) => !memberFilter || memberFilter.has(c.id));
-    childIds.sort(birthOrder);
-
-    let node: TreeNode;
-    if (childIds.length === 0) {
-      const x = leafCounter++;
-      node = { person: p, x, y: depth, children: [] };
-    } else {
-      const childNodes = childIds.map((c) => visit(c, depth + 1));
-      const x =
-        (childNodes[0].x + childNodes[childNodes.length - 1].x) / 2;
-      node = { person: p, x, y: depth, children: childNodes };
-      for (const c of childNodes) {
-        edges.push({ parent: node, child: c });
-      }
-    }
-    nodes.push(node);
-    return node;
-  }
-
-  for (const r of roots) visit(r, 0);
-
-  const maxDepth = nodes.reduce((m, n) => Math.max(m, n.y), 0);
-  return { nodes, edges, leafCount: Math.max(leafCounter, 1), maxDepth };
-}
-
-/** Soft cap before we split the diagram into multiple pages.
- *  At 12 leaves, each lane is ~60pt → cards 56pt with a 4pt gap; 4-char
- *  Vietnamese names ("Ngô Văn A") fit comfortably at 7pt. */
-const MAX_LEAVES_PER_PAGE = 12;
+/** Số lá tối đa mỗi trang phả đồ. Ô dọc hẹp + viewBox tự co nên chứa
+ *  được nhiều hơn kiểu ô ngang cũ. */
+const TREE_LEAF_BUDGET = 40;
 
 function countLeaves(
   roots: PersonDetail[],
@@ -1008,209 +988,156 @@ function countLeaves(
 }
 
 /**
- * Decide how to slice the tree across pages:
- *   - If the clan has ≥ 2 branches, render one page per chi.
- *   - Else if the single tree has too many leaves, render one page
- *     per Đời-2 sub-root (a child of the Thuỷ tổ).
- *   - Else, one page covers the whole tree.
+ * Chia sơ đồ ra nhiều trang mà KHÔNG cắt đôi một nhánh:
+ *   - Cả cây vừa 1 trang → 1 trang.
+ *   - Không thì: 1 trang tổng quan (Thuỷ tổ + vài đời), rồi mỗi trang là
+ *     một hoặc vài nhánh-con TRỌN VẸN (gói theo số lá); nhánh nào quá lớn
+ *     thì đệ quy tách sâu hơn nhưng vẫn giữ mỗi nhánh nguyên vẹn.
+ * Tiêu đề trang nhánh kèm "Đời N" của gốc nhánh.
  */
 function renderTreePages({
-  bloodline,
   roots,
-  branches,
   childrenByParent,
   personById,
-  showDeathDetails = false,
+  spousesByPerson,
+  genOffset,
   showLivingFullDob = false,
 }: {
-  bloodline: PersonDetail[];
   roots: PersonDetail[];
-  branches: { id: string; name: string }[];
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
-  showDeathDetails?: boolean;
+  spousesByPerson: Map<string, string[]>;
+  genOffset: number;
   showLivingFullDob?: boolean;
 }): React.ReactNode {
-  // ─── Strategy A: one page per chi ───────────────────────────
-  const byBranch = new Map<string, PersonDetail[]>();
-  for (const p of bloodline) {
-    if (!p.branch_id) continue;
-    const arr = byBranch.get(p.branch_id) ?? [];
-    arr.push(p);
-    byBranch.set(p.branch_id, arr);
-  }
-  if (byBranch.size >= 2) {
-    return branches
-      .filter((b) => (byBranch.get(b.id)?.length ?? 0) > 0)
-      .map((b) => {
-        const members = byBranch.get(b.id)!;
-        const memberSet = new Set(members.map((m) => m.id));
-        // Roots of this branch: members whose father/mother isn't in
-        // the same branch (the chi's founder).
-        const branchRoots = members
-          .filter((p) => {
-            const famId = p.id; // we don't have father refs handy here
-            void famId;
-            // approximate: smallest generation in branch is the root
-            return true;
-          })
-          .sort((a, b2) => (a.generation ?? 999) - (b2.generation ?? 999));
-        const minGen = branchRoots[0]?.generation ?? null;
-        const realRoots = members.filter((p) => p.generation === minGen);
-        return (
-          <TreeDiagramPage
-            key={b.id}
-            title={`Chi ${b.name}`}
-            roots={realRoots}
-            childrenByParent={childrenByParent}
-            personById={personById}
-            memberFilter={memberSet}
-            showDeathDetails={showDeathDetails}
-            showLivingFullDob={showLivingFullDob}
-          />
-        );
-      });
-  }
+  const kidsOf = (id: string): PersonDetail[] =>
+    (childrenByParent.get(id) ?? [])
+      .map((cid) => personById.get(cid))
+      .filter((c): c is PersonDetail => !!c && c.generation !== null);
 
-  // ─── Strategy B: single tree, check size ─────────────────────
-  const totalLeaves = countLeaves(roots, childrenByParent, personById);
-  if (totalLeaves <= MAX_LEAVES_PER_PAGE) {
-    return (
-      <TreeDiagramPage
-        title="Sơ đồ cây gia phả"
-        roots={roots}
-        childrenByParent={childrenByParent}
-        personById={personById}
-        showDeathDetails={showDeathDetails}
-        showLivingFullDob={showLivingFullDob}
-      />
-    );
-  }
-
-  // ─── Strategy C: recursively split by sub-roots ──────────────
-  // Walk down the tree; for each node, if its subtree fits the leaf
-  // budget, render one page. Otherwise descend to its children and
-  // recurse. The Thuỷ tổ itself is skipped from page generation
-  // (we go straight to its children) because it's listed at the top
-  // of every chi/sub-root subtree anyway.
-  const pages: React.ReactNode[] = [];
-  const seedNodes = roots.flatMap((r) =>
-    (childrenByParent.get(r.id) ?? [])
-      .map((id) => personById.get(id))
-      .filter((c): c is PersonDetail => !!c && c.generation !== null),
-  );
-
-  function descendantsOf(p: PersonDetail): Set<string> {
-    const universe = new Set<string>([p.id]);
-    const queue = [p.id];
-    while (queue.length > 0) {
-      const cur = queue.shift()!;
-      for (const c of childrenByParent.get(cur) ?? []) {
-        if (!universe.has(c)) {
-          universe.add(c);
-          queue.push(c);
+  const descendantsOf = (id: string): Set<string> => {
+    const set = new Set<string>([id]);
+    const q = [id];
+    while (q.length > 0) {
+      const cur = q.shift()!;
+      for (const k of kidsOf(cur)) {
+        if (!set.has(k.id)) {
+          set.add(k.id);
+          q.push(k.id);
         }
       }
     }
-    return universe;
-  }
+    return set;
+  };
 
-  function emit(p: PersonDetail) {
-    const leaves = countLeaves([p], childrenByParent, personById);
-    if (leaves <= MAX_LEAVES_PER_PAGE) {
-      const universe = descendantsOf(p);
-      pages.push(
-        <TreeDiagramPage
-          key={p.id}
-          title={`Phả hệ từ ${p.full_name}`}
-          subtitle={`Một nhánh của họ — ${universe.size} người`}
-          roots={[p]}
-          childrenByParent={childrenByParent}
-          personById={personById}
-          memberFilter={universe}
-          showDeathDetails={showDeathDetails}
-          showLivingFullDob={showLivingFullDob}
-        />,
-      );
-      return;
-    }
-    // Too big — descend to children.
-    const children = (childrenByParent.get(p.id) ?? [])
-      .map((id) => personById.get(id))
-      .filter((c): c is PersonDetail => !!c && c.generation !== null);
-    if (children.length === 0) {
-      // Leaf with > MAX_LEAVES_PER_PAGE shouldn't happen (leaf = 1
-      // descendant). Emit anyway as a fallback.
-      const universe = descendantsOf(p);
-      pages.push(
-        <TreeDiagramPage
-          key={p.id}
-          title={`Phả hệ từ ${p.full_name}`}
-          subtitle={`Một nhánh của họ — ${universe.size} người`}
-          roots={[p]}
-          childrenByParent={childrenByParent}
-          personById={personById}
-          memberFilter={universe}
-          showDeathDetails={showDeathDetails}
-          showLivingFullDob={showLivingFullDob}
-        />,
-      );
-      return;
-    }
-    for (const c of children) emit(c);
-  }
-
-  // Trang MỞ ĐẦU: luôn bắt đầu từ Thuỷ tổ. Sơ đồ đầy đủ quá rộng cho
-  // một trang nên trang này chỉ vẽ Thuỷ tổ + các đời kế tiếp vừa đủ bề
-  // ngang; chi tiết từng nhánh nằm ở các trang sau. Bao giờ cũng gồm
-  // đời con (đời 2) để Thuỷ tổ không đứng trơ một mình.
-  const overview = new Set<string>(roots.map((r) => r.id));
-  let frontier = roots;
-  let firstGen = true;
-  while (true) {
-    const next = frontier.flatMap((p) =>
-      (childrenByParent.get(p.id) ?? [])
-        .map((id) => personById.get(id))
-        .filter((c): c is PersonDetail => !!c && c.generation !== null),
-    );
-    if (next.length === 0) break;
-    if (!firstGen && next.length > MAX_LEAVES_PER_PAGE) break;
-    next.forEach((c) => overview.add(c.id));
-    frontier = next;
-    firstGen = false;
-  }
-  if (overview.size > roots.length) {
-    const founders = roots.filter((r) => r.is_root);
-    const founderNames = (founders.length ? founders : roots)
-      .map((r) => r.full_name)
-      .join(", ");
+  const pages: React.ReactNode[] = [];
+  const mkPage = (
+    key: string,
+    rootsArg: PersonDetail[],
+    mf: Set<string> | undefined,
+    title: string,
+    subtitle?: string,
+  ) =>
     pages.push(
       <TreeDiagramPage
-        key="overview"
-        title="Sơ đồ cây gia phả"
-        subtitle={`Bắt đầu từ Thuỷ tổ ${founderNames}`}
-        roots={roots}
+        key={key}
+        title={title}
+        subtitle={subtitle}
+        roots={rootsArg}
         childrenByParent={childrenByParent}
         personById={personById}
-        memberFilter={overview}
-        showDeathDetails={showDeathDetails}
+        spousesByPerson={spousesByPerson}
+        memberFilter={mf}
         showLivingFullDob={showLivingFullDob}
       />,
     );
+
+  const genOf = (p: PersonDetail) => displayGenLabel(p.generation, genOffset);
+
+  // Gói các nhánh-con của R vào từng trang (mỗi trang: R + vài nhánh trọn
+  // vẹn), nhánh-con quá lớn thì đệ quy — không bao giờ cắt đôi một nhánh.
+  function emitBranchesOf(r: PersonDetail, keyPrefix: string) {
+    const kids = kidsOf(r.id);
+    const groups: PersonDetail[][] = [];
+    const big: PersonDetail[] = [];
+    let cur: PersonDetail[] = [];
+    let curLeaves = 0;
+    for (const c of kids) {
+      const cl = countLeaves([c], childrenByParent, personById);
+      if (cl > TREE_LEAF_BUDGET) {
+        if (cur.length) {
+          groups.push(cur);
+          cur = [];
+          curLeaves = 0;
+        }
+        big.push(c);
+      } else if (curLeaves + cl <= TREE_LEAF_BUDGET) {
+        cur.push(c);
+        curLeaves += cl;
+      } else {
+        groups.push(cur);
+        cur = [c];
+        curLeaves = cl;
+      }
+    }
+    if (cur.length) groups.push(cur);
+
+    const label = `Phả hệ từ ${r.full_name} — ${genOf(r)}`;
+    if (groups.length === 0 && big.length > 0) {
+      // Mọi nhánh con đều lớn → 1 trang tổng quan R + các con (1 đời).
+      const mf = new Set<string>([r.id, ...kids.map((k) => k.id)]);
+      mkPage(`${keyPrefix}-ov`, [r], mf, label, "Tổng quan các nhánh con");
+    } else {
+      groups.forEach((g, gi) => {
+        const mf = new Set<string>([r.id]);
+        for (const c of g) for (const d of descendantsOf(c.id)) mf.add(d);
+        const part = groups.length > 1 ? ` (phần ${gi + 1}/${groups.length})` : "";
+        mkPage(`${keyPrefix}-${gi}`, [r], mf, label, `Các nhánh con${part}`);
+      });
+    }
+    big.forEach((c, bi) => emitBranchesOf(c, `${keyPrefix}b${bi}`));
   }
 
-  for (const seed of seedNodes) emit(seed);
+  // Cả cây vừa một trang.
+  const totalLeaves = countLeaves(roots, childrenByParent, personById);
+  if (totalLeaves <= TREE_LEAF_BUDGET) {
+    mkPage("tree", roots, undefined, "Sơ đồ cây gia phả");
+    return pages;
+  }
+
+  // Trang tổng quan: Thuỷ tổ + các đời kế tiếp vừa đủ bề ngang.
+  const overview = new Set<string>(roots.map((r) => r.id));
+  let frontier = roots;
+  while (true) {
+    const next = frontier.flatMap((p) => kidsOf(p.id));
+    if (next.length === 0) break;
+    if (overview.size + next.length > TREE_LEAF_BUDGET) break;
+    next.forEach((c) => overview.add(c.id));
+    frontier = next;
+  }
+  if (overview.size > roots.length) {
+    const names = roots.map((r) => r.full_name).join(", ");
+    mkPage("overview", roots, overview, "Sơ đồ cây gia phả", `Tổng quan từ ${names} — chi tiết từng nhánh ở trang sau`);
+  }
+
+  // Chi tiết: mỗi gốc → gói các nhánh con trọn vẹn.
+  roots.forEach((r, i) => emitBranchesOf(r, `t${i}`));
   return pages;
 }
 
+/**
+ * Một trang phả đồ. Ô DỌC: tên xếp mỗi âm tiết một dòng + dòng năm; vợ/
+ * chồng (dâu/rể) vẽ cạnh (ô nhạt, viền đứt), con nối xuống từ giữa cặp.
+ * viewBox tự co cho vừa trang.
+ */
 function TreeDiagramPage({
   title = "Sơ đồ cây gia phả",
   subtitle,
   roots,
   childrenByParent,
   personById,
+  spousesByPerson,
   memberFilter,
-  showDeathDetails = false,
   showLivingFullDob = false,
 }: {
   title?: string;
@@ -1218,68 +1145,155 @@ function TreeDiagramPage({
   roots: PersonDetail[];
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
+  spousesByPerson: Map<string, string[]>;
   memberFilter?: Set<string>;
-  showDeathDetails?: boolean;
   showLivingFullDob?: boolean;
 }): React.ReactNode {
-  const { nodes, edges, leafCount, maxDepth } = buildTreeLayout(
-    roots,
-    childrenByParent,
-    personById,
-    memberFilter,
-  );
-
-  // A4 landscape: 842 × 595 pt. The Page applies its own padding via
-  // styles.page (top 60 / bottom 68 / sides 56). The SVG sits in flex
-  // flow under the title block, so we keep it just shy of the
-  // remaining height so it doesn't bump to a new page.
   const PAGE_W_LS = 842;
   const PAGE_H_LS = 595;
   const SVG_W = PAGE_W_LS - 56 * 2; // 730
-  const SVG_H = 360; // leaves ~107pt for h1 + underline + intro
+  const SVG_H = 400;
 
-  // Top/bottom inset for cards. Sides are handled by the lane scheme
-  // below so edge cards always sit fully inside the SVG.
-  const TOP_INSET = 20;
-  const BOTTOM_INSET = 12;
-  const SAFETY = 8;
-  const H = SVG_H - TOP_INSET - BOTTOM_INSET;
+  const kidsOf = (id: string): PersonDetail[] =>
+    (childrenByParent.get(id) ?? [])
+      .map((cid) => personById.get(cid))
+      .filter((c): c is PersonDetail => !!c && c.generation !== null)
+      .filter((c) => !memberFilter || memberFilter.has(c.id));
+  // Vợ/chồng cưới vào (đời null) vẽ cạnh — tối đa 2 ô để khỏi quá rộng.
+  const inlawsOf = (id: string): PersonDetail[] =>
+    (spousesByPerson.get(id) ?? [])
+      .map((sid) => personById.get(sid))
+      .filter((s): s is PersonDetail => !!s && s.generation === null)
+      .slice(0, 2);
 
-  // Lane scheme: divide the SVG width into N equal "lanes" (one per
-  // leaf) and centre each leaf at its lane midpoint. This keeps the
-  // outermost cards comfortably inside the SVG bounds instead of
-  // hanging off the edge.
-  const lane = leafCount > 0 ? (SVG_W - SAFETY * 2) / leafCount : SVG_W;
-  const CARD_W = Math.max(48, Math.min(80, lane - 6));
-  // Người đã mất cần thêm dòng thọ + dòng giỗ riêng → thẻ cao hơn (vẫn
-  // nằm gọn trong khoảng cách hàng ROW ≥ 56pt nên không đè lên nhau).
-  const CARD_H = showDeathDetails ? 32 : 24;
-  const ROW = Math.max(56, Math.min(110, H / Math.max(maxDepth + 1, 2)));
+  // Kích thước ô ĐỒNG NHẤT theo trang: rộng = âm tiết dài nhất, cao = số
+  // âm tiết nhiều nhất (+ dòng năm) → mọi ô thẳng hàng.
+  const rendered: PersonDetail[] = [];
+  {
+    const seen = new Set<string>();
+    const walk = (id: string) => {
+      if (seen.has(id)) return;
+      seen.add(id);
+      const p = personById.get(id);
+      if (!p) return;
+      rendered.push(p, ...inlawsOf(id));
+      for (const c of kidsOf(id)) walk(c.id);
+    };
+    for (const r of roots) walk(r.id);
+  }
+  let maxSyl = 1;
+  let maxSylLen = 1;
+  for (const p of rendered) {
+    const sy = nameSyllables(p.full_name);
+    maxSyl = Math.max(maxSyl, sy.length);
+    for (const s of sy) maxSylLen = Math.max(maxSylLen, s.length);
+  }
+  maxSyl = Math.min(maxSyl, 5); // tên quá dài: gộp phần dư vào dòng cuối
 
-  const pxOf = (gridX: number) =>
-    leafCount === 1 ? SVG_W / 2 : SAFETY + lane * (gridX + 0.5);
-  const pyOf = (gridY: number) => TOP_INSET + gridY * ROW + CARD_H / 2;
+  const NAME_FS = 7;
+  const YEAR_FS = 5;
+  const LINE_H = NAME_FS + 1.6;
+  const PAD_T = 4;
+  const PAD_B = 3;
+  const CARD_W = Math.round(
+    Math.min(34, Math.max(15, maxSylLen * NAME_FS * 0.62 + 5)),
+  );
+  const CARD_H = Math.round(PAD_T + maxSyl * LINE_H + YEAR_FS + 2 + PAD_B);
+  const MARRIAGE_GAP = 6;
+  const SIBLING_GAP = 12;
+  const ROW_GAP = 26;
+  const ROW_PITCH = CARD_H + ROW_GAP;
 
-  const nameFontSize = CARD_W < 56 ? 6.5 : CARD_W < 70 ? 7 : 7.5;
-  const yearFontSize = nameFontSize - 1.5;
-  // Tên dài → thu nhỏ cỡ chữ cho vừa bề ngang thẻ thay vì cắt "…".
-  // Chỉ cắt khi đã chạm cỡ chữ tối thiểu mà vẫn tràn.
-  const fitName = (
-    name: string,
-  ): { text: string; size: number } => {
-    const avail = CARD_W - 8;
-    const est = name.length * nameFontSize * 0.52;
-    let size = nameFontSize;
-    if (est > avail) size = Math.max(5, (nameFontSize * avail) / est);
-    const max = Math.floor(avail / (size * 0.52));
-    const text = name.length > max ? name.slice(0, max - 1) + "…" : name;
-    return { text, size };
+  type Card = {
+    person: PersonDetail;
+    cx: number;
+    y: number;
+    kind: "primary" | "spouse";
+    coupleCenterX: number;
   };
-  // Dòng phụ (năm / thọ / giỗ) dùng cỡ chữ nhỏ hơn → vừa được nhiều
-  // ký tự hơn trên cùng bề rộng thẻ.
-  const maxCharsMeta = Math.max(8, Math.floor(CARD_W / (yearFontSize * 0.5)));
-  const truncateMeta = (s: string) =>
-    s.length > maxCharsMeta ? s.slice(0, maxCharsMeta - 1) + "…" : s;
+  const cards: Card[] = [];
+  const childLinks: { parent: Card; child: Card }[] = [];
+  const marriageLinks: { a: Card; b: Card }[] = [];
+  let cursor = 0;
+
+  function place(person: PersonDetail, depth: number): Card {
+    const spouses = inlawsOf(person.id);
+    const groupCount = 1 + spouses.length;
+    const groupWidth = groupCount * CARD_W + (groupCount - 1) * MARRIAGE_GAP;
+    const kids = kidsOf(person.id);
+    const startIdx = cards.length;
+    const childCards: Card[] = [];
+    let groupLeft: number;
+
+    if (kids.length === 0) {
+      groupLeft = cursor;
+      cursor += groupWidth + SIBLING_GAP;
+    } else {
+      const childStart = cursor;
+      for (const k of kids) childCards.push(place(k, depth + 1));
+      const childrenWidth = cursor - SIBLING_GAP - childStart;
+      const childrenCenter =
+        (childCards[0].cx + childCards[childCards.length - 1].cx) / 2;
+      if (groupWidth > childrenWidth) {
+        // Cặp rộng hơn hàng con → dịch con sang phải cho cân giữa cặp.
+        const shift = (groupWidth - childrenWidth) / 2;
+        for (let i = startIdx; i < cards.length; i++) {
+          cards[i].cx += shift;
+          cards[i].coupleCenterX += shift;
+        }
+        groupLeft = childStart;
+        cursor = childStart + groupWidth + SIBLING_GAP;
+      } else {
+        groupLeft = childrenCenter - groupWidth / 2;
+      }
+    }
+
+    const y = depth * ROW_PITCH;
+    const primary: Card = {
+      person,
+      cx: groupLeft + CARD_W / 2,
+      y,
+      kind: "primary",
+      coupleCenterX: groupLeft + groupWidth / 2,
+    };
+    cards.push(primary);
+    let sx = groupLeft + CARD_W + MARRIAGE_GAP;
+    for (const s of spouses) {
+      const sc: Card = {
+        person: s,
+        cx: sx + CARD_W / 2,
+        y,
+        kind: "spouse",
+        coupleCenterX: sx + CARD_W / 2,
+      };
+      cards.push(sc);
+      marriageLinks.push({ a: primary, b: sc });
+      sx += CARD_W + MARRIAGE_GAP;
+    }
+    for (const cc of childCards) childLinks.push({ parent: primary, child: cc });
+    return primary;
+  }
+  for (const r of roots) place(r, 0);
+
+  const contentW = Math.max(
+    1,
+    cards.reduce((m, c) => Math.max(m, c.cx + CARD_W / 2), 0),
+  );
+  const contentH = Math.max(
+    1,
+    cards.reduce((m, c) => Math.max(m, c.y + CARD_H), 0),
+  );
+
+  const yearOf = (p: PersonDetail): string => {
+    if (showLivingFullDob && p.is_living) {
+      const full = formatPartialDate({
+        date: p.birth_date,
+        precision: p.birth_date_precision ?? null,
+      });
+      if (full) return full;
+    }
+    return lifespanText(p);
+  };
 
   return (
     <Page size="A4" orientation="landscape" style={styles.page}>
@@ -1288,114 +1302,106 @@ function TreeDiagramPage({
       <View style={styles.h1Underline} />
       <Text style={styles.intro}>
         {subtitle ??
-          "Mỗi ô là một thành viên trong huyết thống. Đường nối thể hiện quan hệ cha-con. Thuỷ tổ ở đầu sơ đồ, các đời sau xuôi xuống dưới."}
+          "Mỗi ô là một thành viên; ô nhạt viền đứt là dâu/rể kết hôn vào họ. Tên đọc từ trên xuống. Thuỷ tổ ở đầu, các đời xuôi xuống dưới."}
       </Text>
       <Svg
         width={SVG_W}
         height={SVG_H}
-        viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+        viewBox={`0 0 ${contentW} ${contentH}`}
+        preserveAspectRatio="xMidYMin meet"
       >
-        {/* Orthogonal connectors: parent → horizontal bus → child */}
-        {edges.map((e, i) => {
-          const px = pxOf(e.parent.x);
-          const py = pyOf(e.parent.y) + CARD_H / 2;
-          const cx = pxOf(e.child.x);
-          const cy = pyOf(e.child.y) - CARD_H / 2;
+        {/* Nối cặp cha/mẹ → con: từ đáy giữa cặp xuống đỉnh ô con */}
+        {childLinks.map((e, i) => {
+          const px = e.parent.coupleCenterX;
+          const py = e.parent.y + CARD_H;
+          const cx = e.child.cx;
+          const cy = e.child.y;
           const midY = (py + cy) / 2;
           return (
             <Path
-              key={i}
+              key={`c${i}`}
               d={`M ${px} ${py} V ${midY} H ${cx} V ${cy}`}
               stroke={COLORS.divider}
-              strokeWidth={0.7}
+              strokeWidth={0.6}
               fill="none"
             />
           );
         })}
-        {/* Cards */}
-        {nodes.map((n) => {
-          const cx = pxOf(n.x);
-          const cy = pyOf(n.y);
-          const x = cx - CARD_W / 2;
-          const y = cy - CARD_H / 2;
-          const fill = n.person.gender === "M" ? "#D4DDE4" : "#E8D2CC";
-          const person = n.person;
-          // Dưới tên tối đa 2 dòng phụ để thẻ nhỏ không bị chữ đè nhau.
-          const metaLines: string[] = [];
-          // Dòng năm: người sống bật "ngày sinh đủ" → ngày sinh đầy đủ;
-          // còn lại "YYYY-YYYY" / "sinh YYYY".
-          let yearLine = lifespanText(person);
-          if (showLivingFullDob && person.is_living) {
-            const full = formatPartialDate({
-              date: person.birth_date,
-              precision: person.birth_date_precision ?? null,
-            });
-            if (full) yearLine = full;
-          }
-          if (showDeathDetails && !person.is_living) {
-            // Người mất: dòng 1 = năm (nếu có) + thọ; dòng 2 = giỗ. Gộp
-            // năm với thọ để vẫn giữ được năm mà không quá 3 dòng.
-            const tho = computeLifespanYears(
-              person.lifespan_years,
-              person.birth_date,
-              person.death_date,
-            );
-            const thoStr =
-              tho != null
-                ? `${tho >= THO_MIN_AGE ? "thọ" : "hưởng dương"} ${tho}`
-                : "";
-            const line1 = [yearLine, thoStr].filter(Boolean).join(" · ");
-            if (line1) metaLines.push(truncateMeta(line1));
-            if (person.death_anniv_lunar_month && person.death_anniv_lunar_day)
-              metaLines.push(
-                truncateMeta(
-                  `giỗ ${person.death_anniv_lunar_day}/${person.death_anniv_lunar_month} ÂL`,
-                ),
-              );
-          } else if (yearLine) {
-            metaLines.push(truncateMeta(yearLine));
-          }
+        {/* Đường hôn nhân: gạch ngang giữa hai ô */}
+        {marriageLinks.map((m, i) => {
+          const y = m.a.y + CARD_H / 2;
           return (
-            <G key={n.person.id}>
+            <Path
+              key={`m${i}`}
+              d={`M ${m.a.cx + CARD_W / 2} ${y} H ${m.b.cx - CARD_W / 2}`}
+              stroke={COLORS.muted}
+              strokeWidth={0.6}
+              fill="none"
+            />
+          );
+        })}
+        {/* Ô thành viên (dọc) */}
+        {cards.map((c, i) => {
+          const p = c.person;
+          const x = c.cx - CARD_W / 2;
+          const isSpouse = c.kind === "spouse";
+          const fill = isSpouse
+            ? "#EEE7DA"
+            : p.gender === "M"
+              ? "#D4DDE4"
+              : p.gender === "F"
+                ? "#E8D2CC"
+                : "#E8E0D2";
+          const sylls = nameSyllables(p.full_name);
+          const lines =
+            sylls.length > maxSyl
+              ? [...sylls.slice(0, maxSyl - 1), sylls.slice(maxSyl - 1).join(" ")]
+              : sylls;
+          const yr = yearOf(p);
+          return (
+            <G key={`${p.id}-${i}`}>
               <Rect
                 x={x}
-                y={y}
+                y={c.y}
                 width={CARD_W}
                 height={CARD_H}
-                rx={3}
-                ry={3}
+                rx={2.5}
+                ry={2.5}
                 fill={fill}
-                stroke={COLORS.primary}
+                stroke={isSpouse ? COLORS.muted : COLORS.primary}
                 strokeWidth={0.5}
+                strokeDasharray={isSpouse ? "1.5 1.5" : undefined}
               />
-              <Text
-                x={cx}
-                y={y + (metaLines.length ? 9 : 14)}
-                style={{
-                  fontFamily: PDF_FONT_FAMILY,
-                  fontSize: fitName(person.full_name).size,
-                  fontWeight: 600,
-                  fill: COLORS.ink,
-                  textAnchor: "middle",
-                }}
-              >
-                {fitName(person.full_name).text}
-              </Text>
-              {metaLines.map((line, li) => (
+              {lines.map((ln, li) => (
                 <Text
                   key={li}
-                  x={cx}
-                  y={y + 17 + li * 7}
+                  x={c.cx}
+                  y={c.y + PAD_T + (li + 1) * LINE_H - 1.8}
                   style={{
                     fontFamily: PDF_FONT_FAMILY,
-                    fontSize: yearFontSize,
+                    fontSize: NAME_FS,
+                    fontWeight: isSpouse ? 400 : 600,
+                    fill: COLORS.ink,
+                    textAnchor: "middle",
+                  }}
+                >
+                  {ln}
+                </Text>
+              ))}
+              {yr ? (
+                <Text
+                  x={c.cx}
+                  y={c.y + CARD_H - PAD_B - 1}
+                  style={{
+                    fontFamily: PDF_FONT_FAMILY,
+                    fontSize: YEAR_FS,
                     fill: COLORS.muted,
                     textAnchor: "middle",
                   }}
                 >
-                  {line}
+                  {yr}
                 </Text>
-              ))}
+              ) : null}
             </G>
           );
         })}
