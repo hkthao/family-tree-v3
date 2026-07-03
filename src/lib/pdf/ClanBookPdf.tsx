@@ -383,9 +383,16 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   const branchById = new Map(data.branches.map((b) => [b.id, b.name]));
   const personById = new Map(persons.map((p) => [p.id, p]));
 
-  // Bloodline (generation !== null) vs in-laws (married in, no clan parents).
-  const bloodline = persons.filter((p) => p.generation !== null);
-  const inLaws = persons.filter((p) => p.generation === null);
+  // Huyết thống vs dâu/rể phải phân theo DÒNG MÁU, KHÔNG theo generation:
+  // recompute_generation cố ý "lan đời sang vợ/chồng" nên dâu/rể cũng có
+  // generation (= đời của người bạn đời). Vì vậy generation != null KHÔNG
+  // đồng nghĩa huyết thống. Dòng máu = Thuỷ tổ, hoặc sinh ra trong họ (có
+  // mặt trong childToFamily).
+  const isLineage = (pid: string): boolean =>
+    personById.get(pid)?.is_root === true || data.childToFamily[pid] != null;
+  const bloodline = persons.filter((p) => isLineage(p.id));
+  const inLaws = persons.filter((p) => !isLineage(p.id));
+  const inLawIds = new Set(inLaws.map((p) => p.id));
 
   const spousesByPerson = new Map<string, string[]>();
   const childrenByParent = new Map<string, string[]>();
@@ -399,11 +406,6 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       pushTo(spousesByPerson, fam.wife_id, fam.husband_id);
     }
   }
-  // "Thuộc dòng máu" = Thuỷ tổ, hoặc người sinh ra trong họ (có cha mẹ
-  // trong họ → có mặt trong childToFamily). Vợ/chồng cưới vào không
-  // thoả (không phải is_root, không có cha mẹ trong họ).
-  const isLineage = (pid: string): boolean =>
-    personById.get(pid)?.is_root === true || data.childToFamily[pid] != null;
 
   for (const [childId, famId] of Object.entries(data.childToFamily)) {
     const fam = familyById.get(famId);
@@ -626,6 +628,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           childrenByParent,
           personById,
           spousesByPerson,
+          inLawIds,
           genOffset: clan.generation_offset ?? 0,
           budget: include?.treePerPage,
           showLivingFullDob: clan.display_living_full_dob,
@@ -974,7 +977,7 @@ function nameSyllables(name: string): string[] {
 
 /** Số lá tối đa mỗi trang phả đồ. Ô dọc hẹp + viewBox tự co nên chứa
  *  được nhiều hơn kiểu ô ngang cũ. */
-const TREE_LEAF_BUDGET = 40;
+const TREE_LEAF_BUDGET = 24;
 
 function countLeaves(
   roots: PersonDetail[],
@@ -1008,6 +1011,7 @@ function renderTreePages({
   childrenByParent,
   personById,
   spousesByPerson,
+  inLawIds,
   genOffset,
   budget: budgetOpt,
   showLivingFullDob = false,
@@ -1016,6 +1020,7 @@ function renderTreePages({
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
   spousesByPerson: Map<string, string[]>;
+  inLawIds: Set<string>;
   genOffset: number;
   budget?: number;
   showLivingFullDob?: boolean;
@@ -1059,6 +1064,7 @@ function renderTreePages({
         childrenByParent={childrenByParent}
         personById={personById}
         spousesByPerson={spousesByPerson}
+        inLawIds={inLawIds}
         memberFilter={mf}
         showLivingFullDob={showLivingFullDob}
       />,
@@ -1156,6 +1162,7 @@ function TreeDiagramPage({
   childrenByParent,
   personById,
   spousesByPerson,
+  inLawIds,
   memberFilter,
   showLivingFullDob = false,
 }: {
@@ -1165,6 +1172,7 @@ function TreeDiagramPage({
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
   spousesByPerson: Map<string, string[]>;
+  inLawIds: Set<string>;
   memberFilter?: Set<string>;
   showLivingFullDob?: boolean;
 }): React.ReactNode {
@@ -1175,18 +1183,20 @@ function TreeDiagramPage({
   // trong lòng ≈ 595-60-68=467, khối tiêu đề ~86 → SVG tối đa ~340 để cả
   // hai NẰM CÙNG MỘT TRANG (nếu cao hơn, react-pdf đẩy SVG sang trang mới
   // → trang tiêu đề bị trống). drawH ≤ SVG_H nên luôn an toàn.
-  const SVG_H = 336;
+  const SVG_H = 352;
 
   const kidsOf = (id: string): PersonDetail[] =>
     (childrenByParent.get(id) ?? [])
       .map((cid) => personById.get(cid))
       .filter((c): c is PersonDetail => !!c && c.generation !== null)
       .filter((c) => !memberFilter || memberFilter.has(c.id));
-  // Vợ/chồng cưới vào (đời null) vẽ cạnh — tối đa 2 ô để khỏi quá rộng.
+  // Vợ/chồng cưới vào (dâu/rể — KHÔNG thuộc dòng máu) vẽ cạnh; tối đa 2 ô.
+  // Dùng inLawIds (theo dòng máu) chứ KHÔNG theo generation, vì dâu/rể
+  // cũng có generation (lan từ bạn đời).
   const inlawsOf = (id: string): PersonDetail[] =>
     (spousesByPerson.get(id) ?? [])
       .map((sid) => personById.get(sid))
-      .filter((s): s is PersonDetail => !!s && s.generation === null)
+      .filter((s): s is PersonDetail => !!s && inLawIds.has(s.id))
       .slice(0, 2);
 
   // Kích thước ô ĐỒNG NHẤT theo trang: rộng = âm tiết dài nhất, cao = số
