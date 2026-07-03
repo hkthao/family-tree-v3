@@ -1190,14 +1190,30 @@ function TreeDiagramPage({
       .map((cid) => personById.get(cid))
       .filter((c): c is PersonDetail => !!c && c.generation !== null)
       .filter((c) => !memberFilter || memberFilter.has(c.id));
-  // Vợ/chồng cưới vào (dâu/rể — KHÔNG thuộc dòng máu) vẽ cạnh; tối đa 2 ô.
-  // Dùng inLawIds (theo dòng máu) chứ KHÔNG theo generation, vì dâu/rể
-  // cũng có generation (lan từ bạn đời).
-  const inlawsOf = (id: string): PersonDetail[] =>
+
+  // Cây huyết thống hiện TRÊN TRANG NÀY = các gốc có con + toàn bộ hậu duệ.
+  const connectedRoots = roots.filter((r) => kidsOf(r.id).length > 0);
+  const lineagePrimaries = new Set<string>();
+  {
+    const collect = (id: string) => {
+      if (lineagePrimaries.has(id)) return;
+      lineagePrimaries.add(id);
+      for (const c of kidsOf(id)) collect(c.id);
+    };
+    for (const r of connectedRoots) collect(r.id);
+  }
+
+  // Ô vợ/chồng vẽ cạnh = bạn đời KHÔNG xuất hiện như một node dòng máu trên
+  // trang này: dâu/rể cưới vào, HOẶC người trong họ nhưng nhánh cha mẹ ở
+  // trang khác (vd lấy người cùng họ — Đặng Thị Tần là vợ Huỳnh Văn Hiếu
+  // nhưng có cha mẹ ở nhánh khác). Tối đa 2 ô.
+  const spousesToShow = (id: string): PersonDetail[] =>
     (spousesByPerson.get(id) ?? [])
       .map((sid) => personById.get(sid))
-      .filter((s): s is PersonDetail => !!s && inLawIds.has(s.id))
+      .filter((s): s is PersonDetail => !!s && !lineagePrimaries.has(s.id))
       .slice(0, 2);
+  // Ai đã được vẽ như ô vợ/chồng → không cho rơi vào lưới "người rời rạc".
+  const shownAsSpouse = new Set<string>();
 
   // Kích thước ô ĐỒNG NHẤT theo trang: rộng = âm tiết dài nhất, cao = số
   // âm tiết nhiều nhất (+ dòng năm) → mọi ô thẳng hàng.
@@ -1209,7 +1225,7 @@ function TreeDiagramPage({
       seen.add(id);
       const p = personById.get(id);
       if (!p) return;
-      rendered.push(p, ...inlawsOf(id));
+      rendered.push(p, ...spousesToShow(id));
       for (const c of kidsOf(id)) walk(c.id);
     };
     for (const r of roots) walk(r.id);
@@ -1254,7 +1270,7 @@ function TreeDiagramPage({
   let cursor = 0;
 
   function place(person: PersonDetail, depth: number): Card {
-    const spouses = inlawsOf(person.id);
+    const spouses = spousesToShow(person.id);
     const groupCount = 1 + spouses.length;
     const groupWidth = groupCount * CARD_W + (groupCount - 1) * MARRIAGE_GAP;
     const kids = kidsOf(person.id);
@@ -1307,17 +1323,24 @@ function TreeDiagramPage({
       };
       cards.push(sc);
       marriageLinks.push({ a: primary, b: sc });
+      shownAsSpouse.add(s.id);
       sx += CARD_W + MARRIAGE_GAP;
     }
     for (const cc of childCards) childLinks.push({ parent: primary, child: cc });
     return primary;
   }
-  // Người có nhánh (có con) vẽ dạng cây; người RỜI RẠC (không con, vd dâu/
-  // rể chưa nối, dữ liệu lẻ) gom vào LƯỚI nhiều hàng bên dưới — tránh kéo
-  // cả trang rộng ra khiến chữ bé tí.
-  const connectedRoots = roots.filter((r) => kidsOf(r.id).length > 0);
-  const singleRoots = roots.filter((r) => kidsOf(r.id).length === 0);
+  // Vẽ cây huyết thống trước (kèm ô vợ/chồng cạnh mỗi người).
   for (const r of connectedRoots) place(r, 0);
+
+  // Người RỜI RẠC = gốc không con, KHÔNG thuộc cây trên trang, và CHƯA được
+  // vẽ như ô vợ/chồng → gom vào LƯỚI nhiều hàng bên dưới (tránh kéo trang
+  // rộng làm chữ bé). Bạn đời của người trong họ đã nằm cạnh họ rồi.
+  const singleRoots = roots.filter(
+    (r) =>
+      kidsOf(r.id).length === 0 &&
+      !lineagePrimaries.has(r.id) &&
+      !shownAsSpouse.has(r.id),
+  );
 
   if (singleRoots.length > 0) {
     const treeBottom = cards.reduce((m, c) => Math.max(m, c.y + CARD_H), 0);
@@ -1330,7 +1353,8 @@ function TreeDiagramPage({
     let gy = gridTop;
     let col = 0;
     for (const s of singleRoots) {
-      const spouses = inlawsOf(s.id);
+      if (shownAsSpouse.has(s.id)) continue; // đã là ô vợ/chồng của single khác
+      const spouses = spousesToShow(s.id);
       const gw = (1 + spouses.length) * CARD_W + spouses.length * MARRIAGE_GAP;
       const primary: Card = {
         person: s,
@@ -1353,6 +1377,7 @@ function TreeDiagramPage({
         };
         cards.push(sc);
         marriageLinks.push({ a: primary, b: sc });
+        shownAsSpouse.add(sp.id);
         sx += CARD_W + MARRIAGE_GAP;
       }
       gx += gw + SIBLING_GAP;
@@ -1443,8 +1468,11 @@ function TreeDiagramPage({
         {cards.map((c, i) => {
           const p = c.person;
           const x = c.cx - CARD_W / 2;
-          const isSpouse = c.kind === "spouse";
-          const fill = isSpouse
+          // Kiểu ô theo DÒNG MÁU: chỉ dâu/rể cưới vào (inLawIds) mới tô nhạt
+          // + viền đứt. Người trong họ dù đang vẽ ở vị trí vợ/chồng vẫn tô
+          // như thành viên bình thường (đặc, gendered).
+          const isInLaw = inLawIds.has(p.id);
+          const fill = isInLaw
             ? "#EEE7DA"
             : p.gender === "M"
               ? "#D4DDE4"
@@ -1467,9 +1495,9 @@ function TreeDiagramPage({
                 rx={2.5}
                 ry={2.5}
                 fill={fill}
-                stroke={isSpouse ? COLORS.muted : COLORS.primary}
+                stroke={isInLaw ? COLORS.muted : COLORS.primary}
                 strokeWidth={0.5}
-                strokeDasharray={isSpouse ? "1.5 1.5" : undefined}
+                strokeDasharray={isInLaw ? "1.5 1.5" : undefined}
               />
               {lines.map((ln, li) => (
                 <Text
@@ -1479,7 +1507,7 @@ function TreeDiagramPage({
                   style={{
                     fontFamily: PDF_FONT_FAMILY,
                     fontSize: NAME_FS,
-                    fontWeight: isSpouse ? 400 : 600,
+                    fontWeight: isInLaw ? 400 : 600,
                     fill: COLORS.ink,
                     textAnchor: "middle",
                   }}
