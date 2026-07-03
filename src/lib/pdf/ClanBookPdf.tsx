@@ -1225,8 +1225,9 @@ function TreeDiagramPage({
 
   const NAME_FS = 7;
   const YEAR_FS = 5;
-  const LINE_H = NAME_FS + 1.6;
-  const PAD_T = 4;
+  // Giãn dòng giữa các âm tiết cho dễ đọc (thẻ cao thêm chút).
+  const LINE_H = NAME_FS + 3.4;
+  const PAD_T = 5;
   const PAD_B = 3;
   const CARD_W = Math.round(
     Math.min(34, Math.max(15, maxSylLen * NAME_FS * 0.62 + 5)),
@@ -1302,6 +1303,7 @@ function TreeDiagramPage({
         y,
         kind: "spouse",
         coupleCenterX: sx + CARD_W / 2,
+        hasSpouse: false,
       };
       cards.push(sc);
       marriageLinks.push({ a: primary, b: sc });
@@ -1347,6 +1349,7 @@ function TreeDiagramPage({
           y: gy,
           kind: "spouse",
           coupleCenterX: sx + CARD_W / 2,
+          hasSpouse: false,
         };
         cards.push(sc);
         marriageLinks.push({ a: primary, b: sc });
