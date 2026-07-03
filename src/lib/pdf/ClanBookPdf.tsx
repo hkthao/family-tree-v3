@@ -392,7 +392,6 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
     personById.get(pid)?.is_root === true || data.childToFamily[pid] != null;
   const bloodline = persons.filter((p) => isLineage(p.id));
   const inLaws = persons.filter((p) => !isLineage(p.id));
-  const inLawIds = new Set(inLaws.map((p) => p.id));
 
   const spousesByPerson = new Map<string, string[]>();
   const childrenByParent = new Map<string, string[]>();
@@ -628,7 +627,6 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           childrenByParent,
           personById,
           spousesByPerson,
-          inLawIds,
           genOffset: clan.generation_offset ?? 0,
           budget: include?.treePerPage,
           showLivingFullDob: clan.display_living_full_dob,
@@ -1011,7 +1009,6 @@ function renderTreePages({
   childrenByParent,
   personById,
   spousesByPerson,
-  inLawIds,
   genOffset,
   budget: budgetOpt,
   showLivingFullDob = false,
@@ -1020,7 +1017,6 @@ function renderTreePages({
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
   spousesByPerson: Map<string, string[]>;
-  inLawIds: Set<string>;
   genOffset: number;
   budget?: number;
   showLivingFullDob?: boolean;
@@ -1064,7 +1060,6 @@ function renderTreePages({
         childrenByParent={childrenByParent}
         personById={personById}
         spousesByPerson={spousesByPerson}
-        inLawIds={inLawIds}
         memberFilter={mf}
         showLivingFullDob={showLivingFullDob}
       />,
@@ -1162,7 +1157,6 @@ function TreeDiagramPage({
   childrenByParent,
   personById,
   spousesByPerson,
-  inLawIds,
   memberFilter,
   showLivingFullDob = false,
 }: {
@@ -1172,7 +1166,6 @@ function TreeDiagramPage({
   childrenByParent: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
   spousesByPerson: Map<string, string[]>;
-  inLawIds: Set<string>;
   memberFilter?: Set<string>;
   showLivingFullDob?: boolean;
 }): React.ReactNode {
@@ -1468,11 +1461,12 @@ function TreeDiagramPage({
         {cards.map((c, i) => {
           const p = c.person;
           const x = c.cx - CARD_W / 2;
-          // Kiểu ô theo DÒNG MÁU: chỉ dâu/rể cưới vào (inLawIds) mới tô nhạt
-          // + viền đứt. Người trong họ dù đang vẽ ở vị trí vợ/chồng vẫn tô
-          // như thành viên bình thường (đặc, gendered).
-          const isInLaw = inLawIds.has(p.id);
-          const fill = isInLaw
+          // Kiểu ô theo VỊ TRÍ: ô đứng ở chỗ vợ/chồng (kind="spouse") tô nhạt
+          // + viền đứt = "kết hôn vào nhánh này" — kể cả khi người đó là con
+          // gái trong họ lấy người cùng họ (vd Đặng Thị Tần bên nhánh chồng).
+          // Ở trang nhánh cha mẹ của họ, họ là node chính → tô đặc bình thường.
+          const isSpouse = c.kind === "spouse";
+          const fill = isSpouse
             ? "#EEE7DA"
             : p.gender === "M"
               ? "#D4DDE4"
@@ -1495,9 +1489,9 @@ function TreeDiagramPage({
                 rx={2.5}
                 ry={2.5}
                 fill={fill}
-                stroke={isInLaw ? COLORS.muted : COLORS.primary}
+                stroke={isSpouse ? COLORS.muted : COLORS.primary}
                 strokeWidth={0.5}
-                strokeDasharray={isInLaw ? "1.5 1.5" : undefined}
+                strokeDasharray={isSpouse ? "1.5 1.5" : undefined}
               />
               {lines.map((ln, li) => (
                 <Text
@@ -1507,7 +1501,7 @@ function TreeDiagramPage({
                   style={{
                     fontFamily: PDF_FONT_FAMILY,
                     fontSize: NAME_FS,
-                    fontWeight: isInLaw ? 400 : 600,
+                    fontWeight: isSpouse ? 400 : 600,
                     fill: COLORS.ink,
                     textAnchor: "middle",
                   }}
