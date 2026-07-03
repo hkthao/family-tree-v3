@@ -23,10 +23,10 @@ export function buildAiPrompt(input: PromptInput): string {
 }
 
 function buildCsvPrompt({ narrative, clanName }: PromptInput): string {
-  return `Bạn là trợ lý nhập liệu phả hệ. Đọc đoạn mô tả gia đình của tôi bên dưới và xuất ra file CSV chuẩn 9 cột để nhập vào hệ thống phả hệ.
+  return `Bạn là trợ lý nhập liệu phả hệ. Đọc đoạn mô tả gia đình của tôi bên dưới và xuất ra file CSV chuẩn 10 cột để nhập vào hệ thống phả hệ.
 
 Định dạng output BẮT BUỘC:
-- Header dòng 1: \`ID,Họ tên,Giới tính,Năm sinh,Năm mất,ID Cha,ID Mẹ,Chi,Ghi chú\`
+- Header dòng 1: \`ID,Họ tên,Giới tính,Thứ tự con,Năm sinh,Năm mất,ID Cha,ID Mẹ,Chi,Ghi chú\`
 - Mỗi người 1 dòng tiếp theo
 - UTF-8, comma-separated, RFC 4180 quoting cho ô chứa dấu phẩy hoặc xuống dòng
 - KHÔNG bao bằng markdown fences \`\`\`
@@ -36,17 +36,18 @@ Quy tắc từng cột:
 - **ID**: bạn tự đặt mã tạm P001, P002, P003… (3 chữ số). Cha/mẹ tham chiếu qua ID này, KHÔNG dùng tên.
 - **Họ tên**: họ + tên đệm + tên, viết hoa đúng quy tắc tiếng Việt.
 - **Giới tính**: viết "M" cho nam, "F" cho nữ.
+- **Thứ tự con**: con thứ mấy trong nhà (1 = con cả, 2 = con thứ hai…), tính riêng trong mỗi gia đình cùng cha mẹ; xếp anh-chị-em theo đúng thứ tự trong mô tả. Để trống nếu không rõ.
 - **Năm sinh / Năm mất**: 4 chữ số (vd 1950) hoặc để trống nếu không rõ.
 - **ID Cha / ID Mẹ**: tham chiếu ID người trong cùng file. Để trống nếu cha/mẹ không có trong dữ liệu.
 - **Chi**: tên nhánh/chi họ (vd "Chi cả", "Chi hai") hoặc để trống.
 - **Ghi chú**: nghề nghiệp, biệt danh, nơi sinh, thông tin tự do.
 
 Ví dụ output đúng định dạng:
-ID,Họ tên,Giới tính,Năm sinh,Năm mất,ID Cha,ID Mẹ,Chi,Ghi chú
-P001,Nguyễn Văn An,M,1900,1970,,,Chi cả,Thuỷ tổ - làm nông
-P002,Trần Thị Bình,F,1905,1980,,,Chi cả,Vợ của An
-P003,Nguyễn Văn Cường,M,1930,,P001,P002,Chi cả,Lập trình viên
-P004,"Lê Thị Dung, biệt danh Bé",F,1932,,,,,"Vợ của Cường, sinh tại Hà Nội"
+ID,Họ tên,Giới tính,Thứ tự con,Năm sinh,Năm mất,ID Cha,ID Mẹ,Chi,Ghi chú
+P001,Nguyễn Văn An,M,,1900,1970,,,Chi cả,Thuỷ tổ - làm nông
+P002,Trần Thị Bình,F,,1905,1980,,,Chi cả,Vợ của An
+P003,Nguyễn Văn Cường,M,1,1930,,P001,P002,Chi cả,Con cả - lập trình viên
+P004,"Lê Thị Dung, biệt danh Bé",F,,1932,,,,,"Vợ của Cường, sinh tại Hà Nội"
 
 ---
 
