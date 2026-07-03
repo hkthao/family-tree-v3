@@ -1243,6 +1243,9 @@ function TreeDiagramPage({
     y: number;
     kind: "primary" | "spouse";
     coupleCenterX: number;
+    /** Có vợ/chồng vẽ cạnh → con thả từ NÉT HÔN NHÂN (giữa cặp), không
+     *  phải từ đáy ô đơn. */
+    hasSpouse: boolean;
   };
   const cards: Card[] = [];
   const childLinks: { parent: Card; child: Card }[] = [];
@@ -1288,6 +1291,7 @@ function TreeDiagramPage({
       y,
       kind: "primary",
       coupleCenterX: groupLeft + groupWidth / 2,
+      hasSpouse: spouses.length > 0,
     };
     cards.push(primary);
     let sx = groupLeft + CARD_W + MARRIAGE_GAP;
@@ -1332,6 +1336,7 @@ function TreeDiagramPage({
         y: gy,
         kind: "primary",
         coupleCenterX: gx + gw / 2,
+        hasSpouse: spouses.length > 0,
       };
       cards.push(primary);
       let sx = gx + CARD_W + MARRIAGE_GAP;
@@ -1398,13 +1403,16 @@ function TreeDiagramPage({
         viewBox={`0 0 ${contentW} ${contentH}`}
         preserveAspectRatio="xMidYMin meet"
       >
-        {/* Nối cặp cha/mẹ → con: từ đáy giữa cặp xuống đỉnh ô con */}
+        {/* Nối cha/mẹ → con. Có vợ/chồng: thả từ NÉT HÔN NHÂN (giữa cặp,
+            ngay giữa chiều cao ô); độc thân: thả từ đáy ô. */}
         {childLinks.map((e, i) => {
           const px = e.parent.coupleCenterX;
-          const py = e.parent.y + CARD_H;
+          const py = e.parent.hasSpouse
+            ? e.parent.y + CARD_H / 2
+            : e.parent.y + CARD_H;
           const cx = e.child.cx;
           const cy = e.child.y;
-          const midY = (py + cy) / 2;
+          const midY = (e.parent.y + CARD_H + cy) / 2;
           return (
             <Path
               key={`c${i}`}
