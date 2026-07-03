@@ -1128,8 +1128,15 @@ function renderTreePages({
     frontier = next;
   }
   if (overview.size > roots.length) {
-    const names = roots.map((r) => r.full_name).join(", ");
-    mkPage("overview", roots, overview, "Sơ đồ cây gia phả", `Tổng quan từ ${names} — chi tiết từng nhánh ở trang sau`);
+    const founders = roots.filter((r) => kidsOf(r.id).length > 0);
+    const lead = founders[0]?.full_name ?? roots[0]?.full_name ?? "";
+    mkPage(
+      "overview",
+      roots,
+      overview,
+      "Sơ đồ cây gia phả",
+      `Tổng quan từ ${lead}${founders.length > 1 ? " và các chi" : ""} — chi tiết từng nhánh ở các trang sau`,
+    );
   }
 
   // Chi tiết: mỗi gốc → gói các nhánh con trọn vẹn.
@@ -1164,7 +1171,11 @@ function TreeDiagramPage({
   const PAGE_W_LS = 842;
   const PAGE_H_LS = 595;
   const SVG_W = PAGE_W_LS - 56 * 2; // 730
-  const SVG_H = 400;
+  // Chừa đủ chỗ cho tiêu đề + phụ đề (tối đa ~2 dòng) phía trên: cao trang
+  // trong lòng ≈ 595-60-68=467, khối tiêu đề ~86 → SVG tối đa ~340 để cả
+  // hai NẰM CÙNG MỘT TRANG (nếu cao hơn, react-pdf đẩy SVG sang trang mới
+  // → trang tiêu đề bị trống). drawH ≤ SVG_H nên luôn an toàn.
+  const SVG_H = 336;
 
   const kidsOf = (id: string): PersonDetail[] =>
     (childrenByParent.get(id) ?? [])
