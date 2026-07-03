@@ -1386,42 +1386,88 @@ function InlawBadgeBody({
 // Lazy-imports the PDF renderer (react-pdf bundle is heavy) so the
 // Tree page still loads quickly when the user never clicks export.
 
+const EXPORT_DENSITY: { v: number; label: string }[] = [
+  { v: 18, label: "Gọn — thẻ to, dễ đọc" },
+  { v: 40, label: "Vừa (mặc định)" },
+  { v: 80, label: "Nhiều người mỗi trang" },
+  { v: 140, label: "Tối đa — thẻ nhỏ, ít trang" },
+];
+
 function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [perPage, setPerPage] = useState(40);
 
-  async function onClick() {
+  async function doExport() {
     if (busy) return;
+    setOpen(false);
     setBusy(true);
     try {
       const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
-      await downloadClanBookPdf(clan, { tree: true, detail: true });
+      await downloadClanBookPdf(clan, {
+        tree: true,
+        detail: true,
+        treePerPage: perPage,
+      });
       track("export", { kind: "clan_book_pdf", from: "tree" });
       toast.success("Đã tải sổ PDF");
     } catch (e) {
-      toast.error("Không xuất được", {
-        description: (e as Error).message,
-      });
+      toast.error("Không xuất được", { description: (e as Error).message });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      className="h-10 px-2.5 sm:px-3"
-      onClick={onClick}
-      disabled={busy}
-      aria-label="Xuất sổ PDF"
-      title="Xuất toàn bộ thông tin dòng họ thành sổ PDF"
-    >
-      <IconDownload className="h-4 w-4 sm:mr-1.5" />
-      <span className="hidden sm:inline">
-        {busy ? "Đang xuất…" : "Xuất sổ"}
-      </span>
-    </Button>
+    <div className="relative">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-10 px-2.5 sm:px-3"
+        onClick={() => setOpen((o) => !o)}
+        disabled={busy}
+        aria-label="Xuất sổ PDF"
+        title="Xuất toàn bộ thông tin dòng họ thành sổ PDF"
+      >
+        <IconDownload className="h-4 w-4 sm:mr-1.5" />
+        <span className="hidden sm:inline">
+          {busy ? "Đang xuất…" : "Xuất sổ"}
+        </span>
+      </Button>
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setOpen(false)}
+            aria-hidden
+          />
+          <div className="absolute right-0 z-50 mt-1 w-72 space-y-2 rounded-lg border bg-card p-3 shadow-lg">
+            <p className="text-sm font-medium">Số người mỗi trang sơ đồ</p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để thẻ to, nhiều đời
+              vẫn đẹp trên một trang. Họ đông chọn mức cao để gói nhiều
+              người/trang.
+            </p>
+            <select
+              value={perPage}
+              onChange={(e) => setPerPage(Number(e.target.value))}
+              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+            >
+              {EXPORT_DENSITY.map((o) => (
+                <option key={o.v} value={o.v}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <Button size="sm" className="w-full" onClick={doExport} disabled={busy}>
+              <IconDownload className="h-4 w-4 mr-1.5" />
+              Tải PDF
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

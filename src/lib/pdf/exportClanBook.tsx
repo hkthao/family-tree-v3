@@ -10,6 +10,9 @@ import { getOrCreateTreeShareLink } from "@/lib/queries/share-links";
 export interface ExportClanBookOptions {
   tree?: boolean;
   detail?: boolean;
+  /** Số thành viên ("lá") tối đa mỗi trang sơ đồ cây. Ít → thẻ to, dễ đọc;
+   *  nhiều → gói được nhiều đời/người trên một trang. */
+  treePerPage?: number;
 }
 
 /**
