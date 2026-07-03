@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     lineHeight: 1.3,
     color: COLORS.primary,
+    textAlign: "center",
     paddingBottom: 8,
     marginBottom: 18,
   },
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     textAlign: "center",
   },
-  coverStat: { fontSize: 12, color: COLORS.ink, marginBottom: 4 },
+  coverStat: { fontSize: 12, color: COLORS.ink, marginBottom: 4, textAlign: "center" },
   coverDateline: { fontSize: 11, color: COLORS.muted, marginTop: 36 },
 
   // Section heading. h1 has its own lineHeight (1.2) so descenders
