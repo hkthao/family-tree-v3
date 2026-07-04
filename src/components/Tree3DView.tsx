@@ -14,18 +14,21 @@ import { subscribeTheme } from "@/lib/theme";
 
 type GraphInstance = ForceGraph3DInstance;
 
-type GLink = { source: string; target: string };
+type GLink = { source: string; target: string; kind: "parent" | "marriage" };
 type GNode = NodeObject & {
   name: string;
   gender: "M" | "F";
   isRoot: boolean;
+  inLaw: boolean; // dâu/rể (kết hôn vào, không mang dòng máu)
   years: string;
   gen: number | null;
+  tier: number | null; // đời (số thô) để ghim toạ độ dọc; dâu/rể = đời vợ/chồng
   color: string;
   img: string;
   avatar: string;
   childCount: number; // số con trực tiếp (badge + biết có mở rộng được không)
-  childLinks?: GLink[]; // gán khi ở chế độ mở rộng dần
+  childLinks?: GLink[]; // cạnh cha→con (mở rộng dần đi theo cạnh này)
+  spouseLinks?: GLink[]; // cạnh hôn nhân (kéo dâu/rể xuất hiện cùng vợ/chồng)
   collapsed?: boolean; // đang thu gọn nhánh con?
 };
 
@@ -42,6 +45,7 @@ function palette(dark: boolean) {
         photoBg: "#2B2520", // --muted
         link: "#5C5349",
         linkText: "#9C9082",
+        marriage: "#D24545", // --primary (oxblood, dark) — cạnh hôn nhân
         root: "#D4A045", // --accent (bronze, dark)
         male: "#6FA0C8",
         female: "#D08A91",
@@ -55,6 +59,7 @@ function palette(dark: boolean) {
         photoBg: "#ECE6DA",
         link: "#CBBFAC",
         linkText: "#8A7F72",
+        marriage: "#9B3535", // --primary (oxblood, light) — cạnh hôn nhân
         root: "#B8862A", // --accent (bronze, light)
         male: "#5B8FB8",
         female: "#C97F86",
@@ -137,7 +142,11 @@ const loadImage = (src: string) =>
     img.src = src;
   });
 
-/** Node (mỗi người) + link (cha/mẹ → con, và hôn nhân) cho 3d-force-graph. */
+/**
+ * Node + link cho 3d-force-graph. GỒM CẢ dâu/rể (kết hôn vào) — nối bằng cạnh
+ * hôn nhân. Vì có dâu/rể + hôn nhân nên KHÔNG dùng dagMode (sẽ tạo chu trình);
+ * thay vào đó mỗi node được GHIM toạ độ dọc theo `tier` (đời) ở component.
+ */
 function buildGraph(
   data: TreeData,
   genOffset: number,
@@ -146,31 +155,60 @@ function buildGraph(
 ): { nodes: GNode[]; links: GLink[] } {
   const personById = new Map(data.persons.map((p) => [p.id, p]));
   const famById = new Map(data.families.map((f) => [f.id, f]));
-  // Huyết thống = thuỷ tổ HOẶC có cha/mẹ trong họ (birth_family_id). Dâu/rể
-  // (kết hôn vào) bị loại để đồ thị là CÂY thuần → dagMode "td" xếp tầng được
-  // (giống ví dụ "tree" của thư viện). Link hôn nhân/2 cha-mẹ sẽ tạo chu trình
-  // làm hỏng dag → chỉ giữ 1 cha/mẹ huyết thống cho mỗi con.
+  // Huyết thống = thuỷ tổ HOẶC có cha/mẹ trong họ (birth_family_id).
   const isLineage = (id: string | null | undefined) => {
     if (!id) return false;
     const p = personById.get(id);
     return !!p && (p.is_root || p.birth_family_id != null);
   };
 
-  const bloodline = data.persons.filter((p) => isLineage(p.id));
-  const ids = new Set(bloodline.map((p) => p.id));
+  // Bản đồ vợ/chồng (từ các gia đình) để suy ra đời cho dâu/rể + kéo họ hiện ra.
+  const spouseOf = new Map<string, string[]>();
+  const addSpouse = (a: string, b: string) => {
+    if (!spouseOf.has(a)) spouseOf.set(a, []);
+    spouseOf.get(a)!.push(b);
+  };
+  for (const f of data.families) {
+    if (f.husband_id && f.wife_id) {
+      addSpouse(f.husband_id, f.wife_id);
+      addSpouse(f.wife_id, f.husband_id);
+    }
+  }
 
-  const nodes: GNode[] = bloodline.map((p) => {
+  // Người được đưa vào: huyết thống, HOẶC dâu/rể có vợ/chồng là huyết thống.
+  const included = data.persons.filter(
+    (p) =>
+      isLineage(p.id) ||
+      (spouseOf.get(p.id) ?? []).some((s) => isLineage(s)),
+  );
+  const ids = new Set(included.map((p) => p.id));
+
+  const tierOf = (p: (typeof data.persons)[number]) => {
+    if (isLineage(p.id)) return p.generation ?? null;
+    // Dâu/rể → lấy đời của vợ/chồng huyết thống.
+    for (const s of spouseOf.get(p.id) ?? []) {
+      const g = personById.get(s)?.generation;
+      if (g != null) return g;
+    }
+    return p.generation ?? null;
+  };
+
+  const nodes: GNode[] = included.map((p) => {
     const avatar = avatarOf(p.gender);
     const photo = p.photo_path ? photoUrls?.get(p.photo_path) : undefined;
+    const inLaw = !isLineage(p.id);
+    const tier = tierOf(p);
     return {
       id: p.id,
       name: p.full_name,
       gender: p.gender,
       isRoot: p.is_root,
+      inLaw,
       years: [p.birth_date?.slice(0, 4), p.death_date?.slice(0, 4)]
         .filter(Boolean)
         .join("–"),
-      gen: displayGen(p.generation, genOffset),
+      gen: displayGen(tier, genOffset),
+      tier,
       color: p.is_root ? pal.root : p.gender === "F" ? pal.female : pal.male,
       img: photo ?? avatar,
       avatar,
@@ -180,22 +218,31 @@ function buildGraph(
   const nodeById = new Map(nodes.map((n) => [n.id as string, n]));
 
   const links: GLink[] = [];
-  for (const p of bloodline) {
+  // Cạnh cha/mẹ → con: nối vào MỘT cha/mẹ huyết thống (để cây/mở-rộng-dần gọn).
+  for (const p of included) {
     if (!p.birth_family_id) continue;
     const f = famById.get(p.birth_family_id);
     if (!f) continue;
-    // Ưu tiên nối vào cha/mẹ HUYẾT THỐNG (người mang dòng máu của họ); nếu cả
-    // hai đều là dâu/rể thì nối vào chồng, rồi tới vợ.
     const parent = isLineage(f.husband_id)
       ? f.husband_id
       : isLineage(f.wife_id)
         ? f.wife_id
         : f.husband_id ?? f.wife_id;
     if (parent && ids.has(parent)) {
-      links.push({ source: parent, target: p.id });
+      links.push({ source: parent, target: p.id, kind: "parent" });
       const pn = nodeById.get(parent);
       if (pn) pn.childCount += 1;
     }
+  }
+  // Cạnh hôn nhân (dedup) — để dâu/rể đứng cạnh vợ/chồng.
+  const seen = new Set<string>();
+  for (const f of data.families) {
+    if (!f.husband_id || !f.wife_id) continue;
+    if (!ids.has(f.husband_id) || !ids.has(f.wife_id)) continue;
+    const key = [f.husband_id, f.wife_id].sort().join("|");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    links.push({ source: f.husband_id, target: f.wife_id, kind: "marriage" });
   }
   return { nodes, links };
 }
@@ -309,13 +356,15 @@ export function Tree3DView({
       const draw = (photo?: HTMLImageElement | null) => {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, CARD_W, CARD_H);
-        // Thân thẻ + viền theo màu giới tính / thuỷ tổ.
+        // Thân thẻ + viền theo màu giới tính / thuỷ tổ. Dâu/rể → viền đứt nét.
         roundRectPath(ctx, 6, 6, CARD_W - 12, CARD_H - 12, 26);
         ctx.fillStyle = pal.card;
         ctx.fill();
+        if (g.inLaw) ctx.setLineDash([11, 8]);
         ctx.lineWidth = g.isRoot ? 6 : 4;
         ctx.strokeStyle = accent;
         ctx.stroke();
+        ctx.setLineDash([]);
         // Ảnh tròn (cover) + vòng viền.
         ctx.save();
         ctx.beginPath();
@@ -332,9 +381,11 @@ export function Tree3DView({
         ctx.restore();
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        if (g.inLaw) ctx.setLineDash([11, 8]);
         ctx.lineWidth = 6;
         ctx.strokeStyle = accent;
         ctx.stroke();
+        ctx.setLineDash([]);
         // Tên + năm/đời: căn giữa theo chiều dọc vùng DƯỚI ảnh cho cân đối,
         // line-height rộng (40 / 36) để thoáng.
         ctx.textAlign = "center";
@@ -393,29 +444,47 @@ export function Tree3DView({
       if (cancelled || !elRef.current) return;
       const { nodes, links } = buildGraph(data, genOffset, photoUrls, pal);
 
-      // Mở rộng dần: gắn danh sách con cho mỗi node, thu gọn mọi nhánh trừ gốc,
-      // và chỉ đưa vào graph phần đang bung (getPruned) → nhẹ với họ >1000 người.
       const nodeById = new Map(nodes.map((n) => [n.id as string, n]));
+      const endId = (v: unknown) =>
+        typeof v === "object" ? ((v as GNode).id as string) : (v as string);
+      const srcId = (l: GLink) => endId(l.source);
+      const targetId = (l: GLink) => endId(l.target);
+
+      // Ghim đời: thay cho dagMode, mỗi node cố định toạ độ DỌC theo `tier` (đời)
+      // → dâu/rể + cạnh hôn nhân không làm hỏng cách xếp tầng.
+      const LEVEL = 50;
+      nodes.forEach((n) => {
+        n.fy = n.tier != null ? -n.tier * LEVEL : undefined;
+      });
+
+      // Cạnh cha→con (childLinks) để mở-rộng-dần; cạnh hôn nhân (spouseLinks) để
+      // kéo dâu/rể hiện ra cạnh vợ/chồng.
+      nodes.forEach((n) => {
+        n.childLinks = [];
+        n.spouseLinks = [];
+      });
+      for (const l of links) {
+        if (l.kind === "parent") nodeById.get(srcId(l))?.childLinks?.push(l);
+        else {
+          nodeById.get(srcId(l))?.spouseLinks?.push(l);
+          nodeById.get(targetId(l))?.spouseLinks?.push(l);
+        }
+      }
       const roots = nodes.filter((n) => n.isRoot);
-      const targetSet = new Set(links.map((l) => l.target));
+      const childTargets = new Set(
+        links.filter((l) => l.kind === "parent").map((l) => targetId(l)),
+      );
       const rootSet = roots.length
         ? roots
-        : nodes.filter((n) => !targetSet.has(n.id as string));
-      const targetId = (l: GLink) =>
-        typeof l.target === "object"
-          ? ((l.target as GNode).id as string)
-          : (l.target as string);
-      if (expandable) {
-        nodes.forEach((n) => {
-          n.childLinks = [];
-          n.collapsed = !n.isRoot;
-        });
-        links.forEach((l) => nodeById.get(l.source)?.childLinks?.push(l));
-        if (!roots.length) rootSet.forEach((n) => (n.collapsed = false));
-      }
-      const getPruned = () => {
+        : nodes.filter((n) => !n.inLaw && !childTargets.has(n.id as string));
+      if (expandable) nodes.forEach((n) => (n.collapsed = !n.isRoot));
+
+      // Phần đang hiển thị: full khi tắt mở-rộng-dần; khi bật thì duyệt cây huyết
+      // thống rồi bổ sung dâu/rể của những người đang hiện.
+      const getVisible = () => {
+        if (!expandable) return { nodes, links };
         const vN: GNode[] = [];
-        const vL: GLink[] = [];
+        const vL = new Set<GLink>();
         const seen = new Set<string>();
         const walk = (n: GNode) => {
           const id = n.id as string;
@@ -424,13 +493,24 @@ export function Tree3DView({
           vN.push(n);
           if (n.collapsed) return;
           for (const l of n.childLinks ?? []) {
-            vL.push(l);
+            vL.add(l);
             const t = nodeById.get(targetId(l));
             if (t) walk(t);
           }
         };
         rootSet.forEach(walk);
-        return { nodes: vN, links: vL };
+        for (const n of [...vN]) {
+          for (const l of n.spouseLinks ?? []) {
+            const other = srcId(l) === (n.id as string) ? targetId(l) : srcId(l);
+            const sp = nodeById.get(other);
+            if (sp && !seen.has(other)) {
+              seen.add(other);
+              vN.push(sp);
+            }
+            vL.add(l);
+          }
+        }
+        return { nodes: vN, links: [...vL] };
       };
 
       const flyTo = (node: GNode & { x?: number; y?: number; z?: number }) => {
@@ -448,7 +528,7 @@ export function Tree3DView({
       graph = new ForceGraph3D(elRef.current)
         .backgroundColor(pal.bg)
         .showNavInfo(false)
-        .graphData(expandable ? getPruned() : { nodes, links })
+        .graphData(getVisible())
         .nodeThreeObject(makeNode)
         .nodeThreeObjectExtend(false)
         .nodeLabel((n) => {
@@ -461,21 +541,45 @@ export function Tree3DView({
             : "";
           return `<div style="text-align:center"><b>${g.name}</b>${sub}</div>`;
         })
-        .linkColor(() => pal.link)
-        .linkWidth(0.6)
-        .linkOpacity(0.4)
-        .linkDirectionalParticles(2)
-        .linkDirectionalParticleWidth(0.8)
-        .linkDirectionalParticleSpeed(0.006)
-        .linkDirectionalParticleColor(() => pal.particle)
-        // Chữ "con trai/con gái" nổi giữa mỗi đường cha→con (ví dụ text-links).
-        .linkThreeObjectExtend(true)
-        .linkThreeObject((l) => {
-          const t = (l as { target: unknown }).target;
+        // Màu cạnh cho biết quan hệ: hôn nhân = đỏ rượu; cha→con = màu theo giới
+        // của người con (trai xanh, gái hồng).
+        .linkColor((l) => {
+          const link = l as GLink;
+          if (link.kind === "marriage") return pal.marriage;
+          const t = link.target as unknown;
           const gender =
             t && typeof t === "object" ? (t as GNode).gender : undefined;
-          const s = new SpriteText(gender === "F" ? "con gái" : "con trai");
-          s.color = pal.linkText;
+          return gender === "F" ? pal.female : pal.male;
+        })
+        .linkWidth((l) => ((l as GLink).kind === "marriage" ? 1.2 : 0.8))
+        .linkOpacity(0.55)
+        // Hạt chạy chỉ trên cạnh cha→con (hôn nhân là quan hệ ngang, không hạt).
+        .linkDirectionalParticles((l) =>
+          (l as GLink).kind === "marriage" ? 0 : 2,
+        )
+        .linkDirectionalParticleWidth(0.9)
+        .linkDirectionalParticleSpeed(0.006)
+        .linkDirectionalParticleColor((l) => {
+          const t = (l as GLink).target as unknown;
+          const gender =
+            t && typeof t === "object" ? (t as GNode).gender : undefined;
+          return gender === "F" ? pal.female : pal.male;
+        })
+        // Chữ giữa mỗi cạnh: "con trai/con gái" (cha→con) hoặc "vợ chồng".
+        .linkThreeObjectExtend(true)
+        .linkThreeObject((l) => {
+          const link = l as GLink;
+          let label: string;
+          if (link.kind === "marriage") {
+            label = "vợ chồng";
+          } else {
+            const t = (l as { target: unknown }).target;
+            const gender =
+              t && typeof t === "object" ? (t as GNode).gender : undefined;
+            label = gender === "F" ? "con gái" : "con trai";
+          }
+          const s = new SpriteText(label);
+          s.color = link.kind === "marriage" ? pal.marriage : pal.linkText;
           s.textHeight = 2.4;
           s.fontWeight = "500";
           return s;
@@ -489,21 +593,18 @@ export function Tree3DView({
             );
           return false;
         })
-        .dagMode("td")
-        .dagLevelDistance(90)
-        .onDagError(() => {})
         // Bấm 1 thẻ: mở/thu nhánh con (nếu bật mở-rộng-dần) rồi bay camera tới.
         .onNodeClick((n) => {
           const node = n as GNode & { x?: number; y?: number; z?: number };
           if (expandable && node.childCount > 0) {
             node.collapsed = !node.collapsed;
-            graph?.graphData(getPruned());
+            graph?.graphData(getVisible());
           }
           flyTo(node);
         });
-      // Giãn vừa phải cho đỡ đè mà vẫn gọn dễ nhìn.
-      graph.d3Force("charge")?.strength(-360);
-      graph.d3Force("link")?.distance(28);
+      // Xếp sát lại (~1/2 khoảng cách cũ) cho đỡ trống trải mà không quá chật.
+      graph.d3Force("charge")?.strength(-180);
+      graph.d3Force("link")?.distance(14);
 
       onResize = () => {
         if (!elRef.current || !graph) return;
@@ -607,6 +708,21 @@ export function Tree3DView({
           </span>
           <span className="inline-flex items-center gap-1">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.root }} /> Thuỷ tổ
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-2.5 w-2.5 rounded-full border border-dashed border-muted-foreground" /> Dâu/rể
+          </span>
+        </div>
+        {/* Màu đường nối = quan hệ. */}
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-1.5">
+          <span className="inline-flex items-center gap-1">
+            <span className="h-0.5 w-4 rounded" style={{ background: pal.male }} /> Con trai
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-0.5 w-4 rounded" style={{ background: pal.female }} /> Con gái
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="h-0.5 w-4 rounded" style={{ background: pal.marriage }} /> Vợ chồng
           </span>
         </div>
       </div>
