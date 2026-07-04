@@ -936,7 +936,7 @@ export default function Tree() {
                   active={mode === "2d"}
                   onClick={() => setMode("2d")}
                   ariaLabel="Xem cây 2D"
-                  className="px-3"
+                  className="px-2 sm:px-3"
                 >
                   2D
                 </SegmentedButton>
@@ -944,40 +944,20 @@ export default function Tree() {
                   active={mode === "3d"}
                   onClick={() => setMode("3d")}
                   ariaLabel="Xem cây 3D"
-                  className="px-3"
+                  className="px-2 sm:px-3"
                 >
                   3D
                 </SegmentedButton>
               </SegmentedControl>
               {mode === "2d" && (
               <>
-              {isMember && (
-                <SegmentedControl ariaLabel="Chế độ xem" className="order-first sm:mr-2">
-                  <SegmentedButton
-                    active={view === "tree"}
-                    onClick={() => setView("tree")}
-                    ariaLabel="Xem cả cây"
-                    className="px-3 whitespace-nowrap"
-                  >
-                    Cả cây
-                  </SegmentedButton>
-                  <SegmentedButton
-                    active={view === "lineage"}
-                    onClick={() => setView("lineage")}
-                    ariaLabel="Xem đường trực hệ của tôi"
-                    className="px-3 whitespace-nowrap"
-                  >
-                    Trực hệ
-                  </SegmentedButton>
-                </SegmentedControl>
-              )}
-              {/* Mobile: nút gạt mở/đóng cụm tuỳ chọn hiển thị. Desktop ẩn
-                  (luôn hiện đầy đủ). */}
+              {/* Mobile: nút gạt tuỳ chọn — đứng CÙNG DÒNG với 2D/3D (order-first),
+                  để "Cả cây/Trực hệ" mới xuống dòng dưới. Desktop ẩn. */}
               {view === "tree" && (
                 <button
                   type="button"
                   onClick={() => setShowOpts((v) => !v)}
-                  className="sm:hidden inline-flex items-center gap-1 rounded-md border bg-card px-3 h-9 text-sm"
+                  className="order-first sm:hidden inline-flex items-center gap-1 rounded-md border bg-card px-2 sm:px-3 h-10 text-sm"
                   aria-expanded={showOpts}
                 >
                   <IconSettings className="h-4 w-4" /> Tuỳ chọn
@@ -987,6 +967,26 @@ export default function Tree() {
                     <IconChevronDown className="h-4 w-4" />
                   )}
                 </button>
+              )}
+              {isMember && (
+                <SegmentedControl ariaLabel="Chế độ xem" className="sm:order-first sm:mr-2">
+                  <SegmentedButton
+                    active={view === "tree"}
+                    onClick={() => setView("tree")}
+                    ariaLabel="Xem cả cây"
+                    className="px-2 sm:px-3 whitespace-nowrap"
+                  >
+                    Cả cây
+                  </SegmentedButton>
+                  <SegmentedButton
+                    active={view === "lineage"}
+                    onClick={() => setView("lineage")}
+                    ariaLabel="Xem đường trực hệ của tôi"
+                    className="px-2 sm:px-3 whitespace-nowrap"
+                  >
+                    Trực hệ
+                  </SegmentedButton>
+                </SegmentedControl>
               )}
               {view === "tree" && (
               <div
