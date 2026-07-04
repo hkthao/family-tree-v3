@@ -902,6 +902,74 @@ export default function Tree() {
     return { matches: filtered.slice(0, SEARCH_CAP), totalMatched: filtered.length };
   }, [data, search]);
 
+  // Ô "Đặt người trung tâm" — dùng CHUNG cho cả cây 2D và 3D.
+  const focalSearch =
+    data && data.persons.length > 0 ? (
+      <div className="relative print-hide">
+        <div className="flex items-end gap-2">
+          <div className="flex-1 min-w-0">
+            <SearchInput
+              label="Đặt người trung tâm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Đặt người trung tâm — gõ tên để tìm…"
+            />
+          </div>
+          {defaultFocal && focal !== defaultFocal && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 shrink-0 w-10 sm:w-auto px-0 sm:px-3"
+              onClick={() => {
+                setFocal(defaultFocal);
+                setSearch("");
+              }}
+              aria-label="Về Thuỷ tổ"
+              title={
+                focalName
+                  ? `Đang chính giữa là ${focalName}. Bấm để về Thuỷ tổ.`
+                  : "Về Thuỷ tổ"
+              }
+            >
+              <IconHome className="h-4 w-4 sm:mr-1.5 shrink-0" />
+              <span className="hidden sm:inline">Về Thuỷ tổ</span>
+            </Button>
+          )}
+        </div>
+        {matches.length > 0 && (
+          <div className="absolute left-0 right-0 top-full mt-1 rounded-md border bg-card shadow-lg z-20">
+            <div className="px-3 py-1.5 text-xs text-muted-foreground border-b bg-muted/30">
+              {totalMatched > SEARCH_CAP
+                ? `Hiện ${SEARCH_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp`
+                : `${totalMatched} kết quả`}
+            </div>
+            <ul className="max-h-80 overflow-y-auto divide-y">
+              {matches.map((m) => (
+                <li key={m.id}>
+                  <button
+                    type="button"
+                    className="w-full text-left px-3 py-2 hover:bg-muted/40"
+                    onClick={() => {
+                      setFocal(m.id);
+                      setSearch("");
+                    }}
+                  >
+                    <span className="font-medium">{m.full_name}</span>
+                    {m.generation !== null && (
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        Đời {m.generation}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    ) : null;
+
   return (
     <div className="space-y-4">
       {/* Print-only title strip — shows "Họ Nguyễn — Cây gia phả · 2026-06-01"
@@ -1060,19 +1128,23 @@ export default function Tree() {
       </div>
 
       {mode === "3d" ? (
-        <Suspense
-          fallback={
-            <div className="grid h-[calc(100dvh-210px)] min-h-[440px] place-items-center rounded-xl border text-muted-foreground">
-              Đang tải khung 3D…
-            </div>
-          }
-        >
-          <Tree3DView
-            clanId={clan.id}
-            genOffset={clan.generation_offset}
-            className="h-[calc(100dvh-210px)] min-h-[440px] rounded-xl border"
-          />
-        </Suspense>
+        <div className="space-y-2">
+          {focalSearch}
+          <Suspense
+            fallback={
+              <div className="grid h-[calc(100dvh-260px)] min-h-[440px] place-items-center rounded-xl border text-muted-foreground">
+                Đang tải khung 3D…
+              </div>
+            }
+          >
+            <Tree3DView
+              clanId={clan.id}
+              genOffset={clan.generation_offset}
+              focal={focal}
+              className="h-[calc(100dvh-260px)] min-h-[440px] rounded-xl border"
+            />
+          </Suspense>
+        </div>
       ) : view === "lineage" ? (
         <LineageContent clanId={clanId} userId={userId} />
       ) : (
@@ -1112,69 +1184,7 @@ export default function Tree() {
 
       {data && data.persons.length > 0 && (
         <>
-          <div className="relative print-hide">
-            <div className="flex items-end gap-2">
-              <div className="flex-1 min-w-0">
-                <SearchInput
-                  label="Đặt người trung tâm"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Đặt người trung tâm — gõ tên để tìm…"
-                />
-              </div>
-              {defaultFocal && focal !== defaultFocal && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-10 shrink-0 w-10 sm:w-auto px-0 sm:px-3"
-                  onClick={() => {
-                    setFocal(defaultFocal);
-                    setSearch("");
-                  }}
-                  aria-label="Về Thuỷ tổ"
-                  title={
-                    focalName
-                      ? `Đang chính giữa là ${focalName}. Bấm để về Thuỷ tổ.`
-                      : "Về Thuỷ tổ"
-                  }
-                >
-                  <IconHome className="h-4 w-4 sm:mr-1.5 shrink-0" />
-                  <span className="hidden sm:inline">Về Thuỷ tổ</span>
-                </Button>
-              )}
-            </div>
-            {matches.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1 rounded-md border bg-card shadow-lg z-20">
-                <div className="px-3 py-1.5 text-xs text-muted-foreground border-b bg-muted/30">
-                  {totalMatched > SEARCH_CAP
-                    ? `Hiện ${SEARCH_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp`
-                    : `${totalMatched} kết quả`}
-                </div>
-                <ul className="max-h-80 overflow-y-auto divide-y">
-                  {matches.map((m) => (
-                    <li key={m.id}>
-                      <button
-                        type="button"
-                        className="w-full text-left px-3 py-2 hover:bg-muted/40"
-                        onClick={() => {
-                          setFocal(m.id);
-                          setSearch("");
-                        }}
-                      >
-                        <span className="font-medium">{m.full_name}</span>
-                        {m.generation !== null && (
-                          <span className="ml-2 text-sm text-muted-foreground">
-                            Đời {m.generation}
-                          </span>
-                        )}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          {focalSearch}
 
           {renderTreeWrap(
           <div
