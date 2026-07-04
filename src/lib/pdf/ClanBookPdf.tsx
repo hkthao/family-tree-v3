@@ -1109,8 +1109,15 @@ function renderTreePages({
     return { set, frontier };
   }
 
-  // Emit một cây (đã giới hạn bề ngang) — cắt thêm theo chiều sâu nếu quá
-  // nhiều đời.
+  const descIn = (id: string, mf?: Set<string>): Set<string> => {
+    const s = new Set<string>();
+    for (const d of descendantsOf(id)) if (!mf || mf.has(d)) s.add(d);
+    return s;
+  };
+
+  // Emit theo kiểu SỔ: ưu tiên CHIỀU SÂU, mỗi nhánh vẽ TRỌN (kèm các trang
+  // "(tiếp)") rồi mới sang nhánh kế → thứ tự đọc mạch lạc, KHÔNG xen kẽ,
+  // không trùng tiêu đề. Mỗi trang tối đa MAX_GEN_PER_PAGE đời và ≤ budget lá.
   function emitTree(
     rootsArg: PersonDetail[],
     mf: Set<string> | undefined,
@@ -1118,109 +1125,67 @@ function renderTreePages({
     subtitle: string | undefined,
     keyPrefix: string,
   ) {
-    if (subtreeDepth(rootsArg, mf) <= MAX_GEN_PER_PAGE) {
+    const deep = subtreeDepth(rootsArg, mf) > MAX_GEN_PER_PAGE;
+    const wide = countLeaves(rootsArg, childrenByParent, personById, mf) > budget;
+    if (!deep && !wide) {
       mkPage(keyPrefix, rootsArg, mf, title, subtitle);
       return;
     }
+
     const { set, frontier } = depthSlice(rootsArg, mf, MAX_GEN_PER_PAGE);
-    mkPage(
-      keyPrefix,
-      rootsArg,
-      set,
-      title,
-      subtitle ? `${subtitle} · đời sau ở trang kế` : "Đời sau tiếp ở trang kế",
-    );
-    frontier.forEach((f, i) => {
-      const sub = new Set<string>();
-      for (const d of descendantsOf(f.id)) if (!mf || mf.has(d)) sub.add(d);
-      emitTree(
-        [f],
-        sub,
-        `Phả hệ từ ${f.full_name} — ${genOf(f)} (tiếp)`,
-        undefined,
-        `${keyPrefix}d${i}`,
+    const sliceWide =
+      countLeaves(rootsArg, childrenByParent, personById, set) > budget;
+
+    if (!sliceWide) {
+      // Chỉ sâu → cắt theo chiều sâu; đời sau nối tiếp ở trang "(tiếp)".
+      mkPage(
+        keyPrefix,
+        rootsArg,
+        set,
+        title,
+        subtitle ? `${subtitle} · đời sau ở trang kế` : "Đời sau tiếp ở trang kế",
       );
-    });
-  }
-
-  // Gói các nhánh-con của R vào từng trang (mỗi trang: R + vài nhánh trọn
-  // vẹn), nhánh-con quá lớn thì đệ quy — không bao giờ cắt đôi một nhánh.
-  function emitBranchesOf(r: PersonDetail, keyPrefix: string) {
-    const kids = kidsOf(r.id);
-    const groups: PersonDetail[][] = [];
-    const big: PersonDetail[] = [];
-    let cur: PersonDetail[] = [];
-    let curLeaves = 0;
-    for (const c of kids) {
-      const cl = countLeaves([c], childrenByParent, personById);
-      if (cl > budget) {
-        if (cur.length) {
-          groups.push(cur);
-          cur = [];
-          curLeaves = 0;
-        }
-        big.push(c);
-      } else if (curLeaves + cl <= budget) {
-        cur.push(c);
-        curLeaves += cl;
-      } else {
-        groups.push(cur);
-        cur = [c];
-        curLeaves = cl;
-      }
+      frontier.forEach((f, i) =>
+        emitTree(
+          [f],
+          descIn(f.id, mf),
+          `Phả hệ từ ${f.full_name} — ${genOf(f)} (tiếp)`,
+          undefined,
+          `${keyPrefix}d${i}`,
+        ),
+      );
+      return;
     }
-    if (cur.length) groups.push(cur);
 
-    const label = `Phả hệ từ ${r.full_name} — ${genOf(r)}`;
-    if (groups.length === 0 && big.length > 0) {
-      // Mọi nhánh con đều lớn → 1 trang tổng quan R + các con (1 đời).
-      const mf = new Set<string>([r.id, ...kids.map((k) => k.id)]);
-      mkPage(`${keyPrefix}-ov`, [r], mf, label, "Tổng quan các nhánh con");
-    } else {
-      groups.forEach((g, gi) => {
-        const mf = new Set<string>([r.id]);
-        for (const c of g) for (const d of descendantsOf(c.id)) mf.add(d);
-        const part = groups.length > 1 ? ` (phần ${gi + 1}/${groups.length})` : "";
-        emitTree([r], mf, label, `Các nhánh con${part}`, `${keyPrefix}-${gi}`);
-      });
-    }
-    big.forEach((c, bi) => emitBranchesOf(c, `${keyPrefix}b${bi}`));
-  }
-
-  // Cả cây vừa một trang.
-  const totalLeaves = countLeaves(roots, childrenByParent, personById);
-  if (totalLeaves <= budget) {
-    emitTree(roots, undefined, "Sơ đồ cây gia phả", undefined, "tree");
-    return pages;
-  }
-
-  // Trang tổng quan: Thuỷ tổ + các đời kế tiếp — vừa bề ngang VÀ không quá
-  // sâu (giới hạn số đời để thẻ không bị co nhỏ).
-  const overview = new Set<string>(roots.map((r) => r.id));
-  let frontier = roots;
-  let ovDepth = 1;
-  while (ovDepth < MAX_GEN_PER_PAGE) {
-    const next = frontier.flatMap((p) => kidsOf(p.id));
-    if (next.length === 0) break;
-    if (overview.size + next.length > budget) break;
-    next.forEach((c) => overview.add(c.id));
-    frontier = next;
-    ovDepth += 1;
-  }
-  if (overview.size > roots.length) {
-    const founders = roots.filter((r) => kidsOf(r.id).length > 0);
-    const lead = founders[0]?.full_name ?? roots[0]?.full_name ?? "";
+    // Một đời quá nhiều nhánh → trang tổng quan (gốc + các con), rồi mỗi
+    // người con CÓ HẬU DUỆ vẽ trọn một mục riêng (đệ quy, vẫn ưu tiên sâu).
+    // Con là "lá" đã nằm trên trang tổng quan nên không tách trang riêng.
+    const kids = rootsArg.flatMap((r) => kidsIn(r.id, mf));
+    const ovSet = new Set<string>([
+      ...rootsArg.map((r) => r.id),
+      ...kids.map((k) => k.id),
+    ]);
     mkPage(
-      "overview",
-      roots,
-      overview,
-      "Sơ đồ cây gia phả",
-      `Tổng quan từ ${lead}${founders.length > 1 ? " và các chi" : ""} — chi tiết từng nhánh ở các trang sau`,
+      `${keyPrefix}-ov`,
+      rootsArg,
+      ovSet,
+      title,
+      subtitle ?? "Tổng quan các nhánh",
     );
+    kids
+      .filter((c) => kidsIn(c.id, mf).length > 0)
+      .forEach((c, i) =>
+        emitTree(
+          [c],
+          descIn(c.id, mf),
+          `Phả hệ từ ${c.full_name} — ${genOf(c)}`,
+          undefined,
+          `${keyPrefix}c${i}`,
+        ),
+      );
   }
 
-  // Chi tiết: mỗi gốc → gói các nhánh con trọn vẹn.
-  roots.forEach((r, i) => emitBranchesOf(r, `t${i}`));
+  emitTree(roots, undefined, "Sơ đồ cây gia phả", undefined, "tree");
   return pages;
 }
 
