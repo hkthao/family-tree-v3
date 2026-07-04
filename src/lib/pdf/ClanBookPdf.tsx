@@ -1044,7 +1044,10 @@ function renderTreePages({
     return set;
   };
 
-  const pages: React.ReactNode[] = [];
+  // Gom trang kèm ĐỜI của gốc trang để cuối cùng sắp theo đời (đời nhỏ
+  // trước), giữ thứ tự phát sinh cho các trang cùng đời.
+  const pages: { gen: number; seq: number; node: React.ReactNode }[] = [];
+  let pageSeq = 0;
   const mkPage = (
     key: string,
     rootsArg: PersonDetail[],
@@ -1052,19 +1055,23 @@ function renderTreePages({
     title: string,
     subtitle?: string,
   ) =>
-    pages.push(
-      <TreeDiagramPage
-        key={key}
-        title={title}
-        subtitle={subtitle}
-        roots={rootsArg}
-        childrenByParent={childrenByParent}
-        personById={personById}
-        spousesByPerson={spousesByPerson}
-        memberFilter={mf}
-        showLivingFullDob={showLivingFullDob}
-      />,
-    );
+    pages.push({
+      gen: rootsArg[0]?.generation ?? 0,
+      seq: pageSeq++,
+      node: (
+        <TreeDiagramPage
+          key={key}
+          title={title}
+          subtitle={subtitle}
+          roots={rootsArg}
+          childrenByParent={childrenByParent}
+          personById={personById}
+          spousesByPerson={spousesByPerson}
+          memberFilter={mf}
+          showLivingFullDob={showLivingFullDob}
+        />
+      ),
+    });
 
   const genOf = (p: PersonDetail) => displayGenLabel(p.generation, genOffset);
 
@@ -1186,7 +1193,11 @@ function renderTreePages({
   }
 
   emitTree(roots, undefined, "Sơ đồ cây gia phả", undefined, "tree");
-  return pages;
+  // Sắp trang theo ĐỜI của gốc trang → đọc lần lượt Đời 1, 2, 3… thay vì
+  // đi sâu hết một nhánh (đời 16) rồi nhảy về nhánh khác (đời 6).
+  return pages
+    .sort((a, b) => a.gen - b.gen || a.seq - b.seq)
+    .map((p) => p.node);
 }
 
 /**
