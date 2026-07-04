@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -22,6 +22,10 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+// Lazy — kéo cả three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
+const Tree3DView = lazy(() =>
+  import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
+);
 import {
   SegmentedButton,
   SegmentedControl,
@@ -165,6 +169,18 @@ export default function Tree() {
         const p = new URLSearchParams(prev);
         if (v === "lineage") p.set("view", "lineage");
         else p.delete("view");
+        return p;
+      },
+      { replace: true },
+    );
+  // Chế độ hiển thị: "2d" (family-chart) | "3d" (3d-force-graph). Lưu ở URL.
+  const mode: "2d" | "3d" = searchParams.get("mode") === "3d" ? "3d" : "2d";
+  const setMode = (m: "2d" | "3d") =>
+    setSearchParams(
+      (prev) => {
+        const p = new URLSearchParams(prev);
+        if (m === "3d") p.set("mode", "3d");
+        else p.delete("mode");
         return p;
       },
       { replace: true },
@@ -914,13 +930,34 @@ export default function Tree() {
           actionsBelow
           actions={
             <>
+              {/* 2D ↔ 3D — luôn hiển thị; đứng đầu. */}
+              <SegmentedControl ariaLabel="Kiểu hiển thị" className="order-first sm:mr-2">
+                <SegmentedButton
+                  active={mode === "2d"}
+                  onClick={() => setMode("2d")}
+                  ariaLabel="Xem cây 2D"
+                  className="px-3"
+                >
+                  2D
+                </SegmentedButton>
+                <SegmentedButton
+                  active={mode === "3d"}
+                  onClick={() => setMode("3d")}
+                  ariaLabel="Xem cây 3D"
+                  className="px-3"
+                >
+                  3D
+                </SegmentedButton>
+              </SegmentedControl>
+              {mode === "2d" && (
+              <>
               {isMember && (
-                <SegmentedControl ariaLabel="Chế độ xem" className="w-full sm:w-auto order-first sm:mr-2">
+                <SegmentedControl ariaLabel="Chế độ xem" className="order-first sm:mr-2">
                   <SegmentedButton
                     active={view === "tree"}
                     onClick={() => setView("tree")}
                     ariaLabel="Xem cả cây"
-                    className="flex-1 px-3 whitespace-nowrap"
+                    className="px-3 whitespace-nowrap"
                   >
                     Cả cây
                   </SegmentedButton>
@@ -928,7 +965,7 @@ export default function Tree() {
                     active={view === "lineage"}
                     onClick={() => setView("lineage")}
                     ariaLabel="Xem đường trực hệ của tôi"
-                    className="flex-1 px-3 whitespace-nowrap"
+                    className="px-3 whitespace-nowrap"
                   >
                     Trực hệ
                   </SegmentedButton>
@@ -1015,12 +1052,28 @@ export default function Tree() {
               </div>
               </div>
               )}
+              </>
+              )}
             </>
           }
         />
       </div>
 
-      {view === "lineage" ? (
+      {mode === "3d" ? (
+        <Suspense
+          fallback={
+            <div className="grid h-[calc(100dvh-210px)] min-h-[440px] place-items-center rounded-xl border text-muted-foreground">
+              Đang tải khung 3D…
+            </div>
+          }
+        >
+          <Tree3DView
+            clanId={clan.id}
+            genOffset={clan.generation_offset}
+            className="h-[calc(100dvh-210px)] min-h-[440px] rounded-xl border"
+          />
+        </Suspense>
+      ) : view === "lineage" ? (
         <LineageContent clanId={clanId} userId={userId} />
       ) : (
       <>
