@@ -12,6 +12,10 @@ import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { getTreeData, type TreeData } from "@/lib/queries/tree";
 import { subscribeTheme } from "@/lib/theme";
 
+/** Số node tối đa dựng cùng lúc (giữ mượt trên điện thoại). Phần còn lại
+ *  ẩn dưới các thẻ có badge số con — bấm để bung thêm. */
+const RENDER_CAP = 500;
+
 type GraphInstance = ForceGraph3DInstance;
 
 type GLink = { source: string; target: string; kind: "parent" | "marriage" };
@@ -256,10 +260,13 @@ function buildGraph(
 export function Tree3DView({
   clanId,
   genOffset,
+  focal = null,
   className,
 }: {
   clanId: string;
   genOffset: number;
+  /** Người làm trung tâm (do trang cha điều khiển qua ô tìm chung với cây 2D). */
+  focal?: string | null;
   className?: string;
 }) {
   const elRef = useRef<HTMLDivElement>(null);
@@ -316,9 +323,9 @@ export function Tree3DView({
   // Chờ ảnh xong (nếu có ảnh) mới dựng để khỏi dựng lại + reset camera.
   const photosReady = photoPaths.length === 0 || !!photoUrls;
 
-  // Tự bật mở-rộng-dần khi họ đông (>800 người) để đỡ nặng; người dùng ghi đè được.
+  // Tự bật mở-rộng-dần khi họ đông (>RENDER_CAP người); người dùng ghi đè được.
   const nodeCount = data?.persons?.length ?? 0;
-  const expandable = expandOverride ?? nodeCount > 800;
+  const expandable = expandOverride ?? nodeCount > RENDER_CAP;
 
   useEffect(() => {
     const el = elRef.current;
@@ -471,13 +478,59 @@ export function Tree3DView({
         }
       }
       const roots = nodes.filter((n) => n.isRoot);
-      const childTargets = new Set(
-        links.filter((l) => l.kind === "parent").map((l) => targetId(l)),
-      );
+      const parentOf = new Map<string, string>();
+      const childTargets = new Set<string>();
+      for (const l of links) {
+        if (l.kind !== "parent") continue;
+        parentOf.set(targetId(l), srcId(l));
+        childTargets.add(targetId(l));
+      }
       const rootSet = roots.length
         ? roots
         : nodes.filter((n) => !n.inLaw && !childTargets.has(n.id as string));
-      if (expandable) nodes.forEach((n) => (n.collapsed = !n.isRoot));
+      const childIdsOf = (n: GNode) =>
+        (n.childLinks ?? []).map((l) => targetId(l));
+
+      // Khởi tạo thu gọn: BUNG quanh NGƯỜI TRUNG TÂM, tối đa RENDER_CAP node —
+      // ưu tiên đường từ gốc xuống người đó rồi lan ra con cháu; phần còn lại
+      // để thu gọn (bấm để bung). Giữ mượt cho họ vài nghìn người trên điện thoại.
+      const initCollapse = (focalId: string | null) => {
+        nodes.forEach((n) => (n.collapsed = true));
+        const shown = new Set<string>();
+        rootSet.forEach((r) => shown.add(r.id as string));
+        const order: string[] = [];
+        if (focalId && nodeById.has(focalId)) {
+          const chain: string[] = [];
+          const guard = new Set<string>();
+          let cur: string | undefined = focalId;
+          while (cur && !guard.has(cur)) {
+            guard.add(cur);
+            chain.push(cur);
+            cur = parentOf.get(cur);
+          }
+          chain.reverse().forEach((id) => {
+            order.push(id);
+            shown.add(id);
+          });
+        }
+        const start =
+          focalId && nodeById.has(focalId)
+            ? [focalId]
+            : rootSet.map((n) => n.id as string);
+        const queue = [...order, ...start];
+        for (let i = 0; i < queue.length && shown.size < RENDER_CAP; i++) {
+          const n = nodeById.get(queue[i]);
+          if (!n) continue;
+          const kids = childIdsOf(n).filter((c) => !shown.has(c));
+          if (shown.size + kids.length > RENDER_CAP) continue; // bung sẽ vượt → giữ gọn
+          n.collapsed = false;
+          for (const c of kids) {
+            shown.add(c);
+            queue.push(c);
+          }
+        }
+      };
+      if (expandable) initCollapse(focal);
 
       // Phần đang hiển thị: full khi tắt mở-rộng-dần; khi bật thì duyệt cây huyết
       // thống rồi bổ sung dâu/rể của những người đang hiện.
@@ -606,6 +659,17 @@ export function Tree3DView({
       graph.d3Force("charge")?.strength(-180);
       graph.d3Force("link")?.distance(14);
 
+      // Khi layout ổn định lần đầu → bay tới người trung tâm cho vào giữa khung.
+      let flew = false;
+      graph.onEngineStop(() => {
+        if (flew) return;
+        const fn = focal ? nodeById.get(focal) : null;
+        if (fn && (fn as { x?: number }).x != null) {
+          flew = true;
+          flyTo(fn as GNode & { x?: number; y?: number; z?: number });
+        }
+      });
+
       onResize = () => {
         if (!elRef.current || !graph) return;
         graph.width(elRef.current.clientWidth).height(elRef.current.clientHeight);
@@ -643,7 +707,7 @@ export function Tree3DView({
       if (onKey) window.removeEventListener("keydown", onKey);
       graph?._destructor?.();
     };
-  }, [data, genOffset, photoUrls, photosReady, pal, fs, expandable]);
+  }, [data, genOffset, photoUrls, photosReady, pal, fs, expandable, focal]);
 
   const kbd =
     "rounded border border-border bg-muted px-1 font-mono text-[10px]";
@@ -697,37 +761,7 @@ export function Tree3DView({
         </button>
       </div>
 
-      {/* Chú thích màu — góc trên trái, nổi trên canvas (z-10). */}
-      <div className="pointer-events-none absolute left-3 top-3 z-10 rounded-lg border border-border bg-background/85 px-3 py-2 text-xs text-foreground shadow-sm backdrop-blur">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.male }} /> Nam
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.female }} /> Nữ
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.root }} /> Thuỷ tổ
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-2.5 w-2.5 rounded-full border border-dashed border-muted-foreground" /> Dâu/rể
-          </span>
-        </div>
-        {/* Màu đường nối = quan hệ. */}
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-1.5">
-          <span className="inline-flex items-center gap-1">
-            <span className="h-0.5 w-4 rounded" style={{ background: pal.male }} /> Con trai
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-0.5 w-4 rounded" style={{ background: pal.female }} /> Con gái
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <span className="h-0.5 w-4 rounded" style={{ background: pal.marriage }} /> Vợ chồng
-          </span>
-        </div>
-      </div>
-
-      {/* Hướng dẫn điều khiển — góc dưới trái, tắt được cho đỡ chiếm chỗ. */}
+      {/* Hướng dẫn + chú thích màu — góc dưới trái, tắt được cho đỡ chiếm chỗ. */}
       {showGuide ? (
         <div className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[16rem] space-y-1 rounded-lg border border-border bg-background/85 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
           <div className="mb-1 flex items-center justify-between gap-2">
@@ -772,6 +806,34 @@ export function Tree3DView({
             <div>Kéo 2 ngón để phóng to / thu nhỏ</div>
             <div>
               Chạm thẻ để {expandable ? "bung / thu nhánh" : "bay tới xem"}
+            </div>
+          </div>
+          {/* Chú thích màu: thẻ theo giới, đường theo quan hệ. */}
+          <div className="mt-1.5 space-y-1 border-t border-border pt-1.5 text-foreground">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.male }} /> Nam
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.female }} /> Nữ
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.root }} /> Thuỷ tổ
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-full border border-dashed border-muted-foreground" /> Dâu/rể
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="inline-flex items-center gap-1">
+                <span className="h-0.5 w-4 rounded" style={{ background: pal.male }} /> Con trai
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-0.5 w-4 rounded" style={{ background: pal.female }} /> Con gái
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-0.5 w-4 rounded" style={{ background: pal.marriage }} /> Vợ chồng
+              </span>
             </div>
           </div>
         </div>
