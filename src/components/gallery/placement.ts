@@ -21,6 +21,7 @@ export type PlacedFrame = {
   w: number; // bề rộng khung (slot)
   h: number; // chiều cao khung (slot)
   style: FrameStyle;
+  cluster: number; // id cụm (các khung cùng cụm để căn giữa khi Ngắm)
 };
 
 export type RoomLayout = {
@@ -102,6 +103,7 @@ export function placePhotos(photos: GalleryPhoto[]): RoomLayout {
   let i = 0; // photo index
   let left = true; // xen kẽ hai bên
   let guard = 0;
+  let clusterId = 0;
 
   while (i < photos.length && guard++ < photos.length + 8) {
     const remaining = photos.length - i;
@@ -130,12 +132,14 @@ export function placePhotos(photos: GalleryPhoto[]): RoomLayout {
         w: s.w,
         h: s.h,
         style,
+        cluster: clusterId,
       });
     }
 
     if (left) zLeft += t.footprint + GAP;
     else zRight += t.footprint + GAP;
     left = !left;
+    clusterId++;
   }
 
   const length = Math.max(zLeft, zRight, START * 2) + GAP;
