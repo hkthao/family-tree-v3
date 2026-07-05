@@ -175,7 +175,7 @@ export default function RestingPlaces() {
             const thumb = p.first_photo_path ? photoUrls?.get(p.first_photo_path) : null;
             const dir = directionsUrl(p.latitude, p.longitude);
             return (
-              <li key={p.id}>
+              <li key={p.id} className="min-w-0">
                 <Link
                   to={`/clans/${clan.id}/graves/${p.id}`}
                   className="flex gap-3 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"

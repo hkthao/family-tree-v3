@@ -156,7 +156,7 @@ export function ClanLayout() {
 
       <AppDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
-      <main className="container max-w-4xl py-6 px-4">
+      <main className="container max-w-4xl py-6 px-4 overflow-x-clip">
         <Outlet context={{ clan } satisfies OutletContext} />
       </main>
 
