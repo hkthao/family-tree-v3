@@ -10,6 +10,7 @@ import {
   IconBook,
   IconBuildings,
   IconCalendar,
+  IconCamera,
   IconFacebook,
   IconGlobe,
   IconHome,
@@ -521,6 +522,14 @@ function buildSections(
         to: `/clans/${clanId}/heritage`,
         label: "Di sản & Văn hoá",
         icon: <IconScroll className={ic} />,
+      });
+    }
+    // Phòng ký ức (ảnh 3D) — chỉ thành viên (ảnh người thân là dữ liệu nhạy cảm).
+    if (isMember) {
+      communityItems.push({
+        to: `/clans/${clanId}/memory-room`,
+        label: "Phòng ký ức (ảnh 3D)",
+        icon: <IconCamera className={ic} />,
       });
     }
     if (communityItems.length > 0) {
