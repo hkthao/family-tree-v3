@@ -35,9 +35,11 @@ function useTileTexture(repeatX: number, repeatY: number) {
 export function Room({
   layout,
   colors,
+  onFloorDoubleClick,
 }: {
   layout: RoomLayout;
   colors: RoomColors;
+  onFloorDoubleClick?: (pt: { x: number; z: number }) => void;
 }) {
   const halfW = layout.width / 2 + 0.12;
   const h = layout.height;
@@ -52,8 +54,16 @@ export function Room({
 
   return (
     <group>
-      {/* Sàn gạch, phản chiếu mờ */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, zMid]} receiveShadow>
+      {/* Sàn gạch, phản chiếu mờ — nhấp đúp để đi tới điểm đó */}
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0, zMid]}
+        receiveShadow
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          onFloorDoubleClick?.({ x: e.point.x, z: e.point.z });
+        }}
+      >
         <planeGeometry args={[halfW * 2, depth]} />
         <MeshReflectorMaterial
           resolution={512}

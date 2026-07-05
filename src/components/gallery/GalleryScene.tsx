@@ -4,6 +4,7 @@ import { CanvasTexture, SRGBColorSpace, Vector3 } from "three";
 
 import { IconMaximize, IconMinimize } from "@/components/icons";
 import type { GalleryPhoto } from "@/lib/queries/galleryPhotos";
+import { matchesName } from "@/lib/unaccent";
 import { PhotoFrame } from "./PhotoFrame";
 import { EYE, placePhotos, type RoomLayout } from "./placement";
 import { Room } from "./Room";
@@ -21,7 +22,13 @@ export type GalleryPalette = {
 
 type Move = { f: number; s: number };
 type Look = { dx: number; dy: number };
-type Goto = { pos: Vector3; yaw: number } | null;
+type Goto = { pos: Vector3; yaw?: number } | null;
+type ScenePhoto = GalleryPhoto & { itemId?: string; personId?: string | null };
+type ClanMember = { id: string; full_name: string; photo_path: string };
+type SaveItem = (
+  itemId: string,
+  patch: { person_id?: string | null; image_url?: string | null },
+) => void | Promise<void>;
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
@@ -86,11 +93,14 @@ function FirstPerson({
     const goto = gotoRef.current;
     if (goto) {
       pos.current.lerp(goto.pos, 0.09);
-      let d = goto.yaw - yaw.current;
-      while (d > Math.PI) d -= 2 * Math.PI;
-      while (d < -Math.PI) d += 2 * Math.PI;
-      yaw.current += d * 0.12;
-      pitch.current += (0 - pitch.current) * 0.12;
+      let d = 0;
+      if (goto.yaw != null) {
+        d = goto.yaw - yaw.current;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d < -Math.PI) d += 2 * Math.PI;
+        yaw.current += d * 0.12;
+        pitch.current += (0 - pitch.current) * 0.12; // ngắm ngang khi tới trước bức
+      }
       if (pos.current.distanceTo(goto.pos) < 0.06 && Math.abs(d) < 0.02)
         gotoRef.current = null;
     } else {
@@ -151,14 +161,26 @@ function FirstPerson({
 export function GalleryScene({
   photos,
   pal,
+  presets = [],
+  presetId,
+  onPreset,
+  canEdit = false,
+  members = [],
+  onSaveItem,
 }: {
-  photos: GalleryPhoto[];
+  photos: ScenePhoto[];
   pal: GalleryPalette;
+  presets?: { id: string; name: string; swatch: string }[];
+  presetId?: string;
+  onPreset?: (id: string) => void;
+  canEdit?: boolean;
+  members?: ClanMember[];
+  onSaveItem?: SaveItem;
 }) {
   const layout = useMemo(() => placePhotos(photos), [photos]);
   const total = layout.frames.length;
   const [near, setNear] = useState(0);
-  const [detail, setDetail] = useState<GalleryPhoto | null>(null);
+  const [detail, setDetail] = useState<ScenePhoto | null>(null);
   const [fs, setFs] = useState(false);
 
   const moveRef = useRef<Move>({ f: 0, s: 0 });
@@ -166,6 +188,11 @@ export function GalleryScene({
   const gotoRef = useRef<Goto>(null);
   const dragged = useRef(false);
   const drag = useRef({ active: false, x: 0, y: 0 });
+  const detailOpen = useRef(false);
+  useEffect(() => {
+    detailOpen.current = !!detail;
+    if (detail) moveRef.current = { f: 0, s: 0 };
+  }, [detail]);
 
   // Esc thoát toàn màn hình.
   useEffect(() => {
@@ -188,9 +215,21 @@ export function GalleryScene({
         (keys.has("a") || keys.has("arrowleft") ? 1 : 0);
       moveRef.current = { f, s };
     };
+    const isTyping = () => {
+      const el = document.activeElement as HTMLElement | null;
+      if (!el) return false;
+      const tag = el.tagName;
+      return (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        el.isContentEditable
+      );
+    };
     const kd = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
       if (!MOVE.includes(k)) return;
+      if (isTyping() || detailOpen.current) return; // đang gõ / xem ảnh → không đi lại
       if (k.startsWith("arrow")) e.preventDefault();
       keys.add(k);
       apply();
@@ -212,7 +251,7 @@ export function GalleryScene({
     [],
   );
   const openDetail = useCallback((p: GalleryPhoto) => {
-    if (!dragged.current) setDetail(p);
+    if (!dragged.current) setDetail(p as ScenePhoto);
   }, []);
 
   // Bước tới trước một bức (dùng cho ◀ ▶).
@@ -229,6 +268,17 @@ export function GalleryScene({
     [layout],
   );
   const go = (d: number) => walkTo((near + d + total) % total);
+
+  // Nhấp đúp lên sàn → tự đi tới điểm đó (dễ cho người lớn tuổi).
+  const walkToPoint = useCallback(
+    (pt: { x: number; z: number }) => {
+      const halfW = layout.width / 2 + 0.12;
+      const x = clamp(pt.x, -halfW + 0.6, halfW - 0.6);
+      const z = clamp(pt.z, -0.6, layout.length + 0.6);
+      gotoRef.current = { pos: new Vector3(x, EYE, z) };
+    },
+    [layout],
+  );
 
   // Kéo (chuột/chạm) để nhìn quanh — bỏ qua khi bấm trúng nút (data-ui).
   const onDown = (e: React.PointerEvent) => {
@@ -252,7 +302,7 @@ export function GalleryScene({
 
   const frame = layout.frames[near];
   const btn =
-    "pointer-events-auto inline-flex h-9 items-center justify-center rounded-md border bg-card/90 px-3 text-sm text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card";
+    "pointer-events-auto inline-flex h-8 items-center justify-center rounded-md border bg-card/90 px-2.5 text-xs text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card";
 
   return (
     <div
@@ -282,7 +332,7 @@ export function GalleryScene({
           shadow-camera-bottom={-14}
           shadow-camera-far={45}
         />
-        <Room layout={layout} colors={pal} />
+        <Room layout={layout} colors={pal} onFloorDoubleClick={walkToPoint} />
         {layout.frames.map((f) => (
           <PhotoFrame
             key={f.photo.id}
@@ -300,17 +350,37 @@ export function GalleryScene({
         />
       </Canvas>
 
-      {/* Nút toàn màn hình */}
-      <button
-        data-ui
-        type="button"
-        onClick={() => setFs((v) => !v)}
-        className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
-        aria-label={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-        title={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-      >
-        {fs ? <IconMinimize className="h-4 w-4" /> : <IconMaximize className="h-4 w-4" />}
-      </button>
+      {/* Góc trên phải: chọn tông phòng + toàn màn hình */}
+      <div data-ui className="absolute right-3 top-3 z-10 flex items-center gap-2">
+        {presets.length > 0 && (
+          <div className="flex items-center gap-1 rounded-md border bg-card/90 px-1.5 py-1 shadow-sm backdrop-blur">
+            {presets.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onPreset?.(p.id)}
+                title={p.name}
+                aria-label={`Tông phòng: ${p.name}`}
+                className={`h-4 w-4 rounded-full border transition ${
+                  p.id === presetId
+                    ? "ring-2 ring-primary ring-offset-1 ring-offset-card"
+                    : "border-border hover:scale-110"
+                }`}
+                style={{ background: p.swatch }}
+              />
+            ))}
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setFs((v) => !v)}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-card/90 text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
+          aria-label={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+          title={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+        >
+          {fs ? <IconMinimize className="h-4 w-4" /> : <IconMaximize className="h-4 w-4" />}
+        </button>
+      </div>
 
       {/* Joystick đi lại (điện thoại) */}
       <Joystick onMove={(f, s) => (moveRef.current = { f, s })} />
@@ -321,10 +391,10 @@ export function GalleryScene({
         className="pointer-events-none absolute left-3 top-3 max-w-[70%] rounded-lg border bg-background/85 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur"
       >
         <span className="hidden sm:inline">
-          Kéo chuột để nhìn quanh · W A S D / phím mũi tên để đi · chạm khung để xem ảnh.
+          Kéo chuột để nhìn · W A S D để đi · <b className="text-foreground">nhấp đúp lên sàn để đi tới đó</b> · chạm khung để xem ảnh.
         </span>
         <span className="sm:hidden">
-          Kéo để nhìn · dùng cần joystick để đi · chạm khung để xem ảnh.
+          Kéo để nhìn · <b className="text-foreground">chạm đúp lên sàn để đi tới đó</b> · chạm khung để xem ảnh.
         </span>
       </div>
 
@@ -333,7 +403,7 @@ export function GalleryScene({
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex flex-col items-center gap-2 px-3">
           <div
             data-ui
-            className="pointer-events-auto max-w-full truncate rounded-lg border bg-background/85 px-3 py-1.5 text-center text-sm shadow-sm backdrop-blur"
+            className="pointer-events-auto max-w-full truncate rounded-lg border bg-background/85 px-3 py-1 text-center text-xs shadow-sm backdrop-blur"
           >
             <span className="font-medium text-foreground">{frame.photo.title}</span>
             {frame.photo.subtitle && (
@@ -357,31 +427,169 @@ export function GalleryScene({
         </div>
       )}
 
-      {/* Xem chi tiết */}
+      {/* Xem chi tiết (+ sửa item nếu là admin/editor) — modal card */}
       {detail && (
-        <button
+        <div
           data-ui
-          type="button"
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
           onClick={() => setDetail(null)}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/85 p-4"
-          aria-label="Đóng"
         >
-          <img
-            src={detail.url}
-            alt={detail.title}
-            className="max-h-[78%] max-w-full rounded-lg object-contain shadow-2xl"
-          />
-          <div className="text-center text-white">
-            <div className="font-semibold">{detail.title}</div>
-            {detail.subtitle && (
-              <div className="text-sm text-white/70">{detail.subtitle}</div>
-            )}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-[92%] w-full max-w-lg flex-col rounded-xl border bg-card text-card-foreground shadow-2xl"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 border-b px-4 py-2.5">
+              <div className="min-w-0">
+                <div className="truncate font-semibold">
+                  {detail.title || "Ảnh kỷ niệm"}
+                </div>
+                {detail.subtitle && (
+                  <div className="truncate text-xs text-muted-foreground">
+                    {detail.subtitle}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetail(null)}
+                aria-label="Đóng"
+                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+            {/* Body */}
+            <div className="space-y-4 overflow-y-auto p-4">
+              <img
+                src={detail.url}
+                alt={detail.title}
+                className="mx-auto max-h-[52vh] w-auto max-w-full rounded-lg object-contain"
+              />
+              {canEdit && detail.itemId && onSaveItem && (
+                <EditItemPanel
+                  key={detail.itemId}
+                  itemId={detail.itemId}
+                  currentUrl={detail.personId ? "" : detail.url}
+                  members={members}
+                  onSave={async (patch) => {
+                    await onSaveItem(detail.itemId!, patch);
+                    setDetail(null);
+                  }}
+                />
+              )}
+            </div>
           </div>
-          <span className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white">
-            ✕
-          </span>
-        </button>
+        </div>
       )}
+    </div>
+  );
+}
+
+/** Panel sửa item (admin): dán URL ảnh ngoài, hoặc chọn lại ảnh thành viên. */
+function EditItemPanel({
+  itemId,
+  currentUrl,
+  members,
+  onSave,
+}: {
+  itemId: string;
+  currentUrl: string;
+  members: ClanMember[];
+  onSave: (patch: {
+    person_id?: string | null;
+    image_url?: string | null;
+  }) => Promise<void>;
+}) {
+  const [url, setUrl] = useState(currentUrl);
+  const [q, setQ] = useState("");
+  const [busy, setBusy] = useState(false);
+  void itemId;
+  const matches = useMemo(
+    () =>
+      q.trim()
+        ? members.filter((m) => matchesName(m.full_name, q)).slice(0, 20)
+        : [],
+    [members, q],
+  );
+  const run = async (patch: {
+    person_id?: string | null;
+    image_url?: string | null;
+  }) => {
+    setBusy(true);
+    try {
+      await onSave(patch);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const urlOk = /^https?:\/\/.+/.test(url.trim());
+
+  return (
+    <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+      <div className="text-sm font-medium text-foreground">
+        Thay ảnh cho khung này
+      </div>
+
+      {/* Dán URL ảnh ngoài — nút Áp dụng là icon outline nằm TRONG ô input */}
+      <div className="relative">
+        <input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="Dán URL ảnh (https://…)"
+          className="h-9 w-full rounded-md border border-input bg-background pl-2.5 pr-9 text-sm outline-none focus:border-primary"
+        />
+        <button
+          type="button"
+          disabled={!urlOk || busy}
+          onClick={() => run({ image_url: url.trim(), person_id: null })}
+          title={urlOk ? "Áp dụng URL này" : "Dán URL ảnh hợp lệ (https://…)"}
+          aria-label="Áp dụng URL này"
+          className={`absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded transition-colors ${
+            urlOk
+              ? "text-red-600 hover:bg-red-500/15 dark:text-red-500"
+              : "cursor-not-allowed text-muted-foreground/40"
+          }`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Hoặc chọn ảnh thành viên khác — dropdown NỔI (absolute) để không đẩy panel */}
+      <div className="relative">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Hoặc tìm thành viên (có ảnh) để thay…"
+          className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus:border-primary"
+        />
+        {matches.length > 0 && (
+          <ul className="absolute bottom-full left-0 right-0 z-10 mb-1 max-h-52 divide-y overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-lg">
+            {matches.map((m) => (
+              <li key={m.id}>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => run({ person_id: m.id, image_url: null })}
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted/60 disabled:opacity-50"
+                >
+                  {m.full_name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

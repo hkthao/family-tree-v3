@@ -45,6 +45,7 @@ import InlawsNew from "@/pages/clan/InlawsNew";
 import Kinship from "@/pages/clan/Kinship";
 import Members from "@/pages/clan/Members";
 import MemoryRoom from "@/pages/clan/MemoryRoom";
+import MemoryRooms from "@/pages/clan/MemoryRooms";
 import Merge from "@/pages/clan/Merge";
 import RestingPlaces from "@/pages/clan/RestingPlaces";
 import RestingPlaceDetail from "@/pages/clan/RestingPlaceDetail";
@@ -185,7 +186,8 @@ export default function App() {
           <Route path="people/:personId/add-parent" element={<AddParent />} />
           <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
-          <Route path="memory-room" element={<MemoryRoom />} />
+          <Route path="memory-room" element={<MemoryRooms />} />
+          <Route path="memory-room/:roomId" element={<MemoryRoom />} />
           <Route path="graves" element={<RestingPlaces />} />
           <Route path="graves/cemeteries" element={<Cemeteries />} />
           <Route path="graves/new" element={<RestingPlaceForm />} />
