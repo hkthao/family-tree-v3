@@ -607,6 +607,7 @@ export type Database = {
           hide_living_for_nonmembers: boolean
           hide_photos_in_share: boolean
           id: string
+          max_memory_rooms: number
           max_persons: number
           max_users: number
           name: string
@@ -630,6 +631,7 @@ export type Database = {
           hide_living_for_nonmembers?: boolean
           hide_photos_in_share?: boolean
           id?: string
+          max_memory_rooms?: number
           max_persons?: number
           max_users?: number
           name: string
@@ -653,6 +655,7 @@ export type Database = {
           hide_living_for_nonmembers?: boolean
           hide_photos_in_share?: boolean
           id?: string
+          max_memory_rooms?: number
           max_persons?: number
           max_users?: number
           name?: string
@@ -1454,6 +1457,139 @@ export type Database = {
             columns: ["person_id"]
             isOneToOne: false
             referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memory_room_items: {
+        Row: {
+          caption: string | null
+          clan_id: string
+          created_at: string
+          id: string
+          image_path: string | null
+          image_url: string | null
+          kind: string
+          model_url: string | null
+          person_id: string | null
+          room_id: string
+          sort: number
+          subtitle: string | null
+          transform: Json | null
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          clan_id: string
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          image_url?: string | null
+          kind?: string
+          model_url?: string | null
+          person_id?: string | null
+          room_id: string
+          sort?: number
+          subtitle?: string | null
+          transform?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          clan_id?: string
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          image_url?: string | null
+          kind?: string
+          model_url?: string | null
+          person_id?: string | null
+          room_id?: string
+          sort?: number
+          subtitle?: string | null
+          transform?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memory_room_items_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_room_items_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_room_items_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_room_items_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "memory_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memory_rooms: {
+        Row: {
+          clan_id: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          sort: number
+          theme: string
+          updated_at: string
+        }
+        Insert: {
+          clan_id: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          sort?: number
+          theme?: string
+          updated_at?: string
+        }
+        Update: {
+          clan_id?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          sort?: number
+          theme?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memory_rooms_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
             referencedColumns: ["id"]
           },
         ]
@@ -2589,6 +2725,10 @@ export type Database = {
       }
       resolve_link_token: { Args: { p_token: string }; Returns: Json }
       restore_audit_entry: { Args: { audit_id: string }; Returns: undefined }
+      seed_memory_room_from_members: {
+        Args: { p_room_id: string }
+        Returns: number
+      }
       set_my_self_person: {
         Args: { p_clan_id: string; p_person_id: string }
         Returns: undefined
@@ -2811,3 +2951,4 @@ export const Constants = {
     },
   },
 } as const
+
