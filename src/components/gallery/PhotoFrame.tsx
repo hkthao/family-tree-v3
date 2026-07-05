@@ -80,7 +80,7 @@ function PhotoFrameBase({
 
   // Mặt ảnh lấp đầy vùng ảnh (cover) + bo góc nhẹ, UV remap 0..1.
   const photoGeo = useMemo(() => {
-    const r = Math.min(areaW, areaH) * 0.07;
+    const r = Math.min(areaW, areaH) * 0.03; // bo góc nhẹ (không quá tròn)
     const g = new ShapeGeometry(roundedRect(areaW, areaH, r), 6);
     const uv = g.attributes.uv;
     for (let i = 0; i < uv.count; i++) {
