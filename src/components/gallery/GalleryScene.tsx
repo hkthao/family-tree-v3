@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CanvasTexture, SRGBColorSpace, Vector3 } from "three";
 
 import { IconMaximize, IconMinimize } from "@/components/icons";
+import { isVideoUrl } from "@/lib/queries/galleryPhotos";
 import type { GalleryPhoto } from "@/lib/queries/galleryPhotos";
 import { matchesName } from "@/lib/unaccent";
 import { PhotoFrame } from "./PhotoFrame";
@@ -126,25 +127,24 @@ function FirstPerson({
     camera.position.copy(pos.current);
     camera.rotation.set(pitch.current, yaw.current, 0, "YXZ");
 
-    // Tìm bức đang ở trước mặt (cho caption) — cách quãng cho nhẹ.
+    // Bức đang ở CHÍNH GIỮA tầm nhìn (góc lệch nhỏ nhất) — để caption + nút Ngắm
+    // bám đúng bức đang xem, không lấy bức lệch bên. Cách quãng cho nhẹ.
     tick.current += dt;
-    if (tick.current > 0.3) {
+    if (tick.current > 0.25) {
       tick.current = 0;
       const sy = -Math.sin(yaw.current);
       const cz = -Math.cos(yaw.current);
       let best = -1;
-      let bestScore = Infinity;
+      let bestDot = 0.55; // ngưỡng: phải khá thẳng trước mặt
       for (let i = 0; i < layout.frames.length; i++) {
         const p = layout.frames[i].position;
         const dx = p[0] - pos.current.x;
         const dz = p[2] - pos.current.z;
         const dist = Math.hypot(dx, dz);
-        if (dist > 7) continue;
+        if (dist > 9) continue;
         const dot = sy * (dx / dist) + cz * (dz / dist);
-        if (dot < 0.35) continue;
-        const score = dist / dot;
-        if (score < bestScore) {
-          bestScore = score;
+        if (dot > bestDot) {
+          bestDot = dot;
           best = i;
         }
       }
@@ -254,15 +254,36 @@ export function GalleryScene({
     if (!dragged.current) setDetail(p as ScenePhoto);
   }, []);
 
-  // Bước tới trước một bức (dùng cho ◀ ▶).
+  // Đến ĐỐI DIỆN + căn giữa CẢ CỤM chứa bức idx: tính bao của các khung cùng
+  // cụm, lấy tâm, lùi vuông góc đủ xa để nhìn trọn cụm (không lệch theo 1 bức).
   const walkTo = useCallback(
     (idx: number) => {
       const f = layout.frames[idx];
       if (!f) return;
-      const p = new Vector3(f.viewFrom[0], f.viewFrom[1], f.viewFrom[2]);
-      const dx = f.position[0] - p.x;
-      const dz = f.position[2] - p.z;
-      gotoRef.current = { pos: p, yaw: Math.atan2(-dx, -dz) };
+      const group = layout.frames.filter((g) => g.cluster === f.cluster);
+      let minZ = Infinity;
+      let maxZ = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (const g of group) {
+        minZ = Math.min(minZ, g.position[2] - g.w / 2);
+        maxZ = Math.max(maxZ, g.position[2] + g.w / 2);
+        minY = Math.min(minY, g.position[1] - g.h / 2);
+        maxY = Math.max(maxY, g.position[1] + g.h / 2);
+      }
+      const cz = (minZ + maxZ) / 2;
+      const cy = (minY + maxY) / 2;
+      const extZ = maxZ - minZ;
+      const extY = maxY - minY;
+      // Lùi đủ xa để cụm lọt khung nhìn (fov ~68°, ước lượng tỉ lệ ngang 1.3).
+      const vfov = (68 * Math.PI) / 180;
+      const hfov = 2 * Math.atan(Math.tan(vfov / 2) * 1.3);
+      const dY = extY / 2 / Math.tan(vfov / 2);
+      const dZ = extZ / 2 / Math.tan(hfov / 2);
+      const D = Math.max(2.4, Math.max(dY, dZ) * 1.12 + 0.5);
+      const wallX = f.position[0];
+      const pos = new Vector3(wallX - Math.sign(wallX) * D, cy, cz);
+      gotoRef.current = { pos, yaw: f.rotationY };
       setNear(idx);
     },
     [layout],
@@ -417,6 +438,27 @@ export function GalleryScene({
             <span className="rounded-md bg-background/80 px-2 py-1 text-xs tabular-nums text-muted-foreground backdrop-blur">
               {near + 1}/{total}
             </span>
+            <button
+              type="button"
+              className={btn}
+              onClick={() => walkTo(near)}
+              title="Đến vị trí ngắm đẹp bức này"
+              aria-label="Đến vị trí ngắm đẹp"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-1 h-4 w-4"
+              >
+                <circle cx="12" cy="12" r="8" />
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+              </svg>
+              Ngắm
+            </button>
             <button type="button" className={btn} onClick={() => setDetail(frame.photo)}>
               Xem ảnh
             </button>
@@ -461,11 +503,23 @@ export function GalleryScene({
             </div>
             {/* Body */}
             <div className="space-y-4 overflow-y-auto p-4">
-              <img
-                src={detail.url}
-                alt={detail.title}
-                className="mx-auto max-h-[52vh] w-auto max-w-full rounded-lg object-contain"
-              />
+              {isVideoUrl(detail.url) ? (
+                <video
+                  src={detail.url}
+                  controls
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="mx-auto max-h-[52vh] w-auto max-w-full rounded-lg"
+                />
+              ) : (
+                <img
+                  src={detail.url}
+                  alt={detail.title}
+                  className="mx-auto max-h-[52vh] w-auto max-w-full rounded-lg object-contain"
+                />
+              )}
               {canEdit && detail.itemId && onSaveItem && (
                 <EditItemPanel
                   key={detail.itemId}
@@ -528,7 +582,7 @@ function EditItemPanel({
   return (
     <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
       <div className="text-sm font-medium text-foreground">
-        Thay ảnh cho khung này
+        Thay ảnh / video cho khung này
       </div>
 
       {/* Dán URL ảnh ngoài — nút Áp dụng là icon outline nằm TRONG ô input */}
@@ -536,7 +590,7 @@ function EditItemPanel({
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="Dán URL ảnh (https://…)"
+          placeholder="Dán URL ảnh hoặc video (https://…)"
           className="h-9 w-full rounded-md border border-input bg-background pl-2.5 pr-9 text-sm outline-none focus:border-primary"
         />
         <button
@@ -564,6 +618,10 @@ function EditItemPanel({
           </svg>
         </button>
       </div>
+      <p className="text-[11px] leading-snug text-muted-foreground">
+        Video nên dùng <b>link .mp4 trực tiếp</b> (chuột phải video đang phát →
+        “Copy video address”). Link trang chia sẻ có thể không hiện trên tường.
+      </p>
 
       {/* Hoặc chọn ảnh thành viên khác — dropdown NỔI (absolute) để không đẩy panel */}
       <div className="relative">

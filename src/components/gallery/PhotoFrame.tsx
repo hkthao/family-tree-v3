@@ -5,9 +5,11 @@ import {
   ShapeGeometry,
   SRGBColorSpace,
   TextureLoader,
+  VideoTexture,
   type Texture,
 } from "three";
 
+import { isVideoUrl } from "@/lib/queries/galleryPhotos";
 import type { GalleryPhoto } from "@/lib/queries/galleryPhotos";
 import type { PlacedFrame } from "./placement";
 
@@ -49,6 +51,37 @@ function PhotoFrameBase({
 
   useEffect(() => {
     let alive = true;
+
+    // Video: phát ngay trong khung bằng VideoTexture (muted + loop để tự chạy).
+    if (isVideoUrl(url)) {
+      const video = document.createElement("video");
+      video.crossOrigin = "anonymous";
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      video.src = url;
+      const onMeta = () => {
+        if (video.videoWidth && video.videoHeight)
+          setAspect(video.videoWidth / video.videoHeight);
+      };
+      video.addEventListener("loadedmetadata", onMeta);
+      const t = new VideoTexture(video);
+      t.colorSpace = SRGBColorSpace;
+      t.anisotropy = maxAniso;
+      video.play().catch(() => {});
+      setTex(t);
+      return () => {
+        alive = false;
+        video.removeEventListener("loadedmetadata", onMeta);
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+        t.dispose();
+      };
+    }
+
+    // Ảnh tĩnh
     const loader = new TextureLoader();
     loader.setCrossOrigin("anonymous");
     loader.load(

@@ -13,6 +13,15 @@ export type GalleryPhoto = {
 /** Số ảnh tối đa treo cùng lúc (giữ mượt trên điện thoại). */
 export const GALLERY_CAP = 80;
 
+/** URL có phải video không: đuôi file trực tiếp (mp4/webm/…) hoặc link video
+ *  phổ biến không có đuôi (Pexels /download/video/, videos.pexels.com…). */
+export const isVideoUrl = (u: string | null | undefined) =>
+  !!u &&
+  (/\.(mp4|webm|ogg|ogv|mov|m4v)(\?|#|$)/i.test(u) ||
+    /\/download\/video\//i.test(u) ||
+    /videos?\.pexels\.com/i.test(u) ||
+    /\/video-files\//i.test(u));
+
 const year = (d: string | null) => (d ? d.slice(0, 4) : "");
 
 /**
