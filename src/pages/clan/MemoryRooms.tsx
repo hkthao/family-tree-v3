@@ -29,6 +29,7 @@ export default function MemoryRooms() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [theme, setTheme] = useState("white");
+  const [coverUrl, setCoverUrl] = useState("");
   const [seed, setSeed] = useState(true);
   const [err, setErr] = useState("");
 
@@ -43,6 +44,7 @@ export default function MemoryRooms() {
       const room = await createMemoryRoom(clan.id, {
         name: name.trim() || "Phòng ký ức",
         theme,
+        cover_image_url: coverUrl.trim() || null,
       });
       if (seed) {
         try {
@@ -128,6 +130,26 @@ export default function MemoryRooms() {
                   {p.name}
                 </button>
               ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Ảnh đại diện (tuỳ chọn)
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-md border bg-muted">
+                {coverUrl.trim() ? (
+                  <img src={coverUrl.trim()} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <IconCamera className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+              <input
+                value={coverUrl}
+                onChange={(e) => setCoverUrl(e.target.value)}
+                placeholder="Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định"
+                className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm"
+              />
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm">

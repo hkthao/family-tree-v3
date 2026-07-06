@@ -34,6 +34,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { PersonAvatar } from "@/components/PersonAvatar";
+import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
@@ -307,6 +308,7 @@ export default function People() {
               cachedVersion={clan.data_version}
               compact
             />
+            {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
             {canEdit && (
               <>
                 <Button

@@ -18,6 +18,7 @@ import {
   IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
@@ -1080,6 +1081,7 @@ export default function Tree() {
                   Ngang
                 </SegmentedButton>
               </SegmentedControl>
+              {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
               {effectiveRole(clan) !== null && (
                 <>
                   <ExportBookButton clan={clan} />

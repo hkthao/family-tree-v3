@@ -14,7 +14,8 @@ import { CustomCard } from "@/pages/Customs";
 import { listCustomEntries } from "@/lib/queries/customs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
+import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { useUrlState } from "@/hooks/useUrlState";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import {
@@ -34,6 +35,7 @@ export default function Heritage() {
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const canEdit = canEditClan(clan);
+  const isMember = effectiveRole(clan) !== null;
 
   // 2 tab: "clan" = di sản riêng của họ · "sotay" = Sổ tay Văn hoá chung.
   const [tabRaw, setTab] = useUrlState("tab", "clan");
@@ -124,16 +126,19 @@ export default function Heritage() {
             Sổ tay Văn hoá
           </button>
         </div>
-        {tab === "clan" && canEdit && (
-          <Button
-            size="sm"
-            className="shrink-0"
-            onClick={() => navigate(`/clans/${clan.id}/heritage/new`)}
-          >
-            <IconPlus className="h-4 w-4 mr-1" />
-            Thêm
-          </Button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {isMember && <MemoryRoomCtaButton clanId={clan.id} className="h-9" />}
+          {tab === "clan" && canEdit && (
+            <Button
+              size="sm"
+              className="shrink-0"
+              onClick={() => navigate(`/clans/${clan.id}/heritage/new`)}
+            >
+              <IconPlus className="h-4 w-4 mr-1" />
+              Thêm
+            </Button>
+          )}
+        </div>
       </div>
 
       {tab === "sotay" && <SoTayTab />}
