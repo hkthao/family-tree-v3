@@ -74,7 +74,12 @@ export async function getMemoryRoom(roomId: string): Promise<MemoryRoom | null> 
 
 export async function createMemoryRoom(
   clanId: string,
-  input: { name: string; theme?: string; description?: string },
+  input: {
+    name: string;
+    theme?: string;
+    description?: string;
+    cover_image_url?: string | null;
+  },
 ): Promise<MemoryRoom> {
   const { data, error } = await db
     .from("memory_rooms")
@@ -83,6 +88,7 @@ export async function createMemoryRoom(
       name: input.name,
       theme: input.theme ?? "white",
       description: input.description ?? null,
+      cover_image_url: input.cover_image_url ?? null,
     })
     .select("*")
     .single();

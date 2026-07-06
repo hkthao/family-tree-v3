@@ -6,6 +6,7 @@ import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import {
   IconCalendar,
+  IconCamera,
   IconCheck,
   IconDownload,
   IconGrave,
@@ -356,6 +357,11 @@ export default function Dashboard() {
               />
               {isMember && (
                 <>
+                  <ActionTile
+                    to={`/clans/${clan.id}/memory-room`}
+                    icon={<IconCamera />}
+                    title="Phòng ký ức"
+                  />
                   <ActionTile
                     to={`/clans/${clan.id}/todo`}
                     icon={<IconCheck />}

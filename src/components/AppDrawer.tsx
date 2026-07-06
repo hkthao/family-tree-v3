@@ -468,6 +468,14 @@ function buildSections(
         end: true,
       },
     ];
+    // Phòng ký ức (ảnh 3D) — ngay dưới Tổng quan; chỉ thành viên (ảnh nhạy cảm).
+    if (isMember) {
+      topItems.push({
+        to: `/clans/${clanId}/memory-room`,
+        label: "Phòng ký ức",
+        icon: <IconCamera className={ic} />,
+      });
+    }
     if (canTree) {
       topItems.push(
         {
@@ -522,14 +530,6 @@ function buildSections(
         to: `/clans/${clanId}/heritage`,
         label: "Di sản & Văn hoá",
         icon: <IconScroll className={ic} />,
-      });
-    }
-    // Phòng ký ức (ảnh 3D) — chỉ thành viên (ảnh người thân là dữ liệu nhạy cảm).
-    if (isMember) {
-      communityItems.push({
-        to: `/clans/${clanId}/memory-room`,
-        label: "Phòng ký ức (ảnh 3D)",
-        icon: <IconCamera className={ic} />,
       });
     }
     if (communityItems.length > 0) {
