@@ -9,9 +9,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import {
+  addRoomModel,
+  deleteRoomItem,
   getMemoryRoom,
   listClanMembersWithPhotos,
-  resolveRoomPhotos,
+  resolveRoomItems,
   updateMemoryRoom,
   updateRoomItem,
 } from "@/lib/queries/memoryRooms";
@@ -43,7 +45,19 @@ export default function MemoryRoom() {
     patch: { person_id?: string | null; image_url?: string | null },
   ) => {
     await updateRoomItem(itemId, patch);
-    qc.invalidateQueries({ queryKey: ["memory-room-photos", roomId] });
+    qc.invalidateQueries({ queryKey: ["memory-room-items", roomId] });
+  };
+  const onAddModel = async (url: string, pos?: [number, number]) => {
+    await addRoomModel(roomId, url, pos);
+    qc.invalidateQueries({ queryKey: ["memory-room-items", roomId] });
+  };
+  const onDeleteItem = async (itemId: string) => {
+    await deleteRoomItem(itemId);
+    qc.invalidateQueries({ queryKey: ["memory-room-items", roomId] });
+  };
+  const onSaveModel = async (itemId: string, transform: unknown) => {
+    await updateRoomItem(itemId, { transform });
+    qc.invalidateQueries({ queryKey: ["memory-room-items", roomId] });
   };
 
   const { data: room } = useQuery({
@@ -52,21 +66,52 @@ export default function MemoryRoom() {
     enabled: !!roomId && !!userId,
   });
 
-  const { data: photos, isLoading } = useQuery({
-    queryKey: ["memory-room-photos", roomId],
-    queryFn: () => resolveRoomPhotos(roomId),
+  const { data: items, isLoading } = useQuery({
+    queryKey: ["memory-room-items", roomId],
+    queryFn: () => resolveRoomItems(roomId),
     enabled: !!roomId && !!userId,
   });
+  const photos = items?.photos ?? [];
+  const models = items?.models ?? [];
 
-  const [presetId, setPresetId] = useState("white");
+  // theme lưu ở room.theme: là id preset ("white"…) HOẶC JSON palette tuỳ chỉnh.
+  const [themeRaw, setThemeRaw] = useState("white");
   useEffect(() => {
-    if (room?.theme) setPresetId(room.theme);
+    if (room?.theme) setThemeRaw(room.theme);
   }, [room?.theme]);
-  const selectPreset = (id: string) => {
-    setPresetId(id);
-    if (canEdit && roomId) updateMemoryRoom(roomId, { theme: id }).catch(() => {});
+  const pal = useMemo(() => {
+    const base = galleryPalette("white");
+    if (themeRaw.trim().startsWith("{")) {
+      try {
+        return { ...base, ...JSON.parse(themeRaw) };
+      } catch {
+        return base;
+      }
+    }
+    return galleryPalette(themeRaw);
+  }, [themeRaw]);
+  const presetId = themeRaw.startsWith("{") ? "" : themeRaw;
+
+  const persistTheme = (raw: string) => {
+    if (canEdit && roomId) updateMemoryRoom(roomId, { theme: raw }).catch(() => {});
   };
-  const pal = galleryPalette(presetId);
+  const selectPreset = (id: string) => {
+    setThemeRaw(id);
+    persistTheme(id);
+  };
+  // Đổi màu phòng tuỳ ý (live: chỉ đổi local; persist khi rời ô chọn).
+  const setRoomColor = (field: string, value: string) => {
+    const next: Record<string, string> = { ...pal };
+    if (field === "bg") {
+      next.bg = value;
+      next.bgTop = value;
+      next.bgBottom = value;
+    } else {
+      next[field] = value;
+    }
+    setThemeRaw(JSON.stringify(next));
+  };
+  const commitRoomColor = () => persistTheme(themeRaw);
 
   return (
     <div className="space-y-3">
@@ -85,15 +130,15 @@ export default function MemoryRoom() {
 
       {isLoading && <p className="text-muted-foreground">Đang tải ảnh…</p>}
 
-      {!isLoading && (!photos || photos.length === 0) && (
+      {!isLoading && photos.length === 0 && models.length === 0 && (
         <EmptyState
           icon={<IconCamera className="h-10 w-10" />}
           title="Phòng chưa có ảnh"
-          description="Thêm ảnh cho phòng (nạp từ thành viên hoặc thêm ảnh) để bắt đầu trưng bày."
+          description="Thêm ảnh cho phòng (nạp từ thành viên hoặc thêm ảnh), hoặc thêm hiện vật 3D để bắt đầu trưng bày."
         />
       )}
 
-      {!isLoading && photos && photos.length > 0 && (
+      {!isLoading && (photos.length > 0 || models.length > 0) && (
         <>
           {webgl ? (
             <div className="h-[calc(100dvh-210px)] min-h-[440px] overflow-hidden rounded-xl border">
@@ -113,6 +158,12 @@ export default function MemoryRoom() {
                   canEdit={canEdit}
                   members={members}
                   onSaveItem={onSaveItem}
+                  models={models}
+                  onAddModel={onAddModel}
+                  onDeleteItem={onDeleteItem}
+                  onSaveModel={onSaveModel}
+                  onRoomColor={setRoomColor}
+                  onRoomColorCommit={commitRoomColor}
                 />
               </Suspense>
             </div>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><rect x="0" y="0" width="30" height="30" fill="#ffffff"/><g fill-opacity="0.22"><!-- Generator: Sketch 40 (33762) - http://www.bohemiancoding.com/sketch -->
+    <title>floor-tile</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="floor-tile" fill="#000000">
+            <path d="M0,10 L10,10 L10,20 L0,20 L0,10 Z M10,0 L20,0 L20,10 L10,10 L10,0 Z" id="Combined-Shape"></path>
+        </g>
+    </g></g></svg>

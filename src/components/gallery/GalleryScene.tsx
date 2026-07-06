@@ -6,6 +6,8 @@ import { IconMaximize, IconMinimize } from "@/components/icons";
 import { isVideoUrl } from "@/lib/queries/galleryPhotos";
 import type { GalleryPhoto } from "@/lib/queries/galleryPhotos";
 import { matchesName } from "@/lib/unaccent";
+import { ModelPedestal } from "./ModelPedestal";
+import { PATTERN_TEXTURES } from "./patternTextures";
 import { PhotoFrame } from "./PhotoFrame";
 import { EYE, placePhotos, type RoomLayout } from "./placement";
 import { Room } from "./Room";
@@ -26,6 +28,35 @@ type Look = { dx: number; dy: number };
 type Goto = { pos: Vector3; yaw?: number } | null;
 type ScenePhoto = GalleryPhoto & { itemId?: string; personId?: string | null };
 type ClanMember = { id: string; full_name: string; photo_path: string };
+type ModelTransform = {
+  rotY?: number;
+  pedestalColor?: string;
+  metal?: boolean;
+  pedestalTexture?: string | null;
+  pos?: [number, number]; // [x, z] vị trí đặt tuỳ ý; null = tự xếp
+  pedestalStyle?: string; // box | low | tall | podium
+};
+const PEDESTAL_STYLES: { id: string; name: string }[] = [
+  { id: "box", name: "Hộp" },
+  { id: "low", name: "Thấp" },
+  { id: "tall", name: "Cao" },
+  { id: "podium", name: "Nhiều tầng" },
+];
+// Hoạ tiết bục lấy từ manifest tự sinh (PATTERN_TEXTURES) — xem import ở đầu file.
+type SceneModel = {
+  itemId: string;
+  url: string;
+  caption: string | null;
+  transform?: unknown;
+};
+/** Bảng màu/chất liệu bục cho người dùng chọn. */
+const PEDESTAL_OPTS: { name: string; color: string; metal: boolean }[] = [
+  { name: "Trắng", color: "#ECECEE", metal: false },
+  { name: "Đá xám", color: "#9A9A9E", metal: false },
+  { name: "Gỗ", color: "#6E4B2C", metal: false },
+  { name: "Đen", color: "#2B2B2E", metal: false },
+  { name: "Vàng đồng", color: "#B8862A", metal: false },
+];
 type SaveItem = (
   itemId: string,
   patch: { person_id?: string | null; image_url?: string | null },
@@ -68,12 +99,15 @@ function FirstPerson({
   lookRef,
   gotoRef,
   onNear,
+  frontRef,
 }: {
   layout: RoomLayout;
   moveRef: React.MutableRefObject<Move>;
   lookRef: React.MutableRefObject<Look>;
   gotoRef: React.MutableRefObject<Goto>;
   onNear: (i: number) => void;
+  /** Điểm trên sàn ~1.8m TRƯỚC MẶT camera (để đặt hiện vật mới ngay chỗ đứng). */
+  frontRef: React.MutableRefObject<[number, number]>;
 }) {
   const { camera } = useThree();
   const yaw = useRef(Math.PI); // nhìn dọc hành lang (+Z)
@@ -115,7 +149,7 @@ function FirstPerson({
       lookRef.current.dy = 0;
       fwd.set(-Math.sin(yaw.current), 0, -Math.cos(yaw.current));
       right.set(Math.cos(yaw.current), 0, -Math.sin(yaw.current));
-      const speed = 3.4 * dt;
+      const speed = 2.0 * dt; // chậm vừa phải cho người lớn tuổi dễ điều khiển
       const m = moveRef.current;
       pos.current
         .addScaledVector(fwd, m.f * speed)
@@ -126,6 +160,11 @@ function FirstPerson({
     }
     camera.position.copy(pos.current);
     camera.rotation.set(pitch.current, yaw.current, 0, "YXZ");
+    // Điểm ~1.8m trước mặt trên sàn (đặt hiện vật mới tại đây).
+    frontRef.current = [
+      pos.current.x - Math.sin(yaw.current) * 1.8,
+      pos.current.z - Math.cos(yaw.current) * 1.8,
+    ];
 
     // Bức đang ở CHÍNH GIỮA tầm nhìn (góc lệch nhỏ nhất) — để caption + nút Ngắm
     // bám đúng bức đang xem, không lấy bức lệch bên. Cách quãng cho nhẹ.
@@ -167,6 +206,12 @@ export function GalleryScene({
   canEdit = false,
   members = [],
   onSaveItem,
+  models = [],
+  onAddModel,
+  onDeleteItem,
+  onSaveModel,
+  onRoomColor,
+  onRoomColorCommit,
 }: {
   photos: ScenePhoto[];
   pal: GalleryPalette;
@@ -176,18 +221,46 @@ export function GalleryScene({
   canEdit?: boolean;
   members?: ClanMember[];
   onSaveItem?: SaveItem;
+  models?: SceneModel[];
+  onAddModel?: (url: string, pos?: [number, number]) => void | Promise<void>;
+  onDeleteItem?: (itemId: string) => void | Promise<void>;
+  onSaveModel?: (
+    itemId: string,
+    transform: ModelTransform,
+  ) => void | Promise<void>;
+  /** Đổi màu phòng tuỳ ý (live preview). field: wall/ceiling/floor/bg. */
+  onRoomColor?: (field: string, value: string) => void;
+  /** Lưu màu phòng (gọi khi rời ô chọn màu). */
+  onRoomColorCommit?: () => void;
 }) {
   const layout = useMemo(() => placePhotos(photos), [photos]);
   const total = layout.frames.length;
   const [near, setNear] = useState(0);
   const [detail, setDetail] = useState<ScenePhoto | null>(null);
   const [fs, setFs] = useState(false);
+  const [addModelUrl, setAddModelUrl] = useState<string | null>(null); // null=đóng
+  const [showRoomColors, setShowRoomColors] = useState(false);
+  // Đang sửa hiện vật 3D nào (xoay/màu bục). null = không sửa.
+  const [editModel, setEditModel] = useState<{
+    itemId: string;
+    rotY: number;
+    pedestalColor: string;
+    metal: boolean;
+    pedestalTexture: string | null;
+    pos: [number, number] | null;
+    pedStyle: string;
+  } | null>(null);
+  const [placing, setPlacing] = useState(false); // đang chờ chạm sàn để đặt hiện vật
+  useEffect(() => {
+    if (!editModel) setPlacing(false);
+  }, [editModel]);
 
   const moveRef = useRef<Move>({ f: 0, s: 0 });
   const lookRef = useRef<Look>({ dx: 0, dy: 0 });
   const gotoRef = useRef<Goto>(null);
   const dragged = useRef(false);
   const drag = useRef({ active: false, x: 0, y: 0 });
+  const frontRef = useRef<[number, number]>([0, 0]); // điểm trước mặt để đặt hiện vật mới
   const detailOpen = useRef(false);
   useEffect(() => {
     detailOpen.current = !!detail;
@@ -301,6 +374,16 @@ export function GalleryScene({
     [layout],
   );
 
+  // Đang "Di chuyển" hiện vật → chạm sàn để đặt hiện vật tại đó.
+  const placeOnFloor = (pt: { x: number; z: number }) => {
+    if (!placing || !editModel) return;
+    const halfW = layout.width / 2 + 0.12;
+    const x = clamp(pt.x, -halfW + 0.5, halfW - 0.5);
+    const z = clamp(pt.z, -0.5, layout.length + 0.5);
+    setEditModel((s) => (s ? { ...s, pos: [x, z] } : s));
+    setPlacing(false);
+  };
+
   // Kéo (chuột/chạm) để nhìn quanh — bỏ qua khi bấm trúng nút (data-ui).
   const onDown = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest("[data-ui]")) return;
@@ -353,7 +436,12 @@ export function GalleryScene({
           shadow-camera-bottom={-14}
           shadow-camera-far={45}
         />
-        <Room layout={layout} colors={pal} onFloorDoubleClick={walkToPoint} />
+        <Room
+          layout={layout}
+          colors={pal}
+          onFloorDoubleClick={walkToPoint}
+          onFloorClick={placeOnFloor}
+        />
         {layout.frames.map((f) => (
           <PhotoFrame
             key={f.photo.id}
@@ -362,17 +450,125 @@ export function GalleryScene({
             onSelect={openDetail}
           />
         ))}
+        {/* Hiện vật 3D trên bục — xen kẽ hai bên trục giữa, rải dọc phòng. */}
+        {models.map((m, i) => {
+          const editing = editModel?.itemId === m.itemId;
+          const t = (m.transform ?? {}) as ModelTransform;
+          const rotY = editing ? editModel.rotY : (t.rotY ?? 0);
+          const pedestalColor = editing
+            ? editModel.pedestalColor
+            : (t.pedestalColor ?? pal.frame);
+          const metal = editing ? editModel.metal : (t.metal ?? false);
+          const textureUrl = editing
+            ? editModel.pedestalTexture
+            : (t.pedestalTexture ?? null);
+          const pos = editing ? editModel.pos : (t.pos ?? null);
+          const pedStyle = editing ? editModel.pedStyle : (t.pedestalStyle ?? "box");
+          const position: [number, number, number] = pos
+            ? [pos[0], 0, pos[1]]
+            : [
+                i % 2 === 0 ? -1.35 : 1.35,
+                0,
+                ((i + 1) / (models.length + 1)) * layout.length,
+              ];
+          return (
+            <ModelPedestal
+              key={m.itemId}
+              url={m.url}
+              rotY={rotY}
+              pedestalColor={pedestalColor}
+              metal={metal}
+              textureUrl={textureUrl}
+              pedStyle={pedStyle}
+              position={position}
+              onSelect={
+                canEdit
+                  ? () =>
+                      setEditModel({
+                        itemId: m.itemId,
+                        rotY: t.rotY ?? 0,
+                        pedestalColor: t.pedestalColor ?? pal.frame,
+                        metal: t.metal ?? false,
+                        pedestalTexture: t.pedestalTexture ?? null,
+                        pos: t.pos ?? null,
+                        pedStyle: t.pedestalStyle ?? "box",
+                      })
+                  : undefined
+              }
+            />
+          );
+        })}
         <FirstPerson
           layout={layout}
           moveRef={moveRef}
           lookRef={lookRef}
           gotoRef={gotoRef}
           onNear={onNear}
+          frontRef={frontRef}
         />
       </Canvas>
 
+      {/* Thêm hiện vật 3D (admin): panel dán URL GLB/GLTF */}
+      {canEdit && onAddModel && addModelUrl !== null && (
+        <div
+          data-ui
+          className="absolute left-1/2 top-14 z-20 w-[min(22rem,80%)] -translate-x-1/2 space-y-2 rounded-lg border bg-card p-3 text-card-foreground shadow-xl"
+        >
+          <div className="text-sm font-medium">Thêm hiện vật 3D (GLB/GLTF)</div>
+          <input
+            value={addModelUrl}
+            onChange={(e) => setAddModelUrl(e.target.value)}
+            placeholder="Dán URL file .glb / .gltf (https://…)"
+            className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus:border-primary"
+          />
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            File phải cho phép CORS (Poly Haven, Sketchfab CC0…). Không nhận link
+            trang, chỉ link file .glb/.gltf trực tiếp.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={!/^https?:\/\/.+/.test((addModelUrl ?? "").trim())}
+              onClick={() => {
+                const u = (addModelUrl ?? "").trim();
+                if (/^https?:\/\/.+/.test(u)) {
+                  const halfW = layout.width / 2 + 0.12;
+                  const [fx, fz] = frontRef.current;
+                  const pos: [number, number] = [
+                    clamp(fx, -halfW + 0.5, halfW - 0.5),
+                    clamp(fz, -0.5, layout.length + 0.5),
+                  ];
+                  onAddModel(u, pos);
+                  setAddModelUrl(null);
+                }
+              }}
+              className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm text-primary-foreground disabled:opacity-50"
+            >
+              Thêm
+            </button>
+            <button
+              type="button"
+              onClick={() => setAddModelUrl(null)}
+              className="inline-flex h-8 items-center rounded-md border px-3 text-sm"
+            >
+              Huỷ
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Góc trên phải: chọn tông phòng + toàn màn hình */}
       <div data-ui className="absolute right-3 top-3 z-10 flex items-center gap-2">
+        {canEdit && onAddModel && (
+          <button
+            type="button"
+            onClick={() => setAddModelUrl((v) => (v === null ? "" : null))}
+            title="Thêm hiện vật 3D"
+            className="inline-flex h-8 items-center gap-1 rounded-md border bg-card/90 px-2.5 text-xs text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
+          >
+            + 3D
+          </button>
+        )}
         {presets.length > 0 && (
           <div className="flex items-center gap-1 rounded-md border bg-card/90 px-1.5 py-1 shadow-sm backdrop-blur">
             {presets.map((p) => (
@@ -392,6 +588,16 @@ export function GalleryScene({
             ))}
           </div>
         )}
+        {canEdit && onRoomColor && (
+          <button
+            type="button"
+            onClick={() => setShowRoomColors((v) => !v)}
+            title="Màu phòng tuỳ chỉnh"
+            className="inline-flex h-8 items-center rounded-md border bg-card/90 px-2.5 text-xs text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
+          >
+            Màu
+          </button>
+        )}
         <button
           type="button"
           onClick={() => setFs((v) => !v)}
@@ -403,19 +609,51 @@ export function GalleryScene({
         </button>
       </div>
 
+      {/* Bảng màu phòng tuỳ chỉnh (admin) */}
+      {canEdit && onRoomColor && showRoomColors && (
+        <div
+          data-ui
+          className="absolute right-3 top-14 z-20 w-52 space-y-2 rounded-lg border bg-card p-3 text-card-foreground shadow-xl"
+        >
+          <div className="text-sm font-medium">Màu phòng tuỳ chỉnh</div>
+          {(
+            [
+              ["wall", "Tường"],
+              ["ceiling", "Trần"],
+              ["floor", "Sàn"],
+              ["bg", "Nền"],
+            ] as const
+          ).map(([field, label]) => (
+            <label key={field} className="flex items-center justify-between gap-2 text-sm">
+              <span className="text-muted-foreground">{label}</span>
+              <input
+                type="color"
+                value={(pal[field] ?? "#cccccc").slice(0, 7)}
+                onChange={(e) => onRoomColor(field, e.target.value)}
+                onBlur={() => onRoomColorCommit?.()}
+                className="h-7 w-12 cursor-pointer rounded border bg-transparent"
+              />
+            </label>
+          ))}
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            Kéo chọn màu bất kỳ; hoặc dùng các "tông phòng" có sẵn ở trên.
+          </p>
+        </div>
+      )}
+
       {/* Joystick đi lại (điện thoại) */}
       <Joystick onMove={(f, s) => (moveRef.current = { f, s })} />
 
       {/* Hướng dẫn */}
       <div
         data-ui
-        className="pointer-events-none absolute left-3 top-3 max-w-[70%] rounded-lg border bg-background/85 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur"
+        className="pointer-events-none absolute left-3 top-3 max-w-[40%] rounded-lg border bg-background/85 px-2.5 py-1.5 text-xs leading-snug text-muted-foreground shadow-sm backdrop-blur"
       >
         <span className="hidden sm:inline">
-          Kéo chuột để nhìn · W A S D để đi · <b className="text-foreground">nhấp đúp lên sàn để đi tới đó</b> · chạm khung để xem ảnh.
+          Kéo nhìn · WASD/<b className="text-foreground">nhấp đúp sàn</b> để đi · chạm khung xem
         </span>
         <span className="sm:hidden">
-          Kéo để nhìn · <b className="text-foreground">chạm đúp lên sàn để đi tới đó</b> · chạm khung để xem ảnh.
+          Kéo nhìn · <b className="text-foreground">chạm đúp sàn</b> để đi
         </span>
       </div>
 
@@ -533,6 +771,199 @@ export function GalleryScene({
                 />
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sửa hiện vật 3D (admin): xoay + màu/chất liệu bục */}
+      {editModel && (
+        <div
+          data-ui
+          className="absolute bottom-3 left-1/2 z-20 w-[min(24rem,90%)] -translate-x-1/2 space-y-3 rounded-xl border bg-card p-3 text-card-foreground shadow-2xl"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Chỉnh hiện vật 3D</span>
+            <button
+              type="button"
+              onClick={() => setEditModel(null)}
+              className="inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Đóng"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Xoay */}
+          <div>
+            <label className="mb-1 block text-xs text-muted-foreground">
+              Xoay hướng: {Math.round((editModel.rotY * 180) / Math.PI)}°
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={360}
+              value={Math.round((editModel.rotY * 180) / Math.PI)}
+              onChange={(e) =>
+                setEditModel((s) =>
+                  s ? { ...s, rotY: (Number(e.target.value) * Math.PI) / 180 } : s,
+                )
+              }
+              className="w-full"
+            />
+          </div>
+
+          {/* Kiểu bục */}
+          <div>
+            <div className="mb-1 text-xs text-muted-foreground">Kiểu bục</div>
+            <div className="flex flex-wrap gap-1.5">
+              {PEDESTAL_STYLES.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() =>
+                    setEditModel((m) => (m ? { ...m, pedStyle: s.id } : m))
+                  }
+                  className={`inline-flex h-7 items-center rounded-md border px-2.5 text-xs ${
+                    editModel.pedStyle === s.id
+                      ? "border-primary text-primary"
+                      : "hover:border-primary/60"
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Màu / chất liệu bục */}
+          <div>
+            <div className="mb-1 text-xs text-muted-foreground">Màu bục</div>
+            <div className="flex flex-wrap items-center gap-2">
+              {PEDESTAL_OPTS.map((o) => (
+                <button
+                  key={o.name}
+                  type="button"
+                  onClick={() =>
+                    setEditModel((s) =>
+                      s ? { ...s, pedestalColor: o.color, metal: o.metal } : s,
+                    )
+                  }
+                  title={o.name}
+                  className={`h-6 w-6 rounded-full border transition ${
+                    editModel.pedestalColor === o.color
+                      ? "ring-2 ring-primary ring-offset-1 ring-offset-card"
+                      : "hover:scale-110"
+                  }`}
+                  style={{ background: o.color }}
+                />
+              ))}
+              {/* Chọn màu tự do */}
+              <input
+                type="color"
+                value={editModel.pedestalColor.slice(0, 7)}
+                onChange={(e) =>
+                  setEditModel((s) =>
+                    s ? { ...s, pedestalColor: e.target.value } : s,
+                  )
+                }
+                title="Chọn màu bất kỳ"
+                className="h-6 w-8 cursor-pointer rounded border bg-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Chất liệu bục (hoạ tiết SVG) — nhiều mẫu, cuộn để chọn */}
+          <div>
+            <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+              <span>Hoạ tiết ({PATTERN_TEXTURES.length})</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setEditModel((s) => (s ? { ...s, pedestalTexture: null } : s))
+                }
+                className={`rounded border px-2 py-0.5 ${
+                  editModel.pedestalTexture === null
+                    ? "border-primary text-primary"
+                    : ""
+                }`}
+              >
+                Màu trơn
+              </button>
+            </div>
+            <div className="grid max-h-28 grid-cols-6 gap-1.5 overflow-y-auto rounded-md border p-1.5">
+              {PATTERN_TEXTURES.map((w) => (
+                <button
+                  key={w.url}
+                  type="button"
+                  onClick={() =>
+                    setEditModel((s) =>
+                      s ? { ...s, pedestalTexture: w.url } : s,
+                    )
+                  }
+                  title={w.name}
+                  className={`aspect-square overflow-hidden rounded border bg-white transition ${
+                    editModel.pedestalTexture === w.url
+                      ? "ring-2 ring-primary"
+                      : "hover:scale-105"
+                  }`}
+                >
+                  <img
+                    src={w.url}
+                    alt={w.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setPlacing((v) => !v)}
+              className={`inline-flex h-8 items-center rounded-md border px-3 text-sm ${
+                placing ? "border-primary text-primary" : ""
+              }`}
+            >
+              {placing ? "Chạm sàn để đặt…" : "Di chuyển"}
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                await onSaveModel?.(editModel.itemId, {
+                  rotY: editModel.rotY,
+                  pedestalColor: editModel.pedestalColor,
+                  metal: editModel.metal,
+                  pedestalTexture: editModel.pedestalTexture,
+                  pos: editModel.pos ?? undefined,
+                  pedestalStyle: editModel.pedStyle,
+                });
+                setEditModel(null);
+              }}
+              className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm text-primary-foreground"
+            >
+              Lưu
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                if (window.confirm("Xoá hiện vật 3D này?")) {
+                  await onDeleteItem?.(editModel.itemId);
+                  setEditModel(null);
+                }
+              }}
+              className="inline-flex h-8 items-center rounded-md border px-3 text-sm text-destructive hover:bg-destructive/10"
+            >
+              Xoá
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditModel(null)}
+              className="inline-flex h-8 items-center rounded-md border px-3 text-sm"
+            >
+              Đóng
+            </button>
           </div>
         </div>
       )}
