@@ -31,6 +31,7 @@ export type MemoryRoomItem = {
   model_url: string | null;
   caption: string | null;
   subtitle: string | null;
+  transform: unknown;
   sort: number;
   person?: {
     id: string;
@@ -160,6 +161,7 @@ export async function updateRoomItem(
     person_id?: string | null;
     image_url?: string | null;
     caption?: string | null;
+    transform?: unknown;
   },
 ): Promise<void> {
   const { error } = await db
@@ -169,21 +171,33 @@ export async function updateRoomItem(
   if (error) throw new Error(error.message);
 }
 
+/** Hiện vật 3D (GLB/GLTF) đặt trong phòng. */
+export type RoomModel = {
+  itemId: string;
+  url: string;
+  caption: string | null;
+  transform: unknown;
+};
+
 /**
- * Resolve item → ảnh dựng phòng: thành viên thì ký URL từ photo_path (không lưu
- * URL), dán ngoài thì dùng thẳng image_url. Chỉ giữ item ảnh có nguồn hiển thị.
+ * Resolve item của phòng thành ẢNH + HIỆN VẬT 3D để dựng phòng:
+ *  - ảnh: thành viên thì ký URL từ photo_path (không lưu URL), dán ngoài dùng
+ *    thẳng image_url.
+ *  - model: kind='model' + model_url (GLB/GLTF).
  */
-export async function resolveRoomPhotos(
-  roomId: string,
-): Promise<RoomGalleryPhoto[]> {
-  const items = (await getRoomItems(roomId)).filter((i) => i.kind === "photo");
-  const paths = items
+export async function resolveRoomItems(roomId: string): Promise<{
+  photos: RoomGalleryPhoto[];
+  models: RoomModel[];
+}> {
+  const items = await getRoomItems(roomId);
+  const photoItems = items.filter((i) => i.kind === "photo");
+  const paths = photoItems
     .map((i) => (i.person_id ? i.person?.photo_path : null))
     .filter((p): p is string => !!p);
   const urlMap = await getSignedPhotoUrlMap(paths);
 
-  const out: RoomGalleryPhoto[] = [];
-  for (const it of items) {
+  const photos: RoomGalleryPhoto[] = [];
+  for (const it of photoItems) {
     const p = it.person;
     const url = it.person_id
       ? p?.photo_path
@@ -194,7 +208,7 @@ export async function resolveRoomPhotos(
     const subtitle =
       it.subtitle ??
       [year(p?.birth_date), year(p?.death_date)].filter(Boolean).join(" – ");
-    out.push({
+    photos.push({
       id: it.id,
       itemId: it.id,
       personId: it.person_id,
@@ -204,5 +218,39 @@ export async function resolveRoomPhotos(
       subtitle,
     });
   }
-  return out;
+
+  const models: RoomModel[] = items
+    .filter((i) => i.kind === "model" && i.model_url)
+    .map((i) => ({
+      itemId: i.id,
+      url: i.model_url as string,
+      caption: i.caption,
+      transform: i.transform,
+    }));
+
+  return { photos, models };
+}
+
+/** Thêm hiện vật 3D (GLB/GLTF) vào phòng (chỉ editor — RLS). pos=[x,z] tuỳ chọn. */
+export async function addRoomModel(
+  roomId: string,
+  modelUrl: string,
+  pos?: [number, number],
+): Promise<void> {
+  const { error } = await db.from("memory_room_items").insert({
+    room_id: roomId,
+    kind: "model",
+    model_url: modelUrl,
+    transform: pos ? { pos } : null,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Xoá một item (ảnh/hiện vật) của phòng. */
+export async function deleteRoomItem(itemId: string): Promise<void> {
+  const { error } = await db
+    .from("memory_room_items")
+    .delete()
+    .eq("id", itemId);
+  if (error) throw new Error(error.message);
 }

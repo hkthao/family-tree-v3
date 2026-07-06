@@ -36,10 +36,12 @@ export function Room({
   layout,
   colors,
   onFloorDoubleClick,
+  onFloorClick,
 }: {
   layout: RoomLayout;
   colors: RoomColors;
   onFloorDoubleClick?: (pt: { x: number; z: number }) => void;
+  onFloorClick?: (pt: { x: number; z: number }) => void;
 }) {
   const halfW = layout.width / 2 + 0.12;
   const h = layout.height;
@@ -62,6 +64,10 @@ export function Room({
         onDoubleClick={(e) => {
           e.stopPropagation();
           onFloorDoubleClick?.({ x: e.point.x, z: e.point.z });
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onFloorClick?.({ x: e.point.x, z: e.point.z });
         }}
       >
         <planeGeometry args={[halfW * 2, depth]} />
