@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import {
   addRoomModel,
+  addRoomPhoto,
   deleteRoomItem,
   getMemoryRoom,
   listClanMembersWithPhotos,
@@ -17,6 +18,8 @@ import {
   updateMemoryRoom,
   updateRoomItem,
 } from "@/lib/queries/memoryRooms";
+
+const FRAME_EMPTY = "/textures/frame-empty.svg";
 import { hasWebGL } from "@/lib/webglSupport";
 import { GALLERY_PRESETS as PRESETS, galleryPalette } from "@/components/gallery/palettes";
 
@@ -40,16 +43,20 @@ export default function MemoryRoom() {
     queryFn: () => listClanMembersWithPhotos(clan.id),
     enabled: canEdit && !!userId,
   });
+  const invalidate = () =>
+    qc.invalidateQueries({ queryKey: ["memory-room-items", roomId] });
   const onSaveItem = async (
     itemId: string,
     patch: { person_id?: string | null; image_url?: string | null },
   ) => {
-    await updateRoomItem(itemId, patch);
-    qc.invalidateQueries({ queryKey: ["memory-room-items", roomId] });
+    // Khung mặc định (id "new:") chưa có trong DB → THÊM mới; còn lại thì sửa.
+    if (itemId.startsWith("new:")) await addRoomPhoto(roomId, patch);
+    else await updateRoomItem(itemId, patch);
+    invalidate();
   };
   const onAddModel = async (url: string, pos?: [number, number]) => {
     await addRoomModel(roomId, url, pos);
-    qc.invalidateQueries({ queryKey: ["memory-room-items", roomId] });
+    invalidate();
   };
   const onDeleteItem = async (itemId: string) => {
     await deleteRoomItem(itemId);
@@ -73,6 +80,29 @@ export default function MemoryRoom() {
   });
   const photos = items?.photos ?? [];
   const models = items?.models ?? [];
+  // Khung trống (client-side, KHÔNG lưu DB): bấm để chọn ảnh → khi lưu mới insert
+  // thật (kèm ảnh member/URL). Phòng rỗng → 8 khung mặc định cho mọi người xem;
+  // phòng đã có ảnh → admin luôn thấy thêm 3 khung trống để "thêm ảnh". Nút "Mở
+  // rộng phòng" thêm 4 khung trống mỗi lần bấm → hành lang dài thêm.
+  const [extraSlots, setExtraSlots] = useState(0);
+  const onExpand = () => setExtraSlots((n) => n + 4);
+  const scenePhotos = useMemo(() => {
+    const empty = (i: number) => ({
+      id: `new:${i}`,
+      itemId: `new:${i}`,
+      personId: null as string | null,
+      path: "",
+      url: FRAME_EMPTY,
+      title: "",
+      subtitle: "",
+    });
+    const emptyCount = photos.length === 0 ? 8 : canEdit ? 3 : 0;
+    const total = emptyCount + (canEdit ? extraSlots : 0);
+    const pads = Array.from({ length: total }, (_, i) =>
+      empty(photos.length + i),
+    );
+    return [...photos, ...pads];
+  }, [photos, canEdit, extraSlots]);
 
   // theme lưu ở room.theme: là id preset ("white"…) HOẶC JSON palette tuỳ chỉnh.
   const [themeRaw, setThemeRaw] = useState("white");
@@ -130,15 +160,7 @@ export default function MemoryRoom() {
 
       {isLoading && <p className="text-muted-foreground">Đang tải ảnh…</p>}
 
-      {!isLoading && photos.length === 0 && models.length === 0 && (
-        <EmptyState
-          icon={<IconCamera className="h-10 w-10" />}
-          title="Phòng chưa có ảnh"
-          description="Thêm ảnh cho phòng (nạp từ thành viên hoặc thêm ảnh), hoặc thêm hiện vật 3D để bắt đầu trưng bày."
-        />
-      )}
-
-      {!isLoading && (photos.length > 0 || models.length > 0) && (
+      {!isLoading && (
         <>
           {webgl ? (
             <div className="h-[calc(100dvh-210px)] min-h-[440px] overflow-hidden rounded-xl border">
@@ -150,7 +172,7 @@ export default function MemoryRoom() {
                 }
               >
                 <GalleryScene
-                  photos={photos}
+                  photos={scenePhotos}
                   pal={pal}
                   presets={PRESETS.map((p) => ({ id: p.id, name: p.name, swatch: p.pal.wall }))}
                   presetId={presetId}
@@ -158,6 +180,7 @@ export default function MemoryRoom() {
                   canEdit={canEdit}
                   members={members}
                   onSaveItem={onSaveItem}
+                  onExpand={onExpand}
                   models={models}
                   onAddModel={onAddModel}
                   onDeleteItem={onDeleteItem}
@@ -167,7 +190,7 @@ export default function MemoryRoom() {
                 />
               </Suspense>
             </div>
-          ) : (
+          ) : photos.length > 0 ? (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {photos.map((p) => (
                 <li key={p.id} className="overflow-hidden rounded-lg border bg-card">
@@ -181,6 +204,12 @@ export default function MemoryRoom() {
                 </li>
               ))}
             </ul>
+          ) : (
+            <EmptyState
+              icon={<IconCamera className="h-10 w-10" />}
+              title="Phòng chưa có ảnh"
+              description="Thiết bị không hỗ trợ 3D. Thêm ảnh cho phòng để xem ở dạng danh sách."
+            />
           )}
         </>
       )}

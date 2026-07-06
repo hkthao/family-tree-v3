@@ -206,6 +206,7 @@ export function GalleryScene({
   canEdit = false,
   members = [],
   onSaveItem,
+  onExpand,
   models = [],
   onAddModel,
   onDeleteItem,
@@ -221,6 +222,7 @@ export function GalleryScene({
   canEdit?: boolean;
   members?: ClanMember[];
   onSaveItem?: SaveItem;
+  onExpand?: () => void;
   models?: SceneModel[];
   onAddModel?: (url: string, pos?: [number, number]) => void | Promise<void>;
   onDeleteItem?: (itemId: string) => void | Promise<void>;
@@ -559,6 +561,16 @@ export function GalleryScene({
 
       {/* Góc trên phải: chọn tông phòng + toàn màn hình */}
       <div data-ui className="absolute right-3 top-3 z-10 flex items-center gap-2">
+        {canEdit && onExpand && (
+          <button
+            type="button"
+            onClick={() => onExpand()}
+            title="Mở rộng phòng — thêm khung trống ở cuối"
+            className="inline-flex h-8 items-center gap-1 rounded-md border bg-card/90 px-2.5 text-xs text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
+          >
+            + Mở rộng
+          </button>
+        )}
         {canEdit && onAddModel && (
           <button
             type="button"
@@ -762,7 +774,11 @@ export function GalleryScene({
                 <EditItemPanel
                   key={detail.itemId}
                   itemId={detail.itemId}
-                  currentUrl={detail.personId ? "" : detail.url}
+                  currentUrl={
+                    detail.personId || detail.itemId?.startsWith("new:")
+                      ? ""
+                      : detail.url
+                  }
                   members={members}
                   onSave={async (patch) => {
                     await onSaveItem(detail.itemId!, patch);

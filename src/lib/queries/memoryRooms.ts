@@ -246,6 +246,20 @@ export async function addRoomModel(
   if (error) throw new Error(error.message);
 }
 
+/** Thêm một khung ẢNH vào phòng (placeholder hoặc theo thành viên/URL). */
+export async function addRoomPhoto(
+  roomId: string,
+  src: { person_id?: string | null; image_url?: string | null },
+): Promise<void> {
+  const { error } = await db.from("memory_room_items").insert({
+    room_id: roomId,
+    kind: "photo",
+    person_id: src.person_id ?? null,
+    image_url: src.image_url ?? null,
+  });
+  if (error) throw new Error(error.message);
+}
+
 /** Xoá một item (ảnh/hiện vật) của phòng. */
 export async function deleteRoomItem(itemId: string): Promise<void> {
   const { error } = await db
