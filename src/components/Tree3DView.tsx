@@ -262,12 +262,18 @@ export function Tree3DView({
   genOffset,
   focal = null,
   className,
+  data: injectedData,
+  photoUrls: injectedPhotoUrls,
 }: {
   clanId: string;
   genOffset: number;
   /** Người làm trung tâm (do trang cha điều khiển qua ô tìm chung với cây 2D). */
   focal?: string | null;
   className?: string;
+  /** Nạp sẵn dữ liệu cây + map ảnh (dùng cho trang xem công khai/share — khách
+   *  chưa đăng nhập không truy vấn DB được). Khi có, bỏ qua truy vấn nội bộ. */
+  data?: TreeData;
+  photoUrls?: Map<string, string>;
 }) {
   const elRef = useRef<HTMLDivElement>(null);
 
@@ -301,27 +307,35 @@ export function Tree3DView({
   }, []);
   const pal = useMemo(() => palette(dark), [dark]);
 
-  const { data, isLoading } = useQuery({
+  const { data: fetchedData, isLoading: fetchLoading } = useQuery({
     queryKey: ["tree3d", clanId],
     queryFn: () => getTreeData(clanId),
+    enabled: !injectedData,
     staleTime: 60_000,
   });
+  const data = injectedData ?? fetchedData;
+  const isLoading = injectedData ? false : fetchLoading;
 
   const photoPaths = useMemo(
     () =>
-      (data?.persons ?? [])
-        .map((p) => p.photo_path)
-        .filter((p): p is string => !!p),
-    [data],
+      injectedData
+        ? []
+        : (fetchedData?.persons ?? [])
+            .map((p) => p.photo_path)
+            .filter((p): p is string => !!p),
+    [fetchedData, injectedData],
   );
-  const { data: photoUrls } = useQuery({
+  const { data: fetchedPhotoUrls } = useQuery({
     queryKey: ["tree3d-photos", clanId, photoPaths.join(",")],
     queryFn: () => getSignedPhotoUrlMap(photoPaths),
-    enabled: photoPaths.length > 0,
+    enabled: !injectedData && photoPaths.length > 0,
     staleTime: PHOTO_URL_STALE_MS,
   });
+  const photoUrls = injectedData ? injectedPhotoUrls : fetchedPhotoUrls;
   // Chờ ảnh xong (nếu có ảnh) mới dựng để khỏi dựng lại + reset camera.
-  const photosReady = photoPaths.length === 0 || !!photoUrls;
+  const photosReady = injectedData
+    ? true
+    : photoPaths.length === 0 || !!fetchedPhotoUrls;
 
   // Tự bật mở-rộng-dần khi họ đông (>RENDER_CAP người); người dùng ghi đè được.
   const nodeCount = data?.persons?.length ?? 0;

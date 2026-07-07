@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 
@@ -9,6 +9,12 @@ import {
   IconMaximize,
   IconMinimize,
 } from "@/components/icons";
+import type { TreeData } from "@/lib/queries/tree";
+
+// Lazy — kéo three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
+const Tree3DView = lazy(() =>
+  import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
+);
 import { SearchInput } from "@/components/SearchInput";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
 import { SharedRestingPlaceCard } from "@/components/SharedRestingPlaceCard";
@@ -118,6 +124,9 @@ export default function Share() {
   // it — family-chart picks its own default main when none is set.
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  // Chế độ cây: 2D (family-chart) | 3D (Tree3DView). Áp cho cả share-link lẫn
+  // trang xem trước công khai.
+  const [treeMode, setTreeMode] = useState<"2d" | "3d">("2d");
   const [orientation, setOrientation] = useState<Orientation>("vertical");
   // Số đời hiển thị quanh người làm tâm — mặc định 3 để họ lớn không
   // render toàn bộ gây lag trên điện thoại. 0 = tất cả.
@@ -177,6 +186,41 @@ export default function Share() {
       };
     });
     return toFamilyChart(adapted, data.families, photoByPath);
+  }, [data]);
+
+  // Dữ liệu cho cây 3D (Tree3DView nhận qua props vì khách chưa đăng nhập không
+  // fetch DB được). Ảnh dùng key tổng hợp "share/<id>" → map sang URL đã ký.
+  const tree3dData: TreeData | null = useMemo(() => {
+    if (!data) return null;
+    return {
+      persons: data.persons.map((p) => ({
+        id: p.id,
+        full_name: p.full_name,
+        gender: p.gender,
+        is_living: p.is_living,
+        is_root: p.is_root,
+        birth_date: p.birth_date,
+        death_date: p.death_date,
+        generation: p.generation,
+        birth_family_id: p.birth_family_id,
+        branch_id: null,
+        photo_path: p.photo_url ? `share/${p.id}` : null,
+      })),
+      families: data.families.map((f) => ({
+        id: f.id,
+        husband_id: f.husband_id,
+        wife_id: f.wife_id,
+        spouse_order: f.spouse_order,
+        created_at: f.created_at,
+      })),
+    };
+  }, [data]);
+  const tree3dPhotos = useMemo(() => {
+    const m = new Map<string, string>();
+    if (data)
+      for (const p of data.persons)
+        if (p.photo_url) m.set(`share/${p.id}`, p.photo_url);
+    return m;
   }, [data]);
 
   // (Re-)initialise the chart on orientation change. Focal updates do
@@ -306,7 +350,7 @@ export default function Share() {
       resizeObserver?.disconnect();
       node.innerHTML = "";
     };
-  }, [f3Data, orientation, data?.generation_offset, depth, isFullscreen]);
+  }, [f3Data, orientation, data?.generation_offset, depth, isFullscreen, treeMode]);
 
   // Toàn màn hình → portal khối cây ra <body> để phủ kín, không kẹt
   // trong stacking context của trang.
@@ -491,8 +535,8 @@ export default function Share() {
         </h1>
         <p className="text-xs text-center text-muted-foreground mt-1">
           {publicClan
-            ? "Bản xem công khai — thông tin người còn sống đã được ẩn."
-            : "Đang xem qua liên kết chia sẻ — thông tin người còn sống đã được ẩn."}
+            ? "Bản xem công khai — thông tin nhạy cảm của người còn sống (ngày tháng, nơi chốn) đã được ẩn."
+            : "Đang xem qua liên kết chia sẻ — thông tin nhạy cảm của người còn sống (ngày tháng, nơi chốn) đã được ẩn."}
         </p>
         {publicClan && (
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2 print-hide">
@@ -573,85 +617,130 @@ export default function Share() {
                   </ul>
                 )}
               </div>
-              <SegmentedControl ariaLabel="Hướng cây">
+              {/* 2D ↔ 3D — luôn hiển thị. */}
+              <SegmentedControl ariaLabel="Chế độ cây">
                 <SegmentedButton
-                  active={orientation === "vertical"}
-                  onClick={() => setOrientation("vertical")}
-                  className="inline-flex items-center gap-1.5 px-3"
+                  active={treeMode === "2d"}
+                  onClick={() => setTreeMode("2d")}
+                  ariaLabel="Xem cây 2D"
+                  className="px-3"
                 >
-                  <IconLayoutVertical className="h-4 w-4" />
-                  Dọc
+                  2D
                 </SegmentedButton>
                 <SegmentedButton
-                  active={orientation === "horizontal"}
-                  onClick={() => setOrientation("horizontal")}
-                  className="inline-flex items-center gap-1.5 px-3"
+                  active={treeMode === "3d"}
+                  onClick={() => setTreeMode("3d")}
+                  ariaLabel="Xem cây 3D"
+                  className="px-3"
                 >
-                  <IconLayoutHorizontal className="h-4 w-4" />
-                  Ngang
+                  3D
                 </SegmentedButton>
               </SegmentedControl>
-              {/* Số đời hiển thị quanh người làm tâm — mặc định 3 cho
-                  nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. w-full →
-                  xuống dòng riêng trên mobile. */}
-              <div className="w-full sm:w-auto flex items-center gap-2 justify-end">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Số đời hiển thị:
-                </span>
-                <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
-                  {DEPTH_OPTIONS.map((d) => (
+              {/* Hướng cây + số đời chỉ áp cho cây 2D. */}
+              {treeMode === "2d" && (
+                <>
+                  <SegmentedControl ariaLabel="Hướng cây">
                     <SegmentedButton
-                      key={d}
-                      active={depth === d}
-                      onClick={() => setDepth(d)}
-                      title={
-                        d === 0
-                          ? "Hiện tất cả các đời"
-                          : `Hiện ${d} đời tính từ người làm tâm`
-                      }
-                      className="px-2 sm:px-3"
+                      active={orientation === "vertical"}
+                      onClick={() => setOrientation("vertical")}
+                      className="inline-flex items-center gap-1.5 px-3"
                     >
-                      {d === 0 ? "Tất cả" : d}
+                      <IconLayoutVertical className="h-4 w-4" />
+                      Dọc
                     </SegmentedButton>
-                  ))}
-                </SegmentedControl>
-              </div>
+                    <SegmentedButton
+                      active={orientation === "horizontal"}
+                      onClick={() => setOrientation("horizontal")}
+                      className="inline-flex items-center gap-1.5 px-3"
+                    >
+                      <IconLayoutHorizontal className="h-4 w-4" />
+                      Ngang
+                    </SegmentedButton>
+                  </SegmentedControl>
+                  {/* Số đời hiển thị quanh người làm tâm — mặc định 3 cho
+                      nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. w-full →
+                      xuống dòng riêng trên mobile. */}
+                  <div className="w-full sm:w-auto flex items-center gap-2 justify-end">
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
+                      Số đời hiển thị:
+                    </span>
+                    <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
+                      {DEPTH_OPTIONS.map((d) => (
+                        <SegmentedButton
+                          key={d}
+                          active={depth === d}
+                          onClick={() => setDepth(d)}
+                          title={
+                            d === 0
+                              ? "Hiện tất cả các đời"
+                              : `Hiện ${d} đời tính từ người làm tâm`
+                          }
+                          className="px-2 sm:px-3"
+                        >
+                          {d === 0 ? "Tất cả" : d}
+                        </SegmentedButton>
+                      ))}
+                    </SegmentedControl>
+                  </div>
+                </>
+              )}
             </div>
 
-            {renderTreeWrap(
-            <div
-              ref={shareWrapRef}
-              className={
-                isFullscreen
-                  ? "fixed inset-0 z-[60] bg-background p-2"
-                  : "relative flex-1 min-h-0 w-full"
-              }
-            >
-              <div
-                ref={containerRef}
-                className="f3 h-full w-full text-foreground"
-                style={
-                  {
-                    "--male-color": "var(--tree-card-male)",
-                    "--female-color": "var(--tree-card-female)",
-                  } as React.CSSProperties
-                }
-                aria-label="Cây gia phả tương tác (chỉ xem)"
-              />
-              <button
-                type="button"
-                onClick={toggleFullscreen}
-                className="absolute bottom-2 right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
-                aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-                title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-              >
-                {isFullscreen ? (
-                  <IconMinimize className="h-4 w-4" />
-                ) : (
-                  <IconMaximize className="h-4 w-4" />
-                )}
-              </button>
-            </div>,
+            {treeMode === "3d" && tree3dData ? (
+              <div className="relative flex-1 min-h-0 w-full">
+                <Suspense
+                  fallback={
+                    <p className="p-8 text-center text-muted-foreground">
+                      Đang dựng cây 3D…
+                    </p>
+                  }
+                >
+                  <Tree3DView
+                    clanId={data.clan_id}
+                    genOffset={data.generation_offset ?? 0}
+                    focal={focal}
+                    data={tree3dData}
+                    photoUrls={tree3dPhotos}
+                    className="h-full w-full"
+                  />
+                </Suspense>
+              </div>
+            ) : (
+              renderTreeWrap(
+                <div
+                  ref={shareWrapRef}
+                  className={
+                    isFullscreen
+                      ? "fixed inset-0 z-[60] bg-background p-2"
+                      : "relative flex-1 min-h-0 w-full"
+                  }
+                >
+                  <div
+                    ref={containerRef}
+                    className="f3 h-full w-full text-foreground"
+                    style={
+                      {
+                        "--male-color": "var(--tree-card-male)",
+                        "--female-color": "var(--tree-card-female)",
+                      } as React.CSSProperties
+                    }
+                    aria-label="Cây gia phả tương tác (chỉ xem)"
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleFullscreen}
+                    className="absolute bottom-2 right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
+                    aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+                    title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+                  >
+                    {isFullscreen ? (
+                      <IconMinimize className="h-4 w-4" />
+                    ) : (
+                      <IconMaximize className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>,
+              )
             )}
           </>
         )}
