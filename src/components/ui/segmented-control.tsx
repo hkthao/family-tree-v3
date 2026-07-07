@@ -60,7 +60,7 @@ type SegmentedButtonVariant = "text" | "icon-md" | "icon-sm";
 const VARIANT_CLASS: Record<SegmentedButtonVariant, string> = {
   text: "px-4 h-10",
   "icon-md": "inline-flex items-center justify-center w-10 h-10",
-  "icon-sm": "inline-flex items-center justify-center w-8 h-8",
+  "icon-sm": "inline-flex items-center justify-center w-10 h-10",
 };
 
 export function SegmentedButton({

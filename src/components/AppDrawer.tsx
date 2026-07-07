@@ -182,7 +182,7 @@ export function AppDrawer({ open, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted lg:hidden"
+            className="h-11 w-11 inline-flex items-center justify-center rounded-md hover:bg-muted lg:hidden"
             aria-label="Đóng menu"
           >
             <span className="text-lg" aria-hidden="true">✕</span>
@@ -192,7 +192,7 @@ export function AppDrawer({ open, onClose }: Props) {
         <nav className="flex-1 overflow-y-auto py-2">
           {sections.map((section) => (
             <div key={section.label} className="py-2">
-              <h2 className="px-4 pb-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <h2 className="px-4 pb-1 text-xs uppercase tracking-wider text-muted-foreground">
                 {section.label}
               </h2>
               <ul>
@@ -282,7 +282,7 @@ export function AppDrawer({ open, onClose }: Props) {
                   onClose();
                   void signOutAndClearCache();
                 }}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
+                className="h-11 w-11 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
                 aria-label="Đăng xuất"
                 title="Đăng xuất"
               >
