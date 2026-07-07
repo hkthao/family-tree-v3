@@ -306,19 +306,16 @@ export default function Dashboard() {
             >
               <LinkStatTile
                 to={`/clans/${clan.id}/memory-room`}
-                icon={<IconCamera />}
                 label="Phòng ký ức"
                 value={contentCounts.memory_rooms}
               />
               <LinkStatTile
                 to={`/clans/${clan.id}/graves`}
-                icon={<IconGrave />}
                 label="Mộ phần & tro cốt"
                 value={contentCounts.resting_places}
               />
               <LinkStatTile
                 to={`/clans/${clan.id}/heritage`}
-                icon={<IconScroll />}
                 label="Di sản văn hoá"
                 value={contentCounts.heritage_items}
               />
@@ -637,32 +634,23 @@ function ClanDescription({ text }: { text: string }) {
   );
 }
 
-/** Ô thống kê bấm được (icon + số + nhãn) — cho kho tư liệu dòng họ. */
+/** Ô thống kê bấm được — cùng style với StatTile (số lớn căn trái + nhãn). */
 function LinkStatTile({
   to,
-  icon,
   label,
   value,
 }: {
   to: string;
-  icon: React.ReactNode;
   label: string;
   value: number;
 }) {
   return (
     <Link
       to={to}
-      className="group flex flex-col items-center justify-center gap-1 rounded-lg border bg-card p-4 text-center hover:border-primary hover:bg-muted/30 transition-colors"
+      className="block rounded-lg border bg-card p-4 hover:border-primary hover:bg-muted/30 transition-colors"
     >
-      <span className="text-primary [&>svg]:h-5 [&>svg]:w-5" aria-hidden="true">
-        {icon}
-      </span>
-      <span className="text-2xl font-semibold tabular-nums leading-none">
-        {value}
-      </span>
-      <span className="text-xs text-muted-foreground leading-tight">
-        {label}
-      </span>
+      <p className="text-3xl font-semibold tabular-nums">{value}</p>
+      <p className="text-sm text-muted-foreground mt-1">{label}</p>
     </Link>
   );
 }
