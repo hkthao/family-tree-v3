@@ -50,9 +50,15 @@ export function RequireAuth({ children }: Props) {
   }
 
   if (!user || orphaned) {
-    // Giữ đúng đích để đăng nhập xong quay lại (khách bấm link dòng họ từ
-    // Facebook không bị mất trang muốn xem). Truyền qua ?next= để trang login
-    // đọc được — state.from không đủ vì OAuth redirect làm mất state.
+    // Khách bấm link dòng họ từ Facebook → ĐƯA SANG TRANG XEM TRƯỚC CÔNG KHAI
+    // thay vì đá thẳng về /login. Trang đó tự xử: dòng họ công khai thì hiện
+    // cây gia phả (đã che người còn sống) + nút đăng nhập; riêng tư thì mời
+    // đăng nhập. Nhờ vậy không mất khách ngay tại cửa.
+    const clanId = location.pathname.match(/^\/clans\/([^/]+)/)?.[1];
+    if (clanId && clanId !== "new") {
+      return <Navigate to={`/xem/clans/${clanId}`} replace />;
+    }
+    // Các route khác: về login, giữ đích qua ?next= để quay lại sau khi vào.
     const dest = location.pathname + location.search;
     const to =
       dest && dest !== "/"
