@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { AddSpouseForm } from "@/pages/clan/AddSpouse";
@@ -86,6 +86,11 @@ export default function PersonDetail() {
   const askConfirm = useConfirm();
   const toast = useToast();
   const [searchParams] = useSearchParams();
+
+  // Đo lượt xem chi tiết người (không gửi id — theo quy ước không PII).
+  useEffect(() => {
+    track("person_viewed");
+  }, [personId]);
 
   // Where to send the breadcrumb back. Tree action icons append
   // ?from=tree; everything else (e.g. clicking from /people) leaves

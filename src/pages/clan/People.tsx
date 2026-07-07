@@ -7,6 +7,7 @@ import {
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import { displayGen } from "@/lib/displayGeneration";
 import { RecordDates } from "@/components/RecordDates";
@@ -137,6 +138,11 @@ export default function People() {
   useEffect(() => {
     setSelected(new Set());
   }, [debounced, branchId, generation, sort]);
+
+  // Đo lượt dùng tìm kiếm danh bạ (khi từ khoá đủ dài, sau debounce).
+  useEffect(() => {
+    if (debounced.trim().length >= 2) track("people_searched");
+  }, [debounced]);
 
   const qc = useQueryClient();
   const confirm = useConfirm();

@@ -9,6 +9,7 @@ import {
   IconMaximize,
   IconMinimize,
 } from "@/components/icons";
+import { track } from "@/lib/analytics";
 import type { TreeData } from "@/lib/queries/tree";
 
 // Lazy — kéo three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
@@ -140,6 +141,13 @@ export default function Share() {
     enabled: !!token || !!clanId,
     retry: false,
   });
+
+  // Đo lượt xem: trang công khai (khách chưa đăng nhập) vs link chia sẻ.
+  useEffect(() => {
+    if (!data) return;
+    if (publicClan) track("public_clan_viewed");
+    else track("share_viewed", { scope: data.scope });
+  }, [data, publicClan]);
 
   // Pick a default focal synchronously the moment data lands — using
   // a setState-inside-render guard (only fires once) instead of an
