@@ -120,11 +120,25 @@ export interface ShareViewPayload {
  * has verify_jwt = false.
  */
 export async function fetchShareView(token: string): Promise<ShareViewPayload> {
-  // functions.invoke uses POST by default; we use GET with the token in
-  // the query string so the function logic is HTTP-cache-friendly.
+  return fetchShareViewQuery(`token=${encodeURIComponent(token)}`);
+}
+
+/**
+ * Xem trước CÔNG KHAI một dòng họ theo id (không token, không đăng nhập). Chỉ
+ * trả cây khi dòng họ đã bật công khai + cho xem cây (Edge Function kiểm).
+ */
+export async function fetchPublicClanView(
+  clanId: string,
+): Promise<ShareViewPayload> {
+  return fetchShareViewQuery(`clan=${encodeURIComponent(clanId)}`);
+}
+
+async function fetchShareViewQuery(qs: string): Promise<ShareViewPayload> {
+  // functions.invoke uses POST by default; we use GET with params in the
+  // query string so the function logic is HTTP-cache-friendly.
   const base = import.meta.env.VITE_SUPABASE_URL;
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const url = `${base}/functions/v1/share-view?token=${encodeURIComponent(token)}`;
+  const url = `${base}/functions/v1/share-view?${qs}`;
   const res = await fetch(url, {
     method: "GET",
     headers: {

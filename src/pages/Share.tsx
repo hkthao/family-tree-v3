@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import {
   IconLayoutHorizontal,
@@ -13,12 +13,13 @@ import { SearchInput } from "@/components/SearchInput";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
 import { SharedRestingPlaceCard } from "@/components/SharedRestingPlaceCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   SegmentedButton,
   SegmentedControl,
 } from "@/components/ui/segmented-control";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
-import { fetchShareView } from "@/lib/queries/share-view";
+import { fetchPublicClanView, fetchShareView } from "@/lib/queries/share-view";
 import { HERITAGE_CATEGORY_LABEL, videoEmbedUrl } from "@/lib/queries/heritage";
 
 import "family-chart/styles/family-chart.css";
@@ -81,7 +82,10 @@ function normalize(s: string): string {
  * Filters: search-to-focal + vertical/horizontal orientation.
  */
 export default function Share() {
-  const { token } = useParams<{ token: string }>();
+  // Hai nguồn: /share/:token (link chia sẻ) HOẶC /xem/clans/:clanId (xem trước
+  // công khai dòng họ, không cần đăng nhập). clanId → luôn là cây (tree_view).
+  const { token, clanId } = useParams<{ token?: string; clanId?: string }>();
+  const publicClan = !token && !!clanId;
   const containerRef = useRef<HTMLDivElement>(null);
   const shareWrapRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
@@ -121,9 +125,10 @@ export default function Share() {
   const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["share-view", token ?? ""],
-    queryFn: () => fetchShareView(token!),
-    enabled: !!token,
+    queryKey: ["share-view", token ?? `clan:${clanId}`],
+    queryFn: () =>
+      publicClan ? fetchPublicClanView(clanId!) : fetchShareView(token!),
+    enabled: !!token || !!clanId,
     retry: false,
   });
 
@@ -485,8 +490,21 @@ export default function Share() {
           Cây gia phả
         </h1>
         <p className="text-xs text-center text-muted-foreground mt-1">
-          Đang xem qua liên kết chia sẻ — thông tin người còn sống đã được ẩn.
+          {publicClan
+            ? "Bản xem công khai — thông tin người còn sống đã được ẩn."
+            : "Đang xem qua liên kết chia sẻ — thông tin người còn sống đã được ẩn."}
         </p>
+        {publicClan && (
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-2 print-hide">
+            <Button asChild size="sm">
+              <Link
+                to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}
+              >
+                Đăng nhập để xem đầy đủ &amp; cùng vun đắp
+              </Link>
+            </Button>
+          </div>
+        )}
       </header>
 
       <main className="flex-1 min-h-0 flex flex-col">
@@ -494,12 +512,21 @@ export default function Share() {
           <p className="p-8 text-center text-muted-foreground">Đang tải…</p>
         )}
         {error && (
-          <div className="p-4 max-w-md mx-auto w-full">
+          <div className="p-4 max-w-md mx-auto w-full space-y-3">
             <Alert variant="destructive">
               <AlertDescription>
                 {(error as Error).message}
               </AlertDescription>
             </Alert>
+            {publicClan && (
+              <Button asChild className="w-full">
+                <Link
+                  to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}
+                >
+                  Đăng nhập để xem dòng họ này
+                </Link>
+              </Button>
+            )}
           </div>
         )}
         {data && data.persons.length === 0 && (

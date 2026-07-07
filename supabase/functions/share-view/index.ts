@@ -88,7 +88,10 @@ Deno.serve(async (req) => {
 
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
-  if (!token) return err("Missing token", 400);
+  // Chế độ xem trước công khai theo clan (không cần token / không đăng nhập):
+  // ?clan=<id> — chỉ phục vụ dòng họ đã bật công khai + cho xem cây.
+  const clanParam = url.searchParams.get("clan");
+  if (!token && !clanParam) return err("Missing token", 400);
 
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
@@ -126,17 +129,50 @@ Deno.serve(async (req) => {
     sb.rpc("prune_share_view_rate").then(() => {/* fire-and-forget */});
   }
 
-  // ---- 2. Validate token ----
-  const { data: link, error: linkErr } = await sb
-    .from("share_links")
-    .select("clan_id, root_person_id, root_resting_place_id, root_heritage_item_id, expires_at, is_revoked, scope")
-    .eq("token", token)
-    .maybeSingle();
-  if (linkErr) return err(linkErr.message, 500);
-  if (!link) return err("Link không tồn tại.", 404);
-  if (link.is_revoked) return err("Link đã bị thu hồi.", 410);
-  if (new Date(link.expires_at) < new Date()) {
-    return err("Link đã hết hạn.", 410);
+  // ---- 2. Resolve context: share TOKEN, hoặc CLAN công khai (không token) ----
+  interface ShareCtx {
+    clan_id: string;
+    root_person_id: string | null;
+    root_resting_place_id: string | null;
+    root_heritage_item_id: string | null;
+    expires_at: string;
+    is_revoked: boolean;
+    scope: string;
+  }
+  let link: ShareCtx;
+  if (token) {
+    const { data, error: linkErr } = await sb
+      .from("share_links")
+      .select("clan_id, root_person_id, root_resting_place_id, root_heritage_item_id, expires_at, is_revoked, scope")
+      .eq("token", token)
+      .maybeSingle();
+    if (linkErr) return err(linkErr.message, 500);
+    if (!data) return err("Link không tồn tại.", 404);
+    if (data.is_revoked) return err("Link đã bị thu hồi.", 410);
+    if (new Date(data.expires_at) < new Date()) {
+      return err("Link đã hết hạn.", 410);
+    }
+    link = data as unknown as ShareCtx;
+  } else {
+    // Public preview by clan id — chỉ khi dòng họ công khai + bật cây công khai.
+    const { data: c } = await sb
+      .from("clans")
+      .select("id, visibility, public_show_tree")
+      .eq("id", clanParam!)
+      .maybeSingle();
+    if (!c) return err("Dòng họ không tồn tại.", 404);
+    if (c.visibility !== "public" || !c.public_show_tree) {
+      return err("Dòng họ này không công khai.", 403);
+    }
+    link = {
+      clan_id: c.id as string,
+      root_person_id: null,
+      root_resting_place_id: null,
+      root_heritage_item_id: null,
+      expires_at: "2999-01-01",
+      is_revoked: false,
+      scope: "tree_view",
+    };
   }
 
   // ---- 2b. Fetch clan-level toggles that affect masking + display ----

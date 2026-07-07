@@ -85,6 +85,9 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/share/:token" element={<Share />} />
+        {/* Xem trước CÔNG KHAI dòng họ (không cần đăng nhập) — RequireAuth đưa
+            khách chưa đăng nhập từ /clans/:id sang đây. */}
+        <Route path="/xem/clans/:clanId" element={<Share />} />
         <Route path="/khoe/:token" element={<KhoeCard />} />
         <Route path="/join/:token" element={<JoinClan />} />
         <Route path="/lien-he" element={<Contact />} />
