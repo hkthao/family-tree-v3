@@ -188,7 +188,13 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm">
-              <Link to={`/clans/${clan.id}/tree?view=lineage`} onClick={dismissWelcome}>
+              <Link
+                to={`/clans/${clan.id}/tree?view=lineage`}
+                onClick={() => {
+                  track("onboarding_lineage_click");
+                  dismissWelcome();
+                }}
+              >
                 <IconTree className="h-4 w-4 mr-1.5" />
                 Tôi là ai trong cây?
               </Link>

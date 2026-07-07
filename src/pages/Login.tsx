@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { track } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
 
 type Mode = "password" | "magic-link";
@@ -40,6 +41,7 @@ export default function Login() {
   // Đăng nhập bằng Google (1 chạm) — kênh chính. Sau OAuth quay lại đúng link
   // khách muốn xem (next) hoặc /clans.
   async function signInGoogle() {
+    track("login_click", { method: "google" });
     setOauthError(null);
     setOauthBusy(true);
     const { error } = await supabase.auth.signInWithOAuth({
@@ -84,7 +86,10 @@ export default function Login() {
       if (mode === "password") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) setError(error.message);
-        else navigate(next ?? "/");
+        else {
+          track("signed_in", { method: "password" });
+          navigate(next ?? "/");
+        }
       } else {
         const { error } = await supabase.auth.signInWithOtp({
           email,
@@ -93,7 +98,10 @@ export default function Login() {
           },
         });
         if (error) setError(error.message);
-        else setInfo("Đã gửi liên kết đăng nhập. Kiểm tra email của bạn.");
+        else {
+          track("login_link_sent");
+          setInfo("Đã gửi liên kết đăng nhập. Kiểm tra email của bạn.");
+        }
       }
     } finally {
       setBusy(false);

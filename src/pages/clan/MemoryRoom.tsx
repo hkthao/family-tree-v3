@@ -20,6 +20,7 @@ import {
 } from "@/lib/queries/memoryRooms";
 
 const FRAME_EMPTY = "/textures/frame-empty.svg";
+import { track } from "@/lib/analytics";
 import { hasWebGL } from "@/lib/webglSupport";
 import { GALLERY_PRESETS as PRESETS, galleryPalette } from "@/components/gallery/palettes";
 
@@ -37,6 +38,10 @@ export default function MemoryRoom() {
   const { roomId = "" } = useParams();
   const webgl = useMemo(() => hasWebGL(), []);
   const qc = useQueryClient();
+  // Đo lượt mở một phòng ký ức (trải nghiệm 3D).
+  useEffect(() => {
+    track("memory_room_viewed", { webgl });
+  }, [webgl]);
 
   const { data: members = [] } = useQuery({
     queryKey: ["gallery-members", clan.id],

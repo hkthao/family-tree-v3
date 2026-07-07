@@ -176,7 +176,8 @@ export default function Tree() {
     );
   // Chế độ hiển thị: "2d" (family-chart) | "3d" (3d-force-graph). Lưu ở URL.
   const mode: "2d" | "3d" = searchParams.get("mode") === "3d" ? "3d" : "2d";
-  const setMode = (m: "2d" | "3d") =>
+  const setMode = (m: "2d" | "3d") => {
+    if (m === "3d") track("tree_3d_opened");
     setSearchParams(
       (prev) => {
         const p = new URLSearchParams(prev);
@@ -186,6 +187,11 @@ export default function Tree() {
       },
       { replace: true },
     );
+  };
+  // Đo lượt mở trang cây (một lần mỗi lần vào trang).
+  useEffect(() => {
+    track("tree_viewed");
+  }, []);
   const containerRef = useRef<HTMLDivElement>(null);
   const treeWrapRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<F3Chart | null>(null);
