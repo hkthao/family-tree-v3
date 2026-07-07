@@ -86,9 +86,9 @@ export default function People() {
   const debounced = sp.get("q") ?? "";
   const branchId = sp.get("branch") ?? "";
   const generation = sp.get("gen") ?? "";
-  const sortRaw = sp.get("sort") ?? "name";
+  const sortRaw = sp.get("sort") ?? "generation";
   const sort: "name" | "generation" | "birth" =
-    sortRaw === "generation" || sortRaw === "birth" ? sortRaw : "name";
+    sortRaw === "name" || sortRaw === "birth" ? sortRaw : "generation";
   // Chế độ xem: "people" (danh bạ) | "kinship" (tra cứu xưng hô). Lưu ở
   // URL (?view=kinship) — route cũ /kinship redirect sang đây. Xưng hô
   // cần biết quan hệ nên chỉ mở cho thành viên.
@@ -102,7 +102,7 @@ export default function People() {
   const setBranchId = (v: string) => patch({ branch: v || null, page: null });
   const setGeneration = (v: string) => patch({ gen: v || null, page: null });
   const setSort = (v: "name" | "generation" | "birth") =>
-    patch({ sort: v === "name" ? null : v, page: null });
+    patch({ sort: v === "generation" ? null : v, page: null });
 
   // The text box keeps its own live value (seeded from the URL); only
   // the debounced value is pushed to the URL + used for the query.
@@ -410,10 +410,13 @@ export default function People() {
           "Bộ lọc"; desktop: luôn hiện. */}
       <CollapsibleFilters
         activeCount={
-          (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "name" ? 1 : 0)
+          (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "generation" ? 1 : 0)
         }
       >
-      <div className="flex flex-wrap items-center gap-2">
+      {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
+          parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc.
+          Mobile không ảnh hưởng (prefix sm:). */}
+      <div className="flex flex-wrap items-center gap-2 sm:mt-2">
         <select
           value={branchId}
           onChange={(e) => setBranchId(e.target.value)}
@@ -449,8 +452,8 @@ export default function People() {
           aria-label="Sắp xếp"
           className="h-10 flex-1 min-w-[120px] rounded-md border border-input bg-background px-3 text-sm"
         >
-          <option value="name">Sắp: Tên</option>
           <option value="generation">Sắp: Đời</option>
+          <option value="name">Sắp: Tên</option>
           <option value="birth">Sắp: Năm sinh</option>
         </select>
         <SegmentedControl ariaLabel="Chế độ hiển thị">
