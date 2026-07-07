@@ -864,7 +864,7 @@ function PersonListItem({
           to={`/clans/${clanId}/people/new?from=${person.id}`}
           aria-label={`Sao chép ${person.full_name}`}
           title="Sao chép thành người mới"
-          className="absolute top-2 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
+          className="absolute top-2 right-2 z-10 inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
         >
           <IconCopy className="h-4 w-4" />
         </Link>
@@ -935,9 +935,9 @@ function PersonGridCard({
           to={`/clans/${clanId}/people/new?from=${person.id}`}
           aria-label={`Sao chép ${person.full_name}`}
           title="Sao chép thành người mới"
-          className="absolute top-2 right-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-card/80 text-muted-foreground hover:text-primary backdrop-blur"
+          className="absolute top-2 right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/80 text-muted-foreground hover:text-primary backdrop-blur"
         >
-          <IconCopy className="h-3.5 w-3.5" />
+          <IconCopy className="h-4 w-4" />
         </Link>
       )}
       <Link
@@ -957,7 +957,7 @@ function PersonGridCard({
             {person.full_name}
           </p>
           {person.is_root && (
-            <p className="text-[10px] text-accent font-medium mt-0.5">Thuỷ tổ</p>
+            <p className="text-xs text-accent font-medium mt-0.5">Thuỷ tổ</p>
           )}
           <p className="text-xs text-muted-foreground mt-1 truncate">
             {genderLabel(person.gender)}
@@ -969,7 +969,7 @@ function PersonGridCard({
             </p>
           )}
           {rel.spouses.length > 0 && (
-            <p className="text-[11px] text-muted-foreground mt-1 truncate">
+            <p className="text-xs text-muted-foreground mt-1 truncate">
               <span className="font-medium">
                 {spouseLabel(person.gender)}:
               </span>{" "}

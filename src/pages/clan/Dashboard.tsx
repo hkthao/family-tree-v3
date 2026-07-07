@@ -573,7 +573,7 @@ function UpcomingRow({
       <div
         className={`shrink-0 w-12 text-center rounded-md py-1 ${stampColor}`}
       >
-        <div className="text-[10px] uppercase tracking-wider leading-none">
+        <div className="text-xs uppercase tracking-wider leading-none">
           Th{month}
         </div>
         <div className="text-lg font-semibold leading-tight">{day}</div>
