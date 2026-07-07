@@ -139,7 +139,7 @@ function ProviderButton({
 
 // ─── Brand glyphs ────────────────────────────────────────────────────
 
-function GoogleGlyph() {
+export function GoogleGlyph() {
   // Multi-coloured G — required by Google's branding guidelines for
   // "Sign in with Google" buttons. Hand-crafted so it doesn't bring a
   // dependency for one glyph.
