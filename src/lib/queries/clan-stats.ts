@@ -40,3 +40,47 @@ export async function getClanStats(
     branches: row?.branches ?? 0,
   };
 }
+
+export interface ClanContentCounts {
+  /** Số phòng ký ức (ảnh 3D). */
+  memory_rooms: number;
+  /** Số mộ phần & tro cốt. */
+  resting_places: number;
+  /** Số bài di sản văn hoá. */
+  heritage_items: number;
+}
+
+/**
+ * Đếm nhanh (head+count, không tải rows) số phòng ký ức / mộ phần / di sản của
+ * dòng họ để hiển thị trên Tổng quan. RLS áp bình thường → người ngoài dòng họ
+ * (clan công khai) có thể nhận 0; Dashboard chỉ gọi cho thành viên.
+ */
+export async function getClanContentCounts(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<ClanContentCounts> {
+  const [rooms, resting, heritage] = await Promise.all([
+    client
+      .from("memory_rooms")
+      .select("id", { count: "exact", head: true })
+      .eq("clan_id", clanId)
+      .is("deleted_at", null),
+    client
+      .from("resting_places")
+      .select("id", { count: "exact", head: true })
+      .eq("clan_id", clanId)
+      .is("deleted_at", null),
+    client
+      .from("heritage_items")
+      .select("id", { count: "exact", head: true })
+      .eq("clan_id", clanId)
+      .is("deleted_at", null),
+  ]);
+  const err = rooms.error ?? resting.error ?? heritage.error;
+  if (err) throw new Error(err.message);
+  return {
+    memory_rooms: rooms.count ?? 0,
+    resting_places: resting.count ?? 0,
+    heritage_items: heritage.count ?? 0,
+  };
+}

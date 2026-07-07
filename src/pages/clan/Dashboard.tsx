@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
-import { getClanStats } from "@/lib/queries/clan-stats";
+import { getClanContentCounts, getClanStats } from "@/lib/queries/clan-stats";
 import { getClansInlawLinks } from "@/lib/queries/clans";
 import {
   listAnniversaryCandidates,
@@ -79,6 +79,13 @@ export default function Dashboard() {
     queryKey: queryKeys.clanStats(clan.id, userId),
     queryFn: () => getClanStats(clan.id),
     enabled: !!userId,
+  });
+  // Số phòng ký ức / mộ phần / di sản — member-only (RLS trả 0 cho người ngoài).
+  const { data: contentCounts } = useQuery({
+    queryKey: ["clan-content-counts", clan.id, userId],
+    queryFn: () => getClanContentCounts(clan.id),
+    enabled: !!userId && isMember,
+    staleTime: 60_000,
   });
   // Non-members of a public clan need the masked view; raw `persons`
   // RLS would return zero rows for them. Same pattern as /tree.
@@ -291,6 +298,32 @@ export default function Dashboard() {
               </section>
             );
           })()}
+
+          {isMember && contentCounts && (
+            <section
+              aria-label="Kho tư liệu dòng họ"
+              className="grid grid-cols-3 gap-3"
+            >
+              <LinkStatTile
+                to={`/clans/${clan.id}/memory-room`}
+                icon={<IconCamera />}
+                label="Phòng ký ức"
+                value={contentCounts.memory_rooms}
+              />
+              <LinkStatTile
+                to={`/clans/${clan.id}/graves`}
+                icon={<IconGrave />}
+                label="Mộ phần & tro cốt"
+                value={contentCounts.resting_places}
+              />
+              <LinkStatTile
+                to={`/clans/${clan.id}/heritage`}
+                icon={<IconScroll />}
+                label="Di sản văn hoá"
+                value={contentCounts.heritage_items}
+              />
+            </section>
+          )}
 
           {completion && completion.total > 0 && (
             <CompletionTile
@@ -601,6 +634,36 @@ function ClanDescription({ text }: { text: string }) {
         {expanded ? "Thu gọn" : "Xem thêm"}
       </button>
     </div>
+  );
+}
+
+/** Ô thống kê bấm được (icon + số + nhãn) — cho kho tư liệu dòng họ. */
+function LinkStatTile({
+  to,
+  icon,
+  label,
+  value,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex flex-col items-center justify-center gap-1 rounded-lg border bg-card p-4 text-center hover:border-primary hover:bg-muted/30 transition-colors"
+    >
+      <span className="text-primary [&>svg]:h-5 [&>svg]:w-5" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="text-2xl font-semibold tabular-nums leading-none">
+        {value}
+      </span>
+      <span className="text-xs text-muted-foreground leading-tight">
+        {label}
+      </span>
+    </Link>
   );
 }
 
