@@ -398,6 +398,8 @@ export default function People() {
         <KinshipContent clanId={clan.id} userId={userId} />
       ) : (
       <>
+      {/* Nhóm tìm kiếm + bộ lọc — giãn cách rộng hơn (space-y-4) cho thoáng. */}
+      <div className="space-y-4 pt-1">
       {/* Search row — full width, owns one line. */}
       <SearchInput
         label="Tìm theo tên"
@@ -475,6 +477,7 @@ export default function People() {
         </SegmentedControl>
       </div>
       </CollapsibleFilters>
+      </div>
 
       {/* Results — guard against the (rare but real) state where the
           query is briefly disabled (e.g. while a sibling useAuth() is
