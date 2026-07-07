@@ -50,7 +50,15 @@ export function RequireAuth({ children }: Props) {
   }
 
   if (!user || orphaned) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    // Giữ đúng đích để đăng nhập xong quay lại (khách bấm link dòng họ từ
+    // Facebook không bị mất trang muốn xem). Truyền qua ?next= để trang login
+    // đọc được — state.from không đủ vì OAuth redirect làm mất state.
+    const dest = location.pathname + location.search;
+    const to =
+      dest && dest !== "/"
+        ? `/login?next=${encodeURIComponent(dest)}`
+        : "/login";
+    return <Navigate to={to} replace state={{ from: location }} />;
   }
 
   return <>{children}</>;
