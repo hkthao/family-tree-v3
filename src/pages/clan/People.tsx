@@ -398,8 +398,9 @@ export default function People() {
         <KinshipContent clanId={clan.id} userId={userId} />
       ) : (
       <>
-      {/* Nhóm tìm kiếm + bộ lọc — giãn cách rộng hơn (space-y-4) cho thoáng. */}
-      <div className="space-y-4 pt-1">
+      {/* Nhóm tìm kiếm + bộ lọc — giãn rộng cho thoáng: tách khỏi toggle phía
+          trên (pt-4) + khoảng cách lớn giữa ô tìm kiếm và hàng bộ lọc. */}
+      <div className="space-y-5 pt-4">
       {/* Search row — full width, owns one line. */}
       <SearchInput
         label="Tìm theo tên"
