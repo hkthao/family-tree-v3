@@ -4,11 +4,13 @@ import { createPortal } from "react-dom";
 import { Link, useParams } from "react-router-dom";
 
 import {
+  IconDownload,
   IconLayoutHorizontal,
   IconLayoutVertical,
   IconMaximize,
   IconMinimize,
 } from "@/components/icons";
+import { useToast } from "@/components/Toast";
 import { track } from "@/lib/analytics";
 import { bloodlineIds } from "@/lib/bloodline";
 import type { TreeData } from "@/lib/queries/tree";
@@ -126,6 +128,30 @@ export default function Share() {
   // it — family-chart picks its own default main when none is set.
   const [focal, setFocal] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const toast = useToast();
+  // Xuất ảnh cây đang xem (PNG) — dùng chung helper với trang Cây chính.
+  const [savingImg, setSavingImg] = useState(false);
+  const exportShareImage = async () => {
+    const el = containerRef.current;
+    if (!el || savingImg) return;
+    setSavingImg(true);
+    try {
+      const { exportFamilyChartPng, fileSlug } = await import(
+        "@/lib/tree/exportTreePng"
+      );
+      const focalName = focal
+        ? (data?.persons.find((p) => p.id === focal)?.full_name ?? "")
+        : "";
+      const slug = fileSlug(focalName);
+      await exportFamilyChartPng(el, `cay-gia-pha-${slug || "share"}.png`);
+      track("export", { kind: "tree_image", from: "share" });
+      toast.success("Đã xuất ảnh cây gia phả.");
+    } catch {
+      toast.error("Không xuất được ảnh. Thử lại sau.");
+    } finally {
+      setSavingImg(false);
+    }
+  };
   // Chế độ cây: 2D (family-chart) | 3D (Tree3DView). Áp cho cả share-link lẫn
   // trang xem trước công khai.
   const [treeMode, setTreeMode] = useState<"2d" | "3d">("2d");
@@ -804,19 +830,31 @@ export default function Share() {
                     }
                     aria-label="Cây gia phả tương tác (chỉ xem)"
                   />
-                  <button
-                    type="button"
-                    onClick={toggleFullscreen}
-                    className="absolute bottom-2 right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
-                    aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-                    title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-                  >
-                    {isFullscreen ? (
-                      <IconMinimize className="h-4 w-4" />
-                    ) : (
-                      <IconMaximize className="h-4 w-4" />
-                    )}
-                  </button>
+                  <div className="absolute bottom-2 right-2 z-10 flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={exportShareImage}
+                      disabled={savingImg}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
+                      aria-label="Xuất ảnh cây đang hiển thị (PNG)"
+                      title={savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"}
+                    >
+                      <IconDownload className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={toggleFullscreen}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
+                      aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+                      title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+                    >
+                      {isFullscreen ? (
+                        <IconMinimize className="h-4 w-4" />
+                      ) : (
+                        <IconMaximize className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>,
               )
             )}
