@@ -427,6 +427,8 @@ export default function Tree() {
     const node = containerRef.current;
     let chart: F3Chart | null = null;
     let resizeObserver: ResizeObserver | null = null;
+    let linkObserver: MutationObserver | null = null;
+    let linkRaf = 0;
 
     (async () => {
       const f3 = await loadF3();
@@ -792,6 +794,37 @@ export default function Tree() {
         built.setAncestryDepth?.(d);
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
+        // Tô màu đường nối theo giới người CON (con trai xanh / con gái hồng)
+        // và đỏ cho hôn nhân — đồng bộ với cây 3D. family-chart 0.9 không gọi
+        // afterUpdate, nên post-process SVG: mỗi path.link có __data__ =
+        // {spouse?, source, target} (source/target là node, một đầu là mảng
+        // [cha,mẹ] với link cha-con). Người con = đầu KHÔNG phải mảng.
+        const colorLinks = () => {
+          const dark = document.documentElement.classList.contains("dark");
+          const MALE = dark ? "#6FA0C8" : "#5B8FB8";
+          const FEMALE = dark ? "#D08A91" : "#C97F86";
+          const MARRIAGE = dark ? "#D24545" : "#9B3535";
+          node
+            .querySelectorAll<SVGPathElement>(".links_view .link")
+            .forEach((p) => {
+              const d = (
+                p as unknown as {
+                  __data__?: { spouse?: boolean; source?: unknown; target?: unknown };
+                }
+              ).__data__;
+              if (!d) return;
+              let color = MARRIAGE;
+              if (!d.spouse) {
+                const child = Array.isArray(d.source) ? d.target : d.source;
+                const gender = (
+                  child as { data?: { data?: { gender?: string } } } | undefined
+                )?.data?.data?.gender;
+                color = gender === "F" ? FEMALE : MALE;
+              }
+              p.setAttribute("stroke", color);
+            });
+        };
+
         // Without this, family-chart picks an arbitrary first row as
         // "main" and Đời 1 ends up collapsed off-screen.
         if (focal && built.updateMainId) built.updateMainId(focal);
@@ -807,6 +840,18 @@ export default function Tree() {
         built.updateTree({ initial: true });
         chart = built;
         chartRef.current = built;
+
+        // Tô link ngay + theo dõi khi family-chart thêm/bớt link (đổi tâm,
+        // bung/thu nhánh) để tô lại. rAF gộp nhiều mutation trong 1 frame.
+        colorLinks();
+        const linksView = node.querySelector(".links_view");
+        if (linksView) {
+          linkObserver = new MutationObserver(() => {
+            if (linkRaf) cancelAnimationFrame(linkRaf);
+            linkRaf = requestAnimationFrame(colorLinks);
+          });
+          linkObserver.observe(linksView, { childList: true });
+        }
 
         // Re-fit on container resize (window resize, drawer expand/collapse,
         // orientation change). family-chart's updateTree with no `initial`
@@ -829,6 +874,8 @@ export default function Tree() {
     return () => {
       disposed = true;
       resizeObserver?.disconnect();
+      linkObserver?.disconnect();
+      if (linkRaf) cancelAnimationFrame(linkRaf);
       chartRef.current = null;
       node.innerHTML = "";
     };
@@ -1356,6 +1403,17 @@ export default function Tree() {
                         style={{ borderColor: "#B8862A" }}
                       />{" "}
                       Dâu/rể
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-0.5 w-4 rounded" style={{ background: "#5B8FB8" }} /> Con trai
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-0.5 w-4 rounded" style={{ background: "#C97F86" }} /> Con gái
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-0.5 w-4 rounded" style={{ background: "#9B3535" }} /> Vợ chồng
                     </span>
                   </div>
                 </div>
