@@ -200,6 +200,7 @@ export default function Tree() {
   // Fullscreen API vì iOS Safari không cho fullscreen phần tử thường
   // (chỉ <video>). Cách này chạy đồng nhất mọi trình duyệt/mobile.
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const toast = useToast();
   // Bảng "Cách xem" (hướng dẫn + chú thích) — đồng bộ style với cây 3D.
   const [showGuide, setShowGuide] = useState(true);
   function toggleFullscreen() {
@@ -419,6 +420,116 @@ export default function Tree() {
     if (!data || !focal) return null;
     return data.persons.find((p) => p.id === focal)?.full_name ?? null;
   }, [data, focal]);
+
+  // Xuất ảnh cây ĐANG HIỂN THỊ (người trung tâm + mức zoom hiện tại) ra PNG.
+  // Chụp thẳng khung .f3 bằng html-to-image (card là SVG thuần nên serialize
+  // được; ảnh avatar được nội tuyến). Nền theo sáng/tối.
+  const [savingImg, setSavingImg] = useState(false);
+  const exportTreeImage = async () => {
+    const el = containerRef.current;
+    const svg = el?.querySelector("svg.main_svg") as SVGSVGElement | null;
+    if (!el || !svg || savingImg) return;
+    setSavingImg(true);
+    // html-to-image bỏ mất <text> của card. Cách chắc ăn: SERIALIZE SVG thủ công
+    // — clone, NỘI TUYẾN computed style vào từng phần tử (giải var CSS + font),
+    // NHÚNG ảnh avatar thành data-URI (SVG trong <img> không tải được URL ngoài),
+    // ẩn nút +/sửa, rồi để TRÌNH DUYỆT rasterize (render text chuẩn) qua canvas.
+    try {
+      const { downloadBlob, imageUrlToDataUrl } = await import(
+        "@/lib/cards/exportCard"
+      );
+      const rect = el.getBoundingClientRect();
+      const W = Math.max(1, Math.round(rect.width));
+      const H = Math.max(1, Math.round(rect.height));
+      const XLINK = "http://www.w3.org/1999/xlink";
+      const clone = svg.cloneNode(true) as SVGSVGElement;
+      clone.setAttribute("width", String(W));
+      clone.setAttribute("height", String(H));
+      clone.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      clone.setAttribute("xmlns:xlink", XLINK);
+
+      // Nội tuyến computed style (live → clone, cùng thứ tự phần tử).
+      const PROPS = [
+        "fill", "fill-opacity", "stroke", "stroke-width", "stroke-dasharray",
+        "stroke-linecap", "stroke-opacity", "opacity", "font-family",
+        "font-size", "font-weight", "font-style", "text-anchor",
+        "dominant-baseline", "letter-spacing", "color",
+      ];
+      const liveEls = svg.querySelectorAll<SVGElement>("*");
+      const cloneEls = clone.querySelectorAll<SVGElement>("*");
+      for (let i = 0; i < liveEls.length; i++) {
+        const cs = getComputedStyle(liveEls[i]);
+        const s = cloneEls[i].style;
+        for (const p of PROPS) {
+          const v = cs.getPropertyValue(p);
+          if (v) s.setProperty(p, v);
+        }
+      }
+
+      // Ẩn nút +/bút chì cho ảnh gọn.
+      clone
+        .querySelectorAll(".card_add,.card_edit,[class*='card-action']")
+        .forEach((n) => n.remove());
+
+      // Nhúng ảnh avatar/chân dung thành data-URI.
+      await Promise.all(
+        Array.from(clone.querySelectorAll("image")).map(async (img) => {
+          const href =
+            img.getAttribute("href") || img.getAttributeNS(XLINK, "href");
+          if (!href || href.startsWith("data:")) return;
+          const dataUrl = await imageUrlToDataUrl(
+            href.startsWith("http") ? href : window.location.origin + href,
+          );
+          if (dataUrl) {
+            img.setAttribute("href", dataUrl);
+            img.setAttributeNS(XLINK, "href", dataUrl);
+          }
+        }),
+      );
+
+      const dark = document.documentElement.classList.contains("dark");
+      const xml = new XMLSerializer().serializeToString(clone);
+      const svgUrl =
+        "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
+      const image = new Image();
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error("SVG load failed"));
+        image.src = svgUrl;
+      });
+
+      const scale = 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = W * scale;
+      canvas.height = H * scale;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("no ctx");
+      ctx.fillStyle = dark ? "#1A1612" : "#FBF7F0";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.scale(scale, scale);
+      ctx.drawImage(image, 0, 0, W, H);
+      const blob = await new Promise<Blob | null>((r) =>
+        canvas.toBlob(r, "image/png"),
+      );
+      if (!blob) throw new Error("Không tạo được ảnh.");
+
+      const slug = `${clan.name}${focalName ? "-" + focalName : ""}`
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+        .replace(/[^a-zA-Z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      downloadBlob(blob, `cay-gia-pha-${slug || "clan"}.png`);
+      track("export", { kind: "tree_image", from: "tree" });
+      toast.success("Đã xuất ảnh cây gia phả.");
+    } catch {
+      toast.error("Không xuất được ảnh. Thử lại hoặc dùng chức năng In.");
+    } finally {
+      setSavingImg(false);
+    }
+  };
 
   // Initialize / re-render the family-chart instance
   useEffect(() => {
@@ -1324,6 +1435,16 @@ export default function Tree() {
                 className="absolute bottom-2 right-2 z-10 flex flex-col gap-1 print-hide"
                 aria-label="Phóng to / thu nhỏ cây"
               >
+                <button
+                  type="button"
+                  onClick={exportTreeImage}
+                  disabled={savingImg}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60 mb-1"
+                  aria-label="Xuất ảnh cây đang hiển thị (PNG)"
+                  title={savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"}
+                >
+                  <IconDownload className="h-4 w-4" />
+                </button>
                 <button
                   type="button"
                   data-testid="tree-fullscreen"
