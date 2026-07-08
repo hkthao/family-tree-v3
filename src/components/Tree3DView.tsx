@@ -7,6 +7,7 @@ import type { ForceGraph3DInstance, NodeObject } from "3d-force-graph";
 import { CanvasTexture, LinearFilter, Object3D, Sprite, SpriteMaterial, SRGBColorSpace } from "three";
 import SpriteText from "three-spritetext";
 
+import { bloodlineIds } from "@/lib/bloodline";
 import { displayGen } from "@/lib/displayGeneration";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { getTreeData, type TreeData } from "@/lib/queries/tree";
@@ -159,12 +160,11 @@ function buildGraph(
 ): { nodes: GNode[]; links: GLink[] } {
   const personById = new Map(data.persons.map((p) => [p.id, p]));
   const famById = new Map(data.families.map((f) => [f.id, f]));
-  // Huyết thống = thuỷ tổ HOẶC có cha/mẹ trong họ (birth_family_id).
-  const isLineage = (id: string | null | undefined) => {
-    if (!id) return false;
-    const p = personById.get(id);
-    return !!p && (p.is_root || p.birth_family_id != null);
-  };
+  // Huyết thống = thuỷ tổ + toàn bộ hậu duệ (truy cạnh cha→con từ gốc). Đúng cả
+  // khi dâu/rể có cha/mẹ được ghi — họ vẫn KHÔNG thuộc dòng máu. Dùng chung với
+  // cây 2D để nhất quán.
+  const blood = bloodlineIds(data.persons, data.families);
+  const isLineage = (id: string | null | undefined) => !!id && blood.has(id);
 
   // Bản đồ vợ/chồng (từ các gia đình) để suy ra đời cho dâu/rể + kéo họ hiện ra.
   const spouseOf = new Map<string, string[]>();
