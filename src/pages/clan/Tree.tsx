@@ -1065,7 +1065,7 @@ export default function Tree() {
               )}
               {view === "tree" && (
               <div
-                className={`${showOpts ? "flex" : "hidden"} w-full flex-wrap items-center justify-end gap-1.5 sm:contents`}
+                className={`${showOpts ? "flex" : "hidden"} w-full flex-wrap items-center justify-start gap-2 sm:contents`}
               >
               <SegmentedControl ariaLabel="Hướng cây">
                 <SegmentedButton

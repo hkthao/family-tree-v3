@@ -293,6 +293,50 @@ export default function People() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const canEdit = canEditClan(clan);
 
+  // Nút thao tác (refresh/phòng ký ức/thêm/nhập/AI) — render NGAY TRÊN danh
+  // sách, ngang hàng nút "Bộ lọc" (qua CollapsibleFilters) cho gần tầm tay,
+  // thay vì nằm tít trên header phải cuộn lên.
+  const actionButtons = (
+    <>
+      <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} compact />
+      {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
+      {canEdit && (
+        <>
+          <Button asChild size="sm" className="h-10 px-2.5 sm:px-3">
+            <Link
+              to={`/clans/${clan.id}/people/new`}
+              aria-label="Thêm người"
+              data-testid="add-person-link"
+            >
+              <IconPlus className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Thêm người</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="h-10 px-2.5 sm:px-3">
+            <Link
+              to={`/clans/${clan.id}/import`}
+              aria-label="Nhập Excel"
+              title="Nhập từ Excel"
+            >
+              <IconUpload className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Nhập Excel</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="h-10 px-2.5 sm:px-3">
+            <Link
+              to={`/clans/${clan.id}/ai-generate`}
+              aria-label="Sinh bằng AI"
+              title="Mô tả gia đình → AI sinh dữ liệu"
+            >
+              <IconSparkles className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Sinh bằng AI</span>
+            </Link>
+          </Button>
+        </>
+      )}
+    </>
+  );
+
   return (
     <div className="space-y-3">
       {/* Header row — title + icon refresh + add + import buttons.
@@ -305,65 +349,6 @@ export default function People() {
           view === "kinship"
             ? "Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt."
             : "Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
-        }
-        actionsBelow
-        actions={
-          <>
-            <RefreshButton
-              clanId={clan.id}
-              cachedVersion={clan.data_version}
-              compact
-            />
-            {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
-            {canEdit && (
-              <>
-                <Button
-                  asChild
-                  size="sm"
-                  className="h-10 px-2.5 sm:px-3"
-                >
-                  <Link
-                    to={`/clans/${clan.id}/people/new`}
-                    aria-label="Thêm người"
-                    data-testid="add-person-link"
-                  >
-                    <IconPlus className="h-4 w-4 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Thêm người</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="h-10 px-2.5 sm:px-3"
-                >
-                  <Link
-                    to={`/clans/${clan.id}/import`}
-                    aria-label="Nhập Excel"
-                    title="Nhập từ Excel"
-                  >
-                    <IconUpload className="h-4 w-4 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Nhập Excel</span>
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="h-10 px-2.5 sm:px-3"
-                >
-                  <Link
-                    to={`/clans/${clan.id}/ai-generate`}
-                    aria-label="Sinh bằng AI"
-                    title="Mô tả gia đình → AI sinh dữ liệu"
-                  >
-                    <IconSparkles className="h-4 w-4 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Sinh bằng AI</span>
-                  </Link>
-                </Button>
-              </>
-            )}
-          </>
         }
       />
 
@@ -404,64 +389,17 @@ export default function People() {
         <KinshipContent clanId={clan.id} userId={userId} />
       ) : (
       <>
-      {/* Search row — full width, owns one line. */}
-      <SearchInput
-        label="Tìm theo tên"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
-      />
-
-      {/* Toolbar — filters + sort + view toggle. Mobile: thu gọn sau nút
-          "Bộ lọc"; desktop: luôn hiện. */}
-      <CollapsibleFilters
-        activeCount={
-          (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "generation" ? 1 : 0)
-        }
-      >
-      {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
-          parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc.
-          Mobile không ảnh hưởng (prefix sm:). */}
-      <div className="flex flex-wrap items-center gap-2 sm:mt-2">
-        <select
-          value={branchId}
-          onChange={(e) => setBranchId(e.target.value)}
-          aria-label="Lọc theo chi"
-          className="h-10 flex-1 min-w-[140px] rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">Tất cả chi</option>
-          {branches?.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={generation}
-          onChange={(e) => setGeneration(e.target.value)}
-          aria-label="Lọc theo đời"
-          className="h-10 flex-1 min-w-[120px] rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
-          disabled={!maxGen}
-        >
-          <option value="">Tất cả đời</option>
-          {maxGen
-            ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
-                <option key={g} value={g}>
-                  Đời {g - clan.generation_offset}
-                </option>
-              ))
-            : null}
-        </select>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as typeof sort)}
-          aria-label="Sắp xếp"
-          className="h-10 flex-1 min-w-[120px] rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="generation">Sắp: Đời</option>
-          <option value="name">Sắp: Tên</option>
-          <option value="birth">Sắp: Năm sinh</option>
-        </select>
+      {/* Hàng tìm kiếm + toggle Danh sách/Thẻ — LUÔN hiện (không giấu sau
+          "Bộ lọc"), vì đổi kiểu xem là thao tác thường dùng. */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <SearchInput
+            label="Tìm theo tên"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
+          />
+        </div>
         <SegmentedControl ariaLabel="Chế độ hiển thị">
           <SegmentedButton
             active={viewMode === "list"}
@@ -482,6 +420,58 @@ export default function People() {
             <IconGrid className="h-4 w-4" />
           </SegmentedButton>
         </SegmentedControl>
+      </div>
+
+      {/* Bộ lọc chi/đời/sắp xếp. Mobile: thu sau nút "Bộ lọc" + XẾP DỌC
+          full-width cho dễ chạm; desktop: một hàng ngang. */}
+      <CollapsibleFilters
+        activeCount={
+          (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "generation" ? 1 : 0)
+        }
+        actions={view === "people" ? actionButtons : undefined}
+      >
+      {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
+          parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc. */}
+      <div className="flex flex-col gap-2 sm:mt-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <select
+          value={branchId}
+          onChange={(e) => setBranchId(e.target.value)}
+          aria-label="Lọc theo chi"
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto sm:flex-1 sm:min-w-[140px]"
+        >
+          <option value="">Tất cả chi</option>
+          {branches?.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={generation}
+          onChange={(e) => setGeneration(e.target.value)}
+          aria-label="Lọc theo đời"
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50 sm:w-auto sm:flex-1 sm:min-w-[120px]"
+          disabled={!maxGen}
+        >
+          <option value="">Tất cả đời</option>
+          {maxGen
+            ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
+                <option key={g} value={g}>
+                  Đời {g - clan.generation_offset}
+                </option>
+              ))
+            : null}
+        </select>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          aria-label="Sắp xếp"
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto sm:flex-1 sm:min-w-[120px]"
+        >
+          <option value="generation">Sắp: Đời</option>
+          <option value="name">Sắp: Tên</option>
+          <option value="birth">Sắp: Năm sinh</option>
+        </select>
       </div>
       </CollapsibleFilters>
 
