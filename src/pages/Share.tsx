@@ -10,6 +10,7 @@ import {
   IconMinimize,
 } from "@/components/icons";
 import { track } from "@/lib/analytics";
+import { bloodlineIds } from "@/lib/bloodline";
 import type { TreeData } from "@/lib/queries/tree";
 
 // Lazy — kéo three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
@@ -236,6 +237,21 @@ export default function Share() {
   // smoothly pans/zooms to the new centre.
   useEffect(() => {
     if (!containerRef.current || !f3Data) return;
+    // Tập huyết thống để đánh dấu dâu/rể (viền đứt) chính xác.
+    const blood = data
+      ? bloodlineIds(
+          data.persons.map((p) => ({
+            id: p.id,
+            is_root: p.is_root,
+            birth_family_id: p.birth_family_id,
+          })),
+          data.families.map((f) => ({
+            id: f.id,
+            husband_id: f.husband_id,
+            wife_id: f.wife_id,
+          })),
+        )
+      : new Set<string>();
     let disposed = false;
     const node = containerRef.current;
     let resizeObserver: ResizeObserver | null = null;
@@ -294,11 +310,8 @@ export default function Share() {
               meta.setAttribute("dy", "18");
             }
 
-            // Dâu/rể (không có cha/mẹ trong họ & không phải thuỷ tổ) → viền đứt.
-            const parents = (
-              datum as unknown as { rels?: { parents?: unknown[] } } | undefined
-            )?.rels?.parents;
-            if (fields["is_root"] !== true && (!parents || parents.length === 0)) {
+            // Dâu/rể = KHÔNG thuộc huyết thống (đúng cả khi có cha/mẹ ghi).
+            if (datum?.id && !blood.has(datum.id)) {
               const rect = this.querySelector(".card-body rect");
               if (rect) {
                 rect.setAttribute("stroke", "#B8862A");
