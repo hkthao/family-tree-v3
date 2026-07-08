@@ -655,6 +655,22 @@ export default function Tree() {
               return;
             }
 
+            // Dâu/rể (kết hôn vào — không có cha/mẹ trong họ & không phải thuỷ
+            // tổ) → viền ĐỨT bronze, khớp chú thích "Cách xem".
+            const parents = (
+              datum as unknown as { rels?: { parents?: unknown[] } } | undefined
+            )?.rels?.parents;
+            const isInLaw =
+              fields["is_root"] !== true && (!parents || parents.length === 0);
+            if (isInLaw) {
+              const rect = this.querySelector(".card-body rect");
+              if (rect) {
+                rect.setAttribute("stroke", "#B8862A");
+                rect.setAttribute("stroke-dasharray", "4 3");
+                rect.setAttribute("stroke-width", "1.5");
+              }
+            }
+
             // Generation badge — small pill in the top-right corner.
             // DB lưu generation thực (1-based); trừ clan.generation_offset
             // khi render để tôn trọng cài đặt "Thủy tổ là Đời 0".
