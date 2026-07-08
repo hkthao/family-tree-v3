@@ -60,6 +60,7 @@ import { EditPersonForm } from "@/pages/clan/EditPerson";
 import { LineageContent } from "@/pages/clan/MyLineage";
 import { track } from "@/lib/analytics";
 import { matchesName } from "@/lib/unaccent";
+import { bloodlineIds } from "@/lib/bloodline";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { getTreeData } from "@/lib/queries/tree";
 
@@ -423,6 +424,10 @@ export default function Tree() {
   useEffect(() => {
     if (!containerRef.current || !f3Data || !focal) return;
 
+    // Tập huyết thống (thuỷ tổ + hậu duệ) để đánh dấu dâu/rể chính xác — kể cả
+    // khi dâu/rể có cha/mẹ được ghi.
+    const blood = data ? bloodlineIds(data.persons, data.families) : new Set<string>();
+
     let disposed = false;
     const node = containerRef.current;
     let chart: F3Chart | null = null;
@@ -655,13 +660,10 @@ export default function Tree() {
               return;
             }
 
-            // Dâu/rể (kết hôn vào — không có cha/mẹ trong họ & không phải thuỷ
-            // tổ) → viền ĐỨT bronze, khớp chú thích "Cách xem".
-            const parents = (
-              datum as unknown as { rels?: { parents?: unknown[] } } | undefined
-            )?.rels?.parents;
-            const isInLaw =
-              fields["is_root"] !== true && (!parents || parents.length === 0);
+            // Dâu/rể = KHÔNG thuộc huyết thống (không phải hậu duệ thuỷ tổ),
+            // nối vào cây bằng hôn nhân → viền ĐỨT bronze, khớp "Cách xem".
+            // Đúng cả khi dâu/rể có cha/mẹ được ghi.
+            const isInLaw = !!personId && !blood.has(personId);
             if (isInLaw) {
               const rect = this.querySelector(".card-body rect");
               if (rect) {
