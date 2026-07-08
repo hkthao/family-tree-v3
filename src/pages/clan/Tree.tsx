@@ -821,9 +821,21 @@ export default function Tree() {
                 )?.data?.data?.gender;
                 color = gender === "F" ? FEMALE : MALE;
               }
-              p.setAttribute("stroke", color);
+              // style.stroke (inline) thắng cả presentation attr "#fff" lẫn CSS.
+              p.style.stroke = color;
             });
         };
+
+        // Gắn observer NGAY (SVG + .links_view đã tạo bởi createChart, dù rỗng)
+        // để tô mọi path.link family-chart thêm vào lúc updateTree/đổi tâm/bung.
+        const linksView0 = node.querySelector(".links_view");
+        if (linksView0) {
+          linkObserver = new MutationObserver(() => {
+            if (linkRaf) cancelAnimationFrame(linkRaf);
+            linkRaf = requestAnimationFrame(colorLinks);
+          });
+          linkObserver.observe(linksView0, { childList: true });
+        }
 
         // Without this, family-chart picks an arbitrary first row as
         // "main" and Đời 1 ends up collapsed off-screen.
@@ -841,17 +853,11 @@ export default function Tree() {
         chart = built;
         chartRef.current = built;
 
-        // Tô link ngay + theo dõi khi family-chart thêm/bớt link (đổi tâm,
-        // bung/thu nhánh) để tô lại. rAF gộp nhiều mutation trong 1 frame.
+        // Tô link ngay + vài frame sau (phòng updateTree dựng path trễ trong
+        // rAF/transition). Observer ở trên lo các lần cập nhật về sau.
         colorLinks();
-        const linksView = node.querySelector(".links_view");
-        if (linksView) {
-          linkObserver = new MutationObserver(() => {
-            if (linkRaf) cancelAnimationFrame(linkRaf);
-            linkRaf = requestAnimationFrame(colorLinks);
-          });
-          linkObserver.observe(linksView, { childList: true });
-        }
+        requestAnimationFrame(colorLinks);
+        requestAnimationFrame(() => requestAnimationFrame(colorLinks));
 
         // Re-fit on container resize (window resize, drawer expand/collapse,
         // orientation change). family-chart's updateTree with no `initial`
