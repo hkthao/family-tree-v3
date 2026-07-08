@@ -767,8 +767,8 @@ export function Tree3DView({
         </p>
       )}
 
-      {/* Góc trên phải: bật/tắt mở-rộng-dần + toàn màn hình. */}
-      <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
+      {/* Góc dưới phải: bật/tắt mở-rộng-dần + toàn màn hình (đồng bộ với cây 2D). */}
+      <div className="absolute right-3 bottom-3 z-10 flex items-center gap-2">
         <button
           type="button"
           onClick={() => setExpandOverride(!expandable)}

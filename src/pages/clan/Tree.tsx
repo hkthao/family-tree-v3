@@ -199,6 +199,8 @@ export default function Tree() {
   // Fullscreen API vì iOS Safari không cho fullscreen phần tử thường
   // (chỉ <video>). Cách này chạy đồng nhất mọi trình duyệt/mobile.
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // Bảng "Cách xem" (hướng dẫn + chú thích) — đồng bộ style với cây 3D.
+  const [showGuide, setShowGuide] = useState(true);
   function toggleFullscreen() {
     setIsFullscreen((v) => {
       const next = !v;
@@ -1296,6 +1298,80 @@ export default function Tree() {
                 title="Tắt chế độ di chuyển cây để cuộn trang"
               >
                 Khoá để cuộn trang
+              </button>
+            )}
+            {/* Cách xem — hướng dẫn + chú thích, style đồng bộ với cây 3D. */}
+            {showGuide ? (
+              <div className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[16rem] space-y-1 rounded-lg border border-border bg-background/85 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur print-hide">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="font-medium text-foreground">Cách xem</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowGuide(false)}
+                    className="pointer-events-auto -mr-1 -mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                    aria-label="Ẩn hướng dẫn"
+                    title="Ẩn hướng dẫn"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {/* Máy tính */}
+                <div className="hidden space-y-1 sm:block">
+                  <div>
+                    <b className="text-foreground">Kéo</b> — di chuyển
+                  </div>
+                  <div>
+                    <b className="text-foreground">Lăn chuột</b> — phóng to / thu nhỏ
+                  </div>
+                  <div>
+                    <b className="text-foreground">Bấm một thẻ</b> — đặt làm trung tâm
+                  </div>
+                </div>
+                {/* Điện thoại */}
+                <div className="space-y-1 sm:hidden">
+                  <div>Vuốt 1 ngón để di chuyển</div>
+                  <div>Kéo 2 ngón để phóng to / thu nhỏ</div>
+                  <div>Chạm thẻ để đặt trung tâm</div>
+                </div>
+                {/* Chú thích màu: thẻ theo giới; dâu/rể viền đứt. */}
+                <div className="mt-1.5 space-y-1 border-t border-border pt-1.5 text-foreground">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="inline-flex items-center gap-1">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-border"
+                        style={{ background: "var(--tree-card-male)" }}
+                      />{" "}
+                      Nam
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-border"
+                        style={{ background: "var(--tree-card-female)" }}
+                      />{" "}
+                      Nữ
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full border border-dashed"
+                        style={{ borderColor: "#B8862A" }}
+                      />{" "}
+                      Dâu/rể
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowGuide(true)}
+                className="pointer-events-auto absolute bottom-3 left-3 z-10 inline-flex items-center gap-1 rounded-lg border border-border bg-background/85 px-2.5 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur hover:text-foreground print-hide"
+                aria-label="Hiện hướng dẫn"
+                title="Hiện hướng dẫn"
+              >
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px] font-bold">
+                  ?
+                </span>
+                Cách xem
               </button>
             )}
           </div>,
