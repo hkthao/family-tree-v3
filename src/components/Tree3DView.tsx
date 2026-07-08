@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 
 import { IconMaximize, IconMinimize } from "@/components/icons";
 import type { ForceGraph3DInstance, NodeObject } from "3d-force-graph";
-import { CanvasTexture, LinearFilter, Sprite, SpriteMaterial, SRGBColorSpace } from "three";
+import { CanvasTexture, LinearFilter, Object3D, Sprite, SpriteMaterial, SRGBColorSpace } from "three";
 import SpriteText from "three-spritetext";
 
 import { displayGen } from "@/lib/displayGeneration";
@@ -337,9 +337,21 @@ export function Tree3DView({
     ? true
     : photoPaths.length === 0 || !!fetchedPhotoUrls;
 
-  // Tự bật mở-rộng-dần khi họ đông (>RENDER_CAP người); người dùng ghi đè được.
+  // Điện thoại (pointer thô / màn hẹp) → siết mạnh để không lag/crash với họ
+  // lớn: ít node dựng cùng lúc + texture nhẹ + tắt hạt/nhãn cạnh + hạ pixel ratio.
+  const isMobile = useMemo(
+    () =>
+      typeof window !== "undefined" &&
+      !!window.matchMedia &&
+      (window.matchMedia("(pointer: coarse)").matches ||
+        window.matchMedia("(max-width: 768px)").matches),
+    [],
+  );
+  // Số node dựng cùng lúc — mobile ít hơn nhiều (bộ nhớ texture là thủ phạm crash).
+  const cap = isMobile ? 180 : RENDER_CAP;
+  // Tự bật mở-rộng-dần khi họ đông (> cap người); người dùng ghi đè được.
   const nodeCount = data?.persons?.length ?? 0;
-  const expandable = expandOverride ?? nodeCount > RENDER_CAP;
+  const expandable = expandOverride ?? nodeCount > cap;
 
   useEffect(() => {
     const el = elRef.current;
@@ -352,7 +364,8 @@ export function Tree3DView({
     // Mỗi người = một THẺ bo tròn (ảnh tròn + tên + năm sinh–mất) vẽ trên canvas.
     const makeNode = (n: NodeObject) => {
       const g = n as GNode;
-      const dpr = 2; // vẽ nét 2x cho sắc
+      // Mobile: dpr 1 (giảm 4× bộ nhớ texture) để không crash; desktop 2 cho sắc.
+      const dpr = isMobile ? 1 : 2;
       const canvas = document.createElement("canvas");
       canvas.width = CARD_W * dpr;
       canvas.height = CARD_H * dpr;
@@ -532,11 +545,11 @@ export function Tree3DView({
             ? [focalId]
             : rootSet.map((n) => n.id as string);
         const queue = [...order, ...start];
-        for (let i = 0; i < queue.length && shown.size < RENDER_CAP; i++) {
+        for (let i = 0; i < queue.length && shown.size < cap; i++) {
           const n = nodeById.get(queue[i]);
           if (!n) continue;
           const kids = childIdsOf(n).filter((c) => !shown.has(c));
-          if (shown.size + kids.length > RENDER_CAP) continue; // bung sẽ vượt → giữ gọn
+          if (shown.size + kids.length > cap) continue; // bung sẽ vượt → giữ gọn
           n.collapsed = false;
           for (const c of kids) {
             shown.add(c);
@@ -635,6 +648,9 @@ export function Tree3DView({
         // Chữ giữa mỗi cạnh: "con trai/con gái" (cha→con) hoặc "vợ chồng".
         .linkThreeObjectExtend(true)
         .linkThreeObject((l) => {
+          // Mobile: bỏ nhãn cạnh (con trai/vợ chồng) — trả object rỗng, không
+          // tạo canvas texture, cho nhẹ.
+          if (isMobile) return new Object3D();
           const link = l as GLink;
           let label: string;
           if (link.kind === "marriage") {
@@ -672,6 +688,15 @@ export function Tree3DView({
       // Xếp sát lại (~1/2 khoảng cách cũ) cho đỡ trống trải mà không quá chật.
       graph.d3Force("charge")?.strength(-180);
       graph.d3Force("link")?.distance(14);
+
+      // Hiệu suất mobile: hạ pixel ratio (retina 3x → nặng ~9×), tắt hạt chạy +
+      // nhãn cạnh (hàng trăm sprite động mỗi frame), dừng mô phỏng sớm hơn.
+      graph
+        .renderer()
+        .setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
+      if (isMobile) {
+        graph.linkDirectionalParticles(0).cooldownTime(6000);
+      }
 
       // Khi layout ổn định lần đầu → bay tới người trung tâm cho vào giữa khung.
       let flew = false;
@@ -721,7 +746,7 @@ export function Tree3DView({
       if (onKey) window.removeEventListener("keydown", onKey);
       graph?._destructor?.();
     };
-  }, [data, genOffset, photoUrls, photosReady, pal, fs, expandable, focal]);
+  }, [data, genOffset, photoUrls, photosReady, pal, fs, expandable, focal, cap, isMobile]);
 
   const kbd =
     "rounded border border-border bg-muted px-1 font-mono text-[10px]";
