@@ -239,6 +239,8 @@ export default function Share() {
     let disposed = false;
     const node = containerRef.current;
     let resizeObserver: ResizeObserver | null = null;
+    let linkObserver: MutationObserver | null = null;
+    let linkRaf = 0;
 
     (async () => {
       const f3 = await loadF3();
@@ -292,6 +294,19 @@ export default function Share() {
               meta.setAttribute("dy", "18");
             }
 
+            // Dâu/rể (không có cha/mẹ trong họ & không phải thuỷ tổ) → viền đứt.
+            const parents = (
+              datum as unknown as { rels?: { parents?: unknown[] } } | undefined
+            )?.rels?.parents;
+            if (fields["is_root"] !== true && (!parents || parents.length === 0)) {
+              const rect = this.querySelector(".card-body rect");
+              if (rect) {
+                rect.setAttribute("stroke", "#B8862A");
+                rect.setAttribute("stroke-dasharray", "4 3");
+                rect.setAttribute("stroke-width", "1.5");
+              }
+            }
+
             const gen = fields["generation"];
             if (typeof gen === "number" && gen > 0) {
               this.querySelector(".gen-badge")?.remove();
@@ -334,8 +349,48 @@ export default function Share() {
           requestAnimationFrame(() => resolve()),
         );
         if (disposed) return;
+
+        // Tô màu đường nối theo giới người con (con trai xanh / con gái hồng),
+        // hôn nhân đỏ — đồng bộ với cây 3D. Gắn observer TRƯỚC updateTree.
+        const colorLinks = () => {
+          const dark = document.documentElement.classList.contains("dark");
+          const MALE = dark ? "#6FA0C8" : "#5B8FB8";
+          const FEMALE = dark ? "#D08A91" : "#C97F86";
+          const MARRIAGE = dark ? "#D24545" : "#9B3535";
+          node
+            .querySelectorAll<SVGPathElement>(".links_view .link")
+            .forEach((p) => {
+              const d = (
+                p as unknown as {
+                  __data__?: { spouse?: boolean; source?: unknown; target?: unknown };
+                }
+              ).__data__;
+              if (!d) return;
+              let color = MARRIAGE;
+              if (!d.spouse) {
+                const child = Array.isArray(d.source) ? d.target : d.source;
+                const gender = (
+                  child as { data?: { data?: { gender?: string } } } | undefined
+                )?.data?.data?.gender;
+                color = gender === "F" ? FEMALE : MALE;
+              }
+              p.style.stroke = color;
+            });
+        };
+        const linksView0 = node.querySelector(".links_view");
+        if (linksView0) {
+          linkObserver = new MutationObserver(() => {
+            if (linkRaf) cancelAnimationFrame(linkRaf);
+            linkRaf = requestAnimationFrame(colorLinks);
+          });
+          linkObserver.observe(linksView0, { childList: true });
+        }
+
         built.updateTree({ initial: true });
         chartRef.current = built;
+        colorLinks();
+        requestAnimationFrame(colorLinks);
+        requestAnimationFrame(() => requestAnimationFrame(colorLinks));
 
         if (typeof ResizeObserver !== "undefined") {
           let last = node.getBoundingClientRect().width;
@@ -356,6 +411,8 @@ export default function Share() {
       disposed = true;
       chartRef.current = null;
       resizeObserver?.disconnect();
+      linkObserver?.disconnect();
+      if (linkRaf) cancelAnimationFrame(linkRaf);
       node.innerHTML = "";
     };
   }, [f3Data, orientation, data?.generation_offset, depth, isFullscreen, treeMode]);
