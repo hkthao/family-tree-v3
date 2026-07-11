@@ -23,6 +23,7 @@ import { FunFactsCard } from "@/components/FunFactsCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { PageHeader } from "@/components/PageHeader";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
+import { TodayHubCard } from "@/components/TodayHubCard";
 import { RefreshButton } from "@/components/RefreshButton";
 import { Button } from "@/components/ui/button";
 import { VideoEmptyState } from "@/components/VideoEmptyState";
@@ -156,6 +157,7 @@ export default function Dashboard() {
     return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil);
   }, [tree, events, anniversaries, clan.generation_offset]);
   const upcomingTop5 = upcoming.slice(0, 5);
+  const todayEvents = upcoming.filter((e) => e.daysUntil === 0);
 
   return (
     <div className="space-y-4">
@@ -256,6 +258,10 @@ export default function Dashboard() {
         )
       ) : tree && tree.persons.length > 0 ? (
         <>
+          {/* Thẻ "Hôm nay" — đổi mỗi ngày (âm lịch, ngày tốt/xấu, giỗ/sinh
+              nhật hôm nay, phong tục hôm nay) → tạo lý do mở app hằng ngày. */}
+          <TodayHubCard clanId={clan.id} todayEvents={todayEvents} />
+
           {/* Stats tiles. For members, use the get_clan_stats RPC
               (faster aggregate). For non-member visitors of public
               clans, get_clan_stats returns 0 across the board because
