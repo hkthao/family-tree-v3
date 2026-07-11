@@ -54,20 +54,20 @@ export function TodayHubCard({
       aria-label="Hôm nay"
       className="overflow-hidden rounded-xl border bg-card"
     >
-      {/* Đầu thẻ: hai lịch song song, có NHÃN rõ (Dương lịch / Âm lịch) cho
-          người lớn tuổi dễ hiểu. */}
-      <div className="p-4">
-        <div className="flex items-center gap-4">
+      {/* Đầu thẻ: Dương lịch (tờ lịch) + Âm lịch (chữ, có nhãn). Badge ngày
+          tốt/xấu: mobile xuống hàng riêng, desktop neo góc trên-phải. */}
+      <div className="relative p-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* DƯƠNG LỊCH — tờ lịch, số ngày to (ai cũng quen tờ lịch treo tường) */}
-          <div className="flex w-[100px] shrink-0 flex-col items-center rounded-lg border border-primary/25 bg-primary/5 py-2.5 text-primary">
+          <div className="flex w-[84px] shrink-0 flex-col items-center rounded-lg border border-primary/25 bg-primary/5 py-2.5 text-primary sm:w-[96px]">
             <span className="text-xs font-semibold uppercase tracking-wide">
               {WEEKDAYS[now.getDay()]}
             </span>
-            <span className="my-0.5 text-5xl font-bold leading-none tabular-nums">
+            <span className="my-0.5 text-4xl font-bold leading-none tabular-nums sm:text-5xl">
               {now.getDate()}
             </span>
             <span className="text-[11px] text-muted-foreground">
-              Tháng {now.getMonth() + 1} · {now.getFullYear()}
+              Th{now.getMonth() + 1} · {now.getFullYear()}
             </span>
           </div>
 
@@ -77,7 +77,7 @@ export function TodayHubCard({
               Âm lịch
             </p>
             {lunar && (
-              <p className="text-xl font-bold leading-snug sm:text-2xl">
+              <p className="text-lg font-bold leading-snug sm:text-2xl">
                 Ngày {lunar.day} tháng {lunar.month}
                 {leap}
               </p>
@@ -86,24 +86,24 @@ export function TodayHubCard({
               <p className="text-sm text-muted-foreground">Năm {cc.year}</p>
             )}
           </div>
-
-          {aus && (
-            <span
-              className={`shrink-0 self-start rounded-full px-2.5 py-1 text-xs font-medium ${
-                aus.good
-                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                  : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-              }`}
-              title={`Sao ${aus.star}`}
-            >
-              {aus.good ? "Ngày tốt (Hoàng đạo)" : "Ngày xấu (Hắc đạo)"}
-            </span>
-          )}
         </div>
+
+        {aus && (
+          <span
+            className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-medium sm:absolute sm:right-4 sm:top-4 sm:mt-0 ${
+              aus.good
+                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+            }`}
+            title={`Sao ${aus.star}`}
+          >
+            {aus.good ? "Ngày tốt (Hoàng đạo)" : "Ngày xấu (Hắc đạo)"}
+          </span>
+        )}
 
         {/* Can chi — thông tin phụ, chữ nhỏ mờ ở dưới */}
         {cc && (
-          <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+          <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
             Can chi: Ngày {cc.day} · tháng {cc.month} · năm {cc.year}
           </p>
         )}
