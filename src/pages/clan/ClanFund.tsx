@@ -19,11 +19,18 @@ import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import {
   createFundTransaction,
   deleteFundTransaction,
+  listFundAudit,
   listFundTransactions,
   summarizeFund,
   type FundDirection,
   type FundTransaction,
 } from "@/lib/queries/clanFund";
+
+const AUDIT_ACTION_LABEL: Record<"insert" | "update" | "delete", string> = {
+  insert: "Thêm",
+  update: "Sửa",
+  delete: "Xoá",
+};
 
 function formatVnd(n: number): string {
   return new Intl.NumberFormat("vi-VN").format(n) + " đ";
@@ -37,11 +44,17 @@ export default function ClanFund() {
   const toast = useToast();
   const confirm = useConfirm();
   const [showAdd, setShowAdd] = useState(false);
+  const [showAudit, setShowAudit] = useState(false);
 
   const { data: txs = [], isLoading } = useQuery({
     queryKey: ["clan-fund", clan.id, user?.id ?? ""],
     queryFn: () => listFundTransactions(clan.id),
     enabled: !!user?.id,
+  });
+  const { data: audit = [] } = useQuery({
+    queryKey: ["clan-fund-audit", clan.id],
+    queryFn: () => listFundAudit(clan.id),
+    enabled: showAudit && !!user?.id,
   });
   const summary = useMemo(() => summarizeFund(txs), [txs]);
 
@@ -156,6 +169,30 @@ export default function ClanFund() {
           ))}
         </ul>
       )}
+
+      {/* Nhật ký thay đổi — minh bạch ai thêm/sửa/xoá khi nào. */}
+      <div className="border-t pt-3">
+        <button
+          type="button"
+          onClick={() => setShowAudit((v) => !v)}
+          className="text-sm text-primary hover:underline"
+        >
+          {showAudit ? "Ẩn" : "Xem"} nhật ký thay đổi
+        </button>
+        {showAudit && (
+          <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+            {audit.length === 0 && <li>Chưa có thay đổi nào được ghi.</li>}
+            {audit.map((a) => (
+              <li key={a.id}>
+                <b className="text-foreground">{AUDIT_ACTION_LABEL[a.action]}</b>
+                {a.amount != null ? ` ${formatVnd(a.amount)}` : ""}
+                {a.fund ? ` · ${a.fund}` : ""} — {a.actor_name ?? "—"} ·{" "}
+                {new Date(a.at).toLocaleString("vi-VN")}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
