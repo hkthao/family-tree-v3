@@ -17,6 +17,7 @@ import {
   IconLink,
   IconList,
   IconPencil,
+  IconAward,
   IconScroll,
   IconSettings,
   IconShield,
@@ -509,6 +510,11 @@ function buildSections(
         to: `/clans/${clanId}/board`,
         label: "Bảng tin",
         icon: <IconSparkles className={ic} />,
+      });
+      communityItems.push({
+        to: `/clans/${clanId}/honor`,
+        label: "Sổ vàng công đức",
+        icon: <IconAward className={ic} />,
       });
     }
     if (canTree) {

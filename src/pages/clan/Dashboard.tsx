@@ -15,6 +15,7 @@ import {
   IconLink,
   IconList,
   IconPlus,
+  IconAward,
   IconScroll,
   IconTree,
   IconUpload,
@@ -323,6 +324,11 @@ export default function Dashboard() {
                     to={`/clans/${clan.id}/memory-room`}
                     icon={<IconCamera />}
                     title="Phòng ký ức"
+                  />
+                  <ActionTile
+                    to={`/clans/${clan.id}/honor`}
+                    icon={<IconAward />}
+                    title="Sổ vàng"
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/todo`}
