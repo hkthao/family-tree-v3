@@ -262,93 +262,7 @@ export default function Dashboard() {
               nhật hôm nay, phong tục hôm nay) → tạo lý do mở app hằng ngày. */}
           <TodayHubCard clanId={clan.id} todayEvents={todayEvents} />
 
-          {/* Stats tiles. For members, use the get_clan_stats RPC
-              (faster aggregate). For non-member visitors of public
-              clans, get_clan_stats returns 0 across the board because
-              it runs as security_invoker against persons-RLS — so we
-              fall back to client-side counting from the masked tree
-              data they already have. */}
-          {(() => {
-            const useStatsRpc = isMember && stats && stats.total_persons > 0;
-            const counts = useStatsRpc
-              ? {
-                  total: stats!.total_persons,
-                  maxGen: stats!.max_generation,
-                  males: stats!.males,
-                  females: stats!.females,
-                  living: stats!.living,
-                  deceased: stats!.deceased,
-                }
-              : {
-                  total: tree.persons.length,
-                  maxGen:
-                    tree.persons.reduce<number | null>(
-                      (m, p) =>
-                        p.generation == null
-                          ? m
-                          : m == null || p.generation > m
-                            ? p.generation
-                            : m,
-                      null,
-                    ),
-                  males: tree.persons.filter((p) => p.gender === "M").length,
-                  females: tree.persons.filter((p) => p.gender === "F").length,
-                  living: tree.persons.filter((p) => p.is_living).length,
-                  deceased: tree.persons.filter((p) => !p.is_living).length,
-                };
-            return (
-              <section
-                aria-label="Thống kê dòng họ"
-                className="grid grid-cols-2 sm:grid-cols-3 gap-3"
-              >
-                <StatTile label="Tổng số người" value={counts.total} highlight />
-                <StatTile label="Số đời" value={counts.maxGen ?? "—"} />
-                <StatTile label="Nam" value={counts.males} />
-                <StatTile label="Nữ" value={counts.females} />
-                <StatTile label="Còn sống" value={counts.living} />
-                <StatTile label="Đã mất" value={counts.deceased} muted />
-              </section>
-            );
-          })()}
-
-          {isMember && contentCounts && (
-            <section
-              aria-label="Kho tư liệu dòng họ"
-              className="grid grid-cols-3 gap-3"
-            >
-              <LinkStatTile
-                to={`/clans/${clan.id}/memory-room`}
-                label="Phòng ký ức"
-                value={contentCounts.memory_rooms}
-              />
-              <LinkStatTile
-                to={`/clans/${clan.id}/graves`}
-                label="Mộ phần & tro cốt"
-                value={contentCounts.resting_places}
-              />
-              <LinkStatTile
-                to={`/clans/${clan.id}/heritage`}
-                label="Di sản văn hoá"
-                value={contentCounts.heritage_items}
-              />
-            </section>
-          )}
-
-          {completion && completion.total > 0 && (
-            <CompletionTile
-              clanId={clan.id}
-              completion={completion}
-              summary={todoSummary ?? []}
-            />
-          )}
-
-          <FunFactsCard
-            clan={clan}
-            userId={userId}
-            persons={tree.persons}
-            families={tree.families}
-          />
-
+          {/* Sự kiện sắp tới — ưu tiên cao: nhắc giỗ/sinh nhật sắp đến. */}
           {upcomingTop5.length > 0 && (
             <section aria-label="Sự kiện sắp tới" className="space-y-2">
               <SectionHeading
@@ -363,7 +277,8 @@ export default function Dashboard() {
                   </Link>
                 }
               />
-              <ul className="space-y-1.5">
+              {/* Desktop: 2 cột cho gọn (mỗi sự kiện 1 hàng phí chỗ ngang). */}
+              <ul className="grid gap-1.5 sm:grid-cols-2">
                 {upcomingTop5.map((e) => (
                   <UpcomingRow key={e.key} event={e} clanId={clan.id} />
                 ))}
@@ -371,12 +286,12 @@ export default function Dashboard() {
             </section>
           )}
 
+          {/* Thao tác nhanh — điều hướng chính, đưa lên cao. */}
           <section aria-label="Thao tác nhanh" className="space-y-2">
             <SectionHeading icon={<IconGrid />} title="Thao tác nhanh" />
-            {/* 3 cột cố định, auto-rows-fr để mọi item cùng chiều cao
-                kể cả khi badge xuất hiện. Text ngắn 1 từ / 1-2 chữ
-                để ko rớt dòng. */}
-            <div className="grid grid-cols-3 gap-2 auto-rows-fr">
+            {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop
+                → thấp hơn hẳn ô vuông cũ, tiết kiệm diện tích. */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <ActionTile
                 to={`/clans/${clan.id}/people`}
                 icon={<IconList />}
@@ -438,6 +353,94 @@ export default function Dashboard() {
             </div>
           </section>
 
+          {/* Tiến độ hoàn thiện — nhắc bổ sung thông tin. */}
+          {completion && completion.total > 0 && (
+            <CompletionTile
+              clanId={clan.id}
+              completion={completion}
+              summary={todoSummary ?? []}
+            />
+          )}
+
+          {/* Thống kê dòng họ — GỘP GỌN 9 card thành 1 thẻ, đưa xuống dưới
+              (thông tin thứ yếu). Người: số lớn + tách Nam/Nữ/Còn sống/Đã mất;
+              kho tư liệu: hàng nút nhỏ bấm được. */}
+          {(() => {
+            const useStatsRpc = isMember && stats && stats.total_persons > 0;
+            const counts = useStatsRpc
+              ? {
+                  total: stats!.total_persons,
+                  maxGen: stats!.max_generation,
+                  males: stats!.males,
+                  females: stats!.females,
+                  living: stats!.living,
+                  deceased: stats!.deceased,
+                }
+              : {
+                  total: tree.persons.length,
+                  maxGen: tree.persons.reduce<number | null>(
+                    (m, p) =>
+                      p.generation == null
+                        ? m
+                        : m == null || p.generation > m
+                          ? p.generation
+                          : m,
+                    null,
+                  ),
+                  males: tree.persons.filter((p) => p.gender === "M").length,
+                  females: tree.persons.filter((p) => p.gender === "F").length,
+                  living: tree.persons.filter((p) => p.is_living).length,
+                  deceased: tree.persons.filter((p) => !p.is_living).length,
+                };
+            return (
+              <section
+                aria-label="Thống kê dòng họ"
+                className="rounded-lg border bg-card p-4 space-y-3"
+              >
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="text-3xl font-semibold text-primary tabular-nums">
+                    {counts.total}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    thành viên · {counts.maxGen ?? "—"} đời
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-sm">
+                  <MiniStat label="Nam" value={counts.males} />
+                  <MiniStat label="Nữ" value={counts.females} />
+                  <MiniStat label="Còn sống" value={counts.living} />
+                  <MiniStat label="Đã mất" value={counts.deceased} />
+                </div>
+                {isMember && contentCounts && (
+                  <div className="grid grid-cols-3 gap-2 border-t pt-3">
+                    <ResourceLink
+                      to={`/clans/${clan.id}/memory-room`}
+                      label="Phòng ký ức"
+                      value={contentCounts.memory_rooms}
+                    />
+                    <ResourceLink
+                      to={`/clans/${clan.id}/graves`}
+                      label="Mộ phần & tro cốt"
+                      value={contentCounts.resting_places}
+                    />
+                    <ResourceLink
+                      to={`/clans/${clan.id}/heritage`}
+                      label="Di sản văn hoá"
+                      value={contentCounts.heritage_items}
+                    />
+                  </div>
+                )}
+              </section>
+            );
+          })()}
+
+          <FunFactsCard
+            clan={clan}
+            userId={userId}
+            persons={tree.persons}
+            families={tree.families}
+          />
+
           {effectiveRole(clan) !== null && (
             <RecentActivityPanel clanId={clan.id} />
           )}
@@ -447,11 +450,39 @@ export default function Dashboard() {
   );
 }
 
-interface StatTileProps {
+/** Số nhỏ + nhãn cùng dòng — cho thẻ thống kê gộp gọn. */
+function MiniStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-base font-semibold tabular-nums">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+/** Ô kho tư liệu bấm được (nhỏ gọn): số + nhãn, trong thẻ thống kê. */
+function ResourceLink({
+  to,
+  label,
+  value,
+}: {
+  to: string;
   label: string;
-  value: number | string;
-  highlight?: boolean;
-  muted?: boolean;
+  value: number;
+}) {
+  return (
+    <Link
+      to={to}
+      className="flex flex-col items-center rounded-md border bg-muted/20 px-2 py-2 text-center hover:border-primary hover:bg-muted/40 transition-colors"
+    >
+      <span className="text-lg font-semibold tabular-nums leading-none">
+        {value}
+      </span>
+      <span className="mt-1 text-xs text-muted-foreground leading-tight">
+        {label}
+      </span>
+    </Link>
+  );
 }
 
 function ActionTile({
@@ -469,17 +500,17 @@ function ActionTile({
   return (
     <Link
       to={to}
-      className="group relative flex h-full flex-col items-center justify-center gap-1.5 rounded-lg border bg-card p-3 text-center hover:border-primary hover:bg-muted/30 transition-colors"
+      className="group relative flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors"
     >
       <span
-        className="text-primary [&>svg]:h-6 [&>svg]:w-6"
+        className="text-primary shrink-0 [&>svg]:h-5 [&>svg]:w-5"
         aria-hidden="true"
       >
         {icon}
       </span>
-      <span className="text-sm font-medium leading-tight">{title}</span>
+      <span className="text-sm font-medium leading-tight truncate">{title}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="absolute top-1.5 right-1.5 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary text-primary-foreground text-xs px-1 tabular-nums">
+        <span className="absolute top-1 right-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] px-1 tabular-nums">
           {badge > 99 ? "99+" : badge}
         </span>
       )}
@@ -517,15 +548,15 @@ function ExportPdfTile({ clan }: { clan: ClanDetail }) {
       onClick={onClick}
       disabled={busy}
       title={err ?? undefined}
-      className="group relative flex h-full flex-col items-center justify-center gap-1.5 rounded-lg border bg-card p-3 text-center hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
+      className="group relative flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
     >
       <span
-        className="text-primary [&>svg]:h-6 [&>svg]:w-6"
+        className="text-primary shrink-0 [&>svg]:h-5 [&>svg]:w-5"
         aria-hidden="true"
       >
         <IconDownload />
       </span>
-      <span className="text-sm font-medium leading-tight">
+      <span className="text-sm font-medium leading-tight truncate">
         {busy ? "Đang xuất…" : "Xuất PDF"}
       </span>
     </button>
@@ -642,46 +673,6 @@ function ClanDescription({ text }: { text: string }) {
       >
         {expanded ? "Thu gọn" : "Xem thêm"}
       </button>
-    </div>
-  );
-}
-
-/** Ô thống kê bấm được — cùng style với StatTile (số lớn căn trái + nhãn). */
-function LinkStatTile({
-  to,
-  label,
-  value,
-}: {
-  to: string;
-  label: string;
-  value: number;
-}) {
-  return (
-    <Link
-      to={to}
-      className="block rounded-lg border bg-card p-4 hover:border-primary hover:bg-muted/30 transition-colors"
-    >
-      <p className="text-3xl font-semibold tabular-nums">{value}</p>
-      <p className="text-sm text-muted-foreground mt-1">{label}</p>
-    </Link>
-  );
-}
-
-function StatTile({ label, value, highlight, muted }: StatTileProps) {
-  return (
-    <div
-      className={`rounded-lg border bg-card p-4 ${
-        highlight ? "border-primary/40" : ""
-      }`}
-    >
-      <p
-        className={`text-3xl font-semibold ${
-          muted ? "text-muted-foreground" : highlight ? "text-primary" : ""
-        }`}
-      >
-        {value}
-      </p>
-      <p className="text-sm text-muted-foreground mt-1">{label}</p>
     </div>
   );
 }
