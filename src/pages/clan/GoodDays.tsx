@@ -31,9 +31,9 @@ function addDays(iso: string, n: number): string {
 type RangeMode = "7" | "30" | "90" | "custom";
 
 const RANGE_OPTIONS: { key: RangeMode; label: string }[] = [
-  { key: "7", label: "7 ngày tới" },
-  { key: "30", label: "30 ngày tới" },
-  { key: "90", label: "3 tháng tới" },
+  { key: "7", label: "7 ngày" },
+  { key: "30", label: "30 ngày" },
+  { key: "90", label: "3 tháng" },
   { key: "custom", label: "Tùy chọn" },
 ];
 
@@ -112,14 +112,14 @@ export default function GoodDays() {
         <p className="text-sm font-semibold text-muted-foreground">
           2. Trong khoảng thời gian nào?
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {RANGE_OPTIONS.map((r) => (
             <button
               key={r.key}
               type="button"
               onClick={() => setRange(r.key)}
               aria-pressed={range === r.key}
-              className={`rounded-lg border px-4 py-2.5 text-base font-medium transition-colors ${
+              className={`whitespace-nowrap rounded-lg border px-2 py-2.5 text-sm font-medium transition-colors sm:text-base ${
                 range === r.key
                   ? "border-primary bg-primary text-primary-foreground"
                   : "bg-card hover:bg-muted/50"
