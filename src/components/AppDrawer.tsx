@@ -19,6 +19,7 @@ import {
   IconPencil,
   IconAward,
   IconScroll,
+  IconWallet,
   IconSettings,
   IconShield,
   IconSparkles,
@@ -515,6 +516,11 @@ function buildSections(
         to: `/clans/${clanId}/honor`,
         label: "Sổ vàng công đức",
         icon: <IconAward className={ic} />,
+      });
+      communityItems.push({
+        to: `/clans/${clanId}/fund`,
+        label: "Quỹ họ",
+        icon: <IconWallet className={ic} />,
       });
     }
     if (canTree) {
