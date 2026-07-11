@@ -1171,6 +1171,66 @@ export type Database = {
           },
         ]
       }
+      fund_transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          clan_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          direction: string
+          fund: string
+          id: string
+          note: string | null
+          occurred_on: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          clan_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          direction: string
+          fund?: string
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          clan_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          direction?: string
+          fund?: string
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fund_transactions_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fund_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       giapha_import_chunks: {
         Row: {
           job_id: string

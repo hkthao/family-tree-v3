@@ -37,6 +37,7 @@ import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
 import Heritage from "@/pages/clan/Heritage";
+import ClanFund from "@/pages/clan/ClanFund";
 import HonorBook from "@/pages/clan/HonorBook";
 import HeritageDetail from "@/pages/clan/HeritageDetail";
 import HeritageForm from "@/pages/clan/HeritageForm";
@@ -199,6 +200,7 @@ export default function App() {
           <Route path="graves/:graveId/edit" element={<RestingPlaceForm />} />
           <Route path="events" element={<Events />} />
           <Route path="honor" element={<HonorBook />} />
+          <Route path="fund" element={<ClanFund />} />
           <Route path="heritage" element={<Heritage />} />
           <Route path="heritage/new" element={<HeritageForm />} />
           <Route path="heritage/:itemId" element={<HeritageDetail />} />

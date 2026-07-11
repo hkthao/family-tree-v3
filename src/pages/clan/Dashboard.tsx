@@ -19,6 +19,7 @@ import {
   IconScroll,
   IconTree,
   IconUpload,
+  IconWallet,
 } from "@/components/icons";
 import { FunFactsCard } from "@/components/FunFactsCard";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -329,6 +330,11 @@ export default function Dashboard() {
                     to={`/clans/${clan.id}/honor`}
                     icon={<IconAward />}
                     title="Sổ vàng"
+                  />
+                  <ActionTile
+                    to={`/clans/${clan.id}/fund`}
+                    icon={<IconWallet />}
+                    title="Quỹ họ"
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/todo`}
