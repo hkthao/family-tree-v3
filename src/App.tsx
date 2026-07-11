@@ -36,6 +36,7 @@ import Contributions from "@/pages/clan/Contributions";
 import Dashboard from "@/pages/clan/Dashboard";
 import EditPerson from "@/pages/clan/EditPerson";
 import Events from "@/pages/clan/Events";
+import GoodDays from "@/pages/clan/GoodDays";
 import Heritage from "@/pages/clan/Heritage";
 import ClanFund from "@/pages/clan/ClanFund";
 import HonorBook from "@/pages/clan/HonorBook";
@@ -213,6 +214,7 @@ export default function App() {
           <Route path="qr-export" element={<QrExport />} />
           <Route path="my-lineage" element={<MyLineage />} />
           <Route path="today" element={<Today />} />
+          <Route path="xem-ngay" element={<GoodDays />} />
           <Route path="todo" element={<Todo />} />
           <Route path="tools" element={<Tools />} />
           <Route path="kinship" element={<Kinship />} />
