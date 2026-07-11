@@ -363,7 +363,7 @@ export function IconWallet(p: IconProps) {
 }
 
 export function IconAward(p: IconProps) {
-  // Huy chương/ruy băng — dùng cho Sổ vàng công đức.
+  // Huy chương/ruy băng — dùng cho Bảng vàng công đức.
   return (
     <Svg {...p}>
       <circle cx="12" cy="8" r="6" />
