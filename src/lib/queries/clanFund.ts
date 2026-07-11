@@ -86,6 +86,35 @@ export interface FundSummary {
   byFund: { fund: string; in: number; out: number; balance: number }[];
 }
 
+export interface FundAudit {
+  id: string;
+  action: "insert" | "update" | "delete";
+  actor_name: string | null;
+  direction: FundDirection | null;
+  amount: number | null;
+  fund: string | null;
+  note: string | null;
+  at: string;
+}
+
+/** Nhật ký thay đổi quỹ (chỉ đọc) — minh bạch ai làm gì khi nào. */
+export async function listFundAudit(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<FundAudit[]> {
+  const { data, error } = await client
+    .from("fund_audit")
+    .select("id, action, actor_name, direction, amount, fund, note, at")
+    .eq("clan_id", clanId)
+    .order("at", { ascending: false })
+    .limit(50);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({
+    ...(r as FundAudit),
+    amount: r.amount == null ? null : Number(r.amount),
+  }));
+}
+
 /** Tính tổng thu/chi/số dư (chung + theo từng quỹ) từ danh sách giao dịch. */
 export function summarizeFund(txs: FundTransaction[]): FundSummary {
   let totalIn = 0;

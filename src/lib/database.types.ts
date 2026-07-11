@@ -1171,6 +1171,59 @@ export type Database = {
           },
         ]
       }
+      fund_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          amount: number | null
+          at: string
+          clan_id: string
+          direction: string | null
+          fund: string | null
+          id: string
+          note: string | null
+          occurred_on: string | null
+          txn_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          amount?: number | null
+          at?: string
+          clan_id: string
+          direction?: string | null
+          fund?: string | null
+          id?: string
+          note?: string | null
+          occurred_on?: string | null
+          txn_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          amount?: number | null
+          at?: string
+          clan_id?: string
+          direction?: string | null
+          fund?: string | null
+          id?: string
+          note?: string | null
+          occurred_on?: string | null
+          txn_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fund_audit_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fund_transactions: {
         Row: {
           amount: number
