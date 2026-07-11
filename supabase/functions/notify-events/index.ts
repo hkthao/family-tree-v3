@@ -335,34 +335,51 @@ Deno.serve(async (req) => {
   // fire even when nobody has any event_subscriptions configured.
   // The downstream computeFireList just returns [] in that case.
 
-  // 2) Pull the relevant clans' data (persons + events + anniversaries)
-  //    in one round-trip per clan referenced by the subs.
-  const clanIds = [...new Set(subscriptions.map((s) => s.clan_id))];
+  // 2) Pull the relevant clans' data. Gồm clan có subscription + clan có thành
+  //    viên đã "nhận mình là ai trong cây" (self_person_id) — cần cho auto-nhắc
+  //    giỗ theo hậu duệ (không phụ thuộc opt-in).
+  const { data: selfMembers } = await supabase
+    .from("clan_members")
+    .select("clan_id")
+    .not("self_person_id", "is", null);
+  const clanIds = [
+    ...new Set([
+      ...subscriptions.map((s) => s.clan_id),
+      ...((selfMembers ?? []) as { clan_id: string }[]).map((m) => m.clan_id),
+    ]),
+  ];
 
-  const [clansRes, personsRes, eventsRes, profilesRes] = await Promise.all([
-    supabase.from("clans").select("id, name").in("id", clanIds),
-    supabase
-      .from("persons")
-      .select(
-        "id, clan_id, full_name, is_living, birth_date, branch_id, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap, generation",
-      )
-      .in("clan_id", clanIds)
-      .is("deleted_at", null),
-    supabase
-      .from("events")
-      .select(
-        "id, clan_id, title, event_type, date_solar, lunar_year, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id",
-      )
-      .in("clan_id", clanIds),
-    supabase
-      .from("profiles")
-      .select("id, display_name")
-      .in("id", [...new Set(subscriptions.map((s) => s.user_id))]),
-  ]);
+  const [clansRes, personsRes, eventsRes, profilesRes, familiesRes] =
+    await Promise.all([
+      supabase.from("clans").select("id, name").in("id", clanIds),
+      supabase
+        .from("persons")
+        .select(
+          "id, clan_id, full_name, is_living, birth_date, branch_id, birth_family_id, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap, generation",
+        )
+        .in("clan_id", clanIds)
+        .is("deleted_at", null),
+      supabase
+        .from("events")
+        .select(
+          "id, clan_id, title, event_type, date_solar, lunar_year, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id",
+        )
+        .in("clan_id", clanIds),
+      supabase
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", [...new Set(subscriptions.map((s) => s.user_id))]),
+      supabase
+        .from("families")
+        .select("id, husband_id, wife_id")
+        .in("clan_id", clanIds)
+        .is("deleted_at", null),
+    ]);
   if (clansRes.error) return json({ error: clansRes.error.message }, { status: 500 });
   if (personsRes.error) return json({ error: personsRes.error.message }, { status: 500 });
   if (eventsRes.error) return json({ error: eventsRes.error.message }, { status: 500 });
   if (profilesRes.error) return json({ error: profilesRes.error.message }, { status: 500 });
+  if (familiesRes.error) return json({ error: familiesRes.error.message }, { status: 500 });
 
   // Fetch emails from auth.users (service role can read them)
   const userIds = [...new Set(subscriptions.map((s) => s.user_id))];
@@ -377,6 +394,7 @@ Deno.serve(async (req) => {
   );
   const persons = personsRes.data ?? [];
   const events = eventsRes.data ?? [];
+  const families = familiesRes.data ?? [];
   const personBranch = new Map<string, string | null>();
   for (const p of persons) personBranch.set(p.id as string, (p.branch_id as string | null) ?? null);
 
@@ -571,6 +589,21 @@ Deno.serve(async (req) => {
   failed += monthlyResult.failed;
   for (const e of monthlyResult.errors) errors.push(e);
 
+  // Nhắc giỗ theo QUAN HỆ: push tự động cho hậu duệ người mất (ngoài opt-in).
+  const autoDescendantPush = PUSH_READY
+    ? await computeDescendantAnniversaryPush({
+        supabase,
+        today,
+        upcoming,
+        persons: persons as Array<{ id: string; birth_family_id: string | null }>,
+        families: families as Array<{
+          id: string;
+          husband_id: string | null;
+          wife_id: string | null;
+        }>,
+      })
+    : [];
+
   // ── Web Push fan-out (rides along email fires) ───────────────────
   // For every email fire and the monthly-lunar event of the day, if
   // the user has notify_via_push enabled we also push to all their
@@ -583,6 +616,7 @@ Deno.serve(async (req) => {
     monthlyLunarMonth: monthlyResult.monthlyLunarMonth,
     alreadySent,
     clanName,
+    extraPush: autoDescendantPush,
   });
   sent += pushResult.sent;
   failed += pushResult.failed;
@@ -829,6 +863,119 @@ interface SubRow {
 const PUSH_CHUNK = 50;
 const FAILURE_THRESHOLD = 5;
 
+// Nhắc GIỖ theo QUAN HỆ: tự động push cho HẬU DUỆ của người mất (không cần tự
+// đăng ký), vào các mốc trước giỗ. Chỉ push (kênh device đã opt-in) — không gửi
+// email không mời để tránh spam. Người dùng phải đã "nhận mình là ai trong cây"
+// (clan_members.self_person_id) và bật push (profiles.notify_via_push).
+const AUTO_DESCENDANT_LEAD_DAYS = [3, 0];
+
+/**
+ * Với mỗi giỗ (người mất P) rơi đúng mốc nhắc, tìm các user là HẬU DUỆ của P
+ * (self_person_id ∈ hậu duệ P, qua SQL _person_descendants) → tạo push candidate.
+ * eventKey trùng định dạng của computeFireList để dedupe với opt-in sẵn có.
+ */
+async function computeDescendantAnniversaryPush(opts: {
+  supabase: ReturnType<typeof createClient>;
+  today: string;
+  upcoming: UpcomingEvent[];
+  persons: Array<{ id: string; birth_family_id: string | null }>;
+  families: Array<{ id: string; husband_id: string | null; wife_id: string | null }>;
+}): Promise<Array<PushFire & { clanId: string }>> {
+  const { supabase, today, upcoming, persons, families } = opts;
+  const firing = upcoming.filter(
+    (e) =>
+      e.kind === "anniversary" &&
+      e.personId &&
+      AUTO_DESCENDANT_LEAD_DAYS.includes(daysBetween(today, e.date)),
+  );
+  if (firing.length === 0) return [];
+
+  // Đồ thị cha→con để tính hậu duệ (BFS), tính bằng JS — không cần RPC.
+  const childrenByFamily = new Map<string, string[]>();
+  for (const p of persons) {
+    if (!p.birth_family_id) continue;
+    const a = childrenByFamily.get(p.birth_family_id);
+    if (a) a.push(p.id);
+    else childrenByFamily.set(p.birth_family_id, [p.id]);
+  }
+  const familiesByParent = new Map<string, string[]>();
+  for (const f of families) {
+    for (const pid of [f.husband_id, f.wife_id]) {
+      if (!pid) continue;
+      const a = familiesByParent.get(pid);
+      if (a) a.push(f.id);
+      else familiesByParent.set(pid, [f.id]);
+    }
+  }
+  const descendantsOf = (root: string): Set<string> => {
+    const seen = new Set<string>([root]);
+    const q = [root];
+    while (q.length) {
+      const cur = q.shift() as string;
+      for (const fid of familiesByParent.get(cur) ?? []) {
+        for (const cid of childrenByFamily.get(fid) ?? []) {
+          if (!seen.has(cid)) {
+            seen.add(cid);
+            q.push(cid);
+          }
+        }
+      }
+    }
+    return seen;
+  };
+
+  // (clan:person) → user_ids đã "nhận mình là người đó".
+  const { data: members } = await supabase
+    .from("clan_members")
+    .select("user_id, clan_id, self_person_id")
+    .not("self_person_id", "is", null);
+  const usersByClanPerson = new Map<string, string[]>();
+  for (const m of (members ?? []) as {
+    user_id: string;
+    clan_id: string;
+    self_person_id: string;
+  }[]) {
+    const k = `${m.clan_id}:${m.self_person_id}`;
+    const a = usersByClanPerson.get(k);
+    if (a) a.push(m.user_id);
+    else usersByClanPerson.set(k, [m.user_id]);
+  }
+
+  const raw: Array<PushFire & { clanId: string }> = [];
+  const needUsers = new Set<string>();
+  for (const evt of firing) {
+    const lead = daysBetween(today, evt.date);
+    const eventKey = `${evt.kind}:${evt.personId}:${evt.date}:lead${lead}`;
+    const when = lead === 0 ? "Hôm nay" : `Còn ${lead} ngày`;
+    for (const d of descendantsOf(evt.personId as string)) {
+      const users = usersByClanPerson.get(`${evt.clanId}:${d}`);
+      if (!users) continue;
+      for (const uid of users) {
+        needUsers.add(uid);
+        raw.push({
+          userId: uid,
+          clanId: evt.clanId,
+          eventKey,
+          title: `${when}: ${evt.title}`,
+          body: "Giỗ tổ tiên của bạn — chuẩn bị thắp hương, sửa soạn.",
+          url: `${APP_BASE_URL}/clans/${evt.clanId}/people/${evt.personId}`,
+          tag: eventKey,
+        });
+      }
+    }
+  }
+  if (raw.length === 0) return [];
+
+  // Bỏ tài khoản bị khoá.
+  const { data: profs } = await supabase
+    .from("profiles")
+    .select("id")
+    .in("id", [...needUsers])
+    .eq("is_suspended", false);
+  const active = new Set(((profs ?? []) as { id: string }[]).map((p) => p.id));
+  return raw.filter((r) => active.has(r.userId));
+}
+
 async function dispatchWebPush(opts: {
   supabase: ReturnType<typeof createClient>;
   fires: FireItem[];
@@ -837,6 +984,8 @@ async function dispatchWebPush(opts: {
   monthlyLunarMonth: number | null;
   alreadySent: Set<string>;
   clanName: Map<string, string>;
+  /** Push bổ sung (nhắc giỗ cho hậu duệ) — kèm clanId để ghi log. */
+  extraPush?: Array<PushFire & { clanId: string }>;
 }): Promise<{ sent: number; failed: number; errors: string[] }> {
   const {
     supabase,
@@ -846,6 +995,7 @@ async function dispatchWebPush(opts: {
     monthlyLunarMonth,
     alreadySent,
     clanName,
+    extraPush = [],
   } = opts;
 
   if (!PUSH_READY) {
@@ -887,12 +1037,24 @@ async function dispatchWebPush(opts: {
     }
   }
 
-  if (candidates.length === 0) {
+  // Push bổ sung: nhắc giỗ cho hậu duệ (kèm clanId).
+  for (const c of extraPush) candidates.push(c);
+
+  // Dedupe trùng (user, eventKey) giữa các nguồn (email-fire vs hậu duệ).
+  const seenCand = new Set<string>();
+  const deduped = candidates.filter((c) => {
+    const k = `${c.userId}:${c.eventKey}`;
+    if (seenCand.has(k)) return false;
+    seenCand.add(k);
+    return true;
+  });
+
+  if (deduped.length === 0) {
     return { sent: 0, failed: 0, errors: [] };
   }
 
   // Filter to users with notify_via_push = true.
-  const userIds = [...new Set(candidates.map((c) => c.userId))];
+  const userIds = [...new Set(deduped.map((c) => c.userId))];
   const { data: profileRows, error: profErr } = await supabase
     .from("profiles")
     .select("id, notify_via_push, is_suspended")
@@ -911,7 +1073,7 @@ async function dispatchWebPush(opts: {
 
   // Dedupe vs notification_log (same Set used by email dispatch — channel
   // 'webpush' rows are already loaded from today's log range).
-  const pending = candidates.filter((c) => {
+  const pending = deduped.filter((c) => {
     if (!enabled.has(c.userId)) return false;
     return !alreadySent.has(`${c.userId}:${c.eventKey}:webpush`);
   });
@@ -1000,6 +1162,10 @@ async function dispatchWebPush(opts: {
   const fireClanByUserEvent = new Map<string, string>();
   for (const f of fires) {
     fireClanByUserEvent.set(`${f.userId}:${f.eventKey}`, f.clanId);
+  }
+  // Push hậu duệ cũng mang clanId → ghi log đúng dòng họ.
+  for (const c of extraPush) {
+    fireClanByUserEvent.set(`${c.userId}:${c.eventKey}`, c.clanId);
   }
   let firstClanByUser: Map<string, string> = new Map();
   if (monthlyKey) {
