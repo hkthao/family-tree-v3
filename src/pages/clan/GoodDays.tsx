@@ -225,56 +225,47 @@ function ActivityButton({
 // ─── Một hàng ngày đẹp ────────────────────────────────────────────
 
 function GoodDayRow({ day }: { day: DayInfo }) {
+  // Giờ tốt rút gọn còn TÊN CHI ("Tý (23h–1h)" → "Tý") cho danh sách gọn.
+  const goodChi = day.aus.goodHours.map((h) => h.split(" (")[0]);
   return (
-    <li className="flex items-stretch gap-3 rounded-xl border bg-card p-3">
-      {/* Tờ lịch dương — số ngày to */}
-      <div className="flex w-[76px] shrink-0 flex-col items-center justify-center rounded-lg border border-primary/25 bg-primary/5 py-2 text-primary">
-        <span className="text-xs font-semibold uppercase tracking-wide">
+    <li className="flex gap-3 rounded-lg border bg-card p-3">
+      {/* Tờ lịch dương — gọn */}
+      <div className="flex w-14 shrink-0 flex-col items-center justify-center rounded-md bg-primary/5 py-1 text-primary">
+        <span className="text-[11px] font-semibold uppercase tracking-wide">
           {WEEKDAYS_SHORT[day.weekday]}
         </span>
-        <span className="text-3xl font-bold leading-none tabular-nums">
+        <span className="text-2xl font-bold leading-none tabular-nums">
           {day.solar.day}
         </span>
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-[10px] text-muted-foreground">
           Th{day.solar.month}
         </span>
       </div>
 
-      {/* Chi tiết */}
-      <div className="min-w-0 flex-1">
+      {/* Chi tiết — mỗi thông tin 1 dòng, không ô bọc */}
+      <div className="min-w-0 flex-1 space-y-0.5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-base font-semibold">
-            {WEEKDAYS_FULL[day.weekday]}, {day.solar.day}/{day.solar.month}/
-            {day.solar.year}
+          <span className="font-semibold">
+            {WEEKDAYS_FULL[day.weekday]}, {day.solar.day}/{day.solar.month}
           </span>
           <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
             Ngày tốt
           </span>
         </div>
 
-        <p className="mt-0.5 text-sm text-muted-foreground">
+        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+          {day.shortReason}
+        </p>
+
+        <p className="text-sm text-muted-foreground">
           Âm lịch {day.lunar.day}/{day.lunar.month}
-          {day.lunar.leap ? " (nhuận)" : ""} · Trực {day.truc.name} · Năm{" "}
-          {day.canChi.year}
+          {day.lunar.leap ? " (nhuận)" : ""} · Năm {day.canChi.year}
         </p>
 
-        <p className="mt-1.5 rounded-md border-l-4 border-emerald-500 bg-emerald-500/5 px-2.5 py-1.5 text-sm leading-relaxed text-foreground/90">
-          <span className="font-semibold">Vì sao đẹp? </span>
-          {day.reason}
-        </p>
-
-        {day.aus.goodHours.length > 0 && (
-          <div className="mt-1.5 flex flex-wrap items-center gap-1">
-            <span className="text-xs text-muted-foreground">Giờ tốt:</span>
-            {day.aus.goodHours.map((h) => (
-              <span
-                key={h}
-                className="rounded bg-muted px-1.5 py-0.5 text-xs tabular-nums text-foreground/80"
-              >
-                {h}
-              </span>
-            ))}
-          </div>
+        {goodChi.length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Giờ tốt: {goodChi.join(" · ")}
+          </p>
         )}
       </div>
     </li>
