@@ -1,7 +1,20 @@
+import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/PageHeader";
-import { IconSparkles } from "@/components/icons";
+import {
+  IconBuildings,
+  IconCalendar,
+  IconFlame,
+  IconGrave,
+  IconHelp,
+  IconHome,
+  IconMapPin,
+  IconScroll,
+  IconSparkles,
+  IconUsers,
+  IconWallet,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ACTIVITIES,
@@ -9,6 +22,22 @@ import {
   type DayInfo,
   findGoodDays,
 } from "@/lib/almanac";
+
+/** Icon outline cho từng loại việc (thay emoji) — dùng bộ icon của app. */
+const ACTIVITY_ICON: Record<
+  ActivityKey | "all",
+  ComponentType<{ className?: string }>
+> = {
+  all: IconCalendar,
+  "cuoi-hoi": IconUsers,
+  "nhap-trach": IconHome,
+  "dong-tho": IconBuildings,
+  "khai-truong": IconWallet,
+  "xuat-hanh": IconMapPin,
+  "an-tang": IconGrave,
+  "cung-le": IconFlame,
+  "ky-ket": IconScroll,
+};
 
 const WEEKDAYS_SHORT = [
   "CN", "T.Hai", "T.Ba", "T.Tư", "T.Năm", "T.Sáu", "T.Bảy",
@@ -92,7 +121,7 @@ export default function GoodDays() {
           <ActivityButton
             active={activity === "all"}
             onClick={() => setActivity("all")}
-            emoji="🗓️"
+            Icon={ACTIVITY_ICON.all}
             label="Tất cả ngày tốt"
           />
           {ACTIVITIES.map((a) => (
@@ -100,7 +129,7 @@ export default function GoodDays() {
               key={a.key}
               active={activity === a.key}
               onClick={() => setActivity(a.key)}
-              emoji={a.emoji}
+              Icon={ACTIVITY_ICON[a.key]}
               label={a.label}
             />
           ))}
@@ -195,12 +224,12 @@ export default function GoodDays() {
 function ActivityButton({
   active,
   onClick,
-  emoji,
+  Icon,
   label,
 }: {
   active: boolean;
   onClick: () => void;
-  emoji: string;
+  Icon: ComponentType<{ className?: string }>;
   label: string;
 }) {
   return (
@@ -214,9 +243,7 @@ function ActivityButton({
           : "bg-card hover:bg-muted/50"
       }`}
     >
-      <span className="text-xl leading-none" aria-hidden="true">
-        {emoji}
-      </span>
+      <Icon className="h-5 w-5 shrink-0" />
       <span className="leading-tight">{label}</span>
     </button>
   );
@@ -227,6 +254,8 @@ function ActivityButton({
 function GoodDayRow({ day }: { day: DayInfo }) {
   // Giờ tốt rút gọn còn TÊN CHI ("Tý (23h–1h)" → "Tý") cho danh sách gọn.
   const goodChi = day.aus.goodHours.map((h) => h.split(" (")[0]);
+  const [showWhy, setShowWhy] = useState(false);
+
   return (
     <li className="flex gap-3 rounded-lg border bg-card p-3">
       {/* Tờ lịch dương — gọn */}
@@ -251,15 +280,46 @@ function GoodDayRow({ day }: { day: DayInfo }) {
           <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
             Ngày tốt
           </span>
-        </div>
 
-        <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-          {day.shortReason}
-        </p>
+          {/* Nút (?) — bấm để xem lý do vì sao là ngày tốt (tooltip). */}
+          <span className="relative">
+            <button
+              type="button"
+              onClick={() => setShowWhy((v) => !v)}
+              aria-label="Vì sao là ngày tốt?"
+              aria-expanded={showWhy}
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-primary"
+            >
+              <IconHelp className="h-4 w-4" />
+            </button>
+            {showWhy && (
+              <>
+                {/* Nền trong suốt bắt click ra ngoài để đóng. */}
+                <button
+                  type="button"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                  onClick={() => setShowWhy(false)}
+                  className="fixed inset-0 z-10 cursor-default"
+                />
+                <div
+                  role="tooltip"
+                  className="absolute left-0 top-7 z-20 w-64 rounded-lg border bg-card p-3 text-sm leading-relaxed shadow-lg"
+                >
+                  <span className="mb-0.5 block font-semibold text-primary">
+                    Vì sao đẹp?
+                  </span>
+                  {day.reason}
+                </div>
+              </>
+            )}
+          </span>
+        </div>
 
         <p className="text-sm text-muted-foreground">
           Âm lịch {day.lunar.day}/{day.lunar.month}
-          {day.lunar.leap ? " (nhuận)" : ""} · Năm {day.canChi.year}
+          {day.lunar.leap ? " (nhuận)" : ""} · Trực {day.truc.name} · Năm{" "}
+          {day.canChi.year}
         </p>
 
         {goodChi.length > 0 && (
