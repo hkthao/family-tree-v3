@@ -22,6 +22,7 @@ import {
 import { FunFactsCard } from "@/components/FunFactsCard";
 import { SectionHeading } from "@/components/SectionHeading";
 import { PageHeader } from "@/components/PageHeader";
+import { EnablePushPrompt } from "@/components/EnablePushPrompt";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { TodayHubCard } from "@/components/TodayHubCard";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -258,6 +259,10 @@ export default function Dashboard() {
         )
       ) : tree && tree.persons.length > 0 ? (
         <>
+          {/* Lời mời bật thông báo — mở khoá mọi nhắc nhở (giỗ/sinh nhật/sự
+              kiện). Tự ẩn khi đã bật hoặc người dùng bỏ qua. */}
+          {isMember && <EnablePushPrompt />}
+
           {/* Thẻ "Hôm nay" — đổi mỗi ngày (âm lịch, ngày tốt/xấu, giỗ/sinh
               nhật hôm nay, phong tục hôm nay) → tạo lý do mở app hằng ngày. */}
           <TodayHubCard clanId={clan.id} todayEvents={todayEvents} />
