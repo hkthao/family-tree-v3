@@ -76,12 +76,12 @@ export default function HonorBook() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Sổ vàng công đức" },
+          { label: "Bảng vàng công đức" },
         ]}
       />
       <PageHeader
         icon={<IconAward className="h-7 w-7" />}
-        title="Sổ vàng công đức"
+        title="Bảng vàng công đức"
         description="Vinh danh tấm lòng đóng góp & thành tích của con cháu dòng họ."
         actionsBelow
         actions={

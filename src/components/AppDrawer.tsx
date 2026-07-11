@@ -514,7 +514,7 @@ function buildSections(
       });
       communityItems.push({
         to: `/clans/${clanId}/honor`,
-        label: "Sổ vàng công đức",
+        label: "Bảng vàng công đức",
         icon: <IconAward className={ic} />,
       });
       communityItems.push({

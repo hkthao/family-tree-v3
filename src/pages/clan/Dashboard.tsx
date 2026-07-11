@@ -335,7 +335,7 @@ export default function Dashboard() {
                   <ActionTile
                     to={`/clans/${clan.id}/honor`}
                     icon={<IconAward />}
-                    title="Sổ vàng"
+                    title="Bảng vàng"
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/fund`}
