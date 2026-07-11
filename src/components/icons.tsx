@@ -351,6 +351,16 @@ export function IconTree(p: IconProps) {
   );
 }
 
+export function IconAward(p: IconProps) {
+  // Huy chương/ruy băng — dùng cho Sổ vàng công đức.
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="8" r="6" />
+      <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+    </Svg>
+  );
+}
+
 export function IconBell(p: IconProps) {
   return (
     <Svg {...p}>

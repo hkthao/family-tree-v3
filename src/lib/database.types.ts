@@ -1461,6 +1461,83 @@ export type Database = {
           },
         ]
       }
+      honor_entries: {
+        Row: {
+          amount: number | null
+          category: string
+          clan_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          honoree_name: string
+          id: string
+          note: string | null
+          occurred_on: string | null
+          person_id: string | null
+          sort: number
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          category?: string
+          clan_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          honoree_name: string
+          id?: string
+          note?: string | null
+          occurred_on?: string | null
+          person_id?: string | null
+          sort?: number
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          category?: string
+          clan_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          honoree_name?: string
+          id?: string
+          note?: string | null
+          occurred_on?: string | null
+          person_id?: string | null
+          sort?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "honor_entries_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "honor_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "honor_entries_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "honor_entries_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memory_room_items: {
         Row: {
           caption: string | null
