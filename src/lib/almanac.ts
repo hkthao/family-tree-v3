@@ -49,10 +49,10 @@ const GOOD_HOUR_CHI: Record<number, number[]> = {
   11: [1, 4, 6, 7, 10, 11], // Hợi
 };
 
-/** Khung giờ (giờ dương lịch) của mỗi chi. */
+/** Khung giờ (giờ dương lịch) của mỗi chi — kèm "h" cho rõ là giờ. */
 const CHI_HOURS = [
-  "23–1", "1–3", "3–5", "5–7", "7–9", "9–11",
-  "11–13", "13–15", "15–17", "17–19", "19–21", "21–23",
+  "23h–1h", "1h–3h", "3h–5h", "5h–7h", "7h–9h", "9h–11h",
+  "11h–13h", "13h–15h", "15h–17h", "17h–19h", "19h–21h", "21h–23h",
 ];
 
 function chiIndexFromCanChi(canChiDay: string): number {
