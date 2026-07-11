@@ -17,6 +17,7 @@ import {
   IconPlus,
   IconAward,
   IconScroll,
+  IconSparkles,
   IconTree,
   IconUpload,
   IconWallet,
@@ -318,6 +319,11 @@ export default function Dashboard() {
                 to={`/clans/${clan.id}/board`}
                 icon={<IconScroll />}
                 title="Bảng tin"
+              />
+              <ActionTile
+                to={`/clans/${clan.id}/xem-ngay`}
+                icon={<IconSparkles />}
+                title="Xem ngày tốt"
               />
               {isMember && (
                 <>
