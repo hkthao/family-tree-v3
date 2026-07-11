@@ -131,27 +131,23 @@ export default function GoodDays() {
         </div>
 
         {range === "custom" && (
-          <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-muted/20 p-3">
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-muted-foreground">Từ ngày</span>
-              <input
-                type="date"
-                value={customFrom}
-                max={customTo}
-                onChange={(e) => setCustomFrom(e.target.value)}
-                className="rounded-md border bg-card px-3 py-2 text-base"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm">
-              <span className="text-muted-foreground">Đến ngày</span>
-              <input
-                type="date"
-                value={customTo}
-                min={customFrom}
-                onChange={(e) => setCustomTo(e.target.value)}
-                className="rounded-md border bg-card px-3 py-2 text-base"
-              />
-            </label>
+          <div className="flex items-center gap-2 rounded-lg border bg-muted/20 p-3 text-sm">
+            <span className="shrink-0 text-muted-foreground">Từ</span>
+            <input
+              type="date"
+              value={customFrom}
+              max={customTo}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
+            />
+            <span className="shrink-0 text-muted-foreground">đến</span>
+            <input
+              type="date"
+              value={customTo}
+              min={customFrom}
+              onChange={(e) => setCustomTo(e.target.value)}
+              className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
+            />
           </div>
         )}
       </section>
