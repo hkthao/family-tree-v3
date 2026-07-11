@@ -282,8 +282,10 @@ export interface DayInfo {
   canChi: { day: string; month: string; year: string };
   aus: DayAuspice;
   truc: { name: string; summary: string };
-  /** Câu giải thích "vì sao" ngày này tốt/xấu, cho người đọc hiểu. */
+  /** Câu giải thích "vì sao" ngày này tốt/xấu, đầy đủ (dùng ở thẻ 1 ngày). */
   reason: string;
+  /** Lý do NGẮN 1 dòng (dùng trong danh sách nhiều ngày). */
+  shortReason: string;
   /** Đánh giá ngày cho việc đã chọn (hoặc chung nếu không chọn). */
   level: DayLevel;
   /** Nhãn các việc NÊN làm hôm đó (theo trực). */
@@ -349,6 +351,7 @@ export function describeDay(
     aus,
     truc: { name: truc.name, summary: truc.summary },
     reason: buildReason(aus, truc, activity, level),
+    shortReason: buildShortReason(aus, truc, activity),
     level,
     nen: truc.good.map((k) => ACTIVITY_LABEL[k]),
     kieng: truc.avoid.map((k) => ACTIVITY_LABEL[k]),
@@ -383,6 +386,21 @@ function buildReason(
     }
   }
   return starPart + trucPart + actPart;
+}
+
+/** Lý do ngắn gọn 1 dòng, cho danh sách nhiều ngày. */
+function buildShortReason(
+  aus: DayAuspice,
+  truc: Truc,
+  activity: ActivityKey | undefined,
+): string {
+  let s = `${aus.good ? "Hoàng đạo" : "Hắc đạo"} · Trực ${truc.name}`;
+  if (activity) {
+    const label = ACTIVITY_LABEL[activity].toLowerCase();
+    if (truc.good.includes(activity)) s += ` — rất hợp ${label}`;
+    else if (truc.avoid.includes(activity)) s += ` — kỵ ${label}`;
+  }
+  return s;
 }
 
 /**
