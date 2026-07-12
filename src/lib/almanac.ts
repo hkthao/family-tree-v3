@@ -350,7 +350,7 @@ export function describeDay(
     canChi: { day: cc.day, month: cc.month, year: cc.year },
     aus,
     truc: { name: truc.name, summary: truc.summary },
-    reason: buildReason(aus, truc, activity, level),
+    reason: buildReason(aus, truc, activity),
     shortReason: buildShortReason(aus, truc, activity),
     level,
     nen: truc.good.map((k) => ACTIVITY_LABEL[k]),
@@ -358,34 +358,31 @@ export function describeDay(
   };
 }
 
-/** Ghép câu giải thích vì sao ngày này tốt/xấu — 2 vế: sao hoàng đạo + trực. */
+/**
+ * Câu giải thích vì sao ngày tốt/xấu — NGẮN GỌN, KHÔNG lặp: một vế đánh giá
+ * ngày (hoàng/hắc đạo), một vế trực gắn thẳng với việc đang xét (trực chỉ
+ * nhắc một lần). Không xét activity thì nêu ý nghĩa trực chung.
+ */
 function buildReason(
   aus: DayAuspice,
   truc: Truc,
   activity: ActivityKey | undefined,
-  level: DayLevel,
 ): string {
-  const starPart = aus.good
-    ? `Là ngày Hoàng đạo (sao ${aus.star} — ${aus.starDesc}), được coi là ngày lành.`
-    : `Là ngày Hắc đạo (sao ${aus.star} — ${aus.starDesc}), nên hạn chế việc trọng đại.`;
-  const trucPart = ` Ngày thuộc trực ${truc.name}: ${truc.summary.toLowerCase()}.`;
+  const day = aus.good
+    ? `Ngày Hoàng đạo (sao ${aus.star}) — ngày lành.`
+    : `Ngày Hắc đạo (sao ${aus.star} — ${aus.starDesc}) — nên kiêng việc lớn.`;
 
-  // Nếu đang xét một việc cụ thể, nói rõ việc đó hợp/kỵ ra sao.
-  let actPart = "";
-  if (activity) {
-    const label = ACTIVITY_LABEL[activity].toLowerCase();
-    if (truc.avoid.includes(activity)) {
-      actPart = ` Riêng việc ${label}: trực ${truc.name} kỵ, nên tránh.`;
-    } else if (truc.good.includes(activity)) {
-      actPart =
-        level === "good"
-          ? ` Riêng việc ${label}: trực ${truc.name} rất hợp.`
-          : ` Việc ${label} hợp với trực ${truc.name}, nhưng vướng ngày hắc đạo nên chỉ ở mức tạm được.`;
-    } else {
-      actPart = ` Việc ${label} không được lịch nhấn mạnh trong ngày này.`;
-    }
+  if (!activity) {
+    return `${day} Trực ${truc.name}: ${truc.summary.toLowerCase()}.`;
   }
-  return starPart + trucPart + actPart;
+  const label = ACTIVITY_LABEL[activity].toLowerCase();
+  if (truc.good.includes(activity)) {
+    return `${day} Trực ${truc.name} rất hợp việc ${label}.`;
+  }
+  if (truc.avoid.includes(activity)) {
+    return `${day} Song trực ${truc.name} kỵ việc ${label}, nên tránh.`;
+  }
+  return `${day} Trực ${truc.name} không đặc biệt hợp hay kỵ việc ${label}.`;
 }
 
 /** Lý do ngắn gọn 1 dòng, cho danh sách nhiều ngày. */
