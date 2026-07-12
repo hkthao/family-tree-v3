@@ -465,6 +465,9 @@ export default function Tree() {
     }
   };
 
+  // Popup chọn loại ảnh khi bấm nút xuất (PNG / SVG).
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+
   // Initialize / re-render the family-chart instance
   useEffect(() => {
     if (!containerRef.current || !f3Data || !focal) return;
@@ -1369,28 +1372,79 @@ export default function Tree() {
                 className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1 print-hide"
                 aria-label="Phóng to / thu nhỏ cây"
               >
-                <button
-                  type="button"
-                  onClick={exportTreeImage}
-                  disabled={savingImg}
-                  className="inline-flex h-9 items-center gap-1 rounded-md bg-card/90 border shadow-sm px-2.5 text-xs font-semibold text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
-                  aria-label="Xuất ảnh cây đang hiển thị (PNG)"
-                  title={savingImg ? "Đang xuất…" : "Xuất ảnh PNG (ảnh thường)"}
-                >
-                  <IconDownload className="h-4 w-4" />
-                  PNG
-                </button>
-                <button
-                  type="button"
-                  onClick={exportTreeSvg}
-                  disabled={savingSvg}
-                  className="inline-flex h-9 items-center gap-1 rounded-md bg-card/90 border shadow-sm px-2.5 text-xs font-semibold text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60 mb-1"
-                  aria-label="Xuất cây đang hiển thị ra SVG (vector)"
-                  title={savingSvg ? "Đang xuất…" : "Xuất SVG (vector, nét căng)"}
-                >
-                  <IconDownload className="h-4 w-4" />
-                  SVG
-                </button>
+                <div className="relative mb-1">
+                  <button
+                    type="button"
+                    onClick={() => setExportMenuOpen((v) => !v)}
+                    disabled={savingImg || savingSvg}
+                    aria-haspopup="menu"
+                    aria-expanded={exportMenuOpen}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
+                    aria-label="Xuất ảnh cây gia phả"
+                    title={
+                      savingImg || savingSvg
+                        ? "Đang xuất…"
+                        : "Xuất ảnh cây (PNG / SVG)"
+                    }
+                  >
+                    <IconDownload className="h-4 w-4" />
+                  </button>
+                  {exportMenuOpen && (
+                    <>
+                      {/* Nền bắt click ra ngoài để đóng popup. */}
+                      <button
+                        type="button"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                        onClick={() => setExportMenuOpen(false)}
+                        className="fixed inset-0 z-10 cursor-default"
+                      />
+                      <div
+                        role="menu"
+                        className="absolute right-full top-0 z-20 mr-2 w-56 overflow-hidden rounded-lg border bg-card shadow-lg"
+                      >
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setExportMenuOpen(false);
+                            exportTreeImage();
+                          }}
+                          className="flex w-full items-start gap-2 px-3 py-2.5 text-left hover:bg-muted"
+                        >
+                          <IconDownload className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium">
+                              Ảnh PNG
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              Ảnh thường — phần đang xem
+                            </span>
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setExportMenuOpen(false);
+                            exportTreeSvg();
+                          }}
+                          className="flex w-full items-start gap-2 border-t px-3 py-2.5 text-left hover:bg-muted"
+                        >
+                          <IconDownload className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium">
+                              Ảnh vector (SVG)
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              Cả cây — in khổ lớn, phóng to không vỡ
+                            </span>
+                          </span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
                 <button
                   type="button"
                   data-testid="tree-fullscreen"
