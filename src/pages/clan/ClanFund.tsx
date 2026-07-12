@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
-import { IconTrash, IconWallet } from "@/components/icons";
+import { IconDownload, IconTrash, IconWallet } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
@@ -45,6 +45,7 @@ export default function ClanFund() {
   const confirm = useConfirm();
   const [showAdd, setShowAdd] = useState(false);
   const [showAudit, setShowAudit] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const { data: txs = [], isLoading } = useQuery({
     queryKey: ["clan-fund", clan.id, user?.id ?? ""],
@@ -60,6 +61,26 @@ export default function ClanFund() {
 
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ["clan-fund", clan.id] });
+
+  // Xuất báo cáo Quỹ họ ra PDF (chia sẻ cho cả họ). Dynamic-import để không
+  // kéo @react-pdf vào bundle khi chưa dùng.
+  const onExportPdf = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const { downloadFundReportPdf } = await import(
+        "@/lib/pdf/exportFundReport"
+      );
+      await downloadFundReportPdf(clan);
+      toast.success("Đã xuất báo cáo Quỹ họ (PDF).");
+    } catch (e) {
+      toast.error("Không xuất được PDF", {
+        description: (e as Error).message,
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const delM = useMutation({
     mutationFn: (id: string) => deleteFundTransaction(id),
@@ -79,11 +100,22 @@ export default function ClanFund() {
         description="Sổ thu/chi minh bạch — mọi thành viên đều xem được."
         actionsBelow
         actions={
-          canEdit ? (
-            <Button size="sm" onClick={() => setShowAdd((v) => !v)}>
-              {showAdd ? "Đóng" : "+ Ghi giao dịch"}
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onExportPdf}
+              disabled={exporting || txs.length === 0}
+            >
+              <IconDownload className="mr-1 h-4 w-4" />
+              {exporting ? "Đang xuất…" : "Xuất PDF"}
             </Button>
-          ) : undefined
+            {canEdit && (
+              <Button size="sm" onClick={() => setShowAdd((v) => !v)}>
+                {showAdd ? "Đóng" : "+ Ghi giao dịch"}
+              </Button>
+            )}
+          </div>
         }
       />
 

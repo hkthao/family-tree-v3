@@ -14,6 +14,7 @@ import {
 
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanBookData } from "@/lib/queries/clan-book";
+import { HONOR_CATEGORY_LABEL, type HonorCategory } from "@/lib/queries/honor";
 import type { PersonDetail } from "@/lib/queries/persons";
 import { displayGenLabel } from "@/lib/displayGeneration";
 import { formatPartialDate } from "@/lib/partialDate";
@@ -33,7 +34,7 @@ const SIDE_PAD = 56;
 const TOP_PAD = 60;
 const BOTTOM_PAD = 68;
 
-const COLORS = {
+export const COLORS = {
   ink: "#1F1A17",
   muted: "#6F665F",
   divider: "#D8CFC2",
@@ -191,6 +192,22 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.divider,
   },
 
+  // Bảng vàng công đức — dạng hàng (tên trái, số tiền/ngày phải).
+  honorRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingVertical: 3.5,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.divider,
+  },
+  honorLeft: { flex: 1, paddingRight: 10 },
+  honorName: { fontSize: 10.5, fontWeight: 700, color: COLORS.ink },
+  honorNote: { fontSize: 9, color: COLORS.muted },
+  honorRight: { alignItems: "flex-end", minWidth: 96 },
+  honorAmount: { fontSize: 10.5, fontWeight: 700, color: COLORS.primary },
+  honorDate: { fontSize: 8, color: COLORS.muted },
+
   // Footer
   footer: {
     position: "absolute",
@@ -272,7 +289,7 @@ function midOrnament(
   );
 }
 
-function VineBorder({
+export function VineBorder({
   width = PAGE_W,
   height = PAGE_H,
 }: {
@@ -326,6 +343,17 @@ function VineBorder({
   );
 }
 
+/** Định dạng tiền VND: 50000000 → "50.000.000 đ". */
+function formatVnd(n: number): string {
+  return `${n.toLocaleString("vi-VN")} đ`;
+}
+
+/** yyyy-mm-dd → dd/mm/yyyy (giữ nguyên nếu không parse được). */
+function formatDmy(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return d && m && y ? `${d}/${m}/${y}` : iso;
+}
+
 // ─── Document ───────────────────────────────────────────────────────
 
 interface Props {
@@ -336,6 +364,7 @@ interface Props {
     detail?: boolean;
     restingPlaces?: boolean;
     heritage?: boolean;
+    honor?: boolean;
     /** Số "lá" tối đa mỗi trang sơ đồ (mật độ do user chọn). */
     treePerPage?: number;
   };
@@ -359,6 +388,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   const showDetail = include?.detail ?? true;
   const showRestingPlaces = include?.restingPlaces ?? true;
   const showHeritage = include?.heritage ?? true;
+  const showHonor = include?.honor ?? true;
 
   const HERITAGE_CAT_LABEL: Record<string, string> = {
     place: "Từ đường / đền / chùa",
@@ -707,6 +737,59 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
               ))}
             </View>
           ))}
+        </Page>
+      )}
+
+      {/* ─── Bảng vàng công đức (nhóm theo loại, dạng hàng) ─── */}
+      {showHonor && data.honor.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <VineBorder />
+          <Text style={styles.h1}>Bảng vàng công đức</Text>
+          <View style={styles.h1Underline} />
+          <Text style={styles.intro}>
+            Ghi công những tấm lòng đóng góp và vinh danh thành tích của con
+            cháu dòng họ.
+          </Text>
+          {(
+            [
+              "donation_money",
+              "donation_labor",
+              "academic",
+              "other",
+            ] as HonorCategory[]
+          ).map((cat) => {
+            const items = data.honor.filter((h) => h.category === cat);
+            if (items.length === 0) return null;
+            return (
+              <View key={cat}>
+                <Text style={styles.mediaSubhead}>
+                  {HONOR_CATEGORY_LABEL[cat]}
+                </Text>
+                {items.map((h) => (
+                  <View key={h.id} style={styles.honorRow} wrap={false}>
+                    <View style={styles.honorLeft}>
+                      <Text style={styles.honorName}>{h.honoree_name}</Text>
+                      {h.note ? (
+                        <Text style={styles.honorNote}>{h.note}</Text>
+                      ) : null}
+                    </View>
+                    <View style={styles.honorRight}>
+                      {h.amount != null ? (
+                        <Text style={styles.honorAmount}>
+                          {formatVnd(h.amount)}
+                        </Text>
+                      ) : null}
+                      {h.occurred_on ? (
+                        <Text style={styles.honorDate}>
+                          {formatDmy(h.occurred_on)}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            );
+          })}
         </Page>
       )}
 
