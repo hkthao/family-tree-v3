@@ -26,22 +26,51 @@ function bgColor(): string {
  */
 async function buildExportSvg(
   containerEl: HTMLElement,
-): Promise<{ clone: SVGSVGElement; W: number; H: number }> {
+  opts: { full?: boolean } = {},
+): Promise<{ clone: SVGSVGElement; x: number; y: number; W: number; H: number }> {
   const svg = containerEl.querySelector(
     "svg.main_svg",
   ) as SVGSVGElement | null;
   if (!svg) throw new Error("Không tìm thấy cây để xuất.");
 
-  const rect = containerEl.getBoundingClientRect();
-  const W = Math.max(1, Math.round(rect.width));
-  const H = Math.max(1, Math.round(rect.height));
+  // Khung xuất:
+  //  - full=false (mặc định): đúng khung nhìn hiện tại (WYSIWYG) — cho PNG.
+  //  - full=true: ÔM TRỌN cả cây (bbox của g.view, bỏ transform zoom/pan) — cho
+  //    SVG in giấy khổ lớn, phóng to bao nhiêu cũng nét.
+  let x = 0;
+  let y = 0;
+  let W: number;
+  let H: number;
+  if (opts.full) {
+    const view = svg.querySelector("g.view") as SVGGElement | null;
+    const bb = view?.getBBox();
+    if (!bb || bb.width < 1 || bb.height < 1) {
+      throw new Error("Không đo được kích thước cây.");
+    }
+    const PAD = 48; // chừa lề quanh cây
+    x = Math.floor(bb.x - PAD);
+    y = Math.floor(bb.y - PAD);
+    W = Math.ceil(bb.width + PAD * 2);
+    H = Math.ceil(bb.height + PAD * 2);
+  } else {
+    const rect = containerEl.getBoundingClientRect();
+    W = Math.max(1, Math.round(rect.width));
+    H = Math.max(1, Math.round(rect.height));
+  }
 
   const clone = svg.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("width", String(W));
   clone.setAttribute("height", String(H));
-  clone.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  clone.setAttribute("viewBox", `${x} ${y} ${W} ${H}`);
   clone.setAttribute("xmlns", SVGNS);
   clone.setAttribute("xmlns:xlink", XLINK);
+
+  // Full: bỏ transform zoom/pan trên g.view để cây về toạ độ gốc khớp viewBox.
+  if (opts.full) {
+    const cloneView = clone.querySelector("g.view") as SVGGElement | null;
+    cloneView?.removeAttribute("transform");
+    if (cloneView) cloneView.style.transform = "none";
+  }
 
   // Nội tuyến computed style (live → clone, cùng thứ tự phần tử).
   const PROPS = [
@@ -82,7 +111,7 @@ async function buildExportSvg(
     }),
   );
 
-  return { clone, W, H };
+  return { clone, x, y, W, H };
 }
 
 /**
@@ -125,19 +154,21 @@ export async function exportFamilyChartPng(
 }
 
 /**
- * Xuất VECTOR SVG cây gia phả ĐANG HIỂN THỊ — nét căng ở mọi mức phóng to,
- * mở/chỉnh sửa bằng trình đọc SVG hay phần mềm vẽ. Chèn thêm nền theo giao
- * diện sáng/tối để file mở độc lập không bị trong suốt.
+ * Xuất VECTOR SVG TOÀN BỘ cây gia phả (không chỉ khung nhìn) — nét căng ở mọi
+ * mức phóng to, in giấy khổ lớn không vỡ, mở/chỉnh sửa bằng phần mềm vẽ. Chèn
+ * nền theo giao diện sáng/tối để file mở độc lập không bị trong suốt.
  */
 export async function exportFamilyChartSvg(
   containerEl: HTMLElement,
   filename: string,
 ): Promise<void> {
-  const { clone, W, H } = await buildExportSvg(containerEl);
+  const { clone, x, y, W, H } = await buildExportSvg(containerEl, {
+    full: true,
+  });
 
   const bg = document.createElementNS(SVGNS, "rect");
-  bg.setAttribute("x", "0");
-  bg.setAttribute("y", "0");
+  bg.setAttribute("x", String(x));
+  bg.setAttribute("y", String(y));
   bg.setAttribute("width", String(W));
   bg.setAttribute("height", String(H));
   bg.setAttribute("fill", bgColor());
