@@ -166,6 +166,17 @@ export default function Share() {
   const [depth, setDepth] = useState<number>(3);
   const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
 
+  // Trang xem thử công khai chia TAB: Cây | Sự kiện & giỗ | Di sản. Giữ cây
+  // luôn mounted (ẩn bằng CSS) để khỏi dựng lại chart; refit khi quay lại.
+  const [tab, setTab] = useState<"tree" | "events" | "heritage">("tree");
+  useEffect(() => {
+    if (tab !== "tree") return;
+    const r = requestAnimationFrame(() =>
+      chartRef.current?.updateTree({ initial: false }),
+    );
+    return () => cancelAnimationFrame(r);
+  }, [tab]);
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["share-view", token ?? `clan:${clanId}`],
     queryFn: () =>
@@ -637,9 +648,7 @@ export default function Share() {
   }
 
   return (
-    <div
-      className={`${publicClan ? "min-h-dvh" : "h-dvh"} bg-background flex flex-col`}
-    >
+    <div className="h-dvh bg-background flex flex-col">
       <header className="border-b py-3 px-4 shrink-0">
         <h1 className="clan-name text-xl font-semibold text-center">
           Cây gia phả
@@ -662,9 +671,37 @@ export default function Share() {
         )}
       </header>
 
-      <main
-        className={`${publicClan ? "h-[72vh]" : "flex-1"} min-h-0 flex flex-col`}
-      >
+      {/* Thanh TAB (chỉ trang xem thử công khai): Cây | Sự kiện & giỗ | Di sản. */}
+      {publicClan && data && data.persons.length > 0 && (
+        <div
+          role="tablist"
+          aria-label="Nội dung dòng họ"
+          className="flex shrink-0 overflow-x-auto border-b print-hide"
+          style={{ scrollbarWidth: "none" }}
+        >
+          <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
+            Cây gia phả
+          </ShareTab>
+          {(data.events?.length || hasAnniversaries(data)) && (
+            <ShareTab
+              active={tab === "events"}
+              onClick={() => setTab("events")}
+            >
+              Sự kiện &amp; giỗ
+            </ShareTab>
+          )}
+          {data.heritage?.length ? (
+            <ShareTab
+              active={tab === "heritage"}
+              onClick={() => setTab("heritage")}
+            >
+              Di sản
+            </ShareTab>
+          ) : null}
+        </div>
+      )}
+
+      <main className="flex-1 min-h-0 flex flex-col">
         {isLoading && (
           <p className="p-8 text-center text-muted-foreground">Đang tải…</p>
         )}
@@ -693,6 +730,14 @@ export default function Share() {
         )}
         {data && data.persons.length > 0 && (
           <>
+            {/* CÂY — luôn mounted, ẩn bằng CSS khi ở tab khác (khỏi dựng lại chart). */}
+            <div
+              className={
+                !publicClan || tab === "tree"
+                  ? "flex flex-1 min-h-0 flex-col"
+                  : "hidden"
+              }
+            >
             {/* Filter toolbar */}
             <div className="border-b px-4 py-3 shrink-0 flex flex-wrap items-start gap-3 print-hide">
               <div className="flex-1 min-w-[200px] max-w-md relative">
@@ -867,17 +912,48 @@ export default function Share() {
                 </div>,
               )
             )}
+            </div>
+
+            {/* TAB Sự kiện & giỗ / Di sản — chỉ trang xem thử công khai. */}
+            {publicClan && tab === "events" && <EventsGioPanel data={data} />}
+            {publicClan && tab === "heritage" && (
+              <HeritagePanel data={data} />
+            )}
           </>
         )}
       </main>
-
-      {/* Trang XEM THỬ công khai: giới thiệu thêm sự kiện/giỗ + di sản. */}
-      {publicClan && data && <PublicShowcase data={data} />}
     </div>
   );
 }
 
-// ─── Xem thử công khai: sự kiện/giỗ + di sản (chỉ đọc) ────────────
+// ─── Xem thử công khai: tab Sự kiện/giỗ + Di sản (chỉ đọc) ────────
+
+/** Một nút tab trên trang xem thử. */
+function ShareTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`h-11 shrink-0 whitespace-nowrap border-b-2 px-4 text-sm font-medium transition-colors ${
+        active
+          ? "border-primary text-primary"
+          : "border-transparent text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 function eventWhen(e: ShareViewEvent): string {
   if (e.date_solar) {
@@ -890,10 +966,8 @@ function eventWhen(e: ShareViewEvent): string {
   return "";
 }
 
-function PublicShowcase({ data }: { data: ShareViewPayload }) {
-  const events = data.events ?? [];
-  const heritage = data.heritage ?? [];
-  const gio = data.persons
+function anniversaries(data: ShareViewPayload) {
+  return data.persons
     .filter(
       (p) =>
         !p.is_living && p.death_anniv_lunar_month && p.death_anniv_lunar_day,
@@ -903,84 +977,77 @@ function PublicShowcase({ data }: { data: ShareViewPayload }) {
       m: p.death_anniv_lunar_month!,
       d: p.death_anniv_lunar_day!,
     }));
+}
 
-  if (events.length === 0 && heritage.length === 0 && gio.length === 0) {
-    return null;
-  }
+function hasAnniversaries(data: ShareViewPayload): boolean {
+  return anniversaries(data).length > 0;
+}
 
+/** Nội dung tab "Sự kiện & giỗ" — cuộn trong vùng nội dung. */
+function EventsGioPanel({ data }: { data: ShareViewPayload }) {
+  const events = data.events ?? [];
+  const gio = anniversaries(data);
   return (
-    <section className="border-t bg-muted/20 print-hide">
-      <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-        <p className="text-center text-sm text-muted-foreground">
-          Ngoài cây gia phả, ứng dụng còn giúp dòng họ lưu giữ sự kiện, giỗ
-          chạp và di sản văn hoá:
-        </p>
-
-        {(events.length > 0 || gio.length > 0) && (
-          <div>
-            <h2 className="mb-2 text-lg font-semibold">Sự kiện &amp; giỗ</h2>
-            <ul className="space-y-1.5">
-              {events.map((e) => (
-                <li key={e.id} className="rounded-md border bg-card p-3">
-                  <span className="font-medium">{e.title}</span>
-                  {eventWhen(e) && (
-                    <span className="text-sm text-muted-foreground">
-                      {" "}
-                      · {eventWhen(e)}
-                    </span>
-                  )}
-                  {e.notes && (
-                    <p className="text-sm text-muted-foreground">{e.notes}</p>
-                  )}
-                </li>
-              ))}
-              {gio.map((g, i) => (
-                <li
-                  key={`gio-${i}`}
-                  className="rounded-md border bg-card p-3 text-sm"
-                >
-                  🕯️ Ngày giỗ <b>{g.name}</b> · {g.d}/{g.m} ÂL
-                </li>
-              ))}
-            </ul>
-          </div>
+    <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-2xl space-y-2 p-4">
+        {events.length === 0 && gio.length === 0 && (
+          <p className="p-8 text-center text-muted-foreground">
+            Chưa có sự kiện hay ngày giỗ.
+          </p>
         )}
-
-        {heritage.length > 0 && (
-          <div>
-            <h2 className="mb-2 text-lg font-semibold">Di sản &amp; Văn hoá</h2>
-            <div className="space-y-2">
-              {heritage.map((h) => (
-                <div key={h.id} className="rounded-md border bg-card p-3">
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {HERITAGE_CATEGORY_LABEL[h.category]}
-                  </p>
-                  <p className="font-semibold text-primary">
-                    {h.title}
-                    {h.built_year ? ` · ${h.built_year}` : ""}
-                  </p>
-                  {h.summary && (
-                    <p className="text-sm font-medium">{h.summary}</p>
-                  )}
-                  {h.body && (
-                    <p className="line-clamp-3 text-sm text-muted-foreground">
-                      {h.body}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+        {events.map((e) => (
+          <div key={e.id} className="rounded-md border bg-card p-3">
+            <span className="font-medium">{e.title}</span>
+            {eventWhen(e) && (
+              <span className="text-sm text-muted-foreground"> · {eventWhen(e)}</span>
+            )}
+            {e.notes && (
+              <p className="text-sm text-muted-foreground">{e.notes}</p>
+            )}
           </div>
-        )}
-
-        <div className="text-center">
-          <Button asChild>
-            <Link to="/login">
-              Đăng nhập để dùng đầy đủ các tính năng →
-            </Link>
-          </Button>
-        </div>
+        ))}
+        {gio.map((g, i) => (
+          <div
+            key={`gio-${i}`}
+            className="rounded-md border bg-card p-3 text-sm"
+          >
+            🕯️ Ngày giỗ <b>{g.name}</b> · {g.d}/{g.m} ÂL
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
+  );
+}
+
+/** Nội dung tab "Di sản". */
+function HeritagePanel({ data }: { data: ShareViewPayload }) {
+  const heritage = data.heritage ?? [];
+  return (
+    <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-2xl space-y-2 p-4">
+        {heritage.length === 0 && (
+          <p className="p-8 text-center text-muted-foreground">
+            Chưa có di sản.
+          </p>
+        )}
+        {heritage.map((h) => (
+          <div key={h.id} className="rounded-md border bg-card p-3">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              {HERITAGE_CATEGORY_LABEL[h.category]}
+            </p>
+            <p className="font-semibold text-primary">
+              {h.title}
+              {h.built_year ? ` · ${h.built_year}` : ""}
+            </p>
+            {h.summary && <p className="text-sm font-medium">{h.summary}</p>}
+            {h.body && (
+              <p className="whitespace-pre-line text-sm text-muted-foreground">
+                {h.body}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
