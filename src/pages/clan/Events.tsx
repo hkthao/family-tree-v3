@@ -495,8 +495,8 @@ function CustomEventItem({
   const cardGenre: CardGenre = "event";
 
   return (
-    <li className="px-3 py-3 flex items-center justify-between gap-3">
-      <button type="button" onClick={onOpen} className="min-w-0 text-left flex-1 hover:opacity-80">
+    <li className="px-3 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+      <button type="button" onClick={onOpen} className="min-w-0 text-left w-full sm:flex-1 hover:opacity-80">
         <p className="font-semibold line-clamp-2 text-base">{event.title}</p>
         <p className="text-sm text-muted-foreground">
           {when} {event.is_yearly ? "• lặp hằng năm" : ""}
@@ -507,7 +507,7 @@ function CustomEventItem({
           className="text-xs text-muted-foreground/80 mt-0.5 truncate"
         />
       </button>
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
         <Button size="sm" variant="outline" onClick={() => setCardOpen(true)}>
           <IconSparkles className="h-4 w-4 mr-1" />
           Thiệp
