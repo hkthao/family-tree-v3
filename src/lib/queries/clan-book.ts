@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
+import type { HonorEntry } from "@/lib/queries/honor";
 import type { PersonDetail } from "@/lib/queries/persons";
 
 type Client = SupabaseClient<Database>;
@@ -49,6 +50,8 @@ export interface ClanBookData {
   branches: ClanBookBranch[];
   restingPlaces: ClanBookRestingPlace[];
   heritage: ClanBookHeritage[];
+  /** Bảng vàng công đức — vinh danh đóng góp/thành tích. */
+  honor: HonorEntry[];
   /** child_id → family_id (their birth family). */
   childToFamily: Record<string, string>;
 }
@@ -72,7 +75,7 @@ export async function getClanBookData(
   // queries. Used by PDF export + GEDCOM — both want every row,
   // not the first 1000. Same defensive ceiling as getTreeData.
   const MAX_ROWS = 9999;
-  const [pq, fq, bq, rq, hq] = await Promise.all([
+  const [pq, fq, bq, rq, hq, honq] = await Promise.all([
     client
       .from("persons")
       .select(`${DETAIL_COLS}, birth_family_id`)
@@ -112,6 +115,16 @@ export async function getClanBookData(
       .order("category", { ascending: true })
       .order("created_at", { ascending: true })
       .range(0, MAX_ROWS),
+    client
+      .from("honor_entries")
+      .select(
+        "id, clan_id, person_id, honoree_name, category, amount, note, occurred_on, created_at",
+      )
+      .eq("clan_id", clanId)
+      .is("deleted_at", null)
+      .order("occurred_on", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .range(0, MAX_ROWS),
   ]);
 
   if (pq.error) throw new Error(pq.error.message);
@@ -119,6 +132,7 @@ export async function getClanBookData(
   if (bq.error) throw new Error(bq.error.message);
   if (rq.error) throw new Error(rq.error.message);
   if (hq.error) throw new Error(hq.error.message);
+  if (honq.error) throw new Error(honq.error.message);
 
   const persons = (pq.data ?? []) as (PersonDetail & {
     birth_family_id: string | null;
@@ -164,12 +178,18 @@ export async function getClanBookData(
     };
   });
 
+  const honor: HonorEntry[] = (honq.data ?? []).map((r) => ({
+    ...(r as HonorEntry),
+    amount: r.amount == null ? null : Number(r.amount),
+  }));
+
   return {
     persons: persons.map(({ birth_family_id: _b, ...rest }) => rest as PersonDetail),
     families: (fq.data ?? []) as ClanBookFamily[],
     branches: (bq.data ?? []) as ClanBookBranch[],
     restingPlaces,
     heritage,
+    honor,
     childToFamily,
   };
 }
