@@ -164,11 +164,27 @@ export function TodayHubCard({
           </span>
         )}
 
-        {/* Can chi + trực — thông tin phụ, chữ nhỏ mờ ở dưới */}
+        {/* Can chi + trực + sao 28 tú — thông tin phụ, chữ nhỏ mờ ở dưới */}
         {info && (
           <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-            Trực {info.truc.name} · Can chi ngày {info.canChi.day}
+            Trực {info.truc.name} · Sao {info.tu.short} · Can chi ngày{" "}
+            {info.canChi.day}
           </p>
+        )}
+
+        {/* Cảnh báo ngày kiêng dân gian (Tam Nương / Nguyệt Kỵ) */}
+        {info && info.warnings.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {info.warnings.map((w) => (
+              <span
+                key={w.key}
+                title={w.note}
+                className="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-medium text-rose-600 dark:text-rose-400"
+              >
+                ⚠ {w.label}
+              </span>
+            ))}
+          </div>
         )}
       </div>
 
@@ -184,6 +200,16 @@ export function TodayHubCard({
           <span className="font-semibold">Vì sao? </span>
           {info.reason}
         </div>
+      )}
+
+      {/* Nhị thập bát tú (28 sao) — thông tin thêm về ngày */}
+      {info && (
+        <p className="px-4 pb-3 text-xs leading-relaxed text-muted-foreground">
+          <span className="font-medium text-foreground/80">
+            Sao {info.tu.name}
+          </span>{" "}
+          ({info.tu.good ? "cát tinh" : "hung tinh"}) — {info.tu.note}
+        </p>
       )}
 
       {/* Giờ hoàng đạo — dạng chip */}

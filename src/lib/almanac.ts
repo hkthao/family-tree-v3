@@ -282,6 +282,10 @@ export interface DayInfo {
   canChi: { day: string; month: string; year: string };
   aus: DayAuspice;
   truc: { name: string; summary: string };
+  /** Nhị thập bát tú (28 sao) trực ngày. */
+  tu: TuInfo;
+  /** Ngày kiêng dân gian (Tam Nương, Nguyệt Kỵ) — rỗng nếu không có. */
+  warnings: FolkWarning[];
   /** Câu giải thích "vì sao" ngày này tốt/xấu, đầy đủ (dùng ở thẻ 1 ngày). */
   reason: string;
   /** Lý do NGẮN 1 dòng (dùng trong danh sách nhiều ngày). */
@@ -294,24 +298,31 @@ export interface DayInfo {
   kieng: string[];
 }
 
-/** Xếp hạng ngày cho một việc cụ thể (hoặc chung nếu activity trống). */
+/**
+ * Xếp hạng ngày cho một việc cụ thể (hoặc chung nếu activity trống).
+ * `folkBlocked` = ngày kiêng dân gian (Tam Nương/Nguyệt Kỵ) → không bao giờ
+ * xếp "good" (hạ xuống "normal") để danh sách "ngày đẹp" khỏi lọt ngày kiêng.
+ */
 function levelFor(
   ausGood: boolean,
   truc: Truc,
-  activity?: ActivityKey,
+  activity: ActivityKey | undefined,
+  folkBlocked: boolean,
 ): DayLevel {
+  let base: DayLevel;
   if (!activity) {
     // Không chọn việc: ngày tốt chung = hoàng đạo + trực tốt chung.
-    if (ausGood && truc.generallyGood) return "good";
-    if (!ausGood && !truc.generallyGood) return "bad";
-    return "normal";
+    if (ausGood && truc.generallyGood) base = "good";
+    else if (!ausGood && !truc.generallyGood) base = "bad";
+    else base = "normal";
+  } else {
+    let score = ausGood ? 1 : -1;
+    if (truc.good.includes(activity)) score += 2;
+    if (truc.avoid.includes(activity)) score -= 3;
+    base = score >= 2 ? "good" : score <= -1 ? "bad" : "normal";
   }
-  let score = ausGood ? 1 : -1;
-  if (truc.good.includes(activity)) score += 2;
-  if (truc.avoid.includes(activity)) score -= 3;
-  if (score >= 2) return "good";
-  if (score <= -1) return "bad";
-  return "normal";
+  if (folkBlocked && base === "good") return "normal";
+  return base;
 }
 
 function parseIsoUtc(iso: string): number {
@@ -323,9 +334,113 @@ function isoFromUtc(t: number): string {
   return new Date(t).toISOString().slice(0, 10);
 }
 
+// ════════════════════════════════════════════════════════════════
+// NHỊ THẬP BÁT TÚ (28 sao) + NGÀY KIÊNG DÂN GIAN (Tam Nương, Nguyệt Kỵ)
+//
+// Nguồn: Wikipedia tiếng Việt + lichngaytot/xemlicham. 28 tú là chu kỳ 28
+// NGÀY LIÊN TỤC (không theo thứ tuần): index = (JDN + 11) % 28, đã đối chiếu
+// 27/03/2026 = Quỷ (khớp 3 mốc). Trương=cát, Dực=hung theo đa số nguồn.
+// ════════════════════════════════════════════════════════════════
+
+export interface TuInfo {
+  /** Tên đầy đủ, vd "Quỷ Kim Dương". */
+  name: string;
+  /** Tên gọi tắt, vd "Quỷ". */
+  short: string;
+  /** true = cát tú (tốt); false = hung/bình tú. */
+  good: boolean;
+  /** Tóm tắt việc nên/kỵ. */
+  note: string;
+}
+
+const NHI_THAP_BAT_TU: TuInfo[] = [
+  { short: "Giác", name: "Giác Mộc Giao", good: true, note: "Tốt cưới hỏi, khai trương, thi cử. Kỵ mai táng." },
+  { short: "Cang", name: "Cang Kim Long", good: false, note: "Kỵ cưới gả, chôn cất, dựng nhà, kiện tụng." },
+  { short: "Đê", name: "Đê Thổ Lạc", good: false, note: "Kỵ động thổ, kinh doanh, xuất hành, cưới hỏi." },
+  { short: "Phòng", name: "Phòng Nhật Thố", good: true, note: "Tốt mọi việc: cưới xin, xây cất, khai trương, an táng." },
+  { short: "Tâm", name: "Tâm Nguyệt Hồ", good: false, note: "Kỵ mọi việc, nhất là cưới hỏi, tang lễ, kiện tụng." },
+  { short: "Vĩ", name: "Vĩ Hỏa Hổ", good: true, note: "Tốt cưới gả, xuất hành, kinh doanh, xây dựng." },
+  { short: "Cơ", name: "Cơ Thủy Báo", good: true, note: "Tốt khai trương, cầu tài, xây cất." },
+  { short: "Đẩu", name: "Đẩu Mộc Giải", good: true, note: "Tốt mọi việc: cưới hỏi, xây dựng, khai trương." },
+  { short: "Ngưu", name: "Ngưu Kim Ngưu", good: false, note: "Kỵ cưới gả, làm việc lớn; dễ hao tài." },
+  { short: "Nữ", name: "Nữ Thổ Bức", good: false, note: "Kỵ cưới hỏi, sinh nở; dễ bị lừa gạt." },
+  { short: "Hư", name: "Hư Nhật Thử", good: false, note: "Kỵ cưới hỏi, làm việc lớn." },
+  { short: "Nguy", name: "Nguy Nguyệt Yến", good: false, note: "Kỵ mọi việc; dễ hao tài, thua lỗ." },
+  { short: "Thất", name: "Thất Hỏa Trư", good: true, note: "Tốt xây dựng, cưới hỏi, khai trương, cầu công danh." },
+  { short: "Bích", name: "Bích Thủy Du", good: true, note: "Tốt mai táng, cưới hỏi, kinh doanh, xây cất." },
+  { short: "Khuê", name: "Khuê Mộc Lang", good: false, note: "Nửa tốt nửa xấu: tốt xuất hành, nhập học; kỵ xây dựng." },
+  { short: "Lâu", name: "Lâu Kim Cẩu", good: true, note: "Tốt cưới hỏi, xây dựng, khai trương, thăng chức." },
+  { short: "Vị", name: "Vị Thổ Trĩ", good: true, note: "Tốt xây dựng, cưới hỏi, an táng, khai trương." },
+  { short: "Mão", name: "Mão Nhật Kê", good: false, note: "Kỵ xây dựng, an táng; bất lợi công danh." },
+  { short: "Tất", name: "Tất Nguyệt Ô", good: true, note: "Tốt xây dựng, cưới hỏi, sinh nở, khai trương." },
+  { short: "Chủy", name: "Chủy Hỏa Hầu", good: false, note: "Kỵ mọi việc; dễ kiện tụng." },
+  { short: "Sâm", name: "Sâm Thủy Viên", good: true, note: "Tốt kinh doanh, cưới hỏi, xây dựng, cầu tài." },
+  { short: "Tỉnh", name: "Tỉnh Mộc Hãn", good: true, note: "Tốt xây dựng, thi cử, khai trương. Kỵ an táng." },
+  { short: "Quỷ", name: "Quỷ Kim Dương", good: false, note: "Kỵ xây dựng, cưới gả; riêng mai táng lại tốt." },
+  { short: "Liễu", name: "Liễu Thổ Chương", good: false, note: "Kỵ khởi công, an táng, cưới hỏi; dễ hao tài." },
+  { short: "Tinh", name: "Tinh Nhật Mã", good: false, note: "Kỵ cưới hỏi; riêng xây dựng thì được." },
+  { short: "Trương", name: "Trương Nguyệt Lộc", good: true, note: "Tốt cưới hỏi, an táng, khai trương, cầu tài." },
+  { short: "Dực", name: "Dực Hỏa Xà", good: false, note: "Kỵ dựng nhà, chôn cất, cưới gả." },
+  { short: "Chẩn", name: "Chẩn Thủy Dẫn", good: true, note: "Tốt khai trương, cưới hỏi, xây dựng, thăng chức." },
+];
+
+/** Julian Day Number của một ngày dương lịch (Gregorian). */
+function toJDN(y: number, m: number, d: number): number {
+  const a = Math.floor((14 - m) / 12);
+  const yy = y + 4800 - a;
+  const mm = m + 12 * a - 3;
+  return (
+    d +
+    Math.floor((153 * mm + 2) / 5) +
+    365 * yy +
+    Math.floor(yy / 4) -
+    Math.floor(yy / 100) +
+    Math.floor(yy / 400) -
+    32045
+  );
+}
+
+/** Nhị thập bát tú trực một ngày dương yyyy-mm-dd. */
+export function dayTu(iso: string): TuInfo | null {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const idx = (((toJDN(y, m, d) + 11) % 28) + 28) % 28;
+  return NHI_THAP_BAT_TU[idx];
+}
+
+const TAM_NUONG = [3, 7, 13, 18, 22, 27];
+const NGUYET_KY = [5, 14, 23];
+
+export interface FolkWarning {
+  key: "tam-nuong" | "nguyet-ky";
+  label: string;
+  note: string;
+}
+
+/** Cảnh báo ngày kiêng dân gian theo NGÀY ÂM (Tam Nương, Nguyệt Kỵ). */
+export function folkWarnings(lunarDay: number): FolkWarning[] {
+  const out: FolkWarning[] = [];
+  if (TAM_NUONG.includes(lunarDay)) {
+    out.push({
+      key: "tam-nuong",
+      label: "Tam Nương",
+      note: "Dân gian kiêng làm việc lớn (cưới hỏi, khai trương, động thổ, xuất hành).",
+    });
+  }
+  if (NGUYET_KY.includes(lunarDay)) {
+    out.push({
+      key: "nguyet-ky",
+      label: "Nguyệt Kỵ",
+      note: "“Mùng năm, mười bốn, hai ba” — ngày kiêng khởi sự việc trọng đại.",
+    });
+  }
+  return out;
+}
+
 /**
  * Mô tả đầy đủ một ngày dương (yyyy-mm-dd): âm lịch, can chi, hoàng
- * đạo, trực, việc nên/kiêng và xếp hạng cho việc `activity` (nếu có).
+ * đạo, trực, nhị thập bát tú, ngày kiêng dân gian, việc nên/kiêng và
+ * xếp hạng cho việc `activity` (nếu có).
  */
 export function describeDay(
   iso: string,
@@ -334,12 +449,14 @@ export function describeDay(
   const cc = getCanChiForSolarDate(iso);
   const lunar = solarStringToLunar(iso);
   const aus = dayAuspice(iso);
-  if (!cc || !lunar || !aus) return null;
+  const tu = dayTu(iso);
+  if (!cc || !lunar || !aus || !tu) return null;
 
   const dayChi = chiIndexFromCanChi(cc.day);
   if (dayChi < 0) return null;
   const truc = trucForDay(dayChi, lunar.month);
-  const level = levelFor(aus.good, truc, activity);
+  const warnings = folkWarnings(lunar.day);
+  const level = levelFor(aus.good, truc, activity, warnings.length > 0);
 
   const [y, m, d] = iso.split("-").map(Number);
   return {
@@ -350,6 +467,8 @@ export function describeDay(
     canChi: { day: cc.day, month: cc.month, year: cc.year },
     aus,
     truc: { name: truc.name, summary: truc.summary },
+    tu,
+    warnings,
     reason: buildReason(aus, truc, activity),
     shortReason: buildShortReason(aus, truc, activity),
     level,
