@@ -20,8 +20,8 @@ import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
 import {
-  getDemoClanId,
-  setDemoClanId,
+  getDemoClanIds,
+  setDemoClanIds,
 } from "@/lib/queries/platformSettings";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatDate, formatDateTime } from "@/lib/formatDate";
@@ -2134,8 +2134,8 @@ function toLocalInput(iso: string): string {
 // ─── Tab Cấu hình (demo config động) ──────────────────────────────
 
 /**
- * Cấu hình nền tảng động (không cần deploy). Hiện có: chọn DÒNG HỌ DEMO —
- * dòng họ CÔNG KHAI này sẽ hiện nút "Xem thử" ở trang Đăng nhập cho khách mới.
+ * Cấu hình nền tảng động (không cần deploy). Hiện có: chọn các DÒNG HỌ DEMO —
+ * những dòng họ CÔNG KHAI được tick sẽ dùng cho nút "Xem thử" ở trang Đăng nhập.
  */
 function ConfigTab() {
   const qc = useQueryClient();
@@ -2147,8 +2147,8 @@ function ConfigTab() {
     staleTime: 0,
   });
   const { data: current } = useQuery({
-    queryKey: ["demo-clan-id"],
-    queryFn: () => getDemoClanId(),
+    queryKey: ["demo-clan-ids"],
+    queryFn: () => getDemoClanIds(),
   });
 
   const publicClans = useMemo(
@@ -2156,14 +2156,25 @@ function ConfigTab() {
     [clans],
   );
 
-  const [choice, setChoice] = useState<string>("");
-  // Đồng bộ lựa chọn ban đầu theo giá trị đang lưu.
-  const value = choice || current || "";
+  // Tập id đang chọn — khởi tạo/đồng bộ theo giá trị đã lưu.
+  const [selected, setSelected] = useState<Set<string> | null>(null);
+  const chosen = selected ?? new Set(current ?? []);
+  const toggle = (id: string) => {
+    const next = new Set(chosen);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setSelected(next);
+  };
+
+  const savedSet = new Set(current ?? []);
+  const dirty =
+    chosen.size !== savedSet.size ||
+    [...chosen].some((id) => !savedSet.has(id));
 
   const saveM = useMutation({
-    mutationFn: (id: string | null) => setDemoClanId(id),
+    mutationFn: (ids: string[]) => setDemoClanIds(ids),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["demo-clan-id"] });
+      qc.invalidateQueries({ queryKey: ["demo-clan-ids"] });
+      setSelected(null);
       toast.success("Đã lưu dòng họ demo.");
     },
     onError: (e) =>
@@ -2172,11 +2183,11 @@ function ConfigTab() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border bg-card p-4 space-y-3">
+      <div className="space-y-4 rounded-lg border bg-card p-4">
         <div>
           <h2 className="text-lg font-semibold">Dòng họ demo</h2>
           <p className="text-sm text-muted-foreground">
-            Chọn một dòng họ <b>công khai</b> để hiện nút{" "}
+            Tick <b>một hoặc nhiều</b> dòng họ <b>công khai</b> để dùng cho nút{" "}
             <b>“Xem thử gia phả mẫu”</b> ở trang Đăng nhập — giúp khách mới xem
             sản phẩm trước khi đăng nhập.
           </p>
@@ -2190,44 +2201,51 @@ function ConfigTab() {
             </AlertDescription>
           </Alert>
         ) : (
-          <div className="flex flex-wrap items-end gap-2">
-            <div className="min-w-[220px] flex-1 space-y-1">
-              <Label htmlFor="demo-clan">Dòng họ demo</Label>
-              <select
-                id="demo-clan"
-                value={value}
-                onChange={(e) => setChoice(e.target.value)}
-                className="w-full rounded-md border bg-card px-3 py-2 text-sm"
-              >
-                <option value="">— Không dùng demo —</option>
-                {publicClans.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.person_count} người)
-                  </option>
-                ))}
-              </select>
+          <>
+            {/* Danh sách checkbox — mọi hàng cùng chiều cao, đồng nhất. */}
+            <div className="divide-y rounded-md border">
+              {publicClans.map((c) => (
+                <label
+                  key={c.id}
+                  className="flex h-12 cursor-pointer items-center gap-3 px-3 hover:bg-muted/50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={chosen.has(c.id)}
+                    onChange={() => toggle(c.id)}
+                    className="h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span className="min-w-0 flex-1 truncate">
+                    {c.name}{" "}
+                    <span className="text-sm text-muted-foreground">
+                      ({c.person_count} người)
+                    </span>
+                  </span>
+                  <a
+                    href={`/xem/clans/${c.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="shrink-0 text-xs text-primary hover:underline"
+                  >
+                    xem →
+                  </a>
+                </label>
+              ))}
             </div>
-            <Button
-              onClick={() => saveM.mutate(value || null)}
-              disabled={saveM.isPending || value === (current ?? "")}
-            >
-              {saveM.isPending ? "Đang lưu…" : "Lưu"}
-            </Button>
-          </div>
-        )}
 
-        {current && (
-          <p className="text-sm text-muted-foreground">
-            Đang dùng:{" "}
-            <a
-              href={`/xem/clans/${current}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-primary hover:underline"
-            >
-              xem trang demo →
-            </a>
-          </p>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-muted-foreground">
+                Đã chọn {chosen.size} dòng họ
+              </span>
+              <Button
+                onClick={() => saveM.mutate([...chosen])}
+                disabled={saveM.isPending || !dirty}
+              >
+                {saveM.isPending ? "Đang lưu…" : "Lưu"}
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </div>
