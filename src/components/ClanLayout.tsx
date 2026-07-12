@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
@@ -157,7 +157,17 @@ export function ClanLayout() {
       <AppDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <main className="container max-w-4xl py-6 px-4 overflow-x-clip">
-        <Outlet context={{ clan } satisfies OutletContext} />
+        {/* Suspense riêng cho vùng nội dung → chuyển tab (trang con lazy) chỉ
+            hiện spinner ở đây, GIỮ NGUYÊN thanh nav trên/dưới. */}
+        <Suspense
+          fallback={
+            <div className="flex min-h-[50vh] items-center justify-center">
+              <span className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+            </div>
+          }
+        >
+          <Outlet context={{ clan } satisfies OutletContext} />
+        </Suspense>
       </main>
 
       <BottomTabBar tabs={tabs} />
