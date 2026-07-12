@@ -192,6 +192,19 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.divider,
   },
 
+  // Bảng vàng công đức — tiêu đề nhóm dạng DẢI NỀN để tách rõ khỏi item.
+  honorSubhead: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: COLORS.primary,
+    backgroundColor: "#F1E7D4",
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.accent,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
   // Bảng vàng công đức — dạng hàng (tên trái, số tiền/ngày phải).
   honorRow: {
     flexDirection: "row",
@@ -762,7 +775,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
             if (items.length === 0) return null;
             return (
               <View key={cat}>
-                <Text style={styles.mediaSubhead}>
+                <Text style={styles.honorSubhead}>
                   {HONOR_CATEGORY_LABEL[cat]}
                 </Text>
                 {items.map((h) => (
