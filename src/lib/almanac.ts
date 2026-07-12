@@ -284,6 +284,8 @@ export interface DayInfo {
   truc: { name: string; summary: string };
   /** Nhị thập bát tú (28 sao) trực ngày. */
   tu: TuInfo;
+  /** Tiết khí (24 tiết), vd "Lập xuân". */
+  tietKhi: string;
   /** Ngày kiêng dân gian (Tam Nương, Nguyệt Kỵ) — rỗng nếu không có. */
   warnings: FolkWarning[];
   /** Câu giải thích "vì sao" ngày này tốt/xấu, đầy đủ (dùng ở thẻ 1 ngày). */
@@ -417,6 +419,43 @@ export interface FolkWarning {
   note: string;
 }
 
+// ─── 24 Tiết khí (theo kinh độ mặt trời, 15° một tiết) ──────────────
+// Tên tiết xếp theo floor(kinhĐộ/15): index 0 = kinh độ [0°,15°) = Xuân phân.
+const TIET_KHI = [
+  "Xuân phân", "Thanh minh", "Cốc vũ", "Lập hạ", "Tiểu mãn", "Mang chủng",
+  "Hạ chí", "Tiểu thử", "Đại thử", "Lập thu", "Xử thử", "Bạch lộ",
+  "Thu phân", "Hàn lộ", "Sương giáng", "Lập đông", "Tiểu tuyết", "Đại tuyết",
+  "Đông chí", "Tiểu hàn", "Đại hàn", "Lập xuân", "Vũ thủy", "Kinh trập",
+];
+
+/**
+ * Kinh độ mặt trời (độ, 0–360) tại CUỐI ngày theo giờ Việt Nam (UTC+7).
+ * Dùng cuối ngày để: ngày giao tiết được gán cho tiết MỚI (đúng quy ước lịch
+ * vạn niên — vd 4/2 = Lập xuân, 22/12 = Đông chí). Thuật toán Hồ Ngọc Đức.
+ */
+function sunLongitudeDeg(jdn: number): number {
+  const T = (jdn + 0.5 - 7 / 24 - 2451545.0) / 36525;
+  const T2 = T * T;
+  const dr = Math.PI / 180;
+  const M = 357.5291 + 35999.0503 * T - 0.0001559 * T2 - 0.00000048 * T * T2;
+  const L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
+  let DL = (1.9146 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M);
+  DL +=
+    (0.019993 - 0.000101 * T) * Math.sin(dr * 2 * M) +
+    0.00029 * Math.sin(dr * 3 * M);
+  let L = L0 + DL;
+  L = L - 360 * Math.floor(L / 360);
+  return L;
+}
+
+/** Tiết khí của một ngày dương yyyy-mm-dd (vd "Lập xuân"). */
+export function dayTietKhi(iso: string): string | null {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const lon = sunLongitudeDeg(toJDN(y, m, d));
+  return TIET_KHI[Math.floor(lon / 15) % 24];
+}
+
 /** Cảnh báo ngày kiêng dân gian theo NGÀY ÂM (Tam Nương, Nguyệt Kỵ). */
 export function folkWarnings(lunarDay: number): FolkWarning[] {
   const out: FolkWarning[] = [];
@@ -468,6 +507,7 @@ export function describeDay(
     aus,
     truc: { name: truc.name, summary: truc.summary },
     tu,
+    tietKhi: dayTietKhi(iso) ?? "",
     warnings,
     reason: buildReason(aus, truc, activity),
     shortReason: buildShortReason(aus, truc, activity),

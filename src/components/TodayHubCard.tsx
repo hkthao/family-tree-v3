@@ -2,6 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+import {
+  AlmanacDisplayToggles,
+  useAlmanacPrefs,
+} from "@/components/AlmanacDisplayToggles";
 import { IconArrowLeft, IconArrowRight, IconSparkles } from "@/components/icons";
 import { describeDay } from "@/lib/almanac";
 import { listCustomEntries } from "@/lib/queries/customs";
@@ -47,6 +51,8 @@ export function TodayHubCard({
   // nút ‹ › để xem lịch ngày kế tiếp/trước mà không rời Trang chủ.
   const [offset, setOffset] = useState(0);
   const isToday = offset === 0;
+  const { prefs, toggle } = useAlmanacPrefs();
+  const [showOpts, setShowOpts] = useState(false);
 
   const view = useMemo(() => {
     const d = new Date();
@@ -151,7 +157,7 @@ export function TodayHubCard({
           </div>
         </div>
 
-        {info && (
+        {info && prefs.hoangDao && (
           <span
             className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-medium sm:absolute sm:right-4 sm:top-4 sm:mt-0 ${
               info.aus.good
@@ -164,16 +170,22 @@ export function TodayHubCard({
           </span>
         )}
 
-        {/* Can chi + trực + sao 28 tú — thông tin phụ, chữ nhỏ mờ ở dưới */}
+        {/* Can chi + trực + sao 28 tú + tiết khí — thông tin phụ, chữ nhỏ mờ */}
         {info && (
           <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-            Trực {info.truc.name} · Sao {info.tu.short} · Can chi ngày{" "}
-            {info.canChi.day}
+            {[
+              prefs.truc ? `Trực ${info.truc.name}` : null,
+              prefs.tu ? `Sao ${info.tu.short}` : null,
+              prefs.tietKhi && info.tietKhi ? `Tiết ${info.tietKhi}` : null,
+              `Can chi ngày ${info.canChi.day}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         )}
 
         {/* Cảnh báo ngày kiêng dân gian (Tam Nương / Nguyệt Kỵ) */}
-        {info && info.warnings.length > 0 && (
+        {info && prefs.kieng && info.warnings.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {info.warnings.map((w) => (
               <span
@@ -203,7 +215,7 @@ export function TodayHubCard({
       )}
 
       {/* Nhị thập bát tú (28 sao) — thông tin thêm về ngày */}
-      {info && (
+      {info && prefs.tu && (
         <p className="px-4 pb-3 text-xs leading-relaxed text-muted-foreground">
           <span className="font-medium text-foreground/80">
             Sao {info.tu.name}
@@ -213,7 +225,7 @@ export function TodayHubCard({
       )}
 
       {/* Giờ hoàng đạo — dạng chip */}
-      {info && info.aus.goodHours.length > 0 && (
+      {info && prefs.hoangDao && info.aus.goodHours.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 px-4 pb-3">
           <span className="text-xs text-muted-foreground">Giờ tốt (hoàng đạo):</span>
           {info.aus.goodHours.map((h) => (
@@ -228,7 +240,7 @@ export function TodayHubCard({
       )}
 
       {/* Việc NÊN / KIÊNG theo trực — chỉ dùng MÀU CHỮ, không viền/nền. */}
-      {info && (info.nen.length > 0 || info.kieng.length > 0) && (
+      {info && prefs.truc && (info.nen.length > 0 || info.kieng.length > 0) && (
         <div className="grid gap-2 px-4 pb-3 sm:grid-cols-2">
           {info.nen.length > 0 && (
             <div>
@@ -318,6 +330,22 @@ export function TodayHubCard({
           )}
         </>
       )}
+
+      {/* Tuỳ chọn hiển thị — bật/tắt từng loại thông tin cho gọn. */}
+      <div className="border-t">
+        <button
+          type="button"
+          onClick={() => setShowOpts((v) => !v)}
+          className="w-full px-4 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
+        >
+          ⚙ Tuỳ chọn hiển thị {showOpts ? "▲" : "▼"}
+        </button>
+        {showOpts && (
+          <div className="px-4 pb-3">
+            <AlmanacDisplayToggles prefs={prefs} toggle={toggle} />
+          </div>
+        )}
+      </div>
 
       {/* Lối vào trang "Xem ngày tốt" — tìm ngày đẹp cho việc lớn. */}
       <Link

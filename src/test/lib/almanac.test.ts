@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACTIVITIES,
   dayAuspice,
+  dayTietKhi,
   dayTu,
   describeDay,
   findGoodDays,
@@ -171,6 +172,26 @@ describe("almanac nhị thập bát tú (28 sao)", () => {
       names.add(dayTu(iso)!.short);
     }
     expect(names.size).toBe(28);
+  });
+});
+
+describe("almanac tiết khí (24 tiết)", () => {
+  it("khớp các mốc tiết khí chuẩn 2026", () => {
+    // Ngày giao tiết được gán cho tiết MỚI (quy ước lịch vạn niên).
+    expect(dayTietKhi("2026-02-04")).toBe("Lập xuân");
+    expect(dayTietKhi("2026-03-20")).toBe("Xuân phân");
+    expect(dayTietKhi("2026-06-21")).toBe("Hạ chí");
+    expect(dayTietKhi("2026-09-23")).toBe("Thu phân");
+    expect(dayTietKhi("2026-12-22")).toBe("Đông chí");
+    expect(dayTietKhi("2026-08-07")).toBe("Lập thu");
+  });
+
+  it("mid-term date rơi đúng tiết", () => {
+    expect(dayTietKhi("2026-03-27")).toBe("Xuân phân");
+  });
+
+  it("describeDay đính kèm tiết khí", () => {
+    expect(describeDay("2026-02-04")!.tietKhi).toBe("Lập xuân");
   });
 });
 

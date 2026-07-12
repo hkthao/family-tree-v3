@@ -1,6 +1,11 @@
 import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
 
+import {
+  AlmanacDisplayToggles,
+  type AlmanacPrefs,
+  useAlmanacPrefs,
+} from "@/components/AlmanacDisplayToggles";
 import { PageHeader } from "@/components/PageHeader";
 import {
   IconBuildings,
@@ -81,6 +86,8 @@ export default function GoodDays() {
   const [range, setRange] = useState<RangeMode>("30");
   const [customFrom, setCustomFrom] = useState(today);
   const [customTo, setCustomTo] = useState(addDays(today, 60));
+  const { prefs, toggle } = useAlmanacPrefs();
+  const [showOpts, setShowOpts] = useState(false);
 
   const { startIso, endIso } = useMemo(() => {
     if (range === "custom") {
@@ -111,6 +118,22 @@ export default function GoodDays() {
         title="Xem ngày tốt"
         description="Chọn việc và khoảng thời gian để tìm những ngày đẹp."
       />
+
+      {/* Tuỳ chọn hiển thị — bật/tắt từng loại thông tin cho gọn. */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowOpts((v) => !v)}
+          className="text-sm text-primary hover:underline"
+        >
+          ⚙ Tuỳ chọn hiển thị {showOpts ? "▲" : "▼"}
+        </button>
+        {showOpts && (
+          <div className="mt-2 rounded-lg border bg-muted/20 p-3">
+            <AlmanacDisplayToggles prefs={prefs} toggle={toggle} />
+          </div>
+        )}
+      </div>
 
       {/* BƯỚC 1 — Chọn việc. Nút to, có emoji, dễ bấm. */}
       <section className="space-y-2">
@@ -204,7 +227,7 @@ export default function GoodDays() {
         ) : (
           <ul className="space-y-2.5">
             {results.map((d) => (
-              <GoodDayRow key={d.iso} day={d} />
+              <GoodDayRow key={d.iso} day={d} prefs={prefs} />
             ))}
           </ul>
         )}
@@ -251,10 +274,19 @@ function ActivityButton({
 
 // ─── Một hàng ngày đẹp ────────────────────────────────────────────
 
-function GoodDayRow({ day }: { day: DayInfo }) {
+function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
   // Giờ tốt rút gọn còn TÊN CHI ("Tý (23h–1h)" → "Tý") cho danh sách gọn.
   const goodChi = day.aus.goodHours.map((h) => h.split(" (")[0]);
   const [showWhy, setShowWhy] = useState(false);
+
+  // Dòng thông tin phụ ghép theo tuỳ chọn hiển thị.
+  const meta = [
+    `Âm lịch ${day.lunar.day}/${day.lunar.month}${day.lunar.leap ? " (nhuận)" : ""}`,
+    prefs.truc ? `Trực ${day.truc.name}` : null,
+    prefs.tu ? `Sao ${day.tu.short}` : null,
+    prefs.tietKhi && day.tietKhi ? `Tiết ${day.tietKhi}` : null,
+    `Năm ${day.canChi.year}`,
+  ].filter(Boolean);
 
   return (
     <li className="flex gap-3 rounded-lg border bg-card p-3">
@@ -310,23 +342,21 @@ function GoodDayRow({ day }: { day: DayInfo }) {
                     Vì sao đẹp?
                   </span>
                   {day.reason}
-                  <span className="mt-1.5 block text-muted-foreground">
-                    Sao {day.tu.name} ({day.tu.good ? "cát tinh" : "hung tinh"})
-                    — {day.tu.note}
-                  </span>
+                  {prefs.tu && (
+                    <span className="mt-1.5 block text-muted-foreground">
+                      Sao {day.tu.name} (
+                      {day.tu.good ? "cát tinh" : "hung tinh"}) — {day.tu.note}
+                    </span>
+                  )}
                 </div>
               </>
             )}
           </span>
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          Âm lịch {day.lunar.day}/{day.lunar.month}
-          {day.lunar.leap ? " (nhuận)" : ""} · Trực {day.truc.name} · Sao{" "}
-          {day.tu.short} · Năm {day.canChi.year}
-        </p>
+        <p className="text-sm text-muted-foreground">{meta.join(" · ")}</p>
 
-        {goodChi.length > 0 && (
+        {prefs.hoangDao && goodChi.length > 0 && (
           <p className="text-sm text-muted-foreground">
             Giờ tốt: {goodChi.join(" · ")}
           </p>
