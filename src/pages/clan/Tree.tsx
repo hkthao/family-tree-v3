@@ -444,6 +444,27 @@ export default function Tree() {
     }
   };
 
+  // Xuất VECTOR SVG cây đang hiển thị (nét căng, chỉnh sửa/in ấn tốt).
+  const [savingSvg, setSavingSvg] = useState(false);
+  const exportTreeSvg = async () => {
+    const el = containerRef.current;
+    if (!el || savingSvg) return;
+    setSavingSvg(true);
+    try {
+      const { exportFamilyChartSvg, fileSlug } = await import(
+        "@/lib/tree/exportTreePng"
+      );
+      const slug = fileSlug(`${clan.name}${focalName ? "-" + focalName : ""}`);
+      await exportFamilyChartSvg(el, `cay-gia-pha-${slug || "clan"}.svg`);
+      track("export", { kind: "tree_svg", from: "tree" });
+      toast.success("Đã xuất cây gia phả (SVG).");
+    } catch {
+      toast.error("Không xuất được SVG. Thử lại hoặc dùng chức năng In.");
+    } finally {
+      setSavingSvg(false);
+    }
+  };
+
   // Initialize / re-render the family-chart instance
   useEffect(() => {
     if (!containerRef.current || !f3Data || !focal) return;
@@ -1345,18 +1366,30 @@ export default function Tree() {
             )}
             {chartActive && (
               <div
-                className="absolute bottom-2 right-2 z-10 flex flex-col gap-1 print-hide"
+                className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1 print-hide"
                 aria-label="Phóng to / thu nhỏ cây"
               >
                 <button
                   type="button"
                   onClick={exportTreeImage}
                   disabled={savingImg}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60 mb-1"
+                  className="inline-flex h-9 items-center gap-1 rounded-md bg-card/90 border shadow-sm px-2.5 text-xs font-semibold text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
                   aria-label="Xuất ảnh cây đang hiển thị (PNG)"
-                  title={savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"}
+                  title={savingImg ? "Đang xuất…" : "Xuất ảnh PNG (ảnh thường)"}
                 >
                   <IconDownload className="h-4 w-4" />
+                  PNG
+                </button>
+                <button
+                  type="button"
+                  onClick={exportTreeSvg}
+                  disabled={savingSvg}
+                  className="inline-flex h-9 items-center gap-1 rounded-md bg-card/90 border shadow-sm px-2.5 text-xs font-semibold text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60 mb-1"
+                  aria-label="Xuất cây đang hiển thị ra SVG (vector)"
+                  title={savingSvg ? "Đang xuất…" : "Xuất SVG (vector, nét căng)"}
+                >
+                  <IconDownload className="h-4 w-4" />
+                  SVG
                 </button>
                 <button
                   type="button"

@@ -9,10 +9,24 @@ import { downloadBlob, imageUrlToDataUrl } from "@/lib/cards/exportCard";
  * thành data-URI (SVG trong <img> không tải được URL ngoài) → ẩn nút +/sửa →
  * để trình duyệt rasterize qua canvas (render text chuẩn). Tải file `filename`.
  */
-export async function exportFamilyChartPng(
+const XLINK = "http://www.w3.org/1999/xlink";
+const SVGNS = "http://www.w3.org/2000/svg";
+
+/** Nền theo giao diện sáng/tối (khớp canvas PNG + nền trang). */
+function bgColor(): string {
+  return document.documentElement.classList.contains("dark")
+    ? "#1A1612"
+    : "#FBF7F0";
+}
+
+/**
+ * Dựng bản SVG "xuất được" từ cây family-chart đang hiển thị: clone svg đang
+ * xem → nội tuyến computed style (giải var CSS + font) → nhúng avatar thành
+ * data-URI → ẩn nút +/sửa. Dùng chung cho cả xuất PNG lẫn SVG.
+ */
+async function buildExportSvg(
   containerEl: HTMLElement,
-  filename: string,
-): Promise<void> {
+): Promise<{ clone: SVGSVGElement; W: number; H: number }> {
   const svg = containerEl.querySelector(
     "svg.main_svg",
   ) as SVGSVGElement | null;
@@ -21,13 +35,12 @@ export async function exportFamilyChartPng(
   const rect = containerEl.getBoundingClientRect();
   const W = Math.max(1, Math.round(rect.width));
   const H = Math.max(1, Math.round(rect.height));
-  const XLINK = "http://www.w3.org/1999/xlink";
 
   const clone = svg.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("width", String(W));
   clone.setAttribute("height", String(H));
   clone.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  clone.setAttribute("xmlns", SVGNS);
   clone.setAttribute("xmlns:xlink", XLINK);
 
   // Nội tuyến computed style (live → clone, cùng thứ tự phần tử).
@@ -69,6 +82,21 @@ export async function exportFamilyChartPng(
     }),
   );
 
+  return { clone, W, H };
+}
+
+/**
+ * Xuất ảnh PNG cây gia phả family-chart ĐANG HIỂN THỊ trong `containerEl`
+ * (khung `.f3`, giữ nguyên người trung tâm + mức zoom hiện tại).
+ *
+ * html-to-image bỏ mất `<text>` của card, nên serialize SVG thủ công (xem
+ * buildExportSvg) rồi để trình duyệt rasterize qua canvas (render text chuẩn).
+ */
+export async function exportFamilyChartPng(
+  containerEl: HTMLElement,
+  filename: string,
+): Promise<void> {
+  const { clone, W, H } = await buildExportSvg(containerEl);
   const dark = document.documentElement.classList.contains("dark");
   const xml = new XMLSerializer().serializeToString(clone);
   const svgUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(xml);
@@ -94,6 +122,34 @@ export async function exportFamilyChartPng(
   );
   if (!blob) throw new Error("Không tạo được ảnh.");
   downloadBlob(blob, filename);
+}
+
+/**
+ * Xuất VECTOR SVG cây gia phả ĐANG HIỂN THỊ — nét căng ở mọi mức phóng to,
+ * mở/chỉnh sửa bằng trình đọc SVG hay phần mềm vẽ. Chèn thêm nền theo giao
+ * diện sáng/tối để file mở độc lập không bị trong suốt.
+ */
+export async function exportFamilyChartSvg(
+  containerEl: HTMLElement,
+  filename: string,
+): Promise<void> {
+  const { clone, W, H } = await buildExportSvg(containerEl);
+
+  const bg = document.createElementNS(SVGNS, "rect");
+  bg.setAttribute("x", "0");
+  bg.setAttribute("y", "0");
+  bg.setAttribute("width", String(W));
+  bg.setAttribute("height", String(H));
+  bg.setAttribute("fill", bgColor());
+  clone.insertBefore(bg, clone.firstChild);
+
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    new XMLSerializer().serializeToString(clone);
+  downloadBlob(
+    new Blob([xml], { type: "image/svg+xml;charset=utf-8" }),
+    filename,
+  );
 }
 
 /** Slug hoá tên file (bỏ dấu tiếng Việt, thay ký tự lạ bằng "-"). */
