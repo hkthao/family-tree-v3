@@ -565,6 +565,30 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ---- 5. Sự kiện + Di sản cho trang XEM THỬ công khai (?clan=<id>). CHỈ
+  // trả khi là xem-công-khai (không mở rộng dữ liệu cho share-link riêng tư).
+  // Giỗ được client tính từ death_anniv_lunar_* của người đã mất (đã có sẵn).
+  const isPublicPreview = !token && !!clanParam;
+  let events: unknown[] = [];
+  let heritage: unknown[] = [];
+  if (isPublicPreview) {
+    const { data: ev } = await sb
+      .from("events")
+      .select(
+        "id, title, event_type, date_solar, lunar_month, lunar_day, lunar_is_leap, is_yearly, related_person_id, notes",
+      )
+      .eq("clan_id", link.clan_id);
+    events = ev ?? [];
+    const { data: he } = await sb
+      .from("heritage_items")
+      .select("id, category, title, summary, body, location_name, built_year")
+      .eq("clan_id", link.clan_id)
+      .is("deleted_at", null)
+      .order("category", { ascending: true })
+      .order("sort", { ascending: true });
+    heritage = he ?? [];
+  }
+
   return json({
     clan_id: link.clan_id,
     root_person_id: link.root_person_id,
@@ -573,5 +597,7 @@ Deno.serve(async (req) => {
     persons: masked,
     families: scopedFamilies,
     resting_places: restingPlaces,
+    events,
+    heritage,
   });
 });

@@ -95,6 +95,29 @@ export interface ShareViewHeritageItemFull {
   people: { full_name: string; gender: "M" | "F"; role_note: string | null }[];
 }
 
+export interface ShareViewEvent {
+  id: string;
+  title: string;
+  event_type: string;
+  date_solar: string | null;
+  lunar_month: number | null;
+  lunar_day: number | null;
+  lunar_is_leap: boolean | null;
+  is_yearly: boolean;
+  related_person_id: string | null;
+  notes: string | null;
+}
+
+export interface ShareViewHeritageListItem {
+  id: string;
+  category: "place" | "custom" | "story" | "artifact";
+  title: string;
+  summary: string | null;
+  body: string | null;
+  location_name: string | null;
+  built_year: number | null;
+}
+
 export interface ShareViewPayload {
   clan_id: string;
   root_person_id: string | null;
@@ -112,6 +135,9 @@ export interface ShareViewPayload {
   resting_place?: ShareViewRestingPlaceFull;
   /** Present only when scope='heritage_item' (QR di sản). */
   heritage_item?: ShareViewHeritageItemFull;
+  /** Trang xem thử công khai: sự kiện + di sản (chỉ khi ?clan=<id>). */
+  events?: ShareViewEvent[];
+  heritage?: ShareViewHeritageListItem[];
 }
 
 /**

@@ -29,7 +29,12 @@ import {
   SegmentedControl,
 } from "@/components/ui/segmented-control";
 import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
-import { fetchPublicClanView, fetchShareView } from "@/lib/queries/share-view";
+import {
+  fetchPublicClanView,
+  fetchShareView,
+  type ShareViewEvent,
+  type ShareViewPayload,
+} from "@/lib/queries/share-view";
 import { HERITAGE_CATEGORY_LABEL, videoEmbedUrl } from "@/lib/queries/heritage";
 
 import "family-chart/styles/family-chart.css";
@@ -632,7 +637,9 @@ export default function Share() {
   }
 
   return (
-    <div className="h-dvh bg-background flex flex-col">
+    <div
+      className={`${publicClan ? "min-h-dvh" : "h-dvh"} bg-background flex flex-col`}
+    >
       <header className="border-b py-3 px-4 shrink-0">
         <h1 className="clan-name text-xl font-semibold text-center">
           Cây gia phả
@@ -655,7 +662,9 @@ export default function Share() {
         )}
       </header>
 
-      <main className="flex-1 min-h-0 flex flex-col">
+      <main
+        className={`${publicClan ? "h-[72vh]" : "flex-1"} min-h-0 flex flex-col`}
+      >
         {isLoading && (
           <p className="p-8 text-center text-muted-foreground">Đang tải…</p>
         )}
@@ -861,6 +870,117 @@ export default function Share() {
           </>
         )}
       </main>
+
+      {/* Trang XEM THỬ công khai: giới thiệu thêm sự kiện/giỗ + di sản. */}
+      {publicClan && data && <PublicShowcase data={data} />}
     </div>
+  );
+}
+
+// ─── Xem thử công khai: sự kiện/giỗ + di sản (chỉ đọc) ────────────
+
+function eventWhen(e: ShareViewEvent): string {
+  if (e.date_solar) {
+    const [y, m, d] = e.date_solar.split("-");
+    return e.is_yearly ? `${d}/${m} (DL)` : `${d}/${m}/${y} (DL)`;
+  }
+  if (e.lunar_month) {
+    return `${e.lunar_day}/${e.lunar_month}${e.lunar_is_leap ? " nhuận" : ""} ÂL`;
+  }
+  return "";
+}
+
+function PublicShowcase({ data }: { data: ShareViewPayload }) {
+  const events = data.events ?? [];
+  const heritage = data.heritage ?? [];
+  const gio = data.persons
+    .filter(
+      (p) =>
+        !p.is_living && p.death_anniv_lunar_month && p.death_anniv_lunar_day,
+    )
+    .map((p) => ({
+      name: p.full_name,
+      m: p.death_anniv_lunar_month!,
+      d: p.death_anniv_lunar_day!,
+    }));
+
+  if (events.length === 0 && heritage.length === 0 && gio.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="border-t bg-muted/20 print-hide">
+      <div className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
+        <p className="text-center text-sm text-muted-foreground">
+          Ngoài cây gia phả, ứng dụng còn giúp dòng họ lưu giữ sự kiện, giỗ
+          chạp và di sản văn hoá:
+        </p>
+
+        {(events.length > 0 || gio.length > 0) && (
+          <div>
+            <h2 className="mb-2 text-lg font-semibold">Sự kiện &amp; giỗ</h2>
+            <ul className="space-y-1.5">
+              {events.map((e) => (
+                <li key={e.id} className="rounded-md border bg-card p-3">
+                  <span className="font-medium">{e.title}</span>
+                  {eventWhen(e) && (
+                    <span className="text-sm text-muted-foreground">
+                      {" "}
+                      · {eventWhen(e)}
+                    </span>
+                  )}
+                  {e.notes && (
+                    <p className="text-sm text-muted-foreground">{e.notes}</p>
+                  )}
+                </li>
+              ))}
+              {gio.map((g, i) => (
+                <li
+                  key={`gio-${i}`}
+                  className="rounded-md border bg-card p-3 text-sm"
+                >
+                  🕯️ Ngày giỗ <b>{g.name}</b> · {g.d}/{g.m} ÂL
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {heritage.length > 0 && (
+          <div>
+            <h2 className="mb-2 text-lg font-semibold">Di sản &amp; Văn hoá</h2>
+            <div className="space-y-2">
+              {heritage.map((h) => (
+                <div key={h.id} className="rounded-md border bg-card p-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {HERITAGE_CATEGORY_LABEL[h.category]}
+                  </p>
+                  <p className="font-semibold text-primary">
+                    {h.title}
+                    {h.built_year ? ` · ${h.built_year}` : ""}
+                  </p>
+                  {h.summary && (
+                    <p className="text-sm font-medium">{h.summary}</p>
+                  )}
+                  {h.body && (
+                    <p className="line-clamp-3 text-sm text-muted-foreground">
+                      {h.body}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="text-center">
+          <Button asChild>
+            <Link to="/login">
+              Đăng nhập để dùng đầy đủ các tính năng →
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }
