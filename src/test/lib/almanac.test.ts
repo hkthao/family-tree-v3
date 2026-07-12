@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   ACTIVITIES,
   dayAuspice,
+  dayTu,
   describeDay,
   findGoodDays,
+  folkWarnings,
 } from "@/lib/almanac";
 
 const TRUC_NAMES = [
@@ -144,6 +146,62 @@ describe("almanac findGoodDays", () => {
     expect(days.length).toBeGreaterThan(0);
     // 400 ngày quét, số ngày tốt phải nhỏ hơn 400.
     expect(days.length).toBeLessThan(400);
+  });
+});
+
+describe("almanac nhị thập bát tú (28 sao)", () => {
+  it("matches lichngaytot anchor: 27/03/2026 = Quỷ", () => {
+    const t = dayTu("2026-03-27");
+    expect(t).not.toBeNull();
+    expect(t!.short).toBe("Quỷ");
+    expect(t!.name).toBe("Quỷ Kim Dương");
+    expect(t!.good).toBe(false);
+  });
+
+  it("advances one sao per day around the anchor", () => {
+    expect(dayTu("2026-03-28")!.short).toBe("Liễu");
+    expect(dayTu("2026-04-03")!.short).toBe("Cang");
+  });
+
+  it("cycles through all 28 distinct sao in 28 days", () => {
+    const names = new Set<string>();
+    const base = Date.UTC(2026, 0, 1);
+    for (let i = 0; i < 28; i++) {
+      const iso = new Date(base + i * 86_400_000).toISOString().slice(0, 10);
+      names.add(dayTu(iso)!.short);
+    }
+    expect(names.size).toBe(28);
+  });
+});
+
+describe("almanac ngày kiêng dân gian", () => {
+  it("Tam Nương = mùng 3,7,13,18,22,27 ÂL", () => {
+    for (const d of [3, 7, 13, 18, 22, 27]) {
+      expect(folkWarnings(d).some((w) => w.key === "tam-nuong")).toBe(true);
+    }
+    expect(folkWarnings(10).some((w) => w.key === "tam-nuong")).toBe(false);
+  });
+
+  it("Nguyệt Kỵ = mùng 5,14,23 ÂL", () => {
+    for (const d of [5, 14, 23]) {
+      expect(folkWarnings(d).some((w) => w.key === "nguyet-ky")).toBe(true);
+    }
+    expect(folkWarnings(6).some((w) => w.key === "nguyet-ky")).toBe(false);
+  });
+
+  it("findGoodDays không bao giờ trả về ngày Tam Nương / Nguyệt Kỵ", () => {
+    const kieng = new Set([3, 5, 7, 13, 14, 18, 22, 23, 27]);
+    const days = findGoodDays("2026-01-01", "2026-12-31", "cuoi-hoi");
+    expect(days.length).toBeGreaterThan(0);
+    for (const d of days) {
+      expect(kieng.has(d.lunar.day)).toBe(false);
+    }
+  });
+
+  it("describeDay đính kèm sao 28 tú + cảnh báo", () => {
+    const d = describeDay("2026-03-27")!;
+    expect(d.tu.short).toBe("Quỷ");
+    expect(Array.isArray(d.warnings)).toBe(true);
   });
 });
 

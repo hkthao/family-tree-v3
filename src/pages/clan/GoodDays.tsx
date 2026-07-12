@@ -310,6 +310,10 @@ function GoodDayRow({ day }: { day: DayInfo }) {
                     Vì sao đẹp?
                   </span>
                   {day.reason}
+                  <span className="mt-1.5 block text-muted-foreground">
+                    Sao {day.tu.name} ({day.tu.good ? "cát tinh" : "hung tinh"})
+                    — {day.tu.note}
+                  </span>
                 </div>
               </>
             )}
@@ -318,8 +322,8 @@ function GoodDayRow({ day }: { day: DayInfo }) {
 
         <p className="text-sm text-muted-foreground">
           Âm lịch {day.lunar.day}/{day.lunar.month}
-          {day.lunar.leap ? " (nhuận)" : ""} · Trực {day.truc.name} · Năm{" "}
-          {day.canChi.year}
+          {day.lunar.leap ? " (nhuận)" : ""} · Trực {day.truc.name} · Sao{" "}
+          {day.tu.short} · Năm {day.canChi.year}
         </p>
 
         {goodChi.length > 0 && (
