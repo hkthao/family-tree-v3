@@ -19,6 +19,10 @@ import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
+import {
+  getDemoClanId,
+  setDemoClanId,
+} from "@/lib/queries/platformSettings";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatDate, formatDateTime } from "@/lib/formatDate";
 import { Button } from "@/components/ui/button";
@@ -64,7 +68,14 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 import { unaccent } from "@/lib/unaccent";
 
-type Tab = "users" | "clans" | "health" | "feedback" | "announcements" | "giapha";
+type Tab =
+  | "users"
+  | "clans"
+  | "health"
+  | "feedback"
+  | "announcements"
+  | "giapha"
+  | "config";
 
 const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
   { value: "users", label: "Người dùng" },
@@ -73,6 +84,7 @@ const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
   { value: "feedback", label: "Góp ý" },
   { value: "announcements", label: "Thông báo" },
   { value: "giapha", label: "Nhập gia phả" },
+  { value: "config", label: "Cấu hình" },
 ];
 
 const PAGE_SIZE = 15;
@@ -168,6 +180,7 @@ export default function Admin() {
         {tab === "feedback" && <FeedbackTab />}
         {tab === "announcements" && <AnnouncementsAdminTab />}
         {tab === "giapha" && <GiaPhaImportTab />}
+        {tab === "config" && <ConfigTab />}
       </main>
     </div>
   );
@@ -2116,4 +2129,107 @@ function toLocalInput(iso: string): string {
   const d = new Date(iso);
   const pad = (n: number) => n.toString().padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ─── Tab Cấu hình (demo config động) ──────────────────────────────
+
+/**
+ * Cấu hình nền tảng động (không cần deploy). Hiện có: chọn DÒNG HỌ DEMO —
+ * dòng họ CÔNG KHAI này sẽ hiện nút "Xem thử" ở trang Đăng nhập cho khách mới.
+ */
+function ConfigTab() {
+  const qc = useQueryClient();
+  const toast = useToast();
+
+  const { data: clans } = useQuery({
+    queryKey: queryKeys.adminClans(),
+    queryFn: () => listAllClans(),
+    staleTime: 0,
+  });
+  const { data: current } = useQuery({
+    queryKey: ["demo-clan-id"],
+    queryFn: () => getDemoClanId(),
+  });
+
+  const publicClans = useMemo(
+    () => (clans ?? []).filter((c) => c.visibility === "public"),
+    [clans],
+  );
+
+  const [choice, setChoice] = useState<string>("");
+  // Đồng bộ lựa chọn ban đầu theo giá trị đang lưu.
+  const value = choice || current || "";
+
+  const saveM = useMutation({
+    mutationFn: (id: string | null) => setDemoClanId(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["demo-clan-id"] });
+      toast.success("Đã lưu dòng họ demo.");
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border bg-card p-4 space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold">Dòng họ demo</h2>
+          <p className="text-sm text-muted-foreground">
+            Chọn một dòng họ <b>công khai</b> để hiện nút{" "}
+            <b>“Xem thử gia phả mẫu”</b> ở trang Đăng nhập — giúp khách mới xem
+            sản phẩm trước khi đăng nhập.
+          </p>
+        </div>
+
+        {publicClans.length === 0 ? (
+          <Alert>
+            <AlertDescription>
+              Chưa có dòng họ công khai nào. Vào một dòng họ → Cài đặt → đặt
+              quyền xem <b>Công khai</b>, rồi quay lại đây chọn.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="min-w-[220px] flex-1 space-y-1">
+              <Label htmlFor="demo-clan">Dòng họ demo</Label>
+              <select
+                id="demo-clan"
+                value={value}
+                onChange={(e) => setChoice(e.target.value)}
+                className="w-full rounded-md border bg-card px-3 py-2 text-sm"
+              >
+                <option value="">— Không dùng demo —</option>
+                {publicClans.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.person_count} người)
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button
+              onClick={() => saveM.mutate(value || null)}
+              disabled={saveM.isPending || value === (current ?? "")}
+            >
+              {saveM.isPending ? "Đang lưu…" : "Lưu"}
+            </Button>
+          </div>
+        )}
+
+        {current && (
+          <p className="text-sm text-muted-foreground">
+            Đang dùng:{" "}
+            <a
+              href={`/xem/clans/${current}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary hover:underline"
+            >
+              xem trang demo →
+            </a>
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }

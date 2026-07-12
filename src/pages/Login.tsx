@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { track } from "@/lib/analytics";
+import { getDemoClanId } from "@/lib/queries/platformSettings";
 import { supabase } from "@/lib/supabase";
 
 type Mode = "password" | "magic-link";
@@ -37,6 +39,14 @@ export default function Login() {
   const [oauthBusy, setOauthBusy] = useState(false);
   const [oauthError, setOauthError] = useState<string | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+
+  // Dòng họ demo (cấu hình động ở /admin) — cho khách xem thử TRƯỚC khi đăng
+  // nhập, giảm rơi ở trang /login (nguồn chính từ Facebook).
+  const { data: demoClanId } = useQuery({
+    queryKey: ["demo-clan-id"],
+    queryFn: () => getDemoClanId(),
+    staleTime: 10 * 60 * 1000,
+  });
 
   // Đăng nhập bằng Google (1 chạm) — kênh chính. Sau OAuth quay lại đúng link
   // khách muốn xem (next) hoặc /clans.
@@ -142,6 +152,18 @@ export default function Login() {
             </Alert>
           )}
         </div>
+
+        {/* Xem thử gia phả mẫu — không cần đăng nhập. Cho khách mới thấy sản
+            phẩm trước, rồi mới mời đăng nhập/đăng ký. */}
+        {demoClanId && (
+          <Link
+            to={`/xem/clans/${demoClanId}`}
+            onClick={() => track("demo_view_click")}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/5 text-base font-medium text-primary hover:bg-primary/10"
+          >
+            👀 Xem thử gia phả mẫu — không cần đăng nhập
+          </Link>
+        )}
 
         {/* Đăng nhập bằng email/mật khẩu — phụ, ẩn sau một nút gạt. */}
         {!showEmail ? (
