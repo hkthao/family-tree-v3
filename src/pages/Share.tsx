@@ -673,31 +673,33 @@ export default function Share() {
 
       {/* Thanh TAB (chỉ trang xem thử công khai): Cây | Sự kiện & giỗ | Di sản. */}
       {publicClan && data && data.persons.length > 0 && (
-        <div
-          role="tablist"
-          aria-label="Nội dung dòng họ"
-          className="flex shrink-0 overflow-x-auto border-b print-hide"
-          style={{ scrollbarWidth: "none" }}
-        >
-          <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
-            Cây gia phả
-          </ShareTab>
-          {(data.events?.length || hasAnniversaries(data)) && (
-            <ShareTab
-              active={tab === "events"}
-              onClick={() => setTab("events")}
-            >
-              Sự kiện &amp; giỗ
+        <div className="shrink-0 border-b print-hide">
+          <div
+            role="tablist"
+            aria-label="Nội dung dòng họ"
+            className="container flex max-w-4xl overflow-x-auto px-2"
+            style={{ scrollbarWidth: "none" }}
+          >
+            <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
+              Cây gia phả
             </ShareTab>
-          )}
-          {data.heritage?.length ? (
-            <ShareTab
-              active={tab === "heritage"}
-              onClick={() => setTab("heritage")}
-            >
-              Di sản
-            </ShareTab>
-          ) : null}
+            {(data.events?.length || hasAnniversaries(data)) && (
+              <ShareTab
+                active={tab === "events"}
+                onClick={() => setTab("events")}
+              >
+                Sự kiện &amp; giỗ
+              </ShareTab>
+            )}
+            {data.heritage?.length ? (
+              <ShareTab
+                active={tab === "heritage"}
+                onClick={() => setTab("heritage")}
+              >
+                Di sản
+              </ShareTab>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -989,7 +991,7 @@ function EventsGioPanel({ data }: { data: ShareViewPayload }) {
   const gio = anniversaries(data);
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-2xl space-y-2 p-4">
+      <div className="container max-w-4xl space-y-2 px-4 py-4">
         {events.length === 0 && gio.length === 0 && (
           <p className="p-8 text-center text-muted-foreground">
             Chưa có sự kiện hay ngày giỗ.
@@ -1024,7 +1026,7 @@ function HeritagePanel({ data }: { data: ShareViewPayload }) {
   const heritage = data.heritage ?? [];
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-2xl space-y-2 p-4">
+      <div className="container max-w-4xl space-y-2 px-4 py-4">
         {heritage.length === 0 && (
           <p className="p-8 text-center text-muted-foreground">
             Chưa có di sản.
