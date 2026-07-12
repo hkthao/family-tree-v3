@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   ACTIVITIES,
   dayAuspice,
+  dayNapAm,
   dayTietKhi,
   dayTu,
   describeDay,
@@ -172,6 +173,22 @@ describe("almanac nhị thập bát tú (28 sao)", () => {
       names.add(dayTu(iso)!.short);
     }
     expect(names.size).toBe(28);
+  });
+});
+
+describe("almanac ngũ hành nạp âm + giờ hắc đạo", () => {
+  it("nạp âm khớp mốc: 12/07/2026 (Đinh Hợi) = Ốc Thượng Thổ", () => {
+    expect(dayNapAm("2026-07-12")).toBe("Ốc Thượng Thổ");
+    expect(describeDay("2026-07-12")!.napAm).toBe("Ốc Thượng Thổ");
+  });
+
+  it("giờ hắc đạo = 6 giờ, không trùng giờ hoàng đạo", () => {
+    const a = dayAuspice("2026-07-12")!;
+    expect(a.badHours).toHaveLength(6);
+    const good = new Set(a.goodHours.map((h) => h.split(" (")[0]));
+    for (const h of a.badHours) {
+      expect(good.has(h.split(" (")[0])).toBe(false);
+    }
   });
 });
 

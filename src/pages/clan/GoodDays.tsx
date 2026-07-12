@@ -8,6 +8,8 @@ import {
 } from "@/components/AlmanacDisplayToggles";
 import { PageHeader } from "@/components/PageHeader";
 import {
+  IconArrowLeft,
+  IconArrowRight,
   IconBuildings,
   IconCalendar,
   IconFlame,
@@ -16,7 +18,6 @@ import {
   IconHome,
   IconMapPin,
   IconScroll,
-  IconSparkles,
   IconUsers,
   IconWallet,
 } from "@/components/icons";
@@ -25,6 +26,7 @@ import {
   ACTIVITIES,
   type ActivityKey,
   type DayInfo,
+  describeDay,
   findGoodDays,
 } from "@/lib/almanac";
 
@@ -89,6 +91,13 @@ export default function GoodDays() {
   const { prefs, toggle } = useAlmanacPrefs();
   const [showOpts, setShowOpts] = useState(false);
 
+  // Lịch tháng + ngày đang xem chi tiết.
+  const [selectedIso, setSelectedIso] = useState(today);
+  const [cursor, setCursor] = useState(() => {
+    const d = new Date();
+    return { y: d.getFullYear(), m: d.getMonth() };
+  });
+
   const { startIso, endIso } = useMemo(() => {
     if (range === "custom") {
       return { startIso: customFrom, endIso: customTo };
@@ -114,9 +123,9 @@ export default function GoodDays() {
   return (
     <div className="space-y-5">
       <PageHeader
-        icon={<IconSparkles className="h-7 w-7" />}
-        title="Xem ngày tốt"
-        description="Chọn việc và khoảng thời gian để tìm những ngày đẹp."
+        icon={<IconCalendar className="h-7 w-7" />}
+        title="Lịch âm dương & xem ngày"
+        description="Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn."
       />
 
       {/* Tuỳ chọn hiển thị — bật/tắt từng loại thông tin cho gọn. */}
@@ -133,6 +142,26 @@ export default function GoodDays() {
             <AlmanacDisplayToggles prefs={prefs} toggle={toggle} />
           </div>
         )}
+      </div>
+
+      {/* Lịch tháng âm–dương — bấm một ngày để xem chi tiết bên dưới. */}
+      <MonthCalendar
+        cursor={cursor}
+        setCursor={setCursor}
+        selectedIso={selectedIso}
+        todayIso={today}
+        onSelect={setSelectedIso}
+      />
+
+      {/* Chi tiết ngày đang chọn (tốt/xấu, giờ, ngũ hành, sao…). */}
+      <DayDetail iso={selectedIso} prefs={prefs} />
+
+      {/* ─── Công cụ tìm ngày đẹp cho một việc ─────────────────── */}
+      <div className="border-t pt-4">
+        <h2 className="mb-1 text-lg font-semibold">Tìm ngày đẹp cho việc lớn</h2>
+        <p className="text-sm text-muted-foreground">
+          Chọn việc và khoảng thời gian, hệ thống liệt kê sẵn những ngày đẹp.
+        </p>
       </div>
 
       {/* BƯỚC 1 — Chọn việc. Nút to, có emoji, dễ bấm. */}
@@ -239,6 +268,305 @@ export default function GoodDays() {
         lời khuyên bắt buộc — nên cân nhắc thêm tuổi của gia chủ khi làm việc lớn.
       </p>
     </div>
+  );
+}
+
+// ─── Lịch tháng âm–dương ──────────────────────────────────────────
+
+const CAL_WEEKDAYS = ["T.Hai", "T.Ba", "T.Tư", "T.Năm", "T.Sáu", "T.Bảy", "CN"];
+
+function MonthCalendar({
+  cursor,
+  setCursor,
+  selectedIso,
+  todayIso,
+  onSelect,
+}: {
+  cursor: { y: number; m: number };
+  setCursor: (c: { y: number; m: number }) => void;
+  selectedIso: string;
+  todayIso: string;
+  onSelect: (iso: string) => void;
+}) {
+  const { y, m } = cursor;
+  const cells = useMemo(() => {
+    const startOffset = (new Date(y, m, 1).getDay() + 6) % 7; // Thứ Hai đầu tuần
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const arr: ({ iso: string; day: number; info: DayInfo | null } | null)[] =
+      [];
+    for (let i = 0; i < startOffset; i++) arr.push(null);
+    for (let d = 1; d <= daysInMonth; d++) {
+      const iso = `${y}-${pad(m + 1)}-${pad(d)}`;
+      arr.push({ iso, day: d, info: describeDay(iso) });
+    }
+    while (arr.length % 7 !== 0) arr.push(null);
+    return arr;
+  }, [y, m]);
+
+  const goMonth = (delta: number) => {
+    const d = new Date(y, m + delta, 1);
+    setCursor({ y: d.getFullYear(), m: d.getMonth() });
+  };
+  const ty = Number(todayIso.slice(0, 4));
+  const tm = Number(todayIso.slice(5, 7)) - 1;
+  const atCurrent = y === ty && m === tm;
+
+  return (
+    <section className="overflow-hidden rounded-xl border bg-card">
+      <div className="flex items-center justify-between gap-2 border-b bg-muted/30 px-2 py-2">
+        <button
+          type="button"
+          onClick={() => goMonth(-1)}
+          aria-label="Tháng trước"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
+        >
+          <IconArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-base font-semibold">
+            Tháng {m + 1}/{y}
+          </span>
+          {!atCurrent && (
+            <button
+              type="button"
+              onClick={() => setCursor({ y: ty, m: tm })}
+              className="rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10"
+            >
+              Về tháng này
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => goMonth(1)}
+          aria-label="Tháng sau"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
+        >
+          <IconArrowRight className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-7 border-b text-center text-xs font-semibold text-muted-foreground">
+        {CAL_WEEKDAYS.map((w) => (
+          <div key={w} className="py-1.5">
+            {w}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7">
+        {cells.map((c, i) => {
+          if (!c) {
+            return (
+              <div
+                key={`e${i}`}
+                className="aspect-square border-b border-r bg-muted/10"
+              />
+            );
+          }
+          const good = c.info?.aus.good;
+          const selected = c.iso === selectedIso;
+          const isToday = c.iso === todayIso;
+          return (
+            <button
+              key={c.iso}
+              type="button"
+              onClick={() => onSelect(c.iso)}
+              className={`relative flex aspect-square flex-col items-center justify-center border-b border-r p-0.5 transition-colors ${
+                good
+                  ? "bg-emerald-500/10 hover:bg-emerald-500/20"
+                  : "bg-rose-500/10 hover:bg-rose-500/20"
+              } ${selected ? "ring-2 ring-inset ring-primary" : ""}`}
+            >
+              <span
+                className={`text-sm font-bold leading-none tabular-nums sm:text-base ${
+                  isToday ? "text-primary underline" : ""
+                }`}
+              >
+                {c.day}
+              </span>
+              <span className="mt-0.5 text-[10px] leading-none text-muted-foreground">
+                {c.info
+                  ? c.info.lunar.day === 1
+                    ? `1/${c.info.lunar.month}`
+                    : c.info.lunar.day
+                  : ""}
+              </span>
+              {c.info && c.info.warnings.length > 0 && (
+                <span
+                  className="absolute right-1 top-1 text-rose-500"
+                  title="Ngày kiêng dân gian"
+                >
+                  •
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-x-4 gap-y-1 px-3 py-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500/40" />
+          Ngày tốt (hoàng đạo)
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-2.5 w-2.5 rounded-sm bg-rose-500/40" />
+          Ngày xấu (hắc đạo)
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="text-rose-500">•</span> Ngày kiêng
+        </span>
+      </div>
+    </section>
+  );
+}
+
+// ─── Chi tiết một ngày (tốt/xấu, giờ, ngũ hành, sao…) ──────────────
+
+function DayDetail({ iso, prefs }: { iso: string; prefs: AlmanacPrefs }) {
+  const info = describeDay(iso);
+  if (!info) return null;
+  const goodChi = info.aus.goodHours.map((h) => h.split(" (")[0]);
+  const badChi = info.aus.badHours.map((h) => h.split(" (")[0]);
+  const meta = [
+    prefs.truc ? `Trực ${info.truc.name}` : null,
+    prefs.tu ? `Sao ${info.tu.short}` : null,
+    prefs.tietKhi && info.tietKhi ? `Tiết ${info.tietKhi}` : null,
+    `Ngũ hành ${info.napAm}`,
+  ].filter(Boolean);
+
+  return (
+    <section className="space-y-3 rounded-xl border bg-card p-4">
+      {/* Đầu: dương lịch + âm lịch to */}
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            {WEEKDAYS_FULL[info.weekday]}
+          </p>
+          <p className="text-4xl font-bold leading-none tabular-nums text-primary">
+            {info.solar.day}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Th{info.solar.month}/{info.solar.year} (DL)
+          </p>
+        </div>
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Âm lịch
+          </p>
+          <p className="text-4xl font-bold leading-none tabular-nums text-emerald-600 dark:text-emerald-400">
+            {info.lunar.day}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Th{info.lunar.month}
+            {info.lunar.leap ? " nhuận" : ""} · {info.canChi.year}
+          </p>
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-1.5">
+          {prefs.hoangDao && (
+            <span
+              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                info.aus.good
+                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                  : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+              }`}
+            >
+              {info.aus.good ? "Ngày tốt (Hoàng đạo)" : "Ngày xấu (Hắc đạo)"}
+            </span>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Can chi: ngày {info.canChi.day} · tháng {info.canChi.month} · năm{" "}
+            {info.canChi.year}
+          </p>
+          {meta.length > 0 && (
+            <p className="text-sm text-muted-foreground">{meta.join(" · ")}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Cảnh báo ngày kiêng */}
+      {prefs.kieng && info.warnings.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {info.warnings.map((w) => (
+            <span
+              key={w.key}
+              title={w.note}
+              className="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-medium text-rose-600 dark:text-rose-400"
+            >
+              ⚠ {w.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Vì sao tốt/xấu */}
+      <div
+        className={`rounded-lg border-l-4 p-3 text-sm leading-relaxed ${
+          info.aus.good
+            ? "border-emerald-500 bg-emerald-500/5"
+            : "border-amber-500 bg-amber-500/5"
+        }`}
+      >
+        <span className="font-semibold">Vì sao? </span>
+        {info.reason}
+      </div>
+
+      {/* Giờ hoàng đạo / hắc đạo */}
+      {prefs.hoangDao && (
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <p className="mb-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              Giờ hoàng đạo (tốt)
+            </p>
+            <p className="text-sm text-foreground/80">{goodChi.join(" · ")}</p>
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
+              Giờ hắc đạo (tránh)
+            </p>
+            <p className="text-sm text-foreground/80">{badChi.join(" · ")}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Việc nên / kiêng theo trực */}
+      {prefs.truc && (info.nen.length > 0 || info.kieng.length > 0) && (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {info.nen.length > 0 && (
+            <div>
+              <p className="mb-0.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                ✓ Nên làm
+              </p>
+              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                {info.nen.join(" · ")}
+              </p>
+            </div>
+          )}
+          {info.kieng.length > 0 && (
+            <div>
+              <p className="mb-0.5 text-sm font-bold text-rose-600 dark:text-rose-400">
+                ✕ Nên tránh
+              </p>
+              <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
+                {info.kieng.join(" · ")}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Nhị thập bát tú */}
+      {prefs.tu && (
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          <span className="font-medium text-foreground/80">
+            Sao {info.tu.name}
+          </span>{" "}
+          ({info.tu.good ? "cát tinh" : "hung tinh"}) — {info.tu.note}
+        </p>
+      )}
+    </section>
   );
 }
 
