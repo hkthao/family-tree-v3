@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { IconRefresh } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useClanFreshness } from "@/hooks/useClanFreshness";
+import { cn } from "@/lib/utils";
 
 interface Props {
   clanId: string;
@@ -15,6 +16,8 @@ interface Props {
    * where the long form chews up a whole row on mobile.
    */
   compact?: boolean;
+  /** Override style của nút compact (vd nhét gọn bên trong ô tìm kiếm). */
+  className?: string;
 }
 
 function formatTime(d: Date): string {
@@ -23,7 +26,7 @@ function formatTime(d: Date): string {
   return `${hh}:${mm}`;
 }
 
-export function RefreshButton({ clanId, cachedVersion, compact }: Props) {
+export function RefreshButton({ clanId, cachedVersion, compact, className }: Props) {
   const { lastSyncedAt, isChecking, refresh } = useClanFreshness(
     clanId,
     cachedVersion,
@@ -52,7 +55,7 @@ export function RefreshButton({ clanId, cachedVersion, compact }: Props) {
       <Button
         variant="outline"
         size="sm"
-        className="h-10 w-10 p-0 shrink-0"
+        className={cn("h-10 w-10 p-0 shrink-0", className)}
         title={isChecking ? "Đang kiểm tra…" : flashedStatus}
         aria-label="Làm mới"
         onClick={async () => {
