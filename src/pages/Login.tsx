@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { track } from "@/lib/analytics";
-import { getDemoClanId } from "@/lib/queries/platformSettings";
+import { getDemoClanIds } from "@/lib/queries/platformSettings";
 import { supabase } from "@/lib/supabase";
 
 type Mode = "password" | "magic-link";
@@ -42,11 +42,13 @@ export default function Login() {
 
   // Dòng họ demo (cấu hình động ở /admin) — cho khách xem thử TRƯỚC khi đăng
   // nhập, giảm rơi ở trang /login (nguồn chính từ Facebook).
-  const { data: demoClanId } = useQuery({
-    queryKey: ["demo-clan-id"],
-    queryFn: () => getDemoClanId(),
+  const { data: demoClanIds } = useQuery({
+    queryKey: ["demo-clan-ids"],
+    queryFn: () => getDemoClanIds(),
     staleTime: 10 * 60 * 1000,
   });
+  // Nhiều dòng họ demo → nút "Xem thử" mở dòng họ đầu tiên.
+  const demoClanId = demoClanIds?.[0];
 
   // Đăng nhập bằng Google (1 chạm) — kênh chính. Sau OAuth quay lại đúng link
   // khách muốn xem (next) hoặc /clans.

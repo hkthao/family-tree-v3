@@ -34,10 +34,39 @@ export async function setPlatformSetting(
   if (error) throw new Error(error.message);
 }
 
-export function getDemoClanId(client: Client = defaultClient) {
-  return getPlatformSetting(DEMO_CLAN_KEY, client);
+/** Parse giá trị demo → mảng clan id. Chấp nhận: JSON array, id đơn, hoặc
+ *  danh sách phân tách bởi dấu phẩy (tương thích ngược giá trị cũ). */
+function parseDemoIds(value: string | null): string[] {
+  if (!value) return [];
+  const v = value.trim();
+  if (v.startsWith("[")) {
+    try {
+      const arr = JSON.parse(v);
+      return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  return v
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
-export function setDemoClanId(clanId: string | null, client: Client = defaultClient) {
-  return setPlatformSetting(DEMO_CLAN_KEY, clanId, client);
+/** Danh sách dòng họ demo (0, 1 hoặc nhiều). */
+export async function getDemoClanIds(
+  client: Client = defaultClient,
+): Promise<string[]> {
+  return parseDemoIds(await getPlatformSetting(DEMO_CLAN_KEY, client));
+}
+
+export function setDemoClanIds(
+  ids: string[],
+  client: Client = defaultClient,
+) {
+  return setPlatformSetting(
+    DEMO_CLAN_KEY,
+    ids.length ? JSON.stringify(ids) : null,
+    client,
+  );
 }
