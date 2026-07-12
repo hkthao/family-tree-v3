@@ -1,5 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 import {
   AlmanacDisplayToggles,
@@ -7,6 +9,16 @@ import {
   useAlmanacPrefs,
 } from "@/components/AlmanacDisplayToggles";
 import { PageHeader } from "@/components/PageHeader";
+import { useAuth } from "@/hooks/useAuth";
+import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
+import { listAnniversaryCandidates, listEvents } from "@/lib/queries/events";
+import { queryKeys } from "@/lib/queries/keys";
+import { getTreeData } from "@/lib/queries/tree";
+import {
+  computeUpcomingAnniversaries,
+  computeUpcomingEvents,
+  type UpcomingEvent,
+} from "@/lib/upcomingEvents";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -83,6 +95,55 @@ const RANGE_OPTIONS: { key: RangeMode; label: string }[] = [
  */
 export default function GoodDays() {
   const today = useMemo(() => isoOf(new Date()), []);
+  const { clan } = useClanContext();
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+
+  // Nguồn cây theo quyền (thành viên vs khách công khai) — như trang Sự kiện.
+  const treeSource =
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
+  const { data: tree } = useQuery({
+    queryKey: queryKeys.treeData(clan.id, userId, treeSource),
+    queryFn: () => getTreeData(clan.id, treeSource),
+    enabled: !!userId,
+  });
+  const { data: events } = useQuery({
+    queryKey: queryKeys.events(clan.id, userId),
+    queryFn: () => listEvents(clan.id),
+    enabled: !!userId,
+  });
+  const { data: anniversaries } = useQuery({
+    queryKey: [...queryKeys.anniversaries(clan.id, userId), treeSource] as const,
+    queryFn: () => listAnniversaryCandidates(clan.id, undefined, treeSource),
+    enabled: !!userId,
+  });
+
+  // Sự kiện dòng họ theo NGÀY DƯƠNG (giỗ/sinh nhật/sự kiện) — dùng cho lịch.
+  const eventsByDay = useMemo(() => {
+    const map = new Map<string, UpcomingEvent[]>();
+    if (!tree || !events || !anniversaries) return map;
+    const now = new Date();
+    const all = [
+      ...computeUpcomingEvents({
+        today: now,
+        daysAhead: 400,
+        persons: tree.persons,
+        events,
+      }),
+      ...computeUpcomingAnniversaries({
+        today: now,
+        daysAhead: 400,
+        anniversaries,
+        generationOffset: clan.generation_offset,
+      }),
+    ];
+    for (const e of all) {
+      const arr = map.get(e.date) ?? [];
+      arr.push(e);
+      map.set(e.date, arr);
+    }
+    return map;
+  }, [tree, events, anniversaries, clan.generation_offset]);
 
   const [activity, setActivity] = useState<ActivityKey | "all">("cuoi-hoi");
   const [range, setRange] = useState<RangeMode>("30");
@@ -91,11 +152,16 @@ export default function GoodDays() {
   const { prefs, toggle } = useAlmanacPrefs();
   const [showOpts, setShowOpts] = useState(false);
 
-  // Lịch tháng + ngày đang xem chi tiết.
-  const [selectedIso, setSelectedIso] = useState(today);
+  // Lịch tháng + ngày đang xem chi tiết. Nhận ?date=YYYY-MM-DD (từ trang Sự
+  // kiện / thẻ Hôm nay) để mở đúng ngày.
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get("date");
+  const initialIso =
+    dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
+  const [selectedIso, setSelectedIso] = useState(initialIso);
   const [cursor, setCursor] = useState(() => {
-    const d = new Date();
-    return { y: d.getFullYear(), m: d.getMonth() };
+    const [y, m] = initialIso.split("-").map(Number);
+    return { y, m: m - 1 };
   });
 
   const { startIso, endIso } = useMemo(() => {
@@ -151,10 +217,16 @@ export default function GoodDays() {
         selectedIso={selectedIso}
         todayIso={today}
         onSelect={setSelectedIso}
+        eventsByDay={eventsByDay}
       />
 
-      {/* Chi tiết ngày đang chọn (tốt/xấu, giờ, ngũ hành, sao…). */}
-      <DayDetail iso={selectedIso} prefs={prefs} />
+      {/* Chi tiết ngày đang chọn (tốt/xấu, giờ, ngũ hành, sao, sự kiện…). */}
+      <DayDetail
+        iso={selectedIso}
+        prefs={prefs}
+        clanId={clan.id}
+        dayEvents={eventsByDay.get(selectedIso) ?? []}
+      />
 
       {/* ─── Công cụ tìm ngày đẹp cho một việc ─────────────────── */}
       <div className="border-t pt-4">
@@ -281,12 +353,14 @@ function MonthCalendar({
   selectedIso,
   todayIso,
   onSelect,
+  eventsByDay,
 }: {
   cursor: { y: number; m: number };
   setCursor: (c: { y: number; m: number }) => void;
   selectedIso: string;
   todayIso: string;
   onSelect: (iso: string) => void;
+  eventsByDay: Map<string, UpcomingEvent[]>;
 }) {
   const { y, m } = cursor;
   const cells = useMemo(() => {
@@ -400,6 +474,12 @@ function MonthCalendar({
                   •
                 </span>
               )}
+              {eventsByDay.has(c.iso) && (
+                <span
+                  className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-amber-500"
+                  title="Có giỗ / sinh nhật / sự kiện dòng họ"
+                />
+              )}
             </button>
           );
         })}
@@ -417,14 +497,35 @@ function MonthCalendar({
         <span className="flex items-center gap-1">
           <span className="text-rose-500">•</span> Ngày kiêng
         </span>
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+          Có sự kiện dòng họ
+        </span>
       </div>
     </section>
   );
 }
 
-// ─── Chi tiết một ngày (tốt/xấu, giờ, ngũ hành, sao…) ──────────────
+// ─── Chi tiết một ngày (tốt/xấu, giờ, ngũ hành, sao, sự kiện…) ──────
 
-function DayDetail({ iso, prefs }: { iso: string; prefs: AlmanacPrefs }) {
+const EVENT_KIND_LABEL: Record<UpcomingEvent["kind"], string> = {
+  birthday: "🎂 Sinh nhật",
+  anniversary: "🕯️ Ngày giỗ",
+  tomb_visit: "⚱️ Tảo mộ / Chạp họ",
+  custom: "📌 Sự kiện",
+};
+
+function DayDetail({
+  iso,
+  prefs,
+  clanId,
+  dayEvents,
+}: {
+  iso: string;
+  prefs: AlmanacPrefs;
+  clanId: string;
+  dayEvents: UpcomingEvent[];
+}) {
   const info = describeDay(iso);
   if (!info) return null;
   const goodChi = info.aus.goodHours.map((h) => h.split(" (")[0]);
@@ -485,6 +586,51 @@ function DayDetail({ iso, prefs }: { iso: string; prefs: AlmanacPrefs }) {
           )}
         </div>
       </div>
+
+      {/* Sự kiện dòng họ hôm đó (giỗ / sinh nhật / sự kiện) */}
+      {dayEvents.length > 0 && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
+            Sự kiện dòng họ ngày này
+          </p>
+          <ul className="space-y-1">
+            {dayEvents.map((e) => {
+              const row = (
+                <span className="flex items-center gap-2 text-sm">
+                  <span className="shrink-0">{EVENT_KIND_LABEL[e.kind]}:</span>
+                  <span className="truncate font-medium">{e.title}</span>
+                  {e.subtitle ? (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      · {e.subtitle}
+                    </span>
+                  ) : null}
+                </span>
+              );
+              return (
+                <li key={e.key}>
+                  {e.personId ? (
+                    <Link
+                      to={`/clans/${clanId}/people/${e.personId}`}
+                      className="hover:text-primary"
+                    >
+                      {row}
+                    </Link>
+                  ) : e.restingPlaceId ? (
+                    <Link
+                      to={`/clans/${clanId}/graves/${e.restingPlaceId}`}
+                      className="hover:text-primary"
+                    >
+                      {row}
+                    </Link>
+                  ) : (
+                    row
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* Cảnh báo ngày kiêng */}
       {prefs.kieng && info.warnings.length > 0 && (

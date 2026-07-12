@@ -137,6 +137,13 @@ export function UpcomingEventRow({
           "flex flex-1 flex-col gap-2 text-left",
         )}
         {renderThiep(true)}
+        <Link
+          to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
+          className="text-xs text-primary hover:underline"
+          title="Xem ngày tốt/xấu, giờ hoàng đạo của ngày này"
+        >
+          Xem ngày →
+        </Link>
       </div>
     );
   }
@@ -184,16 +191,21 @@ export function UpcomingEventRow({
       }`}
     >
       {clickable}
-      {(onCreateCard || !emphasised) && (
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          {!emphasised && (
-            <span className={`text-sm whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
-              {countdown}
-            </span>
-          )}
-          {renderThiep()}
-        </div>
-      )}
+      <div className="flex flex-col items-end gap-1.5 shrink-0">
+        {!emphasised && (
+          <span className={`text-sm whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
+            {countdown}
+          </span>
+        )}
+        {renderThiep()}
+        <Link
+          to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
+          className="text-xs text-primary hover:underline whitespace-nowrap"
+          title="Xem ngày tốt/xấu, giờ hoàng đạo của ngày này"
+        >
+          Xem ngày →
+        </Link>
+      </div>
     </div>
   );
 }
