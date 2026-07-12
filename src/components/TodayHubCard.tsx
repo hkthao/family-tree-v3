@@ -347,14 +347,14 @@ export function TodayHubCard({
         )}
       </div>
 
-      {/* Lối vào trang "Xem ngày tốt" — tìm ngày đẹp cho việc lớn. */}
+      {/* Lối vào trang lịch — mở đúng NGÀY ĐANG XEM trên lịch tháng. */}
       <Link
-        to={`/clans/${clanId}/xem-ngay`}
+        to={`/clans/${clanId}/xem-ngay?date=${iso}`}
         className="group flex items-center justify-between gap-2 border-t bg-muted/20 px-4 py-3 hover:bg-muted/40"
       >
         <span className="flex items-center gap-2 text-sm font-medium">
           <IconSparkles className="h-4 w-4 text-primary" />
-          Xem ngày tốt cho việc lớn (cưới hỏi, làm nhà…)
+          Mở lịch & xem chi tiết ngày này
         </span>
         <IconArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </Link>
