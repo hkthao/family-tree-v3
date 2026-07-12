@@ -298,7 +298,6 @@ export default function People() {
   // thay vì nằm tít trên header phải cuộn lên.
   const actionButtons = (
     <>
-      <RefreshButton clanId={clan.id} cachedVersion={clan.data_version} compact />
       {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
       {canEdit && (
         <>
@@ -398,6 +397,14 @@ export default function People() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
+            rightSlot={
+              <RefreshButton
+                clanId={clan.id}
+                cachedVersion={clan.data_version}
+                compact
+                className="h-8 w-8 border-0 bg-transparent hover:bg-muted"
+              />
+            }
           />
         </div>
         <SegmentedControl ariaLabel="Chế độ hiển thị">
@@ -428,7 +435,9 @@ export default function People() {
         activeCount={
           (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "generation" ? 1 : 0)
         }
-        actions={view === "people" ? actionButtons : undefined}
+        actions={
+          view === "people" && (isMember || canEdit) ? actionButtons : undefined
+        }
       >
       {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
           parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc. */}
