@@ -16,6 +16,11 @@ const CHI = [
   "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi",
 ];
 
+const CAN = [
+  "Giáp", "Ất", "Bính", "Đinh", "Mậu",
+  "Kỷ", "Canh", "Tân", "Nhâm", "Quý",
+];
+
 // 12 sao theo thứ tự, kèm tốt/xấu + nghĩa ngắn (để giải thích "vì sao").
 // Khởi đầu là Thanh Long.
 const STARS: { name: string; good: boolean; desc: string }[] = [
@@ -74,6 +79,8 @@ export interface DayAuspice {
   label: string;
   /** Giờ hoàng đạo (khung giờ tốt), vd ["Tý (23–1)", …]. */
   goodHours: string[];
+  /** Giờ hắc đạo (khung giờ xấu) — 6 giờ còn lại. */
+  badHours: string[];
 }
 
 /** Tính ngày tốt/xấu + giờ hoàng đạo cho một ngày dương yyyy-mm-dd. */
@@ -89,14 +96,19 @@ export function dayAuspice(isoSolar: string): DayAuspice | null {
   const starIdx = (dayChi - startChi + 12) % 12;
   const star = STARS[starIdx];
 
-  const goodHours = (GOOD_HOUR_CHI[dayChi] ?? []).map(
-    (ci) => `${CHI[ci]} (${CHI_HOURS[ci]})`,
-  );
+  const goodChi = GOOD_HOUR_CHI[dayChi] ?? [];
+  const goodHours = goodChi.map((ci) => `${CHI[ci]} (${CHI_HOURS[ci]})`);
+  // Giờ hắc đạo = 6 chi còn lại (không nằm trong giờ hoàng đạo).
+  const goodSet = new Set(goodChi);
+  const badHours = CHI.map((_, ci) => ci)
+    .filter((ci) => !goodSet.has(ci))
+    .map((ci) => `${CHI[ci]} (${CHI_HOURS[ci]})`);
 
   return {
     good: star.good,
     star: star.name,
     starDesc: star.desc,
+    badHours,
     label: star.good ? "Hoàng đạo" : "Hắc đạo",
     goodHours,
   };
@@ -286,6 +298,8 @@ export interface DayInfo {
   tu: TuInfo;
   /** Tiết khí (24 tiết), vd "Lập xuân". */
   tietKhi: string;
+  /** Ngũ hành nạp âm, vd "Ốc Thượng Thổ". */
+  napAm: string;
   /** Ngày kiêng dân gian (Tam Nương, Nguyệt Kỵ) — rỗng nếu không có. */
   warnings: FolkWarning[];
   /** Câu giải thích "vì sao" ngày này tốt/xấu, đầy đủ (dùng ở thẻ 1 ngày). */
@@ -334,6 +348,39 @@ function parseIsoUtc(iso: string): number {
 
 function isoFromUtc(t: number): string {
   return new Date(t).toISOString().slice(0, 10);
+}
+
+// ─── Ngũ hành nạp âm (60 hoa giáp → 30 nạp âm) ──────────────────────
+// Mỗi cặp can-chi liên tiếp chung 1 nạp âm. Kiểm chứng: Đinh Hợi = Ốc Thượng Thổ.
+const NAP_AM = [
+  "Hải Trung Kim", "Lư Trung Hỏa", "Đại Lâm Mộc", "Lộ Bàng Thổ",
+  "Kiếm Phong Kim", "Sơn Đầu Hỏa", "Giản Hạ Thủy", "Thành Đầu Thổ",
+  "Bạch Lạp Kim", "Dương Liễu Mộc", "Tuyền Trung Thủy", "Ốc Thượng Thổ",
+  "Tích Lịch Hỏa", "Tùng Bách Mộc", "Trường Lưu Thủy", "Sa Trung Kim",
+  "Sơn Hạ Hỏa", "Bình Địa Mộc", "Bích Thượng Thổ", "Kim Bạch Kim",
+  "Phú Đăng Hỏa", "Thiên Hà Thủy", "Đại Trạch Thổ", "Thoa Xuyến Kim",
+  "Tang Đố Mộc", "Đại Khê Thủy", "Sa Trung Thổ", "Thiên Thượng Hỏa",
+  "Thạch Lựu Mộc", "Đại Hải Thủy",
+];
+
+/** Chỉ số can-chi trong vòng 60 (0 = Giáp Tý). -1 nếu không parse được. */
+function sexagenaryIndex(canChiDay: string): number {
+  const parts = canChiDay.trim().split(/\s+/);
+  const can = CAN.indexOf(parts[0]);
+  const chi = CHI.indexOf(parts[parts.length - 1]);
+  if (can < 0 || chi < 0) return -1;
+  for (let i = 0; i < 60; i++) {
+    if (i % 10 === can && i % 12 === chi) return i;
+  }
+  return -1;
+}
+
+/** Ngũ hành nạp âm của một ngày dương yyyy-mm-dd (vd "Ốc Thượng Thổ"). */
+export function dayNapAm(iso: string): string | null {
+  const cc = getCanChiForSolarDate(iso);
+  if (!cc) return null;
+  const idx = sexagenaryIndex(cc.day);
+  return idx < 0 ? null : NAP_AM[Math.floor(idx / 2)];
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -508,6 +555,7 @@ export function describeDay(
     truc: { name: truc.name, summary: truc.summary },
     tu,
     tietKhi: dayTietKhi(iso) ?? "",
+    napAm: dayNapAm(iso) ?? "",
     warnings,
     reason: buildReason(aus, truc, activity),
     shortReason: buildShortReason(aus, truc, activity),
