@@ -116,7 +116,7 @@ export function ClanLayout() {
   ];
 
   return (
-    <div className="min-h-dvh bg-background pb-20 lg:pb-0 lg:pl-72">
+    <div className="min-h-dvh bg-background pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0 lg:pl-72">
       {/* Member-only signals — non-member visitors of a public clan
           shouldn't trigger the milestone toast or the drawer badge,
           and those queries 403 for them anyway. */}
