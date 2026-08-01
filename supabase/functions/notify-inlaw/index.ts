@@ -19,12 +19,22 @@
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const RESEND_FROM =
-  Deno.env.get("RESEND_FROM") ?? "Dòng Họ Việt <noreply@giapha.local>";
+// ─── SMTP (gửi mail trực tiếp, thay cho Resend HTTP API) ───────────
+// Dùng chung cấu hình SMTP với GoTrue. Thiếu SMTP_HOST/SMTP_PASS ⇒
+// dry-run: không gửi mail thật.
+const SMTP_HOST = Deno.env.get("SMTP_HOST") ?? "";
+const SMTP_PORT = Number(Deno.env.get("SMTP_PORT") ?? "465");
+const SMTP_USER = Deno.env.get("SMTP_USER") ?? "";
+const SMTP_PASS = Deno.env.get("SMTP_PASS") ?? "";
+const MAIL_FROM =
+  Deno.env.get("SMTP_FROM") ??
+  (Deno.env.get("SMTP_SENDER_NAME") && Deno.env.get("SMTP_ADMIN_EMAIL")
+    ? `${Deno.env.get("SMTP_SENDER_NAME")} <${Deno.env.get("SMTP_ADMIN_EMAIL")}>`
+    : "Dòng Họ Việt <noreply@giapha.local>");
 const APP_BASE_URL =
   Deno.env.get("APP_BASE_URL") ?? "http://localhost:5173";
 
@@ -204,36 +214,44 @@ interface OutEmail {
   html: string;
 }
 
-async function sendOne(email: OutEmail): Promise<{ ok: boolean; error?: string }> {
-  if (!RESEND_API_KEY) return { ok: false, error: "no-api-key (dry-run)" };
-  // try/catch around the fetch so a single ECONNRESET / DNS blip
-  // doesn't abort the loop and leave later recipients silently
-  // un-emailed. Each recipient is independent — we surface the
-  // failure per row + keep iterating.
+// Mở kết nối SMTP mới cho mỗi email rồi đóng — không giữ trạng thái.
+// Bọc try/catch bên trong nên một lỗi SMTP/DNS lẻ không làm hỏng vòng
+// lặp: mỗi người nhận độc lập, ta trả lỗi theo từng dòng + tiếp tục.
+async function sendMail(
+  to: string,
+  subject: string,
+  html: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!SMTP_HOST || !SMTP_PASS) {
+    return { ok: false, error: "no-smtp (dry-run)" };
+  }
+  const client = new SMTPClient({
+    connection: {
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
+      tls: SMTP_PORT === 465, // 465 = TLS ngầm; 587 = STARTTLS
+      auth: { username: SMTP_USER, password: SMTP_PASS },
+    },
+  });
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: RESEND_FROM,
-        to: email.to,
-        subject: email.subject,
-        html: email.html,
-      }),
-    });
-    if (!res.ok) {
-      return { ok: false, error: `resend ${res.status}: ${await res.text()}` };
-    }
+    await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
     return { ok: true };
   } catch (e) {
     return {
       ok: false,
-      error: `network: ${e instanceof Error ? e.message : String(e)}`,
+      error: `smtp: ${e instanceof Error ? e.message : String(e)}`,
     };
+  } finally {
+    try {
+      await client.close();
+    } catch {
+      /* đóng lỗi thì bỏ qua */
+    }
   }
+}
+
+async function sendOne(email: OutEmail): Promise<{ ok: boolean; error?: string }> {
+  return await sendMail(email.to, email.subject, email.html);
 }
 
 interface AdminContact {
