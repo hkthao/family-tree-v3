@@ -14,21 +14,32 @@
  *     is the X-Cron-Token header.
  *   - Manual / staging: POST with the same header + optional
  *     {"date": "yyyy-mm-dd"} body to simulate a different day.
- *   - Dry-run: omit RESEND_API_KEY; the function still walks the data
- *     and writes "dry-run" rows to notification_log so you can verify
- *     the matcher without sending real emails.
+ *   - Dry-run: omit SMTP_HOST/SMTP_PASS; the function still walks the
+ *     data and writes "dry-run" rows to notification_log so you can
+ *     verify the matcher without sending real emails.
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { getLunarDate, getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
 import webpush from "npm:web-push@3.6.7";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CRON_TOKEN = Deno.env.get("CRON_TOKEN") ?? "";
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const RESEND_FROM =
-  Deno.env.get("RESEND_FROM") ?? "Dòng Họ Việt <noreply@giapha.local>";
+// ─── SMTP (gửi mail trực tiếp, thay cho Resend HTTP API) ───────────
+// Dùng chung cấu hình SMTP với GoTrue (smtp.resend.com hoặc SMTP nào
+// khác). Thiếu SMTP_HOST/SMTP_PASS ⇒ dry-run: hàm vẫn chạy nhưng
+// không gửi mail thật.
+const SMTP_HOST = Deno.env.get("SMTP_HOST") ?? "";
+const SMTP_PORT = Number(Deno.env.get("SMTP_PORT") ?? "465");
+const SMTP_USER = Deno.env.get("SMTP_USER") ?? "";
+const SMTP_PASS = Deno.env.get("SMTP_PASS") ?? "";
+const MAIL_FROM =
+  Deno.env.get("SMTP_FROM") ??
+  (Deno.env.get("SMTP_SENDER_NAME") && Deno.env.get("SMTP_ADMIN_EMAIL")
+    ? `${Deno.env.get("SMTP_SENDER_NAME")} <${Deno.env.get("SMTP_ADMIN_EMAIL")}>`
+    : "Dòng Họ Việt <noreply@giapha.local>");
 const APP_BASE_URL =
   Deno.env.get("APP_BASE_URL") ?? "https://giapha.app";
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
@@ -266,31 +277,48 @@ function esc(s: string): string {
     .replaceAll('"', "&quot;");
 }
 
+// Mở kết nối SMTP mới cho mỗi email rồi đóng — không giữ trạng thái,
+// tránh rò kết nối giữa các lần gọi (lượng mail/ngày nhỏ nên chi phí
+// bắt tay TLS không đáng kể).
+async function sendMail(
+  to: string,
+  subject: string,
+  html: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!SMTP_HOST || !SMTP_PASS) {
+    return { ok: false, error: "no-smtp (dry-run)" };
+  }
+  const client = new SMTPClient({
+    connection: {
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
+      tls: SMTP_PORT === 465, // 465 = TLS ngầm; 587 = STARTTLS
+      auth: { username: SMTP_USER, password: SMTP_PASS },
+    },
+  });
+  try {
+    await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      error: `smtp: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  } finally {
+    try {
+      await client.close();
+    } catch {
+      /* đóng lỗi thì bỏ qua */
+    }
+  }
+}
+
 async function sendEmailViaResend(
   to: string,
   item: FireItem,
   clanName: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  if (!RESEND_API_KEY) {
-    return { ok: false, error: "no-api-key (dry-run)" };
-  }
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: RESEND_FROM,
-      to,
-      subject: emailSubject(item),
-      html: emailHtml(item, clanName),
-    }),
-  });
-  if (!res.ok) {
-    return { ok: false, error: `resend ${res.status}: ${await res.text()}` };
-  }
-  return { ok: true };
+  return await sendMail(to, emailSubject(item), emailHtml(item, clanName));
 }
 
 // ─── Main handler ──────────────────────────────────────────────────
@@ -630,7 +658,7 @@ Deno.serve(async (req) => {
     pushSent: pushResult.sent,
     pushFailed: pushResult.failed,
     errors: errors.slice(0, 5),
-    dryRun: !RESEND_API_KEY,
+    dryRun: !SMTP_PASS,
     pushReady: PUSH_READY,
   });
 });
@@ -803,31 +831,7 @@ async function sendMonthlyEmail(
   subject: string,
   html: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  if (!RESEND_API_KEY) return { ok: false, error: "no-api-key (dry-run)" };
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: RESEND_FROM,
-        to,
-        subject,
-        html,
-      }),
-    });
-    if (!res.ok) {
-      return { ok: false, error: `resend ${res.status}: ${await res.text()}` };
-    }
-    return { ok: true };
-  } catch (e) {
-    return {
-      ok: false,
-      error: `network: ${e instanceof Error ? e.message : String(e)}`,
-    };
-  }
+  return await sendMail(to, subject, html);
 }
 
 // ─── Web Push dispatch ─────────────────────────────────────────────
