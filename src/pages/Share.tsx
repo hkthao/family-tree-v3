@@ -651,7 +651,7 @@ export default function Share() {
     <div className="h-dvh bg-background flex flex-col">
       <header className="border-b py-3 px-4 shrink-0">
         <h1 className="clan-name text-xl font-semibold text-center">
-          Cây gia phả
+          {data?.clan_name ? `Gia phả ${data.clan_name}` : "Cây gia phả"}
         </h1>
         <p className="text-xs text-center text-muted-foreground mt-1">
           {publicClan
@@ -924,6 +924,41 @@ export default function Share() {
           </>
         )}
       </main>
+
+      {/* CTA chuyển đổi — hiện cho MỌI khách xem ẩn danh (cả /share/:token
+          lẫn /xem/clans/:id). Đây là đầu phễu tăng trưởng: người xem cây họ
+          người khác từ Facebook → mời tạo gia phả của chính họ. Ẩn khi toàn
+          màn hình và khi in. */}
+      {data && data.persons.length > 0 && !isFullscreen && (
+        <div className="shrink-0 border-t bg-primary/5 px-4 py-3 print-hide">
+          <div className="container mx-auto flex max-w-4xl flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-left">
+            <p className="text-sm">
+              {data.clan_name ? (
+                <>
+                  Đây là gia phả <b>{data.clan_name}</b>.{" "}
+                </>
+              ) : (
+                <>Bạn đang xem một gia phả trên Dòng Họ Việt.{" "}</>
+              )}
+              <span className="text-muted-foreground">
+                Tạo cây gia phả cho dòng họ bạn — miễn phí, chỉ vài phút.
+              </span>
+            </p>
+            <Button asChild size="sm" className="shrink-0">
+              <Link
+                to="/signup"
+                onClick={() =>
+                  track("share_cta_click", {
+                    mode: publicClan ? "public_clan" : "token",
+                  })
+                }
+              >
+                Tạo gia phả miễn phí
+              </Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

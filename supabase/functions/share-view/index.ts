@@ -178,11 +178,12 @@ Deno.serve(async (req) => {
   // ---- 2b. Fetch clan-level toggles that affect masking + display ----
   const { data: clanRow } = await sb
     .from("clans")
-    .select("hide_photos_in_share, generation_offset")
+    .select("name, hide_photos_in_share, generation_offset")
     .eq("id", link.clan_id)
     .maybeSingle();
   const hidePhotos = !!clanRow?.hide_photos_in_share;
   const generationOffset = clanRow?.generation_offset ?? 0;
+  const clanName = (clanRow?.name as string | null) ?? null;
 
   // ---- scope='resting_place': QR tại mộ → trả thẳng thông tin nơi an
   // nghỉ + người an nghỉ (che tên người còn sống) + ảnh. Bỏ qua pipeline
@@ -591,6 +592,7 @@ Deno.serve(async (req) => {
 
   return json({
     clan_id: link.clan_id,
+    clan_name: clanName,
     root_person_id: link.root_person_id,
     scope: link.scope,
     generation_offset: generationOffset,
