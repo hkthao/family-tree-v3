@@ -120,6 +120,8 @@ export interface ShareViewHeritageListItem {
 
 export interface ShareViewPayload {
   clan_id: string;
+  /** Tên dòng họ — hiển thị tiêu đề + CTA "tạo gia phả họ bạn". */
+  clan_name?: string | null;
   root_person_id: string | null;
   /** 'tree_view' (default) or 'single_person'. Drives client rendering. */
   scope: string;
