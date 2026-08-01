@@ -2809,7 +2809,6 @@ export type Database = {
       }
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
-      delete_expired_card_shares: { Args: never; Returns: number }
       delete_my_account: { Args: never; Returns: undefined }
       delete_my_push_subscription: {
         Args: { p_endpoint: string }
