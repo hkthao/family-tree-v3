@@ -126,6 +126,16 @@ export function AppDrawer({ open, onClose }: Props) {
     };
   }, [open]);
 
+  // ESC đóng drawer (modal trên mobile) — bàn phím ngang tầm với chạm nền.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   // Close when the user navigates somewhere via a drawer link. We can't
   // attach this in items themselves cleanly because NavLink also re-renders
   // on its own location change — easier to just close from a parent click

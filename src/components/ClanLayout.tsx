@@ -17,6 +17,7 @@ import {
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanRealtime } from "@/hooks/useClanRealtime";
 import { useCompletionMilestone } from "@/hooks/useCompletionMilestone";
@@ -57,8 +58,8 @@ export function ClanLayout() {
 
   if (isLoading || (isFetching && !clan)) {
     return (
-      <main className="min-h-dvh flex items-center justify-center">
-        <p className="text-muted-foreground">Đang tải…</p>
+      <main>
+        <LoadingState fullscreen />
       </main>
     );
   }
@@ -164,13 +165,7 @@ export function ClanLayout() {
       <main className="container max-w-4xl py-6 px-4 overflow-x-clip">
         {/* Suspense riêng cho vùng nội dung → chuyển tab (trang con lazy) chỉ
             hiện spinner ở đây, GIỮ NGUYÊN thanh nav trên/dưới. */}
-        <Suspense
-          fallback={
-            <div className="flex min-h-[50vh] items-center justify-center">
-              <span className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
-            </div>
-          }
-        >
+        <Suspense fallback={<LoadingState className="min-h-[50vh]" />}>
           <Outlet context={{ clan } satisfies OutletContext} />
         </Suspense>
       </main>

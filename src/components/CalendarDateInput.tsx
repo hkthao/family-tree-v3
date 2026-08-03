@@ -123,12 +123,12 @@ export function CalendarDateInput({
         isLeap: converted.isLeap,
       });
     } else {
-      // Couldn't convert — keep mode change but reset the parts so the
-      // user knows to re-enter rather than mis-read.
+      // Không convert được (ngày còn dở/không hợp lệ): CHỈ đổi nhãn lịch
+      // và GIỮ nguyên phần đã gõ — tránh xoá trắng làm mất công người dùng.
       onChange({
         mode: nextMode,
-        parts: { year: "", month: "", day: "" },
-        isLeap: false,
+        parts: value.parts,
+        isLeap: value.isLeap,
       });
     }
   }
