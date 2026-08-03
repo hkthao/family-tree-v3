@@ -604,7 +604,7 @@ function LunarFestivalsQuickAdd({
     existing.some((e) => e.lunar_month === f.lunar_month && e.lunar_day === f.lunar_day);
 
   return (
-    <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+    <div className="space-y-2">
       <p className="text-sm font-medium">Thêm nhanh lễ tiết truyền thống</p>
       <p className="text-xs text-muted-foreground">
         Tạo sự kiện âm lịch lặp hằng năm — cả họ được nhắc trước. Giỗ Tổ / Chạp họ /
