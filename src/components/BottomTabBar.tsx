@@ -37,7 +37,7 @@ export function BottomTabBar({ tabs }: Props) {
     <nav
       // Hidden on lg+: at that width the left drawer is already pinned
       // and serves the navigation role.
-      className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background safe-area-bottom lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Điều hướng chính"
     >
       <ul className={cn("grid max-w-xl mx-auto", GRID_COLS[tabs.length] ?? "grid-cols-4")}>
