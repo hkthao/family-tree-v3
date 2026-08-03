@@ -369,7 +369,7 @@ export default function Events() {
             </>
           )}
           {events && events.length > 0 ? (
-            <ul className="divide-y border rounded-md">
+            <ul className="divide-y">
               {events.map((e) => (
                 <CustomEventItem
                   key={e.id}
@@ -495,42 +495,56 @@ function CustomEventItem({
   const cardGenre: CardGenre = "event";
 
   return (
-    <li className="px-3 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-      <button type="button" onClick={onOpen} className="min-w-0 text-left w-full sm:flex-1 hover:opacity-80">
-        <p className="font-semibold line-clamp-2 text-base">{event.title}</p>
-        <p className="text-sm text-muted-foreground">
-          {when} {event.is_yearly ? "• lặp hằng năm" : ""}
-        </p>
-        <RecordDates
-          createdAt={event.created_at}
-          updatedAt={event.updated_at}
-          className="text-xs text-muted-foreground/80 mt-0.5 truncate"
-        />
-      </button>
-      <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-        <Button size="sm" variant="outline" onClick={() => setCardOpen(true)}>
-          <IconSparkles className="h-4 w-4 mr-1" />
-          Thiệp
-        </Button>
-        {canDelete && (
+    <li className="py-3 first:pt-0 last:pb-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <button
+          type="button"
+          onClick={onOpen}
+          className="min-w-0 text-left w-full sm:flex-1 hover:opacity-80"
+        >
+          <p className="font-semibold line-clamp-2 text-base">{event.title}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {when}
+            {event.is_yearly ? " • lặp hằng năm" : ""}
+          </p>
+          <RecordDates
+            createdAt={event.created_at}
+            updatedAt={event.updated_at}
+            className="text-xs text-muted-foreground/80 mt-0.5 truncate"
+          />
+        </button>
+        {/* Mobile: nút thành hàng đầy đủ chiều rộng bên dưới (không bóp
+            cột chữ gây rớt dòng). Desktop: nằm bên phải, co theo nội dung. */}
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             size="sm"
             variant="outline"
-            className="text-destructive"
-            disabled={delM.isPending}
-            onClick={async () => {
-              const ok = await confirm({
-                title: `Xoá sự kiện "${event.title}"?`,
-                confirmLabel: "Xoá",
-                destructive: true,
-              });
-              if (ok) delM.mutate();
-            }}
+            className="flex-1 sm:flex-none"
+            onClick={() => setCardOpen(true)}
           >
-            <IconTrash className="h-4 w-4 mr-1" />
-            Xoá
+            <IconSparkles className="h-4 w-4 mr-1" />
+            Thiệp
           </Button>
-        )}
+          {canDelete && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 sm:flex-none text-destructive"
+              disabled={delM.isPending}
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Xoá sự kiện "${event.title}"?`,
+                  confirmLabel: "Xoá",
+                  destructive: true,
+                });
+                if (ok) delM.mutate();
+              }}
+            >
+              <IconTrash className="h-4 w-4 mr-1" />
+              Xoá
+            </Button>
+          )}
+        </div>
       </div>
 
       <ShareCardDialog
