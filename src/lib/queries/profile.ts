@@ -12,6 +12,7 @@ export interface MyProfile {
   is_suspended: boolean;
   notify_monthly_lunar: boolean;
   notify_via_push: boolean;
+  notify_weekly_digest: boolean;
 }
 
 export async function getMyProfile(
@@ -21,7 +22,7 @@ export async function getMyProfile(
   const { data, error } = await client
     .from("profiles")
     .select(
-      "id, display_name, is_platform_admin, is_suspended, notify_monthly_lunar, notify_via_push",
+      "id, display_name, is_platform_admin, is_suspended, notify_monthly_lunar, notify_via_push, notify_weekly_digest",
     )
     .eq("id", userId)
     .maybeSingle();
@@ -37,6 +38,18 @@ export async function updateMyMonthlyLunarPref(
   const { error } = await client
     .from("profiles")
     .update({ notify_monthly_lunar: enabled })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateMyWeeklyDigestPref(
+  userId: string,
+  enabled: boolean,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("profiles")
+    .update({ notify_weekly_digest: enabled })
     .eq("id", userId);
   if (error) throw new Error(error.message);
 }

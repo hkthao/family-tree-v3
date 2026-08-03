@@ -2148,6 +2148,7 @@ export type Database = {
           max_clans: number
           notify_monthly_lunar: boolean
           notify_via_push: boolean
+          notify_weekly_digest: boolean
         }
         Insert: {
           created_at?: string
@@ -2158,6 +2159,7 @@ export type Database = {
           max_clans?: number
           notify_monthly_lunar?: boolean
           notify_via_push?: boolean
+          notify_weekly_digest?: boolean
         }
         Update: {
           created_at?: string
@@ -2168,6 +2170,7 @@ export type Database = {
           max_clans?: number
           notify_monthly_lunar?: boolean
           notify_via_push?: boolean
+          notify_weekly_digest?: boolean
         }
         Relationships: []
       }
