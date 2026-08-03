@@ -37,6 +37,7 @@ import {
   getMyProfile,
   updateMyDisplayName,
   updateMyMonthlyLunarPref,
+  updateMyWeeklyDigestPref,
 } from "@/lib/queries/profile";
 import { sendTestPush, updateMyNotifyViaPush } from "@/lib/queries/push";
 import {
@@ -91,6 +92,12 @@ export default function Account() {
         <DisplayNameCard
           userId={userId}
           current={profile?.display_name ?? null}
+          queryClient={queryClient}
+        />
+
+        <WeeklyDigestCard
+          userId={userId}
+          enabled={profile?.notify_weekly_digest ?? true}
           queryClient={queryClient}
         />
 
@@ -820,6 +827,61 @@ function TestPushButton() {
     >
       {m.isPending ? "Đang gửi…" : "Gửi thông báo test"}
     </Button>
+  );
+}
+
+// ─── Bản tin tuần toggle ──────────────────────────────────────────
+
+function WeeklyDigestCard({
+  userId,
+  enabled,
+  queryClient,
+}: {
+  userId: string;
+  enabled: boolean;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const toast = useToast();
+  const m = useMutation({
+    mutationFn: (next: boolean) => updateMyWeeklyDigestPref(userId, next),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.myProfile(userId),
+      });
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Bản tin tuần</CardTitle>
+        <CardDescription>
+          Mỗi tuần một email (và thông báo đẩy) gộp: sự kiện 7 ngày tới,
+          người mới thêm vào cây, và thông báo mới của dòng họ bạn.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => m.mutate(e.target.checked)}
+            disabled={m.isPending}
+            className="mt-1 h-5 w-5 accent-primary shrink-0"
+          />
+          <div>
+            <p className="font-medium">
+              {enabled ? "Đang bật — nhận bản tin mỗi tuần" : "Tắt"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng.
+            </p>
+          </div>
+        </label>
+      </CardContent>
+    </Card>
   );
 }
 
