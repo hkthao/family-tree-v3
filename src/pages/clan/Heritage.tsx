@@ -90,12 +90,12 @@ export default function Heritage() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Di sản & Văn hoá" },
+          { label: "Di sản dòng họ" },
         ]}
       />
       <PageHeader
         icon={<IconScroll className="h-7 w-7" />}
-        title="Di sản & Văn hoá"
+        title="Di sản dòng họ"
         description="Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
       />
 

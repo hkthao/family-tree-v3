@@ -447,13 +447,16 @@ function buildSections(
   sections.push({ label: "Chung", items: global });
 
   // -- Clan-scoped sections ------------------------------------------------
-  // 4 nhóm semantic — mục HAY DÙNG đẩy lên nhóm đầu:
-  //   1. <clan name>        — hay dùng nhất: Tổng quan / Cây gia phả /
-  //      Danh bạ (gồm Tra cứu xưng hô) / Sự kiện
-  //   2. Cộng đồng & Di sản — Bảng tin / Hôm nay / Mộ phần / Di sản
-  //   3. Cập nhật           — data-entry cho editor+ (Việc cần làm,
-  //      Đóng góp, Nhập Excel, Gộp, Nhật ký)
-  //   4. Quản trị           — chỉ admin (Thành viên / Thông gia / QR / Cài đặt)
+  // Nhóm semantic — mục HAY DÙNG đẩy lên nhóm đầu:
+  //   1. <clan name>          — lõi: Tổng quan / Cây / Danh bạ / Sự kiện /
+  //      Hôm nay (khớp thanh tab dưới, không bị chôn).
+  //   2. Cộng đồng            — Bảng tin.
+  //   3. Di sản & Tưởng niệm  — Phòng ký ức / Di sản dòng họ / Mộ phần /
+  //      Bảng vàng công đức / Quỹ họ (gom hết mục di sản/tưởng niệm về 1
+  //      chỗ, hết cảnh "Di sản" rải rác + nhãn na ná "Sổ tay Văn hoá").
+  //   4. Cập nhật             — data-entry cho editor+ (Việc cần làm,
+  //      Đóng góp, Công cụ).
+  //   5. Quản trị             — chỉ admin (Thành viên / Thông gia / QR / Cài đặt)
   if (clanId && clan) {
     const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
     const canEdit =
@@ -480,14 +483,6 @@ function buildSections(
         end: true,
       },
     ];
-    // Phòng ký ức (ảnh 3D) — ngay dưới Tổng quan; chỉ thành viên (ảnh nhạy cảm).
-    if (isMember) {
-      topItems.push({
-        to: `/clans/${clanId}/memory-room`,
-        label: "Phòng ký ức",
-        icon: <IconCamera className={ic} />,
-      });
-    }
     if (canTree) {
       topItems.push(
         {
@@ -510,52 +505,71 @@ function buildSections(
         icon: <IconCalendar className={ic} />,
       });
     }
-    sections.push({ label: clan.name, items: topItems });
-
-    // ─── Section 2: Cộng đồng & Di sản ─────────────────────────────
-    // Bảng tin = nội dung cộng đồng → chỉ thành viên. Các mục còn lại gate
-    // theo cờ công khai cho non-member.
-    const communityItems: DrawerItem[] = [];
-    if (isMember) {
-      communityItems.push({
-        to: `/clans/${clanId}/board`,
-        label: "Bảng tin",
-        icon: <IconSparkles className={ic} />,
-      });
-      communityItems.push({
-        to: `/clans/${clanId}/honor`,
-        label: "Bảng vàng công đức",
-        icon: <IconAward className={ic} />,
-      });
-      communityItems.push({
-        to: `/clans/${clanId}/fund`,
-        label: "Quỹ họ",
-        icon: <IconWallet className={ic} />,
-      });
-    }
+    // "Hôm nay" là mục lõi (có trong thanh tab dưới) → để cạnh Sự kiện,
+    // không chôn trong nhóm khác.
     if (canTree) {
-      communityItems.push({
+      topItems.push({
         to: `/clans/${clanId}/today`,
         label: "Hôm nay",
         icon: <IconSun className={ic} />,
       });
     }
+    sections.push({ label: clan.name, items: topItems });
+
+    // ─── Section 2: Cộng đồng ──────────────────────────────────────
+    // Nội dung cộng đồng → chỉ thành viên.
+    if (isMember) {
+      sections.push({
+        label: "Cộng đồng",
+        items: [
+          {
+            to: `/clans/${clanId}/board`,
+            label: "Bảng tin",
+            icon: <IconSparkles className={ic} />,
+          },
+        ],
+      });
+    }
+
+    // ─── Section 3: Di sản & Tưởng niệm ────────────────────────────
+    // Gom hết mục di sản/tưởng niệm/công đức về một chỗ. Phòng ký ức +
+    // công đức + quỹ chỉ thành viên; di sản/mộ phần gate theo cờ công khai.
+    const heritageItems: DrawerItem[] = [];
+    if (isMember) {
+      heritageItems.push({
+        to: `/clans/${clanId}/memory-room`,
+        label: "Phòng ký ức",
+        icon: <IconCamera className={ic} />,
+      });
+    }
+    if (canHeritage) {
+      heritageItems.push({
+        to: `/clans/${clanId}/heritage`,
+        label: "Di sản dòng họ",
+        icon: <IconScroll className={ic} />,
+      });
+    }
     if (canGraves) {
-      communityItems.push({
+      heritageItems.push({
         to: `/clans/${clanId}/graves`,
         label: "Mộ phần & tro cốt",
         icon: <IconGrave className={ic} />,
       });
     }
-    if (canHeritage) {
-      communityItems.push({
-        to: `/clans/${clanId}/heritage`,
-        label: "Di sản & Văn hoá",
-        icon: <IconScroll className={ic} />,
+    if (isMember) {
+      heritageItems.push({
+        to: `/clans/${clanId}/honor`,
+        label: "Bảng vàng công đức",
+        icon: <IconAward className={ic} />,
+      });
+      heritageItems.push({
+        to: `/clans/${clanId}/fund`,
+        label: "Quỹ họ",
+        icon: <IconWallet className={ic} />,
       });
     }
-    if (communityItems.length > 0) {
-      sections.push({ label: "Cộng đồng & Di sản", items: communityItems });
+    if (heritageItems.length > 0) {
+      sections.push({ label: "Di sản & Tưởng niệm", items: heritageItems });
     }
 
     // ─── Section 3: Cập nhật — data-entry cho editor+ ─────────────

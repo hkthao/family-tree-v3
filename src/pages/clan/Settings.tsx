@@ -231,7 +231,7 @@ export default function Settings() {
                     {
                       checked: pubHeritage,
                       set: setPubHeritage,
-                      label: "Di sản & Văn hoá",
+                      label: "Di sản dòng họ",
                       desc: "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh.",
                     },
                     {
