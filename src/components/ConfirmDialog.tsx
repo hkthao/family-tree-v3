@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -37,6 +37,7 @@ export function ConfirmDialogProvider({
   children: React.ReactNode;
 }) {
   const [pending, setPending] = useState<Pending | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const confirm = useCallback((opts: ConfirmOptions) => {
     return new Promise<boolean>((resolve) => {
@@ -51,15 +52,43 @@ export function ConfirmDialogProvider({
     });
   }, []);
 
-  // ESC to cancel
+  // ESC huỷ · Enter đồng ý · Tab bị giữ trong hộp thoại (focus-trap) ·
+  // trả focus về phần tử đang focus trước đó khi đóng (a11y).
   useEffect(() => {
     if (!pending) return;
+    const prevFocus = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close(false);
-      if (e.key === "Enter") close(true);
+      if (e.key === "Escape") {
+        close(false);
+        return;
+      }
+      if (e.key === "Enter") {
+        close(true);
+        return;
+      }
+      if (e.key === "Tab") {
+        const root = dialogRef.current;
+        if (!root) return;
+        const f = root.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (f.length === 0) return;
+        const first = f[0];
+        const last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      prevFocus?.focus?.();
+    };
   }, [pending, close]);
 
   return (
@@ -73,6 +102,7 @@ export function ConfirmDialogProvider({
           aria-modal="true"
         >
           <div
+            ref={dialogRef}
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-md rounded-lg border bg-card shadow-lg overflow-hidden"
           >

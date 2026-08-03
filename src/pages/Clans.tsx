@@ -21,6 +21,7 @@ import { ClanBadges } from "@/components/ClanBadges";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
 import { Pagination } from "@/components/Pagination";
@@ -288,7 +289,7 @@ export default function Clans() {
           </p>
         )}
 
-        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+        {isLoading && <LoadingState />}
 
         {error && (
           <ErrorState error={error} onRetry={() => active.refetch()} />

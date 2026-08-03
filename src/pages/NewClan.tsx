@@ -54,7 +54,7 @@ export default function NewClan() {
         <PageHeader
           icon={<IconPlus className="h-7 w-7" />}
           title="Tạo dòng họ mới"
-          description="3 bước để có dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
+          description="Đặt tên và vài thông tin cơ bản — tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
         />
 
         <form
