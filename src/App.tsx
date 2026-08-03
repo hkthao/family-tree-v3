@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { ClanLayout } from "@/components/ClanLayout";
+import { FeatureGuard } from "@/components/FeatureGuard";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
 import { CriticalBanner } from "@/components/CriticalBanner";
 import { MascotTip } from "@/components/MascotTip";
@@ -211,20 +212,20 @@ export default function App() {
           <Route path="people/:personId/add-parent" element={<AddParent />} />
           <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
-          <Route path="memory-room" element={<MemoryRooms />} />
-          <Route path="memory-room/:roomId" element={<MemoryRoom />} />
-          <Route path="graves" element={<RestingPlaces />} />
-          <Route path="graves/cemeteries" element={<Cemeteries />} />
-          <Route path="graves/new" element={<RestingPlaceForm />} />
-          <Route path="graves/:graveId" element={<RestingPlaceDetail />} />
-          <Route path="graves/:graveId/edit" element={<RestingPlaceForm />} />
+          <Route path="memory-room" element={<FeatureGuard feature="memory_room"><MemoryRooms /></FeatureGuard>} />
+          <Route path="memory-room/:roomId" element={<FeatureGuard feature="memory_room"><MemoryRoom /></FeatureGuard>} />
+          <Route path="graves" element={<FeatureGuard feature="graves"><RestingPlaces /></FeatureGuard>} />
+          <Route path="graves/cemeteries" element={<FeatureGuard feature="graves"><Cemeteries /></FeatureGuard>} />
+          <Route path="graves/new" element={<FeatureGuard feature="graves"><RestingPlaceForm /></FeatureGuard>} />
+          <Route path="graves/:graveId" element={<FeatureGuard feature="graves"><RestingPlaceDetail /></FeatureGuard>} />
+          <Route path="graves/:graveId/edit" element={<FeatureGuard feature="graves"><RestingPlaceForm /></FeatureGuard>} />
           <Route path="events" element={<Events />} />
-          <Route path="honor" element={<HonorBook />} />
-          <Route path="fund" element={<ClanFund />} />
-          <Route path="heritage" element={<Heritage />} />
-          <Route path="heritage/new" element={<HeritageForm />} />
-          <Route path="heritage/:itemId" element={<HeritageDetail />} />
-          <Route path="heritage/:itemId/edit" element={<HeritageForm />} />
+          <Route path="honor" element={<FeatureGuard feature="honor"><HonorBook /></FeatureGuard>} />
+          <Route path="fund" element={<FeatureGuard feature="fund"><ClanFund /></FeatureGuard>} />
+          <Route path="heritage" element={<FeatureGuard feature="heritage"><Heritage /></FeatureGuard>} />
+          <Route path="heritage/new" element={<FeatureGuard feature="heritage"><HeritageForm /></FeatureGuard>} />
+          <Route path="heritage/:itemId" element={<FeatureGuard feature="heritage"><HeritageDetail /></FeatureGuard>} />
+          <Route path="heritage/:itemId/edit" element={<FeatureGuard feature="heritage"><HeritageForm /></FeatureGuard>} />
           <Route path="settings" element={<Settings />} />
           <Route path="import" element={<Import />} />
           <Route path="ai-generate" element={<AiGenerate />} />
@@ -239,13 +240,13 @@ export default function App() {
           <Route path="kinship" element={<Kinship />} />
           <Route path="contributions" element={<Contributions />} />
           <Route path="contributions/:contribId" element={<ContributionDetail />} />
-          <Route path="inlaws" element={<Inlaws />} />
-          <Route path="inlaws/new" element={<InlawsNew />} />
-          <Route path="board" element={<Board />} />
-          <Route path="board/new" element={<BoardPostNew />} />
-          <Route path="board/moderation" element={<BoardModeration />} />
-          <Route path="board/:postId" element={<BoardPostDetail />} />
-          <Route path="board/:postId/edit" element={<BoardPostEdit />} />
+          <Route path="inlaws" element={<FeatureGuard feature="inlaws"><Inlaws /></FeatureGuard>} />
+          <Route path="inlaws/new" element={<FeatureGuard feature="inlaws"><InlawsNew /></FeatureGuard>} />
+          <Route path="board" element={<FeatureGuard feature="board"><Board /></FeatureGuard>} />
+          <Route path="board/new" element={<FeatureGuard feature="board"><BoardPostNew /></FeatureGuard>} />
+          <Route path="board/moderation" element={<FeatureGuard feature="board"><BoardModeration /></FeatureGuard>} />
+          <Route path="board/:postId" element={<FeatureGuard feature="board"><BoardPostDetail /></FeatureGuard>} />
+          <Route path="board/:postId/edit" element={<FeatureGuard feature="board"><BoardPostEdit /></FeatureGuard>} />
         </Route>
 
         <Route

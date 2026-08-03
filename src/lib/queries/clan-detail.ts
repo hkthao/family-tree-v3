@@ -31,6 +31,8 @@ export interface ClanDetail {
   max_users: number;
   data_version: number;
   owner_id: string | null;
+  /** Key tính năng phụ đang TẮT cho dòng họ này (opt-out). Rỗng = bật hết. */
+  disabled_features: string[];
   /** Caller's role in this clan, derived from clan_members. */
   myRole: "admin" | "editor" | "viewer" | null;
   /**
@@ -59,7 +61,7 @@ export async function getClanDetail(
     client
       .from("clans")
       .select(
-        "id, name, description, visibility, hide_living_for_nonmembers, hide_photos_in_share, display_death_details, display_living_full_dob, generation_offset, public_show_tree, public_show_heritage, public_show_graves, public_show_events, max_persons, max_users, data_version, owner_id",
+        "id, name, description, visibility, hide_living_for_nonmembers, hide_photos_in_share, display_death_details, display_living_full_dob, generation_offset, public_show_tree, public_show_heritage, public_show_graves, public_show_events, max_persons, max_users, data_version, owner_id, disabled_features",
       )
       .eq("id", clanId)
       .maybeSingle(),
