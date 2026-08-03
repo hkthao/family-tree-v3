@@ -601,6 +601,7 @@ export type Database = {
           created_at: string
           data_version: number
           description: string | null
+          disabled_features: string[]
           display_death_details: boolean
           display_living_full_dob: boolean
           generation_offset: number
@@ -625,6 +626,7 @@ export type Database = {
           created_at?: string
           data_version?: number
           description?: string | null
+          disabled_features?: string[]
           display_death_details?: boolean
           display_living_full_dob?: boolean
           generation_offset?: number
@@ -649,6 +651,7 @@ export type Database = {
           created_at?: string
           data_version?: number
           description?: string | null
+          disabled_features?: string[]
           display_death_details?: boolean
           display_living_full_dob?: boolean
           generation_offset?: number

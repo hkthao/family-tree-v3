@@ -38,6 +38,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { signOutAndClearCache } from "@/lib/auth-actions";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
+import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import { countPendingContributions } from "@/lib/queries/contributions";
 import { countPendingPersonLinks } from "@/lib/queries/person-links";
 import { getMyProfile, type MyProfile } from "@/lib/queries/profile";
@@ -516,9 +517,13 @@ function buildSections(
     }
     sections.push({ label: clan.name, items: topItems });
 
+    // Cờ tính năng phụ theo dòng họ (admin có thể tắt để nav gọn).
+    const feat = (k: ClanFeatureKey) =>
+      isFeatureEnabled(clan.disabled_features, k);
+
     // ─── Section 2: Cộng đồng ──────────────────────────────────────
     // Nội dung cộng đồng → chỉ thành viên.
-    if (isMember) {
+    if (isMember && feat("board")) {
       sections.push({
         label: "Cộng đồng",
         items: [
@@ -534,34 +539,37 @@ function buildSections(
     // ─── Section 3: Di sản & Tưởng niệm ────────────────────────────
     // Gom hết mục di sản/tưởng niệm/công đức về một chỗ. Phòng ký ức +
     // công đức + quỹ chỉ thành viên; di sản/mộ phần gate theo cờ công khai.
+    // Tất cả đều ẩn được qua feature-flags của dòng họ.
     const heritageItems: DrawerItem[] = [];
-    if (isMember) {
+    if (isMember && feat("memory_room")) {
       heritageItems.push({
         to: `/clans/${clanId}/memory-room`,
         label: "Phòng ký ức",
         icon: <IconCamera className={ic} />,
       });
     }
-    if (canHeritage) {
+    if (canHeritage && feat("heritage")) {
       heritageItems.push({
         to: `/clans/${clanId}/heritage`,
         label: "Di sản dòng họ",
         icon: <IconScroll className={ic} />,
       });
     }
-    if (canGraves) {
+    if (canGraves && feat("graves")) {
       heritageItems.push({
         to: `/clans/${clanId}/graves`,
         label: "Mộ phần & tro cốt",
         icon: <IconGrave className={ic} />,
       });
     }
-    if (isMember) {
+    if (isMember && feat("honor")) {
       heritageItems.push({
         to: `/clans/${clanId}/honor`,
         label: "Bảng vàng công đức",
         icon: <IconAward className={ic} />,
       });
+    }
+    if (isMember && feat("fund")) {
       heritageItems.push({
         to: `/clans/${clanId}/fund`,
         label: "Quỹ họ",
@@ -620,28 +628,27 @@ function buildSections(
 
     // ─── Section 4: Quản trị — admin only ─────────────────────────
     if (isAdmin) {
-      sections.push({
-        label: "Quản trị",
-        items: [
-          {
-            to: `/clans/${clanId}/members`,
-            label: "Thành viên",
-            icon: <IconUserPlus className={ic} />,
-          },
-          {
-            to: `/clans/${clanId}/inlaws`,
-            label: "Liên kết thông gia",
-            icon: <IconLink className={ic} />,
-            badge:
-              pendingInlawCount > 0 ? pendingInlawCount : undefined,
-          },
-          {
-            to: `/clans/${clanId}/settings`,
-            label: "Cài đặt dòng họ",
-            icon: <IconSettings className={ic} />,
-          },
-        ],
+      const adminItems: DrawerItem[] = [
+        {
+          to: `/clans/${clanId}/members`,
+          label: "Thành viên",
+          icon: <IconUserPlus className={ic} />,
+        },
+      ];
+      if (feat("inlaws")) {
+        adminItems.push({
+          to: `/clans/${clanId}/inlaws`,
+          label: "Liên kết thông gia",
+          icon: <IconLink className={ic} />,
+          badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
+        });
+      }
+      adminItems.push({
+        to: `/clans/${clanId}/settings`,
+        label: "Cài đặt dòng họ",
+        icon: <IconSettings className={ic} />,
       });
+      sections.push({ label: "Quản trị", items: adminItems });
     }
   }
 

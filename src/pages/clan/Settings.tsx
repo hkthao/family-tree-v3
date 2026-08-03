@@ -7,7 +7,13 @@ import { PageHeader } from "@/components/PageHeader";
 import { BranchesSection } from "@/components/BranchesSection";
 import { CsvExportButton } from "@/components/CsvExportButton";
 import { GedcomButtons } from "@/components/GedcomButtons";
+import { friendlyError } from "@/components/ErrorState";
 import { useToast } from "@/components/Toast";
+import {
+  CLAN_FEATURES,
+  isFeatureEnabled,
+  type ClanFeatureKey,
+} from "@/lib/clanFeatures";
 import {
   IconCheck,
   IconList,
@@ -126,6 +132,8 @@ export default function Settings() {
         title="Cài đặt dòng họ"
         description="Cấu hình, share links, xuất dữ liệu, xoá dòng họ."
       />
+
+      <FeaturesCard clan={clan} userId={userId} queryClient={queryClient} />
 
       <Card>
         <CardHeader>
@@ -512,5 +520,83 @@ export default function Settings() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// ─── Feature-flags theo dòng họ ───────────────────────────────────
+
+function FeaturesCard({
+  clan,
+  userId,
+  queryClient,
+}: {
+  clan: { id: string; disabled_features: string[] };
+  userId: string;
+  queryClient: ReturnType<typeof useQueryClient>;
+}) {
+  const toast = useToast();
+  const [disabled, setDisabled] = useState<string[]>(
+    clan.disabled_features ?? [],
+  );
+  useEffect(() => {
+    setDisabled(clan.disabled_features ?? []);
+  }, [clan.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const m = useMutation({
+    mutationFn: (next: string[]) =>
+      updateClan(clan.id, { disabled_features: next }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.clan(clan.id, userId),
+      }),
+    onError: (e) => {
+      setDisabled(clan.disabled_features ?? []); // hoàn tác optimistic
+      toast.error("Không lưu được", { description: friendlyError(e) });
+    },
+  });
+
+  function toggle(key: ClanFeatureKey, on: boolean) {
+    const next = on
+      ? disabled.filter((k) => k !== key)
+      : [...new Set([...disabled, key])];
+    setDisabled(next);
+    m.mutate(next);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Tính năng hiển thị</CardTitle>
+        <CardDescription>
+          Tắt bớt tính năng phụ để menu gọn hơn cho dòng họ này. Lõi (Cây,
+          Danh bạ, Sự kiện, Hôm nay) luôn bật. Tắt chỉ ẩn khỏi menu — dữ liệu
+          cũ vẫn còn, bật lại là hiện.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {CLAN_FEATURES.map((f) => {
+          const on = isFeatureEnabled(disabled, f.key);
+          return (
+            <label
+              key={f.key}
+              className="flex items-start gap-3 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                onChange={(e) => toggle(f.key, e.target.checked)}
+                disabled={m.isPending}
+                className="mt-1 h-5 w-5 accent-primary shrink-0"
+              />
+              <div>
+                <p className="font-medium">{f.label}</p>
+                <p className="text-sm text-muted-foreground">
+                  {f.description}
+                </p>
+              </div>
+            </label>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
