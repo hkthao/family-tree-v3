@@ -16,6 +16,7 @@ import {
 } from "@/components/icons";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/ErrorState";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanRealtime } from "@/hooks/useClanRealtime";
 import { useCompletionMilestone } from "@/hooks/useCompletionMilestone";
@@ -39,7 +40,7 @@ export function ClanLayout() {
   // silently bouncing the user back to /clans when the cached value is
   // out of date or from a previous schema. staleTime: 0 because the
   // global default (4 hours) would otherwise short-circuit the refetch.
-  const { data: clan, isLoading, isFetching, isError, error } = useQuery({
+  const { data: clan, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: queryKeys.clan(clanId ?? "", userId ?? ""),
     queryFn: () => getClanDetail(clanId!, userId!),
     enabled: !!clanId && !!userId,
@@ -65,7 +66,11 @@ export function ClanLayout() {
   if (isError) {
     return (
       <main className="min-h-dvh flex flex-col items-center justify-center gap-4 px-4">
-        <p className="text-destructive">Lỗi: {(error as Error).message}</p>
+        <ErrorState
+          error={error}
+          onRetry={() => refetch()}
+          className="max-w-md w-full"
+        />
         <Button asChild variant="outline">
           <Link to="/clans">← Quay lại danh sách dòng họ</Link>
         </Button>

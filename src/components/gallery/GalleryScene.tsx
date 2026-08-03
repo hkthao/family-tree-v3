@@ -2,6 +2,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CanvasTexture, SRGBColorSpace, Vector3 } from "three";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconMaximize, IconMinimize } from "@/components/icons";
 import { isVideoUrl } from "@/lib/queries/galleryPhotos";
 import type { GalleryPhoto } from "@/lib/queries/galleryPhotos";
@@ -237,6 +238,7 @@ export function GalleryScene({
 }) {
   const layout = useMemo(() => placePhotos(photos), [photos]);
   const total = layout.frames.length;
+  const confirm = useConfirm();
   const [near, setNear] = useState(0);
   const [detail, setDetail] = useState<ScenePhoto | null>(null);
   const [fs, setFs] = useState(false);
@@ -964,7 +966,12 @@ export function GalleryScene({
             <button
               type="button"
               onClick={async () => {
-                if (window.confirm("Xoá hiện vật 3D này?")) {
+                const ok = await confirm({
+                  title: "Xoá hiện vật 3D này?",
+                  confirmLabel: "Xoá",
+                  destructive: true,
+                });
+                if (ok) {
                   await onDeleteItem?.(editModel.itemId);
                   setEditModel(null);
                 }
