@@ -170,7 +170,7 @@ export default function HeritageForm() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Di sản & Văn hoá", to: `/clans/${clan.id}/heritage` },
+          { label: "Di sản dòng họ", to: `/clans/${clan.id}/heritage` },
           { label: isEdit ? "Sửa" : "Thêm" },
         ]}
       />
