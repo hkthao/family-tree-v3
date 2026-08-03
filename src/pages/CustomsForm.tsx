@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { IconCheck, IconPlus, IconUpload, IconX } from "@/components/icons";
 import { extractCoverImage, parseCustomMarkdown } from "@/lib/customs/markdown";
 import { useToast } from "@/components/Toast";
@@ -51,6 +52,7 @@ export default function CustomsForm() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const toast = useToast();
+  const confirm = useConfirm();
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.myProfile(userId),
@@ -82,7 +84,7 @@ export default function CustomsForm() {
   // Nhập nhanh từ Markdown (thân bài) → điền title/mô tả/đoạn/FAQ.
   const [mdOpen, setMdOpen] = useState(false);
   const [mdText, setMdText] = useState("");
-  const applyMarkdown = () => {
+  const applyMarkdown = async () => {
     const parsed = parseCustomMarkdown(mdText);
     if (!parsed.title && parsed.sections.length === 0) {
       toast.error("Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'.");
@@ -90,11 +92,16 @@ export default function CustomsForm() {
     }
     const hasContent =
       !!title.trim() || !!shortDesc.trim() || sections.length > 0 || faq.length > 0;
-    if (
-      hasContent &&
-      !window.confirm("Ghi đè tiêu đề / mô tả / các đoạn / FAQ hiện tại bằng nội dung Markdown?")
-    )
-      return;
+    if (hasContent) {
+      const ok = await confirm({
+        title: "Ghi đè nội dung hiện tại?",
+        description:
+          "Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằng nội dung Markdown.",
+        confirmLabel: "Ghi đè",
+        destructive: true,
+      });
+      if (!ok) return;
+    }
     const m = parsed.meta;
     // Ảnh bìa: ưu tiên frontmatter; nếu không, lấy ảnh minh hoạ đầu tiên làm bìa
     // (card cần hình) và gỡ khỏi đoạn để trang xem khỏi hiện trùng.

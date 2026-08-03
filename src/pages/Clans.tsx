@@ -20,15 +20,12 @@ import {
 import { ClanBadges } from "@/components/ClanBadges";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorState } from "@/components/ErrorState";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch } from "@/hooks/useUrlState";
 import {
@@ -294,11 +291,7 @@ export default function Clans() {
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
         {error && (
-          <Card>
-            <CardContent className="pt-6 text-destructive">
-              Lỗi: {(error as Error).message}
-            </CardContent>
-          </Card>
+          <ErrorState error={error} onRetry={() => active.refetch()} />
         )}
 
         {data && data.rows.length === 0 && (

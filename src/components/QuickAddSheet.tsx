@@ -775,7 +775,7 @@ function QuickAddChild({
             onLiving={setIsLiving}
           />
 
-          <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
+          <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
             <Button
               type="submit"
               className="flex-1"
@@ -895,7 +895,7 @@ function QuickAddChild({
             Thêm dòng
           </button>
 
-          <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
+          <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
             <Button
               type="submit"
               className="flex-1"
@@ -1040,7 +1040,7 @@ function QuickAddSpouse({
         onLiving={setIsLiving}
       />
 
-      <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
+      <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
         <Button
           type="submit"
           className="flex-1"
@@ -1262,7 +1262,7 @@ function QuickAddParent({
         onLiving={setIsLiving}
       />
 
-      <div className="sticky bottom-0 -mx-5 px-5 py-3 bg-card border-t flex gap-2 z-10">
+      <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
         <Button
           type="submit"
           className="flex-1"

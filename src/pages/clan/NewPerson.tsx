@@ -485,7 +485,7 @@ export default function NewPerson() {
         <div className="flex gap-3 pt-2 justify-end">
           <Button
             type="submit"
-            variant="outline"
+            variant="default"
             data-testid="person-submit-button"
             disabled={mutation.isPending || !fullName.trim()}
           >

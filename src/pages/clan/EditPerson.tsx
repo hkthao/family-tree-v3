@@ -549,7 +549,7 @@ export function EditPersonForm({
       <div className="flex gap-3 pt-2 justify-end">
         <Button
           type="submit"
-          variant="outline"
+          variant="default"
           data-testid="edit-person-submit-button"
           disabled={mutation.isPending || !fullName.trim()}
         >
