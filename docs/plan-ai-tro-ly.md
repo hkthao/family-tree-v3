@@ -679,15 +679,22 @@ Phải có màn hình xử lý cho từng ca, không được để admin tự x
 
 ## 📖 Lịch sử sử dụng
 
-**Chốt: KHÔNG lưu nội dung hội thoại.** Lịch sử chỉ trả lời *ai dùng, khi nào, việc gì,
-tốn bao nhiêu*. Đây là quyết định đúng và nó gỡ được rất nhiều thứ cùng lúc:
+Có **hai thứ khác nhau** hay bị gọi chung là "lịch sử", tách rõ ngay từ đầu:
 
-- Xoá sổ toàn bộ vấn đề PII — không có kho câu hỏi gia đình nào để mà rò.
-- Không cần TTL 90 ngày, không cần nút xoá lịch sử, không cần RLS tinh vi cho nội dung.
-- Trưởng họ trả tiền **thấy được ai tiêu bao nhiêu** mà **không đọc được câu hỏi của con
-  cháu** — vốn là chỗ khó xử nhất, giờ không tồn tại nữa.
+| | Bảng | Có nội dung | Ai đọc |
+|---|------|-------------|--------|
+| **Lịch sử trò chuyện** — tiếp mạch chat | `ai_messages` | Có | **Chỉ chính chủ** |
+| **Lịch sử sử dụng** — đối soát tiền | `credit_ledger` | **Không** | Chính chủ · trưởng họ · admin |
 
-### "Nội dung tối thiểu" nghĩa là gì
+Mục này nói về cái thứ hai. **Màn hình đối soát chỉ trả lời *ai dùng, khi nào, việc gì,
+tốn bao nhiêu*** — không bao giờ hiện nội dung, kể cả cho chính chủ (muốn đọc lại thì
+mở khung chat).
+
+Nhờ vậy trưởng họ trả tiền **thấy được ai tiêu bao nhiêu** mà **không đọc được câu hỏi
+của con cháu** — chỗ khó xử nhất được giải bằng **tách bảng**, không phải bằng phân quyền
+tinh vi trên cùng một bảng.
+
+### Màn đối soát hiện "nội dung tối thiểu" nghĩa là gì
 | Hiện | Không hiện |
 |------|-----------|
 | Loại việc: *Hỏi đáp* · *Bóc tách* · *Đọc to* | Câu hỏi nguyên văn |
@@ -697,117 +704,87 @@ tốn bao nhiêu*. Đây là quyết định đúng và nó gỡ được rất 
 Dòng *"đã thêm 3 người"* không phải nội dung chat — đó là **kết quả thao tác đã nằm sẵn
 trong `audit`**. Giữ lại vì nó giúp đối chiếu, không phải vì nó là hội thoại.
 
-### Hội thoại sống ở đâu — giữ 40 tin gần nhất, **trên máy người dùng**
-Chatbox trống trơn mỗi lần mở là tệ, nhất là với người già — họ cần thấy lần trước mình
-đã hỏi gì. Nên **có lưu**, nhưng lưu ở `localStorage` chứ không phải server:
+### Hội thoại lưu ở server — 40 tin gần nhất, `localStorage` chỉ làm cache
+
+**Đây là đảo lại quyết định trước đó, và có lý do.** Bản trước tôi định chỉ lưu
+`localStorage` để không có PII nào ở server. Nhưng chính dữ liệu Umami bác bỏ: tháng 8
+cho thấy **nhập liệu nặng diễn ra trên desktop, xem trên mobile** — một người chuyển
+máy là **hành vi thật đã quan sát được**, không phải tình huống giả định. Mất mạch trò
+chuyện khi đổi máy là bất tiện thật, không phải cái giá nhỏ.
+
+Kiến trúc: **server là nguồn sự thật, `localStorage` là cache để vẽ ngay**.
+- Mở chat → vẽ ngay từ cache (không spinner) → đồng thời fetch 40 tin từ server → hoà lại.
+- Được cả hai: mở tức thì **và** đồng bộ đa thiết bị.
 
 ```
-localStorage["family-tree:ai-chat:<clanId>"]
-  = { v: 1, messages: [...40 tin gần nhất] }
+ai_messages   id · owner_id · clan_id · role · kind · content · created_at
+-- RLS: owner_id = auth.uid()   ← CHỈ vậy. Xem cảnh báo bên dưới.
+-- Cắt vòng 40 tin cho mỗi (owner_id, clan_id), xoá ngay trong RPC ghi tin.
+-- TTL: platform_settings["ai.chat_retention_days"] = 90 (đổi không cần deploy).
 ```
 
-- Theo convention sẵn có của app (`family-tree:theme`), khoá theo **từng dòng họ** để
-  đổi clan không lẫn ngữ cảnh.
-- **Cắt vòng 40 tin** khi ghi (cấu hình được 20–50), **và cắt thêm theo dung lượng**
-  (~100 KB) — một lần dán mô tả gia phả dài có thể chiếm hết localStorage.
-- Có `v` để đổi schema sau này thì bỏ cache cũ, không vỡ.
+### Cái gì lưu, cái gì KHÔNG — vẫn phải có kỷ luật
+Lưu server không có nghĩa là lưu tất cả. Chỉ lưu **bề mặt hội thoại**, không lưu bộ máy:
 
-**Vì sao vẫn không phải server:** đây là đúng thứ bạn cần (chatbox có dữ liệu) mà
-**không tốn một chút PII nào ở server**. Toàn bộ lợi ích ở mục trên vẫn giữ nguyên:
-không kho câu hỏi gia đình, không TTL, không RLS cho nội dung.
+| Lưu | Không lưu |
+|-----|-----------|
+| Câu người dùng hỏi | Nội dung tool call và tool result |
+| Câu trả lời cuối cùng | Payload bóc tách (JSON người đề xuất) |
+| `kind` (`qa` / `extract`) | Toàn bộ prompt gửi cho model |
 
-**Cái nó không làm được:** đổi điện thoại hoặc xoá cache là mất lịch sử hiển thị.
-Với đối tượng này — một cụ, một cái điện thoại — đánh đổi đó gần như không đau.
-Nếu về sau cần đồng bộ đa thiết bị thì xem §Nếu bắt buộc phải lưu server.
+Lý do: **tool result chính là khối PII to nhất** — nó là các dòng gia phả thật lấy từ
+DB. Mà nó **tái tạo được** từ DB bất cứ lúc nào, nên lưu lại chỉ là nhân bản rủi ro.
+Payload bóc tách cũng vậy: kết quả đã nằm trong `persons` + `audit` rồi.
+
+### 🔴 Chỗ dễ sai nhất — RLS
+```sql
+create policy ai_messages_select on public.ai_messages for select
+  using (owner_id = auth.uid());   -- ĐÚNG
+--using (public.is_clan_member(clan_id));  -- SAI: trưởng họ đọc được câu hỏi con cháu
+```
+Trong repo này `is_clan_member(clan_id)` là helper dùng ở gần như mọi bảng, nên phản xạ
+tự nhiên là gõ nó ra. **Ở bảng này thì đó là lỗi.** Trưởng họ trả tiền vẫn chỉ được
+thấy *ai tiêu bao nhiêu lượt* (từ `credit_ledger`), không phải nội dung.
+Viết test RLS cho đúng ca này.
+
+### Xoá — ba đường, đừng sót đường nào
+1. Nút **"Xoá lịch sử trò chuyện"** trong khung chat (không giấu trong Cài đặt).
+2. **Đăng xuất** → xoá cache `localStorage` (server giữ nguyên — đó là điểm khác với
+   bản trước; máy dùng chung không còn lộ vì cache đã sạch).
+3. **Xoá tài khoản** → phải cascade. `deleteMyAccount` hiện có (xem
+   `src/test/queries/profile.test.ts`) **chưa biết tới bảng này** — quên thêm là để lại
+   PII mồ côi. Thêm vào đường xoá và thêm test.
+
+Xoá lịch sử chat **không** ảnh hưởng `credit_ledger` — tiền bạc nguyên vẹn.
 
 ### ⚠️ Lưu 40 tin ≠ gửi 40 tin cho model
-Đây là chỗ **rất dễ làm hoá đơn nhân đôi ba lần**. Hai con số khác nhau:
+Đây là chỗ **rất dễ làm hoá đơn nhân lên nhiều lần**. Hai con số khác nhau:
 
 | | Số lượng | Mục đích |
 |---|---|---|
-| **Lưu để hiện** | 40 tin | Chatbox không trống |
+| **Lưu để hiện** | 40 tin | Chatbox không trống, đồng bộ đa thiết bị |
 | **Gửi cho LLM** | **6–8 lượt gần nhất** | Đủ ngữ cảnh để hiểu "còn ông ấy thì sao?" |
 
-Ước tính 6.000 token input mỗi lượt ở §Chi phí **dựa trên ngữ cảnh ngắn**. Nếu gửi cả
-40 tin thì input phình lên nhiều lần và mọi con số chi phí trong plan này sai hết.
+Ước tính 6.000 token input mỗi lượt ở §Chi phí **dựa trên ngữ cảnh ngắn**. Gửi cả 40
+tin thì input phình lên và mọi con số chi phí trong plan này sai hết. Cắt theo **lượt
+hội thoại**, không theo tin nhắn, và luôn giữ nguyên system prompt (phần được cache).
 
-Cụ thể: cắt theo **lượt hội thoại**, không theo tin nhắn, và luôn giữ nguyên system
-prompt (phần được cache). Nếu cần nhớ xa hơn thì tóm tắt, đừng gửi thô.
+### Cái giá phải trả — nói thẳng
+Quyết định này **mở lại đúng bề mặt PII mà bản trước đã đóng**. Không né được, chỉ thu
+nhỏ được:
+- Bị giới hạn ở **40 tin/người/dòng họ**, TTL 90 ngày — không phải kho vô hạn.
+- Không lưu tool result nên **không nhân bản dữ liệu gia phả**.
+- Phải ghi vào **chính sách riêng tư**: có lưu nội dung trò chuyện, giữ 90 ngày, người
+  dùng xoá được.
 
-### Máy dùng chung — bắt buộc xử lý
-Người già hay dùng chung máy tính bảng với con cháu. `localStorage` không tự mất:
-- **Xoá lịch sử chat khi đăng xuất** — móc vào `signOut`.
-- Nút **"Xoá lịch sử trò chuyện"** thấy được ngay trong khung chat, không giấu trong Cài đặt.
+Đổi lại là thứ người dùng thật sự cần. Đánh đổi này chấp nhận được — nhưng phải làm đủ
+ba đường xoá và RLS đúng, chứ không phải làm nửa vời.
 
 ### Đừng lẫn hai thứ
-| | Ở đâu | Có nội dung | Dùng để |
-|---|---|---|---|
-| **Lịch sử chat** | `localStorage`, máy người dùng | Có | Tiếp mạch trò chuyện |
-| **Lịch sử sử dụng** | Server, `credit_ledger` | **Không** | Đối soát tiền, xem ai dùng khi nào |
-
-Xoá lịch sử chat **không** ảnh hưởng sổ cái — tiền bạc vẫn nguyên vẹn.
-
-### Nếu bắt buộc phải lưu server (đường nâng cấp, chưa làm)
-Chỉ khi có nhu cầu thật về đồng bộ đa thiết bị. Khi đó cần đủ bộ, đừng làm nửa vời:
-bảng `ai_messages` với **RLS `owner_id = auth.uid()`** (tuyệt đối không dùng
-`is_clan_member` — trưởng họ trả tiền vẫn không được đọc câu hỏi của con cháu), cắt
-vòng 50 tin/người, TTL 90 ngày, nút xoá, và ghi vào chính sách riêng tư.
-
-### Hai màn hình, chia theo ví
-
-**1. Của tôi** — `/account/usage`
-Sổ như sao kê ngân hàng, **có số dư chạy**:
-
-| Thời gian | Ví | Việc | Lượt | Còn lại |
-|-----------|-----|------|-----:|--------:|
-| 23/8 14:32 | Dòng họ | Hỏi đáp | −1 | 43 |
-| 23/8 14:30 | Dòng họ | Bóc tách — thêm 3 người | −1 | 44 |
-| 23/8 14:28 | Dòng họ | Hỏi đáp — *không tính phí, máy lỗi* | 0 | 45 |
-| 1/8 00:00 | Cá nhân | Cấp hàng tháng | +10 | 10 |
-
-**2. Ví dòng họ** — Cài đặt dòng họ › Trợ lý AI (trưởng họ xem)
-Tổng hợp **theo tài khoản** trước, chi tiết sau:
-
-| Thành viên | Tháng này | Tổng | Lần cuối | Trần | |
-|------------|----------:|-----:|----------|-----:|---|
-| Nguyễn Văn B | 27 | 214 | 23/8 14:32 | 20 ⚠ | [Sửa] |
-| Nguyễn Thị C | 4 | 18 | 21/8 09:10 | — | [Sửa] |
-| Nguyễn Văn D | 0 | 0 | — | — | [Gỡ] |
-
-Bấm vào một người → danh sách **thời gian + loại việc**, không có nội dung.
-
-### Hai chi tiết quyết định việc có hết thắc mắc hay không
-**1. Số dư chạy sau mỗi dòng** — kiểu sao kê ngân hàng. Nhìn 45 → 44 → 43 là tự hiểu,
-không cần giải thích.
-
-**2. Hiện CẢ những lượt không bị trừ, kèm lý do** — máy lỗi, câu lặp lấy từ cache, bấm
-"Sửa lại". Đây là điểm dễ bỏ sót nhất: nếu chỉ hiện dòng có trừ, người dùng đếm số câu
-đã hỏi rồi so số dư sẽ thấy lệch và sinh nghi. Nghịch lý nhỏ — **hiện cả cái mình không
-thu tiền mới là thứ dập tắt tranh cãi.**
-
-### Không hiện token cho người dùng
-Số token vô nghĩa với các cụ và chỉ gây lo. Người dùng thấy **lượt**; admin mới thấy
-token và tiền ở `/admin/ai-usage`.
-
-### Bảng — gọn hơn hẳn bản trước
-```
-credit_wallet         id · type ('personal'|'clan') · profile_id | clan_id · created_at
-credit_wallet_member  wallet_id · profile_id · monthly_cap (null = không giới hạn)
-                      · enabled · added_by · added_at
-credit_ledger         id · wallet_id · actor_id · resource · delta · reason
-                      · kind ('qa'|'extract'|'tts') · result_note · order_id
-                      · expires_at · at
-```
-`actor_id` tách khỏi chủ ví chính là thứ cho phép *"ai dùng, khi nào"* — với ví dòng
-họ, `wallet_id` là ví họ còn `actor_id` là con cháu đã tiêu.
-
-**Không còn `ai_conversations` / `ai_messages`.** Hai bảng đó biến mất khỏi plan.
-
-### Xuất & đối chiếu
-Nút **"Tải lịch sử tháng này"** (CSV) ở cả hai màn — để khách và trưởng họ tự kiểm,
-không phải nhắn hỏi.
-
----
+| | Ở đâu | Có nội dung | Ai đọc | Dùng để |
+|---|---|---|---|---|
+| **Lịch sử chat** | `ai_messages` (+ cache máy) | Có | **Chỉ chính chủ** | Tiếp mạch trò chuyện |
+| **Lịch sử sử dụng** | `credit_ledger` | Không | Chính chủ · trưởng họ · admin | Đối soát tiền, ai dùng khi nào |
 
 ## 🛠️ Màn hình quản trị
 
@@ -908,21 +885,24 @@ Có tiền vào là mô hình đe doạ đổi hẳn. Rà lại theo từng nhó
 13. **Khoá API để trong env qua `docker-compose.override.yml`**, tuyệt đối **không** để
     trong `platform_settings` — bảng đó **đọc công khai** (policy `using (true)`).
     Rất dễ nhầm vì đó đúng là chỗ để cấu hình model.
-14. **Server không lưu nội dung hội thoại** — không bảng chat, không nội dung trong
-    `ai_usage`. Đây là biện pháp bảo mật mạnh nhất của cả plan: **không có kho dữ liệu
-    tập trung nào để mà rò.** 40 tin gần nhất nằm ở `localStorage` **trên máy người
-    dùng** — rủi ro chuyển thành "máy dùng chung", xử lý bằng xoá khi đăng xuất + nút
-    xoá thấy được (§Hội thoại sống ở đâu). Đây là đánh đổi có chủ ý: một máy bị lộ ảnh
-    hưởng một người, một bảng bị lộ ảnh hưởng tất cả.
-15. **Ví dòng họ: chỉ tài khoản trong danh sách được duyệt mới tiêu được.** Kiểm ở
+14. **`ai_messages` có lưu nội dung — RLS phải là `owner_id = auth.uid()`, KHÔNG phải
+    `is_clan_member(clan_id)`.** Trong repo này `is_clan_member` là helper dùng ở gần
+    như mọi bảng nên phản xạ tự nhiên là gõ nó ra; ở bảng này đó là lỗi biến tính năng
+    thành công cụ giám sát gia đình. Viết test RLS đúng ca này.
+    Giới hạn bề mặt: 40 tin/người/dòng họ, TTL 90 ngày, **không lưu tool result**
+    (khối PII to nhất, và tái tạo được từ DB). `ai_usage` vẫn không có nội dung.
+15. **Xoá tài khoản phải cascade sang `ai_messages`.** `deleteMyAccount` hiện có
+    (`src/test/queries/profile.test.ts`) chưa biết tới bảng này — quên là để lại PII
+    mồ côi.
+16. **Ví dòng họ: chỉ tài khoản trong danh sách được duyệt mới tiêu được.** Kiểm ở
     `credit_consume` phía server, không phải ở UI. Kèm trần theo người mỗi tháng để một
     người không tiêu sạch quỹ họ.
     Trưởng họ thấy *ai tiêu bao nhiêu, khi nào* — và **không có gì hơn**, vì nội dung
-    không tồn tại. Chỗ khó xử về riêng tư biến mất theo thiết kế, không phải nhờ phân quyền.
-16. Rate limit theo **user + IP**, không chỉ user — tạo tài khoản mới quá dễ.
+    nằm ở bảng khác mà họ không có quyền đọc (mục 14).
+17. Rate limit theo **user + IP**, không chỉ user — tạo tài khoản mới quá dễ.
 
 ### E. Câu hỏi cần người quyết, không phải kỹ thuật
-17. **Dữ liệu gia phả người Việt đang được gửi sang nhà cung cấp nước ngoài.** Tên, năm
+18. **Dữ liệu gia phả người Việt đang được gửi sang nhà cung cấp nước ngoài.** Tên, năm
     sinh, quan hệ huyết thống của người thật. Ba việc phải làm:
     - Nói rõ trong **chính sách riêng tư** rằng có gửi sang bên thứ ba, và bên nào.
     - **Chỉ gửi trường cần thiết** — không gửi ảnh, ghi chú riêng tư, thông tin liên hệ.
@@ -931,10 +911,10 @@ Có tiền vào là mô hình đe doạ đổi hẳn. Rà lại theo từng nhó
       GPT-5.6 Luna hiện rẻ hơn (xem §Chi phí) — không phải đánh đổi tiền.
 
 ### F. Còn tồn từ rà soát 23/8
-18. **Share link Umami `aoqkW8CEpWofncvt` đã thu hồi chưa?** Nếu chưa, JWT và link mời
+19. **Share link Umami `aoqkW8CEpWofncvt` đã thu hồi chưa?** Nếu chưa, JWT và link mời
     cũ vẫn đọc được công khai. Code đã chặn ghi thêm từ commit `4d4d40b`, nhưng dữ liệu
     cũ vẫn nằm đó.
-19. Implicit flow vẫn đặt token vào URL hash. Hash không đi kèm header `Referer` nên
+20. Implicit flow vẫn đặt token vào URL hash. Hash không đi kèm header `Referer` nên
     không rò ra ngoài, nhưng vẫn nằm trong lịch sử trình duyệt. Mức độ thấp, ghi nhận.
 
 ---
@@ -973,7 +953,7 @@ Chỉ số thành công thật: **tỉ lệ `ai_extract_confirmed` / `ai_extract
 |----|----------|--------|
 | **0** | Gateway + registry + `ai_usage` + cấu hình model trong `platform_settings` | Thấp |
 | **1** | Chat **hỏi đáp chỉ-đọc** + bộ tool. Chưa có hạn mức, giới hạn bằng feature-flag theo clan | Thấp — không ghi được gì |
-| **2** | Giọng nói (Web Speech → Whisper dự phòng iOS) + lịch sử chat `localStorage` | Thấp |
+| **2** | Giọng nói (Web Speech → Whisper dự phòng iOS) + `ai_messages` (lưu server, cache máy) | Thấp |
 | **3** | `credit_ledger` + ví cá nhân + 10 lượt free/tháng + màn "Lịch sử sử dụng" | Trung bình |
 | **4** | `billing_*` + VietQR duyệt tay + ví dòng họ + danh sách được duyệt + màn admin | Trung bình — chạm tiền |
 | **5** | Bóc tách + thẻ xác nhận + ghi qua `planImport` | **Cao** — chạm dữ liệu gia phả |
@@ -998,9 +978,9 @@ Hai nguyên tắc xếp thứ tự:
 
 **Kỹ thuật**
 - Whisper: dùng OpenAI hay tự host `whisper.cpp` trên VPS? (VPS đang chật đĩa)
-- Lịch sử chat có cần đồng bộ đa thiết bị không? Nếu có thì mở bảng `ai_messages`
-  theo đúng bộ điều kiện ở §Nếu bắt buộc phải lưu server — đừng làm nửa vời.
-- Số tin giữ trong `localStorage`: 20, 40 hay 50?
+- Số tin giữ trong `ai_messages`: 20, 40 hay 50? (đang để 40)
+- TTL lịch sử chat 90 ngày có hợp lý không? Ngắn hơn thì lộ ít hơn, dài hơn thì tiện hơn.
+  Để trong `platform_settings` nên đổi được không cần deploy.
 
 **Cần chủ sản phẩm quyết, không phải kỹ thuật**
 - **Gửi dữ liệu gia phả người Việt sang DeepSeek (công ty Trung Quốc)** có chấp nhận
