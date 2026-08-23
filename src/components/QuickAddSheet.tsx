@@ -7,6 +7,7 @@ import {
   IconCheck,
   IconChevronUp,
   IconPlus,
+  IconUser,
   IconUsers,
   IconUserPlus,
   IconX,
@@ -20,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
 import {
@@ -707,14 +709,14 @@ function QuickAddChild({
       {spouses.length >= 2 && (
         <div className="space-y-2">
           <Label htmlFor="other_parent">Cùng với</Label>
-          <select
+          <Select
             id="other_parent"
+            icon={<IconUsers />}
             value={otherParent}
             onChange={(e) => {
               setOtherParent(e.target.value);
               setOtherParentTouched(true);
             }}
-            className="flex h-12 w-full rounded-md border border-input bg-background px-3 text-base"
           >
             <option value={SOLO_VALUE}>Đơn thân</option>
             {spouses.map((s) => (
@@ -722,7 +724,7 @@ function QuickAddChild({
                 {s.full_name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       )}
       {spouses.length === 1 && otherParentNote && (
@@ -737,6 +739,7 @@ function QuickAddChild({
             </Label>
             <Input
               id="quick_name"
+              icon={<IconUser />}
               ref={nameRef}
               required
               autoFocus
@@ -1009,6 +1012,7 @@ function QuickAddSpouse({
         </Label>
         <Input
           id="quick_spouse_name"
+          icon={<IconUser />}
           ref={nameRef}
           required
           autoFocus
@@ -1216,6 +1220,7 @@ function QuickAddParent({
         </Label>
         <Input
           id="quick_parent_name"
+          icon={<IconUser />}
           ref={nameRef}
           required
           autoFocus

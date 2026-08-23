@@ -3,13 +3,25 @@ import { useMemo, useState } from "react";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
-import { IconAward, IconTrash } from "@/components/icons";
+import {
+  IconAward,
+  IconCalendar,
+  IconCheck,
+  IconPlus,
+  IconScroll,
+  IconTag,
+  IconTrash,
+  IconUser,
+  IconWallet,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -87,7 +99,17 @@ export default function HonorBook() {
         actions={
           canEdit ? (
             <Button size="sm" onClick={() => setShowAdd((v) => !v)}>
-              {showAdd ? "Đóng" : "+ Ghi công đức"}
+              {showAdd ? (
+                <>
+                  <IconX className="mr-1 h-4 w-4" />
+                  Đóng
+                </>
+              ) : (
+                <>
+                  <IconPlus className="mr-1 h-4 w-4" />
+                  Ghi công đức
+                </>
+              )}
             </Button>
           ) : undefined
         }
@@ -251,6 +273,7 @@ function AddHonorForm({
         </Label>
         <Input
           id="honor-name"
+          icon={<IconUser />}
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Vd: Ông Lê Văn A, hoặc cháu Lê Thị B"
@@ -259,24 +282,25 @@ function AddHonorForm({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="honor-cat">Loại</Label>
-          <select
+          <Select
             id="honor-cat"
+            icon={<IconTag />}
             value={category}
             onChange={(e) => setCategory(e.target.value as HonorCategory)}
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {HONOR_CATEGORY_LABEL[c]}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         {category === "donation_money" && (
           <div className="space-y-1.5">
             <Label htmlFor="honor-amount">Số tiền (đ)</Label>
             <Input
               id="honor-amount"
+              icon={<IconWallet />}
               type="number"
               inputMode="numeric"
               min="0"
@@ -290,6 +314,7 @@ function AddHonorForm({
           <Label htmlFor="honor-date">Ngày (tuỳ chọn)</Label>
           <Input
             id="honor-date"
+            icon={<IconCalendar />}
             type="date"
             value={occurredOn}
             onChange={(e) => setOccurredOn(e.target.value)}
@@ -300,6 +325,7 @@ function AddHonorForm({
         <Label htmlFor="honor-note">Ghi chú (tuỳ chọn)</Label>
         <Input
           id="honor-note"
+          icon={<IconScroll />}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Vd: Ủng hộ xây từ đường / Đỗ Đại học Bách Khoa"
@@ -307,6 +333,7 @@ function AddHonorForm({
       </div>
       <div className="flex justify-end gap-2">
         <Button type="submit" size="sm" disabled={!canSubmit}>
+          <IconCheck className="mr-1.5 h-4 w-4" />
           {createM.isPending ? "Đang lưu…" : "Lưu"}
         </Button>
       </div>
