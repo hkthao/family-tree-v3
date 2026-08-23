@@ -6,11 +6,14 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconBell,
+  IconCalendar,
+  IconCheck,
   IconGrave,
   IconMapPin,
   IconPencil,
   IconPlus,
   IconQrCode,
+  IconScroll,
   IconTrash,
   IconX,
 } from "@/components/icons";
@@ -19,7 +22,13 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
@@ -316,16 +325,16 @@ export default function RestingPlaceDetail() {
           {place.built_year && <Row label="Năm xây" value={String(place.built_year)} />}
           {place.material && <Row label="Vật liệu" value={place.material} />}
           {place.notes && <Row label="Ghi chú" value={place.notes} />}
-          {dir && (
-            <div className="pt-1">
-              <Button size="sm" variant="outline" asChild>
-                <a href={dir} target="_blank" rel="noopener noreferrer">
-                  <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
-                </a>
-              </Button>
-            </div>
-          )}
         </CardContent>
+        {dir && (
+          <CardFooter className="border-t pt-4">
+            <Button size="sm" variant="outline" asChild>
+              <a href={dir} target="_blank" rel="noopener noreferrer">
+                <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
+              </a>
+            </Button>
+          </CardFooter>
+        )}
       </Card>
 
       {/* Người an nghỉ */}
@@ -409,36 +418,40 @@ export default function RestingPlaceDetail() {
               </ol>
             )}
             {relOpen && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  addRelM.mutate();
-                }}
-                className="space-y-3 border-t pt-3"
-              >
+              <div className="space-y-3 border-t pt-3">
                 <div className="space-y-2">
                   <Label htmlFor="rel-from">Nơi cũ (trước khi dời về đây)</Label>
-                  <Input id="rel-from" value={relFrom} onChange={(e) => setRelFrom(e.target.value)} placeholder="vd: Nghĩa trang X, lô 3" />
+                  <Input id="rel-from" icon={<IconMapPin />} value={relFrom} onChange={(e) => setRelFrom(e.target.value)} placeholder="vd: Nghĩa trang X, lô 3" />
                 </div>
                 <div className="space-y-2 max-w-[200px]">
                   <Label htmlFor="rel-date">Ngày cải táng (tuỳ chọn)</Label>
-                  <Input id="rel-date" type="date" value={relDate} onChange={(e) => setRelDate(e.target.value)} />
+                  <Input id="rel-date" icon={<IconCalendar />} type="date" value={relDate} onChange={(e) => setRelDate(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rel-note">Ghi chú</Label>
-                  <Input id="rel-note" value={relNote} onChange={(e) => setRelNote(e.target.value)} placeholder="vd: bốc mộ sang cát, người chủ trì…" />
+                  <Input id="rel-note" icon={<IconScroll />} value={relNote} onChange={(e) => setRelNote(e.target.value)} placeholder="vd: bốc mộ sang cát, người chủ trì…" />
                 </div>
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" variant="outline" disabled={addRelM.isPending || (!relFrom.trim() && !relDate && !relNote.trim())}>
-                    {addRelM.isPending ? "Đang lưu…" : "Lưu"}
-                  </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => setRelOpen(false)}>
-                    Huỷ
-                  </Button>
-                </div>
-              </form>
+              </div>
             )}
           </CardContent>
+          {relOpen && (
+            <CardFooter className="justify-end gap-2 border-t pt-4">
+              <Button type="button" size="sm" variant="ghost" onClick={() => setRelOpen(false)}>
+                <IconX className="h-4 w-4 mr-1.5" />
+                Huỷ
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={addRelM.isPending || (!relFrom.trim() && !relDate && !relNote.trim())}
+                onClick={() => addRelM.mutate()}
+              >
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                {addRelM.isPending ? "Đang lưu…" : "Lưu"}
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       )}
 
@@ -469,38 +482,42 @@ export default function RestingPlaceDetail() {
                 được nhắc trước qua email/thông báo hằng năm.
               </p>
             ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (canRemind) reminderM.mutate();
-                }}
-                className="space-y-3"
-              >
+              <div className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="r-title">Tên dịp</Label>
-                  <Input id="r-title" value={rTitle} onChange={(e) => setRTitle(e.target.value)} maxLength={150} />
+                  <Input id="r-title" icon={<IconBell />} value={rTitle} onChange={(e) => setRTitle(e.target.value)} maxLength={150} />
                 </div>
                 <div className="grid grid-cols-2 gap-3 max-w-xs">
                   <div className="space-y-2">
                     <Label htmlFor="r-day">Ngày âm</Label>
-                    <Input id="r-day" inputMode="numeric" value={rDay} onChange={(e) => setRDay(e.target.value)} placeholder="1–30" />
+                    <Input id="r-day" icon={<IconCalendar />} inputMode="numeric" value={rDay} onChange={(e) => setRDay(e.target.value)} placeholder="1–30" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="r-month">Tháng âm</Label>
-                    <Input id="r-month" inputMode="numeric" value={rMonth} onChange={(e) => setRMonth(e.target.value)} placeholder="1–12" />
+                    <Input id="r-month" icon={<IconCalendar />} inputMode="numeric" value={rMonth} onChange={(e) => setRMonth(e.target.value)} placeholder="1–12" />
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" variant="outline" disabled={!canRemind || reminderM.isPending}>
-                    {reminderM.isPending ? "Đang lưu…" : "Lưu nhắc"}
-                  </Button>
-                  <Button type="button" size="sm" variant="ghost" onClick={() => setReminderOpen(false)}>
-                    Huỷ
-                  </Button>
-                </div>
-              </form>
+              </div>
             )}
           </CardContent>
+          {reminderOpen && (
+            <CardFooter className="justify-end gap-2 border-t pt-4">
+              <Button type="button" size="sm" variant="ghost" onClick={() => setReminderOpen(false)}>
+                <IconX className="h-4 w-4 mr-1.5" />
+                Huỷ
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={!canRemind || reminderM.isPending}
+                onClick={() => reminderM.mutate()}
+              >
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                {reminderM.isPending ? "Đang lưu…" : "Lưu nhắc"}
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       )}
 

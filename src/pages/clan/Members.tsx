@@ -7,13 +7,15 @@ import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { InviteLinkCard } from "@/components/InviteLinkCard";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconTrash, IconUserPlus } from "@/components/icons";
+import { IconCheck, IconMail, IconShield, IconTrash, IconUserPlus } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -153,21 +155,21 @@ export default function Members() {
               tương ứng). Chưa có cơ chế gửi mail mời tự động.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (inviteEmail.trim()) {
-                  setInviteMessage(null);
-                  inviteMutation.mutate();
-                }
-              }}
-              className="space-y-4"
-            >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (inviteEmail.trim()) {
+                setInviteMessage(null);
+                inviteMutation.mutate();
+              }
+            }}
+          >
+            <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="invite_email">Email</Label>
                 <Input
                   id="invite_email"
+                  icon={<IconMail />}
                   type="email"
                   required
                   value={inviteEmail}
@@ -203,6 +205,8 @@ export default function Members() {
                 </Alert>
               )}
 
+            </CardContent>
+            <CardFooter className="justify-end border-t pt-4">
               <Button
                 type="submit"
                 disabled={inviteMutation.isPending || !inviteEmail.trim()}
@@ -216,8 +220,8 @@ export default function Members() {
                   </>
                 )}
               </Button>
-            </form>
-          </CardContent>
+            </CardFooter>
+          </form>
         </Card>
 
         <Card>
@@ -252,7 +256,7 @@ export default function Members() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <select
+                        <Select
                           value={m.role}
                           disabled={m.user_id === userId}
                           onChange={(e) =>
@@ -261,13 +265,14 @@ export default function Members() {
                               role: e.target.value as ClanRole,
                             })
                           }
-                          className="h-10 rounded-md border border-input bg-background px-2 text-sm"
+                          icon={<IconShield />}
+                          className="h-10 w-auto text-sm"
                           aria-label={`Vai trò của ${m.display_name ?? m.user_id}`}
                         >
                           <option value="viewer">Xem</option>
                           <option value="editor">Biên tập</option>
                           <option value="admin">Quản trị</option>
-                        </select>
+                        </Select>
                         {m.user_id !== userId && (
                           <Button
                             variant="destructive"

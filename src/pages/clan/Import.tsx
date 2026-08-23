@@ -22,6 +22,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -150,17 +151,6 @@ export default function Import() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-3">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => downloadTemplate()}
-              >
-                <IconDownload className="h-4 w-4 mr-1.5" />
-                Tải file mẫu (.xlsx)
-              </Button>
-            </div>
             <input
               type="file"
               accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
@@ -180,6 +170,17 @@ export default function Import() {
               </Alert>
             )}
           </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={() => downloadTemplate()}
+            >
+              <IconDownload className="h-4 w-4 mr-1.5" />
+              Tải file mẫu (.xlsx)
+            </Button>
+          </CardFooter>
         </Card>
 
         {plan && (
@@ -198,23 +199,23 @@ export default function Import() {
                   </AlertDescription>
                 </Alert>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => downloadIssuesCsv(fileName, plan.issues)}
-                      title="Tải toàn bộ lỗi và cảnh báo về CSV để mở trong Excel cùng file gốc và sửa hàng loạt"
-                    >
-                      <IconDownload className="h-4 w-4 mr-1.5" />
-                      Tải file lỗi ({plan.issues.length})
-                    </Button>
-                  </div>
-                  <IssueList issues={plan.issues} />
-                </div>
+                <IssueList issues={plan.issues} />
               )}
             </CardContent>
+            {plan.issues.length > 0 && (
+              <CardFooter className="justify-end border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => downloadIssuesCsv(fileName, plan.issues)}
+                  title="Tải toàn bộ lỗi và cảnh báo về CSV để mở trong Excel cùng file gốc và sửa hàng loạt"
+                >
+                  <IconDownload className="h-4 w-4 mr-1.5" />
+                  Tải file lỗi ({plan.issues.length})
+                </Button>
+              </CardFooter>
+            )}
           </Card>
         )}
 
@@ -257,40 +258,40 @@ export default function Import() {
                   prePercent={prePercent}
                 />
               )}
-              <div className="flex gap-3">
-                <Button
-                  className="flex-1 sm:flex-none"
-                  disabled={!canSubmit}
-                  onClick={() => importM.mutate()}
-                >
-                  {importM.isPending ? (
-                    "Đang nhập…"
-                  ) : importM.isSuccess ? (
-                    <>
-                      <IconCheck className="h-4 w-4 mr-1.5" />
-                      Đã nhập
-                    </>
-                  ) : (
-                    <>
-                      <IconUpload className="h-4 w-4 mr-1.5" />
-                      Nhập vào dòng họ
-                    </>
-                  )}
-                </Button>
-                {importM.isSuccess && (
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="flex-1 sm:flex-none"
-                  >
-                    <Link to={`/clans/${clanId}/people`}>
-                      <IconList className="h-4 w-4 mr-1.5" />
-                      Xem danh bạ
-                    </Link>
-                  </Button>
-                )}
-              </div>
             </CardContent>
+            <CardFooter className="flex-wrap gap-3 border-t pt-4">
+              {importM.isSuccess && (
+                <Button
+                  asChild
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                >
+                  <Link to={`/clans/${clanId}/people`}>
+                    <IconList className="h-4 w-4 mr-1.5" />
+                    Xem danh bạ
+                  </Link>
+                </Button>
+              )}
+              <Button
+                className="flex-1 sm:flex-none"
+                disabled={!canSubmit}
+                onClick={() => importM.mutate()}
+              >
+                {importM.isPending ? (
+                  "Đang nhập…"
+                ) : importM.isSuccess ? (
+                  <>
+                    <IconCheck className="h-4 w-4 mr-1.5" />
+                    Đã nhập
+                  </>
+                ) : (
+                  <>
+                    <IconUpload className="h-4 w-4 mr-1.5" />
+                    Nhập vào dòng họ
+                  </>
+                )}
+              </Button>
+            </CardFooter>
         </Card>
       )}
     </div>

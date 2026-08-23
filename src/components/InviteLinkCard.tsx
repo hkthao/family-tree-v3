@@ -8,6 +8,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -119,15 +120,6 @@ export function InviteLinkCard({
           ))}
         </fieldset>
 
-        <Button
-          type="button"
-          onClick={() => createM.mutate()}
-          disabled={createM.isPending}
-        >
-          <IconLink className="h-4 w-4 mr-1.5" />
-          {createM.isPending ? "Đang tạo…" : "Tạo link mời"}
-        </Button>
-
         {invites && invites.length > 0 && (
           <ul className="space-y-2 pt-1">
             {invites.map((inv) => (
@@ -185,6 +177,16 @@ export function InviteLinkCard({
           </ul>
         )}
       </CardContent>
+      <CardFooter className="justify-end border-t pt-4">
+        <Button
+          type="button"
+          onClick={() => createM.mutate()}
+          disabled={createM.isPending}
+        >
+          <IconLink className="h-4 w-4 mr-1.5" />
+          {createM.isPending ? "Đang tạo…" : "Tạo link mời"}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

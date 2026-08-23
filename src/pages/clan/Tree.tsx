@@ -33,8 +33,8 @@ import {
 } from "@/components/ui/segmented-control";
 import {
   Card,
-  CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -1293,20 +1293,20 @@ export default function Tree() {
             </CardDescription>
           </CardHeader>
           {canEdit && (
-            <CardContent className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to={`/clans/${clanId}/people/new`}>
-                  <IconPlus className="h-4 w-4 mr-1.5" />
-                  Thêm người
-                </Link>
-              </Button>
+            <CardFooter className="flex-wrap gap-3">
               <Button asChild variant="outline">
                 <Link to={`/clans/${clanId}/import`}>
                   <IconUpload className="h-4 w-4 mr-1.5" />
                   Nhập từ Excel
                 </Link>
               </Button>
-            </CardContent>
+              <Button asChild>
+                <Link to={`/clans/${clanId}/people/new`}>
+                  <IconPlus className="h-4 w-4 mr-1.5" />
+                  Thêm người
+                </Link>
+              </Button>
+            </CardFooter>
           )}
         </Card>
       )}

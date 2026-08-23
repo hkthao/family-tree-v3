@@ -29,7 +29,15 @@ import { ShareCardDialog } from "@/components/ShareCardDialog";
 import type { CardGenre } from "@/lib/cards/types";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { useAudioRecorder, HERITAGE_AUDIO_MAX_SEC, isAudioRecordingSupported } from "@/lib/audioRecord";
@@ -484,18 +492,21 @@ export default function HeritageDetail() {
               dùng khi đã đầy, hoặc muốn nhúng video YouTube.
             </p>
             <div className="flex flex-wrap gap-2">
-              <select
+              <Select
                 value={extKind}
                 onChange={(e) => { setExtKind(e.target.value as HeritageMediaKind); setExtErr(null); }}
-                className="h-11 rounded-md border border-input bg-background px-3 text-base"
+                icon={<IconPlay />}
+                className="h-11 w-auto"
+                aria-label="Loại nội dung"
               >
                 <option value="video">Video</option>
                 <option value="photo">Ảnh</option>
                 <option value="audio">Âm thanh</option>
-              </select>
-              {/* Nút "Thêm link" đặt LỒNG bên trong ô input (nổi bên phải). */}
-              <div className="relative min-w-[220px] flex-1">
-                <input
+              </Select>
+              {/* Một hành động duy nhất → nằm TRONG ô, xem
+                  docs/design-language.md §Đặt hành động ở đâu. */}
+              <div className="min-w-[220px] flex-1">
+                <Input
                   value={extUrl}
                   onChange={(e) => { setExtUrl(e.target.value); setExtErr(null); }}
                   onKeyDown={(e) => {
@@ -506,19 +517,22 @@ export default function HeritageDetail() {
                   }}
                   placeholder="Dán link https://… vào đây"
                   inputMode="url"
-                  className="h-11 w-full rounded-md border border-input bg-background pl-3 pr-12 text-base"
+                  icon={<IconLink />}
+                  className="h-11"
+                  action={
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => addExternalM.mutate()}
+                      disabled={addExternalM.isPending || !extUrl.trim()}
+                      aria-label="Thêm link"
+                      title="Thêm link"
+                      className="h-9 w-9"
+                    >
+                      <IconPlus className="h-4 w-4" />
+                    </Button>
+                  }
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => addExternalM.mutate()}
-                  disabled={addExternalM.isPending || !extUrl.trim()}
-                  aria-label="Thêm link"
-                  title="Thêm link"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                >
-                  <IconPlus className="h-4 w-4" />
-                </Button>
               </div>
             </div>
             {extErr && <p className="text-sm text-red-600">{extErr}</p>}
@@ -648,16 +662,16 @@ export default function HeritageDetail() {
             <Row label="Ở đâu" value={item.location_name} />
             <Row label="Địa chỉ" value={item.address} />
             {item.built_year && <Row label="Lập / xây năm" value={String(item.built_year)} />}
-            {dir && (
-              <div className="pt-1">
-                <Button size="sm" variant="outline" asChild>
-                  <a href={dir} target="_blank" rel="noopener noreferrer">
-                    <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
-                  </a>
-                </Button>
-              </div>
-            )}
           </CardContent>
+          {dir && (
+            <CardFooter className="border-t pt-4">
+              <Button size="sm" variant="outline" asChild>
+                <a href={dir} target="_blank" rel="noopener noreferrer">
+                  <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
+                </a>
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       )}
 

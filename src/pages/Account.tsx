@@ -23,6 +23,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -80,14 +81,14 @@ export default function Account() {
                 tài khoản, gán quyền.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardFooter>
               <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link to="/admin">
                   <IconShield className="h-4 w-4 mr-1.5" />
                   Mở trang quản trị
                 </Link>
               </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         )}
 
@@ -142,9 +143,9 @@ export default function Account() {
               chỉ dùng được một lần.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardFooter>
             <QrSignInButton />
-          </CardContent>
+          </CardFooter>
         </Card>
 
         <Card>
@@ -154,7 +155,7 @@ export default function Account() {
               Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy).
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardFooter>
             <Button
               variant="outline"
               onClick={signOutAndClearCache}
@@ -163,7 +164,7 @@ export default function Account() {
               <IconLogOut className="h-4 w-4 mr-1.5" />
               Đăng xuất
             </Button>
-          </CardContent>
+          </CardFooter>
         </Card>
 
         <DeleteAccountCard
@@ -298,14 +299,13 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
           Tên hiển thị trong dòng họ và các sự kiện. Không phải email.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (changed && name.trim()) m.mutate();
-          }}
-          className="space-y-4"
-        >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (changed && name.trim()) m.mutate();
+        }}
+      >
+        <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="display-name">Tên hiển thị</Label>
             <Input
@@ -326,6 +326,8 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
               <AlertDescription>Đã lưu.</AlertDescription>
             </Alert>
           )}
+        </CardContent>
+        <CardFooter className="justify-end border-t pt-4">
           <Button
             type="submit"
             variant="outline"
@@ -341,8 +343,8 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
               </>
             )}
           </Button>
-        </form>
-      </CardContent>
+        </CardFooter>
+      </form>
     </Card>
   );
 }
@@ -380,14 +382,13 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
           Mailpit ở local).
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (newEmail.trim()) m.mutate();
-          }}
-          className="space-y-4"
-        >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (newEmail.trim()) m.mutate();
+        }}
+      >
+        <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="new-email">Email mới</Label>
             <Input
@@ -412,6 +413,8 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
               </AlertDescription>
             </Alert>
           )}
+        </CardContent>
+        <CardFooter className="justify-end border-t pt-4">
           <Button
             type="submit"
             variant="outline"
@@ -427,8 +430,8 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
               </>
             )}
           </Button>
-        </form>
-      </CardContent>
+        </CardFooter>
+      </form>
     </Card>
   );
 }
@@ -464,14 +467,13 @@ function PasswordCard() {
         <CardTitle>Mật khẩu</CardTitle>
         <CardDescription>Ít nhất 8 ký tự.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (canSubmit) m.mutate();
-          }}
-          className="space-y-4"
-        >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (canSubmit) m.mutate();
+        }}
+      >
+        <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="pw">Mật khẩu mới</Label>
             <Input
@@ -510,6 +512,8 @@ function PasswordCard() {
               <AlertDescription>Đã đổi mật khẩu.</AlertDescription>
             </Alert>
           )}
+        </CardContent>
+        <CardFooter className="justify-end border-t pt-4">
           <Button
             type="submit"
             variant="outline"
@@ -525,8 +529,8 @@ function PasswordCard() {
               </>
             )}
           </Button>
-        </form>
-      </CardContent>
+        </CardFooter>
+      </form>
     </Card>
   );
 }
@@ -573,16 +577,7 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!expanded ? (
-          <Button
-            variant="outline"
-            onClick={() => setExpanded(true)}
-            className="w-full sm:w-auto"
-          >
-            <IconTrash className="h-4 w-4 mr-1.5 text-destructive" />
-            Tôi muốn xoá tài khoản
-          </Button>
-        ) : (
+        {expanded && (
           <>
             {blocked && (
               <Alert variant="destructive">
@@ -597,7 +592,7 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
                 Gõ <code className="font-bold">XOA</code> để xác nhận
               </Label>
               <Input
-              icon={<IconLock />}
+                icon={<IconLock />}
                 id="confirm"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
@@ -609,35 +604,48 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
                 <AlertDescription>{(m.error as Error).message}</AlertDescription>
               </Alert>
             )}
-            <div className="flex gap-3">
-              <Button
-                variant="destructive"
-                disabled={!canSubmit || m.isPending}
-                onClick={() => m.mutate()}
-              >
-                {m.isPending ? (
-                  "Đang xoá…"
-                ) : (
-                  <>
-                    <IconTrash className="h-4 w-4 mr-1.5" />
-                    Xoá tài khoản vĩnh viễn
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setExpanded(false);
-                  setConfirmText("");
-                }}
-              >
-                <IconX className="h-4 w-4 mr-1.5" />
-                Hủy
-              </Button>
-            </div>
           </>
         )}
       </CardContent>
+      {!expanded ? (
+        <CardFooter>
+          <Button
+            variant="outline"
+            onClick={() => setExpanded(true)}
+            className="w-full sm:w-auto"
+          >
+            <IconTrash className="h-4 w-4 mr-1.5 text-destructive" />
+            Tôi muốn xoá tài khoản
+          </Button>
+        </CardFooter>
+      ) : (
+        <CardFooter className="flex-wrap justify-end gap-3 border-t pt-4">
+          <Button
+            variant="destructive"
+            disabled={!canSubmit || m.isPending}
+            onClick={() => m.mutate()}
+          >
+            {m.isPending ? (
+              "Đang xoá…"
+            ) : (
+              <>
+                <IconTrash className="h-4 w-4 mr-1.5" />
+                Xoá tài khoản vĩnh viễn
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setExpanded(false);
+              setConfirmText("");
+            }}
+          >
+            <IconX className="h-4 w-4 mr-1.5" />
+            Hủy
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }

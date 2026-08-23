@@ -1,5 +1,11 @@
 import { PersonAvatar } from "@/components/PersonAvatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IconMapPin } from "@/components/icons";
 import type { ShareViewRestingPlaceFull } from "@/lib/queries/share-view";
@@ -58,16 +64,16 @@ export function SharedRestingPlaceCard({
           <Row label="Vị trí" value={rp.location_detail} />
           <Row label="Địa chỉ" value={rp.address} />
           <Row label="Trạng thái" value={STATUS_LABEL[rp.status]} />
-          {dir && (
-            <div className="pt-1">
-              <Button size="sm" variant="outline" asChild>
-                <a href={dir} target="_blank" rel="noopener noreferrer">
-                  <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
-                </a>
-              </Button>
-            </div>
-          )}
         </CardContent>
+        {dir && (
+          <CardFooter className="border-t pt-4">
+            <Button size="sm" variant="outline" asChild>
+              <a href={dir} target="_blank" rel="noopener noreferrer">
+                <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
+              </a>
+            </Button>
+          </CardFooter>
+        )}
       </Card>
 
       {rp.occupants.length > 0 && (
