@@ -40,13 +40,9 @@ export interface TestOutcome {
 }
 
 export async function listKeyStatus(): Promise<KeyStatus[]> {
-  // RPC mới ở migration 20260823160000, chưa có trong database.types.ts
-  // (file sinh tự động). Bỏ ép kiểu sau khi áp migration và sinh lại types.
-  const { data, error } = await supabase.rpc(
-    "ai_provider_keys_status" as never,
-  );
+  const { data, error } = await supabase.rpc("ai_provider_keys_status");
   if (error) throw new Error(error.message);
-  return (data ?? []) as unknown as KeyStatus[];
+  return (data ?? []) as KeyStatus[];
 }
 
 async function callAdmin<T>(body: Record<string, unknown>): Promise<T> {
