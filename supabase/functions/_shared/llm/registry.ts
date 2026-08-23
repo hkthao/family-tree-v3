@@ -35,6 +35,7 @@ export const MODELS: Record<string, ModelEntry> = {
     priceOut: 1.2,
     contextWindow: 400_000,
     supportsTools: true,
+    toolsNeedReasoningNone: true,
   },
   "gpt-5.6-terra": {
     id: "gpt-5.6-terra",
@@ -48,6 +49,7 @@ export const MODELS: Record<string, ModelEntry> = {
     priceOut: 12,
     contextWindow: 400_000,
     supportsTools: true,
+    toolsNeedReasoningNone: true,
   },
 
   // ─── DeepSeek (OpenAI-compatible — cùng adapter, khác baseUrl) ────

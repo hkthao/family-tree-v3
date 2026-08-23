@@ -122,6 +122,21 @@ export interface ModelEntry {
   priceCachedIn: number;
   contextWindow: number;
   supportsTools: boolean;
+  /**
+   * Model suy luận (reasoning) trên `/chat/completions` **từ chối tool**
+   * trừ khi gửi kèm `reasoning_effort: "none"`:
+   *
+   *   Function tools with reasoning_effort are not supported for
+   *   gpt-5.6-luna in /v1/chat/completions. To use function tools, use
+   *   /v1/responses or set reasoning_effort to 'none'.
+   *
+   * Mặc định của OpenAI là có suy luận, nên KHÔNG gửi gì cũng dính —
+   * phải gửi "none" một cách tường minh.
+   *
+   * Cờ theo từng model chứ không bật cho cả adapter: DeepSeek, Groq,
+   * vLLM dùng chung adapter này và sẽ 400 vì tham số lạ.
+   */
+  toolsNeedReasoningNone?: boolean;
 }
 
 /** Lỗi có phân loại, để gateway biết cái nào đáng retry. */
