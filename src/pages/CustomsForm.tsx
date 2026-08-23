@@ -25,6 +25,7 @@ import {
 import { extractCoverImage, parseCustomMarkdown } from "@/lib/customs/markdown";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -600,13 +601,13 @@ export default function CustomsForm() {
 
         {err && <p className="text-sm text-destructive">{err}</p>}
 
-        <div className="flex gap-2 justify-end">
+        <FormActions>
+          <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Hủy</Button>
           <Button type="submit" disabled={save.isPending || !title.trim()}>
             <IconCheck className="h-4 w-4 mr-1.5" />
             {save.isPending ? "Đang lưu…" : "Lưu"}
           </Button>
-          <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Hủy</Button>
-        </div>
+        </FormActions>
       </form>
     </Shell>
   );

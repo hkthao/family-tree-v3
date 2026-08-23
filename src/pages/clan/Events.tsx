@@ -532,8 +532,8 @@ function CustomEventItem({
           {canDelete && (
             <Button
               size="sm"
-              variant="outline"
-              className="flex-1 sm:flex-none text-destructive"
+              variant="destructive-outline"
+              className="flex-1 sm:flex-none"
               disabled={delM.isPending}
               onClick={async () => {
                 const ok = await confirm({

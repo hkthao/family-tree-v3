@@ -10,8 +10,24 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        /**
+         * Chỉ dùng cho điểm dừng CUỐI, không hoàn tác được: xoá tài khoản
+         * vĩnh viễn, xoá sạch danh bạ. Nền đỏ đặc phải hiếm thì mới còn
+         * sức cảnh báo.
+         */
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        /**
+         * Nút xoá THÔNG THƯỜNG (xoá một mục, có hộp xác nhận, khôi phục
+         * được). Viền + chữ đỏ, không nền đặc — một danh sách mười dòng
+         * mà mười nút nền đỏ thì mắt không còn biết nhìn đâu.
+         *
+         * Có sẵn thành variant để không phải nhớ ghép
+         * `variant="outline" className="text-destructive"` ở từng chỗ,
+         * mà trước đây mỗi nơi ghép một kiểu.
+         */
+        "destructive-outline":
+          "border border-destructive/40 bg-background text-destructive hover:bg-destructive/10 hover:text-destructive",
         outline:
           "border border-input bg-background hover:bg-secondary hover:text-secondary-foreground",
         secondary:

@@ -337,8 +337,8 @@ function ShareLinkItem({
         )}
         <Button
           size="sm"
-          variant="outline"
-          className="flex-1 min-w-[80px] text-destructive"
+          variant="destructive-outline"
+          className="flex-1 min-w-[80px]"
           onClick={async () => {
             const ok = await confirm({
               title: "Xoá link này vĩnh viễn?",

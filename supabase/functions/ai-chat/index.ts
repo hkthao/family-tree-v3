@@ -186,9 +186,30 @@ Deno.serve(async (req) => {
    * mất một dòng lịch sử là chuyện nhỏ hơn nhiều.
    */
   async function persistTurn(answer: string) {
+    // Đặt mốc thời gian TƯỜNG MINH, lệch 1ms.
+    //
+    // Hai dòng chèn cùng một câu lệnh thì `default now()` cho ra timestamp
+    // Y HỆT nhau (now() là thời điểm bắt đầu transaction). Sắp xếp theo
+    // created_at khi đó hoà, thứ tự trả về tuỳ hứng — và người dùng thấy
+    // câu trả lời nằm TRÊN câu hỏi.
+    const now = Date.now();
     const { error } = await sbAdmin.from("ai_messages").insert([
-      { owner_id: user!.id, clan_id: clanId, role: "user", kind: "qa", content: question! },
-      { owner_id: user!.id, clan_id: clanId, role: "assistant", kind: "qa", content: answer },
+      {
+        owner_id: user!.id,
+        clan_id: clanId,
+        role: "user",
+        kind: "qa",
+        content: question!,
+        created_at: new Date(now).toISOString(),
+      },
+      {
+        owner_id: user!.id,
+        clan_id: clanId,
+        role: "assistant",
+        kind: "qa",
+        content: answer,
+        created_at: new Date(now + 1).toISOString(),
+      },
     ]);
     if (error) console.error("ai-chat: không lưu được lịch sử:", error.message);
   }

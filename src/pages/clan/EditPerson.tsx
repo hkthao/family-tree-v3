@@ -23,6 +23,7 @@ import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -565,7 +566,15 @@ export function EditPersonForm({
         </Alert>
       )}
 
-      <div className="flex gap-3 pt-2 justify-end">
+      <FormActions>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+        >
+          <IconX className="h-4 w-4 mr-1.5" />
+          Hủy
+        </Button>
         <Button
           type="submit"
           variant="default"
@@ -581,15 +590,7 @@ export function EditPersonForm({
             </>
           )}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-        >
-          <IconX className="h-4 w-4 mr-1.5" />
-          Hủy
-        </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

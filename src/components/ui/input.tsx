@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { splitFieldClasses } from "@/components/ui/field-layout";
 import { cn } from "@/lib/utils";
 
 export interface InputProps
@@ -29,6 +30,9 @@ export interface InputProps
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, icon, action, ...props }, ref) => {
+    // Class chiếm chỗ phải nằm ở khung bọc, không ở ô — xem field-layout.ts.
+    const split = splitFieldClasses(className);
+    const fieldCls = icon || action ? split.field : className;
     const field = (
       <input
         type={type}
@@ -38,7 +42,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           // không có icon vẫn phải canh như cũ.
           icon && "pl-10",
           action && "pr-12",
-          className,
+          fieldCls,
         )}
         ref={ref}
         {...props}
@@ -48,7 +52,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     if (!icon && !action) return field;
 
     return (
-      <div className="relative w-full">
+      // `w-full` mặc định để form dọc giữ nguyên như cũ; nơi nào truyền
+      // class chiều ngang (w-32, flex-1, max-w-sm…) thì class đó thắng và
+      // khung co đúng bằng ô — nếu không, icon/mũi tên neo theo khung sẽ
+      // trôi ra xa ô.
+      <div className={cn("relative w-full", split.wrapper)}>
         {icon && (
           <span
             // pointer-events-none: bấm vào icon phải focus vào ô, chứ

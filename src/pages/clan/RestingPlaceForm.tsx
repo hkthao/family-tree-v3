@@ -21,6 +21,7 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -381,15 +382,15 @@ export default function RestingPlaceForm() {
 
         {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
 
-        <div className="flex gap-3 justify-end pt-2">
+        <FormActions>
+          <Button type="button" variant="outline" onClick={() => navigate(back)}>
+            <IconX className="h-4 w-4 mr-1.5" /> Hủy
+          </Button>
           <Button type="submit" variant="outline" disabled={save.isPending}>
             <IconCheck className="h-4 w-4 mr-1.5" />
             {save.isPending ? "Đang lưu…" : "Lưu"}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate(back)}>
-            <IconX className="h-4 w-4 mr-1.5" /> Hủy
-          </Button>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

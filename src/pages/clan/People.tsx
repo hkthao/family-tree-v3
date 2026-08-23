@@ -526,8 +526,7 @@ export default function People() {
           </Button>
           <Button
             size="sm"
-            variant="outline"
-            className="text-destructive"
+            variant="destructive-outline"
             disabled={bulkDeleteM.isPending}
             onClick={async () => {
               const ok = await confirm({

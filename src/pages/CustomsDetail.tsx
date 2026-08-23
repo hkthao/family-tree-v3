@@ -218,8 +218,7 @@ export default function CustomsDetail() {
               </Button>
               <Button
                 size="sm"
-                variant="outline"
-                className="text-destructive"
+                variant="destructive-outline"
                 title="Xoá"
                 onClick={async () => {
                   const ok = await confirm({

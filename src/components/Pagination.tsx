@@ -55,7 +55,10 @@ export function Pagination({
         {isFetching && <span className="ml-2 italic">đang tải…</span>}
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* flex-wrap: ở màn 360px, ô "N/trang" cộng hai nút Trước/Sau
+          rộng hơn khung — không cho xuống dòng thì nút Trước bị đẩy
+          khuất khỏi mép trái, bấm không tới. */}
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {pageSizeOptions && onPageSizeChange && (
           <label className="text-muted-foreground">
             <span className="sr-only">Số dòng mỗi trang</span>

@@ -162,9 +162,9 @@ export function InviteLinkCard({
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="destructive-outline"
                   size="sm"
-                  className="h-9 w-9 p-0 shrink-0 text-destructive"
+                  className="h-9 w-9 p-0 shrink-0"
                   aria-label="Thu hồi link"
                   title="Thu hồi link"
                   disabled={revokeM.isPending}

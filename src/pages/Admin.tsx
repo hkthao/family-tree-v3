@@ -1682,11 +1682,11 @@ function AnnouncementAdminCard({
           </Button>
           <Button
             size="sm"
-            variant="outline"
+            variant="destructive-outline"
             onClick={onDelete}
             aria-label="Xoá tin"
             title="Xoá"
-            className="h-9 w-9 p-0 text-destructive hover:text-destructive"
+            className="h-9 w-9 p-0 hover:"
           >
             <IconTrash className="h-4 w-4" />
           </Button>

@@ -387,9 +387,9 @@ function ConfirmedRow({
           </Button>
         )}
         <Button
-          variant="outline"
+          variant="destructive-outline"
           size="sm"
-          className="flex-1 sm:flex-none text-destructive"
+          className="flex-1 sm:flex-none"
           onClick={onRevoke}
           disabled={revoking}
         >
@@ -523,8 +523,8 @@ function IncomingPendingRow({
         </Button>
         <Button
           size="sm"
-          variant="outline"
-          className="flex-1 sm:flex-none text-destructive"
+          variant="destructive-outline"
+          className="flex-1 sm:flex-none"
           onClick={onReject}
           disabled={busy}
         >
@@ -628,8 +628,8 @@ function PendingRow({
       <div className="flex gap-2 flex-wrap">
         <Button
           size="sm"
-          variant="outline"
-          className="flex-1 sm:flex-none text-destructive"
+          variant="destructive-outline"
+          className="flex-1 sm:flex-none"
           onClick={onCancel}
           disabled={canceling}
         >

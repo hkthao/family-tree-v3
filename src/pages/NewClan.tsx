@@ -15,6 +15,7 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
@@ -144,7 +145,13 @@ export default function NewClan() {
             </Alert>
           )}
 
-          <div className="flex gap-3 pt-2 justify-end">
+          <FormActions>
+            <Button asChild variant="outline">
+              <Link to="/clans">
+                <IconX className="h-4 w-4 mr-1.5" />
+                Hủy
+              </Link>
+            </Button>
             <Button
               type="submit"
               variant="default"
@@ -160,13 +167,7 @@ export default function NewClan() {
                 </>
               )}
             </Button>
-            <Button asChild variant="outline">
-              <Link to="/clans">
-                <IconX className="h-4 w-4 mr-1.5" />
-                Hủy
-              </Link>
-            </Button>
-          </div>
+          </FormActions>
         </form>
       </main>
     </div>

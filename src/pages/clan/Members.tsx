@@ -275,7 +275,7 @@ export default function Members() {
                         </Select>
                         {m.user_id !== userId && (
                           <Button
-                            variant="destructive"
+                            variant="destructive-outline"
                             size="sm"
                             onClick={async () => {
                               const ok = await confirm({

@@ -487,10 +487,13 @@ export default function PersonDetail() {
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
             <RelatedPostsSection personId={personId!} clanId={clan.id} />
 
-            {/* Actions row — buttons fix width 100px để cân nhau, dạt
-                phải, 1 hàng. Xưng hô đã chuyển xuống "Quan hệ" card
-                (mỗi người thân đã có nút tra cứu cạnh tên), bỏ ở đây. */}
-            <div className="flex items-center gap-2 justify-end">
+            {/* Actions row — nút rộng cố định 100px cho cân nhau, dạt
+                phải. Xưng hô đã chuyển xuống thẻ "Quan hệ" (mỗi người
+                thân đã có nút tra cứu cạnh tên), bỏ ở đây.
+
+                flex-wrap: bốn nút × 100px + khoảng cách vượt khung 360px,
+                không cho xuống dòng thì nút đầu bị đẩy khuất mép trái. */}
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {canEdit ? (
                 <Button asChild variant="outline" size="sm" className="w-[100px]">
                   <Link
@@ -552,10 +555,10 @@ export default function PersonDetail() {
               )}
               {canEdit && (
                 <Button
-                  variant="outline"
+                  variant="destructive-outline"
                   size="sm"
                   data-testid="delete-person-button"
-                  className="w-[100px] text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  className="w-[100px] hover:bg-destructive/10 hover:"
                   onClick={async () => {
                     const ok = await askConfirm({
                       title: `Xoá ${person.full_name}?`,

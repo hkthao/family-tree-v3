@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
@@ -373,7 +374,15 @@ export function AddSpouseForm({
         </Alert>
       )}
 
-      <div className="flex gap-3 pt-2 justify-end">
+      <FormActions>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+        >
+          <IconX className="h-4 w-4 mr-1.5" />
+          Hủy
+        </Button>
         <Button
           type="submit"
           variant="outline"
@@ -392,15 +401,7 @@ export function AddSpouseForm({
             </>
           )}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-        >
-          <IconX className="h-4 w-4 mr-1.5" />
-          Hủy
-        </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

@@ -22,6 +22,7 @@ import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -403,7 +404,15 @@ function TokenBody(props: ModeStepProps) {
         </Alert>
       )}
 
-      <div className="flex gap-3 pt-2 justify-end">
+      <FormActions>
+        <Button
+          variant="outline"
+          onClick={props.onBackToPick}
+          disabled={props.submittingToken}
+        >
+          <IconX className="h-4 w-4 mr-1.5" />
+          Huỷ
+        </Button>
         <Button
           variant="outline"
           onClick={props.submitToken}
@@ -418,15 +427,7 @@ function TokenBody(props: ModeStepProps) {
             </>
           )}
         </Button>
-        <Button
-          variant="outline"
-          onClick={props.onBackToPick}
-          disabled={props.submittingToken}
-        >
-          <IconX className="h-4 w-4 mr-1.5" />
-          Huỷ
-        </Button>
-      </div>
+      </FormActions>
     </div>
   );
 }
