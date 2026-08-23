@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { IconArrowRight } from "@/components/icons";
 import { VideoModal } from "@/components/HelpVideoButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,7 +86,10 @@ export function VideoEmptyState({
       {ctaLabel && ctaTo && (
         <div className="flex justify-center sm:justify-start">
           <Button asChild>
-            <Link to={ctaTo}>{ctaLabel} →</Link>
+            <Link to={ctaTo}>
+              {ctaLabel}
+              <IconArrowRight className="h-4 w-4 ml-1.5" />
+            </Link>
           </Button>
         </div>
       )}

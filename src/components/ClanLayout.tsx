@@ -74,7 +74,10 @@ export function ClanLayout() {
           className="max-w-md w-full"
         />
         <Button asChild variant="outline">
-          <Link to="/clans">← Quay lại danh sách dòng họ</Link>
+          <Link to="/clans">
+            <IconArrowLeft className="h-4 w-4 mr-1.5" />
+            Quay lại danh sách dòng họ
+          </Link>
         </Button>
       </main>
     );
@@ -87,7 +90,10 @@ export function ClanLayout() {
           Không tìm thấy dòng họ này hoặc bạn không có quyền xem.
         </p>
         <Button asChild variant="outline">
-          <Link to="/clans">← Danh sách dòng họ</Link>
+          <Link to="/clans">
+            <IconArrowLeft className="h-4 w-4 mr-1.5" />
+            Danh sách dòng họ
+          </Link>
         </Button>
       </main>
     );

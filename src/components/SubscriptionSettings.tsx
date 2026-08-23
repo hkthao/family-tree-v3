@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconTrash } from "@/components/icons";
+import {
+  IconBell,
+  IconBellOff,
+  IconCheck,
+  IconTrash,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -160,7 +165,17 @@ export function SubscriptionSettings({ clanId }: Props) {
             disabled={toggleM.isPending}
             onClick={() => toggleM.mutate(!current.is_enabled)}
           >
-            {current.is_enabled ? "Tạm tắt" : "Bật lại"}
+            {current.is_enabled ? (
+              <>
+                <IconBellOff className="h-4 w-4 mr-1.5" />
+                Tạm tắt
+              </>
+            ) : (
+              <>
+                <IconBell className="h-4 w-4 mr-1.5" />
+                Bật lại
+              </>
+            )}
           </Button>
           <Button
             size="sm"

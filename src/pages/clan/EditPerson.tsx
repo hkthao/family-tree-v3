@@ -15,6 +15,7 @@ import {
   IconPencil,
   IconPlus,
   IconScroll,
+  IconUndo,
   IconUser,
   IconX,
 } from "@/components/icons";
@@ -296,6 +297,7 @@ export function EditPersonForm({
             onClick={restoreDraft}
             className="shrink-0"
           >
+            <IconUndo className="h-4 w-4 mr-1.5" />
             Khôi phục
           </Button>
           <Button

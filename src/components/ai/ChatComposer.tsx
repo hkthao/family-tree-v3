@@ -71,6 +71,7 @@ export function ChatComposer({
         }}
         className="flex shrink-0 items-end gap-2 border-t bg-background px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
       >
+        {/* icon-audit: ok — ô chat chiếm gần hết chiều ngang, đã có nút gửi cạnh bên */}
         <textarea
           value={draft}
           onChange={(e) => onDraftChange(e.target.value)}

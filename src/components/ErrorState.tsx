@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { IconRefresh } from "@/components/icons";
 
 /**
  * Chuyển thông báo lỗi kỹ thuật (thường tiếng Anh từ Supabase/mạng)
@@ -89,6 +90,7 @@ export function ErrorState({
       </div>
       {onRetry && (
         <Button variant="outline" onClick={onRetry}>
+          <IconRefresh className="h-4 w-4 mr-1.5" />
           Thử lại
         </Button>
       )}

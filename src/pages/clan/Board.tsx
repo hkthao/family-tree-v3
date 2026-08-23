@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 
 import { ClanPostCard } from "@/components/ClanPostCard";
-import { IconScroll } from "@/components/icons";
+import {
+  IconPlus,
+  IconScroll,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -75,7 +78,10 @@ export default function Board() {
             )}
             {isMember && user && (
               <Button asChild size="sm" className="h-10">
-                <Link to={`/clans/${clanId}/board/new`}>+ Đăng bài mới</Link>
+                <Link to={`/clans/${clanId}/board/new`}>
+                  <IconPlus className="h-4 w-4 mr-1.5" />
+                  Đăng bài mới
+                </Link>
               </Button>
             )}
           </>

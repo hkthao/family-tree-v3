@@ -17,6 +17,8 @@ import {
   IconQrCode,
   IconScroll,
   IconTrash,
+  IconUser,
+  IconUsers,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -966,6 +968,7 @@ function InLawLinkRow({
             className="flex-1 sm:flex-none"
           >
             <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
+              <IconUser className="h-4 w-4 mr-1.5" />
               Xem trang
             </Link>
           </Button>
@@ -977,7 +980,17 @@ function InLawLinkRow({
           aria-expanded={expanded}
           className="flex-1 sm:flex-none"
         >
-          {expanded ? "Thu gọn" : "Gia đình bên đó"}
+          {expanded ? (
+            <>
+              <IconChevronUp className="h-4 w-4 mr-1.5" />
+              Thu gọn
+            </>
+          ) : (
+            <>
+              <IconUsers className="h-4 w-4 mr-1.5" />
+              Gia đình bên đó
+            </>
+          )}
         </Button>
       </div>
 

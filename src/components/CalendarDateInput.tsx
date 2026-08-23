@@ -176,6 +176,7 @@ export function CalendarDateInput({
         </button>
       )}
 
+      {/* icon-audit: ok — ba ô hẹp dưới 100px, nhãn đã nằm ngay trên, ba icon lịch giống nhau chỉ gây rối */}
       <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2 max-w-md">
         <div className="space-y-1">
           <Label htmlFor={`${idPrefix}-day`} className="text-xs">
@@ -196,6 +197,7 @@ export function CalendarDateInput({
             placeholder="—"
           />
         </div>
+        {/* icon-audit: ok — xem ghi chú ở ô Ngày phía trên */}
         <div className="space-y-1">
           <Label htmlFor={`${idPrefix}-month`} className="text-xs">
             Tháng
@@ -215,6 +217,7 @@ export function CalendarDateInput({
             placeholder="—"
           />
         </div>
+        {/* icon-audit: ok — xem ghi chú ở ô Ngày phía trên */}
         <div className="space-y-1">
           <Label htmlFor={`${idPrefix}-year`} className="text-xs">
             Năm

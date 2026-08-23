@@ -12,6 +12,7 @@ import {
   IconCheck,
   IconDownload,
   IconList,
+  IconSparkles,
   IconUpload,
 } from "@/components/icons";
 import { downloadIssuesCsv } from "@/lib/csv/exportImportIssues";
@@ -119,7 +120,8 @@ export default function Import() {
         actions={
           <Button asChild variant="outline" size="sm" className="h-10">
             <Link to={`/clans/${clanId}/ai-generate`}>
-              Sinh file bằng AI →
+              <IconSparkles className="h-4 w-4 mr-1.5" />
+                Sinh file bằng AI
             </Link>
           </Button>
         }

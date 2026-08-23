@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { IconRefresh, IconX } from "@/components/icons";
 
 import { Button } from "@/components/ui/button";
 import { applyPendingUpdate, subscribeUpdateAvailable } from "@/lib/pwa";
@@ -29,6 +30,7 @@ export function UpdateBanner() {
           Đã có phiên bản mới. Cập nhật để dùng tính năng mới nhất.
         </p>
         <Button size="sm" onClick={() => applyPendingUpdate()}>
+          <IconRefresh className="h-4 w-4 mr-1.5" />
           Cập nhật
         </Button>
         <Button
@@ -37,7 +39,7 @@ export function UpdateBanner() {
           aria-label="Để sau"
           onClick={() => setDismissed(true)}
         >
-          ✕
+          <IconX className="h-4 w-4" />
         </Button>
       </div>
     </div>

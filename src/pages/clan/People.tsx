@@ -20,7 +20,19 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-import { IconCopy, IconGrid, IconList, IconPlus, IconSearch, IconSparkles, IconUpload, IconUsers } from "@/components/icons";
+import {
+  IconCopy,
+  IconGrid,
+  IconList,
+  IconPlus,
+  IconSearch,
+  IconSparkles,
+  IconTrash,
+  IconTree,
+  IconUpload,
+  IconUsers,
+  IconX,
+} from "@/components/icons";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
@@ -509,6 +521,7 @@ export default function People() {
             onClick={() => bulkChangeBranchM.mutate()}
             disabled={bulkChangeBranchM.isPending}
           >
+            <IconTree className="h-4 w-4 mr-1.5" />
             {bulkChangeBranchM.isPending ? "Đang đổi…" : "Đổi chi"}
           </Button>
           <Button
@@ -527,6 +540,7 @@ export default function People() {
               if (ok) bulkDeleteM.mutate();
             }}
           >
+            <IconTrash className="h-4 w-4 mr-1.5" />
             {bulkDeleteM.isPending ? "Đang xoá…" : "Xoá"}
           </Button>
           <Button
@@ -534,6 +548,7 @@ export default function People() {
             variant="outline"
             onClick={() => setSelected(new Set())}
           >
+            <IconX className="h-4 w-4 mr-1.5" />
             Bỏ chọn
           </Button>
         </div>

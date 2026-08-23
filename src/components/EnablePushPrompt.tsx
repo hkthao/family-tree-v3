@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { IconBell } from "@/components/icons";
+import {
+  IconBell,
+} from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -95,7 +97,8 @@ export function EnablePushPrompt() {
         </p>
       </div>
       <Button size="sm" onClick={enable} disabled={setPref.isPending}>
-        Bật ngay
+        <IconBell className="h-4 w-4 mr-1.5" />
+            Bật ngay
       </Button>
       <button
         type="button"

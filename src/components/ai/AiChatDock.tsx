@@ -115,6 +115,7 @@ function Dock({ clan }: { clan: ClanDetail }) {
           <p className="truncate text-sm font-semibold">Trợ lý dòng họ</p>
           <p className="truncate text-xs text-muted-foreground">{clan.name}</p>
         </div>
+        {/* icon-audit: ok — chữ "A" chính là ký hiệu, thêm icon nữa là thừa */}
         <Button
           variant="ghost"
           size="icon"

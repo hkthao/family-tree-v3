@@ -380,6 +380,7 @@ export default function Todo() {
             onClick={() => setSelected(new Set())}
             className="h-9"
           >
+            <IconX className="h-4 w-4 mr-1.5" />
             Bỏ chọn
           </Button>
           <Button
