@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 
+import { AiChatDock } from "@/components/ai/AiChatDock";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -172,6 +173,8 @@ export function ClanLayout() {
 
       <BottomTabBar tabs={tabs} />
       <CommandPalette clan={clan} />
+      {/* Khung chat nổi — tự ẩn trên điện thoại và khi trợ lý tắt. */}
+      {(clan.myRole !== null || clan.isPlatformAdmin) && <AiChatDock clan={clan} />}
     </div>
   );
 }
