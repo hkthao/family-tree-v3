@@ -20,75 +20,11 @@ import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 import { computeKinship, type KinshipPerson } from "../_shared/vendor/kinship.ts";
 import { lunarAnniversaryInSolarYear } from "../_shared/vendor/lunarDate.ts";
-import type { ToolSpec } from "../_shared/llm/types.ts";
 
 /** Trần cứng cho mọi tool trả danh sách — chặn model kéo cả dòng họ về. */
 const MAX_ROWS = 25;
 
-export const TOOL_SPECS: ToolSpec[] = [
-  {
-    name: "search_person",
-    description:
-      "Tìm người trong dòng họ theo tên (không dấu cũng được). Dùng khi câu hỏi nhắc tới một người mà chưa biết id. Trả về tối đa 25 người.",
-    parameters: {
-      type: "object",
-      properties: {
-        name: { type: "string", description: "Tên hoặc một phần tên" },
-      },
-      required: ["name"],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "get_person",
-    description:
-      "Lấy chi tiết một người: năm sinh, năm mất, ngày giỗ âm lịch, đời thứ mấy, cha mẹ, vợ/chồng, con.",
-    parameters: {
-      type: "object",
-      properties: {
-        person_id: { type: "string", description: "id lấy từ search_person" },
-      },
-      required: ["person_id"],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "get_kinship",
-    description:
-      "Tra cách xưng hô giữa hai người trong dòng họ: người A gọi người B là gì và ngược lại. LUÔN dùng tool này cho câu hỏi xưng hô, KHÔNG được tự suy luận chú/bác/cô/cậu/dì.",
-    parameters: {
-      type: "object",
-      properties: {
-        person_a_id: { type: "string" },
-        person_b_id: { type: "string" },
-      },
-      required: ["person_a_id", "person_b_id"],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "upcoming_anniversaries",
-    description:
-      "Danh sách ngày giỗ sắp tới, đã quy đổi từ âm lịch sang dương lịch. LUÔN dùng tool này cho câu hỏi về ngày giỗ, KHÔNG được tự tính lịch âm.",
-    parameters: {
-      type: "object",
-      properties: {
-        days: {
-          type: "integer",
-          description: "Số ngày tới cần xem, mặc định 60, tối đa 400",
-        },
-      },
-      required: [],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "clan_stats",
-    description:
-      "Thống kê nhanh dòng họ: tổng số người, số người còn sống, số đời.",
-    parameters: { type: "object", properties: {}, additionalProperties: false },
-  },
-];
+export { TOOL_SPECS } from "./toolSpecs.ts";
 
 const PERSON_COLS =
   "id, full_name, gender, is_living, generation, birth_date, death_date, " +

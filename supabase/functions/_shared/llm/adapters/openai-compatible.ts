@@ -16,6 +16,7 @@ import {
   type LlmResponse,
   type LlmToolCall,
   type ModelEntry,
+  type ToolSpec,
 } from "../types.ts";
 
 interface OaiToolCall {
@@ -72,6 +73,32 @@ function mapStop(reason: string): LlmResponse["stopReason"] {
 }
 
 /**
+ * Có bật được `strict` cho schema này không?
+ *
+ * OpenAI đòi HAI điều, không phải một: `additionalProperties: false` **và**
+ * `required` phải liệt kê ĐỦ mọi key trong `properties`. Thiếu một key là
+ * 400 ngay từ lúc gửi:
+ *
+ *   Invalid schema for function 'upcoming_anniversaries': 'required' is
+ *   required to be supplied and to be an array including every key in
+ *   properties. Missing 'days'.
+ *
+ * Trước đây chỉ kiểm điều thứ nhất, nên tool nào có tham số **tuỳ chọn**
+ * là làm hỏng cả lượt chat — không phải hỏng riêng tool đó, vì danh sách
+ * tool đi kèm mọi request.
+ *
+ * Không "sửa" bằng cách nhét hết key vào `required`: tham số tuỳ chọn là
+ * tuỳ chọn thật (`days` mặc định 60). Ép model luôn phải điền thì nó sẽ
+ * bịa số. Thà bỏ `strict` cho riêng tool đó — đằng nào tầng trên cũng
+ * validate lại bằng zod trước khi chạy.
+ */
+function isStrictSafe(p: ToolSpec["parameters"]): boolean {
+  if (p.additionalProperties !== false) return false;
+  const required = new Set(p.required ?? []);
+  return Object.keys(p.properties ?? {}).every((k) => required.has(k));
+}
+
+/**
  * Dựng body cho `/chat/completions`. Tách thành hàm THUẦN để unit test
  * được — đây là chỗ mọi khác biệt provider bị chặn lại, nên nó cần test
  * chứ không chỉ cần chạy.
@@ -117,9 +144,7 @@ export function buildOpenAiBody(
         name: t.name,
         description: t.description,
         parameters: t.parameters,
-        // strict yêu cầu additionalProperties:false + required đầy đủ.
-        // Bật để tham số về đúng schema, đỡ một vòng retry.
-        strict: t.parameters.additionalProperties === false,
+        strict: isStrictSafe(t.parameters),
       },
     }));
     body.tool_choice = "auto";
