@@ -39,9 +39,38 @@ export interface TestOutcome {
   ms: number;
 }
 
+/**
+ * Ném ra khi phần AI chưa được cài lên môi trường đang chạy.
+ *
+ * Có thật chứ không phải phòng xa: prod là Supabase tự host và migration
+ * **áp bằng tay**, nên frontend hoàn toàn có thể lên trước database. Khi
+ * đó gọi RPC sẽ nhận 404 (PostgREST `PGRST202`) — phải nhận diện được để
+ * hiện hướng dẫn cài đặt, thay vì quăng một lỗi kỹ thuật vào mặt admin.
+ */
+export class AiNotInstalledError extends Error {
+  constructor() {
+    super("Phần trợ lý AI chưa được cài trên máy chủ này.");
+    this.name = "AiNotInstalledError";
+  }
+}
+
+/** PostgREST trả mã này khi không tìm thấy hàm/bảng trong schema cache. */
+function isMissingObject(error: { code?: string; message?: string }): boolean {
+  return (
+    error.code === "PGRST202" ||
+    error.code === "PGRST205" ||
+    error.code === "42883" || // undefined_function
+    error.code === "42P01" || // undefined_table
+    /could not find the function|schema cache/i.test(error.message ?? "")
+  );
+}
+
 export async function listKeyStatus(): Promise<KeyStatus[]> {
   const { data, error } = await supabase.rpc("ai_provider_keys_status");
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (isMissingObject(error)) throw new AiNotInstalledError();
+    throw new Error(error.message);
+  }
   return (data ?? []) as KeyStatus[];
 }
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   AI_PROVIDERS,
+  AiNotInstalledError,
   deleteProviderKey,
   listKeyStatus,
   setProviderKey,
@@ -33,6 +34,9 @@ export function AiSettingsTab() {
   const statusQ = useQuery({
     queryKey: ["ai-provider-keys"],
     queryFn: listKeyStatus,
+    // Chưa cài thì thử lại cũng vô ích, chỉ tốn thêm ba lần 404 trong
+    // console. Các lỗi khác (mạng chập) vẫn giữ retry mặc định.
+    retry: (count, e) => !(e instanceof AiNotInstalledError) && count < 2,
   });
 
   const byProvider = new Map<AiProvider, KeyStatus>(
@@ -88,6 +92,11 @@ export function AiSettingsTab() {
   });
 
   if (statusQ.isLoading) return <LoadingState label="Đang tải cấu hình…" />;
+
+  // Frontend có thể lên trước database: prod là Supabase tự host, migration
+  // áp bằng tay. Hiện hướng dẫn thay vì quăng lỗi PostgREST thô.
+  if (statusQ.error instanceof AiNotInstalledError) return <SetupGuide />;
+
   if (statusQ.error) {
     return (
       <ErrorState
@@ -212,6 +221,77 @@ export function AiSettingsTab() {
           </section>
         );
       })}
+    </div>
+  );
+}
+
+/**
+ * Hiện khi bảng/hàm của phần AI chưa có trên máy chủ. Liệt kê đúng các
+ * bước còn thiếu, kèm lệnh — người vận hành không phải đi tìm tài liệu.
+ */
+function SetupGuide() {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-lg border border-dashed p-5">
+        <h3 className="mb-1 text-base font-semibold">
+          Phần trợ lý AI chưa được cài trên máy chủ này
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          Giao diện đã lên nhưng cơ sở dữ liệu và hàm phía máy chủ thì chưa. Đây là
+          bình thường: bản tự host áp migration bằng tay, nên frontend có thể lên
+          trước. Làm ba bước dưới đây rồi tải lại trang.
+        </p>
+      </div>
+
+      <ol className="flex flex-col gap-4">
+        <li className="rounded-lg border p-4">
+          <p className="mb-2 text-sm font-semibold">1. Áp ba migration</p>
+          <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
+{`ssh family-tree-db
+for f in 20260823120000_ai_usage \\
+         20260823140000_ai_messages \\
+         20260823160000_ai_provider_keys; do
+  docker exec -i supabase-db psql -U postgres -d postgres < "$f.sql"
+done
+# nhớ ghi vào bảng schema_migrations`}
+          </pre>
+        </li>
+
+        <li className="rounded-lg border p-4">
+          <p className="mb-2 text-sm font-semibold">
+            2. Đẩy Edge Function và khởi động lại
+          </p>
+          <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
+{`scp -r supabase/functions/_shared \\
+       supabase/functions/ai-chat \\
+       supabase/functions/ai-admin \\
+  root@72.61.143.145:/root/supabase/volumes/functions/
+
+ssh family-tree-db 'cd /root/supabase &&
+  docker compose up -d --force-recreate functions'`}
+          </pre>
+        </li>
+
+        <li className="rounded-lg border p-4">
+          <p className="mb-2 text-sm font-semibold">
+            3. Đặt khoá mã hoá trong <code>docker-compose.override.yml</code>
+          </p>
+          <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
+{`services:
+  functions:
+    environment:
+      AI_KEY_ENCRYPTION_KEY: <openssl rand -base64 32>`}
+          </pre>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Cất giá trị này cẩn thận: đổi nó là mọi khoá API đã lưu không giải mã
+            được nữa và phải nhập lại.
+          </p>
+        </li>
+      </ol>
+
+      <p className="text-sm text-muted-foreground">
+        Chi tiết đầy đủ nằm ở <code>supabase/functions/ai-chat/README.md</code>.
+      </p>
     </div>
   );
 }
