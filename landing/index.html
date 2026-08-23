@@ -8,6 +8,15 @@
     <link rel="icon" type="image/svg+xml" href="/assets/app-icon.svg" />
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/app-icon-180.png" />
 
+    <!-- Umami: dùng CHUNG website id với app để landing và app nằm trong
+         một báo cáo. Trước đây landing không gắn gì cả nên ta chỉ đếm được
+         người đã bấm sang app, không biết bao nhiêu người vào rồi bỏ đi.
+         Lưu ý: Umami không ghép session xuyên tên miền một cách hoàn hảo,
+         nên phễu chéo phải dựa vào UTM trên các link ở dưới. -->
+    <script defer src="https://analytics.thaohk.com/script.js"
+            data-website-id="f09ad523-5d64-4cf7-a15c-cecc7da13b67"
+            data-domains="donghoviet.thaohk.com,giapha.thaohk.com"></script>
+
     <title>Dòng Họ Việt — Gia phả số gìn giữ cội nguồn dòng họ</title>
     <meta name="description" content="Gia phả số cho dòng họ Việt — dễ dùng cho cả người lớn tuổi. Cả họ cùng dựng cây gia phả, nhớ ngày giỗ âm lịch, lưu giữ giọng kể và di sản của ông bà cho muôn đời sau." />
     <link rel="canonical" href="https://donghoviet.thaohk.com/" />
@@ -238,6 +247,8 @@
 
       /* FAQ */
       .faq { margin: 3rem auto 0; }
+      .share-row { margin-top: 1.25rem; font-size: .95rem; opacity: .85; }
+      .share-row a { margin-left: .6rem; text-decoration: underline; text-underline-offset: 3px; }
       details { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 0 1.4rem; margin-bottom: .9rem; }
       summary { list-style: none; cursor: pointer; padding: 1.3rem 0; font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
       summary::-webkit-details-marker { display: none; }
@@ -275,6 +286,76 @@
       @media (hover: none) { html, body { scrollbar-width: none; } *::-webkit-scrollbar { display: none; width: 0; height: 0; } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .reveal { opacity: 1; transform: none; } }
     </style>
+
+    <!-- FAQPage: 5 câu hỏi vốn đã có trên trang. Đây là loại rich
+         result dễ ăn nhất của Google và gần như không tốn công. Sửa
+         phần FAQ ở body thì nhớ sửa cả khối này. -->
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Người lớn tuổi có dùng được không?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Được. Giao diện chữ to, nút lớn, ít thao tác, tiếng Việt thuần — ưu tiên cho người lớn tuổi. Có cả video hướng dẫn từng bước."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Dữ liệu có an toàn không?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Có. Dữ liệu lưu & sao lưu định kỳ trên máy chủ riêng. Thông tin người còn sống được ẩn khi chia sẻ ra ngoài, và bạn toàn quyền quyết định ai xem, ai sửa."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Nhập nhiều người có cực không?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Không phải làm một mình. Bạn mời cả họ qua một đường link; mỗi người tự bổ sung nhánh nhà mình."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Có mất phí không?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Bạn bắt đầu hoàn toàn miễn phí. Các nhu cầu nâng cao như in sách gia phả, phả đồ khổ lớn có thể có chi phí riêng."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Cần hỗ trợ thì liên hệ ai?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Gửi email tới support@thaohk.com hoặc tham gia nhóm Facebook của chúng tôi — sẽ có người hướng dẫn tận tình, kể cả giúp dựng dòng họ đầu tiên."
+      }
+    }
+  ]
+}
+    </script>
+
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Dòng Họ Việt",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Web, Android, iOS",
+  "inLanguage": "vi",
+  "url": "https://donghoviet.thaohk.com/",
+  "description": "Gia phả số cho dòng họ Việt — cả họ cùng dựng cây gia phả nhiều đời, nhớ ngày giỗ âm lịch, lưu giữ giọng kể và di sản của ông bà.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "VND"
+  }
+}
+    </script>
   </head>
 
   <body>
@@ -318,7 +399,7 @@
         </nav>
         <div class="nav-actions">
           <button class="icon-btn" id="themeToggle" aria-label="Đổi giao diện"><svg class="ico"><use href="#i-moon"/></svg></button>
-          <a class="btn btn-primary nav-cta" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
+          <a class="btn btn-primary nav-cta" data-cta="nav" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=nav"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
           <button class="icon-btn menu-btn" id="menuBtn" aria-label="Mở menu" aria-expanded="false"><svg class="ico"><use href="#i-menu"/></svg></button>
         </div>
       </div>
@@ -328,7 +409,7 @@
         <a href="#tinh-nang">Tính năng</a>
         <a href="#an-toan">An toàn</a>
         <a href="#cau-hoi">Hỏi đáp</a>
-        <a class="btn btn-primary" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả dòng họ</a>
+        <a class="btn btn-primary" data-cta="bar" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=bar"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả dòng họ</a>
         <a class="btn btn-ghost" href="https://www.facebook.com/donghoviet2026" target="_blank" rel="noopener"><svg class="ico"><use href="#i-facebook"/></svg>Nhóm Facebook</a>
       </div>
     </header>
@@ -342,8 +423,8 @@
             <h1>Gìn giữ <span class="accent">cội nguồn</span> dòng họ cho muôn đời sau</h1>
             <p class="lead">Nơi cả họ cùng nhau dựng nên cây gia phả, ghi nhớ công ơn tổ tiên và lưu giữ những câu chuyện của ông bà — để con cháu mai sau biết mình từ đâu mà đến.</p>
             <div class="hero-cta">
-              <a class="btn btn-primary" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả dòng họ</a>
-              <a class="btn btn-ghost" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-eye"/></svg>Xem dòng họ mẫu</a>
+              <a class="btn btn-primary" data-cta="hero-demo" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=hero"><svg class="ico"><use href="#i-eye"/></svg>Xem thử gia phả mẫu</a>
+              <a class="btn btn-ghost" data-cta="hero-signup" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=hero"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả miễn phí</a>
             </div>
             <div class="hero-trust">
               <span><svg class="ico"><use href="#i-heart"/></svg>Miễn phí để bắt đầu</span>
@@ -370,7 +451,7 @@
           <div class="step reveal"><div class="n">3</div><h3>Lưu giữ cho muôn đời</h3><p>Cây nhiều đời dần hoàn chỉnh, được sao lưu an toàn — không lo thất lạc, mai một.</p><div class="bar"></div></div>
         </div>
         <div class="wrap center" style="margin-top:3rem">
-          <a class="btn btn-primary reveal" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-arrow"/></svg>Bắt đầu dòng họ của bạn</a>
+          <a class="btn btn-primary reveal" data-cta="mid" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=mid"><svg class="ico"><use href="#i-arrow"/></svg>Bắt đầu dòng họ của bạn</a>
         </div>
       </section>
 
@@ -396,7 +477,7 @@
               <span class="eyebrow"><svg class="ico"><use href="#i-tree"/></svg>Trực quan, sống động</span>
               <h2 class="h-sec">Cây gia phả nhiều đời, xem trên cả điện thoại</h2>
               <p>Dựng phả hệ trực quan qua nhiều thế hệ, đặt người làm tâm, xem toàn màn hình, in hoặc xuất sổ gia phả khổ lớn để treo nơi từ đường.</p>
-              <a class="more" href="https://giapha.thaohk.com">Xem dòng họ mẫu <svg class="ico"><use href="#i-arrow"/></svg></a>
+              <a class="more" data-cta="more-demo" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=more">Xem dòng họ mẫu <svg class="ico"><use href="#i-arrow"/></svg></a>
             </div>
             <div class="row-photo shot"><img src="/assets/app-tree.png" alt="Giao diện cây gia phả nhiều đời trong ứng dụng" loading="lazy" /></div>
           </div>
@@ -406,7 +487,7 @@
               <span class="eyebrow"><svg class="ico"><use href="#i-heart"/></svg>Nếp nhà</span>
               <h2 class="h-sec">Gìn giữ truyền thống &amp; di sản dòng họ</h2>
               <p>Lưu giai thoại, gia phong, tục lệ, công trạng và kỷ vật của dòng họ; ghi nhớ ngày giỗ, nơi an nghỉ của tổ tiên — để nếp nhà được trao lại cho đời sau.</p>
-              <a class="more" href="https://giapha.thaohk.com">Khám phá tính năng <svg class="ico"><use href="#i-arrow"/></svg></a>
+              <a class="more" data-cta="more-features" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=cta&utm_campaign=features">Khám phá tính năng <svg class="ico"><use href="#i-arrow"/></svg></a>
             </div>
             <div class="row-photo"><img src="/assets/family-tradition.jpg" alt="Ba thế hệ cùng giữ nếp nhà ngày Tết" loading="lazy" /></div>
           </div>
@@ -482,9 +563,17 @@
             <h2 class="serif">Bắt đầu gìn giữ dòng họ của bạn hôm nay</h2>
             <p>Chỉ vài phút để tạo dòng họ và mời cả họ cùng vun đắp. Miễn phí, và bạn luôn được hỗ trợ.</p>
             <div class="btns">
-              <a class="btn btn-primary" href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả dòng họ</a>
+              <a class="btn btn-primary" data-cta="final" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=final"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả miễn phí</a>
               <a class="btn btn-line" href="https://www.facebook.com/donghoviet2026" target="_blank" rel="noopener"><svg class="ico"><use href="#i-facebook"/></svg>Tham gia nhóm Facebook</a>
             </div>
+            <!-- Chia sẻ: Zalo đứng trước Facebook vì Umami ghi nhận traffic
+                 thật mang utm_source=zalo — kênh này sống với người Việt,
+                 mà trang lại chưa có nút nào. -->
+            <p class="share-row">
+              Thấy hữu ích? Gửi cho người trong họ:
+              <a data-share="zalo" href="https://zalo.me/share/link?url=https%3A%2F%2Fdonghoviet.thaohk.com%2F" target="_blank" rel="noopener">Zalo</a>
+              <a data-share="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdonghoviet.thaohk.com%2F" target="_blank" rel="noopener">Facebook</a>
+            </p>
           </div>
         </div>
       </section>
@@ -505,7 +594,7 @@
           </div>
           <div class="foot-col">
             <h4>Liên hệ &amp; bắt đầu</h4>
-            <a href="https://giapha.thaohk.com"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
+            <a data-cta="footer" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=cta&utm_campaign=footer"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
             <a href="mailto:support@thaohk.com"><svg class="ico"><use href="#i-mail"/></svg>support@thaohk.com</a>
             <a href="https://www.facebook.com/donghoviet2026" target="_blank" rel="noopener"><svg class="ico"><use href="#i-facebook"/></svg>Nhóm Facebook</a>
           </div>
@@ -568,6 +657,65 @@
         function onScroll() { var cur = null; ids.forEach(function (id) { if (document.getElementById(id).getBoundingClientRect().top <= 140) cur = id; });
           links.forEach(function (a) { a.classList.remove("active"); }); if (cur && map[cur]) map[cur].classList.add("active"); }
         window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+      })();
+    </script>
+  
+    <script>
+      // Đo hành vi trên landing. Không có gì ở đây được phép làm vỡ trang:
+      // Umami chặn bởi adblock là chuyện thường, nên mọi lời gọi đều bọc
+      // trong hàm an toàn.
+      (function () {
+        function track(name, data) {
+          try {
+            if (window.umami && typeof window.umami.track === "function") {
+              window.umami.track(name, data);
+            }
+          } catch (e) {
+            /* đo lường không bao giờ được làm hỏng trang */
+          }
+        }
+
+        // Mỗi nút CTA mang data-cta để biết CHỖ NÀO hiệu quả, chứ không
+        // chỉ biết "có người bấm".
+        document.addEventListener("click", function (e) {
+          var sh = e.target && e.target.closest ? e.target.closest("[data-share]") : null;
+          if (sh) track("landing_share", { channel: sh.getAttribute("data-share") });
+          var el = e.target && e.target.closest ? e.target.closest("[data-cta]") : null;
+          if (!el) return;
+          var where = el.getAttribute("data-cta");
+          track(where.indexOf("demo") > -1 ? "landing_demo_click" : "landing_cta_click", {
+            section: where,
+          });
+        });
+
+        document.addEventListener(
+          "toggle",
+          function (e) {
+            var d = e.target;
+            if (d && d.tagName === "DETAILS" && d.open) {
+              var q = d.querySelector("summary");
+              track("landing_faq_open", { q: q ? q.textContent.trim().slice(0, 60) : "" });
+            }
+          },
+          true,
+        );
+
+        // Cuộn 75%: phân biệt "đọc hết trang rồi mới bỏ đi" với "vào rồi
+        // thoát ngay" — hai thứ cần cách sửa khác nhau.
+        var fired = false;
+        addEventListener(
+          "scroll",
+          function () {
+            if (fired) return;
+            var h = document.documentElement;
+            var pct = (h.scrollTop + innerHeight) / h.scrollHeight;
+            if (pct >= 0.75) {
+              fired = true;
+              track("landing_scroll_75");
+            }
+          },
+          { passive: true },
+        );
       })();
     </script>
   </body>

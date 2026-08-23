@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hiện landing chỉ có một trang. Khi tách trang con theo từ khoá dài
+     (cách lập gia phả dòng họ, cách tính ngày giỗ âm lịch, phần mềm gia
+     phả tiếng Việt — xem docs/plan-landing-update.md) thì thêm <url> ở đây. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://donghoviet.thaohk.com/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
