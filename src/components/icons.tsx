@@ -658,3 +658,52 @@ export function IconFacebook(p: IconProps) {
     </Svg>
   );
 }
+
+/** Nhãn, tên gọi khác, danh mục. */
+export function IconTag(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M20.6 13.4 12 22l-9-9V3h10z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </Svg>
+  );
+}
+
+/** Giờ giấc, thời điểm trong ngày — khác IconCalendar (ngày tháng). */
+export function IconClock(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15 14" />
+    </Svg>
+  );
+}
+
+/** Hướng — hướng mộ, hướng nhà. */
+export function IconCompass(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <polygon points="15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5" />
+    </Svg>
+  );
+}
+
+/** Vật liệu, chất liệu — các lớp xếp chồng. */
+export function IconLayers(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <polygon points="12 3 21 8 12 13 3 8" />
+      <polyline points="3 13 12 18 21 13" />
+    </Svg>
+  );
+}
+
+/** Số điện thoại, liên hệ. */
+export function IconPhone(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4 5.2 2 2 0 0 1 6 3z" />
+    </Svg>
+  );
+}

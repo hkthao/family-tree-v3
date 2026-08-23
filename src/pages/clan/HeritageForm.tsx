@@ -3,7 +3,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconCheck, IconMapPin, IconPlus, IconScroll, IconX } from "@/components/icons";
+import {
+  IconBook,
+  IconCalendar,
+  IconCheck,
+  IconMapPin,
+  IconPlus,
+  IconScroll,
+  IconSearch,
+  IconTag,
+  IconUserPlus,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
@@ -11,6 +22,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
@@ -194,16 +207,16 @@ export default function HeritageForm() {
         {/* Loại */}
         <div className="space-y-2">
           <Label htmlFor="category">Loại di sản</Label>
-          <select
+          <Select
             id="category"
+            icon={<IconTag />}
             value={category}
             onChange={(e) => setCategory(e.target.value as HeritageCategory)}
-            className="h-12 w-full rounded-md border border-input bg-background px-3 text-base"
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>{HERITAGE_CATEGORY_LABEL[c]}</option>
             ))}
-          </select>
+          </Select>
           <p className="text-sm text-muted-foreground">{HERITAGE_CATEGORY_HINT[category]}</p>
         </div>
 
@@ -212,6 +225,7 @@ export default function HeritageForm() {
           <Label htmlFor="title" required>Tên / tiêu đề</Label>
           <Input
             id="title"
+            icon={<IconScroll />}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={isPlace ? "vd: Từ đường họ Nguyễn" : "vd: Lệ giỗ Tổ mùng 10 tháng Giêng"}
@@ -225,18 +239,18 @@ export default function HeritageForm() {
           <>
             <div className="space-y-2">
               <Label htmlFor="loc-name">Ở đâu</Label>
-              <Input id="loc-name" value={locationName} onChange={(e) => setLocationName(e.target.value)}
+              <Input id="loc-name" icon={<IconMapPin />} value={locationName} onChange={(e) => setLocationName(e.target.value)}
                 placeholder="vd: thôn …, xã …" className="h-12 text-base" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Địa chỉ (tuỳ chọn)</Label>
-              <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)}
+              <Input id="address" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)}
                 placeholder="vd: xã …, huyện …, tỉnh …" className="h-12 text-base" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="year">Lập / xây năm (tuỳ chọn)</Label>
-                <Input id="year" inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)}
+                <Input id="year" icon={<IconCalendar />} inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)}
                   placeholder="vd: 1920" className="h-12 text-base" />
               </div>
             </div>
@@ -257,15 +271,16 @@ export default function HeritageForm() {
         {/* Mô tả ngắn — textarea để dòng dài đọc/sửa dễ hơn (input 1 dòng
             bị tràn ngang, khó đọc). */}
         <div className="space-y-1">
-          <Label htmlFor="summary">Mô tả ngắn (tuỳ chọn)</Label>
-          <textarea
+          <Textarea
             id="summary"
+            label="Mô tả ngắn (tuỳ chọn)"
+            icon={<IconScroll />}
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             rows={2}
             maxLength={300}
             placeholder="Một câu tóm tắt, hiện ở danh sách"
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed resize-y"
+            className="min-h-0 leading-relaxed resize-y"
           />
           <p className="text-right text-xs text-muted-foreground">
             {summary.length}/300
@@ -274,7 +289,10 @@ export default function HeritageForm() {
 
         {/* Nội dung + câu hỏi gợi ý (dành cho người lớn tuổi) */}
         <div className="space-y-2">
-          <Label htmlFor="body">Nội dung</Label>
+          <Label htmlFor="body" className="flex items-center gap-1.5">
+            <IconBook className="h-4 w-4 text-muted-foreground" />
+            Nội dung
+          </Label>
           <div className="rounded-md border border-divider bg-muted/40 p-3">
             <p className="text-sm font-medium mb-1">Gợi ý — bạn chỉ cần lần lượt trả lời:</p>
             <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-0.5">
@@ -283,13 +301,13 @@ export default function HeritageForm() {
               ))}
             </ul>
           </div>
-          <textarea
+          <Textarea
             id="body"
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={10}
             placeholder="Kể lại bằng lời của bạn… (có thể dùng nút micro trên bàn phím điện thoại để đọc cho máy ghi)"
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed"
+            className="leading-relaxed"
           />
           <p className="text-sm text-muted-foreground">
             Sau khi lưu, bạn có thể <strong>thêm ảnh</strong> và <strong>ghi âm kể chuyện</strong> ở trang chi tiết.
@@ -311,6 +329,7 @@ export default function HeritageForm() {
                   {i + 1}.
                 </span>
                 <Input
+                  icon={<IconTag />}
                   value={sec.heading}
                   onChange={(e) =>
                     setSections((prev) =>
@@ -364,7 +383,7 @@ export default function HeritageForm() {
                   <IconX className="h-4 w-4" />
                 </button>
               </div>
-              <textarea
+              <Textarea
                 value={sec.body}
                 onChange={(e) =>
                   setSections((prev) =>
@@ -375,7 +394,7 @@ export default function HeritageForm() {
                 }
                 rows={6}
                 placeholder="Nội dung đoạn này…"
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed"
+                className="leading-relaxed"
               />
             </div>
           ))}
@@ -409,11 +428,12 @@ export default function HeritageForm() {
           )}
           {!pickerOpen ? (
             <Button type="button" size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+              <IconUserPlus className="h-4 w-4 mr-1.5" />
               Gắn người
             </Button>
           ) : (
             <div className="space-y-2 rounded-md border p-2">
-              <Input value={pickerFilter} onChange={(e) => setPickerFilter(e.target.value)} placeholder="Gõ tên để tìm (không cần dấu)" autoFocus />
+              <Input icon={<IconSearch />} value={pickerFilter} onChange={(e) => setPickerFilter(e.target.value)} placeholder="Gõ tên để tìm (không cần dấu)" autoFocus />
               <ul className="max-h-60 overflow-y-auto divide-y text-sm">
                 {candidates.length === 0 && <li className="px-2 py-2 text-muted-foreground italic">{clanIndex ? "Không có người khớp." : "Đang tải…"}</li>}
                 {candidates.map((p) => (

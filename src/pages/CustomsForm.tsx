@@ -4,12 +4,31 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
-import { IconCheck, IconPlus, IconUpload, IconX } from "@/components/icons";
+import {
+  IconBook,
+  IconCalendar,
+  IconCamera,
+  IconCheck,
+  IconClock,
+  IconGlobe,
+  IconHelp,
+  IconLink,
+  IconPlus,
+  IconScroll,
+  IconSearch,
+  IconShield,
+  IconTag,
+  IconUpload,
+  IconUsers,
+  IconX,
+} from "@/components/icons";
 import { extractCoverImage, parseCustomMarkdown } from "@/lib/customs/markdown";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import {
   CUSTOM_CATEGORY_LABEL,
@@ -298,12 +317,12 @@ export default function CustomsForm() {
               }}
             />
           </label>
-          <textarea
+          <Textarea
             value={mdText}
             onChange={(e) => setMdText(e.target.value)}
             rows={10}
             placeholder={"# Lễ nhập trạch (về nhà mới)\n\nNghi lễ báo cáo tổ tiên khi về nhà mới.\n\n## Ý nghĩa\n…\n\n## Chuẩn bị / lễ vật\n![Mâm cúng](https://…)\n…"}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm leading-relaxed resize-y"
+            className="font-mono text-sm leading-relaxed resize-y"
           />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={() => { setMdOpen(false); setMdText(""); }}>
@@ -325,30 +344,28 @@ export default function CustomsForm() {
       >
         <div className="space-y-2">
           <Label htmlFor="c-title" required>Tiêu đề</Label>
-          <Input id="c-title" value={title} onChange={(e) => setTitle(e.target.value)}
+          <Input id="c-title" icon={<IconScroll />} value={title} onChange={(e) => setTitle(e.target.value)}
             maxLength={200} placeholder="vd: Lễ nhập trạch (về nhà mới)" />
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="c-cat">Chủ đề</Label>
-            <select id="c-cat" value={category}
-              onChange={(e) => setCategory(e.target.value as CustomCategory)}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <Select id="c-cat" icon={<IconTag />} value={category}
+              onChange={(e) => setCategory(e.target.value as CustomCategory)}>
               {CATS.map((c) => (
                 <option key={c} value={c}>{CUSTOM_CATEGORY_LABEL[c]}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="c-status">Trạng thái</Label>
-            <select id="c-status" value={status}
-              onChange={(e) => setStatus(e.target.value as CustomStatus)}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <Select id="c-status" icon={<IconCheck />} value={status}
+              onChange={(e) => setStatus(e.target.value as CustomStatus)}>
               {STATUSES.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -370,16 +387,14 @@ export default function CustomsForm() {
 
         <div className="space-y-2">
           <Label htmlFor="c-aliases">Tên gọi khác (cách nhau bởi dấu phẩy)</Label>
-          <Input id="c-aliases" value={aliases} onChange={(e) => setAliases(e.target.value)}
+          <Input id="c-aliases" icon={<IconTag />} value={aliases} onChange={(e) => setAliases(e.target.value)}
             placeholder="nhà mới, chuyển nhà, tân gia" />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="c-short">Mô tả ngắn</Label>
-          <textarea id="c-short" value={shortDesc} onChange={(e) => setShortDesc(e.target.value)}
-            rows={2} maxLength={300}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed resize-y" />
-        </div>
+        <Textarea id="c-short" label="Mô tả ngắn" icon={<IconScroll />}
+          value={shortDesc} onChange={(e) => setShortDesc(e.target.value)}
+          rows={2} maxLength={300}
+          className="min-h-0 leading-relaxed resize-y" />
 
         <div className="space-y-2">
           <Label>Nguồn gốc (chọn nhiều)</Label>
@@ -400,61 +415,62 @@ export default function CustomsForm() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="c-mand">Mức bắt buộc</Label>
-            <select id="c-mand" value={mandatory}
-              onChange={(e) => setMandatory(e.target.value as CustomMandatory | "")}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <Select id="c-mand" icon={<IconShield />} value={mandatory}
+              onChange={(e) => setMandatory(e.target.value as CustomMandatory | "")}>
               <option value="">—</option>
               {MANDATORIES.map((m) => (
                 <option key={m} value={m}>{CUSTOM_MANDATORY_LABEL[m]}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="c-scope">Phạm vi</Label>
-            <select id="c-scope" value={scope}
-              onChange={(e) => setScope(e.target.value as CustomScope | "")}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <Select id="c-scope" icon={<IconGlobe />} value={scope}
+              onChange={(e) => setScope(e.target.value as CustomScope | "")}>
               <option value="">—</option>
               {SCOPES.map((s) => (
                 <option key={s} value={s}>{CUSTOM_SCOPE_LABEL[s]}</option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="c-rel">Độ tin cậy (1–5)</Label>
-            <Input id="c-rel" type="number" min={1} max={5} value={reliability}
+            <Input id="c-rel" icon={<IconShield />} type="number" min={1} max={5} value={reliability}
               onChange={(e) => setReliability(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="c-lunar">Tháng âm lịch (1–12)</Label>
-            <Input id="c-lunar" type="number" min={1} max={12} value={lunarMonth}
+            <Input id="c-lunar" icon={<IconCalendar />} type="number" min={1} max={12} value={lunarMonth}
               onChange={(e) => setLunarMonth(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="c-timing">Thời điểm (mô tả)</Label>
-            <Input id="c-timing" value={timing} onChange={(e) => setTiming(e.target.value)}
+            <Input id="c-timing" icon={<IconClock />} value={timing} onChange={(e) => setTiming(e.target.value)}
               placeholder="vd: 23 tháng Chạp" />
           </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="c-applic">Đối tượng áp dụng</Label>
-          <Input id="c-applic" value={applicableTo} onChange={(e) => setApplicableTo(e.target.value)}
+          <Input id="c-applic" icon={<IconUsers />} value={applicableTo} onChange={(e) => setApplicableTo(e.target.value)}
             placeholder="vd: gia đình chuyển đến nhà mới" />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="c-cover">Link ảnh bìa (https)</Label>
-          <Input id="c-cover" value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)}
+          <Input id="c-cover" icon={<IconCamera />} value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)}
             placeholder="https://…" />
         </div>
 
         {/* Các đoạn nội dung */}
         <div className="space-y-2">
-          <Label className="block">Nội dung (chia đoạn có tiêu đề)</Label>
+          <Label className="flex items-center gap-1.5">
+            <IconBook className="h-4 w-4 text-muted-foreground" />
+            Nội dung (chia đoạn có tiêu đề)
+          </Label>
           <p className="text-sm text-muted-foreground">
             Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực hiện ·
             Nên / kiêng kỵ · Biến thể vùng miền.
@@ -463,7 +479,7 @@ export default function CustomsForm() {
             <div key={i} className="rounded-md border bg-card p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-6 shrink-0">{i + 1}.</span>
-                <Input value={sec.heading}
+                <Input icon={<IconTag />} value={sec.heading}
                   onChange={(e) =>
                     setSections((p) => p.map((s, j) => (j === i ? { ...s, heading: e.target.value } : s)))
                   }
@@ -480,19 +496,19 @@ export default function CustomsForm() {
                   <IconX className="h-4 w-4" />
                 </button>
               </div>
-              <textarea value={sec.body}
+              <Textarea value={sec.body}
                 onChange={(e) =>
                   setSections((p) => p.map((s, j) => (j === i ? { ...s, body: e.target.value } : s)))
                 }
                 rows={5} placeholder="Nội dung đoạn này…"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed" />
+                className="leading-relaxed" />
               <div className="grid gap-2 sm:grid-cols-2">
-                <Input value={sec.image_url ?? ""}
+                <Input icon={<IconCamera />} value={sec.image_url ?? ""}
                   onChange={(e) =>
                     setSections((p) => p.map((s, j) => (j === i ? { ...s, image_url: e.target.value } : s)))
                   }
                   placeholder="Ảnh minh hoạ (https://…, tuỳ chọn)" />
-                <Input value={sec.image_caption ?? ""}
+                <Input icon={<IconScroll />} value={sec.image_caption ?? ""}
                   onChange={(e) =>
                     setSections((p) => p.map((s, j) => (j === i ? { ...s, image_caption: e.target.value } : s)))
                   }
@@ -516,7 +532,7 @@ export default function CustomsForm() {
             <div key={i} className="rounded-md border bg-card p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-6 shrink-0">{i + 1}.</span>
-                <Input value={item.q}
+                <Input icon={<IconHelp />} value={item.q}
                   onChange={(e) =>
                     setFaq((p) => p.map((f, j) => (j === i ? { ...f, q: e.target.value } : f)))
                   }
@@ -527,12 +543,12 @@ export default function CustomsForm() {
                   <IconX className="h-4 w-4" />
                 </button>
               </div>
-              <textarea value={item.a}
+              <Textarea value={item.a}
                 onChange={(e) =>
                   setFaq((p) => p.map((f, j) => (j === i ? { ...f, a: e.target.value } : f)))
                 }
                 rows={3} placeholder="Câu trả lời…"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed" />
+                className="leading-relaxed" />
             </div>
           ))}
           <Button type="button" variant="outline" size="sm"
@@ -559,7 +575,7 @@ export default function CustomsForm() {
               ))}
             </div>
           )}
-          <Input value={relatedQ} onChange={(e) => setRelatedQ(e.target.value)}
+          <Input icon={<IconSearch />} value={relatedQ} onChange={(e) => setRelatedQ(e.target.value)}
             placeholder="Gõ tên bài để tìm & thêm liên kết…" />
           {relatedMatches.length > 0 && (
             <ul className="rounded-md border bg-card divide-y">
@@ -579,7 +595,7 @@ export default function CustomsForm() {
 
         <div className="space-y-2">
           <Label htmlFor="c-sources">Nguồn tham khảo</Label>
-          <Input id="c-sources" value={sources} onChange={(e) => setSources(e.target.value)} />
+          <Input id="c-sources" icon={<IconLink />} value={sources} onChange={(e) => setSources(e.target.value)} />
         </div>
 
         {err && <p className="text-sm text-destructive">{err}</p>}

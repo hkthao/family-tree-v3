@@ -5,11 +5,16 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import {
+  IconArrowLeft,
   IconBuildings,
   IconCheck,
   IconCopy,
   IconLink,
+  IconPlus,
+  IconRefresh,
+  IconScroll,
   IconSearch,
+  IconUser,
   IconX,
 } from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -19,6 +24,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import {
@@ -319,6 +325,7 @@ function ModeStep(props: ModeStepProps) {
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onBackToPick}>
+          <IconRefresh className="h-4 w-4 mr-1.5" />
           Đổi
         </Button>
       </div>
@@ -368,6 +375,7 @@ function TokenBody(props: ModeStepProps) {
         <Label htmlFor="hint">Người bên kia là ai (gợi ý)</Label>
         <Input
           id="hint"
+          icon={<IconUser />}
           maxLength={200}
           value={props.hint}
           onChange={(e) => props.setHint(e.target.value)}
@@ -378,18 +386,16 @@ function TokenBody(props: ModeStepProps) {
         </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="note">Ghi chú</Label>
-        <textarea
-          id="note"
-          rows={3}
-          maxLength={500}
-          value={props.note}
-          onChange={(e) => props.setNote(e.target.value)}
-          placeholder="Tuỳ chọn. Ghi chú thêm về quan hệ."
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
+      <Textarea
+        id="note"
+        label="Ghi chú"
+        icon={<IconScroll />}
+        rows={3}
+        maxLength={500}
+        value={props.note}
+        onChange={(e) => props.setNote(e.target.value)}
+        placeholder="Tuỳ chọn. Ghi chú thêm về quan hệ."
+      />
 
       {props.tokenError && (
         <Alert variant="destructive">
@@ -562,6 +568,7 @@ function PickPeerPersonStep({
       <div className="flex items-center justify-between">
         <Label>Chọn người trong {peerClan.name}</Label>
         <Button variant="outline" size="sm" onClick={onBack}>
+          <IconRefresh className="h-4 w-4 mr-1.5" />
           Đổi dòng họ
         </Button>
       </div>
@@ -642,6 +649,7 @@ function PeerConfirmStep({
             <span className="font-medium">{peerClan.name}</span>
           </div>
           <Button variant="outline" size="sm" onClick={onChangeClan}>
+            <IconRefresh className="h-4 w-4 mr-1.5" />
             Đổi
           </Button>
         </div>
@@ -666,23 +674,22 @@ function PeerConfirmStep({
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={onChangePerson}>
+            <IconRefresh className="h-4 w-4 mr-1.5" />
             Đổi
           </Button>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="note">Ghi chú (tuỳ chọn)</Label>
-        <textarea
-          id="note"
-          rows={3}
-          maxLength={500}
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Vd: Cưới năm 2010, có 2 con."
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
+      <Textarea
+        id="note"
+        label="Ghi chú (tuỳ chọn)"
+        icon={<IconScroll />}
+        rows={3}
+        maxLength={500}
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Vd: Cưới năm 2010, có 2 con."
+      />
 
       <Alert>
         <AlertDescription>
@@ -755,27 +762,30 @@ function CreatedTokenView({
 
       <div className="space-y-2">
         <Label>Link mời</Label>
-        <div className="relative">
-          <Input
-            readOnly
-            value={confirmUrl}
-            className="font-mono text-xs pr-10"
-            onFocus={(e) => e.currentTarget.select()}
-          />
-          <button
-            type="button"
-            onClick={copy}
-            aria-label={copied ? "Đã chép" : "Chép link"}
-            title={copied ? "Đã chép" : "Chép link"}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-          >
-            {copied ? (
-              <IconCheck className="h-4 w-4" />
-            ) : (
-              <IconCopy className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+        <Input
+          readOnly
+          icon={<IconLink />}
+          value={confirmUrl}
+          className="font-mono text-xs"
+          onFocus={(e) => e.currentTarget.select()}
+          action={
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={copy}
+              aria-label={copied ? "Đã chép" : "Chép link"}
+              title={copied ? "Đã chép" : "Chép link"}
+              className="h-10 w-10"
+            >
+              {copied ? (
+                <IconCheck className="h-4 w-4" />
+              ) : (
+                <IconCopy className="h-4 w-4" />
+              )}
+            </Button>
+          }
+        />
         <p className="text-xs text-muted-foreground">
           Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự
           huỷ.
@@ -784,10 +794,14 @@ function CreatedTokenView({
 
       <div className="flex gap-3">
         <Button onClick={() => navigate(`/clans/${clanId}/inlaws`)}>
+          <IconArrowLeft className="h-4 w-4 mr-1.5" />
           Về danh sách liên kết
         </Button>
         <Button asChild variant="outline">
-          <Link to={`/clans/${clanId}/inlaws/new`}>Tạo thêm</Link>
+          <Link to={`/clans/${clanId}/inlaws/new`}>
+            <IconPlus className="h-4 w-4 mr-1.5" />
+            Tạo thêm
+          </Link>
         </Button>
       </div>
     </div>
