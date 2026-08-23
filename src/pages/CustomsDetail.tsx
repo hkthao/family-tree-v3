@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   CUSTOM_CATEGORY_LABEL,
   CUSTOM_MANDATORY_LABEL,
@@ -53,6 +54,10 @@ export default function CustomsDetail() {
     queryFn: () => getCustomEntry(entryId!),
     enabled: !!entryId && !isNew,
   });
+
+  // Bài Sổ tay là tài sản SEO thật của app (khách vào từ tìm kiếm) —
+  // đặt tiêu đề + mô tả theo đúng nội dung bài.
+  usePageTitle(entry?.title ?? null, entry?.short_description ?? null);
 
   const { data: bookmarks } = useQuery({
     queryKey: ["custom-bookmarks", userId],
