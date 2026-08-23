@@ -140,6 +140,7 @@ export const ROUTE_META: RouteMeta[] = [
   { pattern: "/clans/:clanId/settings", title: "Cài đặt dòng họ" },
   { pattern: "/clans/:clanId/import", title: "Nhập dữ liệu" },
   { pattern: "/clans/:clanId/ai-generate", title: "Tạo gia phả bằng AI" },
+  { pattern: "/clans/:clanId/tro-ly", title: "Trợ lý dòng họ" },
   { pattern: "/clans/:clanId/merge", title: "Gộp trùng" },
   { pattern: "/clans/:clanId/audit", title: "Nhật ký thay đổi" },
   { pattern: "/clans/:clanId/qr-export", title: "Xuất mã QR" },

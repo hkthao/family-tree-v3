@@ -13,7 +13,8 @@ export type ClanFeatureKey =
   | "graves"
   | "honor"
   | "fund"
-  | "inlaws";
+  | "inlaws"
+  | "ai_assistant";
 
 export interface ClanFeatureDef {
   key: ClanFeatureKey;
@@ -30,6 +31,7 @@ export const CLAN_FEATURES: ClanFeatureDef[] = [
   { key: "honor", label: "Bảng vàng công đức", description: "Ghi nhận đóng góp công đức." },
   { key: "fund", label: "Quỹ họ", description: "Sổ quỹ thu chi dòng họ." },
   { key: "inlaws", label: "Liên kết thông gia", description: "Liên kết chéo giữa các dòng họ." },
+  { key: "ai_assistant", label: "Trợ lý AI", description: "Hỏi đáp về gia phả bằng lời — giỗ chạp, xưng hô, tra cứu người." },
 ];
 
 /** Tính năng `key` có đang bật cho dòng họ này không (mặc định: bật). */

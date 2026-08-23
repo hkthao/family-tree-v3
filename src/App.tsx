@@ -32,6 +32,7 @@ const Docs = lazy(() => import("@/pages/Docs"));
 const AddChild = lazy(() => import("@/pages/clan/AddChild"));
 const AddParent = lazy(() => import("@/pages/clan/AddParent"));
 const AddSpouse = lazy(() => import("@/pages/clan/AddSpouse"));
+const AiChat = lazy(() => import("@/pages/clan/AiChat"));
 const AiGenerate = lazy(() => import("@/pages/clan/AiGenerate"));
 const Audit = lazy(() => import("@/pages/clan/Audit"));
 const Board = lazy(() => import("@/pages/clan/Board"));
@@ -235,6 +236,7 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="import" element={<Import />} />
           <Route path="ai-generate" element={<AiGenerate />} />
+          <Route path="tro-ly" element={<FeatureGuard feature="ai_assistant"><AiChat /></FeatureGuard>} />
           <Route path="merge" element={<Merge />} />
           <Route path="audit" element={<Audit />} />
           <Route path="qr-export" element={<QrExport />} />
