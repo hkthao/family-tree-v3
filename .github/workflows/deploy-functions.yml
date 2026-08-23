@@ -11,9 +11,15 @@ name: deploy-functions
 # thẳng vào production database, nên nên là một hành động có chủ đích.
 #
 # Cần hai secret (thêm một lần):
-#   SUPABASE_HOST      host của máy chủ Supabase tự host
-#   SUPABASE_SSH_KEY   private key có quyền vào máy đó
-#   SUPABASE_SSH_USER  (tuỳ chọn, mặc định root)
+#   SUPABASE_HOST          host của máy chủ Supabase tự host
+#   SUPABASE_SSH_KEY       private key có quyền vào máy đó
+#   SUPABASE_SSH_USER      (tuỳ chọn, mặc định root)
+#   AI_KEY_ENCRYPTION_KEY  (tuỳ chọn) base64 của 32 byte. Đặt secret này
+#                          nếu bạn muốn TỰ GIỮ bản sao — sinh bằng
+#                          `openssl rand -base64 32`, cất vào trình quản
+#                          lý mật khẩu rồi mới set. Không đặt thì workflow
+#                          tự sinh trên máy chủ, nhưng khi đó muốn sao lưu
+#                          phải đọc lại từ máy chủ.
 
 on:
   workflow_dispatch:
@@ -56,11 +62,13 @@ jobs:
         env:
           ENSURE_AI_KEY: ${{ inputs.ensure_ai_key }}
           RESTART: ${{ inputs.restart }}
+          # Rỗng nếu chưa đặt secret → nhánh dưới sẽ tự sinh.
+          AI_KEK: ${{ secrets.AI_KEY_ENCRYPTION_KEY }}
         with:
           host: ${{ secrets.SUPABASE_HOST }}
           username: ${{ secrets.SUPABASE_SSH_USER || 'root' }}
           key: ${{ secrets.SUPABASE_SSH_KEY }}
-          envs: ENSURE_AI_KEY,RESTART
+          envs: ENSURE_AI_KEY,RESTART,AI_KEK
           script: |
             set -euo pipefail
             cd /root/supabase
@@ -75,19 +83,33 @@ jobs:
 
             # Khoá mã hoá cho khoá API của các nhà cung cấp AI.
             #
-            # Sinh NGAY TRÊN MÁY CHỦ nếu chưa có, nên giá trị không bao
-            # giờ đi qua log của CI hay qua máy của ai. Idempotent: đã có
-            # thì không đụng vào — ghi đè sẽ làm mọi khoá đã lưu không
-            # giải mã được nữa.
+            # Idempotent tuyệt đối: ĐÃ CÓ thì không bao giờ đụng vào. Ghi
+            # đè sẽ làm mọi khoá API đã lưu không giải mã được nữa, và
+            # không có đường khôi phục.
+            #
+            # Hai nguồn:
+            #   · secret AI_KEY_ENCRYPTION_KEY  → bạn tự sinh, tự giữ bản sao
+            #   · không có secret              → sinh ngay trên máy chủ
+            # Cách sau an toàn hơn (giá trị không đi qua đâu cả) nhưng muốn
+            # sao lưu thì phải đọc lại từ máy chủ.
             if [ "${ENSURE_AI_KEY}" = "true" ]; then
               touch functions.env
               if grep -q '^AI_KEY_ENCRYPTION_KEY=' functions.env; then
-                echo "AI_KEY_ENCRYPTION_KEY: đã có, giữ nguyên"
+                echo "AI_KEY_ENCRYPTION_KEY: đã có, giữ nguyên (không ghi đè)"
+              elif [ -n "${AI_KEK:-}" ]; then
+                # Kiểm đúng 32 byte trước khi ghi — crypto.ts sẽ từ chối
+                # mọi độ dài khác, thà chặn ở đây còn hơn để hỏng lúc chạy.
+                if [ "$(printf '%s' "$AI_KEK" | base64 -d 2>/dev/null | wc -c)" -ne 32 ]; then
+                  echo "::error::AI_KEY_ENCRYPTION_KEY phải là base64 của đúng 32 byte (openssl rand -base64 32)"
+                  exit 1
+                fi
+                printf 'AI_KEY_ENCRYPTION_KEY=%s\n' "$AI_KEK" >> functions.env
+                echo "AI_KEY_ENCRYPTION_KEY: lấy từ secret của repo"
               else
                 printf 'AI_KEY_ENCRYPTION_KEY=%s\n' "$(openssl rand -base64 32)" >> functions.env
-                echo "AI_KEY_ENCRYPTION_KEY: đã sinh mới (32 byte)"
-                echo "⚠️  Sao lưu giá trị này ra ngoài máy chủ:"
-                echo "    grep AI_KEY_ENCRYPTION_KEY /root/supabase/functions.env"
+                echo "AI_KEY_ENCRYPTION_KEY: đã sinh mới trên máy chủ (32 byte)"
+                echo "⚠️  SAO LƯU ra ngoài máy chủ, đọc bằng:"
+                echo "    grep AI_KEY_ENCRYPTION_KEY <supabase-dir>/functions.env"
                 echo "    Mất nó = mọi khoá API đã lưu không giải mã được."
               fi
             fi
