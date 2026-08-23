@@ -56,20 +56,43 @@ tức đọc công khai. Nó chỉ để tên model.
 
 ## Triển khai
 
+### Cách chuẩn: chạy workflow
+
 ```bash
-# 1. Migration (áp tay — deploy-vps.yml không chạy migration)
-# trên máy chủ database
-docker exec -i supabase-db psql -U postgres -d postgres \
-  < 20260823120000_ai_usage.sql
-# nhớ ghi vào supabase_migrations.schema_migrations
-
-# 2. Đẩy function
-scp -r supabase/functions/_shared supabase/functions/ai-chat supabase/functions/ai-admin \
-  <host>:<supabase-dir>/volumes/functions/
-
-# 3. Khởi động lại
-ssh <host> 'cd <supabase-dir> && docker compose up -d --force-recreate functions'
+gh workflow run deploy-functions.yml
 ```
+
+Nó đẩy toàn bộ `supabase/functions/` lên máy chủ, sinh `AI_KEY_ENCRYPTION_KEY`
+nếu chưa có (**ngay trên máy chủ**, giá trị không đi qua log CI), rồi khởi động
+lại container edge-functions.
+
+Cần hai secret, thêm một lần:
+
+```bash
+gh secret set SUPABASE_HOST --body "<host>"
+gh secret set SUPABASE_SSH_KEY < ~/.ssh/<private-key>
+```
+
+Riêng **migration vẫn phải áp tay** — workflow không đụng vào database:
+
+```bash
+# trên máy chủ database
+for f in 20260823120000_ai_usage 20260823140000_ai_messages \
+         20260823160000_ai_provider_keys; do
+  docker exec -i supabase-db psql -U postgres -d postgres < "$f.sql"
+done
+# rồi ghi vào supabase_migrations.schema_migrations
+```
+
+### Vì sao không dùng `--delete` khi đồng bộ
+
+Máy chủ có sẵn `main` (router của edge runtime) và `hello` — chúng không nằm
+trong repo. `rsync --delete` sẽ xoá mất `main` và làm sập toàn bộ edge function.
+Workflow chỉ chồng lên những gì repo có.
+
+Cũng vì lý do tương tự, workflow đẩy vào thư mục trung gian rồi mới rsync sang:
+`volumes/functions` đang bind-mount vào container, xoá thư mục đó sẽ làm mount
+treo — container giữ inode cũ nên chỉ thấy rỗng.
 
 ## Bật
 
