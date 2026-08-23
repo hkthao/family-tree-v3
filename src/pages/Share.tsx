@@ -11,6 +11,7 @@ import {
   IconMinimize,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { track } from "@/lib/analytics";
 import { bloodlineIds } from "@/lib/bloodline";
 import type { TreeData } from "@/lib/queries/tree";
@@ -184,6 +185,15 @@ export default function Share() {
     enabled: !!token || !!clanId,
     retry: false,
   });
+
+  // Tiêu đề thật theo tên dòng họ — trang /xem/clans/:id là trang công
+  // khai được Google index, tiêu đề chung chung thì không xếp hạng được.
+  usePageTitle(
+    data?.clan_name ? `Gia phả ${data.clan_name}` : null,
+    data?.clan_name
+      ? `Cây gia phả ${data.clan_name}: các đời, ngày giỗ và thông tin thành viên.`
+      : null,
+  );
 
   // Đo lượt xem: trang công khai (khách chưa đăng nhập) vs link chia sẻ.
   useEffect(() => {
