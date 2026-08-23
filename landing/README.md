@@ -10,13 +10,18 @@ cd landing && python3 -m http.server 8080
 ```
 
 ## Deploy
-1. Đẩy file lên host:
-   ```bash
-   rsync -az --delete --exclude='.DS_Store' landing/ <host>:<landing-dir>/
-   ```
-2. nginx container `genealogy-app-nginx-1` mount `/opt/landing:/usr/share/nginx/donghoviet:ro`
-   và có server block `donghoviet.thaohk.com` (xem `deploy/` của stack genealogy-app).
-3. Cấp cert Let's Encrypt qua certbot webroot (`/var/www/certbot`) sau khi DNS trỏ về host này.
 
-CTA "Vào gia phả" trỏ `https://giapha.thaohk.com`. Dark-mode dùng chung localStorage key
+**Tự động qua CI.** Job `deploy` trong `.github/workflows/deploy-vps.yml` đẩy cả thư
+mục này lên `/opt/landing` mỗi lần chạy `deploy-vps` — cùng lúc với app, dùng chung
+`VPS_SSH_KEY`. Không cần rsync tay, không cần ai giữ khoá SSH trên máy cá nhân.
+
+```bash
+gh workflow run deploy-vps.yml --ref main
+```
+
+nginx trên host mount `/opt/landing` và có server block cho tên miền landing; cert
+Let's Encrypt cấp qua DNS-01 (HTTP-01 bị chặn tới app host).
+
+CTA trỏ `/xem/demo` và `/signup` của app kèm UTM theo từng vị trí — **không** trỏ root,
+vì root redirect thẳng vào tường đăng nhập. Dark-mode dùng chung localStorage key
 `family-tree:theme` với app để lựa chọn sáng/tối được giữ khi sang app.

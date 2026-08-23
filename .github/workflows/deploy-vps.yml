@@ -102,6 +102,25 @@ jobs:
           target: "/opt/gia-pha/"
           strip_components: 1
 
+      # Landing page tĩnh (donghoviet.thaohk.com) — nginx mount /opt/landing.
+      # Trước đây deploy bằng rsync tay từ máy cá nhân, nên dễ quên và
+      # phải có người giữ khoá SSH. CI đã có VPS_SSH_KEY nên đưa vào đây.
+      #
+      # rm: true → xoá file thừa ở đích (tương đương rsync --delete), để
+      # gỡ bỏ asset cũ. .DS_Store bị loại tường minh: nó đã từng lên
+      # production theo lệnh rsync thiếu --exclude.
+      - name: Deploy landing page
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "landing/*"
+          target: "/opt/landing/"
+          strip_components: 1
+          rm: true
+          overwrite: true
+
       - name: Deploy app container on VPS
         uses: appleboy/ssh-action@v1.2.0
         env:
