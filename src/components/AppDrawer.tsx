@@ -4,6 +4,7 @@ import { Link, NavLink, useParams } from "react-router-dom";
 
 import type { ReactNode } from "react";
 
+import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
 import {
@@ -145,6 +146,7 @@ export function AppDrawer({ open, onClose }: Props) {
     onClose();
   }
 
+  const aiEnabled = useAiEnabled();
   const sections = buildSections(
     clanId,
     clan ?? null,
@@ -152,6 +154,7 @@ export function AppDrawer({ open, onClose }: Props) {
     pendingContribCount ?? 0,
     pendingInlawCount ?? 0,
     todoCount ?? 0,
+    aiEnabled,
   );
 
   return (
@@ -408,6 +411,7 @@ function buildSections(
   pendingContribCount: number,
   pendingInlawCount: number,
   todoCount: number,
+  aiEnabled: boolean,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -438,14 +442,32 @@ function buildSections(
       icon: <IconBook className={ic} />,
     },
   ];
+  sections.push({ label: "Chung", items: global });
+
+  // -- Quản trị nền tảng: nhóm RIÊNG, đặt sau nhóm Chung ------------------
+  // Trước đây là một mục lẻ nhét trong "Chung". Tách ra vì hai lý do: khu
+  // này giờ có hai phần rõ rệt (báo cáo vs cài đặt), và admin vẫn dùng app
+  // như người thường là chính nên nó không nên chen vào giữa việc hằng ngày.
   if (profile?.is_platform_admin) {
-    global.push({
-      to: "/admin",
+    sections.push({
       label: "Quản trị nền tảng",
-      icon: <IconShield className={ic} />,
+      items: [
+        {
+          to: "/admin",
+          // end: nếu không, "/admin" sáng luôn cả khi đang ở
+          // "/admin/cai-dat" → hai mục cùng active, trông như lỗi.
+          end: true,
+          label: "Báo cáo & theo dõi",
+          icon: <IconShield className={ic} />,
+        },
+        {
+          to: "/admin/cai-dat",
+          label: "Cài đặt & nội dung",
+          icon: <IconSettings className={ic} />,
+        },
+      ],
     });
   }
-  sections.push({ label: "Chung", items: global });
 
   // -- Clan-scoped sections ------------------------------------------------
   // Nhóm semantic — mục HAY DÙNG đẩy lên nhóm đầu:
@@ -522,7 +544,7 @@ function buildSections(
     // Trợ lý AI đứng cạnh mục lõi chứ không chôn trong nhóm phụ: nó là
     // lối vào chính cho người lớn tuổi — hỏi bằng lời thay vì tự đi tìm
     // trong menu.
-    if (isMember && feat("ai_assistant")) {
+    if (isMember && aiEnabled && feat("ai_assistant")) {
       topItems.push({
         to: `/clans/${clanId}/tro-ly`,
         label: "Trợ lý dòng họ",

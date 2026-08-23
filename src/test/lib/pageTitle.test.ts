@@ -21,6 +21,13 @@ describe("metaForPath", () => {
     expect(metaForPath(c)?.title).toBe("Tổng quan dòng họ");
   });
 
+  it("tách hai khu quản trị, /admin không nuốt /admin/cai-dat", () => {
+    // Bảng khớp theo thứ tự nên route cụ thể phải đứng trước — sai thứ tự
+    // là khu Cài đặt hiện tiêu đề của khu Báo cáo.
+    expect(metaForPath("/admin/cai-dat")?.title).toBe("Cài đặt nền tảng");
+    expect(metaForPath("/admin")?.title).toBe("Báo cáo nền tảng");
+  });
+
   it("returns null for an unknown path so the default title stands", () => {
     expect(metaForPath("/khong-ton-tai")).toBeNull();
   });

@@ -5,6 +5,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { IconArrowLeft, IconPlay, IconSend, IconTrash } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
+import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useClanContext } from "@/hooks/useClanContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
@@ -70,7 +71,10 @@ export default function AiChat() {
   const atBottomRef = useRef(true);
   const vp = useVisualViewport();
 
-  const enabled = isFeatureEnabled(clan.disabled_features, "ai_assistant");
+  // Cần CẢ công tắc tổng lẫn cờ theo dòng họ — xem isAiEnabled().
+  const aiEnabled = useAiEnabled();
+  const enabled =
+    aiEnabled && isFeatureEnabled(clan.disabled_features, "ai_assistant");
 
   // ─── Lịch sử: vẽ ngay từ cache, rồi hoà với bản trên server ──────
   // Server là nguồn sự thật (đồng bộ giữa máy tính và điện thoại);

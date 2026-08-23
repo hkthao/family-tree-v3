@@ -169,7 +169,8 @@ export const ROUTE_META: RouteMeta[] = [
   { pattern: "/announcements/:id", title: "Thông báo" },
   { pattern: "/announcements", title: "Thông báo" },
   { pattern: "/account", title: "Tài khoản" },
-  { pattern: "/admin", title: "Quản trị hệ thống" },
+  { pattern: "/admin/cai-dat", title: "Cài đặt nền tảng" },
+  { pattern: "/admin", title: "Báo cáo nền tảng" },
 ];
 
 /** Append the site name, unless the title already is the site name. */
