@@ -44,6 +44,49 @@ Thêm icon vào những nút này chỉ làm nhiễu, **đừng thêm**:
 Nguyên tắc: icon phải **nói thêm** điều gì đó. "Huỷ" ai cũng hiểu; một dấu X cạnh
 chữ "Huỷ" là thừa. "Xuất Excel" thì icon tải xuống giúp nhận ra ngay giữa một dải nút.
 
+### Đặt hành động ở đâu
+
+Hai chỗ, chọn theo việc control có nằm trong card hay không.
+
+**Trong card → mọi hành động dồn xuống `<CardFooter>`.**
+
+```tsx
+<Card>
+  <CardHeader>…tiêu đề + chip trạng thái…</CardHeader>
+  <CardContent><Input icon={<IconKey />} … /></CardContent>
+  <CardFooter className="justify-between gap-3 border-t pt-4">
+    <span className="text-xs text-muted-foreground">…meta…</span>
+    <div className="flex flex-wrap gap-2">…nút…</div>
+  </CardFooter>
+</Card>
+```
+
+Vì sao không để nút cạnh ô nhập: ở màn hẹp chúng **bóp ô nhập còn vài ký tự**,
+mà ô nhập mới là thứ người ta cần nhìn. Dồn xuống footer thì ô nhập luôn được
+trọn chiều ngang, và mắt có một chỗ cố định để tìm nút — không phải dò từng hàng.
+
+Thứ tự trong footer: **phá huỷ → phụ → chính**, chính nằm ngoài cùng bên phải
+(gần ngón cái nhất trên điện thoại). Meta text đẩy sang trái để hai bên cân nhau.
+
+**Không dùng card, và chỉ có ĐÚNG MỘT hành động → đưa vào trong ô nhập.**
+
+```tsx
+<Input
+  icon={<IconSearch />}
+  placeholder="Tìm theo tên…"
+  action={
+    <Button size="icon" variant="ghost" aria-label="Tìm">
+      <IconArrowRight className="h-4 w-4" />
+    </Button>
+  }
+/>
+```
+
+Một nút rời cạnh ô nhập chiếm cả một ô lưới chỉ để làm một việc hiển nhiên.
+Đưa vào trong ô thì gọn hơn và quan hệ giữa ô với hành động là hiển nhiên.
+
+Từ **hai hành động trở lên** thì đừng nhồi vào ô — bọc card rồi xuống footer.
+
 ### Icon-only phải có nhãn cho trình đọc màn hình
 
 ```tsx
@@ -98,7 +141,8 @@ Dùng đúng bảng này để cùng một việc luôn cùng một hình, xuyê
 | Tiền, quỹ | `IconWallet` |
 | Mộ phần | `IconGrave` |
 | Văn bản, sổ tay | `IconScroll` · `IconBook` |
-| Làm mới | `IconRefresh` |
+| Làm mới, thử lại | `IconRefresh` |
+| Khoá API, bí mật | `IconKey` |
 | Cảnh báo, quan trọng | `IconFlame` |
 
 Thiếu icon cho việc mới thì **thêm vào `src/components/icons.tsx`**, đừng import
