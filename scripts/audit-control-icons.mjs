@@ -20,10 +20,32 @@ const SKIP_FILES = [/^src\/components\/ui\//, /^src\/test\//];
 
 /** Text nút mà thêm icon chỉ làm nhiễu. */
 const TEXT_ONLY_OK =
-  /^(Huỷ|Hủy|Đóng|Bỏ qua|Để sau|Quay lại|Không|Có|OK|Xong|Tiếp|Trước|Sau|\d+)$/i;
+  /^(Huỷ|Hủy|Đóng|Bỏ qua|Để sau|Không bây giờ|Quay lại|Không|Có|OK|Xong|Tiếp|Trước|Sau|\d+)$/i;
 
-function attrsOf(tag) {
-  return tag;
+/**
+ * Đánh dấu miễn trừ có chủ đích, viết ngay cạnh control:
+ *
+ *   {/* icon-audit: ok — ô trong hàng dày đặc, thêm icon là hết chỗ gõ *\/}
+ *
+ * Có cơ chế này vì danh sách "còn thiếu" chỉ hữu ích khi mọi dòng trong
+ * đó đều là việc thật sự cần làm. Nếu để lẫn hơn chục chỗ cố ý không
+ * icon, lần sau sẽ chẳng ai buồn đọc.
+ *
+ * Bắt buộc kèm lý do sau dấu gạch — miễn trừ không giải thích thì lần
+ * sau không ai dám sửa.
+ */
+const EXEMPT_MARK = /icon-audit:\s*ok\s*—/;
+
+/**
+ * Bỏ phần chú thích trước khi rà.
+ *
+ * Doc-comment hay nhắc tên thẻ ("hiển thị <select> đổi số/trang"), và
+ * chú thích JSX hay chứa cả đoạn mã ví dụ — đếm cả chúng thì con số báo
+ * cáo cao hơn thực tế.
+ */
+function stripComments(src) {
+  // Thay bằng khoảng trắng cùng độ dài để số dòng không xê dịch.
+  return src.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
 }
 
 /**
@@ -49,7 +71,20 @@ function endOfOpenTag(src, from) {
   return [src.length, true];
 }
 
-function scanButtons(src, file) {
+/**
+ * Có dấu miễn trừ ngay phía trên control này không?
+ *
+ * Cửa sổ rộng 14 dòng vì một dấu thường đứng đầu cả một khối (hàng nhập
+ * gồm bốn ô, hai nút của hộp thoại…) — bắt viết lại dấu cho từng control
+ * trong khối chỉ tổ rườm rà.
+ */
+function exempted(lines, line) {
+  return lines
+    .slice(Math.max(0, line - 15), line + 2)
+    .some((l) => EXEMPT_MARK.test(l));
+}
+
+function scanButtons(src, file, rawLines) {
   const out = [];
   const re = /<Button\b/g;
   let m;
@@ -66,9 +101,11 @@ function scanButtons(src, file) {
     if (/Icon[A-Z]/.test(chunk)) continue;
     const label = body.replace(/<[^>]*>/g, "").replace(/\{[^}]*\}/g, "").trim();
     if (TEXT_ONLY_OK.test(label)) continue;
+    const line = src.slice(0, m.index).split("\n").length;
+    if (exempted(rawLines, line)) continue;
     out.push({
       file,
-      line: src.slice(0, m.index).split("\n").length,
+      line,
       kind: "Button",
       label: label.slice(0, 42) || "(không có nhãn)",
     });
@@ -76,17 +113,23 @@ function scanButtons(src, file) {
   return out;
 }
 
-function scanSelfClosing(src, file, tag, kind) {
+function scanSelfClosing(src, file, tag, kind, rawLines) {
   const out = [];
-  const re = new RegExp(`<${tag}\\b[\\s\\S]*?>`, "g");
+  const re = new RegExp(`<${tag}\\b`, "g");
   let m;
   while ((m = re.exec(src))) {
+    const [tagEnd] = endOfOpenTag(src, m.index);
     const line = src.slice(0, m.index).split("\n").length;
-    // Icon của ô nhập nằm ở phần tử ANH EM (icon trong ô), nên soi cả
-    // khối 6 dòng quanh nó thay vì chỉ mỗi thẻ.
+    re.lastIndex = tagEnd;
+    // Soi TOÀN BỘ thẻ mở: prop `icon=` có thể nằm ở dòng thứ mười của
+    // thẻ (sau onKeyDown dài chẳng hạn). Trước đây chỉ soi 6 dòng quanh
+    // đầu thẻ nên báo nhầm những ô đã có icon.
+    if (/Icon[A-Z]/.test(src.slice(m.index, tagEnd))) continue;
+    // Ngoài ra icon có thể nằm ở phần tử ANH EM ngay trên (nhãn có icon).
     const lines = src.split("\n");
     const around = lines.slice(Math.max(0, line - 4), line + 3).join("\n");
     if (/Icon[A-Z]/.test(around)) continue;
+    if (exempted(rawLines, line)) continue;
     const name = (m[0].match(/(?:name|id|aria-label|placeholder)="([^"]{1,40})"/) ||
       [])[1];
     out.push({ file, line, kind, label: name ?? "(không rõ)" });
@@ -97,12 +140,14 @@ function scanSelfClosing(src, file, tag, kind) {
 const findings = [];
 for (const file of files) {
   if (SKIP_FILES.some((re) => re.test(file))) continue;
-  const src = readFileSync(file, "utf8");
+  const raw = readFileSync(file, "utf8");
+  const rawLines = raw.split("\n");
+  const src = stripComments(raw);
   findings.push(
-    ...scanButtons(src, file),
-    ...scanSelfClosing(src, file, "Input", "Input"),
-    ...scanSelfClosing(src, file, "select", "select"),
-    ...scanSelfClosing(src, file, "textarea", "textarea"),
+    ...scanButtons(src, file, rawLines),
+    ...scanSelfClosing(src, file, "Input", "Input", rawLines),
+    ...scanSelfClosing(src, file, "select", "select", rawLines),
+    ...scanSelfClosing(src, file, "textarea", "textarea", rawLines),
   );
 }
 

@@ -13,6 +13,7 @@ import {
   IconPlus,
   IconTrash,
   IconUndo,
+  IconUser,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -380,6 +381,7 @@ function ConfirmedRow({
             className="flex-1 sm:flex-none"
           >
             <Link to={`/clans/${peek.clan_id}/people/${peek.person_id}`}>
+              <IconUser className="h-4 w-4 mr-1.5" />
               Xem trang
             </Link>
           </Button>

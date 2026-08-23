@@ -15,7 +15,7 @@ Ba lý do cụ thể, đều đã gặp trong dữ liệu của chính app này:
 3. **Quen tay.** Người ta nhớ "cái hình cây" chứ ít khi nhớ chữ "Cây gia phả".
 
 Quy ước này **đã tồn tại không thành văn**: 191/298 `<Button>` trong repo vốn đã
-có icon. Văn bản này chỉ chốt lại và nói rõ phần còn thiếu.
+có icon. Văn bản này chốt lại, và đợt rà tháng 8/2026 đã phủ kín phần còn lại.
 
 ## Quy tắc
 
@@ -87,6 +87,36 @@ Một nút rời cạnh ô nhập chiếm cả một ô lưới chỉ để làm
 
 Từ **hai hành động trở lên** thì đừng nhồi vào ô — bọc card rồi xuống footer.
 
+### Nút của một dòng, không phải của cả thẻ
+
+Rule "dồn xuống footer" chỉ áp cho hành động **của cả thẻ**. Nút thuộc về một
+dòng hay một nhóm cụ thể thì ở nguyên chỗ đó:
+
+- nút xoá từng link mời trong danh sách
+- nút "Thêm" của từng nhóm quan hệ (cha mẹ / vợ chồng / con) ở trang cá nhân
+- nút "Lấy vị trí hiện tại" nằm cạnh hai ô toạ độ
+
+Kéo chúng xuống footer là mất thông tin "nút này tác động lên cái nào" — người
+dùng phải đoán. Thử nhanh: nếu nhãn nút cần thêm chữ để biết nó nhắm vào đâu
+("Xoá **link thứ hai**"), thì nó không thuộc về footer.
+
+### Thẻ có form: `<form>` bọc cả content lẫn footer
+
+```tsx
+<Card>
+  <CardHeader>…</CardHeader>
+  <form onSubmit={…}>
+    <CardContent className="space-y-4">…ô nhập…</CardContent>
+    <CardFooter className="justify-end border-t pt-4">
+      <Button type="submit">Lưu</Button>
+    </CardFooter>
+  </form>
+</Card>
+```
+
+Nếu chỉ kéo nút ra ngoài `<form>`, nút submit rời khỏi form: bấm Enter trong ô
+nhập không còn gửi được, mà đó lại là cách người quen máy tính hay dùng.
+
 ### Icon-only phải có nhãn cho trình đọc màn hình
 
 ```tsx
@@ -155,26 +185,41 @@ node scripts/audit-control-icons.mjs        # liệt kê chỗ còn thiếu
 node scripts/audit-control-icons.mjs --json # cho công cụ khác dùng
 ```
 
-Script **không chặn commit**. Nó để biết còn nợ bao nhiêu, vì có những chỗ cố ý
-không icon (xem mục "Không lạm dụng") mà máy không phân biệt được.
+Script **không chặn commit**. Nó để biết còn nợ bao nhiêu.
+
+Chỗ cố ý không icon thì **đánh dấu ngay tại chỗ**, kèm lý do:
+
+```tsx
+{/* icon-audit: ok — ba ô hẹp dưới 100px, nhãn đã nằm ngay trên */}
+```
+
+Dấu này che 14 dòng ngay dưới nó, đủ cho cả một khối (một hàng nhập, hai nút
+của hộp thoại). **Bắt buộc có lý do sau dấu gạch** — miễn trừ không giải thích
+thì lần sau không ai dám sửa. Có cơ chế này để danh sách "còn thiếu" chỉ chứa
+việc thật; lẫn hơn chục chỗ cố ý vào đó là lần sau không ai buồn đọc.
 
 ## Tình trạng
 
 | Mốc | Còn thiếu |
 |-----|----------:|
 | Khi bắt đầu | 292 |
-| **Hiện tại** | **258** (92 Button · 109 Input · 32 select · 25 textarea) |
+| Sau đợt đầu (Login, NewPerson, People, Account…) | 258 |
+| **Hiện tại** | **0** |
 
-Đã làm xong, chọn theo **lưu lượng thật** chứ không theo thứ tự file:
+Đã quét hết. Con số 0 **không có nghĩa là mọi control đều có icon** — nó có
+nghĩa là mọi control còn thiếu đều đã được cân nhắc, và chỗ nào cố ý bỏ trống
+thì có dấu `icon-audit: ok` kèm lý do ngay tại chỗ.
 
-- `Login` · `Signup` — cửa đăng nhập, nơi phân tích tháng 8 cho thấy một nửa số
-  phiên rời đi. Sửa chỗ này trước là hợp lý nhất.
-- `NewPerson` · `EditPerson` — màn nhập liệu lõi, 145 lượt sửa người trong tháng 8.
-- `People` — 994 lượt xem, nhiều nhất app. Bốn ô lọc chuyển sang `<Select>`.
-- `Account` — ô đổi tên, đổi email, đổi mật khẩu.
-- `AiSettingsTab` — màn mới, làm chuẩn ngay từ đầu.
+Các nhóm cố ý bỏ trống, để khỏi tranh luận lại:
 
-Còn lại chủ yếu là **form ít dùng** (`CustomsForm`, `RestingPlaceForm`,
-`HeritageForm`, `InlawsNew`) và tab quản trị. Sửa dần, mỗi lần đụng vào màn nào
-thì dọn màn đó — đừng làm một lần 258 chỗ, vì mỗi ô cần chọn icon đúng nghĩa
-chứ không phải gắn bừa cho hết cảnh báo.
+| Chỗ | Vì sao |
+|-----|--------|
+| Ba ô ngày/tháng/năm (`CalendarDateInput`) | Lưới 3 cột, mỗi ô dưới 100px; ba icon lịch giống hệt nhau chỉ gây rối |
+| Hàng nhập nhiều người (`QuickAddSheet`) | Một hàng đã có số thứ tự, nút giới tính, hai ô năm và nút xoá |
+| Ô nhập của khung chat | Chiếm gần hết chiều ngang, nút gửi nằm ngay cạnh |
+| Nút cỡ chữ "A / A+" | Chính chữ cái là ký hiệu |
+| Nút ★/☆ lưu bài | Hình sao vừa là icon vừa là trạng thái |
+| Nút đăng nhập Google | Logo thương hiệu, không thuộc bộ icon chung |
+| Component nhận icon qua prop (`EmptyState`, `SubscribeToggle`, `ConfirmDialog`…) | Nơi gọi quyết định icon |
+
+Khi thêm màn mới, chạy lại script trước khi mở PR — 0 là mốc cần giữ.

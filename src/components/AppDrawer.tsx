@@ -8,27 +8,28 @@ import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
 import {
+  IconAward,
   IconBook,
   IconBuildings,
   IconCalendar,
   IconCamera,
   IconFacebook,
   IconGlobe,
+  IconGrave,
   IconHome,
   IconLink,
   IconList,
+  IconLogOut,
   IconPencil,
-  IconAward,
   IconScroll,
-  IconWallet,
   IconSettings,
   IconShield,
   IconSparkles,
   IconSun,
-  IconGrave,
   IconTree,
   IconUserPlus,
   IconUsers,
+  IconWallet,
 } from "@/components/icons";
 import { CheckUpdateButton } from "@/components/CheckUpdateButton";
 import { FeedbackButton } from "@/components/FeedbackButton";
@@ -314,6 +315,7 @@ export function AppDrawer({ open, onClose }: Props) {
                 void signOutAndClearCache();
               }}
             >
+              <IconLogOut className="h-4 w-4 mr-1.5" />
               Đăng xuất
             </Button>
           )}

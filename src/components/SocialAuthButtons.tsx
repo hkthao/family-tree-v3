@@ -115,6 +115,8 @@ function ProviderButton({
   disabled: boolean;
   icon: React.ReactNode;
 }) {
+  // icon-audit: ok — icon do nơi gọi truyền vào (logo từng nhà cung cấp)
+
   return (
     <Button
       type="button"

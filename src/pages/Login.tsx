@@ -128,6 +128,7 @@ export default function Login() {
       <div className="space-y-5">
         {/* Google — kênh chính, nút to, 1 chạm, không cần nhớ mật khẩu. */}
         <div className="space-y-2">
+          {/* icon-audit: ok — logo Google là icon thương hiệu, không dùng bộ icon chung */}
           <Button
             type="button"
             onClick={signInGoogle}

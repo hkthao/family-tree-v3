@@ -4,10 +4,12 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { CustomsShell } from "@/components/CustomsShell";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
+  IconArrowLeft,
   IconBook,
   IconCalendar,
   IconCheck,
   IconHelp,
+  IconLogIn,
   IconPencil,
   IconShare2,
   IconTrash,
@@ -136,7 +138,17 @@ export default function CustomsDetail() {
       <CustomsShell>
         <p className="text-muted-foreground">Không tìm thấy bài.</p>
         <Button asChild variant="outline" className="mt-3">
-          {user ? <Link to="/so-tay">← Về Sổ tay</Link> : <Link to="/login">Đăng nhập</Link>}
+          {user ? (
+            <Link to="/so-tay">
+              <IconArrowLeft className="h-4 w-4 mr-1.5" />
+              Về Sổ tay
+            </Link>
+          ) : (
+            <Link to="/login">
+              <IconLogIn className="h-4 w-4 mr-1.5" />
+              Đăng nhập
+            </Link>
+          )}
         </Button>
       </CustomsShell>
     );
@@ -170,6 +182,7 @@ export default function CustomsDetail() {
             <IconShare2 className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">Chia sẻ</span>
           </Button>
+          {/* icon-audit: ok — ★/☆ chính là icon, và trạng thái đọc được ngay từ hình */}
           {user && (
             <Button
               size="sm"

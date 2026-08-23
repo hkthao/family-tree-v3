@@ -6,6 +6,7 @@ import {
   IconCheck,
   IconCopy,
   IconLink,
+  IconShare2,
   IconX,
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -200,6 +201,7 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
                     className="w-full"
                     onClick={nativeShare}
                   >
+                    <IconShare2 className="h-4 w-4 mr-1.5" />
                     Chia sẻ qua ứng dụng…
                   </Button>
                 )}

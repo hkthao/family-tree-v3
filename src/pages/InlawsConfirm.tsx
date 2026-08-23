@@ -7,6 +7,8 @@ import {
   IconBuildings,
   IconCheck,
   IconLink,
+  IconLogIn,
+  IconRefresh,
   IconSearch,
   IconX,
 } from "@/components/icons";
@@ -158,6 +160,7 @@ function LoginPrompt({ token }: { token: string }) {
       </p>
       <Button asChild>
         <Link to={`/login?redirect=${encodeURIComponent(redirect)}`}>
+          <IconLogIn className="h-4 w-4 mr-1.5" />
           Đăng nhập để xác nhận
         </Link>
       </Button>
@@ -357,6 +360,7 @@ function PickPerson({
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => onPick(null)}>
+          <IconRefresh className="h-4 w-4 mr-1.5" />
           Đổi
         </Button>
       </div>

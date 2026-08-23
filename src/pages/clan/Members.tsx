@@ -332,6 +332,7 @@ export default function Members() {
                           }
                           disabled={verifySelfMutation.isPending}
                         >
+                          <IconCheck className="h-4 w-4 mr-1.5" />
                           {m.self_person_verified ? "Bỏ xác nhận" : "Xác nhận"}
                         </Button>
                       </div>

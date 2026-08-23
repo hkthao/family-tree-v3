@@ -87,6 +87,7 @@ export function SubscribeToggle({
       }),
   });
 
+  // icon-audit: ok — icon do nơi gọi truyền qua prop `icon`
   const on = !!existing;
   return (
     <Button

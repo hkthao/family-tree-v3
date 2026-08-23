@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconCamera,
+  IconCheck,
   IconChevronDown,
   IconChevronUp,
   IconLink,
@@ -776,9 +777,13 @@ function AudioRecorder({
         <div className="flex gap-2">
           <Button size="sm" disabled={disabled}
             onClick={() => { onSave(rec.result!.blob, rec.result!.ext, rec.result!.durationSec); rec.reset(); }}>
+            <IconCheck className="h-4 w-4 mr-1.5" />
             {disabled ? "Đang lưu…" : "Lưu đoạn này"}
           </Button>
-          <Button size="sm" variant="ghost" onClick={rec.reset} disabled={disabled}>Ghi lại</Button>
+          <Button size="sm" variant="ghost" onClick={rec.reset} disabled={disabled}>
+            <IconMicrophone className="h-4 w-4 mr-1.5" />
+            Ghi lại
+          </Button>
         </div>
       </div>
     );
@@ -791,7 +796,10 @@ function AudioRecorder({
           <span className="h-3 w-3 animate-pulse rounded-full bg-red-600" />
           Đang ghi… {fmtDuration(rec.seconds)} / {fmtDuration(rec.maxSeconds)}
         </span>
-        <Button size="sm" variant="outline" className="ml-auto" onClick={rec.stop}>Dừng & nghe lại</Button>
+        <Button size="sm" variant="outline" className="ml-auto" onClick={rec.stop}>
+          <IconPlay className="h-4 w-4 mr-1.5" />
+          Dừng &amp; nghe lại
+        </Button>
       </div>
     );
   }

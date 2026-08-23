@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { IconLogIn } from "@/components/icons";
 
 import { AppHeader } from "@/components/AppHeader";
 import { AppLogo } from "@/components/AppLogo";
@@ -35,7 +36,10 @@ export function CustomsShell({ children }: { children: React.ReactNode }) {
             Dòng Họ Việt
           </Link>
           <Button size="sm" asChild>
-            <Link to="/login">Đăng nhập</Link>
+            <Link to="/login">
+              <IconLogIn className="h-4 w-4 mr-1.5" />
+              Đăng nhập
+            </Link>
           </Button>
         </div>
       </header>

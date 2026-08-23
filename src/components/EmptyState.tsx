@@ -80,6 +80,7 @@ function renderAction(a: Action, variant: "default" | "outline") {
       {a.label}
     </>
   );
+  // icon-audit: ok — `content` do nơi gọi truyền vào, đã gồm icon nếu cần
   if ("to" in a) {
     return (
       <Button asChild variant={variant}>

@@ -736,7 +736,10 @@ function PushNotifyCard({
           khi app đang đóng. Bạn có thể tắt bất cứ lúc nào.
         </p>
         <div className="flex gap-2 flex-wrap">
-          <Button onClick={handleEnable}>Cho phép thông báo</Button>
+          <Button onClick={handleEnable}>
+            <IconBell className="h-4 w-4 mr-1.5" />
+            Cho phép thông báo
+          </Button>
           <Button variant="outline" onClick={() => setShowPrePrompt(false)}>
             Không bây giờ
           </Button>

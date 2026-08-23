@@ -809,6 +809,7 @@ function QuickAddChild({
                 key={i}
                 className="rounded-lg border bg-card p-2.5 space-y-2"
               >
+                {/* icon-audit: ok — hàng dày đặc (số thứ tự, giới tính, 2 ô năm, nút xoá), icon ăn mất chỗ gõ */}
                 {/* Hàng 1: số thứ tự + họ tên + xoá */}
                 <div className="flex items-center gap-2">
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-muted text-xs text-muted-foreground tabular-nums">
@@ -839,6 +840,7 @@ function QuickAddChild({
                     <IconX className="h-4 w-4" />
                   </IconButton>
                 </div>
+                {/* icon-audit: ok — cùng lý do hàng 1: mỗi ô chỉ ~90px */}
                 {/* Hàng 2: giới tính + năm sinh/mất + đổi thứ tự */}
                 <div className="flex items-center gap-2 pl-8">
                   <GenderToggle
@@ -859,6 +861,7 @@ function QuickAddChild({
                     aria-label="Năm sinh"
                     className="flex-1 min-w-0"
                   />
+                  {/* icon-audit: ok — cùng lý do: ô năm chỉ ~90px */}
                   <Input
                     value={r.deathYear}
                     onChange={(e) =>

@@ -7,8 +7,10 @@ import {
   IconDownload,
   IconLayoutHorizontal,
   IconLayoutVertical,
+  IconLogIn,
   IconMaximize,
   IconMinimize,
+  IconPlus,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -674,6 +676,7 @@ export default function Share() {
               <Link
                 to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}
               >
+                <IconLogIn className="h-4 w-4 mr-1.5" />
                 Đăng nhập để xem đầy đủ &amp; cùng vun đắp
               </Link>
             </Button>
@@ -729,6 +732,7 @@ export default function Share() {
                 <Link
                   to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}
                 >
+                  <IconLogIn className="h-4 w-4 mr-1.5" />
                   Đăng nhập để xem dòng họ này
                 </Link>
               </Button>
@@ -963,6 +967,7 @@ export default function Share() {
                   })
                 }
               >
+                <IconPlus className="h-4 w-4 mr-1.5" />
                 Tạo gia phả miễn phí
               </Link>
             </Button>
