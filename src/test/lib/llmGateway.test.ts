@@ -174,6 +174,20 @@ describe("registry", () => {
       if (m.provider === "openai-compatible") {
         expect(m.baseUrl, `${id} thiếu baseUrl`).toBeTruthy();
       }
+      // credential phải khớp apiKeyEnv, nếu không màn hình quản trị sẽ
+      // cắm khoá vào một chỗ mà gateway không đọc tới.
+      expect(m.apiKeyEnv, `${id}: credential lệch apiKeyEnv`).toBe(
+        `${m.credential.toUpperCase()}_API_KEY`,
+      );
+    }
+  });
+
+  it("mỗi credential đều có ít nhất một model để kiểm tra kết nối", () => {
+    // Màn hình quản trị gọi thử bằng model rẻ nhất của nhà cung cấp —
+    // credential không có model nào thì nút "Kiểm tra" thành vô dụng.
+    for (const cred of ["openai", "anthropic", "deepseek"] as const) {
+      const has = Object.values(MODELS).some((m) => m.credential === cred);
+      expect(has, `không có model nào dùng credential ${cred}`).toBe(true);
     }
   });
 

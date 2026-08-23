@@ -87,8 +87,9 @@ Rồi **luôn validate lại bằng zod ở server** bất kể provider nào, s
 ### 5. Cấu hình định tuyến trong DB, khoá trong env
 - `platform_settings`: `ai.model.extract`, `ai.model.qa`, `ai.enabled` → admin đổi
   provider tức thì, không deploy. (Đọc công khai — chỉ để tên model, **không để khoá**.)
-- Khoá API: env qua `docker-compose.override.yml`, giống cách SMTP đang làm
-  ([project_notify_smtp_direct](../docs/)).
+- Khoá API: bảng `ai_provider_keys` (mã hoá AES-GCM), nhập ở Quản trị › Trợ lý AI có
+  nút kiểm tra kết nối. Env chỉ còn giữ **một** biến là KEK `AI_KEY_ENCRYPTION_KEY`,
+  cộng khoá dự phòng nếu muốn. Xem §Bảo mật mục 13.
 
 ### 6. Model mặc định đề xuất
 | Việc | Model | Vì sao |
@@ -882,9 +883,17 @@ Có tiền vào là mô hình đe doạ đổi hẳn. Rà lại theo từng nhó
 12. **Prompt injection giờ tốn tiền.** Một `bio` độc hại có thể xui model gọi tool vòng
     vo cho hết quota. → giới hạn **tối đa 5 vòng tool mỗi lượt**, timeout cứng, và
     kết quả tool luôn là dữ liệu chứ không phải lệnh.
-13. **Khoá API để trong env qua `docker-compose.override.yml`**, tuyệt đối **không** để
-    trong `platform_settings` — bảng đó **đọc công khai** (policy `using (true)`).
-    Rất dễ nhầm vì đó đúng là chỗ để cấu hình model.
+13. **Khoá API nằm ở bảng riêng `ai_provider_keys`, đã mã hoá AES-256-GCM**, nhập qua
+    Quản trị › Trợ lý AI. Bảng đó **không có RLS policy nào** — kể cả platform admin
+    cũng không select được qua PostgREST, chỉ service role đọc nổi. KEK ở env
+    (`AI_KEY_ENCRYPTION_KEY`); Postgres không bao giờ thấy bản rõ lẫn KEK.
+    Mã hoá này chống **bản dump DB bị lộ, `select *` vô ý, policy RLS viết sai, khoá
+    lọt vào log truy vấn** — nhưng **không** chống được người đã đọc được env của edge
+    function. Đổi N bí mật lấy 1, không phải bùa hộ mệnh.
+    Thứ tự lấy khoá là **DB trước, env sau**: nếu ngược lại thì khoá cũ trong env sẽ âm
+    thầm che khoá mới vừa nhập.
+    Tuyệt đối **không** để trong `platform_settings` — bảng đó **đọc công khai**
+    (policy `using (true)`). Rất dễ nhầm vì đó đúng là chỗ để cấu hình model.
 14. **`ai_messages` có lưu nội dung — RLS phải là `owner_id = auth.uid()`, KHÔNG phải
     `is_clan_member(clan_id)`.** Trong repo này `is_clan_member` là helper dùng ở gần
     như mọi bảng nên phản xạ tự nhiên là gõ nó ra; ở bảng này đó là lỗi biến tính năng

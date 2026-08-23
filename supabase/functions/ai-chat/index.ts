@@ -17,7 +17,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 import { err, json, preflight } from "../_shared/cors.ts";
 import { complete, friendlyLlmError } from "../_shared/llm/gateway.ts";
-import { DEFAULT_MODELS } from "../_shared/llm/registry.ts";
+import { resolveApiKey } from "../_shared/llm/keys.ts";
+import { DEFAULT_MODELS, getModel } from "../_shared/llm/registry.ts";
 import type { LlmMessage } from "../_shared/llm/types.ts";
 import { runTool, TOOL_SPECS } from "./tools.ts";
 
@@ -150,6 +151,15 @@ Deno.serve(async (req) => {
     { role: "user", content: question },
   ];
 
+  // Giải mã khoá một lần cho cả lượt (kể cả nhiều vòng gọi tool).
+  let apiKey: string;
+  try {
+    apiKey = await resolveApiKey(sbAdmin, getModel(modelId));
+  } catch (e) {
+    console.error("ai-chat: không lấy được khoá:", e);
+    return err("Trợ lý chưa được cấu hình. Vui lòng báo quản trị viên.", 503);
+  }
+
   const ctx = { sb: sbUser, clanId };
   const system = `${SYSTEM_PROMPT}\n\nDòng họ đang xem: ${clan.name}.`;
 
@@ -161,6 +171,27 @@ Deno.serve(async (req) => {
   let attempts = 0;
   let rawModel = "";
   const startedAt = Date.now();
+
+  /**
+   * Ghi lại lượt hỏi–đáp để mở app trên máy khác vẫn thấy mạch trò chuyện.
+   *
+   * Chỉ lưu BỀ MẶT hội thoại — câu hỏi và câu trả lời cuối. Không lưu tool
+   * result: đó là khối PII to nhất (các dòng gia phả thật) mà lại tái tạo
+   * được từ DB bất cứ lúc nào, nên lưu chỉ là nhân bản rủi ro.
+   *
+   * Ghi bằng service role vì bảng không có policy INSERT — client không tự
+   * bịa được lịch sử. Trigger trong DB tự cắt còn 40 tin.
+   *
+   * Lỗi ở đây KHÔNG được làm hỏng câu trả lời: người dùng đã có đáp án rồi,
+   * mất một dòng lịch sử là chuyện nhỏ hơn nhiều.
+   */
+  async function persistTurn(answer: string) {
+    const { error } = await sbAdmin.from("ai_messages").insert([
+      { owner_id: user!.id, clan_id: clanId, role: "user", kind: "qa", content: question! },
+      { owner_id: user!.id, clan_id: clanId, role: "assistant", kind: "qa", content: answer },
+    ]);
+    if (error) console.error("ai-chat: không lưu được lịch sử:", error.message);
+  }
 
   async function logUsage(ok: boolean, errorKind?: string) {
     await sbAdmin.from("ai_usage").insert({
@@ -186,14 +217,17 @@ Deno.serve(async (req) => {
       // Vòng cuối: bỏ tool đi để model buộc phải chốt câu trả lời bằng
       // những gì đã có, thay vì gọi tool rồi bị cắt giữa chừng.
       const lastRound = round === MAX_TOOL_ROUNDS;
-      const res = await complete({
-        model: modelId,
-        system,
-        messages,
-        tools: lastRound ? undefined : TOOL_SPECS,
-        maxTokens: 1200,
-        effort: "low",
-      });
+      const res = await complete(
+        {
+          model: modelId,
+          system,
+          messages,
+          tools: lastRound ? undefined : TOOL_SPECS,
+          maxTokens: 1200,
+          effort: "low",
+        },
+        apiKey,
+      );
 
       totalIn += res.usage.inputTokens;
       totalCached += res.usage.cachedInputTokens;
@@ -203,13 +237,12 @@ Deno.serve(async (req) => {
       rawModel = res.rawModel;
 
       if (!res.toolCalls.length) {
+        const answer =
+          res.text.trim() ||
+          "Tôi chưa tìm được câu trả lời. Bạn thử hỏi cách khác nhé.";
         await logUsage(true);
-        return json({
-          answer:
-            res.text.trim() ||
-            "Tôi chưa tìm được câu trả lời. Bạn thử hỏi cách khác nhé.",
-          toolCalls: toolCallCount,
-        });
+        await persistTurn(answer);
+        return json({ answer, toolCalls: toolCallCount });
       }
 
       toolCallCount += res.toolCalls.length;

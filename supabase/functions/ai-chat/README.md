@@ -19,19 +19,40 @@ ai-chat/tools.ts  5 tool chỉ đọc
 ai-chat/index.ts  vòng lặp gọi tool, rate limit, ghi ai_usage
 ```
 
-## Khoá API — KHÔNG để trong `platform_settings`
+## Khoá API — nhập ở màn hình quản trị, lưu đã mã hoá
 
-`platform_settings` có policy `using (true)`, tức **đọc công khai**. Đó là chỗ để
-*tên model*, không phải chỗ để khoá. Khoá đi qua env, giống cách SMTP đang làm:
+**Quản trị › Trợ lý AI**: cắm khoá từng nhà cung cấp, bấm lưu là hệ thống gọi thử luôn
+và báo kết nối tốt hay lỗi. Không phải ssh, không phải restart container.
+
+Khoá được mã hoá **AES-256-GCM ngay tại edge function** trước khi vào bảng
+`ai_provider_keys`; Postgres không bao giờ thấy bản rõ. Bảng đó **không có RLS policy
+nào** — kể cả platform admin cũng không select được qua PostgREST, chỉ service role đọc nổi.
+
+Cần đúng **một** biến môi trường, là khoá dùng để mã hoá các khoá kia:
 
 ```yaml
 # /root/supabase/docker-compose.override.yml trên VPS
 services:
   functions:
     environment:
-      OPENAI_API_KEY: sk-...
-      # ANTHROPIC_API_KEY / DEEPSEEK_API_KEY nếu muốn đổi provider
+      AI_KEY_ENCRYPTION_KEY: <openssl rand -base64 32>
 ```
+
+> ⚠️ Đổi `AI_KEY_ENCRYPTION_KEY` = mọi khoá đã lưu thành rác không giải được. Không có
+> đường khôi phục, phải nhập lại ở màn hình quản trị. Cất nó cẩn thận.
+
+**Mã hoá này chống được gì:** bản dump/backup DB bị lộ, một `select *` vô ý, một policy
+RLS viết sai, khoá lọt vào log truy vấn. **Không chống được:** người đã đọc được env của
+edge function — họ có luôn khoá giải mã. Đây là envelope encryption tiêu chuẩn, đổi N bí
+mật lấy 1, không phải bùa hộ mệnh.
+
+`OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `DEEPSEEK_API_KEY` trong env vẫn dùng được làm
+**dự phòng** khi DB chưa có khoá. Thứ tự là **DB trước, env sau** — nếu ngược lại thì
+khoá cũ trong env sẽ âm thầm che khoá mới vừa nhập, đúng kiểu lỗi khiến người ta tưởng
+đã xoay khoá xong mà thật ra chưa.
+
+**Tuyệt đối không để khoá trong `platform_settings`** — bảng đó có policy `using (true)`,
+tức đọc công khai. Nó chỉ để tên model.
 
 ## Triển khai
 
@@ -43,7 +64,7 @@ docker exec -i supabase-db psql -U postgres -d postgres \
 # nhớ ghi vào schema_migrations
 
 # 2. Đẩy function
-scp -r supabase/functions/_shared supabase/functions/ai-chat \
+scp -r supabase/functions/_shared supabase/functions/ai-chat supabase/functions/ai-admin \
   root@72.61.143.145:/root/supabase/volumes/functions/
 
 # 3. Khởi động lại
@@ -60,6 +81,8 @@ update platform_settings set value = 'true' where key = 'ai.enabled';
 
 và trong app: Cài đặt dòng họ → Tính năng hiển thị → bật **Trợ lý AI**
 (`clans.disabled_features` không chứa `ai_assistant`).
+
+Rồi vào **Quản trị › Trợ lý AI** cắm khoá và bấm *Lưu & kiểm tra*.
 
 Đổi model không cần deploy:
 

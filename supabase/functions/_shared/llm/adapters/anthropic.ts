@@ -22,7 +22,6 @@
 
 import Anthropic from "npm:@anthropic-ai/sdk@0.68.0";
 
-import { env } from "../env.ts";
 import {
   LlmError,
   type LlmAdapter,
@@ -41,12 +40,11 @@ const THINKING_HEADROOM = 4096;
 export const anthropicAdapter: LlmAdapter = {
   provider: "anthropic",
 
-  async complete(req: LlmRequest, model: ModelEntry): Promise<LlmResponse> {
-    const apiKey = env(model.apiKeyEnv);
-    if (!apiKey) {
-      throw new LlmError(`Thiếu biến môi trường ${model.apiKeyEnv}`, "auth");
-    }
-
+  async complete(
+    req: LlmRequest,
+    model: ModelEntry,
+    apiKey: string,
+  ): Promise<LlmResponse> {
     const client = new Anthropic({ apiKey });
 
     // Gộp các message tool liền nhau vào một lượt user — Anthropic yêu
