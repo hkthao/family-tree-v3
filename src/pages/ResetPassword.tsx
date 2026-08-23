@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { IconCheck, IconLock, IconLogIn } from "@/components/icons";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,7 @@ export default function ResetPassword() {
             </AlertDescription>
           </Alert>
           <Button className="w-full" onClick={() => navigate("/")}>
+            <IconLogIn className="h-4 w-4 mr-1.5" />
             Vào ứng dụng
           </Button>
         </div>
@@ -74,6 +76,7 @@ export default function ResetPassword() {
             </Label>
             <Input
               id="password"
+              icon={<IconLock />}
               type="password"
               autoComplete="new-password"
               required
@@ -88,6 +91,7 @@ export default function ResetPassword() {
             </Label>
             <Input
               id="confirm"
+              icon={<IconLock />}
               type="password"
               autoComplete="new-password"
               required
@@ -112,6 +116,7 @@ export default function ResetPassword() {
           )}
 
           <Button type="submit" className="w-full" disabled={busy || !ready}>
+            <IconCheck className="h-4 w-4 mr-1.5" />
             {busy ? "Đang lưu…" : "Đổi mật khẩu"}
           </Button>
 

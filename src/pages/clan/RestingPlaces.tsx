@@ -4,12 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
-import { IconGrave, IconMapPin, IconPlus, IconSearch } from "@/components/icons";
+import {
+  IconBuildings,
+  IconGrave,
+  IconMapPin,
+  IconPlus,
+  IconSearch,
+} from "@/components/icons";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useUrlState } from "@/hooks/useUrlState";
@@ -118,11 +125,12 @@ export default function RestingPlaces() {
           activeCount={(kind ? 1 : 0) + (cemeteryId ? 1 : 0)}
         >
         <div className="flex flex-wrap items-center gap-2">
-          <select
+          <Select
             value={kind}
             onChange={(e) => setKind(e.target.value)}
             aria-label="Lọc theo hình thức"
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
+            icon={<IconGrave />}
+            className="h-10 w-auto text-sm min-w-[160px]"
           >
             <option value="">Mọi hình thức</option>
             {KINDS.map((k) => (
@@ -130,19 +138,20 @@ export default function RestingPlaces() {
                 {RESTING_PLACE_KIND_LABEL[k]}
               </option>
             ))}
-          </select>
+          </Select>
           {(cemeteries ?? []).length > 0 && (
-            <select
+            <Select
               value={cemeteryId}
               onChange={(e) => setCemeteryId(e.target.value)}
               aria-label="Lọc theo cơ sở"
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm min-w-[160px]"
+              icon={<IconBuildings />}
+              className="h-10 w-auto text-sm min-w-[160px]"
             >
               <option value="">Mọi cơ sở</option>
               {(cemeteries ?? []).map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
-            </select>
+            </Select>
           )}
         </div>
         </CollapsibleFilters>

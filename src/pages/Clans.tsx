@@ -27,6 +27,7 @@ import { RecordDates } from "@/components/RecordDates";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch } from "@/hooks/useUrlState";
 import {
@@ -232,26 +233,28 @@ export default function Clans() {
             }
           >
           <div className="flex items-center gap-2 sm:gap-3">
-            <select
+            <Select
               value={sort}
               onChange={(e) => setSort(e.target.value as ClanSort)}
               aria-label="Sắp xếp"
-              className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] rounded-md border border-input bg-background px-2 sm:px-3 text-sm"
+              icon={<IconList />}
+              className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] text-sm"
             >
               {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
                 <option key={k} value={k}>
                   {CLAN_SORT_LABEL[k]}
                 </option>
               ))}
-            </select>
+            </Select>
             {tab === "community" && (
-              <select
+              <Select
                 value={sizeBucket}
                 onChange={(e) =>
                   setSizeBucket(e.target.value as ClanSizeBucket | "")
                 }
                 aria-label="Lọc theo quy mô"
-                className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] rounded-md border border-input bg-background px-2 sm:px-3 text-sm"
+                icon={<IconUsers />}
+                className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] text-sm"
               >
                 <option value="">Tất cả quy mô</option>
                 {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
@@ -259,7 +262,7 @@ export default function Clans() {
                     {CLAN_SIZE_BUCKETS[k].label}
                   </option>
                 ))}
-              </select>
+              </Select>
             )}
             <SegmentedControl ariaLabel="Kiểu hiển thị" className="shrink-0">
               <SegmentedButton

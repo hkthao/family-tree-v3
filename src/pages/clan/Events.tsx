@@ -4,10 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   IconBell,
   IconCalendar,
+  IconGrave,
   IconGrid,
   IconList,
+  IconMoon,
   IconPlus,
   IconSparkles,
+  IconTag,
   IconTrash,
   IconX,
 } from "@/components/icons";
@@ -38,6 +41,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -722,6 +726,7 @@ function AddEventForm({
         <Label htmlFor="evt-title">Tên sự kiện</Label>
         <Input
           id="evt-title"
+          icon={<IconCalendar />}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Họp họ, tảo mộ, chạp họ, kỷ niệm…"
@@ -731,27 +736,27 @@ function AddEventForm({
 
       <div className="space-y-2">
         <Label htmlFor="evt-type">Loại</Label>
-        <select
+        <Select
           id="evt-type"
+          icon={<IconTag />}
           value={eventType}
           onChange={(e) => setEventType(e.target.value as EventType)}
-          className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="custom">Tuỳ chỉnh</option>
           <option value="reunion">Họp họ</option>
           <option value="memorial">Giỗ chung</option>
           <option value="tomb_visit">Tảo mộ / Chạp họ</option>
-        </select>
+        </Select>
       </div>
 
       {eventType === "tomb_visit" && (
         <div className="space-y-2">
           <Label htmlFor="evt-grave">Gắn nơi an nghỉ (tuỳ chọn)</Label>
-          <select
+          <Select
             id="evt-grave"
+            icon={<IconGrave />}
             value={restingPlaceId}
             onChange={(e) => setRestingPlaceId(e.target.value)}
-            className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             <option value="">— Không gắn —</option>
             {(places ?? []).map((p) => (
@@ -759,7 +764,7 @@ function AddEventForm({
                 {p.name || p.location_name || RESTING_PLACE_KIND_LABEL[p.kind]}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       )}
 
@@ -789,6 +794,7 @@ function AddEventForm({
           <Label htmlFor="evt-solar">Ngày dương lịch</Label>
           <Input
             id="evt-solar"
+            icon={<IconCalendar />}
             type="date"
             value={dateSolar}
             onChange={(e) => setDateSolar(e.target.value)}
@@ -800,6 +806,7 @@ function AddEventForm({
             <Label htmlFor="evt-lunar-day">Ngày âm</Label>
             <Input
               id="evt-lunar-day"
+              icon={<IconMoon />}
               inputMode="numeric"
               value={lunarDay}
               maxLength={2}
@@ -811,6 +818,7 @@ function AddEventForm({
             <Label htmlFor="evt-lunar-month">Tháng âm</Label>
             <Input
               id="evt-lunar-month"
+              icon={<IconMoon />}
               inputMode="numeric"
               value={lunarMonth}
               maxLength={2}

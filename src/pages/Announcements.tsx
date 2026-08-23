@@ -95,6 +95,7 @@ export default function Announcements() {
                 onClick={() => markAllM.mutate()}
                 disabled={markAllM.isPending}
               >
+                <IconCheck className="h-4 w-4 mr-1.5" />
                 {markAllM.isPending
                   ? "Đang lưu…"
                   : `Đánh dấu tất cả (${unreadCount})`}

@@ -8,14 +8,17 @@ import {
   IconBook,
   IconCalendar,
   IconHelp,
+  IconMapPin,
   IconPlus,
   IconSearch,
+  IconTag,
   IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlState } from "@/hooks/useUrlState";
 import {
@@ -120,11 +123,12 @@ export default function Customs() {
             />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <select
+            <Select
               value={category}
               onChange={(e) => setCat(e.target.value)}
               aria-label="Lọc theo chủ đề"
-              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-48 rounded-md border border-input bg-background px-3 text-sm"
+              icon={<IconTag />}
+              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-48 text-sm"
             >
               <option value="">Mọi chủ đề</option>
               {CATEGORIES.map((c) => (
@@ -132,12 +136,13 @@ export default function Customs() {
                   {CUSTOM_CATEGORY_LABEL[c]}
                 </option>
               ))}
-            </select>
-            <select
+            </Select>
+            <Select
               value={region}
               onChange={(e) => setRegion(e.target.value)}
               aria-label="Lọc theo vùng"
-              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-40 rounded-md border border-input bg-background px-3 text-sm"
+              icon={<IconMapPin />}
+              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-40 text-sm"
             >
               <option value="">Mọi vùng</option>
               {CUSTOM_REGIONS.map((r) => (
@@ -145,7 +150,7 @@ export default function Customs() {
                   {r}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 

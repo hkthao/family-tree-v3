@@ -168,6 +168,7 @@ export default function MemoryRooms() {
               onClick={() => createM.mutate()}
               disabled={createM.isPending}
             >
+              <IconPlus className="h-4 w-4 mr-1.5" />
               {createM.isPending ? "Đang tạo…" : "Tạo phòng"}
             </Button>
             <Button

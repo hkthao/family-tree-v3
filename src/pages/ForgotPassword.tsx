@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AuthLayout } from "@/components/AuthLayout";
+import { IconMail } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,7 @@ export default function ForgotPassword() {
             </Label>
             <Input
               id="email"
+              icon={<IconMail />}
               type="email"
               autoComplete="email"
               required
@@ -74,6 +76,7 @@ export default function ForgotPassword() {
           )}
 
           <Button type="submit" className="w-full" disabled={busy}>
+            <IconMail className="h-4 w-4 mr-1.5" />
             {busy ? "Đang gửi…" : "Gửi liên kết đặt lại"}
           </Button>
 

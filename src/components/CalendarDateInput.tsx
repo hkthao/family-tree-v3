@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { IconMoon } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -254,6 +255,7 @@ export function CalendarDateInput({
           </Label>
           <Input
             id={`${idPrefix}-canchi`}
+            icon={<IconMoon />}
             value={canChiInput}
             onChange={(e) => setCanChiInput(e.target.value)}
             onBlur={onCanChiBlur}
