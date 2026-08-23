@@ -37,30 +37,23 @@ async function main() {
   );
 
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 7 * 86_400_000);
+  const expiresAt = new Date(now.getTime() + 14 * 86_400_000);
 
-  const body = `Đợt cập nhật lớn lần này thêm nhiều cách lưu giữ và lan toả nét đẹp dòng họ:
+  const body = `Kính gửi quý bà con, dòng họ vừa có thêm 3 tính năng mới:
 
-• DI SẢN & VĂN HOÁ — mục mới để lưu giữ những gì không có trong cây gia phả: từ đường - đền - chùa, tục lệ - gia phong, giai thoại - công trạng, tư liệu - kỷ vật. Soạn đơn giản (không cần định dạng), có câu hỏi gợi ý, chụp ảnh trực tiếp và GHI ÂM kể chuyện ngay trên điện thoại. Mỗi mục tạo được mã QR để con cháu quét xem.
+• XEM NGÀY TỐT — ngay trang Tổng quan có tờ lịch mỗi ngày (dương lịch, âm lịch, can chi, ngày hoàng đạo/hắc đạo, giờ tốt) kèm nút Hôm trước – Hôm sau. Mỗi ngày ghi rõ NÊN và NÊN TRÁNH việc gì; bấm dấu hỏi để đọc vì sao. Cần chọn ngày cho việc lớn (cưới hỏi, làm nhà, khai trương, đi xa, an táng…), chỉ việc bấm loại việc + khoảng thời gian, máy liệt kê sẵn những ngày đẹp.
 
-• KHO THIỆP CHIA SẺ — bấm "Tạo thiệp" để làm tấm thiệp đẹp (giỗ Tổ, tảo mộ, Vu Lan, họp họ, Tết, mừng thọ, khuyến học, tin vui…) gửi thẳng sang Zalo / Facebook. Nhiều mẫu, nhiều tông màu, chọn được kiểu chữ.
+• BẢNG VÀNG CÔNG ĐỨC — nơi vinh danh tấm lòng đóng góp và thành tích của con cháu trong dòng họ, để ghi nhớ và làm gương cho đời sau.
 
-• THẺ "KHOE" CÁ NHÂN — ở trang mỗi người có nút tạo thẻ "Tôi là đời thứ N của dòng họ…", kèm ảnh và mã QR, để khoe với bạn bè.
+• QUỸ HỌ MINH BẠCH — sổ thu/chi của quỹ họ cập nhật ngay, ai cũng xem được; mọi thay đổi đều có nhật ký ghi lại rõ ràng, công khai.
 
-• THỐNG KÊ VUI — trang Tổng quan hiện vài con số thú vị của dòng họ (chi đông nhất, cụ cao tuổi nhất, tên đệm phổ biến…), chia sẻ được luôn.
-
-• NHẮC LỄ TIẾT & SỰ KIỆN gọn hơn: thêm nhanh các ngày lễ truyền thống, xem lịch bấm vào là mở chi tiết.
-
-• SỔ GIA PHẢ PDF nay có cả phần Di sản và Mộ phần dạng thẻ kèm ảnh, trang bìa có mã QR mở dòng họ trên mạng.
-
-• Menu bên trái sắp xếp lại cho dễ tìm, các trang gọn gàng hơn.
-
-Cả nhà vào khám phá và chia sẻ cho con cháu nhé!`;
+Cách mở: vào một dòng họ → xem ngay ở mục Tổng quan, hoặc mở menu để vào "Xem ngày tốt", "Bảng vàng công đức", "Quỹ họ". Kính mời cả nhà dùng thử!`;
 
   const { data: row, error } = await admin
     .from("announcements")
     .insert({
-      title: "Mới: Di sản & Văn hoá, Kho thiệp chia sẻ, Thẻ khoe & Thống kê vui",
+      title:
+        "Mới: Xem ngày tốt, Bảng vàng công đức & Quỹ họ minh bạch",
       body,
       level: "update",
       is_public: true,

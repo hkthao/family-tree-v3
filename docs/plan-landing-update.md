@@ -15,7 +15,7 @@ làm được trong file đó.
 | | |
 |---|---|
 | Vị trí | `landing/index.html` (46 KB) + `landing/assets/` |
-| Deploy | `rsync -az --delete landing/ root@45.119.85.97:/opt/landing/` |
+| Deploy | `rsync -az --delete landing/ <host>:<landing-dir>/` (chi tiết ở doc vận hành riêng) |
 | Design | Dùng chung hệ "Oxblood" của app; dark mode chia sẻ `localStorage["family-tree:theme"]` |
 | Nội dung | 3.605 từ · 10 mục · 4 câu FAQ · ảnh thật (hero, kể chuyện, cây) |
 | SEO cơ bản | `<html lang="vi">`, canonical, description, OG + Twitter card đủ 1200×630 |

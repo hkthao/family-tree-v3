@@ -372,7 +372,7 @@ gọi DeepSeek khoảng **600 lần**, và đắt hơn Sonnet 5 khoảng **40 l�
    và ngữ cảnh gia phả là vùng khó.
 3. **Không có prompt caching** — mất luôn đòn bẩy giảm 30–50% ở mục E.
 4. **Vận hành**: giám sát, OOM, cập nhật weight, tự lo uptime. VPS hiện tại
-   (`72.61.143.145`) **không có GPU** → là một hệ thống thứ hai phải trông.
+   **không có GPU** → là một hệ thống thứ hai phải trông.
 5. **Thời gian kỹ sư** — vài ngày setup + duy trì. Ở mức T1, tiền API cả năm
    (~$5–75) còn **rẻ hơn một buổi chiều** dựng vLLM.
 

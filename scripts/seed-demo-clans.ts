@@ -5,7 +5,7 @@
  *
  *   LOCAL:  npx tsx scripts/seed-demo-clans.ts
  *   PROD:   SUPABASE_SERVICE_ROLE_KEY=<self-host key> \
- *           VITE_SUPABASE_URL=https://db.srv1128614.hstgr.cloud \
+ *           VITE_SUPABASE_URL=<supabase-url> \
  *           npx tsx scripts/seed-demo-clans.ts
  *
  * Cần SUPABASE_SERVICE_ROLE_KEY (bypass RLS). Chủ sở hữu = platform admin.

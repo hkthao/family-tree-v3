@@ -31,7 +31,7 @@ nào** — kể cả platform admin cũng không select được qua PostgREST, 
 Cần đúng **một** biến môi trường, là khoá dùng để mã hoá các khoá kia:
 
 ```yaml
-# /root/supabase/docker-compose.override.yml trên VPS
+# docker-compose.override.yml (hoặc functions.env) trên máy chủ Supabase
 services:
   functions:
     environment:
@@ -58,17 +58,17 @@ tức đọc công khai. Nó chỉ để tên model.
 
 ```bash
 # 1. Migration (áp tay — deploy-vps.yml không chạy migration)
-ssh family-tree-db
+# trên máy chủ database
 docker exec -i supabase-db psql -U postgres -d postgres \
   < 20260823120000_ai_usage.sql
-# nhớ ghi vào schema_migrations
+# nhớ ghi vào supabase_migrations.schema_migrations
 
 # 2. Đẩy function
 scp -r supabase/functions/_shared supabase/functions/ai-chat supabase/functions/ai-admin \
-  root@72.61.143.145:/root/supabase/volumes/functions/
+  <host>:<supabase-dir>/volumes/functions/
 
 # 3. Khởi động lại
-ssh family-tree-db 'cd /root/supabase && docker compose up -d --force-recreate functions'
+ssh <host> 'cd <supabase-dir> && docker compose up -d --force-recreate functions'
 ```
 
 ## Bật

@@ -247,13 +247,13 @@ function SetupGuide() {
         <li className="rounded-lg border p-4">
           <p className="mb-2 text-sm font-semibold">1. Áp ba migration</p>
           <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
-{`ssh family-tree-db
+{`# trên máy chủ database
 for f in 20260823120000_ai_usage \\
          20260823140000_ai_messages \\
          20260823160000_ai_provider_keys; do
   docker exec -i supabase-db psql -U postgres -d postgres < "$f.sql"
 done
-# nhớ ghi vào bảng schema_migrations`}
+# nhớ ghi vào bảng supabase_migrations.schema_migrations`}
           </pre>
         </li>
 
@@ -262,19 +262,20 @@ done
             2. Đẩy Edge Function và khởi động lại
           </p>
           <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
-{`scp -r supabase/functions/_shared \\
+{`# thay <host> bằng máy chủ Supabase của bạn
+scp -r supabase/functions/_shared \\
        supabase/functions/ai-chat \\
        supabase/functions/ai-admin \\
-  root@72.61.143.145:/root/supabase/volumes/functions/
+  <host>:<supabase-dir>/volumes/functions/
 
-ssh family-tree-db 'cd /root/supabase &&
+ssh <host> 'cd <supabase-dir> &&
   docker compose up -d --force-recreate functions'`}
           </pre>
         </li>
 
         <li className="rounded-lg border p-4">
           <p className="mb-2 text-sm font-semibold">
-            3. Đặt khoá mã hoá trong <code>docker-compose.override.yml</code>
+            3. Đặt khoá mã hoá cho dịch vụ <code>functions</code>
           </p>
           <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
 {`services:

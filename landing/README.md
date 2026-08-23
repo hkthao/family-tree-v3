@@ -9,10 +9,10 @@ cd landing && python3 -m http.server 8080
 # mở http://localhost:8080
 ```
 
-## Deploy (app host 45.119.85.97)
+## Deploy
 1. Đẩy file lên host:
    ```bash
-   rsync -az --delete landing/ root@45.119.85.97:/opt/landing/
+   rsync -az --delete --exclude='.DS_Store' landing/ <host>:<landing-dir>/
    ```
 2. nginx container `genealogy-app-nginx-1` mount `/opt/landing:/usr/share/nginx/donghoviet:ro`
    và có server block `donghoviet.thaohk.com` (xem `deploy/` của stack genealogy-app).
