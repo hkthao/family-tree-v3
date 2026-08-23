@@ -26,17 +26,43 @@ function attrsOf(tag) {
   return tag;
 }
 
+/**
+ * Tìm vị trí đóng thẻ mở, BỎ QUA `>` nằm trong `{...}`.
+ *
+ * Cần thiết vì thuộc tính hay chứa arrow function: `onClick={() => x()}`.
+ * Cắt ở dấu `>` đầu tiên sẽ nuốt luôn phần thân, khiến nhãn nút đọc ra
+ * thành `setPickerOpen(false)}>Xong` — rồi trượt khỏi danh sách miễn trừ
+ * và bị báo nhầm là thiếu icon.
+ *
+ * Trả về `[chỉ số ngay sau thẻ mở, có phải thẻ tự đóng không]`.
+ */
+function endOfOpenTag(src, from) {
+  let depth = 0;
+  for (let i = from; i < src.length; i++) {
+    const c = src[i];
+    if (c === "{") depth++;
+    else if (c === "}") depth--;
+    else if (c === ">" && depth === 0) {
+      return [i + 1, src[i - 1] === "/"];
+    }
+  }
+  return [src.length, true];
+}
+
 function scanButtons(src, file) {
   const out = [];
-  const re = /<Button\b[^>]*?(\/>|>)/g;
+  const re = /<Button\b/g;
   let m;
   while ((m = re.exec(src))) {
+    const [tagEnd, selfClosing] = endOfOpenTag(src, m.index);
+    const open = src.slice(m.index, tagEnd);
     let body = "";
-    if (m[1] === ">") {
-      const close = src.indexOf("</Button>", re.lastIndex);
-      body = close === -1 ? "" : src.slice(re.lastIndex, close);
+    if (!selfClosing) {
+      const close = src.indexOf("</Button>", tagEnd);
+      body = close === -1 ? "" : src.slice(tagEnd, close);
     }
-    const chunk = m[0] + body;
+    re.lastIndex = tagEnd;
+    const chunk = open + body;
     if (/Icon[A-Z]/.test(chunk)) continue;
     const label = body.replace(/<[^>]*>/g, "").replace(/\{[^}]*\}/g, "").trim();
     if (TEXT_ONLY_OK.test(label)) continue;

@@ -3,7 +3,19 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconCheck, IconGrave, IconMapPin, IconX } from "@/components/icons";
+import {
+  IconBuildings,
+  IconCalendar,
+  IconCheck,
+  IconCompass,
+  IconGrave,
+  IconLayers,
+  IconMapPin,
+  IconScroll,
+  IconSearch,
+  IconUserPlus,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
@@ -11,6 +23,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
@@ -209,29 +223,33 @@ export default function RestingPlaceForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="kind">Hình thức</Label>
-            <select
+            <Select
               id="kind"
+              icon={<IconGrave />}
               value={kind}
               onChange={(e) => setKind(e.target.value as RestingPlaceKind)}
-              className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
               {KINDS.map((k) => (
                 <option key={k} value={k}>{RESTING_PLACE_KIND_LABEL[k]}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="status">Trạng thái</Label>
-            <select id="status" value={status} onChange={(e) => setStatus(e.target.value as RestingPlaceStatus)}
-              className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm">
+            <Select
+              id="status"
+              icon={<IconCheck />}
+              value={status}
+              onChange={(e) => setStatus(e.target.value as RestingPlaceStatus)}
+            >
               {STATUSES.map((s) => <option key={s} value={s}>{RESTING_PLACE_STATUS_LABEL[s]}</option>)}
-            </select>
+            </Select>
           </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="name">Tên gọi (tuỳ chọn)</Label>
-          <Input id="name" value={name} onChange={(e) => setName(e.target.value)}
+          <Input id="name" icon={<IconGrave />} value={name} onChange={(e) => setName(e.target.value)}
             placeholder="vd: Mộ cụ Tổ, Tháp họ Cao" maxLength={200} />
         </div>
 
@@ -239,34 +257,34 @@ export default function RestingPlaceForm() {
         <div className={labels.detail ? "grid gap-4 sm:grid-cols-2" : "space-y-2"}>
           <div className="space-y-2">
             <Label htmlFor="loc-name">{labels.name}</Label>
-            <Input id="loc-name" value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder={labels.namePh} />
+            <Input id="loc-name" icon={<IconMapPin />} value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder={labels.namePh} />
           </div>
           {labels.detail && (
             <div className="space-y-2">
               <Label htmlFor="loc-detail">{labels.detail}</Label>
-              <Input id="loc-detail" value={locationDetail} onChange={(e) => setLocationDetail(e.target.value)} placeholder={labels.detailPh} />
+              <Input id="loc-detail" icon={<IconMapPin />} value={locationDetail} onChange={(e) => setLocationDetail(e.target.value)} placeholder={labels.detailPh} />
             </div>
           )}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="address">Địa chỉ</Label>
-          <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={ADDRESS_PLACEHOLDER} />
+          <Input id="address" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)} placeholder={ADDRESS_PLACEHOLDER} />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="cemetery">Cơ sở / nghĩa trang (tuỳ chọn)</Label>
-          <select
+          <Select
             id="cemetery"
+            icon={<IconBuildings />}
             value={cemeteryId}
             onChange={(e) => setCemeteryId(e.target.value)}
-            className="h-12 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             <option value="">— Không gắn —</option>
             {(cemeteries ?? []).map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </select>
+          </Select>
           <p className="text-xs text-muted-foreground">
             Quản lý danh sách cơ sở ở{" "}
             <Link to={`/clans/${clan.id}/graves/cemeteries`} className="text-primary hover:underline">
@@ -293,25 +311,28 @@ export default function RestingPlaceForm() {
           {kind === "grave" && (
             <div className="space-y-2">
               <Label htmlFor="orientation">Hướng mộ (tuỳ chọn)</Label>
-              <Input id="orientation" value={orientation} onChange={(e) => setOrientation(e.target.value)} placeholder="vd: hướng Đông Nam" />
+              <Input id="orientation" icon={<IconCompass />} value={orientation} onChange={(e) => setOrientation(e.target.value)} placeholder="vd: hướng Đông Nam" />
             </div>
           )}
           <div className="space-y-2">
             <Label htmlFor="year">Năm xây (tuỳ chọn)</Label>
-            <Input id="year" inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)} placeholder="vd: 1990" />
+            <Input id="year" icon={<IconCalendar />} inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)} placeholder="vd: 1990" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="material">Vật liệu (tuỳ chọn)</Label>
-            <Input id="material" value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="vd: đá granit, xi măng" />
+            <Input id="material" icon={<IconLayers />} value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="vd: đá granit, xi măng" />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="notes">Ghi chú</Label>
-          <textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3}
-            placeholder="vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…"
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base" />
-        </div>
+        <Textarea
+          id="notes"
+          label="Ghi chú"
+          icon={<IconScroll />}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder="vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…"
+        />
 
         {/* Người an nghỉ */}
         <div className="space-y-2">
@@ -331,11 +352,12 @@ export default function RestingPlaceForm() {
           )}
           {!pickerOpen ? (
             <Button type="button" size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+              <IconUserPlus className="h-4 w-4 mr-1.5" />
               Gắn người
             </Button>
           ) : (
             <div className="space-y-2 rounded-md border p-2">
-              <Input value={pickerFilter} onChange={(e) => setPickerFilter(e.target.value)} placeholder="Gõ tên để tìm (không cần dấu)" autoFocus />
+              <Input icon={<IconSearch />} value={pickerFilter} onChange={(e) => setPickerFilter(e.target.value)} placeholder="Gõ tên để tìm (không cần dấu)" autoFocus />
               <ul className="max-h-60 overflow-y-auto divide-y text-sm">
                 {candidates.length === 0 && <li className="px-2 py-2 text-muted-foreground italic">{clanIndex ? "Không có người khớp." : "Đang tải…"}</li>}
                 {candidates.map((p) => (

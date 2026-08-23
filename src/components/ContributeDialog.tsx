@@ -3,11 +3,22 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconX } from "@/components/icons";
+import {
+  IconCalendar,
+  IconCheck,
+  IconGrave,
+  IconMail,
+  IconMapPin,
+  IconSend,
+  IconUser,
+  IconUsers,
+  IconX,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { track } from "@/lib/analytics";
 import {
   submitContribution,
@@ -347,6 +358,7 @@ export function ContributeDialog({
                 <>
                   <Field label="Họ và tên">
                     <Input
+                      icon={<IconUser />}
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                     />
@@ -365,6 +377,7 @@ export function ContributeDialog({
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Năm sinh">
                       <Input
+                        icon={<IconCalendar />}
                         type="number"
                         inputMode="numeric"
                         value={editBirthYear}
@@ -375,6 +388,7 @@ export function ContributeDialog({
                     {!editIsLiving && (
                       <Field label="Năm mất">
                         <Input
+                          icon={<IconCalendar />}
                           type="number"
                           inputMode="numeric"
                           value={editDeathYear}
@@ -386,6 +400,7 @@ export function ContributeDialog({
                   </div>
                   <Field label="Nơi sinh">
                     <Input
+                      icon={<IconMapPin />}
                       value={editBirthPlace}
                       onChange={(e) => setEditBirthPlace(e.target.value)}
                     />
@@ -393,6 +408,7 @@ export function ContributeDialog({
                   {!editIsLiving && (
                     <Field label="Nơi an táng">
                       <Input
+                        icon={<IconGrave />}
                         value={editBurialPlace}
                         onChange={(e) => setEditBurialPlace(e.target.value)}
                       />
@@ -407,12 +423,12 @@ export function ContributeDialog({
 
               {mode === "add_note" && (
                 <Field label="Nội dung bổ sung tiểu sử">
-                  <textarea
+                  <Textarea
                     value={noteAddition}
                     onChange={(e) => setNoteAddition(e.target.value)}
                     rows={5}
                     placeholder="Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="text-sm"
                   />
                 </Field>
               )}
@@ -450,6 +466,7 @@ export function ContributeDialog({
                   </div>
                   <Field label="Họ và tên">
                     <Input
+                      icon={<IconUser />}
                       value={addName}
                       onChange={(e) => setAddName(e.target.value)}
                     />
@@ -486,6 +503,7 @@ export function ContributeDialog({
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Năm sinh">
                       <Input
+                        icon={<IconCalendar />}
                         type="number"
                         value={addBirthYear}
                         onChange={(e) => setAddBirthYear(e.target.value)}
@@ -495,6 +513,7 @@ export function ContributeDialog({
                     {!addIsLiving && (
                       <Field label="Năm mất">
                         <Input
+                          icon={<IconCalendar />}
                           type="number"
                           value={addDeathYear}
                           onChange={(e) => setAddDeathYear(e.target.value)}
@@ -503,11 +522,11 @@ export function ContributeDialog({
                     )}
                   </div>
                   <Field label="Ghi chú">
-                    <textarea
+                    <Textarea
                       value={addBio}
                       onChange={(e) => setAddBio(e.target.value)}
                       rows={3}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="text-sm"
                     />
                   </Field>
                 </>
@@ -523,6 +542,7 @@ export function ContributeDialog({
                 <>
                   <Field label="Tên của bạn">
                     <Input
+                      icon={<IconUser />}
                       value={submitterName}
                       onChange={(e) => setSubmitterName(e.target.value)}
                       placeholder="Nguyễn Văn B"
@@ -530,6 +550,7 @@ export function ContributeDialog({
                   </Field>
                   <Field label="Email hoặc số điện thoại">
                     <Input
+                      icon={<IconMail />}
                       value={submitterContact}
                       onChange={(e) => setSubmitterContact(e.target.value)}
                       placeholder="email@example.com"
@@ -541,18 +562,19 @@ export function ContributeDialog({
                 label={`Quan hệ của bạn với ${focalPerson.full_name}`}
               >
                 <Input
+                  icon={<IconUsers />}
                   value={submitterRelation}
                   onChange={(e) => setSubmitterRelation(e.target.value)}
                   placeholder="cháu nội, em họ, khách…"
                 />
               </Field>
               <Field label="Ghi chú / nguồn (tuỳ chọn)">
-                <textarea
+                <Textarea
                   value={submitterNote}
                   onChange={(e) => setSubmitterNote(e.target.value)}
                   rows={2}
                   placeholder="Tôi có giấy chứng tử, hoặc bố tôi kể lại…"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="text-sm"
                 />
               </Field>
             </div>
@@ -574,6 +596,7 @@ export function ContributeDialog({
                 onClick={() => m.mutate()}
                 disabled={m.isPending}
               >
+                <IconSend className="h-4 w-4 mr-1.5" />
                 {m.isPending ? "Đang gửi…" : "Gửi đề xuất"}
               </Button>
             </div>
