@@ -8,6 +8,7 @@ import { CriticalBanner } from "@/components/CriticalBanner";
 import { MascotTip } from "@/components/MascotTip";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { RequireAuth } from "@/components/RequireAuth";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { ScrollManager } from "@/components/ScrollManager";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateBanner } from "@/components/UpdateBanner";
@@ -98,6 +99,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollManager />
+      <AnalyticsTracker />
       <ToastProvider>
       <ConfirmDialogProvider>
         <CriticalBanner />
