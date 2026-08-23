@@ -102,24 +102,49 @@ jobs:
           target: "/opt/gia-pha/"
           strip_components: 1
 
-      # Landing page tĩnh (donghoviet.thaohk.com) — nginx mount /opt/landing.
-      # Trước đây deploy bằng rsync tay từ máy cá nhân, nên dễ quên và
-      # phải có người giữ khoá SSH. CI đã có VPS_SSH_KEY nên đưa vào đây.
+      # Landing page tĩnh (donghoviet.thaohk.com).
       #
-      # rm: true → xoá file thừa ở đích (tương đương rsync --delete), để
-      # gỡ bỏ asset cũ. .DS_Store bị loại tường minh: nó đã từng lên
-      # production theo lệnh rsync thiếu --exclude.
-      - name: Deploy landing page
+      # Đẩy vào thư mục TRUNG GIAN rồi mới đồng bộ sang chỗ thật. Lý do:
+      # /opt/landing được bind-mount vào container nginx, mà XOÁ thư mục
+      # đang bind-mount sẽ làm mount treo — container giữ inode cũ đã bị
+      # xoá nên chỉ thấy rỗng, trang trả 403/500 dù file mới đã nằm trên
+      # host. (Đã dính đúng lỗi này một lần.)
+      #
+      # rsync --delete vào thư mục CÓ SẴN thì chỉ thay nội dung, inode giữ
+      # nguyên, mount không việc gì.
+      - name: Upload landing to staging dir
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "landing/*"
-          target: "/opt/landing/"
+          target: "/opt/landing-staging/"
           strip_components: 1
           rm: true
           overwrite: true
+
+      - name: Publish landing page
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            mkdir -p /opt/landing
+            # Thay nội dung, KHÔNG đụng vào chính thư mục /opt/landing.
+            rsync -a --delete /opt/landing-staging/ /opt/landing/
+            chmod -R a+rX /opt/landing
+
+            # Chỉ khởi động lại nginx khi mount đang treo — kiểm bằng cách
+            # đọc index.html TỪ TRONG container. Bình thường bỏ qua, nên
+            # deploy không gây gián đoạn vô cớ.
+            if ! docker exec genealogy-app-nginx-1 \
+                 test -s /usr/share/nginx/donghoviet/index.html 2>/dev/null; then
+              echo "mount /opt/landing đang treo — khởi động lại nginx"
+              docker restart genealogy-app-nginx-1
+            fi
 
       - name: Deploy app container on VPS
         uses: appleboy/ssh-action@v1.2.0
