@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import {
   AI_PROVIDERS,
   AiNotInstalledError,
+  QA_MODELS,
   deleteProviderKey,
+  getAiConfig,
+  setAiEnabled,
+  setQaModel,
   listKeyStatus,
   setProviderKey,
   testProviderKey,
@@ -30,6 +34,27 @@ export function AiSettingsTab() {
   const toast = useToast();
   const confirm = useConfirm();
   const [drafts, setDrafts] = useState<Partial<Record<AiProvider, string>>>({});
+
+  const configQ = useQuery({ queryKey: ["ai-config"], queryFn: getAiConfig, retry: false });
+
+  const toggleEnabled = useMutation({
+    mutationFn: setAiEnabled,
+    onSuccess: (_, on) => {
+      qc.invalidateQueries({ queryKey: ["ai-config"] });
+      qc.invalidateQueries({ queryKey: ["ai-enabled"] });
+      toast.success(on ? "Đã bật trợ lý" : "Đã tắt trợ lý");
+    },
+    onError: (e: Error) => toast.error("Không đổi được", { description: e.message }),
+  });
+
+  const changeModel = useMutation({
+    mutationFn: setQaModel,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ai-config"] });
+      toast.success("Đã đổi model");
+    },
+    onError: (e: Error) => toast.error("Không đổi được", { description: e.message }),
+  });
 
   const statusQ = useQuery({
     queryKey: ["ai-provider-keys"],
@@ -122,6 +147,47 @@ export function AiSettingsTab() {
           được nữa — phải nhập lại ở đây.
         </p>
       </div>
+
+      <section className="rounded-lg border p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold">Công tắc tổng</h3>
+            <p className="text-sm text-muted-foreground">
+              Tắt thì trợ lý ẩn hoàn toàn với mọi dòng họ, kể cả dòng họ đã bật
+              tính năng. Mặc định tắt.
+            </p>
+          </div>
+          <Button
+            variant={configQ.data?.enabled ? "outline" : "default"}
+            disabled={configQ.isLoading || toggleEnabled.isPending}
+            onClick={() => toggleEnabled.mutate(!configQ.data?.enabled)}
+          >
+            {configQ.data?.enabled ? "Đang bật — bấm để tắt" : "Đang tắt — bấm để bật"}
+          </Button>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t pt-4">
+          <label htmlFor="qa-model" className="text-sm font-medium">
+            Model cho hỏi đáp
+          </label>
+          <select
+            id="qa-model"
+            className="min-h-[44px] rounded-md border bg-background px-3 text-sm"
+            value={configQ.data?.qaModel ?? ""}
+            disabled={configQ.isLoading || changeModel.isPending}
+            onChange={(e) => changeModel.mutate(e.target.value)}
+          >
+            {QA_MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">
+            Phải có khoá của nhà cung cấp tương ứng ở dưới thì model mới chạy.
+          </p>
+        </div>
+      </section>
 
       {AI_PROVIDERS.map((p) => {
         const st = byProvider.get(p.id);

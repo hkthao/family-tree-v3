@@ -1,4 +1,5 @@
 import { supabase } from "../supabase";
+import { getPlatformSetting, setPlatformSetting } from "./platformSettings";
 
 /**
  * Cấu hình trợ lý AI cho platform admin.
@@ -108,4 +109,45 @@ export function testProviderKey(provider: AiProvider) {
 
 export function deleteProviderKey(provider: AiProvider) {
   return callAdmin<{ deleted: boolean }>({ action: "delete_key", provider });
+}
+
+// ─── Công tắc tổng + định tuyến model ────────────────────────────────
+// Để trong platform_settings (đọc công khai — chỉ tên model, không phải
+// khoá). Có UI cho phần này vì nếu không thì bật/tắt trợ lý phải chạy SQL
+// qua SSH, và đó đúng là thứ hay tắc.
+
+export const AI_ENABLED_KEY = "ai.enabled";
+export const AI_MODEL_QA_KEY = "ai.model.qa";
+
+/** Model cho phép chọn ở UI. Phải khớp registry.ts của Edge Function. */
+export const QA_MODELS = [
+  { id: "gpt-5.6-luna", label: "GPT-5.6 Luna — rẻ nhất", credential: "openai" },
+  { id: "gpt-5.6-terra", label: "GPT-5.6 Terra", credential: "openai" },
+  { id: "deepseek-v4-flash", label: "DeepSeek V4-Flash", credential: "deepseek" },
+  { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", credential: "anthropic" },
+  { id: "claude-sonnet-5", label: "Claude Sonnet 5 — tool tốt nhất", credential: "anthropic" },
+] as const;
+
+export interface AiConfig {
+  enabled: boolean;
+  qaModel: string;
+}
+
+export async function getAiConfig(): Promise<AiConfig> {
+  const [enabled, qaModel] = await Promise.all([
+    getPlatformSetting(AI_ENABLED_KEY),
+    getPlatformSetting(AI_MODEL_QA_KEY),
+  ]);
+  return { enabled: enabled === "true", qaModel: qaModel || "gpt-5.6-luna" };
+}
+
+export async function setAiEnabled(on: boolean): Promise<void> {
+  await setPlatformSetting(AI_ENABLED_KEY, on ? "true" : "false");
+}
+
+export async function setQaModel(modelId: string): Promise<void> {
+  if (!QA_MODELS.some((m) => m.id === modelId)) {
+    throw new Error(`Model không hợp lệ: ${modelId}`);
+  }
+  await setPlatformSetting(AI_MODEL_QA_KEY, modelId);
 }
