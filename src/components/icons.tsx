@@ -33,6 +33,18 @@ function Svg({
   );
 }
 
+/** Chìa khoá — dùng cho ô nhập khoá API, mật khẩu cấp hệ thống. */
+export function IconKey(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="7.5" cy="15.5" r="4.5" />
+      <path d="m10.7 12.3 8.8-8.8" />
+      <path d="m17 6 2.5 2.5" />
+      <path d="m14 9 2.5 2.5" />
+    </Svg>
+  );
+}
+
 export function IconSearch(p: IconProps) {
   return (
     <Svg {...p}>

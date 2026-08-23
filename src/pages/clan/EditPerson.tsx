@@ -6,7 +6,18 @@ import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconChevronUp, IconPencil, IconPlus, IconX } from "@/components/icons";
+import {
+  IconCalendar,
+  IconCheck,
+  IconChevronUp,
+  IconGrave,
+  IconMapPin,
+  IconPencil,
+  IconPlus,
+  IconScroll,
+  IconUser,
+  IconX,
+} from "@/components/icons";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -315,6 +326,7 @@ export function EditPersonForm({
           Họ và tên
         </Label>
         <Input
+              icon={<IconUser />}
           id="full_name"
           data-testid="edit-person-name-input"
           required
@@ -419,6 +431,7 @@ export function EditPersonForm({
           <div className="space-y-2">
             <Label htmlFor="courtesy_name">Tên tự</Label>
             <Input
+              icon={<IconScroll />}
               id="courtesy_name"
               maxLength={100}
               value={courtesyName}
@@ -429,6 +442,7 @@ export function EditPersonForm({
           <div className="space-y-2">
             <Label htmlFor="nickname">Tên húy</Label>
             <Input
+              icon={<IconScroll />}
               id="nickname"
               maxLength={100}
               value={nickname}
@@ -439,6 +453,7 @@ export function EditPersonForm({
           <div className="space-y-2">
             <Label htmlFor="posthumous_name">Tên thụy</Label>
             <Input
+              icon={<IconScroll />}
               id="posthumous_name"
               maxLength={100}
               value={posthumousName}
@@ -468,6 +483,7 @@ export function EditPersonForm({
             <div className="space-y-2">
               <Label htmlFor="lifespan_years">Tuổi thọ</Label>
               <Input
+              icon={<IconCalendar />}
                 id="lifespan_years"
                 type="number"
                 inputMode="numeric"
@@ -510,6 +526,7 @@ export function EditPersonForm({
           <div className="space-y-2">
             <Label htmlFor="birth_place">Nơi sinh</Label>
             <Input
+              icon={<IconMapPin />}
               id="birth_place"
               value={birthPlace}
               onChange={(e) => setBirthPlace(e.target.value)}
@@ -519,6 +536,7 @@ export function EditPersonForm({
           <div className="space-y-2">
             <Label htmlFor="burial_place">Nơi an táng</Label>
             <Input
+              icon={<IconGrave />}
               id="burial_place"
               value={burialPlace}
               onChange={(e) => setBurialPlace(e.target.value)}

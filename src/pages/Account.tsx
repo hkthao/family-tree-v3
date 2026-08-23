@@ -8,7 +8,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/Toast";
 import {
   IconCheck,
+  IconLock,
   IconLogOut,
+  IconMail,
   IconShield,
   IconTrash,
   IconUser,
@@ -307,6 +309,7 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
           <div className="space-y-2">
             <Label htmlFor="display-name">Tên hiển thị</Label>
             <Input
+              icon={<IconUser />}
               id="display-name"
               value={name}
               maxLength={100}
@@ -388,6 +391,7 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
           <div className="space-y-2">
             <Label htmlFor="new-email">Email mới</Label>
             <Input
+              icon={<IconMail />}
               id="new-email"
               type="email"
               value={newEmail}
@@ -471,6 +475,7 @@ function PasswordCard() {
           <div className="space-y-2">
             <Label htmlFor="pw">Mật khẩu mới</Label>
             <Input
+              icon={<IconLock />}
               id="pw"
               type="password"
               value={password}
@@ -484,6 +489,7 @@ function PasswordCard() {
           <div className="space-y-2">
             <Label htmlFor="pw2">Xác nhận mật khẩu mới</Label>
             <Input
+              icon={<IconLock />}
               id="pw2"
               type="password"
               value={confirm}
@@ -591,6 +597,7 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
                 Gõ <code className="font-bold">XOA</code> để xác nhận
               </Label>
               <Input
+              icon={<IconLock />}
                 id="confirm"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}

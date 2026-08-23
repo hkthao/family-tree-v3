@@ -10,7 +10,18 @@ import {
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconChevronUp, IconCopy, IconPlus, IconX } from "@/components/icons";
+import {
+  IconCalendar,
+  IconCheck,
+  IconChevronUp,
+  IconCopy,
+  IconGrave,
+  IconMapPin,
+  IconPlus,
+  IconScroll,
+  IconUser,
+  IconX,
+} from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -259,6 +270,7 @@ export default function NewPerson() {
             Họ và tên
           </Label>
           <Input
+              icon={<IconUser />}
             id="full_name"
             data-testid="person-name-input"
             required
@@ -375,6 +387,7 @@ export default function NewPerson() {
               <div className="space-y-2">
                 <Label htmlFor="courtesy_name">Tên tự</Label>
                 <Input
+              icon={<IconScroll />}
                   id="courtesy_name"
                   maxLength={100}
                   value={courtesyName}
@@ -385,6 +398,7 @@ export default function NewPerson() {
               <div className="space-y-2">
                 <Label htmlFor="nickname">Tên húy / biệt hiệu</Label>
                 <Input
+              icon={<IconScroll />}
                   id="nickname"
                   maxLength={100}
                   value={nickname}
@@ -395,6 +409,7 @@ export default function NewPerson() {
               <div className="space-y-2">
                 <Label htmlFor="posthumous_name">Tên thụy</Label>
                 <Input
+              icon={<IconScroll />}
                   id="posthumous_name"
                   maxLength={100}
                   value={posthumousName}
@@ -419,6 +434,7 @@ export default function NewPerson() {
             <div className="space-y-2">
               <Label htmlFor="birth_place">Nơi sinh</Label>
               <Input
+              icon={<IconMapPin />}
                 id="birth_place"
                 maxLength={200}
                 value={birthPlace}
@@ -430,6 +446,7 @@ export default function NewPerson() {
             <div className="space-y-2">
               <Label htmlFor="burial_place">Nơi an táng</Label>
               <Input
+              icon={<IconGrave />}
                 id="burial_place"
                 maxLength={200}
                 value={burialPlace}
@@ -442,6 +459,7 @@ export default function NewPerson() {
               <div className="space-y-2">
                 <Label htmlFor="lifespan_years">Tuổi thọ</Label>
                 <Input
+              icon={<IconCalendar />}
                   id="lifespan_years"
                   type="number"
                   inputMode="numeric"
