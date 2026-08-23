@@ -4,12 +4,22 @@ import { Link } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
-import { IconGrave, IconMapPin, IconPencil, IconPlus, IconTrash, IconX } from "@/components/icons";
+import {
+  IconBuildings,
+  IconCheck,
+  IconGrave,
+  IconMapPin,
+  IconPencil,
+  IconPlus,
+  IconScroll,
+  IconTrash,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
@@ -206,21 +216,20 @@ function CemeteryForm({
 
   return (
     <Card>
-      <CardContent className="pt-6">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (name.trim()) m.mutate();
-          }}
-          className="space-y-3"
-        >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (name.trim()) m.mutate();
+        }}
+      >
+        <CardContent className="space-y-3 pt-6">
           <div className="space-y-2">
             <Label htmlFor="cem-name" required>Tên cơ sở</Label>
-            <Input id="cem-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="vd: Nghĩa trang Lạc Hồng, Chùa Vĩnh Nghiêm" maxLength={200} />
+            <Input id="cem-name" icon={<IconBuildings />} value={name} onChange={(e) => setName(e.target.value)} placeholder="vd: Nghĩa trang Lạc Hồng, Chùa Vĩnh Nghiêm" maxLength={200} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="cem-addr">Địa chỉ</Label>
-            <Input id="cem-addr" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="vd: xã …, huyện …, tỉnh …" />
+            <Input id="cem-addr" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="vd: xã …, huyện …, tỉnh …" />
           </div>
           <div className="space-y-2">
             <Label>Toạ độ GPS (tuỳ chọn)</Label>
@@ -234,18 +243,19 @@ function CemeteryForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="cem-notes">Ghi chú</Label>
-            <Input id="cem-notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Input id="cem-notes" icon={<IconScroll />} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
-          <div className="flex gap-2 justify-end">
-            <Button type="submit" variant="outline" disabled={m.isPending || !name.trim()}>
-              {m.isPending ? "Đang lưu…" : "Lưu"}
-            </Button>
-            <Button type="button" variant="ghost" onClick={onCancel}>
-              <IconX className="h-4 w-4 mr-1" /> Hủy
-            </Button>
-          </div>
-        </form>
-      </CardContent>
+        </CardContent>
+        <CardFooter className="justify-end gap-2 border-t pt-4">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            <IconX className="h-4 w-4 mr-1" /> Hủy
+          </Button>
+          <Button type="submit" variant="outline" disabled={m.isPending || !name.trim()}>
+            <IconCheck className="h-4 w-4 mr-1.5" />
+            {m.isPending ? "Đang lưu…" : "Lưu"}
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 }

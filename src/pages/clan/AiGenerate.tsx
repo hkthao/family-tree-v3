@@ -8,16 +8,20 @@ import {
   IconCheck,
   IconCopy,
   IconList,
+  IconScroll,
+  IconSearch,
   IconSparkles,
   IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -229,14 +233,16 @@ export default function AiGenerate() {
             quan hệ cha/mẹ.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <textarea
+        <CardContent>
+          <Textarea
             value={narrative}
             onChange={(e) => setNarrative(e.target.value)}
             placeholder={EXAMPLE_NARRATIVE}
             rows={10}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-base outline-none focus:ring-2 focus:ring-ring resize-y"
+            className="resize-y"
           />
+        </CardContent>
+        <CardFooter className="flex-wrap justify-end gap-2 border-t pt-4">
           {!narrative && (
             <Button
               type="button"
@@ -244,15 +250,16 @@ export default function AiGenerate() {
               size="sm"
               onClick={() => setNarrative(EXAMPLE_NARRATIVE)}
             >
+              <IconScroll className="h-4 w-4 mr-1.5" />
               Dùng ví dụ mẫu
             </Button>
           )}
-        </CardContent>
+          <Button onClick={generate} disabled={!narrative.trim()}>
+            <IconSparkles className="h-4 w-4 mr-1.5" />
+            Sinh prompt
+          </Button>
+        </CardFooter>
       </Card>
-
-      <Button onClick={generate} disabled={!narrative.trim()}>
-        Sinh prompt
-      </Button>
 
       {prompt && (
         <Card>
@@ -328,7 +335,7 @@ export default function AiGenerate() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <textarea
+            <Textarea
               value={aiResponse}
               onChange={(e) => {
                 setAiResponse(e.target.value);
@@ -346,33 +353,8 @@ export default function AiGenerate() {
                   : "Dán nội dung GEDCOM ở đây — bắt đầu bằng 0 HEAD…"
               }
               rows={10}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono outline-none focus:ring-2 focus:ring-ring resize-y"
+              className="font-mono text-sm resize-y"
             />
-
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={parseAiResponse}
-                disabled={!aiResponse.trim() || importM.isPending}
-              >
-                Phân tích & xem trước
-              </Button>
-              {(csvPlan || gedcomText) && (
-                <Button
-                  type="button"
-                  onClick={() => importM.mutate()}
-                  disabled={!canImport || importM.isPending}
-                >
-                  <IconUpload className="h-4 w-4 mr-1.5" />
-                  {importM.isPending
-                    ? "Đang tạo…"
-                    : format === "csv"
-                      ? `Tạo ${csvPlan?.payload?.persons.length ?? 0} người`
-                      : "Tạo thành viên từ GEDCOM"}
-                </Button>
-              )}
-            </div>
 
             {parseError && (
               <Alert variant="destructive">
@@ -438,6 +420,31 @@ export default function AiGenerate() {
               .
             </p>
           </CardContent>
+          <CardFooter className="flex-wrap justify-end gap-2 border-t pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={parseAiResponse}
+              disabled={!aiResponse.trim() || importM.isPending}
+            >
+              <IconSearch className="h-4 w-4 mr-1.5" />
+              Phân tích &amp; xem trước
+            </Button>
+            {(csvPlan || gedcomText) && (
+              <Button
+                type="button"
+                onClick={() => importM.mutate()}
+                disabled={!canImport || importM.isPending}
+              >
+                <IconUpload className="h-4 w-4 mr-1.5" />
+                {importM.isPending
+                  ? "Đang tạo…"
+                  : format === "csv"
+                    ? `Tạo ${csvPlan?.payload?.persons.length ?? 0} người`
+                    : "Tạo thành viên từ GEDCOM"}
+              </Button>
+            )}
+          </CardFooter>
         </Card>
       )}
     </div>

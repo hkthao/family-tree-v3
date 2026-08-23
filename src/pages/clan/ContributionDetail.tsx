@@ -6,12 +6,14 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ContributionDiffView } from "@/components/ContributionDiffView";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconX } from "@/components/icons";
+import { IconCheck, IconHelp, IconScroll, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -246,9 +248,58 @@ export default function ContributionDetail() {
               <CardHeader>
                 <CardTitle>Xử lý</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent>
+                <Textarea
+                  label="Lý do (nếu từ chối hoặc cần thêm thông tin)"
+                  icon={<IconScroll />}
+                  value={rejectNote}
+                  onChange={(e) => setRejectNote(e.target.value)}
+                  placeholder="VD: Cần ảnh giấy chứng tử để xác nhận ngày mất"
+                  rows={2}
+                  className="text-sm"
+                />
+              </CardContent>
+              {/* Ba hành động của thẻ, xếp phá huỷ → phụ → chính. */}
+              <CardFooter className="flex-wrap justify-end gap-2 border-t pt-4">
                 <Button
-                  className="w-full sm:w-auto"
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive"
+                  disabled={approveM.isPending || rejectM.isPending}
+                  onClick={async () => {
+                    const ok = await askConfirm({
+                      title: "Từ chối đóng góp?",
+                      description:
+                        "Đóng góp sẽ bị đánh dấu rejected. Người gửi vẫn thấy nó.",
+                      confirmLabel: "Từ chối",
+                      destructive: true,
+                    });
+                    if (ok)
+                      rejectM.mutate({
+                        status: "rejected",
+                        note: rejectNote.trim(),
+                      });
+                  }}
+                >
+                  <IconX className="h-4 w-4 mr-1.5" />
+                  Từ chối
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={approveM.isPending || rejectM.isPending}
+                  onClick={() =>
+                    rejectM.mutate({
+                      status: "needs_info",
+                      note: rejectNote.trim(),
+                    })
+                  }
+                >
+                  <IconHelp className="h-4 w-4 mr-1.5" />
+                  Cần thêm thông tin
+                </Button>
+                <Button
+                  size="sm"
                   disabled={approveM.isPending || rejectM.isPending}
                   onClick={async () => {
                     const ok = await askConfirm({
@@ -267,58 +318,7 @@ export default function ContributionDetail() {
                   <IconCheck className="h-4 w-4 mr-1.5" />
                   {approveM.isPending ? "Đang duyệt…" : "Duyệt + áp dụng"}
                 </Button>
-
-                <div className="pt-3 border-t space-y-2">
-                  <p className="text-xs text-muted-foreground">
-                    Hoặc từ chối / yêu cầu thêm thông tin (gửi cho người đóng góp lý do):
-                  </p>
-                  <textarea
-                    value={rejectNote}
-                    onChange={(e) => setRejectNote(e.target.value)}
-                    placeholder="VD: Cần ảnh giấy chứng tử để xác nhận ngày mất"
-                    rows={2}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={approveM.isPending || rejectM.isPending}
-                      onClick={() =>
-                        rejectM.mutate({
-                          status: "needs_info",
-                          note: rejectNote.trim(),
-                        })
-                      }
-                    >
-                      Cần thêm thông tin
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive"
-                      disabled={approveM.isPending || rejectM.isPending}
-                      onClick={async () => {
-                        const ok = await askConfirm({
-                          title: "Từ chối đóng góp?",
-                          description:
-                            "Đóng góp sẽ bị đánh dấu rejected. Người gửi vẫn thấy nó.",
-                          confirmLabel: "Từ chối",
-                          destructive: true,
-                        });
-                        if (ok)
-                          rejectM.mutate({
-                            status: "rejected",
-                            note: rejectNote.trim(),
-                          });
-                      }}
-                    >
-                      <IconX className="h-4 w-4 mr-1.5" />
-                      Từ chối
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
+              </CardFooter>
             </Card>
           )}
 

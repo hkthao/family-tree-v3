@@ -6,13 +6,14 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconCopy, IconSearch, IconX } from "@/components/icons";
+import { IconArrowRight, IconCheck, IconCopy, IconList, IconSearch, IconX } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -233,22 +234,22 @@ function SuggestionPanel({
                   onClick={() => onPick(c.a.id, c.b.id)}
                   className="w-full sm:w-auto"
                 >
-                  Dùng cặp này →
+                  <IconArrowRight className="h-4 w-4 mr-1.5" />
+                  Dùng cặp này
                 </Button>
               </div>
             </div>
           );
         })}
-        {candidates.length > 5 && !showAll && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowAll(true)}
-          >
+      </CardContent>
+      {candidates.length > 5 && !showAll && (
+        <CardFooter className="justify-end border-t pt-4">
+          <Button variant="ghost" size="sm" onClick={() => setShowAll(true)}>
+            <IconList className="h-4 w-4 mr-1.5" />
             Xem thêm {candidates.length - 5} cặp
           </Button>
-        )}
-      </CardContent>
+        </CardFooter>
+      )}
     </Card>
   );
 }
@@ -351,22 +352,19 @@ function PersonPicker({
                 {!person.is_living ? " · đã mất" : ""}
               </p>
             </div>
-            <Button size="sm" variant="outline" onClick={onClear}>
+            <Button size="sm" variant="outline" onClick={onClear} aria-label="Chọn lại">
               <IconX className="h-4 w-4" />
             </Button>
           </div>
         ) : (
           <>
-            <div className="relative">
-              <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input
-                data-testid={`merge-picker-${title === "Giữ lại" ? "winner" : "loser"}-input`}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Tên người…"
-                className="pl-9"
-              />
-            </div>
+            <Input
+              data-testid={`merge-picker-${title === "Giữ lại" ? "winner" : "loser"}-input`}
+              icon={<IconSearch />}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Tên người…"
+            />
             {data && data.rows.length > 0 && (
               <ul className="divide-y rounded-md border bg-card max-h-72 overflow-y-auto">
                 {data.rows

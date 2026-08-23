@@ -15,9 +15,11 @@ import {
   type ClanFeatureKey,
 } from "@/lib/clanFeatures";
 import {
+  IconBuildings,
   IconCheck,
   IconList,
   IconQrCode,
+  IconScroll,
   IconSettings,
   IconUsers,
 } from "@/components/icons";
@@ -28,10 +30,12 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
@@ -142,18 +146,18 @@ export default function Settings() {
             Chỉ quản trị clan thấy được trang này.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (name.trim()) mutation.mutate();
-            }}
-            className="space-y-5"
-          >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (name.trim()) mutation.mutate();
+          }}
+        >
+          <CardContent className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="name">Tên dòng họ</Label>
               <Input
                 id="name"
+                icon={<IconBuildings />}
                 required
                 maxLength={100}
                 value={name}
@@ -162,15 +166,16 @@ export default function Settings() {
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="description">Mô tả</Label>
               {/* Textarea (cuộn) vì mô tả một số dòng họ rất dài. */}
-              <textarea
+              <Textarea
                 id="description"
+                label="Mô tả"
+                icon={<IconScroll />}
                 maxLength={500}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base leading-relaxed resize-y"
+                className="leading-relaxed resize-y"
               />
               <p className="text-right text-xs text-muted-foreground">
                 {description.length}/500
@@ -378,24 +383,24 @@ export default function Settings() {
               </Alert>
             )}
 
-            <div className="flex gap-3 pt-2 justify-end">
-              <Button
-                type="submit"
-                variant="outline"
-                disabled={mutation.isPending || !name.trim()}
-              >
-                {mutation.isPending ? (
-                  "Đang lưu…"
-                ) : (
-                  <>
-                    <IconCheck className="h-4 w-4 mr-1.5" />
-                    Lưu thay đổi
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
+          </CardContent>
+          <CardFooter className="justify-end border-t pt-4">
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={mutation.isPending || !name.trim()}
+            >
+              {mutation.isPending ? (
+                "Đang lưu…"
+              ) : (
+                <>
+                  <IconCheck className="h-4 w-4 mr-1.5" />
+                  Lưu thay đổi
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </form>
       </Card>
 
       <Card>
@@ -419,14 +424,14 @@ export default function Settings() {
             {clan.max_users} tài khoản (do quản trị nền tảng đặt).
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardFooter>
           <Button asChild>
             <Link to={`/clans/${clan.id}/members`}>
               <IconUsers className="h-4 w-4 mr-1.5" />
               Quản lý thành viên
             </Link>
           </Button>
-        </CardContent>
+        </CardFooter>
       </Card>
 
       <Card>
@@ -480,14 +485,14 @@ export default function Settings() {
             Lịch sử thay đổi với người, gia đình, chi — có thể khôi phục.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardFooter>
           <Button asChild variant="outline">
             <Link to={`/clans/${clan.id}/audit`}>
               <IconList className="h-4 w-4 mr-1.5" />
               Mở nhật ký
             </Link>
           </Button>
-        </CardContent>
+        </CardFooter>
       </Card>
 
       <Card>
@@ -497,14 +502,14 @@ export default function Settings() {
             Tạo mã QR cho từng người để in/khắc — quét ra trang cá nhân.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardFooter>
           <Button asChild variant="outline">
             <Link to={`/clans/${clan.id}/qr-export`}>
               <IconQrCode className="h-4 w-4 mr-1.5" />
               Mở xuất QR
             </Link>
           </Button>
-        </CardContent>
+        </CardFooter>
       </Card>
 
       <Card>
