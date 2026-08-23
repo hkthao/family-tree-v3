@@ -21,5 +21,11 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Test KHÔNG nằm trong build production. Hai lý do: ảnh Docker không
+  // chứa test, và một số test cố tình import sang supabase/functions —
+  // thư mục đó bị .dockerignore loại khỏi build context, nên typecheck
+  // chúng ở đây sẽ đỏ trong CI mà xanh ở máy local. Dùng `npm run
+  // typecheck` để kiểm cả test.
+  "exclude": ["src/test"]
 }

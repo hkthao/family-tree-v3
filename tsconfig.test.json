@@ -1,0 +1,14 @@
+{
+  // Typecheck cho test — chạy ở máy local, KHÔNG chạy trong Docker build.
+  // Khác tsconfig.app.json ở chỗ KHÔNG loại src/test.
+  //
+  // Cố tình chỉ include "src": vài test import sang supabase/functions
+  // (vd llmGateway.test.ts canh gateway), và những file đó được kéo vào
+  // theo đường import chứ không quét cả thư mục. Quét cả thư mục sẽ lôi
+  // theo mã chỉ chạy được trên Deno — specifier `npm:` và WebCrypto của
+  // Deno — mà tsc của Node không hiểu.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": { "noEmit": true },
+  "include": ["src"],
+  "exclude": []
+}
