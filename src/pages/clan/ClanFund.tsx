@@ -3,7 +3,17 @@ import { useMemo, useState } from "react";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
-import { IconDownload, IconTrash, IconWallet } from "@/components/icons";
+import {
+  IconCalendar,
+  IconCheck,
+  IconDownload,
+  IconPlus,
+  IconScroll,
+  IconTag,
+  IconTrash,
+  IconWallet,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
@@ -112,7 +122,17 @@ export default function ClanFund() {
             </Button>
             {canEdit && (
               <Button size="sm" onClick={() => setShowAdd((v) => !v)}>
-                {showAdd ? "Đóng" : "+ Ghi giao dịch"}
+                {showAdd ? (
+                  <>
+                    <IconX className="mr-1 h-4 w-4" />
+                    Đóng
+                  </>
+                ) : (
+                  <>
+                    <IconPlus className="mr-1 h-4 w-4" />
+                    Ghi giao dịch
+                  </>
+                )}
               </Button>
             )}
           </div>
@@ -348,6 +368,7 @@ function AddFundForm({
           </Label>
           <Input
             id="fund-amount"
+            icon={<IconWallet />}
             type="number"
             inputMode="numeric"
             min="1"
@@ -360,6 +381,7 @@ function AddFundForm({
           <Label htmlFor="fund-name">Quỹ</Label>
           <Input
             id="fund-name"
+            icon={<IconWallet />}
             value={fund}
             onChange={(e) => setFund(e.target.value)}
             list="fund-list"
@@ -375,6 +397,7 @@ function AddFundForm({
           <Label htmlFor="fund-cat">Mục đích (tuỳ chọn)</Label>
           <Input
             id="fund-cat"
+            icon={<IconTag />}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="Vd: Đóng góp giỗ tổ / Mua vật liệu"
@@ -384,6 +407,7 @@ function AddFundForm({
           <Label htmlFor="fund-date">Ngày (tuỳ chọn)</Label>
           <Input
             id="fund-date"
+            icon={<IconCalendar />}
             type="date"
             value={occurredOn}
             onChange={(e) => setOccurredOn(e.target.value)}
@@ -394,6 +418,7 @@ function AddFundForm({
         <Label htmlFor="fund-note">Ghi chú (tuỳ chọn)</Label>
         <Input
           id="fund-note"
+          icon={<IconScroll />}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Người đóng góp / chi tiết khoản chi…"
@@ -401,6 +426,7 @@ function AddFundForm({
       </div>
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={!canSubmit}>
+          <IconCheck className="mr-1.5 h-4 w-4" />
           {createM.isPending ? "Đang lưu…" : "Lưu"}
         </Button>
       </div>

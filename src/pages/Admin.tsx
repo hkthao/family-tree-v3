@@ -6,13 +6,24 @@ import { AppHeader } from "@/components/AppHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import {
+  IconBuildings,
+  IconCalendar,
   IconCheck,
+  IconClock,
+  IconDownload,
+  IconFlame,
+  IconLink,
   IconLock,
   IconPencil,
+  IconPlay,
+  IconPlus,
   IconRefresh,
+  IconScroll,
   IconShield,
   IconTrash,
   IconUnlock,
+  IconUser,
+  IconUsers,
   IconX,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
@@ -27,6 +38,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatDate, formatDateTime } from "@/lib/formatDate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { AiSettingsTab } from "@/components/admin/AiSettingsTab";
 import { useAuth } from "@/hooks/useAuth";
@@ -499,6 +512,7 @@ function UserRow({
             <div className="relative">
               <Input
                 id={`maxc-${profile.id}`}
+                icon={<IconBuildings />}
                 type="number"
                 min={0}
                 max={100}
@@ -742,6 +756,7 @@ function ClanRow({
           </Label>
           <Input
             id={`mp-${clan.id}`}
+            icon={<IconUsers />}
             type="number"
             min={1}
             value={maxPersons}
@@ -755,6 +770,7 @@ function ClanRow({
           </Label>
           <Input
             id={`mu-${clan.id}`}
+            icon={<IconUser />}
             type="number"
             min={1}
             value={maxUsers}
@@ -1065,6 +1081,7 @@ function FailedNotificationsSection({
                     if (ok) clearM.mutate(n.id);
                   }}
                 >
+                  <IconRefresh className="h-4 w-4 mr-1.5" />
                   Xoá để thử lại
                 </Button>
               </div>
@@ -1447,7 +1464,7 @@ function FeedbackRowCard({
               disabled={mutation.isPending}
               onClick={() => mutation.mutate({ status: s })}
             >
-              {active ? "✓ " : ""}
+              {active && <IconCheck className="h-4 w-4 mr-1.5" />}
               {FEEDBACK_STATUS_LABEL[s]}
             </Button>
           );
@@ -1457,19 +1474,20 @@ function FeedbackRowCard({
           variant="outline"
           onClick={() => setShowNote((v) => !v)}
         >
+          <IconScroll className="h-4 w-4 mr-1.5" />
           {showNote ? "Ẩn ghi chú" : "Ghi chú"}
         </Button>
       </div>
 
       {showNote && (
         <div className="space-y-2">
-          <textarea
+          <Textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Ghi chú nội bộ (chỉ admin xem)…"
             rows={2}
             maxLength={4000}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="text-sm resize-y"
           />
           <Button
             size="sm"
@@ -1537,7 +1555,8 @@ function AnnouncementsAdminTab() {
           {listQ.data && ` (gồm nháp/đã hết hạn)`}.
         </p>
         <Button size="sm" onClick={() => setEditing("new")}>
-          + Tin mới
+          <IconPlus className="h-4 w-4 mr-1.5" />
+          Tin mới
         </Button>
       </div>
 
@@ -1743,6 +1762,7 @@ function AnnouncementEditor({
         </Label>
         <Input
           id="ann-title"
+          icon={<IconScroll />}
           required
           maxLength={200}
           value={title}
@@ -1754,14 +1774,14 @@ function AnnouncementEditor({
         <Label htmlFor="ann-body" required>
           Nội dung
         </Label>
-        <textarea
+        <Textarea
           id="ann-body"
           required
           maxLength={20000}
           rows={6}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="text-sm resize-y"
         />
       </div>
 
@@ -1810,6 +1830,7 @@ function AnnouncementEditor({
           <Label htmlFor="ann-published">Lịch đăng</Label>
           <Input
             id="ann-published"
+            icon={<IconCalendar />}
             type="datetime-local"
             value={publishedAt}
             onChange={(e) => {
@@ -1835,6 +1856,7 @@ function AnnouncementEditor({
           <Label htmlFor="ann-expires">Hết hạn (tuỳ chọn)</Label>
           <Input
             id="ann-expires"
+            icon={<IconClock />}
             type="datetime-local"
             value={expiresAt}
             onChange={(e) => setExpiresAt(e.target.value)}
@@ -1999,6 +2021,7 @@ function GiaPhaImportTab() {
           <Label htmlFor="src-url">Link gia phả</Label>
           <Input
             id="src-url"
+            icon={<IconLink />}
             value={sourceUrl}
             onChange={(e) => setSourceUrl(e.target.value)}
             placeholder="https://vietnamgiapha.com/XemGiaPha/…"
@@ -2010,6 +2033,7 @@ function GiaPhaImportTab() {
             <Label htmlFor="new-name">Tên dòng họ (bỏ trống = tự lấy từ nguồn)</Label>
             <Input
               id="new-name"
+              icon={<IconBuildings />}
               value={newClanName}
               onChange={(e) => setNewClanName(e.target.value)}
               placeholder="vd: Chi họ Cao Minh Triết"
@@ -2019,11 +2043,11 @@ function GiaPhaImportTab() {
           <div className="space-y-2">
             <div className="space-y-1.5">
               <Label htmlFor="target-clan">Dòng họ đích</Label>
-              <select
+              <Select
                 id="target-clan"
+                icon={<IconBuildings />}
                 value={targetClanId}
                 onChange={(e) => setTargetClanId(e.target.value)}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               >
                 <option value="">— Chọn dòng họ —</option>
                 {clans.map((c) => (
@@ -2031,7 +2055,7 @@ function GiaPhaImportTab() {
                     {c.name} ({c.person_count} người)
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <label className="flex items-start gap-2 text-sm cursor-pointer">
               <input
@@ -2060,6 +2084,7 @@ function GiaPhaImportTab() {
                 variant="outline"
                 onClick={() => runJob(resumeJob.jobId, resumeJob.total, resumeJob.clanName)}
               >
+                <IconPlay className="h-4 w-4 mr-1.5" />
                 Tiếp tục nhập
               </Button>
               <Button size="sm" variant="ghost" onClick={dismissResume}>
@@ -2075,6 +2100,7 @@ function GiaPhaImportTab() {
             disabled={!sourceUrl.trim() || (mode === "existing" && !targetClanId)}
             onClick={startImport}
           >
+            <IconDownload className="h-4 w-4 mr-1.5" />
             Tạo
           </Button>
         ) : (
@@ -2091,6 +2117,7 @@ function GiaPhaImportTab() {
                   cancelRef.current = true;
                 }}
               >
+                <IconX className="h-4 w-4 mr-1.5" />
                 Tạm dừng
               </Button>
             </div>
@@ -2147,14 +2174,14 @@ function GiaPhaImportTab() {
 
         <div className="space-y-1.5">
           <Label htmlFor="wipe-clan">Dòng họ cần xoá danh bạ</Label>
-          <select
+          <Select
             id="wipe-clan"
+            icon={<IconBuildings />}
             value={wipeClanId}
             onChange={(e) => {
               setWipeClanId(e.target.value);
               setConfirmText("");
             }}
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             <option value="">— Chọn dòng họ —</option>
             {clans.map((c) => (
@@ -2162,7 +2189,7 @@ function GiaPhaImportTab() {
                 {c.name} ({c.person_count} người)
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         {wipeClan && (
@@ -2173,6 +2200,7 @@ function GiaPhaImportTab() {
             </Label>
             <Input
               id="wipe-confirm"
+              icon={<IconFlame />}
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder={wipeClan.name}
@@ -2312,6 +2340,7 @@ function ConfigTab() {
                 onClick={() => saveM.mutate([...chosen])}
                 disabled={saveM.isPending || !dirty}
               >
+                <IconCheck className="h-4 w-4 mr-1.5" />
                 {saveM.isPending ? "Đang lưu…" : "Lưu"}
               </Button>
             </div>
