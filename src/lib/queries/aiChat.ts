@@ -9,6 +9,27 @@ import { supabase } from "../supabase";
  * — cùng cách `admin.ts` đang làm.
  */
 
+/**
+ * Công tắc tổng của trợ lý, đọc từ `platform_settings` (bảng này đọc
+ * công khai nên client lấy trực tiếp được).
+ *
+ * Vì sao cần, ngoài feature-flag theo dòng họ: `clans.disabled_features`
+ * là **opt-out** — dòng họ nào chưa cấu hình gì thì mặc định BẬT hết. Nếu
+ * chỉ dựa vào đó, ngay khi deploy là mọi dòng họ đều thấy nút "Trợ lý
+ * dòng họ", bấm vào thì lỗi vì edge function/khoá chưa sẵn sàng.
+ *
+ * Nên trợ lý cần CẢ HAI: công tắc tổng (mặc định tắt) và cờ theo dòng họ.
+ */
+export async function isAiEnabled(): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "ai.enabled")
+    .maybeSingle();
+  if (error) return false; // chưa áp migration → coi như tắt
+  return data?.value === "true";
+}
+
 export interface ChatTurn {
   role: "user" | "assistant";
   content: string;

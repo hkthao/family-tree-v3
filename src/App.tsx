@@ -273,6 +273,16 @@ export default function App() {
             </RequireAuth>
           }
         />
+        {/* Khu Cài đặt của quản trị — cùng component, khác dải tab.
+            Tách URL để chia sẻ được và Back hoạt động đúng. */}
+        <Route
+          path="/admin/cai-dat"
+          element={
+            <RequireAuth>
+              <Admin />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/docs"
           element={

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -79,16 +79,54 @@ type Tab =
   | "ai"
   | "config";
 
-const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
-  { value: "users", label: "Người dùng" },
-  { value: "clans", label: "Dòng họ" },
-  { value: "health", label: "Hệ thống" },
-  { value: "feedback", label: "Góp ý" },
-  { value: "announcements", label: "Thông báo" },
-  { value: "giapha", label: "Nhập gia phả" },
-  { value: "ai", label: "Trợ lý AI" },
-  { value: "config", label: "Cấu hình" },
+/**
+ * Khu quản trị tách làm HAI, thay vì một dải 8 tab cuộn ngang.
+ *
+ * Lý do: hai nhóm này khác nhau về nhịp sử dụng. "Báo cáo & theo dõi" là
+ * thứ mở ra xem hằng ngày và hầu như chỉ đọc; "Cài đặt & nội dung" là thứ
+ * đụng vào vài lần rồi thôi, và đụng nhầm thì hỏng thật. Trộn chung khiến
+ * cái hay dùng bị chôn giữa cái ít dùng, và tăng nguy cơ bấm nhầm.
+ *
+ * Mỗi nhóm là một URL riêng nên chia sẻ được và Back hoạt động đúng.
+ */
+type AdminArea = "report" | "settings";
+
+const AREAS: Record<
+  AdminArea,
+  { path: string; label: string; title: string; description: string }
+> = {
+  report: {
+    path: "/admin",
+    label: "Báo cáo & theo dõi",
+    title: "Báo cáo & theo dõi",
+    description: "Sức khoẻ hệ thống, người dùng, dòng họ, góp ý.",
+  },
+  settings: {
+    path: "/admin/cai-dat",
+    label: "Cài đặt & nội dung",
+    title: "Cài đặt & nội dung",
+    description: "Cấu hình nền tảng, trợ lý AI, thông báo, nhập gia phả.",
+  },
+};
+
+const TABS: ReadonlyArray<{ value: Tab; label: string; area: AdminArea }> = [
+  // Báo cáo & theo dõi — đọc là chính
+  { value: "health", label: "Hệ thống", area: "report" },
+  { value: "users", label: "Người dùng", area: "report" },
+  { value: "clans", label: "Dòng họ", area: "report" },
+  { value: "feedback", label: "Góp ý", area: "report" },
+  // Cài đặt & nội dung — ghi là chính
+  { value: "config", label: "Cấu hình", area: "settings" },
+  { value: "ai", label: "Trợ lý AI", area: "settings" },
+  { value: "announcements", label: "Thông báo", area: "settings" },
+  { value: "giapha", label: "Nhập gia phả", area: "settings" },
 ];
+
+/** Tab mặc định của mỗi khu = tab đầu tiên trong khu đó. */
+const DEFAULT_TAB: Record<AdminArea, Tab> = {
+  report: "health",
+  settings: "config",
+};
 
 const PAGE_SIZE = 15;
 
@@ -109,13 +147,23 @@ export default function Admin() {
   // one patch() to avoid clobbering.
   const [sp] = useSearchParams();
   const patch = useUrlPatch();
-  const tabRaw = sp.get("tab") ?? "users";
-  const tab: Tab = TABS.some((t) => t.value === tabRaw)
+  const location = useLocation();
+
+  const area: AdminArea = location.pathname.startsWith(AREAS.settings.path)
+    ? "settings"
+    : "report";
+  const areaTabs = TABS.filter((t) => t.area === area);
+  const fallback = DEFAULT_TAB[area];
+
+  const tabRaw = sp.get("tab") ?? fallback;
+  // Tab của khu khác (vd link cũ ?tab=config trên /admin) → rơi về mặc
+  // định của khu hiện tại thay vì hiện một tab không có trong dải.
+  const tab: Tab = areaTabs.some((t) => t.value === tabRaw)
     ? (tabRaw as Tab)
-    : "users";
+    : fallback;
   const setTab = (next: Tab) =>
     patch({
-      tab: next === "users" ? null : next,
+      tab: next === fallback ? null : next,
       q: null,
       page: null,
       status: null,
@@ -140,9 +188,27 @@ export default function Admin() {
             mobile so the tabs still get full width. */}
         <PageHeader
           icon={<IconShield className="h-7 w-7" />}
-          title="Quản trị nền tảng"
-          description="Người dùng, dòng họ, sức khoẻ hệ thống, góp ý, thông báo."
+          title={AREAS[area].title}
+          description={AREAS[area].description}
         />
+
+        {/* Chuyển giữa hai khu. Đặt TRÊN dải tab để thứ bậc rõ: chọn khu
+            trước, rồi mới chọn mục trong khu. */}
+        <nav aria-label="Khu quản trị" className="flex gap-1">
+          {(Object.keys(AREAS) as AdminArea[]).map((a) => (
+            <Link
+              key={a}
+              to={AREAS[a].path}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                a === area
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              {AREAS[a].label}
+            </Link>
+          ))}
+        </nav>
 
         {/* Tabs kiểu underline (Linear / Vercel / GitHub) — horizontal
             scroll trên mobile, full-width trên desktop. Active tab có
@@ -156,7 +222,7 @@ export default function Admin() {
           className="flex items-stretch border-b overflow-x-auto -mx-1 px-1"
           style={{ scrollbarWidth: "none" }}
         >
-          {TABS.map((t) => {
+          {areaTabs.map((t) => {
             const active = tab === t.value;
             return (
               <button
