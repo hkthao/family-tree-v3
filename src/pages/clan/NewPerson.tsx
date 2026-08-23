@@ -27,6 +27,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
@@ -477,18 +478,17 @@ export default function NewPerson() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Tiểu sử</Label>
-              <textarea
-                id="bio"
-                rows={4}
-                maxLength={5000}
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="(tuỳ chọn)"
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
+            <Textarea
+              id="bio"
+              label="Tiểu sử"
+              icon={<IconScroll />}
+              rows={4}
+              maxLength={5000}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="(tuỳ chọn)"
+              className="text-sm"
+            />
           </div>
         )}
 

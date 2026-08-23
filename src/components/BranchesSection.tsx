@@ -3,7 +3,14 @@ import { useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconPencil, IconPlus, IconTrash, IconX } from "@/components/icons";
+import {
+  IconCheck,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+  IconTree,
+  IconX,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,6 +96,7 @@ export function BranchesSection({ clanId, canEdit }: Props) {
             <Label htmlFor="new-branch">Tên chi mới</Label>
             <Input
               id="new-branch"
+              icon={<IconTree />}
               value={newName}
               maxLength={100}
               onChange={(e) => setNewName(e.target.value)}
@@ -166,6 +174,7 @@ function BranchItem({
       {editing ? (
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
           <Input
+            icon={<IconTree />}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={100}

@@ -3,11 +3,17 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 
-import { IconCheck, IconX } from "@/components/icons";
+import {
+  IconCheck,
+  IconMail,
+  IconScroll,
+  IconX,
+} from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   submitFeedback,
   type FeedbackCategory,
@@ -200,22 +206,19 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
             </div>
           </fieldset>
 
-          <div className="space-y-2">
-            <Label htmlFor="feedback-message" required>
-              Bạn muốn nói gì?
-            </Label>
-            <textarea
-              ref={textareaRef}
-              id="feedback-message"
-              required
-              maxLength={5000}
-              rows={5}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-base resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            />
-          </div>
+          <Textarea
+            ref={textareaRef}
+            id="feedback-message"
+            label="Bạn muốn nói gì?"
+            icon={<IconScroll />}
+            required
+            maxLength={5000}
+            rows={5}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…"
+            className="resize-y"
+          />
 
           <div className="space-y-2">
             <Label htmlFor="feedback-contact">
@@ -223,6 +226,7 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
             </Label>
             <Input
               id="feedback-contact"
+              icon={<IconMail />}
               maxLength={200}
               value={contact}
               onChange={(e) => setContact(e.target.value)}

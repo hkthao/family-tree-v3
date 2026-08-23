@@ -4,13 +4,18 @@ import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconCheck, IconHelp } from "@/components/icons";
+import {
+  IconCheck,
+  IconHelp,
+  IconMail,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   submitFeedback,
   type FeedbackCategory,
@@ -131,7 +136,7 @@ export default function Contact() {
             <Label htmlFor="contact-message" required>
               Bạn muốn nói gì?
             </Label>
-            <textarea
+            <Textarea
               id="contact-message"
               required
               maxLength={5000}
@@ -139,7 +144,7 @@ export default function Contact() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-base resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="resize-y"
             />
           </div>
 
@@ -149,6 +154,7 @@ export default function Contact() {
             </Label>
             <Input
               id="contact-handle"
+              icon={<IconMail />}
               maxLength={200}
               value={contact}
               onChange={(e) => setContact(e.target.value)}

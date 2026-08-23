@@ -4,7 +4,13 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconUserPlus, IconX } from "@/components/icons";
+import {
+  IconCheck,
+  IconSearch,
+  IconUser,
+  IconUserPlus,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
@@ -211,6 +217,7 @@ export function AddSpouseForm({
             </Label>
             <Input
               id="full_name"
+              icon={<IconUser />}
               data-testid="spouse-name-input"
               required
               autoFocus
@@ -297,6 +304,7 @@ export function AddSpouseForm({
             Tìm người đã có (khác giới với {focal?.full_name ?? "người gốc"})
           </Label>
           <Input
+            icon={<IconSearch />}
             value={existingFilter}
             onChange={(e) => setExistingFilter(e.target.value)}
             placeholder="Gõ tên để lọc (không cần dấu)"
