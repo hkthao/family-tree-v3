@@ -34,6 +34,170 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_messages: {
+        Row: {
+          clan_id: string
+          content: string
+          created_at: string
+          id: string
+          kind: string
+          owner_id: string
+          role: string
+        }
+        Insert: {
+          clan_id: string
+          content: string
+          created_at?: string
+          id?: string
+          kind?: string
+          owner_id: string
+          role: string
+        }
+        Update: {
+          clan_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          owner_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_messages_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_provider_keys: {
+        Row: {
+          ciphertext: string
+          hint: string
+          last_test_at: string | null
+          last_test_error: string | null
+          last_test_model: string | null
+          last_test_ms: number | null
+          last_test_ok: boolean | null
+          provider: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          ciphertext: string
+          hint: string
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_model?: string | null
+          last_test_ms?: number | null
+          last_test_ok?: boolean | null
+          provider: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          ciphertext?: string
+          hint?: string
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_model?: string | null
+          last_test_ms?: number | null
+          last_test_ok?: boolean | null
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_provider_keys_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_usage: {
+        Row: {
+          at: string
+          attempts: number
+          cached_input_tokens: number
+          clan_id: string | null
+          cost_usd: number
+          error_kind: string | null
+          id: string
+          input_tokens: number
+          kind: string
+          latency_ms: number | null
+          model_id: string
+          ok: boolean
+          output_tokens: number
+          raw_model: string | null
+          tool_calls: number
+          user_id: string | null
+        }
+        Insert: {
+          at?: string
+          attempts?: number
+          cached_input_tokens?: number
+          clan_id?: string | null
+          cost_usd?: number
+          error_kind?: string | null
+          id?: string
+          input_tokens?: number
+          kind: string
+          latency_ms?: number | null
+          model_id: string
+          ok?: boolean
+          output_tokens?: number
+          raw_model?: string | null
+          tool_calls?: number
+          user_id?: string | null
+        }
+        Update: {
+          at?: string
+          attempts?: number
+          cached_input_tokens?: number
+          clan_id?: string | null
+          cost_usd?: number
+          error_kind?: string | null
+          id?: string
+          input_tokens?: number
+          kind?: string
+          latency_ms?: number | null
+          model_id?: string
+          ok?: boolean
+          output_tokens?: number
+          raw_model?: string | null
+          tool_calls?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcement_reads: {
         Row: {
           announcement_id: string
@@ -2771,6 +2935,20 @@ export type Database = {
         Returns: Json
       }
       admin_wipe_clan_directory: { Args: { p_clan_id: string }; Returns: Json }
+      ai_messages_purge_expired: { Args: never; Returns: number }
+      ai_provider_keys_status: {
+        Args: never
+        Returns: {
+          hint: string
+          last_test_at: string
+          last_test_error: string
+          last_test_model: string
+          last_test_ms: number
+          last_test_ok: boolean
+          provider: string
+          updated_at: string
+        }[]
+      }
       announcements_mark_all_read: { Args: never; Returns: number }
       announcements_unread_count: { Args: never; Returns: number }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
