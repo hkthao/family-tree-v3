@@ -515,11 +515,21 @@ function buildSections(
         icon: <IconSun className={ic} />,
       });
     }
-    sections.push({ label: clan.name, items: topItems });
-
     // Cờ tính năng phụ theo dòng họ (admin có thể tắt để nav gọn).
     const feat = (k: ClanFeatureKey) =>
       isFeatureEnabled(clan.disabled_features, k);
+
+    // Trợ lý AI đứng cạnh mục lõi chứ không chôn trong nhóm phụ: nó là
+    // lối vào chính cho người lớn tuổi — hỏi bằng lời thay vì tự đi tìm
+    // trong menu.
+    if (isMember && feat("ai_assistant")) {
+      topItems.push({
+        to: `/clans/${clanId}/tro-ly`,
+        label: "Trợ lý dòng họ",
+        icon: <IconSparkles className={ic} />,
+      });
+    }
+    sections.push({ label: clan.name, items: topItems });
 
     // ─── Section 2: Cộng đồng ──────────────────────────────────────
     // Nội dung cộng đồng → chỉ thành viên.
