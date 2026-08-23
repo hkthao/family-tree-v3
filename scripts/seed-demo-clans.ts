@@ -5,7 +5,7 @@
  *
  *   LOCAL:  npx tsx scripts/seed-demo-clans.ts
  *   PROD:   SUPABASE_SERVICE_ROLE_KEY=<self-host key> \
- *           VITE_SUPABASE_URL=https://supabase.example.com \
+ *           VITE_SUPABASE_URL=<supabase-url> \
  *           npx tsx scripts/seed-demo-clans.ts
  *
  * Cần SUPABASE_SERVICE_ROLE_KEY (bypass RLS). Chủ sở hữu = platform admin.
