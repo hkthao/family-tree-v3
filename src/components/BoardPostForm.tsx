@@ -2,11 +2,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconX } from "@/components/icons";
+import {
+  IconBook,
+  IconCalendar,
+  IconCheck,
+  IconScroll,
+  IconX,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin } from "@/hooks/useClanContext";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
@@ -152,6 +159,7 @@ export function BoardPostForm({
         <Label htmlFor="post-title">Tiêu đề (tuỳ chọn)</Label>
         <Input
           id="post-title"
+          icon={<IconScroll />}
           maxLength={200}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -159,27 +167,25 @@ export function BoardPostForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="post-body" required>
-          Nội dung
-        </Label>
-        <textarea
-          id="post-body"
-          required
-          maxLength={20000}
-          rows={6}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Viết tin cho cả họ đọc…"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
+      <Textarea
+        id="post-body"
+        label="Nội dung"
+        icon={<IconBook />}
+        required
+        maxLength={20000}
+        rows={6}
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder="Viết tin cho cả họ đọc…"
+        className="text-sm resize-y"
+      />
 
       {(type === "event" || type === "notice") && (
         <div className="space-y-2">
           <Label htmlFor="post-event-date">Ngày diễn ra (tuỳ chọn)</Label>
           <Input
             id="post-event-date"
+            icon={<IconCalendar />}
             type="date"
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}

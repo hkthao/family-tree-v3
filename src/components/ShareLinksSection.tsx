@@ -11,6 +11,7 @@ import { QrCodeModal } from "@/components/QrCodeModal";
 import { useToast } from "@/components/Toast";
 import {
   IconCheck,
+  IconClock,
   IconCopy,
   IconLink,
   IconPlus,
@@ -122,6 +123,7 @@ export function ShareLinksSection({ clanId }: Props) {
           <Label htmlFor="ttl">Số ngày link còn hiệu lực</Label>
           <Input
             id="ttl"
+            icon={<IconClock />}
             type="number"
             min={1}
             max={365}
@@ -282,27 +284,30 @@ function ShareLinkItem({
       {/* URL field — copy button sits inside as an icon adornment so
           the URL gets the full row width instead of being squeezed by
           a separate "Chép" button. */}
-      <div className="relative">
-        <Input
-          readOnly
-          value={shareUrl}
-          className="font-mono text-xs pr-10"
-          onFocus={(e) => e.currentTarget.select()}
-        />
-        <button
-          type="button"
-          onClick={copyToClipboard}
-          aria-label={copied ? "Đã chép" : "Chép link"}
-          title={copied ? "Đã chép" : "Chép link"}
-          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-        >
-          {copied ? (
-            <IconCheck className="h-4 w-4" />
-          ) : (
-            <IconCopy className="h-4 w-4" />
-          )}
-        </button>
-      </div>
+      <Input
+        readOnly
+        icon={<IconLink />}
+        value={shareUrl}
+        className="font-mono text-xs"
+        onFocus={(e) => e.currentTarget.select()}
+        action={
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={copyToClipboard}
+            aria-label={copied ? "Đã chép" : "Chép link"}
+            title={copied ? "Đã chép" : "Chép link"}
+            className="h-10 w-10"
+          >
+            {copied ? (
+              <IconCheck className="h-4 w-4" />
+            ) : (
+              <IconCopy className="h-4 w-4" />
+            )}
+          </Button>
+        }
+      />
 
       {/* Action row — equal-width buttons in a single row. flex-wrap
           kicks in only when content actually overflows. */}

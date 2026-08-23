@@ -24,6 +24,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { useFormDraft } from "@/hooks/useFormDraft";
@@ -543,16 +544,14 @@ export function EditPersonForm({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="bio">Tiểu sử</Label>
-            <textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </div>
+          <Textarea
+            id="bio"
+            label="Tiểu sử"
+            icon={<IconScroll />}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={4}
+          />
         </div>
       )}
 

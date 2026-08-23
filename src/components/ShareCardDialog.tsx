@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { IconDownload, IconLink, IconShare2, IconX } from "@/components/icons";
+import {
+  IconDownload,
+  IconLink,
+  IconScroll,
+  IconShare2,
+  IconTag,
+  IconX,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/Toast";
 import {
   imageUrlToDataUrl,
@@ -508,18 +517,18 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
               <label className="text-sm font-medium">
                 Dòng nhãn (vd "Tin vui dòng họ")
               </label>
-              <input value={kicker} onChange={(e) => setKicker(e.target.value)}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" maxLength={60} />
+              <Input icon={<IconTag />} value={kicker} onChange={(e) => setKicker(e.target.value)}
+                className="h-10 text-sm" maxLength={60} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Tiêu đề</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" maxLength={120} />
+              <Input icon={<IconScroll />} value={title} onChange={(e) => setTitle(e.target.value)}
+                className="h-10 text-sm" maxLength={120} />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Lời trích / mô tả</label>
-              <textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={3}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" maxLength={400} />
+              <Textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} rows={3}
+                className="text-sm" maxLength={400} />
             </div>
 
             {/* Chọn ảnh */}

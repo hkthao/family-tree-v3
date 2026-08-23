@@ -1,7 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { IconCheck } from "@/components/icons";
+import {
+  IconCalendar,
+  IconCheck,
+} from "@/components/icons";
 import { RelationSheet } from "@/components/RelationSheet";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
@@ -141,6 +144,7 @@ export function QuickDateFixSheet({
             </Label>
             <Input
               id="quick_birth_year"
+              icon={<IconCalendar />}
               type="number"
               inputMode="numeric"
               min={1}
@@ -166,6 +170,7 @@ export function QuickDateFixSheet({
             </Label>
             <Input
               id="quick_death_year"
+              icon={<IconCalendar />}
               type="number"
               inputMode="numeric"
               min={1}

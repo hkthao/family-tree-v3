@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import {
+  IconBuildings,
   IconCheck,
   IconLink,
   IconSearch,
@@ -15,6 +16,7 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { listCommunityClans, listMyClans } from "@/lib/queries/clans";
 import { queryKeys } from "@/lib/queries/keys";
@@ -249,14 +251,14 @@ function ConfirmForm({
     <div className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="clan-b">Dòng họ của bạn</Label>
-        <select
+        <Select
           id="clan-b"
+          icon={<IconBuildings />}
           value={clanBId}
           onChange={(e) => {
             setClanBId(e.target.value);
             setPicked(null);
           }}
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
         >
           <option value="">— Chọn —</option>
           {adminClans.map((c) => (
@@ -264,7 +266,7 @@ function ConfirmForm({
               {c.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {clanBId && (

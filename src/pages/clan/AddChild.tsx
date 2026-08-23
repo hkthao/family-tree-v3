@@ -5,7 +5,14 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconUserPlus, IconX } from "@/components/icons";
+import {
+  IconCheck,
+  IconSearch,
+  IconUser,
+  IconUserPlus,
+  IconUsers,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
@@ -17,6 +24,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
@@ -253,14 +261,14 @@ export function AddChildForm({
       </SegmentedControl>
       <div className="space-y-2">
         <Label htmlFor="other_parent">Con chung với ai?</Label>
-        <select
+        <Select
           id="other_parent"
+          icon={<IconUsers />}
           value={otherParent}
           onChange={(e) => {
             setOtherParent(e.target.value);
             setOtherParentTouched(true);
           }}
-          className="flex h-12 w-full rounded-md border border-input bg-background px-3 text-base"
         >
           <option value={SOLO_VALUE}>
             Chưa rõ / đơn thân (chỉ {focal?.full_name ?? "người này"})
@@ -273,7 +281,7 @@ export function AddChildForm({
                 : ""}
             </option>
           ))}
-        </select>
+        </Select>
         {rels?.spouses && rels.spouses.length > 0 &&
           otherParent === SOLO_VALUE && (
             <Alert>
@@ -303,6 +311,7 @@ export function AddChildForm({
             </Label>
             <Input
               id="full_name"
+              icon={<IconUser />}
               data-testid="child-name-input"
               required
               autoFocus
@@ -388,6 +397,7 @@ export function AddChildForm({
           </p>
           <Label>Tìm người đã có trong dòng họ</Label>
           <Input
+            icon={<IconSearch />}
             value={existingFilter}
             onChange={(e) => setExistingFilter(e.target.value)}
             placeholder="Gõ tên để lọc (không cần dấu)"

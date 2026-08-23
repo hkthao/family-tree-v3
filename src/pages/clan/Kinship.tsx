@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 
-import { IconUser } from "@/components/icons";
+import {
+  IconSearch,
+  IconUser,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
@@ -189,6 +192,7 @@ function PersonPicker({
         </div>
       )}
       <Input
+        icon={<IconSearch />}
         data-testid={`kinship-picker-${label === "Người A" ? "a" : "b"}-input`}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}

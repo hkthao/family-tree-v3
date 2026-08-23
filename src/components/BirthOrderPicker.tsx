@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
-import { IconX } from "@/components/icons";
+import {
+  IconList,
+  IconX,
+} from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -102,6 +105,7 @@ export function BirthOrderPicker({
       {(otherOpen || isOther) && (
         <Input
           id={inputId}
+          icon={<IconList />}
           type="number"
           inputMode="numeric"
           min={7}

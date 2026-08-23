@@ -4,7 +4,13 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
-import { IconCheck, IconUserPlus, IconX } from "@/components/icons";
+import {
+  IconCheck,
+  IconSearch,
+  IconUser,
+  IconUserPlus,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
@@ -267,6 +273,7 @@ export function AddParentForm({
             </Label>
             <Input
               id="full_name"
+              icon={<IconUser />}
               required
               autoFocus
               maxLength={200}
@@ -320,6 +327,7 @@ export function AddParentForm({
           </p>
           <Label>Tìm người đã có trong dòng họ</Label>
           <Input
+            icon={<IconSearch />}
             value={existingFilter}
             onChange={(e) => setExistingFilter(e.target.value)}
             placeholder="Gõ tên để lọc (không cần dấu)"

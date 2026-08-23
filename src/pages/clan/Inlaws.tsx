@@ -592,27 +592,30 @@ function PendingRow({
       </div>
 
       {link.invite_token ? (
-        <div className="relative">
-          <Input
-            readOnly
-            value={confirmUrl}
-            className="font-mono text-xs pr-10"
-            onFocus={(e) => e.currentTarget.select()}
-          />
-          <button
-            type="button"
-            onClick={copy}
-            aria-label={copied ? "Đã chép" : "Chép link"}
-            title={copied ? "Đã chép" : "Chép link"}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-          >
-            {copied ? (
-              <IconCheck className="h-4 w-4" />
-            ) : (
-              <IconCopy className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+        <Input
+          readOnly
+          icon={<IconLink />}
+          value={confirmUrl}
+          className="font-mono text-xs"
+          onFocus={(e) => e.currentTarget.select()}
+          action={
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={copy}
+              aria-label={copied ? "Đã chép" : "Chép link"}
+              title={copied ? "Đã chép" : "Chép link"}
+              className="h-10 w-10"
+            >
+              {copied ? (
+                <IconCheck className="h-4 w-4" />
+              ) : (
+                <IconCopy className="h-4 w-4" />
+              )}
+            </Button>
+          }
+        />
       ) : (
         <p className="text-xs text-muted-foreground">
           Đề nghị gửi thẳng tới dòng họ công khai — chờ admin bên kia

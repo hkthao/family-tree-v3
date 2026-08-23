@@ -289,11 +289,11 @@ export default function AiGenerate() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <textarea
+            <Textarea
               value={prompt}
               readOnly
               rows={14}
-              className="w-full rounded-md border border-input bg-muted/30 px-3 py-2 text-sm font-mono outline-none resize-y"
+              className="bg-muted/30 text-sm font-mono resize-y"
               onFocus={(e) => e.currentTarget.select()}
             />
 

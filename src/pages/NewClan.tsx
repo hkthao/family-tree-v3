@@ -5,7 +5,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconPlus, IconX } from "@/components/icons";
+import {
+  IconBuildings,
+  IconCheck,
+  IconPlus,
+  IconScroll,
+  IconX,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -70,6 +76,7 @@ export default function NewClan() {
             </Label>
             <Input
               id="name"
+              icon={<IconBuildings />}
               data-testid="clan-name-input"
               required
               maxLength={100}
@@ -83,6 +90,7 @@ export default function NewClan() {
             <Label htmlFor="description">Mô tả (tuỳ chọn)</Label>
             <Input
               id="description"
+              icon={<IconScroll />}
               data-testid="clan-description-input"
               maxLength={500}
               value={description}
