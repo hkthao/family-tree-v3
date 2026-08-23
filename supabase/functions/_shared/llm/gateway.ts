@@ -36,6 +36,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function complete(
   req: Omit<LlmRequest, "signal">,
+  apiKey: string,
 ): Promise<CompleteResult> {
   const model = getModel(req.model);
   const adapter = ADAPTERS[model.provider];
@@ -48,7 +49,11 @@ export async function complete(
     const ac = new AbortController();
     const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
     try {
-      const res = await adapter.complete({ ...req, signal: ac.signal }, model);
+      const res = await adapter.complete(
+        { ...req, signal: ac.signal },
+        model,
+        apiKey,
+      );
       return {
         ...res,
         modelId: model.id,

@@ -28,6 +28,7 @@ import { formatDate, formatDateTime } from "@/lib/formatDate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AiSettingsTab } from "@/components/admin/AiSettingsTab";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch, useUrlState } from "@/hooks/useUrlState";
 import {
@@ -75,6 +76,7 @@ type Tab =
   | "feedback"
   | "announcements"
   | "giapha"
+  | "ai"
   | "config";
 
 const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
@@ -84,6 +86,7 @@ const TABS: ReadonlyArray<{ value: Tab; label: string }> = [
   { value: "feedback", label: "Góp ý" },
   { value: "announcements", label: "Thông báo" },
   { value: "giapha", label: "Nhập gia phả" },
+  { value: "ai", label: "Trợ lý AI" },
   { value: "config", label: "Cấu hình" },
 ];
 
@@ -180,6 +183,7 @@ export default function Admin() {
         {tab === "feedback" && <FeedbackTab />}
         {tab === "announcements" && <AnnouncementsAdminTab />}
         {tab === "giapha" && <GiaPhaImportTab />}
+        {tab === "ai" && <AiSettingsTab />}
         {tab === "config" && <ConfigTab />}
       </main>
     </div>

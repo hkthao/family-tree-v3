@@ -11,7 +11,12 @@ import { useVisualViewport } from "@/hooks/useVisualViewport";
 import * as history from "@/lib/aiChatHistory";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
 import { track } from "@/lib/analytics";
-import { askAssistant, type ChatTurn } from "@/lib/queries/aiChat";
+import {
+  askAssistant,
+  clearServerHistory,
+  loadServerHistory,
+  type ChatTurn,
+} from "@/lib/queries/aiChat";
 
 /**
  * Trợ lý hỏi đáp gia phả — GĐ 1, chỉ đọc.
@@ -67,9 +72,25 @@ export default function AiChat() {
 
   const enabled = isFeatureEnabled(clan.disabled_features, "ai_assistant");
 
-  // ─── Nạp lịch sử trên máy ────────────────────────────────────────
+  // ─── Lịch sử: vẽ ngay từ cache, rồi hoà với bản trên server ──────
+  // Server là nguồn sự thật (đồng bộ giữa máy tính và điện thoại);
+  // localStorage chỉ để không phải nhìn màn hình trống lúc chờ mạng.
   useEffect(() => {
-    if (clanId) setTurns(history.load(clanId));
+    if (!clanId) return;
+    setTurns(history.load(clanId));
+    let alive = true;
+    loadServerHistory(clanId)
+      .then((server) => {
+        // Chỉ ghi đè khi server thực sự có dữ liệu — mạng lỗi hoặc dòng họ
+        // mới thì giữ nguyên cache, đừng xoá trắng những gì đang hiện.
+        if (alive && server.length) setTurns(server);
+      })
+      .catch(() => {
+        /* offline: cứ dùng cache, không báo lỗi làm gì */
+      });
+    return () => {
+      alive = false;
+    };
   }, [clanId]);
 
   useEffect(() => {
@@ -146,6 +167,8 @@ export default function AiChat() {
     history.clear(clanId);
     setTurns([]);
     setError(null);
+    // Xoá cả bản trên server, nếu không mở lại là nó hiện về.
+    clearServerHistory(clanId).catch((e: Error) => setError(e.message));
   }
 
   const fontSize = FONT_STEPS[fontStep];

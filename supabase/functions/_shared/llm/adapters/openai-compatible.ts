@@ -9,7 +9,6 @@
  * KHÔNG gửi `temperature` / `top_p`. Xem lý do ở types.ts.
  */
 
-import { env } from "../env.ts";
 import {
   LlmError,
   type LlmAdapter,
@@ -132,12 +131,11 @@ export function buildOpenAiBody(
 export const openAiCompatibleAdapter: LlmAdapter = {
   provider: "openai-compatible",
 
-  async complete(req: LlmRequest, model: ModelEntry): Promise<LlmResponse> {
-    const apiKey = env(model.apiKeyEnv);
-    if (!apiKey) {
-      throw new LlmError(`Thiếu biến môi trường ${model.apiKeyEnv}`, "auth");
-    }
-
+  async complete(
+    req: LlmRequest,
+    model: ModelEntry,
+    apiKey: string,
+  ): Promise<LlmResponse> {
     const body = buildOpenAiBody(req, model);
 
     let res: Response;

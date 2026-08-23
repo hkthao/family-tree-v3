@@ -14,6 +14,57 @@ export interface ChatTurn {
   content: string;
 }
 
+/**
+ * `database.types.ts` được sinh tự động từ schema, mà `ai_messages` vừa
+ * thêm ở migration 20260823140000 nên chưa có trong đó. Ép kiểu ĐÚNG MỘT
+ * CHỖ ở đây thay vì rải `as any` khắp nơi.
+ *
+ * Bỏ dòng này sau khi áp migration và chạy lại lệnh sinh types.
+ */
+const untyped = supabase as unknown as {
+  from(table: string): {
+    select(cols: string): {
+      eq(col: string, v: string): {
+        order(col: string, o: { ascending: boolean }): {
+          limit(n: number): Promise<{
+            data: Array<{ role: string; content: string }> | null;
+            error: { message: string } | null;
+          }>;
+        };
+      };
+    };
+    delete(): {
+      eq(col: string, v: string): Promise<{ error: { message: string } | null }>;
+    };
+  };
+};
+
+/** Lịch sử lưu ở server — nguồn sự thật; localStorage chỉ là cache. */
+export async function loadServerHistory(clanId: string): Promise<ChatTurn[]> {
+  // Đọc trực tiếp: RLS của ai_messages là `owner_id = auth.uid()` nên chỉ
+  // ra tin của chính người đang đăng nhập. Không cần endpoint riêng.
+  const { data, error } = await untyped
+    .from("ai_messages")
+    .select("role, content, created_at")
+    .eq("clan_id", clanId)
+    .order("created_at", { ascending: false })
+    .limit(40);
+  if (error) throw new Error(error.message);
+  return (data ?? []).reverse().map((m) => ({
+    role: m.role as ChatTurn["role"],
+    content: m.content,
+  }));
+}
+
+/** Xoá lịch sử phía server của chính mình trong một dòng họ. */
+export async function clearServerHistory(clanId: string): Promise<void> {
+  const { error } = await untyped
+    .from("ai_messages")
+    .delete()
+    .eq("clan_id", clanId);
+  if (error) throw new Error(error.message);
+}
+
 export interface AskResult {
   answer: string;
   toolCalls: number;

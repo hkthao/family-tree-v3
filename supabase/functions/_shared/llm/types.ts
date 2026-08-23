@@ -89,7 +89,16 @@ export interface LlmResponse {
  */
 export interface LlmAdapter {
   readonly provider: string;
-  complete(req: LlmRequest, model: ModelEntry): Promise<LlmResponse>;
+  /**
+   * `apiKey` được tiêm vào chứ adapter KHÔNG tự đọc env. Nhờ vậy khoá có
+   * thể đến từ DB (đã mã hoá) hay từ env mà adapter không cần biết, và
+   * adapter thành hàm thuần dễ test.
+   */
+  complete(
+    req: LlmRequest,
+    model: ModelEntry,
+    apiKey: string,
+  ): Promise<LlmResponse>;
 }
 
 export interface ModelEntry {
@@ -100,7 +109,12 @@ export interface ModelEntry {
   rawId: string;
   /** Chỉ với openai-compatible: endpoint gốc. */
   baseUrl?: string;
-  /** Tên biến môi trường chứa khoá. Khoá KHÔNG bao giờ nằm trong code. */
+  /**
+   * Nhóm khoá dùng chung. Nhiều model chung một khoá (mọi model OpenAI
+   * dùng chung 'openai'). Khớp `ai_provider_keys.provider`.
+   */
+  credential: "openai" | "anthropic" | "deepseek";
+  /** Biến môi trường dự phòng khi DB chưa có khoá. */
   apiKeyEnv: string;
   /** USD trên 1 triệu token — chỉ để ước tính chi phí, không để tính tiền khách. */
   priceIn: number;
