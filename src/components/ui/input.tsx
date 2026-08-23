@@ -2,20 +2,52 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  /**
+   * Icon hiện trong ô, sát mép trái.
+   *
+   * Có prop này để việc theo quy ước (docs/design-language.md) chỉ tốn
+   * một dòng, thay vì phải tự dựng wrapper `relative` + `absolute` ở
+   * từng chỗ — 134 ô nhập trong repo mà mỗi chỗ tự dựng thì kiểu gì
+   * cũng lệch nhau.
+   *
+   * Không cần đặt kích thước: component tự ép về h-4 w-4.
+   */
+  icon?: React.ReactNode;
+}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
-    return (
+  ({ className, type, icon, ...props }, ref) => {
+    const field = (
       <input
         type={type}
         className={cn(
           "flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          // Chừa chỗ cho icon. Không dùng padding trái mặc định vì ô
+          // không có icon vẫn phải canh như cũ.
+          icon && "pl-10",
           className,
         )}
         ref={ref}
         {...props}
       />
+    );
+
+    if (!icon) return field;
+
+    return (
+      <div className="relative w-full">
+        <span
+          // pointer-events-none: bấm vào icon phải focus vào ô, chứ
+          // không nuốt cú chạm — trên điện thoại rất dễ chạm trúng.
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4"
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
+        {field}
+      </div>
     );
   },
 );

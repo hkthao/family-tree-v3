@@ -1,12 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import {
+  IconCheck,
+  IconKey,
+  IconRefresh,
+  IconSparkles,
+  IconTrash,
+} from "@/components/icons";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   AI_PROVIDERS,
   AiNotInstalledError,
@@ -162,6 +170,7 @@ export function AiSettingsTab() {
             disabled={configQ.isLoading || toggleEnabled.isPending}
             onClick={() => toggleEnabled.mutate(!configQ.data?.enabled)}
           >
+            <IconSparkles className="h-4 w-4" />
             {configQ.data?.enabled ? "Đang bật — bấm để tắt" : "Đang tắt — bấm để bật"}
           </Button>
         </div>
@@ -170,9 +179,10 @@ export function AiSettingsTab() {
           <label htmlFor="qa-model" className="text-sm font-medium">
             Model cho hỏi đáp
           </label>
-          <select
+          <Select
+            icon={<IconSparkles />}
             id="qa-model"
-            className="min-h-[44px] rounded-md border bg-background px-3 text-sm"
+            className="max-w-sm"
             value={configQ.data?.qaModel ?? ""}
             disabled={configQ.isLoading || changeModel.isPending}
             onChange={(e) => changeModel.mutate(e.target.value)}
@@ -182,7 +192,7 @@ export function AiSettingsTab() {
                 {m.label}
               </option>
             ))}
-          </select>
+          </Select>
           <p className="text-xs text-muted-foreground">
             Phải có khoá của nhà cung cấp tương ứng ở dưới thì model mới chạy.
           </p>
@@ -230,6 +240,7 @@ export function AiSettingsTab() {
 
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
+                icon={<IconKey />}
                 type="password"
                 autoComplete="off"
                 value={draft}
@@ -244,6 +255,7 @@ export function AiSettingsTab() {
                   onClick={() => save.mutate({ p: p.id, key: draft })}
                   disabled={!draft.trim() || busy}
                 >
+                  <IconCheck className="h-4 w-4" />
                   Lưu &amp; kiểm tra
                 </Button>
                 {st && (
@@ -253,6 +265,7 @@ export function AiSettingsTab() {
                       onClick={() => test.mutate(p.id)}
                       disabled={busy}
                     >
+                      <IconRefresh className="h-4 w-4" />
                       Kiểm tra
                     </Button>
                     <Button
@@ -270,6 +283,7 @@ export function AiSettingsTab() {
                         if (ok) remove.mutate(p.id);
                       }}
                     >
+                      <IconTrash className="h-4 w-4" />
                       Xoá
                     </Button>
                   </>

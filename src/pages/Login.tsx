@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { AuthLayout } from "@/components/AuthLayout";
-import { IconLogIn, IconQrCode } from "@/components/icons";
+import { IconLock, IconLogIn, IconMail, IconQrCode } from "@/components/icons";
 import { QrScannerModal } from "@/components/QrScannerModal";
 import { GoogleGlyph } from "@/components/SocialAuthButtons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -183,6 +183,7 @@ export default function Login() {
                 Email
               </Label>
               <Input
+                icon={<IconMail />}
                 id="email"
                 type="email"
                 autoComplete="email"
@@ -199,6 +200,7 @@ export default function Login() {
                   Mật khẩu
                 </Label>
                 <Input
+                  icon={<IconLock />}
                   id="password"
                   type="password"
                   autoComplete="current-password"

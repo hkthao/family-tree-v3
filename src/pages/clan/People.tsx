@@ -20,16 +20,7 @@ import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-import {
-  IconCopy,
-  IconGrid,
-  IconList,
-  IconPlus,
-  IconSearch,
-  IconSparkles,
-  IconUpload,
-  IconUsers,
-} from "@/components/icons";
+import { IconCopy, IconGrid, IconList, IconPlus, IconSearch, IconSparkles, IconUpload, IconUsers } from "@/components/icons";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
@@ -39,6 +30,7 @@ import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import {
   SegmentedButton,
   SegmentedControl,
@@ -442,11 +434,12 @@ export default function People() {
       {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
           parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc. */}
       <div className="flex flex-col gap-2 sm:mt-2 sm:flex-row sm:flex-wrap sm:items-center">
-        <select
+        <Select
+          icon={<IconGrid />}
           value={branchId}
           onChange={(e) => setBranchId(e.target.value)}
           aria-label="Lọc theo chi"
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto sm:flex-1 sm:min-w-[140px]"
+          className="sm:w-auto sm:flex-1 sm:min-w-[140px]"
         >
           <option value="">Tất cả chi</option>
           {branches?.map((b) => (
@@ -454,12 +447,13 @@ export default function People() {
               {b.name}
             </option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
+          icon={<IconUsers />}
           value={generation}
           onChange={(e) => setGeneration(e.target.value)}
           aria-label="Lọc theo đời"
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50 sm:w-auto sm:flex-1 sm:min-w-[120px]"
+          className="disabled:opacity-50 sm:w-auto sm:flex-1 sm:min-w-[120px]"
           disabled={!maxGen}
         >
           <option value="">Tất cả đời</option>
@@ -470,17 +464,18 @@ export default function People() {
                 </option>
               ))
             : null}
-        </select>
-        <select
+        </Select>
+        <Select
+          icon={<IconList />}
           value={sort}
           onChange={(e) => setSort(e.target.value as typeof sort)}
           aria-label="Sắp xếp"
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm sm:w-auto sm:flex-1 sm:min-w-[120px]"
+          className="sm:w-auto sm:flex-1 sm:min-w-[120px]"
         >
           <option value="generation">Sắp: Đời</option>
           <option value="name">Sắp: Tên</option>
           <option value="birth">Sắp: Năm sinh</option>
-        </select>
+        </Select>
       </div>
       </CollapsibleFilters>
 
@@ -495,11 +490,12 @@ export default function People() {
             Đã chọn {selected.size}
             {total > 0 ? ` / ${total}` : ""} người
           </span>
-          <select
+          <Select
+          icon={<IconGrid />}
             value={bulkBranch}
             onChange={(e) => setBulkBranch(e.target.value)}
             aria-label="Đổi chi cho lựa chọn"
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            className="sm:w-auto"
           >
             <option value="">(không có chi)</option>
             {branches?.map((b) => (
@@ -507,7 +503,7 @@ export default function People() {
                 {b.name}
               </option>
             ))}
-          </select>
+          </Select>
           <Button
             size="sm"
             onClick={() => bulkChangeBranchM.mutate()}

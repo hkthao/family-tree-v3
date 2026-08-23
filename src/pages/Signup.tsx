@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { AuthLayout } from "@/components/AuthLayout";
-import { IconUserPlus } from "@/components/icons";
+import { IconLock, IconMail, IconUser, IconUserPlus } from "@/components/icons";
 import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ export default function Signup() {
         <div className="space-y-2">
           <Label htmlFor="display_name">Tên hiển thị</Label>
           <Input
+            icon={<IconUser />}
             id="display_name"
             type="text"
             value={displayName}
@@ -66,6 +67,7 @@ export default function Signup() {
             Email
           </Label>
           <Input
+            icon={<IconMail />}
             id="email"
             type="email"
             autoComplete="email"
@@ -80,6 +82,7 @@ export default function Signup() {
             Mật khẩu
           </Label>
           <Input
+            icon={<IconLock />}
             id="password"
             type="password"
             autoComplete="new-password"
