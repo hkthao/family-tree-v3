@@ -75,6 +75,30 @@ export async function listKeyStatus(): Promise<KeyStatus[]> {
   return (data ?? []) as KeyStatus[];
 }
 
+/**
+ * Edge Function chưa lên máy chủ, hoặc lên nhưng thiếu file.
+ *
+ * Runtime của Supabase self-host trả nguyên văn
+ * "InvalidWorkerCreation: worker boot error: … could not find an
+ * appropriate entrypoint" — đúng nhưng vô nghĩa với người vận hành. Đổi
+ * thành câu nói rõ phải làm gì.
+ */
+function friendlyFunctionError(msg: string): string | null {
+  if (/InvalidWorkerCreation|could not find an appropriate entrypoint|worker boot error/i.test(msg)) {
+    return (
+      "Edge Function chưa được cài đầy đủ trên máy chủ (thiếu file). " +
+      "Chạy workflow deploy-functions rồi thử lại."
+    );
+  }
+  if (/BOOT_ERROR|Module not found|Relative import path/i.test(msg)) {
+    return (
+      "Edge Function lên máy chủ nhưng thiếu thư mục _shared. " +
+      "Chạy lại workflow deploy-functions."
+    );
+  }
+  return null;
+}
+
 async function callAdmin<T>(body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke<T>("ai-admin", { body });
   if (error) {
@@ -83,13 +107,14 @@ async function callAdmin<T>(body: Record<string, unknown>): Promise<T> {
     const res = (error as { context?: Response }).context;
     if (res) {
       try {
-        const parsed = (await res.clone().json()) as { error?: string };
-        if (parsed?.error) throw new Error(parsed.error);
+        const parsed = (await res.clone().json()) as { error?: string; msg?: string };
+        const raw = parsed?.error ?? parsed?.msg;
+        if (raw) throw new Error(friendlyFunctionError(raw) ?? raw);
       } catch (e) {
         if (e instanceof Error && !e.message.startsWith("Unexpected")) throw e;
       }
     }
-    throw new Error(error.message);
+    throw new Error(friendlyFunctionError(error.message) ?? error.message);
   }
   if (!data) throw new Error("Không nhận được phản hồi");
   return data;
