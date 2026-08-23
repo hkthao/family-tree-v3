@@ -63,6 +63,7 @@ export const ROUTE_META: RouteMeta[] = [
     description:
       "Phong tục, nghi lễ và tín ngưỡng Việt Nam — giải thích ngắn gọn, dễ tra cứu.",
   },
+  { pattern: "/xem/demo", title: "Xem thử gia phả mẫu" },
   {
     pattern: "/xem/clans/:clanId",
     title: "Gia phả dòng họ",

@@ -157,9 +157,23 @@ Sau 4 tuần kể từ khi gắn Umami, các chỉ số cần có:
 Chỉ số thật sự quan trọng là **cột cuối**. Ba cột trên chỉ để biết chỗ nào rò.
 
 ## Thứ tự đề nghị
-1. Umami + UTM (không đo thì không biết mình sửa có ăn thua gì)
-2. Sửa đích CTA sang demo công khai
-3. `robots.txt` + `sitemap.xml` + JSON-LD FAQ
-4. Tự host font, sửa `.DS_Store`, nén ảnh
-5. Nút chia sẻ Zalo
-6. Trang con SEO theo từ khoá dài
+1. ~~Umami + UTM~~ ✅
+2. ~~Sửa đích CTA sang demo công khai~~ ✅
+3. ~~`robots.txt` + `sitemap.xml` + JSON-LD FAQ~~ ✅
+4. ~~Nút chia sẻ Zalo~~ ✅ · ~~sửa `.DS_Store`~~ ✅
+5. **Tự host font** — còn lại, cần tải woff2 subset tiếng Việt về `assets/fonts/`
+6. **Nén ảnh** + `loading="lazy"` + `width`/`height`
+7. **Trang con SEO theo từ khoá dài** — việc lớn nhất còn lại
+
+## Đã làm (23/8/2026)
+- Umami gắn chung website id với app, kèm 5 event: `landing_cta_click`
+  (có `section`), `landing_demo_click`, `landing_faq_open`, `landing_scroll_75`,
+  `landing_share`. Mọi lời gọi bọc try/catch — adblock chặn Umami là chuyện
+  thường, không được để nó làm vỡ trang.
+- 9 CTA không còn cái nào trỏ root. Hero đảo thứ bậc: **"Xem thử gia phả mẫu"**
+  thành nút chính, "Tạo gia phả miễn phí" xuống phụ. Mọi link mang UTM riêng
+  theo vị trí nên biết được chỗ nào hiệu quả, không chỉ biết "có người bấm".
+- Route mới **`/xem/demo`** trong app tự phân giải `demo_clan_id` → landing tĩnh
+  không phải hard-code UUID, đổi dòng họ demo ở /admin là landing tự trỏ đúng.
+- `robots.txt`, `sitemap.xml`, JSON-LD `FAQPage` (5 câu) + `SoftwareApplication`.
+- Nút chia sẻ Zalo + Facebook ở cuối trang.
