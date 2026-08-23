@@ -143,6 +143,32 @@ describe("buildOpenAiBody", () => {
     expect(anniv?.function.strict).toBe(false);
   });
 
+  /**
+   * Lỗi thật thứ hai trên production: model suy luận của OpenAI từ chối
+   * tool trên /chat/completions nếu không tắt suy luận. Mặc định là CÓ
+   * suy luận nên không gửi gì cũng dính — phải gửi "none" tường minh.
+   */
+  it("gửi reasoning_effort:none khi model suy luận dùng tool", () => {
+    const body = buildOpenAiBody(
+      { ...baseReq, tools: [TOOL] },
+      getModel("gpt-5.6-luna"),
+    );
+    expect(body.reasoning_effort).toBe("none");
+  });
+
+  it("không gửi reasoning_effort khi không có tool", () => {
+    const body = buildOpenAiBody(baseReq, getModel("gpt-5.6-luna"));
+    expect(body).not.toHaveProperty("reasoning_effort");
+  });
+
+  it("không gửi reasoning_effort cho model không cần (DeepSeek 400 vì tham số lạ)", () => {
+    const body = buildOpenAiBody(
+      { ...baseReq, model: "deepseek-v4-flash", tools: [TOOL] },
+      getModel("deepseek-v4-flash"),
+    );
+    expect(body).not.toHaveProperty("reasoning_effort");
+  });
+
   it("không bật strict khi schema mở", () => {
     const open: ToolSpec = {
       ...TOOL,

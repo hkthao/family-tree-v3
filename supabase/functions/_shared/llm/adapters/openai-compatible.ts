@@ -148,6 +148,9 @@ export function buildOpenAiBody(
       },
     }));
     body.tool_choice = "auto";
+    // Xem ModelEntry.toolsNeedReasoningNone — model suy luận của OpenAI
+    // từ chối tool trên /chat/completions nếu không tắt suy luận.
+    if (model.toolsNeedReasoningNone) body.reasoning_effort = "none";
   }
 
   return body;
