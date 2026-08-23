@@ -1,0 +1,100 @@
+name: deploy-functions
+
+# Đẩy Supabase Edge Function lên máy chủ tự host.
+#
+# Trước đây bước này 100% thủ công: scp từ máy cá nhân rồi ssh restart.
+# Hệ quả là nó phụ thuộc vào việc ai đó có khoá SSH, IP có bị fail2ban
+# chặn hay không, và rất dễ quên sau khi sửa function. Đưa vào đây để
+# việc deploy không còn gắn với một cái máy cụ thể.
+#
+# Chạy tay (workflow_dispatch) chứ không tự động theo push: function chạm
+# thẳng vào production database, nên nên là một hành động có chủ đích.
+#
+# Cần hai secret (thêm một lần):
+#   SUPABASE_HOST      host của máy chủ Supabase tự host
+#   SUPABASE_SSH_KEY   private key có quyền vào máy đó
+#   SUPABASE_SSH_USER  (tuỳ chọn, mặc định root)
+
+on:
+  workflow_dispatch:
+    inputs:
+      restart:
+        description: "Khởi động lại container edge-functions sau khi đẩy"
+        type: boolean
+        default: true
+      ensure_ai_key:
+        description: "Sinh AI_KEY_ENCRYPTION_KEY nếu chưa có (chạy trên máy chủ, không lộ ra log)"
+        type: boolean
+        default: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Đẩy vào thư mục TRUNG GIAN trước.
+      #
+      # volumes/functions được bind-mount vào container edge-runtime, mà
+      # xoá thư mục đang bind-mount sẽ làm mount treo — container giữ
+      # inode cũ đã bị xoá nên chỉ thấy rỗng. (Đã dính đúng lỗi này với
+      # thư mục landing, xem deploy-vps.yml.)
+      - name: Upload functions to staging dir
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SUPABASE_HOST }}
+          username: ${{ secrets.SUPABASE_SSH_USER || 'root' }}
+          key: ${{ secrets.SUPABASE_SSH_KEY }}
+          source: "supabase/functions/*"
+          target: "/root/supabase-functions-staging/"
+          strip_components: 2
+          rm: true
+          overwrite: true
+
+      - name: Publish functions
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          ENSURE_AI_KEY: ${{ inputs.ensure_ai_key }}
+          RESTART: ${{ inputs.restart }}
+        with:
+          host: ${{ secrets.SUPABASE_HOST }}
+          username: ${{ secrets.SUPABASE_SSH_USER || 'root' }}
+          key: ${{ secrets.SUPABASE_SSH_KEY }}
+          envs: ENSURE_AI_KEY,RESTART
+          script: |
+            set -euo pipefail
+            cd /root/supabase
+
+            # KHÔNG dùng --delete. Máy chủ có sẵn `main` (router của edge
+            # runtime) và `hello` — chúng không nằm trong repo, xoá đi là
+            # sập toàn bộ edge function. Chỉ chồng lên những gì repo có.
+            rsync -a /root/supabase-functions-staging/ volumes/functions/
+
+            echo "── function hiện có trên máy chủ ──"
+            ls -1 volumes/functions/
+
+            # Khoá mã hoá cho khoá API của các nhà cung cấp AI.
+            #
+            # Sinh NGAY TRÊN MÁY CHỦ nếu chưa có, nên giá trị không bao
+            # giờ đi qua log của CI hay qua máy của ai. Idempotent: đã có
+            # thì không đụng vào — ghi đè sẽ làm mọi khoá đã lưu không
+            # giải mã được nữa.
+            if [ "${ENSURE_AI_KEY}" = "true" ]; then
+              touch functions.env
+              if grep -q '^AI_KEY_ENCRYPTION_KEY=' functions.env; then
+                echo "AI_KEY_ENCRYPTION_KEY: đã có, giữ nguyên"
+              else
+                printf 'AI_KEY_ENCRYPTION_KEY=%s\n' "$(openssl rand -base64 32)" >> functions.env
+                echo "AI_KEY_ENCRYPTION_KEY: đã sinh mới (32 byte)"
+                echo "⚠️  Sao lưu giá trị này ra ngoài máy chủ:"
+                echo "    grep AI_KEY_ENCRYPTION_KEY /root/supabase/functions.env"
+                echo "    Mất nó = mọi khoá API đã lưu không giải mã được."
+              fi
+            fi
+
+            if [ "${RESTART}" = "true" ]; then
+              docker compose up -d --force-recreate functions
+              sleep 5
+              docker ps --filter name=supabase-edge-functions \
+                --format 'edge-functions: {{.Status}}'
+            fi

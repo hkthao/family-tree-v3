@@ -35,6 +35,8 @@ interface Rule {
   re: RegExp;
   /** Giá trị local/ví dụ được phép. */
   allow?: RegExp;
+  /** File khớp thì bỏ qua rule này (không bỏ qua các rule khác). */
+  allowIn?: RegExp;
 }
 
 const RULES: Rule[] = [
@@ -46,7 +48,18 @@ const RULES: Rule[] = [
   },
   { name: "hostname VPS nhà cung cấp", re: /srv\d{6,}|hstgr\.cloud/gi },
   { name: "bí danh SSH nội bộ", re: /\bfamily-tree-db\b/g },
-  { name: "đường dẫn tuyệt đối trên máy chủ", re: /\/root\/[a-z-]+/g },
+  {
+    name: "đường dẫn tuyệt đối trên máy chủ",
+    re: /\/root\/[a-z-]+/g,
+    // Workflow deploy buộc phải biết thư mục đích, và `/root/supabase`
+    // đúng là đường dẫn mặc định trong tài liệu self-host của Supabase —
+    // không có ĐỊA CHỈ MÁY CHỦ (nằm trong secret) thì nó vô dụng.
+    //
+    // Vẫn chặn ở mọi nơi khác: mã ứng dụng đi vào bundle trình duyệt,
+    // README và docs thì được đọc trực tiếp trên GitHub. Chính một
+    // component React từng làm lộ `root@<ip>:/root/supabase/...`.
+    allowIn: /^\.github\/workflows\//,
+  },
 ];
 
 describe("không rò thông tin hạ tầng vào mã nguồn mở", () => {
@@ -56,9 +69,10 @@ describe("không rò thông tin hạ tầng vào mã nguồn mở", () => {
     expect(files.length).toBeGreaterThan(100);
   });
 
-  it.each(RULES)("không có $name", ({ re, allow }) => {
+  it.each(RULES)("không có $name", ({ re, allow, allowIn }) => {
     const hits: string[] = [];
     for (const file of files) {
+      if (allowIn?.test(file)) continue;
       let text: string;
       try {
         text = readFileSync(file, "utf8");
