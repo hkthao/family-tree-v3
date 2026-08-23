@@ -262,9 +262,8 @@ export default function ContributionDetail() {
               {/* Ba hành động của thẻ, xếp phá huỷ → phụ → chính. */}
               <CardFooter className="flex-wrap justify-end gap-2 border-t pt-4">
                 <Button
-                  variant="outline"
+                  variant="destructive-outline"
                   size="sm"
-                  className="text-destructive"
                   disabled={approveM.isPending || rejectM.isPending}
                   onClick={async () => {
                     const ok = await askConfirm({

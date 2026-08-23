@@ -16,6 +16,7 @@ import {
 } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -587,7 +588,7 @@ export function ContributeDialog({
               </Alert>
             )}
 
-            <div className="mt-5 flex justify-end gap-2">
+            <FormActions className="mt-3">
               <Button variant="outline" size="sm" onClick={onClose}>
                 Huỷ
               </Button>
@@ -599,7 +600,7 @@ export function ContributeDialog({
                 <IconSend className="h-4 w-4 mr-1.5" />
                 {m.isPending ? "Đang gửi…" : "Gửi đề xuất"}
               </Button>
-            </div>
+            </FormActions>
           </>
         )}
         </div>

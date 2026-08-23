@@ -35,10 +35,42 @@ export interface ChatTurn {
   content: string;
 }
 
+/** Một dòng thô đọc từ `ai_messages`. */
+export interface StoredMessage {
+  role: string;
+  content: string;
+  created_at: string;
+}
+
+/**
+ * Sắp lại đúng thứ tự thời gian, và **hoà thì câu hỏi đứng trước câu
+ * trả lời**.
+ *
+ * Cần luật hoà vì các bản ghi cũ được chèn hai dòng trong CÙNG một câu
+ * lệnh nên `now()` cho ra timestamp y hệt nhau; sắp theo created_at
+ * không đủ, và người dùng thấy câu trả lời nằm trên câu hỏi. Từ nay
+ * server ghi lệch 1ms (xem persistTurn), nhưng dữ liệu cũ vẫn phải hiện
+ * đúng nên luật này ở lại.
+ *
+ * Tách hàm thuần để test được mà không cần database.
+ */
+export function orderTurns(rows: StoredMessage[]): ChatTurn[] {
+  const rank = (r: string) => (r === "user" ? 0 : 1);
+  return [...rows]
+    .sort((a, b) => {
+      const t = Date.parse(a.created_at) - Date.parse(b.created_at);
+      return t !== 0 ? t : rank(a.role) - rank(b.role);
+    })
+    .map((m) => ({ role: m.role as ChatTurn["role"], content: m.content }));
+}
+
 /** Lịch sử lưu ở server — nguồn sự thật; localStorage chỉ là cache. */
 export async function loadServerHistory(clanId: string): Promise<ChatTurn[]> {
   // Đọc trực tiếp: RLS của ai_messages là `owner_id = auth.uid()` nên chỉ
   // ra tin của chính người đang đăng nhập. Không cần endpoint riêng.
+  //
+  // Lấy 40 tin MỚI NHẤT (desc + limit) rồi mới sắp lại xuôi thời gian —
+  // sắp xuôi ngay từ query sẽ lấy nhầm 40 tin CŨ nhất.
   const { data, error } = await supabase
     .from("ai_messages")
     .select("role, content, created_at")
@@ -46,10 +78,7 @@ export async function loadServerHistory(clanId: string): Promise<ChatTurn[]> {
     .order("created_at", { ascending: false })
     .limit(40);
   if (error) throw new Error(error.message);
-  return (data ?? []).reverse().map((m) => ({
-    role: m.role as ChatTurn["role"],
-    content: m.content,
-  }));
+  return orderTurns((data ?? []) as StoredMessage[]);
 }
 
 /** Xoá lịch sử phía server của chính mình trong một dòng họ. */

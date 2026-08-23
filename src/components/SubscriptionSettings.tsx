@@ -179,8 +179,7 @@ export function SubscriptionSettings({ clanId }: Props) {
           </Button>
           <Button
             size="sm"
-            variant="outline"
-            className="text-destructive"
+            variant="destructive-outline"
             disabled={deleteM.isPending}
             onClick={async () => {
               const ok = await confirm({

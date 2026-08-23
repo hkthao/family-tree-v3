@@ -367,11 +367,13 @@ export default function Todo() {
       )}
 
       {canEdit && selected.size > 0 && (
-        <div className="sticky top-0 z-10 -mx-4 sm:mx-0 px-4 sm:px-3 py-2 bg-card border-y sm:border sm:rounded-md flex items-center gap-3 shadow-sm">
+        <div className="sticky top-0 z-10 -mx-4 sm:mx-0 px-4 sm:px-3 py-2 bg-card border-y sm:border sm:rounded-md flex flex-wrap items-center gap-x-3 gap-y-2 shadow-sm">
           <span className="text-sm">
             Đã chọn <strong className="tabular-nums">{selected.size}</strong>{" "}
             người
           </span>
+          {/* Đẩy nút sang phải khi còn chỗ; hết chỗ thì cả cụm xuống dòng
+              thay vì tràn khỏi mép. */}
           <div className="flex-1" />
           <Button
             type="button"
@@ -385,7 +387,7 @@ export default function Todo() {
           </Button>
           <Button
             type="button"
-            variant="destructive"
+            variant="destructive-outline"
             size="sm"
             onClick={onBulkExclude}
             disabled={bulkExcludeMutation.isPending}

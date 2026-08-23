@@ -287,7 +287,6 @@ export function AiSettingsTab() {
                   <>
                     <Button
                       variant="ghost"
-                      className="text-destructive"
                       disabled={busy}
                       onClick={async () => {
                         const ok = await confirm({

@@ -221,7 +221,7 @@ export default function RestingPlaceDetail() {
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="destructive-outline"
                 onClick={() =>
                   askConfirm({
                     title: "Xoá nơi an nghỉ này?",

@@ -247,7 +247,6 @@ export default function AiGenerate() {
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={() => setNarrative(EXAMPLE_NARRATIVE)}
             >
               <IconScroll className="h-4 w-4 mr-1.5" />

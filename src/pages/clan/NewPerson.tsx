@@ -27,6 +27,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormActions } from "@/components/ui/form-actions";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
@@ -500,21 +501,12 @@ export default function NewPerson() {
           </Alert>
         )}
 
-        <div className="flex gap-3 pt-2 justify-end">
-          <Button
-            type="submit"
-            variant="default"
-            data-testid="person-submit-button"
-            disabled={mutation.isPending || !fullName.trim()}
-          >
-            {mutation.isPending && !andContinueRef.current ? (
-              "Đang lưu…"
-            ) : (
-              <>
-                <IconCheck className="h-4 w-4 mr-1.5" />
-                Lưu
-              </>
-            )}
+        <FormActions>
+          <Button asChild variant="outline">
+            <Link to={`/clans/${clanId}/people`}>
+              <IconX className="h-4 w-4 mr-1.5" />
+              Hủy
+            </Link>
           </Button>
           {!isCopy && (
             <Button
@@ -534,13 +526,22 @@ export default function NewPerson() {
               )}
             </Button>
           )}
-          <Button asChild variant="outline">
-            <Link to={`/clans/${clanId}/people`}>
-              <IconX className="h-4 w-4 mr-1.5" />
-              Hủy
-            </Link>
+          <Button
+            type="submit"
+            variant="default"
+            data-testid="person-submit-button"
+            disabled={mutation.isPending || !fullName.trim()}
+          >
+            {mutation.isPending && !andContinueRef.current ? (
+              "Đang lưu…"
+            ) : (
+              <>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                Lưu
+              </>
+            )}
           </Button>
-        </div>
+        </FormActions>
       </form>
     </div>
   );

@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { IconCheck, IconList, IconTag, IconUpload } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
@@ -301,7 +302,7 @@ export default function CustomsImport() {
         </div>
       )}
 
-      <div className="flex justify-end gap-2">
+      <FormActions>
         <Button type="button" variant="ghost" onClick={() => navigate("/so-tay")}>
           Hủy
         </Button>
@@ -313,7 +314,7 @@ export default function CustomsImport() {
           <IconCheck className="h-4 w-4 mr-1.5" />
           {run.isPending ? "Đang tạo…" : `Tạo ${importable.length} bài`}
         </Button>
-      </div>
+      </FormActions>
     </Shell>
   );
 }

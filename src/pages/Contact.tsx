@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -165,7 +166,10 @@ export default function Contact() {
             </p>
           </div>
 
-          <div className="flex gap-3 pt-2 justify-end">
+          <FormActions>
+            <Button asChild variant="outline">
+              <Link to="/clans">Quay lại</Link>
+            </Button>
             <Button
               type="submit"
               variant="outline"
@@ -174,10 +178,7 @@ export default function Contact() {
               <IconCheck className="h-4 w-4 mr-1.5" />
               {mutation.isPending ? "Đang gửi…" : "Gửi phản hồi"}
             </Button>
-            <Button asChild variant="outline">
-              <Link to="/clans">Quay lại</Link>
-            </Button>
-          </div>
+          </FormActions>
         </form>
       </main>
     </div>

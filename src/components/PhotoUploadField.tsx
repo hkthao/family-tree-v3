@@ -158,8 +158,7 @@ export function PhotoUploadField({
           {photoPath && (
             <Button
               type="button"
-              variant="outline"
-              className="text-destructive"
+              variant="destructive-outline"
               onClick={async () => {
                 const ok = await confirm({
                   title: "Xoá ảnh của người này?",

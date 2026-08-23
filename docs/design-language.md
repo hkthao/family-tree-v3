@@ -68,6 +68,10 @@ trọn chiều ngang, và mắt có một chỗ cố định để tìm nút —
 Thứ tự trong footer: **phá huỷ → phụ → chính**, chính nằm ngoài cùng bên phải
 (gần ngón cái nhất trên điện thoại). Meta text đẩy sang trái để hai bên cân nhau.
 
+**Cùng một hàng thì cùng một `size`.** Trộn `size="sm"` (h-10) với mặc định
+(h-12) cho ra hai nút cao thấp so le, nhìn như lỗi dựng trang. Muốn nhấn nút
+chính thì đổi `variant`, đừng đổi chiều cao.
+
 **Không dùng card, và chỉ có ĐÚNG MỘT hành động → đưa vào trong ô nhập.**
 
 ```tsx
@@ -86,6 +90,40 @@ Một nút rời cạnh ô nhập chiếm cả một ô lưới chỉ để làm
 Đưa vào trong ô thì gọn hơn và quan hệ giữa ô với hành động là hiển nhiên.
 
 Từ **hai hành động trở lên** thì đừng nhồi vào ô — bọc card rồi xuống footer.
+
+### Hàng nút phải xuống dòng được trên điện thoại
+
+Dùng `<FormActions>` cho hàng nút cuối form. Màn hẹp nhất ghi nhận được là
+320px; ba nút "Lưu" · "Lưu & thêm nữa" · "Hủy" cộng lại ~420px, mà
+`flex … justify-end` **không tự xuống dòng** — phần dư bị đẩy ra ngoài mép
+TRÁI, nơi không cuộn tới được. Nút biến mất chứ không phải bị cắt nửa.
+
+```tsx
+<FormActions>
+  <Button variant="outline">Hủy</Button>
+  <Button type="submit">Lưu</Button>
+</FormActions>
+```
+
+Với hàng nút không thuộc form (thanh chọn hàng loạt, hàng nút ở trang chi
+tiết) thì tối thiểu phải có `flex-wrap`.
+
+Kiểm bằng máy, đừng kiểm bằng mắt: mở app ở 360px rồi tìm phần tử có
+`getBoundingClientRect().left < 0` hoặc `right > innerWidth`. Trang app đặt
+`overflow-x-clip` nên tràn KHÔNG tạo thanh cuộn — nhìn ảnh chụp rất dễ tưởng
+là bình thường.
+
+### Nút xoá dùng đúng một kiểu
+
+| Việc | Kiểu |
+|------|------|
+| Xoá một mục, có hộp xác nhận, khôi phục được | `variant="destructive-outline"` |
+| Không hoàn tác được (xoá tài khoản, xoá sạch danh bạ) | `variant="destructive"` |
+
+Trước đây mỗi nơi ghép một kiểu (`outline` + `text-destructive`, `outline`
+trơn, `destructive` nền đặc) nên cùng một hành động lại trông khác nhau tuỳ
+màn. Nền đỏ đặc để dành cho điểm dừng cuối — dùng khắp nơi thì nó hết sức
+cảnh báo.
 
 ### Nút của một dòng, không phải của cả thẻ
 
