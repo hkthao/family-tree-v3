@@ -1,5 +1,10 @@
-import { IconArrowLeft, IconArrowRight } from "@/components/icons";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconList,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 
 /**
  * Component phân trang chuẩn cho toàn app — style lấy từ `/people`
@@ -54,17 +59,18 @@ export function Pagination({
         {pageSizeOptions && onPageSizeChange && (
           <label className="text-muted-foreground">
             <span className="sr-only">Số dòng mỗi trang</span>
-            <select
+            <Select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="ml-1 h-10 rounded-md border border-input bg-background px-2"
+              icon={<IconList />}
+              className="ml-1 h-10 w-auto"
             >
               {pageSizeOptions.map((n) => (
                 <option key={n} value={n}>
                   {n}/trang
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         )}
 

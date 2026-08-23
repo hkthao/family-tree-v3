@@ -7,6 +7,7 @@ import { QrSignInButton } from "@/components/QrSignInButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/Toast";
 import {
+  IconBell,
   IconCheck,
   IconLock,
   IconLogOut,
@@ -840,6 +841,7 @@ function TestPushButton() {
       onClick={() => m.mutate()}
       disabled={m.isPending}
     >
+      <IconBell className="h-4 w-4 mr-1.5" />
       {m.isPending ? "Đang gửi…" : "Gửi thông báo test"}
     </Button>
   );

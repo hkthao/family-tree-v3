@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { IconUsers } from "@/components/icons";
+import { IconHome, IconLogIn, IconUserPlus, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,7 +58,10 @@ export default function JoinClan() {
               gửi lại link mới.
             </p>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/">Về trang chủ</Link>
+              <Link to="/">
+                <IconHome className="h-4 w-4 mr-1.5" />
+                Về trang chủ
+              </Link>
             </Button>
           </div>
         )}
@@ -90,6 +93,7 @@ export default function JoinClan() {
                   joinM.mutate();
                 }}
               >
+                <IconUserPlus className="h-4 w-4 mr-1.5" />
                 {joinM.isPending ? "Đang tham gia…" : "Tham gia dòng họ"}
               </Button>
             ) : (
@@ -99,11 +103,13 @@ export default function JoinClan() {
                 </p>
                 <Button asChild className="w-full">
                   <Link to={`/signup?next=${encodeURIComponent(next)}`}>
+                    <IconUserPlus className="h-4 w-4 mr-1.5" />
                     Tạo tài khoản
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full">
                   <Link to={`/login?next=${encodeURIComponent(next)}`}>
+                    <IconLogIn className="h-4 w-4 mr-1.5" />
                     Tôi đã có tài khoản
                   </Link>
                 </Button>

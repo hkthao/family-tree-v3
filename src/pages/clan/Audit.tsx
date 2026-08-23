@@ -9,13 +9,16 @@ import { useToast } from "@/components/Toast";
 import {
   IconArrowRight,
   IconChevronUp,
+  IconPencil,
   IconRefresh,
   IconUndo,
+  IconUsers,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch } from "@/hooks/useUrlState";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
@@ -97,33 +100,35 @@ export default function Audit() {
         actionsBelow
         actions={
           <>
-            <select
+            <Select
               aria-label="Lọc theo đối tượng"
               value={entityType}
               onChange={(e) =>
                 patch({ type: e.target.value || null, page: null })
               }
-              className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
+              icon={<IconUsers />}
+              className="h-9 w-auto text-sm min-w-0"
             >
               <option value="">Mọi đối tượng</option>
               <option value="person">Người</option>
               <option value="family">Gia đình</option>
               <option value="branch">Chi</option>
               <option value="person_link">Liên kết thông gia</option>
-            </select>
-            <select
+            </Select>
+            <Select
               aria-label="Lọc theo hành động"
               value={action}
               onChange={(e) =>
                 patch({ act: e.target.value || null, page: null })
               }
-              className="h-9 rounded-md border border-input bg-background px-2 text-sm min-w-0"
+              icon={<IconPencil />}
+              className="h-9 w-auto text-sm min-w-0"
             >
               <option value="">Mọi hành động</option>
               <option value="insert">Thêm mới</option>
               <option value="update">Sửa</option>
               <option value="delete">Xoá</option>
-            </select>
+            </Select>
           </>
         }
       />

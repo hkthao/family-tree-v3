@@ -3,10 +3,12 @@ import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
-import { IconCheck, IconUpload } from "@/components/icons";
+import { IconCheck, IconList, IconTag, IconUpload } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import {
   extractCoverImage,
@@ -187,7 +189,7 @@ export default function CustomsImport() {
           }}
         />
       </label>
-      <textarea
+      <Textarea
         value={mdText}
         onChange={(e) => {
           setMdText(e.target.value);
@@ -195,39 +197,39 @@ export default function CustomsImport() {
         }}
         rows={14}
         placeholder={"# Bài thứ nhất\n\nMô tả ngắn…\n\n## Ý nghĩa\n…\n\n# Bài thứ hai\n\n## Ý nghĩa\n…"}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm leading-relaxed resize-y"
+        className="font-mono text-sm leading-relaxed resize-y"
       />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="i-cat">Chủ đề (áp dụng cho tất cả)</Label>
-          <select
+          <Select
             id="i-cat"
+            icon={<IconTag />}
             value={category}
             onChange={(e) => setCategory(e.target.value as CustomCategory)}
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             {CATS.map((c) => (
               <option key={c} value={c}>
                 {CUSTOM_CATEGORY_LABEL[c]}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="i-status">Trạng thái</Label>
-          <select
+          <Select
             id="i-status"
+            icon={<IconCheck />}
             value={status}
             onChange={(e) => setStatus(e.target.value as CustomStatus)}
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           >
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -292,6 +294,7 @@ export default function CustomsImport() {
           )}
           <div className="pt-1">
             <Button size="sm" variant="outline" onClick={() => navigate("/so-tay")}>
+              <IconList className="h-4 w-4 mr-1.5" />
               Về danh sách
             </Button>
           </div>

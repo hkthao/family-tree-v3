@@ -7,6 +7,7 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconDownload,
+  IconGrid,
   IconHome,
   IconLayoutHorizontal,
   IconLayoutVertical,
@@ -23,6 +24,7 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 // Lazy — kéo cả three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
 const Tree3DView = lazy(() =>
   import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
@@ -1800,17 +1802,19 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
               vẫn đẹp trên một trang. Họ đông chọn mức cao để gói nhiều
               người/trang.
             </p>
-            <select
+            <Select
               value={perPage}
               onChange={(e) => setPerPage(Number(e.target.value))}
-              className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              icon={<IconGrid />}
+              aria-label="Số người mỗi trang sơ đồ"
+              className="h-9 text-sm"
             >
               {EXPORT_DENSITY.map((o) => (
                 <option key={o.v} value={o.v}>
                   {o.label}
                 </option>
               ))}
-            </select>
+            </Select>
             <Button size="sm" className="w-full" onClick={doExport} disabled={busy}>
               <IconDownload className="h-4 w-4 mr-1.5" />
               Tải PDF

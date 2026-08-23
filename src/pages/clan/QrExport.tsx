@@ -6,10 +6,11 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconDownload, IconQrCode } from "@/components/icons";
+import { IconCheck, IconDownload, IconQrCode, IconTree, IconUsers } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
@@ -152,10 +153,11 @@ export default function QrExport() {
       {/* Filter row — single flex-wrap line, matching the People page
           toolbar so admin tools feel like one family. */}
       <div className="flex flex-wrap items-center gap-2">
-        <select
+        <Select
           value={branchId}
           onChange={(e) => setBranchId(e.target.value)}
           aria-label="Lọc theo chi"
+          icon={<IconTree />}
           className={`${CTRL} flex-1 min-w-[160px]`}
         >
           <option value="">Tất cả chi</option>
@@ -164,9 +166,10 @@ export default function QrExport() {
               {b.name}
             </option>
           ))}
-        </select>
+        </Select>
         <Input
           type="number"
+          icon={<IconUsers />}
           min={1}
           value={genMin}
           onChange={(e) => setGenMin(e.target.value)}
@@ -176,6 +179,7 @@ export default function QrExport() {
         />
         <Input
           type="number"
+          icon={<IconUsers />}
           min={1}
           value={genMax}
           onChange={(e) => setGenMax(e.target.value)}
@@ -230,6 +234,7 @@ export default function QrExport() {
             onClick={toggleAll}
             disabled={!rows?.length}
           >
+            <IconCheck className="h-4 w-4 mr-1.5" />
             {allSelectedOnPage ? "Bỏ chọn tất cả" : "Chọn tất cả"}
           </Button>
           <Button
