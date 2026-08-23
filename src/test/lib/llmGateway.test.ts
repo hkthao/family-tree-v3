@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { buildOpenAiBody } from "../../../supabase/functions/_shared/llm/adapters/openai-compatible";
+import { TOOL_SPECS } from "../../../supabase/functions/ai-chat/toolSpecs";
 import {
   DEFAULT_MODELS,
   MODELS,
@@ -107,6 +108,39 @@ describe("buildOpenAiBody", () => {
     );
     const tools = body.tools as Array<{ function: { strict: boolean } }>;
     expect(tools[0].function.strict).toBe(true);
+  });
+
+  /**
+   * Lỗi thật gặp trên production: OpenAI trả 400 ngay khi gửi, vì
+   * `upcoming_anniversaries` có tham số tuỳ chọn `days` mà `strict` lại
+   * đòi `required` liệt kê đủ mọi key. Danh sách tool đi kèm MỌI request
+   * nên một tool sai là chết cả tính năng, không phải chết riêng nó.
+   *
+   * Dùng TOOL_SPECS thật chứ không dựng schema giả — chính bộ tool thật
+   * mới là thứ được gửi đi.
+   */
+  it("không bật strict cho tool có tham số tuỳ chọn (lỗi 400 của OpenAI)", () => {
+    const body = buildOpenAiBody(
+      { ...baseReq, tools: TOOL_SPECS },
+      getModel("gpt-5.6-luna"),
+    );
+    const tools = body.tools as Array<{
+      function: { name: string; strict: boolean; parameters: ToolSpec["parameters"] };
+    }>;
+
+    for (const t of tools) {
+      if (!t.function.strict) continue;
+      const required = new Set(t.function.parameters.required ?? []);
+      for (const key of Object.keys(t.function.parameters.properties ?? {})) {
+        expect(
+          required.has(key),
+          `tool ${t.function.name} bật strict nhưng thiếu "${key}" trong required`,
+        ).toBe(true);
+      }
+    }
+
+    const anniv = tools.find((t) => t.function.name === "upcoming_anniversaries");
+    expect(anniv?.function.strict).toBe(false);
   });
 
   it("không bật strict khi schema mở", () => {
