@@ -15,10 +15,20 @@ export interface InputProps
    * Không cần đặt kích thước: component tự ép về h-4 w-4.
    */
   icon?: React.ReactNode;
+  /**
+   * Nút hành động nằm TRONG ô, sát mép phải.
+   *
+   * Chỉ dùng khi ô có **đúng một** hành động và không nằm trong card —
+   * xem docs/design-language.md §Đặt hành động ở đâu. Nhiều hơn một
+   * hành động thì đưa xuống `<CardFooter>`, đừng nhồi vào ô.
+   *
+   * Truyền vào một nút icon-only đã có `aria-label`.
+   */
+  action?: React.ReactNode;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, icon, ...props }, ref) => {
+  ({ className, type, icon, action, ...props }, ref) => {
     const field = (
       <input
         type={type}
@@ -27,6 +37,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           // Chừa chỗ cho icon. Không dùng padding trái mặc định vì ô
           // không có icon vẫn phải canh như cũ.
           icon && "pl-10",
+          action && "pr-12",
           className,
         )}
         ref={ref}
@@ -34,19 +45,27 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       />
     );
 
-    if (!icon) return field;
+    if (!icon && !action) return field;
 
     return (
       <div className="relative w-full">
-        <span
-          // pointer-events-none: bấm vào icon phải focus vào ô, chứ
-          // không nuốt cú chạm — trên điện thoại rất dễ chạm trúng.
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4"
-          aria-hidden="true"
-        >
-          {icon}
-        </span>
+        {icon && (
+          <span
+            // pointer-events-none: bấm vào icon phải focus vào ô, chứ
+            // không nuốt cú chạm — trên điện thoại rất dễ chạm trúng.
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground [&>svg]:h-4 [&>svg]:w-4"
+            aria-hidden="true"
+          >
+            {icon}
+          </span>
+        )}
         {field}
+        {action && (
+          // Ngược lại với icon trái: cái này PHẢI nhận được cú bấm.
+          <span className="absolute right-1 top-1/2 -translate-y-1/2">
+            {action}
+          </span>
+        )}
       </div>
     );
   },

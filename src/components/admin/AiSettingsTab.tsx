@@ -13,6 +13,14 @@ import { LoadingState } from "@/components/LoadingState";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
@@ -156,26 +164,19 @@ export function AiSettingsTab() {
         </p>
       </div>
 
-      <section className="rounded-lg border p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="text-base font-semibold">Công tắc tổng</h3>
-            <p className="text-sm text-muted-foreground">
-              Tắt thì trợ lý ẩn hoàn toàn với mọi dòng họ, kể cả dòng họ đã bật
-              tính năng. Mặc định tắt.
-            </p>
-          </div>
-          <Button
-            variant={configQ.data?.enabled ? "outline" : "default"}
-            disabled={configQ.isLoading || toggleEnabled.isPending}
-            onClick={() => toggleEnabled.mutate(!configQ.data?.enabled)}
-          >
-            <IconSparkles className="h-4 w-4" />
-            {configQ.data?.enabled ? "Đang bật — bấm để tắt" : "Đang tắt — bấm để bật"}
-          </Button>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <IconSparkles className="h-5 w-5 text-primary" />
+            Công tắc tổng
+          </CardTitle>
+          <CardDescription>
+            Tắt thì trợ lý ẩn hoàn toàn với mọi dòng họ, kể cả dòng họ đã bật
+            tính năng. Mặc định tắt.
+          </CardDescription>
+        </CardHeader>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 border-t pt-4">
+        <CardContent className="flex flex-col gap-2">
           <label htmlFor="qa-model" className="text-sm font-medium">
             Model cho hỏi đáp
           </label>
@@ -196,8 +197,23 @@ export function AiSettingsTab() {
           <p className="text-xs text-muted-foreground">
             Phải có khoá của nhà cung cấp tương ứng ở dưới thì model mới chạy.
           </p>
-        </div>
-      </section>
+        </CardContent>
+
+        {/* Hành động nằm ở footer — xem docs/design-language.md. */}
+        <CardFooter className="justify-between gap-3 border-t pt-4">
+          <span className="text-sm text-muted-foreground">
+            {configQ.data?.enabled ? "Trợ lý đang bật" : "Trợ lý đang tắt"}
+          </span>
+          <Button
+            variant={configQ.data?.enabled ? "outline" : "default"}
+            disabled={configQ.isLoading || toggleEnabled.isPending}
+            onClick={() => toggleEnabled.mutate(!configQ.data?.enabled)}
+          >
+            <IconSparkles className="h-4 w-4" />
+            {configQ.data?.enabled ? "Tắt trợ lý" : "Bật trợ lý"}
+          </Button>
+        </CardFooter>
+      </Card>
 
       {AI_PROVIDERS.map((p) => {
         const st = byProvider.get(p.id);
@@ -208,39 +224,45 @@ export function AiSettingsTab() {
           (remove.isPending && remove.variables === p.id);
 
         return (
-          <section key={p.id} className="rounded-lg border p-4">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-semibold">{p.label}</h3>
-              {st ? (
-                <span className="rounded-full border px-2 py-0.5 font-mono text-xs">
-                  {st.hint}
-                </span>
-              ) : (
-                <span className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground">
-                  chưa cắm khoá
-                </span>
+          <Card key={p.id}>
+            <CardHeader className="gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle className="text-base">{p.label}</CardTitle>
+                {st ? (
+                  <span className="rounded-full border px-2 py-0.5 font-mono text-xs">
+                    {st.hint}
+                  </span>
+                ) : (
+                  <span className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground">
+                    chưa cắm khoá
+                  </span>
+                )}
+                {st?.last_test_ok === true && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-400">
+                    <IconCheck className="h-3 w-3" />
+                    kết nối tốt · {st.last_test_ms}ms
+                  </span>
+                )}
+                {st?.last_test_ok === false && (
+                  <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs text-destructive">
+                    lỗi kết nối
+                  </span>
+                )}
+              </div>
+              {st?.last_test_ok === false && st.last_test_error && (
+                <p className="break-words rounded border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
+                  {st.last_test_error}
+                </p>
               )}
-              {st?.last_test_ok === true && (
-                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-400">
-                  kết nối tốt · {st.last_test_ms}ms
-                </span>
-              )}
-              {st?.last_test_ok === false && (
-                <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs text-destructive">
-                  lỗi kết nối
-                </span>
-              )}
-            </div>
+            </CardHeader>
 
-            {st?.last_test_ok === false && st.last_test_error && (
-              <p className="mb-3 break-words rounded border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
-                {st.last_test_error}
-              </p>
-            )}
-
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <CardContent>
+              <label htmlFor={`key-${p.id}`} className="sr-only">
+                Khoá API {p.label}
+              </label>
               <Input
                 icon={<IconKey />}
+                id={`key-${p.id}`}
                 type="password"
                 autoComplete="off"
                 value={draft}
@@ -248,26 +270,21 @@ export function AiSettingsTab() {
                 onChange={(e) =>
                   setDrafts((d) => ({ ...d, [p.id]: e.target.value }))
                 }
-                className="flex-1 font-mono"
+                className="font-mono"
               />
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => save.mutate({ p: p.id, key: draft })}
-                  disabled={!draft.trim() || busy}
-                >
-                  <IconCheck className="h-4 w-4" />
-                  Lưu &amp; kiểm tra
-                </Button>
+            </CardContent>
+
+            {/* Mọi hành động dồn xuống footer, không chen cạnh ô nhập:
+                ở màn hẹp chúng đẩy ô nhập co lại còn vài ký tự. */}
+            <CardFooter className="flex-wrap justify-between gap-3 border-t pt-4">
+              <span className="text-xs text-muted-foreground">
+                {st
+                  ? `Cập nhật ${new Date(st.updated_at).toLocaleString("vi-VN")}`
+                  : "Chưa có khoá nào được lưu"}
+              </span>
+              <div className="flex flex-wrap gap-2">
                 {st && (
                   <>
-                    <Button
-                      variant="outline"
-                      onClick={() => test.mutate(p.id)}
-                      disabled={busy}
-                    >
-                      <IconRefresh className="h-4 w-4" />
-                      Kiểm tra
-                    </Button>
                     <Button
                       variant="ghost"
                       className="text-destructive"
@@ -286,19 +303,26 @@ export function AiSettingsTab() {
                       <IconTrash className="h-4 w-4" />
                       Xoá
                     </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => test.mutate(p.id)}
+                      disabled={busy}
+                    >
+                      <IconRefresh className="h-4 w-4" />
+                      Kiểm tra
+                    </Button>
                   </>
                 )}
+                <Button
+                  onClick={() => save.mutate({ p: p.id, key: draft })}
+                  disabled={!draft.trim() || busy}
+                >
+                  <IconCheck className="h-4 w-4" />
+                  Lưu &amp; kiểm tra
+                </Button>
               </div>
-            </div>
-
-            {st && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Cập nhật {new Date(st.updated_at).toLocaleString("vi-VN")}
-                {st.last_test_at &&
-                  ` · kiểm tra lần cuối ${new Date(st.last_test_at).toLocaleString("vi-VN")}`}
-              </p>
-            )}
-          </section>
+            </CardFooter>
+          </Card>
         );
       })}
     </div>
