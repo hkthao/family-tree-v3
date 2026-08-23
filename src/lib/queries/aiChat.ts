@@ -88,8 +88,17 @@ export async function askAssistant(input: {
     const res = (error as { context?: Response }).context;
     if (res) {
       try {
-        const body = (await res.clone().json()) as { error?: string };
-        if (body?.error) throw new Error(body.error);
+        const body = (await res.clone().json()) as { error?: string; msg?: string };
+        const raw = body?.error ?? body?.msg;
+        if (raw) {
+          // Runtime self-host trả lỗi boot bằng thuật ngữ nội bộ —
+          // người dùng cuối không cần đọc thứ đó.
+          throw new Error(
+            /InvalidWorkerCreation|worker boot error|Module not found/i.test(raw)
+              ? "Trợ lý chưa sẵn sàng trên máy chủ. Vui lòng báo quản trị viên."
+              : raw,
+          );
+        }
       } catch (e) {
         if (e instanceof Error && e.message && !e.message.startsWith("Unexpected")) {
           throw e;
