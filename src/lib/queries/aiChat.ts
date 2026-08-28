@@ -93,6 +93,10 @@ export async function clearServerHistory(clanId: string): Promise<void> {
 export interface AskResult {
   answer: string;
   toolCalls: number;
+  /** Số lượt còn lại sau câu này. `null` khi máy chủ chưa bật hạn mức. */
+  credits?: number | null;
+  /** Hết lượt tháng này — KHÔNG phải lỗi, xem plan §Đường lui. */
+  quotaExhausted?: boolean;
 }
 
 /** Số tin gửi lên làm ngữ cảnh. KHÁC số tin lưu để hiển thị. */

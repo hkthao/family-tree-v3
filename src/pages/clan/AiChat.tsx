@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { ChatComposer } from "@/components/ai/ChatComposer";
+import { QuotaBadge } from "@/components/ai/QuotaBadge";
 import { ChatThread } from "@/components/ai/ChatThread";
 import { IconArrowLeft, IconSparkles, IconTrash } from "@/components/icons";
 import { Button } from "@/components/ui/button";
@@ -70,8 +71,11 @@ export default function AiChat() {
     <>
       <div className="min-w-0 flex-1">
         <p className="truncate text-base font-semibold">Trợ lý dòng họ</p>
-        <p className="truncate text-xs text-muted-foreground">{clan.name}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {clan.name}
+        </p>
       </div>
+      <QuotaBadge quota={chat.quota} className="text-xs" />
       {/* icon-audit: ok — chữ "A" chính là ký hiệu, thêm icon nữa là thừa */}
       <Button
         variant="ghost"

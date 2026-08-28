@@ -9,8 +9,9 @@
  * khai (sự cố rò token, commit 4d4d40b). Ở đây còn đặt được rate limit,
  * trần vòng lặp và ghi ai_usage.
  *
- * GĐ 1 chưa có hạn mức/tiền — bật tắt bằng platform_settings["ai.enabled"]
- * và feature-flag `ai_assistant` theo từng dòng họ.
+ * Bật tắt bằng platform_settings["ai.enabled"] và feature-flag
+ * `ai_assistant` theo từng dòng họ. Hạn mức (GĐ 3) trừ vào credit_ledger:
+ * giữ chỗ MỘT lượt trước khi gọi model, hoàn lại nếu lượt đó hỏng.
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -38,6 +39,9 @@ const MAX_TOOL_ROUNDS = 5;
 /** Chống bấm nhanh và vòng lặp lỗi ở client. Khác hạn mức kinh doanh. */
 const RATE_PER_WINDOW = 5;
 const RATE_WINDOW_MIN = 5;
+
+/** Loại quyền lợi trong credit_ledger. Sổ cái dùng chung cho mọi thứ bán. */
+const RESOURCE = "ai_request";
 
 /** Chỉ nhận ngữ cảnh ngắn. Lưu 40 tin ở client ≠ gửi 40 tin cho model. */
 const MAX_HISTORY_MESSAGES = 12;
@@ -138,6 +142,70 @@ Deno.serve(async (req) => {
     .gt("at", windowStart);
   if ((recent ?? 0) >= RATE_PER_WINDOW) {
     return err("Bạn hỏi hơi nhanh. Chờ một chút rồi hỏi tiếp nhé.", 429);
+  }
+
+  // ─── Hạn mức kinh doanh (GĐ 3) ─────────────────────────────────────
+  // Giữ chỗ TRƯỚC khi gọi model, hoàn lại nếu hỏng — xem plan §Thực thi
+  // phải atomic. Trừ lượt xong mới gọi model, chứ không phải ngược lại:
+  // gọi trước rồi mới trừ là mở hai tab bấm cùng lúc sẽ vượt hạn mức.
+  const consumeRef = `qa:${crypto.randomUUID()}`;
+  let creditsLeft: number | null = null;
+  let creditsCharged = false;
+
+  await sbAdmin.rpc("credit_ensure_monthly_free", {
+    p_owner: user.id,
+    p_resource: RESOURCE,
+  });
+  const consumed = await sbAdmin.rpc("credit_consume", {
+    p_owner: user.id,
+    p_resource: RESOURCE,
+    p_amount: 1,
+    p_ref: consumeRef,
+  });
+
+  if (consumed.error) {
+    // Migration của self-host áp bằng tay, nên hàm có thể chưa tồn tại lúc
+    // code mới vừa lên. Thiếu hàm thì cho qua (app vẫn chạy như GĐ 1);
+    // còn lỗi khác là DB đang có vấn đề thật — không tính tiền mù.
+    const missing = consumed.error.code === "42883" ||
+      consumed.error.code === "PGRST202";
+    if (!missing) {
+      console.error("ai-chat: không trừ được lượt:", consumed.error.message);
+      return err("Chưa kiểm được hạn mức. Bạn thử lại sau một lát nhé.", 503);
+    }
+    console.warn("ai-chat: chưa có credit_consume — bỏ qua hạn mức");
+  } else if (consumed.data === null) {
+    // HẾT LƯỢT KHÔNG PHẢI LỖI. Nói nhẹ và chỉ đường lui, đừng dựng tường.
+    return json({
+      quotaExhausted: true,
+      answer:
+        "Bạn đã dùng hết lượt hỏi trợ lý của tháng này. Bạn vẫn dùng được " +
+        'trang "Nhờ AI lập gia phả" để tự hỏi bên ngoài, hoặc nhập tay như ' +
+        "bình thường nhé.",
+      credits: 0,
+    });
+  } else {
+    creditsLeft = consumed.data as number;
+    creditsCharged = true;
+  }
+
+  /**
+   * Hoàn lại lượt vừa giữ chỗ.
+   *
+   * Bút toán MỚI (+1), không xoá bút toán cũ — giữ nguyên lịch sử để sau
+   * này còn trả lời được "lượt đó đi đâu". `ref` riêng nên gọi lại nhiều
+   * lần cũng chỉ hoàn một lần.
+   */
+  async function refundCredit() {
+    if (!creditsCharged) return;
+    const { error } = await sbAdmin.rpc("credit_grant", {
+      p_owner: user!.id,
+      p_resource: RESOURCE,
+      p_amount: 1,
+      p_reason: "refund",
+      p_ref: `refund:${consumeRef}`,
+    });
+    if (error) console.error("ai-chat: hoàn lượt thất bại:", error.message);
   }
 
   // ─── Dựng hội thoại ────────────────────────────────────────────────
@@ -263,7 +331,7 @@ Deno.serve(async (req) => {
           "Tôi chưa tìm được câu trả lời. Bạn thử hỏi cách khác nhé.";
         await logUsage(true);
         await persistTurn(answer);
-        return json({ answer, toolCalls: toolCallCount });
+        return json({ answer, toolCalls: toolCallCount, credits: creditsLeft });
       }
 
       toolCallCount += res.toolCalls.length;
@@ -288,10 +356,13 @@ Deno.serve(async (req) => {
 
     // Không nên tới đây: vòng cuối đã bỏ tool nên model phải trả lời.
     await logUsage(false, "tool_loop");
+    await refundCredit();
     return err("Câu này phức tạp quá. Bạn thử hỏi ngắn gọn hơn nhé.", 500);
   } catch (e) {
     const kind = (e as { kind?: string })?.kind ?? "unknown";
     await logUsage(false, String(kind));
+    // Không bao giờ để người dùng trả lượt cho lỗi của mình.
+    await refundCredit();
     console.error("ai-chat failed:", e);
     return err(friendlyLlmError(e), 502);
   }
