@@ -29,6 +29,7 @@ import {
   QA_MODELS,
   deleteProviderKey,
   getAiConfig,
+  getAiSpendToday,
   setAiEnabled,
   setQaModel,
   listKeyStatus,
@@ -52,6 +53,13 @@ export function AiSettingsTab() {
   const [drafts, setDrafts] = useState<Partial<Record<AiProvider, string>>>({});
 
   const configQ = useQuery({ queryKey: ["ai-config"], queryFn: getAiConfig, retry: false });
+  // Chi phí hôm nay — để ngắt mạch không phải là hộp đen.
+  const spendQ = useQuery({
+    queryKey: ["ai-spend-today"],
+    queryFn: getAiSpendToday,
+    retry: false,
+    refetchInterval: 60_000,
+  });
 
   const toggleEnabled = useMutation({
     mutationFn: setAiEnabled,
@@ -203,6 +211,21 @@ export function AiSettingsTab() {
         <CardFooter className="justify-between gap-3 border-t pt-4">
           <span className="text-sm text-muted-foreground">
             {configQ.data?.enabled ? "Trợ lý đang bật" : "Trợ lý đang tắt"}
+            {spendQ.data && spendQ.data.capUsd > 0 && (
+              <>
+                {" · hôm nay "}
+                <span
+                  className={
+                    spendQ.data.spentUsd >= spendQ.data.capUsd
+                      ? "font-medium text-destructive"
+                      : "tabular-nums"
+                  }
+                  title="Chạm trần thì trợ lý tự nghỉ tới hết ngày (giờ VN), không cần bật lại tay."
+                >
+                  ${spendQ.data.spentUsd.toFixed(2)}/${spendQ.data.capUsd}
+                </span>
+              </>
+            )}
           </span>
           <Button
             variant={configQ.data?.enabled ? "outline" : "default"}

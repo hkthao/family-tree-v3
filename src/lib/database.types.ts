@@ -136,6 +136,7 @@ export type Database = {
           error_kind: string | null
           id: string
           input_tokens: number
+          ip_hash: string | null
           kind: string
           latency_ms: number | null
           model_id: string
@@ -154,6 +155,7 @@ export type Database = {
           error_kind?: string | null
           id?: string
           input_tokens?: number
+          ip_hash?: string | null
           kind: string
           latency_ms?: number | null
           model_id: string
@@ -172,6 +174,7 @@ export type Database = {
           error_kind?: string | null
           id?: string
           input_tokens?: number
+          ip_hash?: string | null
           kind?: string
           latency_ms?: number | null
           model_id?: string
@@ -3019,6 +3022,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      ai_spend_today: { Args: never; Returns: number }
       announcements_mark_all_read: { Args: never; Returns: number }
       announcements_unread_count: { Args: never; Returns: number }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
