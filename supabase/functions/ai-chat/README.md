@@ -102,7 +102,8 @@ Riêng **migration vẫn phải áp tay** — workflow không đụng vào datab
 ```bash
 # trên máy chủ database
 for f in 20260823120000_ai_usage 20260823140000_ai_messages \
-         20260823160000_ai_provider_keys 20260828120000_credit_ledger; do
+         20260823160000_ai_provider_keys 20260828120000_credit_ledger \
+         20260828140000_ai_cost_guard; do
   docker exec -i supabase-db psql -U postgres -d postgres < "$f.sql"
 done
 # rồi ghi vào supabase_migrations.schema_migrations
@@ -160,16 +161,34 @@ cp src/lib/kinship.ts supabase/functions/_shared/vendor/kinship.ts
 | | Giá trị | Vì sao |
 |---|---|---|
 | Vòng gọi tool mỗi lượt | 5 | `bio` độc hại có thể xui model gọi tool vòng vo cho tốn tiền |
-| Rate limit | 5 lượt / 5 phút / người | Chống bấm nhanh và vòng lặp lỗi ở client — **không phải** hạn mức kinh doanh |
+| Rate limit / người | 5 lượt / 5 phút · 30 lượt / giờ | Chống bấm nhanh và vòng lặp lỗi ở client — **không phải** hạn mức kinh doanh |
+| Rate limit / IP | 20 lượt / 5 phút | Tạo tài khoản mới quá dễ nên đếm theo người là chưa đủ. Nới hơn ngưỡng cá nhân vì cả nhà dùng chung một đường mạng là bình thường |
+| Rate limit / dòng họ | 200 lượt / ngày | Kể cả gói trả phí |
+| Hạn mức | 10 lượt / tháng / tài khoản | Mô hình kinh doanh, xem §Hạn mức |
+| Trần chi phí | $20 / ngày toàn hệ thống | Chặn hoá đơn thảm hoạ khi có bug gọi API vòng lặp |
 | Ngữ cảnh gửi lên | 8 lượt gần nhất | Client lưu 40 tin để hiển thị; gửi hết sẽ làm token đầu vào phình lên nhiều lần |
 | Timeout | 60s | Người dùng đang ngồi chờ |
 
+Ba điều về ngắt mạch chi phí:
+
+- **Không tự tắt `ai.enabled`.** Trần được kiểm ở mỗi lượt hỏi nên qua ngày
+  (giờ VN) là tự mở lại. Lật cờ thì phải có người vào bật tay — báo động lúc 2 giờ
+  sáng đồng nghĩa trợ lý chết tới khi ai đó ngủ dậy.
+- **Mail báo động mỗi ngày một lần**, chốt bằng `ai.cost_alert_sent_on`. Không có
+  chốt đó thì mỗi người dùng gặp trần lại sinh một email.
+- **IP được băm (SHA-256 + muối ở env), không lưu IP thật.** Rate limit chỉ cần so
+  trùng, không cần biết ai ở đâu. Muối lấy từ `AI_IP_SALT`, thiếu thì mượn service
+  key; đổi muối chỉ làm bộ đếm quên lịch sử cũ.
+
+Đổi trần: `update platform_settings set value = '50' where key = 'ai.daily_cost_cap_usd';`
+(đặt `'0'` để tắt hẳn ngắt mạch).
+
 ## Chưa làm
 
-- Trần chi phí toàn hệ thống (`$20/ngày`) — ngắt mạch khi có bug gọi API vòng lặp.
-  Hạn mức theo người (đã có) không cứu được ca đó.
 - Ví dòng họ + danh sách được duyệt tiêu — GĐ 4, cùng với `billing_*`.
-- Rate limit theo IP (hiện chỉ theo người dùng) — plan §Bảo mật mục 17.
+- Bộ đếm rate limit đọc `ai_usage`, mà bảng đó chỉ được ghi khi lượt hỏi KẾT THÚC.
+  Nghĩa là mười lượt bắn song song cùng lúc đều lọt qua cửa. Hạn mức (`credit_consume`,
+  atomic) mới là thứ chặn được ca đó; rate limit chỉ lo phần bấm nhanh tuần tự.
 - Streaming: hiện trả về nguyên câu, UI hiện "Đang nghĩ…". Đủ dùng ở GĐ 1.
 - Whisper dự phòng cho iOS Safari (không có Web Speech): còn chờ quyết tự host
   `whisper.cpp` hay gọi OpenAI — xem plan §Việc mở. Tới lúc đó iOS Safari chỉ gõ tay,

@@ -166,6 +166,31 @@ export async function getAiConfig(): Promise<AiConfig> {
   return { enabled: enabled === "true", qaModel: qaModel || "gpt-5.6-luna" };
 }
 
+export interface AiSpendToday {
+  spentUsd: number;
+  capUsd: number;
+}
+
+/**
+ * Chi phí AI đã tiêu hôm nay và trần đang đặt.
+ *
+ * Có ngắt mạch mà không ai nhìn thấy con số thì admin chỉ biết trợ lý
+ * "tự nhiên im" — nên số này phải hiện ngay cạnh công tắc tổng.
+ *
+ * `capUsd = 0` nghĩa là đã tắt ngắt mạch; chưa áp migration thì
+ * `spentUsd` về 0 chứ không ném lỗi ra màn hình quản trị.
+ */
+export async function getAiSpendToday(): Promise<AiSpendToday> {
+  const [{ data: spend }, cap] = await Promise.all([
+    supabase.rpc("ai_spend_today"),
+    getPlatformSetting("ai.daily_cost_cap_usd"),
+  ]);
+  return {
+    spentUsd: Number(spend ?? 0),
+    capUsd: Number(cap ?? "0"),
+  };
+}
+
 export async function setAiEnabled(on: boolean): Promise<void> {
   await setPlatformSetting(AI_ENABLED_KEY, on ? "true" : "false");
 }

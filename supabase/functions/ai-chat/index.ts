@@ -15,6 +15,7 @@
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 import { err, json, preflight } from "../_shared/cors.ts";
 import { complete, friendlyLlmError } from "../_shared/llm/gateway.ts";
@@ -28,6 +29,25 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 /**
+ * Muối để băm IP. Không có biến riêng thì mượn service key — thứ vốn đã
+ * là bí mật của môi trường này. Đổi muối chỉ làm rate limit theo IP quên
+ * lịch sử cũ, không hỏng gì khác.
+ */
+const IP_SALT = Deno.env.get("AI_IP_SALT") ?? SERVICE_KEY;
+
+// SMTP dùng chung cấu hình với GoTrue, y như notify-*. Thiếu host/pass là
+// dry-run: không gửi, chỉ ghi log.
+const SMTP_HOST = Deno.env.get("SMTP_HOST") ?? "";
+const SMTP_PORT = Number(Deno.env.get("SMTP_PORT") ?? "465");
+const SMTP_USER = Deno.env.get("SMTP_USER") ?? "";
+const SMTP_PASS = Deno.env.get("SMTP_PASS") ?? "";
+const MAIL_FROM =
+  Deno.env.get("SMTP_FROM") ??
+  (Deno.env.get("SMTP_SENDER_NAME") && Deno.env.get("SMTP_ADMIN_EMAIL")
+    ? `${Deno.env.get("SMTP_SENDER_NAME")} <${Deno.env.get("SMTP_ADMIN_EMAIL")}>`
+    : "Dòng Họ Việt <noreply@giapha.local>");
+
+/**
  * Trần vòng gọi tool cho MỘT lượt hỏi.
  *
  * Không chỉ để chặn model lẩn quẩn: một trường `bio` độc hại có thể xui
@@ -36,9 +56,21 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
  */
 const MAX_TOOL_ROUNDS = 5;
 
-/** Chống bấm nhanh và vòng lặp lỗi ở client. Khác hạn mức kinh doanh. */
+/**
+ * Chống lạm dụng — KHÁC hạn mức kinh doanh (xem plan §Ba lớp).
+ *
+ * Bốn ngưỡng, mỗi ngưỡng bắt một kiểu hỏng khác nhau:
+ *  - 5 lượt/5 phút/người   — bấm nhanh, double-tap, vòng lặp lỗi ở client.
+ *  - 30 lượt/giờ/người     — ngồi hỏi liên tục cả buổi.
+ *  - 20 lượt/5 phút/IP     — một người tạo nhiều tài khoản. Nới hơn ngưỡng
+ *    cá nhân vì cả nhà dùng chung một đường mạng là chuyện bình thường.
+ *  - 200 lượt/ngày/dòng họ — kể cả gói trả phí; chặn một dòng họ tự đốt.
+ */
 const RATE_PER_WINDOW = 5;
 const RATE_WINDOW_MIN = 5;
+const RATE_PER_HOUR = 30;
+const RATE_IP_PER_WINDOW = 20;
+const RATE_PER_CLAN_DAY = 200;
 
 /** Loại quyền lợi trong credit_ledger. Sổ cái dùng chung cho mọi thứ bán. */
 const RESOURCE = "ai_request";
@@ -46,6 +78,101 @@ const RESOURCE = "ai_request";
 /** Chỉ nhận ngữ cảnh ngắn. Lưu 40 tin ở client ≠ gửi 40 tin cho model. */
 const MAX_HISTORY_MESSAGES = 12;
 const MAX_QUESTION_CHARS = 1000;
+
+/**
+ * Băm IP để đếm rate limit mà không lưu IP thật.
+ *
+ * Lưu IP thô là tự tạo thêm một kho dữ liệu cá nhân cho việc chỉ cần so
+ * trùng. Cắt còn 32 ký tự hex: đủ để không đụng độ ở quy mô này, mà cũng
+ * không giữ nhiều hơn mức cần.
+ */
+async function hashIp(req: Request): Promise<string | null> {
+  const raw = (req.headers.get("x-forwarded-for") ?? "")
+    .split(",")[0]
+    .trim();
+  if (!raw) return null;
+  const buf = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(`${IP_SALT}:${raw}`),
+  );
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 32);
+}
+
+const minutesAgo = (n: number) =>
+  new Date(Date.now() - n * 60_000).toISOString();
+
+/**
+ * Gửi mail báo động cho platform admin — MỖI NGÀY MỘT LẦN.
+ *
+ * Chốt chặn ở đây là `ai.cost_alert_sent_on`: ngắt mạch kiểm mỗi lượt
+ * hỏi, nên không có nó thì mỗi người dùng gặp trần lại sinh một email,
+ * và hộp thư của admin thành nạn nhân thứ hai của chính sự cố.
+ */
+async function alertCostCap(
+  sb: ReturnType<typeof createClient>,
+  spend: number,
+  cap: number,
+): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: mark } = await sb
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "ai.cost_alert_sent_on")
+    .maybeSingle();
+  if (mark?.value === today) return;
+
+  await sb
+    .from("platform_settings")
+    .upsert({ key: "ai.cost_alert_sent_on", value: today });
+
+  const { data: admins } = await sb
+    .from("profiles")
+    .select("id")
+    .eq("is_platform_admin", true);
+  if (!admins?.length) return;
+
+  const subject = `[Gia phả] Trợ lý AI đã chạm trần chi phí ngày ($${cap})`;
+  const html =
+    `<p>Hôm nay trợ lý AI đã tiêu <b>$${spend.toFixed(2)}</b>, ` +
+    `chạm trần <b>$${cap}</b> nên đã tạm ngừng trả lời.</p>` +
+    `<p>Trần tự mở lại vào đầu ngày hôm sau. Muốn nới ngay thì đổi ` +
+    `<code>ai.daily_cost_cap_usd</code> trong platform_settings.</p>` +
+    `<p>Nên xem <code>ai_usage</code> hôm nay trước khi nới — chạm trần ` +
+    `thường là dấu hiệu có vòng lặp gọi API, không phải người dùng đông.</p>`;
+
+  if (!SMTP_HOST || !SMTP_PASS) {
+    console.warn("ai-chat: chạm trần chi phí, chưa cấu hình SMTP nên không gửi mail");
+    return;
+  }
+
+  const client = new SMTPClient({
+    connection: {
+      hostname: SMTP_HOST,
+      port: SMTP_PORT,
+      tls: SMTP_PORT === 465,
+      auth: { username: SMTP_USER, password: SMTP_PASS },
+    },
+  });
+  try {
+    for (const a of admins) {
+      const { data: u } = await sb.auth.admin.getUserById(a.id as string);
+      const to = u?.user?.email;
+      if (!to) continue;
+      await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
+    }
+  } catch (e) {
+    console.error("ai-chat: gửi mail báo động thất bại:", e);
+  } finally {
+    try {
+      await client.close();
+    } catch {
+      /* đóng lỗi thì bỏ qua */
+    }
+  }
+}
 
 const SYSTEM_PROMPT = `Bạn là trợ lý gia phả của một dòng họ Việt Nam, nói chuyện với người lớn tuổi.
 
@@ -132,16 +259,84 @@ Deno.serve(async (req) => {
   }
 
   // ─── Chặn lạm dụng (khác hạn mức kinh doanh — xem plan §Ba lớp) ─────
-  const windowStart = new Date(
-    Date.now() - RATE_WINDOW_MIN * 60_000,
-  ).toISOString();
-  const { count: recent } = await sbAdmin
-    .from("ai_usage")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .gt("at", windowStart);
-  if ((recent ?? 0) >= RATE_PER_WINDOW) {
-    return err("Bạn hỏi hơi nhanh. Chờ một chút rồi hỏi tiếp nhé.", 429);
+  const ipHash = await hashIp(req);
+
+  /** Đếm lượt trong một cửa sổ thời gian. Một cột lọc, một ngưỡng. */
+  const countSince = async (
+    column: "user_id" | "clan_id" | "ip_hash",
+    value: string,
+    since: string,
+  ): Promise<number> => {
+    const { count } = await sbAdmin
+      .from("ai_usage")
+      .select("id", { count: "exact", head: true })
+      .eq(column, value)
+      .gt("at", since);
+    return count ?? 0;
+  };
+
+  const TOO_FAST = "Bạn hỏi hơi nhanh. Chờ một chút rồi hỏi tiếp nhé.";
+
+  if (
+    (await countSince("user_id", user.id, minutesAgo(RATE_WINDOW_MIN))) >=
+      RATE_PER_WINDOW
+  ) {
+    return err(TOO_FAST, 429);
+  }
+  if ((await countSince("user_id", user.id, minutesAgo(60))) >= RATE_PER_HOUR) {
+    return err(
+      "Bạn đã hỏi khá nhiều trong một giờ qua. Nghỉ một lát rồi quay lại nhé.",
+      429,
+    );
+  }
+  // Theo IP: tạo tài khoản mới quá dễ nên đếm theo người là chưa đủ.
+  if (
+    ipHash &&
+    (await countSince("ip_hash", ipHash, minutesAgo(RATE_WINDOW_MIN))) >=
+      RATE_IP_PER_WINDOW
+  ) {
+    return err(TOO_FAST, 429);
+  }
+  if (
+    (await countSince("clan_id", clanId, minutesAgo(24 * 60))) >=
+      RATE_PER_CLAN_DAY
+  ) {
+    return err(
+      "Dòng họ này đã dùng hết lượt hỏi trong ngày. Mai bạn hỏi tiếp nhé.",
+      429,
+    );
+  }
+
+  // ─── Ngắt mạch chi phí (lớp 3) ─────────────────────────────────────
+  // Hạn mức theo người KHÔNG cứu được ca bug gọi API vòng lặp: mỗi người
+  // vẫn trong hạn mức mà tổng thì cháy. Đây là cái chặn hoá đơn thảm hoạ.
+  //
+  // Cố tình KHÔNG tự tắt `ai.enabled`: kiểm ở mỗi lượt nên qua ngày là tự
+  // mở lại. Lật cờ thì phải có người vào bật tay — báo động lúc 2 giờ sáng
+  // là trợ lý chết tới khi ai đó ngủ dậy.
+  const { data: capRow } = await sbAdmin
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "ai.daily_cost_cap_usd")
+    .maybeSingle();
+  const cap = Number(capRow?.value ?? "0");
+  if (cap > 0) {
+    const { data: spendRaw, error: spendErr } = await sbAdmin.rpc(
+      "ai_spend_today",
+    );
+    // Chưa áp migration thì bỏ qua, y như phần hạn mức — self-host áp DB
+    // bằng tay nên code lên trước là chuyện thường.
+    if (!spendErr) {
+      const spend = Number(spendRaw ?? 0);
+      if (spend >= cap) {
+        await alertCostCap(sbAdmin, spend, cap);
+        return err(
+          "Trợ lý đang tạm nghỉ để giữ chi phí trong mức cho phép. " +
+            "Mai bạn hỏi lại nhé — gia phả vẫn nhập tay bình thường.",
+          503,
+        );
+      }
+    }
   }
 
   // ─── Hạn mức kinh doanh (GĐ 3) ─────────────────────────────────────
@@ -298,6 +493,7 @@ Deno.serve(async (req) => {
       attempts: Math.max(attempts, 1),
       ok,
       error_kind: errorKind ?? null,
+      ip_hash: ipHash,
     });
   }
 
