@@ -34,7 +34,8 @@ import { isFeatureEnabled } from "@/lib/clanFeatures";
  *  3. Chữ nhỏ — app chặn pinch-zoom toàn cục (`user-scalable=no`), nên
  *     phải có nút chỉnh cỡ chữ ngay tại đây.
  *
- * Chưa có: giọng nói (GĐ 2), hạn mức (GĐ 3), bóc tách nhập liệu (GĐ 5).
+ * Nhập bằng giọng nói (GĐ 2) đã có — nút mic nằm trong ChatComposer.
+ * Chưa có: hạn mức (GĐ 3), bóc tách nhập liệu (GĐ 5).
  */
 export default function AiChat() {
   const { clanId } = useParams<{ clanId: string }>();

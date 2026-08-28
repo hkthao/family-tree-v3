@@ -173,6 +173,7 @@ function Dock({ clan }: { clan: ClanDetail }) {
         pending={chat.pending}
         showSuggestions={!chat.turns.length}
         suggestionLayout="wrap"
+        micSize="sm"
       />
     </div>
   );
