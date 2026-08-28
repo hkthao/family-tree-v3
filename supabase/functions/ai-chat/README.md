@@ -3,8 +3,8 @@
 GĐ 0 + 1 của [docs/plan-ai-tro-ly.md](../../../docs/plan-ai-tro-ly.md): gateway đa nhà
 cung cấp + khung chat **chỉ đọc**, cộng phần GĐ 2 chạy hoàn toàn ở client (lịch sử
 `ai_messages` + nhập bằng giọng nói qua Web Speech API — **không** qua edge function
-này, xem `src/lib/speech.ts`). Chưa có hạn mức (GĐ 3), thanh toán (GĐ 4) hay bóc tách
-nhập liệu (GĐ 5).
+này, xem `src/lib/speech.ts`) và hạn mức GĐ 3 (`credit_ledger`). Chưa có thanh toán
+(GĐ 4) hay bóc tách nhập liệu (GĐ 5).
 
 ## Có gì
 
@@ -18,8 +18,30 @@ _shared/llm/
   adapters/anthropic.ts           SDK chính thức của Anthropic
 _shared/vendor/   bản sao kinship.ts + lunarDate.ts (xem bên dưới)
 ai-chat/tools.ts  5 tool chỉ đọc
-ai-chat/index.ts  vòng lặp gọi tool, rate limit, ghi ai_usage
+ai-chat/index.ts  vòng lặp gọi tool, rate limit, trừ lượt, ghi ai_usage
 ```
+
+## Hạn mức (GĐ 3)
+
+Mỗi tài khoản **10 lượt/tháng miễn phí**, trừ vào `credit_ledger` — sổ cái dùng chung
+cho mọi thứ bán được, không riêng AI (xem plan §Không đặt tiền tố `ai_`).
+
+Đổi số lượt free không cần deploy:
+
+```sql
+update platform_settings set value = '20' where key = 'ai.free_per_month';
+```
+
+Ba điều đáng nhớ khi sửa chỗ này:
+
+- **Giữ chỗ trước, hoàn sau.** `credit_consume` chạy TRƯỚC khi gọi model; lượt hỏng
+  (timeout, model lỗi, vòng lặp tool) được hoàn bằng **bút toán mới +1**, không xoá
+  bút toán cũ. Không bao giờ để người dùng trả lượt cho lỗi của mình.
+- **Hết lượt trả HTTP 200**, kèm `quotaExhausted: true` và câu nhắn có đường lui —
+  hết hạn mức là mô hình kinh doanh, không phải lỗi. Trả 4xx là giao diện sẽ tô đỏ.
+- **Chưa áp migration thì bỏ qua hạn mức** (nhận diện lỗi `42883`/`PGRST202`). Máy chủ
+  self-host áp migration bằng tay nên code mới có thể lên trước DB; chặn cứng lúc đó
+  là sập trợ lý cho tất cả mọi người.
 
 ## Khoá API — nhập ở màn hình quản trị, lưu đã mã hoá
 
@@ -80,7 +102,7 @@ Riêng **migration vẫn phải áp tay** — workflow không đụng vào datab
 ```bash
 # trên máy chủ database
 for f in 20260823120000_ai_usage 20260823140000_ai_messages \
-         20260823160000_ai_provider_keys; do
+         20260823160000_ai_provider_keys 20260828120000_credit_ledger; do
   docker exec -i supabase-db psql -U postgres -d postgres < "$f.sql"
 done
 # rồi ghi vào supabase_migrations.schema_migrations
@@ -144,7 +166,10 @@ cp src/lib/kinship.ts supabase/functions/_shared/vendor/kinship.ts
 
 ## Chưa làm
 
-- Trần chi phí toàn hệ thống (`$20/ngày`) — GĐ 3, cùng với `credit_ledger`.
+- Trần chi phí toàn hệ thống (`$20/ngày`) — ngắt mạch khi có bug gọi API vòng lặp.
+  Hạn mức theo người (đã có) không cứu được ca đó.
+- Ví dòng họ + danh sách được duyệt tiêu — GĐ 4, cùng với `billing_*`.
+- Rate limit theo IP (hiện chỉ theo người dùng) — plan §Bảo mật mục 17.
 - Streaming: hiện trả về nguyên câu, UI hiện "Đang nghĩ…". Đủ dùng ở GĐ 1.
 - Whisper dự phòng cho iOS Safari (không có Web Speech): còn chờ quyết tự host
   `whisper.cpp` hay gọi OpenAI — xem plan §Việc mở. Tới lúc đó iOS Safari chỉ gõ tay,

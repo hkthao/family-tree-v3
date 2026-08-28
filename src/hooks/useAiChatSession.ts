@@ -10,6 +10,7 @@ import {
   loadServerHistory,
   type ChatTurn,
 } from "@/lib/queries/aiChat";
+import { loadMyQuota, type CreditQuota } from "@/lib/queries/credits";
 
 /**
  * Toàn bộ trạng thái một phiên trò chuyện với trợ lý.
@@ -34,6 +35,8 @@ export interface AiChatSession {
   pending: boolean;
   error: string | null;
   clearHistory: () => Promise<void>;
+  /** Hạn mức tháng này. `null` = máy chủ chưa bật hạn mức → đừng hiện gì. */
+  quota: CreditQuota | null;
   fontSize: number;
   fontStep: number;
   cycleFont: () => void;
@@ -45,6 +48,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [quota, setQuota] = useState<CreditQuota | null>(null);
   const [fontStep, setFontStep] = useState(() => {
     const v = Number(localStorage.getItem(FONT_KEY));
     return Number.isInteger(v) && v >= 0 && v < FONT_STEPS.length ? v : 0;
@@ -75,11 +79,33 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     if (clanId) history.save(clanId, turns);
   }, [clanId, turns]);
 
+  // Đọc hạn mức ngay khi mở khung chat — lời gọi này cũng là chỗ cấp lượt
+  // free của tháng, nên mở ra là đã có lượt để dùng.
+  useEffect(() => {
+    let alive = true;
+    loadMyQuota()
+      .then((q) => alive && setQuota(q))
+      .catch(() => {
+        /* chưa áp migration: coi như không có hạn mức */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const ask = useMutation({
     mutationFn: (question: string) =>
       askAssistant({ clanId: clanId!, question, history: turns }),
-    onSuccess: (res) =>
-      setTurns((t) => [...t, { role: "assistant", content: res.answer }]),
+    onSuccess: (res) => {
+      setTurns((t) => [...t, { role: "assistant", content: res.answer }]);
+      // Hết lượt KHÔNG phải lỗi — máy chủ trả 200 kèm câu nhắn nhẹ và
+      // đường lui, nên nó hiện như một câu trả lời bình thường.
+      if (res.quotaExhausted) track("ai_quota_exhausted");
+      if (typeof res.credits === "number") {
+        const left = res.credits;
+        setQuota((q) => (q ? { ...q, balance: left } : q));
+      }
+    },
     onError: (e: Error) => setError(e.message),
   });
 
@@ -129,6 +155,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     pending: ask.isPending,
     error,
     clearHistory,
+    quota,
     fontSize: FONT_STEPS[fontStep],
     fontStep,
     cycleFont,

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { ChatComposer } from "@/components/ai/ChatComposer";
 import { ChatThread } from "@/components/ai/ChatThread";
+import { QuotaBadge } from "@/components/ai/QuotaBadge";
 import {
   IconChevronDown,
   IconMaximize,
@@ -115,6 +116,7 @@ function Dock({ clan }: { clan: ClanDetail }) {
           <p className="truncate text-sm font-semibold">Trợ lý dòng họ</p>
           <p className="truncate text-xs text-muted-foreground">{clan.name}</p>
         </div>
+        <QuotaBadge quota={chat.quota} className="text-xs" />
         {/* icon-audit: ok — chữ "A" chính là ký hiệu, thêm icon nữa là thừa */}
         <Button
           variant="ghost"

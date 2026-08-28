@@ -939,6 +939,60 @@ export type Database = {
           },
         ]
       }
+      credit_ledger: {
+        Row: {
+          actor_id: string | null
+          at: string
+          delta: number
+          expires_at: string | null
+          id: string
+          order_id: string | null
+          owner_id: string
+          reason: string
+          ref: string | null
+          resource: string
+        }
+        Insert: {
+          actor_id?: string | null
+          at?: string
+          delta: number
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          owner_id: string
+          reason: string
+          ref?: string | null
+          resource: string
+        }
+        Update: {
+          actor_id?: string | null
+          at?: string
+          delta?: number
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          owner_id?: string
+          reason?: string
+          ref?: string | null
+          resource?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ledger_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_ledger_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_bookmarks: {
         Row: {
           created_at: string
@@ -2709,6 +2763,22 @@ export type Database = {
       }
     }
     Views: {
+      credit_balance: {
+        Row: {
+          balance: number | null
+          owner_id: string | null
+          resource: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ledger_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       families_public_safe: {
         Row: {
           clan_id: string | null
@@ -2993,6 +3063,34 @@ export type Database = {
       }
       count_clan_todo: { Args: { p_clan_id: string }; Returns: number }
       count_my_blocking_clans: { Args: never; Returns: number }
+      credit_consume: {
+        Args: {
+          p_amount: number
+          p_owner: string
+          p_ref: string
+          p_resource: string
+        }
+        Returns: number
+      }
+      credit_ensure_monthly_free: {
+        Args: { p_owner: string; p_resource?: string }
+        Returns: undefined
+      }
+      credit_grant: {
+        Args: {
+          p_actor_id?: string
+          p_amount: number
+          p_expires_at?: string
+          p_order_id?: string
+          p_owner: string
+          p_reason: string
+          p_ref?: string
+          p_resource: string
+        }
+        Returns: number
+      }
+      credit_monthly_free_amount: { Args: never; Returns: number }
+      credit_my_quota: { Args: { p_resource?: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       delete_my_push_subscription: {
         Args: { p_endpoint: string }

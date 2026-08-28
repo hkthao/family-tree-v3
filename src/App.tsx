@@ -18,6 +18,7 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 // trang đang vào, không gánh code của cả 65 trang. Giảm mạnh thời gian tải lần
 // đầu, nhất là trên mobile (~67% người dùng) & trình duyệt trong Facebook.
 const Account = lazy(() => import("@/pages/Account"));
+const CreditHistory = lazy(() => import("@/pages/CreditHistory"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const AnnouncementDetail = lazy(() => import("@/pages/AnnouncementDetail"));
 const Announcements = lazy(() => import("@/pages/Announcements"));
@@ -266,6 +267,15 @@ export default function App() {
           element={
             <RequireAuth>
               <Account />
+            </RequireAuth>
+          }
+        />
+        {/* Sổ lượt trợ lý — KHÁC lịch sử trò chuyện (xem CreditHistory). */}
+        <Route
+          path="/account/luot-dung"
+          element={
+            <RequireAuth>
+              <CreditHistory />
             </RequireAuth>
           }
         />
