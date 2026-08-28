@@ -1,8 +1,10 @@
 # ai-chat — trợ lý hỏi đáp gia phả
 
 GĐ 0 + 1 của [docs/plan-ai-tro-ly.md](../../../docs/plan-ai-tro-ly.md): gateway đa nhà
-cung cấp + khung chat **chỉ đọc**. Chưa có giọng nói (GĐ 2), hạn mức (GĐ 3), thanh toán
-(GĐ 4) hay bóc tách nhập liệu (GĐ 5).
+cung cấp + khung chat **chỉ đọc**, cộng phần GĐ 2 chạy hoàn toàn ở client (lịch sử
+`ai_messages` + nhập bằng giọng nói qua Web Speech API — **không** qua edge function
+này, xem `src/lib/speech.ts`). Chưa có hạn mức (GĐ 3), thanh toán (GĐ 4) hay bóc tách
+nhập liệu (GĐ 5).
 
 ## Có gì
 
@@ -144,3 +146,6 @@ cp src/lib/kinship.ts supabase/functions/_shared/vendor/kinship.ts
 
 - Trần chi phí toàn hệ thống (`$20/ngày`) — GĐ 3, cùng với `credit_ledger`.
 - Streaming: hiện trả về nguyên câu, UI hiện "Đang nghĩ…". Đủ dùng ở GĐ 1.
+- Whisper dự phòng cho iOS Safari (không có Web Speech): còn chờ quyết tự host
+  `whisper.cpp` hay gọi OpenAI — xem plan §Việc mở. Tới lúc đó iOS Safari chỉ gõ tay,
+  và nút mic **ẩn hẳn** thay vì hiện ra rồi bấm không ăn thua.
