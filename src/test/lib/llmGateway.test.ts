@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { buildOpenAiBody } from "../../../supabase/functions/_shared/llm/adapters/openai-compatible";
+import { PROPOSE_TOOL } from "../../../supabase/functions/ai-chat/proposal";
 import { TOOL_SPECS } from "../../../supabase/functions/ai-chat/toolSpecs";
 import {
   DEFAULT_MODELS,
@@ -120,8 +121,10 @@ describe("buildOpenAiBody", () => {
    * mới là thứ được gửi đi.
    */
   it("không bật strict cho tool có tham số tuỳ chọn (lỗi 400 của OpenAI)", () => {
+    // Kèm cả PROPOSE_TOOL: nó là schema lồng nhau sâu nhất trong bộ
+    // tool, tức chỗ dễ quên `required` nhất.
     const body = buildOpenAiBody(
-      { ...baseReq, tools: TOOL_SPECS },
+      { ...baseReq, tools: [...TOOL_SPECS, PROPOSE_TOOL] },
       getModel("gpt-5.6-luna"),
     );
     const tools = body.tools as Array<{

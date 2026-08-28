@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { ChatComposer } from "@/components/ai/ChatComposer";
 import { ChatThread } from "@/components/ai/ChatThread";
+import { ProposalCard } from "@/components/ai/ProposalCard";
 import { QuotaBadge } from "@/components/ai/QuotaBadge";
 import {
   IconChevronDown,
@@ -167,6 +168,18 @@ function Dock({ clan }: { clan: ClanDetail }) {
         error={chat.error}
         fontSize={chat.fontSize}
         clanName={clan.name}
+        proposalCard={
+          chat.proposal ? (
+            <ProposalCard
+              proposal={chat.proposal}
+              applying={chat.applying}
+              onConfirm={chat.confirmProposal}
+              onEdit={chat.editProposal}
+              onReject={chat.rejectProposal}
+              fontSize={chat.fontSize}
+            />
+          ) : undefined
+        }
       />
       <ChatComposer
         draft={chat.draft}

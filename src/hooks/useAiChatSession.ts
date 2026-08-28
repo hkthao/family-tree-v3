@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -11,6 +11,7 @@ import {
   type ChatTurn,
 } from "@/lib/queries/aiChat";
 import { loadMyQuota, type CreditQuota } from "@/lib/queries/credits";
+import { applyProposal, type Proposal } from "@/lib/queries/aiExtract";
 
 /**
  * Toàn bộ trạng thái một phiên trò chuyện với trợ lý.
@@ -37,6 +38,14 @@ export interface AiChatSession {
   clearHistory: () => Promise<void>;
   /** Hạn mức tháng này. `null` = máy chủ chưa bật hạn mức → đừng hiện gì. */
   quota: CreditQuota | null;
+  /** Đề xuất thêm người đang chờ người dùng xác nhận (GĐ 5). */
+  proposal: Proposal | null;
+  /** Đang ghi vào gia phả sau khi bấm "Đúng rồi". */
+  applying: boolean;
+  confirmProposal: () => void;
+  rejectProposal: () => void;
+  /** "Sửa lại" — trả câu vừa nói về ô nhập, bóc tách lại KHÔNG mất lượt. */
+  editProposal: () => void;
   fontSize: number;
   fontStep: number;
   cycleFont: () => void;
@@ -44,11 +53,18 @@ export interface AiChatSession {
 
 export function useAiChatSession(clanId: string | undefined): AiChatSession {
   const confirm = useConfirm();
+  const qc = useQueryClient();
 
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [quota, setQuota] = useState<CreditQuota | null>(null);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
+  // Mã lượt + câu nói gốc của đề xuất đang chờ. Giữ lại để "Sửa lại"
+  // gửi lại đúng ref đó — cùng ref thì không bị trừ lượt lần hai.
+  const [pending, setPending] = useState<{ ref?: string; question: string } | null>(
+    null,
+  );
   const [fontStep, setFontStep] = useState(() => {
     const v = Number(localStorage.getItem(FONT_KEY));
     return Number.isInteger(v) && v >= 0 && v < FONT_STEPS.length ? v : 0;
@@ -94,9 +110,14 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
   }, []);
 
   const ask = useMutation({
-    mutationFn: (question: string) =>
-      askAssistant({ clanId: clanId!, question, history: turns }),
-    onSuccess: (res) => {
+    mutationFn: (input: { question: string; ref?: string }) =>
+      askAssistant({
+        clanId: clanId!,
+        question: input.question,
+        history: turns,
+        ref: input.ref,
+      }),
+    onSuccess: (res, input) => {
       setTurns((t) => [...t, { role: "assistant", content: res.answer }]);
       // Hết lượt KHÔNG phải lỗi — máy chủ trả 200 kèm câu nhắn nhẹ và
       // đường lui, nên nó hiện như một câu trả lời bình thường.
@@ -105,11 +126,21 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
         const left = res.credits;
         setQuota((q) => (q ? { ...q, balance: left } : q));
       }
+      // Đề xuất thêm người: giữ ở đây chứ KHÔNG lưu vào lịch sử. Nó là
+      // trạng thái của một lần trao đổi; mở lại trên máy khác mà hiện
+      // một cái nút "Đúng rồi" của hôm qua là mời người ta bấm nhầm.
+      setProposal(res.proposal ?? null);
+      setPending(
+        res.proposal ? { ref: res.ref, question: input.question } : null,
+      );
     },
     onError: (e: Error) => setError(e.message),
   });
 
   const { mutate } = ask;
+  // Ref của lượt đang sửa lại — dùng một lần rồi thôi.
+  const [retryRef, setRetryRef] = useState<string | undefined>(undefined);
+
   const send = useCallback(
     (text: string) => {
       const q = text.trim();
@@ -118,10 +149,69 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       setDraft("");
       setTurns((t) => [...t, { role: "user", content: q }]);
       track("ai_message_sent");
-      mutate(q);
+      mutate({ question: q, ref: retryRef });
+      setRetryRef(undefined);
     },
-    [clanId, ask.isPending, mutate],
+    [clanId, ask.isPending, mutate, retryRef],
   );
+
+  // ─── Thẻ xác nhận (GĐ 5) ────────────────────────────────────────
+  const apply = useMutation({
+    mutationFn: () => applyProposal(clanId!, proposal!),
+    onSuccess: (res) => {
+      track("ai_extract_confirmed");
+      setProposal(null);
+      setPending(null);
+      setTurns((t) => [
+        ...t,
+        {
+          role: "assistant",
+          content: `Đã thêm ${res.added} người vào gia phả. Bạn mở Danh bạ hoặc Cây để xem nhé.`,
+        },
+      ]);
+      // Cây, danh bạ, thống kê đang giữ bản cũ trong cache — không dọn
+      // thì người dùng vừa xác nhận xong lại thấy y như chưa thêm gì.
+      qc.invalidateQueries({
+        predicate: (query) => {
+          const [head, second] = query.queryKey as unknown[];
+          if (typeof head !== "string") return false;
+          if (head === "person" || head === "person-relationships") return true;
+          return (
+            second === clanId &&
+            ["persons", "tree-data", "clan-stats", "branches", "clan"].includes(
+              head,
+            )
+          );
+        },
+      });
+    },
+    onError: (e: Error) => setError(e.message),
+  });
+
+  const confirmProposal = useCallback(() => {
+    if (proposal && !apply.isPending) apply.mutate();
+  }, [apply, proposal]);
+
+  const rejectProposal = useCallback(() => {
+    track("ai_extract_rejected");
+    setProposal(null);
+    setPending(null);
+    setTurns((t) => [
+      ...t,
+      { role: "assistant", content: "Vâng, tôi chưa thêm ai cả." },
+    ]);
+  }, []);
+
+  const editProposal = useCallback(() => {
+    // Trả nguyên câu vừa nói về ô nhập để sửa rồi gửi lại. Kèm ref cũ nên
+    // lần bóc tách lại KHÔNG bị trừ lượt (plan §"1 lượt" là gì).
+    if (pending) {
+      setDraft(pending.question);
+      setRetryRef(pending.ref);
+    }
+    setProposal(null);
+    setPending(null);
+  }, [pending]);
 
   const clearHistory = useCallback(async () => {
     const ok = await confirm({
@@ -156,6 +246,11 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     error,
     clearHistory,
     quota,
+    proposal,
+    applying: apply.isPending,
+    confirmProposal,
+    rejectProposal,
+    editProposal,
     fontSize: FONT_STEPS[fontStep],
     fontStep,
     cycleFont,
