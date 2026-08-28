@@ -232,13 +232,18 @@ export default function Clans() {
               (tab === "community" && sizeBucket ? 1 : 0)
             }
           >
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Bề ngang các ô chọn: KHÔNG dùng `min-w-*` với `flex-none`.
+              Khung bọc của <Select> luôn có `w-full`, nên khi không co
+              được (flex-none) mỗi ô đòi 100% bề ngang của hàng → hai ô
+              cộng lại tràn khỏi khung. Từ lg mới chốt bề ngang cố định;
+              hẹp hơn thì để flex-1 chia đều và co được. */}
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Select
               value={sort}
               onChange={(e) => setSort(e.target.value as ClanSort)}
               aria-label="Sắp xếp"
               icon={<IconList />}
-              className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] text-sm"
+              className="h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-sm"
             >
               {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
                 <option key={k} value={k}>
@@ -254,7 +259,7 @@ export default function Clans() {
                 }
                 aria-label="Lọc theo quy mô"
                 icon={<IconUsers />}
-                className="h-10 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] text-sm"
+                className="h-10 min-w-0 flex-1 lg:flex-none lg:w-48 text-sm"
               >
                 <option value="">Tất cả quy mô</option>
                 {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
