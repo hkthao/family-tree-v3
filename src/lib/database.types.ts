@@ -144,6 +144,7 @@ export type Database = {
           output_tokens: number
           raw_model: string | null
           tool_calls: number
+          turn_ref: string | null
           user_id: string | null
         }
         Insert: {
@@ -163,6 +164,7 @@ export type Database = {
           output_tokens?: number
           raw_model?: string | null
           tool_calls?: number
+          turn_ref?: string | null
           user_id?: string | null
         }
         Update: {
@@ -182,6 +184,7 @@ export type Database = {
           output_tokens?: number
           raw_model?: string | null
           tool_calls?: number
+          turn_ref?: string | null
           user_id?: string | null
         }
         Relationships: [
