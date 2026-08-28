@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { IconPlay, IconSparkles } from "@/components/icons";
 import type { ChatTurn } from "@/lib/queries/aiChat";
@@ -34,6 +34,7 @@ export function ChatThread({
   error,
   fontSize,
   clanName,
+  proposalCard,
   className,
 }: {
   turns: ChatTurn[];
@@ -41,6 +42,8 @@ export function ChatThread({
   error: string | null;
   fontSize: number;
   clanName: string;
+  /** Thẻ xác nhận thêm người, nếu đang có đề xuất chờ (GĐ 5). */
+  proposalCard?: ReactNode;
   className?: string;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -66,7 +69,7 @@ export function ChatThread({
   useEffect(() => {
     if (atBottomRef.current) scrollToBottom();
     else setShowJump(true);
-  }, [turns, pending, scrollToBottom]);
+  }, [turns, pending, proposalCard, scrollToBottom]);
 
   return (
     <div className={cn("relative min-h-0 flex-1", className)}>
@@ -114,6 +117,8 @@ export function ChatThread({
               </div>
             </li>
           ))}
+
+          {proposalCard && <li className="w-full">{proposalCard}</li>}
 
           {pending && (
             <li className="flex justify-start">

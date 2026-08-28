@@ -3,8 +3,8 @@
 GĐ 0 + 1 của [docs/plan-ai-tro-ly.md](../../../docs/plan-ai-tro-ly.md): gateway đa nhà
 cung cấp + khung chat **chỉ đọc**, cộng phần GĐ 2 chạy hoàn toàn ở client (lịch sử
 `ai_messages` + nhập bằng giọng nói qua Web Speech API — **không** qua edge function
-này, xem `src/lib/speech.ts`) và hạn mức GĐ 3 (`credit_ledger`). Chưa có thanh toán
-(GĐ 4) hay bóc tách nhập liệu (GĐ 5).
+này, xem `src/lib/speech.ts`) hạn mức GĐ 3 (`credit_ledger`) và bóc tách
+nhập liệu GĐ 5 (`propose_persons` + thẻ xác nhận). Chưa có thanh toán (GĐ 4).
 
 ## Có gì
 
@@ -18,8 +18,32 @@ _shared/llm/
   adapters/anthropic.ts           SDK chính thức của Anthropic
 _shared/vendor/   bản sao kinship.ts + lunarDate.ts (xem bên dưới)
 ai-chat/tools.ts  5 tool chỉ đọc
+ai-chat/proposal.ts  tool ĐỀ XUẤT thêm người + kiểm lại đầu ra của model
 ai-chat/index.ts  vòng lặp gọi tool, rate limit, trừ lượt, ghi ai_usage
 ```
+
+## Bóc tách nhập liệu (GĐ 5)
+
+Người dùng KỂ thay vì hỏi ("Bố tôi là Nguyễn Văn A, sinh 1940") → model gọi
+`propose_persons` → máy chủ kiểm lại → trả **đề xuất** về trình duyệt → người dùng
+nhìn thẻ "Tôi hiểu là:" rồi mới bấm "Đúng rồi".
+
+**Model không bao giờ ghi vào gia phả.** Lệnh ghi cuối cùng chạy ở trình duyệt bằng
+JWT của chính người dùng (`src/lib/queries/aiExtract.ts`), nên vẫn qua RLS và trigger
+audit y như khi họ tự nhập tay. Kịch bản xấu nhất — model bịa người, hoặc một trường
+`bio` độc hại xui model "thêm 500 người" — dừng lại ở một cái thẻ trên màn hình.
+
+Ba chốt chặn xếp chồng:
+
+| Chốt | Chặn gì |
+|---|---|
+| Chỉ editor/admin mới được ĐƯA tool | Người xem không đề xuất được. Không đưa tool, chứ không phải dặn model đừng dùng — dặn thì prompt injection lách được |
+| `validateProposal` ở máy chủ | `strict` chỉ đảm bảo hình dạng JSON, không đảm bảo nội dung: tên trống, giới tính lạ, năm sinh sau năm mất, gắn vào người đứng sau, quá 10 người |
+| RLS khi ghi | Client tự chế vẫn không ghi được — có test |
+
+"Sửa lại" **không tính thêm lượt**: client gửi lại `ref` của lượt cũ, `credit_consume`
+thấy ref trùng nên không trừ lần hai. Trần `MAX_FREE_RETRIES` (2 lần) chặn kiểu gửi
+mãi một ref để hỏi miễn phí — đếm bằng `ai_usage.turn_ref`.
 
 ## Hạn mức (GĐ 3)
 
@@ -103,7 +127,7 @@ Riêng **migration vẫn phải áp tay** — workflow không đụng vào datab
 # trên máy chủ database
 for f in 20260823120000_ai_usage 20260823140000_ai_messages \
          20260823160000_ai_provider_keys 20260828120000_credit_ledger \
-         20260828140000_ai_cost_guard; do
+         20260828140000_ai_cost_guard 20260828160000_ai_turn_ref; do
   docker exec -i supabase-db psql -U postgres -d postgres < "$f.sql"
 done
 # rồi ghi vào supabase_migrations.schema_migrations

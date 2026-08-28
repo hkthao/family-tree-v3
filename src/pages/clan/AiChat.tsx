@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { ChatComposer } from "@/components/ai/ChatComposer";
+import { ProposalCard } from "@/components/ai/ProposalCard";
 import { QuotaBadge } from "@/components/ai/QuotaBadge";
 import { ChatThread } from "@/components/ai/ChatThread";
 import { IconArrowLeft, IconSparkles, IconTrash } from "@/components/icons";
@@ -35,8 +36,8 @@ import { isFeatureEnabled } from "@/lib/clanFeatures";
  *  3. Chữ nhỏ — app chặn pinch-zoom toàn cục (`user-scalable=no`), nên
  *     phải có nút chỉnh cỡ chữ ngay tại đây.
  *
- * Nhập bằng giọng nói (GĐ 2) đã có — nút mic nằm trong ChatComposer.
- * Chưa có: hạn mức (GĐ 3), bóc tách nhập liệu (GĐ 5).
+ * Đã có: giọng nói (GĐ 2, trong ChatComposer), hạn mức (GĐ 3, QuotaBadge),
+ * bóc tách thêm người (GĐ 5, ProposalCard). Chưa có: thanh toán (GĐ 4).
  */
 export default function AiChat() {
   const { clanId } = useParams<{ clanId: string }>();
@@ -109,6 +110,18 @@ export default function AiChat() {
         error={chat.error}
         fontSize={chat.fontSize}
         clanName={clan.name}
+        proposalCard={
+          chat.proposal ? (
+            <ProposalCard
+              proposal={chat.proposal}
+              applying={chat.applying}
+              onConfirm={chat.confirmProposal}
+              onEdit={chat.editProposal}
+              onReject={chat.rejectProposal}
+              fontSize={chat.fontSize}
+            />
+          ) : undefined
+        }
       />
       <ChatComposer
         draft={chat.draft}

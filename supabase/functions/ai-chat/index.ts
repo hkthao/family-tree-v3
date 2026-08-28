@@ -22,6 +22,7 @@ import { complete, friendlyLlmError } from "../_shared/llm/gateway.ts";
 import { resolveApiKey } from "../_shared/llm/keys.ts";
 import { DEFAULT_MODELS, getModel } from "../_shared/llm/registry.ts";
 import type { LlmMessage } from "../_shared/llm/types.ts";
+import { MAX_PROPOSED, PROPOSE_TOOL, validateProposal } from "./proposal.ts";
 import { runTool, TOOL_SPECS } from "./tools.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -74,6 +75,16 @@ const RATE_PER_CLAN_DAY = 200;
 
 /** Loại quyền lợi trong credit_ledger. Sổ cái dùng chung cho mọi thứ bán. */
 const RESOURCE = "ai_request";
+
+/**
+ * Số lần bóc tách lại MIỄN PHÍ cho một lượt.
+ *
+ * Bấm "Sửa lại" mà bị trừ thêm lượt thì các cụ sợ, không dám sửa, và dữ
+ * liệu sai cứ thế vào gia phả (plan §"1 lượt" là gì). Nhưng cũng không
+ * thể cho dùng lại vô hạn: client gửi mãi một `ref` là hỏi miễn phí mãi.
+ * Hai lần sửa là quá đủ cho một câu nói.
+ */
+const MAX_FREE_RETRIES = 2;
 
 /** Chỉ nhận ngữ cảnh ngắn. Lưu 40 tin ở client ≠ gửi 40 tin cho model. */
 const MAX_HISTORY_MESSAGES = 12;
@@ -196,7 +207,16 @@ interface Body {
   clanId?: string;
   question?: string;
   history?: Array<{ role: "user" | "assistant"; content: string }>;
+  /**
+   * Mã lượt cũ, gửi kèm khi người dùng bấm "Sửa lại" để bóc tách lại —
+   * cùng ref thì `credit_consume` không trừ lần hai. Máy chủ vẫn đếm số
+   * lần dùng lại (MAX_FREE_RETRIES) nên không thể hỏi miễn phí mãi.
+   */
+  ref?: string;
 }
+
+/** Chỉ nhận đúng dạng ref do chính máy chủ sinh ra. */
+const REF_RE = /^qa:[0-9a-f-]{36}$/;
 
 Deno.serve(async (req) => {
   const pre = preflight(req);
@@ -339,11 +359,37 @@ Deno.serve(async (req) => {
     }
   }
 
+  // ─── Ai được đề xuất thêm người vào gia phả ────────────────────────
+  // Chỉ editor/admin. Người xem hỏi được nhưng KHÔNG được đề xuất ghi —
+  // và cách chặn là không đưa tool cho model, chứ không phải dặn model
+  // đừng dùng. Dặn thì prompt injection lách được, không đưa thì không.
+  const { data: membership } = await sbUser
+    .from("clan_members")
+    .select("role")
+    .eq("clan_id", clanId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const canEdit =
+    membership?.role === "admin" || membership?.role === "editor";
+
   // ─── Hạn mức kinh doanh (GĐ 3) ─────────────────────────────────────
   // Giữ chỗ TRƯỚC khi gọi model, hoàn lại nếu hỏng — xem plan §Thực thi
   // phải atomic. Trừ lượt xong mới gọi model, chứ không phải ngược lại:
   // gọi trước rồi mới trừ là mở hai tab bấm cùng lúc sẽ vượt hạn mức.
-  const consumeRef = `qa:${crypto.randomUUID()}`;
+  // Dùng lại ref cũ khi bóc tách lại — nhưng có trần. Đếm bằng số dòng
+  // ai_usage đã mang ref đó: gửi mãi một ref thì lần thứ ba trở đi sinh
+  // ref mới và bị tính lượt như bình thường.
+  let consumeRef = `qa:${crypto.randomUUID()}`;
+  const reuse = body.ref?.trim();
+  if (reuse && REF_RE.test(reuse)) {
+    const { count } = await sbAdmin
+      .from("ai_usage")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("turn_ref", reuse);
+    if ((count ?? 0) <= MAX_FREE_RETRIES) consumeRef = reuse;
+  }
+
   let creditsLeft: number | null = null;
   let creditsCharged = false;
 
@@ -424,7 +470,17 @@ Deno.serve(async (req) => {
   }
 
   const ctx = { sb: sbUser, clanId };
-  const system = `${SYSTEM_PROMPT}\n\nDòng họ đang xem: ${clan.name}.`;
+  // Chỉ dặn về tool đề xuất khi người dùng thực sự có tool đó — dặn suông
+  // cho người không có quyền chỉ tổ làm model hứa rồi không làm được.
+  const extractRule = canEdit
+    ? `\n\nTHÊM NGƯỜI VÀO GIA PHẢ
+- Khi người dùng KỂ (không phải hỏi) về người trong họ để thêm vào, hãy gọi propose_persons.
+- Trước đó BẮT BUỘC gọi search_person để lấy id người đã có làm điểm neo. Không đoán id.
+- Không tự ý thêm người khi người dùng chỉ hỏi. Không bao giờ nói là đã thêm xong — người dùng còn phải bấm xác nhận.
+- Tối đa ${MAX_PROPOSED} người mỗi lần.`
+    : "";
+  const system =
+    `${SYSTEM_PROMPT}\n\nDòng họ đang xem: ${clan.name}.` + extractRule;
 
   let totalIn = 0;
   let totalCached = 0;
@@ -477,11 +533,16 @@ Deno.serve(async (req) => {
     if (error) console.error("ai-chat: không lưu được lịch sử:", error.message);
   }
 
-  async function logUsage(ok: boolean, errorKind?: string) {
+  async function logUsage(
+    ok: boolean,
+    errorKind?: string,
+    kind: "qa" | "extract" = "qa",
+  ) {
     await sbAdmin.from("ai_usage").insert({
       clan_id: clanId,
       user_id: user!.id,
-      kind: "qa",
+      kind,
+      turn_ref: consumeRef,
       model_id: modelId,
       raw_model: rawModel || null,
       input_tokens: totalIn,
@@ -507,7 +568,12 @@ Deno.serve(async (req) => {
           model: modelId,
           system,
           messages,
-          tools: lastRound ? undefined : TOOL_SPECS,
+          // Tool ĐỀ XUẤT chỉ đưa cho người có quyền sửa gia phả.
+          tools: lastRound
+            ? undefined
+            : canEdit
+              ? [...TOOL_SPECS, PROPOSE_TOOL]
+              : TOOL_SPECS,
           maxTokens: 1200,
           effort: "low",
         },
@@ -537,10 +603,51 @@ Deno.serve(async (req) => {
         toolCalls: res.toolCalls,
       });
 
-      const results = await Promise.all(
-        res.toolCalls.map((c) => runTool(ctx, c.name, c.arguments)),
+      // ─── Đề xuất thêm người (GĐ 5) ─────────────────────────────────
+      // Máy chủ KHÔNG ghi gì. Nó kiểm lại đề xuất rồi trả về cho trình
+      // duyệt vẽ thẻ xác nhận; lệnh ghi thật chỉ chạy khi người dùng bấm
+      // "Đúng rồi", và chạy bằng JWT của họ nên vẫn qua RLS và audit.
+      const proposeCall = res.toolCalls.find(
+        (c) => c.name === PROPOSE_TOOL.name,
       );
-      res.toolCalls.forEach((c, i) => {
+      if (proposeCall) {
+        const { proposal, error: invalid } = validateProposal(
+          proposeCall.arguments,
+        );
+        if (proposal) {
+          const answer =
+            res.text.trim() ||
+            `Tôi hiểu là bạn muốn thêm ${proposal.people.length} người dưới đây. ` +
+              "Bạn xem giúp có đúng không nhé.";
+          await logUsage(true, undefined, "extract");
+          await persistTurn(answer);
+          return json({
+            answer,
+            toolCalls: toolCallCount,
+            credits: creditsLeft,
+            proposal,
+            ref: consumeRef,
+          });
+        }
+        // Sai thì nói cho model biết để nó tự sửa ở vòng sau — người dùng
+        // không cần thấy lỗi kỹ thuật của một cái tool.
+        messages.push({
+          role: "tool",
+          toolCallId: proposeCall.id,
+          toolName: proposeCall.name,
+          content: `Đề xuất chưa hợp lệ: ${invalid} Hãy sửa rồi gọi lại (tối đa ${MAX_PROPOSED} người).`,
+        });
+        const others = res.toolCalls.filter((c) => c !== proposeCall);
+        if (others.length === 0) continue;
+      }
+
+      const readCalls = res.toolCalls.filter(
+        (c) => c.name !== PROPOSE_TOOL.name,
+      );
+      const results = await Promise.all(
+        readCalls.map((c) => runTool(ctx, c.name, c.arguments)),
+      );
+      readCalls.forEach((c, i) => {
         messages.push({
           role: "tool",
           toolCallId: c.id,

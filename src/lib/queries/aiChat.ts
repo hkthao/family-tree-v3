@@ -1,4 +1,5 @@
 import { supabase } from "../supabase";
+import type { Proposal } from "./aiExtract";
 
 /**
  * Gọi Edge Function `ai-chat`.
@@ -93,6 +94,13 @@ export async function clearServerHistory(clanId: string): Promise<void> {
 export interface AskResult {
   answer: string;
   toolCalls: number;
+  /**
+   * Đề xuất thêm người, khi trợ lý hiểu là người dùng đang KỂ chứ không
+   * hỏi. Chỉ là đề xuất — chưa có gì được ghi vào gia phả.
+   */
+  proposal?: Proposal;
+  /** Mã lượt, gửi lại khi bóc tách lại để không bị trừ lượt lần hai. */
+  ref?: string;
   /** Số lượt còn lại sau câu này. `null` khi máy chủ chưa bật hạn mức. */
   credits?: number | null;
   /** Hết lượt tháng này — KHÔNG phải lỗi, xem plan §Đường lui. */
@@ -106,6 +114,8 @@ export async function askAssistant(input: {
   clanId: string;
   question: string;
   history: ChatTurn[];
+  /** Lượt cũ đang được bóc tách lại — xem AskResult.ref. */
+  ref?: string;
 }): Promise<AskResult> {
   const { data, error } = await supabase.functions.invoke<AskResult>("ai-chat", {
     body: {
@@ -114,6 +124,7 @@ export async function askAssistant(input: {
       // Cắt ở đây, không cắt ở server: gửi cả lịch sử 40 tin sẽ làm
       // token đầu vào phình lên nhiều lần (xem plan §Chi phí).
       history: input.history.slice(-CONTEXT_TURNS),
+      ref: input.ref,
     },
   });
 
