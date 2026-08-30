@@ -232,7 +232,7 @@ cp src/lib/kinship.ts supabase/functions/_shared/vendor/kinship.ts
 | Vòng gọi tool mỗi lượt | 5 | `bio` độc hại có thể xui model gọi tool vòng vo cho tốn tiền |
 | Rate limit / người | 5 lượt / 5 phút · 30 lượt / giờ | Chống bấm nhanh và vòng lặp lỗi ở client — **không phải** hạn mức kinh doanh |
 | Rate limit / IP | 20 lượt / 5 phút | Tạo tài khoản mới quá dễ nên đếm theo người là chưa đủ. Nới hơn ngưỡng cá nhân vì cả nhà dùng chung một đường mạng là bình thường |
-| Rate limit / dòng họ | 200 lượt / ngày | Kể cả gói trả phí |
+| Rate limit / dòng họ | theo `clans.ai_daily_limit` / `ai_monthly_limit`, thiếu thì lấy `ai.clan_daily_limit` / `ai.clan_monthly_limit` (mặc định 200/ngày, tháng không giới hạn) | Kể cả gói trả phí. Đặt riêng cho từng dòng họ ở **Quản trị › Dòng họ**; `0` = khoá hẳn, để TRỐNG = theo mức chung — hai thứ đó khác nhau |
 | Hạn mức | 10 lượt / tháng / tài khoản | Mô hình kinh doanh, xem §Hạn mức |
 | Trần chi phí | $20 / ngày toàn hệ thống | Chặn hoá đơn thảm hoạ khi có bug gọi API vòng lặp |
 | Ngữ cảnh gửi lên | 8 lượt gần nhất | Client lưu 40 tin để hiển thị; gửi hết sẽ làm token đầu vào phình lên nhiều lần |
@@ -250,7 +250,8 @@ Ba điều về ngắt mạch chi phí:
   key; đổi muối chỉ làm bộ đếm quên lịch sử cũ.
 
 Đổi trần: `update platform_settings set value = '50' where key = 'ai.daily_cost_cap_usd';`
-(đặt `'0'` để tắt hẳn ngắt mạch).
+(đặt `'0'` để tắt hẳn ngắt mạch) — hoặc sửa thẳng ở **Quản trị › Cài đặt › Trợ lý AI**,
+không cần ssh.
 
 ## Chưa làm
 

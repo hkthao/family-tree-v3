@@ -22,6 +22,10 @@ export interface AdminClanRow {
   visibility: "private" | "public";
   max_persons: number;
   max_users: number;
+  /** Trần lượt hỏi trợ lý mỗi ngày. null = theo mức chung của nền tảng. */
+  ai_daily_limit: number | null;
+  /** Trần mỗi tháng. null = theo mức chung (0 ở đó nghĩa là không giới hạn). */
+  ai_monthly_limit: number | null;
   owner_id: string | null;
   data_version: number;
   created_at: string;
@@ -62,7 +66,7 @@ export async function listAllClans(
   const { data, error } = await client
     .from("clans")
     .select(
-      "id, name, description, visibility, max_persons, max_users, owner_id, data_version, created_at, updated_at, person_count",
+      "id, name, description, visibility, max_persons, max_users, ai_daily_limit, ai_monthly_limit, owner_id, data_version, created_at, updated_at, person_count",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -102,7 +106,16 @@ export async function updateProfileMaxClans(
 
 export async function updateClanLimits(
   clanId: string,
-  limits: { max_persons?: number; max_users?: number },
+  /**
+   * `null` cho hạn mức AI nghĩa là "xoá mức riêng, dùng mức chung" — khác
+   * hẳn 0 ("không cho hỏi lượt nào"). Đừng gộp hai thứ đó làm một.
+   */
+  limits: {
+    max_persons?: number;
+    max_users?: number;
+    ai_daily_limit?: number | null;
+    ai_monthly_limit?: number | null;
+  },
   client: Client = defaultClient,
 ): Promise<void> {
   const { error } = await client

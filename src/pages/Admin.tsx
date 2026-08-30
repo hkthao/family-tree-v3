@@ -23,6 +23,7 @@ import {
   IconTrash,
   IconUnlock,
   IconUser,
+  IconSparkles,
   IconUsers,
   IconX,
 } from "@/components/icons";
@@ -699,12 +700,23 @@ function ClanRow({
   const toast = useToast();
   const [maxPersons, setMaxPersons] = useState(String(clan.max_persons));
   const [maxUsers, setMaxUsers] = useState(String(clan.max_users));
+  // Rỗng = dùng mức chung của nền tảng. Giữ dạng chuỗi để phân biệt được
+  // "rỗng" với "0" — 0 là một mức thật ("khoá hẳn"), không phải bỏ trống.
+  const [aiDaily, setAiDaily] = useState(
+    clan.ai_daily_limit === null ? "" : String(clan.ai_daily_limit),
+  );
+  const [aiMonthly, setAiMonthly] = useState(
+    clan.ai_monthly_limit === null ? "" : String(clan.ai_monthly_limit),
+  );
+  const asLimit = (v: string) => (v.trim() === "" ? null : Number(v));
 
   const m = useMutation({
     mutationFn: () =>
       updateClanLimits(clan.id, {
         max_persons: Number(maxPersons),
         max_users: Number(maxUsers),
+        ai_daily_limit: asLimit(aiDaily),
+        ai_monthly_limit: asLimit(aiMonthly),
       }),
     onSuccess: () => {
       onChange();
@@ -714,9 +726,12 @@ function ClanRow({
       toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
+  const asText = (v: number | null) => (v === null ? "" : String(v));
   const changed =
     String(clan.max_persons) !== maxPersons ||
-    String(clan.max_users) !== maxUsers;
+    String(clan.max_users) !== maxUsers ||
+    asText(clan.ai_daily_limit) !== aiDaily ||
+    asText(clan.ai_monthly_limit) !== aiMonthly;
 
   const isPublic = clan.visibility === "public";
 
@@ -756,7 +771,9 @@ function ClanRow({
 
       {/* Limits — grid: 2 inputs share width, button sits on its own
           row at mobile and inline-right at sm+. */}
-      <div className="border-t pt-3 grid grid-cols-2 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+      {/* Hạn mức. Hai ô AI để trống = dùng mức chung của nền tảng, sửa ở
+          Cài đặt › Trợ lý AI. */}
+      <div className="border-t pt-3 grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-end">
         <div className="space-y-1 min-w-0">
           <Label htmlFor={`mp-${clan.id}`} className="text-xs">
             Giới hạn người
@@ -782,6 +799,36 @@ function ClanRow({
             min={1}
             value={maxUsers}
             onChange={(e) => setMaxUsers(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="space-y-1 min-w-0">
+          <Label htmlFor={`ad-${clan.id}`} className="text-xs">
+            Lượt AI / ngày
+          </Label>
+          <Input
+            id={`ad-${clan.id}`}
+            icon={<IconSparkles />}
+            type="number"
+            min={0}
+            placeholder="mặc định"
+            value={aiDaily}
+            onChange={(e) => setAiDaily(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="space-y-1 min-w-0">
+          <Label htmlFor={`am-${clan.id}`} className="text-xs">
+            Lượt AI / tháng
+          </Label>
+          <Input
+            id={`am-${clan.id}`}
+            icon={<IconSparkles />}
+            type="number"
+            min={0}
+            placeholder="mặc định"
+            value={aiMonthly}
+            onChange={(e) => setAiMonthly(e.target.value)}
             className="w-full"
           />
         </div>
