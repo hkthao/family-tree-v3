@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { IconPlay, IconSparkles } from "@/components/icons";
+import { useAiProviderLabel } from "@/hooks/useAiProvider";
 import type { ChatTurn } from "@/lib/queries/aiChat";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +50,7 @@ export function ChatThread({
   proposalCard?: ReactNode;
   className?: string;
 }) {
+  const provider = useAiProviderLabel();
   const scrollRef = useRef<HTMLDivElement>(null);
   const atBottomRef = useRef(true);
   const [showJump, setShowJump] = useState(false);
@@ -89,6 +91,14 @@ export function ChatThread({
             <p className="text-muted-foreground">
               Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời
               thường ngày — ngày giỗ, cách xưng hô, ai là con ai.
+            </p>
+            {/* Nói thẳng chuyện dữ liệu rời khỏi máy chủ. Người dùng có
+                quyền biết trước khi gõ câu đầu tiên, không phải đi tìm
+                trong trang điều khoản. */}
+            <p className="mt-3 text-sm text-muted-foreground">
+              Câu hỏi của bạn{provider ? ` được gửi tới ${provider}` : " được gửi tới một dịch vụ AI bên ngoài"} để
+              xử lý, kèm tên và năm sinh/mất của những người liên quan trong
+              gia phả. Ảnh, tiểu sử và ghi chú riêng thì không gửi đi.
             </p>
           </div>
         )}

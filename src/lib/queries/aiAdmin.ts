@@ -1,4 +1,13 @@
 import { supabase } from "../supabase";
+import {
+  AI_PROVIDERS,
+  QA_MODELS,
+  type AiProvider,
+} from "../aiModels";
+
+// Re-export: màn quản trị vẫn import từ đây như cũ.
+export { AI_PROVIDERS, QA_MODELS };
+export type { AiProvider };
 import { getPlatformSetting, setPlatformSetting } from "./platformSettings";
 
 /**
@@ -9,18 +18,6 @@ import { getPlatformSetting, setPlatformSetting } from "./platformSettings";
  * `ai_provider_keys`, bảng đó không có RLS policy nào nên trình duyệt
  * không select nổi kể cả khi là admin.
  */
-
-export type AiProvider = "openai" | "anthropic" | "deepseek";
-
-export const AI_PROVIDERS: Array<{
-  id: AiProvider;
-  label: string;
-  hint: string;
-}> = [
-  { id: "openai", label: "OpenAI", hint: "Khoá bắt đầu bằng sk-" },
-  { id: "anthropic", label: "Anthropic (Claude)", hint: "Khoá bắt đầu bằng sk-ant-" },
-  { id: "deepseek", label: "DeepSeek", hint: "Khoá bắt đầu bằng sk-" },
-];
 
 export interface KeyStatus {
   provider: AiProvider;
@@ -145,14 +142,6 @@ export const AI_ENABLED_KEY = "ai.enabled";
 export const AI_MODEL_QA_KEY = "ai.model.qa";
 
 /** Model cho phép chọn ở UI. Phải khớp registry.ts của Edge Function. */
-export const QA_MODELS = [
-  { id: "gpt-5.6-luna", label: "GPT-5.6 Luna — rẻ nhất", credential: "openai" },
-  { id: "gpt-5.6-terra", label: "GPT-5.6 Terra", credential: "openai" },
-  { id: "deepseek-v4-flash", label: "DeepSeek V4-Flash", credential: "deepseek" },
-  { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", credential: "anthropic" },
-  { id: "claude-sonnet-5", label: "Claude Sonnet 5 — tool tốt nhất", credential: "anthropic" },
-] as const;
-
 export interface AiConfig {
   enabled: boolean;
   qaModel: string;
