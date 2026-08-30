@@ -8,6 +8,7 @@ import {
 } from "@/components/AlmanacDisplayToggles";
 import { IconArrowLeft, IconArrowRight, IconSparkles } from "@/components/icons";
 import { describeDay } from "@/lib/almanac";
+import { festivalsOn } from "@/lib/festivals";
 import { listCustomEntries } from "@/lib/queries/customs";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
@@ -63,6 +64,7 @@ export function TodayHubCard({
 
   const iso = isoOf(view);
   const info = describeDay(iso);
+  const festivals = festivalsOn(iso);
   const leap = info?.lunar.leap ? " nhuận" : "";
 
   const dayOfYear = useMemo(() => {
@@ -182,6 +184,27 @@ export function TodayHubCard({
               .filter(Boolean)
               .join(" · ")}
           </p>
+        )}
+
+        {/* Lễ, tết — đặt TRƯỚC cảnh báo ngày kiêng: người ta mở app ngày
+            rằm tháng Bảy là để thấy chữ "Vu Lan", không phải để thấy hôm
+            nay có kiêng gì. */}
+        {festivals.length > 0 && (
+          <div className="mt-2 space-y-1">
+            {festivals.map((f) => (
+              <p key={f.key} className="text-sm">
+                <span className="font-medium text-primary">🏮 {f.name}</span>
+                {f.publicHoliday && (
+                  <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                    Nghỉ lễ
+                  </span>
+                )}
+                <span className="block text-xs text-muted-foreground">
+                  {f.note}
+                </span>
+              </p>
+            ))}
+          </div>
         )}
 
         {/* Cảnh báo ngày kiêng dân gian (Tam Nương / Nguyệt Kỵ) */}
