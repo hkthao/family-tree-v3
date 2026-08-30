@@ -13,13 +13,15 @@
 # service role gọi được và không cần HTTP, thêm một function chỉ để bấm
 # một câu SQL là thừa.
 #
-# Cài trên máy chủ database:
-#   scp deploy/cron/ai-messages-purge.sh family-tree-db:/root/
-#   ssh family-tree-db "chmod +x /root/ai-messages-purge.sh"
-#   # rồi thêm vào crontab: 40 3 * * * /root/ai-messages-purge.sh
+# Cài trên máy chủ database (địa chỉ thật để ở doc vận hành ngoài repo —
+# xem src/test/lib/noInfraSecrets.test.ts):
+#   scp deploy/cron/ai-messages-purge.sh <host>:<bin-dir>/
+#   ssh <host> "chmod +x <bin-dir>/ai-messages-purge.sh"
+#   # rồi thêm vào crontab: 40 3 * * * <bin-dir>/ai-messages-purge.sh
 set -euo pipefail
 
-LOG=/root/ai-messages-purge.log
+# Ghi log cạnh chính script, trừ khi được chỉ chỗ khác.
+LOG="${PURGE_LOG:-$(dirname "$0")/ai-messages-purge.log}"
 COUNT=$(docker exec -i supabase-db psql -U postgres -d postgres -tAc \
   "select public.ai_messages_purge_expired();" 2>>"$LOG")
 
