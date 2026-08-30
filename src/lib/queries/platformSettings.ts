@@ -70,3 +70,24 @@ export function setDemoClanIds(
     client,
   );
 }
+
+// ─── Linh vật ────────────────────────────────────────────────────────
+
+const MASCOT_KEY = "ui.mascot_enabled";
+
+/**
+ * Linh vật có hiện hay không.
+ *
+ * Mặc định BẬT: chưa áp migration hay chưa ai đụng vào thì giữ nguyên
+ * hành vi cũ, chứ không phải tự nhiên biến mất.
+ */
+export async function isMascotEnabled(client: Client = defaultClient): Promise<boolean> {
+  return (await getPlatformSetting(MASCOT_KEY, client)) !== "false";
+}
+
+export async function setMascotEnabled(
+  on: boolean,
+  client: Client = defaultClient,
+): Promise<void> {
+  await setPlatformSetting(MASCOT_KEY, on ? "true" : "false", client);
+}

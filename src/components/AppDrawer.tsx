@@ -1,49 +1,35 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { Link, NavLink, useParams } from "react-router-dom";
+import { Link, NavLink, useLocation, useParams } from "react-router-dom";
 
-import type { ReactNode } from "react";
 
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
 import {
-  IconAward,
-  IconBook,
-  IconBuildings,
-  IconCalendar,
-  IconCamera,
+  IconChevronDown,
   IconFacebook,
   IconGlobe,
-  IconGrave,
-  IconHome,
-  IconLink,
-  IconList,
   IconLogOut,
-  IconPencil,
-  IconScroll,
-  IconSettings,
-  IconShield,
-  IconSparkles,
-  IconSun,
-  IconTree,
-  IconUserPlus,
-  IconUsers,
-  IconWallet,
 } from "@/components/icons";
 import { CheckUpdateButton } from "@/components/CheckUpdateButton";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import {
+  buildSections,
+  isTabActive,
+  sectionBadge,
+  useCollapsedSections,
+} from "@/lib/navModel";
 import { InstallAppButton } from "@/components/InstallAppButton";
 import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { signOutAndClearCache } from "@/lib/auth-actions";
-import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
+import { getClanDetail } from "@/lib/queries/clan-detail";
 import { queryKeys } from "@/lib/queries/keys";
-import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import { countPendingContributions } from "@/lib/queries/contributions";
 import { countPendingPersonLinks } from "@/lib/queries/person-links";
-import { getMyProfile, type MyProfile } from "@/lib/queries/profile";
+import { getMyProfile } from "@/lib/queries/profile";
 import { countClanTodo } from "@/lib/queries/todo";
 import { cn } from "@/lib/utils";
 
@@ -147,7 +133,10 @@ export function AppDrawer({ open, onClose }: Props) {
     onClose();
   }
 
+  const location = useLocation();
   const aiEnabled = useAiEnabled();
+  const isAdminArea =
+    location.pathname === "/admin" || location.pathname.startsWith("/admin/");
   const sections = buildSections(
     clanId,
     clan ?? null,
@@ -156,7 +145,10 @@ export function AppDrawer({ open, onClose }: Props) {
     pendingInlawCount ?? 0,
     todoCount ?? 0,
     aiEnabled,
+    isAdminArea,
   );
+
+  const { isOpen, toggle } = useCollapsedSections(location.pathname);
 
   return (
     <>
@@ -207,42 +199,82 @@ export function AppDrawer({ open, onClose }: Props) {
         </header>
 
         <nav className="flex-1 overflow-y-auto py-2">
-          {sections.map((section) => (
-            <div key={section.label} className="py-2">
-              <h2 className="px-4 pb-1 text-xs uppercase tracking-wider text-muted-foreground">
-                {section.label}
-              </h2>
-              <ul>
-                {section.items.map((item) => (
-                  <li key={item.to}>
-                    <NavLink
-                      to={item.to}
-                      end={item.end ?? false}
-                      onClick={pick}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center gap-3 px-4 py-2.5 text-sm",
-                          isActive
-                            ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
-                            : "text-foreground hover:bg-muted/50 border-l-4 border-transparent pl-3",
-                        )
-                      }
-                    >
-                      <span className="inline-flex items-center justify-center shrink-0">
-                        {item.icon}
-                      </span>
-                      <span className="flex-1">{item.label}</span>
-                      {item.badge !== undefined && (
-                        <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
-                          {item.badge}
-                        </span>
+          {sections.map((section) => {
+            const open = isOpen(section);
+            return (
+              <div key={section.id} className="py-1">
+                {section.collapsible === false ? (
+                  <h2 className="px-4 pb-1 pt-1 text-xs uppercase tracking-wider text-muted-foreground">
+                    {section.label}
+                  </h2>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => toggle(section)}
+                    aria-expanded={open}
+                    // 44px: nhóm gập được là thứ người dùng bấm thật,
+                    // không phải nhãn trang trí như tiêu đề nhóm cố định.
+                    className="flex min-h-[44px] w-full items-center gap-2 px-4 text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                  >
+                    <IconChevronDown
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform",
+                        open ? "" : "-rotate-90",
                       )}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                    />
+                    <span className="flex-1 text-left">{section.label}</span>
+                    {!open && sectionBadge(section) !== undefined && (
+                      // Nhóm đang gập mà bên trong có việc chờ thì phải
+                      // hiện ra ngoài — badge giấu trong nhóm gập là badge
+                      // vô dụng.
+                      <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
+                        {sectionBadge(section)}
+                      </span>
+                    )}
+                  </button>
+                )}
+                {open && (
+                  <ul>
+                    {section.items.map((item) => (
+                      <li key={item.to}>
+                        {item.kind === "feedback" ? (
+                          <FeedbackButton
+                            className="flex w-full items-center gap-3 border-l-4 border-transparent py-2.5 pl-3 pr-4 text-left text-sm text-foreground hover:bg-muted/50"
+                            label={item.label}
+                            icon={item.icon}
+                          />
+                        ) : (
+                          <NavLink
+                            to={item.to}
+                            end={item.end ?? false}
+                            onClick={pick}
+                            className={({ isActive }) =>
+                              cn(
+                                "flex items-center gap-3 px-4 py-2.5 text-sm",
+                                isActive || isTabActive(item.to, location)
+                                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                                  : "text-foreground hover:bg-muted/50 border-l-4 border-transparent pl-3",
+                              )
+                            }
+                          >
+                            <span className="inline-flex items-center justify-center shrink-0">
+                              {item.icon}
+                            </span>
+                            <span className="flex-1">{item.label}</span>
+                            {item.badge !== undefined && (
+                              <span className="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
+                                {item.badge}
+                              </span>
+                            )}
+                          </NavLink>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* Footer — user identity + logout in a single row to keep the
@@ -255,11 +287,11 @@ export function AppDrawer({ open, onClose }: Props) {
               sẻ QR") so 3-4 fit on the 288-wide drawer without
               clipping. InstallAppButton self-hides when not
               installable, so on most desktop browsers this is just
-              QR / Góp ý / Cập nhật. */}
+              QR / Cập nhật. Góp ý ĐÃ CHUYỂN LÊN MENU — ở đây nó lẫn giữa
+              mấy nút tiện ích, chỉ ai đi tìm mới thấy. */}
           <div className="flex gap-2">
             <InstallAppButton />
             <ShareAppQrButton />
-            <FeedbackButton className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm whitespace-nowrap" />
             <CheckUpdateButton compact />
           </div>
           {profile ? (
@@ -348,12 +380,6 @@ export function AppDrawer({ open, onClose }: Props) {
   );
 }
 
-/** Cap badge display at 99+ so a noisy count doesn't blow out the
- *  row width. The number itself is still accurate on the page. */
-function formatBadge(n: number): string | number {
-  return n > 99 ? "99+" : n;
-}
-
 function initialOf(name: string): string {
   const trimmed = name.trim();
   if (!trimmed) return "?";
@@ -385,306 +411,5 @@ function LogoutIcon() {
   );
 }
 
-// ---------------------------------------------------------------------------
 
-interface DrawerItem {
-  to: string;
-  label: string;
-  icon: ReactNode;
-  end?: boolean;
-  /** Optional pill rendered after the label — e.g. pending count. */
-  badge?: string | number;
-}
-interface DrawerSection {
-  label: string;
-  items: DrawerItem[];
-}
 
-/**
- * Compute the visible item set for the current viewer + clan context.
- * Centralised so we have a single place to change when a new clan page
- * lands. Permission helpers mirror useClanContext — platform admin
- * counts as clan admin everywhere.
- */
-function buildSections(
-  clanId: string | undefined,
-  clan: ClanDetail | null,
-  profile: MyProfile | null,
-  pendingContribCount: number,
-  pendingInlawCount: number,
-  todoCount: number,
-  aiEnabled: boolean,
-): DrawerSection[] {
-  const sections: DrawerSection[] = [];
-
-  // Single icon size used across the drawer — matches typical sidebar
-  // density and lets the lucide-style strokes stay legible at small
-  // text-sm row heights.
-  const ic = "h-5 w-5";
-
-  // -- Global section ------------------------------------------------------
-  // "Tạo dòng họ mới" bỏ khỏi menu (đã có nút ở trang Dòng họ của tôi).
-  // "Hướng dẫn" + "Video hướng dẫn" gộp thành "Trợ giúp" (trang có 2 tab),
-  // đặt cuối — người dùng cũ ít cần.
-  const global: DrawerItem[] = [
-    {
-      to: "/clans",
-      label: profile?.is_platform_admin ? "Tất cả dòng họ" : "Dòng họ của tôi",
-      icon: <IconBuildings className={ic} />,
-      end: true,
-    },
-    {
-      to: "/so-tay",
-      label: "Sổ tay Văn hoá",
-      icon: <IconGlobe className={ic} />,
-    },
-    {
-      to: "/docs",
-      label: "Trợ giúp",
-      icon: <IconBook className={ic} />,
-    },
-  ];
-  sections.push({ label: "Chung", items: global });
-
-  // -- Quản trị nền tảng: nhóm RIÊNG, đặt sau nhóm Chung ------------------
-  // Trước đây là một mục lẻ nhét trong "Chung". Tách ra vì hai lý do: khu
-  // này giờ có hai phần rõ rệt (báo cáo vs cài đặt), và admin vẫn dùng app
-  // như người thường là chính nên nó không nên chen vào giữa việc hằng ngày.
-  if (profile?.is_platform_admin) {
-    sections.push({
-      label: "Quản trị nền tảng",
-      items: [
-        {
-          to: "/admin",
-          // end: nếu không, "/admin" sáng luôn cả khi đang ở
-          // "/admin/cai-dat" → hai mục cùng active, trông như lỗi.
-          end: true,
-          label: "Báo cáo & theo dõi",
-          icon: <IconShield className={ic} />,
-        },
-        {
-          to: "/admin/cai-dat",
-          label: "Cài đặt & nội dung",
-          icon: <IconSettings className={ic} />,
-        },
-      ],
-    });
-  }
-
-  // -- Clan-scoped sections ------------------------------------------------
-  // Nhóm semantic — mục HAY DÙNG đẩy lên nhóm đầu:
-  //   1. <clan name>          — lõi: Tổng quan / Cây / Danh bạ / Sự kiện /
-  //      Hôm nay (khớp thanh tab dưới, không bị chôn).
-  //   2. Cộng đồng            — Bảng tin.
-  //   3. Di sản & Tưởng niệm  — Phòng ký ức / Di sản dòng họ / Mộ phần /
-  //      Bảng vàng công đức / Quỹ họ (gom hết mục di sản/tưởng niệm về 1
-  //      chỗ, hết cảnh "Di sản" rải rác + nhãn na ná "Sổ tay Văn hoá").
-  //   4. Cập nhật             — data-entry cho editor+ (Việc cần làm,
-  //      Đóng góp, Công cụ).
-  //   5. Quản trị             — chỉ admin (Thành viên / Thông gia / QR / Cài đặt)
-  if (clanId && clan) {
-    const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
-    const canEdit =
-      clan.isPlatformAdmin ||
-      clan.myRole === "admin" ||
-      clan.myRole === "editor";
-    const isMember = clan.isPlatformAdmin || clan.myRole !== null;
-
-    // Người xem công khai (không phải thành viên) chỉ thấy phần admin đã
-    // bật. Thành viên thấy tất cả. Các cờ chỉ hiệu lực khi visibility=public.
-    const canTree = isMember || clan.public_show_tree;
-    const canEvents = isMember || clan.public_show_events;
-    const canGraves = isMember || clan.public_show_graves;
-    const canHeritage = isMember || clan.public_show_heritage;
-
-    // ─── Section 1: <clan name> — những mục HAY DÙNG NHẤT lên trên ──
-    // Cây gia phả + Danh bạ (trái tim của app) được đẩy lên đầu, cạnh
-    // Tổng quan + Sự kiện. "Đường trực hệ" đã gộp vào Cây (nút gạt).
-    const topItems: DrawerItem[] = [
-      {
-        to: `/clans/${clanId}`,
-        label: "Tổng quan",
-        icon: <IconHome className={ic} />,
-        end: true,
-      },
-    ];
-    if (canTree) {
-      topItems.push(
-        {
-          to: `/clans/${clanId}/tree`,
-          label: "Cây gia phả",
-          icon: <IconTree className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/people`,
-          label: "Danh bạ",
-          icon: <IconUsers className={ic} />,
-        },
-      );
-    }
-    // "Tra cứu xưng hô" đã gộp thành nút gạt trong "Danh bạ".
-    if (canEvents) {
-      topItems.push({
-        to: `/clans/${clanId}/events`,
-        label: "Sự kiện",
-        icon: <IconCalendar className={ic} />,
-      });
-    }
-    // "Hôm nay" là mục lõi (có trong thanh tab dưới) → để cạnh Sự kiện,
-    // không chôn trong nhóm khác.
-    if (canTree) {
-      topItems.push({
-        to: `/clans/${clanId}/today`,
-        label: "Hôm nay",
-        icon: <IconSun className={ic} />,
-      });
-    }
-    // Cờ tính năng phụ theo dòng họ (admin có thể tắt để nav gọn).
-    const feat = (k: ClanFeatureKey) =>
-      isFeatureEnabled(clan.disabled_features, k);
-
-    // Trợ lý AI đứng cạnh mục lõi chứ không chôn trong nhóm phụ: nó là
-    // lối vào chính cho người lớn tuổi — hỏi bằng lời thay vì tự đi tìm
-    // trong menu.
-    if (isMember && aiEnabled && feat("ai_assistant")) {
-      topItems.push({
-        to: `/clans/${clanId}/tro-ly`,
-        label: "Trợ lý dòng họ",
-        icon: <IconSparkles className={ic} />,
-      });
-    }
-    sections.push({ label: clan.name, items: topItems });
-
-    // ─── Section 2: Cộng đồng ──────────────────────────────────────
-    // Nội dung cộng đồng → chỉ thành viên.
-    if (isMember && feat("board")) {
-      sections.push({
-        label: "Cộng đồng",
-        items: [
-          {
-            to: `/clans/${clanId}/board`,
-            label: "Bảng tin",
-            icon: <IconSparkles className={ic} />,
-          },
-        ],
-      });
-    }
-
-    // ─── Section 3: Di sản & Tưởng niệm ────────────────────────────
-    // Gom hết mục di sản/tưởng niệm/công đức về một chỗ. Phòng ký ức +
-    // công đức + quỹ chỉ thành viên; di sản/mộ phần gate theo cờ công khai.
-    // Tất cả đều ẩn được qua feature-flags của dòng họ.
-    const heritageItems: DrawerItem[] = [];
-    if (isMember && feat("memory_room")) {
-      heritageItems.push({
-        to: `/clans/${clanId}/memory-room`,
-        label: "Phòng ký ức",
-        icon: <IconCamera className={ic} />,
-      });
-    }
-    if (canHeritage && feat("heritage")) {
-      heritageItems.push({
-        to: `/clans/${clanId}/heritage`,
-        label: "Di sản dòng họ",
-        icon: <IconScroll className={ic} />,
-      });
-    }
-    if (canGraves && feat("graves")) {
-      heritageItems.push({
-        to: `/clans/${clanId}/graves`,
-        label: "Mộ phần & tro cốt",
-        icon: <IconGrave className={ic} />,
-      });
-    }
-    if (isMember && feat("honor")) {
-      heritageItems.push({
-        to: `/clans/${clanId}/honor`,
-        label: "Bảng vàng công đức",
-        icon: <IconAward className={ic} />,
-      });
-    }
-    if (isMember && feat("fund")) {
-      heritageItems.push({
-        to: `/clans/${clanId}/fund`,
-        label: "Quỹ họ",
-        icon: <IconWallet className={ic} />,
-      });
-    }
-    if (heritageItems.length > 0) {
-      sections.push({ label: "Di sản & Tưởng niệm", items: heritageItems });
-    }
-
-    // ─── Section 3: Cập nhật — data-entry cho editor+ ─────────────
-    if (canEdit) {
-      // Việc thường xuyên giữ ở menu; công cụ ít dùng (Nhập Excel / Gộp /
-      // Sinh AI / Nhật ký) gom vào trang "Công cụ".
-      sections.push({
-        label: "Cập nhật",
-        items: [
-          {
-            to: `/clans/${clanId}/todo`,
-            label: "Việc cần làm",
-            icon: <IconList className={ic} />,
-            badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
-          },
-          {
-            to: `/clans/${clanId}/contributions`,
-            label: "Đóng góp",
-            icon: <IconPencil className={ic} />,
-            badge: pendingContribCount > 0 ? pendingContribCount : undefined,
-          },
-          {
-            to: `/clans/${clanId}/tools`,
-            label: "Công cụ",
-            icon: <IconSettings className={ic} />,
-          },
-        ],
-      });
-    } else if (isMember) {
-      // Member thường (viewer): xem Việc cần làm + Công cụ (chỉ có Nhật ký).
-      sections.push({
-        label: "Cập nhật",
-        items: [
-          {
-            to: `/clans/${clanId}/todo`,
-            label: "Việc cần làm",
-            icon: <IconList className={ic} />,
-            badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
-          },
-          {
-            to: `/clans/${clanId}/tools`,
-            label: "Công cụ",
-            icon: <IconSettings className={ic} />,
-          },
-        ],
-      });
-    }
-
-    // ─── Section 4: Quản trị — admin only ─────────────────────────
-    if (isAdmin) {
-      const adminItems: DrawerItem[] = [
-        {
-          to: `/clans/${clanId}/members`,
-          label: "Thành viên",
-          icon: <IconUserPlus className={ic} />,
-        },
-      ];
-      if (feat("inlaws")) {
-        adminItems.push({
-          to: `/clans/${clanId}/inlaws`,
-          label: "Liên kết thông gia",
-          icon: <IconLink className={ic} />,
-          badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
-        });
-      }
-      adminItems.push({
-        to: `/clans/${clanId}/settings`,
-        label: "Cài đặt dòng họ",
-        icon: <IconSettings className={ic} />,
-      });
-      sections.push({ label: "Quản trị", items: adminItems });
-    }
-  }
-
-  return sections;
-}
