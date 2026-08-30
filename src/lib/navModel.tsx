@@ -24,12 +24,6 @@ import {
   IconUsers,
   IconWallet,
 } from "@/components/icons";
-import {
-  ADMIN_AREA_LABEL,
-  adminPath,
-  screensByArea,
-  type AdminArea,
-} from "@/lib/adminScreens";
 import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { MyProfile } from "@/lib/queries/profile";
@@ -259,8 +253,6 @@ export function buildSections(
   pendingInlawCount: number,
   todoCount: number,
   aiEnabled: boolean,
-  /** Đang ở khu quản trị nền tảng — menu đổi hẳn nội dung. */
-  isAdminArea = false,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -268,51 +260,6 @@ export function buildSections(
   // density and lets the lucide-style strokes stay legible at small
   // text-sm row heights.
   const ic = "h-5 w-5";
-
-  // ─── Khu quản trị nền tảng: MENU RIÊNG, không trộn với app ────────
-  //
-  // Vào /admin là menu chỉ còn việc quản trị. Trước đây khu này chen
-  // vào giữa menu thường nên hai thứ khác hẳn nhịp dùng nằm cạnh nhau,
-  // và menu dài ra với người vốn không phải admin thì chẳng thấy gì.
-  //
-  // Mỗi mục trỏ thẳng vào một tab của trang Quản trị (URL có ?tab=) nên
-  // chia sẻ được và nút Back hoạt động đúng.
-  if (isAdminArea && profile?.is_platform_admin) {
-    sections.push({
-      id: "admin-back",
-      label: "Quản trị nền tảng",
-      collapsible: false,
-      items: [
-        {
-          to: "/admin",
-          label: "Tất cả mục quản trị",
-          icon: <IconShield className={ic} />,
-          end: true,
-        },
-        {
-          to: "/clans",
-          label: "← Về ứng dụng",
-          icon: <IconBuildings className={ic} />,
-          end: true,
-        },
-      ],
-    });
-    // Cùng sổ đăng ký với lưới ở /admin — thêm màn mới là cả hai nơi có
-    // ngay, không phải nhớ sửa hai chỗ.
-    for (const area of ["report", "settings"] as AdminArea[]) {
-      sections.push({
-        id: `admin-${area}`,
-        label: ADMIN_AREA_LABEL[area],
-        collapsible: false,
-        items: screensByArea(area).map((s) => ({
-          to: adminPath(s.slug),
-          label: s.label,
-          icon: <span className={ic}>{s.icon}</span>,
-        })),
-      });
-    }
-    return sections;
-  }
 
   // ─── Nhóm Chung ──────────────────────────────────────────────────
   const global: DrawerItem[] = [
@@ -350,8 +297,10 @@ export function buildSections(
     },
   ];
   if (profile?.is_platform_admin) {
-    // MỘT mục dẫn sang khu riêng, không phải cả một nhóm nằm chình ình
-    // giữa menu thường.
+    // MỘT mục dẫn sang khu quản trị, hết. Trong khu đó, việc điều hướng
+    // là của LƯỚI ở /admin — chín mục quản trị đổ vào menu trái nữa là
+    // hai bản sao của cùng một danh sách, và người dùng phải đoán xem
+    // cái nào mới là chỗ đi.
     global.push({
       to: "/admin",
       label: "Quản trị nền tảng",

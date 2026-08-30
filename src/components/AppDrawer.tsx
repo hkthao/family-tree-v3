@@ -136,8 +136,6 @@ export function AppDrawer({ open, onClose }: Props) {
 
   const location = useLocation();
   const aiEnabled = useAiEnabled();
-  const isAdminArea =
-    location.pathname === "/admin" || location.pathname.startsWith("/admin/");
   const sections = buildSections(
     clanId,
     clan ?? null,
@@ -146,7 +144,6 @@ export function AppDrawer({ open, onClose }: Props) {
     pendingInlawCount ?? 0,
     todoCount ?? 0,
     aiEnabled,
-    isAdminArea,
   );
 
   const { isOpen, toggle } = useCollapsedSections(location.pathname);
