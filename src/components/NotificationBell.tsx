@@ -15,6 +15,13 @@ import {
   LEVEL_LABEL,
   formatRelative,
 } from "@/lib/announcementFormat";
+import {
+  inboxUnreadCount,
+  listMyInbox,
+  markAllInboxRead,
+  markInboxRead,
+} from "@/lib/queries/notifications";
+import { mergeFeed, unreadTotal } from "@/lib/notificationFeed";
 import { queryKeys } from "@/lib/queries/keys";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -31,18 +38,35 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: count = 0 } = useQuery({
+  const { data: annUnread = 0 } = useQuery({
     queryKey: queryKeys.announcementsUnreadCount(),
     queryFn: () => announcementsUnreadCount(),
     enabled: !!user,
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
+  // Hộp thư riêng: nhắc giỗ, đóng góp, thông gia, bản tin tuần — đúng
+  // những gì đã gửi qua email cho chính người này. Trước đây chỉ nằm
+  // trong hộp thư email; mail rơi vào thư rác là mất luôn.
+  const { data: inboxUnread = 0 } = useQuery({
+    queryKey: ["inbox-unread"],
+    queryFn: inboxUnreadCount,
+    enabled: !!user,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+  const count = unreadTotal(annUnread, inboxUnread);
 
   // Chỉ tải danh sách + trạng thái đọc khi mở popover.
   const listQ = useQuery({
     queryKey: queryKeys.announcements(),
     queryFn: () => listAnnouncements(),
+    enabled: !!user && open,
+    staleTime: 30_000,
+  });
+  const inboxQ = useQuery({
+    queryKey: ["inbox-list"],
+    queryFn: () => listMyInbox(20),
     enabled: !!user && open,
     staleTime: 30_000,
   });
@@ -54,10 +78,16 @@ export function NotificationBell() {
   });
 
   const markAllM = useMutation({
-    mutationFn: () => announcementsMarkAllRead(),
+    // Cả hai nguồn: người dùng bấm "đánh dấu tất cả" là muốn cái chấm đỏ
+    // biến mất, không quan tâm tin đến từ bảng nào.
+    mutationFn: async () => {
+      await Promise.all([announcementsMarkAllRead(), markAllInboxRead()]);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.announcementReads() });
       qc.invalidateQueries({ queryKey: queryKeys.announcementsUnreadCount() });
+      qc.invalidateQueries({ queryKey: ["inbox-unread"] });
+      qc.invalidateQueries({ queryKey: ["inbox-list"] });
     },
   });
 
@@ -81,21 +111,31 @@ export function NotificationBell() {
   if (!user) return null;
 
   const reads = readsQ.data ?? new Set<string>();
-  const rows = (listQ.data ?? []).slice(0, 6);
+  const rows = mergeFeed(listQ.data ?? [], reads, inboxQ.data ?? []).slice(0, 8);
 
-  const openItem = (id: string, isRead: boolean) => {
-    if (!isRead) {
-      markAnnouncementRead(id)
+  const openItem = (row: (typeof rows)[number]) => {
+    if (!row.read) {
+      const mark =
+        row.kind === "announcement"
+          ? markAnnouncementRead(row.id)
+          : markInboxRead(row.id);
+      mark
         .then(() => {
           qc.invalidateQueries({ queryKey: queryKeys.announcementReads() });
           qc.invalidateQueries({
             queryKey: queryKeys.announcementsUnreadCount(),
           });
+          qc.invalidateQueries({ queryKey: ["inbox-unread"] });
+          qc.invalidateQueries({ queryKey: ["inbox-list"] });
         })
         .catch(() => {});
     }
     setOpen(false);
-    navigate(`/announcements/${id}`);
+    navigate(
+      row.kind === "announcement"
+        ? `/announcements/${row.id}`
+        : (row.url ?? "/announcements"),
+    );
   };
 
   return (
@@ -132,7 +172,7 @@ export function NotificationBell() {
           </div>
 
           <div className="max-h-[70vh] overflow-y-auto">
-            {listQ.isLoading && (
+            {(listQ.isLoading || inboxQ.isLoading) && (
               <p className="px-4 py-8 text-center text-sm text-muted-foreground">
                 Đang tải…
               </p>
@@ -148,12 +188,12 @@ export function NotificationBell() {
             {rows.length > 0 && (
               <ul className="divide-y">
                 {rows.map((row) => {
-                  const isRead = reads.has(row.id);
+                  const isRead = row.read;
                   return (
-                    <li key={row.id}>
+                    <li key={row.key}>
                       <button
                         type="button"
-                        onClick={() => openItem(row.id, isRead)}
+                        onClick={() => openItem(row)}
                         className={`flex w-full gap-2.5 px-4 py-3 text-left transition-colors hover:bg-muted/60 ${
                           isRead ? "" : "bg-primary/[0.045]"
                         }`}
@@ -175,18 +215,20 @@ export function NotificationBell() {
                             >
                               {row.title}
                             </span>
-                            <span
-                              className={`mt-0.5 shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${LEVEL_BADGE[row.level]}`}
-                            >
-                              {LEVEL_LABEL[row.level]}
-                            </span>
+                            {row.level && (
+                              <span
+                                className={`mt-0.5 shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${LEVEL_BADGE[row.level]}`}
+                              >
+                                {LEVEL_LABEL[row.level]}
+                              </span>
+                            )}
                           </span>
                           <span className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                             {row.body}
                           </span>
-                          {row.published_at && (
+                          {row.at && (
                             <span className="mt-1 block text-xs tabular-nums text-muted-foreground">
-                              {formatRelative(row.published_at)}
+                              {formatRelative(row.at)}
                             </span>
                           )}
                         </span>

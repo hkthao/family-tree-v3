@@ -24,6 +24,8 @@ import { getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
 import webpush from "npm:web-push@3.6.7";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
+import { encodeSubject } from "../_shared/mail.ts";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CRON_TOKEN = Deno.env.get("CRON_TOKEN") ?? "";
@@ -130,7 +132,16 @@ async function sendMail(
     },
   });
   try {
-    await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
+    // Mã hoá sẵn tiêu đề: denomailer nhét cả tiêu đề tiếng Việt vào một
+    // encoded-word quá dài, Gmail bỏ cuộc và in ra chuỗi thô. Xem
+    // _shared/mail.ts.
+    await client.send({
+      from: MAIL_FROM,
+      to,
+      subject: encodeSubject(subject),
+      html,
+      content: "auto",
+    });
     return { ok: true };
   } catch (e) {
     return { ok: false, error: `smtp: ${e instanceof Error ? e.message : String(e)}` };
@@ -457,6 +468,11 @@ Deno.serve(async (req) => {
           event_key: eventKey,
           channel: "email",
           status: r.ok ? "sent" : "failed",
+          // Cùng câu chữ với email, để người dùng nhận ra đây là MỘT
+          // việc chứ không phải bị nhắc hai lần.
+          title: subject.replace(/^\[Dòng Họ Việt\]\s*/, ""),
+          body: "Bản tin tuần của dòng họ bạn.",
+          url: `/clans/${sentinelClan}`,
         });
         if (r.ok) sent++;
         else {

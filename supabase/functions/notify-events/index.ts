@@ -24,6 +24,8 @@ import { getLunarDate, getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
 import webpush from "npm:web-push@3.6.7";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
+import { encodeSubject } from "../_shared/mail.ts";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CRON_TOKEN = Deno.env.get("CRON_TOKEN") ?? "";
@@ -243,6 +245,33 @@ function emailSubject(item: FireItem): string {
   return `[Dòng Họ Việt] ${when}: ${item.title}`;
 }
 
+/**
+ * Nội dung cho CHUÔNG trong app — cùng câu chữ với email.
+ *
+ * Cùng câu chữ là cố ý: người dùng đọc mail xong mở app, thấy y hệt thì
+ * biết đó là một việc, không phải hai. Khác chữ là họ tưởng bị nhắc hai
+ * lần.
+ */
+function inboxPayload(item: FireItem): {
+  title: string;
+  body: string;
+  url: string;
+} {
+  const when =
+    item.leadDays === 0
+      ? "Hôm nay"
+      : item.leadDays === 1
+        ? "Ngày mai"
+        : `Còn ${item.leadDays} ngày`;
+  return {
+    title: `${when}: ${item.title}`,
+    body: `Ngày ${item.eventDate}.`,
+    // Trang Sự kiện của đúng dòng họ đó — bấm vào là tới nơi cần tới,
+    // không phải trang chủ rồi tự đi tìm.
+    url: `/clans/${item.clanId}/events`,
+  };
+}
+
 function emailHtml(item: FireItem, clanName: string): string {
   const kindLabel =
     item.kind === "birthday"
@@ -297,7 +326,16 @@ async function sendMail(
     },
   });
   try {
-    await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
+    // Mã hoá sẵn tiêu đề: denomailer nhét cả tiêu đề tiếng Việt vào một
+    // encoded-word quá dài, Gmail bỏ cuộc và in ra chuỗi thô. Xem
+    // _shared/mail.ts.
+    await client.send({
+      from: MAIL_FROM,
+      to,
+      subject: encodeSubject(subject),
+      html,
+      content: "auto",
+    });
     return { ok: true };
   } catch (e) {
     return {
@@ -593,6 +631,9 @@ Deno.serve(async (req) => {
       event_key: f.eventKey,
       channel: f.channel,
       status: result.ok ? "sent" : "failed",
+      // Vào chuông kể cả khi gửi mail HỎNG — mail hỏng mới là lúc người
+      // dùng cần cái chuông nhất.
+      ...inboxPayload(f),
     });
     if (result.ok) {
       sent++;
@@ -785,6 +826,9 @@ async function dispatchMonthlyLunar(opts: {
     const html = monthlyLunarHtml({ occasion, lunarMonth });
     const result = await sendMonthlyEmail(to, subject, html);
     await supabase.from("notification_log").insert({
+      title: `${occasion} tháng ${lunarMonth} âm lịch`,
+      body: "Nhắc thắp hương cho tổ tiên.",
+      url: `/clans/${clanId}/today`,
       user_id: uid,
       clan_id: clanId,
       event_key: eventKey,

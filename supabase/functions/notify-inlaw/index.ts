@@ -21,6 +21,8 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
+import { encodeSubject } from "../_shared/mail.ts";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // ─── SMTP (gửi mail trực tiếp, thay cho Resend HTTP API) ───────────
@@ -234,7 +236,16 @@ async function sendMail(
     },
   });
   try {
-    await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
+    // Mã hoá sẵn tiêu đề: denomailer nhét cả tiêu đề tiếng Việt vào một
+    // encoded-word quá dài, Gmail bỏ cuộc và in ra chuỗi thô. Xem
+    // _shared/mail.ts.
+    await client.send({
+      from: MAIL_FROM,
+      to,
+      subject: encodeSubject(subject),
+      html,
+      content: "auto",
+    });
     return { ok: true };
   } catch (e) {
     return {
@@ -298,6 +309,8 @@ async function deliverWithDedupe(
   eventKey: string,
   tpl: { subject: string; html: string },
   sent: Array<{ to: string; ok: boolean; error?: string }>,
+  /** Đường dẫn trong app khi bấm vào thông báo ở chuông. */
+  inboxUrl: string,
 ): Promise<void> {
   for (const r of recipients) {
     // Reserve dedupe slot first. If this fails (UNIQUE collision),
@@ -308,6 +321,11 @@ async function deliverWithDedupe(
       event_key: eventKey,
       channel: "email",
       status: "sent",
+      // Cùng câu chữ với email, và cùng dòng: chuông đọc chính bản ghi
+      // đang dùng để chống gửi trùng, nên không có cảnh mail đi mà
+      // chuông im (hay ngược lại).
+      title: tpl.subject.replace(/^\[Dòng Họ Việt[^\]]*\]\s*/, ""),
+      url: inboxUrl,
     });
     if (reserveErr) {
       sent.push({ to: r.email, ok: false, error: "deduped" });
@@ -413,6 +431,7 @@ Deno.serve(async (req) => {
       `inlaw:${l.id}:pending`,
       tpl,
       sent,
+      `/clans/${l.clan_b_id}/inlaws`,
     );
   } else if (l.status === "confirmed") {
     // Email clan A admins — they proposed and have been waiting.
@@ -434,6 +453,7 @@ Deno.serve(async (req) => {
       `inlaw:${l.id}:confirmed`,
       tpl,
       sent,
+      `/clans/${l.clan_a_id}/inlaws`,
     );
   } else if (l.status === "revoked") {
     // Token-mode revoke (admin A cancels a pending invite before any
@@ -463,6 +483,7 @@ Deno.serve(async (req) => {
       `inlaw:${l.id}:revoked`,
       tplA,
       sent,
+      `/clans/${l.clan_a_id}/inlaws`,
     );
     const tplB = buildRevokedEmail({
       recipientClanName: clanBName,
@@ -476,6 +497,7 @@ Deno.serve(async (req) => {
       `inlaw:${l.id}:revoked`,
       tplB,
       sent,
+      `/clans/${l.clan_b_id}/inlaws`,
     );
     if (sent.length === 0) {
       return json({ ok: true, skipped: "no-admin-emails" });

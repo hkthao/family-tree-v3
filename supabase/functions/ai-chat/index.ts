@@ -17,6 +17,8 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
+import { encodeSubject } from "../_shared/mail.ts";
+
 import { CORS, err, json, preflight } from "../_shared/cors.ts";
 import { complete, friendlyLlmError } from "../_shared/llm/gateway.ts";
 import { resolveApiKey } from "../_shared/llm/keys.ts";
@@ -198,7 +200,16 @@ async function alertCostCap(
       const { data: u } = await sb.auth.admin.getUserById(a.id as string);
       const to = u?.user?.email;
       if (!to) continue;
-      await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
+      // Mã hoá sẵn tiêu đề: denomailer nhét cả tiêu đề tiếng Việt vào một
+    // encoded-word quá dài, Gmail bỏ cuộc và in ra chuỗi thô. Xem
+    // _shared/mail.ts.
+    await client.send({
+      from: MAIL_FROM,
+      to,
+      subject: encodeSubject(subject),
+      html,
+      content: "auto",
+    });
     }
   } catch (e) {
     console.error("ai-chat: gửi mail báo động thất bại:", e);
