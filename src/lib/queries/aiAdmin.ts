@@ -180,6 +180,62 @@ export async function getAiSpendToday(): Promise<AiSpendToday> {
   };
 }
 
+/**
+ * Ba con số điều khiển tiền bạc của trợ lý, trước nay chỉ đổi được bằng
+ * câu SQL gõ tay trên máy chủ.
+ *
+ * Đưa lên giao diện vì đây đúng là thứ phải chỉnh theo thực tế: hạn mức
+ * chật quá thì người dùng cụt hứng, trần chi phí thấp quá thì trợ lý tắt
+ * giữa ngày. Bắt admin ssh vào máy chủ để sửa một con số là cách chắc
+ * chắn khiến nó không bao giờ được sửa.
+ */
+export interface AiLimits {
+  freePerMonth: number;
+  dailyCapUsd: number;
+  retentionDays: number;
+}
+
+export const AI_LIMIT_KEYS = {
+  freePerMonth: "ai.free_per_month",
+  dailyCapUsd: "ai.daily_cost_cap_usd",
+  retentionDays: "ai.chat_retention_days",
+} as const;
+
+/** Chặn số vô lý ngay ở client; server vẫn có mặc định an toàn riêng. */
+export const AI_LIMIT_RANGE = {
+  freePerMonth: { min: 0, max: 1000 },
+  dailyCapUsd: { min: 0, max: 10_000 },
+  retentionDays: { min: 1, max: 3650 },
+} as const;
+
+export async function getAiLimits(): Promise<AiLimits> {
+  const [free, cap, retention] = await Promise.all([
+    getPlatformSetting(AI_LIMIT_KEYS.freePerMonth),
+    getPlatformSetting(AI_LIMIT_KEYS.dailyCapUsd),
+    getPlatformSetting(AI_LIMIT_KEYS.retentionDays),
+  ]);
+  return {
+    freePerMonth: Number(free ?? 10),
+    dailyCapUsd: Number(cap ?? 20),
+    retentionDays: Number(retention ?? 90),
+  };
+}
+
+export async function setAiLimits(next: AiLimits): Promise<void> {
+  for (const [field, key] of Object.entries(AI_LIMIT_KEYS) as Array<
+    [keyof AiLimits, string]
+  >) {
+    const value = next[field];
+    const range = AI_LIMIT_RANGE[field];
+    if (!Number.isFinite(value) || value < range.min || value > range.max) {
+      throw new Error(
+        `Giá trị không hợp lệ cho ${key}: phải trong khoảng ${range.min}–${range.max}.`,
+      );
+    }
+    await setPlatformSetting(key, String(value));
+  }
+}
+
 export async function setAiEnabled(on: boolean): Promise<void> {
   await setPlatformSetting(AI_ENABLED_KEY, on ? "true" : "false");
 }

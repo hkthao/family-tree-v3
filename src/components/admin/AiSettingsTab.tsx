@@ -28,9 +28,13 @@ import {
   AiNotInstalledError,
   QA_MODELS,
   deleteProviderKey,
+  AI_LIMIT_RANGE,
   getAiConfig,
+  getAiLimits,
   getAiSpendToday,
   setAiEnabled,
+  setAiLimits,
+  type AiLimits,
   setQaModel,
   listKeyStatus,
   setProviderKey,
@@ -53,6 +57,24 @@ export function AiSettingsTab() {
   const [drafts, setDrafts] = useState<Partial<Record<AiProvider, string>>>({});
 
   const configQ = useQuery({ queryKey: ["ai-config"], queryFn: getAiConfig, retry: false });
+  const limitsQ = useQuery({
+    queryKey: ["ai-limits"],
+    queryFn: getAiLimits,
+    retry: false,
+  });
+  const [limits, setLimits] = useState<AiLimits | null>(null);
+  const saveLimits = useMutation({
+    mutationFn: (next: AiLimits) => setAiLimits(next),
+    onSuccess: () => {
+      toast.success("Đã lưu hạn mức");
+      setLimits(null);
+      qc.invalidateQueries({ queryKey: ["ai-limits"] });
+      qc.invalidateQueries({ queryKey: ["ai-spend-today"] });
+    },
+    onError: (e: Error) =>
+      toast.error("Không lưu được", { description: e.message }),
+  });
+  const current = limits ?? limitsQ.data ?? null;
   // Chi phí hôm nay — để ngắt mạch không phải là hộp đen.
   const spendQ = useQuery({
     queryKey: ["ai-spend-today"],
@@ -238,6 +260,59 @@ export function AiSettingsTab() {
         </CardFooter>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Hạn mức &amp; chi phí</CardTitle>
+          <CardDescription>
+            Ba con số này trước đây chỉ đổi được bằng SQL trên máy chủ. Đổi ở
+            đây có hiệu lực ngay, không cần deploy lại.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-3">
+          <NumberSetting
+            id="ai-free"
+            label="Lượt miễn phí / tháng"
+            hint="Mỗi tài khoản. Đặt 0 để tắt hẳn phần miễn phí."
+            value={current?.freePerMonth}
+            range={AI_LIMIT_RANGE.freePerMonth}
+            onChange={(v) =>
+              current && setLimits({ ...current, freePerMonth: v })
+            }
+          />
+          <NumberSetting
+            id="ai-cap"
+            label="Trần chi phí / ngày (USD)"
+            hint="Chạm trần thì trợ lý nghỉ tới hết ngày rồi tự mở lại. Đặt 0 để tắt ngắt mạch."
+            value={current?.dailyCapUsd}
+            range={AI_LIMIT_RANGE.dailyCapUsd}
+            onChange={(v) => current && setLimits({ ...current, dailyCapUsd: v })}
+          />
+          <NumberSetting
+            id="ai-retention"
+            label="Giữ lịch sử chat (ngày)"
+            hint="Cron mỗi đêm xoá tin cũ hơn mốc này."
+            value={current?.retentionDays}
+            range={AI_LIMIT_RANGE.retentionDays}
+            onChange={(v) =>
+              current && setLimits({ ...current, retentionDays: v })
+            }
+          />
+        </CardContent>
+        <CardFooter className="justify-between gap-3 border-t pt-4">
+          <span className="text-sm text-muted-foreground">
+            {limits ? "Có thay đổi chưa lưu" : "Đang khớp với máy chủ"}
+          </span>
+          <Button
+            disabled={!limits || saveLimits.isPending}
+            onClick={() => limits && saveLimits.mutate(limits)}
+          >
+            <IconCheck className="h-4 w-4" />
+            Lưu hạn mức
+          </Button>
+        </CardFooter>
+      </Card>
+
+
       {AI_PROVIDERS.map((p) => {
         const st = byProvider.get(p.id);
         const draft = drafts[p.id] ?? "";
@@ -419,6 +494,50 @@ ssh <host> 'cd <supabase-dir> &&
       <p className="text-sm text-muted-foreground">
         Chi tiết đầy đủ nằm ở <code>supabase/functions/ai-chat/README.md</code>.
       </p>
+    </div>
+  );
+}
+
+/**
+ * Ô nhập số có chặn khoảng. Để rỗng thì KHÔNG gửi 0 lên máy chủ — 0 ở
+ * đây có nghĩa riêng ("tắt hẳn"), lẫn với "chưa nhập gì" là đổi hành vi
+ * hệ thống chỉ vì người dùng lỡ xoá ô.
+ */
+function NumberSetting({
+  id,
+  label,
+  hint,
+  value,
+  range,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  hint: string;
+  value: number | undefined;
+  range: { min: number; max: number };
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium">
+        {label}
+      </label>
+      <Input
+        id={id}
+        type="number"
+        inputMode="numeric"
+        min={range.min}
+        max={range.max}
+        value={value ?? ""}
+        onChange={(e) => {
+          const raw = e.target.value;
+          if (raw === "") return;
+          const n = Number(raw);
+          if (Number.isFinite(n)) onChange(n);
+        }}
+      />
+      <p className="text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }
