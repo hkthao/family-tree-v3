@@ -118,8 +118,8 @@ export function ShareLinksSection({ clanId }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-        <div className="flex-1 space-y-2">
+      <div className="space-y-3">
+        <div className="space-y-2">
           <Label htmlFor="ttl">Số ngày link còn hiệu lực</Label>
           <Input
             id="ttl"
@@ -132,19 +132,23 @@ export function ShareLinksSection({ clanId }: Props) {
             className="max-w-[140px]"
           />
         </div>
-        <Button
-          onClick={() => createM.mutate()}
-          disabled={createM.isPending || !ttl}
-        >
-          {createM.isPending ? (
-            "Đang tạo…"
-          ) : (
-            <>
-              <IconPlus className="h-4 w-4 mr-1.5" />
-              Tạo link mới
-            </>
-          )}
-        </Button>
+        {/* Hành động ở hàng riêng, căn phải — xem
+            docs/design-language.md §Đặt hành động ở đâu. */}
+        <div className="flex justify-end border-t pt-3">
+          <Button
+            onClick={() => createM.mutate()}
+            disabled={createM.isPending || !ttl}
+          >
+            {createM.isPending ? (
+              "Đang tạo…"
+            ) : (
+              <>
+                <IconPlus className="h-4 w-4 mr-1.5" />
+                Tạo link mới
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {createM.error && (

@@ -761,11 +761,14 @@ function ClanRow({
         </span>
       </div>
 
-      {/* Limits — grid: 2 inputs share width, button sits on its own
-          row at mobile and inline-right at sm+. */}
-      {/* Hạn mức. Hai ô AI để trống = dùng mức chung của nền tảng, sửa ở
-          Cài đặt › Trợ lý AI. */}
-      <div className="border-t pt-3 grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-end">
+      {/* Hạn mức. Bốn ô chia đều chiều ngang, KHÔNG chen nút vào hàng:
+          nút nằm cạnh ô nhập thì ở màn hẹp nó bóp ô nhập còn vài ký tự,
+          mà ô nhập mới là thứ cần nhìn. Nút xuống chân thẻ — xem
+          docs/design-language.md §Đặt hành động ở đâu.
+
+          Hai ô AI để trống = dùng mức chung của nền tảng (sửa ở Cài đặt ›
+          Trợ lý AI); 0 = khoá hẳn. */}
+      <div className="border-t pt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="space-y-1 min-w-0">
           <Label htmlFor={`mp-${clan.id}`} className="text-xs">
             Giới hạn người
@@ -824,11 +827,18 @@ function ClanRow({
             className="w-full"
           />
         </div>
+      </div>
+
+      {/* Chân thẻ: meta bên trái, hành động ngoài cùng bên phải — gần
+          ngón cái nhất trên điện thoại. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+        <span className="text-xs text-muted-foreground">
+          {changed ? "Có thay đổi chưa lưu" : `${clan.person_count} người`}
+        </span>
         <Button
           variant="outline"
           onClick={() => m.mutate()}
           disabled={m.isPending || !changed}
-          className="col-span-2 sm:col-span-1"
         >
           {m.isPending ? (
             "Đang lưu…"
