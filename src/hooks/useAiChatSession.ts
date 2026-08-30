@@ -38,6 +38,8 @@ export interface AiChatSession {
   clearHistory: () => Promise<void>;
   /** Hạn mức tháng này. `null` = máy chủ chưa bật hạn mức → đừng hiện gì. */
   quota: CreditQuota | null;
+  /** Chữ đang chảy về khi trợ lý trả lời dần. Rỗng = chưa có gì. */
+  streamingText: string;
   /** Đề xuất thêm người đang chờ người dùng xác nhận (GĐ 5). */
   proposal: Proposal | null;
   /** Đang ghi vào gia phả sau khi bấm "Đúng rồi". */
@@ -60,6 +62,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
   const [error, setError] = useState<string | null>(null);
   const [quota, setQuota] = useState<CreditQuota | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [streamingText, setStreamingText] = useState("");
   // Mã lượt + câu nói gốc của đề xuất đang chờ. Giữ lại để "Sửa lại"
   // gửi lại đúng ref đó — cùng ref thì không bị trừ lượt lần hai.
   const [pending, setPending] = useState<{ ref?: string; question: string } | null>(
@@ -116,8 +119,15 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
         question: input.question,
         history: turns,
         ref: input.ref,
+        // Chữ hiện dần cho đỡ sốt ruột — mạng 3G/4G ở VN có độ trễ thật,
+        // im lặng năm giây là người dùng tưởng máy hỏng.
+        onDelta: (text) => setStreamingText((prev) => prev + text),
       }),
     onSuccess: (res, input) => {
+      // Bỏ bản xem trước, lấy câu chính thức: mấy vòng gọi tool ở giữa
+      // cũng sinh chữ ("để tôi tra cứu…") nên bản ghép không phải câu
+      // trả lời cuối.
+      setStreamingText("");
       setTurns((t) => [...t, { role: "assistant", content: res.answer }]);
       // Hết lượt KHÔNG phải lỗi — máy chủ trả 200 kèm câu nhắn nhẹ và
       // đường lui, nên nó hiện như một câu trả lời bình thường.
@@ -134,7 +144,10 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
         res.proposal ? { ref: res.ref, question: input.question } : null,
       );
     },
-    onError: (e: Error) => setError(e.message),
+    onError: (e: Error) => {
+      setStreamingText("");
+      setError(e.message);
+    },
   });
 
   const { mutate } = ask;
@@ -148,6 +161,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       setError(null);
       setDraft("");
       setTurns((t) => [...t, { role: "user", content: q }]);
+      setStreamingText("");
       track("ai_message_sent");
       mutate({ question: q, ref: retryRef });
       setRetryRef(undefined);
@@ -246,6 +260,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     error,
     clearHistory,
     quota,
+    streamingText,
     proposal,
     applying: apply.isPending,
     confirmProposal,

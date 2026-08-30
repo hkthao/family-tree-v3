@@ -1,4 +1,4 @@
-import { supabase } from "../supabase";
+import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabase";
 import type { Proposal } from "./aiExtract";
 
 /**
@@ -110,13 +110,126 @@ export interface AskResult {
 /** Số tin gửi lên làm ngữ cảnh. KHÁC số tin lưu để hiển thị. */
 export const CONTEXT_TURNS = 8;
 
+/**
+ * Đọc SSE của `ai-chat`. Tách hàm thuần để test được: chỗ này từng là
+ * nguồn bug kinh điển vì **một lần đọc mạng KHÔNG tương ứng một sự
+ * kiện** — chunk bị cắt ở giữa dòng là chuyện bình thường.
+ */
+export function parseSseLines(buffer: string): {
+  events: unknown[];
+  rest: string;
+} {
+  const parts = buffer.split("\n\n");
+  const rest = parts.pop() ?? "";
+  const events: unknown[] = [];
+  for (const part of parts) {
+    const line = part.split("\n").find((l) => l.startsWith("data:"));
+    if (!line) continue;
+    const payload = line.slice(5).trim();
+    if (!payload) continue;
+    try {
+      events.push(JSON.parse(payload));
+    } catch {
+      /* mẩu rác giữa đường không được làm hỏng cả lượt */
+    }
+  }
+  return { events, rest };
+}
+
+/**
+ * Hỏi có stream. Trả về kết quả cuối; `onDelta` nhận từng mẩu chữ.
+ *
+ * Ném lỗi kèm `beforeFirstDelta` để người gọi biết có được phép rơi về
+ * bản không stream hay không: rơi về sau khi đã hiện nửa câu là người
+ * dùng thấy câu trả lời chạy hai lần.
+ */
+async function askStreaming(
+  input: { clanId: string; question: string; history: ChatTurn[]; ref?: string },
+  onDelta: (text: string) => void,
+): Promise<AskResult> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error("Bạn cần đăng nhập lại.");
+
+  let got = false;
+  const fail = (message: string) => {
+    const e = new Error(message) as Error & { beforeFirstDelta?: boolean };
+    e.beforeFirstDelta = !got;
+    return e;
+  };
+
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      clanId: input.clanId,
+      question: input.question,
+      history: input.history.slice(-CONTEXT_TURNS),
+      ref: input.ref,
+      stream: true,
+    }),
+  }).catch(() => {
+    throw fail("Không kết nối được trợ lý. Kiểm tra mạng giúp nhé.");
+  });
+
+  // Máy chủ chưa có bản hỗ trợ stream (deploy lệch nhịp) → để người gọi
+  // rơi về đường cũ thay vì báo lỗi.
+  const kind = res.headers.get("content-type") ?? "";
+  if (!res.ok || !res.body || !kind.includes("text/event-stream")) {
+    throw fail("Trợ lý chưa sẵn sàng cho chế độ trả lời dần.");
+  }
+
+  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  let done: AskResult | null = null;
+
+  while (true) {
+    const chunk = await reader.read();
+    if (chunk.done) break;
+    buffer += chunk.value;
+    const parsed = parseSseLines(buffer);
+    buffer = parsed.rest;
+    for (const ev of parsed.events) {
+      const e = ev as { type?: string; text?: string; message?: string };
+      if (e.type === "delta" && e.text) {
+        got = true;
+        onDelta(e.text);
+      } else if (e.type === "error") {
+        throw fail(e.message || "Trợ lý gặp lỗi. Bạn thử lại nhé.");
+      } else if (e.type === "done") {
+        done = ev as AskResult;
+      }
+    }
+  }
+
+  if (!done) throw fail("Trợ lý trả lời dở chừng. Bạn thử lại nhé.");
+  return done;
+}
+
 export async function askAssistant(input: {
   clanId: string;
   question: string;
   history: ChatTurn[];
   /** Lượt cũ đang được bóc tách lại — xem AskResult.ref. */
   ref?: string;
+  /** Có truyền thì chữ hiện dần; thiếu thì chờ trả lời xong như trước. */
+  onDelta?: (text: string) => void;
 }): Promise<AskResult> {
+  if (input.onDelta) {
+    try {
+      return await askStreaming(input, input.onDelta);
+    } catch (e) {
+      const before = (e as { beforeFirstDelta?: boolean }).beforeFirstDelta;
+      // Hỏng SAU khi đã hiện chữ thì dừng hẳn: hỏi lại là người dùng bị
+      // tính thêm một lượt và thấy hai câu trả lời chồng nhau.
+      if (!before) throw e;
+    }
+  }
   const { data, error } = await supabase.functions.invoke<AskResult>("ai-chat", {
     body: {
       clanId: input.clanId,

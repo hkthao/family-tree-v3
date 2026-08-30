@@ -99,6 +99,20 @@ export interface LlmAdapter {
     model: ModelEntry,
     apiKey: string,
   ): Promise<LlmResponse>;
+
+  /**
+   * Bản có stream — TUỲ CHỌN. Adapter nào chưa làm thì gateway tự rơi về
+   * `complete()` rồi bắn cả câu trả lời thành một mẩu, nên phía trên
+   * không cần biết provider nào hỗ trợ.
+   *
+   * `onDelta` được gọi với TỪNG MẨU chữ mới, không phải cả câu tích luỹ.
+   */
+  completeStream?(
+    req: LlmRequest,
+    model: ModelEntry,
+    apiKey: string,
+    onDelta: (text: string) => void,
+  ): Promise<LlmResponse>;
 }
 
 export interface ModelEntry {
