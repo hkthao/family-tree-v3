@@ -99,6 +99,10 @@ export function ClanLayout() {
     );
   }
 
+  // CÙNG THỨ TỰ với nhóm lõi trong menu trái (xem lib/navModel.tsx).
+  // Hai thanh điều hướng xếp khác nhau thì người dùng phải học hai lần,
+  // và trên máy tính họ nhớ vị trí này rồi chuyển sang điện thoại lại
+  // phải dò lại từ đầu.
   const tabs = [
     {
       to: `/clans/${clanId}`,
@@ -107,14 +111,14 @@ export function ClanLayout() {
       end: true,
     },
     {
-      to: `/clans/${clanId}/people`,
-      label: "Danh bạ",
-      icon: <IconUsers className="h-5 w-5" />,
-    },
-    {
       to: `/clans/${clanId}/tree`,
       label: "Cây",
       icon: <IconTree className="h-5 w-5" />,
+    },
+    {
+      to: `/clans/${clanId}/people`,
+      label: "Danh bạ",
+      icon: <IconUsers className="h-5 w-5" />,
     },
     {
       to: `/clans/${clanId}/events`,

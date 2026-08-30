@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 
 import {
@@ -32,8 +33,13 @@ import { cn } from "@/lib/utils";
  */
 export function FeedbackButton({
   className,
+  label,
+  icon,
 }: {
   className?: string;
+  /** Nhãn hiện cạnh icon. Không truyền thì giữ dạng nút gọn như cũ. */
+  label?: string;
+  icon?: ReactNode;
 } = {}) {
   const [open, setOpen] = useState(false);
   return (
@@ -51,23 +57,29 @@ export function FeedbackButton({
         aria-label="Góp ý / báo lỗi"
         title="Góp ý / báo lỗi"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-          className="shrink-0"
-        >
-          <path d="M22 2L11 13" />
-          <path d="M22 2L15 22L11 13L2 9L22 2Z" />
-        </svg>
-        <span className="sr-only">Góp ý / báo lỗi</span>
+        {icon ?? (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="shrink-0"
+          >
+            <path d="M22 2L11 13" />
+            <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+          </svg>
+        )}
+        {label ? (
+          <span className="flex-1 text-left">{label}</span>
+        ) : (
+          <span className="sr-only">Góp ý / báo lỗi</span>
+        )}
       </button>
       {open && <FeedbackDialog onClose={() => setOpen(false)} />}
     </>

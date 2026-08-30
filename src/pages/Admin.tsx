@@ -82,6 +82,7 @@ import {
 } from "@/lib/queries/feedback";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
+import { isMascotEnabled, setMascotEnabled } from "@/lib/queries/platformSettings";
 import { unaccent } from "@/lib/unaccent";
 
 type Tab =
@@ -2293,6 +2294,22 @@ function ConfigTab() {
   const qc = useQueryClient();
   const toast = useToast();
 
+  // ─── Linh vật ────────────────────────────────────────────────────
+  const mascotQ = useQuery({
+    queryKey: ["mascot-enabled"],
+    queryFn: () => isMascotEnabled(),
+    retry: false,
+  });
+  const mascotM = useMutation({
+    mutationFn: (on: boolean) => setMascotEnabled(on),
+    onSuccess: (_d, on) => {
+      qc.invalidateQueries({ queryKey: ["mascot-enabled"] });
+      toast.success(on ? "Đã bật linh vật" : "Đã tắt linh vật");
+    },
+    onError: (e) =>
+      toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
   const { data: clans } = useQuery({
     queryKey: queryKeys.adminClans(),
     queryFn: () => listAllClans(),
@@ -2335,6 +2352,29 @@ function ConfigTab() {
 
   return (
     <div className="space-y-4">
+      <div className="space-y-3 rounded-lg border bg-card p-4">
+        <div>
+          <h2 className="text-lg font-semibold">Linh vật</h2>
+          <p className="text-sm text-muted-foreground">
+            Nhân vật nổi ở góc màn hình, hiện mẹo dùng app. Tắt thì ẩn với{" "}
+            <b>mọi người dùng</b> — dùng khi cần màn hình gọn để chụp ảnh, khi
+            demo, hoặc khi mẹo đang gây phiền.
+          </p>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-muted-foreground">
+            {mascotQ.data === false ? "Đang tắt với mọi người" : "Đang bật"}
+          </span>
+          <Button
+            variant={mascotQ.data === false ? "default" : "outline"}
+            disabled={mascotQ.isLoading || mascotM.isPending}
+            onClick={() => mascotM.mutate(mascotQ.data === false)}
+          >
+            {mascotQ.data === false ? "Bật linh vật" : "Tắt linh vật"}
+          </Button>
+        </div>
+      </div>
+
       <div className="space-y-4 rounded-lg border bg-card p-4">
         <div>
           <h2 className="text-lg font-semibold">Dòng họ demo</h2>

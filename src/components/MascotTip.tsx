@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+import { useQuery } from "@tanstack/react-query";
+
 import { IconX } from "@/components/icons";
+import { isMascotEnabled } from "@/lib/queries/platformSettings";
 import { useMascotTip } from "@/hooks/useMascotTip";
 import type { Tip, TipContext } from "@/lib/tipCatalogue";
 import { cn } from "@/lib/utils";
@@ -89,6 +92,15 @@ function savePosition(pos: MascotPosition): void {
 
 export function MascotTip() {
   const { tip, cycle, muted } = useMascotTip();
+  // Công tắc của quản trị nền tảng. Mặc định BẬT, và trong lúc chờ tải
+  // cũng coi như bật — nếu không thì mỗi lần mở app linh vật lại nhấp
+  // nháy hiện rồi biến mất.
+  const { data: mascotOn = true } = useQuery({
+    queryKey: ["mascot-enabled"],
+    queryFn: () => isMascotEnabled(),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
   const { pathname } = useLocation();
   const [showBubble, setShowBubble] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
@@ -204,6 +216,7 @@ export function MascotTip() {
     [tip, showBubble],
   );
 
+  if (!mascotOn) return null;
   if (muted) return null;
   if (isHiddenRoute(pathname)) return null;
 
