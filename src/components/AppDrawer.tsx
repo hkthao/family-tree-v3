@@ -16,7 +16,7 @@ import { CheckUpdateButton } from "@/components/CheckUpdateButton";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import {
   buildSections,
-  isTabActive,
+  isItemActive,
   sectionBadge,
   useCollapsedSections,
 } from "@/lib/navModel";
@@ -251,7 +251,7 @@ export function AppDrawer({ open, onClose }: Props) {
                             className={({ isActive }) =>
                               cn(
                                 "flex items-center gap-3 px-4 py-2.5 text-sm",
-                                isActive || isTabActive(item.to, location)
+                                isItemActive(item.to, location, isActive)
                                   ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
                                   : "text-foreground hover:bg-muted/50 border-l-4 border-transparent pl-3",
                               )
