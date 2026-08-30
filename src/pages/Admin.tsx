@@ -97,30 +97,30 @@ type Tab =
   | "config";
 
 /**
- * Khu quản trị tách làm HAI, thay vì một dải 8 tab cuộn ngang.
+ * HAI TRANG riêng biệt, không phải hai tab trong một trang.
  *
- * Lý do: hai nhóm này khác nhau về nhịp sử dụng. "Báo cáo & theo dõi" là
- * thứ mở ra xem hằng ngày và hầu như chỉ đọc; "Cài đặt & nội dung" là thứ
- * đụng vào vài lần rồi thôi, và đụng nhầm thì hỏng thật. Trộn chung khiến
- * cái hay dùng bị chôn giữa cái ít dùng, và tăng nguy cơ bấm nhầm.
+ * "Báo cáo & theo dõi" là thứ mở ra xem hằng ngày và hầu như chỉ đọc;
+ * "Cài đặt & nội dung" thì đụng vào vài lần rồi thôi, mà đụng nhầm là
+ * hỏng thật. Trộn chung khiến cái hay dùng bị chôn giữa cái ít dùng, và
+ * tăng nguy cơ bấm nhầm.
  *
- * Mỗi nhóm là một URL riêng nên chia sẻ được và Back hoạt động đúng.
+ * Chuyển giữa hai trang bằng MENU TRÁI. Trước đây trang còn có thêm một
+ * dải nút chuyển khu ở đầu — hai chỗ cùng làm một việc, người dùng phải
+ * đoán xem cái nào mới thật sự chuyển trang.
  */
 type AdminArea = "report" | "settings";
 
 const AREAS: Record<
   AdminArea,
-  { path: string; label: string; title: string; description: string }
+  { path: string; title: string; description: string }
 > = {
   report: {
     path: "/admin",
-    label: "Báo cáo & theo dõi",
     title: "Báo cáo & theo dõi",
-    description: "Sức khoẻ hệ thống, người dùng, dòng họ, góp ý.",
+    description: "Sức khoẻ hệ thống, người dùng, dòng họ, góp ý, trợ lý AI.",
   },
   settings: {
     path: "/admin/cai-dat",
-    label: "Cài đặt & nội dung",
     title: "Cài đặt & nội dung",
     description: "Cấu hình nền tảng, trợ lý AI, thông báo, nhập gia phả.",
   },
@@ -204,32 +204,17 @@ export default function Admin() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        {/* Title + tab switcher on one row at sm+ (tabs right-aligned)
-            — saves a row of vertical space on desktop. Stacked on
-            mobile so the tabs still get full width. */}
+        {/* Tiêu đề của TRANG này (một khu = một trang). */}
         <PageHeader
           icon={<IconShield className="h-7 w-7" />}
           title={AREAS[area].title}
           description={AREAS[area].description}
         />
 
-        {/* Chuyển giữa hai khu. Đặt TRÊN dải tab để thứ bậc rõ: chọn khu
-            trước, rồi mới chọn mục trong khu. */}
-        <nav aria-label="Khu quản trị" className="flex gap-1">
-          {(Object.keys(AREAS) as AdminArea[]).map((a) => (
-            <Link
-              key={a}
-              to={AREAS[a].path}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                a === area
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              }`}
-            >
-              {AREAS[a].label}
-            </Link>
-          ))}
-        </nav>
+        {/* Không còn dải nút chuyển khu ở đây: "Báo cáo & theo dõi" và
+            "Cài đặt & nội dung" giờ là HAI TRANG riêng, chuyển bằng menu
+            trái. Để cả hai nơi cùng làm một việc thì người dùng phải
+            đoán xem cái nào mới là chỗ chuyển trang thật. */}
 
         {/* Tabs kiểu underline (Linear / Vercel / GitHub) — horizontal
             scroll trên mobile, full-width trên desktop. Active tab có
@@ -691,6 +676,11 @@ function ClansTab() {
   );
 }
 
+/** Số → ô nhập. `null` (chưa đặt) và `undefined` (dữ liệu cũ) đều thành rỗng. */
+function asText(v: number | null | undefined): string {
+  return v === null || v === undefined ? "" : String(v);
+}
+
 function ClanRow({
   clan,
   onChange,
@@ -703,12 +693,14 @@ function ClanRow({
   const [maxUsers, setMaxUsers] = useState(String(clan.max_users));
   // Rỗng = dùng mức chung của nền tảng. Giữ dạng chuỗi để phân biệt được
   // "rỗng" với "0" — 0 là một mức thật ("khoá hẳn"), không phải bỏ trống.
-  const [aiDaily, setAiDaily] = useState(
-    clan.ai_daily_limit === null ? "" : String(clan.ai_daily_limit),
-  );
-  const [aiMonthly, setAiMonthly] = useState(
-    clan.ai_monthly_limit === null ? "" : String(clan.ai_monthly_limit),
-  );
+  //
+  // Phải dùng `?? ""` chứ KHÔNG phải so `=== null`: bản ghi cũ còn trong
+  // cache của react-query (từ lần deploy trước, khi cột này chưa tồn
+  // tại) mang giá trị `undefined`, mà `String(undefined)` ra chuỗi
+  // "undefined" — trình duyệt ném đúng lỗi
+  // «The specified value "undefined" cannot be parsed» cho input số.
+  const [aiDaily, setAiDaily] = useState(asText(clan.ai_daily_limit));
+  const [aiMonthly, setAiMonthly] = useState(asText(clan.ai_monthly_limit));
   const asLimit = (v: string) => (v.trim() === "" ? null : Number(v));
 
   const m = useMutation({
@@ -727,7 +719,6 @@ function ClanRow({
       toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
-  const asText = (v: number | null) => (v === null ? "" : String(v));
   const changed =
     String(clan.max_persons) !== maxPersons ||
     String(clan.max_users) !== maxUsers ||

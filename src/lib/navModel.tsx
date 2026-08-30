@@ -175,9 +175,13 @@ export function sectionBadge(section: DrawerSection): number | undefined {
 }
 
 /**
- * Mục quản trị trỏ tới `/admin?tab=x`, mà NavLink chỉ so sánh đường dẫn
- * nên bốn mục cùng `/admin` sẽ sáng cùng lúc. So thêm query để đúng một
- * mục sáng.
+ * Mục quản trị trỏ tới `/admin?tab=x`, mà NavLink chỉ so sánh ĐƯỜNG DẪN
+ * nên năm mục cùng `/admin` sáng hết cùng lúc — menu đỏ rực, không nói
+ * được người dùng đang ở đâu.
+ *
+ * Nên với mục có query thì bỏ hẳn kết luận của NavLink và tự so `tab`.
+ * Chỉ `||` thêm vào là không sửa được gì: NavLink vẫn nói "active" cho
+ * cả năm mục. Đây đúng là lỗi đã lọt ra production một lần.
  */
 export function isTabActive(
   to: string,
@@ -187,6 +191,20 @@ export function isTabActive(
   if (!query || path !== location.pathname) return false;
   const want = new URLSearchParams(query).get("tab");
   return !!want && new URLSearchParams(location.search).get("tab") === want;
+}
+
+/**
+ * Mục này có đang được chọn không.
+ *
+ * `navLinkActive` là kết luận của NavLink (chỉ theo đường dẫn). Mục có
+ * query thì KHÔNG dùng kết luận đó nữa — xem chú thích trên.
+ */
+export function isItemActive(
+  to: string,
+  location: { pathname: string; search: string },
+  navLinkActive: boolean,
+): boolean {
+  return to.includes("?") ? isTabActive(to, location) : navLinkActive;
 }
 
 // ---------------------------------------------------------------------------

@@ -7,6 +7,7 @@ import { act, renderHook } from "@testing-library/react";
 
 import {
   buildSections,
+  isItemActive,
   isTabActive,
   useCollapsedSections,
   sectionBadge,
@@ -211,6 +212,31 @@ describe("sectionBadge", () => {
     expect(
       sectionBadge({ id: "x", label: "X", items: [{ to: "/a", label: "A", icon: null }] }),
     ).toBeUndefined();
+  });
+});
+
+describe("isItemActive", () => {
+  const loc = (pathname: string, search: string) => ({ pathname, search });
+
+  it("chỉ MỘT mục quản trị sáng, dù NavLink bảo mục nào cũng active", () => {
+    // Lỗi đã lọt ra production: năm mục cùng trỏ /admin nên NavLink nói
+    // "active" cho cả năm, menu đỏ rực. Kết luận của NavLink (tham số
+    // cuối) phải bị BỎ QUA với mục có query.
+    const here = loc("/admin", "?tab=users");
+    expect(isItemActive("/admin?tab=users", here, true)).toBe(true);
+    expect(isItemActive("/admin?tab=clans", here, true)).toBe(false);
+    expect(isItemActive("/admin?tab=health", here, true)).toBe(false);
+  });
+
+  it("mục không có query thì tin NavLink", () => {
+    const here = loc("/clans/c1/tree", "");
+    expect(isItemActive("/clans/c1/tree", here, true)).toBe(true);
+    expect(isItemActive("/clans/c1/people", here, false)).toBe(false);
+  });
+
+  it("khu quản trị không có ?tab thì không mục nào sáng nhầm", () => {
+    const bare = loc("/admin", "");
+    expect(isItemActive("/admin?tab=users", bare, true)).toBe(false);
   });
 });
 
