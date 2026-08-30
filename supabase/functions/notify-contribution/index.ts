@@ -32,6 +32,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
+import { encodeSubject } from "../_shared/mail.ts";
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // ─── SMTP (gửi mail trực tiếp, thay cho Resend HTTP API) ───────────
@@ -253,7 +255,16 @@ async function sendMail(
     },
   });
   try {
-    await client.send({ from: MAIL_FROM, to, subject, html, content: "auto" });
+    // Mã hoá sẵn tiêu đề: denomailer nhét cả tiêu đề tiếng Việt vào một
+    // encoded-word quá dài, Gmail bỏ cuộc và in ra chuỗi thô. Xem
+    // _shared/mail.ts.
+    await client.send({
+      from: MAIL_FROM,
+      to,
+      subject: encodeSubject(subject),
+      html,
+      content: "auto",
+    });
     return { ok: true };
   } catch (e) {
     return {
@@ -473,7 +484,29 @@ async function pushContribution(opts: {
   targetId?: string;
   actions?: string[];
 }): Promise<void> {
-  if (!PUSH_READY || opts.userIds.length === 0) return;
+  if (opts.userIds.length === 0) return;
+
+  // ─── Chuông trong app ───────────────────────────────────────────
+  // Ghi TRƯỚC và ĐỘC LẬP với web push: cái chuông phải hoạt động kể cả
+  // khi máy chủ chưa cắm khoá VAPID, và kể cả với người tắt push —
+  // `notify_via_push` là ý muốn về thông báo đẩy, không phải lời từ chối
+  // xem tin trong app. Kênh riêng 'inapp' nên không đụng vào phần chống
+  // gửi trùng của push.
+  await opts.sb.from("notification_log").upsert(
+    opts.userIds.map((uid) => ({
+      user_id: uid,
+      clan_id: opts.clanId,
+      event_key: opts.eventKey,
+      channel: "inapp",
+      status: "sent",
+      title: opts.title,
+      body: opts.body,
+      url: opts.url,
+    })),
+    { onConflict: "user_id,event_key,channel", ignoreDuplicates: true },
+  );
+
+  if (!PUSH_READY) return;
 
   // Filter to opted-in, non-suspended users.
   const { data: profiles } = await opts.sb

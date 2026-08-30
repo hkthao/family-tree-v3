@@ -2019,30 +2019,42 @@ export type Database = {
       }
       notification_log: {
         Row: {
+          body: string | null
           channel: string
           clan_id: string
           event_key: string
           id: string
+          read_at: string | null
           sent_at: string
           status: string
+          title: string | null
+          url: string | null
           user_id: string
         }
         Insert: {
+          body?: string | null
           channel: string
           clan_id: string
           event_key: string
           id?: string
+          read_at?: string | null
           sent_at?: string
           status: string
+          title?: string | null
+          url?: string | null
           user_id: string
         }
         Update: {
+          body?: string | null
           channel?: string
           clan_id?: string
           event_key?: string
           id?: string
+          read_at?: string | null
           sent_at?: string
           status?: string
+          title?: string | null
+          url?: string | null
           user_id?: string
         }
         Relationships: [
@@ -3248,6 +3260,7 @@ export type Database = {
         Args: { p_loser: string; p_winner: string }
         Returns: Json
       }
+      notifications_mark_all_read: { Args: never; Returns: number }
       peek_clan_invite: { Args: { p_token: string }; Returns: Json }
       prune_audit_log: { Args: { retention_days?: number }; Returns: number }
       prune_notification_log: {
