@@ -19,7 +19,17 @@ import { UpdateBanner } from "@/components/UpdateBanner";
 // đầu, nhất là trên mobile (~67% người dùng) & trình duyệt trong Facebook.
 const Account = lazy(() => import("@/pages/Account"));
 const CreditHistory = lazy(() => import("@/pages/CreditHistory"));
-const Admin = lazy(() => import("@/pages/Admin"));
+const AdminHub = lazy(() => import("@/pages/admin/AdminHub"));
+const AdminHeThong = lazy(() => import("@/pages/admin/HeThongPage"));
+const AdminNguoiDung = lazy(() => import("@/pages/admin/NguoiDungPage"));
+const AdminDongHo = lazy(() => import("@/pages/admin/DongHoPage"));
+const AdminGopY = lazy(() => import("@/pages/admin/GopYPage"));
+const AdminTroLyAi = lazy(() => import("@/pages/admin/TroLyAiPage"));
+const AdminCauHinh = lazy(() => import("@/pages/admin/CauHinhPage"));
+const AdminCauHinhAi = lazy(() => import("@/pages/admin/CauHinhAiPage"));
+const AdminThongBao = lazy(() => import("@/pages/admin/ThongBaoPage"));
+const AdminNhapGiaPha = lazy(() => import("@/pages/admin/NhapGiaPhaPage"));
+const AdminLegacyRedirect = lazy(() => import("@/pages/admin/LegacyRedirect"));
 const AnnouncementDetail = lazy(() => import("@/pages/AnnouncementDetail"));
 const Announcements = lazy(() => import("@/pages/Announcements"));
 const Changelog = lazy(() => import("@/pages/Changelog"));
@@ -75,6 +85,7 @@ const Today = lazy(() => import("@/pages/clan/Today"));
 const Todo = lazy(() => import("@/pages/clan/Todo"));
 const Tools = lazy(() => import("@/pages/clan/Tools"));
 const Tree = lazy(() => import("@/pages/clan/Tree"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const InlawsConfirm = lazy(() => import("@/pages/InlawsConfirm"));
 const Login = lazy(() => import("@/pages/Login"));
@@ -126,6 +137,9 @@ export default function App() {
         <Route path="/khoe/:token" element={<KhoeCard />} />
         <Route path="/join/:token" element={<JoinClan />} />
         <Route path="/lien-he" element={<Contact />} />
+        {/* Công khai, không cần đăng nhập: người ta phải đọc được TRƯỚC
+            khi quyết định có đăng ký hay không. */}
+        <Route path="/chinh-sach-rieng-tu" element={<PrivacyPolicy />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />
         {/* Sổ tay Văn hoá — route CÔNG KHAI cho link chia sẻ (không cần đăng nhập).
@@ -279,24 +293,21 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route
-          path="/admin"
-          element={
-            <RequireAuth>
-              <Admin />
-            </RequireAuth>
-          }
-        />
-        {/* Khu Cài đặt của quản trị — cùng component, khác dải tab.
-            Tách URL để chia sẻ được và Back hoạt động đúng. */}
-        <Route
-          path="/admin/cai-dat"
-          element={
-            <RequireAuth>
-              <Admin />
-            </RequireAuth>
-          }
-        />
+        {/* Khu quản trị: MỖI MÀN MỘT TRANG (xem lib/adminScreens.tsx).
+            /admin là lưới chọn màn, kiểu màn hình chính điện thoại. */}
+        <Route path="/admin" element={<RequireAuth><AdminHub /></RequireAuth>} />
+        <Route path="/admin/he-thong" element={<RequireAuth><AdminHeThong /></RequireAuth>} />
+        <Route path="/admin/nguoi-dung" element={<RequireAuth><AdminNguoiDung /></RequireAuth>} />
+        <Route path="/admin/dong-ho" element={<RequireAuth><AdminDongHo /></RequireAuth>} />
+        <Route path="/admin/gop-y" element={<RequireAuth><AdminGopY /></RequireAuth>} />
+        <Route path="/admin/tro-ly-ai" element={<RequireAuth><AdminTroLyAi /></RequireAuth>} />
+        <Route path="/admin/cau-hinh" element={<RequireAuth><AdminCauHinh /></RequireAuth>} />
+        <Route path="/admin/cau-hinh-ai" element={<RequireAuth><AdminCauHinhAi /></RequireAuth>} />
+        <Route path="/admin/thong-bao" element={<RequireAuth><AdminThongBao /></RequireAuth>} />
+        <Route path="/admin/nhap-gia-pha" element={<RequireAuth><AdminNhapGiaPha /></RequireAuth>} />
+        {/* Link cũ (/admin?tab=… và /admin/cai-dat) đã bị dán vào chat và
+            bookmark — chuyển hướng thay vì để người ta gặp trang trống. */}
+        <Route path="/admin/cai-dat" element={<RequireAuth><AdminLegacyRedirect /></RequireAuth>} />
         <Route
           path="/docs"
           element={

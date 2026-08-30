@@ -14,6 +14,7 @@ import {
   sectionHasPath,
   type DrawerSection,
 } from "@/lib/navModel";
+import { ADMIN_SCREENS, adminPath, pathForLegacyTab } from "@/lib/adminScreens";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { MyProfile } from "@/lib/queries/profile";
 
@@ -71,6 +72,25 @@ describe("buildSections — khu quản trị", () => {
     // Không còn Cây gia phả, Quỹ họ… lẫn vào.
     expect(labels(s)).not.toContain("Cây gia phả");
     expect(labels(s)).toContain("← Về ứng dụng");
+    expect(labels(s)).toContain("Tất cả mục quản trị");
+  });
+
+  it("menu quản trị và lưới ở /admin luôn khớp nhau", () => {
+    // Cùng đọc một sổ đăng ký, nên thêm màn mới là cả hai nơi có ngay.
+    // Trước đây mỗi nơi khai một danh sách: quên một chỗ thì màn hình đó
+    // thành "có mà không ai tìm ra".
+    const s = build({ profile: admin, adminArea: true });
+    const inMenu = s
+      .filter((x) => x.id.startsWith("admin-") && x.id !== "admin-back")
+      .flatMap((x) => x.items.map((i) => i.to));
+    const inGrid = ADMIN_SCREENS.map((x) => adminPath(x.slug));
+    expect(inMenu.sort()).toEqual(inGrid.sort());
+  });
+
+  it("mỗi màn quản trị là một ĐƯỜNG DẪN riêng, không phải ?tab=", () => {
+    const s = build({ profile: admin, adminArea: true });
+    const tos = s.flatMap((x) => x.items.map((i) => i.to));
+    expect(tos.some((t) => t.includes("?tab="))).toBe(false);
   });
 
   it("người thường lỡ vào /admin thì vẫn thấy menu app, không thấy menu quản trị", () => {
@@ -323,5 +343,35 @@ describe("useCollapsedSections", () => {
     localStorage.setItem("drawer:sections", "{{hỏng");
     const { result } = renderHook(() => useCollapsedSections("/x"));
     expect(result.current.isOpen(open)).toBe(true);
+  });
+});
+
+
+describe("pathForLegacyTab", () => {
+  /**
+   * Link `/admin?tab=users` đã nằm trong bookmark và trong tin nhắn
+   * ("xem giúp anh cái này"). Bỏ thẳng là người ta bấm vào gặp trang
+   * trống mà không hiểu vì sao.
+   */
+  it("đổi tab cũ sang đường dẫn mới", () => {
+    expect(pathForLegacyTab("users")).toBe("/admin/nguoi-dung");
+    expect(pathForLegacyTab("ai")).toBe("/admin/cau-hinh-ai");
+    expect(pathForLegacyTab("ai_usage")).toBe("/admin/tro-ly-ai");
+  });
+
+  it("mọi màn đều có lối về từ tab cũ — không bỏ sót màn nào", () => {
+    for (const s of ADMIN_SCREENS) {
+      expect(pathForLegacyTab(s.legacyTab)).toBe(adminPath(s.slug));
+    }
+  });
+
+  it("tab lạ hoặc thiếu tab thì trả null để nơi gọi tự quyết", () => {
+    expect(pathForLegacyTab("khong-co")).toBeNull();
+    expect(pathForLegacyTab(null)).toBeNull();
+  });
+
+  it("slug không trùng nhau", () => {
+    const slugs = ADMIN_SCREENS.map((s) => s.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
   });
 });
