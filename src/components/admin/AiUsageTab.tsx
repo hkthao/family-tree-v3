@@ -103,7 +103,7 @@ export function AiUsageTab() {
       </div>
 
       {/* Số liệu đầu bảng — cái nhìn năm giây. */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
         <Stat label="Lượt hỏi" value={o.requests.toLocaleString("vi-VN")} />
         <Stat label="Người dùng" value={o.users.toLocaleString("vi-VN")} />
         <Stat
@@ -124,6 +124,22 @@ export function AiUsageTab() {
           // nhìn thấy tiền.
           tone={o.requests > 20 && o.cached_ratio < 0.3 ? "bad" : undefined}
           hint={`${formatTokens(o.input_tokens)} token vào`}
+        />
+        <Stat
+          label="Hài lòng"
+          value={
+            o.liked_ratio === null
+              ? "—"
+              : `${Math.round(o.liked_ratio * 100)}%`
+          }
+          hint={o.rated ? `${o.rated} lượt được chấm` : "chưa ai chấm điểm"}
+          // Dưới 60% là câu trả lời đang sai nhiều — đáng đi soi
+          // trước khi người dùng bỏ dùng trợ lý.
+          tone={
+            o.liked_ratio !== null && o.rated >= 5 && o.liked_ratio < 0.6
+              ? "bad"
+              : undefined
+          }
         />
         <Stat
           label="Độ trễ TB"

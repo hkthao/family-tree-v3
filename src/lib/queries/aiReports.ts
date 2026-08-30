@@ -26,6 +26,14 @@ export interface AiUsageOverview {
   avg_latency_ms: number;
   /** Tỉ lệ token đầu vào đọc từ cache. Tụt = prompt caching hỏng. */
   cached_ratio: number;
+  /** Số lượt người dùng có bấm chấm điểm. */
+  rated: number;
+  /**
+   * Tỉ lệ hài lòng TRÊN SỐ LƯỢT ĐƯỢC CHẤM, không phải trên tổng lượt —
+   * hầu hết người dùng không bấm gì, chia cho tổng thì con số nào cũng
+   * ra "tệ". `null` khi chưa ai chấm.
+   */
+  liked_ratio: number | null;
 }
 
 export interface AiUsageDay {
@@ -81,6 +89,8 @@ export async function getAiUsageOverview(days: number): Promise<AiUsageOverview>
     cost_usd: num(r.cost_usd),
     avg_latency_ms: num(r.avg_latency_ms),
     cached_ratio: num(r.cached_ratio),
+    rated: num(r.rated),
+    liked_ratio: r.liked_ratio === null ? null : num(r.liked_ratio),
   };
 }
 

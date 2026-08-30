@@ -34,6 +34,7 @@ export function ChatThread({
   turns,
   pending,
   streamingText = "",
+  onRate,
   error,
   fontSize,
   clanName,
@@ -46,6 +47,8 @@ export function ChatThread({
   pending: boolean;
   /** Chữ đang chảy về giữa chừng — bản xem trước, chưa phải câu chốt. */
   streamingText?: string;
+  /** Chấm điểm câu trả lời thứ `index`. Thiếu thì không hiện nút chấm. */
+  onRate?: (index: number, rating: 1 | -1) => void;
   error: string | null;
   fontSize: number;
   clanName: string;
@@ -133,14 +136,38 @@ export function ChatThread({
               >
                 {t.content}
                 {t.role === "assistant" && (
-                  <button
-                    type="button"
-                    onClick={() => speak(t.content)}
-                    className="mt-2 flex min-h-[44px] items-center gap-1.5 text-sm text-muted-foreground underline-offset-2 hover:underline"
-                  >
-                    <IconPlay className="h-4 w-4" />
-                    Đọc to
-                  </button>
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => speak(t.content)}
+                      className="flex min-h-[44px] items-center gap-1.5 text-sm text-muted-foreground underline-offset-2 hover:underline"
+                    >
+                      <IconPlay className="h-4 w-4" />
+                      Đọc to
+                    </button>
+                    {/* Chấm điểm chỉ hiện ở câu vừa trả lời trong phiên
+                        này (câu tải từ lịch sử không có mã lượt). Chấm
+                        cho câu hỏi từ tuần trước thì cũng không ai nhớ
+                        nổi nó đúng hay sai. */}
+                    {onRate && t.ref && (
+                      <span className="flex items-center gap-1">
+                        <RateButton
+                          active={t.rating === 1}
+                          label="Câu trả lời này hữu ích"
+                          onClick={() => onRate(i, 1)}
+                        >
+                          👍
+                        </RateButton>
+                        <RateButton
+                          active={t.rating === -1}
+                          label="Câu trả lời này chưa đúng"
+                          onClick={() => onRate(i, -1)}
+                        >
+                          👎
+                        </RateButton>
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             </li>
@@ -205,5 +232,38 @@ export function ChatThread({
         </button>
       )}
     </div>
+  );
+}
+
+
+/**
+ * Nút chấm điểm — 44px cho vừa ngón tay người lớn tuổi, và trạng thái đã
+ * chọn phải thấy được bằng NỀN chứ không chỉ bằng màu chữ (emoji không
+ * đổi màu theo `text-*`).
+ */
+function RateButton({
+  active,
+  label,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      className={`inline-flex h-11 w-11 items-center justify-center rounded-full text-base transition-colors ${
+        active ? "bg-primary/15 ring-1 ring-primary/40" : "hover:bg-muted"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

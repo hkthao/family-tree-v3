@@ -142,6 +142,8 @@ export type Database = {
           model_id: string
           ok: boolean
           output_tokens: number
+          rated_at: string | null
+          rating: number | null
           raw_model: string | null
           tool_calls: number
           turn_ref: string | null
@@ -162,6 +164,8 @@ export type Database = {
           model_id: string
           ok?: boolean
           output_tokens?: number
+          rated_at?: string | null
+          rating?: number | null
           raw_model?: string | null
           tool_calls?: number
           turn_ref?: string | null
@@ -182,6 +186,8 @@ export type Database = {
           model_id?: string
           ok?: boolean
           output_tokens?: number
+          rated_at?: string | null
+          rating?: number | null
           raw_model?: string | null
           tool_calls?: number
           turn_ref?: string | null
@@ -3043,6 +3049,10 @@ export type Database = {
           provider: string
           updated_at: string
         }[]
+      }
+      ai_rate_turn: {
+        Args: { p_rating: number; p_ref: string }
+        Returns: undefined
       }
       ai_spend_today: { Args: never; Returns: number }
       ai_usage_by_clan: {
