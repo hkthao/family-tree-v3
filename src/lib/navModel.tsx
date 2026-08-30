@@ -24,6 +24,12 @@ import {
   IconUsers,
   IconWallet,
 } from "@/components/icons";
+import {
+  ADMIN_AREA_LABEL,
+  adminPath,
+  screensByArea,
+  type AdminArea,
+} from "@/lib/adminScreens";
 import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { MyProfile } from "@/lib/queries/profile";
@@ -278,6 +284,12 @@ export function buildSections(
       collapsible: false,
       items: [
         {
+          to: "/admin",
+          label: "Tất cả mục quản trị",
+          icon: <IconShield className={ic} />,
+          end: true,
+        },
+        {
           to: "/clans",
           label: "← Về ứng dụng",
           icon: <IconBuildings className={ic} />,
@@ -285,65 +297,20 @@ export function buildSections(
         },
       ],
     });
-    sections.push({
-      id: "admin-report",
-      label: "Báo cáo & theo dõi",
-      collapsible: false,
-      items: [
-        {
-          to: "/admin?tab=health",
-          label: "Hệ thống",
-          icon: <IconShield className={ic} />,
-        },
-        {
-          to: "/admin?tab=users",
-          label: "Người dùng",
-          icon: <IconUsers className={ic} />,
-        },
-        {
-          to: "/admin?tab=clans",
-          label: "Dòng họ",
-          icon: <IconBuildings className={ic} />,
-        },
-        {
-          to: "/admin?tab=feedback",
-          label: "Góp ý của người dùng",
-          icon: <IconMail className={ic} />,
-        },
-        {
-          to: "/admin?tab=ai_usage",
-          label: "Trợ lý AI",
-          icon: <IconSparkles className={ic} />,
-        },
-      ],
-    });
-    sections.push({
-      id: "admin-settings",
-      label: "Cài đặt & nội dung",
-      collapsible: false,
-      items: [
-        {
-          to: "/admin/cai-dat?tab=config",
-          label: "Cấu hình nền tảng",
-          icon: <IconSettings className={ic} />,
-        },
-        {
-          to: "/admin/cai-dat?tab=ai",
-          label: "Cấu hình trợ lý AI",
-          icon: <IconSparkles className={ic} />,
-        },
-        {
-          to: "/admin/cai-dat?tab=announcements",
-          label: "Thông báo",
-          icon: <IconBell className={ic} />,
-        },
-        {
-          to: "/admin/cai-dat?tab=giapha",
-          label: "Nhập gia phả",
-          icon: <IconScroll className={ic} />,
-        },
-      ],
-    });
+    // Cùng sổ đăng ký với lưới ở /admin — thêm màn mới là cả hai nơi có
+    // ngay, không phải nhớ sửa hai chỗ.
+    for (const area of ["report", "settings"] as AdminArea[]) {
+      sections.push({
+        id: `admin-${area}`,
+        label: ADMIN_AREA_LABEL[area],
+        collapsible: false,
+        items: screensByArea(area).map((s) => ({
+          to: adminPath(s.slug),
+          label: s.label,
+          icon: <span className={ic}>{s.icon}</span>,
+        })),
+      });
+    }
     return sections;
   }
 

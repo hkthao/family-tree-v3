@@ -10,6 +10,7 @@ import {
   IconChevronDown,
   IconFacebook,
   IconGlobe,
+  IconLock,
   IconLogOut,
 } from "@/components/icons";
 import { CheckUpdateButton } from "@/components/CheckUpdateButton";
@@ -352,7 +353,18 @@ export function AppDrawer({ open, onClose }: Props) {
             </Button>
           )}
           {/* Website + liên hệ hỗ trợ — meta links cuối sidebar */}
-          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            {/* Chính sách riêng tư để ở đây chứ không chôn trong Trợ giúp:
+                người ta đi tìm nó đúng lúc đang nghi ngại, mà lúc nghi
+                ngại thì không ai chịu khó lục ba lớp menu. */}
+            <Link
+              to="/chinh-sach-rieng-tu"
+              onClick={pick}
+              className="inline-flex items-center gap-1 hover:text-primary"
+            >
+              <IconLock className="h-3.5 w-3.5" />
+              Riêng tư
+            </Link>
             <a
               href="https://donghoviet.thaohk.com"
               target="_blank"
