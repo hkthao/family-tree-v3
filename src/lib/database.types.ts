@@ -3011,6 +3011,7 @@ export type Database = {
         Returns: Json
       }
       admin_wipe_clan_directory: { Args: { p_clan_id: string }; Returns: Json }
+      ai_admin_guard: { Args: never; Returns: undefined }
       ai_messages_purge_expired: { Args: never; Returns: number }
       ai_provider_keys_status: {
         Args: never
@@ -3026,6 +3027,36 @@ export type Database = {
         }[]
       }
       ai_spend_today: { Args: never; Returns: number }
+      ai_usage_by_clan: {
+        Args: { p_days?: number }
+        Returns: {
+          clan_id: string
+          clan_name: string
+          cost_usd: number
+          requests: number
+          users: number
+        }[]
+      }
+      ai_usage_by_model: {
+        Args: { p_days?: number }
+        Returns: {
+          avg_latency_ms: number
+          cached_ratio: number
+          cost_usd: number
+          model_id: string
+          requests: number
+        }[]
+      }
+      ai_usage_daily: {
+        Args: { p_days?: number }
+        Returns: {
+          cost_usd: number
+          day: string
+          failed: number
+          requests: number
+        }[]
+      }
+      ai_usage_overview: { Args: { p_days?: number }; Returns: Json }
       announcements_mark_all_read: { Args: never; Returns: number }
       announcements_unread_count: { Args: never; Returns: number }
       apply_contribution: { Args: { p_id: string }; Returns: undefined }
@@ -3098,6 +3129,7 @@ export type Database = {
       }
       credit_monthly_free_amount: { Args: never; Returns: number }
       credit_my_quota: { Args: { p_resource?: string }; Returns: Json }
+      credit_overview: { Args: never; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       delete_my_push_subscription: {
         Args: { p_endpoint: string }

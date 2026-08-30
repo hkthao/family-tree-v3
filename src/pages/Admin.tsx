@@ -42,6 +42,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { AiSettingsTab } from "@/components/admin/AiSettingsTab";
+import { AiUsageTab } from "@/components/admin/AiUsageTab";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch, useUrlState } from "@/hooks/useUrlState";
 import {
@@ -90,6 +91,7 @@ type Tab =
   | "announcements"
   | "giapha"
   | "ai"
+  | "ai_usage"
   | "config";
 
 /**
@@ -128,6 +130,10 @@ const TABS: ReadonlyArray<{ value: Tab; label: string; area: AdminArea }> = [
   { value: "users", label: "Người dùng", area: "report" },
   { value: "clans", label: "Dòng họ", area: "report" },
   { value: "feedback", label: "Góp ý", area: "report" },
+  // Báo cáo trợ lý AI nằm ở khu ĐỌC, tách khỏi tab "Trợ lý AI" bên khu
+  // cài đặt: xem số liệu là việc hằng ngày, còn cắm khoá API thì vài
+  // tháng một lần và bấm nhầm là hỏng thật.
+  { value: "ai_usage", label: "Trợ lý AI", area: "report" },
   // Cài đặt & nội dung — ghi là chính
   { value: "config", label: "Cấu hình", area: "settings" },
   { value: "ai", label: "Trợ lý AI", area: "settings" },
@@ -263,6 +269,7 @@ export default function Admin() {
         {tab === "announcements" && <AnnouncementsAdminTab />}
         {tab === "giapha" && <GiaPhaImportTab />}
         {tab === "ai" && <AiSettingsTab />}
+        {tab === "ai_usage" && <AiUsageTab />}
         {tab === "config" && <ConfigTab />}
       </main>
     </div>
