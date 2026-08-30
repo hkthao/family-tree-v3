@@ -768,6 +768,8 @@ export type Database = {
       }
       clans: {
         Row: {
+          ai_daily_limit: number | null
+          ai_monthly_limit: number | null
           created_at: string
           data_version: number
           description: string | null
@@ -793,6 +795,8 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          ai_daily_limit?: number | null
+          ai_monthly_limit?: number | null
           created_at?: string
           data_version?: number
           description?: string | null
@@ -818,6 +822,8 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          ai_daily_limit?: number | null
+          ai_monthly_limit?: number | null
           created_at?: string
           data_version?: number
           description?: string | null

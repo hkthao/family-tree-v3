@@ -297,6 +297,26 @@ export function AiSettingsTab() {
               current && setLimits({ ...current, retentionDays: v })
             }
           />
+          <NumberSetting
+            id="ai-clan-daily"
+            label="Lượt / ngày cho mỗi dòng họ"
+            hint="Mức chung. Đặt riêng cho một dòng họ ở Báo cáo › Dòng họ. 0 = không giới hạn."
+            value={current?.clanDailyLimit}
+            range={AI_LIMIT_RANGE.clanDailyLimit}
+            onChange={(v) =>
+              current && setLimits({ ...current, clanDailyLimit: v })
+            }
+          />
+          <NumberSetting
+            id="ai-clan-monthly"
+            label="Lượt / tháng cho mỗi dòng họ"
+            hint="Mức chung, tính theo tháng dương giờ Việt Nam. 0 = không giới hạn."
+            value={current?.clanMonthlyLimit}
+            range={AI_LIMIT_RANGE.clanMonthlyLimit}
+            onChange={(v) =>
+              current && setLimits({ ...current, clanMonthlyLimit: v })
+            }
+          />
         </CardContent>
         <CardFooter className="justify-between gap-3 border-t pt-4">
           <span className="text-sm text-muted-foreground">

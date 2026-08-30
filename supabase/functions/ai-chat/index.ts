@@ -65,13 +65,18 @@ const MAX_TOOL_ROUNDS = 5;
  *  - 30 lượt/giờ/người     — ngồi hỏi liên tục cả buổi.
  *  - 20 lượt/5 phút/IP     — một người tạo nhiều tài khoản. Nới hơn ngưỡng
  *    cá nhân vì cả nhà dùng chung một đường mạng là chuyện bình thường.
- *  - 200 lượt/ngày/dòng họ — kể cả gói trả phí; chặn một dòng họ tự đốt.
+ *  - Trần ngày/tháng theo DÒNG HỌ — kể cả gói trả phí; chặn một dòng họ
+ *    tự đốt. Con số lấy từ `clans.ai_daily_limit` / `ai_monthly_limit`,
+ *    thiếu thì rơi về mức chung trong platform_settings. Trước đây nó là
+ *    hằng số trong mã: muốn nới cho một dòng họ đang họp việc họ là phải
+ *    deploy lại, nghĩa là trên thực tế không ai nới.
  */
 const RATE_PER_WINDOW = 5;
 const RATE_WINDOW_MIN = 5;
 const RATE_PER_HOUR = 30;
 const RATE_IP_PER_WINDOW = 20;
-const RATE_PER_CLAN_DAY = 200;
+/** Dùng khi cả dòng họ lẫn platform_settings đều chưa đặt gì. */
+const RATE_PER_CLAN_DAY_FALLBACK = 200;
 
 /** Loại quyền lợi trong credit_ledger. Sổ cái dùng chung cho mọi thứ bán. */
 const RESOURCE = "ai_request";
@@ -114,6 +119,27 @@ async function hashIp(req: Request): Promise<string | null> {
 
 const minutesAgo = (n: number) =>
   new Date(Date.now() - n * 60_000).toISOString();
+
+/**
+ * Đầu tháng theo GIỜ VIỆT NAM.
+ *
+ * Mốc UTC cắt tháng lúc 7 giờ sáng ngày mùng 1 giờ Việt Nam — nghĩa là
+ * mấy tiếng đầu tháng vẫn bị tính vào tháng trước, đúng lúc người dùng
+ * mong được cấp lượt mới.
+ */
+function monthStartIso(): string {
+  const now = new Date();
+  const vn = new Date(now.getTime() + 7 * 3600_000);
+  return new Date(
+    Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), 1) - 7 * 3600_000,
+  ).toISOString();
+}
+
+/** Đọc số từ platform_settings; giá trị rác không được làm sập cả lượt. */
+function numSetting(raw: string | undefined, fallback: number): number {
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
 
 /**
  * Gửi mail báo động cho platform admin — MỖI NGÀY MỘT LẦN.
@@ -261,7 +287,12 @@ Deno.serve(async (req) => {
   const { data: settings } = await sbAdmin
     .from("platform_settings")
     .select("key, value")
-    .in("key", ["ai.enabled", "ai.model.qa"]);
+    .in("key", [
+      "ai.enabled",
+      "ai.model.qa",
+      "ai.clan_daily_limit",
+      "ai.clan_monthly_limit",
+    ]);
   const cfg = new Map((settings ?? []).map((s) => [s.key, s.value]));
   if (cfg.get("ai.enabled") !== "true") {
     return err("Trợ lý đang tạm nghỉ. Bạn quay lại sau nhé.", 503);
@@ -272,7 +303,7 @@ Deno.serve(async (req) => {
   // Đọc qua sbUser nên RLS tự chặn người ngoài; không tin clanId client gửi.
   const { data: clan } = await sbUser
     .from("clans")
-    .select("id, name, disabled_features")
+    .select("id, name, disabled_features, ai_daily_limit, ai_monthly_limit")
     .eq("id", clanId)
     .maybeSingle();
   if (!clan) return err("Bạn không có quyền xem dòng họ này", 403);
@@ -319,12 +350,29 @@ Deno.serve(async (req) => {
   ) {
     return err(TOO_FAST, 429);
   }
+  // Trần của dòng họ: đặt riêng thì theo riêng, không thì theo mức chung.
+  // `?? ` chứ không phải `||`: 0 là "không giới hạn", một giá trị thật.
+  const clanDaily =
+    clan.ai_daily_limit ??
+    numSetting(cfg.get("ai.clan_daily_limit"), RATE_PER_CLAN_DAY_FALLBACK);
+  const clanMonthly =
+    clan.ai_monthly_limit ?? numSetting(cfg.get("ai.clan_monthly_limit"), 0);
+
   if (
-    (await countSince("clan_id", clanId, minutesAgo(24 * 60))) >=
-      RATE_PER_CLAN_DAY
+    clanDaily > 0 &&
+    (await countSince("clan_id", clanId, minutesAgo(24 * 60))) >= clanDaily
   ) {
     return err(
       "Dòng họ này đã dùng hết lượt hỏi trong ngày. Mai bạn hỏi tiếp nhé.",
+      429,
+    );
+  }
+  if (
+    clanMonthly > 0 &&
+    (await countSince("clan_id", clanId, monthStartIso())) >= clanMonthly
+  ) {
+    return err(
+      "Dòng họ này đã dùng hết lượt hỏi của tháng. Bạn báo trưởng họ giúp nhé.",
       429,
     );
   }

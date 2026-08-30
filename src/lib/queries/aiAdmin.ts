@@ -193,12 +193,17 @@ export interface AiLimits {
   freePerMonth: number;
   dailyCapUsd: number;
   retentionDays: number;
+  /** Mức chung cho dòng họ chưa đặt riêng. 0 = không giới hạn. */
+  clanDailyLimit: number;
+  clanMonthlyLimit: number;
 }
 
 export const AI_LIMIT_KEYS = {
   freePerMonth: "ai.free_per_month",
   dailyCapUsd: "ai.daily_cost_cap_usd",
   retentionDays: "ai.chat_retention_days",
+  clanDailyLimit: "ai.clan_daily_limit",
+  clanMonthlyLimit: "ai.clan_monthly_limit",
 } as const;
 
 /** Chặn số vô lý ngay ở client; server vẫn có mặc định an toàn riêng. */
@@ -206,18 +211,24 @@ export const AI_LIMIT_RANGE = {
   freePerMonth: { min: 0, max: 1000 },
   dailyCapUsd: { min: 0, max: 10_000 },
   retentionDays: { min: 1, max: 3650 },
+  clanDailyLimit: { min: 0, max: 100_000 },
+  clanMonthlyLimit: { min: 0, max: 1_000_000 },
 } as const;
 
 export async function getAiLimits(): Promise<AiLimits> {
-  const [free, cap, retention] = await Promise.all([
+  const [free, cap, retention, clanDaily, clanMonthly] = await Promise.all([
     getPlatformSetting(AI_LIMIT_KEYS.freePerMonth),
     getPlatformSetting(AI_LIMIT_KEYS.dailyCapUsd),
     getPlatformSetting(AI_LIMIT_KEYS.retentionDays),
+    getPlatformSetting(AI_LIMIT_KEYS.clanDailyLimit),
+    getPlatformSetting(AI_LIMIT_KEYS.clanMonthlyLimit),
   ]);
   return {
     freePerMonth: Number(free ?? 10),
     dailyCapUsd: Number(cap ?? 20),
     retentionDays: Number(retention ?? 90),
+    clanDailyLimit: Number(clanDaily ?? 200),
+    clanMonthlyLimit: Number(clanMonthly ?? 0),
   };
 }
 
