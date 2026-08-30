@@ -90,9 +90,9 @@ export function BranchesSection({ clanId, canEdit }: Props) {
             e.preventDefault();
             if (newName.trim()) addM.mutate();
           }}
-          className="flex flex-col sm:flex-row gap-3 items-end"
+          className="space-y-3"
         >
-          <div className="flex-1 space-y-2 w-full">
+          <div className="space-y-2">
             <Label htmlFor="new-branch">Tên chi mới</Label>
             <Input
               id="new-branch"
@@ -103,16 +103,21 @@ export function BranchesSection({ clanId, canEdit }: Props) {
               placeholder="Vd: Chi cả"
             />
           </div>
-          <Button type="submit" disabled={!newName.trim() || addM.isPending}>
-            {addM.isPending ? (
-              "Đang thêm…"
-            ) : (
-              <>
-                <IconPlus className="h-4 w-4 mr-1.5" />
-                Thêm chi
-              </>
-            )}
-          </Button>
+          {/* Hành động xuống hàng riêng, căn phải — xem
+              docs/design-language.md §Đặt hành động ở đâu. Đứng cạnh ô
+              nhập thì trên màn hẹp nó bóp ô còn vài ký tự. */}
+          <div className="flex justify-end border-t pt-3">
+            <Button type="submit" disabled={!newName.trim() || addM.isPending}>
+              {addM.isPending ? (
+                "Đang thêm…"
+              ) : (
+                <>
+                  <IconPlus className="h-4 w-4 mr-1.5" />
+                  Thêm chi
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       )}
 
