@@ -123,6 +123,27 @@ describe("buildSections — nhóm của dòng họ", () => {
     expect(busy.defaultOpen).toBe(true);
   });
 
+  it("nhóm Chung xếp theo lượt dùng thật (Umami 90 ngày)", () => {
+    // Danh sách dòng họ 193 · Thông báo 88 · Trợ giúp 36 · Sổ tay 30.
+    const global = build().find((s) => s.id === "global")!;
+    expect(global.items.slice(0, 4).map((i) => i.label)).toEqual([
+      "Dòng họ của tôi",
+      "Thông báo",
+      "Trợ giúp",
+      "Sổ tay Văn hoá",
+    ]);
+  });
+
+  it("nhóm hay dùng mở sẵn, nhóm ít dùng gập sẵn", () => {
+    const s = build();
+    const open = (id: string) => s.find((x) => x.id === id)!.defaultOpen;
+    // Mộ phần 40 + Di sản 32 so với Quỹ 11 + Công đức 11.
+    expect(open("clan-culture")).toBe(true);
+    expect(open("clan-money")).toBe(false);
+    // Cài đặt dòng họ 38 lượt — mục thứ tư trong một dòng họ.
+    expect(open("clan-admin")).toBe(true);
+  });
+
   it("Góp ý là một mục trong menu, không còn là nút lẫn ở chân drawer", () => {
     const global = build().find((s) => s.id === "global")!;
     const fb = global.items.find((i) => i.kind === "feedback");

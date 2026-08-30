@@ -40,6 +40,28 @@ import type { MyProfile } from "@/lib/queries/profile";
  * File .tsx vì mỗi mục mang sẵn icon.
  */
 
+/*
+ * THỨ TỰ VÀ TRẠNG THÁI GẬP DỰA TRÊN SỐ LIỆU THẬT, không phải cảm tính.
+ * Umami, 90 ngày tính tới 30/08/2026, gộp mọi dòng họ (lượt xem trang):
+ *
+ *   Tổng quan 336 · Cây 243 · Danh bạ 144 (+192 trang một người)
+ *   Sự kiện 66 · Hôm nay 44 · Mộ phần 40 · Cài đặt dòng họ 38
+ *   Phòng ký ức 32 · Di sản 32 · Việc cần làm 28 · Bảng tin 28
+ *   Thông gia 15 · Công cụ 14 · Công đức 11 · Quỹ họ 11 · Đóng góp 8
+ *   Xưng hô 7 · Nhật ký 7 · Thành viên 7
+ *
+ *   Ngoài dòng họ: Danh sách dòng họ 193 · Thông báo 88 · Trợ giúp 36
+ *   · Sổ tay 30
+ *
+ * Hai điều số liệu nói ngược lại linh cảm ban đầu:
+ *  - **Cài đặt dòng họ đứng thứ tư** (38 lượt), trên cả Việc cần làm và
+ *    Bảng tin — nên nhóm Quản trị dòng họ mở sẵn chứ không gập.
+ *  - **Quỹ họ và Công đức là hai mục ít dùng nhất** (11 mỗi cái), nên
+ *    Tài chính gập sẵn — dù nó dính tiền, không ai vào hằng ngày.
+ *
+ * Cập nhật lại khi có số liệu mới; đừng đổi thứ tự theo cảm giác.
+ */
+
 /** Badge quá 99 thì hiện "99+" — số dài làm vỡ hàng menu. */
 function formatBadge(n: number): string {
   return n > 99 ? "99+" : String(n);
@@ -315,15 +337,22 @@ export function buildSections(
       icon: <IconBuildings className={ic} />,
       end: true,
     },
+    // Thông báo: 88 lượt xem — dùng nhiều hơn Trợ giúp và Sổ tay cộng
+    // lại, mà trước nay chỉ vào được qua cái chuông ở header.
     {
-      to: "/so-tay",
-      label: "Sổ tay Văn hoá",
-      icon: <IconGlobe className={ic} />,
+      to: "/announcements",
+      label: "Thông báo",
+      icon: <IconBell className={ic} />,
     },
     {
       to: "/docs",
       label: "Trợ giúp",
       icon: <IconBook className={ic} />,
+    },
+    {
+      to: "/so-tay",
+      label: "Sổ tay Văn hoá",
+      icon: <IconGlobe className={ic} />,
     },
     // Góp ý về hẳn menu: trước đây nó là một nút nhỏ lẫn trong hàng
     // tiện ích ở chân drawer, cạnh QR và Cập nhật — chỗ người dùng chỉ
@@ -471,7 +500,8 @@ export function buildSections(
         id: "clan-culture",
         label: "Văn hoá & Tưởng niệm",
         items: cultureItems,
-        defaultOpen: false,
+        // Mộ phần 40 + Di sản 32 — dùng gấp ba nhóm Tài chính.
+        defaultOpen: true,
       });
     }
 
@@ -559,7 +589,9 @@ export function buildSections(
         id: "clan-admin",
         label: "Quản trị dòng họ",
         items: adminItems,
-        defaultOpen: pendingInlawCount > 0,
+        // Cài đặt dòng họ là mục được xem nhiều thứ TƯ trong một dòng họ
+        // (38 lượt) — gập nó lại là giấu thứ người ta hay tìm.
+        defaultOpen: true,
       });
     }
   }
