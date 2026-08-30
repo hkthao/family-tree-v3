@@ -41,6 +41,7 @@ import {
   describeDay,
   findGoodDays,
 } from "@/lib/almanac";
+import { festivalsOn, hasFestival } from "@/lib/festivals";
 
 /** Icon outline cho từng loại việc (thay emoji) — dùng bộ icon của app. */
 const ACTIVITY_ICON: Record<
@@ -474,6 +475,17 @@ function MonthCalendar({
                   •
                 </span>
               )}
+              {c.info && hasFestival(c.iso) && (
+                // Dấu ở góc trái trên, khác góc với "ngày kiêng" (phải)
+                // và với sự kiện dòng họ (dưới) — ba thứ khác nhau thì
+                // không được trông giống nhau.
+                <span
+                  className="absolute left-1 top-1 text-[9px] leading-none"
+                  title={festivalsOn(c.iso).map((f) => f.name).join(" · ")}
+                >
+                  🏮
+                </span>
+              )}
               {eventsByDay.has(c.iso) && (
                 <span
                   className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-amber-500"
@@ -496,6 +508,9 @@ function MonthCalendar({
         </span>
         <span className="flex items-center gap-1">
           <span className="text-rose-500">•</span> Ngày kiêng
+        </span>
+        <span className="flex items-center gap-1">
+          <span aria-hidden>🏮</span> Lễ, tết
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -530,6 +545,7 @@ function DayDetail({
   if (!info) return null;
   const goodChi = info.aus.goodHours.map((h) => h.split(" (")[0]);
   const badChi = info.aus.badHours.map((h) => h.split(" (")[0]);
+  const dayFestivals = festivalsOn(iso);
   const meta = [
     prefs.truc ? `Trực ${info.truc.name}` : null,
     prefs.tu ? `Sao ${info.tu.short}` : null,
@@ -586,6 +602,32 @@ function DayDetail({
           )}
         </div>
       </div>
+
+      {/* Lễ tết của ngày này. Đặt TRƯỚC sự kiện dòng họ vì nó là thứ
+          người ta mở lịch ra để tìm — rằm tháng Bảy mà không thấy chữ
+          "Vu Lan" thì cuốn lịch coi như thiếu. */}
+      {dayFestivals.length > 0 && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
+            Lễ, tết ngày này
+          </p>
+          <ul className="space-y-1.5">
+            {dayFestivals.map((f) => (
+              <li key={f.key}>
+                <p className="text-sm font-medium">
+                  {f.name}
+                  {f.publicHoliday && (
+                    <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                      Nghỉ lễ
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">{f.note}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Sự kiện dòng họ hôm đó (giỗ / sinh nhật / sự kiện) */}
       {dayEvents.length > 0 && (
