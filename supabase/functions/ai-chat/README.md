@@ -22,6 +22,30 @@ ai-chat/proposal.ts  tool ĐỀ XUẤT thêm người + kiểm lại đầu ra c
 ai-chat/index.ts  vòng lặp gọi tool, rate limit, trừ lượt, ghi ai_usage
 ```
 
+## Dữ liệu gì rời khỏi máy chủ
+
+Đã rà lại từng tool (rà ngày 30/08/2026, sau khi trợ lý chạy thật trên prod):
+
+| Gửi đi | KHÔNG gửi |
+|---|---|
+| Tên, giới tính, còn sống/đã mất, đời thứ mấy | `bio` (tiểu sử) |
+| Ngày sinh, ngày mất, ngày giỗ âm lịch | `photo_path` (ảnh) |
+| id nội bộ (để model gọi tool tiếp) | `birth_place`, `burial_place` |
+| Câu hỏi của người dùng | Thông tin liên hệ, tài khoản, email |
+
+`PERSON_COLS` trong `tools.ts` là chỗ quyết định điều đó — **thêm cột vào đấy là thêm
+dữ liệu gửi ra ngoài**, cân nhắc trước khi thêm cho tiện.
+
+Người dùng được nói thẳng chuyện này ngay trong khung chat (màn hình chào) và ở mô tả
+tính năng trong Cài đặt dòng họ. Tên nhà cung cấp suy từ `ai.model.qa` chứ không viết
+cứng — admin đổi model mà dòng chữ đứng yên thì nó thành lời nói dối im lặng.
+
+**Hạn giữ lịch sử**: `ai_messages_purge_expired()` chạy hằng đêm 3:40 qua cron trên máy
+chủ database (`deploy/cron/ai-messages-purge.sh`). Trigger trong DB chỉ cắt được 40 tin
+mỗi người; hạn theo NGÀY thì không có sự kiện nào để bám — người bỏ dùng trợ lý ba tháng
+trước sẽ không ghi thêm tin nào để trigger chạy. Chính sách 90 ngày mà không ai xoá thì
+không phải chính sách.
+
 ## Trả lời dần (streaming)
 
 Client gửi `stream: true` → function trả `text/event-stream`, mỗi sự kiện là một dòng
