@@ -108,6 +108,7 @@ export default function AiChat() {
         turns={chat.turns}
         pending={chat.pending}
         streamingText={chat.streamingText}
+        onRate={chat.rateTurn}
         error={chat.error}
         fontSize={chat.fontSize}
         clanName={clan.name}

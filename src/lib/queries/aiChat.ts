@@ -34,6 +34,15 @@ export async function isAiEnabled(): Promise<boolean> {
 export interface ChatTurn {
   role: "user" | "assistant";
   content: string;
+  /**
+   * Mã lượt đã sinh ra câu trả lời này — chỉ có ở câu trả lời của lượt
+   * VỪA HỎI trong phiên hiện tại. Lịch sử tải từ server không mang mã
+   * lượt, nên câu cũ không chấm điểm được: đó là chủ ý, chấm điểm cho
+   * một câu hỏi từ tuần trước thì cũng không nhớ nổi nó đúng hay sai.
+   */
+  ref?: string;
+  /** Điểm đã chấm trong phiên này (không tải lại từ server). */
+  rating?: 1 | -1;
 }
 
 /** Một dòng thô đọc từ `ai_messages`. */
@@ -105,6 +114,28 @@ export interface AskResult {
   credits?: number | null;
   /** Hết lượt tháng này — KHÔNG phải lỗi, xem plan §Đường lui. */
   quotaExhausted?: boolean;
+}
+
+export type AnswerRating = 1 | -1 | 0;
+
+/**
+ * Chấm điểm một câu trả lời của trợ lý.
+ *
+ * `0` = gỡ điểm (bấm lại đúng nút đã chọn). Máy chủ chỉ sửa được lượt
+ * của chính người gọi — xem migration ai_answer_rating.
+ *
+ * Lỗi ở đây KHÔNG được làm hỏng khung chat: chấm điểm là việc phụ, hỏng
+ * thì thôi, đừng ném một hộp lỗi đỏ vào giữa cuộc trò chuyện.
+ */
+export async function rateAnswer(
+  ref: string,
+  rating: AnswerRating,
+): Promise<void> {
+  const { error } = await supabase.rpc("ai_rate_turn", {
+    p_ref: ref,
+    p_rating: rating,
+  });
+  if (error) console.warn("không chấm điểm được:", error.message);
 }
 
 /** Số tin gửi lên làm ngữ cảnh. KHÁC số tin lưu để hiển thị. */

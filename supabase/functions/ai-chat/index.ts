@@ -658,7 +658,13 @@ Deno.serve(async (req) => {
           "Tôi chưa tìm được câu trả lời. Bạn thử hỏi cách khác nhé.";
         await logUsage(true);
         await persistTurn(answer);
-        return { answer, toolCalls: toolCallCount, credits: creditsLeft };
+        // Trả cả mã lượt: client cần nó để chấm điểm câu trả lời.
+        return {
+          answer,
+          toolCalls: toolCallCount,
+          credits: creditsLeft,
+          ref: consumeRef,
+        };
       }
 
       toolCallCount += res.toolCalls.length;

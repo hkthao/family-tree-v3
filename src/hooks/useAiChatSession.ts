@@ -8,6 +8,8 @@ import {
   askAssistant,
   clearServerHistory,
   loadServerHistory,
+  rateAnswer,
+  type AnswerRating,
   type ChatTurn,
 } from "@/lib/queries/aiChat";
 import { loadMyQuota, type CreditQuota } from "@/lib/queries/credits";
@@ -46,6 +48,8 @@ export interface AiChatSession {
   proposal: Proposal | null;
   /** Đang ghi vào gia phả sau khi bấm "Đúng rồi". */
   applying: boolean;
+  /** Chấm điểm câu trả lời; bấm lại đúng nút đang chọn = gỡ điểm. */
+  rateTurn: (index: number, rating: 1 | -1) => void;
   confirmProposal: () => void;
   rejectProposal: () => void;
   /** "Sửa lại" — trả câu vừa nói về ô nhập, bóc tách lại KHÔNG mất lượt. */
@@ -131,7 +135,10 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       // cũng sinh chữ ("để tôi tra cứu…") nên bản ghép không phải câu
       // trả lời cuối.
       setStreamingText("");
-      setTurns((t) => [...t, { role: "assistant", content: res.answer }]);
+      setTurns((t) => [
+        ...t,
+        { role: "assistant", content: res.answer, ref: res.ref },
+      ]);
       // Hết lượt KHÔNG phải lỗi — máy chủ trả 200 kèm câu nhắn nhẹ và
       // đường lui, nên nó hiện như một câu trả lời bình thường.
       setQuotaExhausted(!!res.quotaExhausted);
@@ -232,6 +239,23 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     setPending(null);
   }, [pending]);
 
+  const rateTurn = useCallback(
+    (index: number, rating: 1 | -1) => {
+      setTurns((prev) => {
+        const turn = prev[index];
+        if (!turn?.ref) return prev;
+        // Bấm lại đúng nút đang chọn = đổi ý, gỡ điểm.
+        const next: AnswerRating = turn.rating === rating ? 0 : rating;
+        void rateAnswer(turn.ref, next);
+        track("ai_answer_rated", { rating: next });
+        const copy = [...prev];
+        copy[index] = { ...turn, rating: next === 0 ? undefined : next };
+        return copy;
+      });
+    },
+    [],
+  );
+
   const clearHistory = useCallback(async () => {
     const ok = await confirm({
       title: "Xoá lịch sử trò chuyện?",
@@ -269,6 +293,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     streamingText,
     proposal,
     applying: apply.isPending,
+    rateTurn,
     confirmProposal,
     rejectProposal,
     editProposal,
