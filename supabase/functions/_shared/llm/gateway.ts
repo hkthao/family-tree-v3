@@ -8,6 +8,7 @@
 import { anthropicAdapter } from "./adapters/anthropic.ts";
 import { openAiCompatibleAdapter } from "./adapters/openai-compatible.ts";
 import { estimateCost, getModel } from "./registry.ts";
+import { shouldRetry } from "./retry.ts";
 import {
   LlmError,
   type LlmAdapter,
@@ -37,6 +38,12 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export async function complete(
   req: Omit<LlmRequest, "signal">,
   apiKey: string,
+  /**
+   * Có truyền thì chạy bản stream của adapter (nếu adapter có), và
+   * `onDelta` nhận từng mẩu chữ mới. Adapter chưa hỗ trợ stream thì kết
+   * quả vẫn đúng, chỉ là chữ về một cục — người gọi không cần phân biệt.
+   */
+  onDelta?: (text: string) => void,
 ): Promise<CompleteResult> {
   const model = getModel(req.model);
   const adapter = ADAPTERS[model.provider];
@@ -44,16 +51,31 @@ export async function complete(
 
   const started = Date.now();
   let lastErr: unknown;
+  // Đã bắn chữ ra cho người dùng thì KHÔNG thử lại nữa: lần thử sau sẽ
+  // bắn tiếp một câu trả lời khác, và người dùng thấy hai câu dính vào
+  // nhau. Thà báo lỗi còn hơn hiện ra thứ vô nghĩa.
+  let emitted = false;
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const ac = new AbortController();
     const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
     try {
-      const res = await adapter.complete(
-        { ...req, signal: ac.signal },
-        model,
-        apiKey,
-      );
+      const streaming = onDelta && adapter.completeStream;
+      const res = streaming
+        ? await adapter.completeStream!(
+            { ...req, signal: ac.signal },
+            model,
+            apiKey,
+            (t) => {
+              emitted = true;
+              onDelta!(t);
+            },
+          )
+        : await adapter.complete(
+            { ...req, signal: ac.signal },
+            model,
+            apiKey,
+          );
       return {
         ...res,
         modelId: model.id,
@@ -63,8 +85,7 @@ export async function complete(
       };
     } catch (e) {
       lastErr = e;
-      const retryable = e instanceof LlmError && e.retryable;
-      if (!retryable || attempt === MAX_ATTEMPTS) break;
+      if (!shouldRetry(e, { emitted, attempt, maxAttempts: MAX_ATTEMPTS })) break;
       // Backoff có jitter — nhiều người cùng bị 429 thì đừng thử lại
       // cùng một nhịp.
       await sleep(400 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250));

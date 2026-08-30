@@ -11,6 +11,16 @@ if (!url || !anonKey) {
   );
 }
 
+/**
+ * URL + anon key lộ ra ngoài để gọi Edge Function bằng `fetch` thô.
+ *
+ * Cần cho phần streaming: `functions.invoke` đọc hết body rồi mới trả
+ * về, tức là stream bao nhiêu cũng vô nghĩa. Không có bí mật nào ở đây —
+ * anon key vốn nằm sẵn trong bundle.
+ */
+export const SUPABASE_URL = url;
+export const SUPABASE_ANON_KEY = anonKey;
+
 export const supabase = createClient<Database>(url, anonKey, {
   auth: {
     persistSession: true,

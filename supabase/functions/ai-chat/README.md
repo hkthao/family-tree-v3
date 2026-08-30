@@ -22,6 +22,27 @@ ai-chat/proposal.ts  tool ĐỀ XUẤT thêm người + kiểm lại đầu ra c
 ai-chat/index.ts  vòng lặp gọi tool, rate limit, trừ lượt, ghi ai_usage
 ```
 
+## Trả lời dần (streaming)
+
+Client gửi `stream: true` → function trả `text/event-stream`, mỗi sự kiện là một dòng
+JSON `{type:"delta"|"done"|"error"}`.
+
+Ba điều đáng nhớ:
+
+- **`delta` chỉ là bản xem trước, `done` mới là câu chính thức.** Mấy vòng gọi tool ở
+  giữa cũng sinh chữ ("để tôi tra cứu…"), nên ghép hết các mẩu lại sẽ ra một câu lẫn
+  lộn. Trình duyệt hiện dần rồi thay bằng `answer` trong `done`.
+- **Đã bắn chữ thì KHÔNG retry** (`_shared/llm/retry.ts`). Lần thử sau sinh một câu
+  khác trong khi chữ cũ vẫn nằm trên màn hình — người dùng thấy hai câu dính nhau, tệ
+  hơn hẳn một thông báo lỗi tử tế.
+- **Không gửi cờ `stream` thì hợp đồng cũ giữ nguyên** (một cục JSON), và client tự rơi
+  về đường cũ nếu máy chủ trả về thứ không phải SSE. Cần thế vì self-host deploy app và
+  deploy function là hai lần bấm khác nhau, lệch nhịp là chuyện thường.
+
+`stream_options: {include_usage: true}` là bắt buộc với OpenAI-compatible: thiếu nó thì
+chunk cuối không mang usage và `ai_usage` ghi 0 token cho mọi lượt — tức báo cáo chi phí
+sai. Anthropic dùng `client.messages.stream()` của SDK, không tự đọc SSE.
+
 ## Bóc tách nhập liệu (GĐ 5)
 
 Người dùng KỂ thay vì hỏi ("Bố tôi là Nguyễn Văn A, sinh 1940") → model gọi
@@ -213,7 +234,6 @@ Ba điều về ngắt mạch chi phí:
 - Bộ đếm rate limit đọc `ai_usage`, mà bảng đó chỉ được ghi khi lượt hỏi KẾT THÚC.
   Nghĩa là mười lượt bắn song song cùng lúc đều lọt qua cửa. Hạn mức (`credit_consume`,
   atomic) mới là thứ chặn được ca đó; rate limit chỉ lo phần bấm nhanh tuần tự.
-- Streaming: hiện trả về nguyên câu, UI hiện "Đang nghĩ…". Đủ dùng ở GĐ 1.
 - Whisper dự phòng cho iOS Safari (không có Web Speech): còn chờ quyết tự host
   `whisper.cpp` hay gọi OpenAI — xem plan §Việc mở. Tới lúc đó iOS Safari chỉ gõ tay,
   và nút mic **ẩn hẳn** thay vì hiện ra rồi bấm không ăn thua.

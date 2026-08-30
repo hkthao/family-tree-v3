@@ -31,6 +31,7 @@ function speak(text: string) {
 export function ChatThread({
   turns,
   pending,
+  streamingText = "",
   error,
   fontSize,
   clanName,
@@ -39,6 +40,8 @@ export function ChatThread({
 }: {
   turns: ChatTurn[];
   pending: boolean;
+  /** Chữ đang chảy về giữa chừng — bản xem trước, chưa phải câu chốt. */
+  streamingText?: string;
   error: string | null;
   fontSize: number;
   clanName: string;
@@ -69,7 +72,7 @@ export function ChatThread({
   useEffect(() => {
     if (atBottomRef.current) scrollToBottom();
     else setShowJump(true);
-  }, [turns, pending, proposalCard, scrollToBottom]);
+  }, [turns, pending, streamingText, proposalCard, scrollToBottom]);
 
   return (
     <div className={cn("relative min-h-0 flex-1", className)}>
@@ -122,12 +125,21 @@ export function ChatThread({
 
           {pending && (
             <li className="flex justify-start">
-              <div className="rounded-2xl rounded-bl-sm bg-secondary px-4 py-3 text-muted-foreground">
-                <span className="inline-flex items-center gap-2">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-current" />
-                  Đang nghĩ…
-                </span>
-              </div>
+              {streamingText ? (
+                // Đã có chữ thì hiện chữ, đừng hiện "Đang nghĩ…" nữa —
+                // hai thứ cùng lúc trông như máy đang lẫn.
+                <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-secondary px-4 py-2.5 leading-relaxed">
+                  {streamingText}
+                  <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-current align-text-bottom" />
+                </div>
+              ) : (
+                <div className="rounded-2xl rounded-bl-sm bg-secondary px-4 py-3 text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-current" />
+                    Đang nghĩ…
+                  </span>
+                </div>
+              )}
             </li>
           )}
 

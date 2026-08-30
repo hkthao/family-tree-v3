@@ -165,6 +165,7 @@ function Dock({ clan }: { clan: ClanDetail }) {
       <ChatThread
         turns={chat.turns}
         pending={chat.pending}
+        streamingText={chat.streamingText}
         error={chat.error}
         fontSize={chat.fontSize}
         clanName={clan.name}

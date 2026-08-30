@@ -223,4 +223,202 @@ export const openAiCompatibleAdapter: LlmAdapter = {
       stopReason: mapStop(choice.finish_reason),
     };
   },
+
+  async completeStream(
+    req: LlmRequest,
+    model: ModelEntry,
+    apiKey: string,
+    onDelta: (text: string) => void,
+  ): Promise<LlmResponse> {
+    const body = {
+      ...buildOpenAiBody(req, model),
+      stream: true,
+      // Không có cờ này thì chunk cuối KHÔNG mang usage, và ai_usage ghi
+      // 0 token cho mọi lượt có stream — tức là báo cáo chi phí sai.
+      stream_options: { include_usage: true },
+    };
+
+    let res: Response;
+    try {
+      res = await fetch(`${model.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(body),
+        signal: req.signal,
+      });
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") {
+        throw new LlmError("Quá thời gian chờ nhà cung cấp AI", "timeout");
+      }
+      throw new LlmError(`Không gọi được nhà cung cấp AI: ${e}`, "network");
+    }
+
+    if (!res.ok || !res.body) {
+      const text = await res.text().catch(() => "");
+      throw new LlmError(
+        `${model.provider} ${res.status}: ${text.slice(0, 300)}`,
+        res.status === 401 || res.status === 403
+          ? "auth"
+          : res.status === 429
+            ? "rate_limit"
+            : res.status >= 500
+              ? "server"
+              : "bad_request",
+        res.status,
+      );
+    }
+
+    const state = newStreamState();
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += value;
+      const { events, rest } = splitSseEvents(buffer);
+      buffer = rest;
+      for (const ev of events) {
+        const payload = sseData(ev);
+        if (!payload) continue;
+        let chunk: unknown;
+        try {
+          chunk = JSON.parse(payload);
+        } catch {
+          continue; // mẩu rác giữa đường không được làm hỏng cả lượt
+        }
+        const delta = applyOaiChunk(state, chunk);
+        if (delta) onDelta(delta);
+      }
+    }
+
+    return finishStream(state, model);
+  },
 };
+
+// ───────────────────────────────────────────────────────────────────────
+// Stream
+//
+// SSE của OpenAI: mỗi sự kiện là một dòng `data: {...}`, hai xuống dòng
+// là hết một sự kiện, và `data: [DONE]` là kết thúc. Hai chỗ dễ sai:
+//
+//  1. **Một lần đọc không tương ứng một sự kiện.** Mạng cắt chunk ở đâu
+//     tuỳ hứng, có khi giữa chữ `da|ta:`. Nên phải giữ đệm và chỉ cắt ở
+//     ranh giới `\n\n` — đây là lý do phần tách sự kiện tách thành hàm
+//     thuần có test riêng.
+//  2. **tool_calls về theo từng mẩu**, ghép theo `index` chứ không phải
+//     theo id (mẩu sau thường không có id).
+
+/** Tách các sự kiện HOÀN CHỈNH ra khỏi đệm, trả phần còn dở lại. */
+export function splitSseEvents(buffer: string): {
+  events: string[];
+  rest: string;
+} {
+  const parts = buffer.split("\n\n");
+  const rest = parts.pop() ?? "";
+  return { events: parts, rest };
+}
+
+/** Lấy payload JSON của một sự kiện `data:`; null nếu là [DONE]/comment. */
+export function sseData(event: string): string | null {
+  const line = event
+    .split("\n")
+    .find((l) => l.startsWith("data:"));
+  if (!line) return null;
+  const payload = line.slice(5).trim();
+  return payload === "[DONE]" || payload === "" ? null : payload;
+}
+
+interface StreamState {
+  text: string;
+  rawModel: string;
+  finish: string | null;
+  usage: { input: number; output: number; cached: number };
+  /** Ghép theo index — mẩu sau của cùng một tool call không mang id. */
+  tools: Map<number, { id: string; name: string; args: string }>;
+}
+
+export function newStreamState(): StreamState {
+  return {
+    text: "",
+    rawModel: "",
+    finish: null,
+    usage: { input: 0, output: 0, cached: 0 },
+    tools: new Map(),
+  };
+}
+
+/** Nạp một chunk đã parse vào state. Trả về mẩu CHỮ MỚI (có thể rỗng). */
+export function applyOaiChunk(state: StreamState, chunk: unknown): string {
+  const c = chunk as {
+    model?: string;
+    choices?: Array<{
+      delta?: {
+        content?: string | null;
+        tool_calls?: Array<{
+          index?: number;
+          id?: string;
+          function?: { name?: string; arguments?: string };
+        }>;
+      };
+      finish_reason?: string | null;
+    }>;
+    usage?: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      prompt_tokens_details?: { cached_tokens?: number };
+    };
+  };
+
+  if (c.model) state.rawModel = c.model;
+  if (c.usage) {
+    state.usage = {
+      input: c.usage.prompt_tokens ?? state.usage.input,
+      output: c.usage.completion_tokens ?? state.usage.output,
+      cached:
+        c.usage.prompt_tokens_details?.cached_tokens ?? state.usage.cached,
+    };
+  }
+
+  const choice = c.choices?.[0];
+  if (!choice) return "";
+  if (choice.finish_reason) state.finish = choice.finish_reason;
+
+  for (const t of choice.delta?.tool_calls ?? []) {
+    const idx = t.index ?? 0;
+    const cur = state.tools.get(idx) ?? { id: "", name: "", args: "" };
+    if (t.id) cur.id = t.id;
+    if (t.function?.name) cur.name = t.function.name;
+    if (t.function?.arguments) cur.args += t.function.arguments;
+    state.tools.set(idx, cur);
+  }
+
+  const delta = choice.delta?.content ?? "";
+  state.text += delta;
+  return delta;
+}
+
+export function finishStream(
+  state: StreamState,
+  model: ModelEntry,
+): LlmResponse {
+  return {
+    text: state.text,
+    toolCalls: [...state.tools.values()]
+      .filter((t) => t.name)
+      .map((t) => ({
+        id: t.id,
+        name: t.name,
+        arguments: parseArgs(t.args),
+      })),
+    usage: {
+      inputTokens: state.usage.input,
+      outputTokens: state.usage.output,
+      cachedInputTokens: state.usage.cached,
+    },
+    rawModel: state.rawModel || model.rawId,
+    stopReason: mapStop(state.finish ?? ""),
+  };
+}

@@ -17,7 +17,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-import { err, json, preflight } from "../_shared/cors.ts";
+import { CORS, err, json, preflight } from "../_shared/cors.ts";
 import { complete, friendlyLlmError } from "../_shared/llm/gateway.ts";
 import { resolveApiKey } from "../_shared/llm/keys.ts";
 import { DEFAULT_MODELS, getModel } from "../_shared/llm/registry.ts";
@@ -213,6 +213,8 @@ interface Body {
    * lần dùng lại (MAX_FREE_RETRIES) nên không thể hỏi miễn phí mãi.
    */
   ref?: string;
+  /** Bật thì trả về SSE thay vì một cục JSON. Client cũ không gửi cờ này. */
+  stream?: boolean;
 }
 
 /** Chỉ nhận đúng dạng ref do chính máy chủ sinh ra. */
@@ -558,7 +560,10 @@ Deno.serve(async (req) => {
     });
   }
 
-  try {
+  /** Một lượt hỏi–đáp trọn vẹn. Trả về payload, hoặc ném lỗi. */
+  async function runTurn(
+    onDelta?: (text: string) => void,
+  ): Promise<Record<string, unknown>> {
     for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
       // Vòng cuối: bỏ tool đi để model buộc phải chốt câu trả lời bằng
       // những gì đã có, thay vì gọi tool rồi bị cắt giữa chừng.
@@ -578,6 +583,7 @@ Deno.serve(async (req) => {
           effort: "low",
         },
         apiKey,
+        onDelta,
       );
 
       totalIn += res.usage.inputTokens;
@@ -593,7 +599,7 @@ Deno.serve(async (req) => {
           "Tôi chưa tìm được câu trả lời. Bạn thử hỏi cách khác nhé.";
         await logUsage(true);
         await persistTurn(answer);
-        return json({ answer, toolCalls: toolCallCount, credits: creditsLeft });
+        return { answer, toolCalls: toolCallCount, credits: creditsLeft };
       }
 
       toolCallCount += res.toolCalls.length;
@@ -621,13 +627,13 @@ Deno.serve(async (req) => {
               "Bạn xem giúp có đúng không nhé.";
           await logUsage(true, undefined, "extract");
           await persistTurn(answer);
-          return json({
+          return {
             answer,
             toolCalls: toolCallCount,
             credits: creditsLeft,
             proposal,
             ref: consumeRef,
-          });
+          };
         }
         // Sai thì nói cho model biết để nó tự sửa ở vòng sau — người dùng
         // không cần thấy lỗi kỹ thuật của một cái tool.
@@ -660,13 +666,59 @@ Deno.serve(async (req) => {
     // Không nên tới đây: vòng cuối đã bỏ tool nên model phải trả lời.
     await logUsage(false, "tool_loop");
     await refundCredit();
-    return err("Câu này phức tạp quá. Bạn thử hỏi ngắn gọn hơn nhé.", 500);
-  } catch (e) {
+    throw new Error("Câu này phức tạp quá. Bạn thử hỏi ngắn gọn hơn nhé.");
+  }
+
+  /** Dọn dẹp chung cho mọi lỗi giữa lượt: ghi log, hoàn lượt, đổi câu chữ. */
+  async function handleTurnError(e: unknown): Promise<string> {
     const kind = (e as { kind?: string })?.kind ?? "unknown";
     await logUsage(false, String(kind));
     // Không bao giờ để người dùng trả lượt cho lỗi của mình.
     await refundCredit();
     console.error("ai-chat failed:", e);
-    return err(friendlyLlmError(e), 502);
+    return friendlyLlmError(e);
   }
+
+  // ─── Không stream: giữ nguyên hợp đồng cũ ──────────────────────────
+  // Client cũ (chưa deploy bản mới) không gửi cờ `stream`, và vẫn phải
+  // chạy được y như trước — hai bên deploy lệch nhịp là chuyện thường
+  // với self-host áp tay.
+  if (!body.stream) {
+    try {
+      return json(await runTurn());
+    } catch (e) {
+      return err(await handleTurnError(e), 502);
+    }
+  }
+
+  // ─── Có stream: SSE ────────────────────────────────────────────────
+  // Mỗi sự kiện là một dòng JSON: {type:"delta"|"done"|"error"}.
+  //
+  // Chữ bắn ra dần chỉ là BẢN XEM TRƯỚC: `done` mới mang câu trả lời
+  // chính thức. Vì mấy vòng gọi tool ở giữa cũng có thể sinh chữ ("để
+  // tôi tra cứu…"), nếu ghép hết các mẩu lại thì ra một câu lẫn lộn.
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (obj: unknown) =>
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+      try {
+        const payload = await runTurn((text) => send({ type: "delta", text }));
+        send({ type: "done", ...payload });
+      } catch (e) {
+        send({ type: "error", message: await handleTurnError(e) });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      ...CORS,
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
 });
