@@ -137,12 +137,25 @@ function sendView(view: { url: string; title: string }): void {
 }
 
 /**
+ * Khu quản trị KHÔNG được đếm vào số liệu sản phẩm.
+ *
+ * Không phải vì riêng tư — vì số liệu sai. Phân tích tháng 8 có một
+ * phiên với 100 lượt xem `/clans` và 75 lượt `/admin`: đó là người vận
+ * hành đang soi bảng điều khiển, nhưng nó nằm lẫn trong số liệu người
+ * dùng thật và làm mọi tỉ lệ chuyển đổi trông đẹp hơn thực tế. Vài phiên
+ * như vậy đủ để lái sai một quyết định sản phẩm.
+ */
+export function isAdminArea(pathname: string): boolean {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
+}
+
+/**
  * Report a pageview for the current route. Called by
  * `<AnalyticsTracker/>` on every navigation; `search` is optional so
  * callers can pass just a path.
  */
 export function trackPageview(pathname: string, search = ""): void {
-  if (!ENABLED) return;
+  if (!ENABLED || isAdminArea(pathname)) return;
   sendView({
     url: sanitizeUrl(pathname, search),
     title: typeof document === "undefined" ? "" : document.title,
@@ -188,6 +201,10 @@ export function initAnalytics(): void {
  */
 export function track(name: string, props?: Record<string, unknown>): void {
   if (!ENABLED) return;
+  // Cùng lý do với pageview: thao tác của admin trong khu quản trị không
+  // phải hành vi người dùng. Đọc location ở đây thay vì bắt mọi nơi gọi
+  // phải tự nhớ — quên một chỗ là số liệu lệch âm thầm.
+  if (typeof location !== "undefined" && isAdminArea(location.pathname)) return;
   const u = umami();
   if (!u) return;
   try {

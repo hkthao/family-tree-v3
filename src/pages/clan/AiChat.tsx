@@ -9,7 +9,7 @@ import { IconArrowLeft, IconSparkles, IconTrash } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useAiChatSession } from "@/hooks/useAiChatSession";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useVisualViewport } from "@/hooks/useVisualViewport";
@@ -111,6 +111,10 @@ export default function AiChat() {
         error={chat.error}
         fontSize={chat.fontSize}
         clanName={clan.name}
+        canAddPeople={canEditClan(clan)}
+        quotaFallbackHref={
+          chat.quotaExhausted ? `/clans/${clanId}/ai-generate` : undefined
+        }
         proposalCard={
           chat.proposal ? (
             <ProposalCard

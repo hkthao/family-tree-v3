@@ -38,6 +38,8 @@ export interface AiChatSession {
   clearHistory: () => Promise<void>;
   /** Hạn mức tháng này. `null` = máy chủ chưa bật hạn mức → đừng hiện gì. */
   quota: CreditQuota | null;
+  /** Vừa hết lượt tháng này — giao diện phải chỉ đường lui, không dựng tường. */
+  quotaExhausted: boolean;
   /** Chữ đang chảy về khi trợ lý trả lời dần. Rỗng = chưa có gì. */
   streamingText: string;
   /** Đề xuất thêm người đang chờ người dùng xác nhận (GĐ 5). */
@@ -63,6 +65,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
   const [quota, setQuota] = useState<CreditQuota | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [streamingText, setStreamingText] = useState("");
+  const [quotaExhausted, setQuotaExhausted] = useState(false);
   // Mã lượt + câu nói gốc của đề xuất đang chờ. Giữ lại để "Sửa lại"
   // gửi lại đúng ref đó — cùng ref thì không bị trừ lượt lần hai.
   const [pending, setPending] = useState<{ ref?: string; question: string } | null>(
@@ -131,6 +134,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       setTurns((t) => [...t, { role: "assistant", content: res.answer }]);
       // Hết lượt KHÔNG phải lỗi — máy chủ trả 200 kèm câu nhắn nhẹ và
       // đường lui, nên nó hiện như một câu trả lời bình thường.
+      setQuotaExhausted(!!res.quotaExhausted);
       if (res.quotaExhausted) track("ai_quota_exhausted");
       if (typeof res.credits === "number") {
         const left = res.credits;
@@ -162,6 +166,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       setDraft("");
       setTurns((t) => [...t, { role: "user", content: q }]);
       setStreamingText("");
+      setQuotaExhausted(false);
       track("ai_message_sent");
       mutate({ question: q, ref: retryRef });
       setRetryRef(undefined);
@@ -260,6 +265,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     error,
     clearHistory,
     quota,
+    quotaExhausted,
     streamingText,
     proposal,
     applying: apply.isPending,

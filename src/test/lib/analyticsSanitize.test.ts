@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { sanitizeUrl } from "@/lib/analytics";
+import { isAdminArea, sanitizeUrl } from "@/lib/analytics";
 
 /**
  * Regression net for the leak found in the Aug 2026 analytics review:
@@ -60,5 +60,29 @@ describe("sanitizeUrl", () => {
     expect(sanitizeUrl("/clans", "?tab=community#access_token=eyJ.a.b")).toBe(
       "/clans?tab=community",
     );
+  });
+});
+
+describe("isAdminArea", () => {
+  /**
+   * Khu quản trị không được đếm vào số liệu sản phẩm — không phải vì
+   * riêng tư mà vì số liệu SAI. Tháng 8 có một phiên 100 lượt xem
+   * `/clans` + 75 lượt `/admin`: người vận hành soi bảng điều khiển,
+   * nằm lẫn trong số liệu người dùng thật và làm tỉ lệ chuyển đổi đẹp
+   * hơn thực tế.
+   */
+  it("nhận diện khu quản trị", () => {
+    expect(isAdminArea("/admin")).toBe(true);
+    expect(isAdminArea("/admin/cai-dat")).toBe(true);
+    expect(isAdminArea("/admin/orders/123")).toBe(true);
+  });
+
+  it("KHÔNG bắt nhầm đường dẫn chỉ tình cờ bắt đầu bằng 'admin'", () => {
+    // Nếu dùng startsWith("/admin") trần thì mấy đường này bị nuốt mất,
+    // và ta im lặng mất số liệu của tính năng thật.
+    expect(isAdminArea("/administrator")).toBe(false);
+    expect(isAdminArea("/adminfoo")).toBe(false);
+    expect(isAdminArea("/clans/admin")).toBe(false);
+    expect(isAdminArea("/clans/x/settings")).toBe(false);
   });
 });

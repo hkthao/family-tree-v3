@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAiChatSession } from "@/hooks/useAiChatSession";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
+import { canEditClan } from "@/hooks/useClanContext";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
 import { track } from "@/lib/analytics";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
@@ -169,6 +170,10 @@ function Dock({ clan }: { clan: ClanDetail }) {
         error={chat.error}
         fontSize={chat.fontSize}
         clanName={clan.name}
+        canAddPeople={canEditClan(clan)}
+        quotaFallbackHref={
+          chat.quotaExhausted ? `/clans/${clan.id}/ai-generate` : undefined
+        }
         proposalCard={
           chat.proposal ? (
             <ProposalCard

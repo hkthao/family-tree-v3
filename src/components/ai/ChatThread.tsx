@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 import { IconPlay, IconSparkles } from "@/components/icons";
 import { useAiProviderLabel } from "@/hooks/useAiProvider";
@@ -36,6 +37,8 @@ export function ChatThread({
   error,
   fontSize,
   clanName,
+  canAddPeople = false,
+  quotaFallbackHref,
   proposalCard,
   className,
 }: {
@@ -46,6 +49,10 @@ export function ChatThread({
   error: string | null;
   fontSize: number;
   clanName: string;
+  /** Người dùng có quyền sửa gia phả — mới mách chuyện thêm người bằng lời. */
+  canAddPeople?: boolean;
+  /** Có giá trị khi vừa hết lượt: đường lui miễn phí (trang Nhờ AI). */
+  quotaFallbackHref?: string;
   /** Thẻ xác nhận thêm người, nếu đang có đề xuất chờ (GĐ 5). */
   proposalCard?: ReactNode;
   className?: string;
@@ -92,6 +99,14 @@ export function ChatThread({
               Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời
               thường ngày — ngày giỗ, cách xưng hô, ai là con ai.
             </p>
+            {/* Chỉ mách cho người thật sự làm được. Mách cho người xem thì
+                họ kể xong mới biết mình không có quyền — hụt hẫng vô ích. */}
+            {canAddPeople && (
+              <p className="mt-2 text-muted-foreground">
+                Muốn thêm người thì cứ kể, ví dụ “Bố tôi là Nguyễn Văn An,
+                sinh 1940”. Tôi ghi lại để bạn xem trước rồi mới lưu.
+              </p>
+            )}
             {/* Nói thẳng chuyện dữ liệu rời khỏi máy chủ. Người dùng có
                 quyền biết trước khi gõ câu đầu tiên, không phải đi tìm
                 trong trang điều khoản. */}
@@ -130,6 +145,20 @@ export function ChatThread({
               </div>
             </li>
           ))}
+
+          {/* Hết lượt KHÔNG phải bức tường. Câu trả lời đã nói có đường
+              lui, nhưng bắt người lớn tuổi tự đi tìm trang đó thì cũng
+              như không — nên đưa thẳng cái nút ra đây. */}
+          {quotaFallbackHref && (
+            <li className="flex justify-start">
+              <Link
+                to={quotaFallbackHref}
+                className="inline-flex min-h-[52px] items-center rounded-2xl border border-primary/40 bg-primary/5 px-4 py-2.5 font-medium underline-offset-2 hover:underline"
+              >
+                Mở trang Nhờ AI lập gia phả (miễn phí)
+              </Link>
+            </li>
+          )}
 
           {proposalCard && <li className="w-full">{proposalCard}</li>}
 
