@@ -47,7 +47,6 @@ const build = (
     todo?: number;
     contrib?: number;
     inlaw?: number;
-    adminArea?: boolean;
   } = {},
 ) =>
   buildSections(
@@ -58,57 +57,35 @@ const build = (
     opts.inlaw ?? 0,
     opts.todo ?? 0,
     true,
-    opts.adminArea ?? false,
   );
 
 const ids = (sections: DrawerSection[]) => sections.map((s) => s.id);
-const labels = (sections: DrawerSection[]) =>
-  sections.flatMap((s) => s.items.map((i) => i.label));
 
-describe("buildSections — khu quản trị", () => {
-  it("vào /admin thì menu CHỈ còn việc quản trị, không lẫn menu app", () => {
-    const s = build({ profile: admin, adminArea: true });
-    expect(ids(s)).toEqual(["admin-back", "admin-report", "admin-settings"]);
-    // Không còn Cây gia phả, Quỹ họ… lẫn vào.
-    expect(labels(s)).not.toContain("Cây gia phả");
-    expect(labels(s)).toContain("← Về ứng dụng");
-    expect(labels(s)).toContain("Tất cả mục quản trị");
+describe("buildSections — lối vào khu quản trị", () => {
+  it("admin chỉ thấy MỘT mục dẫn vào khu quản trị", () => {
+    // Chín mục quản trị nằm ở LƯỚI trong /admin. Đổ chúng vào menu trái
+    // nữa là hai bản sao của cùng một danh sách, và người dùng phải đoán
+    // xem cái nào mới là chỗ đi.
+    const global = build({ profile: admin }).find((x) => x.id === "global")!;
+    const entries = global.items.filter((i) => i.to.startsWith("/admin"));
+    expect(entries).toHaveLength(1);
+    expect(entries[0].to).toBe("/admin");
   });
 
-  it("menu quản trị và lưới ở /admin luôn khớp nhau", () => {
-    // Cùng đọc một sổ đăng ký, nên thêm màn mới là cả hai nơi có ngay.
-    // Trước đây mỗi nơi khai một danh sách: quên một chỗ thì màn hình đó
-    // thành "có mà không ai tìm ra".
-    const s = build({ profile: admin, adminArea: true });
-    const inMenu = s
-      .filter((x) => x.id.startsWith("admin-") && x.id !== "admin-back")
-      .flatMap((x) => x.items.map((i) => i.to));
-    const inGrid = ADMIN_SCREENS.map((x) => adminPath(x.slug));
-    expect(inMenu.sort()).toEqual(inGrid.sort());
-  });
-
-  it("mỗi màn quản trị là một ĐƯỜNG DẪN riêng, không phải ?tab=", () => {
-    const s = build({ profile: admin, adminArea: true });
-    const tos = s.flatMap((x) => x.items.map((i) => i.to));
-    expect(tos.some((t) => t.includes("?tab="))).toBe(false);
-  });
-
-  it("người thường lỡ vào /admin thì vẫn thấy menu app, không thấy menu quản trị", () => {
-    const s = build({ profile: normal, adminArea: true });
-    expect(ids(s)).not.toContain("admin-report");
-    expect(labels(s)).toContain("Cây gia phả");
-  });
-
-  it("ngoài khu quản trị, admin chỉ thấy MỘT mục dẫn vào — không phải cả nhóm", () => {
-    const s = build({ profile: admin });
-    const global = s.find((x) => x.id === "global")!;
-    const adminEntries = global.items.filter((i) => i.to.startsWith("/admin"));
-    expect(adminEntries).toHaveLength(1);
+  it("menu KHÔNG liệt kê từng màn quản trị", () => {
+    const tos = build({ profile: admin }).flatMap((x) =>
+      x.items.map((i) => i.to),
+    );
+    for (const sc of ADMIN_SCREENS) {
+      expect(tos).not.toContain(adminPath(sc.slug));
+    }
   });
 
   it("người thường không thấy lối vào quản trị", () => {
-    const s = build({ profile: normal });
-    expect(labels(s).some((l) => l === "Quản trị nền tảng")).toBe(false);
+    const all = build({ profile: normal }).flatMap((x) =>
+      x.items.map((i) => i.label),
+    );
+    expect(all).not.toContain("Quản trị nền tảng");
   });
 });
 
