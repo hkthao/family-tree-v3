@@ -135,24 +135,18 @@ function readOrientation(): Orientation {
   }
 }
 
-// Số đời hiển thị tính từ người làm tâm — giới hạn để họ lớn
-// (4000-5000 người) không render toàn bộ gây lag trên điện thoại.
-// 0 = "tất cả". Mặc định 3 đời. Lưu theo từng người (localStorage).
-const DEPTH_KEY = "family-tree:tree-depth";
+/**
+ * Số đời hiển thị quanh người làm tâm. 0 = "tất cả".
+ *
+ * **Mỗi lần vào lại về 3 đời**, KHÔNG nhớ lựa chọn cũ. Cố ý: họ lớn
+ * (4000–5000 người) vẽ toàn bộ là lag nặng trên điện thoại, mà lựa chọn
+ * "Tất cả" thì người ta bấm một lần rồi quên — lần sau mở cây trên máy
+ * yếu lại đứng hình, và không ai đoán ra vì sao. Muốn xem sâu thì bấm
+ * thêm, đó là một cú bấm; còn máy treo thì không sửa được bằng cú bấm nào.
+ */
 const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
 type TreeDepth = (typeof DEPTH_OPTIONS)[number];
 const DEFAULT_DEPTH: TreeDepth = 3;
-
-function readDepth(): TreeDepth {
-  try {
-    const v = Number(localStorage.getItem(DEPTH_KEY));
-    return (DEPTH_OPTIONS as readonly number[]).includes(v)
-      ? (v as TreeDepth)
-      : DEFAULT_DEPTH;
-  } catch {
-    return DEFAULT_DEPTH;
-  }
-}
 
 export default function Tree() {
   const { clan } = useClanContext();
@@ -264,18 +258,10 @@ export default function Tree() {
     }
   }, [orientation]);
 
-  const [depth, setDepth] = useState<TreeDepth>(() => readDepth());
+  const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
   // gạt để tiết kiệm chỗ; desktop luôn hiện. Mặc định ẩn trên mobile.
   const [showOpts, setShowOpts] = useState(false);
-  useEffect(() => {
-    try {
-      localStorage.setItem(DEPTH_KEY, String(depth));
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [depth]);
-
   // Tuỳ chọn hiển thị thêm trên thẻ — nay là cài đặt cấp dòng họ (quản
   // trị bật/tắt ở Cài đặt dòng họ), áp đồng nhất cho mọi người xem cây.
   const showDeceasedDetails = clan.display_death_details;
@@ -1154,6 +1140,51 @@ export default function Tree() {
                   3D
                 </SegmentedButton>
               </SegmentedControl>
+              {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
+                  lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
+                  hơn. Mobile (order-last + w-full): xuống dòng riêng phía
+                  dưới. Desktop (sm:order-first + sm:mr-auto): căn sang
+                  trái, đẩy các nút khác sang phải. */}
+              <div className="w-full sm:w-auto order-last sm:order-first sm:mr-auto flex items-center gap-2 justify-end">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  Số đời hiển thị:
+                </span>
+                <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
+                  {DEPTH_OPTIONS.map((d) => (
+                    <SegmentedButton
+                      key={d}
+                      active={depth === d}
+                      onClick={() => setDepth(d)}
+                      title={
+                        d === 0
+                          ? "Hiện tất cả các đời (có thể chậm với họ lớn)"
+                          : `Hiện ${d} đời tính từ người làm tâm`
+                      }
+                      className="px-2 sm:px-3"
+                    >
+                      {d === 0 ? "Tất cả" : d}
+                    </SegmentedButton>
+                  ))}
+                </SegmentedControl>
+              </div>
+              {/* Mấy nút này KHÔNG phụ thuộc kiểu vẽ cây — Phòng ký ức và
+                  Chia sẻ chỉ là đường dẫn, Xuất sổ dựng PDF từ dữ liệu
+                  chứ không chụp lại khung 2D. Trước đây chúng nằm trong
+                  khối chỉ-2D nên sang 3D là biến mất, mà người dùng
+                  không hiểu vì sao mất. Riêng Xuất ảnh/In thì ở lại 2D:
+                  chúng thật sự chụp SVG của cây 2D. */}
+              {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
+              {effectiveRole(clan) !== null && (
+                <>
+                  <ExportBookButton clan={clan} />
+                  <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+                </>
+              )}
+              <RefreshButton
+                clanId={clan.id}
+                cachedVersion={clan.data_version}
+                compact
+              />
               {mode === "2d" && (
               <>
               {/* Mobile: nút gạt tuỳ chọn — đứng CÙNG DÒNG với 2D/3D (order-first),
@@ -1217,45 +1248,7 @@ export default function Tree() {
                   Ngang
                 </SegmentedButton>
               </SegmentedControl>
-              {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
-              {effectiveRole(clan) !== null && (
-                <>
-                  <ExportBookButton clan={clan} />
-                  <ShareTreeButton clanId={clan.id} clanName={clan.name} />
-                </>
-              )}
-              <RefreshButton
-                clanId={clan.id}
-                cachedVersion={clan.data_version}
-                compact
-              />
-              {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
-                  lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
-                  hơn. Mobile (order-last + w-full): xuống dòng riêng phía
-                  dưới. Desktop (sm:order-first + sm:mr-auto): căn sang
-                  trái, đẩy các nút khác sang phải. */}
-              <div className="w-full sm:w-auto order-last sm:order-first sm:mr-auto flex items-center gap-2 justify-end">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Số đời hiển thị:
-                </span>
-                <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
-                  {DEPTH_OPTIONS.map((d) => (
-                    <SegmentedButton
-                      key={d}
-                      active={depth === d}
-                      onClick={() => setDepth(d)}
-                      title={
-                        d === 0
-                          ? "Hiện tất cả các đời (có thể chậm với họ lớn)"
-                          : `Hiện ${d} đời tính từ người làm tâm`
-                      }
-                      className="px-2 sm:px-3"
-                    >
-                      {d === 0 ? "Tất cả" : d}
-                    </SegmentedButton>
-                  ))}
-                </SegmentedControl>
-              </div>
+
               </div>
               )}
               </>
@@ -1279,6 +1272,7 @@ export default function Tree() {
               clanId={clan.id}
               genOffset={clan.generation_offset}
               focal={focal}
+              depth={depth}
               className="h-[calc(100dvh-260px)] min-h-[440px] rounded-xl border"
             />
           </Suspense>

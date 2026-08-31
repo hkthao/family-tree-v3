@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+
+import { idsWithinDepth } from "@/lib/tree/depthFilter";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -157,6 +159,8 @@ function buildGraph(
   genOffset: number,
   photoUrls: Map<string, string> | undefined,
   pal: Palette,
+  /** Chỉ giữ những người này; null = cả cây. Xem lib/tree/depthFilter. */
+  keepIds: Set<string> | null,
 ): { nodes: GNode[]; links: GLink[] } {
   const personById = new Map(data.persons.map((p) => [p.id, p]));
   const famById = new Map(data.families.map((f) => [f.id, f]));
@@ -179,11 +183,13 @@ function buildGraph(
     }
   }
 
-  // Người được đưa vào: huyết thống, HOẶC dâu/rể có vợ/chồng là huyết thống.
+  // Người được đưa vào: huyết thống, HOẶC dâu/rể có vợ/chồng là huyết
+  // thống — rồi cắt tiếp theo số đời đang chọn (nếu có).
   const included = data.persons.filter(
     (p) =>
-      isLineage(p.id) ||
-      (spouseOf.get(p.id) ?? []).some((s) => isLineage(s)),
+      (!keepIds || keepIds.has(p.id)) &&
+      (isLineage(p.id) ||
+        (spouseOf.get(p.id) ?? []).some((s) => isLineage(s))),
   );
   const ids = new Set(included.map((p) => p.id));
 
@@ -261,6 +267,7 @@ export function Tree3DView({
   clanId,
   genOffset,
   focal = null,
+  depth = 0,
   className,
   data: injectedData,
   photoUrls: injectedPhotoUrls,
@@ -269,6 +276,8 @@ export function Tree3DView({
   genOffset: number;
   /** Người làm trung tâm (do trang cha điều khiển qua ô tìm chung với cây 2D). */
   focal?: string | null;
+  /** Số đời quanh người làm tâm; 0 = tất cả. Cùng nghĩa với cây 2D. */
+  depth?: number;
   className?: string;
   /** Nạp sẵn dữ liệu cây + map ảnh (dùng cho trang xem công khai/share — khách
    *  chưa đăng nhập không truy vấn DB được). Khi có, bỏ qua truy vấn nội bộ. */
@@ -476,7 +485,14 @@ export function Tree3DView({
     void (async () => {
       const ForceGraph3D = (await import("3d-force-graph")).default;
       if (cancelled || !elRef.current) return;
-      const { nodes, links } = buildGraph(data, genOffset, photoUrls, pal);
+      const keepIds = idsWithinDepth(data.persons, data.families, focal, depth);
+      const { nodes, links } = buildGraph(
+        data,
+        genOffset,
+        photoUrls,
+        pal,
+        keepIds,
+      );
 
       const nodeById = new Map(nodes.map((n) => [n.id as string, n]));
       const endId = (v: unknown) =>
@@ -746,7 +762,21 @@ export function Tree3DView({
       if (onKey) window.removeEventListener("keydown", onKey);
       graph?._destructor?.();
     };
-  }, [data, genOffset, photoUrls, photosReady, pal, fs, expandable, focal, cap, isMobile]);
+  }, [
+    data,
+    genOffset,
+    photoUrls,
+    photosReady,
+    pal,
+    fs,
+    expandable,
+    focal,
+    // Đổi số đời phải dựng lại đồ thị — thiếu nó thì bấm nút mà cây
+    // đứng yên, y như lỗi 2D↔3D vừa sửa.
+    depth,
+    cap,
+    isMobile,
+  ]);
 
   const kbd =
     "rounded border border-border bg-muted px-1 font-mono text-[10px]";
