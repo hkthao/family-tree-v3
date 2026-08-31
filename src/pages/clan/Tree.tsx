@@ -472,6 +472,8 @@ export default function Tree() {
 
   // Initialize / re-render the family-chart instance
   useEffect(() => {
+    // Ở chế độ 3D thì khung 2D KHÔNG được mount, nên không có gì để dựng.
+    if (mode !== "2d") return;
     if (!containerRef.current || !f3Data || !focal) return;
 
     // Tập huyết thống (thuỷ tổ + hậu duệ) để đánh dấu dâu/rể chính xác — kể cả
@@ -966,6 +968,11 @@ export default function Tree() {
     // Vào/ra toàn màn hình → container được portal sang body (node mới)
     // nên phải dựng lại chart vào node đó.
     isFullscreen,
+    // 2D ↔ 3D: khung 2D bị gỡ khỏi DOM khi sang 3D, quay lại là một NODE
+    // MỚI. Thiếu `mode` ở đây thì effect không chạy lại, chart không được
+    // dựng vào node mới, và người dùng thấy CÂY TRỐNG — không lỗi, không
+    // báo gì, chỉ là khoảng trắng. Đúng lỗi đã gặp trên production.
+    mode,
   ]);
 
   // Before the OS print dialog opens (either via our "In" button or
