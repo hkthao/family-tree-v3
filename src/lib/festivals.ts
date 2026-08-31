@@ -1,4 +1,5 @@
 import { solarStringToLunar, type LunarYMD } from "@/lib/lunarDate";
+import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
 /**
  * Ngày lễ, tết và ngày rằm quan trọng của người Việt.
@@ -233,3 +234,41 @@ export function festivalsOn(solarIso: string): Festival[] {
 /** Có lễ nào trong ngày không — dùng để chấm dấu trên lịch, rẻ hơn lấy cả mảng. */
 export const hasFestival = (solarIso: string): boolean =>
   festivalsOn(solarIso).length > 0;
+
+
+/**
+ * Lễ tết trong `daysAhead` ngày tới, dưới dạng sự kiện để ghép vào danh
+ * sách "sắp tới" của trang Hôm nay.
+ *
+ * Cố ý KHÔNG nhét vào `computeUpcomingEvents`: hàm đó là nguồn cho cron
+ * gửi mail nhắc. Không ai đăng ký nhận thư nhắc Trung Thu, nên nhét vào
+ * đó là tự dưng gửi thư hàng loạt cho mọi người.
+ *
+ * Duyệt từng ngày thay vì tính ngược từ bảng lễ: quy đổi âm–dương không
+ * đi ngược được gọn gàng (tháng nhuận, tháng thiếu), mà 30–60 lần quy
+ * đổi thì rẻ hơn nhiều so với một hàm đi ngược viết sai.
+ */
+export function upcomingFestivals(
+  todayIso: string,
+  daysAhead: number,
+): UpcomingEvent[] {
+  const out: UpcomingEvent[] = [];
+  const start = new Date(`${todayIso}T00:00:00Z`);
+
+  for (let i = 0; i <= Math.min(Math.max(daysAhead, 0), 400); i++) {
+    const d = new Date(start);
+    d.setUTCDate(d.getUTCDate() + i);
+    const iso = d.toISOString().slice(0, 10);
+    for (const f of festivalsOn(iso)) {
+      out.push({
+        key: `festival:${f.key}:${iso}`,
+        kind: "festival",
+        title: f.name,
+        subtitle: f.note,
+        date: iso,
+        daysUntil: i,
+      });
+    }
+  }
+  return out;
+}

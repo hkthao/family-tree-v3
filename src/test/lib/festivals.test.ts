@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { FESTIVALS, festivalsOn, hasFestival } from "@/lib/festivals";
+import {
+  FESTIVALS,
+  festivalsOn,
+  hasFestival,
+  upcomingFestivals,
+} from "@/lib/festivals";
 import { lunarToSolarString, solarStringToLunar } from "@/lib/lunarDate";
 
 /**
@@ -133,5 +138,48 @@ describe("bảng dữ liệu", () => {
 
   it("ngày thường thì không có lễ", () => {
     expect(hasFestival(solarOf(2026, 7, 7))).toBe(false);
+  });
+});
+
+describe("upcomingFestivals — ghép vào danh sách sắp tới", () => {
+  it("tìm được lễ trong khoảng ngày, kèm số ngày còn lại", () => {
+    // 25/9/2026 là Trung Thu. Đứng ở 20/9 nhìn tới 30 ngày phải thấy nó
+    // với daysUntil = 5.
+    const rows = upcomingFestivals("2026-09-20", 30);
+    const tt = rows.find((r) => r.key.includes("trung-thu"));
+    expect(tt?.daysUntil).toBe(5);
+    expect(tt?.date).toBe("2026-09-25");
+    expect(tt?.kind).toBe("festival");
+  });
+
+  it("tính cả HÔM NAY (daysUntil = 0)", () => {
+    const rows = upcomingFestivals("2026-09-02", 7);
+    expect(rows[0]?.daysUntil).toBe(0);
+    expect(rows[0]?.title).toMatch(/Quốc khánh/);
+  });
+
+  it("khoảng ngắn thì không lôi lễ ở xa về", () => {
+    expect(upcomingFestivals("2026-09-20", 2)).toEqual([]);
+  });
+
+  it("khoá không trùng nhau — dùng làm key React", () => {
+    const keys = upcomingFestivals("2026-01-01", 400).map((r) => r.key);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it("một năm có đủ mấy lễ chính, không sót không lặp", () => {
+    const keys = upcomingFestivals("2026-01-01", 400).map((r) =>
+      r.key.split(":")[1],
+    );
+    for (const must of ["vu-lan", "trung-thu", "phat-dan", "quoc-khanh"]) {
+      expect(keys.filter((k) => k === must).length, must).toBe(1);
+    }
+  });
+
+  it("số ngày âm hoặc quá lớn không làm sập", () => {
+    expect(upcomingFestivals("2026-09-20", -5)).toEqual(
+      upcomingFestivals("2026-09-20", 0),
+    );
+    expect(upcomingFestivals("2026-09-20", 99999).length).toBeGreaterThan(0);
   });
 });
