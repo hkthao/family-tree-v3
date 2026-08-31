@@ -220,5 +220,7 @@ function kindLabel(k: UpcomingEvent["kind"]): string {
       return "Tảo mộ / Chạp họ";
     case "custom":
       return "Sự kiện";
+    case "festival":
+      return "Lễ, tết";
   }
 }

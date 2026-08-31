@@ -20,6 +20,7 @@ import {
   computeUpcomingEvents,
   type UpcomingEvent,
 } from "@/lib/upcomingEvents";
+import { upcomingFestivals } from "@/lib/festivals";
 
 /**
  * "Hôm nay" page — at-a-glance focus on what's happening soon.
@@ -84,9 +85,21 @@ export default function Today() {
     return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil);
   }, [tree, events, anniversaries, clan.generation_offset]);
 
-  const todayEvents = upcoming.filter((e) => e.daysUntil === 0);
-  const weekEvents = upcoming.filter((e) => e.daysUntil >= 1 && e.daysUntil <= 6);
-  const monthEvents = upcoming.filter(
+  // Lễ tết ghép ở TẦNG HIỂN THỊ, không nằm trong computeUpcomingEvents —
+  // hàm đó là nguồn cho cron gửi mail, mà không ai đăng ký nhận thư nhắc
+  // Trung Thu.
+  const withFestivals = useMemo(() => {
+    const merged = [...upcoming, ...upcomingFestivals(todayIso(), 30)];
+    return merged.sort(
+      (a, b) => a.daysUntil - b.daysUntil || a.title.localeCompare(b.title, "vi"),
+    );
+  }, [upcoming]);
+
+  const todayEvents = withFestivals.filter((e) => e.daysUntil === 0);
+  const weekEvents = withFestivals.filter(
+    (e) => e.daysUntil >= 1 && e.daysUntil <= 6,
+  );
+  const monthEvents = withFestivals.filter(
     (e) => e.daysUntil >= 7 && e.daysUntil <= 29,
   );
 
@@ -105,7 +118,7 @@ export default function Today() {
       <Section
         title="Hôm nay"
         titleClassName="text-xl sm:text-2xl"
-        emptyHint="Không có sinh nhật hay ngày giỗ nào hôm nay."
+        emptyHint="Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
         events={todayEvents}
         clanId={clan.id}
         emphasised
@@ -211,4 +224,12 @@ function formatTodayHeader(): string {
   const lunar = solarStringToLunar(solarIso);
   const lunarText = formatLunarDate(lunar);
   return lunarText ? `${solar} · ${lunarText}` : solar;
+}
+
+
+/** Hôm nay theo GIỜ MÁY người dùng — lễ tết là chuyện của lịch địa phương. */
+function todayIso(): string {
+  const n = new Date();
+  const pad = (x: number) => String(x).padStart(2, "0");
+  return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`;
 }

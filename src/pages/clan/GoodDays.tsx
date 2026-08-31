@@ -528,6 +528,7 @@ const EVENT_KIND_LABEL: Record<UpcomingEvent["kind"], string> = {
   anniversary: "🕯️ Ngày giỗ",
   tomb_visit: "⚱️ Tảo mộ / Chạp họ",
   custom: "📌 Sự kiện",
+  festival: "🏮 Lễ, tết",
 };
 
 function DayDetail({

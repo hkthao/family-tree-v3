@@ -19,7 +19,19 @@ import type { PersonForTree } from "@/lib/queries/tree";
  * tests can run with deterministic input without mocking the clock.
  */
 
-export type UpcomingKind = "birthday" | "anniversary" | "custom" | "tomb_visit";
+/**
+ * `festival` (lễ tết) KHÔNG sinh ra từ dữ liệu dòng họ — nó đến từ bảng
+ * lễ cố định trong lib/festivals.ts và chỉ được ghép vào ở tầng hiển
+ * thị. Cố ý không đưa vào computeUpcomingEvents: hàm đó là nguồn cho
+ * cron gửi mail, mà không ai đăng ký nhận thư nhắc Trung Thu — thêm vào
+ * đó là tự dưng gửi thư hàng loạt.
+ */
+export type UpcomingKind =
+  | "birthday"
+  | "anniversary"
+  | "custom"
+  | "tomb_visit"
+  | "festival";
 
 export interface UpcomingEvent {
   /** Stable id for React keys + dedupe ("kind:source_id:yyyy-mm-dd"). */

@@ -44,6 +44,8 @@ function kindColor(kind: UpcomingEvent["kind"]): string {
       return "bg-amber-600";
     case "custom":
       return "bg-foreground";
+    case "festival":
+      return "bg-rose-500";
   }
 }
 
@@ -53,6 +55,8 @@ function kindLabel(k: UpcomingEvent["kind"]): string {
       return "Sinh nhật";
     case "anniversary":
       return "Ngày giỗ";
+    case "festival":
+      return "Lễ, tết";
     case "tomb_visit":
       return "Tảo mộ / Chạp họ";
     case "custom":

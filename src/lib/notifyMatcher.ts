@@ -62,11 +62,15 @@ interface ComputeInput {
   alreadySent: Set<string>;
 }
 
-const KIND_TO_EVENT_TYPE: Record<UpcomingEvent["kind"], SubEventType> = {
+const KIND_TO_EVENT_TYPE: Record<UpcomingEvent["kind"], SubEventType | null> = {
   birthday: "birthday",
   anniversary: "death_anniversary",
   custom: "custom",
   tomb_visit: "tomb_visit",
+  // Lễ tết KHÔNG có kênh đăng ký nhận thư: không ai đăng ký nhận thư
+  // nhắc Trung Thu, và computeUpcomingEvents cũng không bao giờ sinh ra
+  // loại này. Để `null` cho rõ ý thay vì gán bừa một loại khác.
+  festival: null,
 };
 
 function daysBetween(fromIso: string, toIso: string): number {
@@ -115,9 +119,10 @@ export function computeFireList(input: ComputeInput): FireItem[] {
         if (!evt.branchId || sub.target_id !== evt.branchId) continue;
       }
 
-      // Event-type filter
+      // Event-type filter. `null` = loại không có kênh đăng ký (lễ tết)
+      // → không bao giờ khớp, thay vì lọt vào một loại khác.
       const eventType = KIND_TO_EVENT_TYPE[evt.kind];
-      if (!sub.event_types.includes(eventType)) continue;
+      if (!eventType || !sub.event_types.includes(eventType)) continue;
 
       // Lead-day match
       const lead = daysBetween(today, evt.date);
