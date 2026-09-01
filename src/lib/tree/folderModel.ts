@@ -27,14 +27,28 @@ export interface FolderChild {
   birthYear: number | null;
   deathYear: number | null;
   isLiving: boolean;
+  /** Đường dẫn ảnh trong Storage; đổi sang URL ký ở tầng hiển thị. */
+  photoPath: string | null;
   /** Có con hay không — để biết có vẽ mũi tên bung hay không. */
   hasChildren: boolean;
+}
+
+/** Vợ/chồng hiển thị CHUNG một dòng với người trong họ. */
+export interface FolderSpouse {
+  id: string;
+  name: string;
+  gender: "M" | "F";
+  birthYear: number | null;
+  deathYear: number | null;
+  isLiving: boolean;
+  photoPath: string | null;
 }
 
 export interface FolderGroup {
   /** id gia đình; dùng làm khoá React. */
   familyId: string;
   /** Vợ/chồng trong cuộc hôn nhân này; null = chưa ghi. */
+  spouse: FolderSpouse | null;
   spouseName: string | null;
   spouseId: string | null;
   /** "Vợ cả", "Vợ hai"… chỉ khi spouse_order có ghi. */
@@ -48,7 +62,8 @@ export interface FolderNodeContent {
    * người đó có đúng một cuộc hôn nhân có con.
    */
   directChildren: FolderChild[];
-  /** Vợ/chồng ghi ngay trên dòng của người đó (ca một cuộc hôn nhân). */
+  /** Vợ/chồng ghi CHUNG DÒNG với người đó (ca một cuộc hôn nhân). */
+  inlineSpouse: FolderSpouse | null;
   inlineSpouseName: string | null;
   /** Các nhóm theo cuộc hôn nhân (ca hai cuộc trở lên). */
   groups: FolderGroup[];
@@ -87,7 +102,20 @@ export function toFolderChild(
     birthYear: year(p.birth_date),
     deathYear: year(p.death_date),
     isLiving: p.is_living,
+    photoPath: p.photo_path ?? null,
     hasChildren,
+  };
+}
+
+export function toFolderSpouse(p: PersonForTree): FolderSpouse {
+  return {
+    id: p.id,
+    name: p.full_name,
+    gender: p.gender,
+    birthYear: year(p.birth_date),
+    deathYear: year(p.death_date),
+    isLiving: p.is_living,
+    photoPath: p.photo_path ?? null,
   };
 }
 
@@ -116,6 +144,7 @@ export function buildFolderNode(
       const spouse = spouseId ? personById.get(spouseId) : undefined;
       return {
         familyId: f.id,
+        spouse: spouse ? toFolderSpouse(spouse) : null,
         spouseId: spouseId ?? null,
         spouseName: spouse?.full_name ?? null,
         rankLabel: rankLabelFor(f.spouse_order, spouse?.gender ?? null),
@@ -139,12 +168,18 @@ export function buildFolderNode(
     const only = groups[0];
     return {
       directChildren: only?.children ?? [],
+      inlineSpouse: only?.spouse ?? null,
       inlineSpouseName: only?.spouseName ?? null,
       groups: [],
     };
   }
 
-  return { directChildren: [], inlineSpouseName: null, groups };
+  return {
+    directChildren: [],
+    inlineSpouse: null,
+    inlineSpouseName: null,
+    groups,
+  };
 }
 
 /** Nhãn của một nhóm hôn nhân, ví dụ "Vợ cả · Lê Thị F" hay "chưa ghi vợ". */
