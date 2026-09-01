@@ -26,6 +26,12 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 // Lazy — kéo cả three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
+// Cây thư mục nhẹ (không kéo three.js) nhưng vẫn tách chunk cho đồng bộ.
+const TreeFolderView = lazy(() =>
+  import("@/components/TreeFolderView").then((m) => ({
+    default: m.TreeFolderView,
+  })),
+);
 const Tree3DView = lazy(() =>
   import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
 );
@@ -172,13 +178,15 @@ export default function Tree() {
       { replace: true },
     );
   // Chế độ hiển thị: "2d" (family-chart) | "3d" (3d-force-graph). Lưu ở URL.
-  const mode: "2d" | "3d" = searchParams.get("mode") === "3d" ? "3d" : "2d";
-  const setMode = (m: "2d" | "3d") => {
+  const modeParam = searchParams.get("mode");
+  const mode: "2d" | "3d" | "folder" =
+    modeParam === "3d" ? "3d" : modeParam === "folder" ? "folder" : "2d";
+  const setMode = (m: "2d" | "3d" | "folder") => {
     if (m === "3d") track("tree_3d_opened");
     setSearchParams(
       (prev) => {
         const p = new URLSearchParams(prev);
-        if (m === "3d") p.set("mode", "3d");
+        if (m !== "2d") p.set("mode", m);
         else p.delete("mode");
         return p;
       },
@@ -1139,12 +1147,25 @@ export default function Tree() {
                 >
                   3D
                 </SegmentedButton>
+                <SegmentedButton
+                  active={mode === "folder"}
+                  onClick={() => setMode("folder")}
+                  ariaLabel="Xem cây kiểu thư mục"
+                  title="Danh sách bung từng nhánh — nhẹ, hợp dòng họ lớn"
+                  className="px-2 sm:px-3"
+                >
+                  Thư mục
+                </SegmentedButton>
               </SegmentedControl>
               {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
                   lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
                   hơn. Mobile (order-last + w-full): xuống dòng riêng phía
                   dưới. Desktop (sm:order-first + sm:mr-auto): căn sang
                   trái, đẩy các nút khác sang phải. */}
+              {/* Cây thư mục không cần chọn số đời: nó vốn chỉ tải nhánh
+                  đang mở, chính là "số đời" do người dùng tự quyết bằng
+                  cách bung tới đâu. */}
+              {mode !== "folder" && (
               <div className="w-full sm:w-auto order-last sm:order-first sm:mr-auto flex items-center gap-2 justify-end">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   Số đời hiển thị:
@@ -1167,6 +1188,7 @@ export default function Tree() {
                   ))}
                 </SegmentedControl>
               </div>
+              )}
               {/* Mấy nút này KHÔNG phụ thuộc kiểu vẽ cây — Phòng ký ức và
                   Chia sẻ chỉ là đường dẫn, Xuất sổ dựng PDF từ dữ liệu
                   chứ không chụp lại khung 2D. Trước đây chúng nằm trong
@@ -1258,7 +1280,22 @@ export default function Tree() {
         />
       </div>
 
-      {mode === "3d" ? (
+      {mode === "folder" ? (
+        // KHÔNG hiện ô "đặt người trung tâm" ở đây: cây thư mục đi từ
+        // thuỷ tổ xuống, chưa hỗ trợ đổi gốc — để một ô bấm vào không
+        // làm gì còn tệ hơn là không có.
+        <div className="space-y-2">
+          <Suspense
+            fallback={
+              <p className="p-4 text-sm text-muted-foreground">
+                Đang tải danh sách…
+              </p>
+            }
+          >
+            <TreeFolderView clanId={clan.id} source={treeSource} />
+          </Suspense>
+        </div>
+      ) : mode === "3d" ? (
         <div className="space-y-2">
           {focalSearch}
           <Suspense
