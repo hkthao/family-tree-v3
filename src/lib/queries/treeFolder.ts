@@ -116,7 +116,12 @@ export async function loadFolderNode(
   if (fErr) throw new Error(fErr.message);
   const families = (famRows ?? []) as FamilyForTree[];
   if (families.length === 0) {
-    return { directChildren: [], inlineSpouseName: null, groups: [] };
+    return {
+      directChildren: [],
+      inlineSpouse: null,
+      inlineSpouseName: null,
+      groups: [],
+    };
   }
 
   const famIds = families.map((f) => f.id);

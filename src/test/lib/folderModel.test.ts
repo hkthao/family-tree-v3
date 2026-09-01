@@ -56,6 +56,7 @@ const child = (id: string): FolderChild => ({
   birthYear: null,
   deathYear: null,
   isLiving: true,
+  photoPath: null,
   hasChildren: false,
 });
 
@@ -120,6 +121,32 @@ describe("buildFolderNode — một cuộc hôn nhân", () => {
   });
 });
 
+describe("ảnh và thông tin vợ đi kèm nhóm", () => {
+  it("nhóm mang theo đủ thông tin vợ để vẽ ảnh và năm sinh", () => {
+    // Node hiện vợ chồng cùng dòng nên phải có ảnh + năm của vợ, không
+    // chỉ mỗi cái tên.
+    const node = buildFolderNode(
+      "A",
+      [family("f1", "A", "F", 1), family("f2", "A", "G")],
+      new Map([["f1", [child("H")]]]),
+      people,
+    );
+    expect(node.groups[0].spouse?.name).toBe("Lê Thị F");
+    expect(node.groups[0].spouse?.gender).toBe("F");
+  });
+
+  it("ca một vợ trả về vợ đầy đủ để ghép chung dòng", () => {
+    const node = buildFolderNode(
+      "A",
+      [family("f1", "A", "B")],
+      new Map([["f1", [child("C")]]]),
+      people,
+    );
+    expect(node.inlineSpouse?.id).toBe("B");
+    expect(node.inlineSpouse?.name).toBe("Trần Thị B");
+  });
+});
+
 describe("buildFolderNode — hai cuộc hôn nhân trở lên", () => {
   const families = [
     family("f1", "A", "F", 1),
@@ -177,6 +204,17 @@ describe("nhãn thứ bậc — KHÔNG bịa khi dữ liệu trống", () => {
 describe("groupLabel", () => {
   const g = (spouseName: string | null, rank: string | null) => ({
     familyId: "f",
+    spouse: spouseName
+      ? {
+          id: "s",
+          name: spouseName,
+          gender: "F" as const,
+          birthYear: null,
+          deathYear: null,
+          isLiving: true,
+          photoPath: null,
+        }
+      : null,
     spouseId: spouseName ? "s" : null,
     spouseName,
     rankLabel: rank,

@@ -11,13 +11,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
+import { PersonAvatar } from "@/components/PersonAvatar";
+import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import {
   loadFolderNode,
   loadFolderRoots,
   loadUnlinked,
 } from "@/lib/queries/treeFolder";
 import type { TreeSource } from "@/lib/queries/tree";
-import { groupLabel, type FolderChild } from "@/lib/tree/folderModel";
+import {
+  groupLabel,
+  type FolderChild,
+  type FolderGroup,
+  type FolderSpouse,
+} from "@/lib/tree/folderModel";
 
 /**
  * Cây gia phả kiểu THƯ MỤC — bung tới đâu tải tới đó.
@@ -31,6 +38,40 @@ import { groupLabel, type FolderChild } from "@/lib/tree/folderModel";
  * Cách hiển thị vợ/con theo đúng quyết định đã chốt — xem
  * lib/tree/folderModel.ts để biết mỗi luật dựa trên số đo nào.
  */
+
+/**
+ * URL ảnh đã ký cho một nhóm người.
+ *
+ * Ký theo TỪNG NHÁNH đang mở, không ký cả dòng họ: chín nghìn chữ ký cho
+ * mấy chục người đang nhìn là phí, và Storage cũng không thích.
+ */
+function usePhotoUrls(paths: (string | null)[]): Map<string, string> {
+  const list = paths.filter((p): p is string => !!p).sort();
+  const { data } = useQuery({
+    queryKey: ["folder-photos", list.join(",")],
+    queryFn: () => getSignedPhotoUrlMap(list),
+    enabled: list.length > 0,
+    staleTime: PHOTO_URL_STALE_MS,
+  });
+  return data ?? new Map();
+}
+
+/** Dòng phụ: đời + năm sinh–mất. Tách hàm vì dùng ở cả người lẫn vợ/chồng. */
+function metaLine(p: {
+  generation?: number | null;
+  birthYear: number | null;
+  deathYear: number | null;
+  isLiving: boolean;
+}): string {
+  const bits: string[] = [];
+  if (p.generation != null) bits.push(`đời ${p.generation}`);
+  if (p.birthYear || p.deathYear) {
+    bits.push(
+      `${p.birthYear ?? "?"}–${p.deathYear ?? (p.isLiving ? "nay" : "?")}`,
+    );
+  }
+  return bits.join(" · ");
+}
 
 export function TreeFolderView({
   clanId,
@@ -88,15 +129,15 @@ function PersonNode({
   person,
   depth,
   defaultOpen = false,
-  spouseHint,
+  spouseInline,
 }: {
   clanId: string;
   source: TreeSource;
   person: FolderChild;
   depth: number;
   defaultOpen?: boolean;
-  /** Tên vợ/chồng ghi ngay trên dòng (ca một cuộc hôn nhân). */
-  spouseHint?: string | null;
+  /** Vợ/chồng của nhóm hôn nhân — dùng khi người này là NHÓM (đa thê). */
+  spouseInline?: FolderSpouse | null;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -107,14 +148,18 @@ function PersonNode({
     enabled: open,
   });
 
-  const years = [person.birthYear, person.deathYear].some(Boolean)
-    ? `${person.birthYear ?? "?"}–${person.deathYear ?? (person.isLiving ? "nay" : "?")}`
-    : null;
+  // Ảnh của CHÍNH người này + vợ/chồng (nếu đã tải xong nhánh).
+  const spouse: FolderSpouse | null =
+    spouseInline ?? nodeQ.data?.inlineSpouse ?? null;
+  const photoUrls = usePhotoUrls([person.photoPath, spouse?.photoPath ?? null]);
+
+  const meta = metaLine(person);
+  const spouseMeta = spouse ? metaLine(spouse) : "";
 
   return (
     <li>
       <div
-        className="flex items-center gap-1 rounded-md hover:bg-muted/50"
+        className="flex items-start gap-1 rounded-md hover:bg-muted/50"
         style={{ paddingLeft: depth * 16 }}
       >
         {/* Mũi tên chỉ hiện khi CÓ con — biết trước nhờ cờ hasChildren,
@@ -125,7 +170,7 @@ function PersonNode({
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? `Thu gọn ${person.name}` : `Mở ${person.name}`}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+            className="mt-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
           >
             <IconChevronDown
               className={`h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}`}
@@ -135,31 +180,63 @@ function PersonNode({
           <span className="inline-block h-9 w-9 shrink-0" aria-hidden />
         )}
 
-        <Link
-          to={`/clans/${clanId}/people/${person.id}`}
-          className="flex min-h-[36px] min-w-0 flex-1 flex-wrap items-center gap-x-2 py-1 text-sm"
-        >
-          <span
-            className={`h-2 w-2 shrink-0 rounded-full ${
-              person.gender === "M" ? "bg-sky-500" : "bg-rose-400"
-            }`}
-            aria-hidden
-          />
-          <span className="font-medium">{person.name}</span>
-          {person.generation != null && (
-            <span className="text-xs text-muted-foreground">
-              đời {person.generation}
+        {/* MỘT NODE = vợ chồng đứng cùng dòng, thông tin đời/năm xuống
+            dòng dưới. Nhét tất cả vào một dòng thì ở màn hẹp tên bị cắt
+            cụt — mà tên mới là thứ người ta dò. */}
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 py-1">
+          <Link
+            to={`/clans/${clanId}/people/${person.id}`}
+            className="flex min-w-0 items-center gap-2"
+          >
+            <PersonAvatar
+              gender={person.gender}
+              photoUrl={
+                person.photoPath ? photoUrls.get(person.photoPath) : null
+              }
+              size={32}
+              className="shrink-0"
+            />
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-medium">
+                {person.name}
+              </span>
+              {meta && (
+                <span className="block text-xs text-muted-foreground">
+                  {meta}
+                </span>
+              )}
             </span>
+          </Link>
+
+          {spouse && (
+            <>
+              <span className="text-muted-foreground" aria-hidden>
+                ⚭
+              </span>
+              <Link
+                to={`/clans/${clanId}/people/${spouse.id}`}
+                className="flex min-w-0 items-center gap-2"
+              >
+                <PersonAvatar
+                  gender={spouse.gender}
+                  photoUrl={
+                    spouse.photoPath ? photoUrls.get(spouse.photoPath) : null
+                  }
+                  size={28}
+                  className="shrink-0 opacity-90"
+                />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm">{spouse.name}</span>
+                  {spouseMeta && (
+                    <span className="block text-xs text-muted-foreground">
+                      {spouseMeta}
+                    </span>
+                  )}
+                </span>
+              </Link>
+            </>
           )}
-          {years && (
-            <span className="text-xs tabular-nums text-muted-foreground">
-              {years}
-            </span>
-          )}
-          {spouseHint && (
-            <span className="text-xs text-muted-foreground">⚭ {spouseHint}</span>
-          )}
-        </Link>
+        </div>
       </div>
 
       {open && (
@@ -170,17 +247,6 @@ function PersonNode({
               style={{ paddingLeft: (depth + 1) * 16 + 36 }}
             >
               Đang tải…
-            </p>
-          )}
-          {/* Tên vợ/chồng phải đứng NGAY DƯỚI người đó, trước danh sách
-              con — đặt sau danh sách thì nó dính vào đứa con cuối cùng và
-              người đọc tưởng là vợ của đứa con. */}
-          {nodeQ.data?.inlineSpouseName && !spouseHint && (
-            <p
-              className="pb-0.5 text-xs text-muted-foreground"
-              style={{ paddingLeft: (depth + 1) * 16 + 36 }}
-            >
-              ⚭ {nodeQ.data.inlineSpouseName}
             </p>
           )}
           {nodeQ.data && (
@@ -199,20 +265,14 @@ function PersonNode({
               {/* Hai cuộc trở lên: mỗi cuộc một nhóm. */}
               {nodeQ.data.groups.map((g) => (
                 <li key={g.familyId}>
-                  <div
-                    className="flex items-center gap-2 py-1 text-xs text-muted-foreground"
-                    style={{ paddingLeft: (depth + 1) * 16 + 36 }}
-                  >
-                    <span aria-hidden>⚭</span>
-                    <span className={g.spouseName ? "font-medium" : "italic"}>
-                      {groupLabel(g, person.gender)}
-                    </span>
-                    <span>
-                      {g.children.length > 0
-                        ? `— ${g.children.length} con`
-                        : "— chưa có con"}
-                    </span>
-                  </div>
+                  {/* Đa thê: mỗi cuộc hôn nhân một nhóm, có ảnh vợ để
+                      nhận ra ngay chứ không phải đọc tên rồi đoán. */}
+                  <GroupHeader
+                    clanId={clanId}
+                    group={g}
+                    personGender={person.gender}
+                    indent={(depth + 1) * 16 + 36}
+                  />
                   <ul className="space-y-0.5">
                     {g.children.map((c) => (
                       <PersonNode
@@ -318,6 +378,64 @@ function UnlinkedSection({
             vào nhánh nào.
           </p>
         </div>
+      )}
+    </div>
+  );
+}
+
+
+/** Đầu nhóm của một cuộc hôn nhân (chỉ dùng khi người đó có 2+ vợ/chồng). */
+function GroupHeader({
+  clanId,
+  group,
+  personGender,
+  indent,
+}: {
+  clanId: string;
+  group: FolderGroup;
+  personGender: "M" | "F";
+  indent: number;
+}) {
+  const photoUrls = usePhotoUrls([group.spouse?.photoPath ?? null]);
+  const spouse = group.spouse;
+  const meta = spouse ? metaLine(spouse) : "";
+
+  const label = (
+    <span className="flex min-w-0 items-center gap-2">
+      <span aria-hidden className="text-muted-foreground">
+        ⚭
+      </span>
+      {spouse && (
+        <PersonAvatar
+          gender={spouse.gender}
+          photoUrl={spouse.photoPath ? photoUrls.get(spouse.photoPath) : null}
+          size={26}
+          className="shrink-0 opacity-90"
+        />
+      )}
+      <span className="min-w-0">
+        <span
+          className={`block truncate text-sm ${
+            group.spouseName ? "font-medium" : "italic text-muted-foreground"
+          }`}
+        >
+          {groupLabel(group, personGender)}
+        </span>
+        <span className="block text-xs text-muted-foreground">
+          {[meta, group.children.length > 0 ? `${group.children.length} con` : "chưa có con"]
+            .filter(Boolean)
+            .join(" · ")}
+        </span>
+      </span>
+    </span>
+  );
+
+  return (
+    <div className="py-1" style={{ paddingLeft: indent }}>
+      {spouse ? (
+        <Link to={`/clans/${clanId}/people/${spouse.id}`}>{label}</Link>
+      ) : (
+        label
       )}
     </div>
   );
