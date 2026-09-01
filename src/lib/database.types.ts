@@ -3110,6 +3110,55 @@ export type Database = {
         Returns: undefined
       }
       clan_role: { Args: { target_clan: string }; Returns: string }
+      clan_unlinked_count: { Args: { p_clan: string }; Returns: number }
+      clan_unlinked_persons: {
+        Args: {
+          p_clan: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
+        Returns: {
+          bio: string | null
+          birth_date: string | null
+          birth_date_precision: string | null
+          birth_family_id: string | null
+          birth_lunar_day: number | null
+          birth_lunar_month: number | null
+          birth_lunar_year: number | null
+          birth_order: number | null
+          birth_place: string | null
+          branch_id: string | null
+          burial_place: string | null
+          clan_id: string | null
+          courtesy_name: string | null
+          death_anniv_lunar_day: number | null
+          death_anniv_lunar_is_leap: boolean | null
+          death_anniv_lunar_month: number | null
+          death_date: string | null
+          death_date_precision: string | null
+          death_lunar_day: number | null
+          death_lunar_month: number | null
+          death_lunar_year: number | null
+          full_name: string | null
+          full_name_unaccent: string | null
+          gender: string | null
+          generation: number | null
+          id: string | null
+          is_living: boolean | null
+          is_root: boolean | null
+          lifespan_years: number | null
+          nickname: string | null
+          photo_path: string | null
+          posthumous_name: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "persons_public_safe"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       clear_failed_notification: { Args: { p_id: string }; Returns: undefined }
       confirm_link_by_token: {
         Args: { p_clan_b: string; p_person_b: string; p_token: string }

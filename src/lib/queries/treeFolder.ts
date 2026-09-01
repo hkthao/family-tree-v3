@@ -167,7 +167,15 @@ export async function loadFolderNode(
 
 export interface FolderRoots {
   roots: FolderChild[];
-  /** Người chưa gắn vào cây — không có cha mẹ và không phải thuỷ tổ. */
+  /**
+   * Người thật sự chưa gắn vào cây: không có cha mẹ, không phải thuỷ tổ,
+   * VÀ không phải vợ/chồng của ai.
+   *
+   * Điều kiện cuối cùng quan trọng hơn nó trông: dâu/rể hầu như không có
+   * cha mẹ trong gia phả, nhưng họ CÓ trong cây — đứng cạnh vợ/chồng
+   * mình. Đo trên production: 2.329 người không cha mẹ thì 2.221 là
+   * vợ/chồng, tức 95% danh sách cũ là báo động giả.
+   */
   orphanCount: number;
 }
 
@@ -196,23 +204,17 @@ export async function loadFolderRoots(
     client,
   );
 
-  // Đếm bằng head:true — chỉ cần con số, không kéo 2.358 dòng về.
-  const countQ =
-    source === "persons_public_safe"
-      ? client
-          .from("persons_public_safe")
-          .select("id", { count: "exact", head: true })
-          .eq("clan_id", clanId)
-      : client
-          .from("persons")
-          .select("id", { count: "exact", head: true })
-          .eq("clan_id", clanId)
-          .is("deleted_at", null);
-  const { count } = await countQ.is("birth_family_id", null).eq("is_root", false);
+  // Đếm bằng RPC: điều kiện "không phải vợ/chồng của ai" không viết được
+  // bằng PostgREST. Hàm SQL đọc qua view public_safe nên đúng cho cả
+  // khách xem dòng họ công khai lẫn thành viên.
+  const { data: count, error: cErr } = await client.rpc("clan_unlinked_count", {
+    p_clan: clanId,
+  });
+  if (cErr) throw new Error(cErr.message);
 
   return {
     roots: roots.map((r) => toFolderChild(r, hasKids.has(r.id))),
-    orphanCount: count ?? 0,
+    orphanCount: (count as number) ?? 0,
   };
 }
 
@@ -223,19 +225,19 @@ export async function loadUnlinked(
   source: TreeSource = "persons",
   client: Client = defaultClient,
 ): Promise<FolderChild[]> {
+  void source; // RPC tự chọn nguồn qua view public_safe
   const limit = opts.limit ?? 50;
-  let q = personsFrom(client, source, clanId)
-    .is("birth_family_id", null)
-    .eq("is_root", false);
-  if (opts.search?.trim()) {
-    q = q.ilike("full_name", `%${opts.search.trim()}%`);
-  }
-  const { data, error } = await q
-    .order("full_name", { ascending: true })
-    .range(opts.offset ?? 0, (opts.offset ?? 0) + limit - 1);
+  // Cùng RPC với phần đếm, nên danh sách và con số không bao giờ lệch
+  // nhau — hai câu truy vấn viết riêng là kiểu sớm muộn cũng lệch.
+  const { data, error } = await client.rpc("clan_unlinked_persons", {
+    p_clan: clanId,
+    p_search: opts.search?.trim() || undefined,
+    p_limit: limit,
+    p_offset: opts.offset ?? 0,
+  });
   if (error) throw new Error(error.message);
 
-  const rows = (data ?? []) as PersonForTree[];
+  const rows = (data ?? []) as unknown as PersonForTree[];
   const hasKids = await withChildrenSet(
     clanId,
     rows.map((r) => r.id),
