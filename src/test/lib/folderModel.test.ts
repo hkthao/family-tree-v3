@@ -4,7 +4,11 @@ import {
   buildFolderNode,
   groupLabel,
   rankLabelFor,
+  visibleGhostSpouses,
+  MASKED_SPOUSE_NAME,
   type FolderChild,
+  type FolderSpouse,
+  type GhostSpouseSource,
 } from "@/lib/tree/folderModel";
 import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
 
@@ -58,6 +62,7 @@ const child = (id: string): FolderChild => ({
   isLiving: true,
   photoPath: null,
   hasChildren: false,
+  spouses: [],
 });
 
 const people = new Map(
@@ -232,5 +237,88 @@ describe("groupLabel", () => {
   it("chưa ghi thì nói theo giới của người trong họ", () => {
     expect(groupLabel(g(null, null), "M")).toBe("chưa ghi vợ");
     expect(groupLabel(g(null, null), "F")).toBe("chưa ghi chồng");
+  });
+});
+
+describe("dâu/rể ở dòng họ thông gia", () => {
+  const localSpouse = (name: string, birthYear: number | null): FolderSpouse => ({
+    id: `local-${name}`,
+    name,
+    gender: "F",
+    birthYear,
+    deathYear: null,
+    isLiving: true,
+    photoPath: null,
+  });
+
+  const ghost = (
+    over: Partial<GhostSpouseSource> = {},
+  ): GhostSpouseSource => ({
+    linkId: "link-1",
+    peerClanId: "clan-b",
+    peerClanName: "Họ Trần",
+    spouseId: "peer-1",
+    spouseFullName: "Trần Thị Mai",
+    spouseGender: "F",
+    spouseBirthYear: null,
+    spouseDeathYear: null,
+    spouseIsLiving: true,
+    masked: false,
+    ...over,
+  });
+
+  it("hiện dâu/rể mà dòng họ này chưa có bản ghi", () => {
+    const out = visibleGhostSpouses([], [ghost()]);
+    expect(out).toHaveLength(1);
+    expect(out[0].spouse.name).toBe("Trần Thị Mai");
+    expect(out[0].peerClanName).toBe("Họ Trần");
+  });
+
+  it("BỎ khi người đó đã có sẵn ở dòng họ này — kẻo đứng hai lần cạnh nhau", () => {
+    // Rất nhiều họ tự ghi cô dâu của mình rồi mới nối thông gia.
+    const out = visibleGhostSpouses([localSpouse("Trần Thị Mai", null)], [ghost()]);
+    expect(out).toEqual([]);
+  });
+
+  it("so tên bỏ qua khoảng trắng thừa và chữ hoa", () => {
+    const out = visibleGhostSpouses(
+      [localSpouse("trần  thị mai", null)],
+      [ghost()],
+    );
+    expect(out).toEqual([]);
+  });
+
+  it("chỉ đòi trùng năm sinh khi CẢ HAI bên đều có ghi", () => {
+    // Bên kia thường bỏ trống năm sinh; đòi bằng nhau thì không bao giờ
+    // khớp, và cùng một người bị vẽ hai lần.
+    expect(
+      visibleGhostSpouses([localSpouse("Trần Thị Mai", 1970)], [ghost()]),
+    ).toEqual([]);
+    expect(
+      visibleGhostSpouses(
+        [localSpouse("Trần Thị Mai", 1970)],
+        [ghost({ spouseBirthYear: 1990 })],
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("tên bị che thì cứ hiện — thà thừa còn hơn giấu mất một cuộc hôn nhân", () => {
+    const out = visibleGhostSpouses(
+      [localSpouse("Trần Thị Mai", null)],
+      [ghost({ masked: true, spouseFullName: null })],
+    );
+    expect(out).toHaveLength(1);
+    expect(out[0].spouse.name).toBe(MASKED_SPOUSE_NAME);
+  });
+
+  it("cùng một liên kết trả về hai lần thì chỉ vẽ một", () => {
+    const out = visibleGhostSpouses([], [ghost(), ghost()]);
+    expect(out).toHaveLength(1);
+  });
+
+  it("khoá React ổn định theo liên kết + người, không theo thứ tự tải", () => {
+    expect(visibleGhostSpouses([], [ghost()])[0].key).toBe(
+      "ghost:link-1:peer-1",
+    );
   });
 });

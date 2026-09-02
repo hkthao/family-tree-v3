@@ -31,6 +31,14 @@ export interface FolderChild {
   photoPath: string | null;
   /** Có con hay không — để biết có vẽ mũi tên bung hay không. */
   hasChildren: boolean;
+  /**
+   * Vợ/chồng của chính người này, tải SẴN cùng dòng.
+   *
+   * Vì sao không đợi bung ra mới tải: người không có con thì không có mũi
+   * tên, tức không bao giờ bung được — vợ/chồng của họ sẽ không bao giờ
+   * hiện. Mà dâu/rể kết hôn vào họ rồi chưa có con là chuyện thường.
+   */
+  spouses: FolderSpouse[];
 }
 
 /** Vợ/chồng hiển thị CHUNG một dòng với người trong họ. */
@@ -93,6 +101,7 @@ const year = (d: string | null): number | null =>
 export function toFolderChild(
   p: PersonForTree,
   hasChildren: boolean,
+  spouses: FolderSpouse[] = [],
 ): FolderChild {
   return {
     id: p.id,
@@ -104,6 +113,7 @@ export function toFolderChild(
     isLiving: p.is_living,
     photoPath: p.photo_path ?? null,
     hasChildren,
+    spouses,
   };
 }
 
@@ -191,4 +201,102 @@ export function groupLabel(
     return personGender === "F" ? "chưa ghi chồng" : "chưa ghi vợ";
   }
   return g.rankLabel ? `${g.rankLabel} · ${g.spouseName}` : g.spouseName;
+}
+
+
+// ───────── Dâu/rể ở dòng họ thông gia ("ghost") ─────────────────────
+
+/**
+ * Một vợ/chồng mà bản ghi nằm ở DÒNG HỌ BÊN KIA, nối sang qua liên kết
+ * thông gia đã xác nhận. Cây 2D đã vẽ họ bằng ô viền đứt; cây thư mục
+ * cũng phải có, nếu không cùng một cuộc hôn nhân lại "mất tích" khi đổi
+ * kiểu xem — và người dùng sẽ tưởng dữ liệu hỏng.
+ */
+export interface GhostSpouseSource {
+  linkId: string;
+  peerClanId: string;
+  peerClanName: string;
+  spouseId: string;
+  spouseFullName: string | null;
+  spouseGender: "M" | "F";
+  spouseBirthYear: number | null;
+  spouseDeathYear: number | null;
+  spouseIsLiving: boolean;
+  /** Bên kia che tên người còn sống với người ngoài dòng họ. */
+  masked: boolean;
+}
+
+export interface FolderGhostSpouse {
+  /** Khoá React, ổn định giữa các lần tải. */
+  key: string;
+  spouse: FolderSpouse;
+  peerClanId: string;
+  peerClanName: string;
+  masked: boolean;
+}
+
+/** Tên thay thế khi dòng họ bên kia che tên người còn sống. */
+export const MASKED_SPOUSE_NAME = "Người còn sống";
+
+const norm = (s: string): string =>
+  s.trim().toLowerCase().replace(/\s+/g, " ");
+
+export function toFolderGhost(g: GhostSpouseSource): FolderGhostSpouse {
+  return {
+    key: `ghost:${g.linkId}:${g.spouseId}`,
+    spouse: {
+      id: g.spouseId,
+      name: g.masked ? MASKED_SPOUSE_NAME : (g.spouseFullName ?? "?"),
+      gender: g.spouseGender,
+      birthYear: g.spouseBirthYear,
+      deathYear: g.spouseDeathYear,
+      isLiving: g.spouseIsLiving,
+      photoPath: null,
+    },
+    peerClanId: g.peerClanId,
+    peerClanName: g.peerClanName,
+    masked: g.masked,
+  };
+}
+
+/**
+ * Lọc ra những dâu/rể bên kia THẬT SỰ cần vẽ thêm.
+ *
+ * Bỏ đi người đã có mặt ngay tại dòng họ này: rất nhiều dòng họ tự ghi
+ * sẵn cô dâu/chàng rể của mình rồi mới nối thông gia. Vẽ cả hai thì cùng
+ * một người xuất hiện hai lần cạnh nhau — trông như dữ liệu trùng.
+ *
+ * So khớp bằng tên (chuẩn hoá khoảng trắng, chữ hoa) và chỉ đòi trùng
+ * năm sinh KHI CẢ HAI BÊN đều có ghi: bên kia thường bỏ trống năm, đòi
+ * bằng nhau thì hoá ra không bao giờ khớp và lại vẽ trùng. Tên bị che
+ * thì không so được → cứ vẽ, thà thừa còn hơn giấu mất một cuộc hôn nhân.
+ */
+export function visibleGhostSpouses(
+  localSpouses: FolderSpouse[],
+  ghosts: GhostSpouseSource[],
+): FolderGhostSpouse[] {
+  const out: FolderGhostSpouse[] = [];
+  const seen = new Set<string>();
+
+  for (const g of ghosts) {
+    const key = `ghost:${g.linkId}:${g.spouseId}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const name = g.masked ? "" : norm(g.spouseFullName ?? "");
+    if (
+      name &&
+      localSpouses.some((s) => {
+        if (norm(s.name) !== name) return false;
+        if (g.spouseBirthYear && s.birthYear) {
+          return g.spouseBirthYear === s.birthYear;
+        }
+        return true;
+      })
+    ) {
+      continue;
+    }
+    out.push(toFolderGhost(g));
+  }
+  return out;
 }
