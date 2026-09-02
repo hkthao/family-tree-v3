@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -13,6 +13,8 @@ import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
+import { useAuth } from "@/hooks/useAuth";
+import { getInlawGhostSpouses } from "@/lib/queries/person-links";
 import {
   loadFolderNode,
   loadFolderRoots,
@@ -21,9 +23,12 @@ import {
 import type { TreeSource } from "@/lib/queries/tree";
 import {
   groupLabel,
+  visibleGhostSpouses,
   type FolderChild,
+  type FolderGhostSpouse,
   type FolderGroup,
   type FolderSpouse,
+  type GhostSpouseSource,
 } from "@/lib/tree/folderModel";
 
 /**
@@ -56,6 +61,17 @@ function usePhotoUrls(paths: (string | null)[]): Map<string, string> {
   return data ?? new Map();
 }
 
+/**
+ * Dâu/rể nằm ở dòng họ thông gia, tra theo người trong họ này.
+ *
+ * Để trong context chứ không truyền xuống từng tầng: cây thư mục đệ quy
+ * không giới hạn độ sâu, truyền tay thì mọi tầng đều phải mang hộ một
+ * thứ mà hầu hết dòng không dùng tới.
+ */
+const GhostSpouseContext = createContext<Map<string, GhostSpouseSource[]>>(
+  new Map(),
+);
+
 /** Dòng phụ: đời + năm sinh–mất. Tách hàm vì dùng ở cả người lẫn vợ/chồng. */
 function metaLine(p: {
   generation?: number | null;
@@ -80,10 +96,30 @@ export function TreeFolderView({
   clanId: string;
   source: TreeSource;
 }) {
+  const { user } = useAuth();
   const rootsQ = useQuery({
     queryKey: ["folder-roots", clanId, source],
     queryFn: () => loadFolderRoots(clanId, source),
   });
+
+  // Dâu/rể ở dòng họ thông gia. Tải rời, KHÔNG chặn cây: hỏng hay chậm
+  // thì cây vẫn vẽ, chỉ thiếu mấy ô viền đứt — y như cây 2D.
+  const ghostQ = useQuery({
+    queryKey: ["folder-ghosts", clanId, user?.id ?? "anon"],
+    queryFn: () => getInlawGhostSpouses(clanId),
+    enabled: !!user,
+    staleTime: 60_000,
+    retry: false,
+  });
+  const ghostsByPerson = useMemo(() => {
+    const m = new Map<string, GhostSpouseSource[]>();
+    for (const g of ghostQ.data ?? []) {
+      const arr = m.get(g.localPersonId) ?? [];
+      arr.push(g);
+      m.set(g.localPersonId, arr);
+    }
+    return m;
+  }, [ghostQ.data]);
 
   if (rootsQ.isLoading) return <LoadingState label="Đang tải gốc cây…" />;
   if (rootsQ.error)
@@ -92,6 +128,7 @@ export function TreeFolderView({
   const { roots, orphanCount } = rootsQ.data!;
 
   return (
+    <GhostSpouseContext.Provider value={ghostsByPerson}>
     <div className="rounded-xl border bg-card p-2 sm:p-3">
       {roots.length === 0 && orphanCount === 0 && (
         <p className="p-4 text-sm text-muted-foreground">
@@ -119,6 +156,7 @@ export function TreeFolderView({
         />
       )}
     </div>
+    </GhostSpouseContext.Provider>
   );
 }
 
@@ -129,15 +167,12 @@ function PersonNode({
   person,
   depth,
   defaultOpen = false,
-  spouseInline,
 }: {
   clanId: string;
   source: TreeSource;
   person: FolderChild;
   depth: number;
   defaultOpen?: boolean;
-  /** Vợ/chồng của nhóm hôn nhân — dùng khi người này là NHÓM (đa thê). */
-  spouseInline?: FolderSpouse | null;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -148,13 +183,24 @@ function PersonNode({
     enabled: open,
   });
 
-  // Ảnh của CHÍNH người này + vợ/chồng (nếu đã tải xong nhánh).
-  const spouse: FolderSpouse | null =
-    spouseInline ?? nodeQ.data?.inlineSpouse ?? null;
-  const photoUrls = usePhotoUrls([person.photoPath, spouse?.photoPath ?? null]);
+  // Dâu/rể bên dòng họ thông gia — bỏ những người mà chính họ này đã tự
+  // ghi rồi, kẻo cùng một người đứng hai lần cạnh nhau.
+  const ghostsHere = useContext(GhostSpouseContext).get(person.id) ?? [];
+  const ghosts = visibleGhostSpouses(person.spouses, ghostsHere);
+
+  // Đã bung ra mà người này có NHIỀU cuộc hôn nhân thì các nhóm bên dưới
+  // đã nêu từng người vợ/chồng rồi — nhắc lại trên dòng là thừa. Còn khi
+  // đang đóng thì phải nêu, nếu không người chưa có con (không có mũi
+  // tên để bung) sẽ chẳng bao giờ thấy vợ/chồng mình đâu.
+  const showsGroups = open && (nodeQ.data?.groups.length ?? 0) > 0;
+  const spouses = showsGroups ? [] : person.spouses;
+
+  const photoUrls = usePhotoUrls([
+    person.photoPath,
+    ...spouses.map((sp) => sp.photoPath),
+  ]);
 
   const meta = metaLine(person);
-  const spouseMeta = spouse ? metaLine(spouse) : "";
 
   return (
     <li>
@@ -219,36 +265,19 @@ function PersonNode({
             </span>
           </Link>
 
-          {spouse && (
-            // Dấu ⚭ đi LIỀN với người vợ/chồng trong cùng một khối, để
-            // nó không bao giờ bị tách ra đứng một mình.
-            <Link
-              to={`/clans/${clanId}/people/${spouse.id}`}
-              className="flex min-w-0 items-center gap-2 pl-1 sm:pl-0"
-            >
-              <span className="shrink-0 text-muted-foreground" aria-hidden>
-                ⚭
-              </span>
-              <PersonAvatar
-                gender={spouse.gender}
-                photoUrl={
-                  spouse.photoPath ? photoUrls.get(spouse.photoPath) : null
-                }
-                size={28}
-                className="shrink-0 opacity-90"
-              />
-              <span className="min-w-0">
-                <span className="block break-words text-sm">
-                  {spouse.name}
-                </span>
-                {spouseMeta && (
-                  <span className="block text-xs text-muted-foreground">
-                    {spouseMeta}
-                  </span>
-                )}
-              </span>
-            </Link>
-          )}
+          {spouses.map((sp) => (
+            <SpouseChip
+              key={sp.id}
+              clanId={clanId}
+              spouse={sp}
+              photoUrls={photoUrls}
+            />
+          ))}
+
+          {ghosts.map((g) => (
+            <SpouseChip key={g.key} clanId={clanId} ghost={g} />
+          ))}
+
         </div>
       </div>
 
@@ -305,6 +334,73 @@ function PersonNode({
       )}
 
     </li>
+  );
+}
+
+/**
+ * Một người vợ/chồng đứng cạnh người trong họ.
+ *
+ * Hai dạng: người có sẵn trong dòng họ này (bấm mở được hồ sơ), hoặc dâu/rể
+ * mà bản ghi nằm ở dòng họ thông gia — viền đứt + gắn tên họ bên kia, đúng
+ * quy ước đang dùng ở cây 2D. Dạng thứ hai KHÔNG bấm được: ở dòng họ này
+ * họ không có hồ sơ để mở, bấm vào chỉ dẫn tới trang lỗi.
+ */
+function SpouseChip({
+  clanId,
+  spouse,
+  ghost,
+  photoUrls,
+}: {
+  clanId: string;
+  spouse?: FolderSpouse;
+  ghost?: FolderGhostSpouse;
+  photoUrls?: Map<string, string>;
+}) {
+  const person = spouse ?? ghost!.spouse;
+  const meta = metaLine(person);
+
+  // Dấu ⚭ nằm TRONG cùng một khối với người vợ/chồng, để nó không bao
+  // giờ bị rớt dòng đứng trơ một mình.
+  const body = (
+    <>
+      <span className="shrink-0 text-muted-foreground" aria-hidden>
+        ⚭
+      </span>
+      <PersonAvatar
+        gender={person.gender}
+        photoUrl={
+          person.photoPath ? (photoUrls?.get(person.photoPath) ?? null) : null
+        }
+        size={28}
+        className={`shrink-0 opacity-90 ${
+          ghost ? "border border-dashed border-accent" : ""
+        }`}
+      />
+      <span className="min-w-0">
+        <span className="block break-words text-sm">
+          {person.name}
+          {ghost && (
+            <span className="ml-1.5 whitespace-nowrap rounded bg-accent/15 px-1.5 py-0.5 text-[11px] font-medium text-accent">
+              {ghost.peerClanName}
+            </span>
+          )}
+        </span>
+        {meta && (
+          <span className="block text-xs text-muted-foreground">{meta}</span>
+        )}
+      </span>
+    </>
+  );
+
+  const cls = "flex min-w-0 items-center gap-2 pl-1 sm:pl-0";
+  return ghost ? (
+    <span className={cls} title={`Dâu/rể bên ${ghost.peerClanName}`}>
+      {body}
+    </span>
+  ) : (
+    <Link to={`/clans/${clanId}/people/${person.id}`} className={cls}>
+      {body}
+    </Link>
   );
 }
 
