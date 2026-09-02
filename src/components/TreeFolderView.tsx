@@ -183,7 +183,14 @@ function PersonNode({
         {/* MỘT NODE = vợ chồng đứng cùng dòng, thông tin đời/năm xuống
             dòng dưới. Nhét tất cả vào một dòng thì ở màn hẹp tên bị cắt
             cụt — mà tên mới là thứ người ta dò. */}
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 py-1">
+        {/* Điện thoại: vợ chồng XUỐNG DÒNG, mỗi người một hàng. Máy
+            tính: đứng cạnh nhau.
+
+            Trước đây để `flex-wrap` cho tự xuống dòng, nhưng tên người
+            Việt dài (bốn chữ là thường) nên ở màn hẹp nó rớt dòng lộn
+            xộn — có khi dấu ⚭ nằm trơ một mình cuối dòng trên. Xếp cột
+            hẳn ở mobile thì mỗi hàng là một người trọn vẹn. */}
+        <div className="flex min-w-0 flex-1 flex-col gap-y-0.5 py-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
           <Link
             to={`/clans/${clanId}/people/${person.id}`}
             className="flex min-w-0 items-center gap-2"
@@ -197,7 +204,11 @@ function PersonNode({
               className="shrink-0"
             />
             <span className="min-w-0">
-              <span className="block truncate text-sm font-medium">
+              {/* Cho XUỐNG DÒNG chứ không cắt cụt: tên bốn năm chữ là
+                  thường ở gia phả Việt, mà "Nguyễn Hoàng Minh Quân Đại
+                  Ng…" thì không tra được là ai. Mỗi người đã có hàng
+                  riêng nên xuống dòng không làm lộn xộn. */}
+              <span className="block break-words text-sm font-medium">
                 {person.name}
               </span>
               {meta && (
@@ -209,32 +220,34 @@ function PersonNode({
           </Link>
 
           {spouse && (
-            <>
-              <span className="text-muted-foreground" aria-hidden>
+            // Dấu ⚭ đi LIỀN với người vợ/chồng trong cùng một khối, để
+            // nó không bao giờ bị tách ra đứng một mình.
+            <Link
+              to={`/clans/${clanId}/people/${spouse.id}`}
+              className="flex min-w-0 items-center gap-2 pl-1 sm:pl-0"
+            >
+              <span className="shrink-0 text-muted-foreground" aria-hidden>
                 ⚭
               </span>
-              <Link
-                to={`/clans/${clanId}/people/${spouse.id}`}
-                className="flex min-w-0 items-center gap-2"
-              >
-                <PersonAvatar
-                  gender={spouse.gender}
-                  photoUrl={
-                    spouse.photoPath ? photoUrls.get(spouse.photoPath) : null
-                  }
-                  size={28}
-                  className="shrink-0 opacity-90"
-                />
-                <span className="min-w-0">
-                  <span className="block truncate text-sm">{spouse.name}</span>
-                  {spouseMeta && (
-                    <span className="block text-xs text-muted-foreground">
-                      {spouseMeta}
-                    </span>
-                  )}
+              <PersonAvatar
+                gender={spouse.gender}
+                photoUrl={
+                  spouse.photoPath ? photoUrls.get(spouse.photoPath) : null
+                }
+                size={28}
+                className="shrink-0 opacity-90"
+              />
+              <span className="min-w-0">
+                <span className="block break-words text-sm">
+                  {spouse.name}
                 </span>
-              </Link>
-            </>
+                {spouseMeta && (
+                  <span className="block text-xs text-muted-foreground">
+                    {spouseMeta}
+                  </span>
+                )}
+              </span>
+            </Link>
           )}
         </div>
       </div>
