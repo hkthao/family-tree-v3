@@ -84,6 +84,7 @@ const Settings = lazy(() => import("@/pages/clan/Settings"));
 const Today = lazy(() => import("@/pages/clan/Today"));
 const Todo = lazy(() => import("@/pages/clan/Todo"));
 const Tools = lazy(() => import("@/pages/clan/Tools"));
+const Poster = lazy(() => import("@/pages/clan/Poster"));
 const Tree = lazy(() => import("@/pages/clan/Tree"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const Contact = lazy(() => import("@/pages/Contact"));
@@ -264,6 +265,7 @@ export default function App() {
           <Route path="xem-ngay" element={<GoodDays />} />
           <Route path="todo" element={<Todo />} />
           <Route path="tools" element={<Tools />} />
+          <Route path="bang-gia-pha" element={<Poster />} />
           <Route path="kinship" element={<Kinship />} />
           <Route path="contributions" element={<Contributions />} />
           <Route path="contributions/:contribId" element={<ContributionDetail />} />

@@ -4,6 +4,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import {
   IconCalendar,
   IconCopy,
+  IconPrinter,
   IconScroll,
   IconSettings,
   IconSparkles,
@@ -52,6 +53,14 @@ export default function Tools() {
           label: "Lịch âm dương",
           desc: "Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày.",
           icon: <IconCalendar className={ic} />,
+        },
+        {
+          // In ấn nằm ở "Tra cứu" vì nó chỉ ĐỌC dữ liệu — bấm vào không
+          // sửa gì trong gia phả, chỉ ra một file để mang đi in.
+          to: `${base}/bang-gia-pha`,
+          label: "Bảng gia phả in",
+          desc: "Một tấm khổ lớn (A3–A0) có hoa văn, băng tên, câu đối — tải PDF mang ra tiệm in.",
+          icon: <IconPrinter className={ic} />,
         },
         {
           to: `${base}/audit`,
