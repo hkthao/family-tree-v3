@@ -39,11 +39,37 @@ certbot renew \
   --deploy-hook "docker exec $NGINX_CONTAINER nginx -s reload" \
   >> "$LOG" 2>&1 || echo "[$(date -u +%FT%TZ)] certbot trả mã lỗi — xem log phía trên" >> "$LOG"
 
-# Ghi lại hạn còn của từng cert — để đọc log là biết ngay có gì sắp hết
-# hạn, không phải đợi trang chết mới biết.
+# Ghi lại hạn còn của từng cert, ĐỒNG THỜI đối chiếu với cert nginx đang
+# thật sự đưa ra cho khách.
+#
+# Vì sao phải đối chiếu: nginx nạp cert vào bộ nhớ lúc khởi động, file mới
+# nằm trên đĩa không tự có hiệu lực. Đã dính đúng thế thật — cert
+# analytics gia hạn xong từ 02/09 mà tới 07/09 trình duyệt vẫn báo hết
+# hạn, chỉ vì thiếu một lần reload. Nhìn vào đĩa thì mọi thứ đều ổn, nên
+# kiểu hỏng này không ai phát hiện ra cho tới lúc có người kêu.
+reload_needed=0
 for d in "$CERT_DIR"/live/*/; do
   name=$(basename "$d")
   [ -f "$d/fullchain.pem" ] || continue
   end=$(openssl x509 -enddate -noout -in "$d/fullchain.pem" | cut -d= -f2)
+  # Hỏi đúng tên miền đó qua SNI. Nếu nginx KHÔNG có server block cho nó
+  # thì nginx trả cert của site mặc định — khác cert trên đĩa, và nếu
+  # không nhận ra thì đêm nào cũng reload vô ích. Nhận ra bằng cách xem
+  # cert nhận về có đúng tên miền vừa hỏi không.
+  served_cert=$(echo | openssl s_client -servername "$name" -connect 127.0.0.1:443 2>/dev/null)
+  served_cn=$(echo "$served_cert" | openssl x509 -subject -noout 2>/dev/null | sed 's/.*CN *= *//')
+  served=$(echo "$served_cert" | openssl x509 -enddate -noout 2>/dev/null | cut -d= -f2)
+  if [ "$served_cn" != "$name" ]; then
+    served=""
+  fi
+  if [ -n "$served" ] && [ "$served" != "$end" ]; then
+    echo "[$(date -u +%FT%TZ)] $name: nginx đang đưa ra cert cũ ($served) trong khi trên đĩa là $end" >> "$LOG"
+    reload_needed=1
+  fi
   echo "[$(date -u +%FT%TZ)] $name hết hạn $end" >> "$LOG"
 done
+
+if [ "$reload_needed" = 1 ]; then
+  docker exec "$NGINX_CONTAINER" nginx -s reload >> "$LOG" 2>&1 \
+    && echo "[$(date -u +%FT%TZ)] đã nạp lại nginx" >> "$LOG"
+fi
