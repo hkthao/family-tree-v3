@@ -1,7 +1,7 @@
 # Self-hosted VPS deploy.
 #
 #   1. build-push: builds the Docker image with Vite env baked in,
-#      pushes to Docker Hub under `hkthao/family-tree-v3:<tags>`.
+#      pushes to GHCR under `ghcr.io/hkthao/family-tree-v3:<tags>`.
 #   2. deploy: SSH into the VPS, pulls the new image, rotates the
 #      container with the new tag, prunes the old image.
 #
@@ -9,9 +9,14 @@
 # the VPS for no reason. Push the workflow_run gate back if you
 # want auto-deploy after tests pass.
 #
+# Registry là GHCR, xác thực bằng `GITHUB_TOKEN` có sẵn của Actions nên
+# KHÔNG cần secret riêng. Trước đây đẩy lên Docker Hub và đã trả đúng cái
+# giá của nó: PAT hết hạn lặng lẽ, mọi lần deploy chết ở bước login cho
+# tới khi có người vào Docker Hub tạo token mới — trong lúc bản vá đã
+# merge vẫn nằm im không lên được prod. Token của Actions sinh mới mỗi
+# lần chạy nên không có gì để hết hạn.
+#
 # Required secrets (`gh secret set <name> --body <value>`):
-#   DOCKER_USERNAME       Docker Hub username
-#   DOCKER_TOKEN          Docker Hub access token / PAT
 #   VPS_HOST              VPS IP or hostname
 #   VPS_USER              SSH user (typically root)
 #   VPS_SSH_KEY           PEM-format private key — public counterpart
@@ -33,11 +38,14 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE: hkthao/family-tree-v3
+  IMAGE: ghcr.io/hkthao/family-tree-v3
 
 jobs:
   build-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     outputs:
       sha7: ${{ steps.meta.outputs.sha7 }}
     steps:
@@ -51,8 +59,9 @@ jobs:
 
       - uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build + push
         uses: docker/build-push-action@v6
@@ -86,6 +95,9 @@ jobs:
   deploy:
     needs: build-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
 
@@ -150,18 +162,22 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           APP_IMAGE: ${{ env.IMAGE }}:${{ needs.build-push.outputs.sha7 }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: APP_IMAGE
+          envs: APP_IMAGE,GHCR_USER,GHCR_TOKEN
           script: |
             set -euo pipefail
             cd /opt/gia-pha
 
-            # Hub login (rate-limit / private pull safe).
-            echo "${{ secrets.DOCKER_TOKEN }}" \
-              | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            # Đăng nhập GHCR bằng token của chính lần chạy này — nó hết
+            # hiệu lực khi job kết thúc, nên không để lại thông tin đăng
+            # nhập sống lâu nằm trên máy chủ.
+            echo "${GHCR_TOKEN}" \
+              | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
 
             # docker-compose env file — pins APP_IMAGE to the
             # SHA tag built this run. Re-runs overwrite with

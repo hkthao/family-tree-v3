@@ -10,7 +10,7 @@
 
 services:
   app:
-    image: ${APP_IMAGE:-hkthao/family-tree-v3:latest}
+    image: ${APP_IMAGE:-ghcr.io/hkthao/family-tree-v3:latest}
     container_name: family-tree-v3
     restart: unless-stopped
     volumes:
