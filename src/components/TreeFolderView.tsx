@@ -183,17 +183,22 @@ function PersonNode({
     enabled: open,
   });
 
+  // `?? []` KHÔNG thừa: bản ghi nằm trong cache lưu ở máy người dùng có
+  // thể do bản cũ ghi, chưa có field này. Thiếu nó thì cả trang cây trắng
+  // xoá thay vì chỉ thiếu tên vợ/chồng — cái giá quá đắt cho một field.
+  const allSpouses = person.spouses ?? [];
+
   // Dâu/rể bên dòng họ thông gia — bỏ những người mà chính họ này đã tự
   // ghi rồi, kẻo cùng một người đứng hai lần cạnh nhau.
   const ghostsHere = useContext(GhostSpouseContext).get(person.id) ?? [];
-  const ghosts = visibleGhostSpouses(person.spouses, ghostsHere);
+  const ghosts = visibleGhostSpouses(allSpouses, ghostsHere);
 
   // Đã bung ra mà người này có NHIỀU cuộc hôn nhân thì các nhóm bên dưới
   // đã nêu từng người vợ/chồng rồi — nhắc lại trên dòng là thừa. Còn khi
   // đang đóng thì phải nêu, nếu không người chưa có con (không có mũi
   // tên để bung) sẽ chẳng bao giờ thấy vợ/chồng mình đâu.
   const showsGroups = open && (nodeQ.data?.groups.length ?? 0) > 0;
-  const spouses = showsGroups ? [] : person.spouses;
+  const spouses = showsGroups ? [] : allSpouses;
 
   const photoUrls = usePhotoUrls([
     person.photoPath,

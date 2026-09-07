@@ -97,7 +97,12 @@ createRoot(document.getElementById("root")!).render(
           // v7: Sổ tay v2 đổi shape custom_entries (origin → origins[], thêm
           //     related_ids). Bản ghi cache cũ thiếu field mới → đọc
           //     origins.length trên undefined gây crash. Bust để bỏ shape cũ.
-          buster: "v7",
+          // v8: cây thư mục thêm field `spouses` cho mỗi người. Cache cũ
+          //     không có field đó → đọc spouses.map trên undefined làm
+          //     trắng cả trang cây. Đúng vết xe của v4 và v7: thêm field
+          //     vào một shape ĐANG nằm trong cache của người dùng thì
+          //     phải bust, chứ deploy xong mới biết là người dùng chịu.
+          buster: "v8",
         }}
       >
         <App />
