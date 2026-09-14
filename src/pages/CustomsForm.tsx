@@ -349,7 +349,7 @@ export default function CustomsForm() {
             maxLength={200} placeholder="vd: Lễ nhập trạch (về nhà mới)" />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="c-cat">Chủ đề</Label>
             <Select id="c-cat" icon={<IconTag />} value={category}
@@ -413,7 +413,7 @@ export default function CustomsForm() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="c-mand">Mức bắt buộc</Label>
             <Select id="c-mand" icon={<IconShield />} value={mandatory}
@@ -436,7 +436,7 @@ export default function CustomsForm() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="c-rel">Độ tin cậy (1–5)</Label>
             <Input id="c-rel" icon={<IconShield />} type="number" min={1} max={5} value={reliability}
@@ -503,7 +503,7 @@ export default function CustomsForm() {
                 }
                 rows={5} placeholder="Nội dung đoạn này…"
                 className="leading-relaxed" />
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <Input icon={<IconCamera />} value={sec.image_url ?? ""}
                   onChange={(e) =>
                     setSections((p) => p.map((s, j) => (j === i ? { ...s, image_url: e.target.value } : s)))

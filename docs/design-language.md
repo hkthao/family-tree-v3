@@ -1,4 +1,16 @@
-# Ngôn ngữ thiết kế — control phải có icon
+# Ngôn ngữ thiết kế
+
+Ba quy ước trình bày của app. Quy ước icon là phần dài nhất nên đứng đầu; hai
+phần sau ngắn hơn nhưng cùng một loại lỗi: **không ai thấy khi review code, chỉ
+lộ ra trên máy người dùng.**
+
+- [Control phải có icon](#control-phải-có-icon)
+- [Hiển thị ngày](#hiển-thị-ngày)
+- [Lưới trên màn hẹp](#lưới-trên-màn-hẹp)
+
+---
+
+# Control phải có icon
 
 ## Vì sao
 
@@ -261,3 +273,76 @@ Các nhóm cố ý bỏ trống, để khỏi tranh luận lại:
 | Component nhận icon qua prop (`EmptyState`, `SubscribeToggle`, `ConfirmDialog`…) | Nơi gọi quyết định icon |
 
 Khi thêm màn mới, chạy lại script trước khi mở PR — 0 là mốc cần giữ.
+
+
+---
+
+# Hiển thị ngày
+
+## Quy tắc
+
+**Không bao giờ in chuỗi ngày của máy ra cho người đọc.** `2026-09-20` là cách
+cơ sở dữ liệu lưu; người Việt đọc `20/09/2026`.
+
+| Loại dữ liệu | Dùng hàm | Ra |
+|---|---|---|
+| Ngày lịch `yyyy-mm-dd` (ngày sinh, ngày sự kiện) | `formatDateOnly()` | `20/09/2026` |
+| Mốc thời gian có giờ (`created_at`…) | `formatDate()` / `formatDateTime()` | `20/09/2026`, `20/09/2026 14:05` |
+| Thời gian tương đối | `formatRelative()` | `3 ngày trước` |
+| Ngày của một **sự kiện** (dương hoặc âm) | `eventWhenText()` | `20/09/2026 (dương lịch)` · `Ngày 3 tháng 3 (ÂL)` |
+| Chỉ cần năm | `.slice(0, 4)` là được | `cụ Tường (1920–1998)` |
+
+## Hai cái bẫy, đều đã sập
+
+**1. Múi giờ.** `new Date("2026-09-20")` là *nửa đêm UTC*. Người dùng ở Mỹ mở
+app sẽ thấy **19/09** — ngày giỗ lùi một ngày. Vì thế `formatDateOnly()` cắt
+chuỗi chứ không đụng tới `Date`. Chỉ dùng `formatDate()` cho thứ THẬT SỰ có giờ.
+
+**2. Ngày chảy sang chỗ khác.** Chuỗi ngày trong danh sách sự kiện được dùng lại
+làm phụ đề **thiệp chia sẻ**. Một chỗ ghép sai là cả dòng họ nhận được tấm thiệp
+in `2026-09-20`. Nên mọi nơi hỏi "sự kiện này ngày nào" đều gọi
+`eventWhenText()` — đừng tự ghép lại.
+
+---
+
+# Lưới trên màn hẹp
+
+## Quy tắc
+
+Lưới có cột theo breakpoint thì **phải khai báo luôn cột cho màn hẹp**:
+
+```tsx
+<ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">   // ✅
+<ul className="grid gap-2 sm:grid-cols-2">               // ❌ tràn ngang
+```
+
+## Vì sao
+
+Thiếu `grid-cols-1`, cột ngầm của CSS Grid là `auto` — nó **nở theo nội dung**,
+không co theo màn hình. `min-w-0` ở bên trong không cứu được, vì chính cái ô lưới
+mới là thứ nở ra.
+
+Đo thật trên hàng "Sự kiện sắp tới" ở Tổng quan, màn 390px:
+
+| | Bề ngang một hàng | Trang |
+|---|---:|---|
+| `grid gap-1.5 sm:grid-cols-2` | **523px** | trôi ngang, chữ "Còn 4 ngày" bị cắt |
+| thêm `grid-cols-1` | **390px** | vừa khít, tên dài tự cắt bằng ba chấm |
+
+Khai báo `grid-cols-1` biến cột thành `minmax(0, 1fr)` — đó mới là thứ `truncate`
+và `min-w-0` cần để làm việc.
+
+Ngoại lệ hợp lệ: `lg:grid lg:grid-cols-[...]` — màn hẹp không phải lưới, mà là
+khối xếp chồng bình thường.
+
+---
+
+# Kiểm tự động
+
+```bash
+npx vitest run src/test/ui/conventions.test.ts
+```
+
+Hai phép kiểm quét mã nguồn: lưới thiếu cột nền, và ngày thô lọt ra giao diện.
+Khác script icon (chỉ liệt kê), hai phép này **chặn CI** — vì cả hai lỗi đều
+từng ra tới tay người dùng rồi mới có người báo.

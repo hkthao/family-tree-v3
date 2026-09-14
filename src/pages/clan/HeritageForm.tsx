@@ -248,7 +248,7 @@ export default function HeritageForm() {
               <Input id="address" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)}
                 placeholder="vd: xã …, huyện …, tỉnh …" className="h-12 text-base" />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="year">Lập / xây năm (tuỳ chọn)</Label>
                 <Input id="year" icon={<IconCalendar />} inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)}

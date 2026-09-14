@@ -268,7 +268,7 @@ export function AiSettingsTab() {
             đây có hiệu lực ngay, không cần deploy lại.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-3">
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <NumberSetting
             id="ai-free"
             label="Lượt miễn phí / tháng"

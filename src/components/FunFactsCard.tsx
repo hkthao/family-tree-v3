@@ -93,7 +93,7 @@ export function FunFactsCard({
   return (
     <section aria-label="Thống kê vui" className="space-y-2">
       <SectionHeading icon={<IconSparkles />} title="Thống kê vui" />
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {facts.map((f) => (
           <div key={f.id} className="flex flex-col gap-2 rounded-lg border bg-card p-3">
             <div className="flex items-start gap-2.5">

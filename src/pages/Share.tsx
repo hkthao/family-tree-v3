@@ -672,7 +672,14 @@ export default function Share() {
         </p>
         {publicClan && (
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2 print-hide">
-            <Button asChild size="sm">
+            {/* Nút này dài, mà nút mặc định KHÔNG cho chữ xuống dòng —
+                trên màn 390px nó rộng 408px, tức thò hẳn ra ngoài mép và
+                kéo cả trang trôi ngang. Cho phép xuống dòng ở đây. */}
+            <Button
+              asChild
+              size="sm"
+              className="h-auto max-w-full whitespace-normal py-2 text-center"
+            >
               <Link
                 to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}
               >

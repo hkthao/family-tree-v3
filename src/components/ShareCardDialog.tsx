@@ -261,7 +261,7 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
           </button>
         </header>
 
-        <div className="p-5 grid gap-5 lg:grid-cols-[280px_1fr] overflow-y-auto">
+        <div className="p-5 grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr] overflow-y-auto">
           {/* Preview */}
           <div className="space-y-3 self-start lg:sticky lg:top-0">
             <div className="mx-auto rounded-md overflow-hidden border shadow-sm"

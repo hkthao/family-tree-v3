@@ -16,6 +16,7 @@ import {
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
+import { eventWhenText } from "@/lib/eventWhen";
 import type { CardGenre } from "@/lib/cards/types";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
@@ -487,13 +488,9 @@ function CustomEventItem({
       toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
-  const when = event.date_solar
-    ? `${event.date_solar} (dương lịch)`
-    : event.lunar_month
-      ? `Ngày ${event.lunar_day} tháng ${event.lunar_month}${event.lunar_is_leap ? " nhuận" : ""} (ÂL)`
-      : "—";
+  const when = eventWhenText(event);
   // Ngày in lên thiệp: gọn + có "hằng năm" nếu lặp.
-  const cardDate = `${when}${event.is_yearly ? " · hằng năm" : ""}`;
+  const cardDate = eventWhenText(event, { withYearly: true });
   // Thiệp sự kiện: thể loại "Sự kiện / Kính mời" (có cả mẫu Kính mời lẫn
   // mẫu Giỗ/tảo mộ trang nghiêm để người dùng chọn).
   const cardGenre: CardGenre = "event";
