@@ -221,7 +221,7 @@ export default function RestingPlaceForm() {
         className="space-y-6"
       >
         {/* Hình thức + Trạng thái — 2 trường ngắn, ghép 1 hàng */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="kind">Hình thức</Label>
             <Select
@@ -255,7 +255,7 @@ export default function RestingPlaceForm() {
         </div>
 
         {/* Nơi + vị trí chi tiết — ghép 1 hàng khi có cả hai */}
-        <div className={labels.detail ? "grid gap-4 sm:grid-cols-2" : "space-y-2"}>
+        <div className={labels.detail ? "grid grid-cols-1 gap-4 sm:grid-cols-2" : "space-y-2"}>
           <div className="space-y-2">
             <Label htmlFor="loc-name">{labels.name}</Label>
             <Input id="loc-name" icon={<IconMapPin />} value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder={labels.namePh} />
@@ -308,7 +308,7 @@ export default function RestingPlaceForm() {
         </div>
 
         {/* Các trường ngắn còn lại — ghép lưới 2 cột */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {kind === "grave" && (
             <div className="space-y-2">
               <Label htmlFor="orientation">Hướng mộ (tuỳ chọn)</Label>

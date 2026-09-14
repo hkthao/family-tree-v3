@@ -4,6 +4,7 @@ import type {
   EditPersonChanges,
   EditPersonPayload,
 } from "@/lib/queries/contributions";
+import { formatDateOnly } from "@/lib/formatDate";
 import type { PersonDetail } from "@/lib/queries/persons";
 
 interface Props {
@@ -240,10 +241,16 @@ function AddPersonDiff({ payload }: { payload: AddPersonPayload }) {
         value={payload.is_living === false ? "Đã mất" : "Còn sống"}
       />
       {payload.birth_date && (
-        <Row label="Ngày sinh" value={payload.birth_date} />
+        <Row
+          label="Ngày sinh"
+          value={formatDateOnly(payload.birth_date) ?? payload.birth_date}
+        />
       )}
       {payload.death_date && (
-        <Row label="Ngày mất" value={payload.death_date} />
+        <Row
+          label="Ngày mất"
+          value={formatDateOnly(payload.death_date) ?? payload.death_date}
+        />
       )}
       {payload.birth_place && (
         <Row label="Nơi sinh" value={payload.birth_place} />

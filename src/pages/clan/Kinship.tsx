@@ -83,7 +83,7 @@ export function KinshipContent({
       {isLoading && <p className="text-muted-foreground">Đang tải danh bạ…</p>}
 
       {data && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <PersonPicker
             label="Người A"
             persons={data.ordered}
@@ -111,7 +111,7 @@ export function KinshipContent({
             </Alert>
           ) : (
             <>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <RelationCard
                   fromName={personA.full_name}
                   toName={personB.full_name}

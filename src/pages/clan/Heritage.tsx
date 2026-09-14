@@ -230,7 +230,7 @@ export default function Heritage() {
       )}
 
       {items && items.length > 0 && (
-        <ul className="grid gap-2 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {items.map((i) => {
             const thumb = i.cover_external_url
               ?? (i.cover_media_path ? photoUrls?.get(i.cover_media_path) : null);

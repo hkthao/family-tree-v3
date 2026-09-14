@@ -264,7 +264,7 @@ export function TodayHubCard({
 
       {/* Việc NÊN / KIÊNG theo trực — chỉ dùng MÀU CHỮ, không viền/nền. */}
       {info && prefs.truc && (info.nen.length > 0 || info.kieng.length > 0) && (
-        <div className="grid gap-2 px-4 pb-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 px-4 pb-3 sm:grid-cols-2">
           {info.nen.length > 0 && (
             <div>
               <p className="mb-0.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">

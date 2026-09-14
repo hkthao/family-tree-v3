@@ -201,7 +201,7 @@ export default function MemoryRooms() {
       )}
 
       {!isLoading && rooms && rooms.length > 0 && (
-        <ul className="grid gap-2 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {rooms.map((r) => (
             <li key={r.id} className="min-w-0">
               <div className="flex h-full gap-3 rounded-lg border bg-card p-3">

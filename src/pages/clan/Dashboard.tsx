@@ -286,7 +286,7 @@ export default function Dashboard() {
                 }
               />
               {/* Desktop: 2 cột cho gọn (mỗi sự kiện 1 hàng phí chỗ ngang). */}
-              <ul className="grid gap-1.5 sm:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                 {upcomingTop5.map((e) => (
                   <UpcomingRow key={e.key} event={e} clanId={clan.id} />
                 ))}

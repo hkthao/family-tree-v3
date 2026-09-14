@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { IconCalendar, IconMapPin, IconSparkles, IconUser, IconX } from "@/components/icons";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { Button } from "@/components/ui/button";
+import { eventWhenText } from "@/lib/eventWhen";
 import type { EventRow } from "@/lib/queries/events";
 
 const EVENT_TYPE_LABEL: Record<string, string> = {
@@ -43,12 +44,10 @@ export function EventDetailDialog({
 
   if (!open || !event) return null;
 
-  const when = event.date_solar
-    ? `${event.date_solar} (dương lịch)`
-    : event.lunar_month
-      ? `Ngày ${event.lunar_day} tháng ${event.lunar_month}${event.lunar_is_leap ? " nhuận" : ""} (Âm lịch)`
-      : "—";
-  const cardDate = `${when}${event.is_yearly ? " · hằng năm" : ""}`;
+  const cardDate = eventWhenText(event, {
+    lunarLabel: "Âm lịch",
+    withYearly: true,
+  });
 
   return createPortal(
     <div

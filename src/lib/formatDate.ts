@@ -1,4 +1,25 @@
 /**
+ * Ngày LỊCH (yyyy-mm-dd, không giờ) → dd/mm/yyyy.
+ *
+ * Vì sao không dùng `formatDate`: `new Date("2026-09-20")` được hiểu là
+ * nửa đêm UTC, nên người dùng ở múi giờ âm (Mỹ, Canada) sẽ thấy lùi một
+ * ngày. Ngày giỗ lùi một ngày là sai kiểu không ai tha thứ.
+ *
+ * Cắt chuỗi thẳng, không đụng tới `Date`, nên không có múi giờ nào xen
+ * vào được.
+ */
+export function formatDateOnly(ymd: string | null | undefined): string | null {
+  if (!ymd) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymd.trim());
+  if (!m) return null;
+  const [, y, mo, d] = m;
+  if (Number(mo) < 1 || Number(mo) > 12 || Number(d) < 1 || Number(d) > 31) {
+    return null;
+  }
+  return `${d}/${mo}/${y}`;
+}
+
+/**
  * Định dạng timestamp ISO → dd/mm/yyyy theo vi-VN.
  * Trả về null nếu thiếu / không hợp lệ — để UI ẩn hẳn dòng thay vì in
  * "Invalid Date".
