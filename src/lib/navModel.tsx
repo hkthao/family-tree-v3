@@ -8,6 +8,7 @@ import {
   IconCalendar,
   IconCamera,
   IconGlobe,
+  IconMicrophone,
   IconGrave,
   IconHome,
   IconLink,
@@ -285,6 +286,11 @@ export function buildSections(
       to: "/so-tay",
       label: "Sổ tay Văn hoá",
       icon: <IconGlobe className={ic} />,
+    },
+    {
+      to: "/podcast",
+      label: "Podcast",
+      icon: <IconMicrophone className={ic} />,
     },
     // Góp ý về hẳn menu: trước đây nó là một nút nhỏ lẫn trong hàng
     // tiện ích ở chân drawer, cạnh QR và Cập nhật — chỗ người dùng chỉ
