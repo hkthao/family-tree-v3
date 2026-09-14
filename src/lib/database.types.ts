@@ -2389,6 +2389,54 @@ export type Database = {
           },
         ]
       }
+      podcast_episodes: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_seconds: number | null
+          fb_video_id: string
+          id: string
+          is_visible: boolean
+          permalink_url: string
+          published_at: string
+          synced_at: string
+          thumbnail_url: string | null
+          title: string
+          title_edited: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          fb_video_id: string
+          id?: string
+          is_visible?: boolean
+          permalink_url: string
+          published_at: string
+          synced_at?: string
+          thumbnail_url?: string | null
+          title: string
+          title_edited?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number | null
+          fb_video_id?: string
+          id?: string
+          is_visible?: boolean
+          permalink_url?: string
+          published_at?: string
+          synced_at?: string
+          thumbnail_url?: string | null
+          title?: string
+          title_edited?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

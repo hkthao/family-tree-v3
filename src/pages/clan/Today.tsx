@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
+import { PodcastTodayCard } from "@/components/PodcastTodayCard";
 import { PageHeader } from "@/components/PageHeader";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
 import {
@@ -139,6 +140,8 @@ export default function Today() {
         events={monthEvents}
         clanId={clan.id}
       />
+
+      <PodcastTodayCard />
 
       <div className="rounded-md border bg-card p-3 text-sm flex items-center justify-between gap-3 flex-wrap">
         {effectiveRole(clan) !== null ? (
