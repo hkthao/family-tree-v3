@@ -22,6 +22,11 @@ import {
   DEFAULT_POSTER_CONFIG,
   type PosterConfig,
 } from "@/lib/poster/buildPoster";
+import {
+  CREATURES,
+  PLACEMENTS,
+  type CreaturePlacement,
+} from "@/lib/poster/creatures";
 import { POSTER_SIZES, type PosterSize } from "@/lib/poster/frame";
 import {
   BANNERS,
@@ -74,6 +79,16 @@ export default function Poster() {
   const set = <K extends keyof PosterConfig>(k: K, v: PosterConfig[K]) =>
     setCfg((c) => ({ ...c, [k]: v }));
 
+  // Hình linh vật tải rời — con rồng Á Đông một mình đã ~2 MB, không
+  // thể bắt mọi người tải sẵn chỉ để mở trang.
+  const creatureQ = useQuery({
+    queryKey: ["poster-creature", cfg.creature],
+    queryFn: () =>
+      CREATURES.find((c) => c.id === cfg.creature)!.load(),
+    enabled: cfg.creature !== "khong",
+    staleTime: Infinity,
+  });
+
   const [search, setSearch] = useState("");
   const [forced, setForced] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -86,8 +101,13 @@ export default function Poster() {
   const doc = useMemo(() => {
     if (!data) return null;
     if (heavy && !forced && !deferred.focalId) return null;
-    return buildPoster(data.persons, data.families, deferred);
-  }, [data, deferred, heavy, forced]);
+    return buildPoster(
+      data.persons,
+      data.families,
+      deferred,
+      creatureQ.data ?? null,
+    );
+  }, [data, deferred, heavy, forced, creatureQ.data]);
 
   const focalName = cfg.focalId
     ? data?.persons.find((p) => p.id === cfg.focalId)?.full_name ?? null
@@ -217,6 +237,49 @@ export default function Poster() {
                 ))}
               </Select>
             </Field>
+            <Field label="Linh vật (rồng, phượng)">
+              <Select
+                value={cfg.creature}
+                onChange={(e) => set("creature", e.target.value)}
+              >
+                {CREATURES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {cfg.creature !== "khong" && (
+              <>
+                <Field label="Đặt linh vật ở đâu">
+                  <Select
+                    value={cfg.creaturePlacement}
+                    onChange={(e) =>
+                      set(
+                        "creaturePlacement",
+                        e.target.value as CreaturePlacement,
+                      )
+                    }
+                  >
+                    {PLACEMENTS.map((pl) => (
+                      <option key={pl.id} value={pl.id}>
+                        {pl.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                {CREATURES.find((c) => c.id === cfg.creature)?.note && (
+                  <p className="text-xs text-muted-foreground">
+                    {CREATURES.find((c) => c.id === cfg.creature)!.note}
+                  </p>
+                )}
+                {creatureQ.isLoading && (
+                  <p className="text-xs text-muted-foreground">
+                    Đang tải hình…
+                  </p>
+                )}
+              </>
+            )}
             <Field label="Cột câu đối hai bên">
               <Select
                 value={cfg.column}

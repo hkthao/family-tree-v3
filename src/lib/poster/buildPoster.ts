@@ -9,6 +9,11 @@ import {
   type ColumnId,
   type CornerId,
 } from "@/lib/poster/ornaments";
+import {
+  creaturePrims,
+  type CreaturePlacement,
+} from "@/lib/poster/creatures";
+import type { CreatureArt } from "@/lib/poster/creatures/types";
 import { posterRegions, POSTER_SIZES, type PosterSize } from "@/lib/poster/frame";
 import { centeredLines, type Prim, type Rect } from "@/lib/poster/prims";
 import { layoutPosterTree } from "@/lib/poster/treeLayout";
@@ -37,6 +42,9 @@ export interface PosterConfig {
   showYears: boolean;
   showSpouses: boolean;
   showGenerationLabels: boolean;
+  /** Id hình linh vật; "khong" = không có. */
+  creature: string;
+  creaturePlacement: CreaturePlacement;
   /** Null = in cả dòng họ từ thuỷ tổ. */
   focalId: string | null;
   /** 0 = hết cây. */
@@ -56,6 +64,8 @@ export const DEFAULT_POSTER_CONFIG: Omit<PosterConfig, "title"> = {
   showYears: true,
   showSpouses: true,
   showGenerationLabels: true,
+  creature: "khong",
+  creaturePlacement: "ben-bang-ten",
   focalId: null,
   generations: 0,
 };
@@ -79,12 +89,16 @@ export function buildPoster(
   persons: PersonForTree[],
   families: FamilyForTree[],
   cfg: PosterConfig,
+  /** Hình linh vật đã tải xong; chưa tải thì tấm vẫn dựng, chỉ thiếu hình. */
+  creature?: CreatureArt | null,
 ): PosterDoc {
   const pal = paletteById(cfg.paletteId);
   const { w, h } = POSTER_SIZES[cfg.size];
+  const hasCreature = !!creature && creature.shapes.length > 0;
   const r = posterRegions(cfg.size, {
     columns: cfg.column !== "khong",
     banner: true,
+    creature: hasCreature ? cfg.creaturePlacement : "khong",
   });
   const prims: Prim[] = [
     { k: "rect", x: 0, y: 0, w, h, fill: pal.paper },
@@ -102,6 +116,15 @@ export function buildPoster(
     ...columnPrims(cfg.column, r.columnLeft, pal, r.scale, cfg.coupletLeft),
     ...columnPrims(cfg.column, r.columnRight, pal, r.scale, cfg.coupletRight),
   );
+  if (hasCreature) {
+    const [left, right] = r.creatures[cfg.creaturePlacement];
+    prims.push(
+      ...creaturePrims(creature, left, pal, false),
+      // Con bên phải soi gương con bên trái — đôi rồng chầu mà cùng quay
+      // một hướng thì nhìn là biết ngay sai.
+      ...creaturePrims(creature, right, pal, true),
+    );
+  }
   prims.push(
     ...bannerPrims(
       cfg.banner,

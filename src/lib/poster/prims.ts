@@ -51,6 +51,19 @@ export type Prim =
       sw?: number;
     }
   | {
+      /**
+       * Nhóm có phép biến hình — dùng cho hình linh vật lấy từ file SVG.
+       *
+       * Cố ý KHÔNG tính lại toạ độ từng đường nét để "ép" hình vào ô:
+       * hình rồng có hàng nghìn nét, mỗi phép tính lại là một cơ hội làm
+       * méo, mà méo thì chỉ nhận ra sau khi in. Bọc một phép biến hình
+       * thì hình giữ nguyên như tác giả vẽ.
+       */
+      k: "group";
+      transform: string;
+      children: Prim[];
+    }
+  | {
       k: "text";
       x: number;
       y: number;

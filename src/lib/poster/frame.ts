@@ -37,6 +37,14 @@ export interface PosterRegions {
   columnRight: Rect;
   /** Bốn ô vuông ở góc trong, cho hoạ tiết góc. */
   corners: { topLeft: Rect; topRight: Rect; bottomLeft: Rect; bottomRight: Rect };
+  /**
+   * Ô cho linh vật (rồng chầu, phượng múa) theo từng cách đặt.
+   *
+   * Vùng này nằm trong CÙNG bố cục với cây, nên chọn rồng không bao giờ
+   * làm rồng đè lên tên người — thứ chắc chắn xảy ra nếu hình tự tìm chỗ
+   * đứng theo tỉ lệ riêng của nó.
+   */
+  creatures: Record<"ben-bang-ten" | "goc-tren" | "goc-duoi", [Rect, Rect]>;
   /** Chỗ còn lại để vẽ cây — phần duy nhất co giãn theo dữ liệu. */
   tree: Rect;
   /** Bề dày khung diềm, để mẫu hoa văn biết vẽ dày bao nhiêu. */
@@ -51,6 +59,14 @@ export interface FrameOptions {
   columns: boolean;
   /** Có băng tên hay không. */
   banner: boolean;
+  /**
+   * Linh vật đặt ở đâu — cây phải tránh chỗ đó ra.
+   *
+   * "ben-bang-ten" không ăn vào phần cây (rồng đứng hai bên băng tên),
+   * còn đặt ở góc thì cây phải lùi lên hoặc xuống, nếu không rồng nằm đè
+   * lên mấy đời cuối.
+   */
+  creature?: "khong" | "ben-bang-ten" | "goc-tren" | "goc-duoi";
 }
 
 /**
@@ -63,6 +79,7 @@ export function posterRegions(
   size: PosterSize,
   opts: FrameOptions = { columns: true, banner: true },
 ): PosterRegions {
+  const place = opts.creature ?? "khong";
   const { w, h } = POSTER_SIZES[size];
   const scale = w / POSTER_SIZES.A2.w;
 
@@ -107,15 +124,53 @@ export function posterRegions(
     bottomRight: { x: cx1, y: inner.y + inner.h - cs, w: cs, h: cs },
   };
 
+  // Ô linh vật.
+  //
+  // "Chầu hai bên băng tên": lấp đúng khoảng trống hai bên băng — chỗ
+  // này vốn bỏ không, nên không lấy mất chỗ nào của cây.
+  const sideW = banner.x - (columnLeft.x + colW) - Math.round(borderBand * 0.4);
+  const sideH = Math.round(bannerH * 1.25);
+  const sideY = inner.y;
+  const creatureSide: [Rect, Rect] = [
+    { x: columnLeft.x + colW, y: sideY, w: Math.max(0, sideW), h: sideH },
+    {
+      x: banner.x + banner.w + Math.round(borderBand * 0.4),
+      y: sideY,
+      w: Math.max(0, sideW),
+      h: sideH,
+    },
+  ];
+
+  const breathe = Math.round(borderBand * 0.5);
+  const cs2 = Math.round(Math.min(inner.w, inner.h) * 0.16);
+  const cornerTop: [Rect, Rect] = [
+    { x: cx0, y: inner.y + bannerH, w: cs2, h: cs2 },
+    { x: columnRight.x - cs2, y: inner.y + bannerH, w: cs2, h: cs2 },
+  ];
+  const cornerBottom: [Rect, Rect] = [
+    { x: cx0, y: inner.y + inner.h - cs2, w: cs2, h: cs2 },
+    { x: columnRight.x - cs2, y: inner.y + inner.h - cs2, w: cs2, h: cs2 },
+  ];
+
   // Cây: dưới băng tên, giữa hai cột. Chừa thêm một khoảng thở để chữ
   // trong ô không chạm vào hoa văn.
-  const breathe = Math.round(borderBand * 0.5);
-  const treeTop = inner.y + bannerH + (opts.banner ? breathe : 0);
+  //
+  // Linh vật ở góc thì cây phải lùi HẲN qua khỏi ô linh vật. Lùi nửa vời
+  // (đủ cho hàng ngắn, không đủ cho hàng dài) thì đuôi rồng vắt ngang
+  // tên người ở hàng cuối — mà hàng cuối luôn là hàng rộng nhất.
+  const dodge =
+    place === "khong" || place === "ben-bang-ten"
+      ? 0
+      : Math.max(0, cs2 - breathe);
+  const treeTop =
+    inner.y + bannerH + (opts.banner ? breathe : 0) + (place === "goc-tren" ? dodge : 0);
+  const treeBottom =
+    inner.y + inner.h - breathe - (place === "goc-duoi" ? dodge : 0);
   const tree: Rect = {
     x: columnLeft.x + colW + breathe,
     y: treeTop,
     w: inner.w - colW * 2 - breathe * 2,
-    h: inner.y + inner.h - treeTop - breathe,
+    h: treeBottom - treeTop,
   };
 
   return {
@@ -126,6 +181,11 @@ export function posterRegions(
     columnLeft,
     columnRight,
     corners,
+    creatures: {
+      "ben-bang-ten": creatureSide,
+      "goc-tren": cornerTop,
+      "goc-duoi": cornerBottom,
+    },
     tree,
     borderBand,
     scale,

@@ -60,6 +60,12 @@ function renderPrim(p: Prim, i: number) {
           strokeWidth={p.sw}
         />
       );
+    case "group":
+      return (
+        <g key={i} transform={p.transform}>
+          {p.children.map(renderPrim)}
+        </g>
+      );
     case "text":
       return (
         <text
