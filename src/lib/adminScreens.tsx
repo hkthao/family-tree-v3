@@ -4,6 +4,7 @@ import {
   IconBell,
   IconBuildings,
   IconMail,
+  IconMicrophone,
   IconScroll,
   IconSettings,
   IconShield,
@@ -106,6 +107,14 @@ export const ADMIN_SCREENS: AdminScreen[] = [
     icon: <IconSparkles className={ic} />,
     area: "settings",
     legacyTab: "ai",
+  },
+  {
+    slug: "podcast",
+    label: "Podcast",
+    description: "Các tập kéo từ Facebook: ẩn/hiện, sửa tiêu đề, đồng bộ.",
+    icon: <IconMicrophone className={ic} />,
+    area: "settings",
+    legacyTab: "podcast",
   },
   {
     slug: "thong-bao",

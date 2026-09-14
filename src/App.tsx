@@ -28,6 +28,7 @@ const AdminTroLyAi = lazy(() => import("@/pages/admin/TroLyAiPage"));
 const AdminCauHinh = lazy(() => import("@/pages/admin/CauHinhPage"));
 const AdminCauHinhAi = lazy(() => import("@/pages/admin/CauHinhAiPage"));
 const AdminThongBao = lazy(() => import("@/pages/admin/ThongBaoPage"));
+const AdminPodcast = lazy(() => import("@/pages/admin/PodcastPage"));
 const AdminNhapGiaPha = lazy(() => import("@/pages/admin/NhapGiaPhaPage"));
 const AdminLegacyRedirect = lazy(() => import("@/pages/admin/LegacyRedirect"));
 const AnnouncementDetail = lazy(() => import("@/pages/AnnouncementDetail"));
@@ -36,6 +37,7 @@ const Changelog = lazy(() => import("@/pages/Changelog"));
 const Videos = lazy(() => import("@/pages/Videos"));
 const Clans = lazy(() => import("@/pages/Clans"));
 const Customs = lazy(() => import("@/pages/Customs"));
+const Podcast = lazy(() => import("@/pages/Podcast"));
 const DemoRedirect = lazy(() => import("@/pages/DemoRedirect"));
 const CustomsDetail = lazy(() => import("@/pages/CustomsDetail"));
 const CustomsForm = lazy(() => import("@/pages/CustomsForm"));
@@ -167,6 +169,14 @@ export default function App() {
           element={
             <RequireAuth>
               <Customs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/podcast"
+          element={
+            <RequireAuth>
+              <Podcast />
             </RequireAuth>
           }
         />
@@ -304,6 +314,7 @@ export default function App() {
         <Route path="/admin/cau-hinh" element={<RequireAuth><AdminCauHinh /></RequireAuth>} />
         <Route path="/admin/cau-hinh-ai" element={<RequireAuth><AdminCauHinhAi /></RequireAuth>} />
         <Route path="/admin/thong-bao" element={<RequireAuth><AdminThongBao /></RequireAuth>} />
+        <Route path="/admin/podcast" element={<RequireAuth><AdminPodcast /></RequireAuth>} />
         <Route path="/admin/nhap-gia-pha" element={<RequireAuth><AdminNhapGiaPha /></RequireAuth>} />
         {/* Link cũ (/admin?tab=… và /admin/cai-dat) đã bị dán vào chat và
             bookmark — chuyển hướng thay vì để người ta gặp trang trống. */}
