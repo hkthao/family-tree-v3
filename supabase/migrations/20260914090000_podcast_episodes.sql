@@ -88,10 +88,14 @@ on conflict (key) do nothing;
 -- mức Graph API. Chỉ đặt lịch khi pg_cron + pg_net có sẵn (Supabase Cloud
 -- có, docker local thì không).
 --
--- Thân cron đọc hai GUC, người vận hành đặt một lần:
+-- Thân cron đọc ba GUC, người vận hành đặt một lần:
 --   alter database postgres
 --     set app.sync_podcast_url = 'https://<host>/functions/v1/sync-podcast';
 --   alter database postgres set app.sync_podcast_token = '<CRON_TOKEN>';
+--   alter database postgres set app.sync_podcast_apikey = '<ANON_KEY>';
+--
+-- `apikey` + `Authorization` là bắt buộc: gọi vào cổng Kong mà thiếu thì bị
+-- chặn ở 401, chưa kịp tới function. Đã dính đúng chỗ này lúc deploy.
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron')
@@ -106,6 +110,9 @@ begin
         url := current_setting('app.sync_podcast_url', true),
         headers := jsonb_build_object(
           'Content-Type', 'application/json',
+          'apikey', current_setting('app.sync_podcast_apikey', true),
+          'Authorization',
+            'Bearer ' || current_setting('app.sync_podcast_apikey', true),
           'X-Cron-Token', current_setting('app.sync_podcast_token', true)
         ),
         body := '{}'::jsonb
