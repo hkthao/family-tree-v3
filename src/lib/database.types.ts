@@ -1348,6 +1348,56 @@ export type Database = {
           },
         ]
       }
+      fb_page_credentials: {
+        Row: {
+          ciphertext: string
+          hint: string
+          is_active: boolean
+          last_check_at: string | null
+          last_check_error: string | null
+          last_check_ok: boolean | null
+          page_id: string
+          page_name: string | null
+          token_expires_at: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          ciphertext: string
+          hint: string
+          is_active?: boolean
+          last_check_at?: string | null
+          last_check_error?: string | null
+          last_check_ok?: boolean | null
+          page_id: string
+          page_name?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          ciphertext?: string
+          hint?: string
+          is_active?: boolean
+          last_check_at?: string | null
+          last_check_error?: string | null
+          last_check_ok?: boolean | null
+          page_id?: string
+          page_name?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fb_page_credentials_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback: {
         Row: {
           admin_note: string | null
@@ -3261,6 +3311,20 @@ export type Database = {
         Returns: undefined
       }
       f_unaccent: { Args: { "": string }; Returns: string }
+      fb_page_credentials_status: {
+        Args: never
+        Returns: {
+          hint: string
+          is_active: boolean
+          last_check_at: string
+          last_check_error: string
+          last_check_ok: boolean
+          page_id: string
+          page_name: string
+          token_expires_at: string
+          updated_at: string
+        }[]
+      }
       get_clan_completion: {
         Args: { p_clan_id: string }
         Returns: {

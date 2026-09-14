@@ -46,12 +46,38 @@ User token ngắn (1–2 giờ)
 Page token **thừa hưởng quyền của User token lúc sinh ra nó** — sinh Page token
 từ một User token thiếu quyền thì Page token cũng thiếu y như vậy.
 
+## Cắm token từ màn hình quản trị (cách nên dùng)
+
+**Quản trị › Podcast › Kết nối Facebook.** Dán App ID + App Secret + token
+người dùng (ngắn hạn cũng được) → máy chủ tự đổi sang token dài hạn, đọc danh
+sách Trang cho admin chọn, rồi lưu Page token đã **mã hoá AES-GCM** vào bảng
+`fb_page_credentials`.
+
+Ba điều cố ý:
+
+- **Bảng token không có RLS policy nào.** RLS bật + không policy = chặn sạch
+  mọi vai trò qua PostgREST, kể cả platform admin. Chỉ service role (edge
+  function) đọc nổi. Admin xem trạng thái qua RPC `fb_page_credentials_status()`
+  — hàm này trả tên Trang, 4 ký tự cuối token, hạn dùng, kết quả kiểm tra gần
+  nhất; **không bao giờ trả token**.
+- **App Secret không được lưu.** Nó chỉ cần cho đúng lần đổi token; thứ gì
+  không cần giữ thì đừng giữ.
+- **Không dùng `platform_settings`** cho token — bảng đó `using (true)`, tức
+  đọc công khai. Cắm token vào đó là tặng cả cái Trang cho mọi khách vãng lai.
+
+Mã hoá dùng chung KEK với khoá AI (`AI_KEY_ENCRYPTION_KEY`) — đổi KEK thì phải
+cắm lại token.
+
 ## Biến môi trường của edge function `sync-podcast`
+
+Chỉ còn là **đường lui** khi chưa cắm token trong app (hoặc KEK đổi làm bản mã
+thành rác). Có bản ghi trong `fb_page_credentials` thì nó được ưu tiên.
 
 | Biến | Ý nghĩa |
 |---|---|
 | `FB_PAGE_ID` | ID Trang, ví dụ `984275491441459` (ByteCast Tech) |
 | `FB_PAGE_TOKEN` | Page token dài hạn |
+| `AI_KEY_ENCRYPTION_KEY` | KEK để mã hoá/giải mã token đã lưu (đã có sẵn cho khoá AI) |
 | `FB_API_VERSION` | mặc định `v21.0` |
 | `FB_SYNC_LIMIT` | số tập kéo mỗi lần, mặc định 25 |
 | `CRON_TOKEN` | dùng chung với các cron khác |
