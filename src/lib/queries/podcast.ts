@@ -141,3 +141,82 @@ export function formatDuration(seconds: number | null): string | null {
   const s = total % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
+
+
+// ───────── Kết nối Facebook (chỉ quản trị) ──────────────────────────
+
+export interface FbCredentialStatus {
+  page_id: string;
+  page_name: string | null;
+  hint: string;
+  token_expires_at: string | null;
+  is_active: boolean;
+  updated_at: string;
+  last_check_at: string | null;
+  last_check_ok: boolean | null;
+  last_check_error: string | null;
+}
+
+/**
+ * Trạng thái Trang đã nối.
+ *
+ * Trả về METADATA, không bao giờ trả token: bảng token không có RLS policy
+ * nào nên PostgREST không đọc nổi, còn hàm này (security definer) chỉ lấy
+ * đúng phần admin cần để biết "đã nối chưa, còn sống không".
+ */
+export async function getFbCredentialStatus(
+  client: Client = defaultClient,
+): Promise<FbCredentialStatus[]> {
+  const { data, error } = await client.rpc("fb_page_credentials_status");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as FbCredentialStatus[];
+}
+
+export interface ConnectResult {
+  ok?: boolean;
+  needPage?: boolean;
+  pages?: { id: string; name: string }[];
+  pageId?: string;
+  pageName?: string;
+  expiresAt?: string | null;
+}
+
+/**
+ * Nối Trang: gửi App ID + App Secret + token ngắn cho edge function, nó đổi
+ * sang token dài rồi lưu bản mã.
+ *
+ * App Secret chỉ đi qua một lần và KHÔNG được lưu lại ở đâu cả — nó chỉ cần
+ * cho đúng lần đổi token này.
+ *
+ * Không truyền `pageId` thì hàm trả về danh sách Trang để chọn.
+ */
+export async function connectFacebookPage(
+  input: {
+    appId: string;
+    appSecret: string;
+    userToken: string;
+    pageId?: string;
+  },
+  client: Client = defaultClient,
+): Promise<ConnectResult> {
+  const { data, error } = await client.functions.invoke("sync-podcast", {
+    body: { action: "connect", ...input },
+  });
+  if (error) throw new Error(error.message);
+  const res = data as ConnectResult & { error?: string };
+  if (res.error) throw new Error(res.error);
+  return res;
+}
+
+/** Gọi Facebook một phát để xem token còn dùng được không. */
+export async function checkFacebookConnection(
+  client: Client = defaultClient,
+): Promise<{ pageName: string }> {
+  const { data, error } = await client.functions.invoke("sync-podcast", {
+    body: { action: "check" },
+  });
+  if (error) throw new Error(error.message);
+  const res = data as { ok?: boolean; pageName?: string; error?: string };
+  if (res.error || !res.ok) throw new Error(res.error ?? "Token không dùng được");
+  return { pageName: res.pageName ?? "" };
+}

@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDateOnly, formatRelative } from "@/lib/formatDate";
 import {
+  checkFacebookConnection,
+  connectFacebookPage,
   formatDuration,
+  getFbCredentialStatus,
   getPodcastSyncStatus,
   listAllPodcastEpisodes,
   syncPodcastNow,
@@ -71,6 +74,8 @@ export default function PodcastPage() {
       description="Các tập kéo về từ Trang Facebook. Ẩn tập không phù hợp, sửa tiêu đề, đồng bộ lại."
     >
       <div className="space-y-4">
+        <FacebookConnection />
+
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-3">
           <div className="text-sm">
             <p className="font-medium">
@@ -229,5 +234,195 @@ function EpisodeRow({ episode }: { episode: PodcastEpisode }) {
         </div>
       </div>
     </li>
+  );
+}
+
+
+/**
+ * Kết nối Facebook.
+ *
+ * Admin dán App ID + App Secret + token ngắn lấy từ Graph API Explorer;
+ * máy chủ đổi sang token dài rồi lưu ở dạng mã hoá. Token KHÔNG bao giờ
+ * quay ngược ra trình duyệt, và App Secret không được lưu lại ở đâu — nó
+ * chỉ cần cho đúng lần đổi đó.
+ *
+ * Vì sao cho cắm trong app thay vì để env: đổi token là việc sẽ phải làm
+ * lại nhiều lần (đổi mật khẩu Facebook là token chết), mà mỗi lần lại
+ * phải ssh vào máy chủ thì sớm muộn cũng có lần không ai làm.
+ */
+function FacebookConnection() {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [appId, setAppId] = useState("");
+  const [appSecret, setAppSecret] = useState("");
+  const [userToken, setUserToken] = useState("");
+  const [pages, setPages] = useState<{ id: string; name: string }[]>([]);
+  const [open, setOpen] = useState(false);
+
+  const statusQ = useQuery({
+    queryKey: ["fb-credential-status"],
+    queryFn: () => getFbCredentialStatus(),
+  });
+  const active = statusQ.data?.find((c) => c.is_active);
+
+  const connectM = useMutation({
+    mutationFn: (pageId?: string) =>
+      connectFacebookPage({ appId, appSecret, userToken, pageId }),
+    onSuccess: (r) => {
+      if (r.needPage) {
+        setPages(r.pages ?? []);
+        toast.success(`Tìm thấy ${r.pages?.length ?? 0} Trang — chọn một Trang`);
+        return;
+      }
+      toast.success(`Đã nối Trang ${r.pageName}`);
+      // Xoá khỏi bộ nhớ trình duyệt ngay khi xong việc.
+      setAppSecret("");
+      setUserToken("");
+      setPages([]);
+      setOpen(false);
+      qc.invalidateQueries({ queryKey: ["fb-credential-status"] });
+    },
+    onError: (e) =>
+      toast.error("Không nối được", { description: (e as Error).message }),
+  });
+
+  const checkM = useMutation({
+    mutationFn: () => checkFacebookConnection(),
+    onSuccess: (r) => {
+      toast.success(`Token còn tốt — Trang ${r.pageName}`);
+      qc.invalidateQueries({ queryKey: ["fb-credential-status"] });
+    },
+    onError: (e) => {
+      toast.error("Token không dùng được", {
+        description: (e as Error).message,
+      });
+      qc.invalidateQueries({ queryKey: ["fb-credential-status"] });
+    },
+  });
+
+  return (
+    <section className="space-y-3 rounded-md border bg-card p-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 text-sm">
+          <p className="font-medium">Kết nối Facebook</p>
+          {active ? (
+            <>
+              <p className="text-muted-foreground">
+                Trang <span className="text-foreground">{active.page_name}</span>{" "}
+                · token {active.hint} ·{" "}
+                {active.token_expires_at
+                  ? `hết hạn ${formatDateOnly(active.token_expires_at)}`
+                  : "không hết hạn"}
+              </p>
+              {active.last_check_at && (
+                <p className="text-xs text-muted-foreground">
+                  Kiểm tra gần nhất: {formatRelative(active.last_check_at)} —{" "}
+                  {active.last_check_ok ? "tốt" : `hỏng (${active.last_check_error})`}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-muted-foreground">
+              Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi nối.
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 gap-2">
+          {active && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => checkM.mutate()}
+              disabled={checkM.isPending}
+            >
+              {checkM.isPending ? "Đang kiểm tra…" : "Kiểm tra token"}
+            </Button>
+          )}
+          <Button size="sm" variant="outline" onClick={() => setOpen((v) => !v)}>
+            {open ? "Đóng" : active ? "Nối lại" : "Nối Trang"}
+          </Button>
+        </div>
+      </div>
+
+      {active && !active.last_check_ok && active.last_check_error && (
+        <Alert variant="destructive">
+          <AlertDescription>{active.last_check_error}</AlertDescription>
+        </Alert>
+      )}
+
+      {open && (
+        <div className="space-y-3 border-t pt-3">
+          <p className="text-xs text-muted-foreground">
+            Lấy ở <span className="font-mono">developers.facebook.com</span>:
+            App ID và App Secret trong Cài đặt › Cơ bản; token người dùng sinh
+            ở Graph API Explorer với quyền{" "}
+            <span className="font-mono">pages_show_list</span>,{" "}
+            <span className="font-mono">pages_read_engagement</span>,{" "}
+            <span className="font-mono">pages_read_user_content</span>. Token
+            ngắn hạn cũng được — máy chủ sẽ tự đổi sang loại dài hạn.
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <label className="block space-y-1">
+              <span className="text-sm font-medium">App ID</span>
+              <Input
+                value={appId}
+                onChange={(e) => setAppId(e.target.value)}
+                placeholder="1671135124582219"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-sm font-medium">App Secret</span>
+              <Input
+                type="password"
+                value={appSecret}
+                onChange={(e) => setAppSecret(e.target.value)}
+                placeholder="không được lưu lại"
+              />
+            </label>
+          </div>
+          <label className="block space-y-1">
+            <span className="text-sm font-medium">Token người dùng</span>
+            <Input
+              type="password"
+              value={userToken}
+              onChange={(e) => setUserToken(e.target.value)}
+              placeholder="EAA…"
+            />
+          </label>
+
+          {pages.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Chọn Trang để lấy podcast:</p>
+              <ul className="space-y-1">
+                {pages.map((pg) => (
+                  <li key={pg.id}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => connectM.mutate(pg.id)}
+                      disabled={connectM.isPending}
+                    >
+                      {pg.name}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {pages.length === 0 && (
+            <Button
+              onClick={() => connectM.mutate(undefined)}
+              disabled={
+                connectM.isPending || !appId || !appSecret || !userToken
+              }
+            >
+              {connectM.isPending ? "Đang nối…" : "Đọc danh sách Trang"}
+            </Button>
+          )}
+        </div>
+      )}
+    </section>
   );
 }
