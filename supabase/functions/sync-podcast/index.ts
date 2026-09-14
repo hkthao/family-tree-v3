@@ -19,13 +19,20 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+import {
+  decryptSecret,
+  encryptSecret,
+  hintOf,
+} from "../_shared/llm/crypto.ts";
 import { toEpisode, type FbVideo } from "./parse.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CRON_TOKEN = Deno.env.get("CRON_TOKEN") ?? "";
-const FB_PAGE_ID = Deno.env.get("FB_PAGE_ID") ?? "";
-const FB_PAGE_TOKEN = Deno.env.get("FB_PAGE_TOKEN") ?? "";
+// Giữ lại đường env làm ĐƯỜNG LUI: nếu admin chưa cắm token trong app,
+// hoặc KEK đổi làm bản mã thành rác, thì vẫn còn cách chạy được.
+const ENV_PAGE_ID = Deno.env.get("FB_PAGE_ID") ?? "";
+const ENV_PAGE_TOKEN = Deno.env.get("FB_PAGE_TOKEN") ?? "";
 const FB_API_VERSION = Deno.env.get("FB_API_VERSION") ?? "v21.0";
 /** Số tập kéo mỗi lần. Tập cũ đã nằm trong bảng rồi, không cần kéo lại hết. */
 const LIMIT = Number(Deno.env.get("FB_SYNC_LIMIT") ?? "25");
@@ -82,16 +89,185 @@ Deno.serve(async (req) => {
       );
   };
 
-  if (!FB_PAGE_ID || !FB_PAGE_TOKEN) {
-    const msg = "Chưa cấu hình FB_PAGE_ID / FB_PAGE_TOKEN";
-    await noteError(msg);
-    return json({ error: msg }, { status: 500 });
+  const body = await req.json().catch(() => ({}));
+  const action = (body as { action?: string }).action ?? "sync";
+
+  // ─── connect: đổi token ngắn sang token dài rồi lưu ───────────────
+  //
+  // Admin dán token ngắn từ Graph API Explorer (sống 1–2 giờ) cùng app id
+  // + app secret. Ở đây đổi sang user token 60 ngày, rồi lấy Page token —
+  // Page token sinh từ user token dài hạn thì gần như không hết hạn.
+  //
+  // App Secret KHÔNG được lưu lại: nó chỉ cần cho đúng lần đổi này.
+  if (action === "connect") {
+    const { appId, appSecret, userToken, pageId } = body as {
+      appId?: string;
+      appSecret?: string;
+      userToken?: string;
+      pageId?: string;
+    };
+    if (!appId || !appSecret || !userToken) {
+      return json(
+        { error: "Cần đủ App ID, App Secret và token người dùng" },
+        { status: 400 },
+      );
+    }
+
+    const exchangeUrl =
+      `https://graph.facebook.com/${FB_API_VERSION}/oauth/access_token` +
+      `?grant_type=fb_exchange_token&client_id=${encodeURIComponent(appId)}` +
+      `&client_secret=${encodeURIComponent(appSecret)}` +
+      `&fb_exchange_token=${encodeURIComponent(userToken)}`;
+    const exRes = await fetch(exchangeUrl);
+    const exJson = await exRes.json();
+    if (exJson.error) {
+      return json(
+        { error: `Không đổi được token dài hạn: ${exJson.error.message}` },
+        { status: 400 },
+      );
+    }
+    const longUserToken = exJson.access_token as string;
+
+    const pagesRes = await fetch(
+      `https://graph.facebook.com/${FB_API_VERSION}/me/accounts` +
+        `?fields=id,name,access_token&access_token=${encodeURIComponent(longUserToken)}`,
+    );
+    const pagesJson = await pagesRes.json();
+    if (pagesJson.error) {
+      return json(
+        { error: `Không đọc được danh sách Trang: ${pagesJson.error.message}` },
+        { status: 400 },
+      );
+    }
+    const pages = (pagesJson.data ?? []) as {
+      id: string;
+      name: string;
+      access_token: string;
+    }[];
+
+    // Chưa chọn Trang → trả danh sách cho admin chọn. KHÔNG trả token.
+    if (!pageId) {
+      return json({
+        needPage: true,
+        pages: pages.map((p) => ({ id: p.id, name: p.name })),
+      });
+    }
+
+    const picked = pages.find((p) => p.id === pageId);
+    if (!picked) {
+      return json(
+        { error: "Tài khoản này không quản lý Trang vừa chọn" },
+        { status: 400 },
+      );
+    }
+
+    // Hỏi Facebook xem token vừa lấy sống tới bao giờ, thay vì tin lời đồn.
+    let expiresAt: string | null = null;
+    try {
+      const dbg = await fetch(
+        `https://graph.facebook.com/${FB_API_VERSION}/debug_token` +
+          `?input_token=${encodeURIComponent(picked.access_token)}` +
+          `&access_token=${encodeURIComponent(longUserToken)}`,
+      ).then((r) => r.json());
+      const exp = dbg?.data?.expires_at as number | undefined;
+      expiresAt = exp ? new Date(exp * 1000).toISOString() : null;
+    } catch {
+      // Không tra được thì thôi, coi như không biết hạn — không phải lý do
+      // để chặn cả việc kết nối.
+    }
+
+    const uid = (await admin.auth.getUser(authHeader.replace("Bearer ", "")))
+      .data.user?.id ?? null;
+
+    const { error: upErr } = await admin.from("fb_page_credentials").upsert(
+      {
+        page_id: picked.id,
+        page_name: picked.name,
+        ciphertext: await encryptSecret(picked.access_token),
+        hint: hintOf(picked.access_token),
+        token_expires_at: expiresAt,
+        is_active: true,
+        updated_at: new Date().toISOString(),
+        updated_by: uid,
+        last_check_at: new Date().toISOString(),
+        last_check_ok: true,
+        last_check_error: null,
+      },
+      { onConflict: "page_id" },
+    );
+    if (upErr) return json({ error: upErr.message }, { status: 500 });
+
+    // Mỗi lần chỉ một Trang đang dùng — tắt các Trang cũ.
+    await admin
+      .from("fb_page_credentials")
+      .update({ is_active: false })
+      .neq("page_id", picked.id);
+
+    return json({
+      ok: true,
+      pageId: picked.id,
+      pageName: picked.name,
+      expiresAt,
+    });
   }
 
+  // ─── Lấy cấu hình đang dùng ──────────────────────────────────────
+  const { data: cred } = await admin
+    .from("fb_page_credentials")
+    .select("page_id, page_name, ciphertext")
+    .eq("is_active", true)
+    .maybeSingle();
+
+  let pageId = ENV_PAGE_ID;
+  let pageToken = ENV_PAGE_TOKEN;
+  if (cred) {
+    try {
+      pageToken = await decryptSecret(cred.ciphertext);
+      pageId = cred.page_id;
+    } catch (e) {
+      const msg = `Không giải mã được token đã lưu: ${(e as Error).message}`;
+      await noteError(msg);
+      return json({ error: msg }, { status: 500 });
+    }
+  }
+
+  if (!pageId || !pageToken) {
+    const msg =
+      "Chưa nối Trang Facebook. Vào Quản trị › Podcast để kết nối, hoặc đặt FB_PAGE_ID / FB_PAGE_TOKEN.";
+    await noteError(msg);
+    return json({ error: msg }, { status: 400 });
+  }
+
+  // ─── check: token còn sống không ─────────────────────────────────
+  if (action === "check") {
+    const res = await fetch(
+      `https://graph.facebook.com/${FB_API_VERSION}/${pageId}` +
+        `?fields=name&access_token=${encodeURIComponent(pageToken)}`,
+    );
+    const info = await res.json();
+    const ok = !info.error;
+    await admin
+      .from("fb_page_credentials")
+      .update({
+        last_check_at: new Date().toISOString(),
+        last_check_ok: ok,
+        last_check_error: ok ? null : (info.error?.message ?? "Lỗi không rõ"),
+        page_name: ok ? info.name : undefined,
+      })
+      .eq("page_id", pageId);
+    return json(
+      ok
+        ? { ok: true, pageName: info.name }
+        : { error: info.error?.message ?? "Token không dùng được" },
+      { status: ok ? 200 : 400 },
+    );
+  }
+
+  // ─── sync ────────────────────────────────────────────────────────
   const fields = "id,description,created_time,permalink_url,picture,length";
   const url =
-    `https://graph.facebook.com/${FB_API_VERSION}/${FB_PAGE_ID}/videos` +
-    `?fields=${fields}&limit=${LIMIT}&access_token=${encodeURIComponent(FB_PAGE_TOKEN)}`;
+    `https://graph.facebook.com/${FB_API_VERSION}/${pageId}/videos` +
+    `?fields=${fields}&limit=${LIMIT}&access_token=${encodeURIComponent(pageToken)}`;
 
   let payload: { data?: FbVideo[]; error?: { message?: string; code?: number } };
   try {
@@ -109,6 +285,14 @@ Deno.serve(async (req) => {
     // tháng sau mới có người để ý.
     const msg = `Facebook trả lỗi ${payload.error.code}: ${payload.error.message}`;
     await noteError(msg);
+    await admin
+      .from("fb_page_credentials")
+      .update({
+        last_check_at: new Date().toISOString(),
+        last_check_ok: false,
+        last_check_error: msg,
+      })
+      .eq("page_id", pageId);
     return json({ error: msg }, { status: 502 });
   }
 

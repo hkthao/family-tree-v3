@@ -157,3 +157,69 @@ describe("RLS: podcast_episodes", () => {
     expect(error).not.toBeNull();
   });
 });
+
+/**
+ * Bảng token Facebook: cách bảo vệ mạnh nhất của nó là KHÔNG CÓ POLICY NÀO.
+ * Test này giữ đúng điều đó — một policy "tiện tay" thêm vào sau này là đủ
+ * để token đọc được Trang rơi vào tay bất kỳ ai đăng nhập.
+ */
+describe("RLS: fb_page_credentials", () => {
+  let admin: TestUser;
+  let user: TestUser;
+
+  beforeAll(async () => {
+    admin = await createTestUser({
+      displayName: "FbAdmin",
+      isPlatformAdmin: true,
+    });
+    user = await createTestUser({ displayName: "FbUser" });
+    await adminClient().from("fb_page_credentials").delete().neq("page_id", "");
+    const { error } = await adminClient().from("fb_page_credentials").insert({
+      page_id: "111",
+      page_name: "Trang thử",
+      ciphertext: "YmFuIG1hIGdpYQ==",
+      hint: "••••abcd",
+      is_active: true,
+    });
+    if (error) throw new Error(error.message);
+  });
+
+  afterAll(async () => {
+    await adminClient().from("fb_page_credentials").delete().neq("page_id", "");
+    await deleteUser(admin.id);
+    await deleteUser(user.id);
+  });
+
+  it("KHÔNG ai đọc được bản mã qua API — kể cả platform admin", async () => {
+    for (const [who, client] of [
+      ["khách", anonClient()],
+      ["người dùng", user.client],
+      ["platform admin", admin.client],
+    ] as const) {
+      const { data, error } = await client
+        .from("fb_page_credentials")
+        .select("ciphertext");
+      // Hoặc bị chặn hẳn, hoặc trả 0 dòng — cái nào cũng được, miễn là
+      // KHÔNG có bản mã nào lọt ra.
+      expect(data ?? [], `${who} không được thấy bản mã`).toEqual([]);
+      void error;
+    }
+  });
+
+  it("admin xem được trạng thái qua RPC, và trong đó không có token", async () => {
+    const { data, error } = await admin.client.rpc(
+      "fb_page_credentials_status",
+    );
+    expect(error).toBeNull();
+    expect(data?.length).toBe(1);
+    const row = data![0] as Record<string, unknown>;
+    expect(row.page_name).toBe("Trang thử");
+    expect(row.hint).toBe("••••abcd");
+    expect(Object.keys(row)).not.toContain("ciphertext");
+  });
+
+  it("người dùng thường gọi RPC đó thì bị từ chối", async () => {
+    const { error } = await user.client.rpc("fb_page_credentials_status");
+    expect(error).not.toBeNull();
+  });
+});
