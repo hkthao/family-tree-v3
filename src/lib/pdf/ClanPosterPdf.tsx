@@ -1,6 +1,7 @@
 import {
   Circle,
   Document,
+  G,
   Line,
   Page,
   Path,
@@ -88,6 +89,12 @@ function renderPrim(p: Prim, i: number) {
           stroke={p.stroke}
           strokeWidth={p.sw}
         />
+      );
+    case "group":
+      return (
+        <G key={i} transform={p.transform}>
+          {p.children.map(renderPrim)}
+        </G>
       );
     case "text":
       return (

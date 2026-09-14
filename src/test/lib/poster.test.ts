@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { buildPoster, DEFAULT_POSTER_CONFIG } from "@/lib/poster/buildPoster";
+import { creaturePrims } from "@/lib/poster/creatures";
+import type { CreatureArt } from "@/lib/poster/creatures/types";
 import { posterRegions, POSTER_SIZES } from "@/lib/poster/frame";
+import { PALETTES } from "@/lib/poster/ornaments";
 import { layoutPosterTree } from "@/lib/poster/treeLayout";
 import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
 
@@ -275,5 +278,111 @@ describe("buildPoster", () => {
     const cardsOf = (d: typeof a) =>
       d.prims.filter((p) => p.k === "rect" && p.rx).map((p) => (p.k === "rect" ? [p.x, p.y] : []));
     expect(cardsOf(a)).toEqual(cardsOf(b));
+  });
+});
+
+describe("linh vật (rồng, phượng)", () => {
+  const art: CreatureArt = {
+    id: "thu",
+    label: "Thử",
+    // Hình chữ nhật nằm ngang, lệch gốc — cố ý, để bắt lỗi quên bù
+    // viewBox: rất nhiều file SVG có viewBox không bắt đầu từ 0.
+    viewBox: { x: 100, y: 50, w: 200, h: 100 },
+    shapes: [{ d: "M100 50 H300 V150 H100 Z", fill: "dark" }],
+  };
+  const box = { x: 0, y: 0, w: 400, h: 400 };
+  const pal = PALETTES[0];
+
+  const groupOf = (flip: boolean) => {
+    const out = creaturePrims(art, box, pal, flip);
+    expect(out).toHaveLength(1);
+    const g = out[0];
+    if (g.k !== "group") throw new Error("phải là một nhóm có phép biến hình");
+    return g;
+  };
+
+  it("giữ nguyên tỉ lệ hình, không kéo cho đầy ô", () => {
+    // Kéo cho vừa ô thì con rồng béo ra — và chỉ nhận ra sau khi in.
+    const g = groupOf(false);
+    const m = /scale\(([\d.]+) ([\d.]+)\)/.exec(g.transform)!;
+    expect(Number(m[1])).toBeCloseTo(Number(m[2]), 6);
+    expect(Number(m[1])).toBeCloseTo(2, 6); // 400/200, không phải 400/100
+  });
+
+  it("bù viewBox lệch gốc", () => {
+    expect(groupOf(false).transform).toContain("translate(-100 -50)");
+  });
+
+  it("con bên phải soi gương con bên trái", () => {
+    expect(groupOf(true).transform).toContain("scale(-1 1)");
+    expect(groupOf(false).transform).not.toContain("scale(-1 1)");
+  });
+
+  it("không có hình thì không vẽ gì", () => {
+    expect(
+      creaturePrims({ ...art, shapes: [] }, box, pal, false),
+    ).toEqual([]);
+  });
+
+  it("đặt linh vật ở góc thì CÂY LÙI LẠI, không để rồng đè lên tên người", () => {
+    const khong = posterRegions("A1", { columns: true, banner: true });
+    const gocDuoi = posterRegions("A1", {
+      columns: true,
+      banner: true,
+      creature: "goc-duoi",
+    });
+    expect(gocDuoi.tree.y + gocDuoi.tree.h).toBeLessThan(
+      khong.tree.y + khong.tree.h,
+    );
+  });
+
+  it("rồng chầu hai bên băng tên KHÔNG lấy mất chỗ của cây", () => {
+    // Chỗ hai bên băng tên vốn bỏ không — đặt vào đó là lấp chỗ trống,
+    // không phải giành chỗ.
+    const khong = posterRegions("A1", { columns: true, banner: true });
+    const ben = posterRegions("A1", {
+      columns: true,
+      banner: true,
+      creature: "ben-bang-ten",
+    });
+    expect(ben.tree).toEqual(khong.tree);
+  });
+
+  it("linh vật ở góc thì KHÔNG chạm vào vùng cây", () => {
+    // Đuôi rồng vắt ngang tên người là lỗi thấy ngay khi treo lên tường.
+    for (const size of ["A3", "A1", "A0"] as const) {
+      const duoi = posterRegions(size, {
+        columns: true,
+        banner: true,
+        creature: "goc-duoi",
+      });
+      const [l] = duoi.creatures["goc-duoi"];
+      expect(duoi.tree.y + duoi.tree.h).toBeLessThanOrEqual(l.y + 1);
+
+      const tren = posterRegions(size, {
+        columns: true,
+        banner: true,
+        creature: "goc-tren",
+      });
+      const [lt] = tren.creatures["goc-tren"];
+      expect(tren.tree.y).toBeGreaterThanOrEqual(lt.y + lt.h - 1);
+    }
+  });
+
+  it("ô linh vật nằm trong lòng khung, không đè lên cột câu đối", () => {
+    for (const size of ["A3", "A1"] as const) {
+      const r = posterRegions(size, {
+        columns: true,
+        banner: true,
+        creature: "ben-bang-ten",
+      });
+      for (const place of ["ben-bang-ten", "goc-tren", "goc-duoi"] as const) {
+        const [l, rt] = r.creatures[place];
+        expect(l.x).toBeGreaterThanOrEqual(r.columnLeft.x + r.columnLeft.w);
+        expect(rt.x + rt.w).toBeLessThanOrEqual(r.columnRight.x + 1);
+        expect(l.y).toBeGreaterThanOrEqual(r.inner.y - 1);
+        expect(rt.y + rt.h).toBeLessThanOrEqual(r.inner.y + r.inner.h + 1);
+      }
+    }
   });
 });
