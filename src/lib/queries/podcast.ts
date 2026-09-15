@@ -29,7 +29,7 @@ export interface PodcastEpisode {
 const COLS =
   "id, fb_video_id, title, description, permalink_url, thumbnail_url, duration_seconds, published_at, is_visible, title_edited, synced_at";
 
-/** Danh sách cho người xem: chỉ tập đang hiện, mới nhất trước. */
+/** Vài tập mới nhất — cho thẻ ở trang "Hôm nay". */
 export async function listPodcastEpisodes(
   limit = 50,
   client: Client = defaultClient,
@@ -42,6 +42,31 @@ export async function listPodcastEpisodes(
     .limit(limit);
   if (error) throw new Error(error.message);
   return (data ?? []) as PodcastEpisode[];
+}
+
+export const PODCAST_PAGE_SIZE = 10;
+
+/**
+ * Một trang danh sách cho người xem.
+ *
+ * Đếm tổng ngay trong cùng câu truy vấn (`count: "exact"`) thay vì gọi
+ * thêm một lượt: hai lượt riêng thì có lúc lệch nhau, và thanh phân trang
+ * hiện sai số tổng là kiểu lỗi người dùng phát hiện trước mình.
+ */
+export async function listPodcastPage(
+  page: number,
+  pageSize = PODCAST_PAGE_SIZE,
+  client: Client = defaultClient,
+): Promise<{ rows: PodcastEpisode[]; total: number }> {
+  const from = (Math.max(1, page) - 1) * pageSize;
+  const { data, error, count } = await client
+    .from("podcast_episodes")
+    .select(COLS, { count: "exact" })
+    .eq("is_visible", true)
+    .order("published_at", { ascending: false })
+    .range(from, from + pageSize - 1);
+  if (error) throw new Error(error.message);
+  return { rows: (data ?? []) as PodcastEpisode[], total: count ?? 0 };
 }
 
 /** Danh sách cho quản trị: gồm cả tập đã ẩn. */

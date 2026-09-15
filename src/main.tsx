@@ -102,7 +102,11 @@ createRoot(document.getElementById("root")!).render(
           //     trắng cả trang cây. Đúng vết xe của v4 và v7: thêm field
           //     vào một shape ĐANG nằm trong cache của người dùng thì
           //     phải bust, chứ deploy xong mới biết là người dùng chịu.
-          buster: "v8",
+          // v9: Podcast lên sóng lúc chưa đồng bộ tập nào, nên trình duyệt
+          //     của người đã mở trang lưu lại DANH SÁCH RỖNG. Đồng bộ xong
+          //     vẫn thấy "Chưa có tập nào" — đúng vết xe của v5 (danh sách
+          //     thông báo cached rỗng trước khi seed prod).
+          buster: "v9",
         }}
       >
         <App />

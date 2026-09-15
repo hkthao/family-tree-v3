@@ -167,6 +167,17 @@ function EpisodeRow({ episode }: { episode: PodcastEpisode }) {
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
+        {/* Ảnh bìa ngay trong danh sách: admin cần NHÌN THẤY cái mà người
+            dùng sẽ thấy, nhất là khi ảnh bìa lấy từ Facebook và URL có
+            hạn dùng — hỏng ảnh thì phải phát hiện ở đây. */}
+        {episode.thumbnail_url && (
+          <img
+            src={episode.thumbnail_url}
+            alt=""
+            className="h-20 w-[45px] shrink-0 rounded object-cover"
+            loading="lazy"
+          />
+        )}
         <div className="min-w-0 flex-1">
           {editing ? (
             <div className="flex flex-wrap items-center gap-2">
@@ -200,7 +211,7 @@ function EpisodeRow({ episode }: { episode: PodcastEpisode }) {
           <p className="mt-1 text-xs text-muted-foreground">
             {[
               formatDateOnly(episode.published_at),
-              duration && `${duration} phút`,
+              duration,
               episode.title_edited && "tiêu đề đã sửa tay",
               !episode.is_visible && "đang ẩn",
             ]
