@@ -56,7 +56,8 @@ export function PodcastTodayCard() {
           <span className="block text-xs uppercase tracking-wide text-muted-foreground">
             Podcast
           </span>
-          <span className="block font-medium leading-snug line-clamp-2">
+          {/* `block` sẽ đè lên `display:-webkit-box` của line-clamp. */}
+          <span className="line-clamp-2 font-medium leading-snug">
             {ep.title}
           </span>
           <span className="mt-0.5 block text-xs text-muted-foreground">
