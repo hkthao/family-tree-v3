@@ -6,12 +6,15 @@ import { ErrorState } from "@/components/ErrorState";
 import { IconMicrophone, IconPlay } from "@/components/icons";
 import { LoadingState } from "@/components/LoadingState";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
 import { PlatformShell } from "@/components/PlatformShell";
+import { useUrlState } from "@/hooks/useUrlState";
 import { formatDateOnly } from "@/lib/formatDate";
 import {
   facebookEmbedUrl,
   formatDuration,
-  listPodcastEpisodes,
+  listPodcastPage,
+  PODCAST_PAGE_SIZE,
   type PodcastEpisode,
 } from "@/lib/queries/podcast";
 
@@ -22,11 +25,20 @@ import {
  * mất họ vào dòng tin vô tận, mười lần thì chín lần không quay lại.
  */
 export default function Podcast() {
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["podcast-episodes"],
-    queryFn: () => listPodcastEpisodes(),
-    staleTime: 5 * 60_000,
+  const [pageRaw, setPage] = useUrlState("trang", "");
+  const page = Math.max(1, Number(pageRaw) || 1);
+
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: ["podcast-page", page],
+    queryFn: () => listPodcastPage(page),
+    // Ngắn thôi: tập mới đăng xong mà người dùng phải chờ hết giờ mới thấy
+    // thì họ tưởng đồng bộ hỏng.
+    staleTime: 30_000,
+    refetchOnMount: "always",
   });
+
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PODCAST_PAGE_SIZE));
 
   return (
     <PlatformShell homeTo="/podcast">
@@ -39,7 +51,7 @@ export default function Podcast() {
       {isLoading && <LoadingState label="Đang tải danh sách tập…" />}
       {error && <ErrorState error={error} onRetry={() => refetch()} />}
 
-      {data && data.length === 0 && (
+      {data && total === 0 && (
         <EmptyState
           icon={<IconMicrophone className="h-8 w-8" />}
           title="Chưa có tập nào"
@@ -47,11 +59,27 @@ export default function Podcast() {
         />
       )}
 
-      <ul className="space-y-3">
-        {(data ?? []).map((ep) => (
-          <EpisodeCard key={ep.id} episode={ep} />
-        ))}
-      </ul>
+      {total > 0 && (
+        <>
+          <ul className="space-y-3">
+            {(data?.rows ?? []).map((ep) => (
+              <EpisodeCard key={ep.id} episode={ep} />
+            ))}
+          </ul>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={PODCAST_PAGE_SIZE}
+            unit="tập"
+            isFetching={isFetching}
+            onPageChange={(p) => {
+              setPage(p === 1 ? "" : String(p));
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
+        </>
+      )}
     </PlatformShell>
   );
 }
@@ -67,33 +95,38 @@ function EpisodeCard({ episode }: { episode: PodcastEpisode }) {
   return (
     <li className="overflow-hidden rounded-xl border bg-card">
       {playing ? (
-        <div className="aspect-video w-full bg-black">
-          <iframe
-            src={facebookEmbedUrl(episode.permalink_url)}
-            title={episode.title}
-            className="h-full w-full"
-            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-            allowFullScreen
-            loading="lazy"
-          />
+        // Reel quay DỌC (ảnh bìa đo được 160×284). Khung ngang 16:9 thì
+        // video co lại thành một dải hẹp giữa hai mảng đen.
+        <div className="mx-auto w-full max-w-[380px] bg-black">
+          <div className="aspect-[9/16] w-full">
+            <iframe
+              src={facebookEmbedUrl(episode.permalink_url)}
+              title={episode.title}
+              className="h-full w-full"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
         </div>
       ) : (
         <button
           type="button"
           onClick={() => setPlaying(true)}
-          className="group relative flex w-full items-center gap-3 p-3 text-left hover:bg-muted/40"
+          className="group flex w-full items-center gap-3 p-3 text-left hover:bg-muted/40"
         >
           <span className="relative shrink-0">
             {episode.thumbnail_url ? (
               <img
                 src={episode.thumbnail_url}
                 alt=""
-                className="h-20 w-20 rounded-lg object-cover"
+                // Ảnh bìa reel là ảnh dọc — khung vuông cắt mất đầu và chân.
+                className="h-24 w-[54px] rounded-lg object-cover"
                 loading="lazy"
               />
             ) : (
-              <span className="flex h-20 w-20 items-center justify-center rounded-lg bg-muted">
-                <IconMicrophone className="h-7 w-7 text-muted-foreground" />
+              <span className="flex h-24 w-[54px] items-center justify-center rounded-lg bg-muted">
+                <IconMicrophone className="h-6 w-6 text-muted-foreground" />
               </span>
             )}
             <span className="absolute inset-0 flex items-center justify-center">
@@ -107,7 +140,7 @@ function EpisodeCard({ episode }: { episode: PodcastEpisode }) {
               {episode.title}
             </span>
             <span className="mt-1 block text-xs text-muted-foreground">
-              {[date, duration && `${duration} phút`].filter(Boolean).join(" · ")}
+              {[date, duration].filter(Boolean).join(" · ")}
             </span>
           </span>
         </button>

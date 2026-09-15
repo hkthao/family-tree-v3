@@ -5,13 +5,43 @@
  * `Deno.serve` ngay khi nạp, nên không import vào test chạy bằng Node được.
  */
 
+export interface FbThumbnail {
+  uri: string;
+  width?: number;
+  height?: number;
+  is_preferred?: boolean;
+}
+
 export interface FbVideo {
   id: string;
   description?: string;
   created_time: string;
   permalink_url?: string;
+  /** Ảnh bìa mặc định — NHỎ (đo được 160×284 trên reel thật). */
   picture?: string;
+  /** Danh sách ảnh bìa nhiều cỡ; chọn được ảnh nét hơn hẳn. */
+  thumbnails?: { data?: FbThumbnail[] };
   length?: number;
+}
+
+/**
+ * Ảnh bìa tốt nhất: ưu tiên ảnh Facebook đánh dấu `is_preferred`, sau đó
+ * tới ảnh to nhất, cuối cùng mới về `picture`.
+ *
+ * Vì sao không dùng luôn `picture`: nó chỉ 160×284, đặt lên thẻ podcast là
+ * thấy rỗ ngay trên màn hình thường.
+ */
+export function bestThumbnail(v: FbVideo): string | null {
+  const list = v.thumbnails?.data ?? [];
+  if (list.length > 0) {
+    const preferred = list.find((t) => t.is_preferred && t.uri);
+    if (preferred) return preferred.uri;
+    const biggest = [...list]
+      .filter((t) => t.uri)
+      .sort((a, b) => (b.width ?? 0) * (b.height ?? 0) - (a.width ?? 0) * (a.height ?? 0))[0];
+    if (biggest) return biggest.uri;
+  }
+  return v.picture ?? null;
 }
 
 export interface EpisodeRow {
@@ -71,7 +101,7 @@ export function toEpisode(v: FbVideo): EpisodeRow {
     title: titleFromDescription(v.description, v.created_time),
     description: v.description ?? null,
     permalink_url: absoluteUrl(v.permalink_url, v.id),
-    thumbnail_url: v.picture ?? null,
+    thumbnail_url: bestThumbnail(v),
     duration_seconds: typeof v.length === "number" ? v.length : null,
     published_at: v.created_time,
   };

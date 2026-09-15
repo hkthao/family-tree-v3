@@ -18,7 +18,7 @@ export function PodcastTodayCard() {
   const { data } = useQuery({
     queryKey: ["podcast-latest"],
     queryFn: () => listPodcastEpisodes(1),
-    staleTime: 10 * 60_000,
+    staleTime: 60_000,
   });
   const ep = data?.[0];
   if (!ep) return null;
@@ -38,11 +38,11 @@ export function PodcastTodayCard() {
             <img
               src={ep.thumbnail_url}
               alt=""
-              className="h-16 w-16 rounded-lg object-cover"
+              className="h-20 w-[45px] rounded-lg object-cover"
               loading="lazy"
             />
           ) : (
-            <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
+            <span className="flex h-20 w-[45px] items-center justify-center rounded-lg bg-muted">
               <IconMicrophone className="h-6 w-6 text-muted-foreground" />
             </span>
           )}
@@ -60,7 +60,7 @@ export function PodcastTodayCard() {
             {ep.title}
           </span>
           <span className="mt-0.5 block text-xs text-muted-foreground">
-            {[date, duration && `${duration} phút`].filter(Boolean).join(" · ")}
+            {[date, duration].filter(Boolean).join(" · ")}
           </span>
         </span>
         <IconArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />

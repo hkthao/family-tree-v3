@@ -23,7 +23,8 @@ vi.mock("@/components/AppHeader", () => ({
   AppHeader: () => <header data-testid="app-header" />,
 }));
 vi.mock("@/lib/queries/podcast", () => ({
-  listPodcastEpisodes: vi.fn(async () => []),
+  listPodcastPage: vi.fn(async () => ({ rows: [], total: 0 })),
+  PODCAST_PAGE_SIZE: 10,
   facebookEmbedUrl: () => "",
   formatDuration: () => null,
 }));

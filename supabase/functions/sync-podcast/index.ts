@@ -264,10 +264,12 @@ Deno.serve(async (req) => {
   }
 
   // ─── sync ────────────────────────────────────────────────────────
-  const fields = "id,description,created_time,permalink_url,picture,length";
+  const fields =
+    "id,description,created_time,permalink_url,picture,length," +
+    "thumbnails{uri,width,height,is_preferred}";
   const url =
     `https://graph.facebook.com/${FB_API_VERSION}/${pageId}/videos` +
-    `?fields=${fields}&limit=${LIMIT}&access_token=${encodeURIComponent(pageToken)}`;
+    `?fields=${encodeURIComponent(fields)}&limit=${LIMIT}&access_token=${encodeURIComponent(pageToken)}`;
 
   let payload: { data?: FbVideo[]; error?: { message?: string; code?: number } };
   try {

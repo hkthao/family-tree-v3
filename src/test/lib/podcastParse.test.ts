@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   absoluteUrl,
+  bestThumbnail,
   titleFromDescription,
   toEpisode,
 } from "../../../supabase/functions/sync-podcast/parse";
@@ -104,5 +105,44 @@ describe("toEpisode — bản ghi thật", () => {
     expect(ep.thumbnail_url).toBeNull();
     expect(ep.duration_seconds).toBeNull();
     expect(ep.title).toBe("Tập ngày 02/01/2026");
+  });
+});
+
+describe("bestThumbnail", () => {
+  const base = { id: "1", created_time: "2026-09-01T00:00:00+0000" };
+
+  it("ưu tiên ảnh Facebook đánh dấu is_preferred", () => {
+    expect(
+      bestThumbnail({
+        ...base,
+        picture: "small.jpg",
+        thumbnails: {
+          data: [
+            { uri: "a.jpg", width: 1080, height: 1920 },
+            { uri: "b.jpg", width: 320, height: 568, is_preferred: true },
+          ],
+        },
+      }),
+    ).toBe("b.jpg");
+  });
+
+  it("không ảnh nào được đánh dấu thì lấy ảnh TO NHẤT", () => {
+    expect(
+      bestThumbnail({
+        ...base,
+        thumbnails: {
+          data: [
+            { uri: "nho.jpg", width: 160, height: 284 },
+            { uri: "to.jpg", width: 1080, height: 1920 },
+          ],
+        },
+      }),
+    ).toBe("to.jpg");
+  });
+
+  it("không có thumbnails thì về picture", () => {
+    // Đường lui: nếu Meta bỏ edge này thì vẫn còn ảnh bìa, chỉ là nhỏ.
+    expect(bestThumbnail({ ...base, picture: "small.jpg" })).toBe("small.jpg");
+    expect(bestThumbnail(base)).toBeNull();
   });
 });
