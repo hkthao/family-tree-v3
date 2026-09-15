@@ -6,6 +6,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { IconMicrophone, IconPlay } from "@/components/icons";
 import { LoadingState } from "@/components/LoadingState";
 import { PageHeader } from "@/components/PageHeader";
+import { PlatformShell } from "@/components/PlatformShell";
 import { formatDateOnly } from "@/lib/formatDate";
 import {
   facebookEmbedUrl,
@@ -28,7 +29,7 @@ export default function Podcast() {
   });
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-5 p-4">
+    <PlatformShell homeTo="/podcast">
       <PageHeader
         icon={<IconMicrophone className="h-7 w-7" />}
         title="Podcast"
@@ -51,7 +52,7 @@ export default function Podcast() {
           <EpisodeCard key={ep.id} episode={ep} />
         ))}
       </ul>
-    </div>
+    </PlatformShell>
   );
 }
 
