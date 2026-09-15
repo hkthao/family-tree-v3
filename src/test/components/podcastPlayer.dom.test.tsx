@@ -51,7 +51,8 @@ const EPISODES = [
 vi.mock("@/lib/queries/podcast", () => ({
   listPodcastPage: vi.fn(async () => ({ rows: EPISODES, total: 2 })),
   PODCAST_PAGE_SIZE: 10,
-  facebookEmbedUrl: (u: string) => `https://www.facebook.com/plugins/video.php?href=${u}`,
+  facebookEmbedUrl: (u: string) =>
+    `https://www.facebook.com/plugins/video.php?href=${u}`,
   formatDuration: () => "10:00",
 }));
 
@@ -69,28 +70,28 @@ const renderPage = () => {
 };
 
 describe("trình phát podcast", () => {
-  it("bấm tập thứ hai thì tập thứ nhất tắt — không hai tiếng cùng lúc", async () => {
-    const { container } = renderPage();
+  it("mở tập nào cũng chỉ MỘT khung phát trên trang", async () => {
+    renderPage();
     await waitFor(() => expect(screen.getByText("Tập một")).toBeInTheDocument());
 
     fireEvent.click(screen.getByText("Tập một"));
     await waitFor(() =>
-      expect(container.querySelectorAll("iframe")).toHaveLength(1),
+      expect(document.querySelectorAll("iframe")).toHaveLength(1),
     );
 
-    fireEvent.click(screen.getByText("Tập hai"));
+    // Sang tập sau ngay trong trình xem — vẫn đúng một khung.
+    fireEvent.click(screen.getByRole("button", { name: /Tập sau/ }));
     await waitFor(() => {
-      const frames = container.querySelectorAll("iframe");
+      const frames = document.querySelectorAll("iframe");
       expect(frames).toHaveLength(1);
-      // Phải là tập VỪA BẤM, không phải tập cũ còn sót lại.
       expect(frames[0].getAttribute("src")).toContain("/reel/2/");
     });
   });
 
   it("chưa bấm thì KHÔNG có iframe nào — không gọi Facebook khi chưa ai bảo", async () => {
-    const { container } = renderPage();
+    renderPage();
     await waitFor(() => expect(screen.getByText("Tập một")).toBeInTheDocument());
-    expect(container.querySelectorAll("iframe")).toHaveLength(0);
+    expect(document.querySelectorAll("iframe")).toHaveLength(0);
   });
 
   it("hai nút Thích/Bình luận trỏ đúng bài gốc trên Facebook", async () => {
@@ -112,16 +113,33 @@ describe("trình phát podcast", () => {
     }
   });
 
-  it("đóng trình phát thì iframe biến mất", async () => {
-    const { container } = renderPage();
+  it("đóng trình xem thì iframe biến mất và nền hết bị khoá cuộn", async () => {
+    renderPage();
     await waitFor(() => expect(screen.getByText("Tập một")).toBeInTheDocument());
     fireEvent.click(screen.getByText("Tập một"));
     await waitFor(() =>
-      expect(container.querySelectorAll("iframe")).toHaveLength(1),
+      expect(document.querySelectorAll("iframe")).toHaveLength(1),
     );
+    expect(document.body.style.overflow).toBe("hidden");
+
     fireEvent.click(screen.getByRole("button", { name: "Đóng" }));
     await waitFor(() =>
-      expect(container.querySelectorAll("iframe")).toHaveLength(0),
+      expect(document.querySelectorAll("iframe")).toHaveLength(0),
+    );
+    // Quên mở khoá là cả trang đứng im, người dùng tưởng app treo.
+    expect(document.body.style.overflow).not.toBe("hidden");
+  });
+
+  it("phím Esc đóng trình xem", async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText("Tập một")).toBeInTheDocument());
+    fireEvent.click(screen.getByText("Tập một"));
+    await waitFor(() =>
+      expect(document.querySelectorAll("iframe")).toHaveLength(1),
+    );
+    fireEvent.keyDown(window, { key: "Escape" });
+    await waitFor(() =>
+      expect(document.querySelectorAll("iframe")).toHaveLength(0),
     );
   });
 });
