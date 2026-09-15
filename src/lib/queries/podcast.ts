@@ -152,10 +152,20 @@ export async function getPodcastSyncStatus(
  * Chỉ tạo khi người dùng BẤM XEM, không nhúng sẵn khi mở trang: iframe này
  * kéo theo mã theo dõi của Meta, mà người vào app đọc gia phả thì không
  * ngờ mình đang bị Facebook ghi nhận.
+ *
+ * `show_text=true` là cách DUY NHẤT có nút thích và nút chia sẻ của
+ * Facebook trên tập: plugin nút Like riêng (`plugins/like.php`) trỏ vào
+ * link reel thì trả về khung TRỐNG — đã thử trên reel thật. Bật cờ này
+ * thì trình phát tự kèm ảnh đại diện Trang, tên Trang, nút thích, nút
+ * "Chia sẻ" và nguyên phần mô tả.
  */
-export function facebookEmbedUrl(permalinkUrl: string): string {
+export function facebookEmbedUrl(
+  permalinkUrl: string,
+  opts: { withText?: boolean } = {},
+): string {
   const href = encodeURIComponent(permalinkUrl);
-  return `https://www.facebook.com/plugins/video.php?href=${href}&show_text=false&t=0`;
+  const showText = opts.withText === false ? "false" : "true";
+  return `https://www.facebook.com/plugins/video.php?href=${href}&show_text=${showText}&t=0`;
 }
 
 /** "14:07" — để người nghe biết tập dài bao lâu trước khi bấm. */
