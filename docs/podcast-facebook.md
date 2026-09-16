@@ -79,7 +79,8 @@ thành rác). Có bản ghi trong `fb_page_credentials` thì nó được ưu ti
 | `FB_PAGE_TOKEN` | Page token dài hạn |
 | `AI_KEY_ENCRYPTION_KEY` | KEK để mã hoá/giải mã token đã lưu (đã có sẵn cho khoá AI) |
 | `FB_API_VERSION` | mặc định `v21.0` |
-| `FB_SYNC_LIMIT` | số tập kéo mỗi lần, mặc định 25 |
+| `FB_SYNC_LIMIT` | số tập xin trong MỖI TRANG kết quả, mặc định 50 |
+| `FB_SYNC_MAX` | trần tổng số tập một lần chạy, mặc định 500 |
 | `CRON_TOKEN` | dùng chung với các cron khác |
 
 ## Lịch chạy
@@ -92,6 +93,21 @@ alter database postgres
   set app.sync_podcast_url = 'https://<host>/functions/v1/sync-podcast';
 alter database postgres set app.sync_podcast_token = '<CRON_TOKEN>';
 ```
+
+## Facebook trả kết quả theo TRANG
+
+`/{page-id}/videos` chỉ trả về một trang, kèm con trỏ `paging.next`. Lấy một
+trang rồi dừng thì Trang có 188 video mà app chỉ thấy **25 tập mới nhất** — đã
+dính đúng lỗi này. Hàm đồng bộ đi hết con trỏ, dừng khi trang trả về rỗng (đừng
+chỉ tin con trỏ) hoặc khi chạm trần `FB_SYNC_MAX`.
+
+Cũng vì thế, mỗi lần chạy phải đọc danh sách tập đã có **một lần duy nhất** rồi
+ghi theo lô. Hỏi cơ sở dữ liệu từng tập một là gần 400 lượt gọi cho 188 tập —
+đủ để hàm hết giờ giữa chừng và bỏ dở.
+
+Riêng nhóm tập admin đã sửa tiêu đề thì phải UPDATE thật, không upsert được:
+upsert vẫn dựng một dòng để chèn thử, mà dòng đó thiếu `title` nên vướng ràng
+buộc NOT NULL — dù bản ghi đã tồn tại và ta chỉ định sửa vài cột khác.
 
 ## Kiểu hỏng phải đề phòng
 

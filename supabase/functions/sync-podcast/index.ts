@@ -34,8 +34,10 @@ const CRON_TOKEN = Deno.env.get("CRON_TOKEN") ?? "";
 const ENV_PAGE_ID = Deno.env.get("FB_PAGE_ID") ?? "";
 const ENV_PAGE_TOKEN = Deno.env.get("FB_PAGE_TOKEN") ?? "";
 const FB_API_VERSION = Deno.env.get("FB_API_VERSION") ?? "v21.0";
-/** Số tập kéo mỗi lần. Tập cũ đã nằm trong bảng rồi, không cần kéo lại hết. */
-const LIMIT = Number(Deno.env.get("FB_SYNC_LIMIT") ?? "25");
+/** Số tập xin trong MỖI TRANG kết quả của Facebook. */
+const PAGE_SIZE = Number(Deno.env.get("FB_SYNC_LIMIT") ?? "50");
+/** Trần tổng số tập kéo về một lần chạy — chặn vòng lặp chạy mãi. */
+const MAX_TOTAL = Number(Deno.env.get("FB_SYNC_MAX") ?? "500");
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -267,68 +269,115 @@ Deno.serve(async (req) => {
   const fields =
     "id,description,created_time,permalink_url,picture,length," +
     "thumbnails{uri,width,height,is_preferred}";
-  const url =
+
+  /**
+   * Facebook trả kết quả THEO TRANG, mỗi trang kèm con trỏ `paging.next`.
+   * Lấy một trang rồi dừng là chỉ thấy vài tập mới nhất — Trang có hơn
+   * trăm video thì mất gần hết. Đi hết con trỏ, chặn bằng trần để không
+   * có chuyện chạy mãi nếu Facebook trả con trỏ vòng.
+   */
+  const videos: FbVideo[] = [];
+  let next: string | null =
     `https://graph.facebook.com/${FB_API_VERSION}/${pageId}/videos` +
-    `?fields=${encodeURIComponent(fields)}&limit=${LIMIT}&access_token=${encodeURIComponent(pageToken)}`;
+    `?fields=${encodeURIComponent(fields)}&limit=${PAGE_SIZE}` +
+    `&access_token=${encodeURIComponent(pageToken)}`;
+  let pages = 0;
 
-  let payload: { data?: FbVideo[]; error?: { message?: string; code?: number } };
-  try {
-    const res = await fetch(url);
-    payload = await res.json();
-  } catch (e) {
-    const msg = `Không gọi được Facebook: ${(e as Error).message}`;
-    await noteError(msg);
-    return json({ error: msg }, { status: 502 });
-  }
-
-  if (payload.error) {
-    // Token chết thường rơi vào đây (mã 190). Ghi lại để trang quản trị
-    // bật đèn đỏ — nếu không thì app cứ im lặng không có tập mới, và vài
-    // tháng sau mới có người để ý.
-    const msg = `Facebook trả lỗi ${payload.error.code}: ${payload.error.message}`;
-    await noteError(msg);
-    await admin
-      .from("fb_page_credentials")
-      .update({
-        last_check_at: new Date().toISOString(),
-        last_check_ok: false,
-        last_check_error: msg,
-      })
-      .eq("page_id", pageId);
-    return json({ error: msg }, { status: 502 });
-  }
-
-  const videos = payload.data ?? [];
-  const rows = videos.map((v) => ({
-    ...toEpisode(v),
-    synced_at: new Date().toISOString(),
-  }));
-
-  let inserted = 0;
-  let updated = 0;
-  for (const row of rows) {
-    const { data: existing } = await admin
-      .from("podcast_episodes")
-      .select("id, title_edited")
-      .eq("fb_video_id", row.fb_video_id)
-      .maybeSingle();
-
-    if (!existing) {
-      const { error } = await admin.from("podcast_episodes").insert(row);
-      if (!error) inserted++;
-      continue;
+  while (next && videos.length < MAX_TOTAL) {
+    let payload: {
+      data?: FbVideo[];
+      paging?: { next?: string };
+      error?: { message?: string; code?: number };
+    };
+    try {
+      const res = await fetch(next);
+      payload = await res.json();
+    } catch (e) {
+      const msg = `Không gọi được Facebook: ${(e as Error).message}`;
+      await noteError(msg);
+      return json({ error: msg }, { status: 502 });
     }
-    // Admin đã sửa tiêu đề thì giữ nguyên — đồng bộ không được xoá công
-    // sức biên tập của người ta.
-    const { title: _title, ...withoutTitle } = row;
+
+    if (payload.error) {
+      // Token chết thường rơi vào đây (mã 190). Ghi lại để trang quản trị
+      // bật đèn đỏ — nếu không thì app cứ im lặng không có tập mới, và
+      // vài tháng sau mới có người để ý.
+      const msg = `Facebook trả lỗi ${payload.error.code}: ${payload.error.message}`;
+      await noteError(msg);
+      await admin
+        .from("fb_page_credentials")
+        .update({
+          last_check_at: new Date().toISOString(),
+          last_check_ok: false,
+          last_check_error: msg,
+        })
+        .eq("page_id", pageId);
+      return json({ error: msg }, { status: 502 });
+    }
+
+    const batch = payload.data ?? [];
+    videos.push(...batch);
+    pages++;
+    // Trang rỗng cũng là hết — đừng tin mỗi con trỏ.
+    next = batch.length > 0 ? (payload.paging?.next ?? null) : null;
+  }
+
+  const syncedAt = new Date().toISOString();
+  const rows = videos
+    .slice(0, MAX_TOTAL)
+    .map((v) => ({ ...toEpisode(v), synced_at: syncedAt }));
+
+  // Đọc MỘT LẦN những gì đã có, thay vì mỗi tập một lượt hỏi đáp: hơn
+  // trăm tập là hơn hai trăm lượt gọi cơ sở dữ liệu, đủ để hàm hết giờ
+  // giữa chừng và bỏ dở công việc.
+  const { data: existingRows } = await admin
+    .from("podcast_episodes")
+    .select("fb_video_id, title_edited");
+  const existing = new Map(
+    (existingRows ?? []).map((r) => [r.fb_video_id, r.title_edited]),
+  );
+
+  const fresh = rows.filter((r) => !existing.has(r.fb_video_id));
+  // Admin đã sửa tiêu đề thì giữ nguyên — đồng bộ không được xoá công sức
+  // biên tập của người ta. Những tập đó cập nhật mọi cột TRỪ tiêu đề.
+  const keepTitle = rows.filter((r) => existing.get(r.fb_video_id) === true);
+  const refresh = rows.filter((r) => existing.get(r.fb_video_id) === false);
+
+  const problems: string[] = [];
+  const write = async (
+    batch: Record<string, unknown>[],
+    label: string,
+  ): Promise<void> => {
+    if (batch.length === 0) return;
     const { error } = await admin
       .from("podcast_episodes")
-      .update(existing.title_edited ? withoutTitle : row)
-      .eq("id", existing.id);
-    if (!error) updated++;
+      .upsert(batch, { onConflict: "fb_video_id" });
+    if (error) problems.push(`${label}: ${error.message}`);
+  };
+
+  await write(fresh, "thêm mới");
+  await write(refresh, "cập nhật");
+
+  // Nhóm giữ tiêu đề phải UPDATE thật, không upsert được: upsert vẫn dựng
+  // một dòng để chèn thử, mà dòng đó thiếu `title` nên vướng ràng buộc
+  // NOT NULL — dù bản ghi đã tồn tại và ta chỉ định sửa vài cột.
+  // Số này nhỏ (chỉ những tập admin đã sửa tay) nên chạy từng dòng không
+  // đáng lo.
+  for (const { title: _title, ...rest } of keepTitle) {
+    const { error } = await admin
+      .from("podcast_episodes")
+      .update(rest)
+      .eq("fb_video_id", rest.fb_video_id);
+    if (error) problems.push(`giữ tiêu đề: ${error.message}`);
   }
 
-  const now = new Date().toISOString();
+  if (problems.length > 0) {
+    const msg = problems.join(" | ");
+    await noteError(msg);
+    return json({ error: msg }, { status: 500 });
+  }
+
+  const now = syncedAt;
   await admin.from("platform_settings").upsert(
     [
       { key: "podcast.last_sync_at", value: JSON.stringify(now) },
@@ -337,5 +386,12 @@ Deno.serve(async (req) => {
     { onConflict: "key" },
   );
 
-  return json({ ok: true, fetched: videos.length, inserted, updated, at: now });
+  return json({
+    ok: true,
+    pages,
+    fetched: videos.length,
+    inserted: fresh.length,
+    updated: refresh.length + keepTitle.length,
+    at: now,
+  });
 });
