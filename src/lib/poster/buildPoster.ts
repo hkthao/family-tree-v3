@@ -1,6 +1,7 @@
 import {
   bannerPrims,
   borderPrims,
+  footerPrims,
   columnPrims,
   cornerPrims,
   paletteById,
@@ -8,6 +9,7 @@ import {
   type BorderId,
   type ColumnId,
   type CornerId,
+  type FooterId,
 } from "@/lib/poster/ornaments";
 import {
   backgroundPrims,
@@ -48,6 +50,8 @@ export interface PosterConfig {
   creaturePlacement: CreaturePlacement;
   /** Id hoa văn nền; "khong" = không có. */
   background: string;
+  /** Dải sen/hạc chân tấm. */
+  footer: FooterId;
   /** Null = in cả dòng họ từ thuỷ tổ. */
   focalId: string | null;
   /** 0 = hết cây. */
@@ -58,7 +62,7 @@ export const DEFAULT_POSTER_CONFIG: Omit<PosterConfig, "title"> = {
   size: "A1",
   paletteId: "son-vang",
   border: "hoi-van",
-  banner: "cuon-thu",
+  banner: "cuon-thu-bat-buu",
   corner: "may",
   column: "cot-do",
   subtitle: "PHẢ ĐỒ DÒNG HỌ",
@@ -70,6 +74,7 @@ export const DEFAULT_POSTER_CONFIG: Omit<PosterConfig, "title"> = {
   creature: "khong",
   creaturePlacement: "ben-bang-ten",
   background: "khong",
+  footer: "sen-hac",
   focalId: null,
   generations: 0,
 };
@@ -104,6 +109,7 @@ export function buildPoster(
   const r = posterRegions(cfg.size, {
     columns: cfg.column !== "khong",
     banner: true,
+    footer: cfg.footer !== "khong",
     creature: hasCreature ? cfg.creaturePlacement : "khong",
   });
   // Nền CHUYỂN SẮC từ giữa ra mép. Nền phẳng một màu là thứ làm tấm in
@@ -139,6 +145,7 @@ export function buildPoster(
     ...cornerPrims(cfg.corner, r.corners.bottomLeft, pal, r.scale, false, true),
     ...cornerPrims(cfg.corner, r.corners.bottomRight, pal, r.scale, true, true),
   );
+  prims.push(...footerPrims(cfg.footer, r.footer, pal, r.scale));
   prims.push(
     ...columnPrims(cfg.column, r.columnLeft, pal, r.scale, cfg.coupletLeft),
     ...columnPrims(cfg.column, r.columnRight, pal, r.scale, cfg.coupletRight),
