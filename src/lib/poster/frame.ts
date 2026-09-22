@@ -45,6 +45,8 @@ export interface PosterRegions {
    * đứng theo tỉ lệ riêng của nó.
    */
   creatures: Record<"ben-bang-ten" | "goc-tren" | "goc-duoi", [Rect, Rect]>;
+  /** Dải chân tấm (sen, hạc) — nằm dưới cây, trong lòng khung. */
+  footer: Rect;
   /** Chỗ còn lại để vẽ cây — phần duy nhất co giãn theo dữ liệu. */
   tree: Rect;
   /** Bề dày khung diềm, để mẫu hoa văn biết vẽ dày bao nhiêu. */
@@ -55,6 +57,8 @@ export interface PosterRegions {
 }
 
 export interface FrameOptions {
+  /** Có dải sen/hạc chân tấm hay không — có thì cây lùi lên. */
+  footer?: boolean;
   /** Có hai cột câu đối hay không — không có thì cây rộng thêm. */
   columns: boolean;
   /** Có băng tên hay không. */
@@ -164,8 +168,20 @@ export function posterRegions(
       : Math.max(0, cs2 - breathe);
   const treeTop =
     inner.y + bannerH + (opts.banner ? breathe : 0) + (place === "goc-tren" ? dodge : 0);
+  // Dải chân tấm ăn một dải dưới đáy; cây phải lùi lên cho khỏi đè.
+  const footerH = opts.footer ? Math.round(inner.h * 0.085) : 0;
+  const footer: Rect = {
+    x: columnLeft.x + colW,
+    y: inner.y + inner.h - footerH,
+    w: inner.w - colW * 2,
+    h: footerH,
+  };
   const treeBottom =
-    inner.y + inner.h - breathe - (place === "goc-duoi" ? dodge : 0);
+    inner.y +
+    inner.h -
+    footerH -
+    breathe -
+    (place === "goc-duoi" ? dodge : 0);
   const tree: Rect = {
     x: columnLeft.x + colW + breathe,
     y: treeTop,
@@ -186,6 +202,7 @@ export function posterRegions(
       "goc-tren": cornerTop,
       "goc-duoi": cornerBottom,
     },
+    footer,
     tree,
     borderBand,
     scale,

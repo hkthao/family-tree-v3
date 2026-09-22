@@ -28,6 +28,7 @@ import {
   PLACEMENTS,
   type CreaturePlacement,
 } from "@/lib/poster/creatures";
+import { FOOTERS } from "@/lib/poster/ornaments";
 import { POSTER_SIZES, type PosterSize } from "@/lib/poster/frame";
 import {
   BANNERS,
@@ -242,6 +243,20 @@ export default function Poster() {
                 {CORNERS.map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Dải chân tấm">
+              <Select
+                value={cfg.footer}
+                onChange={(e) =>
+                  set("footer", e.target.value as PosterConfig["footer"])
+                }
+              >
+                {FOOTERS.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.label}
                   </option>
                 ))}
               </Select>

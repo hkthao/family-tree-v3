@@ -79,6 +79,7 @@ export type Prim =
       fill?: string;
       stroke?: string;
       sw?: number;
+      opacity?: number;
     }
   | {
       /**

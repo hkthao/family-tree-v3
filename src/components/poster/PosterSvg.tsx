@@ -61,6 +61,7 @@ function renderPrim(p: Prim, i: number) {
           fill={p.fill ?? "none"}
           stroke={p.stroke}
           strokeWidth={p.sw}
+          opacity={p.opacity}
         />
       );
     case "group":
