@@ -95,6 +95,24 @@ export type Prim =
       children: Prim[];
     }
   | {
+      /**
+       * Ảnh (tranh vẽ tay, lụa sắc phong…).
+       *
+       * Có loại này vì mỹ thuật phả đồ truyền thống là TRANH chứ không
+       * phải hình học: rồng có vảy, lụa có vân, mây có mảng đậm nhạt.
+       * Code vẽ bằng cung tròn thì không bao giờ ra được, dù vẽ bao lâu.
+       */
+      k: "image";
+      href: string;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      opacity?: number;
+      /** "slice" = phủ kín và cắt bớt; "meet" = lọt trọn trong khung. */
+      fit?: "slice" | "meet";
+    }
+  | {
       k: "text";
       x: number;
       y: number;
