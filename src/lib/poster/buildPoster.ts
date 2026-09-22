@@ -10,6 +10,7 @@ import {
   type CornerId,
 } from "@/lib/poster/ornaments";
 import {
+  backgroundPrims,
   creaturePrims,
   type CreaturePlacement,
 } from "@/lib/poster/creatures";
@@ -45,6 +46,8 @@ export interface PosterConfig {
   /** Id hình linh vật; "khong" = không có. */
   creature: string;
   creaturePlacement: CreaturePlacement;
+  /** Id hoa văn nền; "khong" = không có. */
+  background: string;
   /** Null = in cả dòng họ từ thuỷ tổ. */
   focalId: string | null;
   /** 0 = hết cây. */
@@ -66,6 +69,7 @@ export const DEFAULT_POSTER_CONFIG: Omit<PosterConfig, "title"> = {
   showGenerationLabels: true,
   creature: "khong",
   creaturePlacement: "ben-bang-ten",
+  background: "khong",
   focalId: null,
   generations: 0,
 };
@@ -91,6 +95,8 @@ export function buildPoster(
   cfg: PosterConfig,
   /** Hình linh vật đã tải xong; chưa tải thì tấm vẫn dựng, chỉ thiếu hình. */
   creature?: CreatureArt | null,
+  /** Hoa văn nền đã tải xong. */
+  background?: CreatureArt | null,
 ): PosterDoc {
   const pal = paletteById(cfg.paletteId);
   const { w, h } = POSTER_SIZES[cfg.size];
@@ -103,6 +109,12 @@ export function buildPoster(
   const prims: Prim[] = [
     { k: "rect", x: 0, y: 0, w, h, fill: pal.paper },
   ];
+
+  // Hoa văn nền vẽ NGAY SAU nền giấy, trước mọi thứ khác — nó là lớp
+  // dưới cùng, không được che bất cứ chữ nào.
+  if (background && background.shapes.length > 0) {
+    prims.push(...backgroundPrims(background, r.inner, pal));
+  }
 
   // ─── Hoa văn: từng phần một, vùng nào việc nấy ───────────────────
   prims.push(...borderPrims(cfg.border, r.border, r.borderBand, pal, r.scale));

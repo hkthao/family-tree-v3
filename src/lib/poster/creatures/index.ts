@@ -53,6 +53,23 @@ const EMPTY: CreatureArt = {
   shapes: [],
 };
 
+/**
+ * Hoa văn NỀN — đặt mờ giữa tấm, phía sau cây.
+ *
+ * Tách khỏi danh sách linh vật vì cách dùng khác hẳn: linh vật để nhìn,
+ * còn hoa văn nền để KHÔNG nhìn thấy rõ. Đọc ra được nó là hỏng — chữ
+ * trong ô sẽ khó đọc theo.
+ */
+export const BACKGROUNDS: CreatureOption[] = [
+  { id: "khong", label: "Không có", load: async () => EMPTY },
+  {
+    id: "trong-dong",
+    label: "Trống đồng Đông Sơn",
+    note: "Hoa văn mờ giữa tấm. Nhiều nét — tải lâu hơn một chút.",
+    load: () => import("./trong-dong").then((m) => m.art),
+  },
+];
+
 export type CreaturePlacement = "ben-bang-ten" | "goc-tren" | "goc-duoi";
 
 export const PLACEMENTS: { id: CreaturePlacement; label: string }[] = [
@@ -67,6 +84,41 @@ export const PLACEMENTS: { id: CreaturePlacement; label: string }[] = [
  * `flip` lật ngang để con bên phải soi gương con bên trái — đôi rồng
  * chầu mà cùng quay một hướng thì nhìn là biết ngay sai.
  */
+/**
+ * Hoa văn nền: phủ giữa tấm, một màu, MỜ HẲN.
+ *
+ * Đặt 6% chứ không 20%: hoa văn trống đồng dày đặc, đậm hơn chút là chữ
+ * tên người nằm trên nó đọc không ra — mà tên người mới là thứ người ta
+ * tới để đọc.
+ */
+export function backgroundPrims(
+  art: CreatureArt,
+  box: Rect,
+  pal: Palette,
+  opacity = 0.06,
+): Prim[] {
+  if (art.shapes.length === 0) return [];
+  const vb = art.viewBox;
+  // Phủ theo cạnh NGẮN để hoa văn tròn không bị cắt mất vành.
+  const s = Math.min(box.w / vb.w, box.h / vb.h);
+  const tx = box.x + (box.w - vb.w * s) / 2;
+  const ty = box.y + (box.h - vb.h * s) / 2;
+  return [
+    {
+      k: "group",
+      transform: `translate(${tx} ${ty}) scale(${s} ${s}) translate(${-vb.x} ${-vb.y})`,
+      children: art.shapes.map((sh) => ({
+        k: "path" as const,
+        d: sh.d,
+        fill: sh.fill ? pal.primary : undefined,
+        stroke: sh.stroke ? pal.primary : undefined,
+        sw: sh.stroke ? (sh.sw ?? 1) : undefined,
+        opacity,
+      })),
+    },
+  ];
+}
+
 export function creaturePrims(
   art: CreatureArt,
   box: Rect,

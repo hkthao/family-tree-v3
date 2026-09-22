@@ -40,7 +40,15 @@ export type Prim =
       stroke: string;
       sw: number;
     }
-  | { k: "path"; d: string; fill?: string; stroke?: string; sw?: number }
+  | {
+      k: "path";
+      d: string;
+      fill?: string;
+      stroke?: string;
+      sw?: number;
+      /** 0–1. Dùng cho hoa văn nền: phải mờ hẳn, không được đọc ra. */
+      opacity?: number;
+    }
   | {
       k: "circle";
       cx: number;
