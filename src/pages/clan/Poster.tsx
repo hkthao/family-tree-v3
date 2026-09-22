@@ -23,6 +23,7 @@ import {
   type PosterConfig,
 } from "@/lib/poster/buildPoster";
 import {
+  BACKGROUNDS,
   CREATURES,
   PLACEMENTS,
   type CreaturePlacement,
@@ -89,6 +90,13 @@ export default function Poster() {
     staleTime: Infinity,
   });
 
+  const backgroundQ = useQuery({
+    queryKey: ["poster-background", cfg.background],
+    queryFn: () => BACKGROUNDS.find((b) => b.id === cfg.background)!.load(),
+    enabled: cfg.background !== "khong",
+    staleTime: Infinity,
+  });
+
   const [search, setSearch] = useState("");
   const [forced, setForced] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -106,8 +114,9 @@ export default function Poster() {
       data.families,
       deferred,
       creatureQ.data ?? null,
+      backgroundQ.data ?? null,
     );
-  }, [data, deferred, heavy, forced, creatureQ.data]);
+  }, [data, deferred, heavy, forced, creatureQ.data, backgroundQ.data]);
 
   const focalName = cfg.focalId
     ? data?.persons.find((p) => p.id === cfg.focalId)?.full_name ?? null
@@ -237,6 +246,21 @@ export default function Poster() {
                 ))}
               </Select>
             </Field>
+            <Field label="Hoa văn nền">
+              <Select
+                value={cfg.background}
+                onChange={(e) => set("background", e.target.value)}
+              >
+                {BACKGROUNDS.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {backgroundQ.isLoading && (
+              <p className="text-xs text-muted-foreground">Đang tải hoa văn…</p>
+            )}
             <Field label="Linh vật (rồng, phượng)">
               <Select
                 value={cfg.creature}

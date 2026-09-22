@@ -63,6 +63,13 @@ export default defineConfig({
         importScripts: ["/push-handler.js"],
         // Precache the built app shell.
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,webmanifest}"],
+        // TRỪ hoa văn của bảng gia phả in. Mỗi hình là một gói riêng
+        // hàng megabyte (rồng Á Đông 2 MB, trống đồng 2,5 MB) và chỉ ai
+        // đang dựng tấm in mới cần — nhét vào precache là bắt MỌI người
+        // tải xuống ngay lần mở app đầu tiên, kể cả người không bao giờ
+        // in. Chúng vẫn tải được bình thường khi cần, chỉ là không nằm
+        // sẵn trong bộ nhớ đệm.
+        globIgnores: ["**/assets/{rong,phuong,trong}-*.js"],
         // Don't ship Workbox debug files in prod.
         cleanupOutdatedCaches: true,
         // When the user accepts "Cập nhật" in the banner, the new SW
