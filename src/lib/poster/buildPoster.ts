@@ -4,6 +4,9 @@ import {
   footerPrims,
   columnPrims,
   cornerPrims,
+  artImageById,
+  CREATURE_IMAGES,
+  PAPER_TEXTURES,
   paletteById,
   type BannerId,
   type BorderId,
@@ -32,6 +35,11 @@ import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
 
 export interface PosterConfig {
   size: PosterSize;
+  /**
+   * Tranh nền. Có tranh thì app bỏ qua phần tự vẽ khung/băng tên/hoa văn
+   * — chồng hai lớp trang trí lên nhau chỉ tổ rối.
+   */
+  backgroundImage?: string;
   paletteId: string;
   border: BorderId;
   banner: BannerId;
@@ -52,6 +60,12 @@ export interface PosterConfig {
   background: string;
   /** Dải sen/hạc chân tấm. */
   footer: FooterId;
+  /** Vân nền bằng ảnh (lụa sắc phong). "khong" = nền chuyển sắc trơn. */
+  paperTexture: string;
+  /** Độ đậm của vân nền, 0–1. */
+  paperTextureOpacity: number;
+  /** Dùng tranh rồng thay hình vector. */
+  creatureImage: boolean;
   /** Null = in cả dòng họ từ thuỷ tổ. */
   focalId: string | null;
   /** 0 = hết cây. */
@@ -75,6 +89,12 @@ export const DEFAULT_POSTER_CONFIG: Omit<PosterConfig, "title"> = {
   creaturePlacement: "ben-bang-ten",
   background: "khong",
   footer: "sen-hac",
+  // Mặc định TẮT. Đã thử ảnh sắc phong thật làm vân giấy: nó là văn bản
+  // có chữ Hán to, phủ kín tấm thì chữ Hán nuốt hết tên người. Ảnh chỉ
+  // dùng được khi là TRANH TRANG TRÍ, không phải ảnh chụp tài liệu.
+  paperTexture: "khong",
+  paperTextureOpacity: 0.25,
+  creatureImage: false,
   focalId: null,
   generations: 0,
 };
@@ -83,6 +103,19 @@ export interface PosterDoc {
   w: number;
   h: number;
   prims: Prim[];
+  /**
+   * Tranh nền phủ kín tấm (data URI hoặc đường dẫn ảnh).
+   *
+   * Vì sao có đường này: mỹ thuật phả đồ truyền thống — rồng vẽ tay có
+   * vảy, cuốn thư nhiều màu, sen hạc vẽ chi tiết — là TRANH, không phải
+   * hình học. Code vẽ lại bằng cung tròn thì không bao giờ đuổi kịp. Có
+   * chỗ cắm tranh thì chất lượng tấm in bằng đúng chất lượng bức tranh,
+   * không phụ thuộc vào việc máy vẽ giỏi hay dở.
+   *
+   * Phần app vẽ (cây, tên, nhãn đời) xếp ĐÈ LÊN tranh, đúng cách các tiệm
+   * in đang làm.
+   */
+  backgroundImage?: string;
   /** Cỡ chữ tên THẬT trên bản in (point) — để cảnh báo khi quá nhỏ. */
   namePt: number;
   peopleCount: number;
@@ -106,6 +139,9 @@ export function buildPoster(
   const pal = paletteById(cfg.paletteId);
   const { w, h } = POSTER_SIZES[cfg.size];
   const hasCreature = !!creature && creature.shapes.length > 0;
+  // Có tranh nền thì tranh lo phần trang trí, app chỉ còn lo chữ — chồng
+  // hai lớp trang trí lên nhau chỉ tổ rối.
+  const painted = !!cfg.backgroundImage;
   const r = posterRegions(cfg.size, {
     columns: cfg.column !== "khong",
     banner: true,
@@ -114,7 +150,24 @@ export function buildPoster(
   });
   // Nền CHUYỂN SẮC từ giữa ra mép. Nền phẳng một màu là thứ làm tấm in
   // trông như bản nháp — mẫu phả đồ ngoài tiệm nào cũng chuyển sắc.
-  const prims: Prim[] = [
+  // Có vân lụa thì LỤA CHÍNH LÀ GIẤY — không vẽ thêm lớp nền chuyển sắc
+  // nữa. Vẽ cả hai thì lớp nền phủ mất tấm lụa (ảnh buộc phải nằm dưới
+  // lớp vector ở bản PDF), và công tải ảnh về thành công cốc.
+  const texture = artImageById(PAPER_TEXTURES, cfg.paperTexture);
+  const prims: Prim[] = texture
+    ? [
+        {
+          k: "image",
+          href: texture.src,
+          x: 0,
+          y: 0,
+          w,
+          h,
+          opacity: Math.min(1, Math.max(0.1, cfg.paperTextureOpacity)),
+          fit: "slice",
+        },
+      ]
+    : [
     {
       k: "gradient",
       id: "nen",
@@ -134,23 +187,48 @@ export function buildPoster(
   // Hoa văn nền vẽ NGAY SAU nền giấy, trước mọi thứ khác — nó là lớp
   // dưới cùng, không được che bất cứ chữ nào.
   if (background && background.shapes.length > 0) {
-    prims.push(...backgroundPrims(background, r.inner, pal));
+    prims.push(
+      ...backgroundPrims(background, r.inner, pal, texture ? 0.04 : 0.06),
+    );
   }
 
   // ─── Hoa văn: từng phần một, vùng nào việc nấy ───────────────────
-  prims.push(...borderPrims(cfg.border, r.border, r.borderBand, pal, r.scale));
+  if (!painted) {
+    prims.push(...borderPrims(cfg.border, r.border, r.borderBand, pal, r.scale));
   prims.push(
     ...cornerPrims(cfg.corner, r.corners.topLeft, pal, r.scale, false, false),
     ...cornerPrims(cfg.corner, r.corners.topRight, pal, r.scale, true, false),
     ...cornerPrims(cfg.corner, r.corners.bottomLeft, pal, r.scale, false, true),
     ...cornerPrims(cfg.corner, r.corners.bottomRight, pal, r.scale, true, true),
   );
-  prims.push(...footerPrims(cfg.footer, r.footer, pal, r.scale));
-  prims.push(
-    ...columnPrims(cfg.column, r.columnLeft, pal, r.scale, cfg.coupletLeft),
-    ...columnPrims(cfg.column, r.columnRight, pal, r.scale, cfg.coupletRight),
-  );
-  if (hasCreature) {
+    prims.push(...footerPrims(cfg.footer, r.footer, pal, r.scale));
+    prims.push(
+      ...columnPrims(cfg.column, r.columnLeft, pal, r.scale, cfg.coupletLeft),
+      ...columnPrims(cfg.column, r.columnRight, pal, r.scale, cfg.coupletRight),
+    );
+  }
+  const creatureArt = cfg.creatureImage
+    ? artImageById(CREATURE_IMAGES, "rong-tranh")
+    : undefined;
+  if (creatureArt) {
+    // Tranh rồng: đặt cùng ô với linh vật vector, lật gương con bên phải
+    // bằng cách... không lật được (ảnh không lật bằng thuộc tính), nên
+    // dùng cùng một con hai bên. Trông vẫn cân vì con rồng này đối xứng
+    // theo đường chéo.
+    const [left, right] = r.creatures[cfg.creaturePlacement];
+    for (const box of [left, right]) {
+      prims.push({
+        k: "image",
+        href: creatureArt.src,
+        x: box.x,
+        y: box.y,
+        w: box.w,
+        h: box.h,
+        fit: "meet",
+        opacity: 0.9,
+      });
+    }
+  } else if (hasCreature) {
     const [left, right] = r.creatures[cfg.creaturePlacement];
     prims.push(
       ...creaturePrims(creature, left, pal, false),
@@ -393,6 +471,7 @@ export function buildPoster(
     w,
     h,
     prims,
+    backgroundImage: cfg.backgroundImage,
     namePt,
     peopleCount: layout.cards.length,
     rows: layout.rows,

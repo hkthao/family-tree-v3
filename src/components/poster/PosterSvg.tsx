@@ -70,6 +70,21 @@ function renderPrim(p: Prim, i: number) {
           {p.children.map(renderPrim)}
         </g>
       );
+    case "image":
+      return (
+        <image
+          key={i}
+          href={p.href}
+          x={p.x}
+          y={p.y}
+          width={p.w}
+          height={p.h}
+          opacity={p.opacity}
+          preserveAspectRatio={
+            p.fit === "meet" ? "xMidYMid meet" : "xMidYMid slice"
+          }
+        />
+      );
     case "text":
       return (
         <text
@@ -120,7 +135,10 @@ export function PosterSvg({
           ) : null,
         )}
       </defs>
-      {doc.prims.map(renderPrim)}
+      {/* Ảnh vẽ TRƯỚC tất cả, để khớp với bản PDF — bên đó ảnh buộc phải
+          nằm dưới lớp vector (xem ClanPosterPdf). */}
+      {doc.prims.map((p, i) => (p.k === "image" ? renderPrim(p, i) : null))}
+      {doc.prims.map((p, i) => (p.k === "image" ? null : renderPrim(p, i)))}
     </svg>
   );
 }

@@ -1,6 +1,7 @@
 import {
   Circle,
   Defs,
+  Image,
   Document,
   G,
   Line,
@@ -103,6 +104,8 @@ function renderPrim(p: Prim, i: number) {
           {p.children.map(renderPrim)}
         </G>
       );
+    case "image":
+      return null; // vẽ riêng ở lớp dưới, xem phần thân component
     case "text":
       return (
         <Text
@@ -131,6 +134,28 @@ export function ClanPosterPdf({
   return (
     <Document title={title}>
       <Page size={size} orientation="landscape">
+        {/* Ảnh nằm DƯỚI toàn bộ phần vector.
+            `@react-pdf` không cho <Image> làm con của <Svg> — nó là thẻ bố
+            cục, không phải thẻ vẽ. Nên ảnh được xếp tuyệt đối trên trang,
+            còn chữ và nét vẫn nằm trong <Svg> đè lên trên. Bản xem trước
+            trên màn hình cũng vẽ ảnh trước, để hai bên khớp nhau. */}
+        {doc.prims.map((p, i) =>
+          p.k === "image" ? (
+            <Image
+              key={`img${i}`}
+              src={p.href}
+              style={{
+                position: "absolute",
+                left: p.x,
+                top: p.y,
+                width: p.w,
+                height: p.h,
+                opacity: p.opacity ?? 1,
+                objectFit: p.fit === "meet" ? "contain" : "cover",
+              }}
+            />
+          ) : null,
+        )}
         <Svg width={doc.w} height={doc.h} viewBox={`0 0 ${doc.w} ${doc.h}`}>
           <Defs>
             {doc.prims.map((p, i) =>

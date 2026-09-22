@@ -672,3 +672,59 @@ export function footerPrims(
   }
   return out;
 }
+
+
+// ───────── Vân nền và tranh linh vật (ảnh thật) ─────────────────────
+
+/**
+ * Ảnh dùng làm nền hoặc linh vật.
+ *
+ * Vì sao phải có ảnh bên cạnh phần vẽ bằng công thức: lụa sắc phong có
+ * vân, rồng có vảy, mây có mảng đậm nhạt — đó là TRANH. Code vẽ bằng cung
+ * tròn ra được hình khối, nhưng không ra được chất liệu, nên tấm nhìn
+ * "sạch" mà không ra thần thái phả đồ.
+ */
+export interface ArtImage {
+  id: string;
+  label: string;
+  /** Đường dẫn trong /public. */
+  src: string;
+  /** Ghi công + giấy phép, hiện ở trang chọn. */
+  credit: string;
+}
+
+export const PAPER_TEXTURES: ArtImage[] = [
+  { id: "khong", label: "Không có", src: "", credit: "" },
+  {
+    id: "sac-phong",
+    label: "Lụa sắc phong (vàng) — nên để rất mờ",
+    src: "/poster/nen-sac-phong.jpg",
+    credit: "Sắc phong thời Cảnh Hưng — Wikimedia Commons, public domain",
+  },
+  {
+    id: "sac-phong-2",
+    label: "Lụa sắc phong (hổ phách) — nên để rất mờ",
+    src: "/poster/nen-sac-phong-2.jpg",
+    credit: "Sắc phong thời Khải Định — Wikimedia Commons, public domain",
+  },
+];
+
+/**
+ * ⚠️ Ảnh "PNG nền trong" tải từ Rawpixel qua Openverse THỰC RA có nền
+ * ca-rô in sẵn trong ảnh (họ nướng cái nền xem-trước vào file). Dùng
+ * thẳng là ra một khung ca-rô xám giữa tấm. Giữ lại đây làm ví dụ cho cơ
+ * chế cắm tranh, không bật mặc định.
+ */
+export const CREATURE_IMAGES: ArtImage[] = [
+  {
+    id: "rong-tranh",
+    label: "Rồng Á Đông (tranh vẽ) — ảnh gốc còn nền ca-rô",
+    src: "/poster/rong-a-dong-tranh.png",
+    credit: "Rawpixel, CC0",
+  },
+];
+
+export const artImageById = (
+  list: ArtImage[],
+  id: string,
+): ArtImage | undefined => list.find((a) => a.id === id && a.src);

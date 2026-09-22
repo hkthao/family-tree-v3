@@ -125,7 +125,46 @@ thì đó là ràng buộc không ai muốn dính.
 **Hoa văn nền phải MỜ HẲN** — đặt 6%. Trống đồng nét dày đặc, đậm hơn chút là
 tên người nằm trên nó đọc không ra, mà tên người mới là thứ người ta tới để đọc.
 
-## 6. Việc còn thiếu ở app
+## 6. Đã dò hết nguồn mở — và kết luận
+
+Ngày 22/09 dò bằng lệnh qua: Wikimedia Commons, Openverse (gom rawpixel, Met,
+Cleveland, Rijksmuseum, Smithsonian), Openclipart, freesvg, publicdomainvectors.
+Từ khoá dùng cả tiếng Việt lẫn tiếng Anh, kể cả **sắc phong, chiếu chỉ, thánh
+chỉ, cuốn thư, hoành phi, câu đối**.
+
+**Kết quả: nguồn mở KHÔNG có mỹ thuật phả đồ Việt.** Cụ thể:
+
+| Tìm được | Dùng được? |
+|---|---|
+| Trống đồng Đông Sơn (PD) | ✅ đã gắn làm hoa văn nền |
+| Rồng trên Commons (CC BY-SA) | ❌ chỉ là đầu + móng, không phải rồng nguyên con |
+| "Dragon PNG nền trong" của Rawpixel | ❌ **nền ca-rô in sẵn trong ảnh** — họ nướng nền xem-trước vào file |
+| Sắc phong thật (PD, ảnh chụp) | ❌ là VĂN BẢN có chữ Hán to; phủ kín tấm thì chữ Hán nuốt hết tên người |
+| Hoành phi / cuốn thư trên Commons | ❌ ảnh chụp trong đình chùa, có phông nền — muốn dùng phải cắt nền thủ công |
+| Ruy-băng, khung viền châu Âu (CC0) | ❌ lạc phong cách hoàn toàn |
+
+Openclipart, freesvg, publicdomainvectors: **chặn tải tự động**.
+
+**Vì sao nguồn mở không có:** mỹ thuật này là hàng đặt của thợ thiết kế Việt,
+bán ở các chợ vector trong nước. Không ai đưa lên kho CC0.
+
+## 7. Đường ra: chỗ cắm tranh đã làm sẵn
+
+Vì tranh mới là thứ quyết định, app nay **nhận được ảnh** ở hai chỗ:
+
+- **Vân giấy** — ảnh phủ kín tấm, thay hẳn lớp nền vẽ
+- **Linh vật** — ảnh đặt vào ô rồng/phượng
+
+Cơ chế đã chạy thông hai đầu (bản xem trước và bản PDF đều vẽ được ảnh, đã dựng
+tấm thật để kiểm). Một lưu ý kỹ thuật: `@react-pdf` KHÔNG cho `<Image>` làm con
+của `<Svg>` — ảnh phải xếp tuyệt đối trên trang, dưới lớp vector. Bản xem trước
+cũng vẽ ảnh trước cho khớp.
+
+**Cần gì để ra đúng mẫu:** một file tranh nền (mua ở chợ vector Việt, hoặc đặt
+hoạ sĩ, hoặc AI dựng rồi chỉnh), tối thiểu 4000px bề ngang, chừa trống phần
+giữa cho cây. Có file là gắn vào trong vài phút.
+
+## 8. Việc còn thiếu ở app
 
 Bảng gia phả hiện đã có: khung diềm, băng tên, hoạ tiết góc, cột câu đối, và 4
 linh vật (2 rồng, 2 phượng) do chủ dòng họ cung cấp. So với 4 mẫu tham khảo thì
