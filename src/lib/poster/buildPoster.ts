@@ -106,8 +106,23 @@ export function buildPoster(
     banner: true,
     creature: hasCreature ? cfg.creaturePlacement : "khong",
   });
+  // Nền CHUYỂN SẮC từ giữa ra mép. Nền phẳng một màu là thứ làm tấm in
+  // trông như bản nháp — mẫu phả đồ ngoài tiệm nào cũng chuyển sắc.
   const prims: Prim[] = [
-    { k: "rect", x: 0, y: 0, w, h, fill: pal.paper },
+    {
+      k: "gradient",
+      id: "nen",
+      x1: 0,
+      y1: 0,
+      x2: 0,
+      y2: h,
+      stops: [
+        { offset: 0, color: pal.paperEdge },
+        { offset: 0.42, color: pal.paper },
+        { offset: 1, color: pal.paperEdge },
+      ],
+    },
+    { k: "rect", x: 0, y: 0, w, h, fill: "url(#nen)" },
   ];
 
   // Hoa văn nền vẽ NGAY SAU nền giấy, trước mọi thứ khác — nó là lớp
@@ -267,19 +282,89 @@ export function buildPoster(
   }
 
   if (cfg.showGenerationLabels) {
-    const size = Math.min(namePt * 1.25, cardH * 0.34, gutter * 0.42);
+    // Huy hiệu tròn đỏ ở CẢ HAI MÉP, như mẫu phả đồ in: tấm rộng cả mét,
+    // ai đứng bên phải mà nhãn chỉ có bên trái thì phải đi vòng qua để
+    // biết mình đang xem đời thứ mấy.
+    const size = Math.min(namePt * 1.15, cardH * 0.3, gutter * 0.4);
+    const rad = Math.max(size * 1.35, gutter * 0.42);
+    const xs = [
+      r.tree.x + gutter * 0.5,
+      r.tree.x + r.tree.w + gutter * 0.5,
+    ];
     for (let i = 0; i < layout.rows; i++) {
+      for (const cx of xs) {
+        prims.push(
+          { k: "circle", cx, cy: rowY(i), r: rad, fill: pal.primary },
+          {
+            k: "text",
+            x: cx,
+            y: rowY(i) + size * 0.34,
+            s: `Đời ${i + 1}`,
+            size,
+            fill: pal.inkOnPrimary,
+            anchor: "middle",
+            weight: 600,
+          },
+        );
+      }
+    }
+  }
+
+  // Ô chú dẫn màu — mẫu nào cũng có, và nó trả lời đúng câu người xem
+  // hỏi đầu tiên: "ô màu khác này là ai?"
+  if (cfg.showSpouses) {
+    const lh = Math.max(namePt * 1.5, 9 * r.scale);
+    const boxW = Math.max(r.tree.w * 0.14, lh * 9);
+    const boxH = lh * 3.4;
+    const bx = r.tree.x + r.tree.w - boxW;
+    const by = r.tree.y + r.tree.h - boxH;
+    prims.push({
+      k: "rect",
+      x: bx,
+      y: by,
+      w: boxW,
+      h: boxH,
+      fill: pal.cardFill,
+      stroke: pal.primary,
+      sw: lineW,
+      rx: lh * 0.3,
+    });
+    prims.push({
+      k: "text",
+      x: bx + boxW / 2,
+      y: by + lh * 0.95,
+      s: "Chú dẫn màu nền ô",
+      size: lh * 0.52,
+      fill: pal.ink,
+      anchor: "middle",
+      weight: 600,
+    });
+    const rows: [string, string][] = [
+      ["Người trong dòng họ", pal.cardFill],
+      ["Dâu / rể", pal.cardFillSpouse],
+    ];
+    rows.forEach(([label, color], i) => {
+      const y = by + lh * (1.6 + i * 0.85);
+      prims.push({
+        k: "rect",
+        x: bx + lh * 0.4,
+        y,
+        w: lh * 0.9,
+        h: lh * 0.55,
+        fill: color,
+        stroke: pal.primary,
+        sw: lineW * 0.8,
+      });
       prims.push({
         k: "text",
-        x: r.tree.x + gutter * 0.5,
-        y: rowY(i) + size * 0.35,
-        s: `Đời ${i + 1}`,
-        size,
-        fill: pal.primary,
-        anchor: "middle",
-        weight: 600,
+        x: bx + lh * 1.5,
+        y: y + lh * 0.44,
+        s: label,
+        size: lh * 0.46,
+        fill: pal.ink,
+        anchor: "start",
       });
-    }
+    });
   }
 
   const warnings: string[] = [];

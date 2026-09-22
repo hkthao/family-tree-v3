@@ -1,11 +1,14 @@
 import {
   Circle,
+  Defs,
   Document,
   G,
   Line,
+  LinearGradient,
   Page,
   Path,
   Rect,
+  Stop,
   Svg,
   Text,
 } from "@react-pdf/renderer";
@@ -42,6 +45,8 @@ const textStyle = (size: number, weight: 400 | 600) =>
 
 function renderPrim(p: Prim, i: number) {
   switch (p.k) {
+    case "gradient":
+      return null; // đã vẽ ở <Defs>
     case "rect":
       return (
         <Rect
@@ -126,6 +131,24 @@ export function ClanPosterPdf({
     <Document title={title}>
       <Page size={size} orientation="landscape">
         <Svg width={doc.w} height={doc.h} viewBox={`0 0 ${doc.w} ${doc.h}`}>
+          <Defs>
+            {doc.prims.map((p, i) =>
+              p.k === "gradient" ? (
+                <LinearGradient
+                  key={`g${i}`}
+                  id={p.id}
+                  x1={p.x1}
+                  y1={p.y1}
+                  x2={p.x2}
+                  y2={p.y2}
+                >
+                  {p.stops.map((st, j) => (
+                    <Stop key={j} offset={st.offset} stopColor={st.color} />
+                  ))}
+                </LinearGradient>
+              ) : null,
+            )}
+          </Defs>
           {doc.prims.map(renderPrim)}
         </Svg>
       </Page>
