@@ -19,7 +19,29 @@ export interface Rect {
   h: number;
 }
 
+export interface GradientStop {
+  /** 0–1. */
+  offset: number;
+  color: string;
+}
+
 export type Prim =
+  | {
+      /**
+       * Khai báo một dải chuyển sắc để các hình khác gọi bằng
+       * `fill: "url(#id)"`.
+       *
+       * Mẫu phả đồ ngoài tiệm nào cũng có nền chuyển từ kem sang vàng
+       * ấm — nền phẳng một màu là thứ làm tấm in trông như bản nháp.
+       */
+      k: "gradient";
+      id: string;
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      stops: GradientStop[];
+    }
   | {
       k: "rect";
       x: number;

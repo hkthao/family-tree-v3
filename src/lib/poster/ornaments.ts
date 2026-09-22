@@ -20,8 +20,10 @@ import { centeredLines } from "@/lib/poster/prims";
 export interface Palette {
   id: string;
   label: string;
-  /** Nền tấm. */
+  /** Nền tấm (giữa tấm, sáng nhất). */
   paper: string;
+  /** Sắc nền ở rìa — nền chuyển từ giữa ra mép, như mẫu ngoài tiệm. */
+  paperEdge: string;
   /** Màu chủ đạo: khung, băng tên, cột câu đối. */
   primary: string;
   /** Màu nhấn: nét hoa văn, viền ô. */
@@ -40,7 +42,8 @@ export const PALETTES: Palette[] = [
   {
     id: "son-vang",
     label: "Đỏ son – vàng đồng",
-    paper: "#FDF8EE",
+    paper: "#FEFBF2",
+    paperEdge: "#F3E3AE",
     primary: "#9E2B25",
     accent: "#B8862A",
     ink: "#2B2118",
@@ -51,7 +54,8 @@ export const PALETTES: Palette[] = [
   {
     id: "cham-vang",
     label: "Chàm – vàng",
-    paper: "#F7F5EF",
+    paper: "#F9F8F3",
+    paperEdge: "#E2E8EE",
     primary: "#1F3A5F",
     accent: "#C79A2E",
     ink: "#1B2430",
@@ -63,6 +67,7 @@ export const PALETTES: Palette[] = [
     id: "muc-nho",
     label: "Mực nho (đen trắng)",
     paper: "#FFFFFF",
+    paperEdge: "#F0F0F0",
     primary: "#2A2A2A",
     accent: "#5A5A5A",
     ink: "#1A1A1A",

@@ -12,6 +12,8 @@ import type { Prim } from "@/lib/poster/prims";
 
 function renderPrim(p: Prim, i: number) {
   switch (p.k) {
+    case "gradient":
+      return null; // đã vẽ ở <defs>
     case "rect":
       return (
         <rect
@@ -98,6 +100,25 @@ export function PosterSvg({
       role="img"
       aria-label="Xem trước bảng gia phả"
     >
+      <defs>
+        {doc.prims.map((p, i) =>
+          p.k === "gradient" ? (
+            <linearGradient
+              key={`g${i}`}
+              id={p.id}
+              x1={p.x1}
+              y1={p.y1}
+              x2={p.x2}
+              y2={p.y2}
+              gradientUnits="userSpaceOnUse"
+            >
+              {p.stops.map((st, j) => (
+                <stop key={j} offset={st.offset} stopColor={st.color} />
+              ))}
+            </linearGradient>
+          ) : null,
+        )}
+      </defs>
       {doc.prims.map(renderPrim)}
     </svg>
   );
