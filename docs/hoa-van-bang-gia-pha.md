@@ -164,7 +164,37 @@ cũng vẽ ảnh trước cho khớp.
 hoạ sĩ, hoặc AI dựng rồi chỉnh), tối thiểu 4000px bề ngang, chừa trống phần
 giữa cho cây. Có file là gắn vào trong vài phút.
 
-## 8. Việc còn thiếu ở app
+## 8. Đường ống CDR → tấm in (đã chạy)
+
+Chủ dòng họ tải được một file **CorelDRAW** cuốn thư. Đường đi, đã làm thật:
+
+```bash
+brew install libcdr                       # có cdr2xhtml
+cdr2xhtml cuonthu.cdr > cuonthu.xhtml     # ra XHTML có SVG nhúng
+# (hoặc mở bằng Inkscape rồi lưu .svg — sạch hơn, nên ưu tiên)
+node scripts/convert-poster-artwork.mjs cuon-thu.svg cuon-thu-co "Cuốn thư cổ truyền" \
+     src/lib/poster/artwork/cuon-thu-co.ts
+```
+
+Ba chỗ vấp, ghi lại để khỏi vấp lại:
+
+1. **`cdr2xhtml` sinh XHTML có thuộc tính xmlns lặp** → trình duyệt không đọc
+   nổi. Phải viết lại thẻ `<svg>` đầu file.
+2. **Chữ trong file CDR hỏng phông** ("Hảchñt Pch"). Không sao: tấm gia phả tự
+   đánh chữ. Cứ bỏ hết thẻ `<text>`.
+3. **Không ước lượng khung bao bằng cách bắt cặp số trong `d`** — lệnh cung
+   tròn `A` có 7 tham số nên cặp lệch, và mọi hình đều bị coi là "chạm rìa".
+   Đo bằng `getBBox()` trong trình duyệt thật.
+
+Script `convert-poster-artwork.mjs` khác `convert-poster-creature.mjs` ở chỗ
+**giữ nguyên màu bản gốc** — với cuốn thư thì màu chính là nội dung (rồng
+vàng, nền đỏ son, hoa đào hồng), quy về hai tông là hỏng hình.
+
+Vị trí ô đỏ để đặt tên dòng họ được đo bằng cách dựng tranh ra ảnh rồi **quét
+pixel** tìm dải đỏ liên tục dài nhất ở hàng giữa và cột giữa — đoán bằng mắt
+thì chữ lệch khỏi ô, mà lệch trên tấm A1 thì nhìn là thấy.
+
+## 9. Việc còn thiếu ở app
 
 Bảng gia phả hiện đã có: khung diềm, băng tên, hoạ tiết góc, cột câu đối, và 4
 linh vật (2 rồng, 2 phượng) do chủ dòng họ cung cấp. So với 4 mẫu tham khảo thì

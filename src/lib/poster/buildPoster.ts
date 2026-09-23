@@ -14,6 +14,8 @@ import {
   type CornerId,
   type FooterId,
 } from "@/lib/poster/ornaments";
+import { artworkPrims } from "@/lib/poster/artwork";
+import type { PosterArtwork } from "@/lib/poster/artwork/types";
 import {
   backgroundPrims,
   creaturePrims,
@@ -66,6 +68,8 @@ export interface PosterConfig {
   paperTextureOpacity: number;
   /** Dùng tranh rồng thay hình vector. */
   creatureImage: boolean;
+  /** Id tranh dùng làm băng tên; rỗng = vẽ băng tên bằng công thức. */
+  bannerArtwork: string;
   /** Null = in cả dòng họ từ thuỷ tổ. */
   focalId: string | null;
   /** 0 = hết cây. */
@@ -95,6 +99,7 @@ export const DEFAULT_POSTER_CONFIG: Omit<PosterConfig, "title"> = {
   paperTexture: "khong",
   paperTextureOpacity: 0.25,
   creatureImage: false,
+  bannerArtwork: "cuon-thu-co",
   focalId: null,
   generations: 0,
 };
@@ -135,6 +140,8 @@ export function buildPoster(
   creature?: CreatureArt | null,
   /** Hoa văn nền đã tải xong. */
   background?: CreatureArt | null,
+  /** Tranh băng tên đã tải xong. */
+  bannerArt?: PosterArtwork | null,
 ): PosterDoc {
   const pal = paletteById(cfg.paletteId);
   const { w, h } = POSTER_SIZES[cfg.size];
@@ -237,16 +244,56 @@ export function buildPoster(
       ...creaturePrims(creature, right, pal, true),
     );
   }
-  prims.push(
-    ...bannerPrims(
-      cfg.banner,
-      r.banner,
-      pal,
-      r.scale,
-      cfg.title.toUpperCase(),
-      cfg.subtitle.trim() || null,
-    ),
-  );
+  if (bannerArt) {
+    // Băng tên bằng TRANH: cuốn thư vẽ tay có rồng, có bát bửu, có hoa
+    // đào — thứ mà vẽ bằng công thức không bao giờ ra được. Tranh chừa
+    // sẵn ô đỏ ở giữa, chữ rơi đúng vào đó.
+    // Cuốn thư chiếm khoảng 46% bề ngang tấm, giống các mẫu in: hẹp hơn
+    // thì nó lọt thỏm, rộng hơn thì đè vào hai cột câu đối.
+    const bandW = r.inner.w * 0.46;
+    const band: Rect = {
+      x: r.inner.x + (r.inner.w - bandW) / 2,
+      y: r.banner.y - r.banner.h * 0.3,
+      w: bandW,
+      h: r.banner.h * 1.85,
+    };
+    const { prims: artPrims, textBox } = artworkPrims(bannerArt, band);
+    prims.push(...artPrims);
+
+    const lines = [cfg.title.toUpperCase(), cfg.subtitle.trim()].filter(Boolean);
+    const sizes = lines.map((_, i) =>
+      i === 0
+        ? Math.min(textBox.h * 0.42, (textBox.w * 1.5) / Math.max(6, lines[0].length))
+        : textBox.h * 0.16,
+    );
+    const totalH = sizes.reduce((a, v) => a + v * 1.35, 0);
+    let cursor = textBox.y + textBox.h / 2 - totalH / 2;
+    lines.forEach((line, i) => {
+      cursor += sizes[i] * 1.35;
+      prims.push({
+        k: "text",
+        x: textBox.x + textBox.w / 2,
+        y: cursor - sizes[i] * 0.35,
+        s: line,
+        size: sizes[i],
+        // Chữ vàng trên nền đỏ son — đúng lối hoành phi.
+        fill: "#F7D774",
+        anchor: "middle",
+        weight: 600,
+      });
+    });
+  } else {
+    prims.push(
+      ...bannerPrims(
+        cfg.banner,
+        r.banner,
+        pal,
+        r.scale,
+        cfg.title.toUpperCase(),
+        cfg.subtitle.trim() || null,
+      ),
+    );
+  }
 
   // ─── Cây ─────────────────────────────────────────────────────────
   const layout = layoutPosterTree(persons, families, {
