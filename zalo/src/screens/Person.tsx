@@ -1,44 +1,80 @@
-import type { CSSProperties } from "react";
-import { IconArrowRight } from "@/components/icons";
+import type { ReactNode } from "react";
 import { openWebview } from "zmp-sdk";
 
-import { displayGenLabel } from "@/lib/displayGeneration";
-import { formatLunarAnniversary } from "@/lib/lunarDate";
+import { IconArrowRight } from "@/components/icons";
+import { computeLifespanYears, lifespanLabel } from "@/lib/lifespan";
+import {
+  formatLunarAnniversary,
+  formatLunarDate,
+  solarStringToLunar,
+} from "@/lib/lunarDate";
 import { formatPartialDate } from "@/lib/partialDate";
 import { getPersonRelationships, type Relationship } from "@/lib/queries/families";
-import { getPerson } from "@/lib/queries/persons";
-import { generationColor } from "@/lib/tree/folderModel";
+import { getPerson, type PersonDetail } from "@/lib/queries/persons";
 
 import { usePhotoUrls } from "../photos";
 import { useAsync } from "../useAsync";
 
 const WEB = "https://giapha.thaohk.com";
 
-/** Hồ sơ một người — chỉ xem. Sửa thì mở bản web. */
+/**
+ * Hồ sơ một người — dựng theo trang chi tiết của bản web: đường dẫn, đầu
+ * trang (ảnh + tên + "Thuỷ tổ • Đời N • đã mất"), thẻ "Thông tin cơ bản"
+ * với đúng các dòng và thứ tự của web, rồi thẻ "Quan hệ". Chỉ xem; sửa
+ * thì mở bản web.
+ */
+
+/** Một dòng thông tin: nhãn nhỏ ở trên, giá trị ở dưới. Trống thì bỏ cả dòng. */
+function Row({ label, value }: { label: string; value: ReactNode }) {
+  if (value === null || value === undefined || value === "" || value === false) return null;
+  return (
+    <div className="drow">
+      <span>{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}
+
+/**
+ * Ngày âm: ưu tiên ngày âm ghi sẵn (bia mộ thường chỉ có âm lịch), không
+ * có thì suy từ ngày dương đầy đủ — cùng cách với web.
+ */
+function lunarText(
+  y: number | null,
+  m: number | null,
+  d: number | null,
+  fallbackSolar: string | null,
+): string | null {
+  if (y || m || d) {
+    return formatLunarDate({ year: y ?? undefined, month: m ?? undefined, day: d ?? undefined }) || null;
+  }
+  const derived = fallbackSolar ? solarStringToLunar(fallbackSolar) : null;
+  return derived ? formatLunarDate(derived) || null : null;
+}
+
 export function PersonScreen({
   clanId,
+  clanName,
   personId,
   source,
   genOffset,
   openPerson,
 }: {
   clanId: string;
+  clanName: string;
   personId: string;
   /** Khách xem họ công khai đọc bản đã che thông tin người còn sống. */
   source: "persons" | "persons_public_safe";
   genOffset: number;
   openPerson: (id: string) => void;
 }) {
-  const q = useAsync(
-    async () => {
-      const [person, rel] = await Promise.all([
-        getPerson(personId, undefined, source),
-        getPersonRelationships(personId, undefined, source),
-      ]);
-      return { person, rel };
-    },
-    [personId, source],
-  );
+  const q = useAsync(async () => {
+    const [person, rel] = await Promise.all([
+      getPerson(personId, undefined, source),
+      getPersonRelationships(personId, undefined, source),
+    ]);
+    return { person, rel };
+  }, [personId, source]);
   const rel = q.data?.rel;
   const all = rel ? [...rel.parents, ...rel.spouses, ...rel.children] : [];
   const photo = usePhotoUrls([q.data?.person?.photo_path, ...all.map((r) => r.photo_path)]);
@@ -46,8 +82,8 @@ export function PersonScreen({
   if (q.loading) {
     return (
       <div className="page">
-        <div className="sk" style={{ height: 220 }} />
-        <div className="sk" style={{ height: 180, marginTop: 14 }} />
+        <div className="sk" style={{ height: 64 }} />
+        <div className="sk" style={{ height: 260, marginTop: 12 }} />
       </div>
     );
   }
@@ -59,87 +95,99 @@ export function PersonScreen({
       </div>
     );
   }
-  const p = q.data.person;
-  const color = generationColor(p.generation);
-  const facts: [string, string | null][] = [
-    ["Tên tự", p.courtesy_name],
-    ["Tên huý / thuỵ", p.posthumous_name],
-    ["Tên thường gọi", p.nickname],
-    ["Sinh", formatPartialDate({ date: p.birth_date, precision: p.birth_date_precision }) || null],
-    ["Mất", formatPartialDate({ date: p.death_date, precision: p.death_date_precision }) || (p.is_living ? null : "đã mất")],
-    ["Ngày giỗ", formatLunarAnniversary({ month: p.death_anniv_lunar_month ?? undefined, day: p.death_anniv_lunar_day ?? undefined }) || null],
-    ["Nơi sinh", p.birth_place],
-    ["Nơi an táng", p.burial_place],
-  ];
+  const p: PersonDetail = q.data.person;
+  const tho = p.is_living ? null : computeLifespanYears(p.lifespan_years, p.birth_date, p.death_date);
 
-  const shown = facts.filter(([, v]) => v);
-  const gen = { "--gen": color ?? undefined } as CSSProperties;
-
-  const group = (label: string, items: Relationship[]) =>
-    items.length > 0 && (
-      <>
-        <h3 className="section-title">{label}</h3>
-        <div className="card rels">
-          {items.map((r) => (
-            <button key={r.id} type="button" className="rel" onClick={() => openPerson(r.id)}>
-              <img src={photo(r.photo_path, r.gender)} width={44} height={44} alt="" />
-              <span style={{ minWidth: 0 }}>
-                <b>{r.full_name}</b>
-                <span className="muted">{r.gender === "M" ? "Nam" : "Nữ"}{!r.is_living && " · đã mất"}</span>
+  const group = (label: string, items: Relationship[], emptyHint: string) => (
+    <div className="relgroup">
+      <h4>{label}</h4>
+      {items.length === 0 ? (
+        <div className="hintbox">{emptyHint}</div>
+      ) : (
+        items.map((r) => (
+          <button key={r.id} type="button" className="card relrow" onClick={() => openPerson(r.id)}>
+            <img src={photo(r.photo_path, r.gender)} width={40} height={40} alt="" />
+            <span style={{ minWidth: 0, flex: 1 }}>
+              <b className="ell">{r.full_name}</b>
+              <span className="tiny" style={{ margin: 0 }}>
+                {r.gender === "M" ? "Nam" : "Nữ"}{!r.is_living && " · đã mất"}
               </span>
-              <span className="go"><IconArrowRight /></span>
-            </button>
-          ))}
-        </div>
-      </>
-    );
+            </span>
+            <span className="go"><IconArrowRight /></span>
+          </button>
+        ))
+      )}
+    </div>
+  );
 
   return (
-    <div className="page" style={gen}>
-      <div className="card hero">
-        <div className="cover" />
-        <span className="ring">
-          <img src={photo(p.photo_path, p.gender)} width={92} height={92} alt="" />
-        </span>
-        <h2>{p.full_name}</h2>
-        <div className="chips">
-          {color && <span className="badge" style={{ fontSize: 12, padding: "3px 10px" }}>{displayGenLabel(p.generation, genOffset)}</span>}
-          {p.is_root && <span className="chip">Thuỷ tổ</span>}
-          <span className="chip">
-            <span className={p.gender === "M" ? "m" : "f"}>{p.gender === "M" ? "♂" : "♀"}</span>{" "}
-            {p.gender === "M" ? "Nam" : "Nữ"}
-          </span>
-          {!p.is_living && <span className="chip">Đã mất</span>}
+    <div className="page">
+      <p className="crumb">
+        {clanName} <span>›</span> Danh bạ <span>›</span> <b>{p.full_name}</b>
+      </p>
+
+      <header className="phead">
+        <img src={photo(p.photo_path, p.gender)} width={56} height={56} alt="" />
+        <div style={{ minWidth: 0 }}>
+          <h1 className="serif ell">{p.full_name}</h1>
+          <p className="muted" style={{ margin: 0 }}>
+            {p.is_root && <span className="root" style={{ margin: 0 }}>Thuỷ tổ • </span>}
+            {p.generation !== null && <>Đời {p.generation - genOffset}</>}
+            {!p.is_living && (
+              <>
+                {p.generation !== null && " • "}đã mất
+                {p.death_date?.slice(0, 4) && ` • ${p.death_date.slice(0, 4)}`}
+              </>
+            )}
+          </p>
         </div>
-      </div>
+      </header>
 
-      {shown.length > 0 && (
-        <>
-          <h3 className="section-title">Thông tin</h3>
-          <dl className="card facts">
-            {shown.map(([k, v]) => (
-              <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
-            ))}
-          </dl>
-        </>
-      )}
-
-      {p.bio && (
-        <>
-          <h3 className="section-title">Tiểu sử</h3>
-          <div className="card bio">{p.bio}</div>
-        </>
-      )}
+      <section className="card pane">
+        <h3 className="serif">Thông tin cơ bản</h3>
+        <Row label="Giới tính" value={p.gender === "M" ? "Nam" : "Nữ"} />
+        <Row label="Tên tự" value={p.courtesy_name} />
+        <Row label="Tên húy" value={p.nickname} />
+        <Row label="Tên thụy" value={p.posthumous_name} />
+        <Row label="Ngày sinh" value={formatPartialDate({ date: p.birth_date, precision: p.birth_date_precision }) || null} />
+        <Row
+          label="Ngày sinh (âm)"
+          value={lunarText(p.birth_lunar_year, p.birth_lunar_month, p.birth_lunar_day, p.birth_date_precision === "day" ? p.birth_date : null)}
+        />
+        {!p.is_living && (
+          <>
+            <Row label="Ngày mất" value={formatPartialDate({ date: p.death_date, precision: p.death_date_precision }) || null} />
+            <Row
+              label="Ngày mất (âm)"
+              value={lunarText(p.death_lunar_year, p.death_lunar_month, p.death_lunar_day, p.death_date_precision === "day" ? p.death_date : null)}
+            />
+            <Row
+              label="Ngày giỗ"
+              value={formatLunarAnniversary({ month: p.death_anniv_lunar_month ?? undefined, day: p.death_anniv_lunar_day ?? undefined }) || null}
+            />
+            {tho != null && <Row label={lifespanLabel(tho)} value={`${tho} tuổi`} />}
+          </>
+        )}
+        <Row label="Nơi sinh" value={p.birth_place} />
+        <Row label="Nơi an táng" value={p.burial_place} />
+        {p.bio && (
+          <div className="drow" style={{ borderTop: "1px solid var(--line)", paddingTop: 10, marginTop: 6 }}>
+            <span>Tiểu sử</span>
+            <span style={{ whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{p.bio}</span>
+          </div>
+        )}
+      </section>
 
       {rel && (
-        <>
-          {group("Cha mẹ", rel.parents)}
-          {group("Vợ / chồng", rel.spouses)}
-          {group("Con cái", rel.children)}
-        </>
+        <section className="card pane">
+          <h3 className="serif">Quan hệ</h3>
+          {group("Cha mẹ", rel.parents, "Chưa nhập cha mẹ")}
+          {group("Vợ / chồng", rel.spouses, "Chưa có vợ / chồng.")}
+          {group("Con cái", rel.children, "Chưa có con cái.")}
+        </section>
       )}
 
-      {/* Sửa hồ sơ, thêm người, xuất sổ… là việc của bản web (bước 5). */}
+      {/* Sửa hồ sơ, thêm người thân… là việc của bản web. */}
       <div className="cta">
         <button
           type="button"
