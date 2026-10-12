@@ -9,6 +9,8 @@ import { getOrCreateTreeShareLink } from "@/lib/queries/share-links";
 
 export interface ExportClanBookOptions {
   tree?: boolean;
+  /** Kèm trang "Cây thư mục" khổ tự tính (mặc định có). */
+  folderTree?: boolean;
   detail?: boolean;
   /** Số thành viên ("lá") tối đa mỗi trang sơ đồ cây. Ít → thẻ to, dễ đọc;
    *  nhiều → gói được nhiều đời/người trên một trang. */
