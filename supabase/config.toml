@@ -474,3 +474,8 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # Đăng nhập từ Zalo Mini App: người gọi CHƯA có phiên nên không đòi JWT.
 # Cổng vào là việc Zalo xác nhận access token + appsecret_proof ở trong hàm.
 verify_jwt = false
+
+[functions.zalo-link]
+# Liên kết Zalo với tài khoản email sẵn có. Cổng vào là access token Zalo
+# (kiểm trong hàm) + mã 6 số gửi qua email — không dựa vào JWT của Supabase.
+verify_jwt = false

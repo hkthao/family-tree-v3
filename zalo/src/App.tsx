@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 
-import { signInWithZalo } from "./auth";
+import { isZaloOnlyAccount, signInWithZalo } from "./auth";
+import { LinkAccount } from "./LinkAccount";
 
 /**
- * Bước 2 của kế hoạch (docs/plan-zalo-mini-app.md): màn hình KIỂM CHỨNG
- * đăng nhập, chưa phải giao diện thật. Mở app → tự đăng nhập bằng Zalo →
- * hiện tên tài khoản. Màn hình xem cây (bước 4) sẽ thay chỗ này.
+ * Bước 2–3 của kế hoạch (docs/plan-zalo-mini-app.md): màn hình KIỂM CHỨNG
+ * đăng nhập và liên kết tài khoản, chưa phải giao diện thật. Mở app → tự
+ * đăng nhập bằng Zalo → hiện tên tài khoản → mời liên kết tài khoản web.
+ * Màn hình xem cây (bước 4) sẽ thay chỗ này.
  */
 type State =
   | { kind: "loading" }
-  | { kind: "ready"; name: string; isNew: boolean }
+  | { kind: "ready"; name: string; isNew: boolean; zaloOnly: boolean }
   | { kind: "error"; message: string };
 
 export function App() {
@@ -25,7 +27,12 @@ export function App() {
         const name =
           (data.user?.user_metadata?.display_name as string | undefined) ??
           "bạn";
-        setState({ kind: "ready", name, isNew });
+        setState({
+          kind: "ready",
+          name,
+          isNew,
+          zaloOnly: isZaloOnlyAccount(data.user?.email),
+        });
       })
       .catch((e: Error) => setState({ kind: "error", message: e.message }));
   };
@@ -45,6 +52,10 @@ export function App() {
             : "Bạn đã đăng nhập."}
         </p>
       )}
+
+      {/* Chỉ mời liên kết khi đang ở tài khoản tạo từ Zalo; đã liên kết
+          rồi (email thật) thì không còn gì để làm ở đây. */}
+      {state.kind === "ready" && state.zaloOnly && <LinkAccount onLinked={login} />}
 
       {state.kind === "error" && (
         <>
