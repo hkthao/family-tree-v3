@@ -6,7 +6,10 @@ import {
   type CSSProperties,
 } from "react";
 
-import { IconChevronDown } from "@/components/icons";
+import {
+  IconChevronDown,
+  IconSearch,
+} from "@/components/icons";
 import { displayGen } from "@/lib/displayGeneration";
 import {
   loadFolderNode,
@@ -281,7 +284,7 @@ function SearchResults({ q }: { q: string }) {
   if (rows.length === 0) {
     return (
       <div className="empty">
-        <div className="icon">🔍</div>
+        <div className="icon"><IconSearch /></div>
         <p className="muted">Không tìm thấy ai tên “{q}”.</p>
       </div>
     );

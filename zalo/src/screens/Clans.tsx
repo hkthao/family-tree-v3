@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { IconBuildings, IconLink } from "@/components/icons";
+import {
+  IconBuildings,
+  IconLink,
+  IconTree,
+} from "@/components/icons";
 import { formatDate, formatRelative } from "@/lib/formatDate";
 import {
   getClansInlawLinks,
@@ -110,7 +114,7 @@ export function ClansScreen({
 
       {!list.loading && list.data && rows.length === 0 && (
         <div className="card empty">
-          <div className="icon">🌳</div>
+          <div className="icon"><IconTree /></div>
           <p className="muted">
             {q
               ? `Không có dòng họ nào khớp “${q}”.`
