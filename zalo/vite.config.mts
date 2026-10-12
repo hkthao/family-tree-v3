@@ -45,4 +45,19 @@ export default defineConfig({
     // Mặc định Vite không cho đọc file ngoài thư mục gốc của dự án.
     fs: { allow: [repoRoot] },
   },
+  optimizeDeps: {
+    // Gom SẴN các thư viện chỉ được nạp lười (cây 2D/3D) ngay lúc khởi động
+    // máy chủ dev. Không khai thì lần đầu bấm sang 2D/3D Vite mới phát hiện
+    // ra chúng, gom lại giữa chừng và đổi mã phiên bản — trình duyệt đang
+    // cầm địa chỉ cũ nên báo "Failed to fetch dynamically imported module".
+    include: [
+      "family-chart",
+      "3d-force-graph",
+      "three",
+      "three-spritetext",
+      "@tanstack/react-query",
+      "@supabase/supabase-js",
+      "@dqcai/vn-lunar",
+    ],
+  },
 });
