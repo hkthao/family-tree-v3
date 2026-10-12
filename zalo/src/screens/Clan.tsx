@@ -2,7 +2,6 @@ import { useState } from "react";
 import { openWebview } from "zmp-sdk";
 
 import {
-  IconArrowRight,
   IconCalendar,
   IconGlobe,
   IconHome,
