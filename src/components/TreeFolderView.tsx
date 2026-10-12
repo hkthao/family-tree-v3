@@ -292,6 +292,7 @@ export function TreeFolderView({
             clanId={clanId}
             source={source}
             person={r}
+            reserveArrow={roots.some((x) => x.hasChildren)}
             defaultOpen
           />
         ))}
@@ -348,6 +349,7 @@ function SearchResults({
             clanId={clanId}
             source={source}
             person={h.person}
+            reserveArrow={hits.some((x) => x.person.hasChildren)}
             note={
               h.parentNames.length > 0
                 ? `con của ${h.parentNames.join(" & ")}`
@@ -373,6 +375,7 @@ function PersonNode({
   defaultOpen = false,
   note,
   branch = false,
+  reserveArrow = true,
 }: {
   clanId: string;
   source: TreeSource;
@@ -382,6 +385,13 @@ function PersonNode({
   note?: string;
   /** Là con treo dưới một người khác → vẽ nét nối vào đường gióng. */
   branch?: boolean;
+  /**
+   * Danh sách phẳng (gốc, kết quả tìm, chưa gắn vào cây): có chừa ô mũi
+   * tên cho người không có con hay không. Chỉ chừa khi trong danh sách
+   * CÓ người bung được — để ảnh thẳng cột; còn cả danh sách không ai có
+   * con thì ô trống đó chỉ là khoảng thụt lề thừa.
+   */
+  reserveArrow?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -428,7 +438,7 @@ function PersonNode({
     >
       <div
         className={`flex items-start gap-1 rounded-md pr-2 ${
-          branch && !person.hasChildren ? "pl-2" : ""
+          !person.hasChildren && (branch || !reserveArrow) ? "pl-2" : ""
         } hover:ring-1 hover:ring-border ${
           person.generation == null ? "bg-muted/40" : ""
         }`}
@@ -449,9 +459,12 @@ function PersonNode({
             />
           </button>
         ) : (
-          // Ngoài danh sách phẳng (gốc, kết quả tìm) vẫn giữ ô trống cho
-          // ảnh thẳng cột; trong cây thì nét nối đã lấp chỗ này.
-          !branch && <span className="inline-block h-9 w-9 shrink-0" aria-hidden />
+          // Trong cây thì nét nối đã lấp chỗ này; ở danh sách phẳng chỉ
+          // giữ ô trống khi có người khác trong danh sách bung được.
+          !branch &&
+          reserveArrow && (
+            <span className="inline-block h-9 w-9 shrink-0" aria-hidden />
+          )
         )}
 
         {/* MỘT NODE = vợ chồng đứng cùng dòng, thông tin đời/năm xuống
@@ -703,6 +716,7 @@ function UnlinkedSection({
                 clanId={clanId}
                 source={source}
                 person={p}
+                reserveArrow={(listQ.data ?? []).some((x) => x.hasChildren)}
               />
             ))}
           </ul>
