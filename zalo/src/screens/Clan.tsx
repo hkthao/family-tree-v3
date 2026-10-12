@@ -6,6 +6,7 @@ import {
   IconGlobe,
   IconHome,
   IconLink,
+  IconSun,
   IconTree,
   IconUsers,
 } from "@/components/icons";
@@ -28,6 +29,7 @@ import { scrollTopScreen } from "../scroll";
 import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
 import { PeopleScreen } from "./People";
+import { TodayScreen } from "./Today";
 import { TreeTab } from "./TreeTab";
 
 /**
@@ -38,13 +40,14 @@ import { TreeTab } from "./TreeTab";
  * Bản đầu chỉ XEM: các thao tác sửa/thêm/xuất của web gom vào một nút mở
  * bản web đầy đủ.
  */
-type Tab = "overview" | "tree" | "people" | "events";
+type Tab = "overview" | "tree" | "people" | "events" | "today";
 
 const TABS: { id: Tab; label: string; Icon: typeof IconHome }[] = [
   { id: "overview", label: "Tổng quan", Icon: IconHome },
   { id: "tree", label: "Cây", Icon: IconTree },
   { id: "people", label: "Danh bạ", Icon: IconUsers },
   { id: "events", label: "Sự kiện", Icon: IconCalendar },
+  { id: "today", label: "Hôm nay", Icon: IconSun },
 ];
 
 const WEEKDAY = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
@@ -258,6 +261,11 @@ export function ClanScreen({
       {seen.has("events") && (
         <div className={pane} style={show("events")}>
           <EventsScreen clan={clan} upcoming={upcoming} openPerson={openPerson} />
+        </div>
+      )}
+      {seen.has("today") && (
+        <div className={pane} style={show("today")}>
+          <TodayScreen clan={clan} upcoming={upcoming} openPerson={openPerson} goEvents={() => jump("events")} />
         </div>
       )}
 
