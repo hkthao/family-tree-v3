@@ -1788,6 +1788,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [perPage, setPerPage] = useState(24);
+  const [folderTree, setFolderTree] = useState(true);
 
   async function doExport() {
     if (busy) return;
@@ -1799,6 +1800,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         tree: true,
         detail: true,
         treePerPage: perPage,
+        folderTree,
       });
       track("export", { kind: "clan_book_pdf", from: "tree" });
       toast.success("Đã tải sổ PDF");
@@ -1853,6 +1855,21 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
                 </option>
               ))}
             </Select>
+            <label className="flex items-start gap-2 pt-1 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-primary"
+                checked={folderTree}
+                onChange={(e) => setFolderTree(e.target.checked)}
+              />
+              <span>
+                Kèm trang “Sơ đồ cây gia phả” (dạng thư mục)
+                <span className="block text-[11px] leading-relaxed text-muted-foreground">
+                  Cả dòng họ liền một cột trên một trang; trang dài ra theo
+                  số người (họ lớn thì dài hơn A4).
+                </span>
+              </span>
+            </label>
             <Button size="sm" className="w-full" onClick={doExport} disabled={busy}>
               <IconDownload className="h-4 w-4 mr-1.5" />
               Tải PDF

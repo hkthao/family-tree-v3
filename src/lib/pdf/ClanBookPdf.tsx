@@ -24,6 +24,8 @@ import {
   formatLunarDate,
 } from "@/lib/lunarDate";
 
+import { renderFolderTreePages } from "./FolderTreePdf";
+import { buildFolderPdfRows, type FolderPdfPerson } from "./folderTreeRows";
 import { ensurePdfFontRegistered, PDF_FONT_FAMILY } from "./registerFont";
 
 // ─── Page geometry (A4 in points) ──────────────────────────────────
@@ -374,6 +376,8 @@ interface Props {
   data: ClanBookData;
   include?: {
     tree?: boolean;
+    /** Trang "Cây thư mục" khổ tự tính — cả cây liền một mạch. */
+    folderTree?: boolean;
     detail?: boolean;
     restingPlaces?: boolean;
     heritage?: boolean;
@@ -398,6 +402,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   ensurePdfFontRegistered();
 
   const showTree = include?.tree ?? true;
+  const showFolderTree = include?.folderTree ?? true;
   const showDetail = include?.detail ?? true;
   const showRestingPlaces = include?.restingPlaces ?? true;
   const showHeritage = include?.heritage ?? true;
@@ -568,6 +573,44 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
     addSubtree(p.id);
   }
 
+  // Cây thư mục: cùng bộ gốc với sơ đồ, nên hai trang không bao giờ lệch
+  // nhau về chuyện ai có mặt.
+  const genOffset = clan.generation_offset ?? 0;
+  const folderPersonCache = new Map<string, FolderPdfPerson>();
+  const folderPerson = (id: string): FolderPdfPerson | undefined => {
+    const hit = folderPersonCache.get(id);
+    if (hit) return hit;
+    const p = personById.get(id);
+    if (!p) return undefined;
+    // Nhiều cụ đời trước chỉ ghi được năm ÂM LỊCH (không có ngày dương).
+    // Bỏ qua thì cả một đời in ra trống trơn dù gia phả có ghi năm.
+    const b = p.birth_date?.slice(0, 4) ?? p.birth_lunar_year ?? null;
+    const d = p.death_date?.slice(0, 4) ?? p.death_lunar_year ?? null;
+    const out: FolderPdfPerson = {
+      id: p.id,
+      name: p.full_name,
+      gender: p.gender,
+      generation: p.generation === null ? null : p.generation - genOffset,
+      years: b || d ? `${b ?? "?"}–${d ?? (p.is_living ? "nay" : "?")}` : "",
+      photo: photoByPersonId?.get(p.id) ?? avatarSrc(p.gender),
+    };
+    folderPersonCache.set(id, out);
+    return out;
+  };
+  const folderRows = showFolderTree
+    ? buildFolderPdfRows({
+        roots: treeRoots.map((r) => r.id),
+        person: folderPerson,
+        childrenOf: (id) => childrenByParent.get(id) ?? [],
+        spousesOf: (id) => spousesByPerson.get(id) ?? [],
+        otherParentOf: (childId, parentId) => {
+          const fam = familyById.get(data.childToFamily[childId]);
+          if (!fam) return null;
+          return fam.husband_id === parentId ? fam.wife_id : fam.husband_id;
+        },
+      })
+    : [];
+
   const stats = {
     bloodlineCount: bloodline.length,
     inLawCount: inLaws.length,
@@ -671,10 +714,13 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           childrenByParent,
           personById,
           spousesByPerson,
-          genOffset: clan.generation_offset ?? 0,
+          genOffset,
           budget: include?.treePerPage,
           showLivingFullDob: clan.display_living_full_dob,
         })}
+
+      {/* ─── Cây thư mục (khổ giấy tự tính theo cây) ─────────── */}
+      {folderRows.length > 0 && renderFolderTreePages(folderRows)}
 
       {/* ─── Danh bạ chi tiết (3-card grid) ─────────────────── */}
       {showDetail && bloodlineSorted.length > 0 && (
