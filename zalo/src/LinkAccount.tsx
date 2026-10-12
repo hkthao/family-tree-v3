@@ -25,7 +25,7 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
   };
 
   return (
-    <section className="card link">
+    <section className="card link" style={{ marginTop: 0, marginBottom: 12 }}>
       <h2>Đã có tài khoản trên web?</h2>
       <p className="muted" style={{ margin: 0 }}>
         Liên kết để thấy các dòng họ bạn đã lập ở giapha.thaohk.com.

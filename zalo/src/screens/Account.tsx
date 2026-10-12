@@ -1,47 +1,301 @@
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { openWebview } from "zmp-sdk";
 
-import { LinkAccount } from "../LinkAccount";
+import { IconArrowRight, IconChevronDown } from "@/components/icons";
+import {
+  getMyProfile,
+  updateMyDisplayName,
+  updateMyMonthlyLunarPref,
+  updateMyWeeklyDigestPref,
+} from "@/lib/queries/profile";
+import { supabase } from "@/lib/supabase";
+import { getTheme, setTheme, type Theme } from "@/lib/theme";
 
-/** Tài khoản: đang đăng nhập bằng gì, liên kết tài khoản web, mở bản web. */
+import { LinkAccount } from "../LinkAccount";
+import { useAsync } from "../useAsync";
+
+/**
+ * Tài khoản — CÙNG CHỨC NĂNG với trang Tài khoản của bản web (tên hiển thị,
+ * mật khẩu, bản tin tuần, nhắc mùng 1/rằm, giao diện) nhưng trình bày kiểu
+ * danh sách thiết lập của điện thoại: nhóm dòng, công tắc bên phải, bấm
+ * dòng để mở phần sửa — thay cho mỗi thiết lập một thẻ lớn như trên web.
+ *
+ * Không có ở đây, vì không hợp với Mini App: thông báo đẩy của trình duyệt,
+ * đăng nhập bằng QR, đăng xuất (vào Mini App là tự đăng nhập bằng Zalo), và
+ * các việc cần xác nhận kỹ (đổi email, xoá tài khoản) — làm ở bản web.
+ */
+/** Một nhóm thiết lập kiểu danh sách của điện thoại: tiêu đề nhỏ + khối bo góc. */
+function Group({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <>
+      <h3 className="grouptitle">{title}</h3>
+      <div className="card group">{children}</div>
+    </>
+  );
+}
+
+/** Trạng thái lưu của một dòng: đang lưu / báo xong / báo lỗi. */
+function useSave() {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const run = (fn: () => Promise<void>, done: string) => {
+    setBusy(true);
+    setMsg(null);
+    fn()
+      .then(() => setMsg({ ok: true, text: done }))
+      .catch((e: Error) => setMsg({ ok: false, text: e.message }))
+      .finally(() => setBusy(false));
+  };
+  const note = msg && <p className={msg.ok ? "ok" : "error"}>{msg.text}</p>;
+  return { busy, run, note };
+}
+
+/** Dòng bấm để mở phần sửa ngay bên dưới (thay cho cả một thẻ như trên web). */
+function ExpandRow({
+  label,
+  value,
+  children,
+}: {
+  label: string;
+  value?: string;
+  children: (close: () => void) => ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="grow">
+      <button type="button" className="growhead" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <span>{label}</span>
+        <span className="val">{value}</span>
+        <span className={`chev${open ? "" : " closed"}`} style={{ margin: 0, width: 24, height: 24 }}><IconChevronDown /></span>
+      </button>
+      {open && <div className="growbody">{children(() => setOpen(false))}</div>}
+    </div>
+  );
+}
+
+function DisplayName({ userId, current, onSaved }: { userId: string; current: string; onSaved: (n: string) => void }) {
+  const [name, setName] = useState(current);
+  useEffect(() => setName(current), [current]);
+  const save = useSave();
+  const changed = name.trim() !== current.trim() && !!name.trim();
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!changed) return;
+    const next = name.trim();
+    save.run(async () => {
+      await updateMyDisplayName(userId, next);
+      onSaved(next);
+    }, "Đã đổi tên hiển thị");
+  };
+  return (
+    <ExpandRow label="Tên hiển thị" value={current}>
+      {() => (
+        <form onSubmit={submit}>
+          <p className="note" style={{ marginTop: 0 }}>Tên hiển thị trong dòng họ và các sự kiện. Không phải email.</p>
+          <input className="field" aria-label="Tên hiển thị" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />
+          <button type="submit" className="btn block" style={{ marginTop: 8 }} disabled={!changed || save.busy}>
+            {save.busy ? "Đang lưu…" : "Lưu"}
+          </button>
+          {save.note}
+        </form>
+      )}
+    </ExpandRow>
+  );
+}
+
+function Password() {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const save = useSave();
+  const tooShort = pw.length > 0 && pw.length < 8;
+  const mismatch = pw2.length > 0 && pw !== pw2;
+  const ok = pw.length >= 8 && pw === pw2;
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!ok) return;
+    save.run(async () => {
+      const { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) throw new Error(error.message);
+      setPw("");
+      setPw2("");
+    }, "Đã đổi mật khẩu");
+  };
+  return (
+    <ExpandRow label="Mật khẩu" value="Đổi">
+      {() => (
+        <form onSubmit={submit}>
+          <p className="note" style={{ marginTop: 0 }}>Ít nhất 8 ký tự. Dùng để đăng nhập trên bản web.</p>
+          <input className="field" type="password" autoComplete="new-password" placeholder="Mật khẩu mới" aria-label="Mật khẩu mới" value={pw} onChange={(e) => setPw(e.target.value)} />
+          {tooShort && <p className="error" style={{ margin: "4px 0 0", fontSize: 12.5 }}>Mật khẩu cần ít nhất 8 ký tự.</p>}
+          <input className="field" style={{ marginTop: 8 }} type="password" autoComplete="new-password" placeholder="Nhập lại mật khẩu mới" aria-label="Xác nhận mật khẩu mới" value={pw2} onChange={(e) => setPw2(e.target.value)} />
+          {mismatch && <p className="error" style={{ margin: "4px 0 0", fontSize: 12.5 }}>Hai mật khẩu chưa khớp.</p>}
+          <button type="submit" className="btn block" style={{ marginTop: 8 }} disabled={!ok || save.busy}>
+            {save.busy ? "Đang lưu…" : "Đổi mật khẩu"}
+          </button>
+          {save.note}
+        </form>
+      )}
+    </ExpandRow>
+  );
+}
+
+/** Dòng có công tắc bên phải — bật/tắt là lưu ngay. */
+function SwitchRow({
+  title,
+  desc,
+  value,
+  disabledNote,
+  onChange,
+}: {
+  title: string;
+  desc: string;
+  value: boolean;
+  disabledNote?: string;
+  onChange: (v: boolean) => Promise<void>;
+}) {
+  const [on, setOn] = useState(value);
+  useEffect(() => setOn(value), [value]);
+  const save = useSave();
+  return (
+    <div className="grow">
+      <label className="switchrow">
+        <span style={{ minWidth: 0 }}>
+          <b>{title}</b>
+          <span className="note" style={{ display: "block", margin: "2px 0 0" }}>{disabledNote ?? desc}</span>
+        </span>
+        <input
+          type="checkbox"
+          className="switch"
+          role="switch"
+          checked={on}
+          disabled={save.busy || !!disabledNote}
+          onChange={(e) => {
+            const v = e.target.checked;
+            setOn(v);
+            save.run(async () => {
+              try {
+                await onChange(v);
+              } catch (err) {
+                setOn(!v); // lưu hỏng thì trả công tắc về như cũ
+                throw err;
+              }
+            }, v ? "Đã bật" : "Đã tắt");
+          }}
+        />
+      </label>
+      {save.note && <div style={{ padding: "0 14px 10px" }}>{save.note}</div>}
+    </div>
+  );
+}
+
+const THEMES: { id: Theme; label: string }[] = [
+  { id: "light", label: "Sáng" },
+  { id: "dark", label: "Tối" },
+  { id: "system", label: "Theo máy" },
+];
+
 export function AccountScreen({
+  userId,
+  email,
   name,
   zaloOnly,
   onLinked,
+  onRenamed,
 }: {
+  userId: string;
+  email: string | null;
   name: string;
   zaloOnly: boolean;
   onLinked: () => void;
+  onRenamed: (name: string) => void;
 }) {
+  const profile = useAsync(() => getMyProfile(userId), [userId]);
+  const [theme, setThemeState] = useState<Theme>(getTheme());
+  const p = profile.data;
+  const shownName = p?.display_name ?? name;
+  // Nhắc qua email cần một hộp thư thật; tài khoản chỉ có Zalo thì chưa có.
+  const needEmail = zaloOnly ? "Cần liên kết tài khoản có email để nhận thư." : undefined;
+
   return (
     <div className="page">
-      <div className="card account">
-        <span className="mono">{name.trim().charAt(0).toUpperCase() || "?"}</span>
-        <span style={{ minWidth: 0 }}>
-          <b>{name}</b>
-          <span className="muted">
-            {zaloOnly
-              ? "Đăng nhập bằng Zalo · chưa liên kết tài khoản web"
-              : "Đã liên kết với tài khoản web"}
-          </span>
-        </span>
+      <div className="me">
+        <span className="mono">{shownName.trim().charAt(0).toUpperCase() || "?"}</span>
+        <div style={{ minWidth: 0 }}>
+          <b className="serif ell">{shownName}</b>
+          <span className="muted ell">{zaloOnly ? "Đăng nhập bằng Zalo" : email}</span>
+        </div>
       </div>
 
       {zaloOnly && <LinkAccount onLinked={onLinked} />}
+      {profile.error && <p className="error">{profile.error}</p>}
 
-      <h2 className="section-title">Bản web đầy đủ</h2>
-      <div className="card" style={{ padding: 14 }}>
-        <p className="muted" style={{ margin: "0 0 10px" }}>
-          Thêm và sửa thành viên, xuất sổ gia phả PDF, nhập từ Excel… làm trên
-          bản web.
-        </p>
-        <button
-          type="button"
-          className="btn ghost block"
-          onClick={() => openWebview({ url: "https://giapha.thaohk.com/clans" })}
-        >
-          Mở giapha.thaohk.com
-        </button>
-      </div>
+      <Group title="Hồ sơ">
+        <DisplayName userId={userId} current={shownName} onSaved={onRenamed} />
+        <div className="grow">
+          <div className="growhead" style={{ cursor: "default" }}>
+            <span>Email</span>
+            <span className="val">{zaloOnly ? "Chưa có" : email}</span>
+          </div>
+        </div>
+        {!zaloOnly && <Password />}
+      </Group>
+
+      {(profile.loading || p) && (
+        <Group title="Thông báo qua email">
+          {profile.loading && <div className="sk" style={{ height: 120, margin: 10 }} />}
+          {p && (
+            <>
+              <SwitchRow
+                title="Bản tin tuần"
+                desc="Mỗi tuần một email gộp: sự kiện 7 ngày tới, người mới thêm vào cây, thông báo mới của dòng họ."
+                value={p.notify_weekly_digest}
+                disabledNote={needEmail}
+                onChange={(v) => updateMyWeeklyDigestPref(userId, v)}
+              />
+              <SwitchRow
+                title="Nhắc mùng 1 / rằm âm lịch"
+                desc="Ngày 1 và 15 âm lịch, app gửi email nhắc thắp hương."
+                value={p.notify_monthly_lunar}
+                disabledNote={needEmail}
+                onChange={(v) => updateMyMonthlyLunarPref(userId, v)}
+              />
+            </>
+          )}
+        </Group>
+      )}
+
+      <Group title="Giao diện">
+        <div style={{ padding: 12 }}>
+          <div className="seg full" style={{ margin: 0 }} role="group" aria-label="Chế độ màu">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                aria-pressed={theme === t.id}
+                onClick={() => {
+                  setTheme(t.id);
+                  setThemeState(t.id);
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Group>
+
+      <Group title="Bản web đầy đủ">
+        <div className="grow">
+          <button type="button" className="growhead" onClick={() => openWebview({ url: "https://giapha.thaohk.com/account" })}>
+            <span>Mở giapha.thaohk.com</span>
+            <span className="val" />
+            <span className="go"><IconArrowRight /></span>
+          </button>
+        </div>
+      </Group>
+      <p className="note" style={{ margin: "8px 4px 0" }}>
+        Đổi email, xoá tài khoản, thêm và sửa thành viên, xuất sổ PDF… làm trên bản web.
+      </p>
     </div>
   );
 }

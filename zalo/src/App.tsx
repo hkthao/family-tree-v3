@@ -3,6 +3,7 @@ import { setNavigationBarLeftButton, setNavigationBarTitle } from "zmp-sdk";
 
 import { IconBuildings, IconCalendar, IconUser } from "@/components/icons";
 import type { ClanSummary } from "@/lib/queries/clans";
+import { getMyProfile } from "@/lib/queries/profile";
 import { supabase } from "@/lib/supabase";
 
 import "./app.css";
@@ -56,7 +57,7 @@ const TABS: { id: Tab; label: string; title: string; icon: JSX.Element }[] = [
 
 type Auth =
   | { kind: "loading" }
-  | { kind: "ready"; userId: string; name: string; zaloOnly: boolean }
+  | { kind: "ready"; userId: string; email: string | null; name: string; zaloOnly: boolean }
   | { kind: "error"; message: string }
   | { kind: "dev-login"; message?: string };
 
@@ -103,7 +104,11 @@ export function App() {
         setAuth({
           kind: "ready",
           userId: data.user.id,
+          email: data.user.email ?? null,
+          // Tên thật nằm ở bảng profiles (người dùng sửa được); metadata
+          // của phiên đăng nhập chỉ là giá trị lúc tạo tài khoản.
           name:
+            (await getMyProfile(data.user.id).catch(() => null))?.display_name ??
             (data.user.user_metadata?.display_name as string | undefined) ??
             "bạn",
           zaloOnly: isZaloOnlyAccount(data.user.email),
@@ -207,7 +212,14 @@ export function App() {
                 />
               </div>
               <div className="tabpane" style={{ display: tab === "account" ? undefined : "none" }}>
-                <AccountScreen name={auth.name} zaloOnly={auth.zaloOnly} onLinked={login} />
+                <AccountScreen
+                  userId={auth.userId}
+                  email={auth.email}
+                  name={auth.name}
+                  zaloOnly={auth.zaloOnly}
+                  onLinked={login}
+                  onRenamed={(name) => setAuth((a) => (a.kind === "ready" ? { ...a, name } : a))}
+                />
               </div>
             </div>
           )}
