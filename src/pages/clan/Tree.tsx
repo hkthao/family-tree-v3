@@ -1789,6 +1789,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const [open, setOpen] = useState(false);
   const [perPage, setPerPage] = useState(24);
   const [folderTree, setFolderTree] = useState(true);
+  const [singlePage, setSinglePage] = useState(false);
 
   async function doExport() {
     if (busy) return;
@@ -1800,6 +1801,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         tree: true,
         detail: true,
         treePerPage: perPage,
+        treeSinglePage: singlePage,
         folderTree,
       });
       track("export", { kind: "clan_book_pdf", from: "tree" });
@@ -1836,6 +1838,25 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
             aria-hidden
           />
           <div className="absolute right-0 z-50 mt-1 w-72 space-y-2 rounded-lg border bg-card p-3 shadow-lg">
+            <p className="text-sm font-medium">Trang sơ đồ cây</p>
+            <Select
+              value={singlePage ? "single" : "paged"}
+              onChange={(e) => setSinglePage(e.target.value === "single")}
+              icon={<IconGrid />}
+              aria-label="Cách trình bày sơ đồ cây"
+              className="h-9 text-sm"
+            >
+              <option value="paged">Tách nhiều trang A4 theo đời</option>
+              <option value="single">Một trang lớn chứa cả cây</option>
+            </Select>
+            {singlePage && (
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                Cả sơ đồ liền trên một trang, khổ giấy tự tính theo cây (họ
+                lớn thì trang rất rộng) — hợp để xem trên máy hoặc in khổ lớn.
+              </p>
+            )}
+            {!singlePage && (
+              <>
             <p className="text-sm font-medium">Số người mỗi trang sơ đồ</p>
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để thẻ to, nhiều đời
@@ -1855,6 +1876,8 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
                 </option>
               ))}
             </Select>
+              </>
+            )}
             <label className="flex items-start gap-2 pt-1 text-sm">
               <input
                 type="checkbox"
