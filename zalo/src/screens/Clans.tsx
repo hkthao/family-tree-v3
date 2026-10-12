@@ -48,7 +48,7 @@ export function ClansScreen({
           <div className="icon">🌳</div>
           <p className="muted">
             Tài khoản này chưa tham gia dòng họ nào. Nếu bạn đã lập gia phả
-            trên web, hãy liên kết tài khoản ở bên dưới.
+            trên web, hãy liên kết tài khoản ở tab “Tài khoản”.
           </p>
         </div>
       )}
