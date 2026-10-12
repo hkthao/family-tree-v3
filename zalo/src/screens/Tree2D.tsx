@@ -37,11 +37,14 @@ interface F3Chart {
 
 export function Tree2D({
   data,
+  photoUrls,
   focalId,
   depth,
   onFocus,
 }: {
   data: TreeData;
+  /** photo_path → URL đã ký, để thẻ hiện ảnh thật của từng người. */
+  photoUrls: Map<string, string>;
   focalId: string | null;
   /** Số đời hiển thị quanh người trung tâm; 0 = tất cả. */
   depth: number;
@@ -70,7 +73,7 @@ export function Tree2D({
         // Bộ chuyển của web trỏ ảnh mặc định tới "/avatars/…" — đường dẫn
         // chỉ có trên trang web. Mini App đóng gói ảnh riêng nên đổi sang
         // địa chỉ đã đóng gói, không thì mọi thẻ hiện ô ảnh vỡ.
-        toFamilyChart(data.persons, data.families).map((d) =>
+        toFamilyChart(data.persons, data.families, photoUrls).map((d) =>
           d.data.avatar?.startsWith("/avatars/")
             ? { ...d, data: { ...d.data, avatar: d.data.gender === "M" ? maleAvatar : femaleAvatar } }
             : d,
@@ -113,7 +116,7 @@ export function Tree2D({
     // focalId cố ý KHÔNG nằm trong deps: đổi tâm xử lý ở effect dưới, không
     // phải dựng lại cả biểu đồ.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, depth]);
+  }, [data, depth, photoUrls]);
 
   // Đổi người trung tâm (từ ô tìm) mà không dựng lại.
   useEffect(() => {

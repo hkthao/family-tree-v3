@@ -27,7 +27,16 @@ export default defineConfig({
   envDir: here,
   plugins: [react(), ZaloMiniApp()],
   resolve: {
-    alias: { "@": path.resolve(repoRoot, "src") },
+    alias: {
+      "@": path.resolve(repoRoot, "src"),
+      // Thành phần 3D của web cần react-query; nó cài ở node_modules GỐC.
+      // File trong `zalo/src` muốn nhập cùng bản đó (để chung một context)
+      // thì phải chỉ đường, vì Node chỉ dò ngược từ `zalo/` lên.
+      "@tanstack/react-query": path.resolve(
+        repoRoot,
+        "node_modules/@tanstack/react-query",
+      ),
+    },
     // Một bản React duy nhất, kể cả khi file dùng chung kéo theo thư viện
     // cài ở node_modules gốc của repo.
     dedupe: ["react", "react-dom"],

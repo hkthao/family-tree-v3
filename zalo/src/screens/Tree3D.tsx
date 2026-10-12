@@ -1,127 +1,62 @@
-import { useEffect, useRef, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { Tree3DView } from "@/components/Tree3DView";
 import type { TreeData } from "@/lib/queries/tree";
 import { hasWebGL } from "@/lib/webglSupport";
 
+import femaleAvatar from "../../../public/avatars/female.png";
+import maleAvatar from "../../../public/avatars/male.png";
+
 /**
- * Cây 3D — cùng thư viện (3d-force-graph) với bản web và cùng cách xếp:
- * mỗi đời ghim một tầng theo chiều dọc, nét xanh nối cha mẹ với con trai,
- * hồng với con gái, đỏ cho vợ chồng. Bản Mini App lược phần ảnh chân dung
- * trên nút và các hiệu ứng hạt chạy của web để nhẹ máy điện thoại: mỗi
- * người là một nhãn tên tô theo giới tính.
+ * Cây 3D — dùng NGUYÊN thành phần `Tree3DView` của bản web, không viết lại.
+ *
+ * Bản viết riêng ban đầu (nhãn tên trên nền lực đẩy) cho ra hình khác hẳn
+ * web. Thành phần của web đã có sẵn thẻ ảnh chân dung, cách ghim tầng theo
+ * đời, chế độ bung dần cho họ lớn và các mức siết riêng cho điện thoại —
+ * dùng lại là hai bên luôn giống nhau, sửa một nơi là đủ.
+ *
+ * Nó cần react-query (kể cả khi được nạp sẵn dữ liệu), nên bọc một
+ * QueryClient riêng ở đây; phần còn lại của Mini App không dùng tới.
  */
-const C = { male: "#5B9BD5", female: "#E58BA8", marriage: "#C8475A" };
+const client = new QueryClient();
+const AVATARS = { M: maleAvatar, F: femaleAvatar };
 
 export function Tree3D({
+  clanId,
+  genOffset,
   data,
-  visible,
-  openPerson,
+  photoUrls,
+  focalId,
+  depth,
 }: {
+  clanId: string;
+  genOffset: number;
   data: TreeData;
-  /** Chỉ vẽ những người này (lọc theo số đời); null = cả cây. */
-  visible: Set<string> | null;
-  openPerson: (id: string) => void;
+  photoUrls: Map<string, string>;
+  focalId: string | null;
+  depth: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const openRef = useRef(openPerson);
-  openRef.current = openPerson;
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    if (!hasWebGL()) {
-      setError("Máy này không hỗ trợ đồ hoạ 3D. Hãy dùng kiểu 2D hoặc Thư mục.");
-      return;
-    }
-    let disposed = false;
-    let graph: { _destructor?: () => void; width: (n: number) => unknown; height: (n: number) => unknown } | null = null;
-    let ro: ResizeObserver | null = null;
-
-    (async () => {
-      const [{ default: ForceGraph3D }, { default: SpriteText }] = await Promise.all([
-        import("3d-force-graph"),
-        import("three-spritetext"),
-      ]);
-      if (disposed) return;
-
-      const people = data.persons.filter((p) => !visible || visible.has(p.id));
-      const ids = new Set(people.map((p) => p.id));
-      const minGen = people.reduce((m, p) => Math.min(m, p.generation ?? Infinity), Infinity);
-      const nodes = people.map((p) => ({
-        id: p.id,
-        name: p.full_name,
-        gender: p.gender,
-        // Ghim tầng theo đời: thay cho dagMode (dâu/rể + hôn nhân tạo chu
-        // trình nên không dùng dagMode được — cùng lý do với web).
-        fy: -((p.generation ?? minGen) - (Number.isFinite(minGen) ? minGen : 0)) * 46,
-      }));
-      const famById = new Map(data.families.map((f) => [f.id, f]));
-      const links: { source: string; target: string; color: string }[] = [];
-      for (const p of people) {
-        const fam = p.birth_family_id ? famById.get(p.birth_family_id) : undefined;
-        for (const parent of [fam?.husband_id, fam?.wife_id]) {
-          if (parent && ids.has(parent)) {
-            links.push({ source: parent, target: p.id, color: p.gender === "M" ? C.male : C.female });
-          }
-        }
-      }
-      for (const f of data.families) {
-        if (f.husband_id && f.wife_id && ids.has(f.husband_id) && ids.has(f.wife_id)) {
-          links.push({ source: f.husband_id, target: f.wife_id, color: C.marriage });
-        }
-      }
-
-      const dark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-      const g = new (ForceGraph3D as unknown as new (el: HTMLElement) => any)(node)
-        .backgroundColor(dark ? "#1A1612" : "#FBF7F0")
-        .width(node.clientWidth)
-        .height(node.clientHeight)
-        .showNavInfo(false)
-        .nodeThreeObject((n: { name: string; gender: "M" | "F" }) => {
-          const s = new SpriteText(n.name);
-          s.textHeight = 5;
-          s.color = dark ? "#EFE9DB" : "#2A2320";
-          s.backgroundColor = n.gender === "M" ? (dark ? "#2F3D48" : "#D4DDE4") : dark ? "#4A2F2D" : "#E8D2CC";
-          s.padding = 1.5;
-          s.borderRadius = 1.5;
-          return s;
-        })
-        .linkColor((l: { color: string }) => l.color)
-        .linkOpacity(0.7)
-        .linkWidth(0.6)
-        .onNodeClick((n: { id: string }) => openRef.current(n.id))
-        .graphData({ nodes, links })
-        .cooldownTime(5000);
-      g.d3Force("charge")?.strength(-160);
-      g.d3Force("link")?.distance(16);
-      setTimeout(() => !disposed && g.zoomToFit(600, 30), 1200);
-      graph = g;
-
-      ro = new ResizeObserver(() => {
-        g.width(node.clientWidth);
-        g.height(node.clientHeight);
-      });
-      ro.observe(node);
-    })().catch((e: Error) => {
-      console.error("3d init failed:", e);
-      if (!disposed) setError("Không dựng được cây 3D trên máy này.");
-    });
-
-    return () => {
-      disposed = true;
-      ro?.disconnect();
-      graph?._destructor?.();
-      node.innerHTML = "";
-    };
-  }, [data, visible]);
-
-  if (error) {
+  if (!hasWebGL()) {
     return (
       <div className="card empty" style={{ margin: 12 }}>
-        <p className="muted" style={{ margin: 0 }}>{error}</p>
+        <p className="muted" style={{ margin: 0 }}>
+          Máy này không hỗ trợ đồ hoạ 3D. Hãy dùng kiểu 2D hoặc Thư mục.
+        </p>
       </div>
     );
   }
-  return <div ref={ref} className="canvas" />;
+  return (
+    <QueryClientProvider client={client}>
+      <Tree3DView
+        clanId={clanId}
+        genOffset={genOffset}
+        focal={focalId}
+        depth={depth}
+        data={data}
+        photoUrls={photoUrls}
+        avatars={AVATARS}
+        className="canvas tw3d"
+      />
+    </QueryClientProvider>
+  );
 }
