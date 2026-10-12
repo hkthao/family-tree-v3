@@ -1,0 +1,57 @@
+:root { --ink:#2A2320; --muted:#7A6F66; --line:#E8E0D2; --paper:#FBF7F0; --primary:#7A2E2E; }
+html, body { margin:0; background:var(--paper); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; font-size:15px; }
+* { box-sizing:border-box; }
+button { font:inherit; color:inherit; background:none; border:0; padding:0; }
+.page { padding:12px 12px 32px; }
+.topbar { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:8px;
+  padding:10px 12px; background:var(--paper); border-bottom:1px solid var(--line); }
+.topbar h1 { flex:1; min-width:0; margin:0; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.back { width:36px; height:36px; font-size:22px; color:var(--primary); }
+.muted { color:var(--muted); font-size:13px; }
+.error { color:#B3261E; font-size:14px; }
+.btn { display:inline-block; padding:10px 16px; border-radius:8px; background:var(--primary); color:#fff; font-size:15px; }
+.btn.ghost { background:transparent; color:var(--primary); border:1px solid var(--primary); }
+.field { width:100%; padding:10px 12px; font-size:16px; border:1px solid #D8CFC2; border-radius:8px; background:#fff; }
+.card { display:block; width:100%; text-align:left; padding:14px; margin-bottom:10px;
+  border:1px solid var(--line); border-radius:12px; background:#fff; }
+.card b { display:block; font-size:16px; }
+
+/* ── Cây thư mục: cùng cách vẽ với bản web (đường gióng, màu theo đời) ── */
+.tree, .tree ul { list-style:none; margin:0; padding:0; }
+.tree > li + li { margin-top:4px; }
+.rail { margin-left:17px; }
+.branch { position:relative; padding:4px 0 0 4px; }
+.branch.leaf { padding-left:36px; }
+.branch::before { content:""; position:absolute; left:0; top:0; height:100%; border-left:1px solid #B9AE9F; }
+.branch:last-child::before { height:28px; }
+.branch::after { content:""; position:absolute; left:0; top:28px; width:4px; border-top:1px solid #B9AE9F; }
+.branch.leaf::after { width:36px; }
+.branch.group::after { top:27px; }
+.branch.group:last-child::before { height:27px; }
+.row { display:flex; align-items:flex-start; gap:4px; border-radius:8px; padding-right:8px; background:rgba(0,0,0,.04); }
+.row.pad { padding-left:8px; }
+.chev { flex:none; width:36px; height:36px; margin-top:6px; color:var(--muted); font-size:13px; transition:transform .15s; }
+.chev.closed { transform:rotate(-90deg); }
+.slot { flex:none; width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--muted); }
+.people { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; padding:4px 0; }
+.who { display:flex; align-items:center; gap:8px; min-width:0; text-align:left; }
+.ring { flex:none; border-radius:999px; padding:2px; display:inline-flex; }
+.ring img { border-radius:999px; object-fit:cover; background:#eee; display:block; }
+.name { display:block; font-size:14px; font-weight:600; word-break:break-word; }
+.name.spouse { font-weight:400; }
+.meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px; min-height:18px; font-size:12px; color:var(--muted); }
+.badge { border-radius:999px; padding:0 6px; font-size:10px; font-weight:600; line-height:16px; color:#fff; white-space:nowrap; }
+.m { color:#2F7FD1; } .f { color:#D0458F; }
+.rings { color:var(--muted); flex:none; }
+
+/* ── Hồ sơ ── */
+.hero { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.hero h2 { margin:0 0 4px; font-size:20px; }
+.facts { margin:0 0 16px; }
+.facts div { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px; }
+.facts dt { flex:none; width:108px; color:var(--muted); }
+.facts dd { margin:0; flex:1; min-width:0; }
+.h3 { margin:18px 0 8px; font-size:15px; }
+.rel { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:8px 10px; margin-bottom:6px;
+  border:1px solid var(--line); border-radius:10px; background:#fff; }

@@ -36,9 +36,15 @@ Trạng thái (12/10/2026): Zalo App đã kích hoạt, tên miền `giapha.thao
    GoTrue vì thư mặc định của nó chỉ có link, không có mã), màn hình
    `zalo/src/LinkAccount.tsx`. Tài khoản Zalo tạm KHÔNG bị xoá sau khi liên
    kết (có thể đã đứng tên dữ liệu) — chỉ mất đường đăng nhập.
-4. **Màn hình xem** — danh sách dòng họ của tôi → cây thư mục (tái dùng
-   `folderModel` + `treeFolder`) → tìm người → hồ sơ một người.
-5. **Nút "Mở bản web đầy đủ"** cho xuất sổ, nhập Excel, ghi âm.
+4. **Màn hình xem** — ✅ ĐÃ VIẾT (12/10/2026), ⏳ CHƯA thử trên điện thoại.
+   `zalo/src/screens/`: Clans (dòng họ của tôi) → Tree (cây thư mục + tìm
+   theo tên + "chưa gắn vào cây") → Person (hồ sơ + quan hệ). Dùng nguyên
+   `treeFolder`, `folderModel`, `families`, `persons`, `clans` của web; chỉ
+   phần vẽ viết riêng. Điều hướng bằng chồng màn hình trong state. Không
+   dùng react-query và `photoUpload` của web (kéo theo thư viện không cần).
+   Chưa có: dâu/rể ở dòng họ thông gia (ô viền đứt), nút Back của Zalo.
+5. **Nút "Mở bản web đầy đủ"** — ✅ có ở màn Hồ sơ (mở đúng trang người đó
+   trên web). Chưa có ở màn Cây (xuất sổ, nhập Excel).
 6. **Khai tên miền gọi API** (Supabase self-host, nơi lưu ảnh) trong cấu
    hình Mini App, thử trên điện thoại thật, gửi duyệt.
 
