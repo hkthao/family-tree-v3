@@ -10,10 +10,11 @@ import {
   updateMyMonthlyLunarPref,
   updateMyWeeklyDigestPref,
 } from "@/lib/queries/profile";
+import { formatDate } from "@/lib/formatDate";
 import { supabase } from "@/lib/supabase";
 import { getTheme, setTheme, type Theme } from "@/lib/theme";
 
-import { forgetZaloLeftovers } from "../auth";
+import { forgetZaloLeftovers, getLinkStatus, unlinkZalo } from "../auth";
 import { LinkAccount } from "../LinkAccount";
 import { useAsync } from "../useAsync";
 
@@ -250,6 +251,75 @@ function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
   );
 }
 
+/**
+ * Tài khoản liên kết: Zalo này đang nối với tài khoản email nào, và nút bỏ
+ * liên kết. Phải bấm hai lần mới bỏ — bỏ xong là Mini App không còn thấy
+ * các dòng họ của tài khoản đó (dữ liệu thì vẫn nguyên trên web).
+ */
+function LinkedAccounts({ email, onUnlinked }: { email: string | null; onUnlinked: () => void }) {
+  const status = useAsync(() => getLinkStatus(), []);
+  const [confirming, setConfirming] = useState(false);
+  const save = useSave();
+  const s = status.data;
+
+  return (
+    <Group title="Tài khoản liên kết">
+      <div className="grow">
+        <div className="growhead" style={{ cursor: "default" }}>
+          <span>Zalo</span>
+          <span className="val">
+            {status.loading ? "Đang kiểm tra…" : s?.linked ? `Đã liên kết${s.linkedAt ? ` · ${formatDate(s.linkedAt)}` : ""}` : "Đang dùng"}
+          </span>
+        </div>
+      </div>
+      <div className="grow">
+        <div className="growhead" style={{ cursor: "default" }}>
+          <span>Email</span>
+          <span className="val">{s?.email ?? email ?? "—"}</span>
+        </div>
+      </div>
+      {status.error && (
+        <div className="grow"><p className="note" style={{ margin: "10px 14px" }}>{status.error}</p></div>
+      )}
+      {s?.linked && (
+        <div className="grow" style={{ padding: "10px 14px 12px" }}>
+          {confirming ? (
+            <>
+              <p className="note" style={{ marginTop: 0 }}>
+                Sau khi bỏ liên kết, Mini App sẽ dùng một tài khoản Zalo riêng và
+                không còn thấy các dòng họ của <b>{s.email}</b>. Tài khoản email và
+                dữ liệu của nó vẫn nguyên, đăng nhập trên web như cũ.
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" className="btn ghost" style={{ flex: 1 }} disabled={save.busy} onClick={() => setConfirming(false)}>Huỷ</button>
+                <button
+                  type="button"
+                  className="btn danger"
+                  style={{ flex: 1 }}
+                  disabled={save.busy}
+                  onClick={() =>
+                    save.run(async () => {
+                      await unlinkZalo();
+                      onUnlinked();
+                    }, "Đã bỏ liên kết")
+                  }
+                >
+                  {save.busy ? "Đang bỏ…" : "Bỏ liên kết"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <button type="button" className="btn text dangertext" style={{ minHeight: 0, padding: 0 }} onClick={() => setConfirming(true)}>
+              Bỏ liên kết Zalo với tài khoản này
+            </button>
+          )}
+          {save.note}
+        </div>
+      )}
+    </Group>
+  );
+}
+
 const THEMES: { id: Theme; label: string }[] = [
   { id: "light", label: "Sáng" },
   { id: "dark", label: "Tối" },
@@ -290,7 +360,9 @@ export function AccountScreen({
         </div>
       </div>
 
-      {zaloOnly && <LinkAccount onLinked={onLinked} />}
+      {/* Chưa liên kết thì mời liên kết; liên kết rồi thì hiện danh sách +
+          nút bỏ. Bỏ xong đăng nhập lại (onLinked) để nhận tài khoản Zalo riêng. */}
+      {zaloOnly ? <LinkAccount onLinked={onLinked} /> : <LinkedAccounts email={email} onUnlinked={onLinked} />}
       {profile.error && <p className="error">{profile.error}</p>}
 
       <Group title="Hồ sơ">
