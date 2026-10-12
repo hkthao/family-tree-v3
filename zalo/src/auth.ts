@@ -155,3 +155,27 @@ export async function unlinkZalo(): Promise<void> {
   await callFunction("zalo-link", { action: "unlink", accessToken });
   await supabase.auth.signOut({ scope: "local" });
 }
+
+/** Đổi/thêm email, bước 1: gửi mã 6 số tới địa chỉ MỚI. */
+export async function requestEmailChange(email: string): Promise<void> {
+  const accessToken = await getAccessToken();
+  if (!accessToken) throw new NotInZaloError();
+  await callFunction("zalo-link", { action: "email-request", accessToken, email });
+}
+
+/** Bước 2: đúng mã thì email của tài khoản đổi sang địa chỉ mới. */
+export async function confirmEmailChange(code: string): Promise<string> {
+  const accessToken = await getAccessToken();
+  if (!accessToken) throw new NotInZaloError();
+  const res = await callFunction<{ email: string; tokenHash: string | null }>("zalo-link", {
+    action: "email-confirm",
+    accessToken,
+    code,
+  });
+  // Phiên đang giữ còn mang email cũ → nhận phiên mới cho khớp.
+  if (res.tokenHash) {
+    await supabase.auth.signOut({ scope: "local" });
+    await adoptSession(res.tokenHash);
+  }
+  return res.email;
+}

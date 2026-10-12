@@ -14,7 +14,13 @@ import { formatDate } from "@/lib/formatDate";
 import { supabase } from "@/lib/supabase";
 import { getTheme, setTheme, type Theme } from "@/lib/theme";
 
-import { forgetZaloLeftovers, getLinkStatus, unlinkZalo } from "../auth";
+import {
+  confirmEmailChange,
+  forgetZaloLeftovers,
+  getLinkStatus,
+  requestEmailChange,
+  unlinkZalo,
+} from "../auth";
 import { LinkAccount } from "../LinkAccount";
 import { toast } from "../toast";
 import { useAsync } from "../useAsync";
@@ -27,7 +33,7 @@ import { useAsync } from "../useAsync";
  *
  * Không có ở đây, vì không hợp với Mini App: thông báo đẩy của trình duyệt,
  * đăng nhập bằng QR, đăng xuất (vào Mini App là tự đăng nhập bằng Zalo), và
- * đổi email (cần xác nhận qua thư) — làm ở bản web.
+ * dòng họ đang theo dõi.
  */
 /** Một nhóm thiết lập kiểu danh sách của điện thoại: tiêu đề nhỏ + khối bo góc. */
 function Group({ title, children }: { title: string; children: ReactNode }) {
@@ -256,6 +262,73 @@ function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
 }
 
 /**
+ * Đổi email (hoặc thêm email cho tài khoản mới chỉ có Zalo). Hai bước: gửi
+ * mã tới địa chỉ MỚI rồi nhập mã — phải chứng minh đọc được hộp thư đó.
+ */
+function ChangeEmail({ current, onChanged }: { current: string | null; onChanged: () => void }) {
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const save = useSave();
+  return (
+    <ExpandRow label="Email" value={current ?? "Thêm email"}>
+      {() =>
+        step === "email" ? (
+          <>
+            <p className="note" style={{ marginTop: 0 }}>
+              {current
+                ? "Nhập email mới. Mã xác nhận sẽ được gửi tới địa chỉ đó."
+                : "Thêm email để nhận thư nhắc và đăng nhập bằng email. Mã xác nhận sẽ được gửi tới địa chỉ đó."}
+            </p>
+            <input className="field" type="email" inputMode="email" autoComplete="email" placeholder="ten@vidu.com" aria-label="Email mới" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <button
+              type="button"
+              className="btn block"
+              style={{ marginTop: 8 }}
+              disabled={save.busy || !email.trim() || email.trim().toLowerCase() === (current ?? "").toLowerCase()}
+              onClick={() =>
+                save.run(async () => {
+                  await requestEmailChange(email.trim());
+                  setStep("code");
+                }, "Đã gửi mã xác nhận")
+              }
+            >
+              {save.busy ? "Đang gửi…" : "Gửi mã xác nhận"}
+            </button>
+            {save.note}
+          </>
+        ) : (
+          <>
+            <p className="note" style={{ marginTop: 0 }}>
+              Nhập mã 6 số đã gửi tới <b>{email.trim()}</b> (hiệu lực 10 phút).
+            </p>
+            <input className="field" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Mã 6 số" aria-label="Mã xác nhận" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} style={{ letterSpacing: 6, textAlign: "center", fontWeight: 600 }} />
+            <button
+              type="button"
+              className="btn block"
+              style={{ marginTop: 8 }}
+              disabled={save.busy || code.length !== 6}
+              onClick={() =>
+                save.run(async () => {
+                  await confirmEmailChange(code);
+                  onChanged();
+                }, "Đã đổi email")
+              }
+            >
+              {save.busy ? "Đang kiểm tra…" : "Xác nhận"}
+            </button>
+            <button type="button" className="btn text block" style={{ marginTop: 10 }} disabled={save.busy} onClick={() => { setStep("email"); setCode(""); }}>
+              Dùng email khác
+            </button>
+            {save.note}
+          </>
+        )
+      }
+    </ExpandRow>
+  );
+}
+
+/**
  * Tài khoản liên kết: Zalo này đang nối với tài khoản email nào, và nút bỏ
  * liên kết. Phải bấm hai lần mới bỏ — bỏ xong là Mini App không còn thấy
  * các dòng họ của tài khoản đó (dữ liệu thì vẫn nguyên trên web).
@@ -371,12 +444,8 @@ export function AccountScreen({
 
       <Group title="Hồ sơ">
         <DisplayName userId={userId} current={shownName} onSaved={onRenamed} />
-        <div className="grow">
-          <div className="growhead" style={{ cursor: "default" }}>
-            <span>Email</span>
-            <span className="val">{zaloOnly ? "Chưa có" : email}</span>
-          </div>
-        </div>
+        {/* Đổi email xong thì đăng nhập lại (onLinked) để nhận thông tin mới. */}
+        <ChangeEmail current={zaloOnly ? null : email} onChanged={onLinked} />
         {!zaloOnly && <Password />}
       </Group>
 
