@@ -6,7 +6,6 @@ import {
   IconGlobe,
   IconHome,
   IconLink,
-  IconSun,
   IconTree,
   IconUsers,
 } from "@/components/icons";
@@ -30,7 +29,6 @@ import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
 import { PeopleScreen } from "./People";
-import { TodayScreen } from "./Today";
 import { TreeTab } from "./TreeTab";
 
 /**
@@ -41,14 +39,13 @@ import { TreeTab } from "./TreeTab";
  * Bản đầu chỉ XEM: các thao tác sửa/thêm/xuất của web gom vào một nút mở
  * bản web đầy đủ.
  */
-type Tab = "overview" | "tree" | "people" | "events" | "today";
+type Tab = "overview" | "tree" | "people" | "events";
 
 const TABS: { id: Tab; label: string; Icon: typeof IconHome }[] = [
   { id: "overview", label: "Tổng quan", Icon: IconHome },
   { id: "tree", label: "Cây", Icon: IconTree },
   { id: "people", label: "Danh bạ", Icon: IconUsers },
   { id: "events", label: "Sự kiện", Icon: IconCalendar },
-  { id: "today", label: "Hôm nay", Icon: IconSun },
 ];
 
 const WEEKDAY = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
@@ -119,7 +116,7 @@ function Overview({
       </div>
 
       {clan.description && (
-        <p style={{ margin: "0 2px 12px", fontSize: 14.5, lineHeight: 1.55 }}>
+        <p style={{ margin: "0 2px 12px", fontSize: 15, lineHeight: 1.55 }}>
           <span className={more ? undefined : "clamp3"}>{clan.description}</span>
           {clan.description.length > 140 && (
             <button type="button" className="btn text" style={{ minHeight: 0, padding: 0, display: "block" }} onClick={() => setMore((v) => !v)}>
@@ -152,7 +149,7 @@ function Overview({
         </span>
         <span style={{ minWidth: 0 }}>
           <small className="muted" style={{ fontWeight: 600, letterSpacing: ".06em" }}>ÂM LỊCH</small>
-          <b className="serif" style={{ display: "block", fontSize: 17 }}>
+          <b className="serif" style={{ display: "block", fontSize: 18 }}>
             {lunar ? `Ngày ${lunar.day} tháng ${lunar.month}${lunar.isLeap ? " nhuận" : ""}` : "—"}
           </b>
           <span className="muted">{lunar ? formatLunarDate(lunar).replace(/^.*?(Năm|năm)/, "Năm") : ""}</span>
@@ -199,7 +196,7 @@ function Overview({
       {s && (
         <div className="card" style={{ padding: 14 }}>
           <div>
-            <b className="serif" style={{ fontSize: 30, color: "var(--primary)" }}>{s.total_persons}</b>{" "}
+            <b className="serif" style={{ fontSize: 20, color: "var(--primary)" }}>{s.total_persons}</b>{" "}
             <span className="muted">thành viên{s.max_generation ? ` · ${s.max_generation} đời` : ""}</span>
           </div>
           <div className="statgrid">
@@ -269,11 +266,7 @@ export function ClanScreen({
           <EventsScreen clan={clan} upcoming={upcoming} openPerson={openPerson} />
         </div>
       )}
-      {seen.has("today") && (
-        <div className={pane} style={show("today")}>
-          <TodayScreen clan={clan} upcoming={upcoming} openPerson={openPerson} goEvents={() => jump("events")} />
-        </div>
-      )}
+
 
       <nav className="tabbar">
         {TABS.map((t) => (

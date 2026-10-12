@@ -9,6 +9,7 @@ import {
 } from "@/lib/personDates";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
 
+import { toast } from "../toast";
 import { useAsync } from "../useAsync";
 
 /**
@@ -49,7 +50,7 @@ export function DateField({
         <input className="field" inputMode="numeric" maxLength={4} placeholder="Năm" aria-label={`${label}: năm`} value={value.parts.year} onChange={part("year")} />
       </div>
       {value.mode === "lunar" && (
-        <label className="check" style={{ marginTop: 6, fontSize: 13 }}>
+        <label className="check" style={{ marginTop: 6, fontSize: 14 }}>
           <input type="checkbox" checked={value.isLeap} onChange={(e) => onChange({ ...value, isLeap: e.target.checked })} />
           <span>Tháng nhuận</span>
         </label>
@@ -174,6 +175,7 @@ export function EditPersonScreen({
       onSaved();
     } catch (err) {
       setError((err as Error).message);
+      toast((err as Error).message, "error");
       setBusy(false);
     }
   };

@@ -3,7 +3,13 @@ import { useState } from "react";
 import { IconBellOff, IconCalendar, IconGrid, IconList } from "@/components/icons";
 import { formatDate, formatRelative } from "@/lib/formatDate";
 import { eventWhenText } from "@/lib/eventWhen";
-import { formatCanChiShort, getCanChiForSolarDate } from "@/lib/lunarDate";
+import { upcomingFestivals } from "@/lib/festivals";
+import {
+  formatCanChiShort,
+  formatLunarDate,
+  getCanChiForSolarDate,
+  solarStringToLunar,
+} from "@/lib/lunarDate";
 import type { ClanSummary } from "@/lib/queries/clans";
 import { listEvents, type EventRow } from "@/lib/queries/events";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
@@ -36,6 +42,13 @@ const KIND: Record<UpcomingEvent["kind"], string> = {
 };
 
 /** Màu nhãn "Còn N ngày" theo độ gấp — cùng ngưỡng với web. */
+/** Hôm nay theo GIỜ MÁY người dùng — lễ tết là chuyện của lịch địa phương. */
+function todayIso(): string {
+  const n = new Date();
+  const pad = (x: number) => String(x).padStart(2, "0");
+  return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}`;
+}
+
 const urgency = (d: number) => (d <= 1 ? "now" : d <= 7 ? "soon" : "");
 const countdown = (d: number) => (d === 0 ? "Hôm nay" : d === 1 ? "Ngày mai" : `Còn ${d} ngày`);
 
@@ -109,8 +122,19 @@ export function EventsScreen({
     [clan.id, clan.role, rev],
   );
 
-  const all = (upcoming.data ?? []).filter((e) => e.daysUntil <= daysAhead);
+  // Sự kiện của họ + lễ tết âm lịch (như trang "Hôm nay" của web), gần nhất
+  // trước. Hôm nay tách riêng lên đầu; phần còn lại theo khoảng đã chọn.
+  const iso = todayIso();
+  const merged = [
+    ...(upcoming.data ?? []),
+    ...upcomingFestivals(iso, daysAhead),
+  ]
+    .filter((e) => e.daysUntil <= daysAhead)
+    .sort((a, b) => a.daysUntil - b.daysUntil || a.title.localeCompare(b.title, "vi"));
+  const today = merged.filter((e) => e.daysUntil === 0);
+  const all = merged.filter((e) => e.daysUntil > 0);
   const rows = all.slice(0, shown);
+  const lunarToday = formatLunarDate(solarStringToLunar(iso));
 
   return (
     <div className="page">
@@ -131,6 +155,24 @@ export function EventsScreen({
         </div>
       </div>
 
+      {/* "Hôm nay" gộp vào đây thay cho một tab riêng: hướng dẫn thiết kế
+          của Zalo khuyến nghị thanh tab dưới đáy tối đa 4 mục. */}
+      <section className="card pane todaybox">
+        <div className="sec-row">
+          <h3 className="serif" style={{ margin: 0 }}>Hôm nay</h3>
+          <span className="muted">{today.length === 0 ? "—" : `${today.length} sự kiện`}</span>
+        </div>
+        <p className="muted" style={{ margin: "2px 0 10px" }}>
+          {new Date().toLocaleDateString("vi-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+          {lunarToday ? ` · ${lunarToday}` : ""}
+        </p>
+        {!upcoming.loading && today.length === 0 && (
+          <p className="muted" style={{ margin: 0 }}>Hôm nay không có giỗ, sinh nhật hay lễ tết nào.</p>
+        )}
+        {today.map((e) => <EventItem key={e.key} e={e} openPerson={openPerson} />)}
+      </section>
+
+      <h3 className="section-title">Sắp tới</h3>
       <div className="seg full" role="group" aria-label="Khoảng thời gian">
         {LOOKAHEAD.map((o) => (
           <button

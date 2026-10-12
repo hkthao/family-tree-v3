@@ -21,6 +21,7 @@ import { PersonScreen } from "./screens/Person";
 import { listenBack, pushBack } from "./nav";
 import { RevContext } from "./rev";
 import { scrollTopScreen } from "./scroll";
+import { toast, ToastHost } from "./toast";
 import { AddRelativeScreen } from "./screens/AddRelative";
 import { ClanScreen } from "./screens/Clan";
 import { EditPersonScreen } from "./screens/EditPerson";
@@ -178,7 +179,7 @@ export function App() {
   if (auth.kind === "deleted") {
     return (
       <div className="center">
-        <b className="serif" style={{ fontSize: 19 }}>Tài khoản đã được xoá</b>
+        <b className="serif" style={{ fontSize: 20 }}>Tài khoản đã được xoá</b>
         <p className="muted" style={{ margin: 0, maxWidth: 300 }}>
           Dữ liệu tài khoản của bạn đã bị xoá vĩnh viễn. Bạn có thể đóng ứng
           dụng. Nếu mở lại, một tài khoản mới sẽ được tạo từ Zalo của bạn.
@@ -287,6 +288,7 @@ export function App() {
                       // Rời trang của người vừa xoá, và báo các trang hồ sơ
                       // bên dưới (cha mẹ, vợ chồng) tải lại quan hệ.
                       setRev((n) => n + 1);
+                      toast("Đã xoá khỏi gia phả");
                       window.history.back();
                     }
                   : undefined
@@ -301,6 +303,7 @@ export function App() {
               relation={s.relation}
               onSaved={() => {
                 setRev((n) => n + 1);
+                toast(s.relation === "spouse" ? "Đã thêm vợ/chồng" : "Đã thêm con");
                 window.history.back();
               }}
             />
@@ -310,6 +313,7 @@ export function App() {
               personId={s.personId}
               onSaved={() => {
                 setRev((n) => n + 1);
+                toast("Đã lưu thay đổi");
                 window.history.back();
               }}
             />
@@ -337,6 +341,7 @@ export function App() {
           ))}
         </nav>
       )}
+      <ToastHost />
     </RevContext.Provider>
   );
 }

@@ -16,6 +16,7 @@ import { getTheme, setTheme, type Theme } from "@/lib/theme";
 
 import { forgetZaloLeftovers, getLinkStatus, unlinkZalo } from "../auth";
 import { LinkAccount } from "../LinkAccount";
+import { toast } from "../toast";
 import { useAsync } from "../useAsync";
 
 /**
@@ -46,8 +47,11 @@ function useSave() {
     setBusy(true);
     setMsg(null);
     fn()
-      .then(() => setMsg({ ok: true, text: done }))
-      .catch((e: Error) => setMsg({ ok: false, text: e.message }))
+      .then(() => toast(done))
+      .catch((e: Error) => {
+        setMsg({ ok: false, text: e.message });
+        toast(e.message, "error");
+      })
       .finally(() => setBusy(false));
   };
   const note = msg && <p className={msg.ok ? "ok" : "error"}>{msg.text}</p>;
@@ -132,9 +136,9 @@ function Password() {
         <form onSubmit={submit}>
           <p className="note" style={{ marginTop: 0 }}>Ít nhất 8 ký tự. Dùng để đăng nhập trên bản web.</p>
           <input className="field" type="password" autoComplete="new-password" placeholder="Mật khẩu mới" aria-label="Mật khẩu mới" value={pw} onChange={(e) => setPw(e.target.value)} />
-          {tooShort && <p className="error" style={{ margin: "4px 0 0", fontSize: 12.5 }}>Mật khẩu cần ít nhất 8 ký tự.</p>}
+          {tooShort && <p className="error" style={{ margin: "4px 0 0", fontSize: 12 }}>Mật khẩu cần ít nhất 8 ký tự.</p>}
           <input className="field" style={{ marginTop: 8 }} type="password" autoComplete="new-password" placeholder="Nhập lại mật khẩu mới" aria-label="Xác nhận mật khẩu mới" value={pw2} onChange={(e) => setPw2(e.target.value)} />
-          {mismatch && <p className="error" style={{ margin: "4px 0 0", fontSize: 12.5 }}>Hai mật khẩu chưa khớp.</p>}
+          {mismatch && <p className="error" style={{ margin: "4px 0 0", fontSize: 12 }}>Hai mật khẩu chưa khớp.</p>}
           <button type="submit" className="btn block" style={{ marginTop: 8 }} disabled={!ok || save.busy}>
             {save.busy ? "Đang lưu…" : "Đổi mật khẩu"}
           </button>
