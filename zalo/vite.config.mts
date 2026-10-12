@@ -1,0 +1,36 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import ZaloMiniApp from "zmp-vite-plugin";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(here, "..");
+
+/**
+ * Mini App sống chung repo với web và DÙNG CHUNG `src/lib` của web.
+ *
+ * `@` trỏ về `src/` của WEB (không phải của Mini App) vì các file trong
+ * `src/lib` tự nhập lẫn nhau bằng `@/lib/...`; đổi nghĩa `@` ở đây là
+ * mọi file dùng chung vỡ theo. Mã riêng của Mini App nhập bằng đường
+ * dẫn tương đối.
+ *
+ * Chỉ nhập từ `@/lib` những file THUẦN LOGIC. File nào đụng tới PWA, web
+ * push, tải file bằng link tạm hay router của web thì để yên bên web.
+ */
+export default defineConfig({
+  root: "./src",
+  base: "",
+  plugins: [react(), ZaloMiniApp()],
+  resolve: {
+    alias: { "@": path.resolve(repoRoot, "src") },
+    // Một bản React duy nhất, kể cả khi file dùng chung kéo theo thư viện
+    // cài ở node_modules gốc của repo.
+    dedupe: ["react", "react-dom"],
+  },
+  server: {
+    // Mặc định Vite không cho đọc file ngoài thư mục gốc của dự án.
+    fs: { allow: [repoRoot] },
+  },
+});

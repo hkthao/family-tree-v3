@@ -1,0 +1,26 @@
+{
+  "name": "dong-ho-viet-zalo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Zalo Mini App của Dòng Họ Việt — dùng chung logic với web qua ../src/lib",
+  "scripts": {
+    "start": "zmp start",
+    "deploy": "zmp deploy",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zmp-sdk": "^2.53.0",
+    "zmp-ui": "^1.11.14"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "zmp-vite-plugin": "^1.1.6"
+  }
+}
