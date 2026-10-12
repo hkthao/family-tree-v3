@@ -59,20 +59,46 @@ interface ZaloProfile {
   picture: string | null;
 }
 
-async function fetchZaloProfile(accessToken: string): Promise<ZaloProfile | null> {
-  const res = await fetch(
-    "https://graph.zalo.me/v2.0/me?fields=id,name,picture",
-    {
-      headers: {
-        access_token: accessToken,
-        appsecret_proof: await hmacSha256Hex(ZALO_APP_SECRET, accessToken),
-      },
-    },
-  );
-  if (!res.ok) return null;
+/**
+ * Zalo Graph CHỈ trả thông tin người dùng cho máy chủ có IP trong Việt Nam
+ * (lỗi -501 "IP address not inside Vietnam" — kể cả khi chỉ xin ID). Máy
+ * Supabase đặt ở nước ngoài, nên khi có cấu hình thì gọi vòng qua máy chủ
+ * web (ở VN): nginx bên đó chuyển tiếp đúng một đường /me và đòi khoá chung.
+ * Tên header đổi sang dạng X-… vì nginx bỏ header có dấu gạch dưới.
+ */
+const GRAPH_PROXY_URL = Deno.env.get("ZALO_GRAPH_PROXY_URL") ?? "";
+const GRAPH_PROXY_KEY = Deno.env.get("ZALO_GRAPH_PROXY_KEY") ?? "";
+
+async function callGraph(accessToken: string, fields: string) {
+  const proof = await hmacSha256Hex(ZALO_APP_SECRET, accessToken);
+  const res = GRAPH_PROXY_URL
+    ? await fetch(`${GRAPH_PROXY_URL}?fields=${fields}`, {
+        headers: {
+          "X-Zalo-Proxy-Key": GRAPH_PROXY_KEY,
+          "X-Zalo-Access-Token": accessToken,
+          "X-Zalo-Appsecret-Proof": proof,
+        },
+      })
+    : await fetch(`https://graph.zalo.me/v2.0/me?fields=${fields}`, {
+        headers: { access_token: accessToken, appsecret_proof: proof },
+      });
   const body = await res.json().catch(() => null);
+  return { res, body };
+}
+
+async function fetchZaloProfile(accessToken: string): Promise<ZaloProfile | null> {
+  const { res, body } = await callGraph(accessToken, "id,name,picture");
   // Zalo trả 200 kèm { error: <mã khác 0> } khi token sai/hết hạn.
-  if (!body || (body.error && body.error !== 0) || !body.id) return null;
+  if (!res.ok || !body || (body.error && body.error !== 0) || !body.id) {
+    // Ghi mã lỗi của Zalo (KHÔNG ghi token) — không có dòng này thì mọi
+    // nguyên nhân (sai secret, thiếu quyền, token hết hạn) trông y hệt nhau.
+    console.error(
+      "zalo-auth: Graph từ chối:",
+      res.status,
+      JSON.stringify({ error: body?.error, message: body?.message, keys: body ? Object.keys(body) : null }),
+    );
+    return null;
+  }
   return {
     id: String(body.id),
     name: typeof body.name === "string" ? body.name : null,
