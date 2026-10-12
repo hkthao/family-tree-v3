@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import { displayGen } from "@/lib/displayGeneration";
 import {
@@ -33,6 +39,25 @@ const Ctx = createContext<{
   openPerson: (id: string) => void;
 }>({ clanId: "", genOffset: 0, openPerson: () => {} });
 
+/** Màu đời đưa xuống CSS qua biến `--gen` (viền ảnh, huy hiệu, vạch trái). */
+const genVar = (generation: number | null) =>
+  ({ "--gen": generationColor(generation) ?? undefined }) as CSSProperties;
+
+const Chevron = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+/** Ba dòng giả trong lúc chờ tải, cùng hình dạng với dòng thật. */
+const Skeleton = ({ rows = 3 }: { rows?: number }) => (
+  <>
+    {Array.from({ length: rows }, (_, i) => (
+      <div key={i} className="sk" style={{ height: 58, marginTop: 6 }} />
+    ))}
+  </>
+);
+
 const years = (p: {
   birthYear: number | null;
   deathYear: number | null;
@@ -47,7 +72,7 @@ function Who({
   generation,
   badge,
   spouse = false,
-  size = 32,
+  size = 40,
   note,
   src,
 }: {
@@ -61,12 +86,12 @@ function Who({
   src: string;
 }) {
   const { genOffset, openPerson } = useContext(Ctx);
-  const color = generationColor(generation);
+  const hasGen = generationColor(generation) !== null;
   const meta = [years(p), note].filter(Boolean).join(" · ");
   return (
     <button type="button" className="who" onClick={() => openPerson(p.id)}>
       {spouse && <span className="rings">⚭</span>}
-      <span className="ring" style={{ background: color ?? "transparent" }}>
+      <span className="ring">
         <img src={src} width={size} height={size} alt="" loading="lazy" />
       </span>
       <span style={{ minWidth: 0 }}>
@@ -77,10 +102,8 @@ function Who({
           </span>
         </span>
         <span className="meta">
-          {badge && color && (
-            <span className="badge" style={{ background: color }}>
-              Đời {displayGen(generation, genOffset)}
-            </span>
+          {badge && hasGen && (
+            <span className="badge">Đời {displayGen(generation, genOffset)}</span>
           )}
           {meta}
         </span>
@@ -123,18 +146,13 @@ function PersonNode({
     person.photoPath,
     ...spouses.map((s) => s.photoPath),
   ]);
-  const color = generationColor(person.generation);
   const leaf = !person.hasChildren;
 
   return (
     <li className={branch ? `branch${leaf ? " leaf" : ""}` : undefined}>
       <div
         className={`row${leaf && (branch || !reserveArrow) ? " pad" : ""}`}
-        style={
-          color
-            ? { background: `color-mix(in srgb, ${color} 11%, transparent)` }
-            : undefined
-        }
+        style={genVar(person.generation)}
       >
         {!leaf ? (
           <button
@@ -144,7 +162,7 @@ function PersonNode({
             aria-label={open ? `Thu gọn ${person.name}` : `Mở ${person.name}`}
             onClick={() => setOpen((v) => !v)}
           >
-            ▼
+            <Chevron />
           </button>
         ) : (
           !branch && reserveArrow && <span className="slot" />
@@ -163,7 +181,7 @@ function PersonNode({
               p={s}
               generation={person.generation}
               spouse
-              size={28}
+              size={32}
               src={photo(s.photoPath, s.gender)}
             />
           ))}
@@ -172,7 +190,7 @@ function PersonNode({
 
       {open && (
         <div className="rail">
-          {node.loading && <p className="muted" style={{ margin: "6px 0 0 40px" }}>Đang tải…</p>}
+          {node.loading && <div style={{ paddingLeft: 6 }}><Skeleton rows={2} /></div>}
           {node.error && <p className="error" style={{ margin: "6px 0 0 40px" }}>{node.error}</p>}
           {node.data && (
             <ul>
@@ -196,13 +214,13 @@ function Group({ group, parent }: { group: FolderGroup; parent: FolderChild }) {
   const count = group.children.length ? `${group.children.length} con` : "chưa có con";
   return (
     <li className="branch group">
-      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 0" }}>
+      <div className="grouphead" style={genVar(parent.generation)}>
         <span className="slot">⚭</span>
         {group.spouse ? (
           <Who
             p={{ ...group.spouse, name: groupLabel(group, parent.gender) }}
             generation={parent.generation}
-            size={28}
+            size={32}
             note={count}
             src={photo(group.spouse.photoPath, group.spouse.gender)}
           />
@@ -232,15 +250,16 @@ function Unlinked({ count }: { count: number }) {
   );
   const rows = list.data ?? [];
   return (
-    <div style={{ marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
-      <button type="button" style={{ padding: "10px 0", width: "100%", textAlign: "left" }} onClick={() => setOpen((v) => !v)}>
-        <span className={`chev${open ? "" : " closed"}`} style={{ display: "inline-block", width: 24, height: "auto", margin: 0 }}>▼</span>
-        <b>Chưa gắn vào cây</b> <span className="muted">({count})</span>
+    <div>
+      <button type="button" className="fold card" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <span className={`chev${open ? "" : " closed"}`} style={{ margin: 0 }}><Chevron /></span>
+        <span>Chưa gắn vào cây</span>
+        <span className="chip" style={{ marginLeft: "auto" }}>{count}</span>
       </button>
       {open && (
         <>
-          {list.loading && <p className="muted">Đang tải…</p>}
-          <ul className="tree">
+          {list.loading && <Skeleton />}
+          <ul className="tree" style={{ marginTop: 8 }}>
             {rows.map((p) => (
               <PersonNode key={p.id} person={p} reserveArrow={rows.some((x) => x.hasChildren)} />
             ))}
@@ -255,10 +274,17 @@ function Unlinked({ count }: { count: number }) {
 function SearchResults({ q }: { q: string }) {
   const { clanId } = useContext(Ctx);
   const hits = useAsync(() => loadFolderSearch(clanId, q), [clanId, q]);
-  if (hits.loading) return <p className="muted">Đang tìm…</p>;
+  if (hits.loading) return <Skeleton />;
   if (hits.error) return <p className="error">{hits.error}</p>;
   const rows = hits.data ?? [];
-  if (rows.length === 0) return <p className="muted">Không tìm thấy ai tên “{q}”.</p>;
+  if (rows.length === 0) {
+    return (
+      <div className="empty">
+        <div className="icon">🔍</div>
+        <p className="muted">Không tìm thấy ai tên “{q}”.</p>
+      </div>
+    );
+  }
   return (
     <>
       <ul className="tree">
@@ -296,20 +322,21 @@ export function TreeScreen({
   return (
     <Ctx.Provider value={{ clanId, genOffset, openPerson }}>
       <div className="page">
-        <input
-          className="field"
-          type="search"
-          placeholder="Tìm người theo tên…"
-          aria-label="Tìm người trong cây"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ marginBottom: 12 }}
-        />
+        <div className="searchbar">
+          <input
+            className="field"
+            type="search"
+            placeholder="Tìm người theo tên…"
+            aria-label="Tìm người trong cây"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
         {q && <SearchResults q={q} />}
 
         {/* Đang tìm thì GIẤU cây chứ không gỡ: gỡ là mất các nhánh đã bung. */}
         <div style={{ display: q ? "none" : undefined }}>
-          {roots.loading && <p className="muted">Đang tải gốc cây…</p>}
+          {roots.loading && <Skeleton rows={4} />}
           {roots.error && (
             <p className="error">
               {roots.error}{" "}

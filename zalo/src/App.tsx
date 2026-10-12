@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { setNavigationBarLeftButton, setNavigationBarTitle } from "zmp-sdk";
 
 import type { ClanSummary } from "@/lib/queries/clans";
 import { supabase } from "@/lib/supabase";
@@ -32,7 +33,7 @@ type Screen =
 
 type Auth =
   | { kind: "loading" }
-  | { kind: "ready"; userId: string; zaloOnly: boolean }
+  | { kind: "ready"; userId: string; name: string; zaloOnly: boolean }
   | { kind: "error"; message: string }
   | { kind: "dev-login"; message?: string };
 
@@ -55,9 +56,9 @@ function DevLogin({ message, onDone }: { message?: string; onDone: () => void })
         Chế độ lập trình (localhost): không có Zalo nên đăng nhập bằng tài
         khoản web. Form này không có trong bản đưa lên Zalo.
       </p>
-      <input className="field" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className="field" type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} style={{ margin: "8px 0" }} />
-      <button type="submit" className="btn">Đăng nhập</button>
+      <input className="field" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginTop: 12 }} />
+      <input className="field" type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} style={{ margin: "10px 0" }} />
+      <button type="submit" className="btn block">Đăng nhập</button>
       {error && <p className="error">{error}</p>}
     </form>
   );
@@ -77,6 +78,9 @@ export function App() {
         setAuth({
           kind: "ready",
           userId: data.user.id,
+          name:
+            (data.user.user_metadata?.display_name as string | undefined) ??
+            "bạn",
           zaloOnly: isZaloOnlyAccount(data.user.email),
         });
       })
@@ -90,40 +94,72 @@ export function App() {
   };
   useEffect(login, []);
 
-  if (auth.kind === "loading") return <div className="page muted">Đang đăng nhập bằng Zalo…</div>;
+  // Nút quay lại là của ZALO (trên thanh tiêu đề gốc), nó gọi lùi lịch sử
+  // trình duyệt. Nên mỗi lần mở màn hình mới ta đẩy một mốc lịch sử, và
+  // nghe sự kiện lùi để gỡ màn hình trên cùng — vuốt ngược trên Android
+  // cũng đi đúng đường này.
+  useEffect(() => {
+    const onPop = () => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  const push = (s: Screen) => {
+    window.history.pushState({ depth: stack.length }, "");
+    setStack((st) => [...st, s]);
+  };
+
+  const top = stack[stack.length - 1];
+  const title =
+    top.kind === "clans" ? "Dòng Họ Việt" : top.kind === "tree" ? top.clan.name : "Hồ sơ";
+  const canGoBack = stack.length > 1;
+  useEffect(() => {
+    // Ngoài Zalo (giả lập máy tính) hai lệnh này không có gì để điều khiển.
+    setNavigationBarTitle({ title }).catch(() => {});
+    setNavigationBarLeftButton({ type: canGoBack ? "back" : "none" }).catch(() => {});
+  }, [title, canGoBack]);
+
+  if (auth.kind === "loading") {
+    return (
+      <div className="center">
+        <div className="sk" style={{ width: 64, height: 64, borderRadius: 20 }} />
+        <p className="muted">Đang đăng nhập…</p>
+      </div>
+    );
+  }
   if (auth.kind === "dev-login") return <DevLogin message={auth.message} onDone={login} />;
   if (auth.kind === "error") {
     return (
-      <div className="page">
+      <div className="center">
         <p className="error">{auth.message}</p>
         <button type="button" className="btn" onClick={login}>Thử lại</button>
       </div>
     );
   }
 
-  const push = (s: Screen) => setStack((st) => [...st, s]);
-  const back = () => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
-  const top = stack[stack.length - 1];
-  const title =
-    top.kind === "clans" ? "Dòng họ của tôi" : top.kind === "tree" ? top.clan.name : "Hồ sơ";
-
   return (
     <>
-      <header className="topbar">
-        {stack.length > 1 && (
-          <button type="button" className="back" aria-label="Quay lại" onClick={back}>‹</button>
-        )}
-        <h1>{title}</h1>
-      </header>
-
+      {/* Trên Zalo đã có thanh tiêu đề + nút quay lại gốc; thanh này chỉ
+          để lập trình trên máy tính, nơi không có thanh của Zalo. */}
+      {isLocalDev && (
+        <header className="devbar">
+          {canGoBack && (
+            <button type="button" aria-label="Quay lại" onClick={() => window.history.back()}>‹</button>
+          )}
+          <span>{title}</span>
+        </header>
+      )}
       {stack.map((s, i) => (
         // Màn hình bên dưới chỉ bị giấu, để quay lại còn nguyên trạng thái.
         <div key={i} style={{ display: i === stack.length - 1 ? undefined : "none" }}>
           {s.kind === "clans" && (
             <>
-              <ClansScreen userId={auth.userId} openClan={(clan) => push({ kind: "tree", clan })} />
+              <ClansScreen
+                userId={auth.userId}
+                name={auth.name}
+                openClan={(clan) => push({ kind: "tree", clan })}
+              />
               {auth.zaloOnly && (
-                <div className="page" style={{ paddingTop: 0 }}>
+                <div className="page" style={{ paddingTop: 0, marginTop: -32 }}>
                   <LinkAccount onLinked={login} />
                 </div>
               )}

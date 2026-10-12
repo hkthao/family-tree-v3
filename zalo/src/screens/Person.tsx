@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { openWebview } from "zmp-sdk";
 
 import { displayGenLabel } from "@/lib/displayGeneration";
@@ -38,10 +39,17 @@ export function PersonScreen({
   const all = rel ? [...rel.parents, ...rel.spouses, ...rel.children] : [];
   const photo = usePhotoUrls([q.data?.person?.photo_path, ...all.map((r) => r.photo_path)]);
 
-  if (q.loading) return <div className="page muted">Đang tải…</div>;
-  if (q.error || !q.data?.person) {
+  if (q.loading) {
     return (
       <div className="page">
+        <div className="sk" style={{ height: 220 }} />
+        <div className="sk" style={{ height: 180, marginTop: 14 }} />
+      </div>
+    );
+  }
+  if (q.error || !q.data?.person) {
+    return (
+      <div className="center">
         <p className="error">{q.error ?? "Không tìm thấy người này."}</p>
         <button type="button" className="btn ghost" onClick={q.reload}>Thử lại</button>
       </div>
@@ -60,49 +68,62 @@ export function PersonScreen({
     ["Nơi an táng", p.burial_place],
   ];
 
+  const shown = facts.filter(([, v]) => v);
+  const gen = { "--gen": color ?? undefined } as CSSProperties;
+
   const group = (label: string, items: Relationship[]) =>
     items.length > 0 && (
       <>
-        <h3 className="h3">{label}</h3>
-        {items.map((r) => (
-          <button key={r.id} type="button" className="rel" onClick={() => openPerson(r.id)}>
-            <img src={photo(r.photo_path, r.gender)} width={36} height={36} alt="" style={{ borderRadius: 999, objectFit: "cover" }} />
-            <span style={{ minWidth: 0 }}>
-              <b style={{ display: "block", fontSize: 14 }}>{r.full_name}</b>
-              <span className="muted">{r.gender === "M" ? "Nam" : "Nữ"}{!r.is_living && " · đã mất"}</span>
-            </span>
-          </button>
-        ))}
+        <h3 className="section-title">{label}</h3>
+        <div className="card rels">
+          {items.map((r) => (
+            <button key={r.id} type="button" className="rel" onClick={() => openPerson(r.id)}>
+              <img src={photo(r.photo_path, r.gender)} width={44} height={44} alt="" />
+              <span style={{ minWidth: 0 }}>
+                <b>{r.full_name}</b>
+                <span className="muted">{r.gender === "M" ? "Nam" : "Nữ"}{!r.is_living && " · đã mất"}</span>
+              </span>
+              <span className="go">›</span>
+            </button>
+          ))}
+        </div>
       </>
     );
 
   return (
-    <div className="page">
-      <div className="hero">
-        <span className="ring" style={{ background: color ?? "transparent", padding: 3 }}>
-          <img src={photo(p.photo_path, p.gender)} width={84} height={84} alt="" />
+    <div className="page" style={gen}>
+      <div className="card hero">
+        <div className="cover" />
+        <span className="ring">
+          <img src={photo(p.photo_path, p.gender)} width={92} height={92} alt="" />
         </span>
-        <div style={{ minWidth: 0 }}>
-          <h2>
-            {p.full_name}{" "}
-            <span className={p.gender === "M" ? "m" : "f"} style={{ fontSize: 16 }}>{p.gender === "M" ? "♂" : "♀"}</span>
-          </h2>
-          <div className="meta">
-            {color && <span className="badge" style={{ background: color }}>{displayGenLabel(p.generation, genOffset)}</span>}
-            {p.is_root && "Thuỷ tổ"}
-          </div>
+        <h2>{p.full_name}</h2>
+        <div className="chips">
+          {color && <span className="badge" style={{ fontSize: 12, padding: "3px 10px" }}>{displayGenLabel(p.generation, genOffset)}</span>}
+          {p.is_root && <span className="chip">Thuỷ tổ</span>}
+          <span className="chip">
+            <span className={p.gender === "M" ? "m" : "f"}>{p.gender === "M" ? "♂" : "♀"}</span>{" "}
+            {p.gender === "M" ? "Nam" : "Nữ"}
+          </span>
+          {!p.is_living && <span className="chip">Đã mất</span>}
         </div>
       </div>
 
-      <dl className="facts">
-        {facts.filter(([, v]) => v).map(([k, v]) => (
-          <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
-        ))}
-      </dl>
+      {shown.length > 0 && (
+        <>
+          <h3 className="section-title">Thông tin</h3>
+          <dl className="card facts">
+            {shown.map(([k, v]) => (
+              <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
+            ))}
+          </dl>
+        </>
+      )}
+
       {p.bio && (
         <>
-          <h3 className="h3">Tiểu sử</h3>
-          <p style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: 14, lineHeight: 1.5 }}>{p.bio}</p>
+          <h3 className="section-title">Tiểu sử</h3>
+          <div className="card bio">{p.bio}</div>
         </>
       )}
 
@@ -115,15 +136,15 @@ export function PersonScreen({
       )}
 
       {/* Sửa hồ sơ, thêm người, xuất sổ… là việc của bản web (bước 5). */}
-      <p style={{ marginTop: 24 }}>
+      <div className="cta">
         <button
           type="button"
-          className="btn ghost"
+          className="btn ghost block"
           onClick={() => openWebview({ url: `${WEB}/clans/${clanId}/people/${personId}` })}
         >
-          Mở bản web đầy đủ
+          Sửa hồ sơ trên bản web đầy đủ
         </button>
-      </p>
+      </div>
     </div>
   );
 }
