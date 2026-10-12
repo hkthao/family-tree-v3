@@ -22,6 +22,9 @@ const repoRoot = path.resolve(here, "..");
 export default defineConfig({
   root: "./src",
   base: "",
+  // Biến môi trường đọc ở `zalo/` (không phải `zalo/src`): VITE_SUPABASE_*
+  // nằm trong `zalo/.env.local`, cạnh `.env` do công cụ Zalo tạo.
+  envDir: here,
   plugins: [react(), ZaloMiniApp()],
   resolve: {
     alias: { "@": path.resolve(repoRoot, "src") },

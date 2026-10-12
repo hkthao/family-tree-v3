@@ -21,9 +21,15 @@ Trạng thái (12/10/2026): Zalo App đã kích hoạt, tên miền `giapha.thao
    Lưu ý: `@` trong `zalo/` trỏ về `src/` của WEB; file riêng của Mini App
    nhập bằng đường dẫn tương đối. Đừng đặt hai file chỉ khác chữ hoa/thường
    (`app.tsx`/`App.tsx`) — ổ đĩa macOS coi là một.
-2. **Đăng nhập Zalo** — edge function `zalo-auth`: nhận mã truy cập từ Mini
-   App, hỏi Zalo lấy ID người dùng, đổi sang phiên Supabase. Bảng mới nối
-   ID Zalo ↔ tài khoản. Cần migration (áp tay trên self-host).
+2. **Đăng nhập Zalo** — ✅ ĐÃ VIẾT MÃ (12/10/2026), ⏳ CHƯA triển khai, CHƯA
+   thử với Zalo thật. Gồm: migration `20261012100000_zalo_identities.sql`,
+   edge function `zalo-auth` (kiểm token bằng Graph + `appsecret_proof`, sinh
+   magic link không gửi mail), `zalo/src/auth.ts` (đổi `token_hash` lấy phiên).
+   Còn phải làm trên máy chủ: áp migration bằng tay, đặt `ZALO_APP_SECRET`,
+   chép function lên rồi khởi động lại.
+   Tài khoản tạo từ Zalo mang email giả `zalo-<id>@zalo.giapha.thaohk.com` và
+   dấu `app_metadata.zalo_user_id` — **các function gửi mail (nhắc sự kiện,
+   bản tin tuần…) cần bỏ qua địa chỉ này**, chưa làm.
 3. **Liên kết tài khoản sẵn có** — người đã có tài khoản email nhập mã OTP
    một lần để gắn Zalo vào tài khoản cũ, không sinh tài khoản trùng.
 4. **Màn hình xem** — danh sách dòng họ của tôi → cây thư mục (tái dùng
