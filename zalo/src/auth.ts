@@ -16,7 +16,14 @@ export async function signInWithZalo(): Promise<{ isNew: boolean }> {
   if (existing.session) return { isNew: false };
 
   const accessToken = await getAccessToken();
-  if (!accessToken) throw new Error("Zalo không cấp mã truy cập.");
+  // Rỗng = đang chạy NGOÀI ứng dụng Zalo (giả lập trên trình duyệt máy
+  // tính): ở đó không có người dùng Zalo nào để cấp mã. Chỉ thử đăng nhập
+  // được trên điện thoại, qua bản Development của `zmp deploy`.
+  if (!accessToken) {
+    throw new Error(
+      "Zalo không cấp mã truy cập. Đăng nhập chỉ chạy khi mở trong ứng dụng Zalo trên điện thoại, không chạy trên giả lập máy tính.",
+    );
+  }
 
   const res = await fetch(`${SUPABASE_URL}/functions/v1/zalo-auth`, {
     method: "POST",

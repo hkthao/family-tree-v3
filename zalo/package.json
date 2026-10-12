@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Zalo Mini App của Dòng Họ Việt — dùng chung logic với web qua ../src/lib",
   "scripts": {
-    "start": "zmp start --port 3100",
+    "start": "zmp start --port 3002",
     "deploy": "zmp deploy",
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -21,6 +21,7 @@
     "@vitejs/plugin-react": "^4.3.3",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
+    "zmp-cli": "^4.0.3",
     "zmp-vite-plugin": "^1.1.6"
   }
 }
