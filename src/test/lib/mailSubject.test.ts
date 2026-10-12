@@ -18,6 +18,9 @@ import {
 /** Giải mã ngược RFC 2047, đóng vai Gmail. */
 function decodeSubject(encoded: string): string {
   return encoded
+    // Khoảng trắng đầu giá trị header không thuộc nội dung — trình đọc thư
+    // bỏ nó đi (encodeSubject cố ý thêm, xem ghi chú ở hàm đó).
+    .trimStart()
     .split(/\r\n /)
     .map((word) => {
       const m = /^=\?UTF-8\?B\?(.*)\?=$/.exec(word);
@@ -31,10 +34,20 @@ function decodeSubject(encoded: string): string {
 
 /** Mỗi encoded-word phải ≤ 75 ký tự — đây chính là luật bị vi phạm. */
 function longestWord(encoded: string): number {
-  return Math.max(...encoded.split(/\r\n /).map((w) => w.length));
+  return Math.max(...encoded.trimStart().split(/\r\n /).map((w) => w.length));
 }
 
 describe("encodeSubject", () => {
+  it("KHÔNG bắt đầu bằng '=?' — nếu có, denomailer mã hoá chồng lần nữa", () => {
+    // Xem ghi chú trong encodeSubject: thư viện bọc thêm quoted-printable
+    // cho mọi tiêu đề mở đầu bằng "=?", và Gmail in ra chuỗi thô.
+    const enc = encodeSubject("[Dòng Họ Việt] Ngày mai: Sinh nhật Nguyễn Thị Hạnh");
+    expect(enc.startsWith("=?")).toBe(false);
+    expect(enc.trimStart().startsWith("=?UTF-8?B?")).toBe(true);
+    // Vẫn thuần ASCII, để thư viện không có cớ nào khác mà mã hoá lại.
+    expect(/^[\x20-\x7E\r\n]*$/.test(enc)).toBe(true);
+  });
+
   const real = "[Dòng Họ Việt] Còn 7 ngày: Giỗ Huỳnh Xuân Tại";
 
   it("giải mã ngược ra đúng tiêu đề gốc", () => {
