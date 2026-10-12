@@ -11,6 +11,7 @@ import { getRelativesIndex, type RelativesIndex } from "@/lib/queries/relatives-
 import type { TreeSource } from "@/lib/queries/tree";
 
 import { usePhotoUrls } from "../photos";
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 
 /**
@@ -59,6 +60,7 @@ export function PeopleScreen({
   openPerson: (id: string) => void;
 }) {
   const genOffset = clan.generation_offset ?? 0;
+  const rev = useRev();
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   const [view, setView] = useState<View>("list");
@@ -78,11 +80,11 @@ export function PeopleScreen({
       listBranches(clan.id).catch(() => []),
     ]);
     return { maxGen: stats?.max_generation ?? 0, branches };
-  }, [clan.id]);
+  }, [clan.id, rev]);
   // Tên cha mẹ / vợ chồng: chỉ thành viên đọc được; khách thì bỏ qua.
   const relatives = useAsync(
     () => (clan.role ? getRelativesIndex(clan.id).catch(() => undefined) : Promise.resolve(undefined)),
-    [clan.id, clan.role],
+    [clan.id, clan.role, rev],
   );
 
   const list = useAsync(async () => {
@@ -102,7 +104,7 @@ export function PeopleScreen({
       total = r.total;
     }
     return { rows, total };
-  }, [clan.id, q, branch, generation, sort, pages, source]);
+  }, [clan.id, q, branch, generation, sort, pages, source, rev]);
   const rows = list.data?.rows ?? [];
   const photo = usePhotoUrls(rows.map((r) => r.photo_path));
   const filtered = !!(q || branch || generation);

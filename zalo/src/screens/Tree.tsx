@@ -27,6 +27,7 @@ import {
 } from "@/lib/tree/folderModel";
 
 import { usePhotoUrls } from "../photos";
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 
 /**
@@ -129,6 +130,7 @@ function PersonNode({
   note?: string;
 }) {
   const { clanId, source } = useContext(Ctx);
+  const rev = useRev();
   const [open, setOpen] = useState(defaultOpen);
   const [everOpened, setEverOpened] = useState(defaultOpen);
   useEffect(() => {
@@ -139,7 +141,7 @@ function PersonNode({
   const node = useAsync(
     () =>
       everOpened ? loadFolderNode(clanId, person.id, source) : Promise.resolve(null),
-    [clanId, person.id, everOpened, source],
+    [clanId, person.id, everOpened, source, rev],
   );
 
   const allSpouses = person.spouses ?? [];
@@ -194,7 +196,7 @@ function PersonNode({
 
       {open && (
         <div className="rail">
-          {node.loading && <div style={{ paddingLeft: 6 }}><Skeleton rows={2} /></div>}
+          {node.loading && !node.data && <div style={{ paddingLeft: 6 }}><Skeleton rows={2} /></div>}
           {node.error && <p className="error" style={{ margin: "6px 0 0 40px" }}>{node.error}</p>}
           {node.data && (
             <ul>
@@ -247,10 +249,11 @@ function Group({ group, parent }: { group: FolderGroup; parent: FolderChild }) {
 
 function Unlinked({ count }: { count: number }) {
   const { clanId, source } = useContext(Ctx);
+  const rev = useRev();
   const [open, setOpen] = useState(false);
   const list = useAsync(
     () => (open ? loadUnlinked(clanId, { limit: 50 }, source) : Promise.resolve([])),
-    [clanId, open, source],
+    [clanId, open, source, rev],
   );
   const rows = list.data ?? [];
   return (
@@ -277,8 +280,9 @@ function Unlinked({ count }: { count: number }) {
 
 function SearchResults({ q }: { q: string }) {
   const { clanId, source } = useContext(Ctx);
-  const hits = useAsync(() => loadFolderSearch(clanId, q, source), [clanId, q, source]);
-  if (hits.loading) return <Skeleton />;
+  const rev = useRev();
+  const hits = useAsync(() => loadFolderSearch(clanId, q, source), [clanId, q, source, rev]);
+  if (hits.loading && !hits.data) return <Skeleton />;
   if (hits.error) return <p className="error">{hits.error}</p>;
   const rows = hits.data ?? [];
   if (rows.length === 0) {
@@ -317,7 +321,8 @@ export function TreeScreen({
   genOffset: number;
   openPerson: (id: string) => void;
 }) {
-  const roots = useAsync(() => loadFolderRoots(clanId, source), [clanId, source]);
+  const rev = useRev();
+  const roots = useAsync(() => loadFolderRoots(clanId, source), [clanId, source, rev]);
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   useEffect(() => {
@@ -342,7 +347,7 @@ export function TreeScreen({
 
         {/* Đang tìm thì GIẤU cây chứ không gỡ: gỡ là mất các nhánh đã bung. */}
         <div style={{ display: q ? "none" : undefined }}>
-          {roots.loading && <Skeleton rows={4} />}
+          {roots.loading && !roots.data && <Skeleton rows={4} />}
           {roots.error && (
             <p className="error">
               {roots.error}{" "}

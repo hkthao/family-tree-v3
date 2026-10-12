@@ -13,6 +13,7 @@ import { getPersonRelationships, type Relationship } from "@/lib/queries/familie
 import { deletePerson, getPerson, type PersonDetail } from "@/lib/queries/persons";
 
 import { usePhotoUrls } from "../photos";
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 
 const WEB = "https://giapha.thaohk.com";
@@ -58,7 +59,6 @@ export function PersonScreen({
   personId,
   source,
   genOffset,
-  rev = 0,
   onEdit,
   onAdd,
   onDeleted,
@@ -66,8 +66,6 @@ export function PersonScreen({
 }: {
   clanId: string;
   clanName: string;
-  /** Đổi giá trị này để tải lại hồ sơ (sau khi sửa xong). */
-  rev?: number;
   /** Có thì hiện nút "Sửa" — chỉ truyền khi người dùng có quyền sửa. */
   onEdit?: () => void;
   /** Có thì hiện mục "Xoá người này"; gọi sau khi xoá xong. */
@@ -80,6 +78,7 @@ export function PersonScreen({
   genOffset: number;
   openPerson: (id: string) => void;
 }) {
+  const rev = useRev();
   const q = useAsync(async () => {
     const [person, rel] = await Promise.all([
       getPerson(personId, undefined, source),

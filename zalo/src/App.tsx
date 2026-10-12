@@ -19,6 +19,7 @@ import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
 import { listenBack, pushBack } from "./nav";
+import { RevContext } from "./rev";
 import { scrollTopScreen } from "./scroll";
 import { AddRelativeScreen } from "./screens/AddRelative";
 import { ClanScreen } from "./screens/Clan";
@@ -197,7 +198,7 @@ export function App() {
   }
 
   return (
-    <>
+    <RevContext.Provider value={rev}>
       {/* Trên Zalo đã có thanh tiêu đề + nút quay lại gốc. Giả lập máy tính
           cũng tự vẽ tiêu đề nhưng không có nút quay lại, nên chỉ thêm đúng
           một nút đó khi lập trình. */}
@@ -268,7 +269,6 @@ export function App() {
               personId={s.personId}
               source={sourceOf(s.clan)}
               genOffset={s.clan.generation_offset ?? 0}
-              rev={rev}
               // Quyền sửa do cơ sở dữ liệu kiểm; ở đây chỉ để khỏi bày nút
               // cho người chắc chắn không sửa được.
               onEdit={
@@ -337,6 +337,6 @@ export function App() {
           ))}
         </nav>
       )}
-    </>
+    </RevContext.Provider>
   );
 }

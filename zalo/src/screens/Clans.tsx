@@ -14,6 +14,7 @@ import {
   type ClanSummary,
 } from "@/lib/queries/clans";
 
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 
 type Scope = "mine" | "community";
@@ -33,6 +34,7 @@ export function ClansScreen({
   userId: string;
   openClan: (c: ClanSummary) => void;
 }) {
+  const rev = useRev();
   const [scope, setScope] = useState<Scope>("mine");
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
@@ -54,7 +56,7 @@ export function ClansScreen({
       getClansInlawLinks(ids).catch(() => new Map()),
     ]);
     return { ...res, stats, inlaws };
-  }, [userId, scope, q]);
+  }, [userId, scope, q, rev]);
 
   // Con số trên hai nút gạt: đếm riêng một lần, không phụ thuộc ô tìm.
   const counts = useAsync(async () => {
@@ -63,7 +65,7 @@ export function ClansScreen({
       listCommunityClans(userId, { page: 1, pageSize: 1 }),
     ]);
     return { mine: mine.total, community: community.total };
-  }, [userId]);
+  }, [userId, rev]);
 
   const rows = list.data?.rows ?? [];
   const n = (k: Scope) => (counts.data ? ` (${counts.data[k]})` : "");

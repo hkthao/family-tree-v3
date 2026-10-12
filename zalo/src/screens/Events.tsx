@@ -8,6 +8,7 @@ import type { ClanSummary } from "@/lib/queries/clans";
 import { listEvents, type EventRow } from "@/lib/queries/events";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 
 /**
@@ -101,10 +102,11 @@ export function EventsScreen({
   const [view, setView] = useState<"list" | "grid">("list");
   const [daysAhead, setDaysAhead] = useState(90);
   const [shown, setShown] = useState(PAGE);
+  const rev = useRev();
   // Sự kiện tự tạo chỉ thành viên đọc được.
   const custom = useAsync(
     () => (clan.role ? listEvents(clan.id).catch(() => []) : Promise.resolve([] as EventRow[])),
-    [clan.id, clan.role],
+    [clan.id, clan.role, rev],
   );
 
   const all = (upcoming.data ?? []).filter((e) => e.daysUntil <= daysAhead);

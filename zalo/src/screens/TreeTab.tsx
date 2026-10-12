@@ -6,6 +6,7 @@ import { getTreeData, type TreeSource } from "@/lib/queries/tree";
 import { supabase } from "@/lib/supabase";
 import { unaccent } from "@/lib/unaccent";
 
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 import { TreeScreen } from "./Tree";
 import { Tree2D } from "./Tree2D";
@@ -38,6 +39,7 @@ export function TreeTab({
   genOffset: number;
   openPerson: (id: string) => void;
 }) {
+  const rev = useRev();
   const [mode, setMode] = useState<Mode>("2d");
   const [depth, setDepth] = useState(3);
   const [focal, setFocal] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export function TreeTab({
       }
     }
     return { data, photoUrls };
-  }, [clanId, source, needsAll]);
+  }, [clanId, source, needsAll, rev]);
   const data = tree.data?.data ?? null;
   const photoUrls = tree.data?.photoUrls ?? EMPTY;
   const focalId = focal ?? (data ? pickDefaultFocal(data.persons) : null);
@@ -145,7 +147,7 @@ export function TreeTab({
         )}
       </div>
 
-      {needsAll && tree.loading && <div className="sk" style={{ margin: 12, height: 260 }} />}
+      {needsAll && tree.loading && !data && <div className="sk" style={{ margin: 12, height: 260 }} />}
       {needsAll && tree.error && (
         <div className="card empty" style={{ margin: 12 }}>
           <p className="error">{tree.error}</p>
