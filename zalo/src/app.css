@@ -270,7 +270,7 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
 .tiny strong { font-weight:600; }
 .faint { opacity:.8; }
 .root { margin-left:8px; font-size:12px; font-weight:600; color:var(--accent); }
-.pgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.pgrid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
 .pcard { display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; padding:12px; min-width:0; }
 .pcard img { border-radius:999px; object-fit:cover; margin-bottom:4px; }
 .pcard b { font-size:14px; max-width:100%; }
@@ -309,10 +309,15 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
 .evtitle { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:15.5px; font-weight:600; }
 .evwhen { flex:none; font-size:13.5px; color:var(--muted); white-space:nowrap; }
 .evwhen.soon { color:var(--accent); font-weight:500; } .evwhen.now { color:var(--primary); font-weight:600; }
-.evgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+/* minmax(0,1fr) chứ không phải 1fr: 1fr không cho cột co nhỏ hơn nội dung
+   dài nhất (dòng can chi không xuống dòng), nên một thẻ dài là đẩy cả lưới
+   tràn ra ngoài màn hình. */
+.evgrid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
 /* Kiểu dọc cho lưới. KHÔNG đặt tên lớp là "card": mọi thẻ đã mang lớp
    .card chung, nên ".ev.card" ăn vào cả kiểu danh sách (lỗi dính thẻ). */
-.ev.col { flex-direction:column; align-items:stretch; gap:8px; margin:0; height:100%; }
+.ev.col { flex-direction:column; align-items:stretch; gap:8px; margin:0; height:100%; min-width:0; }
+.ev.col > span { min-width:0; flex:none; }
+.ev.col .evwhen { align-self:auto; white-space:normal; text-align:right; }
 .evtop { display:flex; align-items:flex-start; justify-content:space-between; gap:6px; }
 .ev.col .evday { width:46px; padding:4px 0; background:color-mix(in srgb, var(--soft) 60%, transparent); }
 .ev.col .evwhen { font-size:12px; }
