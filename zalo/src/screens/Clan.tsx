@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import {
   IconCalendar,
+  IconDownload,
   IconHome,
   IconLink,
   IconTree,
@@ -81,7 +82,9 @@ function Overview({
   upcoming,
   go,
   openPerson,
+  onExport,
 }: {
+  onExport?: () => void;
   clan: ClanSummary;
   upcoming: { data?: UpcomingEvent[]; loading: boolean; error?: string };
   go: (t: Tab) => void;
@@ -182,10 +185,13 @@ function Overview({
       {/* Chỉ dẫn tới các tab TRONG app. Không có nút mở trang web ngoài:
           tiêu chí duyệt của Zalo không cho Mini App đẩy người dùng sang
           ứng dụng/trang riêng. */}
-      <div className="quick three">
+      <div className={`quick ${onExport ? "" : "three"}`}>
         <button type="button" className="card" onClick={() => go("tree")}><span className="ico"><IconTree /></span>Phả hệ</button>
         <button type="button" className="card" onClick={() => go("people")}><span className="ico"><IconUsers /></span>Danh bạ</button>
         <button type="button" className="card" onClick={() => go("events")}><span className="ico"><IconCalendar /></span>Sự kiện</button>
+        {onExport && (
+          <button type="button" className="card" onClick={onExport}><span className="ico"><IconDownload /></span>Xuất sổ PDF</button>
+        )}
       </div>
 
       <h3 className="section-title">Thống kê</h3>
@@ -212,10 +218,13 @@ export function ClanScreen({
   clan,
   source,
   openPerson,
+  onExport,
 }: {
   clan: ClanSummary;
   source: TreeSource;
   openPerson: (id: string) => void;
+  /** Có thì hiện ô "Xuất sổ PDF" ở Thao tác nhanh (chỉ thành viên). */
+  onExport?: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("overview");
   // Cây và danh bạ chỉ dựng khi đã mở lần đầu, rồi GIỮ (giấu đi) để đổi tab
@@ -246,7 +255,7 @@ export function ClanScreen({
   return (
     <div className="has-tabs inner">
       <div className={pane} style={show("overview")}>
-        <Overview clan={clan} upcoming={upcoming} go={jump} openPerson={openPerson} />
+        <Overview clan={clan} upcoming={upcoming} go={jump} openPerson={openPerson} onExport={onExport} />
       </div>
       {seen.has("tree") && (
         <div className={pane} style={show("tree")}>

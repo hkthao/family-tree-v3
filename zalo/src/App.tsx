@@ -25,6 +25,7 @@ import { toast, ToastHost } from "./toast";
 import { AddRelativeScreen } from "./screens/AddRelative";
 import { ClanScreen } from "./screens/Clan";
 import { EditPersonScreen } from "./screens/EditPerson";
+import { ExportBookScreen } from "./screens/ExportBook";
 
 /**
  * Khung của Mini App: tự đăng nhập bằng Zalo rồi điều hướng giữa ba màn
@@ -40,7 +41,8 @@ type Screen =
   | { kind: "tree"; clan: ClanSummary }
   | { kind: "person"; clan: ClanSummary; personId: string }
   | { kind: "edit"; clan: ClanSummary; personId: string }
-  | { kind: "add"; clan: ClanSummary; personId: string; relation: "spouse" | "child" };
+  | { kind: "add"; clan: ClanSummary; personId: string; relation: "spouse" | "child" }
+  | { kind: "export"; clan: ClanSummary };
 
 /**
  * Không phải thành viên (họ công khai ở mục Cộng đồng) thì đọc qua bản đã
@@ -155,7 +157,9 @@ export function App() {
       ? TABS.find((t) => t.id === tab)!.title
       : top.kind === "tree"
         ? top.clan.name
-        : top.kind === "edit"
+        : top.kind === "export"
+          ? "Xuất sổ gia phả"
+          : top.kind === "edit"
           ? "Sửa hồ sơ"
           : top.kind === "add"
             ? top.relation === "spouse" ? "Thêm vợ / chồng" : "Thêm con"
@@ -261,8 +265,11 @@ export function App() {
               clan={s.clan}
               source={sourceOf(s.clan)}
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
+              // Sổ chứa thông tin đầy đủ của cả họ → chỉ thành viên mới xuất.
+              onExport={s.clan.role ? () => push({ kind: "export", clan: s.clan }) : undefined}
             />
           )}
+          {s.kind === "export" && <ExportBookScreen clan={s.clan} userId={auth.userId} />}
           {s.kind === "person" && (
             <PersonScreen
               clanId={s.clan.id}

@@ -28,6 +28,7 @@ import {
 
 import { BOOK_WATERMARKS, type BookWatermarkId } from "./bookWatermarks";
 import { renderFolderTreePages } from "./FolderTreePdf";
+import { pdfAssets } from "./pdfAssets";
 import { buildFolderPdfRows, type FolderPdfPerson } from "./folderTreeRows";
 import { ensurePdfFontRegistered, PDF_FONT_FAMILY } from "./registerFont";
 
@@ -685,13 +686,22 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       subject={`Sổ gia phả dòng họ ${cleanName}`}
     >
       <WatermarkContext.Provider
-        value={include?.watermark ? BOOK_WATERMARKS[include.watermark] : null}
+        value={
+          include?.watermark
+            ? {
+                ...BOOK_WATERMARKS[include.watermark],
+                src:
+                  pdfAssets.watermarks[include.watermark] ??
+                  BOOK_WATERMARKS[include.watermark].src,
+              }
+            : null
+        }
       >
       {/* ─── Cover ──────────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
         <VineBorder />
         <View style={styles.coverWrap}>
-          <Image src="/icons/app-icon-192.png" style={styles.coverLogo} />
+          <Image src={pdfAssets.logo} style={styles.coverLogo} />
           <Text style={styles.coverEyebrow}>GIA PHẢ</Text>
           <Text style={styles.coverTitle}>{withHoPrefix(cleanName)}</Text>
           <View style={styles.coverDivider} />
@@ -1911,7 +1921,7 @@ function birthOrder(a: PersonDetail, b: PersonDetail): number {
 }
 
 function avatarSrc(g: "M" | "F"): string {
-  return g === "M" ? "/avatars/male.png" : "/avatars/female.png";
+  return g === "M" ? pdfAssets.avatarM : pdfAssets.avatarF;
 }
 
 function chunk<T>(arr: T[], n: number): T[][] {
