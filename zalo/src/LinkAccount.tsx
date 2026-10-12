@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { confirmAccountLink, requestAccountLink } from "./auth";
+import { toast } from "./toast";
 
 /**
  * Liên kết Zalo với tài khoản đã có trên web (bước 3 của kế hoạch).
@@ -58,7 +59,7 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
         </>
       ) : (
         <>
-          <p style={{ fontSize: 13, margin: "12px 0 0" }}>
+          <p style={{ fontSize: 14, margin: "12px 0 0" }}>
             Nếu <b>{email}</b> có tài khoản, mã 6 số đã được gửi tới đó (hiệu
             lực 10 phút).
           </p>
@@ -79,6 +80,7 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
             onClick={() =>
               run(async () => {
                 await confirmAccountLink(code);
+                toast("Đã liên kết tài khoản");
                 onLinked();
               })
             }

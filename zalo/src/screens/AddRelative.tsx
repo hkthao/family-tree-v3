@@ -14,6 +14,7 @@ import {
 } from "@/lib/queries/families";
 import { createPerson, getPerson } from "@/lib/queries/persons";
 
+import { toast } from "../toast";
 import { useAsync } from "../useAsync";
 import { DateField } from "./EditPerson";
 
@@ -143,6 +144,7 @@ export function AddRelativeScreen({
       onSaved();
     } catch (err) {
       setError((err as Error).message);
+      toast((err as Error).message, "error");
       setBusy(false);
     }
   };
