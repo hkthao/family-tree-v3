@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { setNavigationBarLeftButton, setNavigationBarTitle } from "zmp-sdk";
+import { closeApp, setNavigationBarLeftButton, setNavigationBarTitle } from "zmp-sdk";
 
 import { IconBuildings, IconCalendar, IconUser } from "@/components/icons";
 import type { ClanSummary } from "@/lib/queries/clans";
@@ -59,7 +59,8 @@ type Auth =
   | { kind: "loading" }
   | { kind: "ready"; userId: string; email: string | null; name: string; zaloOnly: boolean }
   | { kind: "error"; message: string }
-  | { kind: "dev-login"; message?: string };
+  | { kind: "dev-login"; message?: string }
+  | { kind: "deleted" };
 
 /** Form đăng nhập cho lúc lập trình trên máy tính — xem `devSignIn`. */
 function DevLogin({ message, onDone }: { message?: string; onDone: () => void }) {
@@ -163,6 +164,19 @@ export function App() {
     );
   }
   if (auth.kind === "dev-login") return <DevLogin message={auth.message} onDone={login} />;
+  if (auth.kind === "deleted") {
+    return (
+      <div className="center">
+        <b className="serif" style={{ fontSize: 19 }}>Tài khoản đã được xoá</b>
+        <p className="muted" style={{ margin: 0, maxWidth: 300 }}>
+          Dữ liệu tài khoản của bạn đã bị xoá vĩnh viễn. Bạn có thể đóng ứng
+          dụng. Nếu mở lại, một tài khoản mới sẽ được tạo từ Zalo của bạn.
+        </p>
+        <button type="button" className="btn ghost" onClick={() => closeApp({}).catch(() => {})}>Đóng ứng dụng</button>
+        <button type="button" className="btn text" onClick={login}>Tạo tài khoản mới</button>
+      </div>
+    );
+  }
   if (auth.kind === "error") {
     return (
       <div className="center">
@@ -219,6 +233,13 @@ export function App() {
                   zaloOnly={auth.zaloOnly}
                   onLinked={login}
                   onRenamed={(name) => setAuth((a) => (a.kind === "ready" ? { ...a, name } : a))}
+                  onDeleted={() => {
+                    // KHÔNG tự đăng nhập lại: mở Mini App là Zalo cấp ngay một
+                    // tài khoản mới, người vừa xoá sẽ tưởng xoá không thành.
+                    void supabase.auth.signOut({ scope: "local" });
+                    setStack([{ kind: "clans" }]);
+                    setAuth({ kind: "deleted" });
+                  }}
                 />
               </div>
             </div>
