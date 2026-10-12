@@ -1,5 +1,6 @@
 import { pdf } from "@react-pdf/renderer";
 
+import type { BookWatermarkId } from "@/lib/pdf/bookWatermarks";
 import { ClanBookPdf } from "@/lib/pdf/ClanBookPdf";
 import { makeQrDataUrl } from "@/lib/cards/exportCard";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
@@ -15,9 +16,20 @@ export interface ExportClanBookOptions {
   /** Số thành viên ("lá") tối đa mỗi trang sơ đồ cây. Ít → thẻ to, dễ đọc;
    *  nhiều → gói được nhiều đời/người trên một trang. */
   treePerPage?: number;
-  /** Vẽ cả sơ đồ trên MỘT trang khổ tự tính thay vì tách nhiều trang A4. */
+  /** Vẽ cả sơ đồ trên MỘT trang khổ tự tính (mặc định); false = tách
+   *  nhiều trang A4 theo đời. */
   treeSinglePage?: boolean;
+  /** Hình nền mờ in chìm dưới mọi trang. Bỏ trống = phượng (mặc định);
+   *  null = không có hình nền. */
+  watermark?: BookWatermarkId | null;
 }
+
+/**
+ * Mặc định đặt Ở ĐÂY chứ không ở từng nút bấm: sổ xuất từ trang Cây, từ
+ * Dashboard hay từ nút "Xuất sổ gia phả PDF" phải ra cùng một kiểu, nếu
+ * không người dùng bấm hai chỗ sẽ nhận hai cuốn khác nhau.
+ */
+const DEFAULT_WATERMARK: BookWatermarkId = "phoenix";
 
 /**
  * Fetch clan data, render the React-PDF document to a Blob, and trigger
@@ -51,7 +63,14 @@ export async function downloadClanBookPdf(
     <ClanBookPdf
       clan={clan}
       data={data}
-      include={options}
+      include={{
+        ...options,
+        treeSinglePage: options.treeSinglePage ?? true,
+        watermark:
+          options.watermark === undefined
+            ? DEFAULT_WATERMARK
+            : (options.watermark ?? undefined),
+      }}
       photoByPersonId={photoByPersonId}
       coverByItemId={coverByItemId}
       coverQrDataUri={coverQrDataUri}
