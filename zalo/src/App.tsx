@@ -21,6 +21,7 @@ import { PersonScreen } from "./screens/Person";
 import { listenBack, pushBack } from "./nav";
 import { scrollTopScreen } from "./scroll";
 import { ClanScreen } from "./screens/Clan";
+import { EditPersonScreen } from "./screens/EditPerson";
 
 /**
  * Khung của Mini App: tự đăng nhập bằng Zalo rồi điều hướng giữa ba màn
@@ -34,7 +35,8 @@ import { ClanScreen } from "./screens/Clan";
 type Screen =
   | { kind: "clans" }
   | { kind: "tree"; clan: ClanSummary }
-  | { kind: "person"; clan: ClanSummary; personId: string };
+  | { kind: "person"; clan: ClanSummary; personId: string }
+  | { kind: "edit"; clan: ClanSummary; personId: string };
 
 /**
  * Không phải thành viên (họ công khai ở mục Cộng đồng) thì đọc qua bản đã
@@ -94,6 +96,8 @@ export function App() {
   const [stack, setStack] = useState<Screen[]>([{ kind: "clans" }]);
   const [tab, setTab] = useState<Tab>("clans");
   const [leaving, setLeaving] = useState(false);
+  // Tăng sau mỗi lần lưu, để màn hồ sơ bên dưới tải lại dữ liệu mới.
+  const [rev, setRev] = useState(0);
 
   const login = () => {
     setAuth({ kind: "loading" });
@@ -147,7 +151,9 @@ export function App() {
       ? TABS.find((t) => t.id === tab)!.title
       : top.kind === "tree"
         ? top.clan.name
-        : "Hồ sơ";
+        : top.kind === "edit"
+          ? "Sửa hồ sơ"
+          : "Hồ sơ";
   const canGoBack = stack.length > 1;
   useEffect(() => {
     // Ngoài Zalo (giả lập máy tính) hai lệnh này không có gì để điều khiển.
@@ -258,7 +264,24 @@ export function App() {
               personId={s.personId}
               source={sourceOf(s.clan)}
               genOffset={s.clan.generation_offset ?? 0}
+              rev={rev}
+              // Quyền sửa do cơ sở dữ liệu kiểm; ở đây chỉ để khỏi bày nút
+              // cho người chắc chắn không sửa được.
+              onEdit={
+                s.clan.role === "admin" || s.clan.role === "editor"
+                  ? () => push({ kind: "edit", clan: s.clan, personId: s.personId })
+                  : undefined
+              }
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
+            />
+          )}
+          {s.kind === "edit" && (
+            <EditPersonScreen
+              personId={s.personId}
+              onSaved={() => {
+                setRev((n) => n + 1);
+                window.history.back();
+              }}
             />
           )}
         </div>
