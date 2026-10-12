@@ -25,6 +25,11 @@ import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import {
+  BOOK_WATERMARKS,
+  type BookWatermarkId,
+} from "@/lib/pdf/bookWatermarks";
+
 // Lazy — kéo cả three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
 // Cây thư mục nhẹ (không kéo three.js) nhưng vẫn tách chunk cho đồng bộ.
 const TreeFolderView = lazy(() =>
@@ -1789,7 +1794,8 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const [open, setOpen] = useState(false);
   const [perPage, setPerPage] = useState(24);
   const [folderTree, setFolderTree] = useState(true);
-  const [singlePage, setSinglePage] = useState(false);
+  const [singlePage, setSinglePage] = useState(true);
+  const [watermark, setWatermark] = useState<BookWatermarkId | "">("phoenix");
 
   async function doExport() {
     if (busy) return;
@@ -1803,6 +1809,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         treePerPage: perPage,
         treeSinglePage: singlePage,
         folderTree,
+        watermark: watermark || null,
       });
       track("export", { kind: "clan_book_pdf", from: "tree" });
       toast.success("Đã tải sổ PDF");
@@ -1846,8 +1853,8 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
               aria-label="Cách trình bày sơ đồ cây"
               className="h-9 text-sm"
             >
+              <option value="single">Một trang lớn chứa cả cây (mặc định)</option>
               <option value="paged">Tách nhiều trang A4 theo đời</option>
-              <option value="single">Một trang lớn chứa cả cây</option>
             </Select>
             {singlePage && (
               <p className="text-[11px] leading-relaxed text-muted-foreground">
@@ -1893,6 +1900,23 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
                 </span>
               </span>
             </label>
+            <p className="pt-1 text-sm font-medium">Hình nền mờ</p>
+            <Select
+              value={watermark}
+              onChange={(e) =>
+                setWatermark(e.target.value as BookWatermarkId | "")
+              }
+              icon={<IconGrid />}
+              aria-label="Hình nền mờ của sổ"
+              className="h-9 text-sm"
+            >
+              <option value="">Không có</option>
+              {Object.entries(BOOK_WATERMARKS).map(([id, w]) => (
+                <option key={id} value={id}>
+                  {w.label}
+                </option>
+              ))}
+            </Select>
             <Button size="sm" className="w-full" onClick={doExport} disabled={busy}>
               <IconDownload className="h-4 w-4 mr-1.5" />
               Tải PDF

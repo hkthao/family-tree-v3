@@ -12,6 +12,8 @@ import {
   View,
 } from "@react-pdf/renderer";
 
+import { createContext, useContext } from "react";
+
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import { HONOR_CATEGORY_LABEL, type HonorCategory } from "@/lib/queries/honor";
@@ -24,6 +26,7 @@ import {
   formatLunarDate,
 } from "@/lib/lunarDate";
 
+import { BOOK_WATERMARKS, type BookWatermarkId } from "./bookWatermarks";
 import { renderFolderTreePages } from "./FolderTreePdf";
 import { buildFolderPdfRows, type FolderPdfPerson } from "./folderTreeRows";
 import { ensurePdfFontRegistered, PDF_FONT_FAMILY } from "./registerFont";
@@ -304,6 +307,34 @@ function midOrnament(
   );
 }
 
+// ─── Hình nền mờ (tuỳ chọn) ────────────────────────────────────────
+
+/**
+ * Hình nền của sổ đang dựng. Để trong context vì mọi trang đều vẽ
+ * VineBorder, mà truyền tay một prop qua hơn chục chỗ gọi (và cả các
+ * file trang khác) thì thế nào cũng sót một trang.
+ */
+export const WatermarkContext = createContext<{
+  src: string;
+  ratio: number;
+  opacity: number;
+} | null>(null);
+
+/**
+ * Hình nền luôn là MỘT hình ở chính giữa trang, kể cả trang khổ tự tính
+ * rất rộng hay rất dài: lặp lại nhiều lần thì thành giấy dán tường, rối
+ * mắt và tranh chỗ với sơ đồ. Co theo cạnh ngắn hơn của trang.
+ */
+function watermarkBox(
+  width: number,
+  height: number,
+  ratio: number,
+): { left: number; top: number; w: number; h: number } {
+  const w = Math.min(width * 0.72, height * 0.72 * ratio);
+  const h = w / ratio;
+  return { left: (width - w) / 2, top: (height - h) / 2, w, h };
+}
+
 export function VineBorder({
   width = PAGE_W,
   height = PAGE_H,
@@ -311,6 +342,7 @@ export function VineBorder({
   width?: number;
   height?: number;
 } = {}) {
+  const watermark = useContext(WatermarkContext);
   return (
     <View
       style={{
@@ -322,6 +354,23 @@ export function VineBorder({
       }}
       fixed
     >
+      {watermark &&
+        (() => {
+          const t = watermarkBox(width, height, watermark.ratio);
+          return (
+            <Image
+              src={watermark.src}
+              style={{
+                position: "absolute",
+                left: t.left,
+                top: t.top,
+                width: t.w,
+                height: t.h,
+                opacity: watermark.opacity,
+              }}
+            />
+          );
+        })()}
       <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
         {/* Outer red rectangle */}
         <Rect
@@ -386,6 +435,8 @@ interface Props {
     treePerPage?: number;
     /** Vẽ CẢ sơ đồ trên một trang khổ tự tính thay vì tách nhiều trang A4. */
     treeSinglePage?: boolean;
+    /** Hình nền mờ in chìm dưới mọi trang; bỏ trống = không có. */
+    watermark?: BookWatermarkId;
   };
   /**
    * Optional personId → JPEG data URI map for embedding real avatar
@@ -633,6 +684,9 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       author="Dòng Họ Việt"
       subject={`Sổ gia phả dòng họ ${cleanName}`}
     >
+      <WatermarkContext.Provider
+        value={include?.watermark ? BOOK_WATERMARKS[include.watermark] : null}
+      >
       {/* ─── Cover ──────────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
         <VineBorder />
@@ -936,6 +990,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           })}
         </Page>
       )}
+      </WatermarkContext.Provider>
     </Document>
   );
 }
