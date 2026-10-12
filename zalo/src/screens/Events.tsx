@@ -68,7 +68,7 @@ export function EventItem({
   return (
     <button
       type="button"
-      className={`card ev ${variant}${today ? " today" : ""}`}
+      className={`card ev${variant === "card" ? " col" : ""}${today ? " today" : ""}`}
       disabled={!e.personId}
       onClick={() => e.personId && openPerson(e.personId)}
     >

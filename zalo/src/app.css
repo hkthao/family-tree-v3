@@ -310,10 +310,12 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
 .evwhen { flex:none; font-size:13.5px; color:var(--muted); white-space:nowrap; }
 .evwhen.soon { color:var(--accent); font-weight:500; } .evwhen.now { color:var(--primary); font-weight:600; }
 .evgrid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.ev.card { flex-direction:column; align-items:stretch; gap:8px; margin:0; height:100%; }
+/* Kiểu dọc cho lưới. KHÔNG đặt tên lớp là "card": mọi thẻ đã mang lớp
+   .card chung, nên ".ev.card" ăn vào cả kiểu danh sách (lỗi dính thẻ). */
+.ev.col { flex-direction:column; align-items:stretch; gap:8px; margin:0; height:100%; }
 .evtop { display:flex; align-items:flex-start; justify-content:space-between; gap:6px; }
-.ev.card .evday { width:46px; padding:4px 0; background:color-mix(in srgb, var(--soft) 60%, transparent); }
-.ev.card .evwhen { font-size:12px; }
+.ev.col .evday { width:46px; padding:4px 0; background:color-mix(in srgb, var(--soft) 60%, transparent); }
+.ev.col .evwhen { font-size:12px; }
 .cevent { padding:10px 0; } .cevent + .cevent { border-top:1px solid var(--line); }
 .cevent b { display:block; font-size:15.5px; font-weight:600; }
 .empty b { display:block; margin-top:6px; }
