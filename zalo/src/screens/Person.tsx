@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { IconArrowRight } from "@/components/icons";
 import { openWebview } from "zmp-sdk";
 
 import { displayGenLabel } from "@/lib/displayGeneration";
@@ -86,7 +87,7 @@ export function PersonScreen({
                 <b>{r.full_name}</b>
                 <span className="muted">{r.gender === "M" ? "Nam" : "Nữ"}{!r.is_living && " · đã mất"}</span>
               </span>
-              <span className="go">›</span>
+              <span className="go"><IconArrowRight /></span>
             </button>
           ))}
         </div>

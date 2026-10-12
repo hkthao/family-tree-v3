@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { IconBuildings, IconLink } from "@/components/icons";
 import { formatDate, formatRelative } from "@/lib/formatDate";
 import {
   getClansInlawLinks,
@@ -66,9 +67,7 @@ export function ClansScreen({
   return (
     <div className="page">
       <div className="pagehead">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M10 21v-6h4v6" />
-        </svg>
+        <IconBuildings />
         <div>
           <h2>Tất cả dòng họ</h2>
           <p className="muted">
@@ -141,7 +140,7 @@ export function ClansScreen({
                 Tạo {formatDate(c.created_at)} • Cập nhật {formatRelative(c.updated_at)}
               </span>
               {inlaws.length > 0 && (
-                <span className="line">🔗 Thông gia: {inlaws.map((x: { clan_name: string }) => x.clan_name).join(", ")}</span>
+                <span className="line"><IconLink className="ic" /> Thông gia: {inlaws.map((x: { clan_name: string }) => x.clan_name).join(", ")}</span>
               )}
               {gens ? (
                 <span className="tags">
