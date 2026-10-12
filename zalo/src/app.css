@@ -344,15 +344,13 @@ html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
 .screen.under { pointer-events:none; }
 .screen.top { z-index:2; box-shadow:-8px 0 24px rgba(0,0,0,.18); }
 .screen.in { animation:slideIn 240ms cubic-bezier(.22,.8,.3,1); }
-.screen.out { animation:slideOut 240ms cubic-bezier(.4,0,.8,.4) both; pointer-events:none; }
 @keyframes slideIn { from { transform:translateX(100%); } to { transform:none; } }
-@keyframes slideOut { from { transform:none; } to { transform:translateX(100%); } }
 /* Đổi tab: nội dung hiện dần thay vì nhảy bụp. */
 .tabpane { animation:fadeIn 160ms ease both; }
 @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
 /* Người bật "giảm chuyển động" trong máy thì bỏ hết hiệu ứng. */
 @media (prefers-reduced-motion: reduce) {
-  .screen.in, .screen.out, .tabpane { animation:none; }
+  .screen.in, .tabpane { animation:none; }
 }
 /* Nút "Quay lại" khi lập trình: nổi cố định, màn hình con chừa chỗ cho nó. */
 .devbar { position:fixed; top:0; left:0; right:0; z-index:20; }

@@ -52,9 +52,6 @@ type Screen =
 const sourceOf = (clan: ClanSummary) =>
   clan.role ? ("persons" as const) : ("persons_public_safe" as const);
 
-/** Thời gian trượt màn hình — phải khớp với `.screen.in/.out` trong app.css. */
-const SLIDE_MS = 240;
-
 type Tab = "clans" | "anniv" | "account";
 
 const TABS: { id: Tab; label: string; title: string; icon: JSX.Element }[] = [
@@ -101,7 +98,6 @@ export function App() {
   const [auth, setAuth] = useState<Auth>({ kind: "loading" });
   const [stack, setStack] = useState<Screen[]>([{ kind: "clans" }]);
   const [tab, setTab] = useState<Tab>("clans");
-  const [leaving, setLeaving] = useState(false);
   // Tăng sau mỗi lần lưu, để màn hồ sơ bên dưới tải lại dữ liệu mới.
   const [rev, setRev] = useState(0);
 
@@ -140,15 +136,9 @@ export function App() {
   useEffect(listenBack, []);
   const push = (s: Screen) => {
     setStack((st) => [...st, s]);
-    pushBack(() => {
-      // Cho màn hình trên cùng TRƯỢT RA trước rồi mới gỡ khỏi chồng — gỡ
-      // ngay thì nó biến mất cái rụp, không ra dáng app.
-      setLeaving(true);
-      window.setTimeout(() => {
-        setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
-        setLeaving(false);
-      }, SLIDE_MS);
-    });
+    // Lùi thì gỡ màn hình NGAY, không hiệu ứng (chủ dự án yêu cầu): chỉ
+    // lúc mở màn hình mới mới trượt vào.
+    pushBack(() => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st)));
   };
 
   const top = stack[stack.length - 1];
@@ -214,13 +204,13 @@ export function App() {
       )}
       {stack.map((s, i) => {
         // Mỗi màn hình là một khung cuộn RIÊNG phủ kín màn hình, xếp chồng
-        // lên nhau: màn mới trượt vào từ phải, lùi thì trượt ra; màn bên
+        // lên nhau: màn mới trượt vào từ phải, lùi thì hiện ngay; màn bên
         // dưới giữ nguyên trạng thái lẫn vị trí cuộn. Chỉ hai màn trên cùng
         // được vẽ, các màn sâu hơn ẩn đi cho nhẹ máy.
         const fromTop = stack.length - 1 - i;
         const cls =
           fromTop === 0
-            ? `screen top${i > 0 ? (leaving ? " out" : " in") : ""}`
+            ? `screen top${i > 0 ? " in" : ""}`
             : fromTop === 1
               ? "screen under"
               : "screen hidden";
