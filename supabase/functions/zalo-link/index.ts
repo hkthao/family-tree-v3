@@ -1,7 +1,9 @@
 /**
  * zalo-link: gắn ID Zalo vào một tài khoản SẴN CÓ (đăng ký bằng email).
  *
- * Ngoài ra: "status" (Zalo này đang liên kết với email nào), "unlink" (bỏ
+ * Ngoài ra: "email-request"/"email-confirm" (đổi hoặc thêm email của chính
+ * tài khoản đang dùng, xác minh bằng mã gửi tới email mới), "status" (Zalo
+ * này đang liên kết với email nào), "unlink" (bỏ
  * liên kết — không xoá gì của tài khoản email), "forget" (dọn sau khi xoá
  * tài khoản).
  *
@@ -85,7 +87,11 @@ async function purgeSynthetic(sb: any, zaloId: string, keep: string | null): Pro
   return true;
 }
 
-async function sendCode(to: string, code: string): Promise<boolean> {
+async function sendCode(
+  to: string,
+  code: string,
+  what = "là mã liên kết Zalo của bạn",
+): Promise<boolean> {
   if (!SMTP_HOST || !SMTP_PASS) {
     console.error("zalo-link: thiếu cấu hình SMTP");
     return false;
@@ -102,10 +108,10 @@ async function sendCode(to: string, code: string): Promise<boolean> {
     await client.send({
       from: MAIL_FROM,
       to,
-      subject: encodeSubject(`${code} là mã liên kết Zalo của bạn`),
+      subject: encodeSubject(`${code} ${what}`),
       content: "auto",
       html:
-        `<p>Mã liên kết tài khoản Dòng Họ Việt với Zalo của bạn:</p>` +
+        `<p>Mã xác nhận cho tài khoản Dòng Họ Việt của bạn:</p>` +
         `<p style="font-size:28px;font-weight:700;letter-spacing:4px">${code}</p>` +
         `<p>Mã có hiệu lực trong 10 phút. Nếu bạn không yêu cầu, hãy bỏ qua thư này — ` +
         `không ai vào được tài khoản của bạn nếu không có mã.</p>`,
@@ -177,6 +183,9 @@ Deno.serve(async (req) => {
           {
             zalo_user_id: profile.id,
             user_id: userId,
+            // Xoá địa chỉ còn sót của một lần đổi email dở, để hai luồng
+            // không bao giờ dùng chung một dòng.
+            email: null,
             code_hash: await hashCode(profile.id, code),
             attempts: 0,
             expires_at: new Date(Date.now() + CODE_TTL_MS).toISOString(),
@@ -205,7 +214,8 @@ Deno.serve(async (req) => {
       .eq("zalo_user_id", profile.id)
       .maybeSingle();
     const bad = () => err("Mã không đúng hoặc đã hết hạn.", 400);
-    if (!row || new Date(row.expires_at).getTime() < Date.now()) return bad();
+    // Thiếu `user_id` là mã của luồng ĐỔI EMAIL — không dùng lẫn.
+    if (!row?.user_id || new Date(row.expires_at).getTime() < Date.now()) return bad();
     if (row.attempts >= MAX_ATTEMPTS) {
       await sb.from("zalo_link_codes").delete().eq("zalo_user_id", profile.id);
       return err("Nhập sai quá nhiều lần. Hãy xin mã mới.", 429);
@@ -248,6 +258,123 @@ Deno.serve(async (req) => {
       return err("Đã liên kết, nhưng chưa đăng nhập được. Hãy mở lại Mini App.", 500);
     }
     return json({ tokenHash });
+  }
+
+  // ─── Đổi / thêm email, bước 1: gửi mã tới email MỚI ────────────────
+  // Luôn gửi mã, kể cả khi địa chỉ đó đã là tài khoản khác: việc từ chối
+  // dời xuống bước 2, SAU khi người gọi chứng minh mình đọc được hộp thư —
+  // lúc đó nói "email này đã có tài khoản" không còn là lộ thông tin.
+  if (body.action === "email-request") {
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+      return err("Email không hợp lệ.", 400);
+    }
+    if (email.endsWith(`@${ZALO_SYNTHETIC_EMAIL_DOMAIN}`)) return err("Email không hợp lệ.", 400);
+
+    const { data: ident } = await sb
+      .from("zalo_identities")
+      .select("user_id")
+      .eq("zalo_user_id", profile.id)
+      .maybeSingle();
+    if (!ident) return err("Hãy mở lại Mini App để đăng nhập.", 401);
+
+    const { data: pending } = await sb
+      .from("zalo_link_codes")
+      .select("created_at")
+      .eq("zalo_user_id", profile.id)
+      .maybeSingle();
+    if (pending && Date.now() - new Date(pending.created_at).getTime() < RESEND_WAIT_MS) {
+      return err("Vừa gửi mã xong. Đợi một phút rồi thử lại.", 429);
+    }
+
+    const code = sixDigits();
+    const { error: upErr } = await sb.from("zalo_link_codes").upsert(
+      {
+        zalo_user_id: profile.id,
+        user_id: null,
+        email,
+        code_hash: await hashCode(profile.id, `email:${email}:${code}`),
+        attempts: 0,
+        expires_at: new Date(Date.now() + CODE_TTL_MS).toISOString(),
+        created_at: new Date().toISOString(),
+      },
+      { onConflict: "zalo_user_id" },
+    );
+    if (upErr) {
+      console.error("zalo-link: lưu mã đổi email:", upErr.message);
+      return err("Lỗi máy chủ. Thử lại sau.", 500);
+    }
+    if (!(await sendCode(email, code, "là mã xác nhận email của bạn"))) {
+      return err("Không gửi được thư. Kiểm tra lại địa chỉ rồi thử lại.", 502);
+    }
+    return json({ ok: true });
+  }
+
+  // ─── Đổi / thêm email, bước 2: đúng mã thì đổi ────────────────────
+  if (body.action === "email-confirm") {
+    const code = typeof body.code === "string" ? body.code.trim() : "";
+    if (!/^\d{6}$/.test(code)) return err("Mã gồm 6 chữ số.", 400);
+
+    const { data: row } = await sb
+      .from("zalo_link_codes")
+      .select("email, code_hash, attempts, expires_at")
+      .eq("zalo_user_id", profile.id)
+      .maybeSingle();
+    const bad = () => err("Mã không đúng hoặc đã hết hạn.", 400);
+    // Dòng không có `email` là mã của luồng LIÊN KẾT — không dùng lẫn.
+    if (!row?.email || new Date(row.expires_at).getTime() < Date.now()) return bad();
+    if (row.attempts >= MAX_ATTEMPTS) {
+      await sb.from("zalo_link_codes").delete().eq("zalo_user_id", profile.id);
+      return err("Nhập sai quá nhiều lần. Hãy xin mã mới.", 429);
+    }
+    if ((await hashCode(profile.id, `email:${row.email}:${code}`)) !== row.code_hash) {
+      await sb.from("zalo_link_codes").update({ attempts: row.attempts + 1 }).eq("zalo_user_id", profile.id);
+      return bad();
+    }
+
+    const { data: ident } = await sb
+      .from("zalo_identities")
+      .select("user_id")
+      .eq("zalo_user_id", profile.id)
+      .maybeSingle();
+    if (!ident) return err("Hãy mở lại Mini App để đăng nhập.", 401);
+
+    const { data: owner, error: findErr } = await sb.rpc("zalo_find_user_id_by_email", {
+      p_email: row.email,
+    });
+    if (findErr) {
+      console.error("zalo-link: tra email:", findErr.message);
+      return err("Lỗi máy chủ. Thử lại sau.", 500);
+    }
+    if (owner && owner !== ident.user_id) {
+      await sb.from("zalo_link_codes").delete().eq("zalo_user_id", profile.id);
+      return err(
+        "Email này đã thuộc về một tài khoản khác. Nếu đó là tài khoản của bạn, hãy dùng mục liên kết tài khoản.",
+        409,
+      );
+    }
+
+    const { error: updErr } = await sb.auth.admin.updateUserById(ident.user_id, {
+      email: row.email,
+      email_confirm: true,
+    });
+    if (updErr) {
+      console.error("zalo-link: đổi email:", updErr.message);
+      return err("Không đổi được email. Thử lại sau.", 500);
+    }
+    await sb.from("zalo_link_codes").delete().eq("zalo_user_id", profile.id);
+
+    // Phiên cũ còn mang email cũ: cấp token để Mini App nhận phiên mới.
+    const { data: gen, error: genErr } = await sb.auth.admin.generateLink({
+      type: "magiclink",
+      email: row.email,
+    });
+    const tokenHash = gen?.properties?.hashed_token;
+    if (genErr || !tokenHash) {
+      console.error("zalo-link: generateLink sau đổi email:", genErr?.message ?? "thiếu token");
+      return json({ email: row.email, tokenHash: null });
+    }
+    return json({ email: row.email, tokenHash });
   }
 
   // ─── Trạng thái liên kết (cho màn Tài khoản) ──────────────────────
