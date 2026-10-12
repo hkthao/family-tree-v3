@@ -24,6 +24,7 @@ import {
 } from "@/lib/upcomingEvents";
 
 import { useAsync } from "../useAsync";
+import { EventItem, EventsScreen } from "./Events";
 import { PeopleScreen } from "./People";
 import { TreeTab } from "./TreeTab";
 
@@ -45,13 +46,6 @@ const TABS: { id: Tab; label: string; Icon: typeof IconHome }[] = [
 ];
 
 const WEEKDAY = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
-const KIND: Record<UpcomingEvent["kind"], string> = {
-  birthday: "Sinh nhật",
-  anniversary: "Ngày giỗ",
-  custom: "Sự kiện",
-  tomb_visit: "Tảo mộ",
-  festival: "Lễ tiết",
-};
 const localIso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
@@ -80,25 +74,6 @@ async function loadUpcoming(clan: ClanSummary, source: TreeSource): Promise<Upco
       generationOffset: clan.generation_offset ?? 0,
     }),
   ].sort((a, b) => a.daysUntil - b.daysUntil);
-}
-
-function EventRowView({ e, openPerson }: { e: UpcomingEvent; openPerson: (id: string) => void }) {
-  const [, m, d] = e.date.split("-");
-  return (
-    <button type="button" className="rel" disabled={!e.personId} onClick={() => e.personId && openPerson(e.personId)}>
-      <span className={`days${e.daysUntil <= 7 ? " soon" : ""}`}>
-        <small>TH{Number(m)}</small>
-        <b>{Number(d)}</b>
-      </span>
-      <span style={{ minWidth: 0 }}>
-        <b>{e.title}</b>
-        <span className="muted">{[KIND[e.kind], e.subtitle].filter(Boolean).join(" · ")}</span>
-      </span>
-      <span className="muted" style={{ marginLeft: "auto", whiteSpace: "nowrap" }}>
-        {e.daysUntil === 0 ? "Hôm nay" : e.daysUntil === 1 ? "Ngày mai" : `Còn ${e.daysUntil} ngày`}
-      </span>
-    </button>
-  );
 }
 
 function Overview({
@@ -197,8 +172,8 @@ function Overview({
         <div className="card empty"><p className="muted" style={{ margin: 0 }}>Chưa có sinh nhật hay ngày giỗ nào sắp tới.</p></div>
       )}
       {top5.length > 0 && (
-        <div className="card rels">
-          {top5.map((e) => <EventRowView key={e.key} e={e} openPerson={openPerson} />)}
+        <div>
+          {top5.map((e) => <EventItem key={e.key} e={e} openPerson={openPerson} />)}
         </div>
       )}
 
@@ -226,37 +201,6 @@ function Overview({
             <span><b>{s.living}</b> Còn sống</span>
             <span><b>{s.deceased}</b> Đã mất</span>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Events({
-  upcoming,
-  openPerson,
-}: {
-  upcoming: ReturnType<typeof useAsync<UpcomingEvent[]>>;
-  openPerson: (id: string) => void;
-}) {
-  const rows = upcoming.data ?? [];
-  return (
-    <div className="page">
-      <div className="pagehead">
-        <IconCalendar />
-        <div>
-          <h2>Sự kiện</h2>
-          <p className="muted">Sinh nhật, ngày giỗ và sự kiện của dòng họ trong một năm tới.</p>
-        </div>
-      </div>
-      {upcoming.loading && [0, 1, 2, 3].map((i) => <div key={i} className="sk" style={{ height: 60, marginBottom: 6 }} />)}
-      {upcoming.error && <p className="error">{upcoming.error}</p>}
-      {!upcoming.loading && rows.length === 0 && (
-        <div className="card empty"><div className="icon"><IconCalendar /></div><p className="muted">Chưa có sự kiện nào sắp tới.</p></div>
-      )}
-      {rows.length > 0 && (
-        <div className="card rels">
-          {rows.map((e) => <EventRowView key={e.key} e={e} openPerson={openPerson} />)}
         </div>
       )}
     </div>
@@ -301,7 +245,7 @@ export function ClanScreen({
       )}
       {seen.has("events") && (
         <div style={show("events")}>
-          <Events upcoming={upcoming} openPerson={openPerson} />
+          <EventsScreen clan={clan} upcoming={upcoming} openPerson={openPerson} />
         </div>
       )}
 
