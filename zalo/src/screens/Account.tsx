@@ -368,7 +368,7 @@ function LinkedAccounts({ email, onUnlinked }: { email: string | null; onUnlinke
                 dữ liệu của nó vẫn nguyên, đăng nhập trên web như cũ.
               </p>
               <div style={{ display: "flex", gap: 8 }}>
-                <button type="button" className="btn ghost" style={{ flex: 1 }} disabled={save.busy} onClick={() => setConfirming(false)}>Huỷ</button>
+                <button type="button" className="btn neutral" style={{ flex: 1 }} disabled={save.busy} onClick={() => setConfirming(false)}>Huỷ</button>
                 <button
                   type="button"
                   className="btn danger"

@@ -458,9 +458,38 @@ html.dark .dangertext { color:#F0786E; }
 .btn.sm::before { content:""; position:absolute; inset:-4px 0; }
 .btn.sm svg { width:15px; height:15px; color:var(--primary); }
 /* Hành động nguy hiểm dạng chữ, đứng riêng cuối trang. */
-.btn.dangerlink { background:transparent; color:#C5392F; font-weight:500; margin-top:8px; }
-html.dark .btn.dangerlink { color:#F0786E; }
-.btn.dangerlink svg { width:16px; height:16px; }
 .dangerpane { border-color:color-mix(in srgb, #C5392F 45%, var(--line)); margin-top:8px; }
 .phead > div { flex:1; }
 .relgroup h4 { min-height:36px; }
+
+/* ═══ Nút theo bộ nút chuẩn của Zalo (ZaUI Button) ════════════════════
+   Lấy từ zmp-ui/zaui.css: ba cỡ 48 / 40 / 32px, ba
+   mức nhấn — chính (nền đặc), phụ (nền nhạt + chữ màu), chữ (không nền) —
+   và các biến thể "nguy hiểm" dùng đỏ #dc1f18 của Zalo, "trung tính" dùng
+   xám. Màu nhấn thường giữ đỏ rượu vang của thương hiệu.
+   KHÁC Zalo một điểm, theo ý chủ dự án: góc bo 8px như phần còn lại của
+   app, không bo tròn hẳn (48px) như nút gốc của ZaUI — "bo tròn quá". */
+.btn { border-radius:8px; min-height:48px; padding:12px 24px; font-size:16px; font-weight:500; gap:8px; border:0; }
+.btn svg { width:18px; height:18px; flex:none; }
+.btn:disabled { background:#d6d9dc; color:#b9bdc1; opacity:1; }
+html.dark .btn:disabled { background:#3a332d; color:#7d7468; }
+/* Phụ (secondary highlight). */
+.btn.ghost { background:var(--primary-soft); color:var(--primary); }
+/* Phụ trung tính: Huỷ, Đóng. */
+.btn.neutral, .btn.outline { background:#e9ebed; color:#141415; border:0; }
+html.dark .btn.neutral, html.dark .btn.outline { background:var(--soft); color:var(--ink); }
+/* Chữ (tertiary). */
+.btn.text { background:transparent; color:var(--primary); padding:0 8px; border-radius:8px; }
+.btn.text:disabled { background:transparent; }
+/* Nguy hiểm: chính (xác nhận xoá) và phụ (nút mở đầu việc xoá). */
+.btn.danger { background:#dc1f18; color:#fff; }
+.btn.danger2 { background:#fed8d7; color:#dc1f18; }
+html.dark .btn.danger2 { background:rgba(220,31,24,.2); color:#ff7a73; }
+/* Cỡ nhỏ 32px (vùng chạm vẫn 44px nhờ lớp ::before). */
+.btn.sm { min-height:32px; height:32px; padding:0 16px; font-size:14px; font-weight:500; gap:6px; }
+.btn.sm::before { inset:-6px 0; }
+.btn.sm svg { width:15px; height:15px; color:inherit; }
+.addbtn { border-radius:8px; }
+/* Hai nút cạnh nhau trong khối xác nhận dùng cỡ vừa 40px. */
+.dangerpane .btn, .growbody .btn, .grow > div > .btn { min-height:40px; padding:8px 16px; }
+.dangerpane { border-color:color-mix(in srgb, #dc1f18 40%, var(--line)); }

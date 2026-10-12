@@ -121,7 +121,7 @@ export function PersonScreen({
       <h4 className="sec-row">
         {label}
         {add && onAdd && (
-          <button type="button" className="btn outline sm" onClick={() => onAdd(add)}>
+          <button type="button" className="btn ghost sm" onClick={() => onAdd(add)}>
             <IconPlus />
             Thêm
           </button>
@@ -170,7 +170,7 @@ export function PersonScreen({
         {/* Nút Sửa nằm cạnh tên, không còn là thanh to dính đáy đè lên nội
             dung khi cuộn. */}
         {onEdit && (
-          <button type="button" className="btn outline sm" onClick={onEdit}>
+          <button type="button" className="btn ghost sm" onClick={onEdit}>
             <IconPencil />
             Sửa
           </button>
@@ -233,7 +233,7 @@ export function PersonScreen({
             </p>
             {deleteError && <p className="error">{deleteError}</p>}
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <button type="button" className="btn outline" style={{ flex: 1 }} disabled={deleting} onClick={() => setConfirmDelete(false)}>Huỷ</button>
+              <button type="button" className="btn neutral" style={{ flex: 1 }} disabled={deleting} onClick={() => setConfirmDelete(false)}>Huỷ</button>
               <button
                 type="button"
                 className="btn danger"
@@ -255,9 +255,9 @@ export function PersonScreen({
             </div>
           </section>
         ) : (
-          <button type="button" className="btn dangerlink block" onClick={() => setConfirmDelete(true)}>
+          <button type="button" className="btn danger2 block" style={{ marginTop: 8 }} onClick={() => setConfirmDelete(true)}>
             <IconTrash />
-            Xoá người này
+            Xoá
           </button>
         ))}
     </div>
