@@ -2,12 +2,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
+import { unaccent } from "@/lib/unaccent";
 import {
   buildFolderNode,
   toFolderChild,
   toFolderSpouse,
   type FolderChild,
   type FolderNodeContent,
+  type FolderSearchHit,
   type FolderSpouse,
 } from "@/lib/tree/folderModel";
 import type {
@@ -272,6 +274,84 @@ export async function loadFolderRoots(
     }),
     orphanCount: (count as number) ?? 0,
   };
+}
+
+/**
+ * Tìm người theo tên trong cả dòng họ.
+ *
+ * Cây thư mục chỉ tải nhánh đang mở, nên Ctrl+F của trình duyệt không
+ * thấy người ở nhánh chưa bung — phải hỏi máy chủ. Kèm tên cha mẹ vì
+ * trong một họ lớn, "Lê Văn Hùng" có cả chục người; không biết con ai
+ * thì kết quả tìm cũng vô dụng.
+ *
+ * Tìm trên `full_name_unaccent` (không phải `search_text`): ở đây người
+ * ta dò TÊN, gõ "Năm" mà ra cả người có tiểu sử nhắc "năm 1954" là nhiễu.
+ */
+export async function loadFolderSearch(
+  clanId: string,
+  search: string,
+  source: TreeSource = "persons",
+  client: Client = defaultClient,
+  limit = 30,
+): Promise<FolderSearchHit[]> {
+  const needle = unaccent(search).trim();
+  if (!needle) return [];
+
+  const { data, error } = await personsFrom(client, source, clanId)
+    .ilike("full_name_unaccent", `%${needle}%`)
+    .order("generation", { ascending: true, nullsFirst: false })
+    .order("full_name_unaccent", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as PersonForTree[];
+  if (rows.length === 0) return [];
+
+  const famIds = [
+    ...new Set(rows.map((r) => r.birth_family_id).filter((x): x is string => !!x)),
+  ];
+  const [extras, famRes] = await Promise.all([
+    loadRowExtras(
+      clanId,
+      rows.map((r) => r.id),
+      source,
+      client,
+    ),
+    famIds.length
+      ? familiesFrom(client, source, clanId).in("id", famIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (famRes.error) throw new Error(famRes.error.message);
+  const fams = (famRes.data ?? []) as FamilyForTree[];
+
+  const parentIds = [
+    ...new Set(
+      fams.flatMap((f) => [f.husband_id, f.wife_id]).filter((x): x is string => !!x),
+    ),
+  ];
+  const nameById = new Map<string, string>();
+  if (parentIds.length) {
+    const { data: parents, error: pErr } = await personsFrom(
+      client,
+      source,
+      clanId,
+    ).in("id", parentIds);
+    if (pErr) throw new Error(pErr.message);
+    for (const p of (parents ?? []) as PersonForTree[]) {
+      nameById.set(p.id, p.full_name);
+    }
+  }
+  const famById = new Map(fams.map((f) => [f.id, f]));
+
+  return rows.map((r) => {
+    const ex = extras.get(r.id);
+    const fam = r.birth_family_id ? famById.get(r.birth_family_id) : undefined;
+    return {
+      person: toFolderChild(r, ex?.hasChildren ?? false, ex?.spouses ?? []),
+      parentNames: [fam?.husband_id, fam?.wife_id]
+        .map((id) => (id ? nameById.get(id) : undefined))
+        .filter((n): n is string => !!n),
+    };
+  });
 }
 
 /** Danh sách người chưa gắn vào cây, phân trang. */
