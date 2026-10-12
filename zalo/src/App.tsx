@@ -16,7 +16,7 @@ import { AccountScreen } from "./screens/Account";
 import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
-import { TreeScreen } from "./screens/Tree";
+import { ClanScreen } from "./screens/Clan";
 
 /**
  * Khung của Mini App: tự đăng nhập bằng Zalo rồi điều hướng giữa ba màn
@@ -197,10 +197,9 @@ export function App() {
             </div>
           )}
           {s.kind === "tree" && (
-            <TreeScreen
-              clanId={s.clan.id}
+            <ClanScreen
+              clan={s.clan}
               source={sourceOf(s.clan)}
-              genOffset={s.clan.generation_offset ?? 0}
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
             />
           )}
