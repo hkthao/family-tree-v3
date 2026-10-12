@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { openWebview } from "zmp-sdk";
 
-import { IconArrowRight, IconChevronDown } from "@/components/icons";
+import { IconChevronDown } from "@/components/icons";
 import {
   countMyBlockingClans,
   deleteMyAccount,
@@ -134,7 +134,7 @@ function Password() {
     <ExpandRow label="Mật khẩu" value="Đổi">
       {() => (
         <form onSubmit={submit}>
-          <p className="note" style={{ marginTop: 0 }}>Ít nhất 8 ký tự. Dùng để đăng nhập trên bản web.</p>
+          <p className="note" style={{ marginTop: 0 }}>Ít nhất 8 ký tự. Dùng khi đăng nhập bằng email.</p>
           <input className="field" type="password" autoComplete="new-password" placeholder="Mật khẩu mới" aria-label="Mật khẩu mới" value={pw} onChange={(e) => setPw(e.target.value)} />
           {tooShort && <p className="error" style={{ margin: "4px 0 0", fontSize: 12 }}>Mật khẩu cần ít nhất 8 ký tự.</p>}
           <input className="field" style={{ marginTop: 8 }} type="password" autoComplete="new-password" placeholder="Nhập lại mật khẩu mới" aria-label="Xác nhận mật khẩu mới" value={pw2} onChange={(e) => setPw2(e.target.value)} />
@@ -216,7 +216,7 @@ function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
     <>
       <p className="note" style={{ marginTop: 0 }}>
         Hành động này không thể hoàn tác. Nếu bạn đang sở hữu dòng họ có thành
-        viên, hãy chuyển quyền hoặc xoá dòng họ trước (trên bản web).
+        viên, hãy chuyển quyền hoặc xoá dòng họ trước.
       </p>
       {blocking.error && <p className="error">{blocking.error}</p>}
       {blocked && (
@@ -424,24 +424,21 @@ export function AccountScreen({
         </div>
       </Group>
 
-      <Group title="Bản web đầy đủ">
-        <div className="grow">
-          <button type="button" className="growhead" onClick={() => openWebview({ url: "https://giapha.thaohk.com/account" })}>
-            <span>Mở giapha.thaohk.com</span>
-            <span className="val" />
-            <span className="go"><IconArrowRight /></span>
-          </button>
-        </div>
-      </Group>
-      <p className="note" style={{ margin: "8px 4px 0" }}>
-        Đổi email, thêm và sửa thành viên, xuất sổ PDF… làm trên bản web.
-      </p>
-
       <Group title="Vùng nguy hiểm">
         <ExpandRow label="Xoá tài khoản" danger>
           {() => <DeleteAccount onDeleted={onDeleted} />}
         </ExpandRow>
       </Group>
+
+      {/* Liên kết DUY NHẤT ra ngoài của cả app, để kín ở cuối màn Tài khoản:
+          tiêu chí duyệt của Zalo không cho Mini App mời người dùng sang
+          ứng dụng/trang riêng. */}
+      <p className="note" style={{ margin: "16px 4px 0", textAlign: "center" }}>
+        Dòng Họ Việt cũng có trên{" "}
+        <button type="button" className="btn text" style={{ display: "inline", padding: 0, fontSize: "inherit" }} onClick={() => openWebview({ url: "https://giapha.thaohk.com" })}>
+          giapha.thaohk.com
+        </button>
+      </p>
     </div>
   );
 }

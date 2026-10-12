@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { openWebview } from "zmp-sdk";
 
 import { IconArrowRight } from "@/components/icons";
 import { computeLifespanYears, lifespanLabel } from "@/lib/lifespan";
@@ -16,13 +15,11 @@ import { usePhotoUrls } from "../photos";
 import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 
-const WEB = "https://giapha.thaohk.com";
-
 /**
  * Hồ sơ một người — dựng theo trang chi tiết của bản web: đường dẫn, đầu
  * trang (ảnh + tên + "Thuỷ tổ • Đời N • đã mất"), thẻ "Thông tin cơ bản"
- * với đúng các dòng và thứ tự của web, rồi thẻ "Quan hệ". Chỉ xem; sửa
- * thì mở bản web.
+ * với đúng các dòng và thứ tự của web, rồi thẻ "Quan hệ". Người có quyền
+ * thì sửa, thêm vợ/chồng/con và xoá ngay tại đây.
  */
 
 /** Một dòng thông tin: nhãn nhỏ ở trên, giá trị ở dưới. Trống thì bỏ cả dòng. */
@@ -213,21 +210,13 @@ export function PersonScreen({
         </section>
       )}
 
-      <div className="cta">
-        {onEdit && (
-          <button type="button" className="btn block" style={{ marginBottom: 8 }} onClick={onEdit}>
+      {onEdit && (
+        <div className="cta">
+          <button type="button" className="btn block" onClick={onEdit}>
             Sửa thông tin
           </button>
-        )}
-        {/* Ảnh, quan hệ, mộ phần… vẫn sửa ở bản web. */}
-        <button
-          type="button"
-          className="btn ghost block"
-          onClick={() => openWebview({ url: `${WEB}/clans/${clanId}/people/${personId}` })}
-        >
-          Mở trên bản web đầy đủ
-        </button>
-      </div>
+        </div>
+      )}
 
       {onDeleted && (
         <section className="card pane" style={{ marginTop: 16 }}>
@@ -235,8 +224,8 @@ export function PersonScreen({
             <>
               <b style={{ display: "block", fontSize: 15 }}>Xoá {p.full_name}?</b>
               <p className="note" style={{ marginTop: 4 }}>
-                Người này sẽ biến khỏi cây và danh bạ. Có thể khôi phục từ nhật
-                ký trên bản web.
+                Người này sẽ biến khỏi cây và danh bạ. Quản trị dòng họ có thể
+                khôi phục lại từ nhật ký thay đổi.
               </p>
               {deleteError && <p className="error">{deleteError}</p>}
               <div style={{ display: "flex", gap: 8, marginTop: 10 }}>

@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { openWebview } from "zmp-sdk";
 
 import {
   IconCalendar,
-  IconGlobe,
   IconHome,
   IconLink,
   IconTree,
@@ -36,8 +34,7 @@ import { TreeTab } from "./TreeTab";
  * quan · Cây · Danh bạ · Sự kiện) và trang Tổng quan gồm giới thiệu, thông
  * gia, lịch âm hôm nay, sự kiện sắp tới, thao tác nhanh, thống kê.
  *
- * Bản đầu chỉ XEM: các thao tác sửa/thêm/xuất của web gom vào một nút mở
- * bản web đầy đủ.
+ * Sửa, thêm, xoá người làm ngay trong app (ở trang hồ sơ).
  */
 type Tab = "overview" | "tree" | "people" | "events";
 
@@ -182,13 +179,13 @@ function Overview({
       )}
 
       <h3 className="section-title">Thao tác nhanh</h3>
-      <div className="quick">
+      {/* Chỉ dẫn tới các tab TRONG app. Không có nút mở trang web ngoài:
+          tiêu chí duyệt của Zalo không cho Mini App đẩy người dùng sang
+          ứng dụng/trang riêng. */}
+      <div className="quick three">
         <button type="button" className="card" onClick={() => go("tree")}><span className="ico"><IconTree /></span>Phả hệ</button>
         <button type="button" className="card" onClick={() => go("people")}><span className="ico"><IconUsers /></span>Danh bạ</button>
         <button type="button" className="card" onClick={() => go("events")}><span className="ico"><IconCalendar /></span>Sự kiện</button>
-        <button type="button" className="card" onClick={() => openWebview({ url: `https://giapha.thaohk.com/clans/${clan.id}` })}>
-          <span className="ico"><IconGlobe /></span>Bản web đầy đủ
-        </button>
       </div>
 
       <h3 className="section-title">Thống kê</h3>

@@ -446,3 +446,6 @@ html.dark .dangertext { color:#F0786E; }
 @keyframes toastIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
 .todaybox { margin-bottom:4px; }
 .todaybox .ev:last-child { margin-bottom:0; }
+
+.quick.three { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+.quick.three button { flex-direction:column; gap:4px; padding:12px 6px; text-align:center; justify-content:center; min-height:64px; }
