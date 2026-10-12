@@ -11,14 +11,20 @@ Trạng thái (12/10/2026): Zalo App đã kích hoạt, tên miền `giapha.thao
 - **Khoá bí mật Zalo App chỉ nằm ở máy chủ** (biến môi trường của edge
   function, đặt như `SMTP_*`), không vào repo hay bản dựng.
 
-## Nguyên tắc thiết kế (chủ dự án chốt 12/10/2026)
+## Nguyên tắc thiết kế (chủ dự án chốt 12/10/2026, bản sau cùng)
 
-Giao diện Mini App phải GIỐNG BẢN WEB KHI XEM TRÊN ĐIỆN THOẠI: cùng bố cục
-trang, cùng thứ tự thông tin, cùng phông (Be Vietnam Pro + Noto Serif), thẻ
-viền mảnh góc 8px, nền sáng/tối theo bảng màu trong `src/index.css`. Khi làm
-màn hình mới: mở trang tương ứng của web ở khổ điện thoại rồi dựng theo, đừng
-tự nghĩ bố cục khác. Đã thử kiểu "app hiện đại" bo tròn nhiều + thẻ có bóng —
-bị chê, đã bỏ.
+**Đồng nhất về CHỨC NĂNG với bản web; phần trình bày được làm lại cho hợp
+điện thoại.** Mỗi màn hình Mini App phải có đủ các chức năng xem (và các
+thiết lập) của trang web tương ứng, dùng chung logic trong `src/lib`. Bố cục
+thì không buộc chép web: ưu tiên kiểu quen tay trên điện thoại (danh sách
+thiết lập, công tắc, dòng bấm để mở, thẻ gọn, thanh tab dưới đáy).
+
+Giữ từ web: phông (Be Vietnam Pro + Noto Serif), bộ icon
+`src/components/icons.tsx`, bảng màu sáng/tối, đỏ rượu vang `#7A2230`, góc
+bo nhỏ (8px), ít khoảng trống. Đã thử và bị chê: bo tròn nhiều + thẻ có bóng.
+
+Lịch sử: ban đầu yêu cầu là "giống bản web khi xem trên mobile" (chép cả bố
+cục); sau khi làm tới màn Tài khoản thì nới thành nguyên tắc trên.
 
 ## Các bước
 
