@@ -25,34 +25,69 @@ export async function signInWithZalo(): Promise<{ isNew: boolean }> {
     );
   }
 
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/zalo-auth`, {
+  const body = await callFunction<{ tokenHash: string; isNew?: boolean }>(
+    "zalo-auth",
+    { accessToken },
+  );
+  await adoptSession(body.tokenHash);
+  return { isNew: !!body.isNew };
+}
+
+/** Gọi một edge function của Zalo; lỗi thì ném ra câu tiếng Việt từ máy chủ. */
+async function callFunction<T>(name: string, payload: object): Promise<T> {
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
-    body: JSON.stringify({ accessToken }),
+    body: JSON.stringify(payload),
   });
   const body = (await res.json().catch(() => null)) as
-    | { tokenHash?: string; isNew?: boolean; error?: string }
+    | (T & { error?: string })
     | null;
-  if (!res.ok || !body?.tokenHash) {
-    throw new Error(body?.error ?? "Không đăng nhập được. Thử lại sau.");
+  if (!res.ok || !body) {
+    throw new Error(body?.error ?? "Không kết nối được máy chủ. Thử lại sau.");
   }
+  return body;
+}
 
+/** Đổi `token_hash` do máy chủ cấp lấy phiên đăng nhập. */
+async function adoptSession(tokenHash: string): Promise<void> {
   // Bản GoTrue mới nhận type "email" cho token_hash của magic link, bản cũ
   // đòi "magiclink". Máy chủ là self-host nên thử cả hai thay vì đoán.
   let { error } = await supabase.auth.verifyOtp({
-    token_hash: body.tokenHash,
+    token_hash: tokenHash,
     type: "email",
   });
   if (error) {
     ({ error } = await supabase.auth.verifyOtp({
-      token_hash: body.tokenHash,
+      token_hash: tokenHash,
       type: "magiclink",
     }));
   }
   if (error) throw new Error(error.message);
-  return { isNew: !!body.isNew };
+}
+
+/** Email giả của tài khoản tạo từ Zalo — tức CHƯA liên kết tài khoản web. */
+export const isZaloOnlyAccount = (email: string | undefined | null) =>
+  !!email && email.endsWith("@zalo.giapha.thaohk.com");
+
+/** Bước 1 liên kết: gửi mã 6 số tới email của tài khoản đã có trên web. */
+export async function requestAccountLink(email: string): Promise<void> {
+  const accessToken = await getAccessToken();
+  await callFunction("zalo-link", { action: "request", accessToken, email });
+}
+
+/** Bước 2: đúng mã thì Zalo này trỏ sang tài khoản cũ, phiên đổi theo. */
+export async function confirmAccountLink(code: string): Promise<void> {
+  const accessToken = await getAccessToken();
+  const { tokenHash } = await callFunction<{ tokenHash: string }>("zalo-link", {
+    action: "confirm",
+    accessToken,
+    code,
+  });
+  await supabase.auth.signOut({ scope: "local" });
+  await adoptSession(tokenHash);
 }

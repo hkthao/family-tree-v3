@@ -21,17 +21,21 @@ Trạng thái (12/10/2026): Zalo App đã kích hoạt, tên miền `giapha.thao
    Lưu ý: `@` trong `zalo/` trỏ về `src/` của WEB; file riêng của Mini App
    nhập bằng đường dẫn tương đối. Đừng đặt hai file chỉ khác chữ hoa/thường
    (`app.tsx`/`App.tsx`) — ổ đĩa macOS coi là một.
-2. **Đăng nhập Zalo** — ✅ ĐÃ VIẾT MÃ (12/10/2026), ⏳ CHƯA triển khai, CHƯA
-   thử với Zalo thật. Gồm: migration `20261012100000_zalo_identities.sql`,
-   edge function `zalo-auth` (kiểm token bằng Graph + `appsecret_proof`, sinh
-   magic link không gửi mail), `zalo/src/auth.ts` (đổi `token_hash` lấy phiên).
-   Còn phải làm trên máy chủ: áp migration bằng tay, đặt `ZALO_APP_SECRET`,
-   chép function lên rồi khởi động lại.
+2. **Đăng nhập Zalo** — ✅ XONG, đã thử trên điện thoại thật (12/10/2026).
+   Migration `zalo_identities`, edge function `zalo-auth`, `zalo/src/auth.ts`.
+   Hai điều học được: (a) Zalo Graph từ chối IP ngoài VN (-501) nên function
+   gọi vòng qua nginx của máy web `giapha.thaohk.com` (`ZALO_GRAPH_PROXY_*`);
+   (b) Mini App phải trỏ về Supabase THẬT (`zalo/.env.local`), không phải
+   bản chạy trên máy lập trình.
    Tài khoản tạo từ Zalo mang email giả `zalo-<id>@zalo.giapha.thaohk.com` và
    dấu `app_metadata.zalo_user_id` — **các function gửi mail (nhắc sự kiện,
    bản tin tuần…) cần bỏ qua địa chỉ này**, chưa làm.
-3. **Liên kết tài khoản sẵn có** — người đã có tài khoản email nhập mã OTP
-   một lần để gắn Zalo vào tài khoản cũ, không sinh tài khoản trùng.
+3. **Liên kết tài khoản sẵn có** — ✅ ĐÃ VIẾT + TRIỂN KHAI, ⏳ CHƯA thử trên
+   điện thoại. Migration `zalo_link_codes` + hàm `zalo_find_user_id_by_email`,
+   edge function `zalo-link` (tự gửi mã 6 số qua SMTP — không dùng OTP của
+   GoTrue vì thư mặc định của nó chỉ có link, không có mã), màn hình
+   `zalo/src/LinkAccount.tsx`. Tài khoản Zalo tạm KHÔNG bị xoá sau khi liên
+   kết (có thể đã đứng tên dữ liệu) — chỉ mất đường đăng nhập.
 4. **Màn hình xem** — danh sách dòng họ của tôi → cây thư mục (tái dùng
    `folderModel` + `treeFolder`) → tìm người → hồ sơ một người.
 5. **Nút "Mở bản web đầy đủ"** cho xuất sổ, nhập Excel, ghi âm.

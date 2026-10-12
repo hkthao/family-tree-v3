@@ -24,87 +24,22 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 import { err, json, preflight } from "../_shared/cors.ts";
+import {
+  fetchZaloProfile,
+  ZALO_APP_SECRET,
+  ZALO_SYNTHETIC_EMAIL_DOMAIN,
+} from "../_shared/zalo.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ZALO_APP_SECRET = Deno.env.get("ZALO_APP_SECRET") ?? "";
 
 /**
  * Tài khoản tạo từ Zalo không có email thật, mà auth.users bắt buộc có.
  * Dùng địa chỉ giả dưới tên miền của mình (không ai nhận thư ở đó) thay vì
  * tên miền bịa: bịa ra thì có ngày trùng tên miền thật của người khác.
  */
-const SYNTHETIC_EMAIL_DOMAIN = "zalo.giapha.thaohk.com";
 const syntheticEmail = (zaloId: string) =>
-  `zalo-${zaloId}@${SYNTHETIC_EMAIL_DOMAIN}`;
-
-async function hmacSha256Hex(key: string, message: string): Promise<string> {
-  const enc = new TextEncoder();
-  const k = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(key),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", k, enc.encode(message));
-  return [...new Uint8Array(sig)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-interface ZaloProfile {
-  id: string;
-  name: string | null;
-  picture: string | null;
-}
-
-/**
- * Zalo Graph CHỈ trả thông tin người dùng cho máy chủ có IP trong Việt Nam
- * (lỗi -501 "IP address not inside Vietnam" — kể cả khi chỉ xin ID). Máy
- * Supabase đặt ở nước ngoài, nên khi có cấu hình thì gọi vòng qua máy chủ
- * web (ở VN): nginx bên đó chuyển tiếp đúng một đường /me và đòi khoá chung.
- * Tên header đổi sang dạng X-… vì nginx bỏ header có dấu gạch dưới.
- */
-const GRAPH_PROXY_URL = Deno.env.get("ZALO_GRAPH_PROXY_URL") ?? "";
-const GRAPH_PROXY_KEY = Deno.env.get("ZALO_GRAPH_PROXY_KEY") ?? "";
-
-async function callGraph(accessToken: string, fields: string) {
-  const proof = await hmacSha256Hex(ZALO_APP_SECRET, accessToken);
-  const res = GRAPH_PROXY_URL
-    ? await fetch(`${GRAPH_PROXY_URL}?fields=${fields}`, {
-        headers: {
-          "X-Zalo-Proxy-Key": GRAPH_PROXY_KEY,
-          "X-Zalo-Access-Token": accessToken,
-          "X-Zalo-Appsecret-Proof": proof,
-        },
-      })
-    : await fetch(`https://graph.zalo.me/v2.0/me?fields=${fields}`, {
-        headers: { access_token: accessToken, appsecret_proof: proof },
-      });
-  const body = await res.json().catch(() => null);
-  return { res, body };
-}
-
-async function fetchZaloProfile(accessToken: string): Promise<ZaloProfile | null> {
-  const { res, body } = await callGraph(accessToken, "id,name,picture");
-  // Zalo trả 200 kèm { error: <mã khác 0> } khi token sai/hết hạn.
-  if (!res.ok || !body || (body.error && body.error !== 0) || !body.id) {
-    // Ghi mã lỗi của Zalo (KHÔNG ghi token) — không có dòng này thì mọi
-    // nguyên nhân (sai secret, thiếu quyền, token hết hạn) trông y hệt nhau.
-    console.error(
-      "zalo-auth: Graph từ chối:",
-      res.status,
-      JSON.stringify({ error: body?.error, message: body?.message, keys: body ? Object.keys(body) : null }),
-    );
-    return null;
-  }
-  return {
-    id: String(body.id),
-    name: typeof body.name === "string" ? body.name : null,
-    picture: body.picture?.data?.url ?? null,
-  };
-}
+  `zalo-${zaloId}@${ZALO_SYNTHETIC_EMAIL_DOMAIN}`;
 
 Deno.serve(async (req) => {
   const pre = preflight(req);
