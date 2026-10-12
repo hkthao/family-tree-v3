@@ -17,6 +17,7 @@ import { AccountScreen } from "./screens/Account";
 import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
+import { listenBack, pushBack } from "./nav";
 import { scrollTopScreen } from "./scroll";
 import { ClanScreen } from "./screens/Clan";
 
@@ -118,26 +119,20 @@ export function App() {
   };
   useEffect(login, []);
 
-  // Nút quay lại là của ZALO (trên thanh tiêu đề gốc), nó gọi lùi lịch sử
-  // trình duyệt. Nên mỗi lần mở màn hình mới ta đẩy một mốc lịch sử, và
-  // nghe sự kiện lùi để gỡ màn hình trên cùng — vuốt ngược trên Android
-  // cũng đi đúng đường này.
-  useEffect(() => {
-    // Lùi: cho màn hình trên cùng TRƯỢT RA trước rồi mới gỡ khỏi chồng —
-    // gỡ ngay thì nó biến mất cái rụp, không ra dáng app.
-    const onPop = () => {
+  // Nút quay lại là của ZALO (trên thanh tiêu đề gốc); nó lùi lịch sử trình
+  // duyệt. Mọi bước tiến đều đăng ký cách hoàn tác qua `pushBack` (xem nav.ts).
+  useEffect(listenBack, []);
+  const push = (s: Screen) => {
+    setStack((st) => [...st, s]);
+    pushBack(() => {
+      // Cho màn hình trên cùng TRƯỢT RA trước rồi mới gỡ khỏi chồng — gỡ
+      // ngay thì nó biến mất cái rụp, không ra dáng app.
       setLeaving(true);
       window.setTimeout(() => {
         setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
         setLeaving(false);
       }, SLIDE_MS);
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
-  const push = (s: Screen) => {
-    window.history.pushState({ depth: stack.length }, "");
-    setStack((st) => [...st, s]);
+    });
   };
 
   const top = stack[stack.length - 1];

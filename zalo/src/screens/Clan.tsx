@@ -23,6 +23,7 @@ import {
   type UpcomingEvent,
 } from "@/lib/upcomingEvents";
 
+import { pushBack } from "../nav";
 import { scrollTopScreen } from "../scroll";
 import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
@@ -226,6 +227,15 @@ export function ClanScreen({
     setTab(t);
     scrollTopScreen();
   };
+  // Nhảy tab bằng một nút TRONG NỘI DUNG (thao tác nhanh, "Xem tất cả"):
+  // người dùng coi đó là "đi tới", nên lùi phải về lại tab vừa rời. Bấm
+  // thẳng thanh tab thì không tính là một bước (như mọi app có tab).
+  const jump = (t: Tab) => {
+    const from = tab;
+    if (t === from) return;
+    go(t);
+    pushBack(() => go(from));
+  };
   const upcoming = useAsync(() => loadUpcoming(clan, source), [clan.id, source]);
   const show = (t: Tab) => ({ display: tab === t ? undefined : "none" });
   const pane = "tabpane";
@@ -233,7 +243,7 @@ export function ClanScreen({
   return (
     <div className="has-tabs inner">
       <div className={pane} style={show("overview")}>
-        <Overview clan={clan} upcoming={upcoming} go={go} openPerson={openPerson} />
+        <Overview clan={clan} upcoming={upcoming} go={jump} openPerson={openPerson} />
       </div>
       {seen.has("tree") && (
         <div className={pane} style={show("tree")}>
