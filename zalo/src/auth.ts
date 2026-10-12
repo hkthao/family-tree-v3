@@ -116,3 +116,18 @@ export async function confirmAccountLink(code: string): Promise<void> {
   await supabase.auth.signOut({ scope: "local" });
   await adoptSession(tokenHash);
 }
+
+/**
+ * Gọi ngay SAU khi xoá tài khoản: nhờ máy chủ dọn tài khoản Zalo tạm còn
+ * sót (nếu có). Lỗi thì bỏ qua — tài khoản chính đã xoá xong, đây chỉ là
+ * dọn nốt, không nên báo đỏ cho người dùng vì nó.
+ */
+export async function forgetZaloLeftovers(): Promise<void> {
+  try {
+    const accessToken = await getAccessToken();
+    if (!accessToken) return;
+    await callFunction("zalo-link", { action: "forget", accessToken });
+  } catch {
+    /* dọn dẹp không thành — không ảnh hưởng việc xoá tài khoản */
+  }
+}

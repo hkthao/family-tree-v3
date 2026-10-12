@@ -13,6 +13,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { getTheme, setTheme, type Theme } from "@/lib/theme";
 
+import { forgetZaloLeftovers } from "../auth";
 import { LinkAccount } from "../LinkAccount";
 import { useAsync } from "../useAsync";
 
@@ -237,6 +238,7 @@ function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
         onClick={() =>
           save.run(async () => {
             await deleteMyAccount();
+            await forgetZaloLeftovers();
             onDeleted();
           }, "Đã xoá tài khoản")
         }
