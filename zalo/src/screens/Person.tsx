@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { openWebview } from "zmp-sdk";
 
 import { IconArrowRight } from "@/components/icons";
@@ -10,7 +10,7 @@ import {
 } from "@/lib/lunarDate";
 import { formatPartialDate } from "@/lib/partialDate";
 import { getPersonRelationships, type Relationship } from "@/lib/queries/families";
-import { getPerson, type PersonDetail } from "@/lib/queries/persons";
+import { deletePerson, getPerson, type PersonDetail } from "@/lib/queries/persons";
 
 import { usePhotoUrls } from "../photos";
 import { useAsync } from "../useAsync";
@@ -61,6 +61,7 @@ export function PersonScreen({
   rev = 0,
   onEdit,
   onAdd,
+  onDeleted,
   openPerson,
 }: {
   clanId: string;
@@ -69,6 +70,8 @@ export function PersonScreen({
   rev?: number;
   /** Có thì hiện nút "Sửa" — chỉ truyền khi người dùng có quyền sửa. */
   onEdit?: () => void;
+  /** Có thì hiện mục "Xoá người này"; gọi sau khi xoá xong. */
+  onDeleted?: () => void;
   /** Có thì hiện nút "+ Thêm" ở nhóm Vợ/chồng và Con cái. */
   onAdd?: (relation: "spouse" | "child") => void;
   personId: string;
@@ -84,6 +87,11 @@ export function PersonScreen({
     ]);
     return { person, rel };
   }, [personId, source, rev]);
+  // Xoá: phải bấm hai lần (mở xác nhận rồi mới xoá) — cùng mức thận trọng
+  // với hộp xác nhận của web.
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const rel = q.data?.rel;
   const all = rel ? [...rel.parents, ...rel.spouses, ...rel.children] : [];
   const photo = usePhotoUrls([q.data?.person?.photo_path, ...all.map((r) => r.photo_path)]);
@@ -221,6 +229,46 @@ export function PersonScreen({
           Mở trên bản web đầy đủ
         </button>
       </div>
+
+      {onDeleted && (
+        <section className="card pane" style={{ marginTop: 16 }}>
+          {confirmDelete ? (
+            <>
+              <b style={{ display: "block", fontSize: 15 }}>Xoá {p.full_name}?</b>
+              <p className="note" style={{ marginTop: 4 }}>
+                Người này sẽ biến khỏi cây và danh bạ. Có thể khôi phục từ nhật
+                ký trên bản web.
+              </p>
+              {deleteError && <p className="error">{deleteError}</p>}
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <button type="button" className="btn ghost" style={{ flex: 1 }} disabled={deleting} onClick={() => setConfirmDelete(false)}>Huỷ</button>
+                <button
+                  type="button"
+                  className="btn danger"
+                  style={{ flex: 1 }}
+                  disabled={deleting}
+                  onClick={() => {
+                    setDeleting(true);
+                    setDeleteError(null);
+                    deletePerson(personId)
+                      .then(onDeleted)
+                      .catch((e: Error) => {
+                        setDeleteError(e.message);
+                        setDeleting(false);
+                      });
+                  }}
+                >
+                  {deleting ? "Đang xoá…" : "Xoá"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <button type="button" className="btn text dangertext" style={{ minHeight: 0, padding: 0 }} onClick={() => setConfirmDelete(true)}>
+              Xoá người này
+            </button>
+          )}
+        </section>
+      )}
     </div>
   );
 }

@@ -281,6 +281,16 @@ export function App() {
                   ? (relation) => push({ kind: "add", clan: s.clan, personId: s.personId, relation })
                   : undefined
               }
+              onDeleted={
+                s.clan.role === "admin" || s.clan.role === "editor"
+                  ? () => {
+                      // Rời trang của người vừa xoá, và báo các trang hồ sơ
+                      // bên dưới (cha mẹ, vợ chồng) tải lại quan hệ.
+                      setRev((n) => n + 1);
+                      window.history.back();
+                    }
+                  : undefined
+              }
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
             />
           )}
