@@ -12,6 +12,11 @@ export interface Relationship {
   is_living: boolean;
   birth_date: string | null;
   death_date: string | null;
+  /**
+   * Đường dẫn ảnh trong Storage. Tuỳ chọn vì bản ghi nằm sẵn trong cache
+   * ở máy người dùng (do bản cũ ghi) chưa có field này.
+   */
+  photo_path?: string | null;
 }
 
 export interface SpouseRelationship extends Relationship {
@@ -32,7 +37,7 @@ export interface PersonRelationships {
 }
 
 const PERSON_BRIEF =
-  "id, full_name, gender, is_living, birth_date, death_date";
+  "id, full_name, gender, is_living, birth_date, death_date, photo_path";
 
 /**
  * Order a person's marriages by explicit rank (vợ cả/hai/ba) then by
@@ -176,7 +181,7 @@ export async function getPersonRelationships(
   let children: ChildRelationship[] = [];
   if (familyIds.length > 0) {
     const childCols =
-      "id, full_name, gender, is_living, birth_date, death_date, birth_family_id";
+      "id, full_name, gender, is_living, birth_date, death_date, photo_path, birth_family_id";
     const kidsRes = useSafe
       ? await client
           .from("persons_public_safe")

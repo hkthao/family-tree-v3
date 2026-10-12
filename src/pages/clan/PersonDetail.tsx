@@ -29,7 +29,11 @@ import { KhoeButton } from "@/components/KhoeButton";
 import { SubscribeToggle } from "@/components/SubscribeToggle";
 import { useToast } from "@/components/Toast";
 import { getOrCreatePersonShareLink } from "@/lib/queries/share-links";
-import { getSignedPhotoUrl, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
+import {
+  getSignedPhotoUrl,
+  getSignedPhotoUrlMap,
+  PHOTO_URL_STALE_MS,
+} from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -136,6 +140,25 @@ export default function PersonDetail() {
     ],
     queryFn: () => getPersonRelationships(personId!, undefined, personSource),
     enabled: !!personId && !!person,
+  });
+
+  // Ảnh của cha mẹ / vợ chồng / con trong mục Quan hệ. Ký MỘT lượt cho
+  // cả nhóm; trước đây mục này luôn vẽ hình minh hoạ dù người thân có ảnh.
+  const relationPhotoPaths = relationships
+    ? [
+        ...relationships.parents,
+        ...relationships.spouses,
+        ...relationships.children,
+      ]
+        .map((r) => r.photo_path)
+        .filter((p): p is string => !!p)
+        .sort()
+    : [];
+  const { data: relationPhotoUrls } = useQuery({
+    queryKey: ["signed-photos", relationPhotoPaths.join(",")],
+    queryFn: () => getSignedPhotoUrlMap(relationPhotoPaths),
+    enabled: relationPhotoPaths.length > 0,
+    staleTime: PHOTO_URL_STALE_MS,
   });
 
   const { data: photoUrl } = useQuery({
@@ -419,6 +442,7 @@ export default function PersonDetail() {
                     label="Cha mẹ"
                     items={relationships.parents}
                     clanId={clanId}
+                    photoUrls={relationPhotoUrls}
                     emptyHint="Chưa nhập cha mẹ"
                     action={
                       canEdit && relationships.parents.length < 2 ? (
@@ -438,6 +462,7 @@ export default function PersonDetail() {
                     label="Vợ / chồng"
                     items={relationships.spouses}
                     clanId={clanId}
+                    photoUrls={relationPhotoUrls}
                     emptyHint="Chưa có vợ / chồng."
                     reorder={
                       canEdit && relationships.spouses.length > 1
@@ -465,6 +490,7 @@ export default function PersonDetail() {
                     label="Con cái"
                     items={relationships.children}
                     clanId={clanId}
+                    photoUrls={relationPhotoUrls}
                     emptyHint="Chưa có con cái."
                     action={
                       canEdit ? (
@@ -768,10 +794,13 @@ function RelationshipGroup({
   emptyHint,
   action,
   reorder,
+  photoUrls,
 }: {
   label: string;
   items: Relationship[];
   clanId: string;
+  /** photo_path → URL đã ký; thiếu thì vẽ hình minh hoạ theo giới tính. */
+  photoUrls?: Map<string, string>;
   emptyHint: string;
   action?: React.ReactNode;
   /** When set, renders ↑/↓ controls to re-rank the list (vợ cả/hai/ba).
@@ -804,7 +833,13 @@ function RelationshipGroup({
                 to={`/clans/${clanId}/people/${r.id}`}
                 className="flex flex-1 min-w-0 items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
               >
-                <PersonAvatar gender={r.gender} photoUrl={null} size={40} />
+                <PersonAvatar
+                  gender={r.gender}
+                  photoUrl={
+                    r.photo_path ? (photoUrls?.get(r.photo_path) ?? null) : null
+                  }
+                  size={40}
+                />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{r.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
