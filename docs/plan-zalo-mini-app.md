@@ -36,8 +36,12 @@ Trạng thái (12/10/2026): Zalo App đã kích hoạt, tên miền `giapha.thao
 
 - Bước 2 là cửa vào tài khoản: phải kiểm mã ở phía máy chủ, không tin ID do
   Mini App tự gửi lên. Cần review bảo mật trước khi phát hành.
-- Chưa rõ tài khoản cá nhân (không có OA) được phát hành công khai tới đâu;
-  chỉ biết chắc khi gửi duyệt.
+- Xác thực chủ sở hữu (bắt buộc với mọi Mini App từ 15/10/2025): CÁ NHÂN
+  được, điều kiện là tài khoản Zalo đã eKYC thành công; không cần OA hay
+  giấy đăng ký kinh doanh. Gia phả không thuộc nhóm ngành cần giấy phép bổ
+  sung (tài chính, y tế, bất động sản, thực phẩm…). Xử lý 3–5 ngày làm việc.
+  Nguồn: tài liệu chính thức "Mini App Verification" của Zalo. Tài liệu
+  KHÔNG nói cá nhân có bị giới hạn tính năng gì — chỉ biết chắc khi gửi duyệt.
 - Mỗi lần cập nhật Mini App phải qua duyệt (3–5 ngày làm việc theo nguồn
   bên thứ ba), nên gom thay đổi theo đợt.
 - Chính sách quyền riêng tư phải có trước khi gửi duyệt (app lưu thông tin
