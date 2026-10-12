@@ -121,7 +121,7 @@ export function ClansScreen({
             {q
               ? `Không có dòng họ nào khớp “${q}”.`
               : scope === "mine"
-                ? "Tài khoản này chưa tham gia dòng họ nào. Nếu bạn đã lập gia phả trên web, hãy liên kết tài khoản ở tab “Tài khoản”."
+                ? "Tài khoản này chưa tham gia dòng họ nào. Nếu bạn đã lập gia phả bằng tài khoản email, hãy liên kết ở tab “Tài khoản”."
                 : "Chưa có dòng họ công khai nào."}
           </p>
         </div>
