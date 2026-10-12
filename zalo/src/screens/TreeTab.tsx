@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { IconTree } from "@/components/icons";
 import { pickDefaultFocal } from "@/lib/familyChartAdapter";
 import { getTreeData, type TreeSource } from "@/lib/queries/tree";
-import { idsWithinDepth } from "@/lib/tree/depthFilter";
+import { supabase } from "@/lib/supabase";
 import { unaccent } from "@/lib/unaccent";
 
 import { useAsync } from "../useAsync";
@@ -24,6 +24,7 @@ import { Tree3D } from "./Tree3D";
  * tới đó. Nên dữ liệu cả cây chỉ tải khi người dùng thật sự chọn 2D/3D.
  */
 type Mode = "2d" | "3d" | "folder";
+const EMPTY = new Map<string, string>();
 const DEPTHS = [3, 4, 5, 0];
 
 export function TreeTab({
@@ -48,17 +49,26 @@ export function TreeTab({
   }, [mode]);
 
   const needsAll = mode !== "folder";
-  const tree = useAsync(
-    () => (needsAll ? getTreeData(clanId, source) : Promise.resolve(null)),
-    [clanId, source, needsAll],
-  );
-  const data = tree.data ?? null;
+  const tree = useAsync(async () => {
+    if (!needsAll) return null;
+    const data = await getTreeData(clanId, source);
+    // Ký ảnh một lượt cho cả cây (như web) rồi mới vẽ, để 2D/3D không phải
+    // dựng lại lần hai khi ảnh về. Ký hỏng thì vẫn vẽ, chỉ thiếu ảnh thật.
+    const paths = [...new Set(data.persons.map((p) => p.photo_path).filter((p): p is string => !!p))];
+    const photoUrls = new Map<string, string>();
+    if (paths.length > 0) {
+      const { data: signed } = await supabase.storage
+        .from("person-photos")
+        .createSignedUrls(paths, 24 * 60 * 60);
+      for (const e of signed ?? []) {
+        if (e.signedUrl && e.path) photoUrls.set(e.path, e.signedUrl);
+      }
+    }
+    return { data, photoUrls };
+  }, [clanId, source, needsAll]);
+  const data = tree.data?.data ?? null;
+  const photoUrls = tree.data?.photoUrls ?? EMPTY;
   const focalId = focal ?? (data ? pickDefaultFocal(data.persons) : null);
-  const visible = useMemo(
-    () => (data ? idsWithinDepth(data.persons, data.families, focalId, depth) : null),
-    [data, focalId, depth],
-  );
-
   const needle = unaccent(search);
   const matches =
     data && needle.length >= 2
@@ -144,14 +154,14 @@ export function TreeTab({
       )}
       {data && mode === "2d" && (
         <>
-          <Tree2D data={data} focalId={focalId} depth={depth} onFocus={setFocal} />
+          <Tree2D data={data} photoUrls={photoUrls} focalId={focalId} depth={depth} onFocus={setFocal} />
           <p className="muted hint">Kéo để di chuyển, chụm hai ngón để phóng to. Chạm một thẻ để đặt làm trung tâm.</p>
         </>
       )}
       {data && mode === "3d" && (
         <>
-          <Tree3D data={data} visible={visible} openPerson={openPerson} />
-          <p className="muted hint">Kéo để xoay, chụm hai ngón để phóng to. Chạm tên để mở hồ sơ.</p>
+          <Tree3D clanId={clanId} genOffset={genOffset} data={data} photoUrls={photoUrls} focalId={focalId} depth={depth} />
+          <p className="muted hint">Kéo để xoay, chụm hai ngón để phóng to.</p>
         </>
       )}
 

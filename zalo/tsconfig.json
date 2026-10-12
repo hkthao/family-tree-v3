@@ -13,7 +13,10 @@
     "isolatedModules": true,
     "types": ["vite/client"],
     "baseUrl": ".",
-    "paths": { "@/*": ["../src/*"] }
+    "paths": {
+      "@/*": ["../src/*"],
+      "@tanstack/react-query": ["../node_modules/@tanstack/react-query"]
+    }
   },
   "include": ["src"]
 }

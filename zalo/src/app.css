@@ -248,3 +248,12 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
   .f3 svg.main_svg path.link { stroke:#8A8278; opacity:.7; }
   .f3 svg.main_svg path.link.f3-path-to-main { stroke:#E26B6B; opacity:1; }
 }
+
+/* Thành phần 3D của WEB viết bằng lớp Tailwind, mà Mini App không có
+   Tailwind. Khai lại đúng mấy lớp bố cục nó cần để khung vẽ nằm đúng chỗ;
+   các nút và bảng chú giải nổi của web (cần cả bộ Tailwind mới ra hình)
+   tạm ẩn ở đây. */
+.tw3d { position:relative; overflow:hidden; }
+.tw3d > .absolute.inset-0 { position:absolute; inset:0; }
+.tw3d > :not(.absolute.inset-0) { display:none; }
+.tw3d > p.absolute.inset-0 { display:grid; place-items:center; color:var(--muted); margin:0; }
