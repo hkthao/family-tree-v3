@@ -15,6 +15,8 @@ export interface ExportClanBookOptions {
   /** Số thành viên ("lá") tối đa mỗi trang sơ đồ cây. Ít → thẻ to, dễ đọc;
    *  nhiều → gói được nhiều đời/người trên một trang. */
   treePerPage?: number;
+  /** Vẽ cả sơ đồ trên MỘT trang khổ tự tính thay vì tách nhiều trang A4. */
+  treeSinglePage?: boolean;
 }
 
 /**

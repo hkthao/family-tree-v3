@@ -384,6 +384,8 @@ interface Props {
     honor?: boolean;
     /** Số "lá" tối đa mỗi trang sơ đồ (mật độ do user chọn). */
     treePerPage?: number;
+    /** Vẽ CẢ sơ đồ trên một trang khổ tự tính thay vì tách nhiều trang A4. */
+    treeSinglePage?: boolean;
   };
   /**
    * Optional personId → JPEG data URI map for embedding real avatar
@@ -716,6 +718,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           spousesByPerson,
           genOffset,
           budget: include?.treePerPage,
+          singlePage: include?.treeSinglePage,
           showLivingFullDob: clan.display_living_full_dob,
         })}
 
@@ -1147,13 +1150,14 @@ function countLeaves(
  *     thì đệ quy tách sâu hơn nhưng vẫn giữ mỗi nhánh nguyên vẹn.
  * Tiêu đề trang nhánh kèm "Đời N" của gốc nhánh.
  */
-function renderTreePages({
+export function renderTreePages({
   roots,
   childrenByParent,
   personById,
   spousesByPerson,
   genOffset,
   budget: budgetOpt,
+  singlePage = false,
   showLivingFullDob = false,
 }: {
   roots: PersonDetail[];
@@ -1162,8 +1166,27 @@ function renderTreePages({
   spousesByPerson: Map<string, string[]>;
   genOffset: number;
   budget?: number;
+  /** true → một trang khổ tự tính chứa toàn bộ cây, không tách theo đời. */
+  singlePage?: boolean;
   showLivingFullDob?: boolean;
 }): React.ReactNode {
+  // Tách trang cho vừa A4 thì dễ in, nhưng muốn nhìn toàn cảnh dòng họ
+  // phải ghép nhiều trang trong đầu. Kiểu một trang đổi lại: khổ giấy
+  // lớn theo cây, đổi lấy cả sơ đồ liền một mạch.
+  if (singlePage) {
+    return (
+      <TreeDiagramPage
+        key="tree-single"
+        fitPage
+        roots={roots}
+        childrenByParent={childrenByParent}
+        personById={personById}
+        spousesByPerson={spousesByPerson}
+        showLivingFullDob={showLivingFullDob}
+      />
+    );
+  }
+
   const budget =
     budgetOpt && budgetOpt >= 4 ? Math.floor(budgetOpt) : TREE_LEAF_BUDGET;
   const kidsOf = (id: string): PersonDetail[] =>
@@ -1356,7 +1379,10 @@ function TreeDiagramPage({
   spousesByPerson,
   memberFilter,
   showLivingFullDob = false,
+  fitPage = false,
 }: {
+  /** Khổ giấy tự tính theo sơ đồ (không co sơ đồ cho vừa A4). */
+  fitPage?: boolean;
   title?: string;
   subtitle?: string;
   roots: PersonDetail[];
@@ -1604,9 +1630,25 @@ function TreeDiagramPage({
   );
   // Vẽ SVG đúng cỡ nội dung đã co (không letterbox) → thẻ to hết mức mà
   // vẫn nằm gọn trong khung trang, bớt khoảng trắng thừa.
-  const fit = Math.min(SVG_W / contentW, SVG_H / contentH);
+  //
+  // Khổ tự tính (fitPage): KHÔNG co sơ đồ cho vừa trang mà nới trang cho
+  // vừa sơ đồ, phóng 1,5× để tên lên cỡ chữ thân bài (7pt → 10,5pt). Chỉ
+  // khi một cạnh chạm trần 14.400pt của PDF mới phải co lại.
+  const PDF_MAX_SIDE = 14400;
+  const HEADER_H = 96; // tiêu đề + phụ đề, để SVG không bị đẩy sang trang sau
+  const fit = fitPage
+    ? Math.min(
+        1.5,
+        (PDF_MAX_SIDE - SIDE_PAD * 2) / contentW,
+        (PDF_MAX_SIDE - TOP_PAD - BOTTOM_PAD - HEADER_H) / contentH,
+      )
+    : Math.min(SVG_W / contentW, SVG_H / contentH);
   const drawW = Math.max(1, Math.round(contentW * fit));
   const drawH = Math.max(1, Math.round(contentH * fit));
+  const pageW = fitPage ? Math.max(PAGE_W_LS, drawW + SIDE_PAD * 2) : PAGE_W_LS;
+  const pageH = fitPage
+    ? Math.max(PAGE_H_LS, drawH + TOP_PAD + BOTTOM_PAD + HEADER_H)
+    : PAGE_H_LS;
 
   const yearOf = (p: PersonDetail): string => {
     if (showLivingFullDob && p.is_living) {
@@ -1620,8 +1662,14 @@ function TreeDiagramPage({
   };
 
   return (
-    <Page size="A4" orientation="landscape" style={styles.page}>
-      <VineBorder width={PAGE_W_LS} height={PAGE_H_LS} />
+    <Page
+      size={fitPage ? [pageW, pageH] : "A4"}
+      // Khổ tự tính đã mang sẵn chiều ngang/dọc; thêm "landscape" là
+      // react-pdf đảo hai cạnh lần nữa, ra trang dọc hẹp.
+      orientation={fitPage ? undefined : "landscape"}
+      style={styles.page}
+    >
+      <VineBorder width={pageW} height={pageH} />
       <Text style={styles.h1}>{title}</Text>
       <View style={styles.h1Underline} />
       <Text style={styles.intro}>
