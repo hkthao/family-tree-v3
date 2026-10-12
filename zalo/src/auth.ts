@@ -17,13 +17,8 @@ export async function signInWithZalo(): Promise<{ isNew: boolean }> {
 
   const accessToken = await getAccessToken();
   // Rỗng = đang chạy NGOÀI ứng dụng Zalo (giả lập trên trình duyệt máy
-  // tính): ở đó không có người dùng Zalo nào để cấp mã. Chỉ thử đăng nhập
-  // được trên điện thoại, qua bản Development của `zmp deploy`.
-  if (!accessToken) {
-    throw new Error(
-      "Zalo không cấp mã truy cập. Đăng nhập chỉ chạy khi mở trong ứng dụng Zalo trên điện thoại, không chạy trên giả lập máy tính.",
-    );
-  }
+  // tính): ở đó không có người dùng Zalo nào để cấp mã.
+  if (!accessToken) throw new NotInZaloError();
 
   const body = await callFunction<{ tokenHash: string; isNew?: boolean }>(
     "zalo-auth",
@@ -31,6 +26,36 @@ export async function signInWithZalo(): Promise<{ isNew: boolean }> {
   );
   await adoptSession(body.tokenHash);
   return { isNew: !!body.isNew };
+}
+
+/** Ném ra khi Mini App chạy ngoài Zalo — không có ai để Zalo cấp mã. */
+export class NotInZaloError extends Error {
+  constructor() {
+    super(
+      "Zalo không cấp mã truy cập. Đăng nhập chỉ chạy khi mở trong ứng dụng Zalo trên điện thoại.",
+    );
+  }
+}
+
+/**
+ * Đang chạy `npm start` trên máy lập trình (giả lập ở localhost)?
+ *
+ * Kiểm CẢ cờ DEV lẫn tên máy: bản đưa lên Zalo không bao giờ ở localhost,
+ * nên dù có sơ sẩy dựng nhầm chế độ thì form đăng nhập dev cũng không lộ
+ * ra cho người dùng thật.
+ */
+export const isLocalDev =
+  import.meta.env.DEV &&
+  ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+/**
+ * Đăng nhập bằng email + mật khẩu — CHỈ để lập trình trên giả lập máy
+ * tính, nơi không có Zalo để đăng nhập. Nhờ nó sửa giao diện là thấy ngay
+ * (tự nạp lại), không phải đưa bản dựng lên Zalo rồi quét mã mỗi lần.
+ */
+export async function devSignIn(email: string, password: string) {
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw new Error(error.message);
 }
 
 /** Gọi một edge function của Zalo; lỗi thì ném ra câu tiếng Việt từ máy chủ. */

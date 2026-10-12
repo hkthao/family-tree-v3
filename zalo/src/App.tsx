@@ -4,7 +4,13 @@ import type { ClanSummary } from "@/lib/queries/clans";
 import { supabase } from "@/lib/supabase";
 
 import "./app.css";
-import { isZaloOnlyAccount, signInWithZalo } from "./auth";
+import {
+  devSignIn,
+  isLocalDev,
+  isZaloOnlyAccount,
+  NotInZaloError,
+  signInWithZalo,
+} from "./auth";
 import { LinkAccount } from "./LinkAccount";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
@@ -27,7 +33,35 @@ type Screen =
 type Auth =
   | { kind: "loading" }
   | { kind: "ready"; userId: string; zaloOnly: boolean }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string }
+  | { kind: "dev-login"; message?: string };
+
+/** Form đăng nhập cho lúc lập trình trên máy tính — xem `devSignIn`. */
+function DevLogin({ message, onDone }: { message?: string; onDone: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(message);
+  return (
+    <form
+      className="page"
+      onSubmit={(e) => {
+        e.preventDefault();
+        devSignIn(email.trim(), password)
+          .then(onDone)
+          .catch((er: Error) => setError(er.message));
+      }}
+    >
+      <p className="muted">
+        Chế độ lập trình (localhost): không có Zalo nên đăng nhập bằng tài
+        khoản web. Form này không có trong bản đưa lên Zalo.
+      </p>
+      <input className="field" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input className="field" type="password" placeholder="Mật khẩu" value={password} onChange={(e) => setPassword(e.target.value)} style={{ margin: "8px 0" }} />
+      <button type="submit" className="btn">Đăng nhập</button>
+      {error && <p className="error">{error}</p>}
+    </form>
+  );
+}
 
 export function App() {
   const [auth, setAuth] = useState<Auth>({ kind: "loading" });
@@ -46,11 +80,18 @@ export function App() {
           zaloOnly: isZaloOnlyAccount(data.user.email),
         });
       })
-      .catch((e: Error) => setAuth({ kind: "error", message: e.message }));
+      .catch((e: Error) =>
+        setAuth(
+          isLocalDev && e instanceof NotInZaloError
+            ? { kind: "dev-login" }
+            : { kind: "error", message: e.message },
+        ),
+      );
   };
   useEffect(login, []);
 
   if (auth.kind === "loading") return <div className="page muted">Đang đăng nhập bằng Zalo…</div>;
+  if (auth.kind === "dev-login") return <DevLogin message={auth.message} onDone={login} />;
   if (auth.kind === "error") {
     return (
       <div className="page">
