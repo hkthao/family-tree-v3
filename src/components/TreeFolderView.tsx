@@ -1,9 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { createContext, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import { Link } from "react-router-dom";
 
 import {
   IconChevronDown,
+  IconFemale,
+  IconMale,
   IconSearch,
   IconUser,
   IconUsers,
@@ -18,10 +27,12 @@ import { getInlawGhostSpouses } from "@/lib/queries/person-links";
 import {
   loadFolderNode,
   loadFolderRoots,
+  loadFolderSearch,
   loadUnlinked,
 } from "@/lib/queries/treeFolder";
 import type { TreeSource } from "@/lib/queries/tree";
 import {
+  generationColor,
   groupLabel,
   visibleGhostSpouses,
   type FolderChild,
@@ -72,21 +83,133 @@ const GhostSpouseContext = createContext<Map<string, GhostSpouseSource[]>>(
   new Map(),
 );
 
-/** Dòng phụ: đời + năm sinh–mất. Tách hàm vì dùng ở cả người lẫn vợ/chồng. */
-function metaLine(p: {
+/**
+ * Đường gióng nối cha mẹ xuống con, vẽ kiểu cây thư mục: một nét dọc mọc
+ * từ giữa ô mũi tên (rộng 36px) của cha mẹ, mỗi người con một nét ngang
+ * rẽ vào dòng của mình, và nét dọc DỪNG ở người con út.
+ *
+ * Trước đây thụt lề bằng padding trơn, nên qua ba bốn tầng là không còn
+ * dò được ai là con ai — tệ nhất ở ca đa thê, nơi ảnh bà vợ và ảnh con
+ * gần như thẳng hàng nhau.
+ *
+ * Nét vẽ bằng ::before/::after trên từng <li>, và các dòng cách nhau
+ * bằng padding-top của <li> chứ không phải margin: margin nằm ngoài <li>
+ * nên nét dọc sẽ đứt quãng giữa hai anh em.
+ *
+ * Điện thoại rút nét ngang còn 4px — tám chín đời thụt vào mà mỗi đời
+ * tốn 25px thì tên không còn chỗ.
+ */
+const RAIL = "ml-[17px]";
+const BRANCH_LINES =
+  "relative pt-1 " +
+  "before:absolute before:left-0 before:top-0 before:h-full before:border-l before:border-muted-foreground/40 " +
+  "after:absolute after:left-0 after:border-t after:border-muted-foreground/40";
+const BRANCH_SHORT = "pl-1 after:w-1 sm:pl-2 sm:after:w-2";
+/**
+ * Người KHÔNG có con thì không có mũi tên. Thay vì để trống ô 36px đó
+ * ngay trong dòng (trông như thụt lề thừa), kéo dài nét ngang qua chỗ ấy
+ * tới sát ảnh: ảnh vẫn thẳng cột với anh chị em có mũi tên, mà không còn
+ * khoảng trống vô nghĩa. 32px = ô mũi tên 36 + khe 4 − đệm trái 8 của dòng.
+ */
+const BRANCH_LONG = "pl-9 after:w-9 sm:pl-10 sm:after:w-10";
+/** Nét ngang rơi đúng tâm mũi tên của dòng người (4 + 6 + 18). */
+const BRANCH_PERSON = "after:top-[28px] last:before:h-[28px]";
+/** …và đúng tâm dấu ⚭ của đầu nhóm hôn nhân (dòng cao ~46px, canh giữa). */
+const BRANCH_GROUP = `${BRANCH_LINES} ${BRANCH_SHORT} after:top-[27px] last:before:h-[27px]`;
+
+/**
+ * Ảnh có viền màu theo đời.
+ *
+ * Viền là một vòng đệm 2px quanh ảnh chứ không phải `border` trên ảnh:
+ * người chưa ghi đời vẫn giữ nguyên vòng đệm (trong suốt), nên ảnh ở mọi
+ * dòng to bằng nhau và tên không bị xô lệch.
+ */
+function RingAvatar({
+  generation,
+  ...avatar
+}: { generation: number | null } & Parameters<typeof PersonAvatar>[0]) {
+  return (
+    <span
+      className="inline-flex shrink-0 rounded-full p-[2px]"
+      style={{ backgroundColor: generationColor(generation) ?? "transparent" }}
+    >
+      <PersonAvatar {...avatar} />
+    </span>
+  );
+}
+
+/**
+ * Ký hiệu giới tính đứng ngay sau tên.
+ *
+ * Ảnh mặc định đã phân nam nữ, nhưng ai có ảnh thật thì mất dấu hiệu đó
+ * — và tên đệm "Thị/Văn" không phải lúc nào cũng có. Kèm chữ ẩn cho
+ * trình đọc màn hình, vì màu và hình thì họ không đọc được.
+ */
+function GenderIcon({ gender }: { gender: "M" | "F" }) {
+  const Icon = gender === "M" ? IconMale : IconFemale;
+  return (
+    <>
+      <Icon
+        className={`ml-1 inline h-3.5 w-3.5 align-[-2px] ${
+          gender === "M" ? "text-sky-500" : "text-pink-500"
+        }`}
+      />
+      <span className="sr-only">{gender === "M" ? " (nam)" : " (nữ)"}</span>
+    </>
+  );
+}
+
+/**
+ * Dòng phụ dưới tên: huy hiệu đời + năm sinh–mất. LUÔN chiếm một dòng,
+ * kể cả khi không có gì để ghi: người thiếu năm sinh mà mất luôn dòng
+ * này thì thấp hơn hàng xóm, tên vợ chồng đứng cạnh nhau cao thấp lệch.
+ *
+ * Đời là HUY HIỆU tô màu chứ không phải chữ xám lẫn với năm sinh: đó là
+ * thứ người ta dò đầu tiên khi lướt một cột dài.
+ */
+function MetaLine({
+  generation = null,
+  text,
+}: {
   generation?: number | null;
+  text: string;
+}) {
+  const color = generationColor(generation);
+  return (
+    <span className="flex min-h-[18px] flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+      {color && (
+        <span
+          className="whitespace-nowrap rounded-full px-1.5 text-[10px] font-semibold leading-[16px] text-white"
+          style={{ backgroundColor: color }}
+        >
+          Đời {generation}
+        </span>
+      )}
+      {text}
+    </span>
+  );
+}
+
+/**
+ * Nền nhạt theo màu đời cho cả dòng — anh em một đời thành một dải cùng
+ * tông, con cháu bên dưới đổi tông, nên dòng nào ra dòng nấy dù không kẻ
+ * vạch ngăn. Chưa ghi đời thì dùng nền xám chung.
+ */
+function rowTint(generation: number | null): CSSProperties | undefined {
+  const color = generationColor(generation);
+  return color
+    ? { backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)` }
+    : undefined;
+}
+
+/** Năm sinh–mất. Tách hàm vì dùng ở cả người lẫn vợ/chồng. */
+function metaLine(p: {
   birthYear: number | null;
   deathYear: number | null;
   isLiving: boolean;
 }): string {
-  const bits: string[] = [];
-  if (p.generation != null) bits.push(`đời ${p.generation}`);
-  if (p.birthYear || p.deathYear) {
-    bits.push(
-      `${p.birthYear ?? "?"}–${p.deathYear ?? (p.isLiving ? "nay" : "?")}`,
-    );
-  }
-  return bits.join(" · ");
+  if (!p.birthYear && !p.deathYear) return "";
+  return `${p.birthYear ?? "?"}–${p.deathYear ?? (p.isLiving ? "nay" : "?")}`;
 }
 
 export function TreeFolderView({
@@ -97,6 +220,16 @@ export function TreeFolderView({
   source: TreeSource;
 }) {
   const { user } = useAuth();
+
+  // Ô tìm giữ giá trị gõ tức thời; chỉ giá trị đã chờ 300ms mới đem đi
+  // hỏi máy chủ — không thì mỗi phím một lượt truy vấn.
+  const [search, setSearch] = useState("");
+  const [debounced, setDebounced] = useState("");
+  useEffect(() => {
+    const h = setTimeout(() => setDebounced(search), 300);
+    return () => clearTimeout(h);
+  }, [search]);
+
   const rootsQ = useQuery({
     queryKey: ["folder-roots", clanId, source],
     queryFn: () => loadFolderRoots(clanId, source),
@@ -126,23 +259,39 @@ export function TreeFolderView({
     return <ErrorState error={rootsQ.error} onRetry={() => rootsQ.refetch()} />;
 
   const { roots, orphanCount } = rootsQ.data!;
+  const searching = debounced.trim().length > 0;
 
   return (
     <GhostSpouseContext.Provider value={ghostsByPerson}>
     <div className="rounded-xl border bg-card p-2 sm:p-3">
+      <Input
+        type="search"
+        icon={<IconSearch />}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Tìm người theo tên…"
+        aria-label="Tìm người trong cây"
+        className="mb-2"
+      />
+      {searching && (
+        <SearchResults clanId={clanId} source={source} q={debounced.trim()} />
+      )}
+
+      {/* Đang tìm thì GIẤU cây chứ không gỡ ra: gỡ là mất sạch những
+          nhánh người dùng đã bung, xoá ô tìm xong phải mở lại từ đầu. */}
+      <div className={searching ? "hidden" : undefined}>
       {roots.length === 0 && orphanCount === 0 && (
         <p className="p-4 text-sm text-muted-foreground">
           Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu.
         </p>
       )}
-      <ul className="space-y-0.5">
+      <ul className="space-y-1">
         {roots.map((r) => (
           <PersonNode
             key={r.id}
             clanId={clanId}
             source={source}
             person={r}
-            depth={0}
             defaultOpen
           />
         ))}
@@ -155,8 +304,64 @@ export function TreeFolderView({
           count={orphanCount}
         />
       )}
+      </div>
     </div>
     </GhostSpouseContext.Provider>
+  );
+}
+
+/** Kết quả tìm theo tên — mỗi người vẫn bung được con cháu ngay tại chỗ. */
+function SearchResults({
+  clanId,
+  source,
+  q,
+}: {
+  clanId: string;
+  source: TreeSource;
+  q: string;
+}) {
+  const LIMIT = 30;
+  const hitsQ = useQuery({
+    queryKey: ["folder-search", clanId, source, q],
+    queryFn: () => loadFolderSearch(clanId, q, source, undefined, LIMIT),
+  });
+
+  if (hitsQ.isLoading)
+    return <p className="p-2 text-xs text-muted-foreground">Đang tìm…</p>;
+  if (hitsQ.error)
+    return <ErrorState error={hitsQ.error} onRetry={() => hitsQ.refetch()} />;
+
+  const hits = hitsQ.data ?? [];
+  if (hits.length === 0) {
+    return (
+      <p className="p-2 text-sm text-muted-foreground">
+        Không tìm thấy ai tên “{q}”.
+      </p>
+    );
+  }
+  return (
+    <>
+      <ul className="space-y-1">
+        {hits.map((h) => (
+          <PersonNode
+            key={h.person.id}
+            clanId={clanId}
+            source={source}
+            person={h.person}
+            note={
+              h.parentNames.length > 0
+                ? `con của ${h.parentNames.join(" & ")}`
+                : undefined
+            }
+          />
+        ))}
+      </ul>
+      {hits.length >= LIMIT && (
+        <p className="p-2 text-xs text-muted-foreground">
+          Chỉ hiện {LIMIT} người đầu — gõ thêm chữ để thu hẹp.
+        </p>
+      )}
+    </>
   );
 }
 
@@ -165,14 +370,18 @@ function PersonNode({
   clanId,
   source,
   person,
-  depth,
   defaultOpen = false,
+  note,
+  branch = false,
 }: {
   clanId: string;
   source: TreeSource;
   person: FolderChild;
-  depth: number;
   defaultOpen?: boolean;
+  /** Ghi chú thêm ở dòng phụ — kết quả tìm kiếm dùng để nêu cha mẹ. */
+  note?: string;
+  /** Là con treo dưới một người khác → vẽ nét nối vào đường gióng. */
+  branch?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -205,13 +414,25 @@ function PersonNode({
     ...spouses.map((sp) => sp.photoPath),
   ]);
 
-  const meta = metaLine(person);
+  const meta = [metaLine(person), note].filter(Boolean).join(" · ");
 
   return (
-    <li>
+    <li
+      className={
+        branch
+          ? `${BRANCH_LINES} ${BRANCH_PERSON} ${
+              person.hasChildren ? BRANCH_SHORT : BRANCH_LONG
+            }`
+          : undefined
+      }
+    >
       <div
-        className="flex items-start gap-1 rounded-md hover:bg-muted/50"
-        style={{ paddingLeft: depth * 16 }}
+        className={`flex items-start gap-1 rounded-md pr-2 ${
+          branch && !person.hasChildren ? "pl-2" : ""
+        } hover:ring-1 hover:ring-border ${
+          person.generation == null ? "bg-muted/40" : ""
+        }`}
+        style={rowTint(person.generation)}
       >
         {/* Mũi tên chỉ hiện khi CÓ con — biết trước nhờ cờ hasChildren,
             không phải tải thử rồi mới biết. */}
@@ -228,7 +449,9 @@ function PersonNode({
             />
           </button>
         ) : (
-          <span className="inline-block h-9 w-9 shrink-0" aria-hidden />
+          // Ngoài danh sách phẳng (gốc, kết quả tìm) vẫn giữ ô trống cho
+          // ảnh thẳng cột; trong cây thì nét nối đã lấp chỗ này.
+          !branch && <span className="inline-block h-9 w-9 shrink-0" aria-hidden />
         )}
 
         {/* MỘT NODE = vợ chồng đứng cùng dòng, thông tin đời/năm xuống
@@ -246,13 +469,13 @@ function PersonNode({
             to={`/clans/${clanId}/people/${person.id}`}
             className="flex min-w-0 items-center gap-2"
           >
-            <PersonAvatar
+            <RingAvatar
+              generation={person.generation}
               gender={person.gender}
               photoUrl={
                 person.photoPath ? photoUrls.get(person.photoPath) : null
               }
               size={32}
-              className="shrink-0"
             />
             <span className="min-w-0">
               {/* Cho XUỐNG DÒNG chứ không cắt cụt: tên bốn năm chữ là
@@ -261,12 +484,9 @@ function PersonNode({
                   riêng nên xuống dòng không làm lộn xộn. */}
               <span className="block break-words text-sm font-medium">
                 {person.name}
+                <GenderIcon gender={person.gender} />
               </span>
-              {meta && (
-                <span className="block text-xs text-muted-foreground">
-                  {meta}
-                </span>
-              )}
+              <MetaLine generation={person.generation} text={meta} />
             </span>
           </Link>
 
@@ -275,29 +495,32 @@ function PersonNode({
               key={sp.id}
               clanId={clanId}
               spouse={sp}
+              generation={person.generation}
               photoUrls={photoUrls}
             />
           ))}
 
           {ghosts.map((g) => (
-            <SpouseChip key={g.key} clanId={clanId} ghost={g} />
+            <SpouseChip
+              key={g.key}
+              clanId={clanId}
+              ghost={g}
+              generation={person.generation}
+            />
           ))}
 
         </div>
       </div>
 
-      {open && (
-        <>
+      {open && (nodeQ.isLoading || nodeQ.data) && (
+        <div className={RAIL}>
           {nodeQ.isLoading && (
-            <p
-              className="py-1 text-xs text-muted-foreground"
-              style={{ paddingLeft: (depth + 1) * 16 + 36 }}
-            >
+            <p className="py-1 pl-9 text-xs text-muted-foreground">
               Đang tải…
             </p>
           )}
           {nodeQ.data && (
-            <ul className="space-y-0.5">
+            <ul>
               {/* Một cuộc hôn nhân: con nằm thẳng dưới, không thêm tầng. */}
               {nodeQ.data.directChildren.map((c) => (
                 <PersonNode
@@ -305,39 +528,42 @@ function PersonNode({
                   clanId={clanId}
                   source={source}
                   person={c}
-                  depth={depth + 1}
+                  branch
                 />
               ))}
 
               {/* Hai cuộc trở lên: mỗi cuộc một nhóm. */}
               {nodeQ.data.groups.map((g) => (
-                <li key={g.familyId}>
+                <li key={g.familyId} className={BRANCH_GROUP}>
                   {/* Đa thê: mỗi cuộc hôn nhân một nhóm, có ảnh vợ để
-                      nhận ra ngay chứ không phải đọc tên rồi đoán. */}
+                      nhận ra ngay chứ không phải đọc tên rồi đoán. Con
+                      của bà nào treo trên đường gióng mọc từ dấu ⚭ của
+                      bà ấy. */}
                   <GroupHeader
                     clanId={clanId}
                     group={g}
                     personGender={person.gender}
-                    indent={(depth + 1) * 16 + 36}
+                    generation={person.generation}
                   />
-                  <ul className="space-y-0.5">
-                    {g.children.map((c) => (
-                      <PersonNode
-                        key={c.id}
-                        clanId={clanId}
-                        source={source}
-                        person={c}
-                        depth={depth + 2}
-                      />
-                    ))}
-                  </ul>
+                  {g.children.length > 0 && (
+                    <ul className={RAIL}>
+                      {g.children.map((c) => (
+                        <PersonNode
+                          key={c.id}
+                          clanId={clanId}
+                          source={source}
+                          person={c}
+                          branch
+                        />
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>
           )}
-        </>
+        </div>
       )}
-
     </li>
   );
 }
@@ -354,11 +580,14 @@ function SpouseChip({
   clanId,
   spouse,
   ghost,
+  generation,
   photoUrls,
 }: {
   clanId: string;
   spouse?: FolderSpouse;
   ghost?: FolderGhostSpouse;
+  /** Đời của người bạn đời trong họ — vợ chồng ngang hàng nên chung màu. */
+  generation: number | null;
   photoUrls?: Map<string, string>;
 }) {
   const person = spouse ?? ghost!.spouse;
@@ -371,28 +600,30 @@ function SpouseChip({
       <span className="shrink-0 text-muted-foreground" aria-hidden>
         ⚭
       </span>
-      <PersonAvatar
+      {/* Dâu/rể bên thông gia giữ viền đứt như cây 2D, không tô màu đời:
+          viền đứt là dấu hiệu "hồ sơ nằm ở họ khác", đè màu lên là mất. */}
+      <RingAvatar
+        generation={ghost ? null : generation}
         gender={person.gender}
         photoUrl={
           person.photoPath ? (photoUrls?.get(person.photoPath) ?? null) : null
         }
         size={28}
-        className={`shrink-0 opacity-90 ${
+        className={`opacity-90 ${
           ghost ? "border border-dashed border-accent" : ""
         }`}
       />
       <span className="min-w-0">
         <span className="block break-words text-sm">
           {person.name}
+          <GenderIcon gender={person.gender} />
           {ghost && (
             <span className="ml-1.5 whitespace-nowrap rounded bg-accent/15 px-1.5 py-0.5 text-[11px] font-medium text-accent">
               {ghost.peerClanName}
             </span>
           )}
         </span>
-        {meta && (
-          <span className="block text-xs text-muted-foreground">{meta}</span>
-        )}
+        <MetaLine text={meta} />
       </span>
     </>
   );
@@ -465,14 +696,13 @@ function UnlinkedSection({
           {listQ.isLoading && (
             <p className="text-xs text-muted-foreground">Đang tải…</p>
           )}
-          <ul className="space-y-0.5">
+          <ul className="space-y-1">
             {(listQ.data ?? []).map((p) => (
               <PersonNode
                 key={p.id}
                 clanId={clanId}
                 source={source}
                 person={p}
-                depth={0}
               />
             ))}
           </ul>
@@ -503,12 +733,12 @@ function GroupHeader({
   clanId,
   group,
   personGender,
-  indent,
+  generation,
 }: {
   clanId: string;
   group: FolderGroup;
   personGender: "M" | "F";
-  indent: number;
+  generation: number | null;
 }) {
   const photoUrls = usePhotoUrls([group.spouse?.photoPath ?? null]);
   const spouse = group.spouse;
@@ -516,15 +746,13 @@ function GroupHeader({
 
   const label = (
     <span className="flex min-w-0 items-center gap-2">
-      <span aria-hidden className="text-muted-foreground">
-        ⚭
-      </span>
       {spouse && (
-        <PersonAvatar
+        <RingAvatar
+          generation={generation}
           gender={spouse.gender}
           photoUrl={spouse.photoPath ? photoUrls.get(spouse.photoPath) : null}
           size={26}
-          className="shrink-0 opacity-90"
+          className="opacity-90"
         />
       )}
       <span className="min-w-0">
@@ -534,6 +762,7 @@ function GroupHeader({
           }`}
         >
           {groupLabel(group, personGender)}
+          {spouse && <GenderIcon gender={spouse.gender} />}
         </span>
         <span className="block text-xs text-muted-foreground">
           {[meta, group.children.length > 0 ? `${group.children.length} con` : "chưa có con"]
@@ -545,9 +774,19 @@ function GroupHeader({
   );
 
   return (
-    <div className="py-1" style={{ paddingLeft: indent }}>
+    <div className="flex items-center gap-1 py-1">
+      {/* Dấu ⚭ đứng đúng ô mũi tên của các dòng anh em, để đường gióng
+          xuống đám con mọc ra từ chính nó. */}
+      <span
+        aria-hidden
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center text-muted-foreground"
+      >
+        ⚭
+      </span>
       {spouse ? (
-        <Link to={`/clans/${clanId}/people/${spouse.id}`}>{label}</Link>
+        <Link to={`/clans/${clanId}/people/${spouse.id}`} className="min-w-0">
+          {label}
+        </Link>
       ) : (
         label
       )}

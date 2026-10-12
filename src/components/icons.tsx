@@ -503,6 +503,28 @@ export function IconUser(p: IconProps) {
   );
 }
 
+/** Ký hiệu nam (♂). */
+export function IconMale(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M16 3h5v5" />
+      <path d="m21 3-6.75 6.75" />
+      <circle cx="10" cy="14" r="6" />
+    </Svg>
+  );
+}
+
+/** Ký hiệu nữ (♀). */
+export function IconFemale(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 15v7" />
+      <path d="M9 19h6" />
+      <circle cx="12" cy="9" r="6" />
+    </Svg>
+  );
+}
+
 export function IconBuildings(p: IconProps) {
   return (
     <Svg {...p}>

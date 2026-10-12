@@ -95,6 +95,39 @@ export function rankLabelFor(
   return RANK_LABEL[spouseOrder] ?? `Vợ thứ ${spouseOrder}`;
 }
 
+/**
+ * Màu viền ảnh theo ĐỜI — cùng đời thì cùng màu, để lướt mắt là biết ai
+ * ngang hàng với ai mà không phải đọc chữ "đời 4" ở từng dòng.
+ *
+ * Tám màu xoay vòng: đủ để hai đời liền nhau (và cả ông–cháu) không bao
+ * giờ trùng, mà vẫn ít để mắt còn phân biệt được. Chọn tông đủ đậm để
+ * chữ trắng trên huy hiệu "Đời N" còn đọc được, mà vẫn nổi trên cả nền
+ * giấy lẫn nền tối.
+ */
+export const GENERATION_COLORS = [
+  "#C0392B",
+  "#C2741A",
+  "#9A8514",
+  "#2F8A42",
+  "#17877F",
+  "#2F7FD1",
+  "#7A5BD6",
+  "#C2479A",
+] as const;
+
+/** null = chưa ghi đời → không tô, chứ không gán bừa một màu. */
+export function generationColor(generation: number | null): string | null {
+  if (generation == null || !Number.isFinite(generation)) return null;
+  const n = GENERATION_COLORS.length;
+  return GENERATION_COLORS[(((Math.trunc(generation) - 1) % n) + n) % n];
+}
+
+/** Một kết quả tìm kiếm: người + tên cha mẹ để biết họ thuộc nhánh nào. */
+export interface FolderSearchHit {
+  person: FolderChild;
+  parentNames: string[];
+}
+
 const year = (d: string | null): number | null =>
   d ? Number(d.slice(0, 4)) || null : null;
 

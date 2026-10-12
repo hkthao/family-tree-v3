@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildFolderNode,
+  generationColor,
+  GENERATION_COLORS,
   groupLabel,
   rankLabelFor,
   visibleGhostSpouses,
@@ -320,5 +322,18 @@ describe("dâu/rể ở dòng họ thông gia", () => {
     expect(visibleGhostSpouses([], [ghost()])[0].key).toBe(
       "ghost:link-1:peer-1",
     );
+  });
+});
+
+describe("generationColor", () => {
+  it("cùng đời cùng màu, hai đời liền nhau khác màu", () => {
+    expect(generationColor(3)).toBe(generationColor(3));
+    expect(generationColor(3)).not.toBe(generationColor(4));
+  });
+  it("xoay vòng khi vượt quá bảng màu", () => {
+    expect(generationColor(1)).toBe(generationColor(1 + GENERATION_COLORS.length));
+  });
+  it("chưa ghi đời thì không tô", () => {
+    expect(generationColor(null)).toBeNull();
   });
 });

@@ -3,7 +3,7 @@
  * @vitest-environment jsdom
  */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
@@ -47,6 +47,23 @@ vi.mock("@/lib/queries/treeFolder", () => ({
   })),
   loadFolderNode: vi.fn(),
   loadUnlinked: vi.fn(),
+  loadFolderSearch: vi.fn(async () => [
+    {
+      person: {
+        id: "p9",
+        name: "Nguyễn Văn Cháu",
+        gender: "M",
+        generation: 4,
+        birthYear: null,
+        deathYear: null,
+        isLiving: true,
+        photoPath: null,
+        hasChildren: false,
+        spouses: [],
+      },
+      parentNames: ["Nguyễn Văn Cha", "Trần Thị Mẹ"],
+    },
+  ]),
 }));
 
 import { TreeFolderView } from "@/components/TreeFolderView";
@@ -66,5 +83,26 @@ describe("TreeFolderView với cache của bản cũ", () => {
     await waitFor(() =>
       expect(screen.getByText("Nguyễn Văn Tổ")).toBeInTheDocument(),
     );
+  });
+
+  it("gõ vào ô tìm thì hiện kết quả kèm tên cha mẹ", async () => {
+    const qc = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={qc}>
+        <MemoryRouter>
+          <TreeFolderView clanId="c1" source="persons" />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    const box = await screen.findByLabelText("Tìm người trong cây");
+    fireEvent.change(box, { target: { value: "cháu" } });
+    await waitFor(() =>
+      expect(screen.getByText("Nguyễn Văn Cháu")).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText(/con của Nguyễn Văn Cha & Trần Thị Mẹ/),
+    ).toBeInTheDocument();
   });
 });
