@@ -23,7 +23,7 @@ import { useAsync } from "../useAsync";
  * thứ tự con, tuổi thọ ghi tay, Thuỷ tổ, chi…) không nằm trong lệnh cập
  * nhật nên giữ nguyên giá trị cũ, không bị xoá mất.
  */
-function DateField({
+export function DateField({
   label,
   value,
   onChange,

@@ -60,6 +60,7 @@ export function PersonScreen({
   genOffset,
   rev = 0,
   onEdit,
+  onAdd,
   openPerson,
 }: {
   clanId: string;
@@ -68,6 +69,8 @@ export function PersonScreen({
   rev?: number;
   /** Có thì hiện nút "Sửa" — chỉ truyền khi người dùng có quyền sửa. */
   onEdit?: () => void;
+  /** Có thì hiện nút "+ Thêm" ở nhóm Vợ/chồng và Con cái. */
+  onAdd?: (relation: "spouse" | "child") => void;
   personId: string;
   /** Khách xem họ công khai đọc bản đã che thông tin người còn sống. */
   source: "persons" | "persons_public_safe";
@@ -104,9 +107,19 @@ export function PersonScreen({
   const p: PersonDetail = q.data.person;
   const tho = p.is_living ? null : computeLifespanYears(p.lifespan_years, p.birth_date, p.death_date);
 
-  const group = (label: string, items: Relationship[], emptyHint: string) => (
+  const group = (
+    label: string,
+    items: Relationship[],
+    emptyHint: string,
+    add?: "spouse" | "child",
+  ) => (
     <div className="relgroup">
-      <h4>{label}</h4>
+      <h4 className="sec-row">
+        {label}
+        {add && onAdd && (
+          <button type="button" className="btn ghost addbtn" onClick={() => onAdd(add)}>+ Thêm</button>
+        )}
+      </h4>
       {items.length === 0 ? (
         <div className="hintbox">{emptyHint}</div>
       ) : (
@@ -188,8 +201,8 @@ export function PersonScreen({
         <section className="card pane">
           <h3 className="serif">Quan hệ</h3>
           {group("Cha mẹ", rel.parents, "Chưa nhập cha mẹ")}
-          {group("Vợ / chồng", rel.spouses, "Chưa có vợ / chồng.")}
-          {group("Con cái", rel.children, "Chưa có con cái.")}
+          {group("Vợ / chồng", rel.spouses, "Chưa có vợ / chồng.", "spouse")}
+          {group("Con cái", rel.children, "Chưa có con cái.", "child")}
         </section>
       )}
 
