@@ -58,10 +58,16 @@ export function PersonScreen({
   personId,
   source,
   genOffset,
+  rev = 0,
+  onEdit,
   openPerson,
 }: {
   clanId: string;
   clanName: string;
+  /** Đổi giá trị này để tải lại hồ sơ (sau khi sửa xong). */
+  rev?: number;
+  /** Có thì hiện nút "Sửa" — chỉ truyền khi người dùng có quyền sửa. */
+  onEdit?: () => void;
   personId: string;
   /** Khách xem họ công khai đọc bản đã che thông tin người còn sống. */
   source: "persons" | "persons_public_safe";
@@ -74,7 +80,7 @@ export function PersonScreen({
       getPersonRelationships(personId, undefined, source),
     ]);
     return { person, rel };
-  }, [personId, source]);
+  }, [personId, source, rev]);
   const rel = q.data?.rel;
   const all = rel ? [...rel.parents, ...rel.spouses, ...rel.children] : [];
   const photo = usePhotoUrls([q.data?.person?.photo_path, ...all.map((r) => r.photo_path)]);
@@ -187,14 +193,19 @@ export function PersonScreen({
         </section>
       )}
 
-      {/* Sửa hồ sơ, thêm người thân… là việc của bản web. */}
       <div className="cta">
+        {onEdit && (
+          <button type="button" className="btn block" style={{ marginBottom: 8 }} onClick={onEdit}>
+            Sửa thông tin
+          </button>
+        )}
+        {/* Ảnh, quan hệ, mộ phần… vẫn sửa ở bản web. */}
         <button
           type="button"
           className="btn ghost block"
           onClick={() => openWebview({ url: `${WEB}/clans/${clanId}/people/${personId}` })}
         >
-          Sửa hồ sơ trên bản web đầy đủ
+          Mở trên bản web đầy đủ
         </button>
       </div>
     </div>

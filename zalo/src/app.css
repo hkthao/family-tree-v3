@@ -408,3 +408,13 @@ html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
 .btn.danger { background:#B3261E; color:#fff; }
 .dangertext { color:#C5392F; }
 html.dark .dangertext { color:#F0786E; }
+
+/* ── Form sửa hồ sơ ── */
+.fgroup { margin-bottom:12px; } .fgroup:last-child { margin-bottom:0; }
+.frow { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.fgroup .seg button { padding:8px 14px; }
+.dmy { display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:8px; margin-top:6px; }
+.dmy .field { text-align:center; padding:0 6px; }
+.area { height:auto; padding:10px 12px; line-height:1.5; resize:vertical; font-family:inherit; }
+.lbl { display:block; font-size:13px; font-weight:500; }
+.cta .btn { box-shadow:0 2px 10px rgba(0,0,0,.18); }
