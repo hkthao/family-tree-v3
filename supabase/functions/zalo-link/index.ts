@@ -1,7 +1,11 @@
 /**
  * zalo-link: gắn ID Zalo vào một tài khoản SẴN CÓ (đăng ký bằng email).
  *
- * Hai bước, mỗi bước đều phải kèm access token Zalo còn hiệu lực:
+ * Ngoài ra: "status" (Zalo này đang liên kết với email nào), "unlink" (bỏ
+ * liên kết — không xoá gì của tài khoản email), "forget" (dọn sau khi xoá
+ * tài khoản).
+ *
+ * Liên kết gồm hai bước, mỗi bước đều phải kèm access token Zalo còn hiệu lực:
  *   { action: "request", accessToken, email } → gửi mã 6 số tới email đó.
  *   { action: "confirm", accessToken, code }  → đúng mã thì trỏ ID Zalo sang
  *                                               tài khoản kia, trả token_hash
@@ -25,7 +29,12 @@ import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 import { err, json, preflight } from "../_shared/cors.ts";
 import { encodeSubject } from "../_shared/mail.ts";
-import { fetchZaloProfile, hmacSha256Hex, ZALO_APP_SECRET } from "../_shared/zalo.ts";
+import {
+  fetchZaloProfile,
+  hmacSha256Hex,
+  ZALO_APP_SECRET,
+  ZALO_SYNTHETIC_EMAIL_DOMAIN,
+} from "../_shared/zalo.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -239,6 +248,50 @@ Deno.serve(async (req) => {
       return err("Đã liên kết, nhưng chưa đăng nhập được. Hãy mở lại Mini App.", 500);
     }
     return json({ tokenHash });
+  }
+
+  // ─── Trạng thái liên kết (cho màn Tài khoản) ──────────────────────
+  if (body.action === "status") {
+    const { data: link } = await sb
+      .from("zalo_identities")
+      .select("user_id, created_at")
+      .eq("zalo_user_id", profile.id)
+      .maybeSingle();
+    if (!link) return json({ linked: false });
+    const { data: u } = await sb.auth.admin.getUserById(link.user_id);
+    const email = u.user?.email ?? null;
+    // "Liên kết" nghĩa là Zalo đang trỏ vào một tài khoản CÓ EMAIL THẬT.
+    // Tài khoản tạm (email giả) thì chưa liên kết với gì cả.
+    const real = !!email && !email.endsWith(`@${ZALO_SYNTHETIC_EMAIL_DOMAIN}`);
+    return json({ linked: real, email: real ? email : null, linkedAt: real ? link.created_at : null });
+  }
+
+  // ─── Bỏ liên kết ──────────────────────────────────────────────────
+  // Gỡ đường nối Zalo → tài khoản email. Tài khoản email và dữ liệu của nó
+  // KHÔNG bị đụng tới (vẫn đăng nhập được trên web); chỉ là Zalo này không
+  // còn vào được nó nữa. Lần mở Mini App sau, zalo-auth cấp tài khoản tạm.
+  if (body.action === "unlink") {
+    const { data: link } = await sb
+      .from("zalo_identities")
+      .select("user_id")
+      .eq("zalo_user_id", profile.id)
+      .maybeSingle();
+    if (!link) return err("Zalo này chưa liên kết với tài khoản nào.", 409);
+    const { data: u } = await sb.auth.admin.getUserById(link.user_id);
+    const email = u.user?.email ?? "";
+    if (!email || email.endsWith(`@${ZALO_SYNTHETIC_EMAIL_DOMAIN}`)) {
+      // Gỡ nối của tài khoản tạm là bỏ mặc nó không ai vào được.
+      return err("Tài khoản này chưa liên kết với email nào để bỏ.", 409);
+    }
+    const { error: delErr } = await sb
+      .from("zalo_identities")
+      .delete()
+      .eq("zalo_user_id", profile.id);
+    if (delErr) {
+      console.error("zalo-link: bỏ liên kết:", delErr.message);
+      return err("Lỗi máy chủ. Thử lại sau.", 500);
+    }
+    return json({ ok: true });
   }
 
   // ─── Dọn sau khi XOÁ TÀI KHOẢN ────────────────────────────────────

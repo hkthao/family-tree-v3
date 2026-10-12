@@ -53,7 +53,7 @@ type Tab = "clans" | "anniv" | "account";
 
 const TABS: { id: Tab; label: string; title: string; icon: JSX.Element }[] = [
   { id: "clans", label: "Dòng họ", title: "Dòng Họ Việt", icon: <IconBuildings /> },
-  { id: "anniv", label: "Ngày giỗ", title: "Ngày giỗ sắp tới", icon: <IconCalendar /> },
+  { id: "anniv", label: "Sự kiện", title: "Sự kiện", icon: <IconCalendar /> },
   { id: "account", label: "Tài khoản", title: "Tài khoản", icon: <IconUser /> },
 ];
 

@@ -131,3 +131,27 @@ export async function forgetZaloLeftovers(): Promise<void> {
     /* dọn dẹp không thành — không ảnh hưởng việc xoá tài khoản */
   }
 }
+
+export interface LinkStatus {
+  linked: boolean;
+  email: string | null;
+  linkedAt: string | null;
+}
+
+/** Zalo này đang liên kết với tài khoản email nào (nếu có), từ bao giờ. */
+export async function getLinkStatus(): Promise<LinkStatus> {
+  const accessToken = await getAccessToken();
+  if (!accessToken) throw new NotInZaloError();
+  return callFunction<LinkStatus>("zalo-link", { action: "status", accessToken });
+}
+
+/**
+ * Bỏ liên kết Zalo khỏi tài khoản email. Tài khoản email vẫn còn nguyên
+ * (đăng nhập được trên web); Mini App thì quay về một tài khoản Zalo riêng.
+ */
+export async function unlinkZalo(): Promise<void> {
+  const accessToken = await getAccessToken();
+  if (!accessToken) throw new NotInZaloError();
+  await callFunction("zalo-link", { action: "unlink", accessToken });
+  await supabase.auth.signOut({ scope: "local" });
+}
