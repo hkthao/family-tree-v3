@@ -231,7 +231,7 @@ export function ClanScreen({
   const pane = "tabpane";
 
   return (
-    <div className="has-tabs">
+    <div className="has-tabs inner">
       <div className={pane} style={show("overview")}>
         <Overview clan={clan} upcoming={upcoming} go={go} openPerson={openPerson} />
       </div>

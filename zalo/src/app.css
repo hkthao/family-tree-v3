@@ -343,7 +343,7 @@ html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
 .screen.hidden { visibility:hidden; }
 .screen.under { pointer-events:none; }
 .screen.top { z-index:2; box-shadow:-8px 0 24px rgba(0,0,0,.18); }
-.screen.in { animation:slideIn 240ms cubic-bezier(.22,.8,.3,1) both; }
+.screen.in { animation:slideIn 240ms cubic-bezier(.22,.8,.3,1); }
 .screen.out { animation:slideOut 240ms cubic-bezier(.4,0,.8,.4) both; pointer-events:none; }
 @keyframes slideIn { from { transform:translateX(100%); } to { transform:none; } }
 @keyframes slideOut { from { transform:none; } to { transform:translateX(100%); } }
@@ -359,3 +359,11 @@ html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
 .screen.with-devbar { padding-top:34px; }
 /* Phần tử dính (ô tìm, nút đáy) giờ dính theo khung cuộn của màn hình. */
 .tabbar { z-index:3; }
+
+/* Thanh tab của trang dòng họ nằm TRONG khung cuộn của màn hình, nên dùng
+   "dính đáy" chứ không "cố định": phần tử cố định nằm trong một khung đang
+   (hoặc vừa) chạy hiệu ứng trượt sẽ bám theo khung đó thay vì màn hình —
+   kết quả là thanh tab trôi lơ lửng giữa nội dung khi cuộn. */
+.has-tabs.inner { min-height:100%; display:flex; flex-direction:column; padding-bottom:0; }
+.has-tabs.inner > .tabpane { flex:0 0 auto; }
+.has-tabs.inner > .tabbar { position:sticky; bottom:0; left:auto; right:auto; margin-top:auto; }
