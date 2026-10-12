@@ -17,6 +17,7 @@ import { AccountScreen } from "./screens/Account";
 import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
+import { scrollTopScreen } from "./scroll";
 import { ClanScreen } from "./screens/Clan";
 
 /**
@@ -40,6 +41,9 @@ type Screen =
  */
 const sourceOf = (clan: ClanSummary) =>
   clan.role ? ("persons" as const) : ("persons_public_safe" as const);
+
+/** Thời gian trượt màn hình — phải khớp với `.screen.in/.out` trong app.css. */
+const SLIDE_MS = 240;
 
 type Tab = "clans" | "anniv" | "account";
 
@@ -86,6 +90,7 @@ export function App() {
   const [auth, setAuth] = useState<Auth>({ kind: "loading" });
   const [stack, setStack] = useState<Screen[]>([{ kind: "clans" }]);
   const [tab, setTab] = useState<Tab>("clans");
+  const [leaving, setLeaving] = useState(false);
 
   const login = () => {
     setAuth({ kind: "loading" });
@@ -118,7 +123,15 @@ export function App() {
   // nghe sự kiện lùi để gỡ màn hình trên cùng — vuốt ngược trên Android
   // cũng đi đúng đường này.
   useEffect(() => {
-    const onPop = () => setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
+    // Lùi: cho màn hình trên cùng TRƯỢT RA trước rồi mới gỡ khỏi chồng —
+    // gỡ ngay thì nó biến mất cái rụp, không ra dáng app.
+    const onPop = () => {
+      setLeaving(true);
+      window.setTimeout(() => {
+        setStack((st) => (st.length > 1 ? st.slice(0, -1) : st));
+        setLeaving(false);
+      }, SLIDE_MS);
+    };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
@@ -169,25 +182,36 @@ export function App() {
           <button type="button" onClick={() => window.history.back()}>‹ Quay lại</button>
         </div>
       )}
-      {stack.map((s, i) => (
-        // Màn hình bên dưới chỉ bị giấu, để quay lại còn nguyên trạng thái.
-        <div key={i} style={{ display: i === stack.length - 1 ? undefined : "none" }}>
+      {stack.map((s, i) => {
+        // Mỗi màn hình là một khung cuộn RIÊNG phủ kín màn hình, xếp chồng
+        // lên nhau: màn mới trượt vào từ phải, lùi thì trượt ra; màn bên
+        // dưới giữ nguyên trạng thái lẫn vị trí cuộn. Chỉ hai màn trên cùng
+        // được vẽ, các màn sâu hơn ẩn đi cho nhẹ máy.
+        const fromTop = stack.length - 1 - i;
+        const cls =
+          fromTop === 0
+            ? `screen top${i > 0 ? (leaving ? " out" : " in") : ""}`
+            : fromTop === 1
+              ? "screen under"
+              : "screen hidden";
+        return (
+        <div key={i} className={`${cls}${isLocalDev && i > 0 ? " with-devbar" : ""}`}>
           {s.kind === "clans" && (
             // Ba tab gốc đều được giữ sẵn (chỉ giấu), đổi tab không tải lại.
             <div className="has-tabs">
-              <div style={{ display: tab === "clans" ? undefined : "none" }}>
+              <div className="tabpane" style={{ display: tab === "clans" ? undefined : "none" }}>
                 <ClansScreen
                   userId={auth.userId}
                   openClan={(clan) => push({ kind: "tree", clan })}
                 />
               </div>
-              <div style={{ display: tab === "anniv" ? undefined : "none" }}>
+              <div className="tabpane" style={{ display: tab === "anniv" ? undefined : "none" }}>
                 <AnniversariesScreen
                   userId={auth.userId}
                   openPerson={(clan, personId) => push({ kind: "person", clan, personId })}
                 />
               </div>
-              <div style={{ display: tab === "account" ? undefined : "none" }}>
+              <div className="tabpane" style={{ display: tab === "account" ? undefined : "none" }}>
                 <AccountScreen name={auth.name} zaloOnly={auth.zaloOnly} onLinked={login} />
               </div>
             </div>
@@ -210,7 +234,8 @@ export function App() {
             />
           )}
         </div>
-      ))}
+        );
+      })}
 
       {/* Tab chỉ hiện ở màn hình gốc; vào cây/hồ sơ thì nhường chỗ cho nội dung. */}
       {!canGoBack && (
@@ -222,7 +247,7 @@ export function App() {
               aria-current={tab === t.id ? "page" : undefined}
               onClick={() => {
                 setTab(t.id);
-                window.scrollTo(0, 0);
+                scrollTopScreen();
               }}
             >
               {t.icon}
