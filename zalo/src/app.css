@@ -196,8 +196,11 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
 .clan b { flex:1; min-width:0; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .clan .count { flex:none; font-size:12px; color:var(--muted); }
 .clan .desc { margin:4px 0; font-size:13.5px; color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.clan .line { display:flex; align-items:center; gap:4px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
-.clan .line .ic { width:13px; height:13px; }
+/* Không cho xuống dòng giữa các phần tử: icon phải đứng CÙNG dòng với chữ
+   (chữ dài thì tự gãy trong phần của nó, không đẩy icon lên một dòng riêng). */
+.clan .line { display:flex; align-items:flex-start; gap:4px; font-size:12px; color:var(--muted); }
+.clan .line > span { min-width:0; }
+.clan .line .ic { width:13px; height:13px; margin-top:2px; }
 .clan .line strong { color:var(--ink); font-weight:600; }
 .clan .tags { display:flex; justify-content:flex-end; gap:6px; margin-top:6px; }
 .tag { border-radius:999px; padding:1px 8px; font-size:11px; font-weight:600; border:1px solid currentColor; }

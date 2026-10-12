@@ -137,14 +137,19 @@ export function ClansScreen({
               </span>
               {c.description && <span className="desc">{c.description}</span>}
               <span className="line">
-                {c.role && <><strong>{ROLE[c.role]}</strong> • </>}
-                {c.visibility === "public" ? "Công khai" : "Riêng tư"}
+                <span>
+                  {c.role && <><strong>{ROLE[c.role]}</strong> • </>}
+                  {c.visibility === "public" ? "Công khai" : "Riêng tư"}
+                </span>
               </span>
               <span className="line">
-                Tạo {formatDate(c.created_at)} • Cập nhật {formatRelative(c.updated_at)}
+                <span>Tạo {formatDate(c.created_at)} • Cập nhật {formatRelative(c.updated_at)}</span>
               </span>
               {inlaws.length > 0 && (
-                <span className="line"><IconLink className="ic" /> Thông gia: {inlaws.map((x: { clan_name: string }) => x.clan_name).join(", ")}</span>
+                <span className="line">
+                  <IconLink className="ic" />
+                  <span>Thông gia: {inlaws.map((x: { clan_name: string }) => x.clan_name).join(", ")}</span>
+                </span>
               )}
               {gens ? (
                 <span className="tags">
