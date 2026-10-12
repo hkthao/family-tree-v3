@@ -319,3 +319,9 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
 .cevent { padding:10px 0; } .cevent + .cevent { border-top:1px solid var(--line); }
 .cevent b { display:block; font-size:15.5px; font-weight:600; }
 .empty b { display:block; margin-top:6px; }
+
+/* Hàng công cụ canh phải dưới đầu trang (như trang Sự kiện của web). */
+.toolrow { display:flex; justify-content:flex-end; gap:8px; margin:0 0 10px; }
+.toolrow .seg button { padding:0 12px; height:40px; display:flex; align-items:center; }
+.ev { align-items:center; }
+.ev .evwhen { align-self:flex-start; }

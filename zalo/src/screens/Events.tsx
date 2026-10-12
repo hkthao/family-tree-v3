@@ -2,7 +2,8 @@ import { useState } from "react";
 
 import { IconBellOff, IconCalendar, IconGrid, IconList } from "@/components/icons";
 import { formatDate, formatRelative } from "@/lib/formatDate";
-import { formatCanChiShort, formatLunarDate, getCanChiForSolarDate } from "@/lib/lunarDate";
+import { eventWhenText } from "@/lib/eventWhen";
+import { formatCanChiShort, getCanChiForSolarDate } from "@/lib/lunarDate";
 import type { ClanSummary } from "@/lib/queries/clans";
 import { listEvents, type EventRow } from "@/lib/queries/events";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
@@ -88,16 +89,6 @@ export function EventItem({
   );
 }
 
-function customWhen(e: EventRow): string {
-  if (e.date_solar) return formatDate(e.date_solar) ?? e.date_solar;
-  const lunar = formatLunarDate({
-    year: e.lunar_year ?? undefined,
-    month: e.lunar_month ?? undefined,
-    day: e.lunar_day ?? undefined,
-  });
-  return lunar || (e.lunar_day && e.lunar_month ? `${e.lunar_day}/${e.lunar_month} âm lịch` : "");
-}
-
 export function EventsScreen({
   clan,
   upcoming,
@@ -121,12 +112,17 @@ export function EventsScreen({
 
   return (
     <div className="page">
+      <p className="crumb">‹ {clan.name}</p>
       <div className="pagehead">
         <IconCalendar />
         <div style={{ flex: 1, minWidth: 0 }}>
           <h2>Sự kiện</h2>
           <p className="muted">Giỗ, sinh nhật, sự kiện chung của dòng họ.</p>
         </div>
+      </div>
+
+      {/* Như web: nút đổi kiểu nằm một hàng riêng, canh phải. */}
+      <div className="toolrow">
         <div className="seg" style={{ margin: 0 }} role="group" aria-label="Chế độ hiển thị">
           <button type="button" aria-pressed={view === "list"} aria-label="Danh sách" onClick={() => setView("list")}><IconList /></button>
           <button type="button" aria-pressed={view === "grid"} aria-label="Lưới" onClick={() => setView("grid")}><IconGrid /></button>
@@ -189,7 +185,7 @@ export function EventsScreen({
           <div key={e.id} className="cevent">
             <b>{e.title}</b>
             <span className="sub">
-              {customWhen(e)}
+              {eventWhenText(e)}
               {e.is_yearly ? " • lặp hằng năm" : ""}
             </span>
             <span className="tiny faint">
