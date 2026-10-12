@@ -11,6 +11,7 @@ import {
   type UpcomingEvent,
 } from "@/lib/upcomingEvents";
 
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 
 const DAYS_AHEAD = 60;
@@ -66,7 +67,8 @@ export function AnniversariesScreen({
   userId: string;
   openPerson: (clan: ClanSummary, personId: string) => void;
 }) {
-  const q = useAsync(() => load(userId), [userId]);
+  const rev = useRev();
+  const q = useAsync(() => load(userId), [userId, rev]);
   const rows = q.data ?? [];
 
   return (

@@ -26,6 +26,7 @@ import {
 
 import { pushBack } from "../nav";
 import { scrollTopScreen } from "../scroll";
+import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
 import { PeopleScreen } from "./People";
@@ -88,11 +89,12 @@ function Overview({
   openPerson,
 }: {
   clan: ClanSummary;
-  upcoming: ReturnType<typeof useAsync<UpcomingEvent[]>>;
+  upcoming: { data?: UpcomingEvent[]; loading: boolean; error?: string };
   go: (t: Tab) => void;
   openPerson: (id: string) => void;
 }) {
-  const stats = useAsync(() => getClanStats(clan.id), [clan.id]);
+  const rev = useRev();
+  const stats = useAsync(() => getClanStats(clan.id), [clan.id, rev]);
   const inlaws = useAsync(
     () => getClansInlawLinks([clan.id]).then((m) => m.get(clan.id) ?? []).catch(() => []),
     [clan.id],
@@ -193,7 +195,7 @@ function Overview({
       </div>
 
       <h3 className="section-title">Thống kê</h3>
-      {stats.loading && <div className="sk" style={{ height: 110 }} />}
+      {stats.loading && !s && <div className="sk" style={{ height: 110 }} />}
       {s && (
         <div className="card" style={{ padding: 14 }}>
           <div>
@@ -239,7 +241,11 @@ export function ClanScreen({
     go(t);
     pushBack(() => go(from));
   };
-  const upcoming = useAsync(() => loadUpcoming(clan, source), [clan.id, source]);
+  const rev = useRev();
+  const upcomingQ = useAsync(() => loadUpcoming(clan, source), [clan.id, source, rev]);
+  // Đang tải LẠI mà đã có dữ liệu cũ thì cứ hiện dữ liệu cũ, không nháy
+  // khung chờ — chỉ coi là "đang tải" khi chưa có gì để hiện.
+  const upcoming = { ...upcomingQ, loading: upcomingQ.loading && !upcomingQ.data };
   const show = (t: Tab) => ({ display: tab === t ? undefined : "none" });
   const pane = "tabpane";
 
