@@ -28,7 +28,7 @@ import {
 } from "@/lib/upcomingEvents";
 
 import { useAsync } from "../useAsync";
-import { TreeScreen } from "./Tree";
+import { TreeTab } from "./TreeTab";
 
 /**
  * Trang một dòng họ — cùng bố cục với bản web: thanh tab dưới đáy (Tổng
@@ -368,7 +368,7 @@ export function ClanScreen({
       </div>
       {seen.has("tree") && (
         <div style={show("tree")}>
-          <TreeScreen clanId={clan.id} source={source} genOffset={clan.generation_offset ?? 0} openPerson={openPerson} />
+          <TreeTab clanId={clan.id} source={source} genOffset={clan.generation_offset ?? 0} openPerson={openPerson} />
         </div>
       )}
       {seen.has("people") && (

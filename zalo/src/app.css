@@ -227,3 +227,24 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
 .h-4 { height:16px; } .w-4 { width:16px; }
 .ic { width:20px; height:20px; flex:none; }
 .go svg, .rel .go svg { width:18px; height:18px; display:block; }
+
+/* ── Tab Cây: thanh công cụ + khung vẽ 2D/3D ── */
+.toolbar { display:flex; flex-direction:column; gap:8px; padding:10px 12px 8px; }
+.tools { display:flex; flex-wrap:wrap; gap:8px; }
+.tools .seg button { padding:7px 11px; font-size:13px; }
+.suggest { position:absolute; left:0; right:0; top:46px; z-index:6; max-height:260px; overflow:auto; }
+/* Khung cây chiếm phần màn hình còn lại và nhận thẳng cử chỉ kéo/chụm. */
+.canvas { height:calc(100vh - 300px); min-height:320px; margin:0 12px; border:1px solid var(--line); border-radius:8px;
+  overflow:hidden; background:var(--surface); touch-action:none; }
+.hint { margin:6px 12px 0; }
+/* Màu thẻ của family-chart — cùng bảng với src/index.css của web. */
+:root { --tree-male:#D4DDE4; --tree-female:#E8D2CC; --tree-neutral:#E8E0D2; --tree-text:#2A2320; }
+.f3 { display:block; }
+.f3 svg.main_svg { width:100%; height:100%; display:block; }
+.f3 svg.main_svg path.link { stroke:#7A6F66; stroke-width:1.5px; opacity:.55; }
+.f3 svg.main_svg path.link.f3-path-to-main { stroke:#7A2230; opacity:.9; }
+@media (prefers-color-scheme: dark) {
+  :root { --tree-male:#2F3D48; --tree-female:#4A2F2D; --tree-neutral:#38322B; --tree-text:#EFE9DB; }
+  .f3 svg.main_svg path.link { stroke:#8A8278; opacity:.7; }
+  .f3 svg.main_svg path.link.f3-path-to-main { stroke:#E26B6B; opacity:1; }
+}
