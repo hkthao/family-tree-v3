@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Zalo Mini App của Dòng Họ Việt — dùng chung logic với web qua ../src/lib",
   "scripts": {
-    "start": "zmp start --port 3002",
+    "start": "zmp start --port 3110",
     "deploy": "zmp deploy",
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit"

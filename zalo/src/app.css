@@ -367,3 +367,8 @@ html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
 .has-tabs.inner { min-height:100%; display:flex; flex-direction:column; padding-bottom:0; }
 .has-tabs.inner > .tabpane { flex:0 0 auto; }
 .has-tabs.inner > .tabbar { position:sticky; bottom:0; left:auto; right:auto; margin-top:auto; }
+
+/* ── Hôm nay ── */
+.todaynote { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; padding:12px; font-size:14px; }
+/* Năm tab: chữ nhỏ lại một chút cho vừa bề ngang điện thoại hẹp. */
+.has-tabs.inner > .tabbar button { font-size:10.5px; }
