@@ -3,6 +3,8 @@ import { openWebview } from "zmp-sdk";
 
 import { IconArrowRight, IconChevronDown } from "@/components/icons";
 import {
+  countMyBlockingClans,
+  deleteMyAccount,
   getMyProfile,
   updateMyDisplayName,
   updateMyMonthlyLunarPref,
@@ -22,7 +24,7 @@ import { useAsync } from "../useAsync";
  *
  * Không có ở đây, vì không hợp với Mini App: thông báo đẩy của trình duyệt,
  * đăng nhập bằng QR, đăng xuất (vào Mini App là tự đăng nhập bằng Zalo), và
- * các việc cần xác nhận kỹ (đổi email, xoá tài khoản) — làm ở bản web.
+ * đổi email (cần xác nhận qua thư) — làm ở bản web.
  */
 /** Một nhóm thiết lập kiểu danh sách của điện thoại: tiêu đề nhỏ + khối bo góc. */
 function Group({ title, children }: { title: string; children: ReactNode }) {
@@ -54,17 +56,19 @@ function useSave() {
 function ExpandRow({
   label,
   value,
+  danger,
   children,
 }: {
   label: string;
   value?: string;
+  danger?: boolean;
   children: (close: () => void) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="grow">
       <button type="button" className="growhead" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        <span>{label}</span>
+        <span className={danger ? "dangertext" : undefined}>{label}</span>
         <span className="val">{value}</span>
         <span className={`chev${open ? "" : " closed"}`} style={{ margin: 0, width: 24, height: 24 }}><IconChevronDown /></span>
       </button>
@@ -188,6 +192,62 @@ function SwitchRow({
   );
 }
 
+/**
+ * Xoá tài khoản — cùng hàm và cùng hai lớp chặn với bản web: không xoá được
+ * khi còn sở hữu dòng họ có thành viên, và phải gõ "XOA" mới bấm được nút.
+ * Việc này không hoàn tác được nên không có đường tắt nào.
+ */
+function DeleteAccount({ onDeleted }: { onDeleted: () => void }) {
+  const [confirmText, setConfirmText] = useState("");
+  const blocking = useAsync(() => countMyBlockingClans(), []);
+  const save = useSave();
+  const count = blocking.data ?? 0;
+  const blocked = count > 0;
+  // Chưa đếm xong thì chưa cho xoá: không biết có bị chặn hay không.
+  const canSubmit = !blocking.loading && !blocking.error && !blocked && confirmText.trim() === "XOA";
+
+  return (
+    <>
+      <p className="note" style={{ marginTop: 0 }}>
+        Hành động này không thể hoàn tác. Nếu bạn đang sở hữu dòng họ có thành
+        viên, hãy chuyển quyền hoặc xoá dòng họ trước (trên bản web).
+      </p>
+      {blocking.error && <p className="error">{blocking.error}</p>}
+      {blocked && (
+        <p className="error">
+          Bạn còn sở hữu {count} dòng họ có thành viên. Phải chuyển quyền hoặc
+          xoá dòng họ trước khi xoá tài khoản.
+        </p>
+      )}
+      <label className="lbl" htmlFor="confirm-delete">Gõ <b>XOA</b> để xác nhận</label>
+      <input
+        id="confirm-delete"
+        className="field"
+        autoCapitalize="characters"
+        autoComplete="off"
+        value={confirmText}
+        disabled={blocked}
+        onChange={(e) => setConfirmText(e.target.value)}
+      />
+      <button
+        type="button"
+        className="btn danger block"
+        style={{ marginTop: 8 }}
+        disabled={!canSubmit || save.busy}
+        onClick={() =>
+          save.run(async () => {
+            await deleteMyAccount();
+            onDeleted();
+          }, "Đã xoá tài khoản")
+        }
+      >
+        {save.busy ? "Đang xoá…" : "Xoá tài khoản vĩnh viễn"}
+      </button>
+      {save.note}
+    </>
+  );
+}
+
 const THEMES: { id: Theme; label: string }[] = [
   { id: "light", label: "Sáng" },
   { id: "dark", label: "Tối" },
@@ -201,6 +261,7 @@ export function AccountScreen({
   zaloOnly,
   onLinked,
   onRenamed,
+  onDeleted,
 }: {
   userId: string;
   email: string | null;
@@ -208,6 +269,7 @@ export function AccountScreen({
   zaloOnly: boolean;
   onLinked: () => void;
   onRenamed: (name: string) => void;
+  onDeleted: () => void;
 }) {
   const profile = useAsync(() => getMyProfile(userId), [userId]);
   const [theme, setThemeState] = useState<Theme>(getTheme());
@@ -294,8 +356,14 @@ export function AccountScreen({
         </div>
       </Group>
       <p className="note" style={{ margin: "8px 4px 0" }}>
-        Đổi email, xoá tài khoản, thêm và sửa thành viên, xuất sổ PDF… làm trên bản web.
+        Đổi email, thêm và sửa thành viên, xuất sổ PDF… làm trên bản web.
       </p>
+
+      <Group title="Vùng nguy hiểm">
+        <ExpandRow label="Xoá tài khoản" danger>
+          {() => <DeleteAccount onDeleted={onDeleted} />}
+        </ExpandRow>
+      </Group>
     </div>
   );
 }

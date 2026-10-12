@@ -403,3 +403,8 @@ html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
 .switch:checked { background:var(--primary); }
 .switch:checked::after { transform:translateX(18px); }
 .switch:disabled { opacity:.5; }
+
+/* Việc không hoàn tác được: màu đỏ cảnh báo riêng, không dùng màu thương hiệu. */
+.btn.danger { background:#B3261E; color:#fff; }
+.dangertext { color:#C5392F; }
+html.dark .dangertext { color:#F0786E; }
