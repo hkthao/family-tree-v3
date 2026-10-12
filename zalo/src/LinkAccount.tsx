@@ -24,29 +24,10 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
       .finally(() => setBusy(false));
   };
 
-  const field = {
-    width: "100%",
-    padding: "10px 12px",
-    fontSize: 16, // dưới 16px iOS tự phóng to khi bấm vào ô
-    border: "1px solid #D8CFC2",
-    borderRadius: 8,
-    boxSizing: "border-box",
-  } as const;
-  const button = {
-    marginTop: 8,
-    padding: "10px 16px",
-    fontSize: 15,
-    border: 0,
-    borderRadius: 8,
-    background: "#7A2E2E",
-    color: "#fff",
-    opacity: busy ? 0.6 : 1,
-  } as const;
-
   return (
-    <section style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid #E8E0D2" }}>
-      <h2 style={{ fontSize: 16, margin: "0 0 4px" }}>Đã có tài khoản trên web?</h2>
-      <p style={{ fontSize: 13, color: "#6F665F", margin: "0 0 12px" }}>
+    <section className="card link">
+      <h2>Đã có tài khoản trên web?</h2>
+      <p className="muted" style={{ margin: 0 }}>
         Liên kết để thấy các dòng họ bạn đã lập ở giapha.thaohk.com.
       </p>
 
@@ -59,12 +40,12 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
             placeholder="Email đã đăng ký"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={field}
+            className="field"
           />
           <button
             type="button"
             disabled={busy || !email.trim()}
-            style={button}
+            className="btn block"
             onClick={() =>
               run(async () => {
                 await requestAccountLink(email.trim());
@@ -77,7 +58,7 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
         </>
       ) : (
         <>
-          <p style={{ fontSize: 13, margin: "0 0 8px" }}>
+          <p style={{ fontSize: 13, margin: "12px 0 0" }}>
             Nếu <b>{email}</b> có tài khoản, mã 6 số đã được gửi tới đó (hiệu
             lực 10 phút).
           </p>
@@ -88,12 +69,13 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
             placeholder="Mã 6 số"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-            style={{ ...field, letterSpacing: 4 }}
+            className="field"
+            style={{ letterSpacing: 6, textAlign: "center", fontWeight: 600 }}
           />
           <button
             type="button"
             disabled={busy || code.length !== 6}
-            style={button}
+            className="btn block"
             onClick={() =>
               run(async () => {
                 await confirmAccountLink(code);
@@ -102,11 +84,11 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
             }
           >
             {busy ? "Đang kiểm tra…" : "Liên kết"}
-          </button>{" "}
+          </button>
           <button
             type="button"
             disabled={busy}
-            style={{ ...button, background: "transparent", color: "#7A2E2E" }}
+            className="btn text block"
             onClick={() => {
               setStep("email");
               setCode("");
@@ -118,7 +100,7 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
         </>
       )}
 
-      {error && <p style={{ color: "#B3261E", fontSize: 13 }}>{error}</p>}
+      {error && <p className="error" style={{ margin: "10px 0 0" }}>{error}</p>}
     </section>
   );
 }
