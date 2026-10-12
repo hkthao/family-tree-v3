@@ -13,6 +13,7 @@ import {
   loadFolderSearch,
   loadUnlinked,
 } from "@/lib/queries/treeFolder";
+import type { TreeSource } from "@/lib/queries/tree";
 import {
   generationColor,
   groupLabel,
@@ -35,9 +36,11 @@ import { useAsync } from "../useAsync";
 
 const Ctx = createContext<{
   clanId: string;
+  /** Thành viên đọc bảng gốc; khách xem họ công khai đọc bản đã che. */
+  source: TreeSource;
   genOffset: number;
   openPerson: (id: string) => void;
-}>({ clanId: "", genOffset: 0, openPerson: () => {} });
+}>({ clanId: "", source: "persons", genOffset: 0, openPerson: () => {} });
 
 /** Màu đời đưa xuống CSS qua biến `--gen` (viền ảnh, huy hiệu, vạch trái). */
 const genVar = (generation: number | null) =>
@@ -125,7 +128,7 @@ function PersonNode({
   defaultOpen?: boolean;
   note?: string;
 }) {
-  const { clanId } = useContext(Ctx);
+  const { clanId, source } = useContext(Ctx);
   const [open, setOpen] = useState(defaultOpen);
   const [everOpened, setEverOpened] = useState(defaultOpen);
   useEffect(() => {
@@ -134,8 +137,9 @@ function PersonNode({
 
   // Chỉ tải khi đã mở lần đầu — đó là lý do có kiểu xem này.
   const node = useAsync(
-    () => (everOpened ? loadFolderNode(clanId, person.id) : Promise.resolve(null)),
-    [clanId, person.id, everOpened],
+    () =>
+      everOpened ? loadFolderNode(clanId, person.id, source) : Promise.resolve(null),
+    [clanId, person.id, everOpened, source],
   );
 
   const allSpouses = person.spouses ?? [];
@@ -242,11 +246,11 @@ function Group({ group, parent }: { group: FolderGroup; parent: FolderChild }) {
 }
 
 function Unlinked({ count }: { count: number }) {
-  const { clanId } = useContext(Ctx);
+  const { clanId, source } = useContext(Ctx);
   const [open, setOpen] = useState(false);
   const list = useAsync(
-    () => (open ? loadUnlinked(clanId, { limit: 50 }) : Promise.resolve([])),
-    [clanId, open],
+    () => (open ? loadUnlinked(clanId, { limit: 50 }, source) : Promise.resolve([])),
+    [clanId, open, source],
   );
   const rows = list.data ?? [];
   return (
@@ -272,8 +276,8 @@ function Unlinked({ count }: { count: number }) {
 }
 
 function SearchResults({ q }: { q: string }) {
-  const { clanId } = useContext(Ctx);
-  const hits = useAsync(() => loadFolderSearch(clanId, q), [clanId, q]);
+  const { clanId, source } = useContext(Ctx);
+  const hits = useAsync(() => loadFolderSearch(clanId, q, source), [clanId, q, source]);
   if (hits.loading) return <Skeleton />;
   if (hits.error) return <p className="error">{hits.error}</p>;
   const rows = hits.data ?? [];
@@ -304,14 +308,16 @@ function SearchResults({ q }: { q: string }) {
 
 export function TreeScreen({
   clanId,
+  source,
   genOffset,
   openPerson,
 }: {
   clanId: string;
+  source: TreeSource;
   genOffset: number;
   openPerson: (id: string) => void;
 }) {
-  const roots = useAsync(() => loadFolderRoots(clanId), [clanId]);
+  const roots = useAsync(() => loadFolderRoots(clanId, source), [clanId, source]);
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
   useEffect(() => {
@@ -320,7 +326,7 @@ export function TreeScreen({
   }, [search]);
 
   return (
-    <Ctx.Provider value={{ clanId, genOffset, openPerson }}>
+    <Ctx.Provider value={{ clanId, source, genOffset, openPerson }}>
       <div className="page">
         <div className="searchbar">
           <input

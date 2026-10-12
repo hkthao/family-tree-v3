@@ -17,23 +17,26 @@ const WEB = "https://giapha.thaohk.com";
 export function PersonScreen({
   clanId,
   personId,
+  source,
   genOffset,
   openPerson,
 }: {
   clanId: string;
   personId: string;
+  /** Khách xem họ công khai đọc bản đã che thông tin người còn sống. */
+  source: "persons" | "persons_public_safe";
   genOffset: number;
   openPerson: (id: string) => void;
 }) {
   const q = useAsync(
     async () => {
       const [person, rel] = await Promise.all([
-        getPerson(personId),
-        getPersonRelationships(personId),
+        getPerson(personId, undefined, source),
+        getPersonRelationships(personId, undefined, source),
       ]);
       return { person, rel };
     },
-    [personId],
+    [personId, source],
   );
   const rel = q.data?.rel;
   const all = rel ? [...rel.parents, ...rel.spouses, ...rel.children] : [];
