@@ -20,6 +20,7 @@ import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
 import { listenBack, pushBack } from "./nav";
 import { scrollTopScreen } from "./scroll";
+import { AddRelativeScreen } from "./screens/AddRelative";
 import { ClanScreen } from "./screens/Clan";
 import { EditPersonScreen } from "./screens/EditPerson";
 
@@ -36,7 +37,8 @@ type Screen =
   | { kind: "clans" }
   | { kind: "tree"; clan: ClanSummary }
   | { kind: "person"; clan: ClanSummary; personId: string }
-  | { kind: "edit"; clan: ClanSummary; personId: string };
+  | { kind: "edit"; clan: ClanSummary; personId: string }
+  | { kind: "add"; clan: ClanSummary; personId: string; relation: "spouse" | "child" };
 
 /**
  * Không phải thành viên (họ công khai ở mục Cộng đồng) thì đọc qua bản đã
@@ -153,7 +155,9 @@ export function App() {
         ? top.clan.name
         : top.kind === "edit"
           ? "Sửa hồ sơ"
-          : "Hồ sơ";
+          : top.kind === "add"
+            ? top.relation === "spouse" ? "Thêm vợ / chồng" : "Thêm con"
+            : "Hồ sơ";
   const canGoBack = stack.length > 1;
   useEffect(() => {
     // Ngoài Zalo (giả lập máy tính) hai lệnh này không có gì để điều khiển.
@@ -272,7 +276,23 @@ export function App() {
                   ? () => push({ kind: "edit", clan: s.clan, personId: s.personId })
                   : undefined
               }
+              onAdd={
+                s.clan.role === "admin" || s.clan.role === "editor"
+                  ? (relation) => push({ kind: "add", clan: s.clan, personId: s.personId, relation })
+                  : undefined
+              }
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
+            />
+          )}
+          {s.kind === "add" && (
+            <AddRelativeScreen
+              clanId={s.clan.id}
+              personId={s.personId}
+              relation={s.relation}
+              onSaved={() => {
+                setRev((n) => n + 1);
+                window.history.back();
+              }}
             />
           )}
           {s.kind === "edit" && (
