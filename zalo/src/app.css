@@ -197,3 +197,19 @@ html, body { font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Rob
 .clan .tags { display:flex; justify-content:flex-end; gap:6px; margin-top:6px; }
 .tag { border-radius:999px; padding:1px 8px; font-size:11px; font-weight:600; border:1px solid currentColor; }
 .tag.gen { color:var(--teal); background:color-mix(in srgb, var(--teal) 12%, transparent); }
+
+/* ── Trang một dòng họ (Tổng quan) ── */
+.clamp3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.ico { display:inline-flex; color:var(--primary); } .ico svg { width:18px; height:18px; }
+.today { display:flex; gap:12px; padding:12px; align-items:flex-start; }
+.cal { flex:none; width:68px; padding:6px 0; border-radius:8px; text-align:center; background:var(--primary-soft); color:var(--primary);
+  display:flex; flex-direction:column; line-height:1.15; }
+.cal small { font-size:10px; font-weight:600; text-transform:uppercase; } .cal b { font-size:28px; font-family:"Noto Serif",Georgia,serif; }
+.tag.bad { color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, transparent); }
+.sec-row { display:flex; align-items:center; justify-content:space-between; }
+.days small { text-transform:uppercase; }
+.rel:disabled { opacity:1; }
+.quick { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.quick button { display:flex; align-items:center; gap:8px; padding:11px 12px; font-size:14px; font-weight:600; text-align:left; }
+.statgrid { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin-top:8px; font-size:14px; color:var(--muted); }
+.statgrid b { color:var(--ink); font-size:16px; margin-right:4px; }
