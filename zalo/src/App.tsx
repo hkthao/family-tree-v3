@@ -202,6 +202,7 @@ export function App() {
           {s.kind === "person" && (
             <PersonScreen
               clanId={s.clan.id}
+              clanName={s.clan.name}
               personId={s.personId}
               source={sourceOf(s.clan)}
               genOffset={s.clan.generation_offset ?? 0}
