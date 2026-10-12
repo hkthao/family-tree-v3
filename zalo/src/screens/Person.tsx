@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 
-import { IconArrowRight } from "@/components/icons";
+import { IconArrowRight, IconPencil, IconPlus, IconTrash } from "@/components/icons";
 import { computeLifespanYears, lifespanLabel } from "@/lib/lifespan";
 import {
   formatLunarAnniversary,
@@ -121,7 +121,10 @@ export function PersonScreen({
       <h4 className="sec-row">
         {label}
         {add && onAdd && (
-          <button type="button" className="btn ghost addbtn" onClick={() => onAdd(add)}>+ Thêm</button>
+          <button type="button" className="btn outline sm" onClick={() => onAdd(add)}>
+            <IconPlus />
+            Thêm
+          </button>
         )}
       </h4>
       {items.length === 0 ? (
@@ -164,6 +167,14 @@ export function PersonScreen({
             )}
           </p>
         </div>
+        {/* Nút Sửa nằm cạnh tên, không còn là thanh to dính đáy đè lên nội
+            dung khi cuộn. */}
+        {onEdit && (
+          <button type="button" className="btn outline sm" onClick={onEdit}>
+            <IconPencil />
+            Sửa
+          </button>
+        )}
       </header>
 
       <section className="card pane">
@@ -210,53 +221,45 @@ export function PersonScreen({
         </section>
       )}
 
-      {onEdit && (
-        <div className="cta">
-          <button type="button" className="btn block" onClick={onEdit}>
-            Sửa thông tin
+      {/* Xoá: một dòng chữ đỏ ở cuối trang, tách khỏi các thẻ nội dung; bấm
+          mới mở phần xác nhận. */}
+      {onDeleted &&
+        (confirmDelete ? (
+          <section className="card pane dangerpane">
+            <b style={{ display: "block", fontSize: 15 }}>Xoá {p.full_name}?</b>
+            <p className="note" style={{ marginTop: 4 }}>
+              Người này sẽ biến khỏi cây và danh bạ. Quản trị dòng họ có thể khôi
+              phục lại từ nhật ký thay đổi.
+            </p>
+            {deleteError && <p className="error">{deleteError}</p>}
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button type="button" className="btn outline" style={{ flex: 1 }} disabled={deleting} onClick={() => setConfirmDelete(false)}>Huỷ</button>
+              <button
+                type="button"
+                className="btn danger"
+                style={{ flex: 1 }}
+                disabled={deleting}
+                onClick={() => {
+                  setDeleting(true);
+                  setDeleteError(null);
+                  deletePerson(personId)
+                    .then(onDeleted)
+                    .catch((e: Error) => {
+                      setDeleteError(e.message);
+                      setDeleting(false);
+                    });
+                }}
+              >
+                {deleting ? "Đang xoá…" : "Xoá"}
+              </button>
+            </div>
+          </section>
+        ) : (
+          <button type="button" className="btn dangerlink block" onClick={() => setConfirmDelete(true)}>
+            <IconTrash />
+            Xoá người này
           </button>
-        </div>
-      )}
-
-      {onDeleted && (
-        <section className="card pane" style={{ marginTop: 16 }}>
-          {confirmDelete ? (
-            <>
-              <b style={{ display: "block", fontSize: 15 }}>Xoá {p.full_name}?</b>
-              <p className="note" style={{ marginTop: 4 }}>
-                Người này sẽ biến khỏi cây và danh bạ. Quản trị dòng họ có thể
-                khôi phục lại từ nhật ký thay đổi.
-              </p>
-              {deleteError && <p className="error">{deleteError}</p>}
-              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                <button type="button" className="btn ghost" style={{ flex: 1 }} disabled={deleting} onClick={() => setConfirmDelete(false)}>Huỷ</button>
-                <button
-                  type="button"
-                  className="btn danger"
-                  style={{ flex: 1 }}
-                  disabled={deleting}
-                  onClick={() => {
-                    setDeleting(true);
-                    setDeleteError(null);
-                    deletePerson(personId)
-                      .then(onDeleted)
-                      .catch((e: Error) => {
-                        setDeleteError(e.message);
-                        setDeleting(false);
-                      });
-                  }}
-                >
-                  {deleting ? "Đang xoá…" : "Xoá"}
-                </button>
-              </div>
-            </>
-          ) : (
-            <button type="button" className="btn text dangertext" style={{ minHeight: 0, padding: 0 }} onClick={() => setConfirmDelete(true)}>
-              Xoá người này
-            </button>
-          )}
-        </section>
-      )}
+        ))}
     </div>
   );
 }
