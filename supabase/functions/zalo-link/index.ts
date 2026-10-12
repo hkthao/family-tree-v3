@@ -14,8 +14,10 @@
  * "request" luôn trả ok dù email có tài khoản hay không — nếu trả khác nhau
  * thì hàm này thành công cụ dò xem ai đã đăng ký.
  *
- * Tài khoản Zalo tạm (email giả) KHÔNG bị xoá sau khi liên kết: nó có thể
- * đã đứng tên dữ liệu, xoá là mất theo. Nó chỉ không còn đường đăng nhập.
+ * Tài khoản Zalo tạm (email giả) được xoá ngay sau khi liên kết NẾU nó
+ * trống (không sở hữu / không tham gia dòng họ nào); có dữ liệu đứng tên
+ * thì giữ lại, vì xoá là mất theo. Hành động "forget" dọn nốt phần còn sót
+ * sau khi người dùng tự xoá tài khoản.
  */
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -47,6 +49,31 @@ const hashCode = (zaloId: string, code: string) =>
 function sixDigits(): string {
   const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000;
   return String(n).padStart(6, "0");
+}
+
+/**
+ * Xoá tài khoản Zalo tạm còn sót của một ID Zalo, nếu được phép (xem hàm SQL
+ * `zalo_purgeable_synthetic_user`: đúng do zalo-auth tạo, không đứng tên dữ
+ * liệu nào, không phải tài khoản đang giữ). Hỏng thì chỉ ghi log — đây là
+ * việc dọn dẹp, không được làm hỏng thao tác chính của người dùng.
+ */
+// deno-lint-ignore no-explicit-any
+async function purgeSynthetic(sb: any, zaloId: string, keep: string | null): Promise<boolean> {
+  const { data: id, error } = await sb.rpc("zalo_purgeable_synthetic_user", {
+    p_zalo_id: zaloId,
+    p_keep: keep,
+  });
+  if (error) {
+    console.error("zalo-link: tra tài khoản tạm:", error.message);
+    return false;
+  }
+  if (!id) return false;
+  const { error: delErr } = await sb.auth.admin.deleteUser(id);
+  if (delErr) {
+    console.error("zalo-link: xoá tài khoản tạm:", delErr.message);
+    return false;
+  }
+  return true;
 }
 
 async function sendCode(to: string, code: string): Promise<boolean> {
@@ -199,6 +226,8 @@ Deno.serve(async (req) => {
       return err("Tài khoản này đã liên kết với một Zalo khác.", 409);
     }
     await sb.from("zalo_link_codes").delete().eq("zalo_user_id", profile.id);
+    // Tài khoản tạm giờ không còn đường đăng nhập: xoá luôn nếu nó trống.
+    await purgeSynthetic(sb, profile.id, row.user_id);
 
     const { data: gen, error: genErr } = await sb.auth.admin.generateLink({
       type: "magiclink",
@@ -210,6 +239,20 @@ Deno.serve(async (req) => {
       return err("Đã liên kết, nhưng chưa đăng nhập được. Hãy mở lại Mini App.", 500);
     }
     return json({ tokenHash });
+  }
+
+  // ─── Dọn sau khi XOÁ TÀI KHOẢN ────────────────────────────────────
+  // Mini App gọi ngay sau khi người dùng tự xoá tài khoản. Chỉ dọn khi ID
+  // Zalo này KHÔNG còn nối với tài khoản nào — tức việc xoá đã thật sự xảy
+  // ra; nếu còn nối thì từ chối, kẻo ai cầm token cũng gọi được để xoá.
+  if (body.action === "forget") {
+    const { data: still } = await sb
+      .from("zalo_identities")
+      .select("user_id")
+      .eq("zalo_user_id", profile.id)
+      .maybeSingle();
+    if (still) return err("Tài khoản vẫn còn. Hãy xoá tài khoản trước.", 409);
+    return json({ purged: await purgeSynthetic(sb, profile.id, null) });
   }
 
   return err("Yêu cầu không hợp lệ.", 400);
