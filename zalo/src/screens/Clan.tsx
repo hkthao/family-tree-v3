@@ -23,6 +23,7 @@ import {
   type UpcomingEvent,
 } from "@/lib/upcomingEvents";
 
+import { scrollTopScreen } from "../scroll";
 import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
 import { PeopleScreen } from "./People";
@@ -223,28 +224,29 @@ export function ClanScreen({
   const go = (t: Tab) => {
     setSeen((s) => new Set(s).add(t));
     setTab(t);
-    window.scrollTo(0, 0);
+    scrollTopScreen();
   };
   const upcoming = useAsync(() => loadUpcoming(clan, source), [clan.id, source]);
   const show = (t: Tab) => ({ display: tab === t ? undefined : "none" });
+  const pane = "tabpane";
 
   return (
     <div className="has-tabs">
-      <div style={show("overview")}>
+      <div className={pane} style={show("overview")}>
         <Overview clan={clan} upcoming={upcoming} go={go} openPerson={openPerson} />
       </div>
       {seen.has("tree") && (
-        <div style={show("tree")}>
+        <div className={pane} style={show("tree")}>
           <TreeTab clanId={clan.id} source={source} genOffset={clan.generation_offset ?? 0} openPerson={openPerson} />
         </div>
       )}
       {seen.has("people") && (
-        <div style={show("people")}>
+        <div className={pane} style={show("people")}>
           <PeopleScreen clan={clan} source={source} openPerson={openPerson} />
         </div>
       )}
       {seen.has("events") && (
-        <div style={show("events")}>
+        <div className={pane} style={show("events")}>
           <EventsScreen clan={clan} upcoming={upcoming} openPerson={openPerson} />
         </div>
       )}
