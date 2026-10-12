@@ -1,0 +1,341 @@
+import { createContext, useContext, useEffect, useState } from "react";
+
+import { displayGen } from "@/lib/displayGeneration";
+import {
+  loadFolderNode,
+  loadFolderRoots,
+  loadFolderSearch,
+  loadUnlinked,
+} from "@/lib/queries/treeFolder";
+import {
+  generationColor,
+  groupLabel,
+  type FolderChild,
+  type FolderGroup,
+  type FolderSpouse,
+} from "@/lib/tree/folderModel";
+
+import { usePhotoUrls } from "../photos";
+import { useAsync } from "../useAsync";
+
+/**
+ * Cây gia phả kiểu thư mục — bản Mini App.
+ *
+ * Dữ liệu và luật gom vợ/con lấy NGUYÊN từ web (`treeFolder`,
+ * `folderModel`): bung tới đâu tải tới đó, một vợ thì ghi chung dòng,
+ * nhiều vợ thì mỗi bà một nhóm. Chỉ phần vẽ là viết riêng cho màn hình
+ * điện thoại: vợ chồng luôn xếp dọc, không có chế độ đứng cạnh nhau.
+ */
+
+const Ctx = createContext<{
+  clanId: string;
+  genOffset: number;
+  openPerson: (id: string) => void;
+}>({ clanId: "", genOffset: 0, openPerson: () => {} });
+
+const years = (p: {
+  birthYear: number | null;
+  deathYear: number | null;
+  isLiving: boolean;
+}) =>
+  p.birthYear || p.deathYear
+    ? `${p.birthYear ?? "?"}–${p.deathYear ?? (p.isLiving ? "nay" : "?")}`
+    : "";
+
+function Who({
+  p,
+  generation,
+  badge,
+  spouse = false,
+  size = 32,
+  note,
+  src,
+}: {
+  p: FolderChild | FolderSpouse;
+  /** Đời (thật) dùng để tô màu — vợ chồng chung màu với người trong họ. */
+  generation: number | null;
+  badge?: boolean;
+  spouse?: boolean;
+  size?: number;
+  note?: string;
+  src: string;
+}) {
+  const { genOffset, openPerson } = useContext(Ctx);
+  const color = generationColor(generation);
+  const meta = [years(p), note].filter(Boolean).join(" · ");
+  return (
+    <button type="button" className="who" onClick={() => openPerson(p.id)}>
+      {spouse && <span className="rings">⚭</span>}
+      <span className="ring" style={{ background: color ?? "transparent" }}>
+        <img src={src} width={size} height={size} alt="" loading="lazy" />
+      </span>
+      <span style={{ minWidth: 0 }}>
+        <span className={`name${spouse ? " spouse" : ""}`}>
+          {p.name}{" "}
+          <span className={p.gender === "M" ? "m" : "f"}>
+            {p.gender === "M" ? "♂" : "♀"}
+          </span>
+        </span>
+        <span className="meta">
+          {badge && color && (
+            <span className="badge" style={{ background: color }}>
+              Đời {displayGen(generation, genOffset)}
+            </span>
+          )}
+          {meta}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function PersonNode({
+  person,
+  branch = false,
+  reserveArrow = true,
+  defaultOpen = false,
+  note,
+}: {
+  person: FolderChild;
+  branch?: boolean;
+  reserveArrow?: boolean;
+  defaultOpen?: boolean;
+  note?: string;
+}) {
+  const { clanId } = useContext(Ctx);
+  const [open, setOpen] = useState(defaultOpen);
+  const [everOpened, setEverOpened] = useState(defaultOpen);
+  useEffect(() => {
+    if (open) setEverOpened(true);
+  }, [open]);
+
+  // Chỉ tải khi đã mở lần đầu — đó là lý do có kiểu xem này.
+  const node = useAsync(
+    () => (everOpened ? loadFolderNode(clanId, person.id) : Promise.resolve(null)),
+    [clanId, person.id, everOpened],
+  );
+
+  const allSpouses = person.spouses ?? [];
+  const groups = open ? (node.data?.groups ?? []) : [];
+  // Nhiều cuộc hôn nhân và đang mở: các nhóm bên dưới đã nêu từng người.
+  const spouses = groups.length > 0 ? [] : allSpouses;
+  const photo = usePhotoUrls([
+    person.photoPath,
+    ...spouses.map((s) => s.photoPath),
+  ]);
+  const color = generationColor(person.generation);
+  const leaf = !person.hasChildren;
+
+  return (
+    <li className={branch ? `branch${leaf ? " leaf" : ""}` : undefined}>
+      <div
+        className={`row${leaf && (branch || !reserveArrow) ? " pad" : ""}`}
+        style={
+          color
+            ? { background: `color-mix(in srgb, ${color} 11%, transparent)` }
+            : undefined
+        }
+      >
+        {!leaf ? (
+          <button
+            type="button"
+            className={`chev${open ? "" : " closed"}`}
+            aria-expanded={open}
+            aria-label={open ? `Thu gọn ${person.name}` : `Mở ${person.name}`}
+            onClick={() => setOpen((v) => !v)}
+          >
+            ▼
+          </button>
+        ) : (
+          !branch && reserveArrow && <span className="slot" />
+        )}
+        <div className="people">
+          <Who
+            p={person}
+            generation={person.generation}
+            badge
+            note={note}
+            src={photo(person.photoPath, person.gender)}
+          />
+          {spouses.map((s) => (
+            <Who
+              key={s.id}
+              p={s}
+              generation={person.generation}
+              spouse
+              size={28}
+              src={photo(s.photoPath, s.gender)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {open && (
+        <div className="rail">
+          {node.loading && <p className="muted" style={{ margin: "6px 0 0 40px" }}>Đang tải…</p>}
+          {node.error && <p className="error" style={{ margin: "6px 0 0 40px" }}>{node.error}</p>}
+          {node.data && (
+            <ul>
+              {node.data.directChildren.map((c) => (
+                <PersonNode key={c.id} person={c} branch />
+              ))}
+              {node.data.groups.map((g) => (
+                <Group key={g.familyId} group={g} parent={person} />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}
+
+/** Một cuộc hôn nhân (chỉ khi có 2+ vợ/chồng): con treo dưới đúng mẹ/cha. */
+function Group({ group, parent }: { group: FolderGroup; parent: FolderChild }) {
+  const photo = usePhotoUrls([group.spouse?.photoPath]);
+  const count = group.children.length ? `${group.children.length} con` : "chưa có con";
+  return (
+    <li className="branch group">
+      <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 0" }}>
+        <span className="slot">⚭</span>
+        {group.spouse ? (
+          <Who
+            p={{ ...group.spouse, name: groupLabel(group, parent.gender) }}
+            generation={parent.generation}
+            size={28}
+            note={count}
+            src={photo(group.spouse.photoPath, group.spouse.gender)}
+          />
+        ) : (
+          <span className="muted">
+            <i>{groupLabel(group, parent.gender)}</i> · {count}
+          </span>
+        )}
+      </div>
+      {group.children.length > 0 && (
+        <ul className="rail">
+          {group.children.map((c) => (
+            <PersonNode key={c.id} person={c} branch />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function Unlinked({ count }: { count: number }) {
+  const { clanId } = useContext(Ctx);
+  const [open, setOpen] = useState(false);
+  const list = useAsync(
+    () => (open ? loadUnlinked(clanId, { limit: 50 }) : Promise.resolve([])),
+    [clanId, open],
+  );
+  const rows = list.data ?? [];
+  return (
+    <div style={{ marginTop: 12, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
+      <button type="button" style={{ padding: "10px 0", width: "100%", textAlign: "left" }} onClick={() => setOpen((v) => !v)}>
+        <span className={`chev${open ? "" : " closed"}`} style={{ display: "inline-block", width: 24, height: "auto", margin: 0 }}>▼</span>
+        <b>Chưa gắn vào cây</b> <span className="muted">({count})</span>
+      </button>
+      {open && (
+        <>
+          {list.loading && <p className="muted">Đang tải…</p>}
+          <ul className="tree">
+            {rows.map((p) => (
+              <PersonNode key={p.id} person={p} reserveArrow={rows.some((x) => x.hasChildren)} />
+            ))}
+          </ul>
+          {rows.length >= 50 && <p className="muted">Chỉ hiện 50 người đầu.</p>}
+        </>
+      )}
+    </div>
+  );
+}
+
+function SearchResults({ q }: { q: string }) {
+  const { clanId } = useContext(Ctx);
+  const hits = useAsync(() => loadFolderSearch(clanId, q), [clanId, q]);
+  if (hits.loading) return <p className="muted">Đang tìm…</p>;
+  if (hits.error) return <p className="error">{hits.error}</p>;
+  const rows = hits.data ?? [];
+  if (rows.length === 0) return <p className="muted">Không tìm thấy ai tên “{q}”.</p>;
+  return (
+    <>
+      <ul className="tree">
+        {rows.map((h) => (
+          <PersonNode
+            key={h.person.id}
+            person={h.person}
+            reserveArrow={rows.some((x) => x.person.hasChildren)}
+            note={h.parentNames.length ? `con của ${h.parentNames.join(" & ")}` : undefined}
+          />
+        ))}
+      </ul>
+      {rows.length >= 30 && <p className="muted">Chỉ hiện 30 người đầu — gõ thêm chữ để thu hẹp.</p>}
+    </>
+  );
+}
+
+export function TreeScreen({
+  clanId,
+  genOffset,
+  openPerson,
+}: {
+  clanId: string;
+  genOffset: number;
+  openPerson: (id: string) => void;
+}) {
+  const roots = useAsync(() => loadFolderRoots(clanId), [clanId]);
+  const [search, setSearch] = useState("");
+  const [q, setQ] = useState("");
+  useEffect(() => {
+    const h = setTimeout(() => setQ(search.trim()), 300);
+    return () => clearTimeout(h);
+  }, [search]);
+
+  return (
+    <Ctx.Provider value={{ clanId, genOffset, openPerson }}>
+      <div className="page">
+        <input
+          className="field"
+          type="search"
+          placeholder="Tìm người theo tên…"
+          aria-label="Tìm người trong cây"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ marginBottom: 12 }}
+        />
+        {q && <SearchResults q={q} />}
+
+        {/* Đang tìm thì GIẤU cây chứ không gỡ: gỡ là mất các nhánh đã bung. */}
+        <div style={{ display: q ? "none" : undefined }}>
+          {roots.loading && <p className="muted">Đang tải gốc cây…</p>}
+          {roots.error && (
+            <p className="error">
+              {roots.error}{" "}
+              <button type="button" className="btn ghost" onClick={roots.reload}>Thử lại</button>
+            </p>
+          )}
+          {roots.data && (
+            <>
+              {roots.data.roots.length === 0 && roots.data.orphanCount === 0 && (
+                <p className="muted">Dòng họ chưa có ai.</p>
+              )}
+              <ul className="tree">
+                {roots.data.roots.map((r) => (
+                  <PersonNode
+                    key={r.id}
+                    person={r}
+                    defaultOpen
+                    reserveArrow={roots.data!.roots.some((x) => x.hasChildren)}
+                  />
+                ))}
+              </ul>
+              {roots.data.orphanCount > 0 && <Unlinked count={roots.data.orphanCount} />}
+            </>
+          )}
+        </div>
+      </div>
+    </Ctx.Provider>
+  );
+}
