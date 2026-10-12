@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { setNavigationBarLeftButton, setNavigationBarTitle } from "zmp-sdk";
 
+import { IconBuildings, IconCalendar, IconUser } from "@/components/icons";
 import type { ClanSummary } from "@/lib/queries/clans";
 import { supabase } from "@/lib/supabase";
 
@@ -42,15 +43,10 @@ const sourceOf = (clan: ClanSummary) =>
 
 type Tab = "clans" | "anniv" | "account";
 
-const icon = (d: string) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d={d} />
-  </svg>
-);
 const TABS: { id: Tab; label: string; title: string; icon: JSX.Element }[] = [
-  { id: "clans", label: "Dòng họ", title: "Dòng Họ Việt", icon: icon("M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M10 21v-6h4v6") },
-  { id: "anniv", label: "Ngày giỗ", title: "Ngày giỗ sắp tới", icon: icon("M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z") },
-  { id: "account", label: "Tài khoản", title: "Tài khoản", icon: icon("M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z") },
+  { id: "clans", label: "Dòng họ", title: "Dòng Họ Việt", icon: <IconBuildings /> },
+  { id: "anniv", label: "Ngày giỗ", title: "Ngày giỗ sắp tới", icon: <IconCalendar /> },
+  { id: "account", label: "Tài khoản", title: "Tài khoản", icon: <IconUser /> },
 ];
 
 type Auth =

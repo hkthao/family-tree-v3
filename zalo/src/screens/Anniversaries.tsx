@@ -1,4 +1,5 @@
 import type { ClanSummary } from "@/lib/queries/clans";
+import { IconArrowRight } from "@/components/icons";
 import { listMyClans } from "@/lib/queries/clans";
 import { supabase } from "@/lib/supabase";
 import {
@@ -109,7 +110,7 @@ export function AnniversariesScreen({
               {when(e.daysUntil)} · {dmy(e.date)} · {e.clan.name}
             </span>
           </span>
-          <span className="go">›</span>
+          <span className="go"><IconArrowRight /></span>
         </button>
       ))}
     </div>

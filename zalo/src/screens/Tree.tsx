@@ -6,6 +6,7 @@ import {
   type CSSProperties,
 } from "react";
 
+import { IconChevronDown } from "@/components/icons";
 import { displayGen } from "@/lib/displayGeneration";
 import {
   loadFolderNode,
@@ -46,11 +47,7 @@ const Ctx = createContext<{
 const genVar = (generation: number | null) =>
   ({ "--gen": generationColor(generation) ?? undefined }) as CSSProperties;
 
-const Chevron = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m6 9 6 6 6-6" />
-  </svg>
-);
+const Chevron = () => <IconChevronDown />;
 
 /** Ba dòng giả trong lúc chờ tải, cùng hình dạng với dòng thật. */
 const Skeleton = ({ rows = 3 }: { rows?: number }) => (

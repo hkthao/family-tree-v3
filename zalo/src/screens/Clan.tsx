@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { openWebview } from "zmp-sdk";
 
+import {
+  IconArrowRight,
+  IconCalendar,
+  IconGlobe,
+  IconHome,
+  IconLink,
+  IconTree,
+  IconUsers,
+} from "@/components/icons";
 import { dayAuspice } from "@/lib/almanac";
 import { displayGenLabel } from "@/lib/displayGeneration";
 import { formatLunarDate, solarStringToLunar } from "@/lib/lunarDate";
@@ -31,24 +40,11 @@ import { TreeScreen } from "./Tree";
  */
 type Tab = "overview" | "tree" | "people" | "events";
 
-const icon = (d: string) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d={d} />
-  </svg>
-);
-const I = {
-  home: "M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M10 21v-6h4v6",
-  tree: "M12 3v6M6 21v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4M12 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM12 9v6",
-  people: "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
-  cal: "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z",
-  link: "M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1",
-  out: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3",
-};
-const TABS: { id: Tab; label: string; d: string }[] = [
-  { id: "overview", label: "Tổng quan", d: I.home },
-  { id: "tree", label: "Cây", d: I.tree },
-  { id: "people", label: "Danh bạ", d: I.people },
-  { id: "events", label: "Sự kiện", d: I.cal },
+const TABS: { id: Tab; label: string; Icon: typeof IconHome }[] = [
+  { id: "overview", label: "Tổng quan", Icon: IconHome },
+  { id: "tree", label: "Cây", Icon: IconTree },
+  { id: "people", label: "Danh bạ", Icon: IconUsers },
+  { id: "events", label: "Sự kiện", Icon: IconCalendar },
 ];
 
 const WEEKDAY = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
@@ -136,7 +132,7 @@ function Overview({
   return (
     <div className="page">
       <div className="pagehead">
-        {icon(I.home)}
+        <IconHome />
         <div>
           <h2>Tổng quan</h2>
           <p className="muted">Trang chủ của {clan.name}.</p>
@@ -157,7 +153,7 @@ function Overview({
       {(inlaws.data?.length ?? 0) > 0 && (
         <div className="card" style={{ padding: 12, marginBottom: 10 }}>
           <b style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
-            <span className="ico">{icon(I.link)}</span>
+            <span className="ico"><IconLink /></span>
             Đã kết thông gia với {inlaws.data!.length} dòng họ
           </b>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
@@ -211,11 +207,11 @@ function Overview({
 
       <h3 className="section-title">Thao tác nhanh</h3>
       <div className="quick">
-        <button type="button" className="card" onClick={() => go("tree")}><span className="ico">{icon(I.tree)}</span>Phả hệ</button>
-        <button type="button" className="card" onClick={() => go("people")}><span className="ico">{icon(I.people)}</span>Danh bạ</button>
-        <button type="button" className="card" onClick={() => go("events")}><span className="ico">{icon(I.cal)}</span>Sự kiện</button>
+        <button type="button" className="card" onClick={() => go("tree")}><span className="ico"><IconTree /></span>Phả hệ</button>
+        <button type="button" className="card" onClick={() => go("people")}><span className="ico"><IconUsers /></span>Danh bạ</button>
+        <button type="button" className="card" onClick={() => go("events")}><span className="ico"><IconCalendar /></span>Sự kiện</button>
         <button type="button" className="card" onClick={() => openWebview({ url: `https://giapha.thaohk.com/clans/${clan.id}` })}>
-          <span className="ico">{icon(I.out)}</span>Bản web đầy đủ
+          <span className="ico"><IconGlobe /></span>Bản web đầy đủ
         </button>
       </div>
 
@@ -250,7 +246,7 @@ function Events({
   return (
     <div className="page">
       <div className="pagehead">
-        {icon(I.cal)}
+        <IconCalendar />
         <div>
           <h2>Sự kiện</h2>
           <p className="muted">Sinh nhật, ngày giỗ và sự kiện của dòng họ trong một năm tới.</p>
@@ -329,7 +325,7 @@ function People({
                     {b || d ? `${b ?? "?"}–${d ?? (p.is_living ? "nay" : "?")}` : ""}
                   </span>
                 </span>
-                <span className="go">›</span>
+                <span className="go"><IconArrowRight /></span>
               </button>
             );
           })}
@@ -389,7 +385,7 @@ export function ClanScreen({
       <nav className="tabbar">
         {TABS.map((t) => (
           <button key={t.id} type="button" aria-current={tab === t.id ? "page" : undefined} onClick={() => go(t.id)}>
-            {icon(t.d)}
+            <t.Icon />
             {t.label}
           </button>
         ))}
