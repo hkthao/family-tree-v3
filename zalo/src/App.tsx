@@ -32,6 +32,14 @@ type Screen =
   | { kind: "tree"; clan: ClanSummary }
   | { kind: "person"; clan: ClanSummary; personId: string };
 
+/**
+ * Không phải thành viên (họ công khai ở mục Cộng đồng) thì đọc qua bản đã
+ * che — đúng luật riêng tư của web: người ngoài không thấy thông tin chi
+ * tiết của người còn sống.
+ */
+const sourceOf = (clan: ClanSummary) =>
+  clan.role ? ("persons" as const) : ("persons_public_safe" as const);
+
 type Tab = "clans" | "anniv" | "account";
 
 const icon = (d: string) => (
@@ -174,7 +182,6 @@ export function App() {
               <div style={{ display: tab === "clans" ? undefined : "none" }}>
                 <ClansScreen
                   userId={auth.userId}
-                  name={auth.name}
                   openClan={(clan) => push({ kind: "tree", clan })}
                 />
               </div>
@@ -192,6 +199,7 @@ export function App() {
           {s.kind === "tree" && (
             <TreeScreen
               clanId={s.clan.id}
+              source={sourceOf(s.clan)}
               genOffset={s.clan.generation_offset ?? 0}
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
             />
@@ -200,6 +208,7 @@ export function App() {
             <PersonScreen
               clanId={s.clan.id}
               personId={s.personId}
+              source={sourceOf(s.clan)}
               genOffset={s.clan.generation_offset ?? 0}
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
             />

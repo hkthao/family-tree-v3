@@ -1,68 +1,156 @@
-import { listMyClans, type ClanSummary } from "@/lib/queries/clans";
+import { useEffect, useState } from "react";
+
+import { formatDate, formatRelative } from "@/lib/formatDate";
+import {
+  getClansInlawLinks,
+  getClansLeaderboardStats,
+  listCommunityClans,
+  listMyClans,
+  type ClanSummary,
+} from "@/lib/queries/clans";
 
 import { useAsync } from "../useAsync";
 
-/** Chữ cái đại diện: chữ đầu của từ cuối ("Họ Huỳnh" → H, "Dương Hiển" → H). */
-const monogram = (name: string) =>
-  (name.replace(/\(.*?\)/g, "").trim().split(/\s+/).pop() ?? "?").charAt(0).toUpperCase();
+type Scope = "mine" | "community";
 
-/** Trang chủ: lời chào + danh sách dòng họ của tôi — cửa vào cây. */
+const ROLE = { admin: "Quản trị", editor: "Biên tập", viewer: "Xem" } as const;
+
+/**
+ * Trang chủ — cùng bố cục với trang "Tất cả dòng họ" của bản web: gạt
+ * Của tôi / Cộng đồng, ô tìm, rồi các thẻ dòng họ mang đúng những dòng
+ * thông tin như trên web (vai trò, công khai hay riêng tư, ngày tạo, số
+ * đời, thông gia).
+ */
 export function ClansScreen({
   userId,
-  name,
   openClan,
 }: {
   userId: string;
-  name: string;
   openClan: (c: ClanSummary) => void;
 }) {
-  const q = useAsync(() => listMyClans(userId, { page: 1, pageSize: 50 }), [userId]);
-  const rows = q.data?.rows ?? [];
+  const [scope, setScope] = useState<Scope>("mine");
+  const [search, setSearch] = useState("");
+  const [q, setQ] = useState("");
+  useEffect(() => {
+    const h = setTimeout(() => setQ(search.trim()), 300);
+    return () => clearTimeout(h);
+  }, [search]);
+
+  const list = useAsync(async () => {
+    const params = { page: 1, pageSize: 50, search: q || undefined };
+    const res =
+      scope === "mine"
+        ? await listMyClans(userId, params)
+        : await listCommunityClans(userId, params);
+    const ids = res.rows.map((r) => r.id);
+    // Số đời + thông gia là phần phụ: hỏng thì thẻ vẫn hiện, chỉ thiếu nhãn.
+    const [stats, inlaws] = await Promise.all([
+      getClansLeaderboardStats(ids).catch(() => new Map()),
+      getClansInlawLinks(ids).catch(() => new Map()),
+    ]);
+    return { ...res, stats, inlaws };
+  }, [userId, scope, q]);
+
+  // Con số trên hai nút gạt: đếm riêng một lần, không phụ thuộc ô tìm.
+  const counts = useAsync(async () => {
+    const [mine, community] = await Promise.all([
+      listMyClans(userId, { page: 1, pageSize: 1 }),
+      listCommunityClans(userId, { page: 1, pageSize: 1 }),
+    ]);
+    return { mine: mine.total, community: community.total };
+  }, [userId]);
+
+  const rows = list.data?.rows ?? [];
+  const n = (k: Scope) => (counts.data ? ` (${counts.data[k]})` : "");
 
   return (
     <div className="page">
-      <div className="hello">
-        <small>Xin chào,</small>
-        <strong>{name}</strong>
-        {q.data && (
-          <span>
-            {rows.length > 0 ? `Bạn đang tham gia ${rows.length} dòng họ` : "Chưa tham gia dòng họ nào"}
-          </span>
-        )}
+      <div className="pagehead">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M10 21v-6h4v6" />
+        </svg>
+        <div>
+          <h2>Tất cả dòng họ</h2>
+          <p className="muted">
+            {scope === "mine"
+              ? "Các dòng họ bạn đang tham gia."
+              : "Dòng họ công khai trên nền tảng — ai cũng xem được."}
+          </p>
+        </div>
       </div>
 
-      <h2 className="section-title">Dòng họ của tôi</h2>
+      <div className="seg" role="group" aria-label="Phạm vi">
+        <button type="button" aria-pressed={scope === "mine"} onClick={() => setScope("mine")}>
+          Của tôi{n("mine")}
+        </button>
+        <button type="button" aria-pressed={scope === "community"} onClick={() => setScope("community")}>
+          Cộng đồng{n("community")}
+        </button>
+      </div>
 
-      {q.loading &&
-        [0, 1, 2].map((i) => <div key={i} className="sk" style={{ height: 76, marginBottom: 10 }} />)}
+      <div className="searchbar" style={{ position: "static", margin: "0 0 10px", padding: 0 }}>
+        <input
+          className="field"
+          type="search"
+          placeholder="Tìm dòng họ — gõ không dấu cũng được"
+          aria-label="Tìm dòng họ"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-      {q.error && (
+      {list.loading &&
+        [0, 1, 2].map((i) => <div key={i} className="sk" style={{ height: 112, marginBottom: 8 }} />)}
+
+      {list.error && (
         <div className="card empty">
-          <p className="error">{q.error}</p>
-          <button type="button" className="btn ghost" onClick={q.reload}>Thử lại</button>
+          <p className="error">{list.error}</p>
+          <button type="button" className="btn ghost" onClick={list.reload}>Thử lại</button>
         </div>
       )}
 
-      {q.data && rows.length === 0 && (
+      {!list.loading && list.data && rows.length === 0 && (
         <div className="card empty">
           <div className="icon">🌳</div>
           <p className="muted">
-            Tài khoản này chưa tham gia dòng họ nào. Nếu bạn đã lập gia phả
-            trên web, hãy liên kết tài khoản ở tab “Tài khoản”.
+            {q
+              ? `Không có dòng họ nào khớp “${q}”.`
+              : scope === "mine"
+                ? "Tài khoản này chưa tham gia dòng họ nào. Nếu bạn đã lập gia phả trên web, hãy liên kết tài khoản ở tab “Tài khoản”."
+                : "Chưa có dòng họ công khai nào."}
           </p>
         </div>
       )}
 
-      {rows.map((c) => (
-        <button key={c.id} type="button" className="card clan" onClick={() => openClan(c)}>
-          <span className="mono">{monogram(c.name)}</span>
-          <span style={{ minWidth: 0 }}>
-            <b>{c.name}</b>
-            <span className="muted">{c.person_count} người</span>
-          </span>
-          <span className="go">›</span>
-        </button>
-      ))}
+      {!list.loading &&
+        rows.map((c) => {
+          const gens = list.data!.stats.get(c.id)?.max_generation;
+          const inlaws = list.data!.inlaws.get(c.id) ?? [];
+          return (
+            <button key={c.id} type="button" className="card clan" onClick={() => openClan(c)}>
+              <span className="top">
+                <b>{c.name}</b>
+                <span className="count">{c.person_count} thành viên</span>
+              </span>
+              {c.description && <span className="desc">{c.description}</span>}
+              <span className="line">
+                {c.role && <><strong>{ROLE[c.role]}</strong> • </>}
+                {c.visibility === "public" ? "Công khai" : "Riêng tư"}
+              </span>
+              <span className="line">
+                Tạo {formatDate(c.created_at)} • Cập nhật {formatRelative(c.updated_at)}
+              </span>
+              {inlaws.length > 0 && (
+                <span className="line">🔗 Thông gia: {inlaws.map((x: { clan_name: string }) => x.clan_name).join(", ")}</span>
+              )}
+              {gens ? (
+                <span className="tags">
+                  <span className="tag gen">{gens} đời</span>
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
     </div>
   );
 }
