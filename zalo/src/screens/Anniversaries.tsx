@@ -1,5 +1,8 @@
 import type { ClanSummary } from "@/lib/queries/clans";
-import { IconArrowRight } from "@/components/icons";
+import {
+  IconArrowRight,
+  IconFlame,
+} from "@/components/icons";
 import { listMyClans } from "@/lib/queries/clans";
 import { supabase } from "@/lib/supabase";
 import {
@@ -84,7 +87,7 @@ export function AnniversariesScreen({
 
       {q.data && rows.length === 0 && (
         <div className="card empty">
-          <div className="icon">🕯️</div>
+          <div className="icon"><IconFlame /></div>
           <p className="muted">
             Không có ngày giỗ nào trong {DAYS_AHEAD} ngày tới. Ngày giỗ được
             tính từ ngày mất âm lịch ghi trong hồ sơ.

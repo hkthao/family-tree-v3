@@ -56,7 +56,8 @@ button:active { opacity:.7; }
 .clan b, .event b, .account b { display:block; font-size:15px; line-height:1.3; }
 .clan .go, .event .go { margin-left:auto; color:#C9BFB2; font-size:20px; }
 .empty { padding:20px 16px; text-align:center; }
-.empty .icon { font-size:40px; }
+.empty .icon { display:flex; justify-content:center; color:var(--muted); }
+.empty .icon svg { width:36px; height:36px; opacity:.7; }
 
 /* ── Cây thư mục ── */
 .searchbar { position:sticky; top:0; z-index:4; margin:-10px -12px 8px; padding:8px 12px; background:var(--bg); }

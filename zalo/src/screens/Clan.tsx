@@ -255,7 +255,7 @@ function Events({
       {upcoming.loading && [0, 1, 2, 3].map((i) => <div key={i} className="sk" style={{ height: 60, marginBottom: 6 }} />)}
       {upcoming.error && <p className="error">{upcoming.error}</p>}
       {!upcoming.loading && rows.length === 0 && (
-        <div className="card empty"><div className="icon">🗓️</div><p className="muted">Chưa có sự kiện nào sắp tới.</p></div>
+        <div className="card empty"><div className="icon"><IconCalendar /></div><p className="muted">Chưa có sự kiện nào sắp tới.</p></div>
       )}
       {rows.length > 0 && (
         <div className="card rels">
