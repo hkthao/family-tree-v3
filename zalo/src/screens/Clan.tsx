@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { openWebview } from "zmp-sdk";
 
 import {
@@ -11,15 +11,12 @@ import {
   IconUsers,
 } from "@/components/icons";
 import { dayAuspice } from "@/lib/almanac";
-import { displayGenLabel } from "@/lib/displayGeneration";
 import { formatLunarDate, solarStringToLunar } from "@/lib/lunarDate";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { getClansInlawLinks, type ClanSummary } from "@/lib/queries/clans";
 import { listAnniversaryCandidates, listEvents } from "@/lib/queries/events";
-import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import type { PersonForTree, TreeSource } from "@/lib/queries/tree";
 import { supabase } from "@/lib/supabase";
-import { generationColor } from "@/lib/tree/folderModel";
 import {
   computeUpcomingAnniversaries,
   computeUpcomingEvents,
@@ -28,6 +25,7 @@ import {
 } from "@/lib/upcomingEvents";
 
 import { useAsync } from "../useAsync";
+import { PeopleScreen } from "./People";
 import { TreeTab } from "./TreeTab";
 
 /**
@@ -266,80 +264,6 @@ function Events({
   );
 }
 
-const PAGE = 30;
-
-function People({
-  clan,
-  source,
-  openPerson,
-}: {
-  clan: ClanSummary;
-  source: TreeSource;
-  openPerson: (id: string) => void;
-}) {
-  const [search, setSearch] = useState("");
-  const [q, setQ] = useState("");
-  const [pages, setPages] = useState(1);
-  useEffect(() => {
-    const h = setTimeout(() => {
-      setQ(search.trim());
-      setPages(1);
-    }, 300);
-    return () => clearTimeout(h);
-  }, [search]);
-
-  const list = useAsync(async () => {
-    // Tải dồn từng trang: cuộn tới đâu bấm "Xem thêm" tới đó.
-    let rows: PersonRow[] = [];
-    let total = 0;
-    for (let page = 1; page <= pages; page++) {
-      const r = await listPersons(clan.id, { page, pageSize: PAGE, search: q || undefined, sort: "generation", source });
-      rows = rows.concat(r.rows);
-      total = r.total;
-    }
-    return { rows, total };
-  }, [clan.id, q, pages, source]);
-  const rows = list.data?.rows ?? [];
-
-  return (
-    <div className="page">
-      <div className="searchbar">
-        <input className="field" type="search" placeholder="Tìm trong danh bạ…" aria-label="Tìm trong danh bạ" value={search} onChange={(e) => setSearch(e.target.value)} />
-      </div>
-      {list.data && <p className="muted" style={{ margin: "0 2px 8px" }}>{list.data.total} người</p>}
-      {list.loading && rows.length === 0 && [0, 1, 2, 3].map((i) => <div key={i} className="sk" style={{ height: 56, marginBottom: 6 }} />)}
-      {list.error && <p className="error">{list.error}</p>}
-      {rows.length > 0 && (
-        <div className="card rels">
-          {rows.map((p) => {
-            const color = generationColor(p.generation);
-            const b = p.birth_date?.slice(0, 4);
-            const d = p.death_date?.slice(0, 4);
-            return (
-              <button key={p.id} type="button" className="rel" onClick={() => openPerson(p.id)}>
-                <span className="mono" style={{ width: 36, height: 36, fontSize: 15 }}>{p.full_name.trim().split(/\s+/).pop()?.charAt(0)}</span>
-                <span style={{ minWidth: 0 }}>
-                  <b>{p.full_name} <span className={p.gender === "M" ? "m" : "f"}>{p.gender === "M" ? "♂" : "♀"}</span></b>
-                  <span className="meta" style={{ "--gen": color ?? undefined } as React.CSSProperties}>
-                    {color && <span className="badge">{displayGenLabel(p.generation, clan.generation_offset ?? 0)}</span>}
-                    {b || d ? `${b ?? "?"}–${d ?? (p.is_living ? "nay" : "?")}` : ""}
-                  </span>
-                </span>
-                <span className="go"><IconArrowRight /></span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-      {list.data && rows.length < list.data.total && (
-        <button type="button" className="btn ghost block" style={{ marginTop: 10 }} disabled={list.loading} onClick={() => setPages((n) => n + 1)}>
-          {list.loading ? "Đang tải…" : "Xem thêm"}
-        </button>
-      )}
-    </div>
-  );
-}
-
 export function ClanScreen({
   clan,
   source,
@@ -373,7 +297,7 @@ export function ClanScreen({
       )}
       {seen.has("people") && (
         <div style={show("people")}>
-          <People clan={clan} source={source} openPerson={openPerson} />
+          <PeopleScreen clan={clan} source={source} openPerson={openPerson} />
         </div>
       )}
       {seen.has("events") && (
