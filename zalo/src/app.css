@@ -504,3 +504,10 @@ html.dark .btn.danger2 { background:rgba(220,31,24,.2); color:#ff7a73; }
 
 /* Đặt ở cuối tệp để chắc chắn thắng luật ".pane .field + .field". */
 .pane .dmy .field + .field { margin-top:0; }
+
+/* ── Tab "Thêm" của dòng họ ── */
+.moreitem .moreicon { display:inline-flex; color:var(--primary); }
+.moreitem .moreicon svg { width:20px; height:20px; }
+.moreitem:disabled { opacity:1; cursor:default; color:var(--muted); }
+.moreitem:disabled .moreicon { color:var(--muted); }
+.soon { margin-left:auto; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; background:var(--line); color:var(--muted); }

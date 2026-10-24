@@ -267,6 +267,7 @@ export function App() {
           {s.kind === "tree" && (
             <ClanScreen
               clan={s.clan}
+              userId={auth.userId}
               source={sourceOf(s.clan)}
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
               // Sổ chứa thông tin đầy đủ của cả họ → chỉ thành viên mới xuất.
