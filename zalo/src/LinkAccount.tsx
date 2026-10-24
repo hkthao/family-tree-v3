@@ -9,6 +9,9 @@ import { toast } from "./toast";
  * Người đăng ký bằng email trên web mà mở Mini App sẽ vào một tài khoản
  * mới tinh, không thấy dòng họ của mình. Nhập email → nhận mã qua thư →
  * nhập mã là Zalo này dùng chung tài khoản cũ.
+ *
+ * Chỉ là phần thân form: màn Tài khoản đặt nó trong một dòng của nhóm
+ * "Tài khoản liên kết", cùng kiểu danh sách thiết lập với cả màn.
  */
 export function LinkAccount({ onLinked }: { onLinked: () => void }) {
   const [step, setStep] = useState<"email" | "code">("email");
@@ -26,10 +29,9 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
   };
 
   return (
-    <section className="card link" style={{ marginTop: 0, marginBottom: 12 }}>
-      <h2>Đã có tài khoản email?</h2>
-      <p className="muted" style={{ margin: 0 }}>
-        Liên kết để thấy các dòng họ bạn đã lập bằng tài khoản email.
+    <div className="link">
+      <p className="note" style={{ marginTop: 0 }}>
+        Đã lập gia phả trên web bằng email? Liên kết để thấy các dòng họ đó ngay trong Zalo.
       </p>
 
       {step === "email" ? (
@@ -59,7 +61,7 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
         </>
       ) : (
         <>
-          <p style={{ fontSize: 14, margin: "12px 0 0" }}>
+          <p className="note" style={{ fontSize: 14 }}>
             Nếu <b>{email}</b> có tài khoản, mã 6 số đã được gửi tới đó (hiệu
             lực 10 phút).
           </p>
@@ -103,6 +105,6 @@ export function LinkAccount({ onLinked }: { onLinked: () => void }) {
       )}
 
       {error && <p className="error" style={{ margin: "10px 0 0" }}>{error}</p>}
-    </section>
+    </div>
   );
 }

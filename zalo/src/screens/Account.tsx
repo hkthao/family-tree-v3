@@ -69,14 +69,16 @@ function ExpandRow({
   label,
   value,
   danger,
+  defaultOpen = false,
   children,
 }: {
   label: string;
   value?: string;
   danger?: boolean;
+  defaultOpen?: boolean;
   children: (close: () => void) => ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="grow">
       <button type="button" className="growhead" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
@@ -441,7 +443,22 @@ export function AccountScreen({
 
       {/* Chưa liên kết thì mời liên kết; liên kết rồi thì hiện danh sách +
           nút bỏ. Bỏ xong đăng nhập lại (onLinked) để nhận tài khoản Zalo riêng. */}
-      {zaloOnly ? <LinkAccount onLinked={onLinked} /> : <LinkedAccounts email={email} onUnlinked={onLinked} />}
+      {zaloOnly ? (
+        <Group title="Tài khoản liên kết">
+          <div className="grow">
+            <div className="growhead" style={{ cursor: "default" }}>
+              <span>Zalo</span>
+              <span className="val">Đang dùng</span>
+            </div>
+          </div>
+          {/* Mở sẵn: người mới vào thường là người đã có gia phả trên web. */}
+          <ExpandRow label="Tài khoản email" value="Chưa liên kết" defaultOpen>
+            {() => <LinkAccount onLinked={onLinked} />}
+          </ExpandRow>
+        </Group>
+      ) : (
+        <LinkedAccounts email={email} onUnlinked={onLinked} />
+      )}
       {profile.error && <p className="error">{profile.error}</p>}
 
       <Group title="Hồ sơ">

@@ -121,8 +121,6 @@ button:active { opacity:.7; }
   background:linear-gradient(to top, var(--bg) 70%, transparent); }
 
 /* ── Liên kết tài khoản ── */
-.link { padding:14px; margin-top:12px; }
-.link h2 { margin:0 0 4px; font-size:16px; }
 .link .field { margin:10px 0 8px; }
 
 /* ── Thanh tab dưới đáy (chỉ ở các màn hình gốc) ── */
@@ -293,6 +291,8 @@ html.dark .f3 svg.main_svg path.link.f3-path-to-main { stroke:#E26B6B; opacity:1
 .relrow { display:flex; align-items:center; gap:12px; width:100%; padding:8px 12px; margin-bottom:6px; text-align:left; }
 .relrow img { flex:none; border-radius:999px; object-fit:cover; }
 .relrow b { font-weight:600; font-size:15px; }
+.relrow[aria-pressed="true"] { border-color:var(--primary); background:var(--primary-soft); }
+.picklist { margin-top:10px; }
 
 /* ── Sự kiện (theo trang Sự kiện của web) ── */
 .seg.full { display:flex; width:100%; }

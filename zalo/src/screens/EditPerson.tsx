@@ -20,9 +20,8 @@ import { useAsync } from "../useAsync";
  * dương ↔ âm và tính ngày giỗ. Tự viết lại chỗ đó mà lệch một ngày là có
  * nhà cúng giỗ sai ngày.
  *
- * Chỉ sửa các trường cơ bản. Những trường web có mà ở đây KHÔNG có (ảnh,
- * thứ tự con, tuổi thọ ghi tay, Thuỷ tổ, chi…) không nằm trong lệnh cập
- * nhật nên giữ nguyên giá trị cũ, không bị xoá mất.
+ * Có đủ các trường của form sửa trên web, trừ ảnh đại diện. Trường không
+ * có ở đây không nằm trong lệnh cập nhật nên giữ nguyên giá trị cũ.
  */
 export function DateField({
   label,
@@ -84,6 +83,10 @@ export function EditPersonScreen({
   const [birthPlace, setBirthPlace] = useState("");
   const [burialPlace, setBurialPlace] = useState("");
   const [bio, setBio] = useState("");
+  const [isRoot, setIsRoot] = useState(false);
+  const [birthOrder, setBirthOrder] = useState("");
+  const [lifespanYears, setLifespanYears] = useState("");
+  const [todoExcluded, setTodoExcluded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,6 +123,10 @@ export function EditPersonScreen({
     setBirthPlace(person.birth_place ?? "");
     setBurialPlace(person.burial_place ?? "");
     setBio(person.bio ?? "");
+    setIsRoot(person.is_root);
+    setBirthOrder(person.birth_order != null ? String(person.birth_order) : "");
+    setLifespanYears(person.lifespan_years != null ? String(person.lifespan_years) : "");
+    setTodoExcluded(person.todo_excluded ?? false);
   }, [person]);
 
   if (q.loading) return <div className="page"><div className="sk" style={{ height: 360 }} /></div>;
@@ -150,6 +157,14 @@ export function EditPersonScreen({
         full_name: fullName.trim(),
         gender,
         is_living: isLiving,
+        is_root: isRoot,
+        todo_excluded: todoExcluded,
+        // Cùng cách quy đổi với web: con thứ ≥ 1, tuổi thọ 0–150.
+        birth_order: birthOrder.trim() ? Math.max(1, Math.floor(Number(birthOrder))) : null,
+        lifespan_years:
+          !isLiving && lifespanYears.trim()
+            ? Math.max(0, Math.min(150, Math.floor(Number(lifespanYears))))
+            : null,
         birth_date: b.solar_date,
         birth_date_precision: b.solar_precision,
         birth_lunar_year: b.lunar_year,
@@ -205,12 +220,36 @@ export function EditPersonScreen({
           <span className="lbl" style={{ margin: 0 }}>Còn sống</span>
           <input type="checkbox" role="switch" className="switch" checked={isLiving} onChange={(e) => setIsLiving(e.target.checked)} />
         </label>
+        <label className="fgroup frow">
+          <span style={{ minWidth: 0 }}>
+            <span className="lbl" style={{ margin: 0 }}>Thuỷ tổ</span>
+            <span className="note" style={{ display: "block", marginTop: 2 }}>Bật thì đời = 1; đời của con cháu tự cập nhật theo.</span>
+          </span>
+          <input type="checkbox" role="switch" className="switch" checked={isRoot} onChange={(e) => setIsRoot(e.target.checked)} />
+        </label>
+        <div className="fgroup">
+          <label className="lbl">
+            Con thứ mấy (không bắt buộc)
+            <input className="field" style={{ marginTop: 4 }} inputMode="numeric" maxLength={2} placeholder="1 = con cả" value={birthOrder} onChange={(e) => setBirthOrder(e.target.value.replace(/\D/g, ""))} />
+          </label>
+        </div>
       </section>
 
       <section className="card pane">
         <h3 className="serif">Ngày sinh{!isLiving && " và ngày mất"}</h3>
         <DateField label="Ngày sinh" value={birth} onChange={setBirth} />
         {!isLiving && <DateField label="Ngày mất" value={death} onChange={setDeath} />}
+        {!isLiving && (
+          <div className="fgroup">
+            <label className="lbl">
+              Tuổi thọ (không bắt buộc)
+              <input className="field" style={{ marginTop: 4 }} inputMode="numeric" maxLength={3} placeholder="VD: 82" value={lifespanYears} onChange={(e) => setLifespanYears(e.target.value.replace(/\D/g, ""))} />
+            </label>
+            <p className="note">
+              Để trống thì tự tính từ năm sinh – năm mất. Từ 60 tuổi ghi “hưởng thọ”, dưới 60 là “hưởng dương”.
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="card pane">
@@ -225,6 +264,18 @@ export function EditPersonScreen({
       <section className="card pane">
         <h3 className="serif">Tiểu sử</h3>
         <textarea className="field area" rows={6} aria-label="Tiểu sử" value={bio} onChange={(e) => setBio(e.target.value)} />
+      </section>
+
+      <section className="card pane">
+        <label className="frow" style={{ alignItems: "flex-start", gap: 12 }}>
+          <span style={{ minWidth: 0 }}>
+            <span className="lbl" style={{ margin: 0 }}>Loại khỏi “Việc cần làm”</span>
+            <span className="note" style={{ display: "block", marginTop: 2 }}>
+              Bật khi thông tin thiếu là cố ý hoặc không thể bổ sung (vd. thuỷ tổ không có cha mẹ). App sẽ không nhắc nữa.
+            </span>
+          </span>
+          <input type="checkbox" role="switch" className="switch" checked={todoExcluded} onChange={(e) => setTodoExcluded(e.target.checked)} />
+        </label>
       </section>
 
       <div className="cta">

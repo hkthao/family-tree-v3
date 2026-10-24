@@ -66,6 +66,19 @@ cục); sau khi làm tới màn Tài khoản thì nới thành nguyên tắc tr�
 6. **Khai tên miền gọi API** (Supabase self-host, nơi lưu ảnh) trong cấu
    hình Mini App, thử trên điện thoại thật, gửi duyệt.
 
+## Đối chiếu thêm/sửa/xoá với web (24/10/2026)
+
+Đã chạy thật trên Supabase máy lập trình, đối chiếu dữ liệu trong DB:
+
+- Sửa hồ sơ: đủ trường như web (thêm Thuỷ tổ, con thứ, tuổi thọ, loại khỏi
+  việc cần làm), trừ ảnh đại diện.
+- Thêm cha/mẹ, vợ/chồng, con: có cả "Người mới" lẫn "Chọn người đã có";
+  máy chủ chặn gắn sai quan hệ (đã thử: con gái làm vợ của cha).
+- Xoá: xoá mềm, có nhật ký để khôi phục — như web.
+
+Còn thiếu so với web: tạo dòng họ mới, ảnh đại diện, sắp xếp thứ tự vợ/chồng,
+quản lý thành viên/lời mời, thêm/sửa sự kiện riêng của họ.
+
 ## Rủi ro
 
 - Bước 2 là cửa vào tài khoản: phải kiểm mã ở phía máy chủ, không tin ID do
