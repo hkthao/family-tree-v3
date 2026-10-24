@@ -4,6 +4,7 @@ import {
   IconCalendar,
   IconDownload,
   IconHome,
+  IconMore,
   IconLink,
   IconTree,
   IconUsers,
@@ -27,6 +28,7 @@ import { scrollTopScreen } from "../scroll";
 import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
+import { MoreScreen } from "./More";
 import { PeopleScreen } from "./People";
 import { TreeTab } from "./TreeTab";
 
@@ -37,13 +39,14 @@ import { TreeTab } from "./TreeTab";
  *
  * Sửa, thêm, xoá người làm ngay trong app (ở trang hồ sơ).
  */
-type Tab = "overview" | "tree" | "people" | "events";
+type Tab = "overview" | "tree" | "people" | "events" | "more";
 
 const TABS: { id: Tab; label: string; Icon: typeof IconHome }[] = [
   { id: "overview", label: "Tổng quan", Icon: IconHome },
   { id: "tree", label: "Cây", Icon: IconTree },
   { id: "people", label: "Danh bạ", Icon: IconUsers },
   { id: "events", label: "Sự kiện", Icon: IconCalendar },
+  { id: "more", label: "Thêm", Icon: IconMore },
 ];
 
 const WEEKDAY = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
@@ -216,11 +219,13 @@ function Overview({
 
 export function ClanScreen({
   clan,
+  userId,
   source,
   openPerson,
   onExport,
 }: {
   clan: ClanSummary;
+  userId: string;
   source: TreeSource;
   openPerson: (id: string) => void;
   /** Có thì hiện ô "Xuất sổ PDF" ở Thao tác nhanh (chỉ thành viên). */
@@ -270,6 +275,16 @@ export function ClanScreen({
       {seen.has("events") && (
         <div className={pane} style={show("events")}>
           <EventsScreen clan={clan} upcoming={upcoming} openPerson={openPerson} />
+        </div>
+      )}
+      {seen.has("more") && (
+        <div className={pane} style={show("more")}>
+          <MoreScreen
+            clan={clan}
+            userId={userId}
+            canExport={!!onExport}
+            open={(t) => (t === "export" ? onExport?.() : jump(t))}
+          />
         </div>
       )}
 
