@@ -223,6 +223,7 @@ export function ClanScreen({
   source,
   openPerson,
   onExport,
+  openPage,
 }: {
   clan: ClanSummary;
   userId: string;
@@ -230,6 +231,8 @@ export function ClanScreen({
   openPerson: (id: string) => void;
   /** Có thì hiện ô "Xuất sổ PDF" ở Thao tác nhanh (chỉ thành viên). */
   onExport?: () => void;
+  /** Mở một màn riêng từ tab "Thêm" (đẩy lên chồng màn hình). */
+  openPage: (page: "todo") => void;
 }) {
   const [tab, setTab] = useState<Tab>("overview");
   // Cây và danh bạ chỉ dựng khi đã mở lần đầu, rồi GIỮ (giấu đi) để đổi tab
@@ -283,7 +286,7 @@ export function ClanScreen({
             clan={clan}
             userId={userId}
             canExport={!!onExport}
-            open={(t) => (t === "export" ? onExport?.() : jump(t))}
+            open={(t) => (t === "export" ? onExport?.() : t === "todo" ? openPage(t) : jump(t))}
           />
         </div>
       )}

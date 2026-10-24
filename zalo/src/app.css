@@ -511,3 +511,22 @@ html.dark .btn.danger2 { background:rgba(220,31,24,.2); color:#ff7a73; }
 .moreitem:disabled { opacity:1; cursor:default; color:var(--muted); }
 .moreitem:disabled .moreicon { color:var(--muted); }
 .soon { margin-left:auto; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; background:var(--line); color:var(--muted); }
+
+/* ── Việc cần làm ── */
+.todo-pct { font-size:26px; font-weight:700; color:var(--primary); font-variant-numeric:tabular-nums; }
+.todo-bar { height:8px; margin-top:8px; border-radius:999px; background:var(--line); overflow:hidden; }
+.todo-bar span { display:block; height:100%; background:var(--primary); border-radius:inherit; }
+.todo-cats { display:flex; gap:6px; margin:14px -12px 8px; padding:0 12px; overflow-x:auto; scrollbar-width:none; }
+.todo-cats::-webkit-scrollbar { display:none; }
+.todo-cats button { flex:none; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); font-size:14px; font-weight:600; color:var(--ink); }
+.todo-cats button[aria-selected="true"] { background:var(--primary); border-color:var(--primary); color:var(--primary-fg); }
+.todo-cats .n { min-width:20px; padding:0 6px; border-radius:999px; font-size:12px; background:var(--line); color:var(--muted); }
+.todo-cats button[aria-selected="true"] .n { background:rgba(255,255,255,.22); color:inherit; }
+.todo-row { display:flex; align-items:center; }
+.todo-check { flex:none; width:20px; height:20px; margin:0 0 0 12px; accent-color:var(--primary); }
+.todo-main { flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:10px 8px 10px 12px; text-align:left; }
+.todo-main img { flex:none; border-radius:999px; object-fit:cover; }
+.todo-main b { font-weight:600; font-size:15px; }
+.todo-miss { color:#B45309; }
+.todo-skip { flex:none; min-height:36px; margin-right:4px; font-size:13px; color:var(--muted); }
+.todo-gen { margin-left:6px; font-size:12px; font-weight:400; color:var(--muted); }
