@@ -575,3 +575,24 @@ html.dark .todo-miss { color:#FBBF24; }
 html.dark .post-pending { color:#FBBF24; }
 .post-full { display:block; font-size:15px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
 .comment { display:flex; flex-direction:column; gap:2px; padding:10px 14px; }
+
+/* ── Di sản / Phòng ký ức / Bảng vàng ── */
+.her-video { position:relative; aspect-ratio:16/9; border-radius:8px; overflow:hidden; background:#000; }
+.her-video iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+.her-sec { border-top:1px solid var(--line); }
+.her-sec:first-of-type { border-top:0; }
+.her-sec-head { display:flex; justify-content:space-between; align-items:center; width:100%; padding:10px 0; text-align:left; font-weight:600; font-size:15px; }
+.her-chev { flex:none; width:24px; text-align:center; color:var(--primary); font-size:18px; }
+.lightbox { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,.9); padding:16px; }
+.lightbox img { max-width:100%; max-height:75vh; object-fit:contain; }
+.lightbox > button { position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:999px; display:grid; place-items:center; background:rgba(255,255,255,.15); color:#fff; }
+.lightbox-cap { margin-top:10px; color:#fff; text-align:center; font-size:14px; }
+.mem-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
+.mem-frame { display:flex; flex-direction:column; gap:2px; padding:8px; border:6px solid #6B4B2A; border-radius:4px; background:var(--surface); text-align:left; min-width:0; }
+.mem-frame img { width:100%; aspect-ratio:3/4; object-fit:cover; background:var(--soft); margin-bottom:4px; }
+.mem-frame b { font-size:13px; font-weight:600; }
+.honor-donation_money { background:#FEF3C7; color:#92400E; }
+.honor-academic { background:#D1FAE5; color:#065F46; }
+.honor-donation_labor { background:var(--primary-soft); color:var(--primary); }
+html.dark .honor-donation_money { background:rgba(245,158,11,.18); color:#FBBF24; }
+html.dark .honor-academic { background:rgba(16,185,129,.18); color:#34D399; }
