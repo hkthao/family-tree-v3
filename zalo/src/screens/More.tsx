@@ -37,6 +37,8 @@ const ROUTES: Record<string, MoreTarget> = {
 };
 /** Các mục đã có ở thanh tab dưới — không nhắc lại trong "Thêm". */
 const IN_TABBAR = new Set(["", "/tree", "/people", "/events"]);
+/** Mục của web mà Mini App không làm (chủ dự án chốt) — ẩn hẳn. */
+const WEB_ONLY = new Set(["/contributions"]);
 
 export function MoreScreen({
   clan,
@@ -74,7 +76,10 @@ export function MoreScreen({
   )
     .filter((s) => s.id !== "global" && s.id !== "clan-admin")
     .map((s) => {
-      const items: DrawerItem[] = s.items.filter((i) => !IN_TABBAR.has(i.to.slice(prefix.length)));
+      const items: DrawerItem[] = s.items.filter((i) => {
+        const tail = i.to.slice(prefix.length);
+        return !IN_TABBAR.has(tail) && !WEB_ONLY.has(tail);
+      });
       // Xuất sổ ở web nằm trong "Công cụ"; ở đây là màn riêng nên ghi rõ tên.
       if (s.id === "clan-work" && canExport) {
         items.unshift({ to: "#export", label: "Xuất sổ gia phả PDF", icon: <IconBook /> });
