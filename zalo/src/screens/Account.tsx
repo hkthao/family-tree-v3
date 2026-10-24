@@ -411,6 +411,7 @@ export function AccountScreen({
   onLinked,
   onRenamed,
   onDeleted,
+  openPrivacy,
 }: {
   userId: string;
   email: string | null;
@@ -419,6 +420,7 @@ export function AccountScreen({
   onLinked: () => void;
   onRenamed: (name: string) => void;
   onDeleted: () => void;
+  openPrivacy: () => void;
 }) {
   const profile = useAsync(() => getMyProfile(userId), [userId]);
   const [theme, setThemeState] = useState<Theme>(getTheme());
@@ -490,6 +492,15 @@ export function AccountScreen({
               </button>
             ))}
           </div>
+        </div>
+      </Group>
+
+      <Group title="Thông tin">
+        <div className="grow">
+          <button type="button" className="growhead" onClick={openPrivacy}>
+            <span>Chính sách riêng tư</span>
+            <span className="chev closed" style={{ margin: "0 0 0 auto", width: 24, height: 24 }}><IconChevronDown /></span>
+          </button>
         </div>
       </Group>
 

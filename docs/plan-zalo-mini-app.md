@@ -94,6 +94,8 @@ Phía code (Claude làm):
 
 - [x] Mail không gửi vào email giả của tài khoản Zalo.
 - [x] Chính sách quyền riêng tư nói rõ lấy gì từ Zalo.
+- [x] Màn "Chính sách riêng tư" ngay trong Mini App (Tài khoản → Thông tin),
+      cùng nội dung trang web — người duyệt thấy được mà không phải rời app.
 - [ ] Triển khai lại edge function gửi mail (notify-events, notify-inlaw,
       notify-contribution, weekly-digest, ai-chat) lên self-host.
 - [ ] Merge `feat/zalo-mini-app` vào `main` để web lên trang chính sách mới.
@@ -105,7 +107,8 @@ Phía chủ dự án (cần tài khoản Zalo):
 - [ ] Khai tên miền được gọi trong cấu hình Mini App:
       tên miền Supabase self-host (lấy từ `VITE_SUPABASE_URL` trong
       `zalo/.env.local` — API + ảnh) và `giapha.thaohk.com`.
-- [ ] Điền link chính sách: `https://giapha.thaohk.com/chinh-sach-rieng-tu`.
+- [ ] Điền link chính sách nếu cấu hình Mini App có ô cho nó (chưa rõ ô nằm
+      đâu): `https://giapha.thaohk.com/chinh-sach-rieng-tu`.
 - [ ] `cd zalo && npx zmp login` rồi `npm run deploy` để đẩy bản dựng lên.
 - [ ] Thử bản Testing trên điện thoại thật: đăng nhập mới, liên kết tài
       khoản sẵn có, mở cây lớn, xuất PDF.

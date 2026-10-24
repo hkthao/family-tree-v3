@@ -6,7 +6,7 @@
   "scripts": {
     "start": "zmp start --port 3110",
     "deploy": "zmp deploy",
-    "build": "vite build",
+    "build": "zmp build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

@@ -18,6 +18,7 @@ import { AccountScreen } from "./screens/Account";
 import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
+import { PrivacyScreen } from "./screens/Privacy";
 import { listenBack, pushBack } from "./nav";
 import { RevContext } from "./rev";
 import { scrollTopScreen } from "./scroll";
@@ -42,7 +43,8 @@ type Screen =
   | { kind: "person"; clan: ClanSummary; personId: string }
   | { kind: "edit"; clan: ClanSummary; personId: string }
   | { kind: "add"; clan: ClanSummary; personId: string; relation: "spouse" | "child" }
-  | { kind: "export"; clan: ClanSummary };
+  | { kind: "export"; clan: ClanSummary }
+  | { kind: "privacy" };
 
 /**
  * Không phải thành viên (họ công khai ở mục Cộng đồng) thì đọc qua bản đã
@@ -153,7 +155,9 @@ export function App() {
           ? "Sửa hồ sơ"
           : top.kind === "add"
             ? top.relation === "spouse" ? "Thêm vợ / chồng" : "Thêm con"
-            : "Hồ sơ";
+            : top.kind === "privacy"
+              ? "Chính sách riêng tư"
+              : "Hồ sơ";
   const canGoBack = stack.length > 1;
   useEffect(() => {
     // Ngoài Zalo (giả lập máy tính) hai lệnh này không có gì để điều khiển.
@@ -246,6 +250,7 @@ export function App() {
                     setStack([{ kind: "clans" }]);
                     setAuth({ kind: "deleted" });
                   }}
+                  openPrivacy={() => push({ kind: "privacy" })}
                 />
               </div>
             </div>
@@ -260,6 +265,7 @@ export function App() {
             />
           )}
           {s.kind === "export" && <ExportBookScreen clan={s.clan} userId={auth.userId} />}
+          {s.kind === "privacy" && <PrivacyScreen />}
           {s.kind === "person" && (
             <PersonScreen
               clanId={s.clan.id}

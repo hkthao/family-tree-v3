@@ -391,6 +391,13 @@ html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
 .growhead { display:flex; align-items:center; gap:10px; width:100%; min-height:48px; padding:10px 14px; text-align:left; font-size:15px; }
 .growhead .val { margin-left:auto; min-width:0; max-width:58%; color:var(--muted); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .growbody { padding:2px 14px 14px; }
+/* Văn bản dài (chính sách): chữ đọc được, không phải chữ ghi chú. */
+.policy { padding:12px 14px; font-size:14px; line-height:1.55; color:var(--muted); }
+.policy p { margin:0; }
+.policy p + p { margin-top:8px; }
+.policy ul { margin:0; padding-left:18px; }
+.policy li + li { margin-top:6px; }
+.policy b { color:var(--ink); font-weight:600; }
 .switchrow { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 14px; }
 .switchrow b { font-size:15px; font-weight:500; }
 /* Công tắc kiểu iOS vẽ bằng CSS trên chính ô checkbox. */
