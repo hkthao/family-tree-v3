@@ -4,7 +4,7 @@ import {
   IconCalendar,
   IconDownload,
   IconHome,
-  IconMore,
+  IconMoreHorizontal,
   IconLink,
   IconTree,
   IconUsers,
@@ -46,7 +46,7 @@ const TABS: { id: Tab; label: string; Icon: typeof IconHome }[] = [
   { id: "tree", label: "Cây", Icon: IconTree },
   { id: "people", label: "Danh bạ", Icon: IconUsers },
   { id: "events", label: "Sự kiện", Icon: IconCalendar },
-  { id: "more", label: "Thêm", Icon: IconMore },
+  { id: "more", label: "Thêm", Icon: IconMoreHorizontal },
 ];
 
 const WEEKDAY = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
