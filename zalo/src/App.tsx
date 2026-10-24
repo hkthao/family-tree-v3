@@ -19,6 +19,7 @@ import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
 import { PrivacyScreen } from "./screens/Privacy";
+import { TodoScreen } from "./screens/Todo";
 import { listenBack, pushBack } from "./nav";
 import { RevContext } from "./rev";
 import { scrollTopScreen } from "./scroll";
@@ -44,7 +45,8 @@ type Screen =
   | { kind: "edit"; clan: ClanSummary; personId: string }
   | { kind: "add"; clan: ClanSummary; personId: string; relation: Relation }
   | { kind: "export"; clan: ClanSummary }
-  | { kind: "privacy" };
+  | { kind: "privacy" }
+  | { kind: "todo"; clan: ClanSummary };
 
 /**
  * Không phải thành viên (họ công khai ở mục Cộng đồng) thì đọc qua bản đã
@@ -157,6 +159,8 @@ export function App() {
             ? relationTitle(top.relation)
             : top.kind === "privacy"
               ? "Chính sách riêng tư"
+            : top.kind === "todo"
+              ? "Việc cần làm"
               : "Hồ sơ";
   const canGoBack = stack.length > 1;
   useEffect(() => {
@@ -272,10 +276,20 @@ export function App() {
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
               // Sổ chứa thông tin đầy đủ của cả họ → chỉ thành viên mới xuất.
               onExport={s.clan.role ? () => push({ kind: "export", clan: s.clan }) : undefined}
+              openPage={() => push({ kind: "todo", clan: s.clan })}
             />
           )}
           {s.kind === "export" && <ExportBookScreen clan={s.clan} userId={auth.userId} />}
           {s.kind === "privacy" && <PrivacyScreen />}
+          {s.kind === "todo" && (
+            <TodoScreen
+              clan={s.clan}
+              canEdit={s.clan.role === "admin" || s.clan.role === "editor"}
+              openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
+              editPerson={(personId) => push({ kind: "edit", clan: s.clan, personId })}
+              addParent={(personId) => push({ kind: "add", clan: s.clan, personId, relation: "parent" })}
+            />
+          )}
           {s.kind === "person" && (
             <PersonScreen
               clanId={s.clan.id}
