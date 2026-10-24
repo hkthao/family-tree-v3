@@ -81,7 +81,7 @@ thêm/sửa sự kiện riêng của họ.
 
 **Không làm trong Mini App (chủ dự án chốt 24/10/2026):** chức năng admin hệ
 thống, và các màn phân quyền/bảo mật của họ — Thành viên, link mời, Liên kết
-thông gia, Cài đặt dòng họ; và Đóng góp (duyệt đề xuất). Những việc này chỉ
+thông gia, Cài đặt dòng họ; Đóng góp (duyệt đề xuất); Công cụ. Những việc này chỉ
 làm trên web.
 
 Tab "Thêm" (màn dòng họ) liệt kê các mục còn lại của menu trái web; đã có:
