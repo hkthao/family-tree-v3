@@ -85,7 +85,9 @@ thông gia, Cài đặt dòng họ; và Đóng góp (duyệt đề xuất). Nh�
 làm trên web.
 
 Tab "Thêm" (màn dòng họ) liệt kê các mục còn lại của menu trái web; đã có:
-Hôm nay, Xuất sổ PDF, Việc cần làm. Thứ tự làm tiếp: Mộ phần, Quỹ họ, Bảng tin.
+Hôm nay, Xuất sổ PDF, Việc cần làm, Mộ phần & tro cốt (trừ mã QR dán tại mộ
+và trang quản lý danh sách cơ sở — để trên web). Thứ tự làm tiếp: Quỹ họ,
+Bảng tin.
 
 ## Rủi ro
 

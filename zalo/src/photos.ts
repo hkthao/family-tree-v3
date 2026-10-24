@@ -27,6 +27,16 @@ async function sign(paths: string[]): Promise<void> {
 
 /** Ảnh của một nhóm người; ký theo từng nhánh đang mở, không ký cả họ. */
 export function usePhotoUrls(paths: (string | null | undefined)[]) {
+  const url = useSignedUrls(paths);
+  return (path: string | null | undefined, gender: "M" | "F") =>
+    url(path) ?? (gender === "M" ? maleAvatar : femaleAvatar);
+}
+
+/**
+ * URL đã ký cho ảnh bất kỳ trong kho `person-photos` (ảnh mộ phần cũng nằm
+ * ở đây); chưa ký xong hoặc không có ảnh thì trả null.
+ */
+export function useSignedUrls(paths: (string | null | undefined)[]) {
   const list = paths.filter((p): p is string => !!p).sort();
   const key = list.join(",");
   const [, bump] = useState(0);
@@ -39,6 +49,10 @@ export function usePhotoUrls(paths: (string | null | undefined)[]) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  return (path: string | null | undefined, gender: "M" | "F") =>
-    (path && cache.get(path)) || (gender === "M" ? maleAvatar : femaleAvatar);
+  return (path: string | null | undefined): string | null => (path && cache.get(path)) || null;
+}
+
+/** Quên URL đã ký của các ảnh vừa xoá. */
+export function forgetPhotos(paths: string[]) {
+  for (const p of paths) cache.delete(p);
 }

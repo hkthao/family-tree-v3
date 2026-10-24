@@ -19,6 +19,7 @@ import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
 import { PrivacyScreen } from "./screens/Privacy";
+import { GraveFormScreen, GraveScreen, GravesScreen } from "./screens/Graves";
 import { TodoScreen } from "./screens/Todo";
 import { listenBack, pushBack } from "./nav";
 import { RevContext } from "./rev";
@@ -46,7 +47,10 @@ type Screen =
   | { kind: "add"; clan: ClanSummary; personId: string; relation: Relation }
   | { kind: "export"; clan: ClanSummary }
   | { kind: "privacy" }
-  | { kind: "todo"; clan: ClanSummary };
+  | { kind: "todo"; clan: ClanSummary }
+  | { kind: "graves"; clan: ClanSummary }
+  | { kind: "grave"; clan: ClanSummary; graveId: string }
+  | { kind: "graveForm"; clan: ClanSummary; graveId?: string };
 
 /**
  * Không phải thành viên (họ công khai ở mục Cộng đồng) thì đọc qua bản đã
@@ -161,6 +165,10 @@ export function App() {
               ? "Chính sách riêng tư"
             : top.kind === "todo"
               ? "Việc cần làm"
+            : top.kind === "graves" || top.kind === "grave"
+              ? "Mộ phần & tro cốt"
+            : top.kind === "graveForm"
+              ? top.graveId ? "Sửa nơi an nghỉ" : "Thêm nơi an nghỉ"
               : "Hồ sơ";
   const canGoBack = stack.length > 1;
   useEffect(() => {
@@ -276,11 +284,43 @@ export function App() {
               openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
               // Sổ chứa thông tin đầy đủ của cả họ → chỉ thành viên mới xuất.
               onExport={s.clan.role ? () => push({ kind: "export", clan: s.clan }) : undefined}
-              openPage={() => push({ kind: "todo", clan: s.clan })}
+              openPage={(page) => push({ kind: page, clan: s.clan })}
             />
           )}
           {s.kind === "export" && <ExportBookScreen clan={s.clan} userId={auth.userId} />}
           {s.kind === "privacy" && <PrivacyScreen />}
+          {s.kind === "graves" && (
+            <GravesScreen
+              clan={s.clan}
+              canEdit={s.clan.role === "admin" || s.clan.role === "editor"}
+              openGrave={(graveId) => push({ kind: "grave", clan: s.clan, graveId })}
+              addGrave={() => push({ kind: "graveForm", clan: s.clan })}
+            />
+          )}
+          {s.kind === "grave" && (
+            <GraveScreen
+              clan={s.clan}
+              graveId={s.graveId}
+              canEdit={s.clan.role === "admin" || s.clan.role === "editor"}
+              openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
+              editGrave={() => push({ kind: "graveForm", clan: s.clan, graveId: s.graveId })}
+              onDeleted={() => {
+                setRev((n) => n + 1);
+                window.history.back();
+              }}
+            />
+          )}
+          {s.kind === "graveForm" && (
+            <GraveFormScreen
+              clan={s.clan}
+              graveId={s.graveId}
+              onSaved={(_id, isNew) => {
+                setRev((n) => n + 1);
+                toast(isNew ? "Đã thêm" : "Đã lưu");
+                window.history.back();
+              }}
+            />
+          )}
           {s.kind === "todo" && (
             <TodoScreen
               clan={s.clan}

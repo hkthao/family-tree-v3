@@ -530,3 +530,22 @@ html.dark .btn.danger2 { background:rgba(220,31,24,.2); color:#ff7a73; }
 .todo-miss { color:#B45309; }
 .todo-skip { flex:none; min-height:36px; margin-right:4px; font-size:13px; color:var(--muted); }
 .todo-gen { margin-left:6px; font-size:12px; font-weight:400; color:var(--muted); }
+
+/* ── Mộ phần & tro cốt ── */
+.grave-filters { display:flex; gap:8px; margin-bottom:10px; }
+.grave-filters .select { height:40px; }
+.grave-card { display:flex; align-items:center; gap:12px; width:100%; padding:10px 12px; margin-bottom:8px; text-align:left; }
+.grave-card b { font-weight:600; font-size:15px; display:block; }
+.grave-thumb { flex:none; width:56px; height:56px; border-radius:8px; overflow:hidden; display:grid; place-items:center; background:var(--soft); color:var(--muted); }
+.grave-thumb.lg { width:48px; height:48px; color:var(--primary); }
+.grave-thumb img { width:100%; height:100%; object-fit:cover; }
+.grave-thumb svg { width:24px; height:24px; }
+.grave-pin { color:var(--primary); }
+.grave-pin svg { width:13px; height:13px; vertical-align:-2px; }
+.grave-photos { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+.grave-photo { position:relative; aspect-ratio:1; border-radius:8px; overflow:hidden; background:var(--soft); }
+.grave-photo img { width:100%; height:100%; object-fit:cover; }
+.grave-photo button { position:absolute; top:4px; right:4px; width:26px; height:26px; border-radius:999px; display:grid; place-items:center; background:rgba(0,0,0,.55); color:#fff; }
+.grave-photo button svg { width:14px; height:14px; }
+.grave-rel { display:flex; align-items:center; gap:8px; padding:8px 0; border-top:1px solid var(--line); font-size:14px; }
+.grave-rel:first-of-type { border-top:0; }
