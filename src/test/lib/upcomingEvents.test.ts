@@ -87,6 +87,22 @@ describe("computeUpcomingEvents", () => {
     expect(events).toHaveLength(0);
   });
 
+  it("skips birthdays known only to the year or month", () => {
+    // birth_date của người chỉ ghi năm là "1950-01-01" (ngày giữ chỗ).
+    const today = new Date(2024, 11, 20);
+    const events = computeUpcomingEvents({
+      today,
+      daysAhead: 365,
+      events: [],
+      persons: [
+        person({ id: "y", full_name: "Chỉ năm", birth_date: "1950-01-01", birth_date_precision: "year" }),
+        person({ id: "m", full_name: "Năm tháng", birth_date: "1950-03-01", birth_date_precision: "month" }),
+        person({ id: "d", full_name: "Đủ ngày", birth_date: "1950-01-01", birth_date_precision: "day" }),
+      ],
+    });
+    expect(events.map((e) => e.key)).toEqual(["birthday:d:2025-01-01"]);
+  });
+
   it("includes a one-shot custom solar event in range", () => {
     const today = new Date(2024, 5, 1);
     const events = computeUpcomingEvents({
