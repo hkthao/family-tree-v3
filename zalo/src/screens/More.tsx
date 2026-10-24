@@ -24,7 +24,7 @@ import { useAsync } from "../useAsync";
  * Mục nào đã có màn hình trong Mini App thì mở màn đó; chưa có thì hiện
  * "Sắp có" thay vì mời sang trang web (tiêu chí duyệt của Zalo).
  */
-export type MoreTarget = "overview" | "tree" | "people" | "events" | "export" | "todo" | "graves" | "fund";
+export type MoreTarget = "overview" | "tree" | "people" | "events" | "export" | "todo" | "graves" | "fund" | "board";
 
 /** Đuôi đường dẫn web → màn hình tương ứng trong Mini App. */
 const ROUTES: Record<string, MoreTarget> = {
@@ -36,6 +36,7 @@ const ROUTES: Record<string, MoreTarget> = {
   "/todo": "todo",
   "/graves": "graves",
   "/fund": "fund",
+  "/board": "board",
 };
 /** Các mục đã có ở thanh tab dưới — không nhắc lại trong "Thêm". */
 const IN_TABBAR = new Set(["", "/tree", "/people", "/events"]);

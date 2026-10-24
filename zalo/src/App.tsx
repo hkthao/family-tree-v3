@@ -19,6 +19,7 @@ import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
 import { PrivacyScreen } from "./screens/Privacy";
+import { BoardScreen, PostScreen } from "./screens/Board";
 import { FundScreen } from "./screens/Fund";
 import { GraveFormScreen, GraveScreen, GravesScreen } from "./screens/Graves";
 import { TodoScreen } from "./screens/Todo";
@@ -51,6 +52,8 @@ type Screen =
   | { kind: "todo"; clan: ClanSummary }
   | { kind: "graves"; clan: ClanSummary }
   | { kind: "fund"; clan: ClanSummary }
+  | { kind: "board"; clan: ClanSummary }
+  | { kind: "post"; clan: ClanSummary; postId: string }
   | { kind: "grave"; clan: ClanSummary; graveId: string }
   | { kind: "graveForm"; clan: ClanSummary; graveId?: string };
 
@@ -169,6 +172,8 @@ export function App() {
               ? "Việc cần làm"
             : top.kind === "fund"
               ? "Quỹ họ"
+            : top.kind === "board" || top.kind === "post"
+              ? "Bảng tin"
             : top.kind === "graves" || top.kind === "grave"
               ? "Mộ phần & tro cốt"
             : top.kind === "graveForm"
@@ -293,6 +298,20 @@ export function App() {
           )}
           {s.kind === "export" && <ExportBookScreen clan={s.clan} userId={auth.userId} />}
           {s.kind === "privacy" && <PrivacyScreen />}
+          {s.kind === "board" && (
+            <BoardScreen
+              clan={s.clan}
+              userId={auth.userId}
+              openPost={(postId) => push({ kind: "post", clan: s.clan, postId })}
+            />
+          )}
+          {s.kind === "post" && (
+            <PostScreen
+              userId={auth.userId}
+              postId={s.postId}
+              openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })}
+            />
+          )}
           {s.kind === "fund" && (
             <FundScreen clan={s.clan} userId={auth.userId} canEdit={s.clan.role === "admin" || s.clan.role === "editor"} />
           )}

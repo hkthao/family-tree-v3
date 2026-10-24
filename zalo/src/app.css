@@ -562,3 +562,16 @@ html.dark .btn.danger2 { background:rgba(220,31,24,.2); color:#ff7a73; }
 .fund-row b { font-variant-numeric:tabular-nums; }
 html.dark .pos { color:#34D399; } html.dark .neg { color:#F87171; }
 html.dark .todo-miss { color:#FBBF24; }
+
+/* ── Bảng tin ── */
+.post-card { position:relative; display:flex; align-items:center; gap:10px; width:100%; padding:12px; margin-bottom:8px; text-align:left; overflow:hidden; }
+.post-card.pinned::before, .post-card.pending::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--primary); }
+.post-card.pending::before { background:#D97706; }
+.post-card.hidden-post { opacity:.6; }
+.post-card b { display:block; font-weight:600; font-size:15px; margin-bottom:2px; }
+.post-body { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:14px; color:var(--ink); white-space:pre-line; }
+.post-type { display:inline-block; padding:0 6px; border-radius:999px; font-size:11px; font-weight:600; background:var(--soft); color:var(--ink); }
+.post-pending { color:#B45309; }
+html.dark .post-pending { color:#FBBF24; }
+.post-full { display:block; font-size:15px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.comment { display:flex; flex-direction:column; gap:2px; padding:10px 14px; }
