@@ -57,6 +57,28 @@ const MAX_ATTEMPTS = 5;
 const hashCode = (zaloId: string, code: string) =>
   hmacSha256Hex(ZALO_APP_SECRET, `link:${zaloId}:${code}`);
 
+/**
+ * Giữ MỘT lượt thử trước khi so mã, theo kiểu so-rồi-đổi: chỉ tăng
+ * `attempts` nếu nó vẫn đúng bằng số vừa đọc. Đọc rồi mới ghi (như trước)
+ * thì gửi trăm yêu cầu CÙNG LÚC là cả trăm cùng thấy attempts = 0, cùng được
+ * so mã — giới hạn 5 lần thành vô nghĩa, mã 6 số dò được trong vài giờ.
+ * Trả false khi đã có yêu cầu khác giành lượt đó: coi như sai mã.
+ */
+// deno-lint-ignore no-explicit-any
+async function takeAttempt(sb: any, zaloId: string, seen: number): Promise<boolean> {
+  const { data, error } = await sb
+    .from("zalo_link_codes")
+    .update({ attempts: seen + 1 })
+    .eq("zalo_user_id", zaloId)
+    .eq("attempts", seen)
+    .select("zalo_user_id");
+  if (error) {
+    console.error("zalo-link: giữ lượt thử:", error.message);
+    return false;
+  }
+  return (data?.length ?? 0) === 1;
+}
+
 function sixDigits(): string {
   const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000;
   return String(n).padStart(6, "0");
@@ -177,7 +199,18 @@ Deno.serve(async (req) => {
         .eq("user_id", userId)
         .neq("zalo_user_id", profile.id)
         .maybeSingle();
-      if (!taken) {
+      // Mỗi tài khoản đích chỉ một mã liên kết còn hạn mỗi lúc, bất kể từ
+      // bao nhiêu Zalo. Không có chặn này thì kẻ cầm nhiều tài khoản Zalo
+      // xin mã song song cho cùng một email: mỗi Zalo 5 lượt đoán mỗi phút,
+      // nhân lên là dò ra mã — và nạn nhân bị dội thư.
+      const { data: busy } = await sb
+        .from("zalo_link_codes")
+        .select("zalo_user_id")
+        .eq("user_id", userId)
+        .neq("zalo_user_id", profile.id)
+        .gt("expires_at", new Date().toISOString())
+        .limit(1);
+      if (!taken && !busy?.length) {
         const code = sixDigits();
         const { error: upErr } = await sb.from("zalo_link_codes").upsert(
           {
@@ -220,13 +253,8 @@ Deno.serve(async (req) => {
       await sb.from("zalo_link_codes").delete().eq("zalo_user_id", profile.id);
       return err("Nhập sai quá nhiều lần. Hãy xin mã mới.", 429);
     }
-    if ((await hashCode(profile.id, code)) !== row.code_hash) {
-      await sb
-        .from("zalo_link_codes")
-        .update({ attempts: row.attempts + 1 })
-        .eq("zalo_user_id", profile.id);
-      return bad();
-    }
+    if (!(await takeAttempt(sb, profile.id, row.attempts))) return bad();
+    if ((await hashCode(profile.id, code)) !== row.code_hash) return bad();
 
     const { data: target, error: userErr } = await sb.auth.admin.getUserById(row.user_id);
     if (userErr || !target.user?.email) return err("Tài khoản không còn tồn tại.", 409);
@@ -327,10 +355,8 @@ Deno.serve(async (req) => {
       await sb.from("zalo_link_codes").delete().eq("zalo_user_id", profile.id);
       return err("Nhập sai quá nhiều lần. Hãy xin mã mới.", 429);
     }
-    if ((await hashCode(profile.id, `email:${row.email}:${code}`)) !== row.code_hash) {
-      await sb.from("zalo_link_codes").update({ attempts: row.attempts + 1 }).eq("zalo_user_id", profile.id);
-      return bad();
-    }
+    if (!(await takeAttempt(sb, profile.id, row.attempts))) return bad();
+    if ((await hashCode(profile.id, `email:${row.email}:${code}`)) !== row.code_hash) return bad();
 
     const { data: ident } = await sb
       .from("zalo_identities")
