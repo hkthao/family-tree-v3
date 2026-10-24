@@ -17,6 +17,10 @@ import { useAsync } from "../useAsync";
  * là quản trị mọi họ). Nhóm "Chung" của web (Thông báo, Trợ giúp, Sổ tay…)
  * không thuộc dòng họ nên không đưa vào đây.
  *
+ * Nhóm "Quản trị dòng họ" (Thành viên, Liên kết thông gia, Cài đặt dòng họ)
+ * cũng KHÔNG có ở đây: đó là các màn phân quyền và bảo mật của họ (ai vào
+ * được, vai trò, công khai gì), chủ dự án chốt chỉ làm trên web.
+ *
  * Mục nào đã có màn hình trong Mini App thì mở màn đó; chưa có thì hiện
  * "Sắp có" thay vì mời sang trang web (tiêu chí duyệt của Zalo).
  */
@@ -68,7 +72,7 @@ export function MoreScreen({
     // Trợ lý AI chưa có trong Mini App; để nó hiện "Sắp có" như các mục khác.
     true,
   )
-    .filter((s) => s.id !== "global")
+    .filter((s) => s.id !== "global" && s.id !== "clan-admin")
     .map((s) => {
       const items: DrawerItem[] = s.items.filter((i) => !IN_TABBAR.has(i.to.slice(prefix.length)));
       // Xuất sổ ở web nằm trong "Công cụ"; ở đây là màn riêng nên ghi rõ tên.
