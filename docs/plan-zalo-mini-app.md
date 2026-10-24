@@ -81,14 +81,14 @@ thêm/sửa sự kiện riêng của họ.
 
 **Không làm trong Mini App (chủ dự án chốt 24/10/2026):** chức năng admin hệ
 thống, và các màn phân quyền/bảo mật của họ — Thành viên, link mời, Liên kết
-thông gia, Cài đặt dòng họ; Đóng góp (duyệt đề xuất); Công cụ. Những việc này chỉ
+thông gia, Cài đặt dòng họ; Đóng góp (duyệt đề xuất); Công cụ; Trợ lý dòng họ. Những việc này chỉ
 làm trên web.
 
 Tab "Thêm" (màn dòng họ) liệt kê các mục còn lại của menu trái web; đã có:
 Hôm nay, Xuất sổ PDF, Việc cần làm, Mộ phần & tro cốt (trừ mã QR dán tại mộ
 và trang quản lý danh sách cơ sở — để trên web), Quỹ họ (kèm báo cáo PDF),
 Bảng tin, Di sản dòng họ, Phòng ký ức (ảnh dạng lưới; phòng 3D trên web),
-Bảng vàng công đức. Còn "Sắp có": Trợ lý dòng họ.
+Bảng vàng công đức. Trợ lý dòng họ: ẩn, chỉ có trên web.
 
 **Chỉ đọc trong Mini App** (thêm/sửa/bình luận/duyệt làm trên web, chủ dự án
 chốt 24/10/2026): Bảng tin, Phòng ký ức, Di sản dòng họ, Bảng vàng công đức.

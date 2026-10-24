@@ -44,7 +44,7 @@ const ROUTES: Record<string, MoreTarget> = {
 /** Các mục đã có ở thanh tab dưới — không nhắc lại trong "Thêm". */
 const IN_TABBAR = new Set(["", "/tree", "/people", "/events"]);
 /** Mục của web mà Mini App không làm (chủ dự án chốt) — ẩn hẳn. */
-const WEB_ONLY = new Set(["/contributions", "/tools"]);
+const WEB_ONLY = new Set(["/contributions", "/tools", "/tro-ly"]);
 
 export function MoreScreen({
   clan,
@@ -77,7 +77,7 @@ export function MoreScreen({
     0,
     0,
     0,
-    // Trợ lý AI chưa có trong Mini App; để nó hiện "Sắp có" như các mục khác.
+    // Trợ lý AI chỉ có trên web (lọc ở WEB_ONLY bên dưới).
     true,
   )
     .filter((s) => s.id !== "global" && s.id !== "clan-admin")
