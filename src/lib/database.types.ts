@@ -2889,6 +2889,57 @@ export type Database = {
         }
         Relationships: []
       }
+      zalo_identities: {
+        Row: {
+          created_at: string
+          last_login_at: string | null
+          user_id: string
+          zalo_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          last_login_at?: string | null
+          user_id: string
+          zalo_user_id: string
+        }
+        Update: {
+          created_at?: string
+          last_login_at?: string | null
+          user_id?: string
+          zalo_user_id?: string
+        }
+        Relationships: []
+      }
+      zalo_link_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          created_at: string
+          email: string | null
+          expires_at: string
+          user_id: string | null
+          zalo_user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          created_at?: string
+          email?: string | null
+          expires_at: string
+          user_id?: string | null
+          zalo_user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          user_id?: string | null
+          zalo_user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       credit_balance: {
@@ -3476,6 +3527,11 @@ export type Database = {
           p_p256dh: string
           p_user_agent?: string
         }
+        Returns: string
+      }
+      zalo_find_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      zalo_purgeable_synthetic_user: {
+        Args: { p_keep?: string; p_zalo_id: string }
         Returns: string
       }
     }
