@@ -19,6 +19,7 @@ import { AnniversariesScreen } from "./screens/Anniversaries";
 import { ClansScreen } from "./screens/Clans";
 import { PersonScreen } from "./screens/Person";
 import { PrivacyScreen } from "./screens/Privacy";
+import { FundScreen } from "./screens/Fund";
 import { GraveFormScreen, GraveScreen, GravesScreen } from "./screens/Graves";
 import { TodoScreen } from "./screens/Todo";
 import { listenBack, pushBack } from "./nav";
@@ -49,6 +50,7 @@ type Screen =
   | { kind: "privacy" }
   | { kind: "todo"; clan: ClanSummary }
   | { kind: "graves"; clan: ClanSummary }
+  | { kind: "fund"; clan: ClanSummary }
   | { kind: "grave"; clan: ClanSummary; graveId: string }
   | { kind: "graveForm"; clan: ClanSummary; graveId?: string };
 
@@ -165,6 +167,8 @@ export function App() {
               ? "Chính sách riêng tư"
             : top.kind === "todo"
               ? "Việc cần làm"
+            : top.kind === "fund"
+              ? "Quỹ họ"
             : top.kind === "graves" || top.kind === "grave"
               ? "Mộ phần & tro cốt"
             : top.kind === "graveForm"
@@ -289,6 +293,9 @@ export function App() {
           )}
           {s.kind === "export" && <ExportBookScreen clan={s.clan} userId={auth.userId} />}
           {s.kind === "privacy" && <PrivacyScreen />}
+          {s.kind === "fund" && (
+            <FundScreen clan={s.clan} userId={auth.userId} canEdit={s.clan.role === "admin" || s.clan.role === "editor"} />
+          )}
           {s.kind === "graves" && (
             <GravesScreen
               clan={s.clan}

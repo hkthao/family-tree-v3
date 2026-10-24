@@ -86,8 +86,8 @@ làm trên web.
 
 Tab "Thêm" (màn dòng họ) liệt kê các mục còn lại của menu trái web; đã có:
 Hôm nay, Xuất sổ PDF, Việc cần làm, Mộ phần & tro cốt (trừ mã QR dán tại mộ
-và trang quản lý danh sách cơ sở — để trên web). Thứ tự làm tiếp: Quỹ họ,
-Bảng tin.
+và trang quản lý danh sách cơ sở — để trên web), Quỹ họ (kèm báo cáo PDF).
+Làm tiếp: Bảng tin.
 
 ## Rủi ro
 

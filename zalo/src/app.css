@@ -549,3 +549,16 @@ html.dark .btn.danger2 { background:rgba(220,31,24,.2); color:#ff7a73; }
 .grave-photo button svg { width:14px; height:14px; }
 .grave-rel { display:flex; align-items:center; gap:8px; padding:8px 0; border-top:1px solid var(--line); font-size:14px; }
 .grave-rel:first-of-type { border-top:0; }
+
+/* ── Quỹ họ ── */
+.fund-balance { margin:2px 0 6px; font-size:28px; font-weight:700; font-variant-numeric:tabular-nums; }
+.pos { color:#047857; } .neg { color:#B91C1C; }
+.fund-totals { display:flex; flex-wrap:wrap; gap:4px 18px; font-size:14px; color:var(--muted); }
+.fund-totals b { font-variant-numeric:tabular-nums; }
+.fund-byfund { margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:14px; }
+.fund-byfund > div { display:flex; justify-content:space-between; gap:8px; padding:2px 0; }
+.fund-byfund span { color:var(--muted); min-width:0; }
+.fund-row { padding:10px 14px; }
+.fund-row b { font-variant-numeric:tabular-nums; }
+html.dark .pos { color:#34D399; } html.dark .neg { color:#F87171; }
+html.dark .todo-miss { color:#FBBF24; }
