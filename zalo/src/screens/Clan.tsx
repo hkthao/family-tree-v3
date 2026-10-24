@@ -57,8 +57,8 @@ async function loadUpcoming(clan: ClanSummary, source: TreeSource): Promise<Upco
   // như web (getTreeData): họ chín nghìn người thì điện thoại chịu không nổi.
   const living =
     table === "persons"
-      ? supabase.from("persons").select("id, full_name, birth_date, is_living, branch_id, generation").eq("clan_id", clan.id).is("deleted_at", null).eq("is_living", true).not("birth_date", "is", null)
-      : supabase.from("persons_public_safe").select("id, full_name, birth_date, is_living, branch_id, generation").eq("clan_id", clan.id).eq("is_living", true).not("birth_date", "is", null);
+      ? supabase.from("persons").select("id, full_name, birth_date, birth_date_precision, is_living, branch_id, generation").eq("clan_id", clan.id).is("deleted_at", null).eq("is_living", true).not("birth_date", "is", null)
+      : supabase.from("persons_public_safe").select("id, full_name, birth_date, birth_date_precision, is_living, branch_id, generation").eq("clan_id", clan.id).eq("is_living", true).not("birth_date", "is", null);
   const [people, events, anniv] = await Promise.all([
     living.then((r) => r.data ?? []),
     // Sự kiện tự tạo chỉ thành viên đọc được; khách thì coi như không có.

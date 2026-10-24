@@ -259,7 +259,7 @@ Deno.serve(async (req) => {
       supabase
         .from("persons")
         .select(
-          "id, clan_id, full_name, is_living, birth_date, created_at, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap",
+          "id, clan_id, full_name, is_living, birth_date, birth_date_precision, created_at, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap",
         )
         .in("clan_id", allClanIds)
         .is("deleted_at", null),
@@ -309,7 +309,8 @@ Deno.serve(async (req) => {
 
   for (const p of persons) {
     // Sinh nhật người còn sống.
-    if (p.is_living && p.birth_date) {
+    // Chỉ ghi năm/tháng thì birth_date mang ngày giữ chỗ "-01-01" — bỏ qua.
+    if (p.is_living && p.birth_date && (!p.birth_date_precision || p.birth_date_precision === "day")) {
       const [, m, d] = (p.birth_date as string).split("-").map(Number);
       const next = nextOccurrenceOfMonthDay(m, d, todayDate);
       if (next) {

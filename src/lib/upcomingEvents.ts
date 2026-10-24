@@ -127,6 +127,9 @@ export function computeUpcomingEvents({
   for (const p of persons) {
     if (!p.is_living) continue;
     if (!p.birth_date) continue;
+    // Chỉ ghi năm (hay năm + tháng) thì birth_date mang ngày giữ chỗ
+    // "-01-01" — không bỏ qua là ai cũng thành sinh nhật mùng 1 tháng 1.
+    if (p.birth_date_precision && p.birth_date_precision !== "day") continue;
     const [y, m, d] = p.birth_date.split("-").map(Number);
     if (!Number.isInteger(m) || !Number.isInteger(d)) continue;
     const nextIso = nextOccurrenceOfMonthDay(m, d, today);
