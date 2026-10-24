@@ -1,21 +1,11 @@
 import { useState } from "react";
-import { openDocument } from "zmp-sdk";
 
 import { BOOK_WATERMARKS, type BookWatermarkId } from "@/lib/pdf/bookWatermarks";
 import { getClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanSummary } from "@/lib/queries/clans";
-import { supabase } from "@/lib/supabase";
 
+import { openPdf as open, preparePdfAssets, savePdf } from "../pdf";
 import { toast } from "../toast";
-
-// Tệp tĩnh của sổ, đóng gói cùng Mini App (trang web lấy chúng ở "/fonts/…").
-import font400 from "../../../public/fonts/be-vietnam-pro-400.ttf?url";
-import font600 from "../../../public/fonts/be-vietnam-pro-600.ttf?url";
-import logo from "../../../public/icons/app-icon-192.png";
-import avatarF from "../../../public/avatars/female.png";
-import avatarM from "../../../public/avatars/male.png";
-import dragon from "../../../public/watermarks/dragon.png";
-import phoenix from "../../../public/watermarks/phoenix.png";
 
 /**
  * Xuất Sổ gia phả PDF.
@@ -40,23 +30,13 @@ export function ExportBookScreen({ clan, userId }: { clan: ClanSummary; userId: 
   const [watermark, setWatermark] = useState<BookWatermarkId | "">("phoenix");
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
 
-  const open = (url: string, filename: string) =>
-    openDocument({ url, title: filename, download: true, share: false, edit: false }).catch(() => {
-      // Ngoài Zalo (giả lập máy tính) không có trình xem của Zalo.
-      window.open(url, "_blank");
-    });
-
   const run = async () => {
     try {
       setPhase({ kind: "working", text: "Đang lấy dữ liệu dòng họ…" });
       const detail = await getClanDetail(clan.id, userId);
       if (!detail) throw new Error("Không đọc được thông tin dòng họ.");
 
-      const [{ buildClanBookPdf }, { setPdfAssets }] = await Promise.all([
-        import("@/lib/pdf/exportClanBook"),
-        import("@/lib/pdf/pdfAssets"),
-      ]);
-      setPdfAssets({ font400, font600, logo, avatarM, avatarF, watermarks: { dragon, phoenix } });
+      const [{ buildClanBookPdf }] = await Promise.all([import("@/lib/pdf/exportClanBook"), preparePdfAssets()]);
 
       setPhase({ kind: "working", text: "Đang dựng sổ… (họ đông người có thể mất một lúc)" });
       const { blob, filename } = await buildClanBookPdf(detail, {
@@ -71,19 +51,9 @@ export function ExportBookScreen({ clan, userId }: { clan: ClanSummary; userId: 
 
       setPhase({ kind: "working", text: "Đang lưu sổ…" });
       // Một file cố định cho mỗi dòng họ, ghi đè mỗi lần xuất.
-      const path = `${userId}/${clan.id}.pdf`;
-      const up = await supabase.storage
-        .from("book-exports")
-        .upload(path, blob, { contentType: "application/pdf", upsert: true });
-      if (up.error) throw new Error(up.error.message);
-      const signed = await supabase.storage
-        .from("book-exports")
-        .createSignedUrl(path, 60 * 60, { download: filename });
-      if (signed.error || !signed.data?.signedUrl) {
-        throw new Error(signed.error?.message ?? "Không tạo được địa chỉ tải.");
-      }
+      const url = await savePdf(blob, userId, clan.id, filename);
 
-      const done = { kind: "done" as const, url: signed.data.signedUrl, filename, mb: (blob.size / 1024 / 1024).toFixed(1) };
+      const done = { kind: "done" as const, url, filename, mb: (blob.size / 1024 / 1024).toFixed(1) };
       setPhase(done);
       toast("Đã tạo sổ gia phả");
       void open(done.url, done.filename);
