@@ -14,6 +14,7 @@ import { deletePerson, getPerson, type PersonDetail } from "@/lib/queries/person
 import { usePhotoUrls } from "../photos";
 import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
+import type { Relation } from "./AddRelative";
 
 /**
  * Hồ sơ một người — dựng theo trang chi tiết của bản web: đường dẫn, đầu
@@ -67,8 +68,8 @@ export function PersonScreen({
   onEdit?: () => void;
   /** Có thì hiện mục "Xoá người này"; gọi sau khi xoá xong. */
   onDeleted?: () => void;
-  /** Có thì hiện nút "+ Thêm" ở nhóm Vợ/chồng và Con cái. */
-  onAdd?: (relation: "spouse" | "child") => void;
+  /** Có thì hiện nút "+ Thêm" ở nhóm Cha mẹ (khi chưa đủ hai), Vợ/chồng và Con cái. */
+  onAdd?: (relation: Relation) => void;
   personId: string;
   /** Khách xem họ công khai đọc bản đã che thông tin người còn sống. */
   source: "persons" | "persons_public_safe";
@@ -115,7 +116,7 @@ export function PersonScreen({
     label: string,
     items: Relationship[],
     emptyHint: string,
-    add?: "spouse" | "child",
+    add?: Relation,
   ) => (
     <div className="relgroup">
       <h4 className="sec-row">
@@ -215,7 +216,7 @@ export function PersonScreen({
       {rel && (
         <section className="card pane">
           <h3 className="serif">Quan hệ</h3>
-          {group("Cha mẹ", rel.parents, "Chưa nhập cha mẹ")}
+          {group("Cha mẹ", rel.parents, "Chưa nhập cha mẹ", rel.parents.length < 2 ? "parent" : undefined)}
           {group("Vợ / chồng", rel.spouses, "Chưa có vợ / chồng.", "spouse")}
           {group("Con cái", rel.children, "Chưa có con cái.", "child")}
         </section>

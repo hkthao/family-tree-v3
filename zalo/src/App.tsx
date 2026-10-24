@@ -23,7 +23,7 @@ import { listenBack, pushBack } from "./nav";
 import { RevContext } from "./rev";
 import { scrollTopScreen } from "./scroll";
 import { toast, ToastHost } from "./toast";
-import { AddRelativeScreen } from "./screens/AddRelative";
+import { AddRelativeScreen, relationTitle, type Relation } from "./screens/AddRelative";
 import { ClanScreen } from "./screens/Clan";
 import { EditPersonScreen } from "./screens/EditPerson";
 import { ExportBookScreen } from "./screens/ExportBook";
@@ -42,7 +42,7 @@ type Screen =
   | { kind: "tree"; clan: ClanSummary }
   | { kind: "person"; clan: ClanSummary; personId: string }
   | { kind: "edit"; clan: ClanSummary; personId: string }
-  | { kind: "add"; clan: ClanSummary; personId: string; relation: "spouse" | "child" }
+  | { kind: "add"; clan: ClanSummary; personId: string; relation: Relation }
   | { kind: "export"; clan: ClanSummary }
   | { kind: "privacy" };
 
@@ -154,7 +154,7 @@ export function App() {
           : top.kind === "edit"
           ? "Sửa hồ sơ"
           : top.kind === "add"
-            ? top.relation === "spouse" ? "Thêm vợ / chồng" : "Thêm con"
+            ? relationTitle(top.relation)
             : top.kind === "privacy"
               ? "Chính sách riêng tư"
               : "Hồ sơ";
@@ -227,6 +227,15 @@ export function App() {
                 <ClansScreen
                   userId={auth.userId}
                   openClan={(clan) => push({ kind: "tree", clan })}
+                  onLink={
+                    auth.zaloOnly
+                      ? () => {
+                          // Nhảy tab bằng nút trong nội dung: phải có mốc lùi (nav.ts).
+                          setTab("account");
+                          pushBack(() => setTab("clans"));
+                        }
+                      : undefined
+                  }
                 />
               </div>
               <div className="tabpane" style={{ display: tab === "anniv" ? undefined : "none" }}>
@@ -304,9 +313,9 @@ export function App() {
               clanId={s.clan.id}
               personId={s.personId}
               relation={s.relation}
-              onSaved={() => {
+              onSaved={(msg) => {
                 setRev((n) => n + 1);
-                toast(s.relation === "spouse" ? "Đã thêm vợ/chồng" : "Đã thêm con");
+                toast(msg);
                 window.history.back();
               }}
             />

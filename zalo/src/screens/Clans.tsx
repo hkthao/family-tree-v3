@@ -30,9 +30,12 @@ const ROLE = { admin: "Quản trị", editor: "Biên tập", viewer: "Xem" } as 
 export function ClansScreen({
   userId,
   openClan,
+  onLink,
 }: {
   userId: string;
   openClan: (c: ClanSummary) => void;
+  /** Tài khoản chỉ có Zalo: nút ở màn trống dẫn sang phần liên kết email. */
+  onLink?: () => void;
 }) {
   const rev = useRev();
   const [scope, setScope] = useState<Scope>("mine");
@@ -121,9 +124,16 @@ export function ClansScreen({
             {q
               ? `Không có dòng họ nào khớp “${q}”.`
               : scope === "mine"
-                ? "Tài khoản này chưa tham gia dòng họ nào. Nếu bạn đã lập gia phả bằng tài khoản email, hãy liên kết ở tab “Tài khoản”."
+                ? onLink
+                  ? "Tài khoản Zalo này chưa tham gia dòng họ nào. Đã lập gia phả trên web bằng email thì liên kết để thấy các dòng họ đó ở đây."
+                  : "Tài khoản này chưa tham gia dòng họ nào."
                 : "Chưa có dòng họ công khai nào."}
           </p>
+          {!q && scope === "mine" && onLink && (
+            <button type="button" className="btn" style={{ marginTop: 12 }} onClick={onLink}>
+              Liên kết tài khoản email
+            </button>
+          )}
         </div>
       )}
 
