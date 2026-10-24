@@ -28,7 +28,7 @@ import { scrollTopScreen } from "../scroll";
 import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
-import { MoreScreen } from "./More";
+import { MoreScreen, type MoreTarget } from "./More";
 import { PeopleScreen } from "./People";
 import { TreeTab } from "./TreeTab";
 
@@ -232,7 +232,7 @@ export function ClanScreen({
   /** Có thì hiện ô "Xuất sổ PDF" ở Thao tác nhanh (chỉ thành viên). */
   onExport?: () => void;
   /** Mở một màn riêng từ tab "Thêm" (đẩy lên chồng màn hình). */
-  openPage: (page: "todo" | "graves" | "fund" | "board") => void;
+  openPage: (page: Exclude<MoreTarget, "overview" | "tree" | "people" | "events" | "export">) => void;
 }) {
   const [tab, setTab] = useState<Tab>("overview");
   // Cây và danh bạ chỉ dựng khi đã mở lần đầu, rồi GIỮ (giấu đi) để đổi tab
@@ -286,7 +286,7 @@ export function ClanScreen({
             clan={clan}
             userId={userId}
             canExport={!!onExport}
-            open={(t) => (t === "export" ? onExport?.() : t === "todo" || t === "graves" || t === "fund" || t === "board" ? openPage(t) : jump(t))}
+            open={(t) => (t === "export" ? onExport?.() : t === "overview" || t === "tree" || t === "people" || t === "events" ? jump(t) : openPage(t))}
           />
         </div>
       )}

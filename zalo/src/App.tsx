@@ -21,6 +21,8 @@ import { PersonScreen } from "./screens/Person";
 import { PrivacyScreen } from "./screens/Privacy";
 import { BoardScreen, PostScreen } from "./screens/Board";
 import { FundScreen } from "./screens/Fund";
+import { HeritageListScreen, HeritageScreen } from "./screens/Heritage";
+import { HonorScreen, MemoryRoomScreen, MemoryRoomsScreen } from "./screens/Memory";
 import { GraveFormScreen, GraveScreen, GravesScreen } from "./screens/Graves";
 import { TodoScreen } from "./screens/Todo";
 import { listenBack, pushBack } from "./nav";
@@ -53,6 +55,11 @@ type Screen =
   | { kind: "graves"; clan: ClanSummary }
   | { kind: "fund"; clan: ClanSummary }
   | { kind: "board"; clan: ClanSummary }
+  | { kind: "heritage"; clan: ClanSummary }
+  | { kind: "heritageItem"; clan: ClanSummary; itemId: string }
+  | { kind: "memory"; clan: ClanSummary }
+  | { kind: "memoryRoom"; clan: ClanSummary; roomId: string }
+  | { kind: "honor"; clan: ClanSummary }
   | { kind: "post"; clan: ClanSummary; postId: string }
   | { kind: "grave"; clan: ClanSummary; graveId: string }
   | { kind: "graveForm"; clan: ClanSummary; graveId?: string };
@@ -174,6 +181,12 @@ export function App() {
               ? "Quỹ họ"
             : top.kind === "board" || top.kind === "post"
               ? "Bảng tin"
+            : top.kind === "heritage" || top.kind === "heritageItem"
+              ? "Di sản dòng họ"
+            : top.kind === "memory" || top.kind === "memoryRoom"
+              ? "Phòng ký ức"
+            : top.kind === "honor"
+              ? "Bảng vàng công đức"
             : top.kind === "graves" || top.kind === "grave"
               ? "Mộ phần & tro cốt"
             : top.kind === "graveForm"
@@ -298,6 +311,21 @@ export function App() {
           )}
           {s.kind === "export" && <ExportBookScreen clan={s.clan} userId={auth.userId} />}
           {s.kind === "privacy" && <PrivacyScreen />}
+          {s.kind === "heritage" && (
+            <HeritageListScreen clan={s.clan} openItem={(itemId) => push({ kind: "heritageItem", clan: s.clan, itemId })} />
+          )}
+          {s.kind === "heritageItem" && (
+            <HeritageScreen itemId={s.itemId} openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })} />
+          )}
+          {s.kind === "memory" && (
+            <MemoryRoomsScreen clan={s.clan} openRoom={(roomId) => push({ kind: "memoryRoom", clan: s.clan, roomId })} />
+          )}
+          {s.kind === "memoryRoom" && (
+            <MemoryRoomScreen roomId={s.roomId} openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })} />
+          )}
+          {s.kind === "honor" && (
+            <HonorScreen clan={s.clan} openPerson={(personId) => push({ kind: "person", clan: s.clan, personId })} />
+          )}
           {s.kind === "board" && (
             <BoardScreen
               clan={s.clan}
