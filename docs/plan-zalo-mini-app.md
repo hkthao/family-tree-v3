@@ -77,7 +77,14 @@ cục); sau khi làm tới màn Tài khoản thì nới thành nguyên tắc tr�
 - Xoá: xoá mềm, có nhật ký để khôi phục — như web.
 
 Còn thiếu so với web: tạo dòng họ mới, ảnh đại diện, sắp xếp thứ tự vợ/chồng,
-quản lý thành viên/lời mời, thêm/sửa sự kiện riêng của họ.
+thêm/sửa sự kiện riêng của họ.
+
+**Không làm trong Mini App (chủ dự án chốt 24/10/2026):** chức năng admin hệ
+thống, và các màn phân quyền/bảo mật của họ — Thành viên, link mời, Liên kết
+thông gia, Cài đặt dòng họ. Những việc này chỉ làm trên web.
+
+Tab "Thêm" (màn dòng họ) liệt kê các mục còn lại của menu trái web; đã có:
+Hôm nay, Xuất sổ PDF, Việc cần làm. Thứ tự làm tiếp: Mộ phần, Quỹ họ, Bảng tin.
 
 ## Rủi ro
 
