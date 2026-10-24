@@ -1,7 +1,9 @@
 # Kế hoạch: Zalo Mini App "Dòng Họ Việt"
 
-Trạng thái (12/10/2026): Zalo App đã kích hoạt, tên miền `giapha.thaohk.com`
-đã xác minh, Mini App đã tạo ở dạng nháp. Chưa có dòng code nào.
+Trạng thái (24/10/2026): các màn hình đã viết xong và chạy trên điện thoại
+thật qua bản dev. Bản đầu vượt phạm vi "chỉ xem": đã có sửa hồ sơ, thêm
+vợ/chồng/con, xoá người, xuất Sổ gia phả PDF, quản lý tài khoản. Còn lại là
+**đóng gói và gửi duyệt** (xem "Đưa lên Zalo" ở cuối).
 
 ## Quyết định đã chốt
 
@@ -43,8 +45,9 @@ cục); sau khi làm tới màn Tài khoản thì nới thành nguyên tắc tr�
    (b) Mini App phải trỏ về Supabase THẬT (`zalo/.env.local`), không phải
    bản chạy trên máy lập trình.
    Tài khoản tạo từ Zalo mang email giả `zalo-<id>@zalo.giapha.thaohk.com` và
-   dấu `app_metadata.zalo_user_id` — **các function gửi mail (nhắc sự kiện,
-   bản tin tuần…) cần bỏ qua địa chỉ này**, chưa làm.
+   dấu `app_metadata.zalo_user_id`. Các function gửi mail bỏ qua địa chỉ này
+   qua `canReceiveMail` (`_shared/mail.ts`) — ✅ 24/10/2026; chuông và push
+   vẫn đi.
 3. **Liên kết tài khoản sẵn có** — ✅ ĐÃ VIẾT + TRIỂN KHAI, ⏳ CHƯA thử trên
    điện thoại. Migration `zalo_link_codes` + hàm `zalo_find_user_id_by_email`,
    edge function `zalo-link` (tự gửi mã 6 số qua SMTP — không dùng OTP của
@@ -82,4 +85,28 @@ cục); sau khi làm tới màn Tài khoản thì nới thành nguyên tắc tr�
 
 - Mini App ID.
 - Đặt khoá bí mật Zalo App lên máy chủ khi tới bước 2.
-- Trang chính sách quyền riêng tư (hoặc xác nhận dùng trang sẵn có).
+- ~~Trang chính sách quyền riêng tư~~ — dùng `/chinh-sach-rieng-tu` của web,
+  đã thêm mục "Đăng nhập bằng Zalo" (24/10/2026).
+
+## Đưa lên Zalo (checklist phát hành)
+
+Phía code (Claude làm):
+
+- [x] Mail không gửi vào email giả của tài khoản Zalo.
+- [x] Chính sách quyền riêng tư nói rõ lấy gì từ Zalo.
+- [ ] Triển khai lại edge function gửi mail (notify-events, notify-inlaw,
+      notify-contribution, weekly-digest, ai-chat) lên self-host.
+- [ ] Merge `feat/zalo-mini-app` vào `main` để web lên trang chính sách mới.
+- [ ] Review bảo mật `zalo-auth` / `zalo-link` trước khi phát hành.
+
+Phía chủ dự án (cần tài khoản Zalo):
+
+- [ ] Xác thực chủ sở hữu Mini App (eKYC cá nhân), 3–5 ngày làm việc.
+- [ ] Khai tên miền được gọi trong cấu hình Mini App:
+      tên miền Supabase self-host (lấy từ `VITE_SUPABASE_URL` trong
+      `zalo/.env.local` — API + ảnh) và `giapha.thaohk.com`.
+- [ ] Điền link chính sách: `https://giapha.thaohk.com/chinh-sach-rieng-tu`.
+- [ ] `cd zalo && npx zmp login` rồi `npm run deploy` để đẩy bản dựng lên.
+- [ ] Thử bản Testing trên điện thoại thật: đăng nhập mới, liên kết tài
+      khoản sẵn có, mở cây lớn, xuất PDF.
+- [ ] Chuẩn bị ảnh chụp màn hình, mô tả ngắn, icon; gửi duyệt.

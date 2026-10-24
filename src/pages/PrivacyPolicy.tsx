@@ -24,7 +24,7 @@ import { useAiProviderLabel } from "@/hooks/useAiProvider";
  *     đổi model là dòng chữ phải đổi theo.
  */
 
-const UPDATED = "30/08/2026";
+const UPDATED = "24/10/2026";
 
 export default function PrivacyPolicy() {
   usePageTitle("Chính sách riêng tư");
@@ -66,6 +66,20 @@ export default function PrivacyPolicy() {
               Lịch sử trò chuyện với trợ lý, <b>chỉ chính bạn đọc được</b>.
             </li>
           </ul>
+        </Section>
+
+        <Section title="Đăng nhập bằng Zalo">
+          <p>
+            Khi bạn mở Dòng Họ Việt trong Zalo, chúng tôi chỉ nhận từ Zalo{" "}
+            <b>mã định danh của bạn trong ứng dụng này, tên và ảnh đại diện</b>{" "}
+            — để tạo tài khoản và hiện đúng tên bạn. Chúng tôi{" "}
+            <b>không xin số điện thoại, vị trí hay danh bạ Zalo</b> của bạn.
+          </p>
+          <p>
+            Gia phả bạn xem và sửa trong Zalo nằm trên máy chủ của chúng tôi như
+            bản web, không gửi sang Zalo. Bỏ liên kết hoặc xoá tài khoản trong
+            trang Tài khoản là mối nối với Zalo bị xoá theo.
+          </p>
         </Section>
 
         <Section title="Trợ lý AI — dữ liệu đi ra ngoài chỗ này">

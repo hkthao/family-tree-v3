@@ -14,8 +14,8 @@
 
 export const ZALO_APP_SECRET = Deno.env.get("ZALO_APP_SECRET") ?? "";
 
-/** Tên miền của địa chỉ email giả gán cho tài khoản tạo từ Zalo. */
-export const ZALO_SYNTHETIC_EMAIL_DOMAIN = "zalo.giapha.thaohk.com";
+// Để ở mail.ts (không đụng Deno.env) cho test chạy được trên Node.
+export { ZALO_SYNTHETIC_EMAIL_DOMAIN } from "./mail.ts";
 
 export async function hmacSha256Hex(key: string, message: string): Promise<string> {
   const enc = new TextEncoder();
