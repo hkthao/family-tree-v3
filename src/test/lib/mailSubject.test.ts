@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  canReceiveMail,
   chunkByBytes,
   encodeSubject,
 } from "../../../supabase/functions/_shared/mail";
@@ -97,5 +98,18 @@ describe("chunkByBytes", () => {
 
   it("chuỗi rỗng không sinh khúc rác", () => {
     expect(chunkByBytes("")).toEqual([]);
+  });
+});
+
+describe("canReceiveMail", () => {
+  it("bỏ qua email giả của tài khoản Zalo", () => {
+    expect(canReceiveMail("zalo-123@zalo.giapha.thaohk.com")).toBe(false);
+    expect(canReceiveMail("Zalo-123@ZALO.giapha.thaohk.com")).toBe(false);
+  });
+
+  it("vẫn gửi cho địa chỉ thật", () => {
+    expect(canReceiveMail("ba@gmail.com")).toBe(true);
+    // Tên miền chỉ GIỐNG đuôi thì vẫn là địa chỉ thật.
+    expect(canReceiveMail("a@notzalo.giapha.thaohk.com")).toBe(true);
   });
 });

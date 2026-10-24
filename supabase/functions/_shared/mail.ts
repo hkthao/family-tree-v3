@@ -92,3 +92,19 @@ export function encodeSubject(subject: string): string {
   // không có nghĩa gì với trình đọc thư, nhưng đủ để thư viện để yên.
   return ` ${words}`;
 }
+
+/** Tên miền của địa chỉ email giả gán cho tài khoản tạo từ Zalo. */
+export const ZALO_SYNTHETIC_EMAIL_DOMAIN = "zalo.giapha.thaohk.com";
+
+/**
+ * Địa chỉ có nhận được thư không.
+ *
+ * Tài khoản tạo từ Zalo Mini App mang email giả
+ * `zalo-<id>@zalo.giapha.thaohk.com` — tên miền đó không có hộp thư. Gửi vào
+ * là thư bị dội lại, và dội nhiều thì máy chủ SMTP bị chấm điểm thư rác,
+ * kéo cả thư thật của người khác vào Spam. Chuông trong app và push vẫn đi
+ * như thường; chỉ bỏ đường email.
+ */
+export function canReceiveMail(to: string): boolean {
+  return !to.toLowerCase().endsWith(`@${ZALO_SYNTHETIC_EMAIL_DOMAIN}`);
+}
