@@ -41,7 +41,7 @@ const ROUTES: Record<string, MoreTarget> = {
 /** Các mục đã có ở thanh tab dưới — không nhắc lại trong "Thêm". */
 const IN_TABBAR = new Set(["", "/tree", "/people", "/events"]);
 /** Mục của web mà Mini App không làm (chủ dự án chốt) — ẩn hẳn. */
-const WEB_ONLY = new Set(["/contributions"]);
+const WEB_ONLY = new Set(["/contributions", "/tools"]);
 
 export function MoreScreen({
   clan,
