@@ -15,7 +15,7 @@ import { useAsync } from "../useAsync";
  * không cho mời người dùng sang trang ngoài, mà người duyệt vẫn cần thấy
  * app nói rõ nó giữ thông tin gì của người trong họ.
  */
-const UPDATED = "24/10/2026";
+const UPDATED = "25/10/2026";
 
 export function PrivacyScreen() {
   // Tên nhà cung cấp AI suy từ cấu hình như web — admin đổi model thì câu
@@ -47,12 +47,19 @@ export function PrivacyScreen() {
           Khi bạn mở Dòng Họ Việt trong Zalo, chúng tôi chỉ nhận từ Zalo{" "}
           <b>mã định danh của bạn trong ứng dụng này, tên và ảnh đại diện</b> — để tạo tài
           khoản và hiện đúng tên bạn. Chúng tôi{" "}
-          <b>không xin số điện thoại, vị trí hay danh bạ Zalo</b> của bạn.
+          <b>không xin số điện thoại hay danh bạ Zalo</b> của bạn.
+        </p>
+        <p>
+          Hai quyền thiết bị chỉ dùng khi bạn tự bấm, ở màn Mộ phần: <b>vị trí</b> (nút “Lấy
+          vị trí hiện tại” — lưu toạ độ của ngôi mộ, không theo dõi bạn) và{" "}
+          <b>chọn ảnh/camera</b> (nút “Thêm ảnh”). Mở bản PDF dùng trình xem tài liệu của Zalo.
         </p>
         <p>
           Gia phả bạn xem và sửa trong Zalo nằm trên máy chủ của chúng tôi, không gửi sang
           Zalo. Bỏ liên kết hoặc xoá tài khoản ở màn Tài khoản là mối nối với Zalo bị xoá
-          theo.
+          theo. Rút lại sự đồng ý trong cài đặt của Zalo cũng vậy: mối nối bị xoá, tài khoản
+          tạo từ Zalo bị xoá nếu chưa đứng tên dòng họ nào, còn không thì gỡ tên và ảnh lấy
+          từ Zalo.
         </p>
       </Section>
 
