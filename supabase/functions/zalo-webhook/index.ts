@@ -32,14 +32,27 @@ import { safeEqual, zaloSignature } from "../_shared/zaloSignature.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const API_KEY = Deno.env.get("ZALO_MINIAPP_API_KEY") ?? "";
-/** Có thì chỉ nhận sự kiện của đúng Mini App này. */
-const MINI_APP_ID = Deno.env.get("ZALO_MINI_APP_ID") ?? "";
+/**
+ * Khoá ký: API Key của Open APIs (mini.zalo.me/developers → Open APIs). Tài
+ * liệu Zalo không nói rõ nó có trùng App Secret hay không, nên nhận chữ ký
+ * khớp với BẤT KỲ khoá nào trong hai — cả hai đều là bí mật của riêng app.
+ */
+const SIGNING_KEYS = [Deno.env.get("ZALO_MINIAPP_API_KEY"), Deno.env.get("ZALO_APP_SECRET")].filter(
+  (k): k is string => !!k,
+);
+/**
+ * Có thì chỉ nhận sự kiện của các app này (phân tách bằng dấu phẩy) — Mini
+ * App ID và ID Zalo App có thể khác nhau, khai cả hai.
+ */
+const APP_IDS = (Deno.env.get("ZALO_MINI_APP_ID") ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, { status: 405 });
-  if (!API_KEY) {
-    console.error("zalo-webhook: thiếu ZALO_MINIAPP_API_KEY");
+  if (SIGNING_KEYS.length === 0) {
+    console.error("zalo-webhook: thiếu ZALO_MINIAPP_API_KEY / ZALO_APP_SECRET");
     return json({ error: "not configured" }, { status: 503 });
   }
 
@@ -49,14 +62,17 @@ Deno.serve(async (req) => {
   }
 
   const got = (req.headers.get("x-zevent-signature") ?? "").trim().toLowerCase();
-  const want = await zaloSignature(body as Record<string, unknown>, API_KEY);
-  if (!got || !safeEqual(got, want)) {
+  let valid = false;
+  for (const key of SIGNING_KEYS) {
+    if (got && safeEqual(got, await zaloSignature(body as Record<string, unknown>, key))) valid = true;
+  }
+  if (!valid) {
     console.error("zalo-webhook: sai chữ ký");
     return json({ error: "invalid signature" }, { status: 401 });
   }
 
   const { event, appId, userId } = body as { event?: string; appId?: string; userId?: string };
-  if (MINI_APP_ID && String(appId) !== MINI_APP_ID) {
+  if (APP_IDS.length > 0 && !APP_IDS.includes(String(appId))) {
     console.error("zalo-webhook: sự kiện của Mini App khác:", appId);
     return json({ ok: true, ignored: "other-app" });
   }
