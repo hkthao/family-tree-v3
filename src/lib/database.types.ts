@@ -3534,6 +3534,7 @@ export type Database = {
         Args: { p_keep?: string; p_zalo_id: string }
         Returns: string
       }
+      zalo_synthetic_user_id: { Args: { p_zalo_id: string }; Returns: string }
     }
     Enums: {
       announcement_level: "info" | "update" | "warning" | "critical"
