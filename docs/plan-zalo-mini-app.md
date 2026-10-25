@@ -140,3 +140,14 @@ Phía chủ dự án (cần tài khoản Zalo):
 - [ ] Thử bản Testing trên điện thoại thật: đăng nhập mới, liên kết tài
       khoản sẵn có, mở cây lớn, xuất PDF.
 - [ ] Chuẩn bị ảnh chụp màn hình, mô tả ngắn, icon; gửi duyệt.
+
+Hồ sơ gửi duyệt (25/10/2026):
+
+- **Webhook URL** (sự kiện `user.revoke.consent`): edge function
+  `zalo-webhook` — `<URL Supabase self-host>/functions/v1/zalo-webhook`.
+  Kiểm chữ ký bằng API Key của Mini App (`ZALO_MINIAPP_API_KEY` trong
+  `functions.env`). Router `main` trên máy self-host được vá tay để function
+  này không cần JWT (không có trong repo — nâng cấp Supabase thì vá lại).
+- **Điều khoản sử dụng**: `https://giapha.thaohk.com/dieu-khoan-su-dung` —
+  mục "Quyền trong Zalo" phải khớp các quyền đã xin (Mở tài liệu, Vị trí,
+  Chọn media).
