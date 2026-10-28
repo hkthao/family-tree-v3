@@ -341,3 +341,44 @@ heritage.extend([
                  c("person:0", 5, "năm Nhâm Ngọ (1282)", "冬十月，帝幸平灘")],
    "review": DRAFT},
 ])
+
+# ── Ảnh (Wikimedia Commons) ────────────────────────────────────────
+# Chỉ ảnh mà trang Commons mô tả rõ đúng người / đúng lăng. Thời Trần không còn
+# chân dung thật → ảnh người là tượng thờ (ghi rõ "không phải chân dung thật").
+BY = {p["key"]: p for p in persons}  # dựng lại: đã thêm các nhánh ở trên
+GBY = {g["key"]: g for g in graves}
+C = "https://upload.wikimedia.org/wikipedia/commons/"
+P = "https://commons.wikimedia.org/wiki/File:"
+
+
+def photo(path, page, author, license, kind, year=None, caption=None):
+    d = {"url": C + path, "source_page": P + page, "author": author, "license": license, "kind": kind}
+    if year:
+        d["year"] = year
+    if caption:
+        d["caption"] = caption
+    return d
+
+
+BY["tran.nhan-tong"]["photo"] = photo(
+    "d/d2/T%C6%B0%E1%BB%A3ng_Gi%C3%A1c_Ho%C3%A0ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg",
+    "T%C6%B0%E1%BB%A3ng_Gi%C3%A1c_Ho%C3%A0ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg",
+    "Bùi Thụy Đào Nguyên", "CC BY-SA 3.0", "later_depiction", "2010")
+BY["tran.quoc-tuan"]["photo"] = photo(
+    "e/e8/T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Tr%E1%BA%A7n_H%C6%B0ng_%C4%90%E1%BA%A1o_t%E1%BA%A1i_%C4%91%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Tr%E1%BA%A7n_H%C6%B0ng_%C4%90%E1%BA%A1o_t%E1%BA%A1i_%C4%91%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "Khangoii", "CC BY-SA 4.0", "later_depiction")
+BY["tran.thien-thanh"]["photo"] = photo(
+    "5/51/T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Nguy%C3%AAn_T%E1%BB%AB_qu%E1%BB%91c_m%E1%BA%ABu_t%E1%BA%A1i_%C4%90%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Nguy%C3%AAn_T%E1%BB%AB_qu%E1%BB%91c_m%E1%BA%ABu_t%E1%BA%A1i_%C4%90%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "Khangoii", "CC BY-SA 4.0", "later_depiction")
+
+for key, path, page, caption in [
+    ("lang.chieu-lang", "e/ee/L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1i_T%C3%B4ng.jpg", "L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1i_T%C3%B4ng.jpg",
+     "Lăng Trần Thái Tông ở Long Hưng, Thái Bình (theo mô tả ảnh trên Wikimedia Commons)"),
+    ("lang.du-lang", "0/0d/L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1nh_T%C3%B4ng.jpg", "L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1nh_T%C3%B4ng.jpg",
+     "Lăng Trần Thánh Tông ở xã Tiến Đức, huyện Hưng Hà, Thái Bình (theo mô tả ảnh trên Wikimedia Commons)"),
+    ("lang.duc-lang", "2/29/L%C4%83ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg", "L%C4%83ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg",
+     "Lăng Trần Nhân Tông ở Long Hưng, Thái Bình (theo mô tả ảnh trên Wikimedia Commons)"),
+]:
+    GBY[key]["photos"] = [photo(path, page, "Pvloc90", "CC BY-SA 3.0", "photograph", "2011", caption)]

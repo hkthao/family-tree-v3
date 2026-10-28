@@ -2,85 +2,85 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { IconScroll, IconUsers } from "@/components/icons";
+import { EmptyState } from "@/components/EmptyState";
+import { IconScroll, IconSearch } from "@/components/icons";
+import { LoadingState } from "@/components/LoadingState";
 import {
   HISTORICAL_CATEGORY_LABEL,
   listHistoricalClans,
   type HistoricalCategory,
   type HistoricalClanSummary,
 } from "@/lib/queries/historical";
+import { unaccent } from "@/lib/unaccent";
 
 /**
- * Mục "Gia phả lịch sử" ở tab Cộng đồng: dòng họ lịch sử (hoàng tộc, quý tộc,
- * quan lại – khoa bảng, võ tướng) tách khỏi bảng xếp hạng dòng họ thường.
- * Hiển thị theo đúng chế độ danh sách / lưới của trang (cùng kiểu dòng/thẻ).
- * Không có dòng họ lịch sử nào → không hiện gì.
+ * Tab "Gia phả lịch sử" ở trang Dòng họ: dòng họ lịch sử (hoàng tộc, quý tộc,
+ * quan lại – khoa bảng, võ tướng), tách khỏi bảng xếp hạng dòng họ thường.
+ * Hiển thị theo đúng chế độ danh sách / lưới của trang (cùng kiểu dòng/thẻ);
+ * lọc theo ô tìm kiếm (gõ không dấu cũng được) và chip nhóm.
  */
-export function HistoricalClansSection({ view }: { view: "list" | "grid" }) {
-  const { data } = useQuery({
+export function HistoricalClansSection({ view, search }: { view: "list" | "grid"; search: string }) {
+  const { data, isLoading } = useQuery({
     queryKey: ["historical-clans"],
     queryFn: () => listHistoricalClans(),
     staleTime: 10 * 60 * 1000,
   });
   const [category, setCategory] = useState<HistoricalCategory | null>(null);
-  if (!data || data.length === 0) return null;
+  if (isLoading) return <LoadingState />;
+  if (!data) return null;
 
   const present = (Object.keys(HISTORICAL_CATEGORY_LABEL) as HistoricalCategory[]).filter((c) =>
     data.some((d) => d.historical_category === c),
   );
-  const rows = category ? data.filter((d) => d.historical_category === category) : data;
+  const needle = unaccent(search.trim());
+  const rows = data.filter(
+    (d) => (!category || d.historical_category === category) && (!needle || unaccent(d.name).includes(needle)),
+  );
 
   return (
-    <>
-      <section aria-labelledby="historical-clans-title" className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 id="historical-clans-title" className="inline-flex items-center gap-2 text-base font-semibold">
-            <IconScroll className="h-5 w-5 text-primary" />
-            Gia phả lịch sử
-          </h2>
-          {present.length > 1 && (
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Lọc theo nhóm">
-              {[null, ...present].map((c) => (
-                <button
-                  key={c ?? "all"}
-                  type="button"
-                  onClick={() => setCategory(c)}
-                  aria-pressed={category === c}
-                  className={
-                    category === c
-                      ? "rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
-                      : "rounded-full border bg-card px-3 py-1 text-sm hover:border-primary"
-                  }
-                >
-                  {c ? HISTORICAL_CATEGORY_LABEL[c] : "Tất cả"}
-                </button>
-              ))}
-            </div>
-          )}
+    <section aria-label="Gia phả lịch sử" className="space-y-3">
+      <p className="text-xs text-muted-foreground -mt-1">
+        Soạn từ chính sử, mỗi dữ kiện kèm trích dẫn nguyên văn. Không tính vào bảng xếp hạng dòng họ.
+      </p>
+      {present.length > 1 && (
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Lọc theo nhóm">
+          {[null, ...present].map((c) => (
+            <button
+              key={c ?? "all"}
+              type="button"
+              onClick={() => setCategory(c)}
+              aria-pressed={category === c}
+              className={
+                category === c
+                  ? "rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
+                  : "rounded-full border bg-card px-3 py-1 text-sm hover:border-primary"
+              }
+            >
+              {c ? HISTORICAL_CATEGORY_LABEL[c] : "Tất cả"}
+            </button>
+          ))}
         </div>
-        <p className="text-xs text-muted-foreground">
-          Soạn từ chính sử, mỗi dữ kiện kèm trích dẫn nguyên văn. Không tính vào bảng xếp hạng dòng họ.
-        </p>
-        {view === "grid" ? (
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {rows.map((c) => (
-              <HistoricalClanCard key={c.id} clan={c} />
-            ))}
-          </ul>
-        ) : (
-          <ul className="space-y-2">
-            {rows.map((c) => (
-              <HistoricalClanRow key={c.id} clan={c} />
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <h2 className="inline-flex items-center gap-2 pt-2 text-base font-semibold">
-        <IconUsers className="h-5 w-5 text-primary" />
-        Dòng họ cộng đồng
-      </h2>
-    </>
+      )}
+      {rows.length === 0 ? (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title={search ? `Không có gia phả lịch sử nào khớp "${search}"` : "Chưa có gia phả lịch sử"}
+          description="Thử bỏ bớt từ khoá hoặc chọn nhóm khác."
+        />
+      ) : view === "grid" ? (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {rows.map((c) => (
+            <HistoricalClanCard key={c.id} clan={c} />
+          ))}
+        </ul>
+      ) : (
+        <ul className="space-y-2">
+          {rows.map((c) => (
+            <HistoricalClanRow key={c.id} clan={c} />
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

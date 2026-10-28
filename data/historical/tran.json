@@ -933,6 +933,14 @@
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   },
+   "photo": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/T%C6%B0%E1%BB%A3ng_Gi%C3%A1c_Ho%C3%A0ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:T%C6%B0%E1%BB%A3ng_Gi%C3%A1c_Ho%C3%A0ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg",
+    "author": "Bùi Thụy Đào Nguyên",
+    "license": "CC BY-SA 3.0",
+    "kind": "later_depiction",
+    "year": "2010"
    }
   },
   {
@@ -2649,6 +2657,13 @@
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   },
+   "photo": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e8/T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Tr%E1%BA%A7n_H%C6%B0ng_%C4%90%E1%BA%A1o_t%E1%BA%A1i_%C4%91%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Tr%E1%BA%A7n_H%C6%B0ng_%C4%90%E1%BA%A1o_t%E1%BA%A1i_%C4%91%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "author": "Khangoii",
+    "license": "CC BY-SA 4.0",
+    "kind": "later_depiction"
    }
   },
   {
@@ -2701,6 +2716,13 @@
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   },
+   "photo": {
+    "url": "https://upload.wikimedia.org/wikipedia/commons/5/51/T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Nguy%C3%AAn_T%E1%BB%AB_qu%E1%BB%91c_m%E1%BA%ABu_t%E1%BA%A1i_%C4%90%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "source_page": "https://commons.wikimedia.org/wiki/File:T%C6%B0%E1%BB%A3ng_%C4%91%E1%BB%93ng_Nguy%C3%AAn_T%E1%BB%AB_qu%E1%BB%91c_m%E1%BA%ABu_t%E1%BA%A1i_%C4%90%E1%BB%81n_Ki%E1%BA%BFp_B%E1%BA%A1c.jpg",
+    "author": "Khangoii",
+    "license": "CC BY-SA 4.0",
+    "kind": "later_depiction"
    }
   },
   {
@@ -3491,7 +3513,18 @@
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
    },
-   "location_name": "hương Tinh Cương, phủ Long Hưng"
+   "location_name": "hương Tinh Cương, phủ Long Hưng",
+   "photos": [
+    {
+     "url": "https://upload.wikimedia.org/wikipedia/commons/e/ee/L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1i_T%C3%B4ng.jpg",
+     "source_page": "https://commons.wikimedia.org/wiki/File:L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1i_T%C3%B4ng.jpg",
+     "author": "Pvloc90",
+     "license": "CC BY-SA 3.0",
+     "kind": "photograph",
+     "year": "2011",
+     "caption": "Lăng Trần Thái Tông ở Long Hưng, Thái Bình (theo mô tả ảnh trên Wikimedia Commons)"
+    }
+   ]
   },
   {
    "key": "lang.du-lang",
@@ -3530,7 +3563,18 @@
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
    },
-   "location_name": "hương Tinh Cương, phủ Long Hưng"
+   "location_name": "hương Tinh Cương, phủ Long Hưng",
+   "photos": [
+    {
+     "url": "https://upload.wikimedia.org/wikipedia/commons/0/0d/L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1nh_T%C3%B4ng.jpg",
+     "source_page": "https://commons.wikimedia.org/wiki/File:L%C4%83ng_Tr%E1%BA%A7n_Th%C3%A1nh_T%C3%B4ng.jpg",
+     "author": "Pvloc90",
+     "license": "CC BY-SA 3.0",
+     "kind": "photograph",
+     "year": "2011",
+     "caption": "Lăng Trần Thánh Tông ở xã Tiến Đức, huyện Hưng Hà, Thái Bình (theo mô tả ảnh trên Wikimedia Commons)"
+    }
+   ]
   },
   {
    "key": "lang.duc-lang",
@@ -3576,7 +3620,18 @@
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
    },
    "location_name": "hương Tinh Cương, phủ Long Hưng",
-   "notes": "Năm Canh Tuất (1310) rước linh cữu Thượng hoàng Nhân Tông về táng; xá lị để ở bảo tháp am Ngọa Vân."
+   "notes": "Năm Canh Tuất (1310) rước linh cữu Thượng hoàng Nhân Tông về táng; xá lị để ở bảo tháp am Ngọa Vân.",
+   "photos": [
+    {
+     "url": "https://upload.wikimedia.org/wikipedia/commons/2/29/L%C4%83ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg",
+     "source_page": "https://commons.wikimedia.org/wiki/File:L%C4%83ng_Tr%E1%BA%A7n_Nh%C3%A2n_T%C3%B4ng.jpg",
+     "author": "Pvloc90",
+     "license": "CC BY-SA 3.0",
+     "kind": "photograph",
+     "year": "2011",
+     "caption": "Lăng Trần Nhân Tông ở Long Hưng, Thái Bình (theo mô tả ảnh trên Wikimedia Commons)"
+    }
+   ]
   },
   {
    "key": "lang.thai-lang",

@@ -11,19 +11,15 @@
  * - Chỉ nhập người/hôn nhân có review.status = 'verified'.
  *   --include-drafts nhập cả bản nháp — với Supabase local; lên production phải
  *   thêm --publish-unreviewed (trang hiện nhãn "Bản đang duyệt").
- * - Ảnh (photo): tải từ Wikimedia Commons, nén như app (≤ 512px, ~80 KB, dùng
- *   `sips` của macOS) rồi upload person-photos/{clan}/{person}.jpg.
- *   --skip-photos bỏ qua bước này.
+ * - Ảnh (photo): ghi thẳng link ảnh thu nhỏ Wikimedia Commons (không tải về,
+ *   không nén) — app dùng link https:// trực tiếp. --skip-photos bỏ qua.
  * - Sự kiện thường niên → Sự kiện (giỗ KHÔNG khai: app tự sinh từ ngày mất).
- * - Lăng tẩm → Mộ phần, di sản → Di sản dòng họ (ảnh ≤ 1280px, ~250 KB như app);
+ * - Lăng tẩm → Mộ phần, di sản → Di sản dòng họ;
  *   thông gia → person_links 'same_person' đã xác nhận (khi dòng họ kia đã nhập).
  * - Chạy lại được: upsert theo external_key; trích dẫn/trị vì/tước hiệu của
  *   dòng họ được xoá và ghi lại từ file.
  */
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
@@ -37,7 +33,6 @@ import {
   isPublishable,
   validate,
   type DateColumns,
-  type PlacePhotoDraft,
   type DynastyFile,
   type PersonDraft,
   type SourceDef,
@@ -125,26 +120,25 @@ function dateCols(prefix: "birth" | "death", c: DateColumns | null | undefined) 
 const UA = "giapha-historical-import/1.0 (https://giapha.thaohk.com)";
 
 /**
- * Tải ảnh Commons và nén như app (photoUpload.ts): cạnh dài ≤ maxDim, JPEG,
- * hạ chất lượng tới khi ≤ maxBytes. Trả null nếu tải lỗi.
+ * Link ảnh thu nhỏ của Wikimedia (không tải về, không nén): app dùng thẳng link
+ * https:// (xem isExternalPhoto ở src/lib/photoUpload.ts). `width` lấy theo
+ * kích thước chuẩn của Wikimedia (500 = ảnh đại diện, 960 = ảnh lăng / di sản).
+ * Kiểm link mở được; lỗi thì dùng link ảnh gốc.
+ *   …/commons/e/ee/Ten.jpg → …/commons/thumb/e/ee/Ten.jpg/500px-Ten.jpg
  */
-async function downloadCompressed(url: string, dir: string, name: string, maxDim: number, maxBytes: number) {
-  // Wikimedia yêu cầu User-Agent nhận diện được.
-  const res = await fetch(url, { headers: { "User-Agent": UA } });
-  if (!res.ok) {
-    console.warn(`  ⚠ Ảnh ${name}: tải lỗi ${res.status} — bỏ qua`);
-    return null;
+async function commonsThumb(url: string, width: number): Promise<string> {
+  const m = /^(https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/)([0-9a-f]\/[0-9a-f]{2}\/)([^/]+)$/.exec(url);
+  if (!m) return url;
+  const thumb = `${m[1]}thumb/${m[2]}${m[3]}/${width}px-${m[3]}`;
+  try {
+    // Wikimedia yêu cầu User-Agent nhận diện được.
+    const res = await fetch(thumb, { method: "HEAD", headers: { "User-Agent": UA } });
+    if (res.ok) return thumb;
+    console.warn(`  ⚠ Ảnh thu nhỏ ${width}px lỗi ${res.status} — dùng ảnh gốc: ${m[3]}`);
+  } catch {
+    console.warn(`  ⚠ Không kiểm được ảnh thu nhỏ — dùng ảnh gốc: ${m[3]}`);
   }
-  const src = join(dir, `${name}.src`);
-  const out = join(dir, `${name}.jpg`);
-  writeFileSync(src, Buffer.from(await res.arrayBuffer()));
-  for (const q of [80, 70, 60, 50]) {
-    execFileSync("sips", ["-Z", String(maxDim), "-s", "format", "jpeg", "-s", "formatOptions", String(q), src, "--out", out], {
-      stdio: "ignore",
-    });
-    if (statSync(out).size <= maxBytes) break;
-  }
-  return readFileSync(out);
+  return url;
 }
 
 async function main() {
@@ -260,28 +254,14 @@ async function main() {
     );
   }
 
-  // 6. Ảnh đại diện.
+  // 6. Ảnh đại diện: link ảnh thu nhỏ Wikimedia, không tải về.
   if (!skipPhotos) {
     const withPhoto = persons.filter((p) => p.photo);
-    const dir = mkdtempSync(join(tmpdir(), "historical-photos-"));
-    try {
-      for (const p of withPhoto) {
-        const id = personId.get(p.key)!;
-        const buf = await downloadCompressed(p.photo!.url, dir, p.key, 512, 80 * 1024);
-        if (!buf) continue;
-        const path = `${clanId}/${id}.jpg`;
-        must(
-          `ảnh ${p.key}`,
-          await admin.storage
-            .from("person-photos")
-            .upload(path, buf, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" }),
-        );
-        must(`ảnh ${p.key}`, await admin.from("persons").update({ photo_path: path }).eq("id", id));
-      }
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
+    for (const p of withPhoto) {
+      const link = await commonsThumb(p.photo!.url, 500);
+      must(`ảnh ${p.key}`, await admin.from("persons").update({ photo_path: link }).eq("id", personId.get(p.key)!));
     }
-    if (withPhoto.length) console.log(`✓ Ảnh: ${withPhoto.length} người.`);
+    if (withPhoto.length) console.log(`✓ Ảnh: ${withPhoto.length} người (link Wikimedia).`);
   }
 
   // 7. Lăng tẩm → Mộ phần.
@@ -364,68 +344,39 @@ async function main() {
     if (people.length) must("heritage_people", await admin.from("heritage_people").insert(people));
   }
 
-  // 9. Ảnh lăng / di sản: xoá ảnh cũ của mục rồi tải lại (tên file ổn định theo thứ tự).
-  async function replacePhotos(
-    label: string,
-    folder: string,
-    photos: PlacePhotoDraft[],
-    dir: string,
-    clear: () => PromiseLike<unknown>,
-    insert: (rows: { path: string; caption: string; sort: number; bytes: number }[]) => PromiseLike<unknown>,
-  ) {
-    must(`${label} (xoá ảnh cũ)`, (await clear()) as { data: unknown; error: { message: string } | null });
-    const listed = await admin.storage.from("person-photos").list(folder);
-    const old = (listed.data ?? []).map((f) => `${folder}/${f.name}`);
-    if (old.length) await admin.storage.from("person-photos").remove(old);
-    const rows: { path: string; caption: string; sort: number; bytes: number }[] = [];
-    for (const [i, ph] of photos.entries()) {
-      const buf = await downloadCompressed(ph.url, dir, `${label}-${i}`, 1280, 250 * 1024);
-      if (!buf) continue;
-      const path = `${folder}/${i + 1}.jpg`;
-      must(
-        `ảnh ${label}`,
-        await admin.storage.from("person-photos").upload(path, buf, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" }),
-      );
-      rows.push({ path, caption: photoCaption(ph), sort: i, bytes: buf.length });
-    }
-    if (rows.length) must(`ảnh ${label}`, (await insert(rows)) as { data: unknown; error: { message: string } | null });
-  }
-  if (!skipPhotos && (graves.some((g) => g.photos?.length) || heritage.some((h) => h.photos?.length))) {
-    const dir = mkdtempSync(join(tmpdir(), "historical-photos-"));
-    try {
-      for (const g of graves) {
-        const id = graveId.get(g.key)!;
-        await replacePhotos(
-          g.key,
-          `${clanId}/graves/${id}`,
-          g.photos ?? [],
-          dir,
-          () => admin.from("resting_place_photos").delete().eq("resting_place_id", id),
-          (rows) =>
-            admin.from("resting_place_photos").insert(rows.map(({ bytes: _b, ...r }) => ({ ...r, resting_place_id: id, clan_id: clanId }))),
-        );
+  // 9. Ảnh lăng / di sản: link ảnh thu nhỏ Wikimedia, không tải về. Ghi lại toàn bộ.
+  if (!skipPhotos) {
+    let n = 0;
+    for (const g of graves) {
+      const id = graveId.get(g.key)!;
+      must(`ảnh ${g.key}`, await admin.from("resting_place_photos").delete().eq("resting_place_id", id));
+      const rows = [];
+      for (const [i, ph] of (g.photos ?? []).entries()) {
+        rows.push({ resting_place_id: id, clan_id: clanId, path: await commonsThumb(ph.url, 960), caption: photoCaption(ph), sort: i });
       }
-      for (const h of heritage) {
-        const id = heritageId.get(h.key)!;
-        await admin.from("heritage_items").update({ cover_media_id: null }).eq("id", id);
-        await replacePhotos(
-          h.key,
-          `${clanId}/heritage/${id}`,
-          h.photos ?? [],
-          dir,
-          () => admin.from("heritage_media").delete().eq("item_id", id),
-          (rows) =>
-            admin.from("heritage_media").insert(rows.map((r) => ({ ...r, kind: "photo", item_id: id, clan_id: clanId }))),
-        );
+      if (rows.length) must(`ảnh ${g.key}`, await admin.from("resting_place_photos").insert(rows));
+      n += rows.length;
+    }
+    for (const h of heritage) {
+      const id = heritageId.get(h.key)!;
+      await admin.from("heritage_items").update({ cover_media_id: null }).eq("id", id);
+      must(`ảnh ${h.key}`, await admin.from("heritage_media").delete().eq("item_id", id));
+      const rows = [];
+      for (const [i, ph] of (h.photos ?? []).entries()) {
+        // heritage_media có sẵn cột external_url cho link ngoài.
+        rows.push({ item_id: id, clan_id: clanId, kind: "photo", path: null, external_url: await commonsThumb(ph.url, 960), caption: photoCaption(ph), sort: i });
+      }
+      if (rows.length) {
+        must(`ảnh ${h.key}`, await admin.from("heritage_media").insert(rows));
         const first = must(
           "cover",
           await admin.from("heritage_media").select("id").eq("item_id", id).order("sort").limit(1).maybeSingle(),
         );
         if (first) must("cover", await admin.from("heritage_items").update({ cover_media_id: first.id }).eq("id", id));
       }
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
+      n += rows.length;
     }
+    if (n) console.log(`✓ Ảnh lăng / di sản: ${n} (link Wikimedia).`);
   }
 
   // 10a. Sự kiện thường niên.

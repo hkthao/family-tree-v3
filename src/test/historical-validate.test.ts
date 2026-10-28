@@ -259,13 +259,13 @@ describe("ảnh + tên tự/húy/thụy", () => {
     kind: "later_depiction" as const,
   };
 
-  it("ảnh hợp lệ; tranh đời sau ghi rõ không phải chân dung thật", () => {
+  it("ảnh hợp lệ; tượng / tranh thờ ghi rõ không phải chân dung thật", () => {
     const f = base();
     f.persons[0].photo = photo;
     expect(errs(f)).toBe("");
-    expect(warns(f)).toMatch(/tranh vẽ đời sau/);
+    expect(warns(f)).toMatch(/tượng \/ tranh thờ/);
     expect(photoLine(photo)).toBe(
-      "Ảnh: tranh vẽ đời sau, không phải chân dung thật — Tác giả, CC BY-SA 4.0, Wikimedia Commons.",
+      "Ảnh: tượng / tranh thờ, không phải chân dung thật — Tác giả, CC BY-SA 4.0, Wikimedia Commons.",
     );
   });
 

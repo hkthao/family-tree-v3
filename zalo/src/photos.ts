@@ -15,6 +15,8 @@ const cache = new Map<string, string>();
 const ONE_DAY = 24 * 60 * 60;
 
 async function sign(paths: string[]): Promise<void> {
+  // Link ngoài (https://, vd ảnh Wikimedia của dòng họ lịch sử) dùng thẳng.
+  for (const p of paths) if (p.startsWith("https://")) cache.set(p, p);
   const need = [...new Set(paths)].filter((p) => !cache.has(p));
   if (need.length === 0) return;
   const { data } = await supabase.storage
