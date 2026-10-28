@@ -13,6 +13,9 @@
  * - Ảnh (photo): tải từ Wikimedia Commons, nén như app (≤ 512px, ~80 KB, dùng
  *   `sips` của macOS) rồi upload person-photos/{clan}/{person}.jpg.
  *   --skip-photos bỏ qua bước này.
+ * - Sự kiện thường niên → Sự kiện (giỗ KHÔNG khai: app tự sinh từ ngày mất).
+ * - Lăng tẩm → Mộ phần, di sản → Di sản dòng họ (ảnh ≤ 1280px, ~250 KB như app);
+ *   thông gia → person_links 'same_person' đã xác nhận (khi dòng họ kia đã nhập).
  * - Chạy lại được: upsert theo external_key; trích dẫn/trị vì/tước hiệu của
  *   dòng họ được xoá và ghi lại từ file.
  */
@@ -27,10 +30,13 @@ import { config } from "dotenv";
 import {
   completeness,
   composeBio,
+  composeProse,
+  photoCaption,
   generationSummary,
   isPublishable,
   validate,
   type DateColumns,
+  type PlacePhotoDraft,
   type DynastyFile,
   type PersonDraft,
   type SourceDef,
@@ -62,6 +68,10 @@ if (result.errors.length) {
 const keep = <T extends { review?: PersonDraft["review"] }>(x: T) => includeDrafts || isPublishable(x.review);
 const persons = file.persons.filter(keep);
 const unions = file.unions.filter(keep);
+const graves = (file.resting_places ?? []).filter(keep);
+const heritage = (file.heritage ?? []).filter(keep);
+const links = (file.same_person_links ?? []).filter(keep);
+const events = (file.events ?? []).filter(keep);
 console.log(
   `✓ Hợp lệ. Sẽ nhập ${persons.length}/${file.persons.length} người, ${unions.length}/${file.unions.length} hôn nhân` +
     (includeDrafts ? " (KỂ CẢ BẢN NHÁP)" : " (đã duyệt)"),
@@ -108,6 +118,31 @@ function dateCols(prefix: "birth" | "death", c: DateColumns | null | undefined) 
   };
 }
 
+const UA = "giapha-historical-import/1.0 (https://giapha.thaohk.com)";
+
+/**
+ * Tải ảnh Commons và nén như app (photoUpload.ts): cạnh dài ≤ maxDim, JPEG,
+ * hạ chất lượng tới khi ≤ maxBytes. Trả null nếu tải lỗi.
+ */
+async function downloadCompressed(url: string, dir: string, name: string, maxDim: number, maxBytes: number) {
+  // Wikimedia yêu cầu User-Agent nhận diện được.
+  const res = await fetch(url, { headers: { "User-Agent": UA } });
+  if (!res.ok) {
+    console.warn(`  ⚠ Ảnh ${name}: tải lỗi ${res.status} — bỏ qua`);
+    return null;
+  }
+  const src = join(dir, `${name}.src`);
+  const out = join(dir, `${name}.jpg`);
+  writeFileSync(src, Buffer.from(await res.arrayBuffer()));
+  for (const q of [80, 70, 60, 50]) {
+    execFileSync("sips", ["-Z", String(maxDim), "-s", "format", "jpeg", "-s", "formatOptions", String(q), src, "--out", out], {
+      stdio: "ignore",
+    });
+    if (statSync(out).size <= maxBytes) break;
+  }
+  return readFileSync(out);
+}
+
 async function main() {
   // 1. Danh mục nguồn
   must("sources", await admin.from("historical_sources").upsert(sources, { onConflict: "code" }));
@@ -127,6 +162,10 @@ async function main() {
     kind: "historical",
     visibility: "public",
     max_persons: 3000,
+    // Người ngoài xem được Mộ phần (lăng tẩm) + Di sản của dòng họ lịch sử.
+    public_show_graves: true,
+    public_show_heritage: true,
+    public_show_events: true,
   };
   const existing = must(
     "clan",
@@ -223,30 +262,14 @@ async function main() {
     try {
       for (const p of withPhoto) {
         const id = personId.get(p.key)!;
-        const res = await fetch(p.photo!.url, {
-          // Wikimedia yêu cầu User-Agent nhận diện được.
-          headers: { "User-Agent": "giapha-historical-import/1.0 (https://giapha.thaohk.com)" },
-        });
-        if (!res.ok) {
-          console.warn(`  ⚠ Ảnh ${p.key}: tải lỗi ${res.status} — bỏ qua`);
-          continue;
-        }
-        const src = join(dir, `${p.key}.src`);
-        const out = join(dir, `${p.key}.jpg`);
-        writeFileSync(src, Buffer.from(await res.arrayBuffer()));
-        // Nén giống photoUpload.ts: cạnh dài ≤ 512px, JPEG, hạ chất lượng tới khi ≤ 80 KB.
-        for (const q of [80, 70, 60, 50]) {
-          execFileSync("sips", ["-Z", "512", "-s", "format", "jpeg", "-s", "formatOptions", String(q), src, "--out", out], {
-            stdio: "ignore",
-          });
-          if (statSync(out).size <= 80 * 1024) break;
-        }
+        const buf = await downloadCompressed(p.photo!.url, dir, p.key, 512, 80 * 1024);
+        if (!buf) continue;
         const path = `${clanId}/${id}.jpg`;
         must(
           `ảnh ${p.key}`,
           await admin.storage
             .from("person-photos")
-            .upload(path, readFileSync(out), { upsert: true, contentType: "image/jpeg", cacheControl: "3600" }),
+            .upload(path, buf, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" }),
         );
         must(`ảnh ${p.key}`, await admin.from("persons").update({ photo_path: path }).eq("id", id));
       }
@@ -256,18 +279,198 @@ async function main() {
     if (withPhoto.length) console.log(`✓ Ảnh: ${withPhoto.length} người.`);
   }
 
-  // 7. Trích dẫn, trị vì, tước hiệu — ghi lại toàn bộ.
+  // 7. Lăng tẩm → Mộ phần.
+  const graveId = new Map<string, string>();
+  if (graves.length) {
+    const rows = must(
+      "resting_places",
+      await admin
+        .from("resting_places")
+        .upsert(
+          graves.map((g) => ({
+            clan_id: clanId,
+            external_key: g.key,
+            kind: g.kind ?? "grave",
+            name: g.name,
+            location_name: g.location_name ?? null,
+            address: g.address ?? null,
+            latitude: g.latitude ?? null,
+            longitude: g.longitude ?? null,
+            status: g.status ?? "existing",
+            built_year: g.built_year ?? null,
+            notes: composeProse(g.notes, g.citations, sources),
+          })),
+          { onConflict: "clan_id,external_key" },
+        )
+        .select("id, external_key"),
+    );
+    (rows ?? []).forEach((r) => graveId.set(r.external_key as string, r.id as string));
+    const ids = [...graveId.values()];
+    must("occupants", await admin.from("resting_place_occupants").delete().in("resting_place_id", ids));
+    const occ = graves.flatMap((g) =>
+      g.occupants.filter((k) => personId.has(k)).map((k) => ({
+        resting_place_id: graveId.get(g.key)!,
+        person_id: personId.get(k)!,
+        clan_id: clanId,
+      })),
+    );
+    if (occ.length) must("occupants", await admin.from("resting_place_occupants").insert(occ));
+  }
+
+  // 8. Di sản dòng họ.
+  const heritageId = new Map<string, string>();
+  if (heritage.length) {
+    const rows = must(
+      "heritage_items",
+      await admin
+        .from("heritage_items")
+        .upsert(
+          heritage.map((h, i) => ({
+            clan_id: clanId,
+            external_key: h.key,
+            category: h.category,
+            title: h.title,
+            summary: h.summary ?? null,
+            body: composeProse(h.body, h.citations, sources),
+            location_name: h.location_name ?? null,
+            address: h.address ?? null,
+            latitude: h.latitude ?? null,
+            longitude: h.longitude ?? null,
+            built_year: h.built_year ?? null,
+            status: "active",
+            sort: i,
+            created_by: padmin.id,
+          })),
+          { onConflict: "clan_id,external_key" },
+        )
+        .select("id, external_key"),
+    );
+    (rows ?? []).forEach((r) => heritageId.set(r.external_key as string, r.id as string));
+    const ids = [...heritageId.values()];
+    must("heritage_people", await admin.from("heritage_people").delete().in("item_id", ids));
+    const people = heritage.flatMap((h) =>
+      (h.people ?? []).filter((x) => personId.has(x.person)).map((x) => ({
+        item_id: heritageId.get(h.key)!,
+        person_id: personId.get(x.person)!,
+        clan_id: clanId,
+        role_note: x.role_note ?? null,
+      })),
+    );
+    if (people.length) must("heritage_people", await admin.from("heritage_people").insert(people));
+  }
+
+  // 9. Ảnh lăng / di sản: xoá ảnh cũ của mục rồi tải lại (tên file ổn định theo thứ tự).
+  async function replacePhotos(
+    label: string,
+    folder: string,
+    photos: PlacePhotoDraft[],
+    dir: string,
+    clear: () => PromiseLike<unknown>,
+    insert: (rows: { path: string; caption: string; sort: number; bytes: number }[]) => PromiseLike<unknown>,
+  ) {
+    must(`${label} (xoá ảnh cũ)`, (await clear()) as { data: unknown; error: { message: string } | null });
+    const listed = await admin.storage.from("person-photos").list(folder);
+    const old = (listed.data ?? []).map((f) => `${folder}/${f.name}`);
+    if (old.length) await admin.storage.from("person-photos").remove(old);
+    const rows: { path: string; caption: string; sort: number; bytes: number }[] = [];
+    for (const [i, ph] of photos.entries()) {
+      const buf = await downloadCompressed(ph.url, dir, `${label}-${i}`, 1280, 250 * 1024);
+      if (!buf) continue;
+      const path = `${folder}/${i + 1}.jpg`;
+      must(
+        `ảnh ${label}`,
+        await admin.storage.from("person-photos").upload(path, buf, { upsert: true, contentType: "image/jpeg", cacheControl: "3600" }),
+      );
+      rows.push({ path, caption: photoCaption(ph), sort: i, bytes: buf.length });
+    }
+    if (rows.length) must(`ảnh ${label}`, (await insert(rows)) as { data: unknown; error: { message: string } | null });
+  }
+  if (!skipPhotos && (graves.some((g) => g.photos?.length) || heritage.some((h) => h.photos?.length))) {
+    const dir = mkdtempSync(join(tmpdir(), "historical-photos-"));
+    try {
+      for (const g of graves) {
+        const id = graveId.get(g.key)!;
+        await replacePhotos(
+          g.key,
+          `${clanId}/graves/${id}`,
+          g.photos ?? [],
+          dir,
+          () => admin.from("resting_place_photos").delete().eq("resting_place_id", id),
+          (rows) =>
+            admin.from("resting_place_photos").insert(rows.map(({ bytes: _b, ...r }) => ({ ...r, resting_place_id: id, clan_id: clanId }))),
+        );
+      }
+      for (const h of heritage) {
+        const id = heritageId.get(h.key)!;
+        await admin.from("heritage_items").update({ cover_media_id: null }).eq("id", id);
+        await replacePhotos(
+          h.key,
+          `${clanId}/heritage/${id}`,
+          h.photos ?? [],
+          dir,
+          () => admin.from("heritage_media").delete().eq("item_id", id),
+          (rows) =>
+            admin.from("heritage_media").insert(rows.map((r) => ({ ...r, kind: "photo", item_id: id, clan_id: clanId }))),
+        );
+        const first = must(
+          "cover",
+          await admin.from("heritage_media").select("id").eq("item_id", id).order("sort").limit(1).maybeSingle(),
+        );
+        if (first) must("cover", await admin.from("heritage_items").update({ cover_media_id: first.id }).eq("id", id));
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  // 10a. Sự kiện thường niên.
+  const eventId = new Map<string, string>();
+  if (events.length) {
+    const rows = must(
+      "events",
+      await admin
+        .from("events")
+        .upsert(
+          events.map((e) => ({
+            clan_id: clanId,
+            external_key: e.key,
+            title: e.title,
+            event_type: e.event_type ?? "custom",
+            date_solar: e.date.solar ?? null,
+            lunar_month: e.date.lunar_month ?? null,
+            lunar_day: e.date.lunar_day ?? null,
+            lunar_is_leap: e.date.lunar_leap ?? false,
+            is_yearly: e.is_yearly ?? true,
+            related_person_id: (e.related_person && personId.get(e.related_person)) ?? null,
+            resting_place_id: (e.resting_place && graveId.get(e.resting_place)) ?? null,
+            notes: composeProse(e.notes, e.citations, sources),
+          })),
+          { onConflict: "clan_id,external_key" },
+        )
+        .select("id, external_key"),
+    );
+    (rows ?? []).forEach((r) => eventId.set(r.external_key as string, r.id as string));
+  }
+
+  // 10. Trích dẫn, trị vì, tước hiệu — ghi lại toàn bộ.
   for (const t of ["person_citations", "person_reigns", "person_titles"]) {
     must(t, await admin.from(t).delete().eq("clan_id", clanId));
   }
 
   const citations = [
-    ...persons.flatMap((p) => p.citations.map((c) => ({ c, key: p.key, review: p.review, person_id: personId.get(p.key)!, family_id: null }))),
-    ...unions.flatMap((u) => u.citations.map((c) => ({ c, key: u.key, review: u.review, person_id: null, family_id: familyId.get(u.key)! }))),
-  ].map(({ c, key, review, person_id, family_id }) => ({
+    ...persons.flatMap((p) => p.citations.map((c) => ({ c, key: p.key, review: p.review, person_id: personId.get(p.key)! }))),
+    ...unions.flatMap((u) => u.citations.map((c) => ({ c, key: u.key, review: u.review, family_id: familyId.get(u.key)! }))),
+    ...graves.flatMap((g) => g.citations.map((c) => ({ c, key: g.key, review: g.review, resting_place_id: graveId.get(g.key)! }))),
+    ...heritage.flatMap((h) => h.citations.map((c) => ({ c, key: h.key, review: h.review, heritage_item_id: heritageId.get(h.key)! }))),
+    ...events.flatMap((e) => e.citations.map((c) => ({ c, key: e.key, review: e.review, event_id: eventId.get(e.key)! }))),
+  ].map(({ c, key, review, ...target }) => ({
     clan_id: clanId,
-    person_id,
-    family_id,
+    person_id: null,
+    family_id: null,
+    resting_place_id: null,
+    heritage_item_id: null,
+    event_id: null,
+    ...target,
     field: c.field,
     value: c.value ?? null,
     source_id: sourceId.get(c.source)!,
@@ -308,6 +511,53 @@ async function main() {
   );
   if (titles.length) must("person_titles", await admin.from("person_titles").insert(titles));
 
+  // 11. Thông gia: cùng một người ở dòng họ lịch sử khác.
+  let linked = 0;
+  for (const l of links) {
+    const other = must(
+      "thông gia",
+      await admin.from("clans").select("id").eq("external_key", l.other_clan).eq("kind", "historical").maybeSingle(),
+    );
+    const otherPerson = other
+      ? must(
+          "thông gia",
+          await admin.from("persons").select("id").eq("clan_id", other.id).eq("external_key", l.other_person).maybeSingle(),
+        )
+      : null;
+    if (!other || !otherPerson) {
+      console.warn(`  ⚠ Thông gia ${l.person} ↔ ${l.other_clan}/${l.other_person}: dòng họ/người kia chưa nhập — chạy lại sau`);
+      continue;
+    }
+    const a = personId.get(l.person)!;
+    const b = otherPerson.id as string;
+    const exists = must(
+      "thông gia",
+      await admin
+        .from("person_links")
+        .select("id")
+        .neq("status", "revoked")
+        .or(`and(person_a_id.eq.${a},person_b_id.eq.${b}),and(person_a_id.eq.${b},person_b_id.eq.${a})`),
+    );
+    if (exists?.length) continue;
+    must(
+      "thông gia",
+      await admin.from("person_links").insert({
+        link_type: "same_person",
+        status: "confirmed",
+        clan_a_id: clanId,
+        person_a_id: a,
+        clan_b_id: other.id,
+        person_b_id: b,
+        note: l.note ?? null,
+        created_by: padmin.id,
+        confirmed_by: padmin.id,
+        confirmed_at: new Date().toISOString(),
+      }),
+    );
+    linked++;
+  }
+  if (links.length) console.log(`✓ Thông gia: ${linked} liên kết mới / ${links.length}.`);
+
   // Đối chiếu số đời DB tính với mô phỏng của validator.
   const gens = must(
     "generation",
@@ -330,8 +580,8 @@ async function main() {
   stale.forEach((r) => console.warn(`  ⚠ Trong DB nhưng không có trong lần nhập này: ${r.external_key} (${r.full_name})`));
 
   console.log(
-    `✓ Đã nhập ${persons.length} người, ${unions.length} hôn nhân, ${citations.length} trích dẫn, ` +
-      `${reigns.length} trị vì, ${titles.length} tước hiệu.`,
+    `✓ Đã nhập ${persons.length} người, ${unions.length} hôn nhân, ${graves.length} lăng, ${heritage.length} di sản, ${events.length} sự kiện, ` +
+      `${citations.length} trích dẫn, ${reigns.length} trị vì, ${titles.length} tước hiệu.`,
   );
 }
 

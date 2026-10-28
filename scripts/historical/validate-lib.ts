@@ -150,10 +150,89 @@ export interface UnionDraft {
   review?: Review;
 }
 
+/** Ảnh của lăng / di sản: như PhotoDraft + chú thích. */
+export interface PlacePhotoDraft extends PhotoDraft {
+  caption?: string | null;
+}
+
+/** Lăng tẩm → module Mộ phần (resting_places). */
+export interface RestingPlaceDraft {
+  key: string;
+  name: string; // "Chiêu Lăng"
+  kind?: "grave" | "other";
+  /** Địa danh như sử chép (vd "hương Tinh Cương, phủ Long Hưng"). */
+  location_name?: string | null;
+  /** Địa chỉ ngày nay — cần nguồn tầng A/B (hồ sơ di tích, nghiên cứu). */
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  status?: "existing" | "relocated" | "lost";
+  built_year?: number | null;
+  notes?: string | null; // ngắn gọn, văn phong sử
+  occupants: string[]; // key người an táng tại đây
+  photos?: PlacePhotoDraft[];
+  citations: Citation[];
+  review?: Review;
+}
+
+/** Di sản dòng họ (heritage_items): nơi thờ, tục lệ, giai thoại, tư liệu. */
+export interface HeritageDraft {
+  key: string;
+  category: "place" | "custom" | "story" | "artifact";
+  title: string;
+  summary?: string | null;
+  body?: string | null;
+  location_name?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  built_year?: number | null;
+  people?: { person: string; role_note?: string | null }[];
+  photos?: PlacePhotoDraft[];
+  citations: Citation[];
+  review?: Review;
+}
+
 export interface DynastyFile {
   clan: { key: string; name: string; description?: string | null };
   persons: PersonDraft[];
   unions: UnionDraft[];
+  resting_places?: RestingPlaceDraft[];
+  heritage?: HeritageDraft[];
+  /**
+   * Thông gia: người này CŨNG có trong dòng họ lịch sử khác (vd Lý Chiêu Hoàng —
+   * con gái trong cây nhà Lý, vợ trong cây nhà Trần). Nhập thành person_links
+   * 'same_person' đã xác nhận khi dòng họ kia đã có.
+   */
+  same_person_links?: SamePersonLinkDraft[];
+  events?: EventDraft[];
+}
+
+/**
+ * Sự kiện thường niên (lễ hội đền, tế lăng…) → module Sự kiện. KHÔNG khai giỗ
+ * của người đã có ngày mất: app tự sinh giỗ từ ngày mất.
+ */
+export interface EventDraft {
+  key: string;
+  title: string;
+  event_type?: "custom" | "reunion" | "memorial" | "tomb_visit";
+  /** Âm lịch: { lunar_month, lunar_day } — hoặc dương lịch: { solar: 'YYYY-MM-DD' }. */
+  date: { lunar_month?: number | null; lunar_day?: number | null; lunar_leap?: boolean; solar?: string | null };
+  is_yearly?: boolean;
+  related_person?: string | null;
+  resting_place?: string | null; // key lăng (tế lăng)
+  notes?: string | null;
+  citations: Citation[];
+  review?: Review;
+}
+
+export interface SamePersonLinkDraft {
+  person: string; // key người trong file này
+  other_clan: string; // clan.key của dòng họ kia
+  other_person: string; // key người đó trong dòng họ kia
+  note?: string | null; // vd "Con gái Lý Huệ Tông, hoàng hậu của Trần Thái Tông"
+  citations: Citation[]; // field 'same_person'
+  review?: Review;
 }
 
 export interface ValidationResult {
@@ -169,6 +248,10 @@ export interface ValidationResult {
 
 export const BIO_SOFT_MAX = 500;
 export const BIO_MAX = 800;
+export const NOTES_MAX = 500;
+export const HERITAGE_BODY_SOFT_MAX = 1000;
+export const HERITAGE_BODY_MAX = 1500;
+export const SUMMARY_MAX = 200;
 
 /** Trường chỉ có MỘT giá trị đúng — các nguồn ghi khác nhau ⇒ dị bản. */
 const SINGLE_FIELDS = [
@@ -189,6 +272,11 @@ const SINGLE_FIELDS = [
 
 /** Trường mà citation phải ghi `value` và giá trị trên form phải khớp một nguồn. */
 const VALUE_FIELDS = new Set([
+  "date",
+  "location_name",
+  "address",
+  "built_year",
+  "status",
   "birth",
   "death",
   "lifespan",
@@ -314,9 +402,13 @@ function yearOf(c: DateColumns | null): number | null {
 }
 
 /** Dòng nguồn cuối tiểu sử: "Theo: Đại Việt sử ký toàn thư (Bản kỷ Q.5); …". */
-export function sourceLine(p: PersonDraft, sources: SourceDef[]): string {
+export function sourceLine(
+  p: Pick<PersonDraft, "citations">,
+  sources: SourceDef[],
+  only: string[] = ["bio", "existence"],
+): string {
   const byCode = new Map(sources.map((s) => [s.code, s]));
-  const fields = new Set(["bio", "existence"]);
+  const fields = new Set(only);
   const seen = new Map<string, Set<string>>();
   for (const c of p.citations) {
     if (!fields.has(c.field)) continue;
@@ -339,6 +431,24 @@ export function photoLine(photo: PhotoDraft | null | undefined): string {
   if (!photo) return "";
   const who = [photo.author, photo.year].filter(Boolean).join(", ");
   return `Ảnh: ${PHOTO_KIND_LABEL[photo.kind]} — ${who ? `${who}, ` : ""}${photo.license}, Wikimedia Commons.`;
+}
+
+/** Chú thích ảnh lăng / di sản: chú thích riêng + ghi công. */
+export function photoCaption(ph: PlacePhotoDraft): string {
+  return [ph.caption?.trim(), photoLine(ph)].filter(Boolean).join(" — ");
+}
+
+/** Dòng nguồn cho lăng / di sản (ghi cuối ghi chú / nội dung). */
+export function placeSourceLine(citations: Citation[], sources: SourceDef[]): string {
+  return sourceLine({ citations }, sources, ["existence", "notes", "body"]);
+}
+
+/** Ghi chú lăng / nội dung di sản + dòng nguồn cuối. */
+export function composeProse(text: string | null | undefined, citations: Citation[], sources: SourceDef[]): string | null {
+  const body = text?.trim();
+  const line = placeSourceLine(citations, sources);
+  if (!body) return line || null;
+  return line ? `${body}\n\n${line}` : body;
 }
 
 export function composeBio(p: PersonDraft, sources: SourceDef[]): string | null {
@@ -420,6 +530,7 @@ export function validate(
     required: string[],
     singleFields: Set<string>,
     formValues: Map<string, string> = new Map(),
+    weakOk: Set<string> = new Set(),
   ) {
     const byField = new Map<string, Citation[]>();
     for (const c of citations ?? []) {
@@ -459,7 +570,10 @@ export function validate(
       else if (singleFields.has(field) && values.size > 1) level = "disputed";
       else if (strong.size >= 2) level = "confirmed";
       else if (strong.size === 1) level = "single_source";
-      else {
+      else if (weakOk.has(field)) {
+        warnings.push(`${who}: "${field}" chỉ theo nguồn tầng C — nên đối chiếu hồ sơ di tích`);
+        level = "single_source";
+      } else {
         errors.push(`${who}: dữ kiện "${field}" chỉ có nguồn tầng C (Wikipedia/Wikidata) — chưa đủ để công bố`);
         continue;
       }
@@ -469,6 +583,56 @@ export function validate(
       if (!required.includes(field)) warnings.push(`${who}: trích dẫn cho "${field}" nhưng không có dữ kiện tương ứng`);
     }
     return conf;
+  }
+
+  function checkPhoto(who: string, ph: PhotoDraft) {
+    if (!/^https:\/\/upload\.wikimedia\.org\/.+\.(jpe?g|png|webp|tiff?)$/i.test(ph.url ?? "")) {
+      errors.push(`${who}: ảnh phải là link trực tiếp upload.wikimedia.org (.jpg/.png/.webp/.tif)`);
+    }
+    if (!/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/.test(ph.source_page ?? "")) {
+      errors.push(`${who}: ảnh thiếu trang nguồn commons.wikimedia.org/wiki/File:…`);
+    }
+    const lic = ph.license?.trim() ?? "";
+    if (!/^(PD(-[\w-]+)?|CC0( 1\.0)?|CC BY(-SA)? \d\.\d)$/.test(lic)) {
+      errors.push(`${who}: giấy phép ảnh "${lic}" không thuộc PD / CC0 / CC BY / CC BY-SA`);
+    }
+    if (!/^(PD|CC0)/.test(lic) && !ph.author?.trim()) errors.push(`${who}: ảnh ${lic} cần ghi tác giả`);
+    if (!["photograph", "contemporary_portrait", "later_depiction"].includes(ph.kind)) {
+      errors.push(`${who}: ảnh cần kind = photograph | contemporary_portrait | later_depiction`);
+    } else if (ph.kind === "later_depiction") {
+      warnings.push(`${who}: ảnh là tranh vẽ đời sau — sẽ ghi rõ "không phải chân dung thật"`);
+    }
+  }
+
+  /** Văn bản tự do (tiểu sử, ghi chú, nội dung di sản): độ dài + văn phong sử. */
+  function checkProse(who: string, label: string, text: string | null | undefined, soft: number, max: number) {
+    const t = text?.trim() ?? "";
+    if (t.length > max) errors.push(`${who}: ${label} ${t.length} ký tự — tối đa ${max}, viết gọn lại`);
+    else if (t.length > soft) warnings.push(`${who}: ${label} ${t.length} ký tự — nên ≤ ${soft}`);
+    if (/[!?]|\b(tôi|chúng ta|bạn)\b|(vô cùng|tuyệt vời|cực kỳ|huyền thoại)/i.test(t)) {
+      warnings.push(`${who}: ${label} có lời cảm thán / ngôi thứ nhất / từ phóng đại — giữ văn phong sử`);
+    }
+    if (/\bTheo:/.test(t)) warnings.push(`${who}: không cần tự ghi "Theo:" — dòng nguồn được thêm khi nhập`);
+  }
+
+  /** Trường địa điểm chung của lăng / di sản → required + giá trị form. */
+  function placeFields(
+    who: string,
+    x: { location_name?: string | null; address?: string | null; latitude?: number | null; longitude?: number | null; built_year?: number | null },
+    required: string[],
+    formValues: Map<string, string>,
+  ) {
+    if (x.location_name) (required.push("location_name"), formValues.set("location_name", x.location_name));
+    if (x.address) (required.push("address"), formValues.set("address", x.address));
+    if (x.built_year != null) (required.push("built_year"), formValues.set("built_year", String(x.built_year)));
+    const hasLat = x.latitude != null;
+    if (hasLat !== (x.longitude != null)) errors.push(`${who}: cần cả vĩ độ và kinh độ`);
+    if (hasLat && x.longitude != null) {
+      required.push("coordinates");
+      if (x.latitude! < 8 || x.latitude! > 24 || x.longitude < 102 || x.longitude > 110) {
+        warnings.push(`${who}: toạ độ ${x.latitude}, ${x.longitude} nằm ngoài Việt Nam — kiểm tra lại`);
+      }
+    }
   }
 
   // ── Hôn nhân ───────────────────────────────────────────────────────
@@ -561,13 +725,7 @@ export function validate(
     columns.set(p.key, cols);
 
     // Bio: ngắn gọn, văn phong sử.
-    const bio = p.bio?.trim() ?? "";
-    if (bio.length > BIO_MAX) errors.push(`${who}: tiểu sử ${bio.length} ký tự — tối đa ${BIO_MAX}, viết gọn lại`);
-    else if (bio.length > BIO_SOFT_MAX) warnings.push(`${who}: tiểu sử ${bio.length} ký tự — nên ≤ ${BIO_SOFT_MAX}`);
-    if (/[!?]|\b(tôi|chúng ta|bạn)\b|(vô cùng|tuyệt vời|cực kỳ|huyền thoại)/i.test(bio)) {
-      warnings.push(`${who}: tiểu sử có lời cảm thán / ngôi thứ nhất / từ phóng đại — giữ văn phong sử`);
-    }
-    if (/\bTheo:/.test(bio)) warnings.push(`${who}: không cần tự ghi "Theo:" — dòng nguồn được thêm khi nhập`);
+    checkProse(who, "tiểu sử", p.bio, BIO_SOFT_MAX, BIO_MAX);
 
     // Tên tự / húy / thụy: sử hầu như luôn chép tên húy và thụy hiệu của vua chúa.
     if (p.reigns?.length) {
@@ -581,25 +739,7 @@ export function validate(
       }
     }
 
-    if (p.photo) {
-      const ph = p.photo;
-      if (!/^https:\/\/upload\.wikimedia\.org\/.+\.(jpe?g|png|webp|tiff?)$/i.test(ph.url ?? "")) {
-        errors.push(`${who}: ảnh phải là link trực tiếp upload.wikimedia.org (.jpg/.png/.webp/.tif)`);
-      }
-      if (!/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/.test(ph.source_page ?? "")) {
-        errors.push(`${who}: ảnh thiếu trang nguồn commons.wikimedia.org/wiki/File:…`);
-      }
-      const lic = ph.license?.trim() ?? "";
-      if (!/^(PD(-[\w-]+)?|CC0( 1\.0)?|CC BY(-SA)? \d\.\d)$/.test(lic)) {
-        errors.push(`${who}: giấy phép ảnh "${lic}" không thuộc PD / CC0 / CC BY / CC BY-SA`);
-      }
-      if (!/^(PD|CC0)/.test(lic) && !ph.author?.trim()) errors.push(`${who}: ảnh ${lic} cần ghi tác giả`);
-      if (!["photograph", "contemporary_portrait", "later_depiction"].includes(ph.kind)) {
-        errors.push(`${who}: ảnh cần kind = photograph | contemporary_portrait | later_depiction`);
-      } else if (ph.kind === "later_depiction") {
-        warnings.push(`${who}: ảnh là tranh vẽ đời sau — sẽ ghi rõ "không phải chân dung thật"`);
-      }
-    }
+    if (p.photo) checkPhoto(who, p.photo);
 
     if (p.lifespan != null && (!Number.isInteger(p.lifespan) || p.lifespan < 0 || p.lifespan > 150)) {
       errors.push(`${who}: lifespan phải là số nguyên 0–150`);
@@ -717,6 +857,122 @@ export function validate(
     state.set(k, 2);
   };
   for (const k of persons.keys()) visit(k, []);
+
+  // ── Lăng tẩm (Mộ phần) ─────────────────────────────────────────────
+  const allKeys = new Set([...persons.keys(), ...unions.keys()]);
+  const claimKey = (k: string, label: string) => {
+    if (!KEY_RE.test(k ?? "")) errors.push(`${label} "${k}": key sai định dạng (a-z0-9.-)`);
+    if (allKeys.has(k)) errors.push(`key trùng: ${k}`);
+    allKeys.add(k);
+  };
+  const needPerson = (who: string, k: string, owner?: Review) => {
+    const p = persons.get(k);
+    if (!p) errors.push(`${who}: không có người "${k}"`);
+    else if (opts.publishOnly && isPublishable(owner) && !isPublishable(p.review)) {
+      errors.push(`${who}: đã duyệt nhưng ${k} chưa duyệt`);
+    }
+  };
+  const buriedAt = new Map<string, string[]>();
+  for (const g of file.resting_places ?? []) {
+    const who = `lăng ${g.key}`;
+    claimKey(g.key, "lăng");
+    if (!g.name?.trim()) errors.push(`${who}: thiếu tên`);
+    const required = ["existence"];
+    const formValues = new Map<string, string>();
+    placeFields(who, g, required, formValues);
+    if (g.status && g.status !== "existing") (required.push("status"), formValues.set("status", g.status));
+    if (g.notes) required.push("notes");
+    checkProse(who, "ghi chú", g.notes, NOTES_MAX, NOTES_MAX);
+    if (!g.occupants?.length) errors.push(`${who}: chưa gắn người an táng`);
+    (g.occupants ?? []).forEach((k, i) => {
+      needPerson(who, k, g.review);
+      required.push(`occupant:${i}`);
+      buriedAt.set(k, [...(buriedAt.get(k) ?? []), g.name]);
+    });
+    (g.photos ?? []).forEach((ph) => checkPhoto(who, ph));
+    confidence.set(g.key, checkCitations(who, g.citations, required, new Set(["location_name", "address", "status", "built_year"]), formValues, new Set(["coordinates"])));
+  }
+  for (const [k, names] of buriedAt) {
+    const p = persons.get(k);
+    if (!p) continue;
+    if (!p.burial_place) warnings.push(`người ${k}: an táng tại ${names.join(", ")} nhưng chưa điền Nơi an táng`);
+    else if (!names.some((n) => norm(p.burial_place!).includes(norm(n)))) {
+      warnings.push(`người ${k}: Nơi an táng "${p.burial_place}" không nhắc tới ${names.join(", ")}`);
+    }
+  }
+
+  // ── Di sản dòng họ ─────────────────────────────────────────────────
+  for (const h of file.heritage ?? []) {
+    const who = `di sản ${h.key}`;
+    claimKey(h.key, "di sản");
+    if (!h.title?.trim()) errors.push(`${who}: thiếu tiêu đề`);
+    if (!["place", "custom", "story", "artifact"].includes(h.category)) {
+      errors.push(`${who}: category phải là place | custom | story | artifact`);
+    }
+    const required = ["existence"];
+    const formValues = new Map<string, string>();
+    placeFields(who, h, required, formValues);
+    if (h.body) required.push("body");
+    checkProse(who, "nội dung", h.body, HERITAGE_BODY_SOFT_MAX, HERITAGE_BODY_MAX);
+    checkProse(who, "tóm tắt", h.summary, SUMMARY_MAX, SUMMARY_MAX);
+    (h.people ?? []).forEach((x, i) => {
+      needPerson(who, x.person, h.review);
+      required.push(`person:${i}`);
+    });
+    (h.photos ?? []).forEach((ph) => checkPhoto(who, ph));
+    confidence.set(h.key, checkCitations(who, h.citations, required, new Set(["location_name", "address", "built_year"]), formValues, new Set(["coordinates"])));
+  }
+
+  // ── Sự kiện thường niên ────────────────────────────────────────────
+  const graveKeys = new Set((file.resting_places ?? []).map((g) => g.key));
+  for (const e of file.events ?? []) {
+    const who = `sự kiện ${e.key}`;
+    claimKey(e.key, "sự kiện");
+    if (!e.title?.trim()) errors.push(`${who}: thiếu tiêu đề`);
+    const type = e.event_type ?? "custom";
+    if (!["custom", "reunion", "memorial", "tomb_visit"].includes(type)) errors.push(`${who}: event_type không hợp lệ`);
+    const d = e.date ?? {};
+    const isLunar = d.lunar_month != null;
+    if (isLunar === !!d.solar) errors.push(`${who}: ngày phải là âm lịch (lunar_month/lunar_day) HOẶC dương lịch (solar), không cả hai`);
+    if (isLunar && (d.lunar_month! < 1 || d.lunar_month! > 12 || d.lunar_day == null || d.lunar_day < 1 || d.lunar_day > 30)) {
+      errors.push(`${who}: ngày âm cần tháng 1–12 và ngày 1–30`);
+    }
+    if (d.solar && !/^\d{4}-\d{2}-\d{2}$/.test(d.solar)) errors.push(`${who}: ngày dương cần YYYY-MM-DD`);
+    const required = ["existence", "date"];
+    const formValues = new Map<string, string>([
+      ["date", isLunar ? formatDateFact({ lunar_month: d.lunar_month, lunar_day: d.lunar_day, lunar_leap: d.lunar_leap }) : d.solar ?? ""],
+    ]);
+    if (e.related_person) {
+      needPerson(who, e.related_person, e.review);
+      required.push("related_person");
+      const rp = persons.get(e.related_person);
+      if (type === "memorial" && rp && columns.get(rp.key)?.death_anniv_lunar_month != null) {
+        errors.push(`${who}: ${rp.key} đã có ngày mất → app tự sinh giỗ, không khai sự kiện giỗ trùng`);
+      }
+    }
+    if (e.resting_place) {
+      if (!graveKeys.has(e.resting_place)) errors.push(`${who}: không có lăng "${e.resting_place}"`);
+      required.push("resting_place");
+    } else if (type === "tomb_visit") errors.push(`${who}: tế/viếng lăng cần resting_place`);
+    if (e.notes) required.push("notes");
+    checkProse(who, "ghi chú", e.notes, NOTES_MAX, NOTES_MAX);
+    confidence.set(e.key, checkCitations(who, e.citations, required, new Set(["date"]), formValues));
+  }
+
+  // ── Thông gia (cùng một người ở dòng họ khác) ─────────────────────
+  const linkPairs = new Set<string>();
+  for (const l of file.same_person_links ?? []) {
+    const who = `thông gia ${l.person} ↔ ${l.other_clan}/${l.other_person}`;
+    needPerson(who, l.person, l.review);
+    if (!KEY_RE.test(l.other_clan ?? "") || !KEY_RE.test(l.other_person ?? "")) {
+      errors.push(`${who}: other_clan / other_person sai định dạng key`);
+    }
+    if (l.other_clan === file.clan.key) errors.push(`${who}: phải là dòng họ khác`);
+    const pair = `${l.person}|${l.other_clan}|${l.other_person}`;
+    if (linkPairs.has(pair)) errors.push(`${who}: khai trùng`);
+    linkPairs.add(pair);
+    checkCitations(who, l.citations, ["same_person"], new Set());
+  }
 
   // Thuỷ tổ + số đời: chỉ xét những người sẽ được nhập.
   const inScope = (x: { review?: Review }) => !opts.publishOnly || isPublishable(x.review);
