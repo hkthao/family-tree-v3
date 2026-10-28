@@ -116,6 +116,16 @@ describe("lunarDate", () => {
       expect(c?.day).toMatch(/^\S+\s+\S+$/);
     });
 
+    it("can chi tháng đúng phép cổ truyền (thư viện lệch một can) và viết đúng 'Bính'", () => {
+      // Tết Giáp Thìn: ngày Giáp Thìn, tháng Bính Dần (năm Giáp → tháng Giêng Bính Dần).
+      expect(getCanChiForSolarDate("2024-02-10")).toEqual({ day: "Giáp Thìn", month: "Bính Dần", year: "Giáp Thìn" });
+      // Tết Ất Tỵ 2025: tháng Giêng Mậu Dần. Tết Bính Ngọ 2026: tháng Giêng Canh Dần.
+      expect(getCanChiForSolarDate("2025-01-29")?.month).toBe("Mậu Dần");
+      expect(getCanChiForSolarDate("2026-02-17")).toMatchObject({ month: "Canh Dần", year: "Bính Ngọ" });
+      // Tháng Chạp năm Giáp → Đinh Sửu.
+      expect(getCanChiForSolarDate("2025-01-15")?.month).toBe("Đinh Sửu");
+    });
+
     it("returns three non-empty Can-Chi labels for a normal date", () => {
       const c = getCanChiForSolarDate("2024-09-02");
       expect(c).not.toBeNull();
