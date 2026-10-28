@@ -179,6 +179,8 @@ export async function listCommunityClans(
   // Platform admin sees every non-member clan (public + private).
   // Everyone else sees only public non-member clans.
   if (!pa) q = q.eq("visibility", "public");
+  // Dòng họ lịch sử có mục riêng ("Gia phả lịch sử"), không vào bảng xếp hạng.
+  q = q.eq("kind", "family");
 
   if (memberIds.length > 0) {
     q = q.not("id", "in", `(${memberIds.join(",")})`);

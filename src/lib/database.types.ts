@@ -782,10 +782,13 @@ export type Database = {
           disabled_features: string[]
           display_death_details: boolean
           display_living_full_dob: boolean
+          external_key: string | null
           generation_offset: number
           hide_living_for_nonmembers: boolean
           hide_photos_in_share: boolean
+          historical_category: string | null
           id: string
+          kind: string
           max_memory_rooms: number
           max_persons: number
           max_users: number
@@ -809,10 +812,13 @@ export type Database = {
           disabled_features?: string[]
           display_death_details?: boolean
           display_living_full_dob?: boolean
+          external_key?: string | null
           generation_offset?: number
           hide_living_for_nonmembers?: boolean
           hide_photos_in_share?: boolean
+          historical_category?: string | null
           id?: string
+          kind?: string
           max_memory_rooms?: number
           max_persons?: number
           max_users?: number
@@ -836,10 +842,13 @@ export type Database = {
           disabled_features?: string[]
           display_death_details?: boolean
           display_living_full_dob?: boolean
+          external_key?: string | null
           generation_offset?: number
           hide_living_for_nonmembers?: boolean
           hide_photos_in_share?: boolean
+          historical_category?: string | null
           id?: string
+          kind?: string
           max_memory_rooms?: number
           max_persons?: number
           max_users?: number
@@ -1199,6 +1208,7 @@ export type Database = {
           created_at: string
           date_solar: string | null
           event_type: string
+          external_key: string | null
           id: string
           is_yearly: boolean
           lunar_day: number | null
@@ -1216,6 +1226,7 @@ export type Database = {
           created_at?: string
           date_solar?: string | null
           event_type?: string
+          external_key?: string | null
           id?: string
           is_yearly?: boolean
           lunar_day?: number | null
@@ -1233,6 +1244,7 @@ export type Database = {
           created_at?: string
           date_solar?: string | null
           event_type?: string
+          external_key?: string | null
           id?: string
           is_yearly?: boolean
           lunar_day?: number | null
@@ -1281,6 +1293,7 @@ export type Database = {
           clan_id: string
           created_at: string
           deleted_at: string | null
+          external_key: string | null
           husband_id: string | null
           id: string
           notes: string | null
@@ -1292,6 +1305,7 @@ export type Database = {
           clan_id: string
           created_at?: string
           deleted_at?: string | null
+          external_key?: string | null
           husband_id?: string | null
           id?: string
           notes?: string | null
@@ -1303,6 +1317,7 @@ export type Database = {
           clan_id?: string
           created_at?: string
           deleted_at?: string | null
+          external_key?: string | null
           husband_id?: string | null
           id?: string
           notes?: string | null
@@ -1673,6 +1688,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          external_key: string | null
           id: string
           latitude: number | null
           location_name: string | null
@@ -1694,6 +1710,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          external_key?: string | null
           id?: string
           latitude?: number | null
           location_name?: string | null
@@ -1715,6 +1732,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          external_key?: string | null
           id?: string
           latitude?: number | null
           location_name?: string | null
@@ -1862,6 +1880,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      historical_sources: {
+        Row: {
+          author: string | null
+          code: string
+          created_at: string
+          edition: string | null
+          id: string
+          notes: string | null
+          published_year: number | null
+          tier: string
+          title: string
+          translator: string | null
+          url: string | null
+        }
+        Insert: {
+          author?: string | null
+          code: string
+          created_at?: string
+          edition?: string | null
+          id?: string
+          notes?: string | null
+          published_year?: number | null
+          tier: string
+          title: string
+          translator?: string | null
+          url?: string | null
+        }
+        Update: {
+          author?: string | null
+          code?: string
+          created_at?: string
+          edition?: string | null
+          id?: string
+          notes?: string | null
+          published_year?: number | null
+          tier?: string
+          title?: string
+          translator?: string | null
+          url?: string | null
+        }
+        Relationships: []
       }
       honor_entries: {
         Row: {
@@ -2172,6 +2232,130 @@ export type Database = {
         }
         Relationships: []
       }
+      person_citations: {
+        Row: {
+          clan_id: string
+          confidence: string
+          created_at: string
+          event_id: string | null
+          family_id: string | null
+          field: string
+          heritage_item_id: string | null
+          id: string
+          locator: string
+          note: string | null
+          person_id: string | null
+          quote: string
+          resting_place_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_id: string
+          value: string | null
+        }
+        Insert: {
+          clan_id: string
+          confidence: string
+          created_at?: string
+          event_id?: string | null
+          family_id?: string | null
+          field: string
+          heritage_item_id?: string | null
+          id?: string
+          locator: string
+          note?: string | null
+          person_id?: string | null
+          quote: string
+          resting_place_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_id: string
+          value?: string | null
+        }
+        Update: {
+          clan_id?: string
+          confidence?: string
+          created_at?: string
+          event_id?: string | null
+          family_id?: string | null
+          field?: string
+          heritage_item_id?: string | null
+          id?: string
+          locator?: string
+          note?: string | null
+          person_id?: string | null
+          quote?: string
+          resting_place_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_id?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_citations_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_heritage_item_id_fkey"
+            columns: ["heritage_item_id"]
+            isOneToOne: false
+            referencedRelation: "heritage_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_resting_place_id_fkey"
+            columns: ["resting_place_id"]
+            isOneToOne: false
+            referencedRelation: "resting_places"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_citations_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "historical_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       person_links: {
         Row: {
           clan_a_id: string
@@ -2255,11 +2439,141 @@ export type Database = {
           },
         ]
       }
+      person_reigns: {
+        Row: {
+          clan_id: string
+          created_at: string
+          dynasty: string
+          era_names: Json
+          id: string
+          notes: string | null
+          ordinal: number | null
+          person_id: string
+          reign_end_year: number | null
+          reign_start_year: number | null
+          role: string
+          sort: number
+          temple_name: string | null
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          dynasty: string
+          era_names?: Json
+          id?: string
+          notes?: string | null
+          ordinal?: number | null
+          person_id: string
+          reign_end_year?: number | null
+          reign_start_year?: number | null
+          role?: string
+          sort?: number
+          temple_name?: string | null
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          dynasty?: string
+          era_names?: Json
+          id?: string
+          notes?: string | null
+          ordinal?: number | null
+          person_id?: string
+          reign_end_year?: number | null
+          reign_start_year?: number | null
+          role?: string
+          sort?: number
+          temple_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_reigns_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_reigns_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_reigns_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      person_titles: {
+        Row: {
+          clan_id: string
+          created_at: string
+          from_year: number | null
+          id: string
+          notes: string | null
+          person_id: string
+          sort: number
+          title: string
+          to_year: number | null
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          from_year?: number | null
+          id?: string
+          notes?: string | null
+          person_id: string
+          sort?: number
+          title: string
+          to_year?: number | null
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          from_year?: number | null
+          id?: string
+          notes?: string | null
+          person_id?: string
+          sort?: number
+          title?: string
+          to_year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_titles_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_titles_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_titles_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       persons: {
         Row: {
+          adoptive_family_id: string | null
           bio: string | null
           birth_date: string | null
           birth_date_precision: string | null
+          birth_date_qualifier: string | null
           birth_family_id: string | null
           birth_lunar_day: number | null
           birth_lunar_is_leap: boolean
@@ -2277,11 +2591,13 @@ export type Database = {
           death_anniv_lunar_month: number | null
           death_date: string | null
           death_date_precision: string | null
+          death_date_qualifier: string | null
           death_lunar_day: number | null
           death_lunar_is_leap: boolean
           death_lunar_month: number | null
           death_lunar_year: number | null
           deleted_at: string | null
+          external_key: string | null
           full_name: string
           full_name_unaccent: string | null
           gender: string
@@ -2298,9 +2614,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          adoptive_family_id?: string | null
           bio?: string | null
           birth_date?: string | null
           birth_date_precision?: string | null
+          birth_date_qualifier?: string | null
           birth_family_id?: string | null
           birth_lunar_day?: number | null
           birth_lunar_is_leap?: boolean
@@ -2318,11 +2636,13 @@ export type Database = {
           death_anniv_lunar_month?: number | null
           death_date?: string | null
           death_date_precision?: string | null
+          death_date_qualifier?: string | null
           death_lunar_day?: number | null
           death_lunar_is_leap?: boolean
           death_lunar_month?: number | null
           death_lunar_year?: number | null
           deleted_at?: string | null
+          external_key?: string | null
           full_name: string
           full_name_unaccent?: string | null
           gender: string
@@ -2339,9 +2659,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          adoptive_family_id?: string | null
           bio?: string | null
           birth_date?: string | null
           birth_date_precision?: string | null
+          birth_date_qualifier?: string | null
           birth_family_id?: string | null
           birth_lunar_day?: number | null
           birth_lunar_is_leap?: boolean
@@ -2359,11 +2681,13 @@ export type Database = {
           death_anniv_lunar_month?: number | null
           death_date?: string | null
           death_date_precision?: string | null
+          death_date_qualifier?: string | null
           death_lunar_day?: number | null
           death_lunar_is_leap?: boolean
           death_lunar_month?: number | null
           death_lunar_year?: number | null
           deleted_at?: string | null
+          external_key?: string | null
           full_name?: string
           full_name_unaccent?: string | null
           gender?: string
@@ -2380,6 +2704,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "persons_adoptive_family_fk"
+            columns: ["adoptive_family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "persons_adoptive_family_fk"
+            columns: ["adoptive_family_id"]
+            isOneToOne: false
+            referencedRelation: "families_public_safe"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "persons_birth_family_fk"
             columns: ["birth_family_id"]
@@ -2713,6 +3051,7 @@ export type Database = {
           clan_id: string
           created_at: string
           deleted_at: string | null
+          external_key: string | null
           id: string
           kind: Database["public"]["Enums"]["resting_place_kind"]
           latitude: number | null
@@ -2733,6 +3072,7 @@ export type Database = {
           clan_id: string
           created_at?: string
           deleted_at?: string | null
+          external_key?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["resting_place_kind"]
           latitude?: number | null
@@ -2753,6 +3093,7 @@ export type Database = {
           clan_id?: string
           created_at?: string
           deleted_at?: string | null
+          external_key?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["resting_place_kind"]
           latitude?: number | null
@@ -3452,6 +3793,26 @@ export type Database = {
           persons_with_birth: number
         }[]
       }
+      get_historical_person_extras: {
+        Args: { p_person_id: string }
+        Returns: {
+          bio: string
+          birth_lunar_day: number
+          birth_lunar_month: number
+          birth_lunar_year: number
+          birth_place: string
+          burial_place: string
+          courtesy_name: string
+          death_anniv_lunar_day: number
+          death_anniv_lunar_month: number
+          death_lunar_day: number
+          death_lunar_month: number
+          death_lunar_year: number
+          lifespan_years: number
+          nickname: string
+          posthumous_name: string
+        }[]
+      }
       get_inlaw_peer_relatives: {
         Args: { p_link_id: string; p_viewing_clan_id?: string }
         Returns: Json
@@ -3461,6 +3822,14 @@ export type Database = {
       get_notification_by_token: {
         Args: { p_action_token: string; p_notification_id: string }
         Returns: Json
+      }
+      get_person_adoptive_parents: {
+        Args: { p_person_id: string }
+        Returns: {
+          full_name: string
+          person_id: string
+          role: string
+        }[]
       }
       get_platform_db_stats: { Args: never; Returns: Json }
       get_profile_emails: {
@@ -3478,6 +3847,10 @@ export type Database = {
       is_clan_admin: { Args: { target_clan: string }; Returns: boolean }
       is_clan_member: { Args: { target_clan: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
+      is_public_historical_clan: {
+        Args: { p_clan_id: string }
+        Returns: boolean
+      }
       merge_persons: {
         Args: { p_loser: string; p_winner: string }
         Returns: Json

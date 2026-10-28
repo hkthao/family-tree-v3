@@ -16,6 +16,7 @@ import { useToast } from "@/components/Toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { track } from "@/lib/analytics";
 import { bloodlineIds } from "@/lib/bloodline";
+import { clanHasSources, getHistoricalPersonExtras } from "@/lib/queries/historical";
 import type { TreeData } from "@/lib/queries/tree";
 
 // Lazy — kéo three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
@@ -23,6 +24,7 @@ const Tree3DView = lazy(() =>
   import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
 );
 import { SearchInput } from "@/components/SearchInput";
+import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
 import { SharedRestingPlaceCard } from "@/components/SharedRestingPlaceCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -64,6 +66,8 @@ interface F3Card {
   setOnCardUpdate: (
     fn: (this: SVGGElement, d: { data?: DatumNode }) => void,
   ) => F3Card;
+  setOnCardClick?: (fn: (e: MouseEvent, d: { data?: { id?: string } }) => void) => F3Card;
+  onCardClickDefault?: (e: MouseEvent, d: unknown) => void;
 }
 
 interface F3Chart {
@@ -171,7 +175,15 @@ export default function Share() {
 
   // Trang xem thử công khai chia TAB: Cây | Sự kiện & giỗ | Di sản. Giữ cây
   // luôn mounted (ẩn bằng CSS) để khỏi dựng lại chart; refit khi quay lại.
-  const [tab, setTab] = useState<"tree" | "events" | "heritage">("tree");
+  const [tab, setTab] = useState<"tree" | "events" | "heritage" | "details">("tree");
+  // Dòng họ có nguồn sử liệu (gia phả lịch sử) → thêm tab "Chi tiết" cho người
+  // đang chọn: tiểu sử, trị vì, nguồn — khách chưa đăng nhập cũng đọc được.
+  const { data: hasSources } = useQuery({
+    queryKey: ["clan-has-sources", clanId],
+    queryFn: () => clanHasSources(clanId!),
+    enabled: publicClan && !!clanId,
+    staleTime: 10 * 60 * 1000,
+  });
   useEffect(() => {
     if (tab !== "tree") return;
     const r = requestAnimationFrame(() =>
@@ -334,6 +346,13 @@ export default function Share() {
           const death = (f["death_year"] as string) || (isLiving ? "" : "?");
           return death ? `${b} - ${death}` : b;
         };
+
+        // Bấm thẻ: giữ hành vi mặc định (đổi người trung tâm) + ghi lại người
+        // đang chọn để tab "Chi tiết" hiện đúng người.
+        card?.setOnCardClick?.((e, d) => {
+          card.onCardClickDefault?.(e, d);
+          if (d.data?.id) setFocal(d.data.id);
+        });
 
         card
           ?.setCardDisplay([
@@ -719,6 +738,14 @@ export default function Share() {
                 Di sản
               </ShareTab>
             ) : null}
+            {hasSources ? (
+              <ShareTab
+                active={tab === "details"}
+                onClick={() => setTab("details")}
+              >
+                Chi tiết &amp; nguồn
+              </ShareTab>
+            ) : null}
           </div>
         </div>
       )}
@@ -942,6 +969,9 @@ export default function Share() {
             {publicClan && tab === "heritage" && (
               <HeritagePanel data={data} />
             )}
+            {publicClan && tab === "details" && (
+              <DetailsPanel data={data} focal={focal} onPersonClick={setFocal} />
+            )}
           </>
         )}
       </main>
@@ -981,6 +1011,53 @@ export default function Share() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Xem thử công khai: tab Chi tiết & nguồn (dòng họ lịch sử) ──────
+
+/** Người đang chọn trên cây (mặc định thuỷ tổ): thông tin, quan hệ, trị vì, nguồn. */
+function DetailsPanel({
+  data,
+  focal,
+  onPersonClick,
+}: {
+  data: ShareViewPayload;
+  focal: string | null;
+  onPersonClick: (personId: string) => void;
+}) {
+  const person =
+    data.persons.find((p) => p.id === focal) ??
+    data.persons.find((p) => p.is_root) ??
+    data.persons[0];
+  const { data: extras } = useQuery({
+    queryKey: ["historical-person-extras", person?.id],
+    queryFn: () => getHistoricalPersonExtras(person!.id),
+    enabled: !!person,
+  });
+  if (!person) return null;
+  const { lifespan_years: _lifespan, ...extraFields } = extras ?? {};
+  return (
+    <div className="overflow-y-auto">
+      <SharedPersonCard
+        focal={{ ...person, ...extraFields }}
+        persons={data.persons}
+        families={data.families}
+        genOffset={data.generation_offset ?? 0}
+        onPersonClick={(id) => {
+          onPersonClick(id);
+          window.scrollTo({ top: 0 });
+        }}
+        extra={
+          <HistoricalPersonSections
+            personId={person.id}
+            personName={person.full_name}
+            clanId={data.clan_id}
+            onPersonClick={onPersonClick}
+          />
+        }
+      />
     </div>
   );
 }
