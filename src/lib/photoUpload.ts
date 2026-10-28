@@ -208,6 +208,14 @@ export const PHOTO_URL_TTL_SEC = 604_800;
 export const PHOTO_URL_STALE_MS = 6 * 24 * 60 * 60 * 1000;
 
 /**
+ * Ảnh là link ngoài (vd ảnh Wikimedia Commons của dòng họ lịch sử): photo_path
+ * / path bắt đầu bằng https:// → dùng thẳng, không ký, không xoá trong bucket.
+ */
+export function isExternalPhoto(path: string | null | undefined): path is string {
+  return !!path && path.startsWith("https://");
+}
+
+/**
  * Build a signed URL for displaying the photo. The bucket is private
  * (only clan members can SELECT), so plain public URLs return 401.
  * Signed URLs carry a token that bypasses the auth header requirement,
@@ -221,6 +229,7 @@ export async function getSignedPhotoUrl(
   expiresInSec = PHOTO_URL_TTL_SEC,
 ): Promise<string | null> {
   if (!photoPath) return null;
+  if (isExternalPhoto(photoPath)) return photoPath;
   const { data, error } = await supabase.storage
     .from(BUCKET)
     .createSignedUrl(photoPath, expiresInSec);
@@ -239,7 +248,9 @@ export async function getSignedPhotoUrlMap(
   expiresInSec = PHOTO_URL_TTL_SEC,
 ): Promise<Map<string, string>> {
   const out = new Map<string, string>();
-  const cleaned = [...new Set(photoPaths.filter(Boolean))];
+  const unique = [...new Set(photoPaths.filter(Boolean))];
+  for (const p of unique) if (isExternalPhoto(p)) out.set(p, p);
+  const cleaned = unique.filter((p) => !isExternalPhoto(p));
   if (cleaned.length === 0) return out;
   const { data, error } = await supabase.storage
     .from(BUCKET)
@@ -258,6 +269,7 @@ export async function getSignedPhotoUrlMap(
 export async function deletePersonPhoto(
   photoPath: string,
 ): Promise<void> {
+  if (isExternalPhoto(photoPath)) return;
   const { error } = await supabase.storage.from(BUCKET).remove([photoPath]);
   if (error) throw new Error(`delete: ${error.message}`);
 }

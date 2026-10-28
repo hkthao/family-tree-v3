@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -44,11 +44,12 @@ import {
   type ClanSummary,
   type InlawLinkedClan,
 } from "@/lib/queries/clans";
+import { listHistoricalClans } from "@/lib/queries/historical";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 
 const PAGE_SIZE = 15;
-type Tab = "mine" | "community";
+type Tab = "mine" | "community" | "historical";
 
 export default function Clans() {
   const { user } = useAuth();
@@ -65,7 +66,8 @@ export default function Clans() {
   // tab + search instead of resetting them. See useUrlState.ts.
   const [sp] = useSearchParams();
   const patch = useUrlPatch();
-  const tab: Tab = sp.get("tab") === "community" ? "community" : "mine";
+  const rawTab = sp.get("tab");
+  const tab: Tab = rawTab === "community" || rawTab === "historical" ? rawTab : "mine";
   const sizeBucket = (sp.get("size") ?? "") as ClanSizeBucket | "";
   const rawSort = sp.get("sort");
   const sort: ClanSort =
@@ -140,10 +142,17 @@ export default function Clans() {
     enabled: !!userId,
   });
 
+  // Tab "Gia phả lịch sử" có danh sách riêng (HistoricalClansSection) — không
+  // dùng kết quả (kể cả placeholder giữ lại) của hai tab kia.
+  const historicalQ = useQuery({
+    queryKey: ["historical-clans"],
+    queryFn: () => listHistoricalClans(),
+    staleTime: 10 * 60 * 1000,
+  });
   const active = tab === "mine" ? mineQ : communityQ;
-  const data = active.data;
-  const isLoading = active.isLoading;
-  const error = active.error;
+  const data = tab === "historical" ? undefined : active.data;
+  const isLoading = tab !== "historical" && active.isLoading;
+  const error = tab === "historical" ? null : active.error;
 
   // Số liệu huy hiệu chất lượng cho các dòng họ đang hiển thị (1 round-trip).
   const rowIds = (data?.rows ?? []).map((r) => r.id);
@@ -204,6 +213,19 @@ export default function Clans() {
               onClick={() => setTab("community")}
               label={`Cộng đồng${communityCount.data ? ` (${communityCount.data.total})` : ""}`}
             />
+            {historicalQ.data && historicalQ.data.length > 0 && (
+              <TabButton
+                active={tab === "historical"}
+                onClick={() => setTab("historical")}
+                label={
+                  <>
+                    <span className="sm:hidden">Lịch sử</span>
+                    <span className="hidden sm:inline">Gia phả lịch sử</span>
+                    {` (${historicalQ.data.length})`}
+                  </>
+                }
+              />
+            )}
           </div>
           <Button asChild size="sm" className="h-10 ml-auto shrink-0">
             <Link to="/clans/new" data-testid="create-clan-link">
@@ -239,19 +261,21 @@ export default function Clans() {
               cộng lại tràn khỏi khung. Từ lg mới chốt bề ngang cố định;
               hẹp hơn thì để flex-1 chia đều và co được. */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as ClanSort)}
-              aria-label="Sắp xếp"
-              icon={<IconList />}
-              className="h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-sm"
-            >
-              {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
-                <option key={k} value={k}>
-                  {CLAN_SORT_LABEL[k]}
-                </option>
-              ))}
-            </Select>
+            {tab !== "historical" && (
+              <Select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as ClanSort)}
+                aria-label="Sắp xếp"
+                icon={<IconList />}
+                className="h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-sm"
+              >
+                {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
+                  <option key={k} value={k}>
+                    {CLAN_SORT_LABEL[k]}
+                  </option>
+                ))}
+              </Select>
+            )}
             {tab === "community" && (
               <Select
                 value={sizeBucket}
@@ -298,7 +322,7 @@ export default function Clans() {
           </p>
         )}
 
-        {tab === "community" && !debounced && <HistoricalClansSection view={view} />}
+        {tab === "historical" && <HistoricalClansSection view={view} search={debounced} />}
 
         {isLoading && <LoadingState />}
 
@@ -397,7 +421,7 @@ function TabButton({
 }: {
   active: boolean;
   onClick: () => void;
-  label: string;
+  label: ReactNode;
 }) {
   return (
     <button

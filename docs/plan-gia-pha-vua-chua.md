@@ -238,9 +238,11 @@ chiếu lại với DB sau khi nhập.
 
 ## Ảnh
 - Ảnh đại diện **chỉ lấy từ Wikimedia Commons**, giấy phép PD / CC0 / CC BY / CC BY-SA, có
-  trang nguồn và tác giả (trừ PD/CC0). Script tải, nén như app (≤ 512px, ~80 KB) và
-  upload `person-photos/{clan}/{person}.jpg`.
-- Bắt buộc ghi **loại ảnh**: ảnh chụp thật / chân dung vẽ đương thời / tranh vẽ đời sau.
+  trang nguồn và tác giả (trừ PD/CC0). Script **không tải về**: ghi thẳng link ảnh thu
+  nhỏ Wikimedia (500px người, 960px lăng/di sản) vào `photo_path` / `path` (di sản: cột
+  `external_url`). App coi đường dẫn bắt đầu bằng `https://` là link ngoài — dùng thẳng,
+  không ký, không xoá trong bucket (web `isExternalPhoto`, Zalo, edge function share-view).
+- Bắt buộc ghi **loại ảnh**: ảnh chụp thật / chân dung vẽ đương thời / tượng, tranh thờ.
   Tranh, tượng đời sau được ghi rõ "không phải chân dung thật" ở dòng ghi công cuối tiểu sử.
 - Thực tế: nhà Nguyễn có ảnh chụp từ cuối thế kỷ 19; các triều trước hầu như chỉ có tranh
   đời sau → để trống còn hơn dùng ảnh gây hiểu lầm. Ảnh lăng, đền, sắc phong đưa vào module

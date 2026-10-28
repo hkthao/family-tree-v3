@@ -56,8 +56,11 @@ export function TreeTab({
     const data = await getTreeData(clanId, source);
     // Ký ảnh một lượt cho cả cây (như web) rồi mới vẽ, để 2D/3D không phải
     // dựng lại lần hai khi ảnh về. Ký hỏng thì vẫn vẽ, chỉ thiếu ảnh thật.
-    const paths = [...new Set(data.persons.map((p) => p.photo_path).filter((p): p is string => !!p))];
+    const all = [...new Set(data.persons.map((p) => p.photo_path).filter((p): p is string => !!p))];
     const photoUrls = new Map<string, string>();
+    // Link ngoài (https://, vd ảnh Wikimedia của dòng họ lịch sử) dùng thẳng.
+    for (const p of all) if (p.startsWith("https://")) photoUrls.set(p, p);
+    const paths = all.filter((p) => !p.startsWith("https://"));
     if (paths.length > 0) {
       const { data: signed } = await supabase.storage
         .from("person-photos")

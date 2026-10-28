@@ -15,6 +15,14 @@
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+/**
+ * Ảnh là link ngoài (vd ảnh Wikimedia Commons của dòng họ lịch sử) — photo_path
+ * / path bắt đầu bằng https://. Dùng thẳng, không ký URL trong bucket.
+ */
+const isExternalPhoto = (p: string | null | undefined): p is string =>
+  !!p && p.startsWith("https://");
+
+
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -204,12 +212,19 @@ Deno.serve(async (req) => {
     );
     let photo_urls: string[] = [];
     if (!hidePhotos && photos.length > 0) {
-      const { data: signed } = await sb.storage
-        .from("person-photos")
-        .createSignedUrls(photos.map((p: { path: string }) => p.path), 3600);
-      photo_urls = (signed ?? [])
-        .filter((s) => s.signedUrl)
-        .map((s) => stripOrigin(s.signedUrl!));
+      const inBucket = photos.filter((p: { path: string }) => !isExternalPhoto(p.path));
+      const signedByPath = new Map<string, string>();
+      if (inBucket.length > 0) {
+        const { data: signed } = await sb.storage
+          .from("person-photos")
+          .createSignedUrls(inBucket.map((p: { path: string }) => p.path), 3600);
+        for (const s of signed ?? []) {
+          if (s.signedUrl && s.path) signedByPath.set(s.path, stripOrigin(s.signedUrl));
+        }
+      }
+      photo_urls = photos
+        .map((p: { path: string }) => (isExternalPhoto(p.path) ? p.path : signedByPath.get(p.path)))
+        .filter((u: string | undefined): u is string => !!u);
     }
     // deno-lint-ignore no-explicit-any
     const occupants = ((rp as any).resting_place_occupants ?? [])
@@ -440,10 +455,12 @@ Deno.serve(async (req) => {
         .filter((p) => p.photo_path)
         .map((p) => p.photo_path as string);
   const photoUrlByPath = new Map<string, string>();
-  if (allPhotoPaths.length > 0) {
+  for (const p of allPhotoPaths) if (isExternalPhoto(p)) photoUrlByPath.set(p, p);
+  const bucketPhotoPaths = allPhotoPaths.filter((p) => !isExternalPhoto(p));
+  if (bucketPhotoPaths.length > 0) {
     const { data: signed } = await sb.storage
       .from("person-photos")
-      .createSignedUrls([...new Set(allPhotoPaths)], 3600);
+      .createSignedUrls([...new Set(bucketPhotoPaths)], 3600);
     const stripOrigin = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
     for (const row of signed ?? []) {
       if (row.signedUrl && row.path) {
@@ -538,7 +555,9 @@ Deno.serve(async (req) => {
         if (!rp || rp.deleted_at) continue;
         if (!byId.has(rp.id)) {
           byId.set(rp.id, { ...rp, person_ids: [] as string[] });
-          for (const ph of rp.resting_place_photos ?? []) photoPaths.add(ph.path);
+          for (const ph of rp.resting_place_photos ?? []) {
+            if (!isExternalPhoto(ph.path)) photoPaths.add(ph.path);
+          }
         }
         byId.get(rp.id).person_ids.push((o as { person_id: string }).person_id);
       }
@@ -559,7 +578,7 @@ Deno.serve(async (req) => {
         return {
           ...rest,
           photo_urls: photos
-            .map((ph: { path: string }) => signedMap.get(ph.path))
+            .map((ph: { path: string }) => (isExternalPhoto(ph.path) ? ph.path : signedMap.get(ph.path)))
             .filter((u: string | undefined): u is string => !!u),
         };
       });

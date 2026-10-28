@@ -97,7 +97,7 @@ export interface PhotoDraft {
   author?: string | null; // bắt buộc trừ PD/CC0
   /**
    * photograph = ảnh chụp thật; contemporary_portrait = chân dung vẽ đương thời;
-   * later_depiction = tranh vẽ / tượng đời sau (KHÔNG phải chân dung thật — sẽ ghi rõ).
+   * later_depiction = tượng / tranh thờ (KHÔNG phải chân dung thật — sẽ ghi rõ).
    */
   kind: "photograph" | "contemporary_portrait" | "later_depiction";
   year?: string | null; // năm chụp / vẽ nếu biết
@@ -478,10 +478,10 @@ export function sourceLine(
 const PHOTO_KIND_LABEL: Record<PhotoDraft["kind"], string> = {
   photograph: "ảnh chụp",
   contemporary_portrait: "chân dung vẽ đương thời",
-  later_depiction: "tranh vẽ đời sau, không phải chân dung thật",
+  later_depiction: "tượng / tranh thờ, không phải chân dung thật",
 };
 
-/** Dòng ghi công ảnh: "Ảnh: tranh vẽ đời sau, không phải chân dung thật — Tác giả, CC BY-SA 4.0, Wikimedia Commons." */
+/** Dòng ghi công ảnh: "Ảnh: tượng / tranh thờ, không phải chân dung thật — Tác giả, CC BY-SA 4.0, Wikimedia Commons." */
 export function photoLine(photo: PhotoDraft | null | undefined): string {
   if (!photo) return "";
   const who = [photo.author, photo.year].filter(Boolean).join(", ");
@@ -659,7 +659,7 @@ export function validate(
     if (!["photograph", "contemporary_portrait", "later_depiction"].includes(ph.kind)) {
       errors.push(`${who}: ảnh cần kind = photograph | contemporary_portrait | later_depiction`);
     } else if (ph.kind === "later_depiction") {
-      warnings.push(`${who}: ảnh là tranh vẽ đời sau — sẽ ghi rõ "không phải chân dung thật"`);
+      warnings.push(`${who}: ảnh là tượng / tranh thờ — sẽ ghi rõ "không phải chân dung thật"`);
     }
   }
 
