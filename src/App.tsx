@@ -88,6 +88,7 @@ const Todo = lazy(() => import("@/pages/clan/Todo"));
 const Tools = lazy(() => import("@/pages/clan/Tools"));
 const Tree = lazy(() => import("@/pages/clan/Tree"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("@/pages/TermsOfUse"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const InlawsConfirm = lazy(() => import("@/pages/InlawsConfirm"));
 const Login = lazy(() => import("@/pages/Login"));
@@ -142,6 +143,7 @@ export default function App() {
         {/* Công khai, không cần đăng nhập: người ta phải đọc được TRƯỚC
             khi quyết định có đăng ký hay không. */}
         <Route path="/chinh-sach-rieng-tu" element={<PrivacyPolicy />} />
+        <Route path="/dieu-khoan-su-dung" element={<TermsOfUse />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />
         {/* Sổ tay Văn hoá — route CÔNG KHAI cho link chia sẻ (không cần đăng nhập).

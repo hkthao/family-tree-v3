@@ -24,7 +24,7 @@ import { useAiProviderLabel } from "@/hooks/useAiProvider";
  *     đổi model là dòng chữ phải đổi theo.
  */
 
-const UPDATED = "30/08/2026";
+const UPDATED = "25/10/2026";
 
 export default function PrivacyPolicy() {
   usePageTitle("Chính sách riêng tư");
@@ -66,6 +66,30 @@ export default function PrivacyPolicy() {
               Lịch sử trò chuyện với trợ lý, <b>chỉ chính bạn đọc được</b>.
             </li>
           </ul>
+        </Section>
+
+        <Section title="Đăng nhập bằng Zalo">
+          <p>
+            Khi bạn mở Dòng Họ Việt trong Zalo, chúng tôi chỉ nhận từ Zalo{" "}
+            <b>mã định danh của bạn trong ứng dụng này, tên và ảnh đại diện</b>{" "}
+            — để tạo tài khoản và hiện đúng tên bạn. Chúng tôi{" "}
+            <b>không xin số điện thoại hay danh bạ Zalo</b> của bạn.
+          </p>
+          <p>
+            Hai quyền thiết bị chỉ dùng khi bạn tự bấm, ở màn Mộ phần:{" "}
+            <b>vị trí</b> (nút “Lấy vị trí hiện tại” — lưu toạ độ của ngôi mộ,
+            không theo dõi bạn) và <b>chọn ảnh/camera</b> (nút “Thêm ảnh”). Chi
+            tiết ở{" "}
+            <Link to="/dieu-khoan-su-dung" className="underline">Điều khoản sử dụng</Link>.
+          </p>
+          <p>
+            Gia phả bạn xem và sửa trong Zalo nằm trên máy chủ của chúng tôi như
+            bản web, không gửi sang Zalo. Bỏ liên kết hoặc xoá tài khoản trong
+            trang Tài khoản là mối nối với Zalo bị xoá theo. Rút lại sự đồng ý
+            trong cài đặt của Zalo cũng vậy: mối nối bị xoá, tài khoản tạo từ
+            Zalo bị xoá nếu chưa đứng tên dòng họ nào, còn không thì gỡ tên và
+            ảnh lấy từ Zalo.
+          </p>
         </Section>
 
         <Section title="Trợ lý AI — dữ liệu đi ra ngoài chỗ này">

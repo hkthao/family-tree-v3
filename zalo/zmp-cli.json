@@ -1,0 +1,10 @@
+{
+  "name": "Dòng Họ Việt",
+  "framework": "react-typescript",
+  "cssPreProcessor": "css",
+  "includeTailwind": false,
+  "package": "zmp-ui",
+  "stateManagement": "none",
+  "newProject": false,
+  "template": "blank"
+}

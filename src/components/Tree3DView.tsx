@@ -81,8 +81,7 @@ function isDarkNow() {
   );
 }
 
-const avatarOf = (g: "M" | "F") =>
-  g === "M" ? "/avatars/male.png" : "/avatars/female.png";
+const DEFAULT_AVATARS = { M: "/avatars/male.png", F: "/avatars/female.png" };
 
 /** Kích thước canvas (px logic) của thẻ node. */
 const CARD_W = 260;
@@ -161,6 +160,7 @@ function buildGraph(
   pal: Palette,
   /** Chỉ giữ những người này; null = cả cây. Xem lib/tree/depthFilter. */
   keepIds: Set<string> | null,
+  avatars: { M: string; F: string },
 ): { nodes: GNode[]; links: GLink[] } {
   const personById = new Map(data.persons.map((p) => [p.id, p]));
   const famById = new Map(data.families.map((f) => [f.id, f]));
@@ -204,7 +204,7 @@ function buildGraph(
   };
 
   const nodes: GNode[] = included.map((p) => {
-    const avatar = avatarOf(p.gender);
+    const avatar = avatars[p.gender];
     const photo = p.photo_path ? photoUrls?.get(p.photo_path) : undefined;
     const inLaw = !isLineage(p.id);
     const tier = tierOf(p);
@@ -271,6 +271,7 @@ export function Tree3DView({
   className,
   data: injectedData,
   photoUrls: injectedPhotoUrls,
+  avatars = DEFAULT_AVATARS,
 }: {
   clanId: string;
   genOffset: number;
@@ -283,6 +284,9 @@ export function Tree3DView({
    *  chưa đăng nhập không truy vấn DB được). Khi có, bỏ qua truy vấn nội bộ. */
   data?: TreeData;
   photoUrls?: Map<string, string>;
+  /** Ảnh minh hoạ theo giới tính. Mặc định là đường dẫn của trang web; Zalo
+   *  Mini App đóng gói ảnh riêng (không có "/avatars/…") nên truyền vào. */
+  avatars?: { M: string; F: string };
 }) {
   const elRef = useRef<HTMLDivElement>(null);
 
@@ -492,6 +496,7 @@ export function Tree3DView({
         photoUrls,
         pal,
         keepIds,
+        avatars,
       );
 
       const nodeById = new Map(nodes.map((n) => [n.id as string, n]));
@@ -776,6 +781,7 @@ export function Tree3DView({
     depth,
     cap,
     isMobile,
+    avatars,
   ]);
 
   const kbd =

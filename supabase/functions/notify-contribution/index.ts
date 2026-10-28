@@ -32,7 +32,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-import { encodeSubject } from "../_shared/mail.ts";
+import { canReceiveMail, encodeSubject } from "../_shared/mail.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -243,6 +243,7 @@ async function sendMail(
   subject: string,
   html: string,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (!canReceiveMail(to)) return { ok: false, error: "no-mailbox (tài khoản Zalo)" };
   if (!SMTP_HOST || !SMTP_PASS) {
     return { ok: false, error: "no-smtp (dry-run)" };
   }

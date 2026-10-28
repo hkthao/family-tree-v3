@@ -645,6 +645,17 @@ export function IconMore(p: IconProps) {
   );
 }
 
+/** Ba chấm NGANG — nút "Thêm" ở thanh tab dưới (IconMore là ba chấm dọc). */
+export function IconMoreHorizontal(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="5" cy="12" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+    </Svg>
+  );
+}
+
 export function IconPlay(p: IconProps) {
   return (
     <Svg {...p}>

@@ -362,6 +362,13 @@ export function AppDrawer({ open, onClose }: Props) {
               <IconLock className="h-3.5 w-3.5" />
               Riêng tư
             </Link>
+            <Link
+              to="/dieu-khoan-su-dung"
+              onClick={pick}
+              className="inline-flex items-center gap-1 hover:text-primary"
+            >
+              Điều khoản
+            </Link>
             <a
               href="https://donghoviet.thaohk.com"
               target="_blank"

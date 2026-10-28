@@ -1,0 +1,16 @@
+{
+  "app": {
+    "title": "Dòng Họ Việt",
+    "textColor": "white",
+    "leftButton": "none",
+    "statusBar": "normal",
+    "selfControlLoading": false,
+    "hideAndroidBottomNavigationBar": false,
+    "hideIOSSafeAreaBottom": false,
+    "actionBarHidden": false,
+    "headerColor": "#7A2230"
+  },
+  "listCSS": [],
+  "listSyncJS": [],
+  "listAsyncJS": []
+}

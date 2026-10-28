@@ -17,7 +17,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-import { encodeSubject } from "../_shared/mail.ts";
+import { canReceiveMail, encodeSubject } from "../_shared/mail.ts";
 
 import { CORS, err, json, preflight } from "../_shared/cors.ts";
 import { complete, friendlyLlmError } from "../_shared/llm/gateway.ts";
@@ -199,7 +199,7 @@ async function alertCostCap(
     for (const a of admins) {
       const { data: u } = await sb.auth.admin.getUserById(a.id as string);
       const to = u?.user?.email;
-      if (!to) continue;
+      if (!to || !canReceiveMail(to)) continue;
       // Mã hoá sẵn tiêu đề: denomailer nhét cả tiêu đề tiếng Việt vào một
     // encoded-word quá dài, Gmail bỏ cuộc và in ra chuỗi thô. Xem
     // _shared/mail.ts.

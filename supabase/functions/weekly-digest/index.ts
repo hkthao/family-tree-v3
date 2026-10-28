@@ -24,7 +24,7 @@ import { getSolarDate } from "npm:@dqcai/vn-lunar@1.0.1";
 import webpush from "npm:web-push@3.6.7";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-import { encodeSubject } from "../_shared/mail.ts";
+import { canReceiveMail, encodeSubject } from "../_shared/mail.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -122,6 +122,7 @@ async function sendMail(
   subject: string,
   html: string,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (!canReceiveMail(to)) return { ok: false, error: "no-mailbox (tài khoản Zalo)" };
   if (!SMTP_HOST || !SMTP_PASS) return { ok: false, error: "no-smtp (dry-run)" };
   const client = new SMTPClient({
     connection: {
@@ -258,7 +259,7 @@ Deno.serve(async (req) => {
       supabase
         .from("persons")
         .select(
-          "id, clan_id, full_name, is_living, birth_date, created_at, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap",
+          "id, clan_id, full_name, is_living, birth_date, birth_date_precision, created_at, death_anniv_lunar_month, death_anniv_lunar_day, death_anniv_lunar_is_leap",
         )
         .in("clan_id", allClanIds)
         .is("deleted_at", null),
@@ -308,7 +309,8 @@ Deno.serve(async (req) => {
 
   for (const p of persons) {
     // Sinh nhật người còn sống.
-    if (p.is_living && p.birth_date) {
+    // Chỉ ghi năm/tháng thì birth_date mang ngày giữ chỗ "-01-01" — bỏ qua.
+    if (p.is_living && p.birth_date && (!p.birth_date_precision || p.birth_date_precision === "day")) {
       const [, m, d] = (p.birth_date as string).split("-").map(Number);
       const next = nextOccurrenceOfMonthDay(m, d, todayDate);
       if (next) {
