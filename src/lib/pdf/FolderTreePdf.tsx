@@ -84,7 +84,7 @@ function Avatar({
     >
       <Image
         src={p.photo}
-        style={{ width: size, height: size, borderRadius: size / 2 }}
+        style={{ width: size, height: size, borderRadius: size / 2, objectFit: "cover", objectPositionY: "0%" }}
       />
     </View>
   );

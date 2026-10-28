@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "#FFFFFF",
   },
-  mediaImg: { width: "100%", height: 82, borderRadius: 3, marginBottom: 5 },
+  mediaImg: { width: "100%", height: 82, borderRadius: 3, marginBottom: 5, objectFit: "cover" },
   mediaTitle: { fontSize: 10, fontWeight: 700, color: COLORS.primary, marginBottom: 1 },
   mediaMeta: { fontSize: 8, color: COLORS.muted, marginBottom: 3 },
   mediaSummary: { fontSize: 8.5, fontWeight: 700, marginBottom: 2 },
@@ -174,6 +174,10 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     marginBottom: 6,
+    // Ảnh đứng / ngang (vd tượng thờ 3:4 từ link ngoài) cắt vừa khung tròn,
+    // lấy phần trên (khuôn mặt) thay vì bị kéo méo.
+    objectFit: "cover",
+    objectPositionY: "0%",
   },
   personName: {
     fontSize: 10.5,
