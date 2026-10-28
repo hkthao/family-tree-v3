@@ -138,6 +138,14 @@ describe("validate (gia phả lịch sử)", () => {
     expect(r.confidence.get("thu.cha")?.get("birth")).toBe("disputed");
   });
 
+  it("nguồn ghi gọn hơn (chỉ tháng) không phải dị bản; khác tháng mới là dị bản", () => {
+    const f = base();
+    f.persons[0].citations.push(cite("death", "A2", "âm 1260-4"));
+    expect(validate(f, sources).confidence.get("thu.cha")?.get("death")).toBe("confirmed");
+    f.persons[0].citations.push(cite("death", "A2", "âm 1260-5"));
+    expect(validate(f, sources).confidence.get("thu.cha")?.get("death")).toBe("disputed");
+  });
+
   it("cha hơn con dưới 12 tuổi / mất trước khi con sinh → lỗi", () => {
     const f = base();
     f.persons[2].birth = { lunar_year: 1205 };

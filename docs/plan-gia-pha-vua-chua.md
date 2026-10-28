@@ -339,17 +339,28 @@ Nhà Nguyễn giá trị hơn nhưng to và có hậu duệ còn sống — làm
 | Lẫn số liệu lịch sử vào thống kê/leaderboard dòng họ thật | Lọc `kind='historical'` khỏi stats, leaderboard, giới hạn gói |
 
 ## Trạng thái P1 — Nhà Trần (28/10/2026)
-- `data/historical/tran.json` (BẢN NHÁP, chưa duyệt): 29 người / 12 đời (thuỷ tổ Trần
-  Kinh → Thiếu Đế), 18 hôn nhân (đa thê có thứ tự), 12 vua có trị vì + miếu hiệu, 12 lăng,
-  2 liên kết thông gia chờ nhà Lý / họ Hồ.
-- Nguồn: nguyên văn chữ Hán Đại Việt sử ký toàn thư, Bản kỷ Q.4–8 (zh.wikisource) —
-  235 trích dẫn. `scripts/historical/verify_quotes.py` kiểm: 235/235 đoạn trích có thật
-  trong nguyên văn và nằm đúng năm can chi ghi ở locator.
-- Việc của người duyệt: đối chiếu phiên âm / dịch (value, tiểu sử) với bản dịch tiếng
-  Việt; xác định 3 bà phi họ Lê của Minh Tông có trùng người không (đang để riêng); thêm
-  nguồn thứ hai (Cương mục) để nâng mức tin cậy; đổi `review.status` → `verified`.
-- Chưa có: con cái ngoài trục vua (Trần Liễu, Trần Quốc Tuấn…), di sản, sự kiện —
-  cần nguồn tầng B cho phần ngày nay (đền Trần, lễ khai ấn…).
+- `data/historical/tran.json` (BẢN NHÁP, chưa duyệt): 38 người / 12 đời (thuỷ tổ Trần
+  Kinh → Thiếu Đế), 26 hôn nhân, 12 vua có trị vì + miếu hiệu + niên hiệu, 12 lăng,
+  4 di sản từ chính sử (Hịch tướng sĩ; Binh thư yếu lược & Vạn Kiếp tông bí truyền thư;
+  Hội nghị Diên Hồng; Hội nghị Bình Than), 2 liên kết thông gia chờ nhà Lý / họ Hồ.
+- Các nhánh: Trần Liễu, Trần Quốc Khang (cha đẻ Trần Liễu, cha nuôi Thái Tông — dùng
+  `adoptive_parents`), Hưng Đạo vương Trần Quốc Tuấn + Thiên Thành công chúa, Trần Quốc
+  Tảng (nối tới Thuận Thánh hoàng hậu), Trần Quốc Nghiễn, Trần Quang Khải, Trần Nhật
+  Duật, Trần Ích Tắc. Trần Thủ Độ KHÔNG đưa vào: sử chỉ chép "從叔", không nối được.
+- Nguồn: nguyên văn chữ Hán Toàn thư (Q.4–8), Cương mục (Chính biên Q.6–11), Việt sử
+  lược (phụ 陳朝紀年) — 399 trích dẫn; `verify_quotes.py`: 399/399 có thật trong nguyên
+  văn, đúng năm can chi. Mức tin cậy: 57 dữ kiện khớp ≥ 2 nguồn, 266 một nguồn, 2 dị bản
+  (tháng mất Nghệ Tông: Toàn thư tháng 12 / Cương mục tháng 11; lăng Hiến Tông: Xương An
+  lăng / An lăng).
+- Bản số Wikisource chép sai can chi ở vài tiêu đề năm (Toàn thư: 1255, 1265, 1268,
+  1288, 1292, 1388, 1395; Cương mục: 1272, 1279, 1300) — `verify_quotes.py` tự nhận ra
+  (lệch khỏi năm liền kề) và in danh sách errata.
+- Sinh lại bản khung: `scripts/historical/gen_tran.py` (+ `gen_tran_ext.py`).
+- Việc của người duyệt: đối chiếu phiên âm / dịch với bản dịch tiếng Việt; 3 bà phi họ
+  Lê của Minh Tông có trùng người không; họ tên đầy đủ Trần Quốc Nghiễn (sử chỉ chép 巘);
+  tuổi thọ Nhật Duật (77) lệch 1 năm với năm sinh 1255; đổi `review.status` → `verified`.
+- Chưa có: đền Trần, lễ khai ấn — mới chỉ thấy tin báo chí, chưa có văn bản quyết định
+  xếp hạng (nguồn tầng B); địa giới đã đổi sau sáp nhập tỉnh 2025 → cần xác minh địa chỉ.
 
 ## Đã chốt (28/10/2026)
 1. Triều thí điểm: **Nhà Trần**.

@@ -310,6 +310,28 @@ function norm(v: string): string {
   return v.normalize("NFC").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+/**
+ * Các giá trị có mâu thuẫn không. Ngày ("âm 1290-5" và "âm 1290-5-25") chỉ
+ * khác độ chi tiết thì KHÔNG mâu thuẫn — nguồn này ghi gọn hơn nguồn kia.
+ */
+export function conflicting(values: string[]): boolean {
+  if (new Set(values).size <= 1) return false;
+  const dateParts = (v: string) => {
+    const m = /^(âm )?([\d?]+(?:-[\dn?]+)*)$/.exec(v);
+    return m ? { lunar: !!m[1], parts: m[2].split("-") } : null;
+  };
+  const parsed = values.map(dateParts);
+  if (parsed.some((p) => !p)) return true;
+  for (const a of parsed) {
+    for (const b of parsed) {
+      if (a!.lunar !== b!.lunar) return true;
+      const n = Math.min(a!.parts.length, b!.parts.length);
+      for (let i = 0; i < n; i++) if (a!.parts[i] !== b!.parts[i]) return true;
+    }
+  }
+  return false;
+}
+
 export function isPublishable(r: Review | undefined): boolean {
   return r?.status === "verified";
 }
@@ -594,7 +616,7 @@ export function validate(
       );
       let level: Confidence;
       if (list.some((c) => c.legendary)) level = "legendary";
-      else if (singleFields.has(field) && values.size > 1) level = "disputed";
+      else if (singleFields.has(field) && conflicting([...values])) level = "disputed";
       else if (strong.size >= 2) level = "confirmed";
       else if (strong.size === 1) level = "single_source";
       else if (weakOk.has(field)) {
