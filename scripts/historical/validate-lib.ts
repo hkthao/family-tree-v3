@@ -252,8 +252,10 @@ export interface ValidationResult {
   generations: Map<string, number | null>;
 }
 
-export const BIO_SOFT_MAX = 500;
-export const BIO_MAX = 800;
+// Tiểu sử đủ các phần: xuất thân, lên ngôi / sự nghiệp, việc nước, nhường ngôi / mất,
+// lời sử thần. Vua chúa ≈ 1.200–1.800 ký tự; người khác thường ngắn hơn.
+export const BIO_SOFT_MAX = 1800;
+export const BIO_MAX = 2400;
 export const NOTES_MAX = 500;
 export const HERITAGE_BODY_SOFT_MAX = 1000;
 export const HERITAGE_BODY_MAX = 1500;
@@ -471,7 +473,12 @@ export function sourceLine(
     set.add(c.locator.trim());
     seen.set(c.source, set);
   }
-  const parts = [...seen].map(([code, locs]) => `${byCode.get(code)?.title ?? code} (${[...locs].join("; ")})`);
+  // Chỉ ghi quyển ("Bản kỷ Q.5"), không liệt kê từng năm/đoạn — chi tiết ở thẻ Nguồn.
+  const volume = (loc: string) => /^((?:Bản kỷ|Chính biên|Tiền biên|Ngoại kỷ|Tục biên|Phụ lục)[^,]*)/.exec(loc)?.[1] ?? loc;
+  const parts = [...seen].map(([code, locs]) => {
+    const vols = [...new Set([...locs].map(volume))];
+    return `${byCode.get(code)?.title ?? code} (${vols.join("; ")})`;
+  });
   return parts.length ? `Theo: ${parts.join("; ")}.` : "";
 }
 

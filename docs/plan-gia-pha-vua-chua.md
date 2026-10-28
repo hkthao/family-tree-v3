@@ -206,8 +206,15 @@ nằm ở bảng trích dẫn.
   **Tên húy** ghi họ + tên húy. Tìm kiếm quét cả hai.
 - **Tuổi thọ:** ghi đúng như sử chép ("thọ 60 tuổi" — tuổi ta).
 
-## Tiểu sử — ngắn gọn, văn phong sử
-- 2–5 câu, **≤ 500 ký tự** (validator cảnh báo), tối đa 800 (lỗi).
+## Tiểu sử — đủ cuộc đời sự nghiệp, văn phong sử
+- (Cập nhật 28/10/2026) Vua chúa viết **đủ các phần**: xuất thân → lên ngôi → việc nước
+  (đối nội, đối ngoại, chiến sự) → nhường ngôi / mất → lời sử thần; chia 3–5 đoạn.
+  Khoảng 900–1.800 ký tự; validator cảnh báo quá 1.800, lỗi quá 2.400. Mỗi ý chính có
+  trích dẫn nguyên văn (field `bio`), cuối bài tự thêm dòng "Theo: …" gộp theo quyển.
+  Chỉ viết điều có trong nguồn: ngày tháng, tên người/địa danh theo nguyên văn; chỗ sử
+  chép dị bản thì ghi rõ (vd Nghệ Tông mất tháng 12 theo Toàn thư, tháng 11 theo Cương
+  mục); không bình luận ngoài lời sử thần.
+- (Trước đó) 2–5 câu, **≤ 500 ký tự**, tối đa 800 (lỗi) — quá sơ sài, đã thay.
 - Lối chép sử: ngôi thứ ba, câu trần thuật, mốc năm can chi + năm dương, không cảm thán,
   không tính từ phóng đại ("vô cùng", "huyền thoại"…), không bình luận. Vd: *"Vua tên húy
   là Cảnh, con thứ của … Năm Ất Dậu (1225) được … nhường ngôi. Ở ngôi 33 năm, truyền ngôi
