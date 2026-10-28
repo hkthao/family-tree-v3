@@ -186,11 +186,24 @@ describe("validate (gia phả lịch sử)", () => {
     expect(errs(f)).toMatch(/lên ngôi \(1250\) trước khi sinh/);
   });
 
+  it("dòng nguồn gộp theo quyển, không liệt kê từng năm", () => {
+    const f = base();
+    f.persons[1].citations.push(
+      { ...cite("bio"), locator: "Bản kỷ Q.5, năm Giáp Ngọ (1234)" },
+      { ...cite("bio"), locator: "Bản kỷ Q.5, năm Mậu Dần (1278)" },
+      { ...cite("bio"), locator: "Bản kỷ Q.6, Trần kỷ, Anh Tông hoàng đế — tiểu dẫn" },
+    );
+    f.persons[1].bio = "Bà là con gái nhà Thử.";
+    expect(composeBio(f.persons[1], sources)).toBe(
+      "Bà là con gái nhà Thử.\n\nTheo: Chính sử 1 (Q.1, tờ 2a; Bản kỷ Q.5; Bản kỷ Q.6).",
+    );
+  });
+
   it("tiểu sử quá dài → lỗi; văn phong cảm thán → cảnh báo; dòng nguồn tự thêm", () => {
     const f = base();
-    f.persons[1].bio = "x".repeat(900);
+    f.persons[1].bio = "x".repeat(2500);
     f.persons[1].citations.push(cite("bio"));
-    expect(errs(f)).toMatch(/tiểu sử 900 ký tự/);
+    expect(errs(f)).toMatch(/tiểu sử 2500 ký tự/);
     f.persons[1].bio = "Bà là người vô cùng hiền đức!";
     expect(warns(f)).toMatch(/văn phong sử/);
     f.persons[1].bio = "Bà là con gái nhà Thử.";
