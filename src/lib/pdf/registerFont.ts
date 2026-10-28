@@ -1,5 +1,7 @@
 import { Font } from "@react-pdf/renderer";
 
+import { pdfAssets } from "./pdfAssets";
+
 let registered = false;
 
 /**
@@ -12,8 +14,8 @@ export function ensurePdfFontRegistered(): void {
   Font.register({
     family: "BeVietnamPro",
     fonts: [
-      { src: "/fonts/be-vietnam-pro-400.ttf", fontWeight: 400 },
-      { src: "/fonts/be-vietnam-pro-600.ttf", fontWeight: 600 },
+      { src: pdfAssets.font400, fontWeight: 400 },
+      { src: pdfAssets.font600, fontWeight: 600 },
     ],
   });
   // Disable hyphenation — Vietnamese words shouldn't break mid-word.

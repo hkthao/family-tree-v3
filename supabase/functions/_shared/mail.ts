@@ -76,9 +76,35 @@ export function encodeSubject(subject: string): string {
   if (isAscii(s)) return s;
 
   const enc = new TextEncoder();
-  return chunkByBytes(s)
+  const words = chunkByBytes(s)
     .map((part) => `=?UTF-8?B?${base64(enc.encode(part))}?=`)
     // Nối bằng CRLF + khoảng trắng: đó là cách RFC 2047 nói "vẫn là một
     // tiêu đề, chỉ xuống dòng cho vừa".
     .join("\r\n ");
+
+  // KHOẢNG TRẮNG ĐẦU là cố ý, đừng "dọn" đi. denomailer coi mọi tiêu đề
+  // bắt đầu bằng "=?" là cần mã hoá (config/mail/encoding.ts:
+  // `data.startsWith("=?")`), nên nó bọc chuỗi đã mã hoá của ta thêm một
+  // lớp quoted-printable nữa và ngắt dòng ở ký tự 74. Gmail gỡ lớp ngoài
+  // ra, thấy lớp trong bị cắt cụt, in nguyên chuỗi `=?UTF-8?B?W0TD…` lên
+  // hộp thư — đúng lỗi mà hàm này sinh ra để sửa, và bản sửa đầu (30/8)
+  // dính vì thiếu đúng một khoảng trắng. Khoảng trắng đầu giá trị header
+  // không có nghĩa gì với trình đọc thư, nhưng đủ để thư viện để yên.
+  return ` ${words}`;
+}
+
+/** Tên miền của địa chỉ email giả gán cho tài khoản tạo từ Zalo. */
+export const ZALO_SYNTHETIC_EMAIL_DOMAIN = "zalo.giapha.thaohk.com";
+
+/**
+ * Địa chỉ có nhận được thư không.
+ *
+ * Tài khoản tạo từ Zalo Mini App mang email giả
+ * `zalo-<id>@zalo.giapha.thaohk.com` — tên miền đó không có hộp thư. Gửi vào
+ * là thư bị dội lại, và dội nhiều thì máy chủ SMTP bị chấm điểm thư rác,
+ * kéo cả thư thật của người khác vào Spam. Chuông trong app và push vẫn đi
+ * như thường; chỉ bỏ đường email.
+ */
+export function canReceiveMail(to: string): boolean {
+  return !to.toLowerCase().endsWith(`@${ZALO_SYNTHETIC_EMAIL_DOMAIN}`);
 }

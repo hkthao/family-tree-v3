@@ -22,6 +22,12 @@ export interface ExportClanBookOptions {
   /** Hình nền mờ in chìm dưới mọi trang. Bỏ trống = phượng (mặc định);
    *  null = không có hình nền. */
   watermark?: BookWatermarkId | null;
+  /**
+   * Gốc địa chỉ cho mã QR ở trang bìa (link xem gia phả công khai). Mặc định
+   * là trang đang mở; Zalo Mini App chạy dưới địa chỉ của Zalo nên phải
+   * truyền địa chỉ trang web vào, không thì QR trỏ về một trang không có.
+   */
+  shareOrigin?: string;
 }
 
 /**
@@ -32,14 +38,16 @@ export interface ExportClanBookOptions {
 const DEFAULT_WATERMARK: BookWatermarkId = "phoenix";
 
 /**
- * Fetch clan data, render the React-PDF document to a Blob, and trigger
- * a browser download. Returns the suggested filename so callers can
- * surface it in toasts.
+ * Fetch clan data and render the React-PDF document to a Blob.
+ *
+ * Tách khỏi phần "bấm tải về" vì cách trả file là chuyện của từng nơi:
+ * trang web tạo link tạm rồi tự bấm, còn Zalo Mini App phải đưa file lên
+ * kho lưu trữ rồi mở bằng trình xem tài liệu của Zalo.
  */
-export async function downloadClanBookPdf(
+export async function buildClanBookPdf(
   clan: ClanDetail,
   options: ExportClanBookOptions = {},
-): Promise<{ filename: string; bytes: number }> {
+): Promise<{ blob: Blob; filename: string }> {
   const data = await getClanBookData(clan.id);
   const [photoByPersonId, coverByItemId] = await Promise.all([
     fetchPhotoDataUris(data.persons),
@@ -53,7 +61,7 @@ export async function downloadClanBookPdf(
   let coverQrDataUri: string | undefined;
   try {
     const link = await getOrCreateTreeShareLink(clan.id);
-    const url = `${window.location.origin}/share/${link.token}`;
+    const url = `${options.shareOrigin ?? window.location.origin}/share/${link.token}`;
     coverQrDataUri = (await makeQrDataUrl(url)) ?? undefined;
   } catch {
     /* không có QR */
@@ -84,7 +92,18 @@ export async function downloadClanBookPdf(
     .replace(/Đ/g, "D")
     .replace(/[^a-zA-Z0-9-_]/g, "_");
   const today = new Date().toISOString().slice(0, 10);
-  const filename = `gia-pha_${safe}_${today}.pdf`;
+  return { blob, filename: `gia-pha_${safe}_${today}.pdf` };
+}
+
+/**
+ * Dựng sổ rồi kích hoạt tải về trong trình duyệt. Trả về tên file gợi ý để
+ * nơi gọi hiện trong thông báo.
+ */
+export async function downloadClanBookPdf(
+  clan: ClanDetail,
+  options: ExportClanBookOptions = {},
+): Promise<{ filename: string; bytes: number }> {
+  const { blob, filename } = await buildClanBookPdf(clan, options);
 
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

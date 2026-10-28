@@ -10,7 +10,7 @@
  *   Ghi:      … scripts/fix-pre1800-lunar-dates.ts --apply
  *   PROD:     SUPABASE_SERVICE_ROLE_KEY=<self-host key> VITE_SUPABASE_URL=<url> …
  *
- * Bỏ qua dòng họ lịch sử (kind='historical'): ở đó ngày trước 1800 cố ý chỉ
+ * Bỏ qua dòng họ lịch sử (kind='historical', nếu DB đã có cột): ở đó ngày trước 1800 cố ý chỉ
  * lưu âm lịch + năm, không quy đổi.
  */
 import { createClient } from "@supabase/supabase-js";
