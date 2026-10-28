@@ -14,9 +14,10 @@
  */
 
 import {
+  CAN,
+  CHI,
   getDayCanChi,
   getLunarDate,
-  getMonthCanChi,
   getSolarDate,
   getYearCanChi,
   TK13,
@@ -38,6 +39,22 @@ for (const table of [TK13, TK14, TK15, TK16, TK17, TK18]) {
   for (let i = 0; i < table.length; i++) {
     if (table[i] < 1_000_000) table[i] *= 16;
   }
+}
+
+// Thư viện viết can thứ ba là "Bình" — đúng là "Bính" (năm Bính Ngọ, ngày
+// Bính Dần…). Sửa tại chỗ trong mảng dùng chung → can chi ngày/tháng/năm của
+// thư viện đều đúng theo.
+if (CAN[2] === "Bình") CAN[2] = "Bính";
+
+/**
+ * Can chi của tháng âm. Thư viện tính lệch một can (năm Giáp tháng Giêng ra
+ * "Ất Dần"). Phép cổ truyền: năm Giáp/Kỷ tháng Giêng là Bính Dần, năm Ất/Canh
+ * là Mậu Dần… — can tháng = (can năm × 2 + tháng + 1) mod 10, chi tháng Giêng
+ * là Dần. Tháng nhuận dùng can chi của tháng chính.
+ */
+function monthCanChi(month: number, year: number): string {
+  const yearCan = (year + 6) % 10; // 0 = Giáp
+  return `${CAN[(yearCan * 2 + month + 1) % 10]} ${CHI[(month + 1) % 12]}`;
 }
 
 export interface LunarYMD {
@@ -140,7 +157,7 @@ export function getCanChiForSolarDate(
   const lunar = getLunarDate(d, m, y);
   return {
     day: getDayCanChi(lunar.jd),
-    month: getMonthCanChi(lunar.month, lunar.year),
+    month: monthCanChi(lunar.month, lunar.year),
     year: getYearCanChi(lunar.year),
   };
 }
