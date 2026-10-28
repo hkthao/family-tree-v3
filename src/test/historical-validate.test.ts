@@ -110,6 +110,12 @@ describe("validate (gia phả lịch sử)", () => {
     const f = base();
     f.persons[1].citations = [{ ...cite("existence"), quote: "", locator: " " }];
     expect(errs(f)).toMatch(/thiếu trích dẫn nguyên văn/);
+    f.persons[1].citations = [{ ...cite("existence"), quote: "諱晃" }];
+    expect(errs(f)).toMatch(/quá ngắn/);
+    f.persons[1].citations = [{ ...cite("existence"), quote: "諱晃，太宗適長子也" }];
+    expect(errs(f)).toBe("");
+    f.persons[1].citations = [{ ...cite("existence"), quote: "", locator: " " }];
+    expect(errs(f)).toMatch(/thiếu trích dẫn nguyên văn/);
     expect(errs(f)).toMatch(/thiếu vị trí/);
   });
 
@@ -413,9 +419,10 @@ describe("đa thê", () => {
 });
 
 describe("cột ngày giống form", () => {
-  it("đủ ngày âm → lưu âm + dương quy đổi; form mở ra đúng ngày", () => {
-    const c = dateColumns({ lunar_year: 1225, lunar_month: 12, lunar_day: 12 });
-    expect(c).toMatchObject({ date: "1226-01-11", precision: "day", lunar_year: 1225, lunar_month: 12, lunar_day: 12 });
+  it("đủ ngày âm (sau 1800) → lưu âm + dương quy đổi; form mở ra đúng ngày", () => {
+    // Mùng 1 Tết Canh Thìn = 05/02/2000.
+    const c = dateColumns({ lunar_year: 2000, lunar_month: 1, lunar_day: 1 });
+    expect(c).toMatchObject({ date: "2000-02-05", precision: "day", lunar_year: 2000, lunar_month: 1, lunar_day: 1 });
     const form = loadCalendarDateValue({
       solarDate: c.date,
       solarPrecision: c.precision,
@@ -423,17 +430,34 @@ describe("cột ngày giống form", () => {
       lunarMonth: c.lunar_month,
       lunarDay: c.lunar_day,
     });
-    expect(form.parts).toEqual({ year: "1226", month: "01", day: "11" });
+    expect(form.parts).toEqual({ year: "2000", month: "02", day: "05" });
+  });
+
+  it("trước 1800 → giữ ngày âm như sử chép + năm, KHÔNG quy đổi ra ngày dương", () => {
+    expect(dateColumns({ lunar_year: 1369, lunar_month: 5, lunar_day: 25 })).toMatchObject({
+      date: "1369-01-01",
+      precision: "year",
+      lunar_year: 1369,
+      lunar_month: 5,
+      lunar_day: 25,
+      lunarOnly: true,
+    });
+  });
+
+  it("trước 1800: ngày giỗ lấy thẳng từ tháng/ngày âm", () => {
+    const f = base();
+    const r = validate(f, sources);
+    expect(r.columns.get("thu.cha")).toMatchObject({ death_anniv_lunar_month: 4, death_anniv_lunar_day: 3 });
   });
 
   it("chỉ năm âm → năm dương, độ chính xác năm (cây hiển thị được)", () => {
     expect(dateColumns({ lunar_year: 1258 })).toMatchObject({ date: "1258-01-01", precision: "year", lost: null });
   });
 
-  it("năm + tháng Chạp âm → có thể sang năm dương sau; báo chi tiết bị mất", () => {
-    const c = dateColumns({ lunar_year: 1225, lunar_month: 12 });
-    expect(c).toMatchObject({ date: "1226-01-01", precision: "year" });
-    expect(c.lost).toBe("âm 1225-12");
+  it("năm + tháng Chạp âm (sau 1800) → có thể sang năm dương sau; báo chi tiết bị mất", () => {
+    const c = dateColumns({ lunar_year: 1999, lunar_month: 12 });
+    expect(c).toMatchObject({ date: "2000-01-01", precision: "year" });
+    expect(c.lost).toBe("âm 1999-12");
   });
 
   it("chỉ tháng/ngày âm (giỗ) → lưu âm, suy ra ngày giỗ như form", () => {
@@ -463,6 +487,7 @@ describe("cột ngày giống form", () => {
   });
 
   it("ngày âm không tồn tại → lỗi", () => {
-    expect(() => dateColumns({ lunar_year: 1300, lunar_month: 2, lunar_day: 30, lunar_leap: true })).toThrow(/không tồn tại/);
+    // Năm 2000 không có tháng nhuận.
+    expect(() => dateColumns({ lunar_year: 2000, lunar_month: 2, lunar_day: 10, lunar_leap: true })).toThrow(/không tồn tại/);
   });
 });

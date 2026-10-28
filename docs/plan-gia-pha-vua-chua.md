@@ -183,16 +183,24 @@ nằm ở bảng trích dẫn.
 - **Giá trị form phải khớp nguồn:** citation của các trường trên bắt buộc có `value`;
   giá trị điền vào form phải trùng giá trị của ít nhất một nguồn (dị bản thì chọn một,
   các bản còn lại lưu ở trích dẫn).
-- **Ngày dựng bằng đúng hàm của form** (`buildPersonDateColumns`): mở form ra thấy đúng,
-  bấm Lưu không làm mất gì (đã kiểm round-trip).
+- **Ngày từ năm 1800 trở đi dựng bằng đúng hàm của form** (`buildPersonDateColumns`): mở
+  form ra thấy đúng, bấm Lưu không làm mất gì (đã kiểm round-trip).
   - Đủ ngày/tháng/năm âm → lưu âm + ngày dương quy đổi.
   - Chỉ năm âm → năm dương (độ chính xác "năm") để cây và tuổi thọ hiện được.
   - Năm + tháng âm → chỉ lưu được năm (tháng Chạp có thể sang năm dương sau — tự tính);
     tháng nêu trong tiểu sử. Validator cảnh báo.
   - Chỉ tháng/ngày âm → lưu âm; **ngày giỗ tự suy ra** từ ngày mất như form.
   - Ngày âm không có thật (tháng nhuận sai…) → lỗi (quy đổi ngược để bắt).
-  - Thư viện lịch của app chỉ quy đổi được từ **năm 1200** — triều Lý trở về trước chỉ
-    lưu năm; cần mở rộng thư viện trước P4.
+- **Ngày trước năm 1800: KHÔNG quy đổi ra ngày dương.** Lưu đúng ngày âm như sử chép +
+  năm (độ chính xác "năm") để cây hiện năm; ngày giỗ lấy thẳng từ tháng/ngày âm.
+  - Lý do 1: thư viện lịch của app (`@dqcai/vn-lunar`) **quy đổi sai** nhiều năm trước
+    1800 (các năm tận cùng 8, 9: 1218, 1258, 1308, 1369…) — kết quả vô nghĩa (tháng 14).
+    Lỗi này ảnh hưởng cả người dùng thường nhập ngày âm trước 1800 → nên sửa ở app.
+  - Lý do 2: lịch Việt thời đó (Thụ Thời, Hiệp Kỷ…) khác thuật toán hiện đại; ngày dương
+    "quy đổi" sẽ là giá trị bịa.
+  - Năm hiển thị = năm âm; tháng 11–12 âm có thể đã sang năm dương sau (validator cảnh báo).
+  - Hạn chế: form Sửa người hiện chỉ hiện năm cho các ngày này; bấm Lưu trên form sẽ xoá
+    tháng/ngày âm → **không sửa dòng họ lịch sử bằng form**, sửa file nháp rồi nhập lại.
 - **Họ tên:** vua/chúa ghi tên thường gọi trong sử (họ + miếu hiệu, vd "Trần Thái Tông");
   **Tên húy** ghi họ + tên húy. Tìm kiếm quét cả hai.
 - **Tuổi thọ:** ghi đúng như sử chép ("thọ 60 tuổi" — tuổi ta).
@@ -329,6 +337,19 @@ Nhà Nguyễn giá trị hơn nhưng to và có hậu duệ còn sống — làm
 | Bản quyền bản dịch | Chỉ trích ngắn + vị trí; kiểm tra giấy phép trước khi đưa trích đoạn dài |
 | Lịch âm cổ quy đổi sai | Lưu âm lịch như nguồn, dương lịch gắn cờ "quy đổi" |
 | Lẫn số liệu lịch sử vào thống kê/leaderboard dòng họ thật | Lọc `kind='historical'` khỏi stats, leaderboard, giới hạn gói |
+
+## Trạng thái P1 — Nhà Trần (28/10/2026)
+- `data/historical/tran.json` (BẢN NHÁP, chưa duyệt): 29 người / 12 đời (thuỷ tổ Trần
+  Kinh → Thiếu Đế), 18 hôn nhân (đa thê có thứ tự), 12 vua có trị vì + miếu hiệu, 12 lăng,
+  2 liên kết thông gia chờ nhà Lý / họ Hồ.
+- Nguồn: nguyên văn chữ Hán Đại Việt sử ký toàn thư, Bản kỷ Q.4–8 (zh.wikisource) —
+  235 trích dẫn. `scripts/historical/verify_quotes.py` kiểm: 235/235 đoạn trích có thật
+  trong nguyên văn và nằm đúng năm can chi ghi ở locator.
+- Việc của người duyệt: đối chiếu phiên âm / dịch (value, tiểu sử) với bản dịch tiếng
+  Việt; xác định 3 bà phi họ Lê của Minh Tông có trùng người không (đang để riêng); thêm
+  nguồn thứ hai (Cương mục) để nâng mức tin cậy; đổi `review.status` → `verified`.
+- Chưa có: con cái ngoài trục vua (Trần Liễu, Trần Quốc Tuấn…), di sản, sự kiện —
+  cần nguồn tầng B cho phần ngày nay (đền Trần, lễ khai ấn…).
 
 ## Đã chốt (28/10/2026)
 1. Triều thí điểm: **Nhà Trần**.
