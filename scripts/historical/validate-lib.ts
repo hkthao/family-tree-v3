@@ -296,9 +296,10 @@ const MIN_QUOTE_CJK = 4;
 const CJK_RE = /[\u3400-\u9fff\u{20000}-\u{2ffff}]/u;
 
 /**
- * Trước năm này KHÔNG quy đổi âm → dương: thư viện lịch của app quy đổi sai
- * nhiều năm trước 1800 (vd các năm tận cùng 8, 9), và lịch Việt thời đó (Thụ
- * Thời, Hiệp Kỷ…) khác thuật toán hiện đại. Lưu đúng ngày âm như sử chép.
+ * Trước năm này KHÔNG quy đổi âm → dương: lịch Việt thời đó (Thụ Thời, Hiệp
+ * Kỷ…) khác thuật toán thiên văn hiện đại, ngày dương "quy đổi" sẽ là giá trị
+ * suy diễn. Lưu đúng ngày âm như sử chép. (Lỗi bảng năm 1200–1799 của
+ * @dqcai/vn-lunar đã được vá ở src/lib/lunarDate.ts — không còn là lý do.)
  */
 export const LUNAR_CONVERT_FROM_YEAR = 1800;
 

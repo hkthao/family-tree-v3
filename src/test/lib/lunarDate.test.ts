@@ -31,6 +31,29 @@ describe("lunarDate", () => {
       expect(lunar?.day).toBe(30);
     });
 
+    it("trước 1800 (bảng thư viện bị cắt — đã vá): mùng 5 Tết Kỷ Dậu 1789 = 30/01/1789", () => {
+      // Trận Đống Đa, mùng 5 Tết Kỷ Dậu — 30/01/1789.
+      expect(lunarToSolarString({ year: 1789, month: 1, day: 5, isLeap: false })).toBe("1789-01-30");
+      expect(solarStringToLunar("1789-01-30")).toEqual({ year: 1789, month: 1, day: 5, isLeap: false });
+    });
+
+    it("round-trip đúng mọi năm 1200–2198 (trước đây sai các năm tận cùng 8, 9 trước 1800)", () => {
+      const bad: string[] = [];
+      for (let year = 1200; year <= 2198; year++) {
+        for (const month of [1, 6, 12]) {
+          for (const day of [1, 15, 29]) {
+            const sol = lunarToSolarString({ year, month, day, isLeap: false });
+            if (!sol) continue;
+            const back = solarStringToLunar(sol);
+            if (back?.year !== year || back.month !== month || back.day !== day || back.isLeap) {
+              bad.push(`${year}-${month}-${day}`);
+            }
+          }
+        }
+      }
+      expect(bad).toEqual([]);
+    });
+
     it("lunar→solar→lunar is identity for non-leap dates", () => {
       const original = { year: 1985, month: 3, day: 15, isLeap: false };
       const sol = lunarToSolarString(original);
