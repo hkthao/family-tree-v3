@@ -237,6 +237,41 @@ chiếu lại với DB sau khi nhập.
   đời sau → để trống còn hơn dùng ảnh gây hiểu lầm. Ảnh lăng, đền, sắc phong đưa vào module
   Mộ phần / Di sản (giai đoạn sau).
 
+## Lăng tẩm → module Mộ phần
+- Mục `resting_places` trong file nháp → `resting_places` + người an táng + ảnh (≤ 1280px,
+  ~250 KB như app). Bật `public_show_graves` cho dòng họ lịch sử để khách xem được.
+- **Địa danh như sử chép** (`location_name`, vd "hương Tinh Cương, phủ Long Hưng") tách
+  khỏi **địa chỉ ngày nay** (`address`). Địa chỉ ngày nay, hiện trạng (còn / đã mất / dời)
+  và năm xây cần nguồn tầng A/B (hồ sơ di tích, công trình nghiên cứu); giá trị phải khớp.
+- Toạ độ: cho phép theo Wikidata (tầng C) nhưng cảnh báo — nên đối chiếu hồ sơ di tích.
+- Mỗi người an táng cần trích dẫn (`occupant:<i>`); validator cảnh báo nếu ô "Nơi an táng"
+  của người đó không nhắc tên lăng.
+- Ghi chú ≤ 500 ký tự, văn phong sử, cuối tự thêm dòng nguồn; chú thích ảnh tự kèm ghi công.
+
+## Di sản dòng họ
+- Mục `heritage` → `heritage_items` (place / custom / story / artifact) + người liên quan +
+  ảnh (ảnh đầu làm ảnh bìa). Bật `public_show_heritage`.
+- Vd: đền thờ các vua, tư liệu (chiếu, hịch, bia), giai thoại có trong chính sử. Mỗi người
+  liên quan cần trích dẫn (`person:<i>`). Nội dung ≤ 1.000 ký tự (cứng 1.500), tóm tắt ≤ 200.
+- Lễ hội / tục lệ ngày nay (không có trong chính sử) cần nguồn tầng B; truyền thuyết →
+  `legendary`, ghi rõ "tương truyền".
+
+## Sự kiện
+- Mục `events` → module Sự kiện: lễ hội đền, tế lăng (`tomb_visit` gắn lăng)… ngày âm lịch
+  hằng năm, có trích dẫn ngày (`date`, giá trị khớp nguồn). Bật `public_show_events`.
+- **Không khai giỗ** cho người đã có ngày mất — app tự sinh giỗ từ ngày mất (khai thêm là
+  trùng → lỗi).
+- Mốc lịch sử một lần (lên ngôi, chiến thắng…) không đưa vào Sự kiện; nằm ở Trị vì / tiểu
+  sử / di sản.
+
+## Thông gia giữa các dòng họ lịch sử
+- Mục `same_person_links`: người này cũng có ở dòng họ lịch sử khác (vd Lý Chiêu Hoàng —
+  con gái trong cây nhà Lý, vợ trong cây nhà Trần) → `person_links` `same_person` đã xác
+  nhận; app hiện quan hệ thông gia giữa hai cây.
+- Cần trích dẫn `same_person`. Dòng họ kia chưa nhập → bỏ qua kèm cảnh báo, chạy lại sau.
+- Đây cũng là cách đưa cha mẹ của dâu/rể vào: để họ ở dòng họ của mình rồi nối thông gia,
+  không nhập lẫn vào cây (không nối được về thuỷ tổ).
+
 ## Vua chúa nhiều vợ, mỗi vợ nhiều con
 - **Mỗi cặp vua – vợ là một hôn nhân riêng**, có `spouse_order` (1 = chính thất…) — nhập
   vào `families.spouse_order` sẵn có, cây và trang người xếp vợ theo đó. Thiếu thứ tự khi

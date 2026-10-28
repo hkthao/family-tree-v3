@@ -4,6 +4,7 @@ import { loadCalendarDateValue } from "@/lib/personDates";
 
 import {
   composeBio,
+  composeProse,
   dateColumns,
   photoLine,
   validate,
@@ -261,6 +262,112 @@ describe("ảnh + tên tự/húy/thụy", () => {
 
   it("vua/chúa thiếu tên húy/thụy/tự → cảnh báo", () => {
     expect(warns(base())).toMatch(/thu.con: vua\/chúa chưa có Tên húy, Tên thụy, Tên tự/);
+  });
+});
+
+describe("lăng tẩm, di sản, thông gia", () => {
+  it("lăng hợp lệ: địa danh khớp nguồn, người an táng có trích dẫn", () => {
+    const f = base();
+    f.persons[0].burial_place = "Lăng Thử";
+    f.persons[0].citations.push(cite("burial_place", "A1", "Lăng Thử"));
+    f.resting_places = [
+      {
+        key: "lang.thu",
+        name: "Lăng Thử",
+        location_name: "hương Thử",
+        occupants: ["thu.cha"],
+        citations: [cite("existence"), cite("location_name", "A1", "hương Thử"), cite("occupant:0")],
+      },
+    ];
+    expect(errs(f)).toBe("");
+    f.resting_places[0].citations = [cite("existence"), cite("location_name", "A1", "hương Khác")];
+    expect(errs(f)).toMatch(/"location_name" = "hương Thử" không khớp/);
+    expect(errs(f)).toMatch(/"occupant:0" không có trích dẫn/);
+  });
+
+  it("toạ độ chỉ theo Wikidata → cảnh báo (không chặn); ngoài Việt Nam → cảnh báo", () => {
+    const f = base();
+    f.resting_places = [
+      {
+        key: "lang.thu",
+        name: "Lăng Thử",
+        latitude: 48.8,
+        longitude: 2.3,
+        occupants: ["thu.cha"],
+        citations: [cite("existence"), cite("occupant:0"), cite("coordinates", "C1")],
+      },
+    ];
+    expect(errs(f)).toBe("");
+    expect(warns(f)).toMatch(/"coordinates" chỉ theo nguồn tầng C/);
+    expect(warns(f)).toMatch(/nằm ngoài Việt Nam/);
+    expect(warns(f)).toMatch(/an táng tại Lăng Thử nhưng chưa điền Nơi an táng/);
+  });
+
+  it("di sản: nội dung quá dài → lỗi; người liên quan phải có", () => {
+    const f = base();
+    f.heritage = [
+      {
+        key: "ds.den",
+        category: "place",
+        title: "Đền Thử",
+        body: "x".repeat(1600),
+        people: [{ person: "thu.khong-co" }],
+        citations: [cite("existence"), cite("body"), cite("person:0")],
+      },
+    ];
+    expect(errs(f)).toMatch(/nội dung 1600 ký tự/);
+    expect(errs(f)).toMatch(/không có người "thu.khong-co"/);
+  });
+
+  it("nội dung di sản tự thêm dòng nguồn", () => {
+    expect(composeProse("Đền thờ các vua.", [cite("existence")], sources)).toBe(
+      "Đền thờ các vua.\n\nTheo: Chính sử 1 (Q.1, tờ 2a).",
+    );
+  });
+
+  it("thông gia: cần trích dẫn same_person, không trỏ về chính dòng họ", () => {
+    const f = base();
+    f.same_person_links = [{ person: "thu.me", other_clan: "thu", other_person: "x.me", citations: [] }];
+    expect(errs(f)).toMatch(/phải là dòng họ khác/);
+    expect(errs(f)).toMatch(/"same_person" không có trích dẫn/);
+    f.same_person_links = [{ person: "thu.me", other_clan: "khac", other_person: "khac.con-gai", citations: [cite("same_person")] }];
+    expect(errs(f)).toBe("");
+  });
+});
+
+describe("sự kiện", () => {
+  it("lễ hội âm lịch hợp lệ; ngày phải khớp nguồn", () => {
+    const f = base();
+    f.events = [
+      { key: "sk.le", title: "Lễ hội Thử", date: { lunar_month: 1, lunar_day: 15 }, citations: [cite("existence"), cite("date", "A1", "âm ?-1-15")] },
+    ];
+    expect(errs(f)).toBe("");
+    f.events[0].citations[1].value = "âm ?-1-14";
+    expect(errs(f)).toMatch(/"date" = "âm \?-1-15" không khớp/);
+  });
+
+  it("không khai giỗ cho người đã có ngày mất (app tự sinh)", () => {
+    const f = base();
+    f.events = [
+      {
+        key: "sk.gio",
+        title: "Giỗ Cha Thử",
+        event_type: "memorial",
+        related_person: "thu.cha",
+        date: { lunar_month: 4, lunar_day: 3 },
+        citations: [cite("existence"), cite("date", "A1", "âm ?-4-3"), cite("related_person")],
+      },
+    ];
+    expect(errs(f)).toMatch(/app tự sinh giỗ/);
+  });
+
+  it("tế lăng cần lăng; ngày không được vừa âm vừa dương", () => {
+    const f = base();
+    f.events = [
+      { key: "sk.te", title: "Tế lăng", event_type: "tomb_visit", date: { lunar_month: 2, lunar_day: 1, solar: "2026-03-01" }, citations: [cite("existence"), cite("date")] },
+    ];
+    expect(errs(f)).toMatch(/cần resting_place/);
+    expect(errs(f)).toMatch(/không cả hai/);
   });
 });
 
