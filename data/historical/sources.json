@@ -1,0 +1,112 @@
+[
+  {
+    "code": "TT",
+    "title": "Đại Việt sử ký toàn thư",
+    "author": "Ngô Sĩ Liên và các sử thần triều Lê",
+    "edition": "Nội các quan bản (khắc in năm Chính Hoà 18, 1697)",
+    "translator": null,
+    "published_year": null,
+    "tier": "A",
+    "url": "https://zh.wikisource.org/wiki/大越史記全書",
+    "notes": "Trích dẫn là NGUYÊN VĂN CHỮ HÁN (bản số zh.wikisource). Phiên âm/dịch ở value do người soạn — người duyệt đối chiếu bản dịch tiếng Việt. Errata đã biết: tiêu đề năm 1388 chép 戊戌 (đúng là 戊辰)."
+  },
+  {
+    "code": "CM",
+    "title": "Khâm định Việt sử thông giám cương mục",
+    "author": "Quốc sử quán triều Nguyễn",
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "A",
+    "url": null,
+    "notes": null
+  },
+  {
+    "code": "VSL",
+    "title": "Việt sử lược",
+    "author": "Khuyết danh (thời Trần)",
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "A",
+    "url": null,
+    "notes": "Chép đến hết đời Lý Chiêu Hoàng — dùng đối chiếu cuối Lý / đầu Trần."
+  },
+  {
+    "code": "DNTL",
+    "title": "Đại Nam thực lục",
+    "author": "Quốc sử quán triều Nguyễn",
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "A",
+    "url": null,
+    "notes": "Ghi rõ Tiền biên / Chính biên + kỷ + quyển trong locator."
+  },
+  {
+    "code": "DNLT",
+    "title": "Đại Nam liệt truyện",
+    "author": "Quốc sử quán triều Nguyễn",
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "A",
+    "url": null,
+    "notes": null
+  },
+  {
+    "code": "NPTTP",
+    "title": "Nguyễn Phúc tộc thế phả",
+    "author": "Hội đồng trị sự Nguyễn Phúc tộc",
+    "edition": null,
+    "translator": null,
+    "published_year": 1995,
+    "tier": "A",
+    "url": null,
+    "notes": "NXB Thuận Hoá."
+  },
+  {
+    "code": "DVTS",
+    "title": "Đại Việt thông sử",
+    "author": "Lê Quý Đôn",
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "B",
+    "url": null,
+    "notes": null
+  },
+  {
+    "code": "VNSL",
+    "title": "Việt Nam sử lược",
+    "author": "Trần Trọng Kim",
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "B",
+    "url": null,
+    "notes": null
+  },
+  {
+    "code": "WD",
+    "title": "Wikidata",
+    "author": null,
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "C",
+    "url": "https://www.wikidata.org",
+    "notes": "Chỉ dùng đối chiếu tự động — không đủ để công bố."
+  },
+  {
+    "code": "WP",
+    "title": "Wikipedia tiếng Việt",
+    "author": null,
+    "edition": null,
+    "translator": null,
+    "published_year": null,
+    "tier": "C",
+    "url": "https://vi.wikipedia.org",
+    "notes": "Chỉ là chỉ dẫn tìm nguồn — không đủ để công bố."
+  }
+]

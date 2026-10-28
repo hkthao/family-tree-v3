@@ -23,6 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClanRealtime } from "@/hooks/useClanRealtime";
 import { useCompletionMilestone } from "@/hooks/useCompletionMilestone";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
+import { HISTORICAL_CATEGORY_LABEL } from "@/lib/queries/historical";
 import { queryKeys } from "@/lib/queries/keys";
 import { countClanTodo } from "@/lib/queries/todo";
 
@@ -163,6 +164,13 @@ export function ClanLayout() {
             <h1 className="clan-name text-lg sm:text-xl font-semibold truncate">
               {clan.name}
             </h1>
+            {clan.kind === "historical" && (
+              <p className="text-xs text-muted-foreground truncate">
+                Gia phả lịch sử
+                {clan.historical_category ? ` · ${HISTORICAL_CATEGORY_LABEL[clan.historical_category]}` : ""}
+                {" · có trích dẫn nguồn"}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <NotificationBell />

@@ -21,6 +21,7 @@ import {
   IconUsers,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { ContributeDialog } from "@/components/ContributeDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -324,6 +325,7 @@ export default function PersonDetail() {
                     helps elderly users orient by whichever calendar
                     they know. */}
                 <LunarDetailRow
+                  historical={clan.kind === "historical"}
                   label="Ngày sinh (âm)"
                   lunarYear={person.birth_lunar_year}
                   lunarMonth={person.birth_lunar_month}
@@ -344,6 +346,7 @@ export default function PersonDetail() {
                       }) || null}
                     />
                     <LunarDetailRow
+                      historical={clan.kind === "historical"}
                       label="Ngày mất (âm)"
                       lunarYear={person.death_lunar_year}
                       lunarMonth={person.death_lunar_month}
@@ -431,6 +434,15 @@ export default function PersonDetail() {
                 )}
               </CardContent>
             </Card>
+
+            {clan.kind === "historical" && (
+              <HistoricalPersonSections
+                personId={person.id}
+                personName={person.full_name}
+                clanId={clanId!}
+                userId={userId}
+              />
+            )}
 
             {relationships && (
               <Card>
@@ -750,12 +762,17 @@ function LunarDetailRow({
   lunarMonth,
   lunarDay,
   fallbackSolar,
+  historical = false,
 }: {
   label: string;
   lunarYear: number | null;
   lunarMonth: number | null;
   lunarDay: number | null;
   fallbackSolar: string | null;
+  /** Dòng họ lịch sử: ngày trước 1800 không hiện can chi ngày/tháng — tính bằng
+   *  thuật toán hiện đại có thể khác lịch thời đó (sử cũ chép can chi ngày
+   *  riêng); can chi năm đã có trong dòng chính. */
+  historical?: boolean;
 }) {
   let lunar: { year: number; month: number; day: number; isLeap: boolean } | null = null;
   if (lunarYear && lunarMonth && lunarDay) {
@@ -768,7 +785,8 @@ function LunarDetailRow({
 
   // Resolve the matching solar date so we can compute the day Can Chi.
   const solarForCanChi = fallbackSolar ?? (lunar ? lunarToSolarString(lunar) : null);
-  const canChi = getCanChiForSolarDate(solarForCanChi);
+  const canChi =
+    historical && lunar && lunar.year < 1800 ? null : getCanChiForSolarDate(solarForCanChi);
 
   return (
     <DetailRow
