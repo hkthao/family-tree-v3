@@ -298,7 +298,7 @@ export default function Clans() {
           </p>
         )}
 
-        {tab === "community" && !debounced && <HistoricalClansSection />}
+        {tab === "community" && !debounced && <HistoricalClansSection view={view} />}
 
         {isLoading && <LoadingState />}
 
