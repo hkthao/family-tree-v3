@@ -177,6 +177,8 @@ function SourcesCard({
   for (const c of citations) groups.set(c.field, [...(groups.get(c.field) ?? []), c]);
   const ordered = [...groups].sort(([a], [b]) => Number(b === "existence") - Number(a === "existence"));
   const disputed = ordered.filter(([, list]) => list[0].confidence === "disputed").length;
+  // Trích dẫn chưa có người duyệt → bản đang duyệt (phiên âm / dịch có thể còn chỉnh).
+  const unreviewed = citations.some((c) => !c.reviewed_by);
   return (
     <Card>
       <CardHeader>
@@ -188,6 +190,12 @@ function SourcesCard({
           Mỗi dữ kiện kèm trích dẫn nguyên văn từ sách sử.
           {disputed > 0 && ` Có ${disputed} dữ kiện các nguồn chép khác nhau (dị bản).`}
         </p>
+        {unreviewed && (
+          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+            Bản đang duyệt: trích dẫn nguyên văn đã được đối chiếu, phần phiên âm và dịch
+            có thể còn được chỉnh. Thấy chỗ chưa đúng, bấm “Báo sai sót” bên dưới.
+          </p>
+        )}
       </CardHeader>
       <CardContent className="space-y-2">
         {ordered.map(([field, list]) => (

@@ -9,7 +9,8 @@
  *
  * - File có lỗi (thiếu trích dẫn, quan hệ vô lý…) → dừng, không ghi gì.
  * - Chỉ nhập người/hôn nhân có review.status = 'verified'.
- *   --include-drafts nhập cả bản nháp — CHỈ cho phép với Supabase local.
+ *   --include-drafts nhập cả bản nháp — với Supabase local; lên production phải
+ *   thêm --publish-unreviewed (trang hiện nhãn "Bản đang duyệt").
  * - Ảnh (photo): tải từ Wikimedia Commons, nén như app (≤ 512px, ~80 KB, dùng
  *   `sips` của macOS) rồi upload person-photos/{clan}/{person}.jpg.
  *   --skip-photos bỏ qua bước này.
@@ -92,8 +93,11 @@ if (!URL || !KEY) {
   console.error("Thiếu VITE_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
   process.exit(1);
 }
-if (includeDrafts && !/127\.0\.0\.1|localhost/.test(URL)) {
-  console.error("--include-drafts chỉ dùng với Supabase local.");
+// Bản nháp lên production chỉ khi chủ dự án chủ động đồng ý (trang hiện nhãn
+// "Bản đang duyệt" cho trích dẫn chưa có người duyệt).
+const allowUnreviewed = args.includes("--publish-unreviewed");
+if (includeDrafts && !/127\.0\.0\.1|localhost/.test(URL) && !allowUnreviewed) {
+  console.error("--include-drafts chỉ dùng với Supabase local (thêm --publish-unreviewed để đưa bản nháp lên production).");
   process.exit(1);
 }
 const admin = createClient(URL, KEY, {
