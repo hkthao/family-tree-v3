@@ -291,6 +291,16 @@ const VALUE_FIELDS = new Set([
 const KEY_RE = /^[a-z0-9][a-z0-9.-]*$/;
 const SOLAR_RE = /^(\d{3,4})(?:-(\d{2})(?:-(\d{2}))?)?$/;
 const MIN_QUOTE = 8;
+/** Chữ Hán đặc nghĩa hơn chữ Latin — trích ≥ 4 chữ để đủ ngữ cảnh tra lại. */
+const MIN_QUOTE_CJK = 4;
+const CJK_RE = /[\u3400-\u9fff\u{20000}-\u{2ffff}]/u;
+
+/**
+ * Trước năm này KHÔNG quy đổi âm → dương: thư viện lịch của app quy đổi sai
+ * nhiều năm trước 1800 (vd các năm tận cùng 8, 9), và lịch Việt thời đó (Thụ
+ * Thời, Hiệp Kỷ…) khác thuật toán hiện đại. Lưu đúng ngày âm như sử chép.
+ */
+export const LUNAR_CONVERT_FROM_YEAR = 1800;
 
 function hasValue(v: unknown): boolean {
   return v !== null && v !== undefined && v !== "";
@@ -328,6 +338,8 @@ export interface DateColumns {
   formValue: CalendarDateValue;
   /** Chi tiết nguồn không lưu được trên form (chỉ còn trong trích dẫn/tiểu sử). */
   lost: string | null;
+  /** Ngày trước LUNAR_CONVERT_FROM_YEAR: lưu âm + năm, không quy đổi ra ngày dương. */
+  lunarOnly?: boolean;
 }
 
 /**
@@ -342,6 +354,7 @@ export function dateColumns(d: DateFact): DateColumns {
   const make = (formValue: CalendarDateValue, lost: string | null = null): DateColumns => {
     const c = buildPersonDateColumns(formValue);
     return {
+      lunarOnly: false,
       date: c.solar_date,
       precision: c.solar_precision,
       qualifier: d.qualifier ?? null,
@@ -363,6 +376,21 @@ export function dateColumns(d: DateFact): DateColumns {
 
   const { lunar_year: y, lunar_month: mo, lunar_day: da } = d;
   const leap = !!d.lunar_leap;
+
+  // Trước 1800: lưu ngày âm như nguồn + năm (độ chính xác "năm") để cây hiện
+  // được năm; không suy ra ngày dương.
+  if (y != null && y < LUNAR_CONVERT_FROM_YEAR) {
+    return {
+      ...solarYear(y),
+      lunar_year: y,
+      lunar_month: mo ?? null,
+      lunar_day: mo != null ? da ?? null : null,
+      lunar_is_leap: mo != null && leap,
+      lost: null,
+      lunarOnly: true,
+    };
+  }
+
   if (y != null && mo != null && da != null) {
     const solar = lunarToSolarString({ year: y, month: mo, day: da, isLeap: leap });
     // Quy đổi ngược để bắt ngày không có thật (thư viện "nuốt" tháng nhuận sai).
@@ -370,9 +398,7 @@ export function dateColumns(d: DateFact): DateColumns {
     if (solar && back && back.year === y && back.month === mo && back.day === da && back.isLeap === leap) {
       return make({ mode: "lunar", parts: { year: String(y), month: String(mo), day: String(da) }, isLeap: leap });
     }
-    if (y >= 1200) throw new Error(`ngày âm ${formatDateFact(d)} không tồn tại (kiểm tra tháng nhuận/ngày 30)`);
-    // Thư viện lịch của app chỉ quy đổi từ năm 1200 → giữ năm.
-    return { ...solarYear(y), lost: `${formatDateFact(d)} (trước 1200 — app chưa quy đổi được)` };
+    throw new Error(`ngày âm ${formatDateFact(d)} không tồn tại (kiểm tra tháng nhuận/ngày 30)`);
   }
   if (y == null && mo != null) {
     return make({ mode: "lunar", parts: { year: "", month: String(mo), day: da != null ? String(da) : "" }, isLeap: leap });
@@ -537,7 +563,8 @@ export function validate(
       const where = `${who} [${c.field}]`;
       if (!sourceByCode.has(c.source)) errors.push(`${where}: nguồn "${c.source}" không có trong danh mục`);
       if (!c.locator?.trim()) errors.push(`${where}: thiếu vị trí (quyển/tờ)`);
-      if ((c.quote?.trim().length ?? 0) < MIN_QUOTE) errors.push(`${where}: thiếu trích dẫn nguyên văn`);
+      const q = c.quote?.trim() ?? "";
+      if ([...q].length < (CJK_RE.test(q) ? MIN_QUOTE_CJK : MIN_QUOTE)) errors.push(`${where}: thiếu trích dẫn nguyên văn (quá ngắn)`);
       const list = byField.get(c.field) ?? [];
       list.push(c);
       byField.set(c.field, list);
@@ -709,6 +736,9 @@ export function validate(
       if (!d) continue;
       try {
         cols[label] = dateColumns(d);
+        if (cols[label]!.lunarOnly && (d.lunar_month ?? 0) >= 11) {
+          warnings.push(`${who}: ${label} ${formatDateFact(d)} — tháng 11–12 âm có thể đã sang năm dương sau; năm hiển thị theo năm âm`);
+        }
         if (cols[label]!.lost) {
           warnings.push(`${who}: ${label} ${cols[label]!.lost} — form chỉ lưu năm; nêu chi tiết trong tiểu sử`);
         }
@@ -716,7 +746,11 @@ export function validate(
         errors.push(`${who}: ${label}: ${(e as Error).message}`);
       }
     }
-    if (cols.death) {
+    if (cols.death?.lunarOnly) {
+      cols.death_anniv_lunar_month = cols.death.lunar_day != null ? cols.death.lunar_month : null;
+      cols.death_anniv_lunar_day = cols.death.lunar_month != null ? cols.death.lunar_day : null;
+      cols.death_anniv_lunar_is_leap = cols.death_anniv_lunar_day != null && cols.death.lunar_is_leap;
+    } else if (cols.death) {
       const a = buildDeathAnniversary(cols.death.formValue);
       cols.death_anniv_lunar_month = a.death_anniv_lunar_month;
       cols.death_anniv_lunar_day = a.death_anniv_lunar_day;

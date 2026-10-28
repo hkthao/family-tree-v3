@@ -7,8 +7,8 @@
     "translator": null,
     "published_year": null,
     "tier": "A",
-    "url": "https://vi.wikisource.org/wiki/Đại_Việt_sử_ký_toàn_thư",
-    "notes": "Ghi rõ bản dịch dùng để trích (translator/published_year) trước khi publish."
+    "url": "https://zh.wikisource.org/wiki/大越史記全書",
+    "notes": "Trích dẫn là NGUYÊN VĂN CHỮ HÁN (bản số zh.wikisource). Phiên âm/dịch ở value do người soạn — người duyệt đối chiếu bản dịch tiếng Việt. Errata đã biết: tiêu đề năm 1388 chép 戊戌 (đúng là 戊辰)."
   },
   {
     "code": "CM",
