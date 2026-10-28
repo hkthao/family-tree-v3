@@ -30,7 +30,8 @@ const apply = process.argv.includes("--apply");
 const admin = createClient(URL, KEY, { auth: { persistSession: false, autoRefreshToken: false } });
 
 const { data: historical, error: hErr } = await admin.from("clans").select("id").eq("kind", "historical");
-if (hErr) throw hErr;
+// DB chưa áp migration dòng họ lịch sử → chưa có cột kind, không có gì để bỏ qua.
+if (hErr && hErr.code !== "42703") throw hErr;
 const skipClans = new Set((historical ?? []).map((c) => c.id as string));
 
 let fixes = 0;
