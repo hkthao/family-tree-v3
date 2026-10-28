@@ -165,6 +165,28 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, năm Giáp Ngọ (1234)",
      "quote": "廟號徽宗"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Giáp Ngọ (1234)",
+     "quote": "三年宋端平元年春正月，上皇崩",
+     "value": "âm 1234-1"
+    },
+    {
+     "field": "lifespan",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Giáp Ngọ (1234)",
+     "quote": "廟號徽宗，壽五十一",
+     "value": "51"
+    },
+    {
+     "field": "posthumous_name",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Giáp Ngọ (1234)",
+     "quote": "諡曰開運立極弘仁應道純眞至德神武聖文垂裕至孝皇帝",
+     "value": "Khai Vận Lập Cực Hoằng Nhân Ứng Đạo Thuần Chân Chí Đức Thần Vũ Thánh Văn Thùy Dụ Chí Hiếu hoàng đế",
+     "note": "Cương mục chép 弘仁, Toàn thư chép 弘人 — cùng âm Hoằng Nhân."
     }
    ],
    "review": {
@@ -176,7 +198,7 @@
    "key": "tran.thua.le-thi",
    "full_name": "Lê thị",
    "gender": "F",
-   "bio": "Vợ Trần Thừa, mẹ Trần Thái Tông.",
+   "bio": "Vợ Trần Thừa, mẹ Trần Thái Tông, họ Lê. Khi con làm vua được tôn là Quốc Thánh hoàng thái hậu. Mất tháng 9 năm Canh Dần (1230), truy tôn là Thuận Từ hoàng thái hậu.",
    "citations": [
     {
      "field": "existence",
@@ -189,12 +211,69 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, Trần kỷ, Thái Tông hoàng đế — tiểu dẫn",
      "quote": "帝乃承之次子也，母黎氏"
+    },
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Canh Dần (1230)",
+     "quote": "九月，國聖皇太后崩，追尊順慈皇太后"
+    },
+    {
+     "field": "death",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Canh Dần (1230)",
+     "quote": "九月，國聖皇太后崩，追尊順慈皇太后",
+     "value": "âm 1230-9"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Canh Dần (1230)",
+     "quote": "秋九月，國聖皇太后黎氏崩",
+     "value": "âm 1230-9",
+     "note": "Cương mục ghi rõ họ Lê → chính là Lê thị, mẹ Thái Tông."
+    },
+    {
+     "field": "posthumous_name",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Canh Dần (1230)",
+     "quote": "追尊順慈皇太后",
+     "value": "Thuận Từ hoàng thái hậu"
+    },
+    {
+     "field": "posthumous_name",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Quý Sửu (1373)",
+     "quote": "陳太祖后諡順慈",
+     "value": "Thuận Từ hoàng thái hậu"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Canh Dần (1230)",
+     "quote": "國聖皇太后崩"
+    },
+    {
+     "field": "bio",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Canh Dần (1230)",
+     "quote": "秋九月，國聖皇太后黎氏崩"
     }
    ],
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
-   }
+   },
+   "death": {
+    "lunar_year": 1230,
+    "lunar_month": 9
+   },
+   "posthumous_name": "Thuận Từ hoàng thái hậu",
+   "titles": [
+    {
+     "title": "Quốc Thánh hoàng thái hậu"
+    }
+   ]
   },
   {
    "key": "tran.thai-tong",
@@ -222,7 +301,21 @@
      "role": "emperor",
      "temple_name": "Thái Tông",
      "start_year": 1225,
-     "end_year": 1258
+     "end_year": 1258,
+     "era_names": [
+      {
+       "name": "Kiến Trung",
+       "from_year": 1225
+      },
+      {
+       "name": "Thiên Ứng Chính Bình",
+       "from_year": 1232
+      },
+      {
+       "name": "Nguyên Phong",
+       "from_year": 1251
+      }
+     ]
     }
    ],
    "bio": "Vua họ Trần, tên húy là Cảnh, trước húy là Bồ, con thứ của Trần Thừa, mẹ họ Lê. Làm Chi hậu chính triều Lý, năm Ất Dậu (1225) được Chiêu Hoàng nhường ngôi. Ở ngôi 33 năm, nhường ngôi 19 năm, thọ 60 tuổi, mất ở cung Vạn Thọ, táng Chiêu Lăng.",
@@ -298,6 +391,44 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, Trần kỷ, Thái Tông hoàng đế — tiểu dẫn",
      "quote": "為李朝袛候正，受昭皇禅，在位三十三年，遜位十九年，壽六十歲，崩于萬壽宫塟昭陵"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Đinh Sửu (1277)",
+     "quote": "夏四月，上皇崩",
+     "value": "âm 1277-4"
+    },
+    {
+     "field": "posthumous_name",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Đinh Sửu (1277)",
+     "quote": "諡曰統天御極隆功茂德顯和佑順神文聖武元孝皇帝，廟號太宗",
+     "value": "Thống Thiên Ngự Cực Long Công Mậu Đức Hiển Hòa Hựu Thuận Thần Văn Thánh Vũ Nguyên Hiếu hoàng đế"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Mậu Ngọ (1258)",
+     "quote": "二月，帝禪位於皇太子晃"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "乙酉建中元年 凡七年"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "天應政平元年壬辰 凡十九年"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "元豐元年辛亥 凡七年"
     }
    ],
    "review": {
@@ -451,7 +582,17 @@
      "role": "emperor",
      "temple_name": "Thánh Tông",
      "start_year": 1258,
-     "end_year": 1278
+     "end_year": 1278,
+     "era_names": [
+      {
+       "name": "Thiệu Long",
+       "from_year": 1258
+      },
+      {
+       "name": "Bảo Phù",
+       "from_year": 1273
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Hoảng, con trưởng dòng đích của Thái Tông, mẹ là Hiển Từ Thuận Thiên hoàng thái hậu họ Lý. Sinh ngày 25 tháng 9 năm Canh Tý (1240), sớm được lập làm Hoàng thái tử. Năm Mậu Ngọ (1258) được Thái Tông nhường ngôi. Ở ngôi 21 năm, nhường ngôi 10 năm, thọ 51 tuổi, mất ở cung Nhân Thọ, táng Dụ Lăng.",
@@ -520,12 +661,51 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, Trần kỷ, Thánh Tông hoàng đế — tiểu dẫn",
      "quote": "尋立為皇太子。太宗遜位，遂登大寶，在位二十一年，遜位十年，壽五十一歲，崩于仁壽宫，塟裕陵"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Canh Dần (1290)",
+     "quote": "夏五月，上皇崩",
+     "value": "âm 1290-5"
+    },
+    {
+     "field": "posthumous_name",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Canh Dần (1290)",
+     "quote": "諡曰玄功盛德仁明文武宣孝皇帝，廟號聖宗",
+     "value": "Huyền Công Thịnh Đức Nhân Minh Văn Vũ Tuyên Hiếu hoàng đế"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Mậu Ngọ (1258)",
+     "quote": "太子卽位，尊帝爲顯堯聖壽太上皇帝"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Mậu Dần (1278)",
+     "quote": "冬十月，帝禪位于太子昑"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "紹隆元年戊午 凡十五年"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "寳符元年癸酉 凡六年"
     }
    ],
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
-   }
+   },
+   "posthumous_name": "Huyền Công Thịnh Đức Nhân Minh Văn Vũ Tuyên Hiếu hoàng đế"
   },
   {
    "key": "tran.thien-cam",
@@ -583,12 +763,26 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, năm Mậu Ngọ (1258)",
      "quote": "納安生王第五女韶為天感夫人，尋冊為后"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Đinh Hợi (1287)",
+     "quote": "三年元至元二十四年春二月，元聖天感皇太后陳氏崩",
+     "value": "âm 1287-2"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Mậu Ngọ (1258)",
+     "quote": "納安生王第五女韶為天感夫人"
     }
    ],
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
-   }
+   },
+   "parents": "u.lieu--khuyet"
   },
   {
    "key": "tran.nhan-tong",
@@ -616,7 +810,17 @@
      "role": "emperor",
      "temple_name": "Nhân Tông",
      "start_year": 1278,
-     "end_year": 1293
+     "end_year": 1293,
+     "era_names": [
+      {
+       "name": "Thiệu Bảo",
+       "from_year": 1279
+      },
+      {
+       "name": "Trùng Hưng",
+       "from_year": 1285
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Khâm, con trưởng của Thánh Tông, mẹ là Nguyên Thánh Thiên Cảm hoàng thái hậu. Sinh ngày 11 tháng 11 năm Mậu Ngọ (1258). Ở ngôi 14 năm, nhường ngôi 5 năm, xuất gia 8 năm, ở núi Yên Tử, tự hiệu Trúc Lâm đại sĩ. Thọ 51 tuổi, mất ở am Ngọa Vân núi Yên Tử, táng Đức Lăng.",
@@ -699,6 +903,30 @@
      "source": "TT",
      "locator": "Bản kỷ Q.6, năm Mậu Thân (1308)",
      "quote": "時上皇出家，居安子山之紫霄峯，自號竹林大士"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Mậu Dần (1278)",
+     "quote": "太子卽位，稱孝皇"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Quý Tỵ (1293)",
+     "quote": "春三月，帝禪位于太子烇"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "紹寳元年己夘 凡六年"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "重興元年乙酉 凡八年"
     }
    ],
    "review": {
@@ -735,6 +963,13 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, năm Quý Tỵ (1293)",
      "quote": "欽慈保聖皇太后崩于龍興府魯江"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Quý Tỵ (1293)",
+     "quote": "秋九月，欽慈保聖皇太后陳氏崩",
+     "value": "âm 1293-9"
     }
    ],
    "review": {
@@ -763,7 +998,13 @@
      "role": "emperor",
      "temple_name": "Anh Tông",
      "start_year": 1293,
-     "end_year": 1314
+     "end_year": 1314,
+     "era_names": [
+      {
+       "name": "Hưng Long",
+       "from_year": 1293
+      }
+     ]
     }
    ],
    "bio": "Tên là Thuyên, con trưởng của Nhân Tông, mẹ là Khâm Từ Bảo Thánh hoàng thái hậu. Năm Quý Tỵ (1293) được Nhân Tông nhường ngôi. Ở ngôi 21 năm, nhường ngôi 6 năm, thọ 45 tuổi, mất ở cung Trùng Quang phủ Thiên Trường, táng Thái Lăng.",
@@ -833,6 +1074,38 @@
      "source": "TT",
      "locator": "Bản kỷ Q.6, Trần kỷ, Anh Tông hoàng đế — tiểu dẫn",
      "quote": "在位二十一年，遜位六年，壽四十五歳，崩于天長府重光宫，塟泰陵"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Canh Thân (1320)",
+     "quote": "七年元延祐七年春三月，上皇崩",
+     "value": "âm 1320-3"
+    },
+    {
+     "field": "posthumous_name",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Canh Thân (1320)",
+     "quote": "遂崩于重光宮，諡顯文睿武欽明仁孝皇帝，廟號英宗",
+     "value": "Hiển Văn Duệ Vũ Khâm Minh Nhân Hiếu hoàng đế"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Quý Tỵ (1293)",
+     "quote": "太子旣卽位，稱英皇"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Giáp Dần (1314)",
+     "quote": "詔禪位於太子奣"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "興隆元年癸巳 凡二十一年"
     }
    ],
    "review": {
@@ -874,12 +1147,40 @@
      "source": "TT",
      "locator": "Bản kỷ Q.7, năm Canh Ngọ (1330)",
      "quote": "順聖保慈皇太后崩于安生木杲庵"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Canh Ngọ (1330)",
+     "quote": "秋七月，順聖保慈皇太后陳氏崩",
+     "value": "âm 1330-7"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, Trần kỷ, Minh Tông hoàng đế — tiểu dẫn",
+     "quote": "嫡母順聖保慈皇太后陳氏，興讓大王國顙之女也"
+    },
+    {
+     "field": "parents",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Kỷ Dậu (1309)",
+     "quote": "后，興讓王國顙女也"
+    },
+    {
+     "field": "burial_place",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Nhâm Thân (1332)",
+     "quote": "春二月，合葬順聖保慈皇太后于泰陵",
+     "value": "Thái Lăng (hợp táng)"
     }
    ],
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
-   }
+   },
+   "parents": "u.quoc-tang--khuyet",
+   "burial_place": "Thái Lăng (hợp táng)"
   },
   {
    "key": "tran.chieu-hien",
@@ -927,7 +1228,17 @@
      "role": "emperor",
      "temple_name": "Minh Tông",
      "start_year": 1314,
-     "end_year": 1329
+     "end_year": 1329,
+     "era_names": [
+      {
+       "name": "Đại Khánh",
+       "from_year": 1314
+      },
+      {
+       "name": "Khai Thái",
+       "from_year": 1324
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Mạnh, con thứ tư của Anh Tông. Đích mẫu là Thuận Thánh Bảo Từ hoàng thái hậu, mẹ đẻ là Chiêu Hiến hoàng thái hậu, đều họ Trần. Năm Giáp Dần (1314) được Anh Tông nhường ngôi. Ở ngôi 15 năm, nhường ngôi 28 năm, thọ 58 tuổi, mất ở cung Bảo Nguyên, táng Mục Lăng.",
@@ -996,6 +1307,44 @@
      "source": "TT",
      "locator": "Bản kỷ Q.6, Trần kỷ, Minh Tông hoàng đế — tiểu dẫn",
      "quote": "在位十五年，遜位二十八年，壽五十八歲，崩于葆元宫，塟穆陵"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Đinh Dậu (1357)",
+     "quote": "十七年元至正十七年春二月，上皇崩",
+     "value": "âm 1357-2"
+    },
+    {
+     "field": "posthumous_name",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Đinh Dậu (1357)",
+     "quote": "崩于葆元宮，諡章堯文哲皇帝，廟號明宗",
+     "value": "Chương Nghiêu Văn Triết hoàng đế"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Giáp Dần (1314)",
+     "quote": "太子旣卽位，稱寧皇"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Kỷ Tỵ (1329)",
+     "quote": "立子旺爲皇太子，詔禪位"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "大慶元年甲寅 凡十年"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "開泰元年甲子 凡五年"
     }
    ],
    "review": {
@@ -1130,7 +1479,13 @@
      "role": "emperor",
      "temple_name": "Hiến Tông",
      "start_year": 1329,
-     "end_year": 1341
+     "end_year": 1341,
+     "era_names": [
+      {
+       "name": "Khai Hựu",
+       "from_year": 1329
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Vượng, con thứ của Minh Tông, đích mẫu là Hiến Từ Tuyên Thánh hoàng thái hậu, mẹ đẻ là Minh Từ hoàng thái phi họ Lê. Năm Kỷ Tỵ (1329) được Minh Tông nhường ngôi. Ở ngôi 13 năm, thọ 23 tuổi, mất ở chính tẩm, táng Xương An lăng.",
@@ -1192,6 +1547,40 @@
      "source": "TT",
      "locator": "Bản kỷ Q.7, Trần kỷ, Hiến Tông hoàng đế — tiểu dẫn",
      "quote": "在位十三年壽二十三崩塟昌安陵"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Tân Tỵ (1341)",
+     "quote": "夏六月，帝崩，廟號憲宗，在位十三年，壽二十三",
+     "value": "âm 1341-6"
+    },
+    {
+     "field": "lifespan",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Tân Tỵ (1341)",
+     "quote": "廟號憲宗，在位十三年，壽二十三",
+     "value": "23"
+    },
+    {
+     "field": "burial_place",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Giáp Thân (1344)",
+     "quote": "註：安陵，在建昌府",
+     "value": "An lăng",
+     "note": "Toàn thư chép 昌安陵 (Xương An lăng), Cương mục chép 安陵 (An lăng) — dị bản."
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Kỷ Tỵ (1329)",
+     "quote": "太子旣卽位，稱哲皇"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "開祐元年己巳 凡十二年"
     }
    ],
    "review": {
@@ -1219,7 +1608,17 @@
      "role": "emperor",
      "temple_name": "Dụ Tông",
      "start_year": 1341,
-     "end_year": 1369
+     "end_year": 1369,
+     "era_names": [
+      {
+       "name": "Thiệu Phong",
+       "from_year": 1341
+      },
+      {
+       "name": "Đại Trị",
+       "from_year": 1358
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Hạo, con thứ mười của Minh Tông, do Hiến Từ hoàng hậu sinh ra. Năm Tân Tỵ (1341) lên ngôi sau khi Hiến Tông mất. Ở ngôi 28 năm, thọ 34 tuổi, táng Phụ Lăng. Mất không có con nối, để chiếu đón Dương Nhật Lễ vào nối ngôi.",
@@ -1294,6 +1693,32 @@
      "source": "TT",
      "locator": "Bản kỷ Q.7, năm Kỷ Dậu (1369)",
      "quote": "臨崩之日，以無嗣，詔迎日禮入繼統"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Kỷ Dậu (1369)",
+     "quote": "及帝崩，無嗣，遺詔日禮繼統",
+     "value": "âm 1369"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Tân Tỵ (1341)",
+     "quote": "秋八月，皇弟皥卽位"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "紹豐元年辛巳 凡五年"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "大治元年戊戌 凡十一年",
+     "note": "Việt sử lược ghi Thiệu Phong 'phàm 5 năm' nhưng Đại Trị mới bắt đầu năm Mậu Tuất (1358) — số năm chưa khớp, kiểm lại."
     }
    ],
    "review": {
@@ -1322,7 +1747,13 @@
      "role": "emperor",
      "temple_name": "Nghệ Tông",
      "start_year": 1370,
-     "end_year": 1372
+     "end_year": 1372,
+     "era_names": [
+      {
+       "name": "Thiệu Khánh",
+       "from_year": 1370
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Phủ, con thứ ba của Minh Tông, đích mẫu là Hiến Từ Tuyên Thánh hoàng thái hậu, mẹ đẻ là thứ phi họ Lê. Dẹp loạn Dương Nhật Lễ, năm Canh Tuất (1370) lên ngôi. Ở ngôi 3 năm, nhường ngôi 27 năm, thọ 74 tuổi, táng Nguyên Lăng ở Yên Sinh.",
@@ -1391,6 +1822,40 @@
      "source": "TT",
      "locator": "Bản kỷ Q.7, Trần kỷ, Nghệ Tông hoàng đế — tiểu dẫn",
      "quote": "帝削平内難，光復洪圖"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.11, năm Giáp Tuất (1394)",
+     "quote": "十一月，上皇崩，葬原陵，諡光堯英哲皇帝，廟號藝宗",
+     "value": "âm 1394-11",
+     "note": "Toàn thư chép ngày 15 tháng 12; Cương mục chép tháng 11 và chú 崩葬同在一月 — dị bản."
+    },
+    {
+     "field": "posthumous_name",
+     "source": "CM",
+     "locator": "Chính biên Q.11, năm Giáp Tuất (1394)",
+     "quote": "諡光堯英哲皇帝，廟號藝宗",
+     "value": "Quang Nghiêu Anh Triết hoàng đế"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Canh Tuất (1370)",
+     "quote": "卽位改元，大赦，稱義皇"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Nhâm Tý (1372)",
+     "quote": "十一月，帝禪位于太子曔"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "紹慶元年庚戌 凡三年",
+     "note": "Việt sử lược gọi Nghệ Tông là 太王."
     }
    ],
    "review": {
@@ -1422,7 +1887,13 @@
      "role": "emperor",
      "temple_name": "Duệ Tông",
      "start_year": 1372,
-     "end_year": 1377
+     "end_year": 1377,
+     "era_names": [
+      {
+       "name": "Long Khánh",
+       "from_year": 1373
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Kính, con thứ mười một của Minh Tông, em Nghệ Tông, mẹ là Đôn Từ hoàng thái phi. Sinh ngày 2 tháng 6 năm Đinh Sửu (1337). Có công giúp Nghệ Tông dẹp loạn nên được nhường ngôi năm Nhâm Tý (1372). Tháng Giêng năm Đinh Tỵ (1377) thân chinh Chiêm Thành, tử trận ở thành Đồ Bàn. Ở ngôi 4 năm, thọ 41 tuổi, táng chiêu hồn ở Hy Lăng.",
@@ -1504,6 +1975,25 @@
      "source": "TT",
      "locator": "Bản kỷ Q.7, năm Đinh Tỵ (1377)",
      "quote": "招魂，塟熙陵"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Đinh Tỵ (1377)",
+     "quote": "明洪武十年春正月，進攻闍槃城，敗績，帝崩于軍",
+     "value": "âm 1377-1"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Nhâm Tý (1372)",
+     "quote": "太子卽位，稱欽皇"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "隆慶元年癸丑 凡三年"
     }
    ],
    "review": {
@@ -1545,6 +2035,13 @@
      "source": "TT",
      "locator": "Bản kỷ Q.8, năm Tân Dậu (1381)",
      "quote": "嘉慈皇后崩于龍潭鄉昭慶寺"
+    },
+    {
+     "field": "death",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Tân Dậu (1381)",
+     "quote": "冬十月，嘉慈皇后黎氏崩",
+     "value": "âm 1381-10"
     }
    ],
    "review": {
@@ -1580,7 +2077,13 @@
      "ordinal": 10,
      "role": "emperor",
      "start_year": 1377,
-     "end_year": 1388
+     "end_year": 1388,
+     "era_names": [
+      {
+       "name": "Xương Phù",
+       "from_year": 1377
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Hiện, con trưởng của Duệ Tông, mẹ là Gia Từ hoàng hậu họ Lê. Sinh ngày 6 tháng 3 năm Tân Sửu (1361). Duệ Tông mất ở phương Nam, Nghệ Tông lập lên ngôi. Năm Mậu Thìn (1388) bị Nghệ Tông giáng làm Linh Đức đại vương rồi bị thắt cổ chết. Ở ngôi 12 năm, thọ 28 tuổi, táng ở núi An Bài.",
@@ -1657,6 +2160,19 @@
      "source": "TT",
      "locator": "Bản kỷ Q.8, Trần kỷ, Phế Đế — tiểu dẫn",
      "quote": "及睿宗南征而崩，藝宗立之。後降為靈德王，尋令縊殺之。在位十二年，壽二十八，葬安排山"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Đinh Tỵ (1377)",
+     "quote": "夏五月，皇子晛卽位"
+    },
+    {
+     "field": "reign:0",
+     "source": "VSL",
+     "locator": "Phụ lục Trần triều kỷ niên (附陳朝紀年)",
+     "quote": "昌符元年丁巳",
+     "note": "Việt sử lược gọi Phế Đế là 今王 (vua đương thời) — sách soạn dưới triều này."
     }
    ],
    "review": {
@@ -1682,7 +2198,13 @@
      "role": "emperor",
      "temple_name": "Thuận Tông",
      "start_year": 1388,
-     "end_year": 1398
+     "end_year": 1398,
+     "era_names": [
+      {
+       "name": "Quang Thái",
+       "from_year": 1388
+      }
+     ]
     }
    ],
    "bio": "Tên húy là Ngung, con út của Nghệ Tông. Năm Mậu Thìn (1388) được Nghệ Tông lập làm vua. Ở ngôi hơn 9 năm, chính sự ở trong tay quyền thần. Năm Mậu Dần (1398) bị Lê Quý Ly ép nhường ngôi, năm Kỷ Mão (1399) bị ép xuất gia rồi bị giết, thọ 22 tuổi.",
@@ -1750,6 +2272,18 @@
      "source": "TT",
      "locator": "Bản kỷ Q.8, năm Kỷ Mão (1399)",
      "quote": "季犛逼令帝出家，奉道教居淡水村玉清觀"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.11, năm Mậu Thìn (1388)",
+     "quote": "旣卽位，稱元皇是爲順宗"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.11, năm Mậu Dần (1398)",
+     "quote": "季犛逼帝禪位于皇太子"
     }
    ],
    "review": {
@@ -1811,7 +2345,13 @@
      "ordinal": 12,
      "role": "emperor",
      "start_year": 1398,
-     "end_year": 1400
+     "end_year": 1400,
+     "era_names": [
+      {
+       "name": "Kiến Tân",
+       "from_year": 1398
+      }
+     ]
     }
    ],
    "bio": "Tên là Án, con Thuận Tông. Năm Mậu Dần (1398) Lê Quý Ly ép Thuận Tông nhường ngôi cho; khi ấy mới ba tuổi. Ở ngôi 2 năm; Quý Ly cướp ngôi, phế làm Bảo Ninh đại vương. Nhà Trần mất từ đây.",
@@ -1865,6 +2405,620 @@
      "source": "TT",
      "locator": "Bản kỷ Q.8, Trần kỷ, Thiếu Đế — tiểu dẫn",
      "quote": "在位二年。季犛篡位，廢為保寕大王"
+    },
+    {
+     "field": "reign:0",
+     "source": "CM",
+     "locator": "Chính biên Q.11, năm Mậu Dần (1398)",
+     "quote": "太子卽位，尊欽聖皇后爲皇太后，季犛自稱大王攝政"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.lieu",
+   "full_name": "Trần Liễu",
+   "gender": "M",
+   "parents": "u.thua--khuyet",
+   "death": {
+    "lunar_year": 1251,
+    "lunar_month": 4
+   },
+   "lifespan": 41,
+   "titles": [
+    {
+     "title": "Hoài vương"
+    },
+    {
+     "title": "Yên Sinh vương",
+     "from_year": 1237
+    },
+    {
+     "title": "Đại vương",
+     "from_year": 1251
+    }
+   ],
+   "bio": "Anh của Thái Tông. Năm Đinh Dậu (1237) vợ là công chúa Thuận Thiên bị lấy làm hoàng hậu, Liễu họp quân làm loạn ở sông Cái, rồi được giảng hoà, phong đất làm thang mộc ấp, hiệu Yên Sinh vương. Mất tháng 4 năm Tân Hợi (1251), thọ 41 tuổi, gia phong Đại vương.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "納兄懷王柳妻順天公主李氏為順天皇后"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "納兄懷王柳妻順天公主李氏",
+     "note": "Là anh (兄) của Thái Tông → con Trần Thừa; sử không chép mẹ."
+    },
+    {
+     "field": "parents",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Mậu Tý (1228)",
+     "quote": "秋八月，以兄柳爲太尉"
+    },
+    {
+     "field": "death",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Hợi (1251)",
+     "quote": "夏四月，安生王柳卒，年四十一，加大王",
+     "value": "âm 1251-4"
+    },
+    {
+     "field": "lifespan",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Hợi (1251)",
+     "quote": "安生王柳卒，年四十一",
+     "value": "41"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "納兄懷王柳妻"
+    },
+    {
+     "field": "title:1",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "為柳湯沐邑，因封其地號安生王"
+    },
+    {
+     "field": "title:2",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Hợi (1251)",
+     "quote": "年四十一，加大王"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "柳於是聚眾，下大江作亂"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "以安阜、安養、安生、安興、安邦之地為柳湯沐邑"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.quoc-khang",
+   "full_name": "Trần Quốc Khang",
+   "gender": "M",
+   "parents": "u.lieu--thuan-thien",
+   "adoptive_parents": "u.thai-tong--thuan-thien",
+   "titles": [
+    {
+     "title": "Tĩnh Quốc đại vương"
+    }
+   ],
+   "bio": "Con của Thuận Thiên. Khi Thái Tông lấy Thuận Thiên làm hoàng hậu năm Đinh Dậu (1237), bà đã có mang Quốc Khang ba tháng; Quốc Khang được kể là con trưởng của Thái Tông, anh của Thánh Tông. Sau phong Tĩnh Quốc đại vương.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Sửu (1241)",
+     "quote": "國康其長兄也，後並封大王"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "時昭聖無子，而順天懷娠國康三月",
+     "note": "Mẹ đang có mang khi về với Thái Tông → cha đẻ là Trần Liễu."
+    },
+    {
+     "field": "parents",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Canh Tý (1240)",
+     "quote": "李氏懷娠，帝納之，生子，是爲國康"
+    },
+    {
+     "field": "adoptive_parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Sửu (1241)",
+     "quote": "國康其長兄也"
+    },
+    {
+     "field": "adoptive_parents",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Tân Dậu (1261)",
+     "quote": "帝兄國康年長，以常才不用"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Quý Mùi (1283)",
+     "quote": "靖國大王國康進金龜"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "而順天懷娠國康三月，陳守度與天極公主密謀於帝曰：「宜冒取之，以賴其後。」"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.quoc-tuan",
+   "full_name": "Trần Quốc Tuấn",
+   "gender": "M",
+   "parents": "u.lieu--khuyet",
+   "death": {
+    "lunar_year": 1300,
+    "lunar_month": 8,
+    "lunar_day": 20
+   },
+   "titles": [
+    {
+     "title": "Hưng Đạo đại vương"
+    },
+    {
+     "title": "Thái sư Thượng phụ Thượng quốc công Nhân Vũ Hưng Đạo đại vương (truy tặng)",
+     "from_year": 1300
+    }
+   ],
+   "bio": "Con Yên Sinh vương Trần Liễu, tước Hưng Đạo đại vương. Từng soạn sách binh pháp và viết hịch khuyên dụ các tướng. Mất ngày 20 tháng 8 năm Canh Tý (1300) ở dinh Vạn Kiếp, được tặng Thái sư Thượng phụ Thượng quốc công Nhân Vũ Hưng Đạo đại vương.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "國峻安生王子"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "國峻安生王子"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Ất Dậu (1285)",
+     "quote": "又有安生王夙釁，多猜疑"
+    },
+    {
+     "field": "death",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "秋八月二十日，興道大王國峻卒於萬劫第",
+     "value": "âm 1300-8-20"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "興道大王國峻卒於萬劫第"
+    },
+    {
+     "field": "title:1",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "贈太師尚父上國公仁武興道大王"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "國峻嘗撰兵家妙理要畧書，以援諸裨將，諭之以檄云"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "秋八月二十日，興道大王國峻卒於萬劫第，贈太師尚父上國公仁武興道大王"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.thien-thanh",
+   "full_name": "Thiên Thành công chúa",
+   "gender": "F",
+   "death": {
+    "lunar_year": 1288,
+    "lunar_month": 9
+   },
+   "titles": [
+    {
+     "title": "Nguyên Từ quốc mẫu"
+    }
+   ],
+   "bio": "Công chúa Thiên Thành, vốn được gả cho Trung Thành vương; Trần Quốc Tuấn lẻn vào nơi công chúa ở, vua bất đắc dĩ phải gả cho Quốc Tuấn (năm 1251). Hiệu Nguyên Từ quốc mẫu. Mất tháng 9 năm Mậu Tý (1288).",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Hợi (1251)",
+     "quote": "以天城長公主嫁忠誠王"
+    },
+    {
+     "field": "death",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Mậu Tý (1288)",
+     "quote": "秋九月，興道王夫人元慈國母陳氏薨即天城公主",
+     "value": "âm 1288-9"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Mậu Tý (1288)",
+     "quote": "興道王夫人元慈國母陳氏薨"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Hợi (1251)",
+     "quote": "國峻欲求配而無由，夜間乃潜入天城公主所居通之"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Hợi (1251)",
+     "quote": "帝不得已，以天城公主下嫁國峻"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.quoc-tang",
+   "full_name": "Trần Quốc Tảng",
+   "gender": "M",
+   "parents": "u.quoc-tuan--khuyet",
+   "titles": [
+    {
+     "title": "Hưng Nhượng đại vương"
+    }
+   ],
+   "bio": "Con thứ của Hưng Đạo đại vương Trần Quốc Tuấn, tước Hưng Nhượng đại vương. Con gái là Thuận Thánh Bảo Từ hoàng thái hậu, hoàng hậu của Anh Tông.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "又一日，以問次子興讓王國顙"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "國峻内深然之。又一日，以問次子興讓王國顙"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, Trần kỷ, Minh Tông hoàng đế — tiểu dẫn",
+     "quote": "興讓大王國顙之女也"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, Trần kỷ, Minh Tông hoàng đế — tiểu dẫn",
+     "quote": "嫡母順聖保慈皇太后陳氏，興讓大王國顙之女也"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.quoc-nghien",
+   "full_name": "Trần Quốc Nghiễn",
+   "gender": "M",
+   "parents": "u.quoc-tuan--khuyet",
+   "nickname": "Nghiễn",
+   "titles": [
+    {
+     "title": "Hưng Vũ vương"
+    }
+   ],
+   "bio": "Con Hưng Đạo đại vương Trần Quốc Tuấn, tước Hưng Vũ vương, lấy công chúa Thiên Thụy, có chiến công.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "時興武王巘以國峻之子尚天瑞公主，且有戦功"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "興武王巘以國峻之子"
+    },
+    {
+     "field": "nickname",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "時興武王巘以國峻之子",
+     "value": "Nghiễn",
+     "note": "Sử chỉ chép tên 巘; tên đầy đủ 'Trần Quốc Nghiễn' theo cách gọi thông dụng — người duyệt kiểm."
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "時興武王巘以國峻之子"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "時興武王巘以國峻之子尚天瑞公主，且有戦功"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Họ tên đầy đủ suy từ cách gọi thông dụng; sử chỉ chép 巘."
+   }
+  },
+  {
+   "key": "tran.quang-khai",
+   "full_name": "Trần Quang Khải",
+   "gender": "M",
+   "parents": "u.thai-tong--thuan-thien",
+   "birth": {
+    "lunar_year": 1241
+   },
+   "death": {
+    "lunar_year": 1294,
+    "lunar_month": 7,
+    "lunar_day": 3
+   },
+   "lifespan": 54,
+   "titles": [
+    {
+     "title": "Chiêu Minh đại vương",
+     "from_year": 1258
+    },
+    {
+     "title": "Thượng tướng Thái sư"
+    }
+   ],
+   "bio": "Hoàng tử thứ ba của Thái Tông, em cùng mẹ với Thánh Tông. Năm Mậu Ngọ (1258) được phong Chiêu Minh đại vương, sau làm Thượng tướng Thái sư. Mất ngày 3 tháng 7 năm Giáp Ngọ (1294), thọ 54 tuổi.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Sửu (1241)",
+     "quote": "皇第三子光啓生，太子晃同母弟也"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Sửu (1241)",
+     "quote": "皇第三子光啓生，太子晃同母弟也"
+    },
+    {
+     "field": "birth",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Sửu (1241)",
+     "quote": "皇第三子光啓生",
+     "value": "âm 1241"
+    },
+    {
+     "field": "death",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Giáp Ngọ (1294)",
+     "quote": "秋七月三日，上相太師昭明大王光啓卒，年五十四",
+     "value": "âm 1294-7-3"
+    },
+    {
+     "field": "lifespan",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Giáp Ngọ (1294)",
+     "quote": "昭明大王光啓卒，年五十四",
+     "value": "54"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Mậu Ngọ (1258)",
+     "quote": "封弟光啓為昭明大王"
+    },
+    {
+     "field": "title:0",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Mậu Ngọ (1258)",
+     "quote": "冬十一月，封弟光啓爲昭明大王"
+    },
+    {
+     "field": "title:1",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Giáp Ngọ (1294)",
+     "quote": "上相太師昭明大王光啓卒"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Sửu (1241)",
+     "quote": "皇第三子光啓生，太子晃同母弟也"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.nhat-duat",
+   "full_name": "Trần Nhật Duật",
+   "gender": "M",
+   "parents": "u.thai-tong--khuyet",
+   "birth": {
+    "lunar_year": 1255
+   },
+   "death": {
+    "lunar_year": 1330
+   },
+   "lifespan": 77,
+   "titles": [
+    {
+     "title": "Chiêu Văn vương",
+     "from_year": 1267
+    },
+    {
+     "title": "Tá Thánh Thái sư Chiêu Văn đại vương"
+    }
+   ],
+   "bio": "Hoàng tử thứ sáu của Thái Tông, sinh năm Ất Mão (1255). Năm Đinh Mão (1267) được phong Chiêu Văn vương, sau làm Tá Thánh Thái sư. Ưa giao du với người nước ngoài. Mất năm Canh Ngọ (1330), thọ 77 tuổi.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Ất Mão (1255)",
+     "quote": "皇第六子日燏生"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Ất Mão (1255)",
+     "quote": "皇第六子日燏生"
+    },
+    {
+     "field": "birth",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Ất Mão (1255)",
+     "quote": "皇第六子日燏生",
+     "value": "âm 1255",
+     "note": "Bản số chép tiêu đề năm này là 丁卯 (errata — đúng là 乙卯, Bảo Hựu 3 nhà Tống = 1255)."
+    },
+    {
+     "field": "death",
+     "source": "TT",
+     "locator": "Bản kỷ Q.7, năm Canh Ngọ (1330)",
+     "quote": "佐聖太師昭文大王日燏卒，年七十七",
+     "value": "âm 1330",
+     "note": "Tuổi thọ 77 lệch 1 năm so với năm sinh 1255 — kiểm lại."
+    },
+    {
+     "field": "lifespan",
+     "source": "TT",
+     "locator": "Bản kỷ Q.7, năm Canh Ngọ (1330)",
+     "quote": "昭文大王日燏卒，年七十七",
+     "value": "77"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Mão (1267)",
+     "quote": "封弟日燏為昭文王"
+    },
+    {
+     "field": "title:1",
+     "source": "TT",
+     "locator": "Bản kỷ Q.7, năm Canh Ngọ (1330)",
+     "quote": "佐聖太師昭文大王日燏卒"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.7, năm Canh Ngọ (1330)",
+     "quote": "日燏好與外國人遊"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Mão (1267)",
+     "quote": "封弟日燏為昭文王"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "tran.ich-tac",
+   "full_name": "Trần Ích Tắc",
+   "gender": "M",
+   "parents": "u.thanh-tong--khuyet",
+   "titles": [
+    {
+     "title": "Chiêu Quốc vương",
+     "from_year": 1267
+    }
+   ],
+   "bio": "Con thứ của Thánh Tông, thông minh hiếu học, thông kinh sử lục nghệ, văn chương hơn đời. Năm Đinh Mão (1267) được phong Chiêu Quốc vương.",
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Mão (1267)",
+     "quote": "益稷上皇次子，聰明好學，通經史六藝，文章冠世"
+    },
+    {
+     "field": "parents",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Mão (1267)",
+     "quote": "益稷上皇次子"
+    },
+    {
+     "field": "parents",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Đinh Mão (1267)",
+     "quote": "益稷，上皇次子"
+    },
+    {
+     "field": "title:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Mão (1267)",
+     "quote": "五月，封弟益稷為昭國王"
+    },
+    {
+     "field": "title:0",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Đinh Mão (1267)",
+     "quote": "五月，封弟益稷爲昭國王"
+    },
+    {
+     "field": "bio",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Mão (1267)",
+     "quote": "益稷上皇次子，聰明好學，通經史六藝，文章冠世"
     }
    ],
    "review": {
@@ -1928,6 +3082,12 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, năm Bính Tuất (1226)",
      "quote": "春正月，冊昭皇為皇后，改昭聖"
+    },
+    {
+     "field": "union",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Bính Tuất (1226)",
+     "quote": "春正月，冊李昭皇爲昭聖皇后"
     }
    ],
    "review": {
@@ -2148,6 +3308,102 @@
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
    }
+  },
+  {
+   "key": "u.thua--khuyet",
+   "husband": "tran.thua",
+   "citations": [],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "u.lieu--thuan-thien",
+   "husband": "tran.lieu",
+   "citations": [
+    {
+     "field": "union",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Đinh Dậu (1237)",
+     "quote": "納兄懷王柳妻順天公主李氏為順天皇后"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   },
+   "wife": "tran.thuan-thien",
+   "spouse_order": 1
+  },
+  {
+   "key": "u.lieu--khuyet",
+   "husband": "tran.lieu",
+   "citations": [],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "u.quoc-tuan--thien-thanh",
+   "husband": "tran.quoc-tuan",
+   "citations": [
+    {
+     "field": "union",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Tân Hợi (1251)",
+     "quote": "帝不得已，以天城公主下嫁國峻"
+    },
+    {
+     "field": "union",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Tân Hợi (1251)",
+     "quote": "以天城長公主嫁忠誠王，復歸于國峻"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   },
+   "wife": "tran.thien-thanh",
+   "spouse_order": 1
+  },
+  {
+   "key": "u.quoc-tuan--khuyet",
+   "husband": "tran.quoc-tuan",
+   "citations": [],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "u.quoc-tang--khuyet",
+   "husband": "tran.quoc-tang",
+   "citations": [],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "u.thai-tong--khuyet",
+   "husband": "tran.thai-tong",
+   "citations": [],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "u.thanh-tong--khuyet",
+   "husband": "tran.thanh-tong",
+   "citations": [],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
   }
  ],
  "resting_places": [
@@ -2182,6 +3438,12 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, năm Mậu Thân (1248)",
      "quote": "壽陵曰徽陵"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.6, năm Giáp Ngọ (1234)",
+     "quote": "秋八月，葬壽陵"
     }
    ],
    "review": {
@@ -2216,6 +3478,12 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, năm Đinh Sửu (1277)",
      "quote": "冬十月四日，塟昭陵，廟號太宗"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Đinh Sửu (1277)",
+     "quote": "冬十月，葬昭陵"
     }
    ],
    "review": {
@@ -2249,6 +3517,12 @@
      "source": "TT",
      "locator": "Bản kỷ Q.5, Trần kỷ, Thánh Tông hoàng đế — tiểu dẫn",
      "quote": "崩于仁壽宫，塟裕陵"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Canh Dần (1290)",
+     "quote": "十二月，葬裕陵"
     }
    ],
    "review": {
@@ -2288,6 +3562,12 @@
      "source": "TT",
      "locator": "Bản kỷ Q.6, năm Canh Tuất (1310)",
      "quote": "舍利藏卧雲庵寶㙮"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Canh Tuất (1310)",
+     "quote": "十八年元至大三年秋九月，葬德陵"
     }
    ],
    "review": {
@@ -2301,7 +3581,8 @@
    "key": "lang.thai-lang",
    "name": "Thái Lăng",
    "occupants": [
-    "tran.anh-tong"
+    "tran.anh-tong",
+    "tran.thuan-thanh"
    ],
    "citations": [
     {
@@ -2328,6 +3609,18 @@
      "source": "TT",
      "locator": "Bản kỷ Q.6, năm Canh Thân (1320)",
      "quote": "穆、阜二陵同"
+    },
+    {
+     "field": "occupant:1",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Nhâm Thân (1332)",
+     "quote": "春二月，合葬順聖保慈皇太后于泰陵"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Canh Thân (1320)",
+     "quote": "十二月，葬泰陵"
     }
    ],
    "review": {
@@ -2362,6 +3655,12 @@
      "source": "TT",
      "locator": "Bản kỷ Q.6, Trần kỷ, Minh Tông hoàng đế — tiểu dẫn",
      "quote": "崩于葆元宫，塟穆陵"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Đinh Dậu (1357)",
+     "quote": "冬十一月，葬穆陵"
     }
    ],
    "review": {
@@ -2388,12 +3687,35 @@
      "source": "TT",
      "locator": "Bản kỷ Q.7, Trần kỷ, Hiến Tông hoàng đế — tiểu dẫn",
      "quote": "崩塟昌安陵"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Giáp Thân (1344)",
+     "quote": "吳士連曰：天子七月而葬，憲宗至是始葬四年矣",
+     "note": "Cương mục chép tên lăng là 安陵 (An lăng)."
+    },
+    {
+     "field": "notes",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Giáp Thân (1344)",
+     "quote": "憲宗至是始葬四年矣"
+    },
+    {
+     "field": "location_name",
+     "source": "CM",
+     "locator": "Chính biên Q.9, năm Giáp Thân (1344)",
+     "quote": "註：安陵，在建昌府",
+     "value": "phủ Kiến Xương",
+     "note": "Lời chú của sử thần triều Nguyễn (thế kỷ 19)."
     }
    ],
    "review": {
     "status": "draft",
     "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
-   }
+   },
+   "notes": "Toàn thư gọi là Xương An lăng, Cương mục gọi là An lăng. Theo Cương mục, năm Giáp Thân (1344) mới táng, bốn năm sau khi Hiến Tông mất.",
+   "location_name": "phủ Kiến Xương"
   },
   {
    "key": "lang.phu-lang",
@@ -2420,6 +3742,12 @@
      "locator": "Bản kỷ Q.6, năm Canh Thân (1320)",
      "quote": "上皇塟安生泰陵在安生山，穆、阜二陵同",
      "value": "núi Yên Sinh"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.10, năm Kỷ Dậu (1369)",
+     "quote": "冬十一月，葬阜陵"
     }
    ],
    "review": {
@@ -2453,6 +3781,12 @@
      "locator": "Bản kỷ Q.8, năm Giáp Tuất (1394)",
      "quote": "上皇崩塟安生原陵",
      "value": "Yên Sinh"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.11, năm Giáp Tuất (1394)",
+     "quote": "十一月，上皇崩，葬原陵"
     }
    ],
    "review": {
@@ -2545,7 +3879,193 @@
    "location_name": "núi An Bài"
   }
  ],
- "heritage": [],
+ "heritage": [
+  {
+   "key": "ds.hich-tuong-si",
+   "category": "artifact",
+   "title": "Hịch tướng sĩ",
+   "summary": "Bài hịch Hưng Đạo đại vương Trần Quốc Tuấn viết để khuyên dụ các tướng, Toàn thư và Cương mục đều chép.",
+   "body": "Hưng Đạo đại vương Trần Quốc Tuấn từng soạn sách binh pháp để dạy các tướng, và viết bài hịch khuyên dụ họ. Bài hịch mở đầu bằng gương Kỷ Tín chết thay cho Hán Cao đế, Do Vu lấy lưng đỡ giáo che cho Sở Chiêu vương, rồi trách các tướng không lấy việc rửa nhục làm lo, khuyên họ chăm học binh thư. Toàn thư chép bài hịch trong mục năm Canh Tý (1300), nhân việc Hưng Đạo vương mất.",
+   "people": [
+    {
+     "person": "tran.quoc-tuan",
+     "role_note": "tác giả"
+    }
+   ],
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "國峻嘗撰兵家妙理要畧書，以援諸裨將，諭之以檄云"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Canh Tý (1300)",
+     "quote": "親撰兵家妙理要略，檄授諸裨將"
+    },
+    {
+     "field": "body",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "余常聞之，紀信以身代死而脫高帝，由于以背受戈而蔽昭王"
+    },
+    {
+     "field": "body",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Canh Tý (1300)",
+     "quote": "汝等旣恬然不以雪恥爲念，而又不敎士卒"
+    },
+    {
+     "field": "person:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "國峻嘗撰兵家妙理要畧書"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "ds.binh-thu",
+   "category": "artifact",
+   "title": "Binh thư yếu lược và Vạn Kiếp tông bí truyền thư",
+   "summary": "Hai bộ sách binh pháp của Hưng Đạo đại vương Trần Quốc Tuấn.",
+   "body": "Trong bài hịch, Hưng Đạo đại vương nói đã chọn lọc binh pháp các nhà làm thành một sách gọi là Binh thư yếu lược, dặn các tướng chăm học. Ông lại gom binh pháp các nhà làm thành đồ hình Bát quái cửu cung, gọi là Vạn Kiếp tông bí truyền thư; Nhân Huệ vương Trần Khánh Dư viết bài tựa.",
+   "people": [
+    {
+     "person": "tran.quoc-tuan",
+     "role_note": "tác giả"
+    }
+   ],
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "為一書名曰《兵書要略》"
+    },
+    {
+     "field": "body",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "今余歷選諸家兵法，為一書名曰《兵書要略》"
+    },
+    {
+     "field": "body",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "又集諸家兵法，為八卦九宫圖，名曰《萬刧宗秘傳書》"
+    },
+    {
+     "field": "body",
+     "source": "CM",
+     "locator": "Chính biên Q.8, năm Canh Tý (1300)",
+     "quote": "名曰萬刧宗秘傳書，仁惠王慶餘序之"
+    },
+    {
+     "field": "person:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.6, năm Canh Tý (1300)",
+     "quote": "今余歷選諸家兵法"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "ds.dien-hong",
+   "category": "story",
+   "title": "Hội nghị Diên Hồng (1284)",
+   "summary": "Thượng hoàng Thánh Tông mời các bô lão trong nước họp ở thềm điện Diên Hồng hỏi kế đánh quân Nguyên.",
+   "body": "Năm Giáp Thân (1284), khi quân Nguyên sắp sang, Thượng hoàng Thánh Tông mời các bô lão trong nước họp ở thềm điện Diên Hồng, ban yến và hỏi kế. Các bô lão đều nói: đánh; muôn người cùng một lời, như từ một miệng nói ra.",
+   "people": [
+    {
+     "person": "tran.thanh-tong",
+     "role_note": "Thượng hoàng triệu tập"
+    }
+   ],
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Giáp Thân (1284)",
+     "quote": "上皇召天下父老，會于延洪堦，賜食問計"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Giáp Thân (1284)",
+     "quote": "帝召天下耆老于延洪殿階，賜食問計",
+     "note": "Cương mục chép 帝 (vua), Toàn thư chép 上皇 (Thượng hoàng)."
+    },
+    {
+     "field": "body",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Giáp Thân (1284)",
+     "quote": "皆曰戰，萬人同辝，如出一口"
+    },
+    {
+     "field": "person:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Giáp Thân (1284)",
+     "quote": "上皇召天下父老"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  },
+  {
+   "key": "ds.binh-than",
+   "category": "story",
+   "title": "Hội nghị Bình Than (1282)",
+   "summary": "Nhân Tông họp vương hầu, trăm quan ở Bình Than bàn kế đánh giữ trước cuộc kháng chiến chống Nguyên.",
+   "body": "Tháng 10 năm Nhâm Ngọ (1282), Nhân Tông ngự đến Bình Than, đóng ở vịnh Trần Xá, họp các vương hầu và trăm quan bàn kế đánh giữ, chia nhau giữ các nơi hiểm yếu. Trong dịp này Nhân Huệ vương Trần Khánh Dư được cử làm Phó đô tướng quân.",
+   "people": [
+    {
+     "person": "tran.nhan-tong",
+     "role_note": "chủ trì"
+    }
+   ],
+   "citations": [
+    {
+     "field": "existence",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "冬十月，帝幸平灘，駐蹕陳舍灣，會王侯百官，議攻守之策"
+    },
+    {
+     "field": "existence",
+     "source": "CM",
+     "locator": "Chính biên Q.7, năm Nhâm Ngọ (1282)",
+     "quote": "帝乃命駕幸平灘，會王侯百官議攻守之策"
+    },
+    {
+     "field": "body",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "議攻守之策，及分守要害。以仁惠王陳慶餘為副都將軍"
+    },
+    {
+     "field": "person:0",
+     "source": "TT",
+     "locator": "Bản kỷ Q.5, năm Nhâm Ngọ (1282)",
+     "quote": "冬十月，帝幸平灘"
+    }
+   ],
+   "review": {
+    "status": "draft",
+    "note": "Khung P1 — AI trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."
+   }
+  }
+ ],
  "events": [],
  "same_person_links": [
   {
