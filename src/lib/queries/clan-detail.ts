@@ -10,6 +10,9 @@ export interface ClanDetail {
   name: string;
   description: string | null;
   visibility: "private" | "public";
+  /** 'historical' = dòng họ lịch sử (gia phả vua chúa, quý tộc, quan lại…) có trích dẫn nguồn. */
+  kind: "family" | "historical";
+  historical_category: "royal" | "noble" | "official" | "military" | null;
   hide_living_for_nonmembers: boolean;
   hide_photos_in_share: boolean;
   /** Người đã mất: hiện thêm ngày giỗ + tuổi thọ (cây + sổ PDF). */
@@ -61,7 +64,7 @@ export async function getClanDetail(
     client
       .from("clans")
       .select(
-        "id, name, description, visibility, hide_living_for_nonmembers, hide_photos_in_share, display_death_details, display_living_full_dob, generation_offset, public_show_tree, public_show_heritage, public_show_graves, public_show_events, max_persons, max_users, data_version, owner_id, disabled_features",
+        "id, name, description, visibility, kind, historical_category, hide_living_for_nonmembers, hide_photos_in_share, display_death_details, display_living_full_dob, generation_offset, public_show_tree, public_show_heritage, public_show_graves, public_show_events, max_persons, max_users, data_version, owner_id, disabled_features",
       )
       .eq("id", clanId)
       .maybeSingle(),
@@ -84,6 +87,8 @@ export async function getClanDetail(
   return {
     ...clan,
     visibility: clan.visibility as ClanDetail["visibility"],
+    kind: clan.kind as ClanDetail["kind"],
+    historical_category: clan.historical_category as ClanDetail["historical_category"],
     myRole: (membership?.role as ClanDetail["myRole"]) ?? null,
     isPlatformAdmin: !!profile?.is_platform_admin,
   };

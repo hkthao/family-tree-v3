@@ -30,7 +30,7 @@ const cite = (field: string, source = "A1", value?: string): Citation => ({
 
 function base(): DynastyFile {
   return {
-    clan: { key: "thu", name: "Nhà Thử" },
+    clan: { key: "thu", name: "Nhà Thử", category: "royal" },
     persons: [
       {
         key: "thu.cha",
@@ -92,6 +92,12 @@ describe("validate (gia phả lịch sử)", () => {
     const f = base();
     validate(f, sources);
     expect(f.persons[0].citations).toHaveLength(4);
+  });
+
+  it("thiếu / sai phân loại dòng họ → lỗi", () => {
+    const f = base();
+    (f.clan as { category: string }).category = "dynasty";
+    expect(errs(f)).toMatch(/clan.category phải là/);
   });
 
   it("dữ kiện thiếu trích dẫn → lỗi", () => {
@@ -471,7 +477,7 @@ describe("cột ngày giống form", () => {
   it("chỉ tháng/ngày âm (giỗ) → lưu âm, suy ra ngày giỗ như form", () => {
     const r = validate(
       {
-        clan: { key: "thu", name: "Nhà Thử" },
+        clan: { key: "thu", name: "Nhà Thử", category: "royal" },
         persons: [
           {
             key: "thu.a",

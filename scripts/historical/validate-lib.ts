@@ -194,7 +194,13 @@ export interface HeritageDraft {
 }
 
 export interface DynastyFile {
-  clan: { key: string; name: string; description?: string | null };
+  clan: {
+    key: string;
+    name: string;
+    description?: string | null;
+    /** royal = hoàng tộc · noble = quý tộc · official = quan lại, khoa bảng · military = võ tướng */
+    category: "royal" | "noble" | "official" | "military";
+  };
   persons: PersonDraft[];
   unions: UnionDraft[];
   resting_places?: RestingPlaceDraft[];
@@ -558,6 +564,9 @@ export function validate(
 
   if (!file.clan?.key || !KEY_RE.test(file.clan.key)) errors.push("clan.key thiếu hoặc sai định dạng");
   if (!file.clan?.name) errors.push("clan.name thiếu");
+  if (!["royal", "noble", "official", "military"].includes(file.clan?.category)) {
+    errors.push("clan.category phải là royal | noble | official | military");
+  }
 
   const persons = new Map<string, PersonDraft>();
   const unions = new Map<string, UnionDraft>();

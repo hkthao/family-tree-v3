@@ -160,6 +160,7 @@ async function main() {
     name: file.clan.name,
     description: file.clan.description ?? null,
     kind: "historical",
+    historical_category: file.clan.category,
     visibility: "public",
     max_persons: 3000,
     // Người ngoài xem được Mộ phần (lăng tẩm) + Di sản của dòng họ lịch sử.
@@ -484,8 +485,9 @@ async function main() {
   if (citations.length) must("person_citations", await admin.from("person_citations").insert(citations));
 
   const reigns = persons.flatMap((p) =>
-    (p.reigns ?? []).map((r) => ({
+    (p.reigns ?? []).map((r, i) => ({
       clan_id: clanId,
+      sort: i,
       person_id: personId.get(p.key)!,
       dynasty: r.dynasty,
       ordinal: r.ordinal ?? null,
@@ -500,8 +502,9 @@ async function main() {
   if (reigns.length) must("person_reigns", await admin.from("person_reigns").insert(reigns));
 
   const titles = persons.flatMap((p) =>
-    (p.titles ?? []).map((t) => ({
+    (p.titles ?? []).map((t, i) => ({
       clan_id: clanId,
+      sort: i,
       person_id: personId.get(p.key)!,
       title: t.title,
       from_year: t.from_year ?? null,

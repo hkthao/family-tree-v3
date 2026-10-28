@@ -20,6 +20,7 @@ import {
 import { ClanBadges } from "@/components/ClanBadges";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
+import { HistoricalClansSection } from "@/components/HistoricalClansSection";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { PageHeader } from "@/components/PageHeader";
@@ -296,6 +297,8 @@ export default function Clans() {
             Dòng họ công khai bạn chưa tham gia — chỉ xem cây, người còn sống được ẩn.
           </p>
         )}
+
+        {tab === "community" && !debounced && <HistoricalClansSection />}
 
         {isLoading && <LoadingState />}
 
