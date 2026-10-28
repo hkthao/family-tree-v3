@@ -193,11 +193,12 @@ nằm ở bảng trích dẫn.
   - Ngày âm không có thật (tháng nhuận sai…) → lỗi (quy đổi ngược để bắt).
 - **Ngày trước năm 1800: KHÔNG quy đổi ra ngày dương.** Lưu đúng ngày âm như sử chép +
   năm (độ chính xác "năm") để cây hiện năm; ngày giỗ lấy thẳng từ tháng/ngày âm.
-  - Lý do 1: thư viện lịch của app (`@dqcai/vn-lunar`) **quy đổi sai** nhiều năm trước
-    1800 (các năm tận cùng 8, 9: 1218, 1258, 1308, 1369…) — kết quả vô nghĩa (tháng 14).
-    Lỗi này ảnh hưởng cả người dùng thường nhập ngày âm trước 1800 → nên sửa ở app.
-  - Lý do 2: lịch Việt thời đó (Thụ Thời, Hiệp Kỷ…) khác thuật toán hiện đại; ngày dương
-    "quy đổi" sẽ là giá trị bịa.
+  - Lý do: lịch Việt thời đó (Thụ Thời, Hiệp Kỷ…) khác thuật toán hiện đại; ngày dương
+    "quy đổi" sẽ là giá trị suy diễn.
+  - (Đã sửa 28/10/2026) Thư viện `@dqcai/vn-lunar` 1.0.1 chép thiếu chữ số hex cuối ở 54
+    giá trị bảng năm 1200–1799 → các năm tận cùng 8, 9 quy đổi sai. Đã vá tại chỗ trong
+    `src/lib/lunarDate.ts` (+ bản vendor cho edge function); dữ liệu cũ của người dùng
+    sửa bằng `scripts/fix-pre1800-lunar-dates.ts`.
   - Năm hiển thị = năm âm; tháng 11–12 âm có thể đã sang năm dương sau (validator cảnh báo).
   - Hạn chế: form Sửa người hiện chỉ hiện năm cho các ngày này; bấm Lưu trên form sẽ xoá
     tháng/ngày âm → **không sửa dòng họ lịch sử bằng form**, sửa file nháp rồi nhập lại.
