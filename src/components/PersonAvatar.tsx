@@ -28,7 +28,11 @@ export function PersonAvatar({ gender, photoUrl, size = 40, className }: Props) 
       height={size}
       loading="lazy"
       decoding="async"
-      className={`rounded-full object-cover bg-muted ${className ?? ""}`}
+      // Khoá cả hai chiều bằng style: Tailwind đặt `height: auto` cho <img>, nên
+      // ảnh đứng / ngang (vd tượng thờ 3:4 từ link ngoài) sẽ méo thành bầu dục;
+      // object-cover cắt ảnh vừa khung tròn. shrink-0: không bị ép hẹp trong flex.
+      style={{ width: size, height: size }}
+      className={`shrink-0 rounded-full object-cover object-top bg-muted ${className ?? ""}`}
       aria-hidden="true"
       draggable={false}
     />
