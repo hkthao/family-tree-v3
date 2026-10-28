@@ -30,7 +30,26 @@ import {
   getMonthCanChi,
   getSolarDate,
   getYearCanChi,
+  TK13,
+  TK14,
+  TK15,
+  TK16,
+  TK17,
+  TK18,
 } from "npm:@dqcai/vn-lunar@1.0.1";
+
+// @dqcai/vn-lunar 1.0.1 chép thiếu chữ số hex cuối ở 54 giá trị trong bảng
+// năm 1200–1799 (phần tử thứ 10 của mỗi nhóm: 0x48ab60 → 0x48ab6), nên các
+// năm tận cùng 8, 9 quy đổi sai (mùng 5 Tết Kỷ Dậu 1789 ra 06/01 thay vì
+// 30/01). Giá trị đúng luôn ≥ 1.000.000 (ngày Tết lệch so với 1/1 được dịch
+// trái 17 bit) → giá trị nhỏ hơn chắc chắn bị cắt, nhân 16 là ra bản gốc.
+// Sửa tại chỗ một lần khi nạp module (bảng là mảng dùng chung với thư viện);
+// chạy lại không đổi gì nữa.
+for (const table of [TK13, TK14, TK15, TK16, TK17, TK18]) {
+  for (let i = 0; i < table.length; i++) {
+    if (table[i] < 1_000_000) table[i] *= 16;
+  }
+}
 
 export interface LunarYMD {
   year: number;
