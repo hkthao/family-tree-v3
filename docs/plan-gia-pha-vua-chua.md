@@ -339,6 +339,36 @@ Nhà Nguyễn giá trị hơn nhưng to và có hậu duệ còn sống — làm
 | Lịch âm cổ quy đổi sai | Lưu âm lịch như nguồn, dương lịch gắn cờ "quy đổi" |
 | Lẫn số liệu lịch sử vào thống kê/leaderboard dòng họ thật | Lọc `kind='historical'` khỏi stats, leaderboard, giới hạn gói |
 
+## Mở rộng: quý tộc, quan lại – khoa bảng, võ tướng (sau hoàng tộc)
+- Dòng họ lịch sử không chỉ là các triều vua: `clans.historical_category` = `royal`
+  (hoàng tộc, vương tộc, chúa) · `noble` (quý tộc, công thần thế tộc) · `official` (quan
+  lại, khoa bảng) · `military` (võ tướng). Mục "Gia phả lịch sử" ở tab Cộng đồng lọc
+  theo nhóm; file nháp khai `clan.category` (bắt buộc).
+- Nguồn đặc thù: *Đại Việt lịch triều đăng khoa lục* / *Quốc triều đăng khoa lục* (khoa
+  bảng), bia Tiến sĩ Văn Miếu (văn bia — tầng A/B), *Lịch triều hiến chương loại chí*
+  (Nhân vật chí), *Đại Nam liệt truyện*, *Đại Nam chính biên liệt truyện*; tộc phả /
+  gia phả dòng họ (tầng B — cần đối chiếu chính sử, ghi rõ bản nào, năm nào chép).
+- Chức tước, khoa cử ghi ở `titles` (vd "Đệ nhất giáp Tiến sĩ cập đệ — Trạng nguyên",
+  from_year = năm khoa thi; "Thượng thư bộ Lại" + năm nhậm); có thể tách bảng khoa cử
+  riêng khi làm thật.
+- Khác hoàng tộc: hậu duệ còn sống nhiều, nhiều người đã có dòng họ trên app → quy tắc
+  "chỉ nhập người đã mất" giữ nguyên; liên kết với dòng họ người dùng ("họ tôi là hậu
+  duệ…") làm qua thông gia `same_person`, cần dòng họ người dùng tự xác nhận — không
+  tự nối.
+
+## Trạng thái P2 — giao diện (28/10/2026)
+- Trang người (dòng họ lịch sử): thẻ **Trị vì & tước hiệu** (vua thứ mấy, miếu hiệu,
+  năm ở ngôi, niên hiệu; tước hiệu; cha mẹ nuôi / thừa tự qua RPC
+  `get_person_adoptive_parents`) và thẻ **Nguồn sử liệu** (gom theo dữ kiện, nhãn mức
+  tin cậy, dị bản tự mở, trích nguyên văn chữ Hán, "Nguồn này ghi: …").
+- Nút **Báo sai sót** ngay trong thẻ Nguồn — gửi vào hộp góp ý (`feedback`, category
+  bug) nên người ngoài cũng gửi được (nút "Đề xuất sửa" chỉ dành cho thành viên).
+- Đầu trang dòng họ: "Gia phả lịch sử · Hoàng tộc · có trích dẫn nguồn".
+- Tab Cộng đồng: mục **Gia phả lịch sử** riêng (chip lọc theo nhóm); bảng xếp hạng chỉ
+  tính dòng họ thường (`kind = 'family'`).
+- Ngày trước 1800 của dòng họ lịch sử: không hiện can chi ngày/tháng tự tính.
+- Chưa làm: trang share công khai cho khách chưa đăng nhập (SEO), bản đồ lăng tẩm.
+
 ## Trạng thái P1 — Nhà Trần (28/10/2026)
 - `data/historical/tran.json` (BẢN NHÁP, chưa duyệt): 38 người / 12 đời (thuỷ tổ Trần
   Kinh → Thiếu Đế), 26 hôn nhân, 12 vua có trị vì + miếu hiệu + niên hiệu, 12 lăng,

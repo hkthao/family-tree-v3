@@ -514,7 +514,7 @@ heritage = []
 exec(open(__file__.replace("gen_tran.py", "gen_tran_ext.py"), encoding="utf8").read())
 
 data = {
-    "clan": {"key": "tran", "name": "Nhà Trần (1225–1400)",
+    "clan": {"key": "tran", "name": "Nhà Trần (1225–1400)", "category": "royal",
              "description": "Gia phả các đời vua nhà Trần theo Đại Việt sử ký toàn thư. Mỗi dữ kiện có trích dẫn nguyên văn; xem dòng \"Theo:\" cuối tiểu sử."},
     "persons": persons,
     "unions": unions,
