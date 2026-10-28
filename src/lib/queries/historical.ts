@@ -112,6 +112,27 @@ export async function getPersonHistorical(
   };
 }
 
+/**
+ * Tiểu sử, tên tự/húy/thụy, nơi sinh/an táng, ngày âm của một người đã mất
+ * trong dòng họ lịch sử công khai — share-view không trả các trường này ở
+ * trang xem thử. Dòng họ khác / người còn sống → null.
+ */
+export async function getHistoricalPersonExtras(
+  personId: string,
+  client: Client = defaultClient,
+): Promise<Database["public"]["Functions"]["get_historical_person_extras"]["Returns"][number] | null> {
+  const { data, error } = await client.rpc("get_historical_person_extras", { p_person_id: personId });
+  if (error) throw new Error(error.message);
+  return data?.[0] ?? null;
+}
+
+/** Dòng họ có nguồn sử liệu không — để trang xem thử công khai bật tab "Chi tiết". */
+export async function clanHasSources(clanId: string, client: Client = defaultClient): Promise<boolean> {
+  const { data, error } = await client.from("person_citations").select("id").eq("clan_id", clanId).limit(1);
+  if (error) return false;
+  return (data ?? []).length > 0;
+}
+
 export interface HistoricalClanSummary {
   id: string;
   name: string;

@@ -54,27 +54,39 @@ export function HistoricalPersonSections({
   personName,
   clanId,
   userId,
+  onPersonClick,
 }: {
   personId: string;
   personName: string;
   clanId: string;
-  userId: string;
+  /** Rỗng = khách chưa đăng nhập (trang xem thử công khai). */
+  userId?: string;
+  /** Trang xem thử: bấm tên cha mẹ nuôi → đổi người đang xem thay vì mở trang trong app. */
+  onPersonClick?: (personId: string) => void;
 }) {
   const { data } = useQuery({
-    queryKey: ["person-historical", personId, userId],
+    queryKey: ["person-historical", personId, userId ?? ""],
     queryFn: () => getPersonHistorical(personId),
-    enabled: !!personId && !!userId,
+    enabled: !!personId,
   });
   if (!data) return null;
   return (
     <>
-      <ReignCard data={data} clanId={clanId} />
+      <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />
       <SourcesCard data={data} personName={personName} clanId={clanId} />
     </>
   );
 }
 
-function ReignCard({ data, clanId }: { data: PersonHistorical; clanId: string }) {
+function ReignCard({
+  data,
+  clanId,
+  onPersonClick,
+}: {
+  data: PersonHistorical;
+  clanId: string;
+  onPersonClick?: (personId: string) => void;
+}) {
   const { reigns, titles, adoptiveParents } = data;
   if (reigns.length === 0 && titles.length === 0 && adoptiveParents.length === 0) return null;
   return (
@@ -130,9 +142,15 @@ function ReignCard({ data, clanId }: { data: PersonHistorical; clanId: string })
               {adoptiveParents.map((p) => (
                 <li key={p.person_id}>
                   <span className="text-muted-foreground">{p.role === "father" ? "Cha nuôi: " : "Mẹ nuôi: "}</span>
-                  <Link to={`/clans/${clanId}/people/${p.person_id}`} className="text-primary hover:underline">
-                    {p.full_name ?? "(ẩn)"}
-                  </Link>
+                  {onPersonClick ? (
+                    <button type="button" onClick={() => onPersonClick(p.person_id)} className="text-primary hover:underline">
+                      {p.full_name ?? "(ẩn)"}
+                    </button>
+                  ) : (
+                    <Link to={`/clans/${clanId}/people/${p.person_id}`} className="text-primary hover:underline">
+                      {p.full_name ?? "(ẩn)"}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

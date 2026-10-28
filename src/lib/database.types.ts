@@ -3793,6 +3793,26 @@ export type Database = {
           persons_with_birth: number
         }[]
       }
+      get_historical_person_extras: {
+        Args: { p_person_id: string }
+        Returns: {
+          bio: string
+          birth_lunar_day: number
+          birth_lunar_month: number
+          birth_lunar_year: number
+          birth_place: string
+          burial_place: string
+          courtesy_name: string
+          death_anniv_lunar_day: number
+          death_anniv_lunar_month: number
+          death_lunar_day: number
+          death_lunar_month: number
+          death_lunar_year: number
+          lifespan_years: number
+          nickname: string
+          posthumous_name: string
+        }[]
+      }
       get_inlaw_peer_relatives: {
         Args: { p_link_id: string; p_viewing_clan_id?: string }
         Returns: Json
@@ -3827,6 +3847,10 @@ export type Database = {
       is_clan_admin: { Args: { target_clan: string }; Returns: boolean }
       is_clan_member: { Args: { target_clan: string }; Returns: boolean }
       is_platform_admin: { Args: never; Returns: boolean }
+      is_public_historical_clan: {
+        Args: { p_clan_id: string }
+        Returns: boolean
+      }
       merge_persons: {
         Args: { p_loser: string; p_winner: string }
         Returns: Json

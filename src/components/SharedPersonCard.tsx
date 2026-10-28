@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { ContributeDialog } from "@/components/ContributeDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -39,6 +39,10 @@ interface Props {
    *  contribution UI entirely. */
   clanId?: string;
   shareToken?: string;
+  /** Trang xem thử công khai: bấm người trong "Quan hệ" → xem người đó. */
+  onPersonClick?: (personId: string) => void;
+  /** Nội dung thêm sau "Quan hệ" (vd nguồn sử liệu của dòng họ lịch sử). */
+  extra?: ReactNode;
 }
 
 /**
@@ -58,6 +62,8 @@ export function SharedPersonCard({
   clanId,
   shareToken,
   restingPlaces,
+  onPersonClick,
+  extra,
 }: Props) {
   const [contribOpen, setContribOpen] = useState(false);
   const byId = new Map(persons.map((p) => [p.id, p]));
@@ -241,13 +247,15 @@ export function SharedPersonCard({
           </CardHeader>
           <CardContent className="space-y-5">
             {(father || mother) && (
-              <Group label="Cha mẹ" items={[father, mother].filter(Boolean) as ShareViewPerson[]} />
+              <Group label="Cha mẹ" items={[father, mother].filter(Boolean) as ShareViewPerson[]} onPersonClick={onPersonClick} />
             )}
-            {spouses.length > 0 && <Group label="Vợ / chồng" items={spouses} />}
-            {children.length > 0 && <Group label="Con cái" items={children} />}
+            {spouses.length > 0 && <Group label="Vợ / chồng" items={spouses} onPersonClick={onPersonClick} />}
+            {children.length > 0 && <Group label="Con cái" items={children} onPersonClick={onPersonClick} />}
           </CardContent>
         </Card>
       )}
+
+      {extra}
 
       {clanId && shareToken && (
         <ContributeDialog
@@ -285,7 +293,15 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function Group({ label, items }: { label: string; items: ShareViewPerson[] }) {
+function Group({
+  label,
+  items,
+  onPersonClick,
+}: {
+  label: string;
+  items: ShareViewPerson[];
+  onPersonClick?: (personId: string) => void;
+}) {
   return (
     <div className="space-y-2">
       <h3 className="text-base font-semibold">{label}</h3>
@@ -293,7 +309,22 @@ function Group({ label, items }: { label: string; items: ShareViewPerson[] }) {
         {items.map((p) => (
           <li
             key={p.id}
-            className="flex items-center gap-3 rounded-md border bg-card px-3 py-2"
+            className={`flex items-center gap-3 rounded-md border bg-card px-3 py-2${
+              onPersonClick ? " cursor-pointer hover:border-primary" : ""
+            }`}
+            onClick={onPersonClick ? () => onPersonClick(p.id) : undefined}
+            onKeyDown={
+              onPersonClick
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onPersonClick(p.id);
+                    }
+                  }
+                : undefined
+            }
+            role={onPersonClick ? "button" : undefined}
+            tabIndex={onPersonClick ? 0 : undefined}
           >
             <PersonAvatar
               gender={p.gender}

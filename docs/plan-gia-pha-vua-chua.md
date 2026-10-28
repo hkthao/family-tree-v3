@@ -367,7 +367,14 @@ Nhà Nguyễn giá trị hơn nhưng to và có hậu duệ còn sống — làm
 - Tab Cộng đồng: mục **Gia phả lịch sử** riêng (chip lọc theo nhóm); bảng xếp hạng chỉ
   tính dòng họ thường (`kind = 'family'`).
 - Ngày trước 1800 của dòng họ lịch sử: không hiện can chi ngày/tháng tự tính.
-- Chưa làm: trang share công khai cho khách chưa đăng nhập (SEO), bản đồ lăng tẩm.
+- Trang xem thử công khai `/xem/clans/:id` (khách chưa đăng nhập): tab **Chi tiết &
+  nguồn** cho dòng họ có nguồn sử liệu — người đang chọn trên cây (bấm thẻ hoặc tìm
+  tên) với tiểu sử, tên húy/thụy, ngày âm, quan hệ (bấm để chuyển người), trị vì, nguồn
+  và Báo sai sót. Quyền anon (migration `20261028150000`): đọc trích dẫn / trị vì / tước
+  hiệu + RPC `get_historical_person_extras`, `get_person_adoptive_parents` — CHỈ dòng
+  họ lịch sử công khai, người đã mất; dòng họ thường không mở thêm gì.
+- Chưa làm: SEO (SPA chưa có render phía server / meta riêng từng người), bản đồ lăng
+  tẩm.
 
 ## Trạng thái P1 — Nhà Trần (28/10/2026)
 - `data/historical/tran.json` (BẢN NHÁP, chưa duyệt): 38 người / 12 đời (thuỷ tổ Trần
