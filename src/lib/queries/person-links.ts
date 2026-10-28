@@ -14,8 +14,57 @@ type Client = SupabaseClient<Database>;
 
 export type PersonLinkStatus = "pending" | "confirmed" | "revoked";
 
+/**
+ * Loại liên kết giữa hai dòng họ qua thành viên:
+ *   same_person   — thông gia: cùng một người có mặt ở cả hai dòng họ;
+ *   ancestor_of   — người ở dòng họ A là TỔ TIÊN của người ở dòng họ B;
+ *   descendant_of — người ở dòng họ A là HẬU DUỆ của người ở dòng họ B;
+ *   related       — họ hàng / cùng nguồn gốc khác (nêu rõ trong ghi chú).
+ */
+export type PersonLinkType = "same_person" | "ancestor_of" | "descendant_of" | "related";
+
+export const LINK_TYPE_LABEL: Record<PersonLinkType, string> = {
+  same_person: "Thông gia",
+  ancestor_of: "Tổ tiên – hậu duệ",
+  descendant_of: "Hậu duệ – tổ tiên",
+  related: "Họ hàng / cùng nguồn gốc",
+};
+
+/**
+ * Nhãn theo góc nhìn của dòng họ đang xem. `ancestor_of`: phía A có TỔ TIÊN
+ * của phía B → với dòng họ B (phía còn lại) thì đó là dòng họ "tổ".
+ */
+export function linkTypeFromSide(type: PersonLinkType, viewingIsA: boolean): string {
+  switch (type) {
+    case "same_person":
+      return "Thông gia";
+    case "related":
+      return "Họ hàng / cùng nguồn gốc";
+    case "ancestor_of":
+      return viewingIsA ? "Có tổ tiên của họ bên kia" : "Là hậu duệ của họ bên kia";
+    case "descendant_of":
+      return viewingIsA ? "Là hậu duệ của họ bên kia" : "Có tổ tiên của họ bên kia";
+  }
+}
+
+export const LINK_TYPE_HELP: Record<PersonLinkType, string> = {
+  same_person: "Một người vừa thuộc dòng họ này vừa thuộc dòng họ kia (vd con gái họ này làm dâu họ kia).",
+  ancestor_of: "Người bạn chọn là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ họ này là cha của một người họ kia).",
+  descendant_of: "Người bạn chọn là HẬU DUỆ của một người ở dòng họ kia (vd họ này là chi nhánh của dòng họ kia).",
+  related: "Họ hàng hoặc cùng nguồn gốc khác — ghi rõ quan hệ ở phần ghi chú.",
+};
+
+/** Mô tả cho bên NHẬN đề nghị (góc nhìn của dòng họ B). */
+export const LINK_TYPE_INCOMING_HELP: Record<PersonLinkType, string> = {
+  same_person: "Người bên kia cũng chính là một người trong dòng họ của bạn (vd dâu/rể).",
+  ancestor_of: "Người bên kia là TỔ TIÊN của một người trong dòng họ của bạn.",
+  descendant_of: "Người bên kia là HẬU DUỆ của một người trong dòng họ của bạn.",
+  related: "Hai dòng họ là họ hàng / cùng nguồn gốc — xem ghi chú của bên gửi.",
+};
+
 export interface PersonLink {
   id: string;
+  link_type: PersonLinkType;
   status: PersonLinkStatus;
   clan_a_id: string;
   person_a_id: string;
@@ -102,18 +151,25 @@ export function isInlawCacheKey(queryKey: readonly unknown[]): boolean {
   return typeof head === "string" && INLAW_QUERY_PREFIXES.has(head);
 }
 
+/** Loại liên kết cần lấy: mặc định chỉ thông gia (hành vi cũ); "all" = mọi loại. */
+export type LinkTypeFilter = PersonLinkType[] | "all";
+const DEFAULT_TYPES: PersonLinkType[] = ["same_person"];
+
 /** List every link involving the given clan (either side). */
 export async function listLinksForClan(
   clanId: string,
   client: Client = defaultClient,
+  types: LinkTypeFilter = DEFAULT_TYPES,
 ): Promise<PersonLink[]> {
-  const { data, error } = await client
+  let q = client
     .from("person_links")
     .select(
-      "id, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
+      "id, link_type, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
     )
     .or(`clan_a_id.eq.${clanId},clan_b_id.eq.${clanId}`)
     .order("created_at", { ascending: false });
+  if (types !== "all") q = q.in("link_type", types);
+  const { data, error } = await q;
   if (error) throw new Error(error.message);
   return (data ?? []) as PersonLink[];
 }
@@ -122,19 +178,23 @@ export async function listLinksForClan(
 export async function listLinksForPerson(
   personId: string,
   client: Client = defaultClient,
+  types: LinkTypeFilter = DEFAULT_TYPES,
 ): Promise<PersonLink[]> {
-  const { data, error } = await client
+  let q = client
     .from("person_links")
     .select(
-      "id, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
+      "id, link_type, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
     )
     .eq("status", "confirmed")
     .or(`person_a_id.eq.${personId},person_b_id.eq.${personId}`);
+  if (types !== "all") q = q.in("link_type", types);
+  const { data, error } = await q;
   if (error) throw new Error(error.message);
   return (data ?? []) as PersonLink[];
 }
 
 export interface ProposeLinkInput {
+  linkType?: PersonLinkType;
   clanAId: string;
   personAId: string;
   personBNameHint?: string;
@@ -154,6 +214,7 @@ export async function proposeLink(
   const { data, error } = await client
     .from("person_links")
     .insert({
+      link_type: input.linkType ?? "same_person",
       clan_a_id: input.clanAId,
       person_a_id: input.personAId,
       invite_token: token,
@@ -162,7 +223,7 @@ export async function proposeLink(
       created_by: input.createdBy,
     })
     .select(
-      "id, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
+      "id, link_type, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
     )
     .single();
   if (error) throw new Error(error.message);
@@ -176,6 +237,7 @@ export async function proposeLink(
  * /inlaws "Đang chờ" tab + gets emailed by notify-inlaw.
  */
 export interface ProposeLinkDirectInput {
+  linkType?: PersonLinkType;
   clanAId: string;
   personAId: string;
   clanBId: string;
@@ -191,6 +253,7 @@ export async function proposeLinkDirect(
   const { data, error } = await client
     .from("person_links")
     .insert({
+      link_type: input.linkType ?? "same_person",
       clan_a_id: input.clanAId,
       person_a_id: input.personAId,
       clan_b_id: input.clanBId,
@@ -199,7 +262,7 @@ export async function proposeLinkDirect(
       created_by: input.createdBy,
     })
     .select(
-      "id, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
+      "id, link_type, status, clan_a_id, person_a_id, clan_b_id, person_b_id, invite_token, person_b_name_hint, note, created_by, confirmed_by, created_at, confirmed_at, revoked_at",
     )
     .single();
   if (error) throw new Error(error.message);
@@ -273,6 +336,7 @@ export async function deletePendingLink(
 
 export interface LinkTokenPreview {
   link_id: string;
+  link_type: PersonLinkType;
   clan_a_name: string;
   person_a_name: string;
   person_a_gender: "M" | "F";
@@ -573,6 +637,35 @@ export async function getClanInlawExports(
     } catch {
       // dead peer / RLS hiccup — skip rather than abort the export
     }
+  }
+  return out;
+}
+
+/** Dòng họ liên kết với một dòng họ qua loại liên kết KHÁC thông gia. */
+export interface LinkedClan {
+  clan_id: string;
+  linked_clan_id: string;
+  linked_clan_name: string;
+  /** Theo góc nhìn của clan_id: có tổ tiên của họ kia / là hậu duệ của họ kia / họ hàng. */
+  relation: "ancestor_of" | "descendant_of" | "related";
+}
+
+export const LINKED_CLAN_RELATION_LABEL: Record<LinkedClan["relation"], string> = {
+  ancestor_of: "Họ hậu duệ",
+  descendant_of: "Họ tổ",
+  related: "Họ hàng",
+};
+
+export async function getClansLinkedClans(
+  clanIds: string[],
+  client: Client = defaultClient,
+): Promise<Map<string, LinkedClan[]>> {
+  const out = new Map<string, LinkedClan[]>();
+  if (clanIds.length === 0) return out;
+  const { data, error } = await client.rpc("get_clans_linked_clans", { p_clan_ids: clanIds });
+  if (error) throw new Error(error.message);
+  for (const r of (data ?? []) as LinkedClan[]) {
+    out.set(r.clan_id, [...(out.get(r.clan_id) ?? []), r]);
   }
   return out;
 }

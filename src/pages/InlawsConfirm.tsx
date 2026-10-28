@@ -26,6 +26,8 @@ import { getMyProfile } from "@/lib/queries/profile";
 import {
   confirmByToken,
   isInlawCacheKey,
+  LINK_TYPE_INCOMING_HELP,
+  linkTypeFromSide,
   notifyInlaw,
   resolveTokenPreview,
   type LinkTokenPreview,
@@ -67,7 +69,7 @@ export default function InlawsConfirm() {
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
             <IconLink className="h-6 w-6 text-primary" />
-            Xác nhận liên kết thông gia
+            Xác nhận liên kết dòng họ
           </h1>
           <p className="text-sm text-muted-foreground">
             Có một dòng họ đề nghị nối với người trong dòng họ của bạn.
@@ -116,6 +118,14 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
     <div className="rounded-lg border bg-card p-4 space-y-2">
       <p className="text-sm text-muted-foreground">Từ dòng họ:</p>
       <p className="text-lg font-semibold">{preview.clan_a_name}</p>
+      <p>
+        <span className="inline-flex rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
+          {linkTypeFromSide(preview.link_type ?? "same_person", false)}
+        </span>
+      </p>
+      <p className="text-sm text-muted-foreground">
+        {LINK_TYPE_INCOMING_HELP[preview.link_type ?? "same_person"]}
+      </p>
 
       <div className="border-t pt-3 space-y-1">
         <p className="text-sm text-muted-foreground">Người được đề nghị nối:</p>
