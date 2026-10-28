@@ -1214,4 +1214,89 @@ describe("RLS: cross-clan in-law links", () => {
 
     await adminClient().from("person_links").delete().eq("id", linkId);
   });
+
+  // ── Loại liên kết (thông gia / tổ tiên – hậu duệ / họ hàng) ─────────
+
+  /** Tạo một liên kết đã xác nhận giữa personA ↔ personB với loại cho trước. */
+  async function confirmedLink(linkType: string): Promise<string> {
+    const token = `t-${randomUUID()}-${randomUUID()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        link_type: linkType,
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    expect(ins.error).toBeNull();
+    const { error } = await adminB.client.rpc("confirm_link_by_token", {
+      p_token: token,
+      p_clan_b: clanB,
+      p_person_b: personB,
+    });
+    expect(error).toBeNull();
+    return ins.data!.id;
+  }
+
+  it("link_type chỉ nhận 4 giá trị hợp lệ", async () => {
+    const { error } = await adminA.client.from("person_links").insert({
+      link_type: "friend",
+      clan_a_id: clanA,
+      person_a_id: personA,
+      invite_token: `t-${randomUUID()}-${randomUUID()}`,
+      created_by: adminA.id,
+    });
+    expect(error).not.toBeNull();
+  });
+
+  it("resolve_link_token trả link_type đã đề nghị", async () => {
+    const token = `t-${randomUUID()}-${randomUUID()}`;
+    const ins = await adminA.client
+      .from("person_links")
+      .insert({
+        link_type: "ancestor_of",
+        clan_a_id: clanA,
+        person_a_id: personA,
+        invite_token: token,
+        created_by: adminA.id,
+      })
+      .select("id")
+      .single();
+    expect(ins.error).toBeNull();
+    const { data } = await adminB.client.rpc("resolve_link_token", { p_token: token });
+    expect((data as unknown as { link_type: string }).link_type).toBe("ancestor_of");
+    await adminClient().from("person_links").delete().eq("id", ins.data!.id);
+  });
+
+  it("link_type không đổi được sau khi tạo", async () => {
+    const linkId = await confirmedLink("related");
+    const { error } = await adminA.client
+      .from("person_links")
+      .update({ link_type: "same_person" })
+      .eq("id", linkId);
+    expect(error).not.toBeNull();
+    await adminClient().from("person_links").delete().eq("id", linkId);
+  });
+
+  it("get_clans_inlaw_links chỉ trả thông gia; get_clans_linked_clans chỉ trả loại khác", async () => {
+    const inlaw = await confirmedLink("same_person");
+    let a = await adminA.client.rpc("get_clans_inlaw_links", { p_clan_ids: [clanA] });
+    let b = await adminA.client.rpc("get_clans_linked_clans", { p_clan_ids: [clanA] });
+    expect((a.data ?? []).length).toBe(1);
+    expect((b.data ?? []).length).toBe(0);
+    await adminClient().from("person_links").delete().eq("id", inlaw);
+
+    const anc = await confirmedLink("ancestor_of");
+    a = await adminA.client.rpc("get_clans_inlaw_links", { p_clan_ids: [clanA] });
+    b = await adminA.client.rpc("get_clans_linked_clans", { p_clan_ids: [clanA] });
+    expect((a.data ?? []).length).toBe(0);
+    expect((b.data ?? []).map((r) => r.relation)).toEqual(["ancestor_of"]);
+    // Nhìn từ phía B thì ngược lại: B là hậu duệ.
+    const fromB = await adminB.client.rpc("get_clans_linked_clans", { p_clan_ids: [clanB] });
+    expect((fromB.data ?? []).map((r) => r.relation)).toEqual(["descendant_of"]);
+    await adminClient().from("person_links").delete().eq("id", anc);
+  });
 });

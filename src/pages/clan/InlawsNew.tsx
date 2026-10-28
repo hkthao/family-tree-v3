@@ -39,11 +39,14 @@ import {
 import { track } from "@/lib/analytics";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
+  LINK_TYPE_HELP,
+  LINK_TYPE_LABEL,
   notifyInlaw,
   proposeLink,
   proposeLinkDirect,
   isInlawCacheKey,
   type PersonLink,
+  type PersonLinkType,
 } from "@/lib/queries/person-links";
 
 /**
@@ -74,6 +77,7 @@ export default function InlawsNew() {
     return <Navigate to={`/clans/${clan.id}`} replace />;
   }
 
+  const [linkType, setLinkType] = useState<PersonLinkType>("same_person");
   const [picked, setPicked] = useState<PersonRow | null>(null);
   const [mode, setMode] = useState<Mode>("token");
   // Token-mode inputs
@@ -88,6 +92,7 @@ export default function InlawsNew() {
   const tokenM = useMutation({
     mutationFn: () =>
       proposeLink({
+        linkType,
         clanAId: clan.id,
         personAId: picked!.id,
         personBNameHint: hint,
@@ -97,7 +102,7 @@ export default function InlawsNew() {
     onSuccess: (link) => {
       setCreatedLink(link);
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
-      track("inlaw_proposed", { mode: "token" });
+      track("inlaw_proposed", { mode: "token", type: linkType });
       toast.success("Đã tạo mã mời");
     },
     onError: (e) =>
@@ -107,6 +112,7 @@ export default function InlawsNew() {
   const directM = useMutation({
     mutationFn: () =>
       proposeLinkDirect({
+        linkType,
         clanAId: clan.id,
         personAId: picked!.id,
         clanBId: peerClan!.id,
@@ -116,7 +122,7 @@ export default function InlawsNew() {
       }),
     onSuccess: (link) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
-      track("inlaw_proposed", { mode: "direct" });
+      track("inlaw_proposed", { mode: "direct", type: linkType });
       toast.success("Đã gửi đề nghị tới " + (peerClan?.name ?? ""), {
         description: "Bên kia sẽ nhận email và xem trong /inlaws.",
       });
@@ -132,16 +138,20 @@ export default function InlawsNew() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Liên kết thông gia", to: `/clans/${clan.id}/inlaws` },
+          { label: "Liên kết dòng họ", to: `/clans/${clan.id}/inlaws` },
           { label: "Đề nghị mới" },
         ]}
       />
 
       <PageHeader
         icon={<IconLink className="h-7 w-7" />}
-        title="Đề nghị liên kết thông gia"
-        description="Chọn dâu/rể trong dòng họ này, rồi chọn cách đề nghị: gửi mã mời cho admin bên kia, hoặc tìm thẳng dòng họ công khai."
+        title="Đề nghị liên kết dòng họ"
+        description="Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, hoặc họ hàng. Admin bên kia phải xác nhận."
       />
+
+      {!createdLink && !picked && (
+        <LinkTypeStep value={linkType} onChange={setLinkType} />
+      )}
 
       {createdLink ? (
         <CreatedTokenView
@@ -153,6 +163,7 @@ export default function InlawsNew() {
         <PickLocalPersonStep
           clanId={clan.id}
           genOffset={clan.generation_offset}
+          linkType={linkType}
           onPick={setPicked}
         />
       ) : (
@@ -187,13 +198,55 @@ export default function InlawsNew() {
 
 // ─── Step 1: pick a person from this clan ────────────────────────────
 
+/** Bước đầu: chọn loại liên kết (thông gia / tổ tiên – hậu duệ / họ hàng). */
+function LinkTypeStep({
+  value,
+  onChange,
+}: {
+  value: PersonLinkType;
+  onChange: (t: PersonLinkType) => void;
+}) {
+  const types: PersonLinkType[] = ["same_person", "ancestor_of", "descendant_of", "related"];
+  return (
+    <div className="space-y-3">
+      <StepHeader number={1} title="Loại liên kết" />
+      <div role="radiogroup" aria-label="Loại liên kết" className="grid gap-2 sm:grid-cols-2">
+        {types.map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="radio"
+            aria-checked={value === t}
+            onClick={() => onChange(t)}
+            className={`rounded-lg border p-3 text-left transition-colors ${
+              value === t ? "border-primary bg-primary/5" : "bg-card hover:border-primary/60"
+            }`}
+          >
+            <span className="block font-medium">{LINK_TYPE_LABEL[t]}</span>
+            <span className="mt-0.5 block text-sm text-muted-foreground">{LINK_TYPE_HELP[t]}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const PICK_DESCRIPTION: Record<PersonLinkType, string> = {
+  same_person: "Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của bên kia.",
+  ancestor_of: "Chọn người trong dòng họ này là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ).",
+  descendant_of: "Chọn người trong dòng họ này là HẬU DUỆ của một người ở dòng họ kia.",
+  related: "Chọn người trong dòng họ này làm đầu mối liên kết; nêu rõ quan hệ ở phần ghi chú.",
+};
+
 function PickLocalPersonStep({
   clanId,
   genOffset,
+  linkType,
   onPick,
 }: {
   clanId: string;
   genOffset: number;
+  linkType: PersonLinkType;
   onPick: (p: PersonRow) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -220,9 +273,9 @@ function PickLocalPersonStep({
     <div className="space-y-4">
       <div className="space-y-3">
         <StepHeader
-          number={1}
+          number={2}
           title="Chọn người trong dòng họ này"
-          description="Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của bên kia."
+          description={PICK_DESCRIPTION[linkType]}
         />
         <SearchInput
           label="Tìm theo tên"
@@ -335,7 +388,7 @@ function ModeStep(props: ModeStepProps) {
           SegmentedControl below doesn't sit on the same row as the
           label (previous issue). */}
       <div className="space-y-3">
-        <StepHeader number={2} title="Cách đề nghị" />
+        <StepHeader number={3} title="Cách đề nghị" />
         <SegmentedControl
           ariaLabel="Cách đề nghị"
           className="w-full sm:w-auto"

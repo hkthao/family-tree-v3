@@ -3793,6 +3793,15 @@ export type Database = {
           persons_with_birth: number
         }[]
       }
+      get_clans_linked_clans: {
+        Args: { p_clan_ids: string[] }
+        Returns: {
+          clan_id: string
+          linked_clan_id: string
+          linked_clan_name: string
+          relation: string
+        }[]
+      }
       get_historical_person_extras: {
         Args: { p_person_id: string }
         Returns: {

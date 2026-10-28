@@ -44,6 +44,11 @@ import {
   type ClanSummary,
   type InlawLinkedClan,
 } from "@/lib/queries/clans";
+import {
+  getClansLinkedClans,
+  LINKED_CLAN_RELATION_LABEL,
+  type LinkedClan,
+} from "@/lib/queries/person-links";
 import { listHistoricalClans } from "@/lib/queries/historical";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
@@ -159,6 +164,13 @@ export default function Clans() {
   const { data: statsMap } = useQuery({
     queryKey: ["clan-leaderboard-stats", rowIds],
     queryFn: () => getClansLeaderboardStats(rowIds),
+    enabled: rowIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
+  // Dòng họ liên kết qua thành viên theo loại khác (họ tổ / họ hậu duệ / họ hàng).
+  const { data: linkedMap } = useQuery({
+    queryKey: ["clan-linked-clans", rowIds],
+    queryFn: () => getClansLinkedClans(rowIds),
     enabled: rowIds.length > 0,
     staleTime: 5 * 60 * 1000,
   });
@@ -380,6 +392,7 @@ export default function Clans() {
                   rank={showMedals ? rankBase + i + 1 : undefined}
                   stat={statsMap?.get(c.id)}
                   inlaws={inlawMap?.get(c.id)}
+                  linked={linkedMap?.get(c.id)}
                 />
               ))}
             </ul>
@@ -392,6 +405,7 @@ export default function Clans() {
                   rank={showMedals ? rankBase + i + 1 : undefined}
                   stat={statsMap?.get(c.id)}
                   inlaws={inlawMap?.get(c.id)}
+                  linked={linkedMap?.get(c.id)}
                 />
               ))}
             </ul>
@@ -459,16 +473,36 @@ function InlawLine({
   );
 }
 
+/** Dòng "Họ tổ: X · Họ hậu duệ: Y · Họ hàng: Z" — ẩn khi không có. */
+function LinkedLine({ linked, className }: { linked?: LinkedClan[]; className: string }) {
+  if (!linked || linked.length === 0) return null;
+  const order: LinkedClan["relation"][] = ["descendant_of", "ancestor_of", "related"];
+  const parts = order
+    .map((rel) => {
+      const names = linked.filter((l) => l.relation === rel).map((l) => l.linked_clan_name);
+      return names.length ? `${LINKED_CLAN_RELATION_LABEL[rel]}: ${names.join(", ")}` : null;
+    })
+    .filter(Boolean);
+  return (
+    <p className={className} title={parts.join(" · ")}>
+      <IconLink className="inline h-3 w-3 mr-1 -mt-0.5" />
+      {parts.join(" · ")}
+    </p>
+  );
+}
+
 function ClanRow({
   clan,
   rank,
   stat,
   inlaws,
+  linked,
 }: {
   clan: ClanSummary;
   rank?: number;
   stat?: ClanLeaderboardStat;
   inlaws?: InlawLinkedClan[];
+  linked?: LinkedClan[];
 }) {
   return (
     <li>
@@ -503,6 +537,10 @@ function ClanRow({
           inlaws={inlaws}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
         />
+        <LinkedLine
+          linked={linked}
+          className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
+        />
         {/* Huy hiệu ở dòng cuối, căn lề phải. */}
         <ClanBadges clan={clan} rank={rank} stat={stat} />
       </Link>
@@ -515,11 +553,13 @@ function ClanCard({
   rank,
   stat,
   inlaws,
+  linked,
 }: {
   clan: ClanSummary;
   rank?: number;
   stat?: ClanLeaderboardStat;
   inlaws?: InlawLinkedClan[];
+  linked?: LinkedClan[];
 }) {
   return (
     <li>
@@ -553,6 +593,10 @@ function ClanCard({
         <ClanDates clan={clan} className="mt-1 text-xs text-muted-foreground/80" />
         <InlawLine
           inlaws={inlaws}
+          className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
+        />
+        <LinkedLine
+          linked={linked}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
         />
         {/* Huy hiệu ở dòng cuối, căn lề phải. */}
