@@ -1178,13 +1178,16 @@ export default function Tree() {
           }
           actionsBelow
           actions={
-            <>
+            // Mobile: lưới 2 cột gọn gàng (chọn kiểu | số đời, chế độ | tuỳ chọn,
+            // hàng nút tiện ích, hàng tuỳ chọn). Desktop: `contents` — các phần tử
+            // trả về hàng flex của PageHeader như cũ.
+            <div className="grid w-full grid-cols-2 gap-2 sm:contents">
               {/* 2D ↔ 3D — luôn hiển thị; đứng đầu. */}
               <Select
                 aria-label="Kiểu hiển thị cây"
                 value={mode}
                 onChange={(e) => setMode(e.target.value as typeof mode)}
-                className="order-first sm:mr-2 w-[9.5rem] h-10 text-sm"
+                className="order-1 sm:order-first sm:mr-2 w-full sm:w-[9.5rem] h-10 text-sm"
               >
                 <option value="2d">Cây 2D</option>
                 <option value="3d">Cây 3D</option>
@@ -1203,7 +1206,7 @@ export default function Tree() {
                 aria-label="Số đời hiển thị quanh người làm tâm"
                 value={depth}
                 onChange={(e) => setDepth(Number(e.target.value) as typeof depth)}
-                className="sm:order-first sm:mr-auto w-[10rem] h-10 text-sm"
+                className="order-2 sm:order-first sm:mr-auto w-full sm:w-[10rem] h-10 text-sm"
               >
                 {DEPTH_OPTIONS.map((d) => (
                   <option key={d} value={d}>
@@ -1218,13 +1221,15 @@ export default function Tree() {
                   khối chỉ-2D nên sang 3D là biến mất, mà người dùng
                   không hiểu vì sao mất. Riêng Xuất ảnh/In thì ở lại 2D:
                   chúng thật sự chụp SVG của cây 2D. */}
-              {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
-              {effectiveRole(clan) !== null && (
-                <>
-                  <ExportBookButton clan={clan} />
-                  <ShareTreeButton clanId={clan.id} clanName={clan.name} />
-                </>
-              )}
+              <div className="order-5 col-span-2 flex gap-2 [&>*]:flex-1 sm:contents sm:[&>*]:flex-none">
+                {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
+                {effectiveRole(clan) !== null && (
+                  <>
+                    <ExportBookButton clan={clan} />
+                    <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+                  </>
+                )}
+              </div>
               {mode === "2d" && (
               <>
               {/* Mobile: nút gạt tuỳ chọn — đứng CÙNG DÒNG với 2D/3D (order-first),
@@ -1233,7 +1238,7 @@ export default function Tree() {
                 <button
                   type="button"
                   onClick={() => setShowOpts((v) => !v)}
-                  className="order-first sm:hidden inline-flex items-center gap-1 rounded-md border bg-card px-2 sm:px-3 h-10 text-sm"
+                  className="order-4 sm:hidden inline-flex items-center justify-between gap-1 rounded-md border bg-card px-3 h-10 text-sm"
                   aria-expanded={showOpts}
                 >
                   <IconSettings className="h-4 w-4" /> Tuỳ chọn
@@ -1249,7 +1254,7 @@ export default function Tree() {
                   aria-label="Chế độ xem"
                   value={view}
                   onChange={(e) => setView(e.target.value as typeof view)}
-                  className="sm:order-first sm:mr-2 w-[9.5rem] h-10 text-sm"
+                  className="order-3 sm:order-first sm:mr-2 w-full sm:w-[9.5rem] h-10 text-sm"
                 >
                   <option value="tree">Cả cây</option>
                   <option value="lineage">Trực hệ</option>
@@ -1257,13 +1262,13 @@ export default function Tree() {
               )}
               {view === "tree" && (
               <div
-                className={`${showOpts ? "flex" : "hidden"} w-full flex-wrap items-center justify-start gap-2 sm:contents`}
+                className={`${showOpts ? "grid" : "hidden"} order-6 col-span-2 grid-cols-2 gap-2 sm:contents`}
               >
               <Select
                 aria-label="Hướng cây"
                 value={orientation}
                 onChange={(e) => setOrientation(e.target.value as typeof orientation)}
-                className="w-[9.5rem] h-10 text-sm"
+                className="w-full sm:w-[9.5rem] h-10 text-sm"
               >
                 <option value="vertical">Hướng dọc</option>
                 <option value="horizontal">Hướng ngang</option>
@@ -1272,7 +1277,7 @@ export default function Tree() {
                 aria-label="Hình nền cây"
                 value={backdrop}
                 onChange={(e) => setBackdrop(e.target.value as Backdrop)}
-                className="w-[10rem] h-10 text-sm"
+                className="w-full sm:w-[10rem] h-10 text-sm"
               >
                 <option value="phoenix">Nền: Phượng</option>
                 <option value="dragon">Nền: Rồng</option>
@@ -1283,7 +1288,7 @@ export default function Tree() {
               )}
               </>
               )}
-            </>
+            </div>
           }
         />
       </div>
