@@ -1267,7 +1267,7 @@ export default function Tree() {
                       aria-label="Hình nền cây"
                       value={backdrop}
                       onChange={(e) => setBackdrop(e.target.value as Backdrop)}
-                      className="w-full sm:w-[10rem] h-10 text-sm"
+                      className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
                     >
                       <option value="phoenix">Nền: Phượng</option>
                       <option value="dragon">Nền: Rồng</option>
@@ -1277,7 +1277,7 @@ export default function Tree() {
                 )}
                 {/* Phòng ký ức / Xuất sổ / Chia sẻ không phụ thuộc kiểu vẽ cây
                     (chỉ là đường dẫn / dựng PDF từ dữ liệu) nên luôn có, kể cả 3D. */}
-                <div className="col-span-2 flex gap-2 [&>*]:flex-1 sm:contents sm:[&>*]:flex-none">
+                <div className="col-span-2 grid grid-cols-3 gap-2 [&>*]:w-full sm:contents sm:[&>*]:w-auto">
                   {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
                   {effectiveRole(clan) !== null && (
                     <>
