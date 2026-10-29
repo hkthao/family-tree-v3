@@ -240,10 +240,10 @@ function TimelineCard({
     >
       <ol className="space-y-4">
         {entries.map((e) => (
-          <li key={e.year} className="grid grid-cols-[3.5rem_1fr] gap-x-3">
+          <li key={e.year} className="grid grid-cols-[5.5rem_1fr] gap-x-3">
             <div className="pt-0.5 text-center">
               <p className="text-lg font-semibold leading-none text-primary">{e.year}</p>
-              {e.era && <p className="mt-1 text-xs text-muted-foreground">{e.era}</p>}
+              {e.era && <p className="mt-1 whitespace-nowrap text-xs text-muted-foreground">{e.era}</p>}
             </div>
             <div className="min-w-0 border-l-2 border-primary/25 pl-3">
               <p className="whitespace-pre-line leading-relaxed">{capFirst(e.text)}</p>
