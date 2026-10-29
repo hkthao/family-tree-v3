@@ -13,6 +13,7 @@ import { dayAuspice } from "@/lib/almanac";
 import { formatLunarDate, solarStringToLunar } from "@/lib/lunarDate";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { getClansInlawLinks, type ClanSummary } from "@/lib/queries/clans";
+import { getClansLinkedClans } from "@/lib/queries/person-links";
 import { listAnniversaryCandidates, listEvents } from "@/lib/queries/events";
 import type { PersonForTree, TreeSource } from "@/lib/queries/tree";
 import { supabase } from "@/lib/supabase";
@@ -30,6 +31,7 @@ import { useAsync } from "../useAsync";
 import { EventItem, EventsScreen } from "./Events";
 import { MoreScreen, type MoreTarget } from "./More";
 import { PeopleScreen } from "./People";
+import { linkedClansText } from "./Clans";
 import { TreeTab } from "./TreeTab";
 
 /**
@@ -99,6 +101,11 @@ function Overview({
     () => getClansInlawLinks([clan.id]).then((m) => m.get(clan.id) ?? []).catch(() => []),
     [clan.id],
   );
+  const linked = useAsync(
+    () => getClansLinkedClans([clan.id]).then((m) => m.get(clan.id) ?? []).catch(() => []),
+    [clan.id],
+  );
+  const linkedText = linkedClansText(linked.data ?? []);
   const [more, setMore] = useState(false);
 
   const now = new Date();
@@ -140,6 +147,16 @@ function Overview({
               <span key={x.clan_id} className="chip">{x.clan_name}</span>
             ))}
           </div>
+        </div>
+      )}
+
+      {linkedText && (
+        <div className="card" style={{ padding: 12, marginBottom: 10 }}>
+          <b style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
+            <span className="ico"><IconLink /></span>
+            Liên kết qua thành viên
+          </b>
+          <p className="muted" style={{ margin: "6px 0 0", fontSize: 13 }}>{linkedText}</p>
         </div>
       )}
 

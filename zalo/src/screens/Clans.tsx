@@ -14,8 +14,25 @@ import {
   type ClanSummary,
 } from "@/lib/queries/clans";
 
+import {
+  getClansLinkedClans,
+  LINKED_CLAN_RELATION_LABEL,
+  type LinkedClan,
+} from "@/lib/queries/person-links";
+
 import { useRev } from "../rev";
 import { useAsync } from "../useAsync";
+
+const LINK_ORDER: LinkedClan["relation"][] = ["descendant_of", "ancestor_of", "related"];
+/** "Họ tổ: X · Họ hậu duệ: Y · Họ hàng: Z" — rỗng khi không có liên kết. */
+export function linkedClansText(linked: LinkedClan[]): string {
+  return LINK_ORDER.map((rel) => {
+    const names = linked.filter((l) => l.relation === rel).map((l) => l.linked_clan_name);
+    return names.length ? `${LINKED_CLAN_RELATION_LABEL[rel]}: ${names.join(", ")}` : "";
+  })
+    .filter(Boolean)
+    .join(" · ");
+}
 
 type Scope = "mine" | "community";
 
@@ -54,11 +71,12 @@ export function ClansScreen({
         : await listCommunityClans(userId, params);
     const ids = res.rows.map((r) => r.id);
     // Số đời + thông gia là phần phụ: hỏng thì thẻ vẫn hiện, chỉ thiếu nhãn.
-    const [stats, inlaws] = await Promise.all([
+    const [stats, inlaws, linked] = await Promise.all([
       getClansLeaderboardStats(ids).catch(() => new Map()),
       getClansInlawLinks(ids).catch(() => new Map()),
+      getClansLinkedClans(ids).catch(() => new Map<string, LinkedClan[]>()),
     ]);
-    return { ...res, stats, inlaws };
+    return { ...res, stats, inlaws, linked };
   }, [userId, scope, q, rev]);
 
   // Con số trên hai nút gạt: đếm riêng một lần, không phụ thuộc ô tìm.
@@ -141,6 +159,7 @@ export function ClansScreen({
         rows.map((c) => {
           const gens = list.data!.stats.get(c.id)?.max_generation;
           const inlaws = list.data!.inlaws.get(c.id) ?? [];
+          const linkedText = linkedClansText(list.data!.linked.get(c.id) ?? []);
           return (
             <button key={c.id} type="button" className="card clan" onClick={() => openClan(c)}>
               <span className="top">
@@ -161,6 +180,12 @@ export function ClansScreen({
                 <span className="line">
                   <IconLink className="ic" />
                   <span>Thông gia: {inlaws.map((x: { clan_name: string }) => x.clan_name).join(", ")}</span>
+                </span>
+              )}
+              {linkedText && (
+                <span className="line">
+                  <IconLink className="ic" />
+                  <span>{linkedText}</span>
                 </span>
               )}
               {gens ? (
