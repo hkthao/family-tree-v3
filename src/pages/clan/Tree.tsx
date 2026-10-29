@@ -10,8 +10,6 @@ import {
   IconDownload,
   IconGrid,
   IconHome,
-  IconLayoutHorizontal,
-  IconLayoutVertical,
   IconMaximize,
   IconMinimize,
   IconPlus,
@@ -25,7 +23,6 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
 import {
   BOOK_WATERMARKS,
   type BookWatermarkId,
@@ -41,10 +38,7 @@ const TreeFolderView = lazy(() =>
 const Tree3DView = lazy(() =>
   import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
 );
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
+import { Select } from "@/components/ui/select";
 import {
   Card,
   CardDescription,
@@ -1178,33 +1172,16 @@ export default function Tree() {
           actions={
             <>
               {/* 2D ↔ 3D — luôn hiển thị; đứng đầu. */}
-              <SegmentedControl ariaLabel="Kiểu hiển thị" className="order-first sm:mr-2">
-                <SegmentedButton
-                  active={mode === "2d"}
-                  onClick={() => setMode("2d")}
-                  ariaLabel="Xem cây 2D"
-                  className="px-2 sm:px-3"
-                >
-                  2D
-                </SegmentedButton>
-                <SegmentedButton
-                  active={mode === "3d"}
-                  onClick={() => setMode("3d")}
-                  ariaLabel="Xem cây 3D"
-                  className="px-2 sm:px-3"
-                >
-                  3D
-                </SegmentedButton>
-                <SegmentedButton
-                  active={mode === "folder"}
-                  onClick={() => setMode("folder")}
-                  ariaLabel="Xem cây kiểu thư mục"
-                  title="Danh sách bung từng nhánh — nhẹ, hợp dòng họ lớn"
-                  className="px-2 sm:px-3"
-                >
-                  Thư mục
-                </SegmentedButton>
-              </SegmentedControl>
+              <Select
+                aria-label="Kiểu hiển thị cây"
+                value={mode}
+                onChange={(e) => setMode(e.target.value as typeof mode)}
+                className="order-first sm:mr-2 w-[7.5rem] h-10 text-sm"
+              >
+                <option value="2d">Cây 2D</option>
+                <option value="3d">Cây 3D</option>
+                <option value="folder">Thư mục</option>
+              </Select>
               {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
                   lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
                   hơn. Mobile (order-last + w-full): xuống dòng riêng phía
@@ -1214,28 +1191,18 @@ export default function Tree() {
                   đang mở, chính là "số đời" do người dùng tự quyết bằng
                   cách bung tới đâu. */}
               {mode !== "folder" && (
-              <div className="w-full sm:w-auto order-last sm:order-first sm:mr-auto flex items-center gap-2 justify-end">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  Số đời hiển thị:
-                </span>
-                <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
-                  {DEPTH_OPTIONS.map((d) => (
-                    <SegmentedButton
-                      key={d}
-                      active={depth === d}
-                      onClick={() => setDepth(d)}
-                      title={
-                        d === 0
-                          ? "Hiện tất cả các đời (có thể chậm với họ lớn)"
-                          : `Hiện ${d} đời tính từ người làm tâm`
-                      }
-                      className="px-2 sm:px-3"
-                    >
-                      {d === 0 ? "Tất cả" : d}
-                    </SegmentedButton>
-                  ))}
-                </SegmentedControl>
-              </div>
+              <Select
+                aria-label="Số đời hiển thị quanh người làm tâm"
+                value={depth}
+                onChange={(e) => setDepth(Number(e.target.value) as typeof depth)}
+                className="sm:order-first sm:mr-auto w-[8.5rem] h-10 text-sm"
+              >
+                {DEPTH_OPTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d === 0 ? "Tất cả các đời" : `Số đời: ${d}`}
+                  </option>
+                ))}
+              </Select>
               )}
               {/* Mấy nút này KHÔNG phụ thuộc kiểu vẽ cây — Phòng ký ức và
                   Chia sẻ chỉ là đường dẫn, Xuất sổ dựng PDF từ dữ liệu
@@ -1275,68 +1242,39 @@ export default function Tree() {
                 </button>
               )}
               {isMember && (
-                <SegmentedControl ariaLabel="Chế độ xem" className="sm:order-first sm:mr-2">
-                  <SegmentedButton
-                    active={view === "tree"}
-                    onClick={() => setView("tree")}
-                    ariaLabel="Xem cả cây"
-                    className="px-2 sm:px-3 whitespace-nowrap"
-                  >
-                    Cả cây
-                  </SegmentedButton>
-                  <SegmentedButton
-                    active={view === "lineage"}
-                    onClick={() => setView("lineage")}
-                    ariaLabel="Xem đường trực hệ của tôi"
-                    className="px-2 sm:px-3 whitespace-nowrap"
-                  >
-                    Trực hệ
-                  </SegmentedButton>
-                </SegmentedControl>
+                <Select
+                  aria-label="Chế độ xem"
+                  value={view}
+                  onChange={(e) => setView(e.target.value as typeof view)}
+                  className="sm:order-first sm:mr-2 w-[7.5rem] h-10 text-sm"
+                >
+                  <option value="tree">Cả cây</option>
+                  <option value="lineage">Trực hệ</option>
+                </Select>
               )}
               {view === "tree" && (
               <div
                 className={`${showOpts ? "flex" : "hidden"} w-full flex-wrap items-center justify-start gap-2 sm:contents`}
               >
-              <SegmentedControl ariaLabel="Hướng cây">
-                <SegmentedButton
-                  active={orientation === "vertical"}
-                  onClick={() => setOrientation("vertical")}
-                  title="Dọc — gốc ở trên, đời con xuống dưới"
-                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
-                >
-                  <IconLayoutVertical className="h-4 w-4" />
-                  Dọc
-                </SegmentedButton>
-                <SegmentedButton
-                  active={orientation === "horizontal"}
-                  onClick={() => setOrientation("horizontal")}
-                  title="Ngang — gốc ở trái, đời con sang phải"
-                  className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3"
-                >
-                  <IconLayoutHorizontal className="h-4 w-4" />
-                  Ngang
-                </SegmentedButton>
-              </SegmentedControl>
-              <SegmentedControl ariaLabel="Hình nền cây">
-                {(
-                  [
-                    ["phoenix", "Phượng"],
-                    ["dragon", "Rồng"],
-                    ["none", "Tắt nền"],
-                  ] as const
-                ).map(([id, label]) => (
-                  <SegmentedButton
-                    key={id}
-                    active={backdrop === id}
-                    onClick={() => setBackdrop(id)}
-                    title={id === "none" ? "Không hình nền" : `Hình nền ${label.toLowerCase()}`}
-                    className="px-2 sm:px-3 whitespace-nowrap"
-                  >
-                    {label}
-                  </SegmentedButton>
-                ))}
-              </SegmentedControl>
+              <Select
+                aria-label="Hướng cây"
+                value={orientation}
+                onChange={(e) => setOrientation(e.target.value as typeof orientation)}
+                className="w-[7.5rem] h-10 text-sm"
+              >
+                <option value="vertical">Hướng dọc</option>
+                <option value="horizontal">Hướng ngang</option>
+              </Select>
+              <Select
+                aria-label="Hình nền cây"
+                value={backdrop}
+                onChange={(e) => setBackdrop(e.target.value as Backdrop)}
+                className="w-[8.5rem] h-10 text-sm"
+              >
+                <option value="phoenix">Nền: Phượng</option>
+                <option value="dragon">Nền: Rồng</option>
+                <option value="none">Tắt nền</option>
+              </Select>
 
               </div>
               )}
