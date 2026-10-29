@@ -41,6 +41,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { getClanContentCounts, getClanStats } from "@/lib/queries/clan-stats";
 import { getClansInlawLinks } from "@/lib/queries/clans";
+import { getClansLinkedClans, LINKED_CLAN_RELATION_LABEL } from "@/lib/queries/person-links";
 import {
   listAnniversaryCandidates,
   listEvents,
@@ -133,6 +134,12 @@ export default function Dashboard() {
     staleTime: 5 * 60 * 1000,
   });
   const inlaws = inlawMap?.get(clan.id) ?? [];
+  const { data: linkedMap } = useQuery({
+    queryKey: ["clan-linked-clans", clan.id],
+    queryFn: () => getClansLinkedClans([clan.id]),
+    staleTime: 5 * 60 * 1000,
+  });
+  const linked = linkedMap?.get(clan.id) ?? [];
 
   const { data: todoCount } = useQuery({
     queryKey: queryKeys.clanTodoCount(clan.id, userId),
@@ -228,6 +235,27 @@ export default function Dashboard() {
                 className="inline-flex items-center rounded-full border bg-muted/40 px-3 py-1 text-sm hover:border-primary transition-colors"
               >
                 {c.clan_name}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {linked.length > 0 && (
+        <section className="rounded-lg border bg-card p-4">
+          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
+            <IconLink className="h-4 w-4 text-primary" />
+            Liên kết với {linked.length} dòng họ khác
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {linked.map((c) => (
+              <Link
+                key={`${c.linked_clan_id}-${c.relation}`}
+                to={`/clans/${c.linked_clan_id}`}
+                className="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1 text-sm hover:border-primary transition-colors"
+              >
+                <span className="text-xs text-muted-foreground">{LINKED_CLAN_RELATION_LABEL[c.relation]}</span>
+                {c.linked_clan_name}
               </Link>
             ))}
           </div>
@@ -351,7 +379,7 @@ export default function Dashboard() {
                   <ActionTile
                     to={`/clans/${clan.id}/inlaws`}
                     icon={<IconLink />}
-                    title="Thông gia"
+                    title="Liên kết họ"
                   />
                 </>
               )}

@@ -285,11 +285,50 @@ describe("ảnh + tên tự/húy/thụy", () => {
   it("ảnh ngoài Commons / giấy phép không tự do / thiếu tác giả → lỗi", () => {
     const f = base();
     f.persons[0].photo = { ...photo, url: "https://example.com/a.jpg", license: "All rights reserved" };
-    expect(errs(f)).toMatch(/upload.wikimedia.org/);
+    expect(errs(f)).toMatch(/không thuộc nguồn được chấp nhận/);
     expect(errs(f)).toMatch(/không thuộc PD/);
     f.persons[0].photo = { ...photo, author: null };
     expect(errs(f)).toMatch(/cần ghi tác giả/);
     f.persons[0].photo = { ...photo, license: "PD-old", author: null };
+    expect(errs(f)).toBe("");
+  });
+
+  it("nguồn ảnh ngoài Wikimedia: ghi đúng tên nguồn; ảnh và trang nguồn phải cùng nhà cung cấp", () => {
+    const f = base();
+    const met = {
+      url: "https://images.metmuseum.org/CRDImages/as/original/DP123456.jpg",
+      source_page: "https://www.metmuseum.org/art/collection/search/12345",
+      license: "CC0",
+      kind: "contemporary_portrait" as const,
+    };
+    f.persons[0].photo = met;
+    expect(errs(f)).toBe("");
+    expect(photoLine(met)).toBe("Ảnh: chân dung vẽ đương thời — CC0, The Met (Open Access).");
+    // Ảnh Met nhưng trang nguồn là Commons → lỗi.
+    f.persons[0].photo = { ...met, source_page: "https://commons.wikimedia.org/wiki/File:Example.jpg" };
+    expect(errs(f)).toMatch(/thiếu trang nguồn đúng dạng của The Met/);
+    // Flickr + Gallica + Internet Archive hợp lệ.
+    f.persons[0].photo = {
+      url: "https://live.staticflickr.com/65535/123_abc_b.jpg",
+      source_page: "https://www.flickr.com/photos/someone/123456789",
+      license: "CC BY 2.0",
+      author: "Someone",
+      kind: "photograph",
+    };
+    expect(errs(f)).toBe("");
+    f.persons[0].photo = {
+      url: "https://gallica.bnf.fr/iiif/ark:/12148/btv1b8400000x/f1/full/1000,/0/native.jpg",
+      source_page: "https://gallica.bnf.fr/ark:/12148/btv1b8400000x",
+      license: "PD-old",
+      kind: "contemporary_portrait",
+    };
+    expect(errs(f)).toBe("");
+    f.persons[0].photo = {
+      url: "https://archive.org/download/some-item/page1.jpg",
+      source_page: "https://archive.org/details/some-item",
+      license: "PDM 1.0",
+      kind: "contemporary_portrait",
+    };
     expect(errs(f)).toBe("");
   });
 

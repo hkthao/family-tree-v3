@@ -21,6 +21,7 @@ export interface PersonRow {
   generation: number | null;
   branch_id: string | null;
   photo_path: string | null;
+  avatar_frame?: string | null;
   /**
    * Metadata thời gian — chỉ có khi đọc bảng `persons` (thành viên).
    * View công khai `persons_public_safe` không phơi các cột này nên
@@ -79,7 +80,7 @@ export async function listPersons(
       ? client
           .from("persons_public_safe")
           .select(
-            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path",
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path, avatar_frame",
             { count: "exact" },
           )
           .eq("clan_id", clanId)
@@ -87,7 +88,7 @@ export async function listPersons(
       : client
           .from("persons")
           .select(
-            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path, created_at, updated_at",
+            "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, photo_path, avatar_frame, created_at, updated_at",
             { count: "exact" },
           )
           .eq("clan_id", clanId)
@@ -293,6 +294,7 @@ export interface PersonDetail extends PersonRow {
   birth_place: string | null;
   burial_place: string | null;
   photo_path: string | null;
+  avatar_frame?: string | null;
   birth_lunar_year: number | null;
   birth_lunar_month: number | null;
   birth_lunar_day: number | null;
@@ -310,7 +312,7 @@ export interface PersonDetail extends PersonRow {
 // todo_excluded, no full_name_unaccent). Used when reading on
 // behalf of a non-member of a public clan.
 const DETAIL_COLS_SAFE =
-  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, birth_order, lifespan_years";
+  "id, clan_id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, death_date_precision, generation, branch_id, courtesy_name, posthumous_name, nickname, bio, birth_place, burial_place, photo_path, avatar_frame, birth_lunar_year, birth_lunar_month, birth_lunar_day, death_lunar_year, death_lunar_month, death_lunar_day, death_anniv_lunar_month, death_anniv_lunar_day, birth_order, lifespan_years";
 // Raw table adds member-only columns (todo_excluded).
 const DETAIL_COLS = `${DETAIL_COLS_SAFE}, todo_excluded`;
 
@@ -350,6 +352,7 @@ export async function getPerson(
 }
 
 export interface UpdatePersonInput {
+  avatar_frame?: string | null;
   full_name?: string;
   gender?: "M" | "F";
   is_living?: boolean;

@@ -19,7 +19,9 @@ import {
   IconUser,
   IconX,
 } from "@/components/icons";
+import { AvatarFramePicker } from "@/components/AvatarFramePicker";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { getSignedPhotoUrl } from "@/lib/photoUpload";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -70,6 +72,12 @@ export function EditPersonForm({
     queryFn: () => getPerson(personId),
     enabled: !!personId,
   });
+  // Ảnh thật của người này để xem trước viền avatar.
+  const { data: framePhotoUrl } = useQuery({
+    queryKey: ["avatar-frame-photo", person?.photo_path ?? null],
+    queryFn: () => getSignedPhotoUrl(person?.photo_path),
+    enabled: !!person?.photo_path,
+  });
 
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
@@ -83,6 +91,7 @@ export function EditPersonForm({
   const [nickname, setNickname] = useState("");
   const [posthumousName, setPosthumousName] = useState("");
   const [bio, setBio] = useState("");
+  const [avatarFrame, setAvatarFrame] = useState<string | null>(null);
   const [todoExcluded, setTodoExcluded] = useState(false);
   const [birthOrder, setBirthOrder] = useState<string>("");
   const [lifespanYears, setLifespanYears] = useState<string>("");
@@ -182,6 +191,7 @@ export function EditPersonForm({
     setNickname(person.nickname ?? "");
     setPosthumousName(person.posthumous_name ?? "");
     setBio(person.bio ?? "");
+    setAvatarFrame(person.avatar_frame ?? null);
     setTodoExcluded(person.todo_excluded ?? false);
     setBirthOrder(person.birth_order != null ? String(person.birth_order) : "");
     setLifespanYears(
@@ -245,6 +255,7 @@ export function EditPersonForm({
         nickname: nickname.trim() || null,
         posthumous_name: posthumousName.trim() || null,
         bio: bio || null,
+        avatar_frame: avatarFrame,
       });
     },
     onSuccess: async () => {
@@ -323,6 +334,7 @@ export function EditPersonForm({
           gender={gender}
           photoPath={person.photo_path ?? null}
         />
+        <AvatarFramePicker value={avatarFrame} onChange={setAvatarFrame} gender={gender} photoUrl={framePhotoUrl} />
       </div>
 
       <div className="space-y-2">

@@ -2570,6 +2570,7 @@ export type Database = {
       persons: {
         Row: {
           adoptive_family_id: string | null
+          avatar_frame: string | null
           bio: string | null
           birth_date: string | null
           birth_date_precision: string | null
@@ -2615,6 +2616,7 @@ export type Database = {
         }
         Insert: {
           adoptive_family_id?: string | null
+          avatar_frame?: string | null
           bio?: string | null
           birth_date?: string | null
           birth_date_precision?: string | null
@@ -2660,6 +2662,7 @@ export type Database = {
         }
         Update: {
           adoptive_family_id?: string | null
+          avatar_frame?: string | null
           bio?: string | null
           birth_date?: string | null
           birth_date_precision?: string | null
@@ -3367,6 +3370,7 @@ export type Database = {
       }
       persons_public_safe: {
         Row: {
+          avatar_frame: string | null
           bio: string | null
           birth_date: string | null
           birth_date_precision: string | null
@@ -3401,6 +3405,7 @@ export type Database = {
           posthumous_name: string | null
         }
         Insert: {
+          avatar_frame?: string | null
           bio?: never
           birth_date?: never
           birth_date_precision?: never
@@ -3435,6 +3440,7 @@ export type Database = {
           posthumous_name?: never
         }
         Update: {
+          avatar_frame?: string | null
           bio?: never
           birth_date?: never
           birth_date_precision?: never
@@ -3609,6 +3615,7 @@ export type Database = {
           p_search?: string
         }
         Returns: {
+          avatar_frame: string | null
           bio: string | null
           birth_date: string | null
           birth_date_precision: string | null
@@ -3791,6 +3798,15 @@ export type Database = {
           persons_30d: number
           persons_total: number
           persons_with_birth: number
+        }[]
+      }
+      get_clans_linked_clans: {
+        Args: { p_clan_ids: string[] }
+        Returns: {
+          clan_id: string
+          linked_clan_id: string
+          linked_clan_name: string
+          relation: string
         }[]
       }
       get_historical_person_extras: {

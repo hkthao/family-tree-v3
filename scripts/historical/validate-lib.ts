@@ -86,11 +86,76 @@ export interface TitleDraft {
   notes?: string | null;
 }
 
-/** Ảnh đại diện — chỉ từ Wikimedia Commons, giấy phép tự do, ghi rõ loại ảnh. */
+/**
+ * Nguồn ảnh được chấp nhận: kho ảnh có trang riêng cho từng tệp, nêu rõ giấy
+ * phép và tác giả. Ảnh (`url`) và trang nguồn (`source_page`) phải cùng một
+ * nhà cung cấp. Thêm nguồn mới ở đây (kèm test) chứ không nới regex ở nơi khác.
+ */
+export interface PhotoProvider {
+  id: string;
+  /** Tên hiện trong dòng ghi công. */
+  label: string;
+  /** Link ảnh trực tiếp (hot-link, không tải về). */
+  image: RegExp;
+  /** Trang tệp có giấy phép / tác giả / xuất xứ. */
+  page: RegExp;
+}
+
+export const PHOTO_PROVIDERS: PhotoProvider[] = [
+  {
+    id: "wikimedia",
+    label: "Wikimedia Commons",
+    image: /^https:\/\/upload\.wikimedia\.org\/.+\.(jpe?g|png|webp|tiff?)$/i,
+    page: /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/,
+  },
+  {
+    id: "archive",
+    label: "Internet Archive",
+    image: /^https:\/\/(?:archive\.org\/download|[\w.-]+\.us\.archive\.org)\/.+\.(jpe?g|png|webp|tiff?)$/i,
+    page: /^https:\/\/archive\.org\/details\/[\w.-]+/,
+  },
+  {
+    id: "gallica",
+    label: "Gallica (BnF)",
+    image: /^https:\/\/gallica\.bnf\.fr\/iiif\/ark:\/12148\/[\w/.,!:-]+\.(jpe?g|png)$/i,
+    page: /^https:\/\/gallica\.bnf\.fr\/ark:\/12148\/\w+/,
+  },
+  {
+    id: "met",
+    label: "The Met (Open Access)",
+    image: /^https:\/\/images\.metmuseum\.org\/.+\.(jpe?g|png)$/i,
+    page: /^https:\/\/www\.metmuseum\.org\/art\/collection\/search\/\d+/,
+  },
+  {
+    id: "loc",
+    label: "Library of Congress",
+    image: /^https:\/\/(?:tile\.loc\.gov|www\.loc\.gov\/(?:pictures|static))\/.+\.(jpe?g|png|gif|tiff?)$/i,
+    page: /^https:\/\/www\.loc\.gov\/(?:pictures\/item|item|resource)\/[\w.-]+/,
+  },
+  {
+    id: "europeana",
+    label: "Europeana",
+    image: /^https:\/\/(?:api\.europeana\.eu\/thumbnail|[\w.-]+\.europeana\.eu)\/.+/i,
+    page: /^https:\/\/www\.europeana\.eu\/(?:\w\w\/)?item\/[\w/-]+/,
+  },
+  {
+    id: "flickr",
+    label: "Flickr",
+    image: /^https:\/\/live\.staticflickr\.com\/.+\.(jpe?g|png)$/i,
+    page: /^https:\/\/www\.flickr\.com\/photos\/[\w@-]+\/\d+/,
+  },
+];
+
+/** Nhà cung cấp khớp với link ảnh (hoặc null). */
+export function photoProvider(url: string | null | undefined): PhotoProvider | null {
+  return PHOTO_PROVIDERS.find((p) => p.image.test(url ?? "")) ?? null;
+}
+
+/** Ảnh đại diện — từ kho ảnh trong PHOTO_PROVIDERS, giấy phép tự do, ghi rõ loại ảnh. */
 export interface PhotoDraft {
-  /** Link ảnh trực tiếp: https://upload.wikimedia.org/… (.jpg/.png/.webp/.tif). */
+  /** Link ảnh trực tiếp của một nhà cung cấp trong PHOTO_PROVIDERS. */
   url: string;
-  /** Trang file trên Commons: https://commons.wikimedia.org/wiki/File:… */
+  /** Trang tệp của CÙNG nhà cung cấp (nơi ghi giấy phép, tác giả). */
   source_page: string;
   /** 'PD' / 'PD-old' / 'CC0' / 'CC BY 4.0' / 'CC BY-SA 3.0'… */
   license: string;
@@ -492,7 +557,7 @@ const PHOTO_KIND_LABEL: Record<PhotoDraft["kind"], string> = {
 export function photoLine(photo: PhotoDraft | null | undefined): string {
   if (!photo) return "";
   const who = [photo.author, photo.year].filter(Boolean).join(", ");
-  return `Ảnh: ${PHOTO_KIND_LABEL[photo.kind]} — ${who ? `${who}, ` : ""}${photo.license}, Wikimedia Commons.`;
+  return `Ảnh: ${PHOTO_KIND_LABEL[photo.kind]} — ${who ? `${who}, ` : ""}${photo.license}, ${photoProvider(photo.url)?.label ?? "nguồn ngoài"}.`;
 }
 
 /** Chú thích ảnh lăng / di sản: chú thích riêng + ghi công. */
@@ -652,15 +717,17 @@ export function validate(
   }
 
   function checkPhoto(who: string, ph: PhotoDraft) {
-    if (!/^https:\/\/upload\.wikimedia\.org\/.+\.(jpe?g|png|webp|tiff?)$/i.test(ph.url ?? "")) {
-      errors.push(`${who}: ảnh phải là link trực tiếp upload.wikimedia.org (.jpg/.png/.webp/.tif)`);
-    }
-    if (!/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/.test(ph.source_page ?? "")) {
-      errors.push(`${who}: ảnh thiếu trang nguồn commons.wikimedia.org/wiki/File:…`);
+    const provider = photoProvider(ph.url);
+    if (!provider) {
+      errors.push(
+        `${who}: link ảnh không thuộc nguồn được chấp nhận (${PHOTO_PROVIDERS.map((p) => p.label).join(", ")})`,
+      );
+    } else if (!provider.page.test(ph.source_page ?? "")) {
+      errors.push(`${who}: ảnh ${provider.label} thiếu trang nguồn đúng dạng của ${provider.label}`);
     }
     const lic = ph.license?.trim() ?? "";
-    if (!/^(PD(-[\w-]+)?|CC0( 1\.0)?|CC BY(-SA)? \d\.\d)$/.test(lic)) {
-      errors.push(`${who}: giấy phép ảnh "${lic}" không thuộc PD / CC0 / CC BY / CC BY-SA`);
+    if (!/^(PD(-[\w-]+)?|PDM( 1\.0)?|CC0( 1\.0)?|CC BY(-SA)? \d\.\d)$/.test(lic)) {
+      errors.push(`${who}: giấy phép ảnh "${lic}" không thuộc PD / PDM / CC0 / CC BY / CC BY-SA`);
     }
     if (!/^(PD|CC0)/.test(lic) && !ph.author?.trim()) errors.push(`${who}: ảnh ${lic} cần ghi tác giả`);
     if (!["photograph", "contemporary_portrait", "later_depiction"].includes(ph.kind)) {
