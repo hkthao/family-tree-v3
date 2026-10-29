@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { avatarFrameSvg } from "@/components/PersonAvatar";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
@@ -398,6 +399,9 @@ export default function Tree() {
     setQuickAddRef.current = setQuickAddPersonId;
   }, [setQuickAddPersonId]);
   const linkedIdsRef = useRef<Set<string>>(linkedPersonIds);
+  // Viền avatar chung của dòng họ, vẽ đè lên avatar trong thẻ SVG.
+  const frameSvgRef = useRef("");
+  frameSvgRef.current = avatarFrameSvg(clan.avatar_frame);
   useEffect(() => {
     linkedIdsRef.current = linkedPersonIds;
   }, [linkedPersonIds]);
@@ -591,6 +595,23 @@ export default function Tree() {
             const fields = datum?.data ?? {};
             const personId = datum?.id;
             const isGhost = fields["is_ghost"] === true;
+
+            // Viền avatar của dòng họ: vẽ lại mỗi lần cập nhật thẻ (xoá bản cũ
+            // trước). Khung 100×100 thu 0.5 → đúng avatar 50px, đè lên mép ảnh.
+            // `this` là .card_cont; avatar nằm trong .card (đã dịch về góc thẻ).
+            const cardEl = this.querySelector(".card");
+            cardEl?.querySelector(":scope > .clan-frame")?.remove();
+            if (frameSvgRef.current && cardEl) {
+              const fg = document.createElementNS("http://www.w3.org/2000/svg", "g");
+              fg.setAttribute("class", "clan-frame");
+              fg.setAttribute(
+                "transform",
+                `translate(8 ${showDeceasedDetails ? 12 : 7}) scale(0.5)`,
+              );
+              fg.setAttribute("pointer-events", "none");
+              fg.innerHTML = frameSvgRef.current;
+              cardEl.appendChild(fg);
+            }
 
             const tspans = this.querySelectorAll<SVGTSpanElement>(
               ".card-text text tspan",
@@ -1289,16 +1310,20 @@ export default function Tree() {
         // KHÔNG hiện ô "đặt người trung tâm" ở đây: cây thư mục đi từ
         // thuỷ tổ xuống, chưa hỗ trợ đổi gốc — để một ô bấm vào không
         // làm gì còn tệ hơn là không có.
-        <div className="space-y-2">
-          <Suspense
-            fallback={
-              <p className="p-4 text-sm text-muted-foreground">
-                Đang tải danh sách…
-              </p>
-            }
-          >
-            <TreeFolderView clanId={clan.id} source={treeSource} />
-          </Suspense>
+        // Cây thụt sâu nhiều đời: đặt bề ngang tối thiểu rồi cho cuộn ngang trên
+        // điện thoại, thay vì ép tên người thành cột hẹp xuống nhiều dòng.
+        <div className="space-y-2 overflow-x-auto">
+          <div className="min-w-[640px] sm:min-w-0">
+            <Suspense
+              fallback={
+                <p className="p-4 text-sm text-muted-foreground">
+                  Đang tải danh sách…
+                </p>
+              }
+            >
+              <TreeFolderView clanId={clan.id} source={treeSource} />
+            </Suspense>
+          </div>
         </div>
       ) : mode === "3d" ? (
         <div className="space-y-2">
