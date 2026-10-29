@@ -95,7 +95,7 @@ export const ROUTE_META: RouteMeta[] = [
   { pattern: "/share/:token", title: "Cây gia phả được chia sẻ", noindex: true },
   { pattern: "/join/:token", title: "Lời mời vào dòng họ", noindex: true },
   { pattern: "/khoe/:token", title: "Thiệp gia phả", noindex: true },
-  { pattern: "/inlaws/confirm/:token", title: "Xác nhận thông gia", noindex: true },
+  { pattern: "/inlaws/confirm/:token", title: "Xác nhận liên kết dòng họ", noindex: true },
 
   // ── Đăng nhập ────────────────────────────────────────────────────
   {
@@ -153,8 +153,8 @@ export const ROUTE_META: RouteMeta[] = [
   { pattern: "/clans/:clanId/kinship", title: "Cách xưng hô" },
   { pattern: "/clans/:clanId/contributions/:contribId", title: "Đóng góp" },
   { pattern: "/clans/:clanId/contributions", title: "Đóng góp chờ duyệt" },
-  { pattern: "/clans/:clanId/inlaws/new", title: "Thêm thông gia" },
-  { pattern: "/clans/:clanId/inlaws", title: "Thông gia" },
+  { pattern: "/clans/:clanId/inlaws/new", title: "Đề nghị liên kết dòng họ" },
+  { pattern: "/clans/:clanId/inlaws", title: "Liên kết dòng họ" },
   { pattern: "/clans/:clanId/board/moderation", title: "Kiểm duyệt bài" },
   { pattern: "/clans/:clanId/board/new", title: "Viết bài" },
   { pattern: "/clans/:clanId/board/:postId/edit", title: "Sửa bài" },

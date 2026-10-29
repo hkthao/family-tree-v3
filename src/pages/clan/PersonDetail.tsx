@@ -48,6 +48,7 @@ import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import { InlawFamilyCard } from "@/components/InlawFamilyCard";
 import {
+  linkTypeFromSide,
   listLinksForPerson,
   peekLink,
   type PersonLink,
@@ -257,6 +258,7 @@ export default function PersonDetail() {
               <PersonAvatar
                 gender={person.gender}
                 photoUrl={photoUrl ?? null}
+                frame={person.avatar_frame}
                 size={56}
               />
               <div className="space-y-0.5 min-w-0 flex-1">
@@ -929,16 +931,17 @@ function InLawLinksSection({
 }) {
   const { data: links } = useQuery({
     queryKey: queryKeys.personLinksForPerson(personId, userId),
-    queryFn: () => listLinksForPerson(personId),
+    queryFn: () => listLinksForPerson(personId, undefined, "all"),
     enabled: !!userId && !!personId,
   });
   if (!links || links.length === 0) return null;
+  const onlyInlaw = links.every((l) => l.link_type === "same_person");
   return (
     <Card>
       <CardHeader>
         <CardTitle className="inline-flex items-center gap-2">
           <IconLink className="h-5 w-5" />
-          Liên kết thông gia
+          {onlyInlaw ? "Liên kết thông gia" : "Liên kết dòng họ"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -994,6 +997,13 @@ function InLawLinkRow({
     <div className="rounded-md border bg-background p-3 space-y-3">
       {/* Identity row — full width, no horizontal squeeze from buttons. */}
       <div className="min-w-0">
+        {link.link_type !== "same_person" && (
+          <p className="mb-1">
+            <span className="inline-flex rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
+              {linkTypeFromSide(link.link_type, link.clan_a_id === viewingClanId)}
+            </span>
+          </p>
+        )}
         <p className="font-medium text-sm truncate">
           {peek.masked
             ? "Người còn sống"

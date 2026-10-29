@@ -123,7 +123,8 @@ export function PhotoUploadField({
             alt=""
             width={96}
             height={96}
-            className="rounded-full object-cover bg-muted"
+            style={{ width: 96, height: 96 }}
+            className="shrink-0 rounded-full object-cover object-top bg-muted"
           />
         ) : (
           <PersonAvatar gender={gender} size={96} />

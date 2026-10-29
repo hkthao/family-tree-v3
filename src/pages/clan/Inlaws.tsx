@@ -37,6 +37,7 @@ import {
   revokeLink,
   type InlawProposalPreview,
   isInlawCacheKey,
+  linkTypeFromSide,
   type LinkPeek,
   type PersonLink,
 } from "@/lib/queries/person-links";
@@ -71,7 +72,7 @@ export default function Inlaws() {
 
   const { data: links, isLoading } = useQuery({
     queryKey: queryKeys.personLinksForClan(clan.id, userId),
-    queryFn: () => listLinksForClan(clan.id),
+    queryFn: () => listLinksForClan(clan.id, undefined, "all"),
     enabled: !!userId,
   });
 
@@ -153,14 +154,14 @@ export default function Inlaws() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Liên kết thông gia" },
+          { label: "Liên kết dòng họ" },
         ]}
       />
 
       <PageHeader
         icon={<IconLink className="h-7 w-7" />}
-        title="Liên kết thông gia"
-        description="Nối dâu/rể của dòng họ này với cùng người ở dòng họ khác. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi."
+        title="Liên kết dòng họ"
+        description="Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, họ hàng. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi."
         actionsBelow
         actions={
           <Button asChild size="sm" className="h-10">
@@ -197,7 +198,7 @@ export default function Inlaws() {
           <EmptyState
             icon={<IconLink className="h-10 w-10" />}
             title="Chưa có liên kết nào"
-            description="Khi đã có thông gia trên nền tảng, đề nghị nối để tra cứu 2 chiều."
+            description="Nối với dòng họ khác (thông gia, cùng tổ tiên, họ hàng) để tra cứu 2 chiều."
           />
         ) : (
           <ul className="divide-y rounded-md border bg-background">
@@ -362,6 +363,11 @@ function ConfirmedRow({
       {/* Identity — full row width so long Vietnamese names don't
           wrap character-per-line when squeezed by sibling buttons. */}
       <div className="text-sm min-w-0">
+        <p className="mb-1">
+          <span className="inline-flex rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
+            {linkTypeFromSide(link.link_type, link.clan_a_id === clanId)}
+          </span>
+        </p>
         <p className="font-medium">
           {localPerson?.full_name ?? "—"}{" "}
           <span className="text-muted-foreground">↔</span>{" "}
@@ -485,6 +491,11 @@ function IncomingPendingRow({
           <span className="font-semibold">
             {preview?.clan_a_name ?? "…"}
           </span>
+          {link.link_type !== "same_person" && (
+            <span className="ml-2 inline-flex rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
+              {linkTypeFromSide(link.link_type, false)}
+            </span>
+          )}
         </p>
         <p>
           <span className="text-muted-foreground">Người bên họ: </span>

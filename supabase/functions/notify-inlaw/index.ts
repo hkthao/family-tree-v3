@@ -1,5 +1,5 @@
 /**
- * notify-inlaw: transactional email for cross-clan in-law links.
+ * notify-inlaw: transactional email for cross-clan person links (in-law, ancestor, relative).
  *
  * Called fire-and-forget after a link's state changes. The endpoint
  * takes ONLY a `link_id`; the email type is derived from the current
@@ -118,7 +118,7 @@ function buildPendingEmail(opts: {
   note: string | null;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đề nghị liên kết thông gia`;
+  const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đề nghị liên kết dòng họ`;
   const noteBlock = opts.note
     ? `<div style="border-left:4px solid #B8862A;background:#FBF7F0;padding:10px 14px;margin:14px 0;">
          <p style="font-size:11px;color:#6F665F;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px;">
@@ -128,7 +128,7 @@ function buildPendingEmail(opts: {
        </div>`
     : "";
   const body = `
-    <p>Một dòng họ vừa gửi đề nghị liên kết thông gia tới bạn.</p>
+    <p>Một dòng họ vừa gửi đề nghị liên kết (thông gia, tổ tiên – hậu duệ hoặc họ hàng) tới bạn.</p>
     <table style="border-collapse:collapse;margin:12px 0;font-size:14px;">
       <tr><td style="padding:4px 12px 4px 0;color:#6F665F;">Từ dòng họ</td>
           <td style="padding:4px 0;font-weight:600;">${esc(opts.peerClanName)}</td></tr>
@@ -160,7 +160,7 @@ function buildConfirmedEmail(opts: {
   peerPersonName: string;
   link: string;
 }): { subject: string; html: string } {
-  const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đã xác nhận liên kết thông gia`;
+  const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] ${safeForHeader(opts.peerClanName)} đã xác nhận liên kết dòng họ`;
   const body = `
     <p>Đề xuất liên kết của bạn với <strong>${esc(opts.peerClanName)}</strong>
        vừa được admin bên đó xác nhận.</p>
@@ -171,7 +171,7 @@ function buildConfirmedEmail(opts: {
           <td style="padding:4px 0;font-weight:600;">${esc(opts.peerPersonName)} (${esc(opts.peerClanName)})</td></tr>
     </table>
     <p style="color:#6F665F;font-size:13px;">
-      Trang chi tiết người bên bạn giờ có thẻ "Liên kết thông gia" để xem 2 chiều.
+      Trang chi tiết người bên bạn giờ có thẻ liên kết để xem 2 chiều.
     </p>`;
   return {
     subject,
@@ -192,7 +192,7 @@ function buildRevokedEmail(opts: {
 }): { subject: string; html: string } {
   const subject = `[Dòng Họ Việt ${safeForHeader(opts.recipientClanName)}] Liên kết với ${safeForHeader(opts.peerClanName)} đã thu hồi`;
   const body = `
-    <p>Liên kết thông gia giữa <strong>${esc(opts.recipientClanName)}</strong>
+    <p>Liên kết dòng họ giữa <strong>${esc(opts.recipientClanName)}</strong>
        và <strong>${esc(opts.peerClanName)}</strong> đã được thu hồi.</p>
     <p style="color:#6F665F;font-size:13px;">
       Dữ liệu gia phả của mỗi bên không đổi. Có thể đề nghị nối lại
