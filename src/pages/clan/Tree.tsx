@@ -137,6 +137,19 @@ async function loadF3(): Promise<typeof import("family-chart")> {
 type Orientation = "vertical" | "horizontal";
 const ORIENTATION_KEY = "family-tree:tree-orientation";
 
+/** Hình nền sau biểu đồ cây 2D: chỉ một hình, người xem tự chọn (mặc định phượng). */
+type Backdrop = "phoenix" | "dragon" | "none";
+const BACKDROP_KEY = "family-tree:tree-backdrop";
+
+function readBackdrop(): Backdrop {
+  try {
+    const v = localStorage.getItem(BACKDROP_KEY);
+    return v === "dragon" || v === "none" ? v : "phoenix";
+  } catch {
+    return "phoenix";
+  }
+}
+
 function readOrientation(): Orientation {
   try {
     return localStorage.getItem(ORIENTATION_KEY) === "horizontal"
@@ -271,6 +284,15 @@ export default function Tree() {
       /* private mode — ignore */
     }
   }, [orientation]);
+
+  const [backdrop, setBackdrop] = useState<Backdrop>(readBackdrop);
+  useEffect(() => {
+    try {
+      localStorage.setItem(BACKDROP_KEY, backdrop);
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [backdrop]);
 
   const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
@@ -1296,6 +1318,25 @@ export default function Tree() {
                   Ngang
                 </SegmentedButton>
               </SegmentedControl>
+              <SegmentedControl ariaLabel="Hình nền cây">
+                {(
+                  [
+                    ["phoenix", "Phượng"],
+                    ["dragon", "Rồng"],
+                    ["none", "Tắt nền"],
+                  ] as const
+                ).map(([id, label]) => (
+                  <SegmentedButton
+                    key={id}
+                    active={backdrop === id}
+                    onClick={() => setBackdrop(id)}
+                    title={id === "none" ? "Không hình nền" : `Hình nền ${label.toLowerCase()}`}
+                    className="px-2 sm:px-3 whitespace-nowrap"
+                  >
+                    {label}
+                  </SegmentedButton>
+                ))}
+              </SegmentedControl>
 
               </div>
               )}
@@ -1394,27 +1435,31 @@ export default function Tree() {
                 : "relative"
             }
           >
-            {/* Nền rồng phượng: lớp trang trí sau biểu đồ, rất mờ để không át chữ
-                trong thẻ; PNG đen trong suốt nên đảo màu ở giao diện tối. */}
+            {/* Nền phượng / rồng (chọn ở Tuỳ chọn): lớp trang trí sau biểu đồ, rất mờ
+                để không át chữ trong thẻ; PNG đen trong suốt nên đảo màu ở giao diện tối. */}
             <div className={isFullscreen ? "relative h-full" : "relative"}>
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg bg-card"
             >
-              <img
-                src="/watermarks/dragon.png"
-                alt=""
-                loading="lazy"
-                draggable={false}
-                className="absolute -left-6 top-[52%] w-[78%] max-w-[560px] opacity-[0.10] dark:invert dark:opacity-[0.12]"
-              />
-              <img
-                src="/watermarks/phoenix.png"
-                alt=""
-                loading="lazy"
-                draggable={false}
-                className="absolute -right-4 -top-3 h-[58%] max-h-[420px] opacity-[0.07] dark:invert dark:opacity-[0.10]"
-              />
+              {backdrop === "phoenix" && (
+                <img
+                  src="/watermarks/phoenix.png"
+                  alt=""
+                  loading="lazy"
+                  draggable={false}
+                  className="absolute -right-4 top-[6%] h-[72%] max-h-[520px] opacity-[0.08] dark:invert dark:opacity-[0.11]"
+                />
+              )}
+              {backdrop === "dragon" && (
+                <img
+                  src="/watermarks/dragon.png"
+                  alt=""
+                  loading="lazy"
+                  draggable={false}
+                  className="absolute -left-6 top-[30%] w-[92%] max-w-[640px] opacity-[0.10] dark:invert dark:opacity-[0.12]"
+                />
+              )}
             </div>
             <div
               ref={containerRef}
