@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { IconBook, IconScroll } from "@/components/icons";
+import { IconClock, IconScroll } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -52,12 +52,15 @@ function years(from: number | null | undefined, to: number | null | undefined): 
 export function HistoricalPersonSections({
   personId,
   personName,
+  bio,
   clanId,
   userId,
   onPersonClick,
 }: {
   personId: string;
   personName: string;
+  /** Tiểu sử có mục "Sự nghiệp theo năm" → dòng thời gian. */
+  bio?: string | null;
   clanId: string;
   /** Rỗng = khách chưa đăng nhập (trang xem thử công khai). */
   userId?: string;
@@ -73,7 +76,7 @@ export function HistoricalPersonSections({
   return (
     <>
       <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />
-      <SourcesCard data={data} personName={personName} clanId={clanId} />
+      <TimelineCard data={data} bio={bio ?? null} personName={personName} clanId={clanId} />
     </>
   );
 }
@@ -154,91 +157,154 @@ function ReignCard({
   );
 }
 
-function SourcesCard({
+interface TimelineEntry {
+  year: number | null;
+  /** Nhãn năm theo sử ("Bính Tuất (1226)") hoặc tên trường ("Ngày mất"). */
+  label: string;
+  text: string | null;
+  quotes: Citation[];
+}
+
+const YEAR_RE = /\((\d{3,4})\)/;
+
+/** Các ý "Năm Bính Tuất (1226): …" trong tiểu sử → từng mốc của dòng thời gian. */
+function parseBioTimeline(bio: string | null): { year: number; label: string; text: string }[] {
+  if (!bio) return [];
+  const out: { year: number; label: string; text: string }[] = [];
+  for (const line of bio.split("\n")) {
+    const m = /^[-•]\s+(Năm [^:()]*\((\d{3,4})\)[^:]*):\s*(.+)$/.exec(line.trim());
+    if (m) out.push({ year: Number(m[2]), label: m[1], text: m[3] });
+  }
+  return out;
+}
+
+function buildTimeline(bio: string | null, citations: Citation[], titles: PersonHistorical["titles"]): TimelineEntry[] {
+  const entries = new Map<number, TimelineEntry>();
+  for (const e of parseBioTimeline(bio)) {
+    const prev = entries.get(e.year);
+    if (prev) prev.text = `${prev.text}\n${e.text}`;
+    else entries.set(e.year, { year: e.year, label: e.label, text: e.text, quotes: [] });
+  }
+  const undated: TimelineEntry = { year: null, label: "Nguồn không gắn năm", text: null, quotes: [] };
+  for (const c of citations) {
+    const y = YEAR_RE.exec(c.locator)?.[1];
+    if (y) {
+      const year = Number(y);
+      const e = entries.get(year) ?? { year, label: `Năm ${year}`, text: null, quotes: [] };
+      e.quotes.push(c);
+      entries.set(year, e);
+    } else {
+      undated.quotes.push(c);
+    }
+  }
+  // Mốc chỉ có trích dẫn, chưa có lời tiểu sử: ghi tên trường để người đọc biết là dữ kiện gì.
+  for (const e of entries.values()) {
+    if (!e.text && e.quotes.length) {
+      const f = [...new Set(e.quotes.map((q) => citationFieldLabel(q.field, titles)))];
+      e.text = f.join(" · ");
+    }
+  }
+    const dated = [...entries.values()].sort((a, b) => (a.year ?? 0) - (b.year ?? 0));
+  return undated.quotes.length ? [...dated, undated] : dated;
+}
+
+function TimelineCard({
   data,
+  bio,
   personName,
   clanId,
 }: {
   data: PersonHistorical;
+  bio: string | null;
   personName: string;
   clanId: string;
 }) {
   const { citations, titles } = data;
-  if (citations.length === 0) return null;
-  // Gom theo trường, giữ thứ tự xuất hiện; "Có chép trong sử" lên đầu.
-  const groups = new Map<string, Citation[]>();
-  for (const c of citations) groups.set(c.field, [...(groups.get(c.field) ?? []), c]);
-  const ordered = [...groups].sort(([a], [b]) => Number(b === "existence") - Number(a === "existence"));
-  const disputed = ordered.filter(([, list]) => list[0].confidence === "disputed").length;
+  if (citations.length === 0 && parseBioTimeline(bio).length === 0) return null;
+  const entries = buildTimeline(bio, citations, titles);
+  const disputed = citations.filter((c) => c.confidence === "disputed").length;
   // Trích dẫn chưa có người duyệt → bản đang duyệt (phiên âm / dịch có thể còn chỉnh).
   const unreviewed = citations.some((c) => !c.reviewed_by);
   return (
     <CollapsibleCard
       title={
         <>
-          <IconBook className="h-5 w-5" />
-          Nguồn sử liệu
+          <IconClock className="h-5 w-5" />
+          Dòng thời gian
         </>
       }
       titleClassName="inline-flex items-center gap-2"
-      contentClassName="space-y-2"
+      contentClassName="space-y-4"
       header={
         <>
-        <p className="text-sm text-muted-foreground">
-          Mỗi dữ kiện kèm trích dẫn nguyên văn từ sách sử.
-          {disputed > 0 && ` Có ${disputed} dữ kiện các nguồn chép khác nhau (dị bản).`}
-        </p>
-        {unreviewed && (
-          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
-            Bản đang duyệt: trích dẫn nguyên văn đã được đối chiếu, phần phiên âm và dịch
-            có thể còn được chỉnh. Thấy chỗ chưa đúng, bấm “Báo sai sót” bên dưới.
+          <p className="text-sm text-muted-foreground">
+            Các mốc theo năm sử chép; bấm “Nguyên văn” để xem câu trích trong sách sử.
+            {disputed > 0 && ` Có ${disputed} dữ kiện các nguồn chép khác nhau (dị bản).`}
           </p>
-        )}
+          {unreviewed && (
+            <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+              Bản đang duyệt: trích dẫn nguyên văn đã được đối chiếu, phần phiên âm và dịch
+              có thể còn được chỉnh. Thấy chỗ chưa đúng, bấm “Báo sai sót” bên dưới.
+            </p>
+          )}
         </>
       }
     >
-        {ordered.map(([field, list]) => (
-          <details
-            key={field}
-            open={list[0].confidence === "disputed"}
-            className="rounded-lg border bg-card px-3 py-2 [&_summary::-webkit-details-marker]:hidden"
-          >
-            <summary className="flex cursor-pointer flex-wrap items-center gap-2 py-1">
-              <span className="font-medium">{citationFieldLabel(field, titles)}</span>
-              <ConfidencePill level={list[0].confidence} />
-              <span className="text-sm text-muted-foreground">{list.length} trích dẫn</span>
-            </summary>
-            <ul className="mt-2 space-y-3 border-t pt-3">
-              {list.map((c) => (
-                <li key={c.id} className="space-y-1 text-sm">
-                  <p>
-                    {c.source?.url ? (
-                      <a href={c.source.url} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">
-                        {c.source.title}
-                      </a>
-                    ) : (
-                      <span className="font-medium">{c.source?.title ?? "Nguồn"}</span>
-                    )}
-                    <span className="text-muted-foreground"> — {c.locator}</span>
-                  </p>
-                  <blockquote lang="zh-Hant" className="border-l-2 border-primary/40 pl-3 text-base leading-relaxed">
-                    {c.quote}
-                  </blockquote>
-                  {c.value && (
-                    <p>
-                      <span className="text-muted-foreground">Nguồn này ghi: </span>
-                      {formatCitationValue(c.value)}
-                    </p>
+      <ol className="relative space-y-5 border-l-2 border-primary/30 pl-5">
+        {entries.map((e, i) => (
+          <li key={`${e.year ?? "none"}-${i}`} className="relative">
+            <span
+              className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-card"
+              aria-hidden="true"
+            />
+            <p className="text-sm font-semibold text-primary">{e.label}</p>
+            {e.text && <p className="mt-0.5 whitespace-pre-line">{e.text}</p>}
+            {e.quotes.length > 0 && (
+              <details className="mt-2 rounded-lg border bg-card px-3 py-2 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer flex-wrap items-center gap-2 py-0.5 text-sm text-muted-foreground">
+                  Nguyên văn ({e.quotes.length})
+                  {e.quotes.some((q) => q.confidence === "disputed") && (
+                    <ConfidencePill level="disputed" />
                   )}
-                  {c.note && <p className="text-muted-foreground">Ghi chú: {c.note}</p>}
-                  {c.reviewed_by && <p className="text-muted-foreground">Người duyệt: {c.reviewed_by}</p>}
-                </li>
-              ))}
-            </ul>
-          </details>
+                </summary>
+                <ul className="mt-2 space-y-3 border-t pt-3">
+                  {e.quotes.map((c) => (
+                    <li key={c.id} className="space-y-1 text-sm">
+                      <p>
+                        {c.source?.url ? (
+                          <a href={c.source.url} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">
+                            {c.source.title}
+                          </a>
+                        ) : (
+                          <span className="font-medium">{c.source?.title ?? "Nguồn"}</span>
+                        )}
+                        <span className="text-muted-foreground"> — {c.locator}</span>
+                      </p>
+                      <blockquote lang="zh-Hant" className="border-l-2 border-primary/40 pl-3 text-base leading-relaxed">
+                        {c.quote}
+                      </blockquote>
+                      <p className="flex flex-wrap items-center gap-2 text-muted-foreground">
+                        <span>{citationFieldLabel(c.field, titles)}</span>
+                        <ConfidencePill level={c.confidence} />
+                      </p>
+                      {c.value && (
+                        <p>
+                          <span className="text-muted-foreground">Nguồn này ghi: </span>
+                          {formatCitationValue(c.value)}
+                        </p>
+                      )}
+                      {c.note && <p className="text-muted-foreground">Ghi chú: {c.note}</p>}
+                      {c.reviewed_by && <p className="text-muted-foreground">Người duyệt: {c.reviewed_by}</p>}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </li>
         ))}
-        <ReportError personName={personName} clanId={clanId} />
-      </CollapsibleCard>
+      </ol>
+      <ReportError personName={personName} clanId={clanId} />
+    </CollapsibleCard>
   );
 }
 

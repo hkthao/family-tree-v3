@@ -1053,6 +1053,7 @@ function DetailsPanel({
           <HistoricalPersonSections
             personId={person.id}
             personName={person.full_name}
+            bio={person.bio}
             clanId={data.clan_id}
             onPersonClick={onPersonClick}
           />
