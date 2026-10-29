@@ -18,7 +18,6 @@ export interface PersonForTree {
   birth_family_id: string | null;
   branch_id: string | null;
   photo_path: string | null;
-  avatar_frame?: string | null;
   /** Explicit sibling rank ("con thứ mấy"). 1 = oldest, 2 = next, …
    *  Null when not set — adapter falls back to birth_date sort.
    *  Optional so legacy callers that build PersonForTree without the
@@ -80,7 +79,7 @@ export async function getTreeData(
   client: Client = defaultClient,
 ): Promise<TreeData> {
   const personCols =
-    "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, generation, birth_family_id, branch_id, photo_path, avatar_frame, birth_order, death_anniv_lunar_month, death_anniv_lunar_day, lifespan_years";
+    "id, full_name, gender, is_living, is_root, birth_date, birth_date_precision, death_date, generation, birth_family_id, branch_id, photo_path, birth_order, death_anniv_lunar_month, death_anniv_lunar_day, lifespan_years";
   const personsQuery =
     source === "persons_public_safe"
       ? client

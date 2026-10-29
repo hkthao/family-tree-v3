@@ -776,6 +776,7 @@ export type Database = {
         Row: {
           ai_daily_limit: number | null
           ai_monthly_limit: number | null
+          avatar_frame: string | null
           created_at: string
           data_version: number
           description: string | null
@@ -806,6 +807,7 @@ export type Database = {
         Insert: {
           ai_daily_limit?: number | null
           ai_monthly_limit?: number | null
+          avatar_frame?: string | null
           created_at?: string
           data_version?: number
           description?: string | null
@@ -836,6 +838,7 @@ export type Database = {
         Update: {
           ai_daily_limit?: number | null
           ai_monthly_limit?: number | null
+          avatar_frame?: string | null
           created_at?: string
           data_version?: number
           description?: string | null

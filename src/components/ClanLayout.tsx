@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
+import { ClanAvatarFrameProvider } from "@/components/PersonAvatar";
 import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 
 import { AiChatDock } from "@/components/ai/AiChatDock";
@@ -185,7 +186,9 @@ export function ClanLayout() {
         {/* Suspense riêng cho vùng nội dung → chuyển tab (trang con lazy) chỉ
             hiện spinner ở đây, GIỮ NGUYÊN thanh nav trên/dưới. */}
         <Suspense fallback={<LoadingState className="min-h-[50vh]" />}>
-          <Outlet context={{ clan } satisfies OutletContext} />
+          <ClanAvatarFrameProvider value={clan.avatar_frame}>
+            <Outlet context={{ clan } satisfies OutletContext} />
+          </ClanAvatarFrameProvider>
         </Suspense>
       </main>
 

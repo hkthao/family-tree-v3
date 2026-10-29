@@ -10,16 +10,21 @@ export function AvatarFramePicker({
   onChange,
   gender,
   photoUrl,
+  label = "Viền avatar",
+  hint,
 }: {
   value: string | null;
   onChange: (frame: AvatarFrame | null) => void;
   gender: "M" | "F";
   photoUrl?: string | null;
+  label?: string;
+  hint?: string;
 }) {
   const options: (AvatarFrame | null)[] = [null, ...AVATAR_FRAMES];
   return (
     <div className="space-y-2 pt-2">
-      <Label>Viền avatar</Label>
+      <Label>{label}</Label>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       <div role="radiogroup" aria-label="Viền avatar" className="flex flex-wrap gap-2">
         {options.map((f) => {
           const selected = (value ?? null) === f;

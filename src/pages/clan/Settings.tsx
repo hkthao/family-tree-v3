@@ -39,6 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import { AvatarFramePicker } from "@/components/AvatarFramePicker";
 import { updateClan } from "@/lib/queries/clan-update";
 import { queryKeys } from "@/lib/queries/keys";
 
@@ -51,6 +52,7 @@ export default function Settings() {
 
   const [name, setName] = useState(clan.name);
   const [description, setDescription] = useState(clan.description ?? "");
+  const [avatarFrame, setAvatarFrame] = useState<string | null>(clan.avatar_frame ?? null);
   const [visibility, setVisibility] = useState(clan.visibility);
   const [hidePhotosInShare, setHidePhotosInShare] = useState(
     clan.hide_photos_in_share,
@@ -73,6 +75,7 @@ export default function Settings() {
   useEffect(() => {
     setName(clan.name);
     setDescription(clan.description ?? "");
+    setAvatarFrame(clan.avatar_frame ?? null);
     setVisibility(clan.visibility);
     setHidePhotosInShare(clan.hide_photos_in_share);
     setRootIsGenZero(clan.generation_offset === 1);
@@ -89,6 +92,7 @@ export default function Settings() {
       updateClan(clan.id, {
         name: name.trim(),
         description: description.trim() || null,
+        avatar_frame: avatarFrame,
         visibility,
         hide_photos_in_share: hidePhotosInShare,
         generation_offset: rootIsGenZero ? 1 : 0,
@@ -180,6 +184,16 @@ export default function Settings() {
               <p className="text-right text-xs text-muted-foreground">
                 {description.length}/500
               </p>
+            </div>
+
+            <div className="space-y-1">
+              <AvatarFramePicker
+                value={avatarFrame}
+                onChange={setAvatarFrame}
+                gender="M"
+                label="Viền avatar cả dòng họ"
+                hint="Áp cho avatar của mọi thành viên trong họ."
+              />
             </div>
 
             <fieldset className="space-y-3">

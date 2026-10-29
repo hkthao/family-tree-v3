@@ -7,6 +7,8 @@ type Client = SupabaseClient<Database>;
 
 export interface UpdateClanInput {
   name?: string;
+  /** Viền avatar chung cho cả dòng họ; null = không viền. */
+  avatar_frame?: string | null;
   description?: string | null;
   visibility?: "private" | "public";
   hide_living_for_nonmembers?: boolean;

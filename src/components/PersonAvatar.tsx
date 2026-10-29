@@ -1,7 +1,7 @@
-import type { ReactElement } from "react";
+import { createContext, useContext, type ReactElement } from "react";
 
 /**
- * Viền avatar mà mỗi người được chọn (lưu ở persons.avatar_frame). Khung vẽ
+ * Viền avatar do dòng họ chọn (lưu ở clans.avatar_frame). Khung vẽ
  * bằng SVG nên không cần tệp ảnh; ảnh người thu nhỏ vào trong để tổng kích
  * thước vẫn đúng `size`.
  */
@@ -21,6 +21,14 @@ export function isAvatarFrame(v: string | null | undefined): v is AvatarFrame {
   return !!v && (AVATAR_FRAMES as readonly string[]).includes(v);
 }
 
+/**
+ * Viền avatar mặc định của dòng họ đang xem (clans.avatar_frame). ClanLayout
+ * bọc nội dung bằng provider này nên mọi avatar trong họ tự có khung; prop
+ * `frame` chỉ dùng để xem trước (kể cả null = ép không viền).
+ */
+const ClanAvatarFrameContext = createContext<string | null>(null);
+export const ClanAvatarFrameProvider = ClanAvatarFrameContext.Provider;
+
 interface Props {
   gender: "M" | "F";
   /**
@@ -33,7 +41,7 @@ interface Props {
   photoUrl?: string | null;
   /** Diameter in px. Defaults to 40. */
   size?: number;
-  /** Viền avatar (persons.avatar_frame). Không hợp lệ / rỗng → không viền. */
+  /** Ghi đè viền của dòng họ (xem trước). undefined = theo dòng họ; null = không viền. */
   frame?: string | null;
   className?: string;
 }
@@ -43,7 +51,9 @@ interface Props {
  * `photoUrl` is provided, otherwise the gendered illustration from
  * /public/avatars.
  */
-export function PersonAvatar({ gender, photoUrl, size = 40, frame, className }: Props) {
+export function PersonAvatar({ gender, photoUrl, size = 40, frame: frameProp, className }: Props) {
+  const clanFrame = useContext(ClanAvatarFrameContext);
+  const frame = frameProp !== undefined ? frameProp : clanFrame;
   const fallback = gender === "M" ? "/avatars/male.png" : "/avatars/female.png";
   const framed = isAvatarFrame(frame);
   // Khung chiếm ~10% mỗi bên; ảnh nằm gọn trong vòng.
