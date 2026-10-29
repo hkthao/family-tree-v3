@@ -1086,6 +1086,14 @@ export default function Tree() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Đặt người trung tâm — gõ tên để tìm…"
+              rightSlot={
+                <RefreshButton
+                  clanId={clan.id}
+                  cachedVersion={clan.data_version}
+                  compact
+                  className="h-8 w-8 border-0 bg-transparent shadow-none"
+                />
+              }
             />
           </div>
           {defaultFocal && focal !== defaultFocal && (
@@ -1217,11 +1225,6 @@ export default function Tree() {
                   <ShareTreeButton clanId={clan.id} clanName={clan.name} />
                 </>
               )}
-              <RefreshButton
-                clanId={clan.id}
-                cachedVersion={clan.data_version}
-                compact
-              />
               {mode === "2d" && (
               <>
               {/* Mobile: nút gạt tuỳ chọn — đứng CÙNG DÒNG với 2D/3D (order-first),
