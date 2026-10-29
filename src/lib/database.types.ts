@@ -2512,6 +2512,61 @@ export type Database = {
           },
         ]
       }
+      person_timeline: {
+        Row: {
+          body: string
+          clan_id: string
+          created_at: string
+          era: string | null
+          id: string
+          person_id: string
+          sort: number
+          year: number
+        }
+        Insert: {
+          body: string
+          clan_id: string
+          created_at?: string
+          era?: string | null
+          id?: string
+          person_id: string
+          sort?: number
+          year: number
+        }
+        Update: {
+          body?: string
+          clan_id?: string
+          created_at?: string
+          era?: string | null
+          id?: string
+          person_id?: string
+          sort?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_timeline_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_timeline_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_timeline_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       person_titles: {
         Row: {
           clan_id: string

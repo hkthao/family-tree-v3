@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
+import {
+  TimelineFields,
+  draftsToRows,
+  rowsToDrafts,
+  type TimelineDraft,
+} from "@/components/TimelineFields";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { CalendarDateInput } from "@/components/CalendarDateInput";
@@ -10,6 +16,7 @@ import {
   IconCalendar,
   IconCheck,
   IconChevronUp,
+  IconClock,
   IconGrave,
   IconMapPin,
   IconPencil,
@@ -40,7 +47,9 @@ import {
   type CalendarDateValue,
 } from "@/lib/personDates";
 import { queryKeys } from "@/lib/queries/keys";
+import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
+import { getPersonTimeline, replacePersonTimeline } from "@/lib/queries/person-timeline";
 
 interface EditPersonFormProps {
   clanId: string;
@@ -70,6 +79,16 @@ export function EditPersonForm({
     queryFn: () => getPerson(personId),
     enabled: !!personId,
   });
+
+  // Dòng thời gian chỉ có ở dòng họ lịch sử; lưu cùng nút "Lưu" của form.
+  const { clan } = useClanContext();
+  const isHistorical = clan.kind === "historical";
+  const { data: savedTimeline } = useQuery({
+    queryKey: ["person-timeline", personId],
+    queryFn: () => getPersonTimeline(personId),
+    enabled: !!personId && isHistorical,
+  });
+  const [timeline, setTimeline] = useState<TimelineDraft[] | null>(null);
 
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
@@ -207,8 +226,20 @@ export function EditPersonForm({
     }
   }, [person]);
 
+  // Nạp dòng thời gian một lần: mốc đã lưu, không có thì dựng tạm từ tiểu sử.
+  useEffect(() => {
+    if (!person || !isHistorical || savedTimeline === undefined || timeline !== null) return;
+    const rows =
+      savedTimeline.length > 0
+        ? savedTimeline
+        : bioTimelineRows(person.bio, yearOf(person.birth_date), yearOf(person.death_date));
+    setTimeline(rowsToDrafts(rows));
+  }, [person, isHistorical, savedTimeline, timeline]);
+
   const mutation = useMutation({
     mutationFn: async () => {
+      // Kiểm tra dòng thời gian trước khi ghi bất cứ gì.
+      const timelineRows = isHistorical && timeline !== null ? draftsToRows(timeline) : null;
       const birthCols = buildPersonDateColumns(birth);
       const deathCols = buildPersonDateColumns(death);
       const anniv = buildDeathAnniversary(death);
@@ -245,6 +276,12 @@ export function EditPersonForm({
         nickname: nickname.trim() || null,
         posthumous_name: posthumousName.trim() || null,
         bio: bio || null,
+      }).then(async (res) => {
+        if (timelineRows) {
+          await replacePersonTimeline(personId, clanId, timelineRows);
+          await queryClient.invalidateQueries({ queryKey: ["person-timeline", personId] });
+        }
+        return res;
       });
     },
     onSuccess: async () => {
@@ -555,6 +592,19 @@ export function EditPersonForm({
             onChange={(e) => setBio(e.target.value)}
             rows={4}
           />
+        </div>
+      )}
+
+      {isHistorical && timeline !== null && (
+        <div className="space-y-3">
+          <h3 className="inline-flex items-center gap-2 text-base font-semibold">
+            <IconClock className="h-5 w-5" />
+            Dòng thời gian
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Các mốc trong đời người, từ lúc sinh đến lúc mất. Mốc “Sinh” và “Mất” tự thêm từ ngày sinh, ngày mất.
+          </p>
+          <TimelineFields drafts={timeline} onChange={setTimeline} />
         </div>
       )}
 
