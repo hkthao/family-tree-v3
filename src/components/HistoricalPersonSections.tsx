@@ -241,7 +241,7 @@ function TimelineCard({
       <ol className="space-y-4">
         {entries.map((e) => (
           <li key={e.year} className="grid grid-cols-[3.5rem_1fr] gap-x-3">
-            <div className="pt-0.5 text-right">
+            <div className="pt-0.5 text-center">
               <p className="text-lg font-semibold leading-none text-primary">{e.year}</p>
               {e.era && <p className="mt-1 text-xs text-muted-foreground">{e.era}</p>}
             </div>
