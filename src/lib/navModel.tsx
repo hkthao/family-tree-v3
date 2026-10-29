@@ -515,7 +515,7 @@ export function buildSections(
       if (feat("inlaws")) {
         adminItems.push({
           to: `/clans/${clanId}/inlaws`,
-          label: "Liên kết thông gia",
+          label: "Liên kết dòng họ",
           icon: <IconLink className={ic} />,
           badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
         });

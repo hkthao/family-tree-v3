@@ -63,7 +63,7 @@ export function HealthTab() {
             highlight={data.states.contributions_pending > 0}
           />
           <StateTile
-            label="Liên kết thông gia chờ"
+            label="Liên kết dòng họ chờ"
             value={data.states.person_links_pending}
             highlight={data.states.person_links_pending > 0}
           />
