@@ -1,4 +1,5 @@
 import { createContext, useContext, type ReactElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 /**
  * Viền avatar do dòng họ chọn (lưu ở clans.avatar_frame). Khung vẽ
@@ -13,7 +14,7 @@ export const AVATAR_FRAME_LABEL: Record<AvatarFrame, string> = {
   gold: "Vòng vàng",
   silver: "Vòng bạc",
   royal: "Hoàng gia",
-  lotus: "Hoa sen",
+  lotus: "Sen hồng",
   fortune: "Phúc lộc",
 };
 
@@ -94,49 +95,95 @@ export function PersonAvatar({ gender, photoUrl, size = 40, frame: frameProp, cl
   );
 }
 
-const GOLD = ["#F6E27A", "#D4A017", "#8A5A00"];
-const SILVER = ["#F4F4F4", "#B5B8BD", "#6F7379"];
+/**
+ * Nét vẽ của khung dạng chuỗi SVG (hệ toạ độ 100×100) cho nơi không dùng React:
+ * thẻ cây đồ thị (family-chart) tự dựng DOM SVG.
+ */
+export function avatarFrameSvg(frame: string | null | undefined): string {
+  return isAvatarFrame(frame) ? renderToStaticMarkup(<FrameArt frame={frame} />) : "";
+}
 
-function Gradient({ id, stops }: { id: string; stops: string[] }) {
+// Khung kiểu app hiện đại: viền mảnh + KHE HỞ giữa ảnh và viền (ảnh r=40, viền
+// r≈46), gradient kim loại nhiều điểm dừng, huy hiệu nhỏ ở đáy thay vì phụ kiện
+// nhô lên. Hệ toạ độ 100×100, overflow hiển thị được.
+const RING_R = 46;
+
+function Gradient({ id, stops, vertical }: { id: string; stops: string[]; vertical?: boolean }) {
   return (
-    <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stopColor={stops[0]} />
-      <stop offset="0.5" stopColor={stops[1]} />
-      <stop offset="1" stopColor={stops[2]} />
+    <linearGradient id={id} x1="0" y1="0" x2={vertical ? "0" : "1"} y2="1">
+      {stops.map((c, i) => (
+        <stop key={i} offset={i / (stops.length - 1)} stopColor={c} />
+      ))}
     </linearGradient>
   );
 }
 
-/** Vòng nguyệt quế: hai cành lá ôm hai bên ảnh, hở phía trên. */
+function Ring({ id, stops, width = 4.5 }: { id: string; stops: string[]; width?: number }) {
+  return (
+    <>
+      <defs>
+        <Gradient id={id} stops={stops} />
+      </defs>
+      <circle cx="50" cy="50" r={RING_R} fill="none" stroke={`url(#${id})`} strokeWidth={width} />
+    </>
+  );
+}
+
+const GOLD = ["#FFF1B8", "#E8B923", "#9A6A07", "#F6D668", "#B8860B"];
+const SILVER = ["#FFFFFF", "#C9CED6", "#7B828C", "#E6E9EE", "#9AA1AB"];
+
+/** Huy hiệu tròn ở đáy khung (đồng xu có viền trắng). */
+function Badge({ id, children }: { id: string; children: ReactElement }) {
+  return (
+    <g>
+      <circle cx="50" cy="93" r="9.5" fill={`url(#${id})`} stroke="#fff" strokeWidth="2" />
+      {children}
+    </g>
+  );
+}
+
+/** Vòng nguyệt quế: hai cành mảnh ôm ảnh từ đáy lên, lá so le trong/ngoài, hở đỉnh. */
 function Laurel(): ReactElement {
   const leaves: ReactElement[] = [];
+  const N = 8;
   for (const side of [-1, 1]) {
-    for (let i = 0; i < 9; i++) {
-      const t = Math.PI / 2 + side * (0.32 + i * 0.3);
-      const cx = 50 + 45 * Math.cos(t);
-      const cy = 50 + 45 * Math.sin(t);
-      const tangent = (t * 180) / Math.PI + 90;
-      for (const lean of [-38, 38]) {
+    for (let i = 0; i < N; i++) {
+      const theta = 0.42 + i * 0.27;
+      const t = Math.PI / 2 + side * theta;
+      for (const out of [true, false]) {
+        const r = RING_R + (out ? 2.2 : -2.2);
+        const cx = 50 + r * Math.cos(t);
+        const cy = 50 + r * Math.sin(t);
+        const tangent = (t * 180) / Math.PI + 90;
+        const lean = (out ? 1 : -1) * side * 34;
         leaves.push(
           <ellipse
-            key={`${side}-${i}-${lean}`}
+            key={`${side}-${i}-${out}`}
             cx={cx}
             cy={cy}
-            rx={6.2 - i * 0.18}
-            ry={2.5}
+            rx={5.4 - i * 0.22}
+            ry={2.1}
             transform={`rotate(${tangent + lean} ${cx} ${cy})`}
-            fill="url(#af-laurel)"
+            fill={out ? "url(#af-laurel-a)" : "url(#af-laurel-b)"}
           />,
         );
       }
     }
   }
+  const a0 = Math.PI / 2 + 0.3;
+  const a1 = Math.PI / 2 + 0.42 + (N - 1) * 0.27 + 0.1;
+  const arc = (side: number) => {
+    const p = (a: number) => `${50 + RING_R * Math.cos(Math.PI / 2 + side * (a - Math.PI / 2))} ${50 + RING_R * Math.sin(Math.PI / 2 + side * (a - Math.PI / 2))}`;
+    return `M ${p(a0)} A ${RING_R} ${RING_R} 0 0 ${side === 1 ? 1 : 0} ${p(a1)}`;
+  };
   return (
     <>
       <defs>
-        <Gradient id="af-laurel" stops={["#9BCB5B", "#4F8A2B", "#2D5A1B"]} />
+        <Gradient id="af-laurel-a" stops={["#A8D26B", "#5E9B35"]} />
+        <Gradient id="af-laurel-b" stops={["#7FB04A", "#3E7A25"]} />
       </defs>
-      <circle cx="50" cy="50" r="44" fill="none" stroke="#4F8A2B" strokeWidth="1" opacity="0.5" />
+      <path d={arc(-1)} fill="none" stroke="#4F8A2B" strokeWidth="1.1" strokeLinecap="round" />
+      <path d={arc(1)} fill="none" stroke="#4F8A2B" strokeWidth="1.1" strokeLinecap="round" />
       {leaves}
     </>
   );
@@ -147,68 +194,29 @@ function FrameArt({ frame }: { frame: AvatarFrame }): ReactElement {
     case "laurel":
       return <Laurel />;
     case "gold":
-      return (
-        <>
-          <defs>
-            <Gradient id="af-gold" stops={GOLD} />
-          </defs>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="url(#af-gold)" strokeWidth="6" />
-          <circle cx="50" cy="50" r="40.5" fill="none" stroke="url(#af-gold)" strokeWidth="1.5" />
-        </>
-      );
+      return <Ring id="af-gold" stops={GOLD} />;
     case "silver":
-      return (
-        <>
-          <defs>
-            <Gradient id="af-silver" stops={SILVER} />
-          </defs>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="url(#af-silver)" strokeWidth="6" />
-          <circle cx="50" cy="50" r="40.5" fill="none" stroke="url(#af-silver)" strokeWidth="1.5" />
-        </>
-      );
+      return <Ring id="af-silver" stops={SILVER} />;
     case "royal":
       return (
         <>
+          <Ring id="af-royal" stops={GOLD} width={5} />
           <defs>
-            <Gradient id="af-royal" stops={GOLD} />
+            <Gradient id="af-royal-b" stops={["#FFE27A", "#C9961A"]} vertical />
           </defs>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="url(#af-royal)" strokeWidth="6" />
-          {Array.from({ length: 8 }, (_, i) => {
-            const a = (i * Math.PI) / 4 + Math.PI / 8;
-            const x = 50 + 45 * Math.cos(a);
-            const y = 50 + 45 * Math.sin(a);
-            return <rect key={i} x={x - 3} y={y - 3} width="6" height="6" transform={`rotate(45 ${x} ${y})`} fill="#B3261E" stroke="#F6E27A" strokeWidth="1" />;
-          })}
-          {/* Mão vương miện ở đỉnh */}
-          <path d="M36 12 L38 -4 L45 5 L50 -8 L55 5 L62 -4 L64 12 Z" fill="url(#af-royal)" stroke="#8A5A00" strokeWidth="1" />
+          <Badge id="af-royal-b">
+            {/* Vương miện nhỏ trong huy hiệu */}
+            <path d="M44 96.5 L43.5 89.5 L47 92.5 L50 88.5 L53 92.5 L56.5 89.5 L56 96.5 Z" fill="#7A4B00" />
+          </Badge>
         </>
       );
     case "lotus":
-      return (
-        <>
-          <defs>
-            <linearGradient id="af-lotus" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#FFD6E8" />
-              <stop offset="1" stopColor="#E0679A" />
-            </linearGradient>
-          </defs>
-          {Array.from({ length: 14 }, (_, i) => {
-            const a = (i * 2 * Math.PI) / 14;
-            const x = 50 + 44 * Math.cos(a);
-            const y = 50 + 44 * Math.sin(a);
-            return <ellipse key={i} cx={x} cy={y} rx="7.5" ry="3.6" transform={`rotate(${(a * 180) / Math.PI} ${x} ${y})`} fill="url(#af-lotus)" stroke="#fff" strokeWidth="0.8" />;
-          })}
-        </>
-      );
+      return <Ring id="af-lotus" stops={["#FFB3C7", "#FF6B9A", "#C13584", "#FF9966", "#FFB3C7"]} />;
     case "fortune":
       return (
         <>
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#B3261E" strokeWidth="6" />
-          <circle cx="50" cy="50" r="41" fill="none" stroke="#F6E27A" strokeWidth="1.2" />
-          {Array.from({ length: 16 }, (_, i) => {
-            const a = (i * 2 * Math.PI) / 16;
-            return <circle key={i} cx={50 + 45 * Math.cos(a)} cy={50 + 45 * Math.sin(a)} r="1.7" fill="#F6E27A" />;
-          })}
+          <Ring id="af-fortune" stops={["#E0463A", "#B3261E", "#8E1A14", "#D8372C"]} width={5} />
+          <circle cx="50" cy="50" r="42.4" fill="none" stroke="#F2C94C" strokeWidth="1" />
         </>
       );
   }
