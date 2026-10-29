@@ -1,3 +1,4 @@
+import { CollapsibleCard } from "@/components/CollapsibleCard";
 import { BioText } from "@/components/BioText";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -38,12 +39,6 @@ import {
 } from "@/lib/photoUpload";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
@@ -304,11 +299,7 @@ export default function PersonDetail() {
               />
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Thông tin cơ bản</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-base">
+            <CollapsibleCard title={<>Thông tin cơ bản</>} contentClassName="space-y-2 text-base">
                 <DetailRow label="Giới tính" value={person.gender === "M" ? "Nam" : "Nữ"} />
                 <DetailRow label="Tên tự" value={person.courtesy_name} />
                 <DetailRow label="Tên húy" value={person.nickname} />
@@ -434,8 +425,7 @@ export default function PersonDetail() {
                     <BioText text={person.bio} />
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </CollapsibleCard>
 
             {clan.kind === "historical" && (
               <HistoricalPersonSections
@@ -447,11 +437,7 @@ export default function PersonDetail() {
             )}
 
             {relationships && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quan hệ</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-5">
+              <CollapsibleCard title={<>Quan hệ</>} contentClassName="space-y-5">
                   <RelationshipGroup
                     label="Cha mẹ"
                     items={relationships.parents}
@@ -520,8 +506,7 @@ export default function PersonDetail() {
                       ) : null
                     }
                   />
-                </CardContent>
-              </Card>
+                </CollapsibleCard>
             )}
 
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
@@ -937,14 +922,8 @@ function InLawLinksSection({
   if (!links || links.length === 0) return null;
   const onlyInlaw = links.every((l) => l.link_type === "same_person");
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="inline-flex items-center gap-2">
-          <IconLink className="h-5 w-5" />
-          {onlyInlaw ? "Liên kết thông gia" : "Liên kết dòng họ"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <CollapsibleCard title={<><IconLink className="h-5 w-5" />
+          {onlyInlaw ? "Liên kết thông gia" : "Liên kết dòng họ"}</>} titleClassName="inline-flex items-center gap-2" contentClassName="space-y-3">
         {links.map((l) => (
           <InLawLinkRow
             key={l.id}
@@ -953,8 +932,7 @@ function InLawLinksSection({
             viewingClanId={viewingClanId}
           />
         ))}
-      </CardContent>
-    </Card>
+      </CollapsibleCard>
   );
 }
 
@@ -1140,11 +1118,7 @@ function RelatedPostsSection({
   if (!data || data.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Tin liên quan</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <CollapsibleCard title={<>Tin liên quan</>} titleClassName="text-base">
         <ul className="space-y-3">
           {data.map((p) => (
             <li
@@ -1173,8 +1147,7 @@ function RelatedPostsSection({
             </li>
           ))}
         </ul>
-      </CardContent>
-    </Card>
+      </CollapsibleCard>
   );
 }
 
