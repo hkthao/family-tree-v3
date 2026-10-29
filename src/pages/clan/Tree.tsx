@@ -1221,73 +1221,72 @@ export default function Tree() {
                   khối chỉ-2D nên sang 3D là biến mất, mà người dùng
                   không hiểu vì sao mất. Riêng Xuất ảnh/In thì ở lại 2D:
                   chúng thật sự chụp SVG của cây 2D. */}
-              <div className="order-5 col-span-2 flex gap-2 [&>*]:flex-1 sm:contents sm:[&>*]:flex-none">
-                {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
-                {effectiveRole(clan) !== null && (
+              {/* Mobile: mọi thứ ngoài "kiểu" và "số đời" gói vào "Tuỳ chọn" cho gọn.
+                  Desktop: ẩn nút, các phần tử trải ra hàng flex như cũ. */}
+              <button
+                type="button"
+                onClick={() => setShowOpts((v) => !v)}
+                className="order-3 col-span-2 sm:hidden inline-flex items-center justify-between gap-1 rounded-md border bg-card px-3 h-10 text-sm"
+                aria-expanded={showOpts}
+              >
+                <span className="inline-flex items-center gap-1.5">
+                  <IconSettings className="h-4 w-4" /> Tuỳ chọn
+                </span>
+                {showOpts ? (
+                  <IconChevronUp className="h-4 w-4" />
+                ) : (
+                  <IconChevronDown className="h-4 w-4" />
+                )}
+              </button>
+              <div
+                className={`${showOpts ? "grid" : "hidden"} order-4 col-span-2 grid-cols-2 gap-2 sm:contents`}
+              >
+                {mode === "2d" && isMember && (
+                  <Select
+                    aria-label="Chế độ xem"
+                    value={view}
+                    onChange={(e) => setView(e.target.value as typeof view)}
+                    className="sm:order-first sm:mr-2 w-full sm:w-[9.5rem] h-10 text-sm"
+                  >
+                    <option value="tree">Cả cây</option>
+                    <option value="lineage">Trực hệ</option>
+                  </Select>
+                )}
+                {mode === "2d" && view === "tree" && (
                   <>
-                    <ExportBookButton clan={clan} />
-                    <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+                    <Select
+                      aria-label="Hướng cây"
+                      value={orientation}
+                      onChange={(e) => setOrientation(e.target.value as typeof orientation)}
+                      className="w-full sm:w-[9.5rem] h-10 text-sm"
+                    >
+                      <option value="vertical">Hướng dọc</option>
+                      <option value="horizontal">Hướng ngang</option>
+                    </Select>
+                    <Select
+                      aria-label="Hình nền cây"
+                      value={backdrop}
+                      onChange={(e) => setBackdrop(e.target.value as Backdrop)}
+                      className="w-full sm:w-[10rem] h-10 text-sm"
+                    >
+                      <option value="phoenix">Nền: Phượng</option>
+                      <option value="dragon">Nền: Rồng</option>
+                      <option value="none">Tắt nền</option>
+                    </Select>
                   </>
                 )}
-              </div>
-              {mode === "2d" && (
-              <>
-              {/* Mobile: nút gạt tuỳ chọn — đứng CÙNG DÒNG với 2D/3D (order-first),
-                  để "Cả cây/Trực hệ" mới xuống dòng dưới. Desktop ẩn. */}
-              {view === "tree" && (
-                <button
-                  type="button"
-                  onClick={() => setShowOpts((v) => !v)}
-                  className="order-4 sm:hidden inline-flex items-center justify-between gap-1 rounded-md border bg-card px-3 h-10 text-sm"
-                  aria-expanded={showOpts}
-                >
-                  <IconSettings className="h-4 w-4" /> Tuỳ chọn
-                  {showOpts ? (
-                    <IconChevronUp className="h-4 w-4" />
-                  ) : (
-                    <IconChevronDown className="h-4 w-4" />
+                {/* Phòng ký ức / Xuất sổ / Chia sẻ không phụ thuộc kiểu vẽ cây
+                    (chỉ là đường dẫn / dựng PDF từ dữ liệu) nên luôn có, kể cả 3D. */}
+                <div className="col-span-2 flex gap-2 [&>*]:flex-1 sm:contents sm:[&>*]:flex-none">
+                  {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
+                  {effectiveRole(clan) !== null && (
+                    <>
+                      <ExportBookButton clan={clan} />
+                      <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+                    </>
                   )}
-                </button>
-              )}
-              {isMember && (
-                <Select
-                  aria-label="Chế độ xem"
-                  value={view}
-                  onChange={(e) => setView(e.target.value as typeof view)}
-                  className="order-3 sm:order-first sm:mr-2 w-full sm:w-[9.5rem] h-10 text-sm"
-                >
-                  <option value="tree">Cả cây</option>
-                  <option value="lineage">Trực hệ</option>
-                </Select>
-              )}
-              {view === "tree" && (
-              <div
-                className={`${showOpts ? "grid" : "hidden"} order-6 col-span-2 grid-cols-2 gap-2 sm:contents`}
-              >
-              <Select
-                aria-label="Hướng cây"
-                value={orientation}
-                onChange={(e) => setOrientation(e.target.value as typeof orientation)}
-                className="w-full sm:w-[9.5rem] h-10 text-sm"
-              >
-                <option value="vertical">Hướng dọc</option>
-                <option value="horizontal">Hướng ngang</option>
-              </Select>
-              <Select
-                aria-label="Hình nền cây"
-                value={backdrop}
-                onChange={(e) => setBackdrop(e.target.value as Backdrop)}
-                className="w-full sm:w-[10rem] h-10 text-sm"
-              >
-                <option value="phoenix">Nền: Phượng</option>
-                <option value="dragon">Nền: Rồng</option>
-                <option value="none">Tắt nền</option>
-              </Select>
-
+                </div>
               </div>
-              )}
-              </>
-              )}
             </div>
           }
         />
