@@ -1184,7 +1184,7 @@ export default function Tree() {
                 aria-label="Kiểu hiển thị cây"
                 value={mode}
                 onChange={(e) => setMode(e.target.value as typeof mode)}
-                className="order-first sm:mr-2 w-[7.5rem] h-10 text-sm"
+                className="order-first sm:mr-2 w-[9.5rem] h-10 text-sm"
               >
                 <option value="2d">Cây 2D</option>
                 <option value="3d">Cây 3D</option>
@@ -1203,7 +1203,7 @@ export default function Tree() {
                 aria-label="Số đời hiển thị quanh người làm tâm"
                 value={depth}
                 onChange={(e) => setDepth(Number(e.target.value) as typeof depth)}
-                className="sm:order-first sm:mr-auto w-[8.5rem] h-10 text-sm"
+                className="sm:order-first sm:mr-auto w-[10rem] h-10 text-sm"
               >
                 {DEPTH_OPTIONS.map((d) => (
                   <option key={d} value={d}>
@@ -1249,7 +1249,7 @@ export default function Tree() {
                   aria-label="Chế độ xem"
                   value={view}
                   onChange={(e) => setView(e.target.value as typeof view)}
-                  className="sm:order-first sm:mr-2 w-[7.5rem] h-10 text-sm"
+                  className="sm:order-first sm:mr-2 w-[9.5rem] h-10 text-sm"
                 >
                   <option value="tree">Cả cây</option>
                   <option value="lineage">Trực hệ</option>
@@ -1263,7 +1263,7 @@ export default function Tree() {
                 aria-label="Hướng cây"
                 value={orientation}
                 onChange={(e) => setOrientation(e.target.value as typeof orientation)}
-                className="w-[7.5rem] h-10 text-sm"
+                className="w-[9.5rem] h-10 text-sm"
               >
                 <option value="vertical">Hướng dọc</option>
                 <option value="horizontal">Hướng ngang</option>
@@ -1272,7 +1272,7 @@ export default function Tree() {
                 aria-label="Hình nền cây"
                 value={backdrop}
                 onChange={(e) => setBackdrop(e.target.value as Backdrop)}
-                className="w-[8.5rem] h-10 text-sm"
+                className="w-[10rem] h-10 text-sm"
               >
                 <option value="phoenix">Nền: Phượng</option>
                 <option value="dragon">Nền: Rồng</option>
