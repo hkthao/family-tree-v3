@@ -200,8 +200,8 @@ export default function Clans() {
           title={isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
           description={
             isPlatformAdmin
-              ? "Mọi dòng họ trên nền tảng — bạn xem được tất cả."
-              : "Dòng họ bạn tham gia hoặc đang theo dõi."
+              ? "Mọi dòng họ trên nền tảng."
+              : "Dòng họ bạn tham gia hoặc theo dõi."
           }
         />
 
@@ -212,18 +212,18 @@ export default function Clans() {
             viewport width. */}
         <div className="flex items-center gap-2">
           <div
-            className="inline-flex rounded-md border bg-card overflow-hidden"
+            className="inline-flex min-w-0 overflow-x-auto rounded-md border bg-card [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             role="tablist"
           >
             <TabButton
               active={tab === "mine"}
               onClick={() => setTab("mine")}
-              label={`Của tôi${mineCount.data ? ` (${mineCount.data.total})` : ""}`}
+              label={<>Của tôi{tabCount(mineCount.data?.total)}</>}
             />
             <TabButton
               active={tab === "community"}
               onClick={() => setTab("community")}
-              label={`Cộng đồng${communityCount.data ? ` (${communityCount.data.total})` : ""}`}
+              label={<>Cộng đồng{tabCount(communityCount.data?.total)}</>}
             />
             {historicalQ.data && historicalQ.data.length > 0 && (
               <TabButton
@@ -233,7 +233,7 @@ export default function Clans() {
                   <>
                     <span className="sm:hidden">Lịch sử</span>
                     <span className="hidden sm:inline">Gia phả lịch sử</span>
-                    {` (${historicalQ.data.length})`}
+                    {tabCount(historicalQ.data.length)}
                   </>
                 }
               />
@@ -257,7 +257,7 @@ export default function Clans() {
               label="Tìm dòng họ"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm dòng họ — gõ không dấu cũng được"
+              placeholder="Tìm dòng họ (gõ không dấu được)"
             />
           </div>
           {/* Sắp xếp + quy mô + kiểu hiển thị. Mobile: thu gọn sau "Bộ lọc". */}
@@ -428,6 +428,12 @@ export default function Clans() {
   );
 }
 
+/** Số lượng nhỏ, mờ sau nhãn tab — gọn hơn "(10)" và không làm tab xuống dòng. */
+function tabCount(n: number | undefined) {
+  if (!n) return null;
+  return <span className="ml-1 text-xs opacity-70">{n}</span>;
+}
+
 function TabButton({
   active,
   onClick,
@@ -443,7 +449,7 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`px-4 h-10 text-sm border-l first:border-l-0 ${
+      className={`shrink-0 whitespace-nowrap px-3 sm:px-4 h-10 text-sm border-l first:border-l-0 ${
         active ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
       }`}
     >
@@ -508,22 +514,25 @@ function ClanRow({
     <li>
       <Link
         to={`/clans/${clan.id}`}
-        className="block rounded-lg border bg-card px-4 py-3 hover:border-primary transition-colors"
+        className="block rounded-lg border bg-card px-3 py-2.5 sm:px-4 sm:py-3 hover:border-primary transition-colors"
       >
         <div className="flex items-baseline justify-between gap-3 min-w-0">
           <h2 className="clan-name text-lg font-semibold truncate">
             {clan.name}
           </h2>
-          <span className="text-xs text-muted-foreground shrink-0">
+          <span className="hidden sm:inline text-xs text-muted-foreground shrink-0">
             {clan.person_count.toLocaleString("vi-VN")} thành viên
           </span>
         </div>
         {clan.description && (
-          <p className="text-muted-foreground text-sm line-clamp-2 mt-0.5">
+          <p className="text-muted-foreground text-sm line-clamp-1 sm:line-clamp-2 mt-0.5">
             {clan.description}
           </p>
         )}
         <p className="text-xs text-muted-foreground mt-1">
+          <span className="sm:hidden">
+            {clan.person_count.toLocaleString("vi-VN")} thành viên{" • "}
+          </span>
           {clan.role ? (
             <span className="text-foreground">{roleLabel(clan.role)}</span>
           ) : (
@@ -532,7 +541,7 @@ function ClanRow({
           {" • "}
           {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
         </p>
-        <ClanDates clan={clan} className="text-xs text-muted-foreground/80 mt-0.5" />
+        <ClanDates clan={clan} className="hidden sm:block text-xs text-muted-foreground/80 mt-0.5" />
         <InlawLine
           inlaws={inlaws}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
@@ -565,7 +574,7 @@ function ClanCard({
     <li>
       <Link
         to={`/clans/${clan.id}`}
-        className="flex h-full flex-col rounded-lg border bg-card p-4 hover:border-primary transition-colors"
+        className="flex h-full flex-col rounded-lg border bg-card p-3 sm:p-4 hover:border-primary transition-colors"
       >
         <div className="flex items-start gap-2 min-w-0">
           <IconTree className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -574,7 +583,7 @@ function ClanCard({
           </h2>
         </div>
         {clan.description && (
-          <p className="text-muted-foreground text-sm line-clamp-2 mt-1.5">
+          <p className="text-muted-foreground text-sm line-clamp-1 sm:line-clamp-2 mt-1.5">
             {clan.description}
           </p>
         )}
@@ -590,7 +599,7 @@ function ClanCard({
             {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
           </span>
         </div>
-        <ClanDates clan={clan} className="mt-1 text-xs text-muted-foreground/80" />
+        <ClanDates clan={clan} className="hidden sm:block mt-1 text-xs text-muted-foreground/80" />
         <InlawLine
           inlaws={inlaws}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
