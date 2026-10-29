@@ -201,9 +201,9 @@ describe("validate (gia phả lịch sử)", () => {
 
   it("tiểu sử quá dài → lỗi; văn phong cảm thán → cảnh báo; dòng nguồn tự thêm", () => {
     const f = base();
-    f.persons[1].bio = "x".repeat(2500);
+    f.persons[1].bio = "x".repeat(12500);
     f.persons[1].citations.push(cite("bio"));
-    expect(errs(f)).toMatch(/tiểu sử 2500 ký tự/);
+    expect(errs(f)).toMatch(/tiểu sử 12500 ký tự/);
     f.persons[1].bio = "Bà là người vô cùng hiền đức!";
     expect(warns(f)).toMatch(/văn phong sử/);
     f.persons[1].bio = "Bà là con gái nhà Thử.";
@@ -382,12 +382,12 @@ describe("lăng tẩm, di sản, thông gia", () => {
         key: "ds.den",
         category: "place",
         title: "Đền Thử",
-        body: "x".repeat(1600),
+        body: "x".repeat(8100),
         people: [{ person: "thu.khong-co" }],
         citations: [cite("existence"), cite("body"), cite("person:0")],
       },
     ];
-    expect(errs(f)).toMatch(/nội dung 1600 ký tự/);
+    expect(errs(f)).toMatch(/nội dung 8100 ký tự/);
     expect(errs(f)).toMatch(/không có người "thu.khong-co"/);
   });
 

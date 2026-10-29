@@ -318,12 +318,12 @@ export interface ValidationResult {
 }
 
 // Tiểu sử đủ các phần: xuất thân, lên ngôi / sự nghiệp, việc nước, nhường ngôi / mất,
-// lời sử thần. Vua chúa ≈ 1.200–1.800 ký tự; người khác thường ngắn hơn.
-export const BIO_SOFT_MAX = 1800;
-export const BIO_MAX = 2400;
+// lời sử thần. Tiểu sử đầy đủ có mục "## …" (xem BioText); vua chúa vài nghìn ký tự.
+export const BIO_SOFT_MAX = 8000;
+export const BIO_MAX = 12000;
 export const NOTES_MAX = 500;
-export const HERITAGE_BODY_SOFT_MAX = 1000;
-export const HERITAGE_BODY_MAX = 1500;
+export const HERITAGE_BODY_SOFT_MAX = 4000;
+export const HERITAGE_BODY_MAX = 8000;
 export const SUMMARY_MAX = 200;
 
 /** Trường chỉ có MỘT giá trị đúng — các nguồn ghi khác nhau ⇒ dị bản. */

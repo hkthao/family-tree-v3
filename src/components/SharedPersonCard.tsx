@@ -1,3 +1,4 @@
+import { BioText } from "@/components/BioText";
 import { useState, type ReactNode } from "react";
 
 import { ContributeDialog } from "@/components/ContributeDialog";
@@ -234,7 +235,7 @@ export function SharedPersonCard({
           {focal.bio && (
             <div className="pt-2">
               <p className="text-sm text-muted-foreground mb-1">Tiểu sử</p>
-              <p className="whitespace-pre-wrap">{focal.bio}</p>
+              <BioText text={focal.bio} />
             </div>
           )}
         </CardContent>
