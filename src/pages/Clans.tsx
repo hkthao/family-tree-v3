@@ -428,10 +428,10 @@ export default function Clans() {
   );
 }
 
-/** Số lượng nhỏ, mờ sau nhãn tab — gọn hơn "(10)" và không làm tab xuống dòng. */
+/** Số lượng nhỏ, mờ, trong ngoặc sau nhãn tab. */
 function tabCount(n: number | undefined) {
   if (!n) return null;
-  return <span className="ml-1 text-xs opacity-70">{n}</span>;
+  return <span className="ml-1 text-xs opacity-70">({n})</span>;
 }
 
 function TabButton({
