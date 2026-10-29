@@ -1052,7 +1052,6 @@ function DetailsPanel({
         extra={
           <HistoricalPersonSections
             personId={person.id}
-            personName={person.full_name}
             bio={person.bio}
             birthDate={person.birth_date}
             deathDate={person.death_date}
