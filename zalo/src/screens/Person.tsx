@@ -1,3 +1,4 @@
+import { parseBio } from "@/components/BioText";
 import { useState, type ReactNode } from "react";
 
 import { IconArrowRight, IconPencil, IconPlus, IconTrash } from "@/components/icons";
@@ -208,7 +209,7 @@ export function PersonScreen({
         {p.bio && (
           <div className="drow" style={{ borderTop: "1px solid var(--line)", paddingTop: 10, marginTop: 6 }}>
             <span>Tiểu sử</span>
-            <span style={{ whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{p.bio}</span>
+            <Bio text={p.bio} />
           </div>
         )}
       </section>
@@ -262,5 +263,29 @@ export function PersonScreen({
           </button>
         ))}
     </div>
+  );
+}
+
+/** Tiểu sử có mục ("## Tiêu đề", "- ý"); không có mục thì hiện như văn bản thường. */
+function Bio({ text }: { text: string }) {
+  if (!/^##\s/m.test(text)) {
+    return <span style={{ whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{text}</span>;
+  }
+  return (
+    <span style={{ display: "block", lineHeight: 1.55 }}>
+      {parseBio(text).map((b, i) =>
+        b.kind === "h" ? (
+          <b key={i} style={{ display: "block", marginTop: i ? 12 : 0 }}>{b.text}</b>
+        ) : b.kind === "ul" ? (
+          <ul key={i} style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+            {b.items.map((x, j) => (
+              <li key={j} style={{ marginBottom: 4 }}>{x}</li>
+            ))}
+          </ul>
+        ) : (
+          <span key={i} style={{ display: "block", marginTop: 4, whiteSpace: "pre-wrap" }}>{b.text}</span>
+        ),
+      )}
+    </span>
   );
 }
