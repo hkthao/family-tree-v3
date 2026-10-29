@@ -440,3 +440,101 @@ export async function reorderSpouseFamilies(
   const failed = results.find((r) => r.error);
   if (failed?.error) throw new Error(failed.error.message);
 }
+
+/**
+ * Gỡ liên kết cha / mẹ khi nhập nhầm: bỏ người đó khỏi gia đình sinh ra của
+ * `personId` (ô cha hoặc mẹ về trống). Người cha/mẹ đó vẫn còn trong dòng họ,
+ * chỉ không còn là cha/mẹ của gia đình này nữa — anh chị em cùng gia đình cũng
+ * không còn liên kết với người đó. Cả hai ô trống: gỡ `personId` khỏi gia đình,
+ * và xoá gia đình nếu không còn ai khác trong đó.
+ */
+export async function removeParentLink(
+  personId: string,
+  parentId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { data: me, error: e1 } = await client
+    .from("persons")
+    .select("birth_family_id")
+    .eq("id", personId)
+    .maybeSingle();
+  if (e1) throw new Error(e1.message);
+  const famId = me?.birth_family_id;
+  if (!famId) return;
+  const { data: fam, error: e2 } = await client
+    .from("families")
+    .select("husband_id, wife_id")
+    .eq("id", famId)
+    .maybeSingle();
+  if (e2) throw new Error(e2.message);
+  if (!fam) return;
+  const husband = fam.husband_id === parentId ? null : fam.husband_id;
+  const wife = fam.wife_id === parentId ? null : fam.wife_id;
+  const { error: e3 } = await client
+    .from("families")
+    .update({ husband_id: husband, wife_id: wife })
+    .eq("id", famId);
+  if (e3) throw new Error(e3.message);
+  if (husband === null && wife === null) {
+    const { error: e4 } = await client
+      .from("persons")
+      .update({ birth_family_id: null })
+      .eq("id", personId);
+    if (e4) throw new Error(e4.message);
+    await deleteFamilyIfEmpty(famId, client);
+  }
+}
+
+/**
+ * Gỡ liên kết vợ / chồng khi nhập nhầm. Cuộc hôn nhân chưa có con → xoá hẳn;
+ * đã có con → giữ gia đình (để con vẫn thuộc về `personId`), chỉ bỏ người kia.
+ */
+export async function removeSpouseLink(
+  familyId: string,
+  personId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { data: fam, error } = await client
+    .from("families")
+    .select("husband_id, wife_id")
+    .eq("id", familyId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!fam) return;
+  const { count, error: ce } = await client
+    .from("persons")
+    .select("id", { count: "exact", head: true })
+    .eq("birth_family_id", familyId)
+    .is("deleted_at", null);
+  if (ce) throw new Error(ce.message);
+  if ((count ?? 0) === 0) {
+    const { error: de } = await client.from("families").delete().eq("id", familyId);
+    if (de) throw new Error(de.message);
+    return;
+  }
+  const patch =
+    fam.husband_id === personId ? { wife_id: null } : { husband_id: null };
+  const { error: ue } = await client.from("families").update(patch).eq("id", familyId);
+  if (ue) throw new Error(ue.message);
+}
+
+/** Gỡ liên kết con khi nhập nhầm: người con không còn thuộc gia đình đó (không bị xoá). */
+export async function removeChildLink(
+  childId: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("persons")
+    .update({ birth_family_id: null })
+    .eq("id", childId);
+  if (error) throw new Error(error.message);
+}
+
+async function deleteFamilyIfEmpty(famId: string, client: Client): Promise<void> {
+  const { count } = await client
+    .from("persons")
+    .select("id", { count: "exact", head: true })
+    .eq("birth_family_id", famId)
+    .is("deleted_at", null);
+  if ((count ?? 0) === 0) await client.from("families").delete().eq("id", famId);
+}

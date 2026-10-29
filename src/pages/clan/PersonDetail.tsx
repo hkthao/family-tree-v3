@@ -21,6 +21,7 @@ import {
   IconTrash,
   IconUser,
   IconUsers,
+  IconX,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
@@ -65,7 +66,11 @@ import { queryKeys } from "@/lib/queries/keys";
 import {
   getPersonRelationships,
   reorderSpouseFamilies,
+  removeChildLink,
+  removeParentLink,
+  removeSpouseLink,
   type Relationship,
+  type SpouseRelationship,
 } from "@/lib/queries/families";
 import {
   getRestingPlacesForPerson,
@@ -191,6 +196,43 @@ export default function PersonDetail() {
         description: (e as Error).message,
       }),
   });
+
+  // Gỡ liên kết quan hệ nhập nhầm (người không bị xoá khỏi dòng họ).
+  const removeRelationMutation = useMutation({
+    mutationFn: async (args: { kind: "parent" | "spouse" | "child"; rel: Relationship }) => {
+      if (args.kind === "parent") return removeParentLink(personId!, args.rel.id);
+      if (args.kind === "spouse") {
+        return removeSpouseLink((args.rel as SpouseRelationship).family_id, personId!);
+      }
+      return removeChildLink(args.rel.id);
+    },
+    onSuccess: async () => {
+      await invalidateClanData(queryClient, clanId!);
+      toast.success("Đã gỡ liên kết");
+    },
+    onError: (e) =>
+      toast.error("Không gỡ được", { description: (e as Error).message }),
+  });
+
+  async function removeRelation(kind: "parent" | "spouse" | "child", rel: Relationship) {
+    const name = person?.full_name ?? "người này";
+    const text = {
+      parent: {
+        title: `Gỡ ${rel.full_name} khỏi cha mẹ của ${name}?`,
+        description: `${rel.full_name} vẫn còn trong dòng họ, chỉ không còn là cha/mẹ của ${name} (và anh chị em cùng cha mẹ). Có thể nhập lại sau.`,
+      },
+      spouse: {
+        title: `Gỡ liên kết vợ/chồng với ${rel.full_name}?`,
+        description: `${rel.full_name} vẫn còn trong dòng họ. Nếu hai người đã có con, các con vẫn giữ liên kết với ${name}.`,
+      },
+      child: {
+        title: `Gỡ ${rel.full_name} khỏi con cái của ${name}?`,
+        description: `${rel.full_name} vẫn còn trong dòng họ, chỉ không còn là con của ${name}. Có thể nhập lại sau.`,
+      },
+    }[kind];
+    const ok = await askConfirm({ ...text, confirmLabel: "Gỡ liên kết", destructive: true });
+    if (ok) removeRelationMutation.mutate({ kind, rel });
+  }
 
   // Swap a spouse with its neighbour and persist the whole list's
   // ranking. `relationships.spouses` is already in display order.
@@ -452,6 +494,7 @@ export default function PersonDetail() {
                     clanId={clanId}
                     photoUrls={relationPhotoUrls}
                     emptyHint="Chưa nhập cha mẹ"
+                    onRemove={canEdit ? (rel) => removeRelation("parent", rel) : undefined}
                     action={
                       canEdit && relationships.parents.length < 2 ? (
                         <Button
@@ -472,6 +515,7 @@ export default function PersonDetail() {
                     clanId={clanId}
                     photoUrls={relationPhotoUrls}
                     emptyHint="Chưa có vợ / chồng."
+                    onRemove={canEdit ? (rel) => removeRelation("spouse", rel) : undefined}
                     reorder={
                       canEdit && relationships.spouses.length > 1
                         ? {
@@ -500,6 +544,7 @@ export default function PersonDetail() {
                     clanId={clanId}
                     photoUrls={relationPhotoUrls}
                     emptyHint="Chưa có con cái."
+                    onRemove={canEdit ? (rel) => removeRelation("child", rel) : undefined}
                     action={
                       canEdit ? (
                         <Button
@@ -820,6 +865,7 @@ function RelationshipGroup({
   emptyHint,
   action,
   reorder,
+  onRemove,
   photoUrls,
 }: {
   label: string;
@@ -829,6 +875,8 @@ function RelationshipGroup({
   photoUrls?: Map<string, string>;
   emptyHint: string;
   action?: React.ReactNode;
+  /** Có → mỗi dòng có nút gỡ liên kết (nhập nhầm); người không bị xoá khỏi dòng họ. */
+  onRemove?: (rel: Relationship) => void;
   /** When set, renders ↑/↓ controls to re-rank the list (vợ cả/hai/ba).
    *  `onMove(index, dir)` swaps the item with its neighbour. */
   reorder?: {
@@ -886,6 +934,17 @@ function RelationshipGroup({
                   </span>
                 )}
               </Link>
+              {onRemove && (
+                <button
+                  type="button"
+                  onClick={() => onRemove(r)}
+                  aria-label={`Gỡ liên kết với ${r.full_name}`}
+                  title="Gỡ liên kết (nhập nhầm)"
+                  className="flex w-9 shrink-0 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-destructive hover:border-destructive"
+                >
+                  <IconX className="h-4 w-4" />
+                </button>
+              )}
               {reorder && (
                 <div className="flex flex-col justify-center gap-1 shrink-0">
                   <button
