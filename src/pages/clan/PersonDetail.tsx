@@ -431,6 +431,7 @@ export default function PersonDetail() {
               <HistoricalPersonSections
                 personId={person.id}
                 personName={person.full_name}
+                bio={person.bio}
                 clanId={clanId!}
                 userId={userId}
               />
