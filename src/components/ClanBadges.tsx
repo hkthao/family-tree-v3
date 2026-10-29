@@ -124,8 +124,9 @@ export function ClanBadges({
   if (!tier && !showTop && !isActive && !showDoi && !showComplete && !showGrow)
     return null;
 
+  // Mobile: một hàng cuộn ngang (không xuống 2–3 dòng làm thẻ phình cao).
   return (
-    <div className="mt-1.5 flex flex-wrap items-center justify-end gap-1.5">
+    <div className="mt-1.5 flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 [&>*]:whitespace-nowrap sm:flex-wrap sm:justify-end sm:overflow-visible">
       {showTop && (
         <Chip
           title={`Hạng ${rank} theo số thành viên`}
