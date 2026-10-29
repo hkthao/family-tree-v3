@@ -518,6 +518,18 @@ export default function PersonDetail() {
                 </CollapsibleCard>
             )}
 
+            {/* Dòng thời gian: ngay dưới thẻ Quan hệ. */}
+            {clan.kind === "historical" && (
+              <HistoricalPersonSections
+                personId={person.id}
+                personName={person.full_name}
+                bio={person.bio}
+                clanId={clanId!}
+                userId={userId}
+                only="timeline"
+              />
+            )}
+
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
             <RelatedPostsSection personId={personId!} clanId={clan.id} />
 
@@ -611,18 +623,6 @@ export default function PersonDetail() {
                 </Button>
               )}
             </div>
-
-            {/* Dòng thời gian nằm cuối trang: dài, chỉ cần khi muốn đào sâu. */}
-            {clan.kind === "historical" && (
-              <HistoricalPersonSections
-                personId={person.id}
-                personName={person.full_name}
-                bio={person.bio}
-                clanId={clanId!}
-                userId={userId}
-                only="timeline"
-              />
-            )}
 
             <QrCodeModal
               open={qrOpen}
