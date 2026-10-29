@@ -10,32 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { submitFeedback } from "@/lib/queries/feedback";
 import {
-  CONFIDENCE_LABEL,
   REIGN_ROLE_LABEL,
-  citationFieldLabel,
-  formatCitationValue,
   getPersonHistorical,
-  type Citation,
-  type Confidence,
   type PersonHistorical,
 } from "@/lib/queries/historical";
 
-const CONFIDENCE_CLASS: Record<Confidence, string> = {
-  confirmed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  single_source: "bg-zinc-400/15 text-zinc-600 dark:text-zinc-300 border-zinc-400/30",
-  disputed: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  legendary: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
-};
-
-function ConfidencePill({ level }: { level: Confidence }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${CONFIDENCE_CLASS[level]}`}
-    >
-      {level === "disputed" ? "⚠ " : ""}
-      {CONFIDENCE_LABEL[level]}
-    </span>
-  );
+function yearOf(d: string | null | undefined): number | null {
+  const y = d ? Number(d.slice(0, 4)) : NaN;
+  return Number.isFinite(y) && y > 0 ? y : null;
 }
 
 function years(from: number | null | undefined, to: number | null | undefined): string {
@@ -53,6 +35,8 @@ export function HistoricalPersonSections({
   personId,
   personName,
   bio,
+  birthDate,
+  deathDate,
   clanId,
   userId,
   onPersonClick,
@@ -62,6 +46,9 @@ export function HistoricalPersonSections({
   personName: string;
   /** Tiểu sử có mục "Sự nghiệp theo năm" → dòng thời gian. */
   bio?: string | null;
+  /** Ngày sinh / mất (YYYY…) — dòng thời gian chỉ lấy các mốc trong đời người. */
+  birthDate?: string | null;
+  deathDate?: string | null;
   clanId: string;
   /** Rỗng = khách chưa đăng nhập (trang xem thử công khai). */
   userId?: string;
@@ -80,7 +67,13 @@ export function HistoricalPersonSections({
     <>
       {only !== "timeline" && <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />}
       {only !== "reign" && (
-        <TimelineCard data={data} bio={bio ?? null} personName={personName} clanId={clanId} />
+        <TimelineCard
+          bio={bio ?? null}
+          birthYear={yearOf(birthDate)}
+          deathYear={yearOf(deathDate)}
+          personName={personName}
+          clanId={clanId}
+        />
       )}
     </>
   );
@@ -163,73 +156,69 @@ function ReignCard({
 }
 
 interface TimelineEntry {
-  year: number | null;
-  /** Nhãn năm theo sử ("Bính Tuất (1226)") hoặc tên trường ("Ngày mất"). */
-  label: string;
-  text: string | null;
-  quotes: Citation[];
+  year: number;
+  /** Can chi của năm ("Bính Tuất"), nếu tiểu sử có ghi. */
+  era: string | null;
+  text: string;
 }
 
-const YEAR_RE = /\((\d{3,4})\)/;
-
 /** Các ý "Năm Bính Tuất (1226): …" trong tiểu sử → từng mốc của dòng thời gian. */
-function parseBioTimeline(bio: string | null): { year: number; label: string; text: string }[] {
+function parseBioTimeline(bio: string | null): { year: number; era: string | null; text: string }[] {
   if (!bio) return [];
-  const out: { year: number; label: string; text: string }[] = [];
+  const out: { year: number; era: string | null; text: string }[] = [];
   for (const line of bio.split("\n")) {
-    const m = /^[-•]\s+(Năm [^:()]*\((\d{3,4})\)[^:]*):\s*(.+)$/.exec(line.trim());
-    if (m) out.push({ year: Number(m[2]), label: m[1], text: m[3] });
+    const m = /^[-•]\s+Năm\s+([^:()]*?)\s*\((\d{3,4})\)[^:]*:\s*(.+)$/.exec(line.trim());
+    if (m) out.push({ year: Number(m[2]), era: m[1] || null, text: m[3] });
   }
   return out;
 }
 
-function buildTimeline(bio: string | null, citations: Citation[], titles: PersonHistorical["titles"]): TimelineEntry[] {
+/**
+ * Trục thời gian một đời người: các mốc "Năm …" trong tiểu sử (tiếng Việt) trong
+ * khoảng sinh → mất, thêm mốc Sinh / Mất từ hồ sơ.
+ */
+function buildTimeline(
+  bio: string | null,
+  birthYear: number | null,
+  deathYear: number | null,
+) {
   const entries = new Map<number, TimelineEntry>();
+  // Chỉ các mốc từ lúc sinh đến lúc mất: việc xảy ra sau khi mất (truy tôn, lăng…) không thuộc đời người.
+  const inLife = (y: number) => (birthYear == null || y >= birthYear) && (deathYear == null || y <= deathYear);
   for (const e of parseBioTimeline(bio)) {
+    if (!inLife(e.year)) continue;
     const prev = entries.get(e.year);
     if (prev) prev.text = `${prev.text}\n${e.text}`;
-    else entries.set(e.year, { year: e.year, label: e.label, text: e.text, quotes: [] });
+    else entries.set(e.year, { year: e.year, era: e.era, text: e.text });
   }
-  const undated: TimelineEntry = { year: null, label: "Nguồn không gắn năm", text: null, quotes: [] };
-  for (const c of citations) {
-    const y = YEAR_RE.exec(c.locator)?.[1];
-    if (y) {
-      const year = Number(y);
-      const e = entries.get(year) ?? { year, label: `Năm ${year}`, text: null, quotes: [] };
-      e.quotes.push(c);
-      entries.set(year, e);
-    } else {
-      undated.quotes.push(c);
-    }
+  // Mốc sinh / mất từ hồ sơ, nếu tiểu sử chưa có mốc cùng năm.
+  if (birthYear != null && !entries.has(birthYear)) {
+    entries.set(birthYear, { year: birthYear, era: null, text: "Sinh." });
   }
-  // Mốc chỉ có trích dẫn, chưa có lời tiểu sử: ghi tên trường để người đọc biết là dữ kiện gì.
-  for (const e of entries.values()) {
-    if (!e.text && e.quotes.length) {
-      const f = [...new Set(e.quotes.map((q) => citationFieldLabel(q.field, titles)))];
-      e.text = f.join(" · ");
-    }
+  if (deathYear != null && !entries.has(deathYear)) {
+    const age = birthYear != null ? `, thọ ${deathYear - birthYear} tuổi` : "";
+    entries.set(deathYear, { year: deathYear, era: null, text: `Mất${age}.` });
   }
-    const dated = [...entries.values()].sort((a, b) => (a.year ?? 0) - (b.year ?? 0));
-  return undated.quotes.length ? [...dated, undated] : dated;
+  return [...entries.values()].sort((a, b) => a.year - b.year);
 }
 
 function TimelineCard({
-  data,
   bio,
+  birthYear,
+  deathYear,
   personName,
   clanId,
 }: {
-  data: PersonHistorical;
   bio: string | null;
+  birthYear: number | null;
+  deathYear: number | null;
   personName: string;
   clanId: string;
 }) {
-  const { citations, titles } = data;
-  if (citations.length === 0 && parseBioTimeline(bio).length === 0) return null;
-  const entries = buildTimeline(bio, citations, titles);
-  const disputed = citations.filter((c) => c.confidence === "disputed").length;
-  // Trích dẫn chưa có người duyệt → bản đang duyệt (phiên âm / dịch có thể còn chỉnh).
-  const unreviewed = citations.some((c) => !c.reviewed_by);
+  // Không có mốc nào trong tiểu sử → không vẽ: chỉ ngày sinh / mất thì chưa thành "dòng thời gian".
+  if (parseBioTimeline(bio).length === 0) return null;
+  const entries = buildTimeline(bio, birthYear, deathYear);
+  if (entries.length === 0) return null;
   return (
     <CollapsibleCard
       title={
@@ -239,72 +228,18 @@ function TimelineCard({
         </>
       }
       titleClassName="inline-flex items-center gap-2"
-      contentClassName="space-y-4"
-      header={
-        <>
-          <p className="text-sm text-muted-foreground">
-            Các mốc theo năm sử chép; bấm “Nguyên văn” để xem câu trích trong sách sử.
-            {disputed > 0 && ` Có ${disputed} dữ kiện các nguồn chép khác nhau (dị bản).`}
-          </p>
-          {unreviewed && (
-            <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
-              Bản đang duyệt: trích dẫn nguyên văn đã được đối chiếu, phần phiên âm và dịch
-              có thể còn được chỉnh. Thấy chỗ chưa đúng, bấm “Báo sai sót” bên dưới.
-            </p>
-          )}
-        </>
-      }
+      contentClassName="space-y-5"
     >
-      <ol className="relative space-y-5 border-l-2 border-primary/30 pl-5">
-        {entries.map((e, i) => (
-          <li key={`${e.year ?? "none"}-${i}`} className="relative">
-            <span
-              className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full border-2 border-primary bg-card"
-              aria-hidden="true"
-            />
-            <p className="text-sm font-semibold text-primary">{e.label}</p>
-            {e.text && <p className="mt-0.5 whitespace-pre-line">{e.text}</p>}
-            {e.quotes.length > 0 && (
-              <details className="mt-2 rounded-lg border bg-card px-3 py-2 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer flex-wrap items-center gap-2 py-0.5 text-sm text-muted-foreground">
-                  Nguyên văn ({e.quotes.length})
-                  {e.quotes.some((q) => q.confidence === "disputed") && (
-                    <ConfidencePill level="disputed" />
-                  )}
-                </summary>
-                <ul className="mt-2 space-y-3 border-t pt-3">
-                  {e.quotes.map((c) => (
-                    <li key={c.id} className="space-y-1 text-sm">
-                      <p>
-                        {c.source?.url ? (
-                          <a href={c.source.url} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">
-                            {c.source.title}
-                          </a>
-                        ) : (
-                          <span className="font-medium">{c.source?.title ?? "Nguồn"}</span>
-                        )}
-                        <span className="text-muted-foreground"> — {c.locator}</span>
-                      </p>
-                      <blockquote lang="zh-Hant" className="border-l-2 border-primary/40 pl-3 text-base leading-relaxed">
-                        {c.quote}
-                      </blockquote>
-                      <p className="flex flex-wrap items-center gap-2 text-muted-foreground">
-                        <span>{citationFieldLabel(c.field, titles)}</span>
-                        <ConfidencePill level={c.confidence} />
-                      </p>
-                      {c.value && (
-                        <p>
-                          <span className="text-muted-foreground">Nguồn này ghi: </span>
-                          {formatCitationValue(c.value)}
-                        </p>
-                      )}
-                      {c.note && <p className="text-muted-foreground">Ghi chú: {c.note}</p>}
-                      {c.reviewed_by && <p className="text-muted-foreground">Người duyệt: {c.reviewed_by}</p>}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
+      <ol className="space-y-4">
+        {entries.map((e) => (
+          <li key={e.year} className="grid grid-cols-[3.5rem_1fr] gap-x-3">
+            <div className="pt-0.5 text-right">
+              <p className="text-lg font-semibold leading-none text-primary">{e.year}</p>
+              {e.era && <p className="mt-1 text-xs text-muted-foreground">{e.era}</p>}
+            </div>
+            <div className="min-w-0 border-l-2 border-primary/25 pl-3">
+              <p className="whitespace-pre-line leading-relaxed">{e.text}</p>
+            </div>
           </li>
         ))}
       </ol>
