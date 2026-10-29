@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 import "family-chart/styles/family-chart.css";
 
+import { avatarFrameSvg } from "@/components/PersonAvatar";
 import { toFamilyChart } from "@/lib/familyChartAdapter";
 import type { TreeData } from "@/lib/queries/tree";
 
@@ -21,6 +22,7 @@ import maleAvatar from "../../../public/avatars/male.png";
 interface F3Card {
   setCardDisplay: (lines: ((d: { data?: Record<string, unknown> }) => string)[]) => F3Card;
   setCardDim: (dim: Record<string, number>) => F3Card;
+  setOnCardUpdate: (fn: (this: Element) => void) => F3Card;
 }
 interface F3Chart {
   setSingleParentEmptyCard: (v: boolean) => F3Chart;
@@ -38,11 +40,14 @@ interface F3Chart {
 export function Tree2D({
   data,
   photoUrls,
+  frame,
   focalId,
   depth,
   onFocus,
 }: {
   data: TreeData;
+  /** Viền avatar của dòng họ (clans.avatar_frame); null = không viền. */
+  frame: string | null;
   /** photo_path → URL đã ký, để thẻ hiện ảnh thật của từng người. */
   photoUrls: Map<string, string>;
   focalId: string | null;
@@ -55,6 +60,8 @@ export function Tree2D({
   const chartRef = useRef<F3Chart | null>(null);
   const onFocusRef = useRef(onFocus);
   onFocusRef.current = onFocus;
+  const frameSvgRef = useRef("");
+  frameSvgRef.current = avatarFrameSvg(frame);
 
   // Dựng lại biểu đồ khi dữ liệu hoặc số đời đổi.
   useEffect(() => {
@@ -94,7 +101,20 @@ export function Tree2D({
             return death ? `${b} - ${death}` : b;
           },
         ])
-        .setCardDim({ w: 220, h: 70, text_x: 75, text_y: 15, img_w: 60, img_h: 60, img_x: 5, img_y: 5 });
+        .setCardDim({ w: 220, h: 70, text_x: 75, text_y: 15, img_w: 60, img_h: 60, img_x: 5, img_y: 5 })
+        .setOnCardUpdate(function () {
+          // Viền avatar của dòng họ, vẽ đè lên ảnh 60px (khung 100×100 thu 0.6).
+          const cardEl = this.querySelector(".card");
+          cardEl?.querySelector(":scope > .clan-frame")?.remove();
+          if (frameSvgRef.current && cardEl) {
+            const fg = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            fg.setAttribute("class", "clan-frame");
+            fg.setAttribute("transform", "translate(5 5) scale(0.6)");
+            fg.setAttribute("pointer-events", "none");
+            fg.innerHTML = frameSvgRef.current;
+            cardEl.appendChild(fg);
+          }
+        });
       chart.setTransitionTime(200);
       chart.setOrientationVertical?.();
       chart.setCardXSpacing(250).setCardYSpacing(150);
@@ -116,7 +136,7 @@ export function Tree2D({
     // focalId cố ý KHÔNG nằm trong deps: đổi tâm xử lý ở effect dưới, không
     // phải dựng lại cả biểu đồ.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, depth, photoUrls]);
+  }, [data, depth, photoUrls, frame]);
 
   // Đổi người trung tâm (từ ô tìm) mà không dựng lại.
   useEffect(() => {

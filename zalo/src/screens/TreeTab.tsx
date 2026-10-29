@@ -53,7 +53,11 @@ export function TreeTab({
   const needsAll = mode !== "folder";
   const tree = useAsync(async () => {
     if (!needsAll) return null;
-    const data = await getTreeData(clanId, source);
+    const [data, frameRow] = await Promise.all([
+      getTreeData(clanId, source),
+      supabase.from("clans").select("avatar_frame").eq("id", clanId).maybeSingle(),
+    ]);
+    const frame = (frameRow.data as { avatar_frame?: string | null } | null)?.avatar_frame ?? null;
     // Ký ảnh một lượt cho cả cây (như web) rồi mới vẽ, để 2D/3D không phải
     // dựng lại lần hai khi ảnh về. Ký hỏng thì vẫn vẽ, chỉ thiếu ảnh thật.
     const all = [...new Set(data.persons.map((p) => p.photo_path).filter((p): p is string => !!p))];
@@ -69,10 +73,11 @@ export function TreeTab({
         if (e.signedUrl && e.path) photoUrls.set(e.path, e.signedUrl);
       }
     }
-    return { data, photoUrls };
+    return { data, photoUrls, frame };
   }, [clanId, source, needsAll, rev]);
   const data = tree.data?.data ?? null;
   const photoUrls = tree.data?.photoUrls ?? EMPTY;
+  const frame = tree.data?.frame ?? null;
   const focalId = focal ?? (data ? pickDefaultFocal(data.persons) : null);
   const needle = unaccent(search);
   const matches =
@@ -159,7 +164,7 @@ export function TreeTab({
       )}
       {data && mode === "2d" && (
         <>
-          <Tree2D data={data} photoUrls={photoUrls} focalId={focalId} depth={depth} onFocus={setFocal} />
+          <Tree2D data={data} photoUrls={photoUrls} frame={frame} focalId={focalId} depth={depth} onFocus={setFocal} />
           <p className="muted hint">Kéo để di chuyển, chụm hai ngón để phóng to. Chạm một thẻ để đặt làm trung tâm.</p>
         </>
       )}
