@@ -299,7 +299,11 @@ export default function PersonDetail() {
               />
             )}
 
-            <CollapsibleCard title={<>Thông tin cơ bản</>} contentClassName="space-y-2 text-base">
+            <CollapsibleCard
+              title={<><IconUser className="h-5 w-5" />Thông tin cơ bản</>}
+              titleClassName="inline-flex items-center gap-2"
+              contentClassName="space-y-2 text-base"
+            >
                 <DetailRow label="Giới tính" value={person.gender === "M" ? "Nam" : "Nữ"} />
                 <DetailRow label="Tên tự" value={person.courtesy_name} />
                 <DetailRow label="Tên húy" value={person.nickname} />
@@ -431,14 +435,18 @@ export default function PersonDetail() {
               <HistoricalPersonSections
                 personId={person.id}
                 personName={person.full_name}
-                bio={person.bio}
                 clanId={clanId!}
                 userId={userId}
+                only="reign"
               />
             )}
 
             {relationships && (
-              <CollapsibleCard title={<>Quan hệ</>} contentClassName="space-y-5">
+              <CollapsibleCard
+                title={<><IconUsers className="h-5 w-5" />Quan hệ</>}
+                titleClassName="inline-flex items-center gap-2"
+                contentClassName="space-y-5"
+              >
                   <RelationshipGroup
                     label="Cha mẹ"
                     items={relationships.parents}
@@ -603,6 +611,18 @@ export default function PersonDetail() {
                 </Button>
               )}
             </div>
+
+            {/* Dòng thời gian nằm cuối trang: dài, chỉ cần khi muốn đào sâu. */}
+            {clan.kind === "historical" && (
+              <HistoricalPersonSections
+                personId={person.id}
+                personName={person.full_name}
+                bio={person.bio}
+                clanId={clanId!}
+                userId={userId}
+                only="timeline"
+              />
+            )}
 
             <QrCodeModal
               open={qrOpen}
@@ -1119,7 +1139,10 @@ function RelatedPostsSection({
   if (!data || data.length === 0) return null;
 
   return (
-    <CollapsibleCard title={<>Tin liên quan</>} titleClassName="text-base">
+    <CollapsibleCard
+      title={<><IconBell className="h-5 w-5" />Tin liên quan</>}
+      titleClassName="inline-flex items-center gap-2 text-base"
+    >
         <ul className="space-y-3">
           {data.map((p) => (
             <li

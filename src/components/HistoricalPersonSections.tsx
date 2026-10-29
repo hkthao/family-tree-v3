@@ -56,6 +56,7 @@ export function HistoricalPersonSections({
   clanId,
   userId,
   onPersonClick,
+  only,
 }: {
   personId: string;
   personName: string;
@@ -66,6 +67,8 @@ export function HistoricalPersonSections({
   userId?: string;
   /** Trang xem thử: bấm tên cha mẹ nuôi → đổi người đang xem thay vì mở trang trong app. */
   onPersonClick?: (personId: string) => void;
+  /** Chỉ vẽ một phần (để đặt dòng thời gian xuống cuối trang); bỏ trống = cả hai. */
+  only?: "reign" | "timeline";
 }) {
   const { data } = useQuery({
     queryKey: ["person-historical", personId, userId ?? ""],
@@ -75,8 +78,10 @@ export function HistoricalPersonSections({
   if (!data) return null;
   return (
     <>
-      <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />
-      <TimelineCard data={data} bio={bio ?? null} personName={personName} clanId={clanId} />
+      {only !== "timeline" && <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />}
+      {only !== "reign" && (
+        <TimelineCard data={data} bio={bio ?? null} personName={personName} clanId={clanId} />
+      )}
     </>
   );
 }
