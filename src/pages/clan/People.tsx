@@ -815,7 +815,6 @@ function PersonListItem({
         <PersonAvatar
           gender={person.gender}
           photoUrl={photoUrl}
-          frame={person.avatar_frame}
           size={44}
           className={person.is_living ? "" : "opacity-80"}
         />
@@ -959,7 +958,6 @@ function PersonGridCard({
         <PersonAvatar
           gender={person.gender}
           photoUrl={photoUrl}
-          frame={person.avatar_frame}
           size={64}
           className={person.is_living ? "" : "opacity-80"}
         />
