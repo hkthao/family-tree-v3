@@ -1394,6 +1394,28 @@ export default function Tree() {
                 : "relative"
             }
           >
+            {/* Nền rồng phượng: lớp trang trí sau biểu đồ, rất mờ để không át chữ
+                trong thẻ; PNG đen trong suốt nên đảo màu ở giao diện tối. */}
+            <div className={isFullscreen ? "relative h-full" : "relative"}>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg bg-card"
+            >
+              <img
+                src="/watermarks/dragon.png"
+                alt=""
+                loading="lazy"
+                draggable={false}
+                className="absolute -left-6 top-[52%] w-[78%] max-w-[560px] opacity-[0.10] dark:invert dark:opacity-[0.12]"
+              />
+              <img
+                src="/watermarks/phoenix.png"
+                alt=""
+                loading="lazy"
+                draggable={false}
+                className="absolute -right-4 -top-3 h-[58%] max-h-[420px] opacity-[0.07] dark:invert dark:opacity-[0.10]"
+              />
+            </div>
             <div
               ref={containerRef}
               // The `f3` class is required — family-chart's stylesheet scopes
@@ -1404,7 +1426,7 @@ export default function Tree() {
               // CSS-var overrides shift the default saturated blue/pink card
               // fills toward the paper/oxblood palette from plan §10:
               // male = cool muted, female = warm muted, text in ink colour.
-              className={`f3 border bg-card overflow-hidden text-foreground ${
+              className={`f3 relative border bg-transparent overflow-hidden text-foreground ${
                 isFullscreen
                   ? "h-full max-h-none min-h-0 rounded-lg"
                   : "rounded-lg h-[70vh] min-h-[480px] max-h-[820px]"
@@ -1423,6 +1445,7 @@ export default function Tree() {
               }
               aria-label="Cây gia phả tương tác"
             />
+            </div>
             {!chartActive && (
               <button
                 type="button"
