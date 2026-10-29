@@ -1448,7 +1448,7 @@ export default function Tree() {
                   alt=""
                   loading="lazy"
                   draggable={false}
-                  className="absolute -right-4 top-[6%] h-[72%] max-h-[520px] opacity-[0.08] dark:invert dark:opacity-[0.11]"
+                  className="absolute left-1/2 top-1/2 h-[80%] max-h-[560px] w-auto -translate-x-1/2 -translate-y-1/2 opacity-[0.08] dark:invert dark:opacity-[0.11]"
                 />
               )}
               {backdrop === "dragon" && (
@@ -1457,7 +1457,7 @@ export default function Tree() {
                   alt=""
                   loading="lazy"
                   draggable={false}
-                  className="absolute -left-6 top-[30%] w-[92%] max-w-[640px] opacity-[0.10] dark:invert dark:opacity-[0.12]"
+                  className="absolute left-1/2 top-1/2 w-[92%] max-w-[640px] -translate-x-1/2 -translate-y-1/2 opacity-[0.10] dark:invert dark:opacity-[0.12]"
                 />
               )}
             </div>
