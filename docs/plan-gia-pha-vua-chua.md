@@ -237,9 +237,18 @@ chiếu lại với DB sau khi nhập.
   độ đầy đủ có cột riêng cho vua/chúa.
 
 ## Ảnh
-- Ảnh đại diện **chỉ lấy từ Wikimedia Commons**, giấy phép PD / CC0 / CC BY / CC BY-SA, có
-  trang nguồn và tác giả (trừ PD/CC0). Script **không tải về**: ghi thẳng link ảnh thu
-  nhỏ Wikimedia (500px người, 960px lăng/di sản) vào `photo_path` / `path` (di sản: cột
+- Ảnh đại diện lấy từ **kho ảnh trong allowlist** (`PHOTO_PROVIDERS` ở `validate-lib.ts`):
+  Wikimedia Commons, Internet Archive, Gallica (BnF), The Met Open Access, Library of
+  Congress, Europeana, Flickr. Giấy phép PD / PDM / CC0 / CC BY / CC BY-SA; mỗi ảnh có
+  **trang nguồn của cùng nhà cung cấp** (nơi ghi giấy phép, tác giả — bắt buộc trừ PD/CC0).
+  Dòng ghi công tự lấy tên nguồn theo link ảnh. Muốn thêm nguồn: thêm một dòng vào
+  `PHOTO_PROVIDERS` (regex ảnh + regex trang nguồn) kèm test; không nới regex chỗ khác.
+  Lưu ý hot-link: một số kho (Gallica, Flickr) có thể chặn / giới hạn nhúng ảnh trực tiếp —
+  sau khi nhập phải mở thử trên bản live; ảnh không nhúng được thì bỏ, không tải về.
+  Chỉ thêm ảnh **xác minh được giấy phép và đúng người** (chân dung vẽ đương thời / tượng
+  thờ ghi rõ loại ảnh); không có thì để trống, dùng ảnh minh hoạ giới tính mặc định.
+  Script **không tải về**: ghi thẳng link ảnh (Wikimedia thu nhỏ 500px người, 960px
+  lăng/di sản; nguồn khác dùng nguyên link) vào `photo_path` / `path` (di sản: cột
   `external_url`). App coi đường dẫn bắt đầu bằng `https://` là link ngoài — dùng thẳng,
   không ký, không xoá trong bucket (web `isExternalPhoto`, Zalo, edge function share-view).
 - Bắt buộc ghi **loại ảnh**: ảnh chụp thật / chân dung vẽ đương thời / tượng, tranh thờ.
