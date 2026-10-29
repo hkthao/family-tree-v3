@@ -1,3 +1,4 @@
+import { CollapsibleCard } from "@/components/CollapsibleCard";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -5,7 +6,6 @@ import { Link } from "react-router-dom";
 import { IconBook, IconScroll } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { submitFeedback } from "@/lib/queries/feedback";
@@ -90,14 +90,8 @@ function ReignCard({
   const { reigns, titles, adoptiveParents } = data;
   if (reigns.length === 0 && titles.length === 0 && adoptiveParents.length === 0) return null;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="inline-flex items-center gap-2">
-          <IconScroll className="h-5 w-5" />
-          {reigns.length > 0 ? "Trị vì & tước hiệu" : "Tước hiệu"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 text-base">
+    <CollapsibleCard title={<><IconScroll className="h-5 w-5" />
+          {reigns.length > 0 ? "Trị vì & tước hiệu" : "Tước hiệu"}</>} titleClassName="inline-flex items-center gap-2" contentClassName="space-y-4 text-base">
         {reigns.map((r) => (
           <div key={r.id} className="space-y-1">
             <p className="font-medium">
@@ -156,8 +150,7 @@ function ReignCard({
             </ul>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </CollapsibleCard>
   );
 }
 
@@ -180,12 +173,17 @@ function SourcesCard({
   // Trích dẫn chưa có người duyệt → bản đang duyệt (phiên âm / dịch có thể còn chỉnh).
   const unreviewed = citations.some((c) => !c.reviewed_by);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="inline-flex items-center gap-2">
+    <CollapsibleCard
+      title={
+        <>
           <IconBook className="h-5 w-5" />
           Nguồn sử liệu
-        </CardTitle>
+        </>
+      }
+      titleClassName="inline-flex items-center gap-2"
+      contentClassName="space-y-2"
+      header={
+        <>
         <p className="text-sm text-muted-foreground">
           Mỗi dữ kiện kèm trích dẫn nguyên văn từ sách sử.
           {disputed > 0 && ` Có ${disputed} dữ kiện các nguồn chép khác nhau (dị bản).`}
@@ -196,8 +194,9 @@ function SourcesCard({
             có thể còn được chỉnh. Thấy chỗ chưa đúng, bấm “Báo sai sót” bên dưới.
           </p>
         )}
-      </CardHeader>
-      <CardContent className="space-y-2">
+        </>
+      }
+    >
         {ordered.map(([field, list]) => (
           <details
             key={field}
@@ -239,8 +238,7 @@ function SourcesCard({
           </details>
         ))}
         <ReportError personName={personName} clanId={clanId} />
-      </CardContent>
-    </Card>
+      </CollapsibleCard>
   );
 }
 
