@@ -15,6 +15,14 @@ import {
   type PersonHistorical,
 } from "@/lib/queries/historical";
 
+/** Viết hoa chữ cái đầu mỗi dòng ("định luật lệnh…" → "Định luật lệnh…"). */
+function capFirst(t: string): string {
+  return t
+    .split("\n")
+    .map((l) => (l ? l.charAt(0).toLocaleUpperCase("vi") + l.slice(1) : l))
+    .join("\n");
+}
+
 function yearOf(d: string | null | undefined): number | null {
   const y = d ? Number(d.slice(0, 4)) : NaN;
   return Number.isFinite(y) && y > 0 ? y : null;
@@ -238,7 +246,7 @@ function TimelineCard({
               {e.era && <p className="mt-1 text-xs text-muted-foreground">{e.era}</p>}
             </div>
             <div className="min-w-0 border-l-2 border-primary/25 pl-3">
-              <p className="whitespace-pre-line leading-relaxed">{e.text}</p>
+              <p className="whitespace-pre-line leading-relaxed">{capFirst(e.text)}</p>
             </div>
           </li>
         ))}
