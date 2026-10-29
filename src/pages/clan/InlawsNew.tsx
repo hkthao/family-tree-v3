@@ -210,7 +210,7 @@ function LinkTypeStep({
   return (
     <div className="space-y-3">
       <StepHeader number={1} title="Loại liên kết" />
-      <div role="radiogroup" aria-label="Loại liên kết" className="grid gap-2 sm:grid-cols-2">
+      <div role="radiogroup" aria-label="Loại liên kết" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {types.map((t) => (
           <button
             key={t}
