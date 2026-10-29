@@ -1,14 +1,8 @@
 import { CollapsibleCard } from "@/components/CollapsibleCard";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import { IconClock, IconScroll } from "@/components/icons";
-import { useToast } from "@/components/Toast";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { submitFeedback } from "@/lib/queries/feedback";
 import {
   REIGN_ROLE_LABEL,
   getPersonHistorical,
@@ -41,7 +35,6 @@ function years(from: number | null | undefined, to: number | null | undefined): 
  */
 export function HistoricalPersonSections({
   personId,
-  personName,
   bio,
   birthDate,
   deathDate,
@@ -51,7 +44,6 @@ export function HistoricalPersonSections({
   only,
 }: {
   personId: string;
-  personName: string;
   /** Tiểu sử có mục "Sự nghiệp theo năm" → dòng thời gian. */
   bio?: string | null;
   /** Ngày sinh / mất (YYYY…) — dòng thời gian chỉ lấy các mốc trong đời người. */
@@ -79,8 +71,6 @@ export function HistoricalPersonSections({
           bio={bio ?? null}
           birthYear={yearOf(birthDate)}
           deathYear={yearOf(deathDate)}
-          personName={personName}
-          clanId={clanId}
         />
       )}
     </>
@@ -214,14 +204,10 @@ function TimelineCard({
   bio,
   birthYear,
   deathYear,
-  personName,
-  clanId,
 }: {
   bio: string | null;
   birthYear: number | null;
   deathYear: number | null;
-  personName: string;
-  clanId: string;
 }) {
   // Không có mốc nào trong tiểu sử → không vẽ: chỉ ngày sinh / mất thì chưa thành "dòng thời gian".
   if (parseBioTimeline(bio).length === 0) return null;
@@ -251,65 +237,6 @@ function TimelineCard({
           </li>
         ))}
       </ol>
-      <ReportError personName={personName} clanId={clanId} />
     </CollapsibleCard>
-  );
-}
-
-/** "Báo sai sót" — gửi vào hộp góp ý của admin (ai xem cũng gửi được). */
-function ReportError({ personName, clanId }: { personName: string; clanId: string }) {
-  const toast = useToast();
-  const [open, setOpen] = useState(false);
-  const [text, setText] = useState("");
-  const send = useMutation({
-    mutationFn: () =>
-      submitFeedback({
-        category: "bug",
-        message: `[Sai sót sử liệu] ${personName}: ${text.trim()}`,
-        clanId,
-        pageUrl: window.location.href,
-      }),
-    onSuccess: () => {
-      toast.success("Đã gửi — cảm ơn bạn, ban biên tập sẽ đối chiếu lại nguồn");
-      setText("");
-      setOpen(false);
-    },
-    onError: (e) => toast.error("Chưa gửi được", { description: (e as Error).message }),
-  });
-  if (!open) {
-    return (
-      <div className="pt-2">
-        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-          Báo sai sót
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <form
-      className="space-y-2 pt-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (text.trim()) send.mutate();
-      }}
-    >
-      <Label htmlFor="historical-report">Chỗ nào chưa đúng? Nếu được, ghi kèm nguồn (sách, quyển, trang).</Label>
-      <Textarea
-        id="historical-report"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        rows={3}
-        maxLength={2000}
-        autoFocus
-      />
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
-          Huỷ
-        </Button>
-        <Button type="submit" size="sm" disabled={!text.trim() || send.isPending}>
-          {send.isPending ? "Đang gửi…" : "Gửi"}
-        </Button>
-      </div>
-    </form>
   );
 }

@@ -434,7 +434,6 @@ export default function PersonDetail() {
             {clan.kind === "historical" && (
               <HistoricalPersonSections
                 personId={person.id}
-                personName={person.full_name}
                 clanId={clanId!}
                 userId={userId}
                 only="reign"
@@ -522,7 +521,6 @@ export default function PersonDetail() {
             {clan.kind === "historical" && (
               <HistoricalPersonSections
                 personId={person.id}
-                personName={person.full_name}
                 bio={person.bio}
                 birthDate={person.birth_date}
                 deathDate={person.death_date}
