@@ -8,6 +8,8 @@ import {
   getPersonHistorical,
   type PersonHistorical,
 } from "@/lib/queries/historical";
+import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
+import { getPersonTimeline, type TimelineRow } from "@/lib/queries/person-timeline";
 
 /** Viết hoa chữ cái đầu mỗi dòng ("định luật lệnh…" → "Định luật lệnh…"). */
 function capFirst(t: string): string {
@@ -15,11 +17,6 @@ function capFirst(t: string): string {
     .split("\n")
     .map((l) => (l ? l.charAt(0).toLocaleUpperCase("vi") + l.slice(1) : l))
     .join("\n");
-}
-
-function yearOf(d: string | null | undefined): number | null {
-  const y = d ? Number(d.slice(0, 4)) : NaN;
-  return Number.isFinite(y) && y > 0 ? y : null;
 }
 
 function years(from: number | null | undefined, to: number | null | undefined): string {
@@ -68,6 +65,7 @@ export function HistoricalPersonSections({
       {only !== "timeline" && <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />}
       {only !== "reign" && (
         <TimelineCard
+          personId={personId}
           bio={bio ?? null}
           birthYear={yearOf(birthDate)}
           deathYear={yearOf(deathDate)}
@@ -155,41 +153,21 @@ function ReignCard({
 
 interface TimelineEntry {
   year: number;
-  /** Can chi của năm ("Bính Tuất"), nếu tiểu sử có ghi. */
+  /** Can chi của năm ("Bính Tuất"), nếu có ghi. */
   era: string | null;
   text: string;
 }
 
-/** Các ý "Năm Bính Tuất (1226): …" trong tiểu sử → từng mốc của dòng thời gian. */
-function parseBioTimeline(bio: string | null): { year: number; era: string | null; text: string }[] {
-  if (!bio) return [];
-  const out: { year: number; era: string | null; text: string }[] = [];
-  for (const line of bio.split("\n")) {
-    const m = /^[-•]\s+Năm\s+([^:()]*?)\s*\((\d{3,4})\)[^:]*:\s*(.+)$/.exec(line.trim());
-    if (m) out.push({ year: Number(m[2]), era: m[1] || null, text: m[3] });
-  }
-  return out;
-}
-
-/**
- * Trục thời gian một đời người: các mốc "Năm …" trong tiểu sử (tiếng Việt) trong
- * khoảng sinh → mất, thêm mốc Sinh / Mất từ hồ sơ.
- */
-function buildTimeline(
-  bio: string | null,
-  birthYear: number | null,
-  deathYear: number | null,
-) {
+/** Gộp các mốc cùng năm, thêm mốc Sinh / Mất từ hồ sơ nếu chưa có mốc cùng năm. */
+function buildTimeline(rows: TimelineRow[], birthYear: number | null, deathYear: number | null): TimelineEntry[] {
   const entries = new Map<number, TimelineEntry>();
-  // Chỉ các mốc từ lúc sinh đến lúc mất: việc xảy ra sau khi mất (truy tôn, lăng…) không thuộc đời người.
-  const inLife = (y: number) => (birthYear == null || y >= birthYear) && (deathYear == null || y <= deathYear);
-  for (const e of parseBioTimeline(bio)) {
-    if (!inLife(e.year)) continue;
-    const prev = entries.get(e.year);
-    if (prev) prev.text = `${prev.text}\n${e.text}`;
-    else entries.set(e.year, { year: e.year, era: e.era, text: e.text });
+  for (const r of rows) {
+    const prev = entries.get(r.year);
+    if (prev) {
+      prev.text = `${prev.text}\n${r.body}`;
+      prev.era ??= r.era;
+    } else entries.set(r.year, { year: r.year, era: r.era, text: r.body });
   }
-  // Mốc sinh / mất từ hồ sơ, nếu tiểu sử chưa có mốc cùng năm.
   if (birthYear != null && !entries.has(birthYear)) {
     entries.set(birthYear, { year: birthYear, era: null, text: "Sinh." });
   }
@@ -201,18 +179,26 @@ function buildTimeline(
 }
 
 function TimelineCard({
+  personId,
   bio,
   birthYear,
   deathYear,
 }: {
+  personId: string;
   bio: string | null;
   birthYear: number | null;
   deathYear: number | null;
 }) {
-  // Không có mốc nào trong tiểu sử → không vẽ: chỉ ngày sinh / mất thì chưa thành "dòng thời gian".
-  if (parseBioTimeline(bio).length === 0) return null;
-  const entries = buildTimeline(bio, birthYear, deathYear);
-  if (entries.length === 0) return null;
+  const { data: saved } = useQuery({
+    queryKey: ["person-timeline", personId],
+    queryFn: () => getPersonTimeline(personId),
+    enabled: !!personId,
+  });
+  // Đã có mốc lưu trong DB (sửa ở form "Sửa thông tin") thì dùng; chưa có thì dựng tạm từ tiểu sử.
+  const rows = saved && saved.length > 0 ? saved : bioTimelineRows(bio, birthYear, deathYear);
+  // Chỉ có mốc Sinh / Mất tự thêm thì chưa thành "dòng thời gian".
+  if (rows.length === 0) return null;
+  const entries = buildTimeline(rows, birthYear, deathYear);
   return (
     <CollapsibleCard
       title={
