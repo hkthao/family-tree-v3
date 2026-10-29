@@ -21,6 +21,8 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
+  IconChevronDown,
+  IconChevronUp,
   IconCopy,
   IconGrid,
   IconList,
@@ -788,6 +790,8 @@ function PersonListItem({
   onToggleSelect?: () => void;
   canCopy?: boolean;
 }) {
+  // Thẻ mặc định gọn (tên + đời); bấm mũi tên để mở cha/mẹ/vợ chồng và ngày tháng.
+  const [open, setOpen] = useState(false);
   const rel = lookupRelatives(person.id, relatives);
   const life = lifespan(person);
   const metaBits = [genderLabel(person.gender)];
@@ -833,7 +837,7 @@ function PersonListItem({
           <p className="text-sm text-muted-foreground">
             {metaBits.join(" · ")}
           </p>
-          {(rel.father || rel.mother || rel.spouses.length > 0) && (
+          {open && (rel.father || rel.mother || rel.spouses.length > 0) && (
             <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
               {(rel.father || rel.mother) && (
                 <p className="truncate">
@@ -862,12 +866,24 @@ function PersonListItem({
               )}
             </div>
           )}
-          <PersonDates
-            person={person}
-            className="text-xs text-muted-foreground/80 mt-1 truncate"
-          />
+          {open && (
+            <PersonDates
+              person={person}
+              className="text-xs text-muted-foreground/80 mt-1 truncate"
+            />
+          )}
         </div>
       </Link>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label={open ? `Thu gọn ${person.full_name}` : `Mở rộng ${person.full_name}`}
+        title={open ? "Thu gọn" : "Xem thêm cha mẹ, vợ chồng, ngày tháng"}
+        className="absolute bottom-1 right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
+      >
+        {open ? <IconChevronUp className="h-4 w-4" /> : <IconChevronDown className="h-4 w-4" />}
+      </button>
       {canCopy && (
         <Link
           to={`/clans/${clanId}/people/new?from=${person.id}`}
