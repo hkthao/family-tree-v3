@@ -258,6 +258,7 @@ export default function PersonDetail() {
               <PersonAvatar
                 gender={person.gender}
                 photoUrl={photoUrl ?? null}
+                frame={person.avatar_frame}
                 size={56}
               />
               <div className="space-y-0.5 min-w-0 flex-1">
