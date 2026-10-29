@@ -30,7 +30,7 @@ export const CLAN_FEATURES: ClanFeatureDef[] = [
   { key: "graves", label: "Mộ phần & tro cốt", description: "Danh mục mộ phần, nghĩa trang." },
   { key: "honor", label: "Bảng vàng công đức", description: "Ghi nhận đóng góp công đức." },
   { key: "fund", label: "Quỹ họ", description: "Sổ quỹ thu chi dòng họ." },
-  { key: "inlaws", label: "Liên kết thông gia", description: "Liên kết chéo giữa các dòng họ." },
+  { key: "inlaws", label: "Liên kết dòng họ", description: "Liên kết chéo giữa các dòng họ (thông gia, họ tổ, họ hậu duệ, họ hàng)." },
   { key: "ai_assistant", label: "Trợ lý AI", description: "Hỏi đáp về gia phả bằng lời — giỗ chạp, xưng hô, tra cứu người. Câu hỏi được gửi tới dịch vụ AI bên ngoài để xử lý (kèm tên, năm sinh/mất của người liên quan; không gửi ảnh hay tiểu sử)." },
 ];
 

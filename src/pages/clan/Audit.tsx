@@ -39,7 +39,7 @@ const ENTITY_LABEL: Record<AuditEntity, string> = {
   person: "Người",
   family: "Gia đình",
   branch: "Chi",
-  person_link: "Liên kết thông gia",
+  person_link: "Liên kết dòng họ",
 };
 
 const ACTION_LABEL: Record<AuditAction, string> = {
@@ -113,7 +113,7 @@ export default function Audit() {
               <option value="person">Người</option>
               <option value="family">Gia đình</option>
               <option value="branch">Chi</option>
-              <option value="person_link">Liên kết thông gia</option>
+              <option value="person_link">Liên kết dòng họ</option>
             </Select>
             <Select
               aria-label="Lọc theo hành động"

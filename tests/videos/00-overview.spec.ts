@@ -412,7 +412,7 @@ test("00 — Tour giới thiệu app gia phả", async ({ page }) => {
   );
   await navigateViaDrawer(
     page,
-    /Liên kết thông gia/,
+    /Liên kết dòng họ/,
     /\/clans\/[0-9a-f-]+\/inlaws$/,
   );
   await pause(page, 1500);
