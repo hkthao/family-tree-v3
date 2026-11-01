@@ -143,7 +143,9 @@ async function commonsThumb(url: string, width: number): Promise<string> {
 
 async function main() {
   // 1. Danh mục nguồn
-  must("sources", await admin.from("historical_sources").upsert(sources, { onConflict: "code" }));
+  // `press` chỉ dùng cho bộ kiểm tra (nguồn báo chí), không phải cột của bảng.
+  const sourceRows = sources.map(({ press: _press, ...row }) => row);
+  must("sources", await admin.from("historical_sources").upsert(sourceRows, { onConflict: "code" }));
   const srcRows = must("sources", await admin.from("historical_sources").select("id, code"));
   const sourceId = new Map((srcRows ?? []).map((s) => [s.code as string, s.id as string]));
 
