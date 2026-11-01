@@ -525,3 +525,7 @@ data = {
 }
 json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
 print(f"{len(persons)} người, {len(unions)} hôn nhân, {len(graves)} lăng, {len(links)} thông gia")
+
+# Mọi người cùng một bộ mục tiểu sử (mục thiếu thông tin để trống) — xem normalize_bio.py
+import os, subprocess
+subprocess.run([sys.executable, "-I", os.path.join(os.path.dirname(os.path.abspath(__file__)), "normalize_bio.py"), OUT], check=True)
