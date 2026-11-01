@@ -104,6 +104,34 @@ function must<T>(label: string, r: { data: T; error: { message: string } | null 
   return r.data;
 }
 
+/**
+ * Chia nhỏ thành từng đợt để mỗi yêu cầu không vượt thời gian chờ của cổng. Trigger sinh đời chạy MỖI DÒNG
+ * (độ phức tạp ~ n² với dòng họ lớn) nên đợt phải nhỏ; hết thời gian chờ thì chia đôi đợt rồi thử lại
+ * (upsert nên thử lại an toàn — câu lệnh cũ vẫn chạy xong dưới DB).
+ */
+async function inBatches<R, O>(label: string, rows: R[], size: number, run: (chunk: R[]) => PromiseLike<{ data: O[] | null; error: { message: string } | null }>): Promise<O[]> {
+  const out: O[] = [];
+  const attempt = async (chunk: R[], tag: string): Promise<void> => {
+    const r = await run(chunk);
+    if (r.error) {
+      if (/timing out|timeout|gateway/i.test(r.error.message) && chunk.length > 1) {
+        console.warn(`  ⚠ ${label} ${tag}: hết thời gian chờ — chia đôi (${chunk.length} → ${Math.ceil(chunk.length / 2)})`);
+        await new Promise((res) => setTimeout(res, 20000));
+        const mid = Math.ceil(chunk.length / 2);
+        await attempt(chunk.slice(0, mid), tag + "a");
+        await attempt(chunk.slice(mid), tag + "b");
+        return;
+      }
+      throw new Error(`${label} ${tag}: ${r.error.message}`);
+    }
+    out.push(...(r.data ?? []));
+  };
+  for (let i = 0; i < rows.length; i += size) {
+    await attempt(rows.slice(i, i + size), `[${i + 1}–${Math.min(i + size, rows.length)}/${rows.length}]`);
+  }
+  return out;
+}
+
 /** Cột ngày đã dựng bởi validator (đúng như form ghi) → tên cột persons. */
 function dateCols(prefix: "birth" | "death", c: DateColumns | null | undefined) {
   return {
@@ -216,22 +244,15 @@ async function main() {
     }),
   });
 
-  const pRows = must(
-    "persons",
-    await admin
-      .from("persons")
-      .upsert(persons.map((p) => personRow(p)), { onConflict: "clan_id,external_key" })
-      .select("id, external_key"),
+  const pRows = await inBatches("persons", persons.map((p) => personRow(p)), 25, (chunk) =>
+    admin.from("persons").upsert(chunk, { onConflict: "clan_id,external_key" }).select("id, external_key"),
   );
   const personId = new Map((pRows ?? []).map((r) => [r.external_key as string, r.id as string]));
 
   // 4. Hôn nhân
-  const fRows = must(
+  const fRows = await inBatches(
     "families",
-    await admin
-      .from("families")
-      .upsert(
-        unions.map((u) => ({
+    unions.map((u) => ({
           clan_id: clanId,
           external_key: u.key,
           husband_id: (u.husband && personId.get(u.husband)) ?? null,
@@ -240,19 +261,15 @@ async function main() {
           union_type: u.union_type ?? "marriage",
           notes: u.notes ?? null,
         })),
-        { onConflict: "clan_id,external_key" },
-      )
-      .select("id, external_key"),
+    10,
+    (chunk) => admin.from("families").upsert(chunk, { onConflict: "clan_id,external_key" }).select("id, external_key"),
   );
   const familyId = new Map((fRows ?? []).map((r) => [r.external_key as string, r.id as string]));
 
   // 5. Người — lượt 2 gắn cha mẹ đẻ / cha mẹ nuôi.
   if (persons.length) {
-    must(
-      "persons (parents)",
-      await admin
-        .from("persons")
-        .upsert(persons.map((p) => personRow(p, familyId)), { onConflict: "clan_id,external_key" }),
+    await inBatches("persons (parents)", persons.map((p) => personRow(p, familyId)), 10, (chunk) =>
+      admin.from("persons").upsert(chunk, { onConflict: "clan_id,external_key" }).select("id"),
     );
   }
 
@@ -439,7 +456,7 @@ async function main() {
     reviewed_by: isPublishable(review) ? review?.by ?? null : null,
     reviewed_at: isPublishable(review) ? review?.at ?? null : null,
   }));
-  if (citations.length) must("person_citations", await admin.from("person_citations").insert(citations));
+  await inBatches("person_citations", citations, 150, (chunk) => admin.from("person_citations").insert(chunk).select("id"));
 
   const reigns = persons.flatMap((p) =>
     (p.reigns ?? []).map((r, i) => ({
@@ -456,7 +473,7 @@ async function main() {
       notes: r.notes ?? null,
     })),
   );
-  if (reigns.length) must("person_reigns", await admin.from("person_reigns").insert(reigns));
+  await inBatches("person_reigns", reigns, 100, (chunk) => admin.from("person_reigns").insert(chunk).select("id"));
 
   const titles = persons.flatMap((p) =>
     (p.titles ?? []).map((t, i) => ({
@@ -469,7 +486,7 @@ async function main() {
       notes: t.notes ?? null,
     })),
   );
-  if (titles.length) must("person_titles", await admin.from("person_titles").insert(titles));
+  await inBatches("person_titles", titles, 100, (chunk) => admin.from("person_titles").insert(chunk).select("id"));
 
   // 11. Thông gia: cùng một người ở dòng họ lịch sử khác.
   let linked = 0;
