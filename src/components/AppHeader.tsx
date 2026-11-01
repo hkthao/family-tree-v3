@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { AppDrawer } from "@/components/AppDrawer";
 import { AppLogo } from "@/components/AppLogo";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 
@@ -62,6 +63,7 @@ export function AppHeader() {
           </Link>
           <div className="hidden lg:block flex-1" aria-hidden="true" />
           <div className="flex items-center gap-1">
+            <GlobalSearch />
             <NotificationBell />
             <ThemeQuickToggle />
           </div>

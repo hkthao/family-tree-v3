@@ -3913,6 +3913,18 @@ export type Database = {
           id: string
         }[]
       }
+      global_search: {
+        Args: { per_type?: number; q: string }
+        Returns: {
+          clan_id: string
+          clan_name: string
+          id: string
+          kind: string
+          rank: number
+          subtitle: string
+          title: string
+        }[]
+      }
       invite_member_by_email: {
         Args: { member_role: string; target_clan: string; target_email: string }
         Returns: Json
