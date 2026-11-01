@@ -149,6 +149,16 @@ export function IconArrowLeft(p: IconProps) {
   );
 }
 
+export function IconChart(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <line x1="6" y1="20" x2="6" y2="11" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="18" y1="20" x2="18" y2="14" />
+    </Svg>
+  );
+}
+
 export function IconChevronUp(p: IconProps) {
   return (
     <Svg {...p}>

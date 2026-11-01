@@ -22,7 +22,7 @@ import {
   IconUpload,
   IconWallet,
 } from "@/components/icons";
-import { FunFactsCard } from "@/components/FunFactsCard";
+import { ClanStatsPanel } from "@/components/ClanStatsPanel";
 import { SectionHeading } from "@/components/SectionHeading";
 import { PageHeader } from "@/components/PageHeader";
 import { EnablePushPrompt } from "@/components/EnablePushPrompt";
@@ -294,9 +294,59 @@ export default function Dashboard() {
               kiện). Tự ẩn khi đã bật hoặc người dùng bỏ qua. */}
           {isMember && <EnablePushPrompt />}
 
-          {/* Thẻ "Hôm nay" — đổi mỗi ngày (âm lịch, ngày tốt/xấu, giỗ/sinh
-              nhật hôm nay, phong tục hôm nay) → tạo lý do mở app hằng ngày. */}
-          <TodayHubCard clanId={clan.id} todayEvents={todayEvents} />
+          {/* Số liệu dòng họ — chỉ số chính + biểu đồ cơ cấu; kho tư liệu: hàng nút nhỏ bấm được. */}
+          {(() => {
+            const useStatsRpc = isMember && stats && stats.total_persons > 0;
+            const counts = useStatsRpc
+              ? {
+                  total: stats!.total_persons,
+                  maxGen: stats!.max_generation,
+                  males: stats!.males,
+                  females: stats!.females,
+                  living: stats!.living,
+                  deceased: stats!.deceased,
+                }
+              : {
+                  total: tree.persons.length,
+                  maxGen: tree.persons.reduce<number | null>(
+                    (m, p) =>
+                      p.generation == null
+                        ? m
+                        : m == null || p.generation > m
+                          ? p.generation
+                          : m,
+                    null,
+                  ),
+                  males: tree.persons.filter((p) => p.gender === "M").length,
+                  females: tree.persons.filter((p) => p.gender === "F").length,
+                  living: tree.persons.filter((p) => p.is_living).length,
+                  deceased: tree.persons.filter((p) => !p.is_living).length,
+                };
+            return (
+              <ClanStatsPanel counts={counts} persons={tree.persons}>
+                {isMember && contentCounts && (
+                  <div className="grid grid-cols-3 gap-2 border-t pt-4">
+                    <ResourceLink
+                      to={`/clans/${clan.id}/memory-room`}
+                      label="Phòng ký ức"
+                      value={contentCounts.memory_rooms}
+                    />
+                    <ResourceLink
+                      to={`/clans/${clan.id}/graves`}
+                      label="Mộ phần & tro cốt"
+                      value={contentCounts.resting_places}
+                    />
+                    <ResourceLink
+                      to={`/clans/${clan.id}/heritage`}
+                      label="Di sản văn hoá"
+                      value={contentCounts.heritage_items}
+                    />
+                  </div>
+                )}
+              </ClanStatsPanel>
+            );
+          })()}
+
 
           {/* Sự kiện sắp tới — ưu tiên cao: nhắc giỗ/sinh nhật sắp đến. */}
           {upcomingTop5.length > 0 && (
@@ -413,100 +463,15 @@ export default function Dashboard() {
             />
           )}
 
-          {/* Thống kê dòng họ — GỘP GỌN 9 card thành 1 thẻ, đưa xuống dưới
-              (thông tin thứ yếu). Người: số lớn + tách Nam/Nữ/Còn sống/Đã mất;
-              kho tư liệu: hàng nút nhỏ bấm được. */}
-          {(() => {
-            const useStatsRpc = isMember && stats && stats.total_persons > 0;
-            const counts = useStatsRpc
-              ? {
-                  total: stats!.total_persons,
-                  maxGen: stats!.max_generation,
-                  males: stats!.males,
-                  females: stats!.females,
-                  living: stats!.living,
-                  deceased: stats!.deceased,
-                }
-              : {
-                  total: tree.persons.length,
-                  maxGen: tree.persons.reduce<number | null>(
-                    (m, p) =>
-                      p.generation == null
-                        ? m
-                        : m == null || p.generation > m
-                          ? p.generation
-                          : m,
-                    null,
-                  ),
-                  males: tree.persons.filter((p) => p.gender === "M").length,
-                  females: tree.persons.filter((p) => p.gender === "F").length,
-                  living: tree.persons.filter((p) => p.is_living).length,
-                  deceased: tree.persons.filter((p) => !p.is_living).length,
-                };
-            return (
-              <section
-                aria-label="Thống kê dòng họ"
-                className="rounded-lg border bg-card p-4 space-y-3"
-              >
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="text-3xl font-semibold text-primary tabular-nums">
-                    {counts.total}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    thành viên · {counts.maxGen ?? "—"} đời
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-sm">
-                  <MiniStat label="Nam" value={counts.males} />
-                  <MiniStat label="Nữ" value={counts.females} />
-                  <MiniStat label="Còn sống" value={counts.living} />
-                  <MiniStat label="Đã mất" value={counts.deceased} />
-                </div>
-                {isMember && contentCounts && (
-                  <div className="grid grid-cols-3 gap-2 border-t pt-3">
-                    <ResourceLink
-                      to={`/clans/${clan.id}/memory-room`}
-                      label="Phòng ký ức"
-                      value={contentCounts.memory_rooms}
-                    />
-                    <ResourceLink
-                      to={`/clans/${clan.id}/graves`}
-                      label="Mộ phần & tro cốt"
-                      value={contentCounts.resting_places}
-                    />
-                    <ResourceLink
-                      to={`/clans/${clan.id}/heritage`}
-                      label="Di sản văn hoá"
-                      value={contentCounts.heritage_items}
-                    />
-                  </div>
-                )}
-              </section>
-            );
-          })()}
-
-          <FunFactsCard
-            clan={clan}
-            userId={userId}
-            persons={tree.persons}
-            families={tree.families}
-          />
+          {/* Thẻ "Hôm nay" — đổi mỗi ngày (âm lịch, ngày tốt/xấu, giỗ/sinh
+              nhật hôm nay, phong tục hôm nay) → tạo lý do mở app hằng ngày. */}
+          <TodayHubCard clanId={clan.id} todayEvents={todayEvents} />
 
           {effectiveRole(clan) !== null && (
             <RecentActivityPanel clanId={clan.id} />
           )}
         </>
       ) : null}
-    </div>
-  );
-}
-
-/** Số nhỏ + nhãn cùng dòng — cho thẻ thống kê gộp gọn. */
-function MiniStat({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="flex items-baseline gap-1.5">
-      <span className="text-base font-semibold tabular-nums">{value}</span>
-      <span className="text-muted-foreground">{label}</span>
     </div>
   );
 }
