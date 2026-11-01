@@ -153,3 +153,170 @@ for fab, (hus, ukey, label) in ADD.items():
             added += 1
 json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
 print(f"Tôn phả: thêm {added} hoàng tử / công chúa")
+
+
+# ── Dọn tên còn chữ Hán / thẻ HTML (người Việt không đọc được chữ Hán) ──
+# 1) bỏ thẻ <small> chú giải chữ lạ trong tên Liệt truyện; 2) đặt tên Việt cho con Hưng Tổ (= anh chị em của Gia Long trên Tôn phả)
+# và hai người lẻ khoá .sx/.dx; 3) phiên âm Hán-Việt tên "Mẹ (…氏)"; 4) bỏ bản thêm trùng.
+import os
+
+CJK = re.compile(r"[㐀-鿿\U00020000-\U0002ffff]")
+UNI_PATH = sys.argv[3] if len(sys.argv) > 3 else "/private/tmp/claude-501/unihan/Unihan_Readings.txt"
+_uni = {}
+if os.path.exists(UNI_PATH):
+    for ln in open(UNI_PATH, encoding="utf8"):
+        if "\tkVietnamese\t" in ln:
+            cp, _, val = ln.rstrip("\n").split("\t")
+            _uni[chr(int(cp[2:], 16))] = val.split()[0].lower()
+_uni.setdefault("維", "duy")
+
+RARE = {"玉<small>左從玉，右從睿</small>": "玉璿"}
+for p in data["persons"]:
+    for k, v in RARE.items():
+        p["full_name"] = p["full_name"].replace(k, v)
+        p["bio"] = p.get("bio", "").replace(k, v)
+        for t in p.get("titles", []):
+            t["title"] = t["title"].replace(k, v)
+
+SPECIAL = {  # khoá → (trang Tôn phả, danh sách, số thứ tự, nhãn)
+    "nguyen.tt.sx-2": ("tt", "sons", 28, "Thiệu Trị, con trai thứ 28"),
+    "nguyen.tt.dx": ("tt", "daughters", 1, "Thiệu Trị, con gái thứ 1"),
+    "nguyen.ht.s2": ("gl", "brothers", 2, "Gia Long, em trai thứ 2 (con Hưng Tổ)"),
+    "nguyen.ht.s5": ("gl", "brothers", 5, "Gia Long, em trai thứ 5 (con Hưng Tổ)"),
+    "nguyen.ht.s6": ("gl", "brothers", 6, "Gia Long, em trai thứ 6 (con Hưng Tổ)"),
+    "nguyen.ht.d2": ("gl", "sisters", 8, "Gia Long, em gái (con Hưng Tổ)"),
+    "nguyen.ht.d3": ("gl", "sisters", 9, "Gia Long, em gái (con Hưng Tổ)"),
+    "nguyen.ht.d4": ("gl", "sisters", 10, "Gia Long, em gái (con Hưng Tổ)"),
+}
+byk = {p["key"]: p for p in data["persons"]}
+# Bản thêm trước đó trùng người đã có dưới khoá .sx/.dx (chỉ khác chữ Hán biến thể).
+data["persons"] = [p for p in data["persons"] if p["key"] not in ("nguyen.tt.s28", "nguyen.tt.d1")]
+byk = {p["key"]: p for p in data["persons"]}
+renamed = 0
+for key, (fab, lst, num, label) in SPECIAL.items():
+    p = byk.get(key)
+    if not p or not CJK.search(p["full_name"]):
+        continue
+    e = next((x for x in tp[fab][lst] if x["n"] == num), None)
+    if not e or not e["name_vn"].strip() or "..." in e["name_vn"]:
+        continue
+    nm = e["name_vn"].strip()
+    p["full_name"] = nm if nm.startswith("Nguyễn Phúc") else f"Nguyễn Phúc {nm}"
+    loc = f"Tôn phả, Đế phả, {label}"
+    quote = e["line"].strip()
+    cites = p.setdefault("citations", [])
+    cites.append({"field": "full_name", "source": "NPT", "locator": loc, "quote": quote, "value": p["full_name"]})
+    tv = (e.get("title_vn") or "").strip()
+    if tv and not re.search(r"\d|Niêu|Niên|Hoàng nữ|Hoàng nam", tv) and not any(t["title"] == tv for t in p.setdefault("titles", [])):
+        p["titles"].append({"title": tv})
+        cites.append({"field": f"title:{len(p['titles']) - 1}", "source": "NPT", "locator": loc, "quote": quote})
+    for seg in re.split(r"\s+-\s+", e["line"]):
+        sm = re.match(rf"^([A-ZĐ][\wÀ-ỹ ]+?)\s*\(({HAN})\)$", seg.strip())
+        if sm and not THUY_BAD.search(sm.group(1)) and not p.get("posthumous_name"):
+            p["posthumous_name"] = sm.group(1).strip()
+            cites.append({"field": "posthumous_name", "source": "NPT", "locator": loc, "quote": seg.strip(), "value": p["posthumous_name"]})
+            break
+    renamed += 1
+
+SUR = {"維": "Duy", "阮": "Nguyễn", "武": "Võ", "黄": "Hoàng", "黃": "Hoàng", "宋": "Tống", "潘": "Phan", "陳": "Trần", "黎": "Lê", "范": "Phạm", "胡": "Hồ", "吳": "Ngô"}
+TIT = {"贈昭儀": "Truy tặng Chiêu nghi", "贈昭容": "Truy tặng Chiêu dung", "良妃": "Lương phi", "才人": "Tài nhân", "宮娥": "Cung nga",
+       "嫻嬪": "Nhàn tần", "慈妃": "Từ phi", "庶人": "Thứ nhân", "母": "Mẹ họ"}
+
+
+def vi(ch):
+    return SUR.get(ch) or (_uni.get(ch) or "?").capitalize()
+
+
+def mother_vi(phrase):
+    t = next((k for k in sorted(TIT, key=len, reverse=True) if phrase.startswith(k)), None)
+    rest = phrase[len(t):] if t else phrase
+    rest = rest[:-1] if rest.endswith("氏") else rest
+    sur = " ".join([vi(rest[0])] + [(_uni.get(c) or "?").capitalize() for c in rest[1:]]) if rest else ""
+    if "?" in sur:
+        return None
+    if t == "母":
+        return f"Mẹ họ {sur}"
+    return f"{TIT[t]} {sur} thị" if t else f"{sur} thị"
+
+
+fixed_m = 0
+for p in data["persons"]:
+    m = re.match(r"^Mẹ \((.+)\)$", p["full_name"])
+    if m and CJK.search(m.group(1)):
+        nv = mother_vi(m.group(1))
+        if nv:
+            p["full_name"] = nv
+            fixed_m += 1
+# Còn sót chữ Hán trong ngoặc (chữ lạ bị mất, không tra được) → bỏ phần Hán, giữ "Công chúa của X".
+left = 0
+for p in data["persons"]:
+    m = re.match(r"^(.*?) \(([^()]*)\)$", p["full_name"])
+    if m and CJK.search(m.group(2)) and p["key"].startswith("nguyen.") and not p["key"].startswith("nguyen.me."):
+        p["full_name"] = m.group(1)
+        left += 1
+json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
+print(f"Dọn tên: đặt tên Việt {renamed}, phiên âm mẹ {fixed_m}, bỏ Hán còn sót {left}")
+
+
+# ── Tước hiệu chữ Hán: bỏ nếu đã có tước tiếng Việt; không thì phiên âm Hán-Việt. Dọn thẻ HTML trong trích dẫn. ──
+def han_to_vi(t):
+    words = [(_uni.get(c) or "?") for c in t]
+    return None if "?" in words else " ".join(words).capitalize()
+
+
+dropped = translit = 0
+for p in data["persons"]:
+    ts = p.get("titles") or []
+    if not any(CJK.search(t["title"]) for t in ts):
+        continue
+    has_vi = any(not CJK.search(t["title"]) for t in ts)
+    new, remap = [], {}
+    for i, t in enumerate(ts):
+        if CJK.search(t["title"]):
+            if has_vi:
+                dropped += 1
+                continue
+            tv = han_to_vi(t["title"])
+            if not tv:
+                continue
+            t = {**t, "title": tv}
+            translit += 1
+        remap[i] = len(new)
+        new.append(t)
+    cites = []
+    for c in p.get("citations", []):
+        m = re.match(r"title:(\d+)$", c["field"])
+        if m:
+            if int(m.group(1)) not in remap:
+                continue
+            c = {**c, "field": f"title:{remap[int(m.group(1))]}"}
+        cites.append(c)
+    p["titles"], p["citations"] = new, cites
+    if not new:
+        del p["titles"]
+for p in data["persons"]:
+    for c in p.get("citations", []):
+        q = c.get("quote", "")
+        if "<" in q:
+            for k, v in RARE.items():
+                q = q.replace(k, v)
+            c["quote"] = re.sub(r"<[^>]+>", "", q)
+json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
+print(f"Tước hiệu: bỏ {dropped} tước Hán đã có bản Việt, phiên âm {translit}")
+
+# Câu "Tên theo Liệt truyện: <Hán>." thừa (tên Hán còn có ở câu "Tên chữ Hán: …") → bỏ.
+for p in data["persons"]:
+    p["bio"] = re.sub(r"Tên theo Liệt truyện: [^.]*?\. ", "", p.get("bio", ""))
+json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
+
+# Người đã có tên Việt đầy đủ: câu "Tên chữ Hán: …" chỉ còn là chữ Hán khó đọc → bỏ (chữ Hán vẫn nằm trong trích dẫn nguồn).
+for p in data["persons"]:
+    if p["full_name"].startswith("Nguyễn Phúc "):
+        p["bio"] = re.sub(r" ?Tên chữ Hán: [^\n]*?\.(?= |\n|$)", "", p.get("bio", ""))
+json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
+
+# Bio của "Mẹ (…)": tên đã phiên âm Hán-Việt ở full_name → bỏ phần "(nguyên văn chép: <Hán>)" khó đọc.
+for p in data["persons"]:
+    if p["key"].startswith("nguyen.me."):
+        p["bio"] = re.sub(r" \(nguyên văn chép[^)]*\)", "", p.get("bio", ""))
+json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
