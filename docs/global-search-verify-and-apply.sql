@@ -18,7 +18,9 @@ select cm.user_id as uid, cm.clan_id as cid,
        (select split_part(p.full_name, ' ', array_length(string_to_array(p.full_name, ' '), 1)) from public.persons p
          where p.clan_id = cm.clan_id and p.deleted_at is null and char_length(p.full_name) > 5 limit 1) as nm
   from public.clan_members cm join public.clans c on c.id = cm.clan_id
- where cm.role = 'admin' and c.kind <> 'historical' and c.person_count > 3 limit 1 \gset
+ where cm.role = 'admin' and c.kind <> 'historical' and c.person_count > 3
+   and not exists (select 1 from public.profiles pr where pr.id = cm.user_id and pr.is_platform_admin)
+ limit 1 \gset
 set local role authenticated;
 select set_config('request.jwt.claims', json_build_object('sub', :'uid', 'role', 'authenticated')::text, true);
 select count(*) as t2_hits from public.global_search(:'nm', 20) g where g.kind = 'person' and g.clan_id = :'cid' \gset
