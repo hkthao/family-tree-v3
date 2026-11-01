@@ -293,6 +293,26 @@ describe("ảnh + tên tự/húy/thụy", () => {
     expect(errs(f)).toBe("");
   });
 
+  it("ảnh từ trang tin không ghi giấy phép: chỉ chấp nhận khi khai đúng 'Chưa rõ giấy phép' + tên nguồn, kèm cảnh báo", () => {
+    const f = base();
+    const tin = {
+      url: "https://honguyenvietnam.org/vi/uploads/news/2024_03/image_4.png",
+      source_page: "https://honguyenvietnam.org/vi/lich-su/full-bo-anh-chan-dung-13-vi-vua-trieu-nguyen-473.html",
+      license: "Chưa rõ giấy phép",
+      author: "Tạp chí điện tử Họ Nguyễn Việt Nam (không ghi tác giả ảnh)",
+      kind: "photograph" as const,
+    };
+    f.persons[0].photo = tin;
+    expect(errs(f)).toBe("");
+    expect(warns(f)).toMatch(/rủi ro bản quyền/);
+    f.persons[0].photo = { ...tin, license: "CC BY 4.0" };
+    expect(errs(f)).toMatch(/khai license/);
+    f.persons[0].photo = { ...tin, author: null };
+    expect(errs(f)).toMatch(/tên nguồn/);
+    f.persons[0].photo = { ...tin, source_page: "https://example.com/x.html" };
+    expect(errs(f)).toMatch(/thiếu trang nguồn đúng dạng/);
+  });
+
   it("nguồn ảnh ngoài Wikimedia: ghi đúng tên nguồn; ảnh và trang nguồn phải cùng nhà cung cấp", () => {
     const f = base();
     const met = {
