@@ -31,9 +31,9 @@ def load(path):
 
 
 TB = {n: load(f"tb/tb_{n:02d}.txt") for n in range(1, 13)}
-CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4: "四"}.items()}
+CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4: "四", 5: "五"}.items()}
 LT1 = {n: load(f"lt1/lt1_{n:02d}.txt") for n in (1, 2)}
-LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 5, 6)}
+LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 4, 5, 6)}
 TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2}
 BAD = []
 
@@ -43,7 +43,7 @@ def c(field, src, vol, where, quote, value=None, note=None):
     if re.sub(r"\s+", "", quote) not in TEXT[src][vol]:
         BAD.append((src, vol, quote))
     code, loc = {"tb": lambda: ("DNTL", f"Tiền biên Q.{vol}"),
-                 "cb": lambda: ("DNTL", f"Chính biên, Đệ {'nhất nhị tam tứ'.split()[vol - 1]} kỷ, Q.1"),
+                 "cb": lambda: ("DNTL", f"Chính biên, Đệ {'nhất nhị tam tứ ngũ'.split()[vol - 1]} kỷ, Q.1"),
                  "lt": lambda: ("DNLT", f"Sơ tập Q.{vol}"), "lt2": lambda: ("DNLT", f"Nhị tập Q.{vol}")}[src]()
     d = {"field": field, "source": code, "locator": f"{loc}, {where}", "quote": quote}
     if value is not None:
@@ -480,7 +480,7 @@ def y(vol, where, quote):
 sections("nguyen.thai-to", [
     ("Xuất thân", "Con thứ hai của Triệu Tổ Tĩnh hoàng đế (tên húy là 淦), mẹ là Tĩnh hoàng hậu họ Nguyễn, thuộc một dòng họ vọng tộc đất Thanh Hoa. Ông nội là Trừng quốc công Nguyễn Văn Lựu, từng giúp Lê Oanh khởi binh. Ông là người xã Gia Miêu ngoại, huyện Tống Sơn, phủ Hà Trung."),
     ("Trấn giữ Thuận Hóa", "Sau khi Mạc Đăng Dung cướp ngôi, nhà Lê cho rằng Thuận Hóa cần có tướng giỏi trấn giữ; Đoan quận công Nguyễn Hoàng là con nhà tướng, có tài lược nên được cử vào trấn. Mùa đông tháng 10 năm Mậu Ngọ (1558), 34 tuổi, ông bắt đầu trấn Thuận Hóa, dựng dinh ở xã Ái Tử (huyện Vũ Xương, nay là Đăng Xương); người quê Tống Sơn và nghĩa dũng Thanh Hoa đều vui theo. Ông vỗ về quân dân, thu dụng hào kiệt, thuế khóa nhẹ nhàng, lòng người vui phục, dân gọi là Tiên chúa; sử chép \"đế nghiệp nhà Nguyễn thật gây dựng từ đây\"."),
-    ("Di huấn", "Tháng 6 năm Quý Sửu (1613), lúc bệnh nặng, ông gọi hoàng tử thứ sáu (Nguyên) cùng các thân thần đến bên giường, dặn: làm con chỉ có hiếu, làm tôi chỉ có trung, anh em lấy thương yêu làm đầu. Ông cũng dặn đất Thuận Quảng phía bắc có núi Hoành Sơn, sông Gianh hiểm trở, phía nam có núi Hải Vân, núi Thạch Bi vững chắc, đất có vàng sắt cá muối, là nơi anh hùng dụng võ; nếu biết huấn luyện dân, rèn binh thì đủ sức ngang với họ Trịnh, nếu thế lực chưa địch nổi thì giữ bờ cõi mà đợi thời."),
+    ("Di huấn", "Tháng 6 năm Quý Sửu (1613), lúc bệnh nặng, ông gọi hoàng tử thứ sáu (Nguyên) cùng các thân thần đến bên giường, dặn: làm con chỉ có hiếu, làm thần tử chỉ có trung, anh em lấy thương yêu làm đầu. Ông cũng dặn đất Thuận Quảng phía bắc có núi Hoành Sơn, sông Gianh hiểm trở, phía nam có núi Hải Vân, núi Thạch Bi vững chắc, đất có vàng sắt cá muối, là nơi anh hùng dụng võ; nếu biết huấn luyện dân, rèn binh thì đủ sức ngang với họ Trịnh, nếu thế lực chưa địch nổi thì giữ bờ cõi mà đợi thời."),
     ("Qua đời và lăng tẩm", "Ngày Canh Dần tháng 6 năm Quý Sửu (1613), ông mất, ở ngôi 58 năm, thọ 89 tuổi. Ban đầu táng ở núi Thạch Hãn (huyện Hải Lăng), sau cải táng ở núi La Khê (huyện Hương Trà). Buổi đầu được dâng thụy Cẩn Nghĩa Đạt Lý Hiển Ứng Chiêu Hựu Diệu Linh Gia Dụ vương; năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Thái Tổ, lăng Trường Cơ; phi được truy tôn Từ Lương Quang Thục Minh Đức Ý Cung Gia Dụ hoàng hậu, lăng Vĩnh Cơ."),
 ], [y(1, "tiểu dẫn", "母靖皇后阮氏，先世爲清華望族"),
     y(1, "tiểu dẫn", "清華河中府宋山縣嘉苗外庄人"),
@@ -664,6 +664,66 @@ sections("nguyen.thieu-tri", [
     cb(4, "tiểu dẫn Dực Tông", "二十七日癸卯，憲祖章皇帝崩，羣臣宣遺詔（詔文已奉載第三紀）于勤政殿，上箋勸進"),
     cb(4, "tiểu dẫn Dực Tông", "辰安豐公洪保雖長而庶出，又寡學徒事嬉遊")])
 
+# ══ Đợt 3: Tự Đức ═════════════════════════════════════════════════
+DT = "tiểu dẫn Dực Tông"
+P(key="nguyen.tu-duc", full_name="Nguyễn Dực Tông (Tự Đức)", gender="M", parents="u.thieu-tri--nghi-thien",
+  nickname="Nguyễn Phúc Thì; Nguyễn Phúc Hồng Nhậm",
+  birth={"lunar_year": 1829, "lunar_month": 8, "lunar_day": 25}, death={"lunar_year": 1883, "lunar_month": 6, "lunar_day": 16},
+  burial_place="Khiêm Cung (điện Hòa Khiêm), Khiêm lăng",
+  posthumous_name="Kế Thiên Hanh Vận Chí Thành Đạt Hiếu Thể Kiện Đôn Nhân Khiêm Cung Minh Lược Duệ Văn Anh hoàng đế",
+  titles=[{"title": "Phúc Tuy công (Thiệu Trị 3)", "from_year": 1843}],
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 4, "role": "emperor", "temple_name": "Dực Tông", "start_year": 1847, "end_year": 1883,
+           "era_names": [{"name": "Tự Đức", "from_year": 1848}]}],
+  bio="Con thứ hai của Thiệu Trị, mẹ là Nghi Thiên Chương hoàng hậu (Từ Dụ), sinh ngày 25 tháng 8 năm Kỷ Sửu (1829). Năm Thiệu Trị 3 (1843) phong Phúc Tuy công. Tháng 9 năm Thiệu Trị 7 (1847) Thiệu Trị mất, ông nối ngôi, lấy năm sau (Mậu Thân, 1848) làm Tự Đức nguyên niên. Mất ngày 16 tháng 6 năm Tự Đức 36 (1883), ở ngôi 36 năm; sử chép ông chọn nuôi trong cung các hoàng tử để nối nghiệp. (Tuổi thọ, thụy hiệu đầy đủ ngày an táng chưa có nguyên văn trên Wikisource.)",
+  citations=[c("existence", "cb", 4, DT, "翼宗繼天亨運至誠達孝體健敦仁謙恭明略睿文英皇帝，諱時，字洪任"),
+             c("nickname", "cb", 4, DT, "翼宗繼天亨運至誠達孝體健敦仁謙恭明略睿文英皇帝，諱時，字洪任", "Nguyễn Phúc Thì; Nguyễn Phúc Hồng Nhậm", note="Họ Phúc theo Tiền biên Q.2; phiên âm 時 do người soạn."),
+             c("parents", "cb", 4, DT, "憲祖章皇帝第二子也，母慈裕博惠康壽太太皇太后范登氏"),
+             c("birth", "cb", 4, DT, "聖誕己丑年八月二十五日丙戌（聖祖仁皇帝明命十年，清道光九年）", "âm 1829-8-25"),
+             c("death", "cb", 5, "tiểu dẫn Giản Tông", "十六日甲子，翼宗英皇帝崩", "âm 1883-6-16", note="Tự Đức 36 (câu trước: 三十六年癸未夏六月)."),
+             c("burial_place", "cb", 5, "tiểu dẫn Giản Tông", "秋八月初三日庚戌，奉安翼宗英皇帝梓宮于謙宮和謙殿", "Khiêm Cung (điện Hòa Khiêm), Khiêm lăng",
+               note="Khiêm lăng: xem Liệt truyện nhị tập Q.4, mục Lệ Thiên Anh hoàng hậu."),
+             c("posthumous_name", "cb", 4, DT, "翼宗繼天亨運至誠達孝體健敦仁謙恭明略睿文英皇帝",
+               "Kế Thiên Hanh Vận Chí Thành Đạt Hiếu Thể Kiện Đôn Nhân Khiêm Cung Minh Lược Duệ Văn Anh hoàng đế"),
+             c("title:0", "cb", 4, DT, "紹治三年正月，冊封福綏公"),
+             c("reign:0", "cb", 4, DT, "己酉卽皇帝位於太和殿以明年戊申爲嗣德元年頒恩詔于天下"),
+             c("reign:0", "cb", 5, "tiểu dẫn Giản Tông", "十六日甲子，翼宗英皇帝崩"),
+             c("bio", "cb", 4, DT, "帝仁孝而聰敏好學"),
+             c("bio", "cb", 5, "tiểu dẫn Giản Tông", "三十六年癸未夏六月，聖躬不豫")])
+P(key="nguyen.le-thien-anh", full_name="Lệ Thiên Anh hoàng hậu", gender="F",
+  birth={"lunar_year": 1828, "lunar_month": 5}, death={"lunar_year": 1902, "lunar_month": 4}, lifespan=75,
+  burial_place="Khiêm Thọ lăng (bên trái Khiêm lăng)",
+  posthumous_name="Lệ Thiên Phụ Thánh Trang Ý Thuận Hiếu Cần Thứ Ôn Từ Hiền Minh Tĩnh Thọ Anh hoàng hậu",
+  titles=[{"title": "Trung phi (Tự Đức 14)"}, {"title": "Khiêm hoàng hậu (tên cung Khiêm)"}, {"title": "Trang Ý hoàng thái hậu, sau tôn Trang Ý Thuận Hiếu thái hoàng thái hậu"}],
+  bio="Họ Võ, người Lệ Thủy, Quảng Bình; con gái Cần chính điện đại học sĩ, Lệ quốc công Võ Xuân Cẩn. Sinh tháng 5 năm Minh Mạng 9 (1828). Năm Thiệu Trị 3 (1843) được tuyển vào hầu ở tiềm để của Tự Đức. Mất tháng 4 năm Thành Thái 14 (1902), thọ 75 tuổi, táng ở Khiêm Thọ lăng, bên trái Khiêm lăng.",
+  citations=[c("existence", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "翼宗儷天英皇后姓武氏，廣平麗水人，父御前大臣太子太保東閣大學士特進金紫榮祿大夫封麗國公春謹"),
+             c("birth", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "以明命九年戊子夏五月生", "âm 1828-5"),
+             c("death", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "十四年夏四月薨，壽七十有五", "âm 1902-4", note="Thành Thái 14 (sau đoạn 成泰元年)."),
+             c("lifespan", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "十四年夏四月薨，壽七十有五", "75"),
+             c("burial_place", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "于謙陵之左山萬萬年吉局，上陵名曰謙壽陵", "Khiêm Thọ lăng (bên trái Khiêm lăng)"),
+             c("posthumous_name", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "恭上尊諡曰儷天輔聖莊懿順孝勤恕温慈賢明靜壽英皇后",
+               "Lệ Thiên Phụ Thánh Trang Ý Thuận Hiếu Cần Thứ Ôn Từ Hiền Minh Tĩnh Thọ Anh hoàng hậu"),
+             c("title:0", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "十四年冬，改封爲忠妃"),
+             c("title:1", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "尊爲謙皇后，炤與典故亦符"),
+             c("title:2", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "尊上徽稱曰莊懿皇太后"),
+             c("bio", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "紹治三年，選侍我翼宗英皇帝潛邸")])
+U("u.tu-duc--le-thien-anh", "nguyen.tu-duc", "nguyen.le-thien-anh", 1, [c("union", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "紹治三年，選侍我翼宗英皇帝潛邸")])
+
+sections("nguyen.tu-duc", [
+    ("Xuất thân", "Con thứ hai của Thiệu Trị, mẹ là Nghi Thiên Chương hoàng hậu họ Phạm (về sau tôn Từ Dụ thái hoàng thái hậu), sinh ngày Bính Tuất 25 tháng 8 năm Kỷ Sửu (Minh Mạng 10, 1829) ở phủ cũ Trưởng Khánh. Sử chép bà từng mơ thấy một thần nhân áo rộng đai dài, đầu bạc mày trắng, cầm một tờ giấy vàng chữ son có dấu ấn cùng một chuỗi minh châu trao cho; khi ông sinh ra thật ứng điềm ấy. Ông nhân hiếu và thông minh ham học; Thiệu Trị cho là giống mình nên đặc biệt quý mến."),
+    ("Lên ngôi", "Tháng Giêng năm Thiệu Trị 3 (1843) ông được phong Phúc Tuy công. Lúc ấy An Phong công Hồng Bảo tuy lớn hơn nhưng là con thứ, ít học, chỉ ham chơi. Tháng 9 năm Thiệu Trị 7 (1847) Thiệu Trị ốm; ngày Quý Tỵ (17) ông phê sẵn di chiếu cho ông nối ngôi, giao Trương Đăng Quế, Võ Văn Giải, Nguyễn Tri Phương, Lâm Duy Hiệp làm phụ chính. Ngày 27 (Quý Mão) Thiệu Trị mất, quần thần tuyên di chiếu, dâng tờ khuyên tiến, ông lên ngôi. Ngày Kỷ Dậu (tháng 10) ông lên ngôi ở điện Thái Hòa, lấy năm sau (Mậu Thân, 1848) làm Tự Đức nguyên niên, ban ân chiếu khắp nước."),
+    ("Qua đời và lăng tẩm", "Mùa hạ tháng 6 năm Quý Mùi (Tự Đức 36, 1883) ông bệnh. Ngày Nhâm Tuất 14, ông để di chiếu cho hoàng trưởng tử Thụy quốc công (tức Dục Đức) nối ngôi, và dặn nhận một người con nuôi nữa (sau là vua Kiến Phúc) làm hoàng tam tử, dặn Dục Đức giữ tình anh em. Ngày Giáp Tý 16 ông mất; vua nối ngôi vào cung chịu tang mới ba ngày thì bị phụ chính Nguyễn Văn Tường, Tôn Thất Thuyết phế truất, rồi lập Lãng quốc công (sau gọi là Phế đế). Ngày Canh Tuất 3 tháng 8, linh cữu được phụng an ở điện Hòa Khiêm trong Khiêm cung (Khiêm lăng)."),
+    ("Gia quyến", "Mẹ: Nghi Thiên Chương hoàng hậu. Vợ: Lệ Thiên Anh hoàng hậu họ Võ (tuyển vào hầu năm Thiệu Trị 3, sau tôn Khiêm hoàng hậu, Trang Ý thái hoàng thái hậu). Sử chép ông chọn nuôi trong cung hoàng trưởng tử (Dục Đức) cùng hai hoàng tử khác (hoàng nhị tử, hoàng tam tử) làm con; việc này được ghi ở các mục Dục Đức, Hiệp Hòa, Kiến Phúc, Đồng Khánh về sau."),
+], [cb(4, DT, "初夢一神人寬衣博帶，白首皤眉，捧持黃紙朱書璽跡一幅，竝明珠一串授之，帝生寔應其兆"),
+    cb(4, DT, "憲祖章皇帝以為肖己，眷注特異"),
+    cb(4, DT, "誕生于原長慶府邸"),
+    cb(4, DT, "七年九月，聖躬不豫。十七日癸巳，預批遺詔，以帝嗣位，顧命良臣張登桂、大臣武文解、阮知方、林維浹充輔政大臣"),
+    cb(4, DT, "二十七日癸卯，憲祖章皇帝崩，羣臣宣遺詔（詔文已奉載第三紀）于勤政殿，上箋勸進，乃即位繼大統"),
+    cb(5, "tiểu dẫn Giản Tông", "十四日壬戌，遺詔皇長子瑞國公（即今恭宗惠皇帝）嗣統，遺囑以帝承歡謹畏，準充為皇三子"),
+    cb(5, "tiểu dẫn Giản Tông", "而囑嗣君以友愛篤厚，始終如一"),
+    cb(5, "tiểu dẫn Giản Tông", "辰嗣君入恤宅纔三日，為輔政大臣阮文祥、尊室說廢之，而迎立朗國公"),
+    cb(5, "tiểu dẫn Giản Tông", "秋八月初三日庚戌，奉安翼宗英皇帝梓宮于謙宮和謙殿"),
+    c("bio", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "于謙陵之左山萬萬年吉局，上陵名曰謙壽陵")])
+
 if BAD:
     for b in BAD:
         print("KHÔNG CÓ TRONG NGUYÊN VĂN:", b)
@@ -671,7 +731,7 @@ if BAD:
 
 data = {
     "clan": {"key": "nguyen", "name": "Nhà Nguyễn (1558–1945)", "category": "royal",
-             "description": "Gia phả các chúa Nguyễn và vua nhà Nguyễn theo Đại Nam thực lục, Đại Nam liệt truyện. Đợt 1: từ tổ tiên đến Gia Long; đợt 2: Minh Mạng, Thiệu Trị và một số hoàng tử. Mỗi dữ kiện có trích dẫn nguyên văn; xem dòng \"Theo:\" cuối tiểu sử."},
+             "description": "Gia phả các chúa Nguyễn và vua nhà Nguyễn theo Đại Nam thực lục, Đại Nam liệt truyện. Đợt 1: từ tổ tiên đến Gia Long; đợt 2: Minh Mạng, Thiệu Trị và một số hoàng tử; đợt 3: Tự Đức. Mỗi dữ kiện có trích dẫn nguyên văn; xem dòng \"Theo:\" cuối tiểu sử."},
     "persons": persons, "unions": unions, "resting_places": [], "heritage": [], "events": [],
     "same_person_links": [],
 }
