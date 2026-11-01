@@ -45,3 +45,23 @@ _p("tran.huyen-tran", "Huyền Trân công chúa", "F",
    parents="u.nhan-tong--khuyet", titles=[{"title": "Huyền Trân công chúa"}])
 U("u.nhan-tong--khuyet", "tran.nhan-tong")
 
+
+
+# ── Ảnh (Wikimedia Commons; ảnh người là tượng thờ / tranh vẽ sau này, không phải chân dung thật) ──
+# photo() và hằng C (tiền tố upload) do gen_tran_ext.py định nghĩa; P đã bị gán lại thành URL Commons.
+BY["tran.anh-tong"]["photo"] = photo(
+    "5/5d/Portrait_of_Emperor_Tr%E1%BA%A7n_Anh_T%C3%B4ng.png", "Portrait_of_Emperor_Tr%E1%BA%A7n_Anh_T%C3%B4ng.png",
+    "Không rõ tác giả (tranh Trúc Lâm đại sĩ xuất sơn đồ, 1363)", "Public domain", "later_depiction", "1363",
+    "Hình Trần Anh Tông trong tranh Trúc Lâm đại sĩ xuất sơn đồ (vẽ sau khi ông mất)")
+BY["tran.minh-tong"]["photo"] = photo(
+    "b/bd/CDVTranMinhTongjpg1333297930.jpg", "CDVTranMinhTongjpg1333297930.jpg",
+    "Đất Việt", "CC BY-SA 4.0", "later_depiction", "2018", "Tượng vua Trần Minh Tông")
+BY["tran.du-tong"]["photo"] = photo(
+    "b/bd/Statue_of_emperor_Tr%E1%BA%A7n_D%E1%BB%A5_T%C3%B4ng.jpg", "Statue_of_emperor_Tr%E1%BA%A7n_D%E1%BB%A5_T%C3%B4ng.jpg",
+    "閒鹤", "Public domain", "later_depiction", "2013", "Mộc tượng Trần Dụ Tông ở chùa Gệt")
+BY["tran.nghe-tong"]["photo"] = photo(
+    "f/f0/Tr%E1%BA%A7n_Ngh%E1%BB%87_T%C3%B4ng.png", "Tr%E1%BA%A7n_Ngh%E1%BB%87_T%C3%B4ng.png",
+    "Mice09090", "CC BY-SA 4.0", "later_depiction", "2020", "Tượng vua Trần Nghệ Tông")
+BY["tran.huyen-tran"]["photo"] = photo(
+    "f/fe/HuyenTran.jpg", "HuyenTran.jpg",
+    "Lưu Ly", "Public domain", "later_depiction", "2008", "Tượng thờ Huyền Trân công chúa")
