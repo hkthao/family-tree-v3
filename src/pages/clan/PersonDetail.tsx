@@ -1,5 +1,5 @@
 import { CollapsibleCard } from "@/components/CollapsibleCard";
-import { BioText } from "@/components/BioText";
+import { CollapsibleBio } from "@/components/BioText";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -468,7 +468,7 @@ export default function PersonDetail() {
                 {person.bio && (
                   <div className="pt-2">
                     <p className="text-sm text-muted-foreground mb-1">Tiểu sử</p>
-                    <BioText text={person.bio} />
+                    <CollapsibleBio text={person.bio} />
                   </div>
                 )}
               </CollapsibleCard>
