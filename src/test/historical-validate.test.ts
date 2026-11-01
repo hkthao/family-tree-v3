@@ -18,6 +18,7 @@ const sources: SourceDef[] = [
   { code: "A1", title: "Chính sử 1", tier: "A" },
   { code: "A2", title: "Chính sử 2", tier: "A" },
   { code: "C1", title: "Bách khoa mở", tier: "C" },
+  { code: "P1", title: "Bài báo", tier: "C", press: true },
 ];
 
 const cite = (field: string, source = "A1", value?: string): Citation => ({
@@ -142,6 +143,17 @@ describe("validate (gia phả lịch sử)", () => {
     const r = validate(f, sources);
     expect(r.errors).toEqual([]);
     expect(r.confidence.get("thu.cha")?.get("birth")).toBe("disputed");
+  });
+
+  it("nguồn báo chí (press): được dùng, nhưng chỉ ở mức một nguồn + cảnh báo; tầng C thường vẫn bị chặn", () => {
+    const f = base();
+    f.persons[0].citations = f.persons[0].citations.map((c) => (c.field === "birth" ? { ...c, source: "P1" } : c));
+    const r = validate(f, sources);
+    expect(r.errors).toEqual([]);
+    expect(r.confidence.get("thu.cha")?.get("birth")).toBe("single_source");
+    expect(r.warnings.join("\n")).toMatch(/nguồn báo chí/);
+    f.persons[0].citations = f.persons[0].citations.map((c) => (c.field === "birth" ? { ...c, source: "C1" } : c));
+    expect(validate(f, sources).errors.join("\n")).toMatch(/tầng C/);
   });
 
   it("nguồn ghi gọn hơn (chỉ tháng) không phải dị bản; khác tháng mới là dị bản", () => {

@@ -30,6 +30,8 @@ export interface SourceDef {
   translator?: string | null;
   published_year?: number | null;
   tier: Tier;
+  /** Nguồn báo chí (thứ cấp) — chủ dự án cho phép dùng tạm, hiện nhãn một nguồn + cảnh báo. */
+  press?: boolean;
   url?: string | null;
   notes?: string | null;
 }
@@ -722,7 +724,10 @@ export function validate(
       else if (singleFields.has(field) && conflicting([...values])) level = "disputed";
       else if (strong.size >= 2) level = "confirmed";
       else if (strong.size === 1) level = "single_source";
-      else if (weakOk.has(field)) {
+      else if (list.some((c) => sourceByCode.get(c.source)?.press)) {
+        warnings.push(`${who}: "${field}" chỉ theo nguồn báo chí (thứ cấp) — nên đối chiếu chính sử / thế phả`);
+        level = "single_source";
+      } else if (weakOk.has(field)) {
         warnings.push(`${who}: "${field}" chỉ theo nguồn tầng C — nên đối chiếu hồ sơ di tích`);
         level = "single_source";
       } else {

@@ -34,4 +34,28 @@ done
 
 for n in 01 02 03; do get "大南寔錄/大南正編列傳初集/卷$n" "$R/lt1/lt1_$n.txt"; done
 for n in 01 02 03 04 05 06 07 08; do get "大南寔錄/大南正編列傳二集/卷$n" "$R/lt2/lt2_$n.txt"; done
+# Chính biên kỷ 4 Q.70 + kỷ 5 Q.5 + kỷ 6 phụ biên Q.1, Q.20 (Phế đế, Kiến Phúc…, Thành Thái, Duy Tân)
+mkdir -p "$R/pb"
+get "大南寔錄/大南寔錄正編第四紀/卷70" "$R/cb/cb_四_q70.txt"
+get "大南寔錄/大南寔錄正編第五紀/卷5" "$R/cb/cb_五_q5.txt"
+for n in 01 20; do get "大南寔錄/大南寔錄正編第六紀附編/卷$n" "$R/pb/pb_$n.txt"; done
+
+# Bài báo về Bảo Đại (nguồn thứ cấp)
+mkdir -p "$R/press"
+curl -sL -A "Mozilla/5.0" "https://baophapluat.vn/nhung-bi-an-moi-giai-ma-ve-vua-bao-dai-post270847.html" -o "$R/press/bpl.html"
+curl -sL -A "Mozilla/5.0" "https://www.sggp.org.vn/bao-dai-hoang-de-cuoi-cung-giai-ma-nhung-bi-an-ve-vua-bao-dai-post466207.html" -o "$R/press/sggp.html"
+
+# Việt Nam sử lược (vi.wikisource, bản 1971, Phần V chương XIV–XV) — trang ghép nên phải qua API parse
+mkdir -p "$R/vn"
+python3 -I - "$R/vn" <<'PY'
+import html, json, re, sys, time, urllib.parse, urllib.request
+for ch in ("XII", "XIV", "XV"):
+    q = {"action": "parse", "page": f"Việt Nam sử lược/Quyển II/1971/Phần V/Chương {ch}", "prop": "text", "format": "json", "redirects": "1"}
+    r = urllib.request.Request("https://vi.wikisource.org/w/api.php?" + urllib.parse.urlencode(q), headers={"User-Agent": "giapha-research/1.0"})
+    h = json.load(urllib.request.urlopen(r))["parse"]["text"]["*"]
+    h = re.sub(r"<style.*?</style>|<sup.*?</sup>", "", h, flags=re.S)
+    h = re.sub(r"</p>|<br\s*/?>|</li>|</h\d>", "\n", h)
+    open(f"{sys.argv[1]}/vnsl1971_{ch}.txt", "w").write(html.unescape(re.sub(r"<[^>]+>", "", h)))
+    time.sleep(3)
+PY
 echo "xong → $R"
