@@ -1,33 +1,8 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
-/**
- * Tiểu sử có cấu trúc: dòng "## Tiêu đề" là một mục, dòng "- …" là một ý trong
- * danh sách, còn lại là đoạn văn. Tiểu sử thường (không có "##") hiện như văn
- * bản cũ, nên người dùng nhập tay không bị đổi cách hiển thị.
- */
-type Block =
-  | { kind: "h"; text: string }
-  | { kind: "ul"; items: string[] }
-  | { kind: "p"; text: string };
+import { parseBio } from "@/lib/bio";
 
-export function parseBio(src: string): Block[] {
-  const out: Block[] = [];
-  for (const line of src.split("\n")) {
-    const t = line.trim();
-    if (!t) continue;
-    const h = /^##\s+(.+)$/.exec(t);
-    const li = /^[-•]\s+(.+)$/.exec(t);
-    const last = out[out.length - 1];
-    if (h) out.push({ kind: "h", text: h[1] });
-    else if (li) {
-      if (last?.kind === "ul") last.items.push(li[1]);
-      else out.push({ kind: "ul", items: [li[1]] });
-    } else if (last?.kind === "p") last.text += "\n" + t;
-    else out.push({ kind: "p", text: t });
-  }
-  // Mục không có nội dung (tiêu đề đứng liền tiêu đề khác hoặc cuối bài) thì ẩn.
-  return out.filter((b, i) => b.kind !== "h" || (out[i + 1] && out[i + 1].kind !== "h"));
-}
+export { bioToPlainText, parseBio } from "@/lib/bio";
 
 export function BioText({ text, className }: { text: string; className?: string }) {
   if (!/^##\s/m.test(text)) {
