@@ -45,6 +45,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        gold: "hsl(var(--gold))",
+      },
+      boxShadow: {
+        sm: "var(--shadow-soft)",
       },
       borderRadius: {
         lg: "var(--radius)",
