@@ -88,3 +88,68 @@ for code, slug in KING.items():
         filled += 1
 json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
 print(f"Tôn phả: bổ sung {filled} mốc sinh/mất của các vua")
+
+# ── Thêm hoàng tử / công chúa còn thiếu (chỉ các vua đến Đồng Khánh / Dục Đức; bỏ người Tôn phả chưa ghi tên) ──
+ADD = {"gl": ("nguyen.gia-long", "u.gl--khuyet-hv", "Gia Long"), "mm": ("nguyen.minh-mang", "u.mm--khuyet-hv", "Minh Mạng"),
+       "tt": ("nguyen.thieu-tri", "u.tt--khuyet-hv", "Thiệu Trị"), "dd": ("nguyen.duc-duc", "u.duc-duc--khuyet", "Dục Đức"),
+       "dk": ("nguyen.dong-khanh", "u.dong-khanh--khuyet", "Đồng Khánh"), "hh": ("nguyen.hiep-hoa", "u.hiep-hoa--khuyet", "Hiệp Hòa")}
+ukeys = {u["key"] for u in data["unions"]}
+for fab, (hus, ukey, label) in ADD.items():
+    if ukey not in ukeys:
+        data["unions"].append({"key": ukey, "husband": hus, "citations": [], "review": {"status": "draft", "note": "Hôn nhân 'khuyết' — chỉ để gắn con của vua khi chưa rõ mẹ (Tôn phả không ghi)."}})
+        ukeys.add(ukey)
+byk = {p["key"]: p for p in data["persons"]}
+if "Nguyễn Phúc Bửu Đảo" not in (byk["nguyen.khai-dinh"].get("nickname") or ""):
+    kdp = byk["nguyen.khai-dinh"]
+    kdp["nickname"] = "Nguyễn Phúc Bửu Đảo"
+    e = next(x for x in tp["dk"]["sons"] if x["n"] == 1)
+    kdp["citations"].append({"field": "nickname", "source": "NPT", "locator": "Tôn phả, Đế phả, Đồng Khánh, con trai thứ 1", "quote": e["line"].strip(), "value": "Nguyễn Phúc Bửu Đảo"})
+
+
+def _norm(s):
+    return re.sub(r"[\s.]", "", s or "")
+
+
+added = 0
+# Chỉ so trùng với người ĐÃ có trước lần chạy này (anh em họ có thể trùng tên giữa các nhánh).
+blob = [_norm(q["full_name"]) for q in data["persons"]] + [_norm(q.get("nickname")) for q in data["persons"]]
+ttl = [t["title"].casefold() for q in data["persons"] for t in q.get("titles", [])]
+for fab, (hus, ukey, label) in ADD.items():
+    for sd, nm, gender, kind in (("s", "sons", "M", "con trai"), ("d", "daughters", "F", "con gái")):
+        for e in tp[fab][nm]:
+            key = f"nguyen.{fab}.{sd}{e['n']}"
+            name = e["name_vn"].strip()
+            # Đã có dưới khoá khác: Cảnh (anh-due), Đảm (Minh Mạng), Miên Thẩm, Hồng Nhậm (Tự Đức).
+            if key in byk or key in ("nguyen.gl.s1", "nguyen.gl.s4", "nguyen.mm.s10", "nguyen.tt.s2") or not name or "..." in name or "Bửu Đảo" in name:
+                continue
+            short = re.sub(r"^Nguyễn Phúc ", "", name).strip(" .")
+            full = f"Nguyễn Phúc {short}"
+            tv = (e.get("title_vn") or "").strip()
+            if _norm(full) in blob or (tv and any(tv.casefold() in t for t in ttl) and not re.search(r"\d|Hoàng|tảo thương|mất sớm", tv, re.I)):
+                print(f"  = đã có: {key} {full} ({tv})")
+                continue
+            loc = f"Tôn phả, Đế phả, {label}, {kind} thứ {e['n']}"
+            quote = e["line"].strip()
+            early = bool(e.get("early_death")) or bool(re.search(r"tảo thương|mất sớm", e["line"], re.I))
+            person = {"key": key, "full_name": full, "gender": gender, "parents": ukey,
+                      "bio": f"## Tóm lược\n{'Con trai' if gender == 'M' else 'Con gái'} thứ {e['n']} của {label}." + (" Mất sớm." if early else "") +
+                             "\n\n## Xuất thân\n\n## Lên ngôi\n\n## Sự nghiệp theo năm\n\n## Gia quyến\n\n## Qua đời và lăng tẩm\n\n## Sử thần nhận xét",
+                      "citations": [{"field": "existence", "source": "NPT", "locator": loc, "quote": quote},
+                                    {"field": "bio", "source": "NPT", "locator": loc, "quote": quote},
+                                    {"field": "full_name", "source": "NPT", "locator": loc, "quote": quote, "value": full},
+                                    {"field": "parents", "source": "NPT", "locator": loc, "quote": quote}],
+                      "review": {"status": "draft", "note": "Thêm từ trang Tôn phả (Hoàng tộc lược biên 1943); cần đối chiếu Đại Nam liệt truyện nếu có."}}
+            if tv and not re.search(r"\d|Niêu|Niên|Hoàng nữ|Hoàng nam", tv):
+                person["titles"] = [{"title": tv}]
+                person["citations"].append({"field": "title:0", "source": "NPT", "locator": loc, "quote": quote})
+            for seg in re.split(r"\s+-\s+", e["line"]):
+                sm = re.match(rf"^([A-ZĐ][\wÀ-ỹ ]+?)\s*\(({HAN})\)$", seg.strip())
+                if sm and not THUY_BAD.search(sm.group(1)):
+                    person["posthumous_name"] = sm.group(1).strip()
+                    person["citations"].append({"field": "posthumous_name", "source": "NPT", "locator": loc, "quote": seg.strip(), "value": person["posthumous_name"]})
+                    break
+            data["persons"].append(person)
+            byk[key] = person
+            added += 1
+json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
+print(f"Tôn phả: thêm {added} hoàng tử / công chúa")
