@@ -33,7 +33,7 @@ def load(path):
 TB = {n: load(f"tb/tb_{n:02d}.txt") for n in range(1, 13)}
 CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七"}.items()}
 LT1 = {n: load(f"lt1/lt1_{n:02d}.txt") for n in (1, 2)}
-LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 4, 5, 6, 8)}
+LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 3, 4, 5, 6, 8)}
 CBX = {"4q70": load("cb/cb_四_q70.txt"), "5q5": load("cb/cb_五_q5.txt")}
 PB = {n: load(f"pb/pb_{n:02d}.txt") for n in (1, 20)}
 
@@ -1126,6 +1126,66 @@ H("ds.de-he-thi", "custom", "Đế hệ thi (bài thơ hai mươi chữ đặt t
    c("person:3", "cx", "4q70", "mở đầu", "啓金櫃帝系詩二十字，以第三昇字爲名，舊雙名爲字"),
    c("person:4", "cb", 5, "tiểu dẫn Giản Tông", "以第四字（上從日下從天）為御名"),
    c("person:5", "cb", 7, "tiểu dẫn Hoằng Tông", "以金冊中第九字爲名，取日中爲君象之義")])
+
+# ══ Đợt 8: thêm lăng (Xương Thọ, Bồi, Tư), ảnh Wikimedia Commons, năm xây ═══════════════════
+G("lang.xuong-tho", "Xương Thọ lăng", "nguyen.nghi-thien", "bên phải Xương lăng",
+  "Lăng Nghi Thiên Chương hoàng hậu (Từ Dụ), mẹ Tự Đức. Ngày 22 tháng ấy cử hành đại lễ ninh lăng, táng ở núi bên phải Xương lăng, đặt tên là Xương Thọ lăng.",
+  [c("existence", "lt2", 3, "Nghi Thiên Chương hoàng hậu", "是月二十二日，寧陵大禮，塟于昌陵之右山萬萬年吉局，恭上陵名曰昌壽陵"),
+   c("location_name", "lt2", 3, "Nghi Thiên Chương hoàng hậu", "是月二十二日，寧陵大禮，塟于昌陵之右山萬萬年吉局，恭上陵名曰昌壽陵", "bên phải Xương lăng"),
+   c("occupant:0", "lt2", 3, "Nghi Thiên Chương hoàng hậu", "是月二十二日，寧陵大禮，塟于昌陵之右山萬萬年吉局，恭上陵名曰昌壽陵"),
+   c("notes", "lt2", 3, "Nghi Thiên Chương hoàng hậu", "是月二十二日，寧陵大禮，塟于昌陵之右山萬萬年吉局，恭上陵名曰昌壽陵")])
+G("lang.boi", "Bồi lăng", "nguyen.kien-phuc", "trong La thành núi Khiêm, bên trái",
+  "Lăng Kiến Phúc. Hàm Nghi chọn đất trong La thành núi Khiêm, về phía bên trái, dựng lăng tẩm đặt tên là Bồi lăng; điện thờ đặt ở Chấp Khiêm trai bên trái Khiêm cung, nơi Kiến Phúc ở khi còn tiềm để theo di chúc của Tự Đức.",
+  [c("existence", "cx", "5q5", "mở đầu", "穆卜于謙山羅城內之左涓吉奉建陵寢恭上陵名曰陪陵"),
+   c("location_name", "cx", "5q5", "mở đầu", "穆卜于謙山羅城內之左涓吉奉建陵寢恭上陵名曰陪陵", "trong La thành núi Khiêm, bên trái"),
+   c("occupant:0", "cx", "5q5", "mở đầu", "穆卜于謙山羅城內之左涓吉奉建陵寢恭上陵名曰陪陵", note="Theo mạch văn đoạn lo tang vua trước (我大行皇帝) trong quyển 5; cần đối chiếu."),
+   c("notes", "cx", "5q5", "mở đầu", "其寢殿奉于謙宮左之執謙齋此是奉翼宗英皇帝遺囑以是爲我大行皇帝潛龍辰駐蹕之所也")])
+# Kiến Phúc: ngày mất + an táng theo thư/chiếu của Hàm Nghi (Chính biên kỷ 5 Q.5)
+_kp = next(x for x in persons if x["key"] == "nguyen.kien-phuc")
+_kp["death"] = {"lunar_year": 1884, "lunar_month": 6, "lunar_day": 10}
+_kp["burial_place"] = "Bồi lăng (La thành núi Khiêm)"
+_kp["bio"] += " Theo chiếu của Hàm Nghi, ông mất ngày 10 tháng 6 năm Giáp Thân (1884); ngày 13 tháng 8 năm ấy an táng ở Bồi lăng trong La thành núi Khiêm."
+_kp["citations"] += [
+    c("death", "cx", "5q5", "mở đầu", "本年六月初十日奉我大行皇帝龍馭上賓", "âm 1884-6-10", note="Chiếu của Hàm Nghi gọi người đã mất là 我大行皇帝 (Kiến Phúc) — theo mạch văn quyển 5."),
+    c("burial_place", "cx", "5q5", "mở đầu", "穆卜于謙山羅城內之左涓吉奉建陵寢恭上陵名曰陪陵", "Bồi lăng (La thành núi Khiêm)"),
+    c("bio", "cx", "5q5", "mở đầu", "以今秋八月初二日吿啓期十二日奉靈駕啓行十三日寧陵")]
+
+G("lang.tu", "Tư lăng", "nguyen.dong-khanh", None,
+  "Lăng Cảnh Tông Đồng Khánh. Ngày 19 tháng 3 năm Thành Thái 1 (1889), lễ ninh lăng ở Tư lăng hoàn tất; hôm sau (20) phụng an thần vị ở điện Ngưng Hy.",
+  [c("existence", "cb", 7, "tiểu dẫn Hoằng Tông", "成泰元年乙丑（西曆一千八百八十九年）春三月十九日，思陵寧陵禮成"),
+   c("occupant:0", "cb", 7, "tiểu dẫn Hoằng Tông", "成泰元年乙丑（西曆一千八百八十九年）春三月十九日，思陵寧陵禮成"),
+   c("notes", "cb", 7, "tiểu dẫn Hoằng Tông", "二十日，奉安神位于凝禧殿")])
+_nt = next(x for x in persons if x["key"] == "nguyen.nghi-thien")
+_nt["burial_place"] = "Xương Thọ lăng (bên phải Xương lăng)"
+_nt["citations"].append(c("burial_place", "lt2", 3, "Nghi Thiên Chương hoàng hậu", "是月二十二日，寧陵大禮，塟于昌陵之右山萬萬年吉局，恭上陵名曰昌壽陵", "Xương Thọ lăng (bên phải Xương lăng)"))
+_dk2 = next(x for x in persons if x["key"] == "nguyen.dong-khanh")
+_dk2["burial_place"] = "Tư lăng"
+_dk2["citations"].append(c("burial_place", "cb", 7, "tiểu dẫn Hoằng Tông", "成泰元年乙丑（西曆一千八百八十九年）春三月十九日，思陵寧陵禮成", "Tư lăng"))
+for _g in graves:
+    if _g["key"] == "lang.tu":
+        del _g["location_name"]
+
+# Năm xây Cơ Thánh: Gia Long 7 = 1808
+_cs = next(g for g in graves if g["key"] == "lang.co-thanh")
+_cs["built_year"] = 1808
+_cs["citations"].append(c("built_year", "tb", 11, "năm Ất Dậu (1765)", "七年修築山陵，名基聖陵", "1808", note="Gia Long năm 7."))
+
+
+def cphoto(url_name, enc_name, author, lic, year, caption, h=None):
+    """Ảnh Wikimedia Commons (giấy phép tự do — đã đối chiếu trên trang tệp)."""
+    return {"url": f"https://upload.wikimedia.org/wikipedia/commons/{h}/{enc_name}", "source_page": f"https://commons.wikimedia.org/wiki/File:{enc_name}",
+            "author": author, "license": lic, "kind": "photograph", "year": year, "caption": caption}
+
+
+next(g for g in graves if g["key"] == "lang.khiem")["photos"] = [
+    cphoto("", "Hue_Vietnam_Tomb-of-Emperor-Tu-Duc-02.jpg", "CEphoto, Uwe Aranas", "CC BY-SA 3.0", None,
+           "Khiêm lăng (lăng Tự Đức), Huế (theo mô tả ảnh trên Wikimedia Commons)", h="a/a0")]
+next(g for g in graves if g["key"] == "lang.tu")["photos"] = [
+    cphoto("", "Mausoleum_of_Emperor_Dong_Khanh_%28Hue%29_-_L%C4%83ng_%C4%90%E1%BB%93ng_Kh%C3%A1nh_%282024_July%29_-_img_20.jpg", "Chainwit.", "CC BY 4.0", "2024",
+           "Lăng Đồng Khánh (Tư lăng), Huế (theo mô tả ảnh trên Wikimedia Commons)", h="8/86")]
+next(h for h in heritage if h["key"] == "ds.cau-lai-vien")["photos"] = [
+    cphoto("", "H%E1%BB%99i_An%2C_Ch%C3%B9a_C%E1%BA%A7u%2C_2020-01_CN-01.jpg", "Steffen Schmitz", "CC BY-SA 4.0", "2020",
+           "Chùa Cầu (cầu Lai Viễn), Hội An (theo mô tả ảnh trên Wikimedia Commons)", h="0/02")]
 
 if BAD:
     for b in BAD:
