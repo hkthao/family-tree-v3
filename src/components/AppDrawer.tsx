@@ -210,7 +210,7 @@ export function AppDrawer({ open, onClose }: Props) {
           </button>
         </header>
 
-        <div className="border-b px-3 py-2">
+        <div className="px-3 py-2">
           <label className="relative block">
             <span className="sr-only">Tìm trong menu</span>
             <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -219,7 +219,7 @@ export function AppDrawer({ open, onClose }: Props) {
               value={menuQuery}
               onChange={(e) => setMenuQuery(e.target.value)}
               placeholder="Tìm trong menu…"
-              className="h-10 w-full rounded-md border bg-background pl-8 pr-8 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-10 w-full rounded-md border-0 bg-muted/60 pl-8 pr-8 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {menuQuery && (
               <button
