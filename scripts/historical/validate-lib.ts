@@ -106,11 +106,20 @@ export interface PhotoProvider {
    * Ảnh từ nguồn này phải khai license = UNVERIFIED_LICENSE kèm tên nguồn ở `author`.
    */
   unverifiedLicense?: boolean;
+  /** Kho có giấy phép chung cố định (vd Pexels): ảnh khai đúng chuỗi này, vẫn phải ghi tác giả. */
+  freeLicense?: string;
 }
 
 export const UNVERIFIED_LICENSE = "Chưa rõ giấy phép";
 
 export const PHOTO_PROVIDERS: PhotoProvider[] = [
+  {
+    id: "pexels",
+    label: "Pexels",
+    image: /^https:\/\/images\.pexels\.com\/photos\/\d+\/pexels-photo-\d+\.(jpe?g|png)(\?[\w=&%.-]+)?$/i,
+    page: /^https:\/\/www\.pexels\.com\/photo\/[\w-]+-\d+\/?$/,
+    freeLicense: "Pexels License",
+  },
   {
     id: "honguyen",
     label: "Tạp chí điện tử Họ Nguyễn Việt Nam",
@@ -752,7 +761,10 @@ export function validate(
       errors.push(`${who}: ảnh ${provider.label} thiếu trang nguồn đúng dạng của ${provider.label}`);
     }
     const lic = ph.license?.trim() ?? "";
-    if (provider?.unverifiedLicense) {
+    if (provider?.freeLicense) {
+      if (lic !== provider.freeLicense) errors.push(`${who}: ảnh ${provider.label} khai license = "${provider.freeLicense}"`);
+      if (!ph.author?.trim()) errors.push(`${who}: ảnh ${provider.label} cần ghi tác giả`);
+    } else if (provider?.unverifiedLicense) {
       if (lic !== UNVERIFIED_LICENSE) errors.push(`${who}: ảnh ${provider.label} khai license = "${UNVERIFIED_LICENSE}"`);
       if (!ph.author?.trim()) errors.push(`${who}: ảnh ${provider.label} cần ghi tên nguồn ở author`);
       warnings.push(`${who}: ảnh từ ${provider.label} không ghi giấy phép — rủi ro bản quyền (đã được chủ dự án chấp nhận)`);

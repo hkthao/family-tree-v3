@@ -58,6 +58,16 @@ def load_press(path):
 
 # Bài báo (nguồn thứ cấp, chủ dự án cho phép dùng tạm cho Bảo Đại)
 PR = {"bpl": load_press("press/bpl.html"), "sggp": load_press("press/sggp.html")}
+
+
+def load_txt(path):
+    import unicodedata
+    return re.sub(r"[\s\u200b]+", "", unicodedata.normalize("NFC", open(f"{SRC}/{path}", encoding="utf8").read()))
+
+
+# Các trang lăng của Khám Phá Huế (đã làm sạch HTML → văn bản)
+for _k in ("mm", "tt", "kd", "td", "dk", "gl2"):
+    PR[f"kph_{_k}"] = load_txt(f"press/kph_{_k}.txt")
 TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2, "cx": CBX, "pb": PB, "vn": VN, "pr": PR}
 BAD = []
 
@@ -73,7 +83,7 @@ def c(field, src, vol, where, quote, value=None, note=None):
                  "cx": lambda: ("DNTL", {"4q70": "Chính biên, Đệ tứ kỷ, Q.70", "5q5": "Chính biên, Đệ ngũ kỷ, Q.5"}[vol]),
                  "pb": lambda: ("DNTL", f"Chính biên, Đệ lục kỷ phụ biên, Q.{vol}"),
                  "vn": lambda: ("VNSL", f"Quyển II, Cận kim thời đại, Chương {vol.upper()}"),
-                 "pr": lambda: (vol.upper(), "bài báo (nguồn thứ cấp)")}[src]()
+                 "pr": lambda: (("KPH", "trang Khám Phá Huế") if vol.startswith("kph") else (vol.upper(), "bài báo (nguồn thứ cấp)"))}[src]()
     d = {"field": field, "source": code, "locator": f"{loc}, {where}", "quote": quote}
     if value is not None:
         d["value"] = value
@@ -1186,6 +1196,135 @@ next(g for g in graves if g["key"] == "lang.tu")["photos"] = [
 next(h for h in heritage if h["key"] == "ds.cau-lai-vien")["photos"] = [
     cphoto("", "H%E1%BB%99i_An%2C_Ch%C3%B9a_C%E1%BA%A7u%2C_2020-01_CN-01.jpg", "Steffen Schmitz", "CC BY-SA 4.0", "2020",
            "Chùa Cầu (cầu Lai Viễn), Hội An (theo mô tả ảnh trên Wikimedia Commons)", h="0/02")]
+
+# ══ Đợt 9: lăng các vua (Thiên Thọ, Hiếu, Xương, Ứng) + địa chỉ/năm xây từ Khám Phá Huế; ảnh Pexels/Commons ═══
+def kph(field, key, where, quote, value=None, note=None):
+    return c(field, "pr", key, where, quote, value, note)
+
+
+def pexels(photo_id, slug, author, caption, w=960):
+    return {"url": f"https://images.pexels.com/photos/{photo_id}/pexels-photo-{photo_id}.jpeg?auto=compress&cs=tinysrgb&w={w}",
+            "source_page": f"https://www.pexels.com/photo/{slug}-{photo_id}/", "author": author, "license": "Pexels License",
+            "kind": "photograph", "caption": caption}
+
+
+def gphoto(file_enc, h, author, lic, year, caption):
+    return cphoto("", file_enc, author, lic, year, caption, h=h)
+
+
+def grave(key, name, occupants, loc, addr, built, notes, cites, photos=None):
+    g = {"key": key, "name": name, "occupants": occupants, "location_name": loc, "notes": notes, "citations": cites, "review": DRAFT}
+    if addr:
+        g["address"] = addr
+    if built:
+        g["built_year"] = built
+    if photos:
+        g["photos"] = photos
+    graves.append(g)
+
+
+# Thiên Thọ lăng — Gia Long + Thừa Thiên Cao hoàng hậu
+_tt = next(x for x in persons if x["key"] == "nguyen.thua-thien-cao")
+_tt["death"] = {"lunar_year": 1814, "lunar_month": 2, "lunar_day": 2}
+_tt["burial_place"] = "Thiên Thọ lăng (cùng Gia Long)"
+_tt["bio"] += " Theo trang Khám Phá Huế, bà mất ngày 21 tháng 2 năm 1814 (dương lịch), được an táng ngay trong khu đất xây lăng Thiên Thọ của Gia Long."
+_tt["citations"] += [
+    kph("death", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "ThừaThiênCaoHoàng hậu(chínhphicủavuaGiaLong)quađờivàongày21/2/1814", "âm 1814-2-2", note="Ngày dương lịch 21/2/1814 quy đổi sang âm lịch (2/2 Giáp Tuất)."),
+    kph("burial_place", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "Mộsongtángcủa vuaGiaLongvàbàThừaThiênCaohoàng hậu", "Thiên Thọ lăng (cùng Gia Long)"),
+    kph("bio", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "ôngquyếtđịnhđưaantángvợtrongkhuđấtxâylăngmộchomình")]
+_gl = next(x for x in persons if x["key"] == "nguyen.gia-long")
+_gl["burial_place"] = "Thiên Thọ lăng (làng Hương Thọ, huyện Hương Trà)"
+_gl["citations"] += [
+    kph("burial_place", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "tìmđượcthếđấtởlàngHươngThọthuộchuyệnHươngTràbêntảngạnsôngHươngcáchkinhthành12kmvềphíaTây", "Thiên Thọ lăng (làng Hương Thọ, huyện Hương Trà)"),
+    kph("bio", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "Trướclúcmất,ôngdặntriềuthầnđặtthihàimìnhcạnhphầnmộcủaCaoHoànghậu")]
+grave("lang.thien-tho", "Thiên Thọ lăng", ["nguyen.gia-long", "nguyen.thua-thien-cao"], "làng Hương Thọ, huyện Hương Trà", None, None,
+      "Lăng Gia Long và Thừa Thiên Cao hoàng hậu, ở làng Hương Thọ, huyện Hương Trà, bên tả ngạn sông Hương, cách kinh thành khoảng 12 km về phía Tây. Hai ngôi mộ đá trong Bửu Thành được song táng theo quan niệm \"Càn Khôn hiệp đức\". Tên gọi lăng Gia Long hiện nay chỉ cả quần thể lăng tẩm của quyến thuộc nhà vua.",
+      [kph("existence", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "Mộsongtángcủa vuaGiaLongvàbàThừaThiênCaohoàng hậu"),
+       kph("location_name", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "tìmđượcthếđấtởlàngHươngThọthuộchuyệnHươngTràbêntảngạnsôngHươngcáchkinhthành12kmvềphíaTây", "làng Hương Thọ, huyện Hương Trà"),
+       kph("occupant:0", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "Trướclúcmất,ôngdặntriềuthầnđặtthihàimìnhcạnhphầnmộcủaCaoHoànghậu"),
+       kph("occupant:1", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "Mộsongtángcủa vuaGiaLongvàbàThừaThiênCaohoàng hậu"),
+       kph("notes", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "Bêntrong BửuThànhcóhaingôimộđá,dạngthạchthất,đượcsongtángtheoquanniệm“CànKhônhiệpđức”"),
+       kph("notes", "kph_gl2", "bài 'Vua Gia Long suýt mất mạng khi xây lăng tẩm'", "TêngọilăngGiaLonghiệnnaythựcralàđểchỉcảmộtquầnthểlăngtẩm")],
+      [gphoto("Hue_Vietnam_Tomb-of-Emperor-Gia-Long-02.jpg", "b/b8", "CEphoto, Uwe Aranas", "CC BY-SA 3.0", None, "Lăng Gia Long (Thiên Thọ lăng), Huế (theo mô tả ảnh trên Wikimedia Commons)")])
+
+# Hiếu lăng — Minh Mạng
+_mm = next(x for x in persons if x["key"] == "nguyen.minh-mang")
+_mm["burial_place"] = "Hiếu lăng (núi Cẩm Khê)"
+_mm["citations"].append(kph("burial_place", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "Tháng8/1841:ĐưaquantàicủavuaMinhMạngvàochônởBửuthành", "Hiếu lăng (núi Cẩm Khê)"))
+grave("lang.hieu", "Hiếu lăng", ["nguyen.minh-mang"], "núi Cẩm Khê, gần ngã ba Bằng Lãng", "Hương Thọ, Thị xã Hương Trà, tỉnh Thừa Thiên Huế", 1843,
+      "Lăng Minh Mạng, nằm trên núi Cẩm Khê gần ngã ba Bằng Lãng, cách Huế khoảng 12 km, gồm 40 công trình lớn nhỏ. Thiệu Trị nối ngôi, tiếp tục xây lăng; tháng 8 năm 1841 đưa quan tài Minh Mạng vào chôn ở Bửu Thành; năm 1843 lăng hoàn tất theo đồ án Minh Mạng để lại.",
+      [kph("existence", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "Tháng8/1841:ĐưaquantàicủavuaMinhMạngvàochônởBửuthành"),
+       kph("location_name", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "nằmtrênnúiCẩmKhê,gầnngãbaBằngLãng", "núi Cẩm Khê, gần ngã ba Bằng Lãng"),
+       kph("address", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "LăngvuaMinhMạngĐịachỉ:HươngThọ,ThịxãHươngTrà,tỉnhThừaThiênHuế", "Hương Thọ, Thị xã Hương Trà, tỉnh Thừa Thiên Huế", note="Địa giới hành chính ghi theo trang nguồn, có thể đã đổi."),
+       kph("built_year", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "Năm1843:lăngđượcxâydựnghoàntấttheođồánc ủavuaMinhMạngđểlại".replace(" ", ""), "1843"),
+       kph("occupant:0", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "Tháng8/1841:ĐưaquantàicủavuaMinhMạngvàochônởBửuthành"),
+       kph("notes", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "Tháng2/1841:SaukhiVuaMinhMạngbănghà,vuaThiệuTrínốingôivàtiếptụcxâydựnglăng"),
+       kph("notes", "kph_mm", "trang 'Lăng vua Minh Mạng (Hiếu Lăng)'", "LăngMinhMạnglàmộttổngthểkiếntrúcquymôgồm40côngtrìnhlớnnhỏ")],
+      [pexels(20813510, "mausoleum-of-emperor-minh-mang", "thai-nguy-n-613805762", "Lăng Minh Mạng (Hiếu lăng), Huế (ảnh Pexels)")])
+
+# Xương lăng — Thiệu Trị
+_tt2 = next(x for x in persons if x["key"] == "nguyen.thieu-tri")
+_tt2["burial_place"] = "Xương lăng (làng Cư Chánh)"
+_tt2["citations"].append(kph("burial_place", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "LăngThiệuTrịcótênchữlàXươngLăng(昌陵)lànơichônc ấthoàngđếThiệuTrị".replace(" ", ""), "Xương lăng (làng Cư Chánh)"))
+grave("lang.xuong", "Xương lăng", ["nguyen.thieu-tri"], "núi Thuận Đạo, làng Cư Chánh", "Làng Cư Chánh, phường Thủy Xuân, thành phố Huế", 1848,
+      "Lăng Thiệu Trị (Xương lăng), ở làng Cư Chánh, dưới chân núi Thuận Đạo. Tự Đức vâng mệnh cha sai quan địa lý chọn đất; ngày 14 tháng 6 năm 1848 Tự Đức thân hành kiểm tra lần cuối và đặt tên Xương lăng; mười ngày sau thi hài Thiệu Trị được đưa vào an táng sau 8 tháng quàn ở điện Long An.",
+      [kph("existence", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "LăngThiệuTrịcótênchữlàXươngLăng(昌陵)lànơichônc ấthoàngđếThiệuTrị".replace(" ", "")),
+       kph("location_name", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "Ngọnnúyấyđượcđặttênlànúi ThuậnĐạovàlăngấycótênlàXươngLăng".replace("Ngọnnúyấy","Ngọnnúiấy"), "núi Thuận Đạo, làng Cư Chánh"),
+       kph("address", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "Địachỉ:LàngCưChánh,phườngThủyXuân,thànhphốHuế", "Làng Cư Chánh, phường Thủy Xuân, thành phố Huế", note="Địa giới hành chính ghi theo trang nguồn."),
+       kph("built_year", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "Ngày14tháng06năm1848,vuaTựĐứcthânhànhlênkiểmtralầncuốicôngtrìnhvàđặttênlàXươngLăng", "1848"),
+       kph("occupant:0", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "thihàivuaThiệuTrịđượcđưavàoantángtronglăngsau08thángquàntạiđiệnLongAn"),
+       kph("notes", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "Vângmệnhcha,vuaTựĐứcđãsaicácquanĐịalýđichọnđấtxâylăng"),
+       kph("notes", "kph_tt", "trang 'Lăng vua Thiệu Trị (Xương Lăng)'", "thihàivuaThiệuTrịđượcđưavàoantángtronglăngsau08thángquàntạiđiệnLongAn")],
+      [gphoto("L%C4%83ng_vua_Thi%E1%BB%87u_Tr%E1%BB%8B.JPG", "2/2f", "LÊ TẤN LỘC", "CC BY-SA 3.0", None, "Lăng Thiệu Trị (Xương lăng), Huế (theo mô tả ảnh trên Wikimedia Commons)")])
+
+# Ứng lăng — Khải Định (+ ngày mất)
+_kd = next(x for x in persons if x["key"] == "nguyen.khai-dinh")
+_kd["death"] = {"lunar_year": 1925, "lunar_month": 9, "lunar_day": 20}
+_kd["burial_place"] = "Ứng lăng (núi Châu Chữ)"
+_kd["bio"] += " Theo trang Khám Phá Huế, ông mất ngày 6 tháng 11 năm 1925 (dương lịch) và được an táng ở Ứng lăng trên núi Châu Chữ."
+_kd["citations"] += [
+    kph("death", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "VuaKhảiĐịnhquađờingày06/11/1925vàđượcantángtạiỨngLăng", "âm 1925-9-20", note="Ngày dương lịch 6/11/1925 quy đổi sang âm lịch (20/9 Ất Sửu)."),
+    kph("burial_place", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "VuaKhảiĐịnhquađờingày06/11/1925vàđượcantángtạiỨngLăng", "Ứng lăng (núi Châu Chữ)"),
+    kph("bio", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "VuaKhảiĐịnhquađờingày06/11/1925vàđượcantángtạiỨngLăng")]
+grave("lang.ung", "Ứng lăng", ["nguyen.khai-dinh"], "núi Châu Chữ (Ứng Sơn)", "Núi Châu Chữ (Châu Ê), phường Thủy Xuân, thành phố Huế", 1931,
+      "Lăng Khải Định (Ứng lăng), trên núi Châu Chữ (sau đổi là Ứng Sơn), cách trung tâm Huế khoảng 10 km. Khởi công ngày 4 tháng 9 năm 1920, hoàn thành năm 1931 qua hai đời vua Khải Định và Bảo Đại; là lăng cuối cùng xây dưới triều Nguyễn, kiến trúc giao thoa Đông – Tây, trang trí khảm sành sứ, thủy tinh.",
+      [kph("existence", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "VuaKhảiĐịnhquađờingày06/11/1925vàđượcantángtạiỨngLăng"),
+       kph("location_name", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "Lăngnằmtrênnúi ChâuChữ", "núi Châu Chữ (Ứng Sơn)", note="Sau khi chọn núi Châu Chữ làm sinh phần, nhà vua đổi tên núi thành Ứng Sơn."),
+       kph("address", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "Địachỉ:NúiChâuChữ(ChâuÊ),phườngThủyXuân,thànhphốHuế", "Núi Châu Chữ (Châu Ê), phường Thủy Xuân, thành phố Huế", note="Địa giới hành chính ghi theo trang nguồn."),
+       kph("built_year", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "Đượckhởicôngngày04/09/1920vàhoànthànhnăm1931", "1931"),
+       kph("occupant:0", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "VuaKhảiĐịnhquađờingày06/11/1925vàđượcantángtạiỨngLăng"),
+       kph("notes", "kph_kd", "trang 'Lăng vua Khải Định (Ứng Lăng)'", "Đượckhởicôngngày04/09/1920vàhoànthànhnăm1931,ỨngLănglàcôngtrìnhlăngtẩmcuốicùngđượcxâydựngdướitriềuNguyễn")],
+      [pexels(18509405, "khai-dinh-tomb", "d-ng-nhan-324384", "Lăng Khải Định (Ứng lăng), Huế (ảnh Pexels)")])
+
+# Bổ sung Khiêm lăng và Tư lăng
+_kh = next(g for g in graves if g["key"] == "lang.khiem")
+_kh["address"] = "Thôn Thượng Ba, phường Thủy Xuân, thành phố Huế"
+_kh["built_year"] = 1873
+_kh["notes"] += " Theo trang Khám Phá Huế, lăng khởi công năm 1864 với 5 vạn binh lính, ban đầu đặt tên Vạn Niên Cơ, năm 1866 đổi thành Khiêm Cung, năm 1873 hoàn thành; sau khi vua mất mới gọi là Khiêm lăng."
+_kh["citations"] += [
+    kph("address", "kph_td", "trang 'Lăng vua Tự Đức (Khiêm Lăng)'", "Địachỉ:ThônThượngBa,phườngThủyXuân,thànhphốHuế", "Thôn Thượng Ba, phường Thủy Xuân, thành phố Huế", note="Địa giới hành chính ghi theo trang nguồn."),
+    kph("built_year", "kph_td", "trang 'Lăng vua Tự Đức (Khiêm Lăng)'", "Năm1873:KhiêmCungđượchoànthành", "1873"),
+    kph("notes", "kph_td", "trang 'Lăng vua Tự Đức (Khiêm Lăng)'", "Năm1864:Lăngđượckhởicôngxâydựngvới5vạnbinhlínhthamgia"),
+    kph("notes", "kph_td", "trang 'Lăng vua Tự Đức (Khiêm Lăng)'", "Năm1866:ĐổitênVạnNiênCơthànhKhiêmCung")]
+_kh["photos"].append(pexels(38575039, "historic-gate-at-t-d-c-tomb-in-hue-vietnam", "huqudu1999", "Cổng lăng Tự Đức (Khiêm lăng), Huế (ảnh Pexels)"))
+_tu = next(g for g in graves if g["key"] == "lang.tu")
+_tu["address"] = "Đường Đoàn Nhữ Hải, phường Thủy Xuân, thành phố Huế"
+_tu["built_year"] = 1923
+_tu["location_name"] = "làng Cư Sĩ, tổng Dương Xuân"
+_tu["notes"] += " Theo trang Khám Phá Huế, đây là ngôi lăng đặc biệt và duy nhất được xây qua bốn đời vua mới hoàn thành (1888–1923), nằm giữa hai lăng Thiệu Trị và Tự Đức, thuộc làng Cư Sĩ, tổng Dương Xuân."
+_tu["citations"] += [
+    kph("location_name", "kph_dk", "trang 'Lăng vua Đồng Khánh (Tư Lăng)'", "lăngĐồngKhánhthuộcđịaphậnlàngCưSĩ,tổngDươngXuân", "làng Cư Sĩ, tổng Dương Xuân"),
+    kph("address", "kph_dk", "trang 'Lăng vua Đồng Khánh (Tư Lăng)'", "Địachỉ:ĐườngĐoànNhữHải,phườngThủyXuân,thànhphốHuế", "Đường Đoàn Nhữ Hải, phường Thủy Xuân, thành phố Huế", note="Địa giới hành chính ghi theo trang nguồn."),
+    kph("built_year", "kph_dk", "trang 'Lăng vua Đồng Khánh (Tư Lăng)'", "Đâylàngôilăngmộđặcbiệtvàduynhấtđượcxâydựngquabốnđờivuamớihoànthành(1888-1923)", "1923"),
+    kph("notes", "kph_dk", "trang 'Lăng vua Đồng Khánh (Tư Lăng)'", "Nằmgiữahailăng ThiệuTrịvàTựĐức".replace(" ", ""))]
+
+# Ảnh cho các di sản
+next(h for h in heritage if h["key"] == "ds.ho-truong-khu-co")["photos"] = [
+    gphoto("%C4%90%E1%BB%81n_th%E1%BB%9D_%C4%90%C3%A0o_Duy_T%E1%BB%AB_.jpg", "5/55", "Daoduyan09", "CC BY-SA 4.0", None,
+           "Đền thờ Đào Duy Từ ở Hoài Nhơn, Bình Định (theo mô tả ảnh trên Wikimedia Commons)")]
+next(h for h in heritage if h["key"] == "ds.chieu-anh-cac")["photos"] = [
+    gphoto("M%E1%BB%99_M%E1%BA%A1c_C%E1%BB%ADu_c%C3%B9ng_v%E1%BB%A3_v%C3%A0_con.JPG", "1/16", "Tho nau", "CC BY-SA 3.0", None,
+           "Mộ Mạc Cửu cùng vợ và con ở Hà Tiên — tư liệu về họ Mạc, người lập Chiêu Anh các (theo mô tả ảnh trên Wikimedia Commons)")]
 
 if BAD:
     for b in BAD:
