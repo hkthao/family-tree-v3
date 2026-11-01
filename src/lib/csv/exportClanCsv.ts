@@ -15,6 +15,7 @@
  * unchanged data produces a byte-identical file — useful for diffs.
  */
 
+import { bioToPlainText } from "@/lib/bio";
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
@@ -93,7 +94,7 @@ export function buildClanCsv(data: ClanBookData): string {
       fatherTempId,
       motherTempId,
       branchName,
-      p.bio ?? "",
+      bioToPlainText(p.bio),
     ]);
   }
 

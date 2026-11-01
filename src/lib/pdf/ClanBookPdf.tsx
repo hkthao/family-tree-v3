@@ -14,6 +14,7 @@ import {
 
 import { createContext, useContext } from "react";
 
+import { bioToPlainText } from "@/lib/bio";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import { HONOR_CATEGORY_LABEL, type HonorCategory } from "@/lib/queries/honor";
@@ -1174,7 +1175,7 @@ function renderInLawCard(
         />
         <FieldLine label="Nơi sinh" value={p.birth_place} />
         <FieldLine label="Nơi an táng" value={p.burial_place} />
-        <FieldLine label="Tiểu sử" value={p.bio} />
+        <FieldLine label="Tiểu sử" value={bioToPlainText(p.bio) || null} />
       </View>
     </>
   );

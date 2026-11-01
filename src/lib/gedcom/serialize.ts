@@ -8,6 +8,7 @@
  * restore them losslessly.
  */
 
+import { bioToPlainText } from "@/lib/bio";
 import type { ClanBookData } from "@/lib/queries/clan-book";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { InlawExportEntry } from "@/lib/queries/person-links";
@@ -173,7 +174,7 @@ export function serializeClanToGedcom(
       emit(o, 2, "DAY", p.death_anniv_lunar_day);
     }
 
-    if (p.bio) emit(o, 1, "NOTE", p.bio);
+    if (p.bio) emit(o, 1, "NOTE", bioToPlainText(p.bio));
 
     // Cross-clan in-law links (Section 28). Multiple `_INLAW` blocks
     // per INDI when the person has more than one peer.

@@ -35,18 +35,32 @@ CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4:
 LT1 = {n: load(f"lt1/lt1_{n:02d}.txt") for n in (1, 2)}
 LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 4, 5, 6, 8)}
 CBX = {"4q70": load("cb/cb_四_q70.txt"), "5q5": load("cb/cb_五_q5.txt")}
-TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2, "cx": CBX}
+PB = {n: load(f"pb/pb_{n:02d}.txt") for n in (1, 20)}
+
+
+def load_vn(path):
+    import unicodedata
+    t = unicodedata.normalize("NFC", open(f"{SRC}/{path}", encoding="utf8").read())
+    return re.sub(r"[\s\u200b]+", "", t)
+
+
+# Việt Nam sử lược (Trần Trọng Kim, bản 1971) — văn quốc ngữ; quote không chứa khoảng trắng đặc biệt
+VN = {"xiv": load_vn("vn/vnsl1971_XIV.txt"), "xv": load_vn("vn/vnsl1971_XV.txt")}
+TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2, "cx": CBX, "pb": PB, "vn": VN}
 BAD = []
 
 
 def c(field, src, vol, where, quote, value=None, note=None):
     """src: tb (Tiền biên) | cb (Chính biên, vol = số kỷ, quyển 1) | lt (Liệt truyện sơ tập) | lt2 (nhị tập)."""
-    if re.sub(r"\s+", "", quote) not in TEXT[src][vol]:
+    import unicodedata
+    if re.sub(r"[\s\u200b]+", "", unicodedata.normalize("NFC", quote)) not in TEXT[src][vol]:
         BAD.append((src, vol, quote))
     code, loc = {"tb": lambda: ("DNTL", f"Tiền biên Q.{vol}"),
                  "cb": lambda: ("DNTL", f"Chính biên, Đệ {'nhất nhị tam tứ ngũ lục thất'.split()[vol - 1]} kỷ, Q.1"),
                  "lt": lambda: ("DNLT", f"Sơ tập Q.{vol}"), "lt2": lambda: ("DNLT", f"Nhị tập Q.{vol}"),
-                 "cx": lambda: ("DNTL", {"4q70": "Chính biên, Đệ tứ kỷ, Q.70", "5q5": "Chính biên, Đệ ngũ kỷ, Q.5"}[vol])}[src]()
+                 "cx": lambda: ("DNTL", {"4q70": "Chính biên, Đệ tứ kỷ, Q.70", "5q5": "Chính biên, Đệ ngũ kỷ, Q.5"}[vol]),
+                 "pb": lambda: ("DNTL", f"Chính biên, Đệ lục kỷ phụ biên, Q.{vol}"),
+                 "vn": lambda: ("VNSL", f"Quyển II, Cận kim thời đại, Chương {vol.upper()}")}[src]()
     d = {"field": field, "source": code, "locator": f"{loc}, {where}", "quote": quote}
     if value is not None:
         d["value"] = value
@@ -901,6 +915,63 @@ P(key="nguyen.khai-dinh", full_name="Nguyễn Hoằng Tông (Khải Định)", g
 for _k, _n, _kind in [("nguyen.gia-long", 2, "later_depiction"), ("nguyen.minh-mang", 3, "later_depiction"),
                       ("nguyen.ham-nghi", 4, "photograph"), ("nguyen.khai-dinh", 8, "photograph")]:
     next(x for x in persons if x["key"] == _k)["photo"] = hnv_photo(_n, _kind)
+
+# ══ Đợt 5: Thành Thái, Duy Tân (Bảo Đại chưa có nguồn nào ghi cha mẹ / ngày sinh) ═══════════════
+# Bổ sung cho các vua trước từ Việt Nam sử lược (tầng B).
+_dd = next(x for x in persons if x["key"] == "nguyen.duc-duc")
+_dd["bio"] += " Việt Nam sử lược chép: tháng 9 năm Giáp Thân (1884) Nguyễn Văn Tường và Tôn Thất Thuyết đem ông giam vào nhà tối, không cho ăn uống để chết đói, đổ tội thông mưu với giặc (chưa rõ ngày mất; các sách khác chép năm khác — cần đối chiếu)."
+_dd["citations"].append(c("bio", "vn", "xiv", "§ phế lập ở Huế", "Tháng9nămgiáp-thân(1884),haiôngấyđemôngDục-đứcgiamvàonhàtối,khôngchoăn-uốngđểchếtđói"))
+_dk = next(x for x in persons if x["key"] == "nguyen.dong-khanh")
+_dk["lifespan"] = 25
+_dk["citations"].append(c("lifespan", "vn", "xv", "§6 Vua Thành-thái", "vuaĐồng-khánhphảibệnhmất,thọ25tuổi,làmvuađược3năm,miếu-hiệulàCảnh-tông", "25"))
+
+U("u.duc-duc--khuyet", "nguyen.duc-duc")
+P(key="nguyen.thanh-thai", full_name="Nguyễn Thành Thái (Phế đế)", gender="M", parents="u.duc-duc--khuyet",
+  nickname="Nguyễn Phúc Bửu Lân",
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 10, "role": "emperor", "start_year": 1889, "end_year": 1907,
+           "era_names": [{"name": "Thành Thái", "from_year": 1889}]}],
+  bio="Tên là Bửu Lân, con của Dục Đức, cháu nội nuôi của Tự Đức, cháu gọi Đồng Khánh bằng chú. Ngày 28 tháng 1 năm 1889 (27 tháng chạp năm Mậu Tý), Đồng Khánh mất; Khâm sứ Rheinard nhớ tình xưa với Dục Đức nên cho lập ông, khi ấy mới 10 tuổi và đang cùng mẹ bị giam trong ngục. Ngày mồng 1 tháng Giêng năm Kỷ Sửu (1889), triều đình theo ý chỉ của hai bà thái hậu đón ông về; hôm sau ông lên ngôi ở điện Thái Hòa, đặt niên hiệu Thành Thái, cử Nguyễn Trọng Hợp và Trương Quang Đản làm phụ chính. Năm Thành Thái 19 (1907) sử chép ông mắc bệnh tâm thần, chính quyền bị thu, phải nhường ngôi cho con. Sử nhà Nguyễn gọi là Phế đế; ông cùng Duy Tân bị đày sang đảo Réunion.",
+  citations=[c("existence", "vn", "xv", "§6 Vua Thành-thái", "truyềnlậpôngBửuLânlàconôngDục-đứclênlàmvua"),
+             c("nickname", "vn", "xv", "§6 Vua Thành-thái", "truyềnlậpôngBửuLânlàconôngDục-đứclênlàmvua", "Nguyễn Phúc Bửu Lân", note="Họ Phúc theo Tiền biên Q.2; phiên âm 'Bửu Lân' theo Việt Nam sử lược."),
+             c("parents", "vn", "xv", "§6 Vua Thành-thái", "truyềnlậpôngBửuLânlàconôngDục-đứclênlàmvua"),
+             c("reign:0", "pb", 1, "mở đầu", "戊申（初二日），即皇帝位于太和殿，建元成泰"),
+             c("reign:0", "pb", 20, "mở đầu", "以成泰廢帝得心疾，收其政權，擇立皇子，乃入內奏請遜位"),
+             c("bio", "vn", "xv", "§6 Vua Thành-thái", "ÔngBửuLânbấygiờmớilên10tuổi,đangcùngvớimẹphảigiamởtrongngục"),
+             c("bio", "vn", "xv", "§6 Vua Thành-thái", "Ngày27thángchạpnămmậu-tílàngày28tháng giêngnăm1888"),
+             c("bio", "pb", 1, "mở đầu", "尊人文武廷臣商同貴保護，奉儀天章皇后、儷天英皇后懿旨，迎立"),
+             c("bio", "vn", "xv", "§6 Vua Thành-thái", "đặt niên-hiệu là Thành-thái, cử ông Nguyễn trọng Hợp 阮 仲 合 và ông Trương quang Đản 張 光 襢 làm Phụ-chính"),
+             c("bio", "cb", 7, "tiểu dẫn Hoằng Tông", "成泰廢帝（景尊純皇帝之姪，翼尊英皇帝之嫡孫）稍長，乃得迎立"),
+             c("bio", "vn", "xv", "mở đầu §8", "vuaThành-tháivàvuaDuy-tânđàysangởđảoRéunion")])
+U("u.thanh-thai--khuyet", "nguyen.thanh-thai")
+P(key="nguyen.duy-tan", full_name="Nguyễn Duy Tân (Phế đế)", gender="M", parents="u.thanh-thai--khuyet",
+  nickname="Nguyễn Phúc Hoảng; tự Vĩnh San",
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 11, "role": "emperor", "start_year": 1907, "end_year": 1916,
+           "era_names": [{"name": "Duy Tân", "from_year": 1907}]}],
+  bio="Tên húy là Hoảng, tự Vĩnh San, con thứ năm của Thành Thái. Sinh ra tư chất khác thường, tai to trán rộng, giọng vang; năm sáu tuổi thường theo cha ở Duyệt Thị đường, ngồi yên lặng, được cha yêu nhất trong các hoàng tử. Ngày 28 tháng 7 năm Thành Thái 19 (1907), khi Thành Thái bị thu chính quyền, các đại thần cùng Toàn quyền chọn trong các hoàng tử, đón ông ra ở Đông các rồi lên ngôi ở điện Thái Hòa; hôm sau nhận ngọc tỷ, lấy ngày đó làm Duy Tân nguyên niên. Ngày mồng 2 tháng 4 năm Duy Tân 10 (1916) ông bị phế, ở ngôi 10 năm, cùng Thành Thái bị đày sang đảo Réunion. Sử nhà Nguyễn gọi là Phế đế.",
+  citations=[c("existence", "pb", 20, "mở đầu", "維新廢帝，諱晃，字永珊，成泰廢帝第五子也"),
+             c("nickname", "pb", 20, "mở đầu", "維新廢帝，諱晃，字永珊，成泰廢帝第五子也", "Nguyễn Phúc Hoảng; tự Vĩnh San", note="Họ Phúc theo Tiền biên Q.2; phiên âm 晃/永珊 do người soạn."),
+             c("parents", "pb", 20, "mở đầu", "維新廢帝，諱晃，字永珊，成泰廢帝第五子也"),
+             c("reign:0", "pb", 20, "mở đầu", "丁未成泰十九年（西曆一千九百七年）秋七月丁巳（二十八日），帝即皇帝位于太和殿"),
+             c("reign:0", "pb", 20, "mở đầu", "翌日，受傳國玉璽，即位，以是日為維新元年"),
+             c("reign:0", "cb", 7, "tiểu dẫn Hoằng Tông", "維新丙辰（西曆一千九百十六年）夏四月初二日，維新帝以離位廢"),
+             c("bio", "pb", 20, "mở đầu", "帝資稟穎異，耳大顙闊，聲音响亮"),
+             c("bio", "pb", 20, "mở đầu", "迨受禪，在位凡十年，以離位廢，與成泰廢帝俱徙於法屬地之梨威尼翁海嶠居焉")])
+
+sections("nguyen.thanh-thai", [
+    ("Xuất thân", "Tên là Bửu Lân, con của Dục Đức; Dục Đức là con nuôi (hoàng trưởng tử) của Tự Đức, nên ông là cháu nội nuôi của Tự Đức và gọi Đồng Khánh là chú. Khi cha bị phế và mất, ông cùng mẹ bị giam trong ngục."),
+    ("Lên ngôi", "Ngày 27 tháng chạp năm Mậu Tý (28 tháng 1 năm 1889), Đồng Khánh mất. Khâm sứ Rheinard thấy con Đồng Khánh còn nhỏ, lại nhớ tình xưa với Dục Đức nên truyền lập ông Bửu Lân, khi ấy mới 10 tuổi và đang cùng mẹ bị giam trong ngục. Ngày mồng 1 tháng Giêng năm Kỷ Sửu (1889), triều đình theo ý chỉ của Nghi Thiên Chương hoàng hậu và Lệ Thiên Anh hoàng hậu đón ông về; ngày mồng 2 ông lên ngôi ở điện Thái Hòa, đặt niên hiệu Thành Thái, cử Nguyễn Trọng Hợp và Trương Quang Đản làm phụ chính."),
+    ("Qua đời và lăng tẩm", "Năm Thành Thái 19 (1907), sử chép ông mắc bệnh tâm thần, chính quyền bị thu, phải nhường ngôi cho con. Sử nhà Nguyễn gọi là Phế đế; ông cùng Duy Tân bị đày sang đảo Réunion. (Ngày mất, lăng chưa có nguồn đã đối chiếu.)"),
+    ("Gia quyến", "Cha: Dục Đức. Con thứ năm là Duy Tân."),
+], [c("bio", "vn", "xv", "§6 Vua Thành-thái", "truyềnlậpôngBửuLânlàconôngDục-đứclênlàmvua")])
+
+sections("nguyen.duy-tan", [
+    ("Xuất thân", "Tên húy là Hoảng, tự Vĩnh San, con thứ năm của Thành Thái. Sinh ra tư chất khác thường, tai to trán rộng, giọng vang; nuôi dạy trong cung, cử chỉ đoan trang. Năm năm sáu tuổi thường theo Thành Thái ở Duyệt Thị đường, ngồi yên lặng, được cha yêu nhất trong các hoàng tử."),
+    ("Lên ngôi", "Ngày 28 tháng 7 năm Thành Thái 19 (1907), Toàn quyền nhận điện từ Pháp báo Thành Thái mắc bệnh tâm thần, thu chính quyền và cho chọn hoàng tử nối ngôi; đại thần cùng Khâm sứ họp ở Cơ mật viện, vâng sắc tay của Thành Thái bàn chọn trong các hoàng tử. Ông được chọn, đón ra ở Đông các, quần thần dâng tờ khuyên tiến; ông lên ngôi ở điện Thái Hòa, hôm sau nhận ngọc tỷ, lấy ngày đó làm Duy Tân nguyên niên, ban chiếu khắp trong ngoài."),
+    ("Qua đời và lăng tẩm", "Ngày mồng 2 tháng 4 năm Duy Tân 10 (1916) ông bị phế, ở ngôi 10 năm; ông cùng Thành Thái bị đày sang đảo Réunion (thuộc Pháp). (Ngày sinh, ngày mất chưa có nguồn đã đối chiếu.)"),
+    ("Gia quyến", "Cha: Thành Thái (ông là con thứ năm)."),
+], [c("bio", "pb", 20, "mở đầu", "初全權大臣晡既得法庭來電，以成泰廢帝得心疾，收其政權，擇立皇子，乃入內奏請遜位"),
+    c("bio", "pb", 20, "mở đầu", "五六歲辰，常從成泰帝於閱是堂，侍坐靜默"),
+    c("bio", "pb", 20, "mở đầu", "皇子中最為鍾愛")])
 
 if BAD:
     for b in BAD:
