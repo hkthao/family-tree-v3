@@ -99,9 +99,30 @@ export interface PhotoProvider {
   image: RegExp;
   /** Trang tệp có giấy phép / tác giả / xuất xứ. */
   page: RegExp;
+  /**
+   * Trang tin / báo KHÔNG ghi giấy phép từng ảnh (chủ dự án chấp nhận rủi ro bản quyền).
+   * Ảnh từ nguồn này phải khai license = UNVERIFIED_LICENSE kèm tên nguồn ở `author`.
+   */
+  unverifiedLicense?: boolean;
 }
 
+export const UNVERIFIED_LICENSE = "Chưa rõ giấy phép";
+
 export const PHOTO_PROVIDERS: PhotoProvider[] = [
+  {
+    id: "honguyen",
+    label: "Tạp chí điện tử Họ Nguyễn Việt Nam",
+    image: /^https:\/\/honguyenvietnam\.org\/vi\/uploads\/news\/[\w/.-]+\.(jpe?g|png|webp)$/i,
+    page: /^https:\/\/honguyenvietnam\.org\/vi\/lich-su\/[\w.-]+\.html$/,
+    unverifiedLicense: true,
+  },
+  {
+    id: "khamphahue",
+    label: "Khám phá Huế (khamphahue.com.vn)",
+    image: /^https:\/\/khamphahue\.com\.vn\/Portals\/0\/[\w/.-]+\.(jpe?g|png|webp)(\?[\w=.-]+)?$/i,
+    page: /^https:\/\/khamphahue\.com\.vn\/Hue-24h\/[\w/.%?=&-]+$/,
+    unverifiedLicense: true,
+  },
   {
     id: "wikimedia",
     label: "Wikimedia Commons",
@@ -726,10 +747,16 @@ export function validate(
       errors.push(`${who}: ảnh ${provider.label} thiếu trang nguồn đúng dạng của ${provider.label}`);
     }
     const lic = ph.license?.trim() ?? "";
-    if (!/^(PD(-[\w-]+)?|PDM( 1\.0)?|CC0( 1\.0)?|CC BY(-SA)? \d\.\d)$/.test(lic)) {
-      errors.push(`${who}: giấy phép ảnh "${lic}" không thuộc PD / PDM / CC0 / CC BY / CC BY-SA`);
+    if (provider?.unverifiedLicense) {
+      if (lic !== UNVERIFIED_LICENSE) errors.push(`${who}: ảnh ${provider.label} khai license = "${UNVERIFIED_LICENSE}"`);
+      if (!ph.author?.trim()) errors.push(`${who}: ảnh ${provider.label} cần ghi tên nguồn ở author`);
+      warnings.push(`${who}: ảnh từ ${provider.label} không ghi giấy phép — rủi ro bản quyền (đã được chủ dự án chấp nhận)`);
+    } else {
+      if (!/^(PD(-[\w-]+)?|PDM( 1\.0)?|CC0( 1\.0)?|CC BY(-SA)? \d\.\d)$/.test(lic)) {
+        errors.push(`${who}: giấy phép ảnh "${lic}" không thuộc PD / PDM / CC0 / CC BY / CC BY-SA`);
+      }
+      if (!/^(PD|CC0)/.test(lic) && !ph.author?.trim()) errors.push(`${who}: ảnh ${lic} cần ghi tác giả`);
     }
-    if (!/^(PD|CC0)/.test(lic) && !ph.author?.trim()) errors.push(`${who}: ảnh ${lic} cần ghi tác giả`);
     if (!["photograph", "contemporary_portrait", "later_depiction"].includes(ph.kind)) {
       errors.push(`${who}: ảnh cần kind = photograph | contemporary_portrait | later_depiction`);
     } else if (ph.kind === "later_depiction") {

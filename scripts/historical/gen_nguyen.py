@@ -58,6 +58,14 @@ def c(field, src, vol, where, quote, value=None, note=None):
 DRAFT = {"status": "draft", "note": "Đợt 1 — trích từ nguyên văn Đại Nam thực lục / Liệt truyện; cần người duyệt đối chiếu bản dịch."}
 persons, unions = [], []
 
+HNV = "https://honguyenvietnam.org/vi/lich-su/full-bo-anh-chan-dung-13-vi-vua-trieu-nguyen-473.html"
+
+
+def hnv_photo(n, kind):
+    """Ảnh trong bài 'Full bộ ảnh chân dung 13 vị vua triều Nguyễn' — trang không ghi giấy phép/tác giả (rủi ro bản quyền đã được chủ dự án chấp nhận)."""
+    return {"url": f"https://honguyenvietnam.org/vi/uploads/news/2024_03/image_{n}.png", "source_page": HNV,
+            "license": "Chưa rõ giấy phép", "author": "Tạp chí điện tử Họ Nguyễn Việt Nam (không ghi tác giả ảnh)", "kind": kind}
+
 
 def P(**kw):
     kw.setdefault("review", DRAFT)
@@ -888,6 +896,11 @@ P(key="nguyen.khai-dinh", full_name="Nguyễn Hoằng Tông (Khải Định)", g
              c("reign:0", "cb", 7, HT2, "十七日，帝即皇帝位于太和殿，建元啓定"),
              c("reign:0", "cb", 7, HT2, "維新丙辰（西曆一千九百十六年）夏四月初二日，維新帝以離位廢"),
              c("bio", "cb", 7, HT2, "同慶三年（西曆一千八百八十八年）十二月二十七日，皇考景尊純皇帝賓天，辰帝甫四歲")])
+
+# Ảnh (xem data/historical/nguyen-images.json). Gia Long: bản in cũ "Hình Đức Gia-Long"; Minh Mạng: tranh màu hiện đại — đều KHÔNG phải chân dung đương thời.
+for _k, _n, _kind in [("nguyen.gia-long", 2, "later_depiction"), ("nguyen.minh-mang", 3, "later_depiction"),
+                      ("nguyen.ham-nghi", 4, "photograph"), ("nguyen.khai-dinh", 8, "photograph")]:
+    next(x for x in persons if x["key"] == _k)["photo"] = hnv_photo(_n, _kind)
 
 if BAD:
     for b in BAD:
