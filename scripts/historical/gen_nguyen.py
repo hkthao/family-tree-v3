@@ -31,18 +31,20 @@ def load(path):
 
 
 TB = {n: load(f"tb/tb_{n:02d}.txt") for n in range(1, 13)}
-CB1 = load("cb/cb_一_q1.txt")
+CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4: "四"}.items()}
 LT1 = {n: load(f"lt1/lt1_{n:02d}.txt") for n in (1, 2)}
-TEXT = {"tb": TB, "cb": {1: CB1}, "lt": LT1}
+LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 5, 6)}
+TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2}
 BAD = []
 
 
 def c(field, src, vol, where, quote, value=None, note=None):
-    """src: tb (Tiền biên) | cb (Chính biên kỷ 1) | lt (Liệt truyện sơ tập)."""
+    """src: tb (Tiền biên) | cb (Chính biên, vol = số kỷ, quyển 1) | lt (Liệt truyện sơ tập) | lt2 (nhị tập)."""
     if re.sub(r"\s+", "", quote) not in TEXT[src][vol]:
         BAD.append((src, vol, quote))
-    code, loc = {"tb": ("DNTL", f"Tiền biên Q.{vol}"), "cb": ("DNTL", "Chính biên, Đệ nhất kỷ, Q.1"),
-                 "lt": ("DNLT", f"Sơ tập Q.{vol}")}[src]
+    code, loc = {"tb": lambda: ("DNTL", f"Tiền biên Q.{vol}"),
+                 "cb": lambda: ("DNTL", f"Chính biên, Đệ {'nhất nhị tam tứ'.split()[vol - 1]} kỷ, Q.1"),
+                 "lt": lambda: ("DNLT", f"Sơ tập Q.{vol}"), "lt2": lambda: ("DNLT", f"Nhị tập Q.{vol}")}[src]()
     d = {"field": field, "source": code, "locator": f"{loc}, {where}", "quote": quote}
     if value is not None:
         d["value"] = value
@@ -280,12 +282,13 @@ P(key="nguyen.hieu-khang", full_name="Hiếu Khang hoàng hậu", gender="F",
 
 # ── Gia Long ──────────────────────────────────────────────────────────
 GL = "tiểu dẫn Thế Tổ"
-P(key="nguyen.gia-long", full_name="Nguyễn Thế Tổ", gender="M", parents="u.hung-to--hieu-khang",
+P(key="nguyen.gia-long", full_name="Nguyễn Thế Tổ (Gia Long)", gender="M", parents="u.hung-to--hieu-khang",
+  death={"lunar_year": 1819, "lunar_month": 12},
   nickname="Nguyễn Phúc Ánh; Nguyễn Phúc Noãn; Nguyễn Phúc Chủng",
   birth={"lunar_year": 1762, "lunar_month": 1},
   titles=[{"title": "Đại nguyên soái, nhiếp quốc chính (1778)", "from_year": 1778}, {"title": "Lên ngôi vương ở Sài Côn (1780)", "from_year": 1780}],
-  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 1, "role": "emperor", "temple_name": "Thế Tổ", "start_year": 1802}],
-  bio="Con thứ ba của Hưng Tổ, mẹ Hiếu Khang hoàng hậu, sinh năm Nhâm Ngọ (1762). Năm Ất Dậu (1765) cha mất, ông mới 4 tuổi. Năm Đinh Dậu (1777) Duệ Tông chết trận, ông thoát nạn. Năm Mậu Tuất (1778) được các tướng tôn làm Đại nguyên soái nhiếp quốc chính; năm Canh Tý (1780) lên ngôi vương ở Sài Côn. (Phần sau — thống nhất, lên ngôi hoàng đế năm 1802, mất — chưa có nguyên văn trên Wikisource; sẽ bổ sung.)",
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 1, "role": "emperor", "temple_name": "Thế Tổ", "start_year": 1802, "end_year": 1819}],
+  bio="Con thứ ba của Hưng Tổ, mẹ Hiếu Khang hoàng hậu, sinh năm Nhâm Ngọ (1762). Năm Ất Dậu (1765) cha mất, ông mới 4 tuổi. Năm Đinh Dậu (1777) Duệ Tông chết trận, ông thoát nạn. Năm Mậu Tuất (1778) được các tướng tôn làm Đại nguyên soái nhiếp quốc chính; năm Canh Tý (1780) lên ngôi vương ở Sài Côn. Mất ngày Đinh Mùi tháng 12 năm Gia Long 18 (1819). (Thụy hiệu, lăng, tuổi thọ chưa có nguyên văn trên Wikisource; sẽ bổ sung.)",
   citations=[c("existence", "cb", 1, GL, "世祖開天弘道立紀垂統神文聖武峻德隆功至仁大孝高皇帝諱暖，又諱映"),
              c("nickname", "cb", 1, GL, "又諱映，（初，睿宗謂帝曰：“此字爲日正中之象。”因名之。）又諱種", "Nguyễn Phúc Ánh; Nguyễn Phúc Noãn; Nguyễn Phúc Chủng",
                note="Họ Phúc theo Tiền biên Q.2. Phiên âm 暖/映/種 do người soạn."),
@@ -295,6 +298,8 @@ P(key="nguyen.gia-long", full_name="Nguyễn Thế Tổ", gender="M", parents="u
              c("title:0", "cb", 1, "năm Mậu Tuất (1778)", "杜清仁與諸將尊帝爲大元帥，攝國政"),
              c("title:1", "cb", 1, "năm Canh Tý (1780)", "春正月癸卯，帝即王位"),
              c("reign:0", "lt", 1, "Hưng Tổ Hiếu Khang hoàng hậu", "嘉隆元年夏四月，世祖命黄曰纘等爲奉迎使", note="Năm hiệu Gia Long nguyên niên = 1802."),
+             c("reign:0", "cb", 2, "Gia Long năm 18", "十八年冬十二月丁未，世祖高皇帝崩", note="Gia Long 18 = 1819."),
+             c("death", "cb", 2, "Gia Long năm 18", "十八年冬十二月丁未，世祖高皇帝崩", "âm 1819-12", note="Ngày Đinh Mùi tháng 12 năm Gia Long 18; chưa có tuổi thọ, lăng, thụy (quyển cuối kỷ 1)."),
              c("bio", "cb", 1, GL, "乙酉秋，興祖崩，帝年甫四歲")])
 P(key="nguyen.thua-thien-cao", full_name="Thừa Thiên Cao hoàng hậu", gender="F",
   titles=[{"title": "Nguyên phi (1778)", "from_year": 1778}],
@@ -324,6 +329,139 @@ P(key="nguyen.anh-due", full_name="Anh Duệ hoàng thái tử Cảnh", gender="
              c("title:0", "lt", 2, "Anh Duệ hoàng thái tử Cảnh", "冊立爲東宮，封元帥、郡公"),
              c("bio", "lt", 2, "Anh Duệ hoàng thái tử Cảnh", "是年公甫四歲")])
 
+# ══ Đợt 2: Minh Mạng ═══════════════════════════════════════════════
+MM = "tiểu dẫn Thánh Tổ"
+P(key="nguyen.minh-mang", full_name="Nguyễn Thánh Tổ (Minh Mạng)", gender="M", parents="u.gia-long--thuan-thien",
+  nickname="Nguyễn Phúc Đảm; Nguyễn Phúc Kiểu",
+  birth={"lunar_year": 1791}, death={"lunar_year": 1840, "lunar_month": 12, "lunar_day": 28},
+  posthumous_name="Thể Thiên Xương Vận Chí Hiếu Thuần Đức Văn Vũ Minh Đoán Sáng Thuật Đại Thành Hậu Trạch Phong Công Nhân hoàng đế",
+  titles=[{"title": "Hoàng thái tử (Gia Long 15)", "from_year": 1816}],
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 2, "role": "emperor", "temple_name": "Thánh Tổ", "start_year": 1820, "end_year": 1840,
+           "era_names": [{"name": "Minh Mạng", "from_year": 1820}]}],
+  bio="Con thứ tư của Gia Long, mẹ Thuận Thiên Cao hoàng hậu, sinh năm Tân Hợi (1791). Năm Gia Long 15 được lập làm hoàng thái tử. Tháng 12 năm Gia Long 18 (1819) Gia Long mất, ông nối ngôi; mùa xuân năm Canh Thìn (1820) lên ngôi ở điện Thái Hòa, lấy năm đó làm Minh Mạng nguyên niên. Mất ngày 28 tháng 12 năm Minh Mạng 21 (1840), truyền ngôi cho con trưởng là Thiệu Trị. (Tuổi thọ, lăng chưa có nguyên văn trên Wikisource.)",
+  citations=[c("existence", "cb", 2, MM, "聖祖體天昌運至孝純德文武明斷創述大成厚澤豐功仁皇帝，諱晈，又諱膽"),
+             c("nickname", "cb", 2, MM, "聖祖體天昌運至孝純德文武明斷創述大成厚澤豐功仁皇帝，諱晈，又諱膽", "Nguyễn Phúc Đảm; Nguyễn Phúc Kiểu", note="Họ Phúc theo Tiền biên Q.2; phiên âm 晈/膽 do người soạn."),
+             c("parents", "cb", 2, MM, "世祖高皇帝第四子也。母順天高皇后陳氏"),
+             c("birth", "cb", 2, MM, "聖誕辛亥年，（世祖高皇帝嗣王位之十二年，清乾隆五十六年。）", "âm 1791"),
+             c("death", "cb", 3, "tiểu dẫn Hiến Tổ", "二十八日，宣至御榻前，握手面諭，命以嗣位。是日，聖祖仁皇帝崩", "âm 1840-12-28", note="Minh Mạng năm 21 (1840), tháng 12 ngày 28."),
+             c("posthumous_name", "cb", 2, MM, "聖祖體天昌運至孝純德文武明斷創述大成厚澤豐功仁皇帝",
+               "Thể Thiên Xương Vận Chí Hiếu Thuần Đức Văn Vũ Minh Đoán Sáng Thuật Đại Thành Hậu Trạch Phong Công Nhân hoàng đế"),
+             c("title:0", "cb", 2, MM, "嘉隆十五年夏六月己未，冊立爲皇太子"),
+             c("reign:0", "cb", 2, MM, "庚辰明命元年，（清嘉慶二十五年。）春正月戊午朔，帝即皇帝位于太和殿"),
+             c("reign:0", "cb", 2, MM, "以今年庚辰爲明命元年"),
+             c("reign:0", "cb", 3, "tiểu dẫn Hiến Tổ", "二十八日，宣至御榻前，握手面諭，命以嗣位。是日，聖祖仁皇帝崩"),
+             c("bio", "cb", 2, MM, "十八年冬十二月丁未，世祖高皇帝崩，羣臣奉箋勸進")])
+P(key="nguyen.ta-thien-nhan", full_name="Tá Thiên Nhân hoàng hậu", gender="F",
+  death={"lunar_year": 1807}, lifespan=17,
+  titles=[{"title": "Nghi (truy tặng, Minh Mạng 2), thụy Thuận Đức", "from_year": 1821}, {"title": "Thần phi (Minh Mạng 17)", "from_year": 1836},
+          {"title": "Hoàng hậu (truy tôn đầu Thiệu Trị)", "from_year": 1841}],
+  bio="Họ Hồ, người Bình An, Biên Hòa; con gái Phúc quốc công Hồ Văn Bôi. Năm Gia Long 5 (1806) được Gia Long và Thuận Thiên hoàng hậu chọn làm vợ Minh Mạng. Tháng 5 năm Đinh Mão (1807), sinh Thiệu Trị được 13 ngày thì mất, thọ 17 tuổi. Được truy tôn thụy hiệu Tá Thiên Nghi Thánh Đoan Chính Cung Hòa Đốc Khánh Từ Huy Minh Hiền Thuận Đức Nhân hoàng hậu.",
+  citations=[c("existence", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "聖祖佐天仁皇后胡氏，邊和平安人，福國公文盃之女，母黃氏"),
+             c("death", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "六年丁卯夏五月，生我憲祖章皇帝纔十三日，后崩，壽十有七歲", "âm 1807"),
+             c("lifespan", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "后崩，壽十有七歲", "17"),
+             c("title:0", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "明命二年辛巳夏六月，冊贈爲儀，諡順德"),
+             c("title:1", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "十七年丙申夏五月，晉贈爲宸妃"),
+             c("title:2", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "追上尊諡曰：佐天儷聖端正恭和篤慶慈徽明賢順德仁皇后"),
+             c("bio", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "嘉隆五年丙寅，世祖高皇帝與順天高皇后選功臣之女爲聖祖仁皇帝配")])
+U("u.minh-mang--ta-thien", "nguyen.minh-mang", "nguyen.ta-thien-nhan", 1,
+  [c("union", "lt2", 1, "Tá Thiên Nhân hoàng hậu", "選功臣之女爲聖祖仁皇帝配，命進侍潛邸")])
+
+# Thiệu Trị
+HT = "tiểu dẫn Hiến Tổ"
+P(key="nguyen.thieu-tri", full_name="Nguyễn Hiến Tổ (Thiệu Trị)", gender="M", parents="u.minh-mang--ta-thien",
+  nickname="Nguyễn Phúc Miên Tông",
+  birth={"lunar_year": 1807, "lunar_month": 5, "lunar_day": 11}, death={"lunar_year": 1847, "lunar_month": 9, "lunar_day": 27},
+  posthumous_name="Thiệu Thiên Long Vận Chí Thiện Thuần Hiếu Khoan Minh Duệ Đoán Văn Trị Võ Công Thánh Triết Chương hoàng đế",
+  titles=[{"title": "Trưởng Khánh công (Minh Mạng 11)", "from_year": 1830}],
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 3, "role": "emperor", "temple_name": "Hiến Tổ", "start_year": 1840, "end_year": 1847,
+           "era_names": [{"name": "Thiệu Trị", "from_year": 1841}]}],
+  bio="Con trưởng của Minh Mạng, mẹ Tá Thiên Nhân hoàng hậu, sinh ngày 11 tháng 5 năm Đinh Mão (1807); 13 ngày sau mẹ mất, Thuận Thiên hoàng hậu nuôi trong cung. Năm Minh Mạng 11 phong Trưởng Khánh công. Ngày 28 tháng 12 năm Minh Mạng 21 (1840) nhận lời trối của Minh Mạng, nối ngôi; năm Tân Sửu (1841) lấy niên hiệu Thiệu Trị. Mất ngày 27 tháng 9 năm Thiệu Trị 7 (1847). (Tuổi thọ, lăng chưa có nguyên văn trên Wikisource.)",
+  citations=[c("existence", "cb", 3, HT, "憲祖紹天隆運至善純孝寬明睿斷文治武功聖哲章皇帝，諱暶，又諱曧，字綿宗"),
+             c("nickname", "cb", 3, HT, "憲祖紹天隆運至善純孝寬明睿斷文治武功聖哲章皇帝，諱暶，又諱曧，字綿宗", "Nguyễn Phúc Miên Tông", note="Chép tên tự 綿宗; phiên âm do người soạn."),
+             c("parents", "cb", 3, HT, "聖祖仁皇帝長子也，母順德仁皇后胡氏誕生于京城東之春祿邑"),
+             c("birth", "cb", 3, HT, "聖誕丁卯年五月十一日壬子（世祖高皇帝嘉隆六年，清嘉慶十二年）", "âm 1807-5-11"),
+             c("death", "cb", 4, "tiểu dẫn Dực Tông", "二十七日癸卯，憲祖章皇帝崩", "âm 1847-9-27", note="Thiệu Trị 7, tháng 9 (xem câu trước: 七年九月，聖躬不豫)."),
+             c("bio", "cb", 4, "tiểu dẫn Dực Tông", "七年九月，聖躬不豫"),
+             c("posthumous_name", "cb", 3, HT, "憲祖紹天隆運至善純孝寬明睿斷文治武功聖哲章皇帝",
+               "Thiệu Thiên Long Vận Chí Thiện Thuần Hiếu Khoan Minh Duệ Đoán Văn Trị Võ Công Thánh Triết Chương hoàng đế"),
+             c("title:0", "cb", 3, HT, "十一年正月，冊封長慶公"),
+             c("reign:0", "cb", 3, HT, "乃即位繼大統。辛丑紹治元年（清道光二十一年）"),
+             c("reign:0", "cb", 4, "tiểu dẫn Dực Tông", "二十七日癸卯，憲祖章皇帝崩"),
+             c("bio", "cb", 3, HT, "越十三日，后崩，泣血不止。順天高皇后育之宮中")])
+P(key="nguyen.nghi-thien", full_name="Nghi Thiên Chương hoàng hậu", gender="F",
+  birth={"lunar_year": 1810, "lunar_month": 5, "lunar_day": 19},
+  bio="Họ Phạm, người Tân Hòa, Gia Định; con gái Lễ bộ thượng thư, Cần Chính điện đại học sĩ, Đức quốc công Phạm Đăng Hưng. Sinh ngày 19 tháng 5 năm Gia Long 9 (1810). Vợ Thiệu Trị, mẹ Tự Đức; sau được tôn Từ Dụ thái hoàng thái hậu.",
+  citations=[c("existence", "lt2", 2, "Nghi Thiên Chương hoàng hậu", "憲祖儀天章皇后范氏，嘉定新和人，禮部尚書贈勤政殿大學士封德國公登興之女"),
+             c("birth", "lt2", 2, "Nghi Thiên Chương hoàng hậu", "嘉隆九年夏五月十九日生", "âm 1810-5-19"),
+             c("bio", "cb", 4, "tiểu dẫn Dực Tông", "母慈裕博惠康壽太太皇太后范登氏", note="Mẹ Tự Đức (chép là Phạm Đăng thị).")])
+U("u.thieu-tri--nghi-thien", "nguyen.thieu-tri", "nguyen.nghi-thien", 1,
+  [c("union", "lt2", 2, "Nghi Thiên Chương hoàng hậu", "憲祖儀天章皇后范氏")])
+
+# Các hoàng tử nổi bật của Minh Mạng (Liệt truyện nhị tập Q.5–6) — đợt này chỉ lấy người có dữ kiện rõ
+def son(key, name, han, order, vol, quote_exist, mother_key, mother_name, mother_quote, mother_bio, **kw):
+    P(key=key, full_name=name, gender="M", parents=f"u.minh-mang--{mother_key}",
+      citations=kw.pop("cites") + [c("existence", "lt2", vol, name, quote_exist), c("parents", "lt2", vol, name, quote_exist)], **kw)
+    if not any(p["key"] == f"nguyen.{mother_key}" for p in persons):
+        P(key=f"nguyen.{mother_key}", full_name=mother_name, gender="F", bio=mother_bio,
+          citations=[c("existence", "lt2", vol, name, mother_quote), c("bio", "lt2", vol, name, mother_quote)])
+        U(f"u.minh-mang--{mother_key}", "nguyen.minh-mang", f"nguyen.{mother_key}", None, [c("union", "lt2", vol, name, mother_quote)])
+
+son("nguyen.mien-dinh", "Miên Định (Thọ Xuân vương)", "壽春王綿定", 3, 5, "壽春王綿定，字明靜，號東池。初奉世祖高皇帝賜名宴，明命四年，御製帝系金冊，賜今名。聖祖仁皇帝第三子也",
+    "gia-phi-pham", "Gia phi Phạm thị", "母嘉妃范氏，平定綏遠人，追授光祿寺少卿文軫之女也，以嘉隆九年秋七月生王",
+    "Họ Phạm, người Tuy Viễn, Bình Định; con gái Quang lộc tự thiếu khanh (truy tặng) Văn Chẩn. Mất năm Gia Long 11 (1812); Thuận Thiên hoàng hậu nuôi con là Miên Định.",
+    birth={"lunar_year": 1810, "lunar_month": 7}, titles=[{"title": "Thọ Xuân vương; hoàng tử thứ 3 của Minh Mạng"}],
+    bio="Tên chữ Minh Tĩnh, hiệu Đông Trì; ban đầu được Gia Long đặt tên Yến, năm Minh Mạng 4 đổi tên là Miên Định. Con thứ 3 của Minh Mạng, mẹ Gia phi Phạm thị; sinh tháng 7 năm Gia Long 9 (1810).",
+    cites=[c("birth", "lt2", 5, "Miên Định", "以嘉隆九年秋七月生王", "âm 1810-7"),
+           c("title:0", "lt2", 5, "Miên Định", "壽春王綿定，字明靜，號東池"),
+           c("bio", "lt2", 5, "Miên Định", "十一年，嘉妃薨，王甫三歲，順天高皇后撫之宮中")])
+son("nguyen.mien-nghi", "Miên Nghi (Ninh Thuận quận vương)", "寧順郡王綿宜", 4, 5, "寧順郡王綿宜，初名昱，後賜今名。聖祖仁皇帝第四子。母莊嬪陳氏，承天富祿人，追贈衞尉公議之女也",
+    "trang-tan-tran", "Trang tần Trần thị", "母莊嬪陳氏，承天富祿人，追贈衞尉公議之女也",
+    "Họ Trần, người Phú Lộc, Thừa Thiên; con gái Vệ úy (truy tặng) Nghị.",
+    birth={"lunar_year": 1810}, lifespan=65, titles=[{"title": "Ninh Thuận quận vương, thụy Đoan Túc; hoàng tử thứ 4 của Minh Mạng"}],
+    bio="Ban đầu tên Úc, sau được ban tên Miên Nghi. Con thứ 4 của Minh Mạng, sinh năm Gia Long 9 (1810). Năm Minh Mạng 11 phong Đức Thọ công, năm 14 đổi Ninh Thuận công. Mất khi chưa kịp tuyên phong vương, thọ 65 tuổi, được tặng Ninh Thuận quận vương, thụy Đoan Túc; lập từ ở xã Tiên Nộn, Phú Vinh.",
+    cites=[c("birth", "lt2", 5, "Miên Nghi", "以嘉隆九年生王", "âm 1810"),
+           c("lifespan", "lt2", 5, "Miên Nghi", "尋茵病，未及宣封而薨，壽六十有五", "65"),
+           c("title:0", "lt2", 5, "Miên Nghi", "明命十一年封爲德壽公，十四年攺封寧順公"),
+           c("bio", "lt2", 5, "Miên Nghi", "尋茵病，未及宣封而薨，壽六十有五")])
+son("nguyen.mien-hoanh", "Miên Hoành (Vĩnh Tường quận vương)", "永祥郡王綿宏", 5, 5, "永祥郡王綿宏，初名曙，後賜今名。聖祖仁皇帝第五子，皇二子晸同母弟也",
+    "hien-phi-ngo", "Hiền phi Ngô thị", "母吳氏，掌奇文楚之女，初侍潛邸",
+    "Họ Ngô, con gái Chưởng cơ Văn Sở; vào hầu ở tiềm để, năm Minh Mạng nguyên niên phong Cung tần, sau tấn Hiền phi. (Chép trong mục hoàng tử Chính, anh ruột Miên Hoành.)",
+    birth={"lunar_year": 1811}, death={"lunar_year": 1835}, lifespan=25, titles=[{"title": "Vĩnh Tường quận vương (truy tặng), thụy Trang Mục; hoàng tử thứ 5 của Minh Mạng"}],
+    bio="Ban đầu tên Thự, sau được ban tên Miên Hoành. Con thứ 5 của Minh Mạng, sinh năm Gia Long 10 (1811). Năm Minh Mạng 11 phong Vĩnh Tường công; mất năm Minh Mạng 16 (1835), thọ 25 tuổi, được truy tặng quận vương, thụy Trang Mục.",
+    cites=[c("birth", "lt2", 5, "Miên Hoành", "以嘉隆十年生", "âm 1811"),
+           c("death", "lt2", 5, "Miên Hoành", "十六年，薨，追贈郡王，賜諡莊穆，年二十有五", "âm 1835", note="Minh Mạng 16 (câu trước nêu Minh Mạng 11)."),
+           c("lifespan", "lt2", 5, "Miên Hoành", "年二十有五", "25"),
+           c("title:0", "lt2", 5, "Miên Hoành", "追贈郡王，賜諡莊穆"),
+           c("bio", "lt2", 5, "Miên Hoành", "以嘉隆十年生")])
+son("nguyen.mien-tham", "Miên Thẩm (Tùng Thiện vương)", "從善郡王綿審", 10, 5, "從善郡王綿審，初名睍，字仲淵，又字愼明，號倉山，別號白毫子，聖祖仁皇帝第十子淑嬪阮克氏所出也",
+    "thuc-tan-nguyen-khac", "Thục tần Nguyễn Khắc thị", "淑嬪阮克氏所出也",
+    "Họ Nguyễn Khắc; năm Tự Đức 2 (1849) mất ở nhà con (Miên Thẩm đón về phụng dưỡng).",
+    death={"lunar_year": 1870}, lifespan=52, titles=[{"title": "Tùng Thiện vương, thụy Văn Nhã; hoàng tử thứ 10 của Minh Mạng"}],
+    bio="Ban đầu tên Hiện, tự Trọng Uyên, lại tự Thận Minh, hiệu Thương Sơn, biệt hiệu Bạch Hào tử. Con thứ 10 của Minh Mạng, mẹ Thục tần Nguyễn Khắc thị. Lúc sinh lông mày phải có một sợi lông trắng dài, mình có bốn nhũ, Gia Long nghe và mừng. Mất năm Tự Đức 23 (1870), thọ 52 tuổi, thụy Văn Nhã. Sáng tác 14 tập thơ văn, tiêu biểu Thương Sơn thi tập.",
+    cites=[c("death", "lt2", 5, "Miên Thẩm", "二十三年薨，辰年五十二也", "âm 1870", note="Tự Đức 23."),
+           c("lifespan", "lt2", 5, "Miên Thẩm", "二十三年薨，辰年五十二也", "52"),
+           c("title:0", "lt2", 5, "Miên Thẩm", "輟朝三日，加賜錦繒錢布祕器竝銀錢，又親製祭文，命綏理王賜祭賜酒，諡文雅"),
+           c("bio", "lt2", 5, "Miên Thẩm", "初生辰，右眉有一長白毫，體有四乳，腰有紫痣")])
+son("nguyen.mien-trinh", "Miên Trinh (Tuy Lý vương)", "綏理王綿寊", 11, 6, "綏理王綿寊，字坤章，又字季仲，號靜圃，又號葦野。聖祖仁皇帝第十一子，婕妤黎氏所出也",
+    "tiep-du-le", "Tiệp dư Lê thị", "婕妤黎氏所出也",
+    "Họ Lê, vợ lẽ của Minh Mạng; mất khi Miên Trinh còn làm việc ở Tôn nhân phủ (Tuy Lý vương phụng dưỡng lúc bệnh).",
+    lifespan=79, titles=[{"title": "Tuy Lý vương, thụy Đoan Cung; hoàng tử thứ 11 của Minh Mạng"}],
+    bio="Tự Khôn Chương, lại tự Quý Trọng, hiệu Tĩnh Phố, lại hiệu Vĩ Dã. Con thứ 11 của Minh Mạng, mẹ Tiệp dư Lê thị. Hiếu thảo, ham đọc sách, nổi tiếng thơ văn, có tập Vĩ Dã hợp tập. Mất thọ 79 tuổi, thụy Đoan Cung. Năm 77 tuổi đã có chắt ngoại sinh, được năm đời cùng một nhà.",
+    cites=[c("lifespan", "lt2", 6, "Miên Trinh", "未幾薨，年七十九", "79"),
+           c("title:0", "lt2", 6, "Miên Trinh", "賜諡端恭"),
+           c("bio", "lt2", 6, "Miên Trinh", "平生著述，有葦野合集行世")])
+son("nguyen.mien-bao", "Miên Bảo (Tương An quận vương)", "襄安郡王綿寳", 12, 6, "襄安郡王綿寳，字惟善，聖祖仁皇帝第十二子，母安嬪胡氏，廣治由靈人，追贈錦衣校尉文瞻之女也",
+    "an-tan-ho", "An tần Hồ thị", "母安嬪胡氏，廣治由靈人，追贈錦衣校尉文瞻之女也",
+    "Họ Hồ, người Do Linh, Quảng Trị; con gái Cẩm y hiệu úy (truy tặng) Văn Chiêm.",
+    birth={"lunar_year": 1820}, death={"lunar_year": 1854}, lifespan=35, titles=[{"title": "Tương An quận vương, thụy Cung Nghị; hoàng tử thứ 12 của Minh Mạng"}],
+    bio="Tự Duy Thiện. Con thứ 12 của Minh Mạng, mẹ An tần Hồ thị, sinh năm Minh Mạng nguyên niên (1820). Có sức khoẻ, ham võ và cưỡi bắn, sau chăm đọc sách; có tiếng thơ, giỏi quốc âm, sáng tác từ khúc. Mất năm Tự Đức 7 (1854), thọ 35 tuổi, thụy Cung Nghị; lập từ ở xã Vạn Xuân, Hương Thủy.",
+    cites=[c("birth", "lt2", 6, "Miên Bảo", "明命元年生王，有神力", "âm 1820"),
+           c("death", "lt2", 6, "Miên Bảo", "嗣德七年薨，壽三十有五，諡恭毅，建祠于香水之萬春社", "âm 1854", note="Tự Đức 7."),
+           c("lifespan", "lt2", 6, "Miên Bảo", "壽三十有五", "35"),
+           c("title:0", "lt2", 6, "Miên Bảo", "嗣德七年薨，壽三十有五，諡恭毅"),
+           c("bio", "lt2", 6, "Miên Bảo", "明命元年生王，有神力，少好武善騎射")])
+
+
 if BAD:
     for b in BAD:
         print("KHÔNG CÓ TRONG NGUYÊN VĂN:", b)
@@ -331,7 +469,7 @@ if BAD:
 
 data = {
     "clan": {"key": "nguyen", "name": "Nhà Nguyễn (1558–1945)", "category": "royal",
-             "description": "Gia phả các chúa Nguyễn và vua nhà Nguyễn theo Đại Nam thực lục, Đại Nam liệt truyện. Đợt 1: từ tổ tiên đến Gia Long. Mỗi dữ kiện có trích dẫn nguyên văn; xem dòng \"Theo:\" cuối tiểu sử."},
+             "description": "Gia phả các chúa Nguyễn và vua nhà Nguyễn theo Đại Nam thực lục, Đại Nam liệt truyện. Đợt 1: từ tổ tiên đến Gia Long; đợt 2: Minh Mạng, Thiệu Trị và một số hoàng tử. Mỗi dữ kiện có trích dẫn nguyên văn; xem dòng \"Theo:\" cuối tiểu sử."},
     "persons": persons, "unions": unions, "resting_places": [], "heritage": [], "events": [],
     "same_person_links": [],
 }
