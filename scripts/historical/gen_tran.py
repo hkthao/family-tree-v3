@@ -512,6 +512,7 @@ G("lang.an-bai", "Lăng ở núi An Bài", ["tran.phe-de"],
 
 heritage = []
 exec(open(__file__.replace("gen_tran.py", "gen_tran_ext.py"), encoding="utf8").read())
+exec(open(__file__.replace("gen_tran.py", "gen_tran_ext2.py"), encoding="utf8").read())
 
 data = {
     "clan": {"key": "tran", "name": "Nhà Trần (1225–1400)", "category": "royal",
