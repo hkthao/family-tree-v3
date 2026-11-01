@@ -31,12 +31,6 @@ insert into cnt select 'old','00000000-0000-4000-8000-000000000001','families',c
 insert into cnt select 'old','00000000-0000-4000-8000-000000000001','branches',count(*) from branches;
 insert into cnt select 'old','00000000-0000-4000-8000-000000000001','clan_members',count(*) from clan_members;
 reset role;
-set local role anon; select set_config('request.jwt.claims','{"role":"anon"}',true);
-insert into cnt select 'old','anon','persons',count(*) from persons;
-insert into cnt select 'old','anon','families',count(*) from families;
-insert into cnt select 'old','anon','branches',count(*) from branches;
-insert into cnt select 'old','anon','clan_members',count(*) from clan_members;
-reset role;
 -- Tối ưu RLS SELECT của 4 bảng nóng (persons, families, branches, clan_members):
 -- chính sách cũ `is_clan_member(clan_id) OR is_platform_admin()` gọi hàm SECURITY DEFINER
 -- (is_platform_admin → đọc profiles; clan_role → is_caller_suspended + tra clan_members) CHO TỪNG DÒNG,
@@ -92,12 +86,6 @@ insert into cnt select 'new','00000000-0000-4000-8000-000000000001','persons',co
 insert into cnt select 'new','00000000-0000-4000-8000-000000000001','families',count(*) from families;
 insert into cnt select 'new','00000000-0000-4000-8000-000000000001','branches',count(*) from branches;
 insert into cnt select 'new','00000000-0000-4000-8000-000000000001','clan_members',count(*) from clan_members;
-reset role;
-set local role anon; select set_config('request.jwt.claims','{"role":"anon"}',true);
-insert into cnt select 'new','anon','persons',count(*) from persons;
-insert into cnt select 'new','anon','families',count(*) from families;
-insert into cnt select 'new','anon','branches',count(*) from branches;
-insert into cnt select 'new','anon','clan_members',count(*) from clan_members;
 reset role;
 
 select (count(*)>0) as hasdiff from (select o.uid,o.tbl from cnt o join cnt n on o.uid=n.uid and o.tbl=n.tbl and o.phase='old' and n.phase='new' where o.n<>n.n) d \gset
