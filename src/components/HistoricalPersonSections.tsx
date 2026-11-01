@@ -210,18 +210,42 @@ function TimelineCard({
       titleClassName="inline-flex items-center gap-2"
       contentClassName="space-y-5"
     >
-      <ol className="space-y-4">
-        {entries.map((e) => (
-          <li key={e.year} className="grid grid-cols-[5.5rem_1fr] gap-x-3">
-            <div className="pt-0.5 text-center">
-              <p className="text-lg font-semibold leading-none text-primary">{e.year}</p>
-              {e.era && <p className="mt-1 whitespace-nowrap text-xs text-muted-foreground">{e.era}</p>}
-            </div>
-            <div className="min-w-0 border-l-2 border-primary/25 pl-3">
-              <p className="whitespace-pre-line leading-relaxed">{capFirst(e.text)}</p>
-            </div>
-          </li>
-        ))}
+      <ol className="pt-1">
+        {entries.map((e, i) => {
+          const last = i === entries.length - 1;
+          return (
+            <li key={e.year} className="grid grid-cols-[4.75rem_1.5rem_1fr] gap-x-3">
+              <div className="pt-px text-right">
+                <p className="text-xl font-bold leading-none text-primary">
+                  {e.year}
+                </p>
+                {e.era && <p className="mt-1 whitespace-nowrap text-xs font-medium text-muted-foreground">{e.era}</p>}
+              </div>
+              <div className="relative">
+                {/* Đoạn trục nối mốc này với mốc kế */}
+                <span
+                  aria-hidden
+                  className={`absolute left-1/2 top-2 w-[3px] -translate-x-1/2 rounded-full ${
+                    last ? "bottom-[-0.25rem] bg-primary" : "bottom-[-0.5rem] bg-gradient-to-b from-primary to-primary/30"
+                  }`}
+                />
+                <span
+                  aria-hidden
+                  className="absolute left-1/2 top-0 box-border h-4 w-4 -translate-x-1/2 rounded-full border-[3px] border-primary bg-card"
+                />
+                {last && (
+                  <span
+                    aria-hidden
+                    className="absolute bottom-[-0.75rem] left-1/2 h-3 w-3 -translate-x-1/2 rounded-full bg-primary"
+                  />
+                )}
+              </div>
+              <div className={`min-w-0 ${last ? "pb-3" : "pb-7"}`}>
+                <p className="whitespace-pre-line leading-relaxed">{capFirst(e.text)}</p>
+              </div>
+            </li>
+          );
+        })}
       </ol>
     </CollapsibleCard>
   );
