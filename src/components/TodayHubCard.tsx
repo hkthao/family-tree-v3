@@ -6,7 +6,7 @@ import {
   AlmanacDisplayToggles,
   useAlmanacPrefs,
 } from "@/components/AlmanacDisplayToggles";
-import { IconArrowLeft, IconArrowRight, IconSparkles } from "@/components/icons";
+import { IconArrowLeft, IconArrowRight, IconChevronDown, IconChevronUp, IconSparkles } from "@/components/icons";
 import { describeDay } from "@/lib/almanac";
 import { festivalsOn } from "@/lib/festivals";
 import { listCustomEntries } from "@/lib/queries/customs";
@@ -15,6 +15,16 @@ import type { UpcomingEvent } from "@/lib/upcomingEvents";
 const WEEKDAYS = [
   "Chủ nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy",
 ];
+
+const COLLAPSE_KEY = "today-hub-collapsed";
+
+function readCollapsed(): boolean {
+  try {
+    return localStorage.getItem(COLLAPSE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -54,6 +64,16 @@ export function TodayHubCard({
   const isToday = offset === 0;
   const { prefs, toggle } = useAlmanacPrefs();
   const [showOpts, setShowOpts] = useState(false);
+  const [collapsed, setCollapsed] = useState(readCollapsed);
+  const toggleCollapsed = () =>
+    setCollapsed((c) => {
+      try {
+        localStorage.setItem(COLLAPSE_KEY, c ? "0" : "1");
+      } catch {
+        /* bỏ qua: chỉ là tiện ích nhớ trạng thái */
+      }
+      return !c;
+    });
 
   const view = useMemo(() => {
     const d = new Date();
@@ -110,6 +130,16 @@ export function TodayHubCard({
               Về hôm nay
             </button>
           )}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? "Mở rộng lịch" : "Thu gọn lịch"}
+            title={collapsed ? "Mở rộng" : "Thu gọn"}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
+          >
+            {collapsed ? <IconChevronDown className="h-5 w-5" /> : <IconChevronUp className="h-5 w-5" />}
+          </button>
         </div>
 
         <button
@@ -123,6 +153,28 @@ export function TodayHubCard({
         </button>
       </div>
 
+      {collapsed ? (
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-muted/30"
+        >
+          <span className="min-w-0">
+            <span className="font-semibold">
+              {WEEKDAYS[view.getDay()]}, {view.getDate()}/{view.getMonth() + 1}/{view.getFullYear()}
+            </span>
+            {info && (
+              <span className="text-muted-foreground">
+                {" "}
+                · Âm {info.lunar.day}/{info.lunar.month}
+                {leap}
+              </span>
+            )}
+          </span>
+          <IconChevronDown className="h-5 w-5 shrink-0 text-muted-foreground" />
+        </button>
+      ) : (
+      <>
       {/* Đầu thẻ: Dương lịch (tờ lịch) + Âm lịch (chữ, có nhãn). Badge ngày
           tốt/xấu: mobile xuống hàng riêng, desktop neo góc trên-phải. */}
       <div className="relative p-4">
@@ -381,6 +433,8 @@ export function TodayHubCard({
         </span>
         <IconArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </Link>
+      </>
+      )}
     </section>
   );
 }
