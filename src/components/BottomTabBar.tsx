@@ -37,7 +37,7 @@ export function BottomTabBar({ tabs }: Props) {
     <nav
       // Hidden on lg+: at that width the left drawer is already pinned
       // and serves the navigation role.
-      className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-20 border-t border-gold/30 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Điều hướng chính"
     >
       <ul className={cn("grid max-w-xl mx-auto", GRID_COLS[tabs.length] ?? "grid-cols-4")}>
@@ -48,17 +48,27 @@ export function BottomTabBar({ tabs }: Props) {
               end={tab.end ?? tab.to.endsWith("/")}
               className={({ isActive }) =>
                 cn(
-                  "flex flex-col items-center justify-center gap-1 py-2 min-h-[56px] text-xs",
+                  "relative flex flex-col items-center justify-center gap-1 py-2 min-h-[56px] text-xs",
                   isActive
                     ? "text-primary font-medium"
                     : "text-muted-foreground hover:text-foreground",
                 )
               }
             >
-              <span className="inline-flex items-center justify-center h-6 w-6">
-                {tab.icon}
-              </span>
-              <span>{tab.label}</span>
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-0 h-[3px] w-8 rounded-full bg-primary"
+                    />
+                  )}
+                  <span className="inline-flex items-center justify-center h-6 w-6">
+                    {tab.icon}
+                  </span>
+                  <span>{tab.label}</span>
+                </>
+              )}
             </NavLink>
           </li>
         ))}

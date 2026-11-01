@@ -31,19 +31,19 @@
   :root {
     /* Oxblood palette — light mode (warm paper) */
     --background: 38 60% 96%;          /* #FBF7F0 paper */
-    --foreground: 20 14% 14%;          /* #2A2320 ink */
+    --foreground: 20 45% 12%;          /* #2C1A11 mực nâu */
 
     --card: 38 60% 96%;
-    --card-foreground: 20 14% 14%;
+    --card-foreground: 20 45% 12%;
 
     --popover: 38 60% 96%;
-    --popover-foreground: 20 14% 14%;
+    --popover-foreground: 20 45% 12%;
 
     --primary: 0 45% 33%;              /* #7A2E2E oxblood */
     --primary-foreground: 38 60% 96%;
 
     --secondary: 36 30% 90%;
-    --secondary-foreground: 20 14% 14%;
+    --secondary-foreground: 20 45% 12%;
 
     --muted: 36 30% 90%;
     --muted-foreground: 25 9% 44%;     /* #7A6F66 warm gray */
@@ -65,6 +65,11 @@
     --tree-card-female: #E8D2CC;
     --tree-card-genderless: #E8E0D2;
     --tree-card-text: #2A2320;
+
+    /* Vàng đồng — viền, đường kẻ, dấu nhấn nhỏ (lấy từ site gia phả tham khảo) */
+    --gold: 43 53% 56%;                /* #CAA455 */
+    /* Bóng nâu mềm thay bóng đen */
+    --shadow-soft: 0 2px 8px rgba(44, 26, 17, 0.06);
 
     --radius: 0.5rem;
   }
@@ -114,6 +119,9 @@
     --tree-card-female: #4A2F2D;
     --tree-card-genderless: #38322B;
     --tree-card-text: #EFE9DB;
+
+    --gold: 43 55% 60%;
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.35);
   }
 
   /* Force every Tailwind `border` utility (without an explicit
