@@ -33,6 +33,7 @@ export function useClanRealtime(
   // callback (created once per clanId) always reads the freshest
   // value without re-subscribing on every bump.
   const versionRef = useRef(currentVersion);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     versionRef.current = currentVersion;
   }, [currentVersion]);
@@ -57,12 +58,20 @@ export function useClanRealtime(
           const seen = versionRef.current;
           if (typeof seen === "number" && next <= seen) return;
           versionRef.current = next;
-          void invalidateClanData(qc, clanId);
+          // Gộp các lần tăng liên tiếp (vd script nhập dữ liệu hàng loạt) thành MỘT lần làm mới:
+          // trước đây mỗi lần tăng kích hoạt tải lại cả cây → hàng chục request/giây.
+          if (timerRef.current) clearTimeout(timerRef.current);
+          timerRef.current = setTimeout(() => {
+            timerRef.current = null;
+            void invalidateClanData(qc, clanId);
+          }, 3000);
         },
       )
       .subscribe();
 
     return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = null;
       void supabase.removeChannel(channel);
     };
   }, [clanId, qc]);
