@@ -325,6 +325,23 @@ describe("ảnh + tên tự/húy/thụy", () => {
     expect(errs(f)).toMatch(/thiếu trang nguồn đúng dạng/);
   });
 
+  it("ảnh Pexels: khai 'Pexels License' + tác giả; sai giấy phép hoặc thiếu trang ảnh → lỗi", () => {
+    const f = base();
+    const px = {
+      url: "https://images.pexels.com/photos/18509405/pexels-photo-18509405.jpeg?auto=compress&cs=tinysrgb&w=960",
+      source_page: "https://www.pexels.com/photo/khai-dinh-tomb-18509405/",
+      license: "Pexels License",
+      author: "d-ng-nhan-324384",
+      kind: "photograph" as const,
+    };
+    f.persons[0].photo = px;
+    expect(errs(f)).toBe("");
+    f.persons[0].photo = { ...px, license: "CC BY 4.0" };
+    expect(errs(f)).toMatch(/Pexels License/);
+    f.persons[0].photo = { ...px, source_page: "https://www.pexels.com/search/hue/" };
+    expect(errs(f)).toMatch(/thiếu trang nguồn đúng dạng/);
+  });
+
   it("nguồn ảnh ngoài Wikimedia: ghi đúng tên nguồn; ảnh và trang nguồn phải cùng nhà cung cấp", () => {
     const f = base();
     const met = {
