@@ -46,7 +46,19 @@ def load_vn(path):
 
 # Việt Nam sử lược (Trần Trọng Kim, bản 1971) — văn quốc ngữ; quote không chứa khoảng trắng đặc biệt
 VN = {"xiv": load_vn("vn/vnsl1971_XIV.txt"), "xv": load_vn("vn/vnsl1971_XV.txt")}
-TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2, "cx": CBX, "pb": PB, "vn": VN}
+
+
+def load_press(path):
+    import html as _h, unicodedata
+    h = open(f"{SRC}/{path}", encoding="utf8", errors="ignore").read()
+    h = re.sub(r"<script.*?</script>|<style.*?</style>", "", h, flags=re.S)
+    h = re.sub(r"<[^>]+>", "\n", h)
+    return re.sub(r"[\s\u200b]+", "", unicodedata.normalize("NFC", _h.unescape(h)))
+
+
+# Bài báo (nguồn thứ cấp, chủ dự án cho phép dùng tạm cho Bảo Đại)
+PR = {"bpl": load_press("press/bpl.html"), "sggp": load_press("press/sggp.html")}
+TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2, "cx": CBX, "pb": PB, "vn": VN, "pr": PR}
 BAD = []
 
 
@@ -60,7 +72,8 @@ def c(field, src, vol, where, quote, value=None, note=None):
                  "lt": lambda: ("DNLT", f"Sơ tập Q.{vol}"), "lt2": lambda: ("DNLT", f"Nhị tập Q.{vol}"),
                  "cx": lambda: ("DNTL", {"4q70": "Chính biên, Đệ tứ kỷ, Q.70", "5q5": "Chính biên, Đệ ngũ kỷ, Q.5"}[vol]),
                  "pb": lambda: ("DNTL", f"Chính biên, Đệ lục kỷ phụ biên, Q.{vol}"),
-                 "vn": lambda: ("VNSL", f"Quyển II, Cận kim thời đại, Chương {vol.upper()}")}[src]()
+                 "vn": lambda: ("VNSL", f"Quyển II, Cận kim thời đại, Chương {vol.upper()}"),
+                 "pr": lambda: (vol.upper(), "bài báo (nguồn thứ cấp)")}[src]()
     d = {"field": field, "source": code, "locator": f"{loc}, {where}", "quote": quote}
     if value is not None:
         d["value"] = value
@@ -972,6 +985,38 @@ sections("nguyen.duy-tan", [
 ], [c("bio", "pb", 20, "mở đầu", "初全權大臣晡既得法庭來電，以成泰廢帝得心疾，收其政權，擇立皇子，乃入內奏請遜位"),
     c("bio", "pb", 20, "mở đầu", "五六歲辰，常從成泰帝於閱是堂，侍坐靜默"),
     c("bio", "pb", 20, "mở đầu", "皇子中最為鍾愛")])
+
+# ══ Đợt 6: Bảo Đại — CHỈ có nguồn báo chí (thứ cấp), chủ dự án đã cho phép dùng tạm ═══════════════
+# Chưa có Thực lục / thế phả trên mạng cho đời Bảo Đại; cần đối chiếu Nguyễn Phúc tộc thế phả.
+Q_BD = "NguyễnPhúcVĩnhThụysinhngày22/10/1913(tứcngày23/9nămQuýSửu)tạiHuế"
+Q_BD_S = "NguyễnPhúcVĩnhThụysinhngày22-10-1913(tứcngày23-9nămQuýSửu)tạiHuế"
+Q_CHA = "ChacủaVĩnhThụylàNguyễnPhúcBửuĐảo,tứcVuaKhảiĐịnh,mẹlàHoàngThịCúctứcbàTừCungsaunày"
+P(key="nguyen.hoang-thi-cuc", full_name="Hoàng Thị Cúc (Từ Cung)", gender="F",
+  bio="Mẹ của Vĩnh Thụy (Bảo Đại); sau này được gọi là bà Từ Cung. (Sử liệu chính thức về bà chưa có trên Wikisource; hiện chỉ theo báo chí.)",
+  citations=[c("existence", "pr", "sggp", "bài báo", "Cha của Vĩnh Thụy là Nguyễn Phúc Bửu Đảo, tức Vua Khải Định, mẹ là Hoàng Thị Cúc tức bà Từ Cung sau này"),
+             c("bio", "pr", "bpl", "bài báo", "Cha của Vĩnh Thụy là Nguyễn Phúc Bửu Đảo, tức Vua Khải Định, mẹ là Hoàng Thị Cúc tức bà Từ Cung sau này")])
+U("u.khai-dinh--hoang-thi-cuc", "nguyen.khai-dinh", "nguyen.hoang-thi-cuc", None,
+  [c("union", "pr", "sggp", "bài báo", "Cha của Vĩnh Thụy là Nguyễn Phúc Bửu Đảo, tức Vua Khải Định, mẹ là Hoàng Thị Cúc tức bà Từ Cung sau này")])
+P(key="nguyen.bao-dai", full_name="Nguyễn Bảo Đại", gender="M", parents="u.khai-dinh--hoang-thi-cuc",
+  nickname="Nguyễn Phúc Vĩnh Thụy", birth={"lunar_year": 1913, "lunar_month": 9, "lunar_day": 23}, birth_place="Huế",
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 13, "role": "emperor", "start_year": 1926,
+           "end_year": 1945, "era_names": [{"name": "Bảo Đại", "from_year": 1926}]}],
+  bio="Tên là Nguyễn Phúc Vĩnh Thụy, sinh ngày 22 tháng 10 năm 1913 (23 tháng 9 năm Quý Sửu) ở Huế; theo báo chí, cha là Nguyễn Phúc Bửu Đảo (Khải Định), mẹ là Hoàng Thị Cúc, sau gọi là bà Từ Cung. Ngày 8 tháng 1 năm 1926, triều đình tôn lên ngôi, hiệu Bảo Đại, là vua thứ 13 của triều Nguyễn. Năm 1945 ông từ bỏ ngôi hoàng đế. Một số tác giả trong và ngoài nước đặt vấn đề người cha thật sự của ông; chưa có tác giả nào khẳng định chắc chắn. (Nguồn hiện chỉ là báo chí; cần đối chiếu Nguyễn Phúc tộc thế phả.)",
+  citations=[c("existence", "pr", "bpl", "bài báo", "Nguyễn Phúc Vĩnh Thụy sinh ngày 22/10/1913 (tức ngày 23/9 năm Quý Sửu) tại Huế"),
+             c("nickname", "pr", "bpl", "bài báo", "Nguyễn Phúc Vĩnh Thụy sinh ngày 22/10/1913 (tức ngày 23/9 năm Quý Sửu) tại Huế", "Nguyễn Phúc Vĩnh Thụy"),
+             c("parents", "pr", "bpl", "bài báo", "Cha của Vĩnh Thụy là Nguyễn Phúc Bửu Đảo, tức Vua Khải Định, mẹ là Hoàng Thị Cúc tức bà Từ Cung sau này"),
+             c("parents", "pr", "sggp", "bài báo", "Cha của Vĩnh Thụy là Nguyễn Phúc Bửu Đảo, tức Vua Khải Định, mẹ là Hoàng Thị Cúc tức bà Từ Cung sau này"),
+             c("birth", "pr", "bpl", "bài báo", "Nguyễn Phúc Vĩnh Thụy sinh ngày 22/10/1913 (tức ngày 23/9 năm Quý Sửu) tại Huế", "âm 1913-9-23"),
+             c("birth_place", "pr", "bpl", "bài báo", "Nguyễn Phúc Vĩnh Thụy sinh ngày 22/10/1913 (tức ngày 23/9 năm Quý Sửu) tại Huế", "Huế"),
+             c("reign:0", "pr", "sggp", "bài báo", "Ngày 8-1-1926, triều đình tôn Vĩnh Thụy lên ngôi vua, lấy hiệu Bảo Đại, là vị vua thứ 13 của triều Nguyễn"),
+             c("reign:0", "pr", "bpl", "bài báo", "năm 1945 đã quyết định từ bỏ cương vị hoàng đế để trở thành công dân mới"),
+             c("bio", "pr", "sggp", "bài báo", "vẫn chưa có tác giả nào dám khẳng định và cam kết mình biết rõ sự thật ai là cha đẻ của Bảo Đại"),
+             c("bio", "pr", "bpl", "bài báo", "đã có nhiều tác giả trong nước cũng như nước ngoài đặt ra vấn đề người cha thật sự của Vĩnh Thụy")])
+sections("nguyen.bao-dai", [
+    ("Xuất thân", "Tên là Nguyễn Phúc Vĩnh Thụy, sinh ngày 22 tháng 10 năm 1913 (23 tháng 9 năm Quý Sửu) ở Huế. Theo báo chí, cha là Nguyễn Phúc Bửu Đảo (Khải Định), mẹ là Hoàng Thị Cúc, sau này gọi là bà Từ Cung."),
+    ("Lên ngôi", "Ngày 8 tháng 1 năm 1926, triều đình tôn Vĩnh Thụy lên ngôi vua, lấy hiệu Bảo Đại, là vị vua thứ 13 của triều Nguyễn. Năm 1945 ông quyết định từ bỏ ngôi hoàng đế."),
+    ("Gia quyến", "Cha: Khải Định; mẹ: Hoàng Thị Cúc. Báo chí ghi một số tác giả trong và ngoài nước đặt vấn đề người cha thật sự của ông, và chưa có tác giả nào khẳng định chắc chắn."),
+], [])
 
 if BAD:
     for b in BAD:
