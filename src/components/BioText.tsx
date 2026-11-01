@@ -25,7 +25,8 @@ export function parseBio(src: string): Block[] {
     } else if (last?.kind === "p") last.text += "\n" + t;
     else out.push({ kind: "p", text: t });
   }
-  return out;
+  // Mục không có nội dung (tiêu đề đứng liền tiêu đề khác hoặc cuối bài) thì ẩn.
+  return out.filter((b, i) => b.kind !== "h" || (out[i + 1] && out[i + 1].kind !== "h"));
 }
 
 export function BioText({ text, className }: { text: string; className?: string }) {
