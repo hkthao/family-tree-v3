@@ -6,7 +6,7 @@ import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom
 import { AiChatDock } from "@/components/ai/AiChatDock";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
-import { CommandPalette } from "@/components/CommandPalette";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
   IconArrowLeft,
@@ -174,6 +174,7 @@ export function ClanLayout() {
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            <GlobalSearch />
             <NotificationBell />
             <ThemeQuickToggle />
           </div>
@@ -193,7 +194,6 @@ export function ClanLayout() {
       </main>
 
       <BottomTabBar tabs={tabs} />
-      <CommandPalette clan={clan} />
       {/* Khung chat nổi — tự ẩn trên điện thoại và khi trợ lý tắt. */}
       {(clan.myRole !== null || clan.isPlatformAdmin) && <AiChatDock clan={clan} />}
     </div>
