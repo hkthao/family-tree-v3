@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useParams } from "react-router-dom";
 
 
@@ -12,6 +12,8 @@ import {
   IconGlobe,
   IconLock,
   IconLogOut,
+  IconSearch,
+  IconX,
 } from "@/components/icons";
 import { CheckUpdateButton } from "@/components/CheckUpdateButton";
 import { FeedbackButton } from "@/components/FeedbackButton";
@@ -32,6 +34,7 @@ import { countPendingContributions } from "@/lib/queries/contributions";
 import { countPendingPersonLinks } from "@/lib/queries/person-links";
 import { getMyProfile } from "@/lib/queries/profile";
 import { countClanTodo } from "@/lib/queries/todo";
+import { unaccent } from "@/lib/unaccent";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -131,6 +134,7 @@ export function AppDrawer({ open, onClose }: Props) {
   // on its own location change — easier to just close from a parent click
   // handler.
   function pick(): void {
+    setMenuQuery("");
     onClose();
   }
 
@@ -147,6 +151,16 @@ export function AppDrawer({ open, onClose }: Props) {
   );
 
   const { isOpen, toggle } = useCollapsedSections(location.pathname);
+
+  // Ô tìm mục menu: menu quá dài nên gõ để lọc (không dấu cũng được). Đang lọc
+  // thì mở hết các nhóm có mục khớp, ẩn nhóm không khớp.
+  const [menuQuery, setMenuQuery] = useState("");
+  const needle = unaccent(menuQuery.trim());
+  const visibleSections = needle
+    ? sections
+        .map((sec) => ({ ...sec, items: sec.items.filter((it) => unaccent(it.label).includes(needle)) }))
+        .filter((sec) => sec.items.length > 0)
+    : sections;
 
   return (
     <>
@@ -196,9 +210,36 @@ export function AppDrawer({ open, onClose }: Props) {
           </button>
         </header>
 
+        <div className="border-b px-3 py-2">
+          <label className="relative block">
+            <span className="sr-only">Tìm trong menu</span>
+            <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="search"
+              value={menuQuery}
+              onChange={(e) => setMenuQuery(e.target.value)}
+              placeholder="Tìm trong menu…"
+              className="h-10 w-full rounded-md border bg-background pl-8 pr-8 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            {menuQuery && (
+              <button
+                type="button"
+                onClick={() => setMenuQuery("")}
+                aria-label="Xoá từ khoá"
+                className="absolute right-1.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:bg-muted"
+              >
+                <IconX className="h-4 w-4" />
+              </button>
+            )}
+          </label>
+        </div>
+
         <nav className="flex-1 overflow-y-auto py-2">
-          {sections.map((section) => {
-            const open = isOpen(section);
+          {needle && visibleSections.length === 0 && (
+            <p className="px-4 py-3 text-sm text-muted-foreground">Không có mục nào khớp "{menuQuery}".</p>
+          )}
+          {visibleSections.map((section) => {
+            const open = needle ? true : isOpen(section);
             return (
               <div key={section.id} className="py-1">
                 {section.collapsible === false ? (
@@ -208,7 +249,7 @@ export function AppDrawer({ open, onClose }: Props) {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => toggle(section)}
+                    onClick={() => (needle ? undefined : toggle(section))}
                     aria-expanded={open}
                     // 44px: nhóm gập được là thứ người dùng bấm thật,
                     // không phải nhãn trang trí như tiêu đề nhóm cố định.
