@@ -556,6 +556,11 @@ async function main() {
   const stale = (all ?? []).filter((r) => r.external_key && !personId.has(r.external_key));
   stale.forEach((r) => console.warn(`  ⚠ Trong DB nhưng không có trong lần nhập này: ${r.external_key} (${r.full_name})`));
 
+  // Trigger không tăng data_version cho script nhập dòng họ lịch sử (tránh người đang xem tải lại liên tục) →
+  // tăng MỘT lần ở cuối để các máy đang mở nhận biết và làm mới đúng một lần.
+  const cur = must("clan", await admin.from("clans").select("data_version").eq("id", clanId).single());
+  must("data_version", await admin.from("clans").update({ data_version: ((cur as { data_version: number }).data_version ?? 0) + 1 }).eq("id", clanId));
+
   console.log(
     `✓ Đã nhập ${persons.length} người, ${unions.length} hôn nhân, ${graves.length} lăng, ${heritage.length} di sản, ${events.length} sự kiện, ` +
       `${citations.length} trích dẫn, ${reigns.length} trị vì, ${titles.length} tước hiệu.`,
