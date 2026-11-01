@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * Tiểu sử có cấu trúc: dòng "## Tiêu đề" là một mục, dòng "- …" là một ý trong
@@ -55,4 +55,48 @@ export function BioText({ text, className }: { text: string; className?: string 
     );
   });
   return <div className={className}>{nodes}</div>;
+}
+
+/** Chiều cao tối đa khi thu gọn (rem); tiểu sử ngắn hơn thì không hiện nút. */
+const BIO_COLLAPSED_REM = 14;
+
+/** Tiểu sử dài: mặc định thu gọn, bấm "Xem thêm" để đọc hết thay vì cuộn dài. */
+export function CollapsibleBio({ text }: { text: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const limit = BIO_COLLAPSED_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    setOverflows(el.scrollHeight > limit + 8);
+  }, [text]);
+  const clamped = overflows && !open;
+  return (
+    <div>
+      <div
+        ref={ref}
+        className="relative overflow-hidden"
+        style={clamped ? { maxHeight: `${BIO_COLLAPSED_REM}rem` } : undefined}
+      >
+        <BioText text={text} />
+        {clamped && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-card to-transparent"
+          />
+        )}
+      </div>
+      {overflows && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="mt-2 text-sm font-medium text-primary hover:underline"
+        >
+          {open ? "Thu gọn" : "Xem thêm"}
+        </button>
+      )}
+    </div>
+  );
 }
