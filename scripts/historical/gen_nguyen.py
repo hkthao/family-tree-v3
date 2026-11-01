@@ -13,6 +13,7 @@ Chưa có (nguồn chưa nằm trên Wikisource): ngày mất, thụy hiệu, l�
 biên kỷ 1 quyển cuối). Sinh lại file sẽ ghi đè trạng thái duyệt.
 """
 import json
+import os
 import re
 import sys
 
@@ -32,8 +33,8 @@ def load(path):
 
 TB = {n: load(f"tb/tb_{n:02d}.txt") for n in range(1, 13)}
 CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七"}.items()}
-LT1 = {n: load(f"lt1/lt1_{n:02d}.txt") for n in (1, 2)}
-LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 3, 4, 5, 6, 8)}
+LT1 = {n: load(f"lt1/lt1_{n:02d}.txt") for n in (1, 2, 3)}
+LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)}
 CBX = {"4q70": load("cb/cb_四_q70.txt"), "5q5": load("cb/cb_五_q5.txt")}
 PB = {n: load(f"pb/pb_{n:02d}.txt") for n in (1, 20)}
 
@@ -83,6 +84,7 @@ def c(field, src, vol, where, quote, value=None, note=None):
                  "cx": lambda: ("DNTL", {"4q70": "Chính biên, Đệ tứ kỷ, Q.70", "5q5": "Chính biên, Đệ ngũ kỷ, Q.5"}[vol]),
                  "pb": lambda: ("DNTL", f"Chính biên, Đệ lục kỷ phụ biên, Q.{vol}"),
                  "vn": lambda: ("VNSL", f"Quyển II, Cận kim thời đại, Chương {vol.upper()}"),
+                 "ln": lambda: ("DNLTVN", f"Tập {vol[1:]} (bản dịch Viện Sử học, OCR)"),
                  "pr": lambda: (("KPH", "trang Khám Phá Huế") if vol.startswith("kph") else (vol.upper(), "bài báo (nguồn thứ cấp)"))}[src]()
     d = {"field": field, "source": code, "locator": f"{loc}, {where}", "quote": quote}
     if value is not None:
@@ -1325,6 +1327,9 @@ next(h for h in heritage if h["key"] == "ds.ho-truong-khu-co")["photos"] = [
 next(h for h in heritage if h["key"] == "ds.chieu-anh-cac")["photos"] = [
     gphoto("M%E1%BB%99_M%E1%BA%A1c_C%E1%BB%ADu_c%C3%B9ng_v%E1%BB%A3_v%C3%A0_con.JPG", "1/16", "Tho nau", "CC BY-SA 3.0", None,
            "Mộ Mạc Cửu cùng vợ và con ở Hà Tiên — tư liệu về họ Mạc, người lập Chiêu Anh các (theo mô tả ảnh trên Wikimedia Commons)")]
+
+# ══ Đợt 10: hoàng tử, công chúa (Liệt truyện) ═══
+exec(open(__import__("os").path.join(__import__("os").path.dirname(os.path.abspath(__file__)), "princes_nguyen.py"), encoding="utf8").read())
 
 if BAD:
     for b in BAD:
