@@ -59,7 +59,7 @@ def tt_headers(text):
     """(vị trí, can chi đúng) của tiêu đề năm Toàn thư."""
     # Q.2–9: "戊辰十九年…" đầu dòng; Q.10+: "===庚辰，光順元年…===" hoặc "'''戊午，景統元年…'''".
     return fix_sequence(
-        [(m.start(), m.group(1) or m.group(2)) for m in re.finditer(r"(?m)^(?:([%s][%s])[^\n，。]{0,6}年|(?:={3}|''')([%s][%s])，)" % (GZ, ZZ, GZ, ZZ), text)], text)
+        [(m.start(), m.group(1) or m.group(2)) for m in re.finditer(r"(?m)^(?:([%s][%s])[^\n，。]{0,6}年|(?:={3}|''')([%s][%s])[，,])" % (GZ, ZZ, GZ, ZZ), text)], text)
 
 
 def fix_sequence(hs, text):
