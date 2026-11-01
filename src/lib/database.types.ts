@@ -3929,6 +3929,7 @@ export type Database = {
         Args: { p_loser: string; p_winner: string }
         Returns: Json
       }
+      my_clan_ids: { Args: never; Returns: string[] }
       notifications_mark_all_read: { Args: never; Returns: number }
       peek_clan_invite: { Args: { p_token: string }; Returns: Json }
       prune_audit_log: { Args: { retention_days?: number }; Returns: number }
