@@ -84,6 +84,7 @@ def c(field, src, vol, where, quote, value=None, note=None):
 
 DRAFT = {"status": "draft", "note": "Đợt 1 — trích từ nguyên văn Đại Nam thực lục / Liệt truyện; cần người duyệt đối chiếu bản dịch."}
 persons, unions = [], []
+graves, heritage = [], []
 
 HNV = "https://honguyenvietnam.org/vi/lich-su/full-bo-anh-chan-dung-13-vi-vua-trieu-nguyen-473.html"
 
@@ -1018,6 +1019,114 @@ sections("nguyen.bao-dai", [
     ("Gia quyến", "Cha: Khải Định; mẹ: Hoàng Thị Cúc. Báo chí ghi một số tác giả trong và ngoài nước đặt vấn đề người cha thật sự của ông, và chưa có tác giả nào khẳng định chắc chắn."),
 ], [])
 
+# ══ Đợt 7: Mộ phần (lăng tẩm) và Di sản ═══════════════════════════════════════════════
+def G(key, name, occupant, loc, notes, cites):
+    graves.append({"key": key, "name": name, "occupants": [occupant], "location_name": loc, "notes": notes,
+                   "citations": cites, "review": DRAFT})
+
+
+def lang(key, name, who, vol, bury_q, loc_value, name_q, notes, where="cuối quyển"):
+    G(key, name, who, loc_value, notes,
+      [c("existence", "tb", vol, where, name_q), c("location_name", "tb", vol, where, bury_q, loc_value),
+       c("occupant:0", "tb", vol, where, bury_q), c("notes", "tb", vol, where, name_q)])
+
+
+lang("lang.truong-co", "Trường Cơ", "nguyen.thai-to", 1, "後改寧陵于羅溪（社名，屬香茶縣）山", "núi La Khê, huyện Hương Trà",
+     "嘉隆五年，追尊為肇基垂統欽明恭懿謹義達理顯應昭祐耀靈嘉裕皇帝，廟號太祖，陵名長基",
+     "Lăng Thái Tổ Nguyễn Hoàng. Ban đầu táng ở núi Thạch Hãn, huyện Hải Lăng, sau cải táng ở núi La Khê, huyện Hương Trà. Năm Gia Long thứ 5 (1806) truy tôn hoàng đế, đặt tên lăng là Trường Cơ.", "năm Quý Sửu (1613)")
+lang("lang.truong-dien", "Trường Diễn", "nguyen.hy-tong", 2, "寧陵于廣田山，後改寧陵于海葛（坊名屬香茶縣）", "phường Hải Cát, huyện Hương Trà",
+     "嘉隆五年，追尊為顯謨光烈溫恭明睿翼善綏猷孝文皇帝，廟號熙宗，陵名長衍",
+     "Lăng Hy Tông Nguyễn Phúc Nguyên. Ban đầu táng ở núi Quảng Điền, sau cải táng ở phường Hải Cát. Năm Gia Long thứ 5 (1806) đặt tên lăng là Trường Diễn.", "năm Ất Hợi (1635)")
+lang("lang.truong-dien-than-tong", "Trường Diên", "nguyen.than-tong", 3, "寧陵于安憑（社名，屬香茶縣）山", "núi An Bằng, huyện Hương Trà",
+     "嘉隆五年，追尊為承基纘統剛明雄毅威斷英武孝昭皇帝，廟號神宗，陵名長延",
+     "Lăng Thần Tông Nguyễn Phúc Lan, táng ở núi An Bằng, huyện Hương Trà. Năm Gia Long thứ 5 (1806) đặt tên lăng là Trường Diên.")
+lang("lang.truong-hung", "Trường Hưng", "nguyen.thai-tong", 5, "寧陵于海葛山", "núi Hải Cát",
+     "嘉隆五年，追尊為宣威建武英明莊正聖德神功孝哲皇帝，廟號太宗，陵名長興",
+     "Lăng Thái Tông Nguyễn Phúc Tần, táng ở núi Hải Cát. Năm Gia Long thứ 5 (1806) đặt tên lăng là Trường Hưng.")
+lang("lang.truong-mau", "Trường Mậu", "nguyen.anh-tong", 6, "寧陵于金玉山（在香茶縣定門社）", "núi Kim Ngọc, xã Định Môn, huyện Hương Trà",
+     "嘉隆五年，追尊為紹休纂業寬洪博厚溫惠慈祥孝義皇帝，廟號英宗，陵名長茂",
+     "Lăng Anh Tông Nguyễn Phúc Thái, táng ở núi Kim Ngọc, xã Định Môn, huyện Hương Trà. Năm Gia Long thứ 5 (1806) đặt tên lăng là Trường Mậu.")
+lang("lang.truong-thanh", "Trường Thanh", "nguyen.hien-tong", 8, "寧陵于金玉山", "núi Kim Ngọc",
+     "嘉隆五年，追尊為英謨雄略聖文宣達寬慈仁恕孝明皇帝，廟號顯宗，陵名長清",
+     "Lăng Hiển Tông Nguyễn Phúc Chu, táng ở núi Kim Ngọc. Năm Gia Long thứ 5 (1806) đặt tên lăng là Trường Thanh.")
+lang("lang.truong-phong", "Trường Phong", "nguyen.tuc-tong", 9, "寧陵于定門", "Định Môn",
+     "嘉隆五年，追尊為宣光紹烈濬哲靜淵經文緯武孝寧皇帝，廟號肅宗，陵名長豐",
+     "Lăng Túc Tông Nguyễn Phúc Trú, táng ở Định Môn. Năm Gia Long thứ 5 (1806) đặt tên lăng là Trường Phong.")
+lang("lang.truong-thai", "Trường Thái", "nguyen.the-tong", 10, "寧陵于羅溪山", "núi La Khê",
+     "嘉隆五年，追尊為乾剛威斷神毅聖猷仁慈睿智孝武皇帝，廟號世宗，陵名長泰",
+     "Lăng Thế Tông Nguyễn Phúc Khoát, táng ở núi La Khê. Năm Gia Long thứ 5 (1806) đặt tên lăng là Trường Thái.")
+lang("lang.co-thanh", "Cơ Thánh", "nguyen.hung-to", 11, "寧陵于居正（社名，屬香茶縣）", "xã Cư Chính, huyện Hương Trà",
+     "戊戌世祖攝政元年，追尊為慈祥澹泊寬裕溫和孝康王。嘉隆五年，追尊為仁明謹厚寬裕溫和孝康皇帝；七年修築山陵，名基聖陵",
+     "Lăng Hưng Tổ Hiếu Khang hoàng đế, cha của Gia Long, táng ở xã Cư Chính, huyện Hương Trà. Năm Gia Long thứ 7 (1808) tu sửa sơn lăng, đặt tên là Cơ Thánh.", "năm Ất Dậu (1765)")
+G("lang.khiem", "Khiêm lăng", "nguyen.tu-duc", "Khiêm cung, điện Hòa Khiêm",
+  "Lăng Dực Tông Tự Đức. Ngày mồng 3 tháng 8 năm Tự Đức 36 (1883), linh cữu được phụng an ở điện Hòa Khiêm trong Khiêm cung; sử gọi nơi chôn là Khiêm lăng.",
+  [c("existence", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "于謙陵之左山萬萬年吉局，上陵名曰謙壽陵"),
+   c("location_name", "cb", 5, "tiểu dẫn Giản Tông", "秋八月初三日庚戌，奉安翼宗英皇帝梓宮于謙宮和謙殿", "Khiêm cung, điện Hòa Khiêm"),
+   c("occupant:0", "cb", 5, "tiểu dẫn Giản Tông", "秋八月初三日庚戌，奉安翼宗英皇帝梓宮于謙宮和謙殿"),
+   c("notes", "cb", 5, "tiểu dẫn Giản Tông", "秋八月初三日庚戌，奉安翼宗英皇帝梓宮于謙宮和謙殿")])
+G("lang.khiem-tho", "Khiêm Thọ lăng", "nguyen.le-thien-anh", "bên trái Khiêm lăng",
+  "Lăng Lệ Thiên Anh hoàng hậu, vợ Tự Đức. Ngày 15 tháng 4 năm Thành Thái 14 (1902) rước linh giá về núi bên trái Khiêm lăng, đặt tên là Khiêm Thọ lăng.",
+  [c("existence", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "于謙陵之左山萬萬年吉局，上陵名曰謙壽陵"),
+   c("location_name", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "于謙陵之左山萬萬年吉局，上陵名曰謙壽陵", "bên trái Khiêm lăng"),
+   c("occupant:0", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "于謙陵之左山萬萬年吉局，上陵名曰謙壽陵"),
+   c("notes", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "十五日，奉靈駕進行寧陵，于謙陵之左山萬萬年吉局，上陵名曰謙壽陵")])
+
+
+def H(key, category, title, summary, body, people, cites, loc=None):
+    h = {"key": key, "category": category, "title": title, "summary": summary, "body": body,
+         "people": [{"person": k, "role_note": r} for k, r in people], "citations": cites, "review": DRAFT}
+    if loc:
+        h["location_name"] = loc
+    heritage.append(h)
+
+
+H("ds.cau-lai-vien", "place", "Cầu Lai Viễn (Hội An)",
+  "Cầu ở phố Hội An; năm 1719 Hiển Tông đến xem, đặt tên Lai Viễn và ngự thư biển vàng ban cho.",
+  "Mùa xuân tháng 3 năm Kỷ Hợi (1719), Hiển Tông Nguyễn Phúc Chu đến doanh Quảng Nam duyệt quân, rồi đến phố Hội An. Thấy phía tây phố có cây cầu, thuyền buôn tụ họp ở đó, ông đặt tên là cầu Lai Viễn và ngự thư biển vàng ban cho.",
+  [("nguyen.hien-tong", "đặt tên cầu, ban biển")],
+  [c("existence", "tb", 8, "năm Kỷ Hợi (1719)", "因見舖之西有橋，以其地商船輳集，名來遠橋，御書金匾賜之"),
+   c("body", "tb", 8, "năm Kỷ Hợi (1719)", "己亥二十八年春三月，上幸廣南營閱士馬，尋幸會安舖"),
+   c("person:0", "tb", 8, "năm Kỷ Hợi (1719)", "名來遠橋，御書金匾賜之"),
+   c("location_name", "tb", 8, "năm Kỷ Hợi (1719)", "尋幸會安舖，因見舖之西有橋", "phố Hội An, Quảng Nam")], "phố Hội An, Quảng Nam")
+H("ds.chieu-anh-cac", "place", "Chiêu Anh các (Hà Tiên)",
+  "Gác do Mạc Thiên Tứ lập ở Hà Tiên năm 1736 để tụ họp văn sĩ; có Hà Tiên thập vịnh.",
+  "Năm Bính Thìn (1736), Túc Tông Nguyễn Phúc Trú cho Mạc Thiên Tứ (con Mạc Cửu) làm Đô đốc trấn Hà Tiên. Thiên Tứ chia đặt thuộc viên, đắp thành bảo, mở phố chợ, chiêu mộ văn sĩ, lập Chiêu Anh các, ngày ngày cùng họ bàn luận xướng họa; có tập Hà Tiên thập vịnh. Sử chép từ đó Hà Tiên bắt đầu biết đến việc học.",
+  [("nguyen.tuc-tong", "giao Hà Tiên cho Mạc Thiên Tứ")],
+  [c("existence", "tb", 9, "năm Bính Thìn (1736)", "又招來文學之士，開招英閣，日與講論唱和，有河僊十詠"),
+   c("body", "tb", 9, "năm Bính Thìn (1736)", "天賜分置衙屬，揀補軍伍，築城堡、廣街市，諸國商旅湊集"),
+   c("body", "tb", 9, "năm Bính Thìn (1736)", "自是河僊始知學焉"),
+   c("person:0", "tb", 9, "năm Bính Thìn (1736)", "以鄚天賜（鄚玖之子）為河僊鎮都督，賜龍牌船三艘"),
+   c("location_name", "tb", 9, "năm Bính Thìn (1736)", "以鄚天賜（鄚玖之子）為河僊鎮都督", "trấn Hà Tiên")], "trấn Hà Tiên")
+H("ds.ho-truong-khu-co", "artifact", "Hổ trướng khu cơ (Đào Duy Từ)",
+  "Sách của nội tán Đào Duy Từ, người giúp Hy Tông 8 năm, đứng đầu công thần khai quốc nhà Nguyễn theo sử chép.",
+  "Năm Giáp Tuất (1634), nội tán Đào Duy Từ bệnh nặng, Hy Tông Nguyễn Phúc Nguyên đến thăm; Duy Từ mất, thọ 63 tuổi, được tặng Hiệp mưu đồng đức công thần. Sử chép ông tham gia việc nước chỉ 8 năm nhưng công lao rõ rệt, đứng đầu công thần khai quốc, soạn Hổ trướng khu cơ tập lưu hành ở đời.",
+  [("nguyen.hy-tong", "chúa trọng dụng tác giả")],
+  [c("existence", "tb", 2, "năm Giáp Tuất (1634)", "所著有《虎帳樞機集》行世"),
+   c("body", "tb", 2, "năm Giáp Tuất (1634)", "贈協謀同德功臣，特進金紫榮祿大夫"),
+   c("body", "tb", 2, "năm Giáp Tuất (1634)", "贊襄國政雖止八年，而勳業炳然，為開國功臣之冠"),
+   c("person:0", "tb", 2, "năm Giáp Tuất (1634)", "甲戌二十一年冬十月，內贊陶維慈病篤，上親臨視維慈")])
+H("ds.truyen-quoc-bao", "artifact", "Ấn \"Đại Việt quốc Nguyễn chúa Vĩnh Trấn chi bảo\"",
+  "Ấn do Hiển Tông chế; Gia Long dùng khi lên ngôi vương ở Sài Côn năm 1780, về sau được tôn làm truyền quốc bảo.",
+  "Ấn khắc \"Đại Việt quốc Nguyễn chúa Vĩnh Trấn chi bảo\" do Hiển Tông chế ra. Năm Canh Tý (1780), khi lên ngôi vương ở Sài Côn, Gia Long dùng ấn này đóng vào văn thư (văn thư gọi là \"chỉ truyền\", việc sai phái gọi là \"chỉ sai\"); về sau ấn được tôn làm truyền quốc bảo.",
+  [("nguyen.hien-tong", "chế ấn"), ("nguyen.gia-long", "dùng ấn khi lên ngôi vương")],
+  [c("existence", "cb", 1, "năm Canh Tý (1780)", "用大越國阮主永鎮之寶，（顯宗孝明皇帝所製也，今奉爲傳國之寶。）"),
+   c("body", "cb", 1, "năm Canh Tý (1780)", "文書行下曰旨傳，差派曰旨差"),
+   c("person:0", "cb", 1, "năm Canh Tý (1780)", "顯宗孝明皇帝所製也"),
+   c("person:1", "cb", 1, "năm Canh Tý (1780)", "春正月癸卯，帝即王位")])
+H("ds.de-he-thi", "custom", "Đế hệ thi (bài thơ hai mươi chữ đặt tên các vua)",
+  "Minh Mạng soạn hai mươi chữ bộ Nhật cất trong kim đằng; các vua sau lấy một chữ làm ngự danh.",
+  "Trong những năm Minh Mạng, ông soạn hai mươi chữ thuộc bộ Nhật làm đế hệ, cất trong kim đằng để truyền cho người nối nghiệp. Khi nối ngôi, vua mở kim quỹ, lấy một chữ trong đó làm tên vua, còn tên đặt từ nhỏ thì thành tên tự: Thiệu Trị lấy chữ thứ nhất, Tự Đức chữ thứ hai, Hiệp Hòa chữ thứ ba, Kiến Phúc chữ thứ tư, Khải Định chữ thứ chín.",
+  [("nguyen.minh-mang", "soạn đế hệ thi"), ("nguyen.thieu-tri", "dùng chữ thứ nhất"), ("nguyen.tu-duc", "dùng chữ thứ hai"),
+   ("nguyen.hiep-hoa", "dùng chữ thứ ba"), ("nguyen.kien-phuc", "dùng chữ thứ tư"), ("nguyen.khai-dinh", "dùng chữ thứ chín")],
+  [c("existence", "cb", 3, "tiểu dẫn Hiến Tổ", "聖祖仁皇帝親撰日部二十字藏之金縢以遺繼體"),
+   c("body", "cb", 3, "tiểu dẫn Hiến Tổ", "恭閱聖製帝系金冊以第一字（左從日中從方右從定）爲御名"),
+   c("person:0", "cb", 3, "tiểu dẫn Hiến Tổ", "聖祖仁皇帝親撰日部二十字藏之金縢以遺繼體"),
+   c("person:1", "cb", 3, "tiểu dẫn Hiến Tổ", "以第一字（左從日中從方右從定）爲御名"),
+   c("person:2", "cb", 4, "tiểu dẫn Dực Tông", "以第二字（左從日、右從寺）為御名，以前所命名為字"),
+   c("person:3", "cx", "4q70", "mở đầu", "啓金櫃帝系詩二十字，以第三昇字爲名，舊雙名爲字"),
+   c("person:4", "cb", 5, "tiểu dẫn Giản Tông", "以第四字（上從日下從天）為御名"),
+   c("person:5", "cb", 7, "tiểu dẫn Hoằng Tông", "以金冊中第九字爲名，取日中爲君象之義")])
+
 if BAD:
     for b in BAD:
         print("KHÔNG CÓ TRONG NGUYÊN VĂN:", b)
@@ -1026,7 +1135,7 @@ if BAD:
 data = {
     "clan": {"key": "nguyen", "name": "Nhà Nguyễn (1558–1945)", "category": "royal",
              "description": "Họ Nguyễn vốn ở xã Gia Miêu ngoại, huyện Tống Sơn, phủ Hà Trung, đất Thanh Hoa. Năm Mậu Ngọ (1558), Nguyễn Hoàng vào trấn Thuận Hóa, mở nghiệp các chúa Nguyễn; đến năm Gia Long thứ nhất (1802), Thế Tổ Nguyễn Phúc Ánh lên ngôi hoàng đế, lập nên nhà Nguyễn. Gia phả này chép từ Trừng quốc công Nguyễn Văn Lựu, qua các chúa và các vua, kèm hậu phi và hoàng tử có tên trong sử, theo Đại Nam thực lục và Đại Nam liệt truyện của Quốc sử quán triều Nguyễn. Mỗi dữ kiện đều có nguyên văn trích dẫn; xem dòng \"Theo:\" cuối tiểu sử."},
-    "persons": persons, "unions": unions, "resting_places": [], "heritage": [], "events": [],
+    "persons": persons, "unions": unions, "resting_places": graves, "heritage": heritage, "events": [],
     "same_person_links": [],
 }
 json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
