@@ -515,7 +515,7 @@ exec(open(__file__.replace("gen_tran.py", "gen_tran_ext.py"), encoding="utf8").r
 
 data = {
     "clan": {"key": "tran", "name": "Nhà Trần (1225–1400)", "category": "royal",
-             "description": "Gia phả các đời vua nhà Trần theo Đại Việt sử ký toàn thư. Mỗi dữ kiện có trích dẫn nguyên văn; xem dòng \"Theo:\" cuối tiểu sử."},
+             "description": "Họ Trần gốc người đất Mân, đến ở hương Tức Mặc, phủ Thiên Trường, đời đời làm nghề đánh cá. Năm Ất Dậu (1225), Trần Cảnh (Thái Tông) nhận ngôi từ Lý Chiêu Hoàng, mở đầu nhà Trần; truyền đến Thiếu Đế thì Lê Quý Ly cướp ngôi (1400). Gia phả này chép từ Trần Kinh qua các đời vua và những nhân vật hoàng tộc có tên trong sử, theo Đại Việt sử ký toàn thư, Khâm định Việt sử thông giám cương mục và Việt sử lược. Mỗi dữ kiện đều có nguyên văn trích dẫn; xem dòng \"Theo:\" cuối tiểu sử."},
     "persons": persons,
     "unions": unions,
     "resting_places": graves,
