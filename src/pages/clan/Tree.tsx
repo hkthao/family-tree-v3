@@ -689,8 +689,13 @@ export default function Tree() {
                 rect.setAttribute("fill", "#FBF7F0");
               }
               this.querySelector(".ghost-clan-tag")?.remove();
-              const clanName =
-                (fields["ghost_peer_clan_name"] as string | undefined) ?? "";
+              // Bỏ phần "(1225–1400)" cuối tên cho thẻ gọn; đặt thẻ nằm đè mép dưới
+              // (không chồng lên dòng năm / giỗ bên trong khung).
+              const clanName = (
+                (fields["ghost_peer_clan_name"] as string | undefined) ?? ""
+              )
+                .replace(/\s*\([^)]*\)\s*$/, "")
+                .trim();
               if (clanName) {
                 const ns = "http://www.w3.org/2000/svg";
                 const tag = document.createElementNS(ns, "g");
@@ -698,7 +703,7 @@ export default function Tree() {
                 const tagW = 10 + clanName.length * 6;
                 const cardH = showDeceasedDetails ? 74 : 64;
                 const tagX = cardW - tagW - 6;
-                const tagY = cardH - 20;
+                const tagY = cardH - 7;
                 const bg = document.createElementNS(ns, "rect");
                 bg.setAttribute("x", String(tagX));
                 bg.setAttribute("y", String(tagY));
