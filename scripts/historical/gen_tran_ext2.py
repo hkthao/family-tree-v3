@@ -51,17 +51,47 @@ U("u.nhan-tong--khuyet", "tran.nhan-tong")
 # photo() và hằng C (tiền tố upload) do gen_tran_ext.py định nghĩa; P đã bị gán lại thành URL Commons.
 BY["tran.anh-tong"]["photo"] = photo(
     "5/5d/Portrait_of_Emperor_Tr%E1%BA%A7n_Anh_T%C3%B4ng.png", "Portrait_of_Emperor_Tr%E1%BA%A7n_Anh_T%C3%B4ng.png",
-    "Không rõ tác giả (tranh Trúc Lâm đại sĩ xuất sơn đồ, 1363)", "Public domain", "later_depiction", "1363",
+    "Không rõ tác giả (tranh Trúc Lâm đại sĩ xuất sơn đồ, 1363)", "PD", "later_depiction", "1363",
     "Hình Trần Anh Tông trong tranh Trúc Lâm đại sĩ xuất sơn đồ (vẽ sau khi ông mất)")
 BY["tran.minh-tong"]["photo"] = photo(
     "b/bd/CDVTranMinhTongjpg1333297930.jpg", "CDVTranMinhTongjpg1333297930.jpg",
     "Đất Việt", "CC BY-SA 4.0", "later_depiction", "2018", "Tượng vua Trần Minh Tông")
 BY["tran.du-tong"]["photo"] = photo(
     "b/bd/Statue_of_emperor_Tr%E1%BA%A7n_D%E1%BB%A5_T%C3%B4ng.jpg", "Statue_of_emperor_Tr%E1%BA%A7n_D%E1%BB%A5_T%C3%B4ng.jpg",
-    "閒鹤", "Public domain", "later_depiction", "2013", "Mộc tượng Trần Dụ Tông ở chùa Gệt")
+    "閒鹤", "PD", "later_depiction", "2013", "Mộc tượng Trần Dụ Tông ở chùa Gệt")
 BY["tran.nghe-tong"]["photo"] = photo(
     "f/f0/Tr%E1%BA%A7n_Ngh%E1%BB%87_T%C3%B4ng.png", "Tr%E1%BA%A7n_Ngh%E1%BB%87_T%C3%B4ng.png",
     "Mice09090", "CC BY-SA 4.0", "later_depiction", "2020", "Tượng vua Trần Nghệ Tông")
 BY["tran.huyen-tran"]["photo"] = photo(
     "f/fe/HuyenTran.jpg", "HuyenTran.jpg",
-    "Lưu Ly", "Public domain", "later_depiction", "2008", "Tượng thờ Huyền Trân công chúa")
+    "Lưu Ly", "PD", "later_depiction", "2008", "Tượng thờ Huyền Trân công chúa")
+
+
+# ── Quan hệ cha con lấy từ Wikipedia tiếng Việt (chính sử không chép rõ) ──
+def wp(field, quote, value=None, note=None):
+    d = {"field": field, "source": "VIWP", "locator": "Bài 'Trần Khánh Dư', mục Thân thế (vi.wikipedia.org)", "quote": quote}
+    if value is not None:
+        d["value"] = value
+    if note:
+        d["note"] = note
+    return d
+
+
+KD_QUOTE = "cha là Thượng tướng Nhân Thành hầu Trần Phó Duyệt-con trai Trần Thủ Độ"
+_p("tran.pho-duyet", "Trần Phó Duyệt", "M",
+   [wp("existence", KD_QUOTE), wp("parents", KD_QUOTE),
+    wp("title:0", KD_QUOTE),
+    c("bio", 5, "năm Nhâm Ngọ (1282)", "州本上相陳傅説物")],
+   "Con trai Trần Thủ Độ, tước Nhân Thành hầu, làm Thượng tướng; là cha của Trần Khánh Dư. Toàn thư chép đất Chí Linh vốn là của Thượng tướng Trần Phó Duyệt (傅説) và về sau Khánh Dư giữ lại ở đó. Quan hệ cha con với Thủ Độ lấy theo Wikipedia tiếng Việt (chính sử không chép rõ).",
+   parents="u.thu-do--khuyet", titles=[{"title": "Thượng tướng Nhân Thành hầu"}])
+U("u.thu-do--khuyet", "tran.thu-do")
+U("u.pho-duyet--khuyet", "tran.pho-duyet")
+_p("tran.khanh-du", "Trần Khánh Dư", "M",
+   [c("existence", 5, "năm Nhâm Ngọ (1282)", "慶餘以天子義男，故有是命"),
+    wp("parents", KD_QUOTE),
+    c("death", 7, "năm Kỷ Mão (1339)", "仁惠王慶餘卒", "âm 1339"),
+    c("title:0", 5, "năm Nhâm Ngọ (1282)", "彼非仁惠王乎"),
+    c("bio", 5, "năm Nhâm Ngọ (1282)", "慶餘以天子義男，故有是命")],
+   "Con của Thượng tướng Trần Phó Duyệt (theo Wikipedia tiếng Việt), được Thượng hoàng nhận làm nghĩa nam. Đánh dẹp người Man có công nên được phong Phiêu kỵ đại tướng quân. Vì tư thông với công chúa Thiên Thụy nên bị đánh, tước hết quan tước, về Chí Linh bán than. Sau được vua gọi lại, làm Nhân Huệ vương. Mất năm Kỷ Mão (1339).",
+   parents="u.pho-duyet--khuyet", adoptive_parents="u.thanh-tong--khuyet", death={"lunar_year": 1339}, titles=[{"title": "Nhân Huệ vương"}])
+BY["tran.khanh-du"]["citations"].append(c("adoptive_parents", 5, "năm Nhâm Ngọ (1282)", "立為天子義男"))
