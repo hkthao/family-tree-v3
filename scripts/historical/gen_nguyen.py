@@ -31,10 +31,11 @@ def load(path):
 
 
 TB = {n: load(f"tb/tb_{n:02d}.txt") for n in range(1, 13)}
-CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4: "四", 5: "五"}.items()}
+CB = {k: load(f"cb/cb_{h}_q1.txt") for k, h in {1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七"}.items()}
 LT1 = {n: load(f"lt1/lt1_{n:02d}.txt") for n in (1, 2)}
-LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 4, 5, 6)}
-TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2}
+LT2 = {n: load(f"lt2/lt2_{n:02d}.txt") for n in (1, 2, 4, 5, 6, 8)}
+CBX = {"4q70": load("cb/cb_四_q70.txt"), "5q5": load("cb/cb_五_q5.txt")}
+TEXT = {"tb": TB, "cb": CB, "lt": LT1, "lt2": LT2, "cx": CBX}
 BAD = []
 
 
@@ -43,8 +44,9 @@ def c(field, src, vol, where, quote, value=None, note=None):
     if re.sub(r"\s+", "", quote) not in TEXT[src][vol]:
         BAD.append((src, vol, quote))
     code, loc = {"tb": lambda: ("DNTL", f"Tiền biên Q.{vol}"),
-                 "cb": lambda: ("DNTL", f"Chính biên, Đệ {'nhất nhị tam tứ ngũ'.split()[vol - 1]} kỷ, Q.1"),
-                 "lt": lambda: ("DNLT", f"Sơ tập Q.{vol}"), "lt2": lambda: ("DNLT", f"Nhị tập Q.{vol}")}[src]()
+                 "cb": lambda: ("DNTL", f"Chính biên, Đệ {'nhất nhị tam tứ ngũ lục thất'.split()[vol - 1]} kỷ, Q.1"),
+                 "lt": lambda: ("DNLT", f"Sơ tập Q.{vol}"), "lt2": lambda: ("DNLT", f"Nhị tập Q.{vol}"),
+                 "cx": lambda: ("DNTL", {"4q70": "Chính biên, Đệ tứ kỷ, Q.70", "5q5": "Chính biên, Đệ ngũ kỷ, Q.5"}[vol])}[src]()
     d = {"field": field, "source": code, "locator": f"{loc}, {where}", "quote": quote}
     if value is not None:
         d["value"] = value
@@ -724,6 +726,169 @@ sections("nguyen.tu-duc", [
     cb(5, "tiểu dẫn Giản Tông", "秋八月初三日庚戌，奉安翼宗英皇帝梓宮于謙宮和謙殿"),
     c("bio", "lt2", 4, "Lệ Thiên Anh hoàng hậu", "于謙陵之左山萬萬年吉局，上陵名曰謙壽陵")])
 
+# ══ Đợt 4: Dục Đức → Khải Định (những vua có nguyên văn trên Wikisource) ═══════════════
+def wife(key, name, src, vol, where, quote, husband, ukey, bio):
+    P(key=key, full_name=name, gender="F", bio=bio,
+      citations=[c("existence", src, vol, where, quote), c("bio", src, vol, where, quote)])
+    U(ukey, husband, key, None, [c("union", src, vol, where, quote)])
+
+
+HC = "Kiên Thái vương Hồng Cai"
+Q_HC = "堅太王洪侅，憲祖章皇帝第二十六子，母宮人張氏"
+wife("nguyen.cung-nhan-truong", "Cung nhân Trương thị", "lt2", 8, HC, Q_HC, "nguyen.thieu-tri", "u.thieu-tri--cung-nhan-truong",
+     "Cung nhân họ Trương, vợ lẽ của Thiệu Trị, mẹ của Hồng Cai.")
+P(key="nguyen.hong-cai", full_name="Kiên Thái vương Hồng Cai", gender="M", parents="u.thieu-tri--cung-nhan-truong",
+  birth={"lunar_year": 1845}, death={"lunar_year": 1876}, lifespan=31, posthumous_name="Thuần Nghị",
+  titles=[{"title": "Kiên quốc công (Tự Đức 18)", "from_year": 1865},
+          {"title": "Kiên vương (Đồng Khánh 1), Kiên Thái vương hoàng thúc phụ (Đồng Khánh 3)", "from_year": 1886}],
+  bio="Con thứ 26 của Thiệu Trị, mẹ là cung nhân Trương thị, sinh năm Thiệu Trị 5 (1845). Năm Tự Đức 18 (1865) phong Kiên quốc công; khi ấy các hoàng đệ chưa ai có tước quốc công, Tự Đức cho ông học hạnh hơn người nên đặc cách gia phong. Mất năm Tự Đức 29 (1876), thọ 31 tuổi, thụy Thuần Nghị. Con trưởng là Đồng Khánh, con thứ ba (thứ) là Kiến Phúc, con thứ năm (thứ) là Hàm Nghi. Năm Đồng Khánh 1 được truy tặng Kiên vương, năm thứ 3 truy tôn Kiên Thái vương hoàng thúc phụ.",
+  citations=[c("existence", "lt2", 8, HC, Q_HC), c("parents", "lt2", 8, HC, Q_HC),
+             c("birth", "lt2", 8, HC, "紹治五年生", "âm 1845"),
+             c("death", "lt2", 8, HC, "二十九年薨，壽三十有一，諡純毅", "âm 1876", note="Tự Đức 29."),
+             c("lifespan", "lt2", 8, HC, "壽三十有一", "31"),
+             c("posthumous_name", "lt2", 8, HC, "二十九年薨，壽三十有一，諡純毅", "Thuần Nghị"),
+             c("title:0", "lt2", 8, HC, "嗣德十八年，封爲堅國公"),
+             c("title:1", "lt2", 8, HC, "同慶元年春，景宗純皇帝登光，晉贈爲堅王，諡溫毅。三年，晉贈皇叔父堅太王"),
+             c("bio", "lt2", 8, HC, "有子五女七。長子卽景宗純皇帝，庶三子卽簡宗毅皇帝，庶四子膺𧯦，同慶元年襲封縣公，庶五子卽咸宜出帝")])
+wife("nguyen.bui-thi", "Bùi thị (Thanh)", "cb", 5, "tiểu dẫn Giản Tông", "府妾（後晉封皇叔母堅太王妃）裴氏清所出也", "nguyen.hong-cai",
+     "u.hong-cai--bui-thi", "Phủ thiếp họ Bùi tên Thanh của Kiên Thái vương Hồng Cai, sau được phong Hoàng thúc mẫu Kiên Thái vương phi; mẹ của Đồng Khánh và Kiến Phúc.")
+U("u.hong-cai--khuyet", "nguyen.hong-cai")
+
+HY = "Thụy Thái vương Hồng Y"
+Q_HY = "瑞太王洪依，字君博，憲祖章皇帝第四子，母淑妃阮文氏，廣平麗水人，掌奇領領兵文鳳之女"
+wife("nguyen.thuc-phi-nguyen-van", "Thục phi Nguyễn Văn thị", "lt2", 8, HY, Q_HY, "nguyen.thieu-tri", "u.thieu-tri--thuc-phi",
+     "Họ Nguyễn Văn, người Lệ Thủy, Quảng Bình; con gái Chưởng cơ lĩnh binh Văn Phụng; vợ Thiệu Trị, mẹ của Hồng Y.")
+P(key="nguyen.hong-y", full_name="Thụy Thái vương Hồng Y", gender="M", parents="u.thieu-tri--thuc-phi",
+  birth={"lunar_year": 1833}, death={"lunar_year": 1877}, lifespan=45, posthumous_name="Đôn Chính",
+  titles=[{"title": "Kiến Thụy công (Thiệu Trị 6)", "from_year": 1846}, {"title": "Kiến Thụy quận vương, thụy Tuệ Đạt (truy tặng)", "from_year": 1877},
+          {"title": "Thụy Thái vương, thụy Đôn Chính (Thành Thái 9)", "from_year": 1897}],
+  bio="Tên chữ Quân Bác, con thứ tư của Thiệu Trị, mẹ là Thục phi Nguyễn Văn thị, sinh năm Minh Mạng 14 (1833). Hiếu học, có tài làm thơ, được Tự Đức quý mến. Năm Thiệu Trị 6 (1846) phong Kiến Thụy công. Mất năm Tự Đức 30 (1877), thọ 45 tuổi, được truy tặng Kiến Thụy quận vương, thụy Tuệ Đạt; năm Thành Thái 9 (1897) truy tôn Thụy Thái vương, thụy Đôn Chính. Có 43 con trai, 24 con gái; con thứ ba được Tự Đức nhận làm con nuôi, nay truy tôn Cung Tông Huệ hoàng đế (Dục Đức).",
+  citations=[c("existence", "lt2", 8, HY, Q_HY), c("parents", "lt2", 8, HY, Q_HY),
+             c("birth", "lt2", 8, HY, "明命十四年生", "âm 1833"),
+             c("death", "lt2", 8, HY, "三十年，王以病薨于位，壽四十有五", "âm 1877", note="Tự Đức 30."),
+             c("lifespan", "lt2", 8, HY, "壽四十有五", "45"),
+             c("posthumous_name", "lt2", 8, HY, "成泰九年春，晉贈爲瑞太王，晉諡敦正", "Đôn Chính"),
+             c("title:0", "lt2", 8, HY, "六年，冊封爲建瑞公"),
+             c("title:1", "lt2", 8, HY, "降諭追贈爲建瑞郡王，賜諡慧達"),
+             c("title:2", "lt2", 8, HY, "成泰九年春，晉贈爲瑞太王，晉諡敦正"),
+             c("bio", "lt2", 8, HY, "有子四十三，女二十四。長子膺磬，襲封建瑞縣公，第三子爲翼宗英皇帝嗣子，今追尊爲恭宗惠皇帝")])
+U("u.hong-y--khuyet", "nguyen.hong-y")
+U("u.tu-duc--khuyet", "nguyen.tu-duc")
+
+# Dục Đức (Cung Tông)
+P(key="nguyen.duc-duc", full_name="Nguyễn Cung Tông (Dục Đức)", gender="M", parents="u.hong-y--khuyet", adoptive_parents="u.tu-duc--khuyet",
+  titles=[{"title": "Hoàng trưởng tử của Tự Đức (con nuôi), Thụy quốc công"}, {"title": "Truy tôn Cung Tông Huệ hoàng đế"}],
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 5, "role": "emperor", "temple_name": "Cung Tông", "start_year": 1883, "end_year": 1883}],
+  bio="Con thứ ba của Thụy Thái vương Hồng Y, được Tự Đức nhận làm con nuôi (hoàng trưởng tử), phong Thụy quốc công. Tự Đức mất ngày 16 tháng 6 năm Tự Đức 36 (1883), theo di chiếu ông nối ngôi, nhưng vào cung chịu tang mới ba ngày thì bị phụ chính Nguyễn Văn Tường và Tôn Thất Thuyết phế truất. Về sau được truy tôn Cung Tông Huệ hoàng đế. (Ngày sinh, ngày mất chưa có nguyên văn trên Wikisource.)",
+  citations=[c("existence", "lt2", 8, HY, "第三子爲翼宗英皇帝嗣子，今追尊爲恭宗惠皇帝"),
+             c("parents", "lt2", 8, HY, "第三子爲翼宗英皇帝嗣子，今追尊爲恭宗惠皇帝"),
+             c("adoptive_parents", "cb", 5, "tiểu dẫn Giản Tông", "十四日壬戌，遺詔皇長子瑞國公（即今恭宗惠皇帝）嗣統"),
+             c("adoptive_parents", "cx", "4q70", "mở đầu", "初，大行皇帝揀育皇長子與前後，育在宮中，二公子是爲皇二子、皇三子"),
+             c("title:0", "cb", 5, "tiểu dẫn Giản Tông", "十四日壬戌，遺詔皇長子瑞國公（即今恭宗惠皇帝）嗣統"),
+             c("title:1", "lt2", 8, HY, "第三子爲翼宗英皇帝嗣子，今追尊爲恭宗惠皇帝"),
+             c("reign:0", "cb", 5, "tiểu dẫn Giản Tông", "十六日甲子，翼宗英皇帝崩，辰嗣君入恤宅纔三日，為輔政大臣阮文祥、尊室說廢之"),
+             c("reign:0", "cx", "4q70", "mở đầu", "癸未嗣德三十六年六月戊辰，阮文祥、尊室說廢嗣君，立皇季弟朗國公洪佚"),
+             c("bio", "cx", "4q70", "mở đầu", "帝以皇三子年幼承歡謹畏，鍾愛之，而於皇長子則教督頗嚴，常以過失被譴")])
+
+# Hiệp Hòa (Phế đế)
+wife("nguyen.thuy-tan-truong", "Thụy tần Trương thị", "cx", "4q70", "mở đầu", "母瑞嬪張氏以紹治七年九月生", "nguyen.thieu-tri",
+     "u.thieu-tri--thuy-tan", "Họ Trương, tần của Thiệu Trị, mẹ của Hồng Dật (Hiệp Hòa).")
+P(key="nguyen.hiep-hoa", full_name="Nguyễn Phế đế (Hiệp Hòa)", gender="M", parents="u.thieu-tri--thuy-tan",
+  nickname="Nguyễn Phúc Hồng Dật",
+  birth={"lunar_year": 1847, "lunar_month": 9}, death={"lunar_year": 1883, "lunar_month": 10, "lunar_day": 30},
+  titles=[{"title": "Văn Lãng quận công (Tự Đức 18)", "from_year": 1865}, {"title": "Lãng quốc công (Tự Đức 31)", "from_year": 1878},
+          {"title": "Nhiếp Hữu tôn nhân phủ (Tự Đức 35)", "from_year": 1882}],
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 6, "role": "emperor", "start_year": 1883, "end_year": 1883}],
+  bio="Tên ban đầu là Hồng Dật, con thứ 29 của Thiệu Trị, mẹ là Thụy tần Trương thị, sinh tháng 9 năm Thiệu Trị 7 (1847). Năm Tự Đức 18 (1865) phong Văn Lãng quận công, năm 31 tấn Lãng quốc công, năm 35 kiêm nhiếp Hữu tôn nhân. Tháng 6 năm Tự Đức 36 (1883), Nguyễn Văn Tường và Tôn Thất Thuyết phế Dục Đức rồi lập ông lên ngôi; khi nhận ngôi, ông mở kim quỹ, lấy chữ thứ ba trong bài thơ đế hệ hai mươi chữ (昇) làm tên. Ở ngôi chỉ 4 tháng thì bị phế; cuối tháng 10 bị ép uống thuốc độc chết, được chôn theo lễ quốc công. Sử nhà Nguyễn gọi là Phế đế.",
+  citations=[c("existence", "cx", "4q70", "mở đầu", "廢帝（原賜名洪佚，憲祖章皇帝第二十九子也"),
+             c("nickname", "cx", "4q70", "mở đầu", "廢帝（原賜名洪佚，憲祖章皇帝第二十九子也", "Nguyễn Phúc Hồng Dật", note="Phiên âm 洪佚 do người soạn."),
+             c("parents", "cx", "4q70", "mở đầu", "廢帝（原賜名洪佚，憲祖章皇帝第二十九子也，母瑞嬪張氏以紹治七年九月生"),
+             c("birth", "cx", "4q70", "mở đầu", "母瑞嬪張氏以紹治七年九月生", "âm 1847-9"),
+             c("death", "cx", "4q70", "cuối quyển", "益兼文悌入報曰朗國公就此已飮毒斃了", "âm 1883-10-30",
+               note="Ngày 30 tháng 10 (Đinh Sửu) theo mạch văn Q.70 và Chính biên kỷ 5 Q.1 (cùng sự việc: 冬十月三十日丁丑，文祥、說又擬廢朗國公)."),
+             c("title:0", "cx", "4q70", "mở đầu", "嗣德十八年，封文朗郡公。三十一年，晉封朗國公。三十五年，兼攝尊人府右尊人"),
+             c("title:1", "cx", "4q70", "mở đầu", "嗣德十八年，封文朗郡公。三十一年，晉封朗國公。三十五年，兼攝尊人府右尊人"),
+             c("title:2", "cx", "4q70", "mở đầu", "嗣德十八年，封文朗郡公。三十一年，晉封朗國公。三十五年，兼攝尊人府右尊人"),
+             c("reign:0", "cx", "4q70", "mở đầu", "癸未嗣德三十六年六月戊辰，阮文祥、尊室說廢嗣君，立皇季弟朗國公洪佚"),
+             c("reign:0", "cx", "4q70", "mở đầu", "因嗣君廢得立，啓金櫃帝系詩二十字，以第三昇字爲名，舊雙名爲字。纔四月，亦被廢弑"),
+             c("bio", "cx", "4q70", "cuối quyển", "益兼遂捧此茶水傾入帝口")])
+
+# Kiến Phúc (Giản Tông)
+GT = "tiểu dẫn Giản Tông"
+P(key="nguyen.kien-phuc", full_name="Nguyễn Giản Tông (Kiến Phúc)", gender="M", parents="u.hong-cai--bui-thi", adoptive_parents="u.tu-duc--khuyet",
+  nickname="Nguyễn Phúc Hạo; Nguyễn Phúc Ưng Hỗ; Nguyễn Phúc Ưng Đăng",
+  birth={"lunar_year": 1869, "lunar_month": 1, "lunar_day": 2},
+  posthumous_name="Thiệu Đức Chỉ Hiếu Uyên Duệ Nghị hoàng đế",
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 7, "role": "emperor", "temple_name": "Giản Tông", "start_year": 1883, "end_year": 1884,
+           "era_names": [{"name": "Kiến Phúc", "from_year": 1884}]}],
+  bio="Tên húy là Hạo, tự Ưng Hỗ, lại tự Ưng Đăng; sinh ngày mồng 2 tháng Giêng năm Kỷ Tỵ (Tự Đức 22, 1869). Vốn là con thứ ba (thứ) của Kiên quốc công Hồng Cai, mẹ là phủ thiếp Bùi thị. Năm Tự Đức 23 (1870), mới 2 tuổi, được chọn vào cung làm hoàng thiếu tử của Tự Đức, giao học phi Nguyễn Văn thị nuôi dạy; sau Tự Đức di chiếu nhận làm hoàng tam tử. Ngày 30 tháng 10 năm Tự Đức 36 (1883), Nguyễn Văn Tường và Tôn Thất Thuyết phế Lãng quốc công rồi đón ông vào nối ngôi; ngày 1 tháng 11 nhận ngọc tỷ, lấy năm sau (Giáp Thân, 1884) làm Kiến Phúc nguyên niên. Về sau được tôn miếu hiệu Giản Tông.",
+  citations=[c("existence", "cb", 5, GT, "簡宗紹德止孝淵睿毅皇帝，諱昊，字膺祜，又字膺登，翼宗英皇帝第三子也，聖誕己巳年正月丙寅初二日甲戌"),
+             c("nickname", "cb", 5, GT, "簡宗紹德止孝淵睿毅皇帝，諱昊，字膺祜，又字膺登", "Nguyễn Phúc Hạo; Nguyễn Phúc Ưng Hỗ; Nguyễn Phúc Ưng Đăng", note="Phiên âm 昊/祜/登 do người soạn."),
+             c("parents", "cb", 5, GT, "原先朝皇二十六子堅國公（後晉封皇叔父純毅堅太王）洪侅庶三子，乃府妾（後晉封皇叔母堅太王妃）裴氏清所出也"),
+             c("adoptive_parents", "cb", 5, GT, "嗣德二十三年庚午春正月，年甫二歲，欽奉揀入宮中，充為皇少子，命學妃阮文氏專育之"),
+             c("birth", "cb", 5, GT, "聖誕己巳年正月丙寅初二日甲戌", "âm 1869-1-2"),
+             c("posthumous_name", "cb", 5, GT, "簡宗紹德止孝淵睿毅皇帝", "Thiệu Đức Chỉ Hiếu Uyên Duệ Nghị hoàng đế"),
+             c("reign:0", "cb", 5, GT, "庚辰，即皇帝位于太和殿，以明年甲申紀元建福，頒恩詔于中外"),
+             c("reign:0", "cx", "5q5", "mở đầu", "甲申建福元年夏六月癸未（即十一日），羣臣奉嗣君詣勤政殿，受傳國寶璽、萬年嗣位袍，上箋勸進", note="Kiến Phúc năm 1 (1884): người kế vị là hoàng đệ (冊文敍欽惟皇弟殿下)."),
+             c("bio", "cb", 5, GT, "冬十月三十日丁丑，文祥、說又擬廢朗國公，乃會諸廷臣迎帝回")])
+
+# Hàm Nghi
+P(key="nguyen.ham-nghi", full_name="Hàm Nghi", gender="M", parents="u.hong-cai--khuyet",
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 8, "role": "emperor", "start_year": 1884, "end_year": 1885,
+           "era_names": [{"name": "Hàm Nghi", "from_year": 1885}]}],
+  bio="Con thứ năm (thứ) của Kiên quốc công Hồng Cai, em của Kiến Phúc và Đồng Khánh. Tháng 6 năm Giáp Thân (Kiến Phúc 1, 1884), ngày 11, quần thần đón ông vào điện Cần Chính nhận ngọc tỷ và áo nối ngôi; ngày 12 ông lên ngôi ở điện Thái Hòa, lấy năm sau (Ất Dậu, 1885) làm Hàm Nghi nguyên niên. Tháng 5 năm Hàm Nghi 1 (1885), kinh thành có biến, ông xuất bôn ra Quảng Trị; sử gọi là Hàm Nghi xuất đế. (Ngày sinh, ngày mất chưa có nguyên văn trên Wikisource.)",
+  citations=[c("existence", "lt2", 8, HC, "庶五子卽咸宜出帝"), c("parents", "lt2", 8, HC, "庶五子卽咸宜出帝"),
+             c("reign:0", "cx", "5q5", "mở đầu", "甲申（即十二日），嗣君即位于太和殿，以來年乙酉爲咸宜元年，頒寶詔于中外"),
+             c("reign:0", "cb", 6, "tiểu dẫn Cảnh Tông", "咸宜元年五月，京城有事，出駕播遷，兩宮隨幸往廣治"),
+             c("bio", "cx", "5q5", "mở đầu", "甲申建福元年夏六月癸未（即十一日），羣臣奉嗣君詣勤政殿，受傳國寶璽、萬年嗣位袍，上箋勸進")])
+
+# Đồng Khánh (Cảnh Tông)
+CT = "tiểu dẫn Cảnh Tông"
+P(key="nguyen.dong-khanh", full_name="Nguyễn Cảnh Tông (Đồng Khánh)", gender="M", parents="u.hong-cai--bui-thi", adoptive_parents="u.tu-duc--khuyet",
+  nickname="Nguyễn Phúc Biện; Nguyễn Phúc Ưng Thị; Nguyễn Phúc Ưng Đường",
+  birth={"lunar_year": 1864, "lunar_month": 1, "lunar_day": 13}, death={"lunar_year": 1888, "lunar_month": 12, "lunar_day": 27},
+  posthumous_name="Hoằng Liệt Thông Triết Mẫn Huệ Thuần hoàng đế",
+  titles=[{"title": "Kiên Giang quận công (Tự Đức 36)", "from_year": 1883}],
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 9, "role": "emperor", "temple_name": "Cảnh Tông", "start_year": 1885, "end_year": 1888,
+           "era_names": [{"name": "Đồng Khánh", "from_year": 1885}]}],
+  bio="Tên húy là Biện, con trưởng của Kiên quốc công Hồng Cai, mẹ là phủ thiếp Bùi thị; sinh ngày 13 tháng Giêng năm Giáp Tý (1864). Năm Tự Đức 18 (1865), mới 2 tuổi, được chọn vào cung, giao thiện phi Nguyễn Đình thị nuôi dạy, thành hoàng nhị tử của Tự Đức. Tháng Giêng năm Tự Đức 36 (1883) phong Kiên Giang quận công. Tháng 8 năm Hàm Nghi 1 (1885), sau khi Hàm Nghi xuất bôn, quần thần theo ý chỉ của thái hoàng thái hậu đón ông vào nối ngôi; từ tháng 10 năm ấy đổi niên hiệu Đồng Khánh. Mất ngày 27 tháng 12 năm Đồng Khánh 3 (1888); con trưởng là Khải Định.",
+  citations=[c("existence", "cb", 6, CT, "景宗弘烈聰哲敏惠純皇帝，諱昪，字膺豉，又別字膺禟"),
+             c("nickname", "cb", 6, CT, "景宗弘烈聰哲敏惠純皇帝，諱昪，字膺豉，又別字膺禟", "Nguyễn Phúc Biện; Nguyễn Phúc Ưng Thị; Nguyễn Phúc Ưng Đường",
+               note="Phiên âm 昪/豉/禟 do người soạn — cần đối chiếu (các sách thường chép tên tự khác)."),
+             c("parents", "cb", 6, CT, "帝乃堅國公（後晉封純毅堅太王）洪侅長子，母裴氏（後晉封皇叔母）"),
+             c("adoptive_parents", "cb", 6, CT, "嗣德十八年欽揀育於宮中，辰方二歲，命善妃阮廷氏專育之，是爲皇二子"),
+             c("birth", "cb", 6, CT, "是奉翼宗英皇帝別賜名也，聖誕甲子年正月十三日", "âm 1864-1-13"),
+             c("death", "cb", 7, "tiểu dẫn Hoằng Tông", "同慶三年（西曆一千八百八十八年）十二月二十七日，皇考景尊純皇帝賓天", "âm 1888-12-27"),
+             c("posthumous_name", "cb", 6, CT, "景宗弘烈聰哲敏惠純皇帝", "Hoằng Liệt Thông Triết Mẫn Huệ Thuần hoàng đế"),
+             c("title:0", "cb", 6, CT, "三十六年正月，冊封堅江郡公"),
+             c("reign:0", "cb", 6, CT, "壬申，羣臣奉懿旨，乃迎皇二子堅江郡公入宮，嗣皇帝位"),
+             c("reign:0", "cb", 7, "tiểu dẫn Hoằng Tông", "同慶三年（西曆一千八百八十八年）十二月二十七日，皇考景尊純皇帝賓天"),
+             c("reign:0", "cb", 6, CT, "十月朔以後改爲同慶乙酉年"),
+             c("bio", "cb", 6, CT, "咸宜元年五月，京城有事，出駕播遷，兩宮隨幸往廣治")])
+
+# Khải Định (Hoằng Tông)
+HT2 = "tiểu dẫn Hoằng Tông"
+wife("nguyen.khon-nghi", "Khôn Nghi Xương Đức thái hoàng thái hậu", "cb", 7, HT2,
+     "景尊純皇帝之皇長子也，母坤儀昌德太皇太后楊光氏", "nguyen.dong-khanh", "u.dong-khanh--khon-nghi",
+     "Vợ Đồng Khánh, mẹ Khải Định; sau được tôn Khôn Nghi Xương Đức thái hoàng thái hậu (nguyên văn chép họ 楊光氏).")
+P(key="nguyen.khai-dinh", full_name="Nguyễn Hoằng Tông (Khải Định)", gender="M", parents="u.dong-khanh--khon-nghi",
+  birth={"lunar_year": 1885, "lunar_month": 9, "lunar_day": 1},
+  posthumous_name="Hoằng Tôn Tự Thiên Gia Vận Thánh Minh Thần Trí Nhân Hiếu Thành Kính Di Mô Thừa Liệt Tuyên hoàng đế",
+  titles=[{"title": "Phụng Hóa quận công (Thành Thái 18)", "from_year": 1906}, {"title": "Nhất tự công (Duy Tân 3)", "from_year": 1909}],
+  reigns=[{"dynasty": "Nhà Nguyễn", "ordinal": 12, "role": "emperor", "temple_name": "Hoằng Tông", "start_year": 1916,
+           "era_names": [{"name": "Khải Định", "from_year": 1916}]}],
+  bio="Con trưởng của Đồng Khánh, mẹ là Khôn Nghi Xương Đức thái hoàng thái hậu; sinh ngày mồng 1 tháng 9 năm Ất Dậu (1885). Năm Đồng Khánh 3 (1888) cha mất, ông mới 4 tuổi nên Thành Thái được đón lập. Năm Thành Thái 18 (1906) tấn phong Phụng Hóa quận công, năm Duy Tân 3 (1909) tấn phong Nhất tự công. Ngày 2 tháng 4 năm Duy Tân 10 (1916) Duy Tân bị phế; ngày 17 tháng 4, ông lên ngôi ở điện Thái Hòa, đặt niên hiệu Khải Định. (Ngày mất, lăng chưa có nguyên văn trên Wikisource; bản số chép miếu hiệu là 弘尊.)",
+  citations=[c("existence", "cb", 7, HT2, "弘尊嗣天嘉運聖明神智仁孝誠敬貽謨承烈宣皇帝"),
+             c("parents", "cb", 7, HT2, "景尊純皇帝之皇長子也，母坤儀昌德太皇太后楊光氏"),
+             c("birth", "cb", 7, HT2, "聖誕乙酉年（西曆一千八百八十五年）九月初一日甲戌牌", "âm 1885-9-1"),
+             c("posthumous_name", "cb", 7, HT2, "弘尊嗣天嘉運聖明神智仁孝誠敬貽謨承烈宣皇帝",
+               "Hoằng Tôn Tự Thiên Gia Vận Thánh Minh Thần Trí Nhân Hiếu Thành Kính Di Mô Thừa Liệt Tuyên hoàng đế"),
+             c("title:0", "cb", 7, HT2, "十八年丙午（西曆一千九百六年）冬十月初十日，晉封奉化郡公"),
+             c("title:1", "cb", 7, HT2, "維新三年己酉（西曆一千九百九年）春二月十三日，晉封一字公"),
+             c("reign:0", "cb", 7, HT2, "十七日，帝即皇帝位于太和殿，建元啓定"),
+             c("reign:0", "cb", 7, HT2, "維新丙辰（西曆一千九百十六年）夏四月初二日，維新帝以離位廢"),
+             c("bio", "cb", 7, HT2, "同慶三年（西曆一千八百八十八年）十二月二十七日，皇考景尊純皇帝賓天，辰帝甫四歲")])
+
 if BAD:
     for b in BAD:
         print("KHÔNG CÓ TRONG NGUYÊN VĂN:", b)
@@ -731,7 +896,7 @@ if BAD:
 
 data = {
     "clan": {"key": "nguyen", "name": "Nhà Nguyễn (1558–1945)", "category": "royal",
-             "description": "Gia phả các chúa Nguyễn và vua nhà Nguyễn theo Đại Nam thực lục, Đại Nam liệt truyện. Đợt 1: từ tổ tiên đến Gia Long; đợt 2: Minh Mạng, Thiệu Trị và một số hoàng tử; đợt 3: Tự Đức. Mỗi dữ kiện có trích dẫn nguyên văn; xem dòng \"Theo:\" cuối tiểu sử."},
+             "description": "Họ Nguyễn vốn ở xã Gia Miêu ngoại, huyện Tống Sơn, phủ Hà Trung, đất Thanh Hoa. Năm Mậu Ngọ (1558), Nguyễn Hoàng vào trấn Thuận Hóa, mở nghiệp các chúa Nguyễn; đến năm Gia Long thứ nhất (1802), Thế Tổ Nguyễn Phúc Ánh lên ngôi hoàng đế, lập nên nhà Nguyễn. Gia phả này chép từ Trừng quốc công Nguyễn Văn Lựu, qua các chúa và các vua, kèm hậu phi và hoàng tử có tên trong sử, theo Đại Nam thực lục và Đại Nam liệt truyện của Quốc sử quán triều Nguyễn. Mỗi dữ kiện đều có nguyên văn trích dẫn; xem dòng \"Theo:\" cuối tiểu sử."},
     "persons": persons, "unions": unions, "resting_places": [], "heritage": [], "events": [],
     "same_person_links": [],
 }
