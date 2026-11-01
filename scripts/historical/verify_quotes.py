@@ -27,7 +27,7 @@ import sys
 
 data = json.load(open(sys.argv[1], encoding="utf8"))
 ROOT = sys.argv[2]
-NUM = {4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九", 10: "十", 11: "十一"}
+NUM = {2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九", 10: "十", 11: "十一"}
 CAN = dict(zip("Giáp Ất Bính Đinh Mậu Kỷ Canh Tân Nhâm Quý".split(), "甲乙丙丁戊己庚辛壬癸"))
 CHI = dict(zip("Tý Sửu Dần Mão Thìn Tỵ Ngọ Mùi Thân Dậu Tuất Hợi".split(), "子丑寅卯辰巳午未申酉戌亥"))
 GZ, ZZ = "".join(CAN.values()), "".join(CHI.values())
