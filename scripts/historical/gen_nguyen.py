@@ -462,6 +462,208 @@ son("nguyen.mien-bao", "Miên Bảo (Tương An quận vương)", "襄安郡王�
            c("bio", "lt2", 6, "Miên Bảo", "明命元年生王，有神力，少好武善騎射")])
 
 
+# ══ Tiểu sử có mục (mẫu Trần Thái Tông): Tóm lược / Xuất thân / Nối ngôi / Sự nghiệp / Gia quyến / Qua đời ═══
+# Mỗi mục thêm vào chỉ dùng dữ kiện có trích dẫn nguyên văn (kiểm lúc sinh file). "Sự nghiệp theo năm"
+# mới có những năm đã đọc nguyên văn; các năm còn lại bổ sung khi đọc hết quyển (xem docs).
+def sections(key, parts, cites):
+    """parts: [(tiêu đề, nội dung)]; cites: trích dẫn bổ sung cho các mục."""
+    p = next(x for x in persons if x["key"] == key)
+    body = ["## Tóm lược\n" + p["bio"]] + [f"## {t}\n{x}" for t, x in parts]
+    p["bio"] = "\n\n".join(body)
+    p["citations"] += cites
+
+
+def y(vol, where, quote):
+    return c("bio", "tb", vol, where, quote)
+
+
+sections("nguyen.thai-to", [
+    ("Xuất thân", "Con thứ hai của Triệu Tổ Tĩnh hoàng đế (tên húy là 淦), mẹ là Tĩnh hoàng hậu họ Nguyễn, thuộc một dòng họ vọng tộc đất Thanh Hoa. Ông nội là Trừng quốc công Nguyễn Văn Lựu, từng giúp Lê Oanh khởi binh. Ông là người xã Gia Miêu ngoại, huyện Tống Sơn, phủ Hà Trung."),
+    ("Trấn giữ Thuận Hóa", "Sau khi Mạc Đăng Dung cướp ngôi, nhà Lê cho rằng Thuận Hóa cần có tướng giỏi trấn giữ; Đoan quận công Nguyễn Hoàng là con nhà tướng, có tài lược nên được cử vào trấn. Mùa đông tháng 10 năm Mậu Ngọ (1558), 34 tuổi, ông bắt đầu trấn Thuận Hóa, dựng dinh ở xã Ái Tử (huyện Vũ Xương, nay là Đăng Xương); người quê Tống Sơn và nghĩa dũng Thanh Hoa đều vui theo. Ông vỗ về quân dân, thu dụng hào kiệt, thuế khóa nhẹ nhàng, lòng người vui phục, dân gọi là Tiên chúa; sử chép \"đế nghiệp nhà Nguyễn thật gây dựng từ đây\"."),
+    ("Di huấn", "Tháng 6 năm Quý Sửu (1613), lúc bệnh nặng, ông gọi hoàng tử thứ sáu (Nguyên) cùng các thân thần đến bên giường, dặn: làm con chỉ có hiếu, làm tôi chỉ có trung, anh em lấy thương yêu làm đầu. Ông cũng dặn đất Thuận Quảng phía bắc có núi Hoành Sơn, sông Gianh hiểm trở, phía nam có núi Hải Vân, núi Thạch Bi vững chắc, đất có vàng sắt cá muối, là nơi anh hùng dụng võ; nếu biết huấn luyện dân, rèn binh thì đủ sức ngang với họ Trịnh, nếu thế lực chưa địch nổi thì giữ bờ cõi mà đợi thời."),
+    ("Qua đời và lăng tẩm", "Ngày Canh Dần tháng 6 năm Quý Sửu (1613), ông mất, ở ngôi 58 năm, thọ 89 tuổi. Ban đầu táng ở núi Thạch Hãn (huyện Hải Lăng), sau cải táng ở núi La Khê (huyện Hương Trà). Buổi đầu được dâng thụy Cẩn Nghĩa Đạt Lý Hiển Ứng Chiêu Hựu Diệu Linh Gia Dụ vương; năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Thái Tổ, lăng Trường Cơ; phi được truy tôn Từ Lương Quang Thục Minh Đức Ý Cung Gia Dụ hoàng hậu, lăng Vĩnh Cơ."),
+], [y(1, "tiểu dẫn", "母靖皇后阮氏，先世爲清華望族"),
+    y(1, "tiểu dẫn", "清華河中府宋山縣嘉苗外庄人"),
+    y(1, "năm Mậu Ngọ (1558)", "黎帝從其請，授以鎮節，凡事一以委之，歲徵貢賦而已"),
+    y(1, "năm Mậu Ngọ (1558)", "建營於愛子（社名，屬武昌縣，即今登昌）"),
+    y(1, "năm Mậu Ngọ (1558)", "上撫循軍民，收用豪傑，輕徭薄賦，人心悅服，時稱僊主，帝業之興寔基於此"),
+    y(1, "năm Quý Sửu (1613)", "為子止孝、為臣止忠，兄弟以友愛為先"),
+    y(1, "năm Quý Sửu (1613)", "順廣北有橫山𤅷江之險，南有海雲碑山之固"),
+    y(1, "năm Quý Sửu (1613)", "縱勢力弗敵，當保守境土，以俟時機"),
+    y(1, "năm Quý Sửu (1613)", "初寧陵于石捍（社名，屬海陵縣）山"),
+    y(1, "năm Quý Sửu (1613)", "國初上尊諡曰謹義達理顯應昭祐耀靈嘉裕王"),
+    y(1, "năm Quý Sửu (1613)", "妃為慈良光淑明德懿恭嘉裕皇后，陵名永基")])
+
+sections("nguyen.hy-tong", [
+    ("Xuất thân", "Con thứ sáu của Thái Tổ, mẹ là Gia Dụ hoàng hậu họ Nguyễn. Khi còn là hoàng tử, ông từng đánh tan thủ lĩnh giặc Tây Dương ở cửa biển Việt, Thái Tổ lấy làm lạ, sau cho làm trấn thủ Quảng Nam. Lúc ấy hoàng tử thứ nhất (Hà), thứ hai (Hán), thứ ba và thứ tư (Diễn) đều đã mất trước, hoàng tử thứ năm (Hải) làm con tin ở miền Bắc; ông tuổi lớn lại hiền, hay bàn việc binh, đoán việc thường trúng nên Thái Tổ có ý giao đại nghiệp."),
+    ("Nối ngôi", "Ngày Canh Dần tháng 6 năm Quý Sửu (1613), Thái Tổ mất; theo di mệnh, quần thần tôn ông làm Thống lĩnh thủy bộ chư dinh kiêm tổng nội ngoại bình chương quân quốc trọng sự Thái bảo Thụy quận công, khi ấy 51 tuổi. Vua Lê sai sứ tặng Thái Tổ Cẩn Nghĩa công. Ông sửa thành bảo, đặt quan ải, vỗ về quân dân, trong ngoài đều vui phục, người đời gọi là Phật chúa; từ đây họ nước bắt đầu gọi là họ Nguyễn Phúc."),
+    ("Sự nghiệp theo năm", "- Năm Giáp Dần (1614): đặt Tam ti ở dinh chính: Xá sai ti (giữ việc kiện tụng, văn án), Tướng thần lại ti (thu tiền thóc, phát lương cho các đạo), Lệnh sử ti (lo tế tự, lễ nghi, cấp lương dinh chính).\n- Năm Giáp Tuất (1634): nội tán Đào Duy Từ bệnh nặng, ông đến thăm, Duy Từ mất thọ 63 tuổi; ông thương tiếc, tặng Hiệp mưu đồng đức công thần. Sử chép Duy Từ phụ giúp việc nước tuy chỉ 8 năm nhưng công lao rõ rệt, đứng đầu công thần khai quốc; có soạn Hổ trướng khu cơ tập."),
+    ("Qua đời và lăng tẩm", "Năm Ất Hợi (1635), ông ốm, gọi thế tử Nhân Lộc hầu và Tôn thất Khê vào hầu, dặn việc quân quốc giao cho người em hiền (Khê) quyết định; rồi mất, ở ngôi 22 năm, thọ 73 tuổi. Thế tử nối ngôi, dâng thụy Đại đô thống trấn Nam phương tổng quốc chính Dực thiện tuy du Thụy Dương vương, táng ở núi Quảng Điền, sau cải táng ở phường Hải Cát (huyện Hương Trà). Năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Hy Tông, lăng Trường Diễn."),
+], [y(2, "tiểu dẫn", "母嘉裕皇后阮氏，初為皇子時，嘗擊破西洋賊帥于越海口，太祖異之，後命為廣南鎮守"),
+    y(2, "tiểu dẫn", "時皇長子河、二子漢、三子、四子演皆先薨，五子海北質，上年長且賢"),
+    y(2, "tiểu dẫn", "群臣奉遺命尊為統領水步諸營兼總內外平章軍國重事太保瑞郡公，時年五十一"),
+    y(2, "tiểu dẫn", "黎帝遣使，齎勅贈太祖為謹義公"),
+    y(2, "năm Giáp Dần (1614)", "甲寅元年（黎弘定十五年，明萬曆四十二年），初置三司在內正營，曰舍差司，掌詞訟文案"),
+    y(2, "năm Giáp Tuất (1634)", "甲戌二十一年冬十月，內贊陶維慈病篤，上親臨視維慈"),
+    y(2, "năm Giáp Tuất (1634)", "贈協謀同德功臣，特進金紫榮祿大夫"),
+    y(2, "năm Giáp Tuất (1634)", "贊襄國政雖止八年，而勳業炳然，為開國功臣之冠"),
+    y(2, "năm Ất Hợi (1635)", "召世子仁祿侯及尊室溪入侍"),
+    y(2, "năm Ất Hợi (1635)", "尊諡曰大都統鎮南方總國政翼善綏猷瑞陽王，寧陵于廣田山，後改寧陵于海葛")])
+
+sections("nguyen.than-tong", [
+    ("Xuất thân", "Con thứ hai của Hy Tông, mẹ là Hiếu Văn hoàng hậu họ Nguyễn. Ban đầu ông được phong Phó tướng Nhân Lộc hầu; mùa hạ năm Tân Mùi (1631), hoàng tử trưởng (Kỳ) mất, ông được lập làm thế tử, mở dinh Thuận Nghĩa."),
+    ("Nối ngôi", "Ngày Đinh Hợi tháng 10 năm Ất Hợi (1635), Hy Tông mất; ông 35 tuổi, theo di mệnh quần thần tôn làm Tiết chế thủy bộ chư dinh kiêm tổng nội ngoại bình chương quân quốc trọng sự Thái bảo Nhân quận công, người đời gọi là Thượng chúa. Khi tự cầm chính sự, ông lấy ân huệ vỗ về dân, mưa nắng thuận hòa, nước giàu dân thịnh."),
+    ("Sự nghiệp theo năm", "- Năm Ất Hợi (1635): trấn thủ Quảng Nam là Anh (渶) vốn có lòng khác, muốn cướp ngôi thế tử, nghe ông lên ngôi liền khởi binh làm phản, bị dẹp và xử tử."),
+    ("Qua đời và lăng tẩm", "Mùa thu năm Mậu Tý (1648), ông thân đi đánh quân Trịnh, ốm nặng rồi mất trên ngự thuyền ở cửa biển Tam Giang, ở ngôi 13 năm, thọ 48 tuổi. Thế tử khóc nói với Chưởng cơ Tôn thất Trung xin nhường ngôi, Trung can từ chối, nói cha truyền con nối là lẽ thường của xưa nay, thế tử bèn lên ngôi. Thụy ban đầu là Đại nguyên soái thống suất Thuận Hóa Quảng Nam đẳng xứ chưởng quốc chính Uy đoán Thần vũ Nhân Chiêu vương, táng ở núi An Bằng (huyện Hương Trà). Năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Thần Tông, lăng Trường Diên."),
+], [y(3, "tiểu dẫn", "母孝文皇后阮氏，初封副將仁祿侯，辛未夏皇長子淇薨，立為世子，開順義營"),
+    y(3, "tiểu dẫn", "尊為節制水步諸營兼總內外平章軍國重事太保仁郡公，時稱上主"),
+    y(3, "tiểu dẫn", "是時雨暘，時若國富民殷"),
+    y(3, "tiểu dẫn", "廣南鎮守渶反伏誅"),
+    y(3, "tiểu dẫn", "即發兵反"),
+    y(3, "cuối quyển", "世子泣謂掌奇尊室忠曰"),
+    y(3, "cuối quyển", "父子相傳，古今常道，世子宜承大統以順天人"),
+    y(3, "cuối quyển", "尊諡曰大元帥統率順化廣南等處掌國政威斷神武仁昭王，寧陵于安憑")])
+
+sections("nguyen.thai-tong", [
+    ("Xuất thân", "Con thứ hai của Thần Tông, mẹ là Hiếu Chiêu hoàng hậu họ Đoàn. Ban đầu ông được phong Phó tướng Dũng Lễ hầu; từng đánh tan giặc Ô Lan ở cửa biển Nhật Lệ nên Thần Tông rất khen."),
+    ("Nối ngôi", "Năm Mậu Tý (1648), mùa xuân tháng 2, ông được tấn phong Tiết chế chư quân, đánh tan quân Trịnh ở sông 𤅷 (Cái); sau đó Thần Tông mất, ông 29 tuổi, quần thần tôn làm Tiết chế thủy bộ chư dinh kiêm tổng nội ngoại bình chương quân quốc trọng sự Thái bảo Dũng quận công, người đời gọi là Hiền chúa. Ông cất nhắc Tôn thất Trung, Tôn thất Lộc, Nguyễn Phúc Kiều, Tống Hữu Đại, Tôn thất Nghĩa làm Chưởng dinh, và thăng thưởng văn võ có thứ bậc."),
+    ("Qua đời và lăng tẩm", "Mùa xuân tháng 3 năm Đinh Mão (1687) ông ốm; ngày Đinh Dậu gọi hoàng tử thứ hai là Hoằng Ân hầu dặn: mình cả đời ra vào hiểm nguy giữ gìn gia nghiệp, người kế nghiệp phải sửa chính sách nhân từ để yên bờ cõi, văn võ chư thần là người mình đã cất nhắc nên tin dùng, đừng để bọn tiểu nhân gièm pha. Ông cũng dặn các đại thần cùng lòng phò tá. Rồi ông mất, ở ngôi 39 năm, thọ 68 tuổi; hoàng tử thứ hai nối ngôi, táng ở núi Hải Cát. Thụy ban đầu là Đại nguyên soái tổng quốc chính Công cao đức hậu Dũng Triết vương; năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Thái Tông, lăng Trường Hưng."),
+    ("Gia quyến", "Nguyên phi họ Chu mất năm Tân Tỵ, thọ 60 tuổi, được tặng Tán quốc chính phu nhân, táng ở núi An Ninh (Vĩnh Hưng lăng). Con trưởng là Diễn (còn gọi là Hán) làm thế tử, tước Phúc Mỹ hầu, mất năm 45 tuổi; hoàng tử thứ ba là Trăn (còn gọi là Huyền) mất, được tặng Cương quận công; hoàng tử thứ hai là Thái nối ngôi (Anh Tông)."),
+], [y(4, "tiểu dẫn", "母孝昭皇后段氏，初封副將勇禮侯，嘗擊破烏闌賊于渜海口"),
+    y(4, "tiểu dẫn", "戊子春二月，晉封節制諸軍，大破鄭兵於于𤅷江"),
+    y(4, "tiểu dẫn", "尊為節制水步諸營兼總內外平章軍國重事太保勇郡公，時稱賢主"),
+    y(4, "tiểu dẫn", "以掌奇尊室忠、尊室祿、阮福喬、宋有大、尊室義為掌營"),
+    y(5, "cuối quyển", "丁卯三十九年春三月，上不豫。丁酉，召皇二子弘恩侯謂曰"),
+    y(5, "cuối quyển", "我生平出入艱險，保有家邦"),
+    y(5, "cuối quyển", "尊諡曰大元帥總國政功高德厚勇哲王，寧陵于海葛山"),
+    y(5, "cuối quyển", "辛巳，元妃朱氏崩，壽六十，贈贊國正夫人"),
+    y(5, "cuối quyển", "皇長子演（又名漢）薨。演初立為世子，封掌營福美侯，至是薨，年四十五"),
+    y(5, "cuối quyển", "皇三子掌奇溱（又名玄）薨，贈純信功臣左軍都督府掌府事少保綱郡公")])
+
+sections("nguyen.anh-tong", [
+    ("Xuất thân", "Con thứ hai của Thái Tông, mẹ là Hiếu Triết hoàng hậu họ Tống. Vì hoàng tử trưởng (Diễn) mất sớm, Thái Tông thấy ông tuổi lớn lại hiền nên phong Phó tướng Tả thủy dinh Hoằng Ân hầu, dựng phủ ở Tả thủy dinh."),
+    ("Nối ngôi", "Ngày Đinh Dậu tháng 3 năm Đinh Mão (1687), Thái Tông mất; ông 39 tuổi, theo di mệnh quần thần tôn làm Tiết chế thủy bộ chư dinh kiêm tổng nội ngoại bình chương quân quốc trọng sự Thái phó Hoằng quốc công. Lên ngôi, ông giảm hình phạt, bớt thuế, trăm họ vui mừng, người đời gọi là Nghĩa chúa. Mùa hạ tháng 4, ông phong các thần linh trong cõi và thưởng bạc cho văn võ bá quan có thứ bậc."),
+    ("Qua đời và lăng tẩm", "Mùa xuân tháng Giêng năm Tân Mùi (1691), ngày Giáp Thân ông ốm, gọi thế tử Tộ Trường hầu dặn: mình nối nghiệp trước, người kế phải nhớ nối chí, noi đức tổ tiên, tìm hiền đãi sĩ, yêu dân thương lính, đừng nghe lời gièm, đừng bỏ người ngay; rồi gọi các thân thần dặn phò thế tử. Cùng ngày ông mất, ở ngôi 4 năm, thọ 43 tuổi. Thế tử nối ngôi, dâng thụy Đại nguyên soái tổng quốc chính Thiệu Hưu Toản Nghiệp Hoằng Nghĩa vương, táng ở núi Kim Ngọc (xã Định Môn, huyện Hương Trà). Năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Anh Tông, lăng Trường Mậu."),
+], [y(6, "tiểu dẫn", "母孝哲皇后宋氏，初皇長子演早薨，太宗孝哲皇帝以上年長且賢，封左水營副將弘恩侯，治邸於左水營"),
+    y(6, "tiểu dẫn", "尊為節制水步諸營兼總內外平章軍國重事太傅弘國公"),
+    y(6, "tiểu dẫn", "夏四月，封境內靈神，賞文武百官白金有差"),
+    y(6, "cuối quyển", "辛未四年春正月甲申，上不豫。召世子祚長侯謂曰"),
+    y(6, "cuối quyển", "求賢待士，愛民恤兵，勿信讒言，勿斥直士"),
+    y(6, "cuối quyển", "尊諡曰大元帥總國政紹休纂業弘義王，寧陵于金玉山（在香茶縣定門社）")])
+
+sections("nguyen.hien-tong", [
+    ("Xuất thân", "Con trưởng của Anh Tông, mẹ là Hiếu Nghĩa hoàng hậu họ Tống. Sử chép mùa thu năm Giáp Dần (1674), ở phía tây nam bầu trời mở ra một khe, mây năm sắc quấn quanh, giữa có vầng sáng tròn từ không trung rọi xuống phòng của hoàng hậu, người biết cho là điềm thánh; năm sau ông ra đời, hương lạ đầy nhà. Lớn lên ông hiếu học, giỏi viết chữ, kiêm có tài văn võ; ban đầu phong Phó tướng Tả Bính dinh Tộ Trường hầu, dựng phủ ở Tả Bính cơ."),
+    ("Nối ngôi", "Ngày Giáp Thân tháng Giêng năm Tân Mùi (1691), Anh Tông mất; ông 17 tuổi, theo di mệnh quần thần tôn làm Tiết chế thủy bộ chư dinh kiêm tổng nội ngoại bình chương quân quốc trọng sự Thái bảo Tộ quận công, hiệu Thiên Túng đạo nhân. Khi lên ngôi, ông vọng bái đài Kính Thiên, hôm đó trời trong, mây lành hiện, người cho là cảnh thái bình. Tháng 3 phong các thần linh trong cõi, miễn một nửa thuế ruộng năm đó."),
+    ("Sự nghiệp theo năm", "- Năm Mậu Tý (1708): cho Mạc Cửu làm Tổng binh trấn Hà Tiên. Cửu là người Lôi Châu, Quảng Đông, khi nhà Minh mất thì để tóc theo xuống Chân Lạp, làm chức Óc nha; ở Sài Mạt mở sòng bạc thu thuế, lại được mỏ bạc nên giàu, chiêu tập lưu dân.\n- Năm Kỷ Hợi (1719): tháng 3, vua đến doanh Quảng Nam, rồi đến phố Hội An, thấy phía tây phố có cây cầu, thuyền buôn tụ họp, đặt tên là cầu Lai Viễn, ngự thư biển vàng ban cho."),
+    ("Qua đời và lăng tẩm", "Mùa hạ tháng 4 năm Ất Tỵ (1725), ngày Mậu Tý, ông mất, ở ngôi 34 năm, thọ 51 tuổi, có 146 con trai gái. Con trưởng nối ngôi, dâng thụy Đô nguyên soái tổng quốc chính Khoan Từ Nhân Thứ Tộ Minh vương, táng ở núi Kim Ngọc. Năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Hiển Tông, lăng Trường Thanh."),
+], [y(7, "tiểu dẫn", "母孝義皇后宋氏。先是甲寅秋，西南方天開一竅，彩雲繚繞，中有圓光從空而下，其光燭天，當母后所居之室"),
+    y(7, "tiểu dẫn", "次年，上應期降誕，異香滿室；及長好學工書，兼文武才略"),
+    y(7, "tiểu dẫn", "初封左柄營副將祚長侯，治邸於左柄奇"),
+    y(7, "tiểu dẫn", "尊為節制水步諸營兼總內外平章軍國重事太保祚郡公，時年十七，號天縱道人"),
+    y(7, "tiểu dẫn", "望拜敬天臺，是日天氣清祥雲見，人以為太平景象云"),
+    y(7, "tiểu dẫn", "三月，封境內靈神"),
+    y(7, "tiểu dẫn", "免是年田租之半"),
+    y(8, "năm Mậu Tý (1708)", "以鄚玖為河僊鎮總兵。玖廣東雷州人，明亡留髮而南投于真臘，為屋牙"),
+    y(8, "năm Mậu Tý (1708)", "乃開賭博場徵課，謂之花枝；又得坑銀致富，因招流民"),
+    y(8, "năm Kỷ Hợi (1719)", "己亥二十八年春三月，上幸廣南營閱士馬，尋幸會安舖，因見舖之西有橋，以其地商船輳集，名來遠橋，御書金匾賜之"),
+    y(8, "cuối quyển", "尊諡曰都元帥總國政寬慈仁恕祚明王，寧陵于金玉山"),
+    y(8, "cuối quyển", "在位三十四年，壽五十有一，有子女一百四十六人")])
+
+sections("nguyen.tuc-tong", [
+    ("Xuất thân", "Con trưởng của Hiển Tông, mẹ là Hiếu Minh hoàng hậu họ Tống. Khi sinh có khí lành, hương lạ đầy nhà; lớn lên ông có tài văn võ. Ban đầu giữ chức Cai cơ Đỉnh Thịnh hầu, năm Ất Mùi (1715) thăng Chưởng cơ, dựng phủ ở Tả Súng cơ."),
+    ("Nối ngôi", "Ngày Mậu Tý tháng 4 năm Ất Tỵ (1725), Hiển Tông mất; ông 30 tuổi, theo di mệnh quần thần tôn làm Tiết chế thủy bộ chư dinh kiêm tổng nội ngoại bình chương quân quốc trọng sự Thái phó Đỉnh quốc công, hiệu Vân Tuyền đạo nhân. Ông miễn một nửa tiền sai dư và hai phần mười thuế ruộng trong cõi, phát tiền kho thưởng quân sĩ, cho đúc thêm tiền đồng vì tiền cũ hao dần do bị nấu làm đồ."),
+    ("Sự nghiệp theo năm", "- Năm Ất Mão (1735): Tổng binh Hà Tiên Mạc Cửu mất, được tặng Khai trấn thượng trụ quốc đại tướng quân Vũ Nghị công.\n- Năm Bính Thìn (1736): cho Mạc Thiên Tứ (con Mạc Cửu) làm Đô đốc trấn Hà Tiên, ban ba thuyền long bài, miễn thuế, cho mở cục đúc tiền để thông thương; Thiên Tứ chia đặt thuộc viên, đắp thành bảo, mở phố chợ, chiêu mộ văn sĩ, lập Chiêu Anh các, có Hà Tiên thập vịnh."),
+    ("Qua đời và lăng tẩm", "Mùa hạ tháng 4 năm Mậu Ngọ (1738), ngày Nhâm Dần, ông mất, ở ngôi 13 năm, thọ 43 tuổi. Con trưởng nối ngôi, dâng thụy Đại đô thống tổng quốc chính Tuyên Quang Thiệu Liệt Đỉnh Ninh vương, táng ở Định Môn; năm Giáp Tý (1744) dâng thêm thụy Tuyên Quang Thiệu Liệt Tuấn Triết Tĩnh Uyên Kinh Văn Vĩ Võ Hiếu Ninh vương. Năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Túc Tông, lăng Trường Phong."),
+    ("Gia quyến", "Nguyên phi họ Trương (con gái trấn thủ Chưởng cơ Trương Phúc Phan), mẹ của Thế Tông, mất năm Tân Tỵ (1721) thọ 22 tuổi, được tặng Tu dung Á phu nhân, thụy Từ Ý, táng ở núi Long Hồ (Vĩnh Phong lăng); sau được truy tôn Hiếu Ninh hoàng hậu."),
+], [y(9, "tiểu dẫn", "上初誕時有瑞氣，異香滿室，及長有文武才略。初授該奇鼎盛侯，乙未陞掌奇，治邸於左銃奇居之"),
+    y(9, "tiểu dẫn", "尊為節制水步諸營兼總內外平章軍國重事太傅鼎國公，時年三十，號雲泉道人"),
+    y(9, "tiểu dẫn", "免境內差餘錢十之五，田租十之二，發庫錢賞給軍士"),
+    y(9, "tiểu dẫn", "舊錢日耗，故命增鑄焉"),
+    y(9, "năm Ất Mão (1735)", "河僊鎮總兵鄚玖卒，贈開鎮上柱國大將軍武毅公"),
+    y(9, "năm Bính Thìn (1736)", "以鄚天賜（鄚玖之子）為河僊鎮都督，賜龍牌船三艘，免其徵稅，令出洋採買珍寶以納，又命開鑄錢局以通貿易"),
+    y(9, "năm Bính Thìn (1736)", "又招來文學之士，開招英閣，日與講論唱和，有河僊十詠"),
+    y(9, "cuối quyển", "尊諡曰大都統總國政宣光紹烈鼎寧王，寧陵于定門"),
+    y(9, "cuối quyển", "甲子六年，追尊為宣光紹烈濬哲靜淵經文緯武孝寧王"),
+    y(8, "cuối quyển", "辛巳，皇長子鼎盛侯元妃張氏（即孝寧皇后，鎮守掌奇張福攀之女）薨，壽二十有二，贈修容亞夫人，諡慈懿，建山墳于隆湖（社名）山（即永豐陵）")])
+
+sections("nguyen.the-tong", [
+    ("Xuất thân", "Con trưởng của Túc Tông, mẹ là Hiếu Ninh hoàng hậu họ Trương (con gái trấn thủ Chưởng cơ Trương Phúc Phan). Ban đầu ông được phong Chưởng dinh Tiền thủy dinh Chính hầu, dựng phủ ở Tiền dực cơ, xã Dương Xuân."),
+    ("Nối ngôi", "Mùa hạ tháng 4 năm Mậu Ngọ (1738), ngày Nhâm Dần, Túc Tông mất; ông 25 tuổi, theo di mệnh quần thần tôn làm Tiết chế thủy bộ chư dinh kiêm tổng nội ngoại bình chương quân quốc trọng sự Thái bảo Hiểu quận công, hiệu Từ Tế đạo nhân."),
+    ("Sự nghiệp theo năm", "- Năm Kỷ Mùi (1739): mùa xuân tháng Giêng ngày Tân Mùi, chính phủ (phủ Phú Xuân) xây xong. Chân Lạp Nặc Bồn xâm Hà Tiên; Mạc Thiên Tứ vừa nhận trấn, đem quân đánh, vợ ông là Nguyễn thị dẫn các phụ nữ tải lương nuôi quân; thắng trận, được thưởng Thiên Tứ làm Đô đốc tướng quân, ban áo bào đỏ, vợ làm phu nhân.\n- Năm Đinh Sửu (1757): Chân Lạp có loạn, ông cho Nặc Tôn làm quốc vương Chân Lạp, sai Thiên Tứ cùng binh năm dinh hộ tống về nước; Nặc Tôn dâng đất Tầm Phong Long; Thiên Tứ dâng lên triều, ông cho thuộc Hà Tiên quản hạt.\n- Năm Canh Thìn (1760): thế tử Hạo mất, được tặng Thái bảo quận công; hoàng tử thứ hai (Hưng Tổ), 28 tuổi, sáng sủa anh dũng, ông muốn lập làm người kế vị.\n- Năm Nhâm Ngọ (1762): ngày Kỷ Dậu tháng Giêng, thế tôn (tức Thế Tổ Cao hoàng đế — Gia Long) ra đời, là con của nguyên phi của hoàng tử thứ hai."),
+    ("Qua đời và lăng tẩm", "Mùa hạ tháng 5 năm Ất Dậu (1765), ngày Giáp Ngọ, ông mất, ở ngôi 27 năm, thọ 52 tuổi. Quần thần dâng thụy Càn Cương Uy Đoán Thần Nghị Thánh Du Nhân Từ Duệ Trí Hiếu Võ vương, táng ở núi La Khê. Năm Gia Long thứ 5 (1806) truy tôn hoàng đế, miếu hiệu Thế Tông, lăng Trường Thái."),
+], [y(10, "tiểu dẫn", "母孝寧皇后張氏。初封前水營掌營正侯，治邸於陽春前翼奇"),
+    y(10, "tiểu dẫn", "尊為節制水步諸營兼總內外平章軍國重事太保曉郡公，時年二十五，號慈濟道人"),
+    y(10, "năm Kỷ Mùi (1739)", "己未元年（黎永佑五年，清乾隆四年）春正月辛未，正府成"),
+    y(10, "năm Kỷ Mùi (1739)", "真臘匿盆侵河僊"),
+    y(10, "năm Kỷ Mùi (1739)", "特授天賜都督將軍，賜紅袍冠帶，阮氏為夫人"),
+    y(10, "năm Đinh Sửu (1757)", "乃敕封匿尊為真臘國王，令天賜與五營將士護送歸國"),
+    y(10, "năm Đinh Sửu (1757)", "匿尊乃獻尋楓龍之地"),
+    y(10, "năm Đinh Sửu (1757)", "天賜獻于朝，上介隸歸河僊管轄"),
+    y(10, "năm Canh Thìn (1760)", "庚辰二十二年春二月，世子昊薨，贈太保郡公"),
+    y(10, "năm Canh Thìn (1760)", "皇二子（即興祖孝康皇帝，母元妃張氏）年二十八，穎慧英果，上欲立為嗣"),
+    y(10, "năm Nhâm Ngọ (1762)", "壬午二十四年春正月己酉，世孫（即世祖高皇帝）生"),
+    y(10, "cuối quyển", "群臣合同上尊諡曰乾剛威斷神毅聖猷仁慈睿智孝武王，寧陵于羅溪山")])
+
+sections("nguyen.hung-to", [
+    ("Xuất thân", "Con thứ hai của Thế Tông, mẹ là nguyên phi Trương thị. Năm Canh Thìn (1760), khi thế tử Hạo mất, ông 28 tuổi, thông minh anh dũng; Thế Tông muốn lập làm người kế vị, sai Nội hữu Trương Văn Hạnh làm thầy dạy nho học, Huấn đạo Lê Cao Kỷ làm Thị giảng để phụ đạo, và cho cùng đại thần bàn việc quân quốc."),
+    ("Biến cố năm 1765", "Thế tử Hạo mất, hoàng tôn Dương còn nhỏ, trưởng tử Chương cũng mất, nên theo thứ tự ông đáng được lập; Thế Tông sai Trương Văn Hạnh dạy dỗ để làm người kế nghiệp, ban đầu trao Chưởng cơ, thường dự bàn chính sự. Mùa hạ tháng 5 năm Ất Dậu (1765) Thế Tông mất, quyền thần Trương Phúc Loan thấy hoàng tử thứ mười sáu (Duệ Tông) còn nhỏ, cùng thái giám Chử Đức, Chưởng dinh Nguyễn Cửu Thông giả di chiếu lập lên. Ông bị Phúc Loan ghét, bị giam vào lãnh thất; Trương Văn Hạnh và Lê Cao Kỷ đều bị Loan giết."),
+    ("Qua đời và lăng tẩm", "Ông uất ức rồi ốm; mùa thu tháng 9 năm Ất Dậu (1765), chưa kịp về phủ thì mất, thọ 33 tuổi, táng ở xã Cư Chính (huyện Hương Trà). Năm Mậu Tuất (1778), Thế Tổ nhiếp chính ở Gia Định truy tôn Từ Tường Đạm Bạc Khoan Dụ Ôn Hòa Hiếu Khang vương; năm Gia Long thứ 5 (1806) truy tôn hoàng đế; năm thứ 7 sửa sang sơn lăng, đặt tên Cơ Thánh; năm Minh Mạng thứ 2 (1821) phong ngọn núi là Hưng Nghiệp sơn và dâng miếu hiệu Hưng Tổ."),
+    ("Gia quyến", "Vợ là Hiếu Khang hoàng hậu họ Nguyễn (con gái Diễn quốc công Nguyễn Phúc Trung). Hai người sinh ba con trai và một con gái: Đông Hải quận vương, Thế Tổ (Gia Long), Thông Hóa quận vương, công chúa Long Thành (Ngọc Tú)."),
+], [y(10, "năm Canh Thìn (1760)", "命內右該奇張文幸為傅儒學，訓導黎高紀為侍講以輔導之，使與大臣參議軍國事務"),
+    y(11, "năm Ất Dậu (1765)", "初皇九子昊以貴立為世子，既薨，皇孫暘尚幼，長子暲又薨"),
+    y(11, "năm Ất Dậu (1765)", "世宗孝武皇帝使內右張文幸傅之欲為嗣，初授掌奇，常參朝政"),
+    y(11, "năm Ất Dậu (1765)", "權臣張福巒（張福攀之子）利其少，密與太監褚德（缺姓）、掌營阮久通矯遺命立之"),
+    y(11, "năm Ất Dậu (1765)", "內右張文幸、侍講黎高紀皆為巒所殺"),
+    y(11, "năm Ất Dậu (1765)", "戊戌世祖攝政元年，追尊為慈祥澹泊寬裕溫和孝康王。嘉隆五年，追尊為仁明謹厚寬裕溫和孝康皇帝；七年修築山陵，名基聖陵。明命二年，封其山為興業山")])
+
+sections("nguyen.gia-long", [
+    ("Xuất thân", "Con thứ ba của Hưng Tổ, mẹ là Hiếu Khang hoàng hậu họ Nguyễn; sinh năm Nhâm Ngọ (1762), ngày Kỷ Dậu tháng Giêng, được sử gọi là thế tôn của Thế Tông. Năm Ất Dậu (1765) cha mất, ông mới 4 tuổi, sống ở phủ riêng. Lớn lên ông thông minh sớm thành, được Duệ Tông rất quý trọng, cho ở trong cung."),
+    ("Sự nghiệp theo năm", "- Năm Quý Tỵ (1773): giặc Tây Sơn nổi dậy.\n- Năm Giáp Ngọ (1774): mùa đông, quân Trịnh sang xâm lấn; ông theo Duệ Tông vào Quảng Nam (khi ấy 13 tuổi).\n- Năm Ất Mùi (1775): mùa xuân, vào Gia Định, được trao Chưởng sử, coi quân Tả dực; mỗi khi có việc quân, Duệ Tông bàn với ông, thường nói trúng, các tướng đều quy tâm.\n- Năm Đinh Dậu (1777): mùa thu tháng 9, quân giặc đuổi gấp, Duệ Tông tuẫn nạn; ông thoát được một mình, đi thuyền đậu ở sông Khoa (Khoa Giang, thuộc huyện Long Xuyên), định đi biển tránh giặc ban đêm thì có cá sấu bơi ngang trước thuyền ngăn ba lần nên không đi tiếp. Mùa đông tháng 10, ông khởi binh ở Long Xuyên, tiến đến Sa Đích (thuộc An Giang); tháng 11 đánh phá tướng giặc ở Long Hồ; tháng 12 tiến chiếm Sài Côn.\n- Năm Mậu Tuất (1778): mùa xuân tháng Giêng, đóng ở Sài Côn, Đỗ Thanh Nhân cùng các tướng tôn ông làm Đại nguyên soái nhiếp quốc chính (khi ấy 17 tuổi); ông dâng tôn thụy cho Duệ Tông và cha là Hiếu Khang vương, dựng tông miếu, xây lăng Duệ Tông.\n- Năm Kỷ Hợi (1779): mùa xuân tháng 3, mẹ được đón đến Gia Định.\n- Năm Canh Tý (1780): mùa xuân tháng Giêng, ngày Quý Mão, lên ngôi vương ở Sài Côn, dùng ấn \"Đại Việt quốc Nguyễn chúa Vĩnh Trấn chi bảo\"; tháng 3, hoàng trưởng tử Cảnh sinh."),
+    ("Qua đời", "Mùa đông tháng 12 năm Gia Long thứ 18 (1819), ngày Đinh Mùi, ông mất. Các quyển sau của Chính biên kỷ 1 (thống nhất đất nước, lên ngôi hoàng đế, thụy hiệu, lăng tẩm) chưa có nguyên văn trên Wikisource, sẽ bổ sung."),
+    ("Gia quyến", "Vợ: Thừa Thiên Cao hoàng hậu họ Tống (nguyên phi, lấy năm 1778), sinh Chiêu (mất sớm) và Cảnh (Anh Duệ hoàng thái tử); Thuận Thiên Cao hoàng hậu họ Trần, sinh Minh Mạng (1791), Kiến An vương Đán và Thiệu Hóa quận vương Giản. Mẹ: Hiếu Khang hoàng hậu."),
+], [c("bio", "cb", 1, "tiểu dẫn Thế Tổ", "及長，聰睿夙成，睿宗深器重之，居之宮中"),
+    c("bio", "cb", 1, "tiểu dẫn Thế Tổ", "癸巳，西山賊起。甲午冬，鄭人來侵，帝隨睿宗幸廣南"),
+    c("bio", "cb", 1, "tiểu dẫn Thế Tổ", "乙未春，南幸嘉定，授掌使，將左翊軍"),
+    c("bio", "cb", 1, "tiểu dẫn Thế Tổ", "每有軍事，睿宗與帝謀，多奇中，諸將皆屬心焉"),
+    c("bio", "cb", 1, "năm Đinh Dậu (1777)", "有鱷魚横過舟前，阻之者三，乃止"),
+    c("bio", "cb", 1, "năm Đinh Dậu (1777)", "冬十月，帝擧兵龍川，進至沙的"),
+    c("bio", "cb", 1, "năm Đinh Dậu (1777)", "十二月，進克柴棍"),
+    c("bio", "cb", 1, "năm Mậu Tuất (1778)", "帝率諸將上睿宗尊諡曰聰明寬厚英敏惠和孝定王，皇考尊諡曰慈祥澹泊寬裕温和孝康王"),
+    c("bio", "cb", 1, "năm Mậu Tuất (1778)", "立宗廟，建睿宗陵及新政王山墳"),
+    c("bio", "cb", 1, "năm Kỷ Hợi (1779)", "己亥二年，（黎景興四十年，清乾隆四十四年。）春三月，慈駕至嘉定"),
+    c("bio", "cb", 1, "năm Canh Tý (1780)", "文書行下曰旨傳，差派曰旨差，用大越國阮主永鎮之寶")])
+
+def cb(vol, where, quote):
+    return c("bio", "cb", vol, where, quote)
+
+
+sections("nguyen.minh-mang", [
+    ("Xuất thân", "Con thứ tư của Gia Long, mẹ là Thuận Thiên Cao hoàng hậu họ Trần; sinh năm Tân Hợi (1791), năm thứ 12 sau khi Gia Long nối ngôi vương. Sử chép trước đó hoàng hậu mơ thấy thần nhân dâng một ấn đỏ như mặt trời, khi ông sinh quả ứng điềm ấy."),
+    ("Lên ngôi", "Mùa hạ tháng 6 ngày Kỷ Mùi năm Gia Long thứ 15 (1816), ông được lập làm hoàng thái tử, ở điện Thanh Hòa. Mùa đông tháng 12 ngày Đinh Mùi năm Gia Long thứ 18 (1819), Gia Long mất, quần thần dâng tờ khuyên tiến; ông xúc động khóc mãi, các đại thần ba lần mời mới nhận. Mùa xuân tháng Giêng ngày Mậu Ngọ (mồng 1) năm Canh Thìn (1820), ông lên ngôi hoàng đế ở điện Thái Hòa, đặt niên hiệu Minh Mạng, đại xá, ban chiếu khắp trong ngoài."),
+    ("Qua đời", "Ngày 19 tháng 12 năm Minh Mạng thứ 21 (1840) ông bệnh nặng; ngày 28 cho gọi hoàng trưởng tử Trưởng Khánh công vào hầu, nắm tay trối cho nối ngôi, rồi mất ngay hôm đó. Quần thần tâu xin Từ Thọ cung (Hoàng thái hậu) và dâng tờ khuyên tiến; hoàng trưởng tử lên ngôi, đặt niên hiệu Thiệu Trị. (Tuổi thọ, lăng tẩm chưa có nguyên văn trên Wikisource.)"),
+    ("Gia quyến", "Vợ đầu là Tá Thiên Nhân hoàng hậu họ Hồ (chọn năm 1806), mất sớm sau khi sinh Thiệu Trị; ngoài ra có các bà gia phi Phạm thị, trang tần Trần thị, hiền phi Ngô thị, thục tần Nguyễn Khắc thị, tiệp dư Lê thị, an tần Hồ thị, có con được sử chép. Con trai trưởng là Thiệu Trị; sử chép nhiều hoàng tử khác, nổi bật là Miên Định (Thọ Xuân vương), Miên Thẩm (Tùng Thiện vương), Miên Trinh (Tuy Lý vương)."),
+], [cb(2, "tiểu dẫn Thánh Tổ", "初夢神人獻璽一，紅色如日，帝生，寔應其兆"),
+    cb(2, "tiểu dẫn Thánh Tổ", "乙卯，以登尊祗告郊廟社稷。丙辰，詣皇仁殿拜受傳國金寶、萬年嗣位袍"),
+    cb(2, "tiểu dẫn Thánh Tổ", "羣臣奉箋勸進，帝哀慟不已，諸大臣再三敦請，乃從之"),
+    cb(2, "tiểu dẫn Thánh Tổ", "春正月戊午朔，帝即皇帝位于太和殿，建元，大赦，頒詔中外"),
+    cb(3, "tiểu dẫn Hiến Tổ", "二十一年十二月十九日，聖躬不豫，宣召入侍"),
+    cb(3, "tiểu dẫn Hiến Tổ", "羣臣具本奏知慈壽宮，既奉俞旨，上箋勸進。乃即位繼大統")])
+
+sections("nguyen.thieu-tri", [
+    ("Xuất thân", "Con trưởng của Minh Mạng, mẹ là Tá Thiên Nhân hoàng hậu họ Hồ; sinh ngày Nhâm Tý 11 tháng 5 năm Đinh Mão (Gia Long 6, 1807) ở xã Xuân Lộc phía đông kinh thành (sau lập chùa Diệu Đế ở chỗ này). Mười ba ngày sau khi sinh mẹ mất, ông khóc ra máu không dứt; Thuận Thiên Cao hoàng hậu nuôi trong cung, Gia Long đến xem, mừng nói: \"Đứa trẻ đỏ hỏn khóc ra máu, thiên tính chứa đựng, sau này tất có thể vẹn hiếu\", rồi ban tên theo bộ Nhật."),
+    ("Trước khi lên ngôi", "Đầu niên hiệu Minh Mạng, ông ra học ở tòa nhà do Minh Mạng đặt tên là Chỉ Thiện đường (theo câu \"Chỉ ư chí thiện\" của Đại học). Tháng Giêng năm Minh Mạng thứ 11 (1830) ông được phong Trưởng Khánh công; tháng 8 năm thứ 17 (1836) nhận ấn thư kiêm nhiếp chức Tả tôn chính Tôn nhân phủ, định chương trình, chính phổ hệ, bố giáo lệnh, thứ tự tước lộc."),
+    ("Lên ngôi", "Ngày 28 tháng 12 năm Minh Mạng 21 (1840), ông được Minh Mạng nắm tay trối cho nối ngôi, rồi quần thần dâng tờ khuyên tiến; ông lên ngôi. Mùa xuân tháng Giêng năm Tân Sửu (1841), lấy niên hiệu Thiệu Trị (từ ngày 20 tháng Giêng; trước đó vẫn tính là năm Minh Mạng 22)."),
+    ("Qua đời", "Tháng 9 năm Thiệu Trị thứ 7 (1847) ông bệnh; ngày Quý Tỵ (17), ông phê sẵn di chiếu cho hoàng tử thứ hai (Phúc Tuy công) nối ngôi, giao Trương Đăng Quế, Võ Văn Giải, Nguyễn Tri Phương, Lâm Duy Hiệp làm phụ chính. Ngày 27 ngày Quý Mão ông mất, quần thần tuyên di chiếu ở điện Cần Chính và dâng tờ khuyên tiến. (Tuổi thọ, lăng tẩm chưa có nguyên văn trên Wikisource.)"),
+    ("Gia quyến", "Vợ là Nghi Thiên Chương hoàng hậu họ Phạm (về sau tôn Từ Dụ thái hoàng thái hậu), mẹ của Tự Đức. Sử còn chép An Phong công Hồng Bảo tuy lớn hơn nhưng là con thứ (庶出), ít học, chỉ ham chơi nên không được nối ngôi."),
+], [cb(3, "tiểu dẫn Hiến Tổ", "越十三日，后崩，泣血不止。順天高皇后育之宮中，世祖高皇帝臨視之，喜曰"),
+    cb(3, "tiểu dẫn Hiến Tổ", "赤孩泣血，天性所鍾，他日必能全孝"),
+    cb(3, "tiểu dẫn Hiến Tổ", "抱見，御批以日字部錫名焉"),
+    cb(3, "tiểu dẫn Hiến Tổ", "明命初，出堂讀書，聖祖仁皇帝諭以大學治國平天下之道，在「止於至善」。因以「止善」名其堂"),
+    cb(3, "tiểu dẫn Hiến Tổ", "十七年八月，受璽書兼攝尊人府左尊正，定章程，正譜系，布教令，序爵祿"),
+    cb(4, "tiểu dẫn Dực Tông", "十七日癸巳，預批遺詔，以帝嗣位，顧命良臣張登桂、大臣武文解、阮知方、林維浹充輔政大臣"),
+    cb(4, "tiểu dẫn Dực Tông", "二十七日癸卯，憲祖章皇帝崩，羣臣宣遺詔（詔文已奉載第三紀）于勤政殿，上箋勸進"),
+    cb(4, "tiểu dẫn Dực Tông", "辰安豐公洪保雖長而庶出，又寡學徒事嬉遊")])
+
 if BAD:
     for b in BAD:
         print("KHÔNG CÓ TRONG NGUYÊN VĂN:", b)
