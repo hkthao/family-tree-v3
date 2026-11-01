@@ -12,7 +12,7 @@ import sys
 
 OUT = sys.argv[1]
 DRAFT = {"status": "draft", "note": "Khung P1 — trích từ nguyên văn Toàn thư; cần người duyệt đối chiếu bản dịch + Cương mục."}
-persons, unions, graves, links = [], [], [], []
+persons, unions, graves, links, heritage = [], [], [], [], []
 
 
 def c(field, vol, where, quote, value=None, note=None):
@@ -47,6 +47,22 @@ def G(key, name, occupants, cites, location_name=None, notes=None):
     if notes:
         g["notes"] = notes
     graves.append(g)
+
+
+def pexels(photo_id, slug, author, caption, w=960):
+    return {"url": f"https://images.pexels.com/photos/{photo_id}/pexels-photo-{photo_id}.jpeg?auto=compress&cs=tinysrgb&w={w}",
+            "source_page": f"https://www.pexels.com/photo/{slug}-{photo_id}/", "author": author, "license": "Pexels License",
+            "kind": "photograph", "caption": caption}
+
+
+def H(key, category, title, summary, body, people, cites, loc=None, photos=None):
+    h = {"key": key, "category": category, "title": title, "summary": summary, "body": body,
+         "people": [{"person": k, "role_note": r} for k, r in people], "citations": cites, "review": DRAFT}
+    if loc:
+        h["location_name"] = loc
+    if photos:
+        h["photos"] = photos
+    heritage.append(h)
 
 
 def reign(n, temple, start, end, eras):
@@ -277,6 +293,37 @@ P(key="ly.chieu-hoang", full_name="Lý Chiêu Hoàng", gender="F", parents="u.hu
              c("reign:0", 4, "năm Ất Dậu (1225)", "昭皇乃降服，勸進陳煚即皇帝位"),
              c("bio", 4, f"{T9} — {TD}", "惠宗無嗣，立爲皇太子以傳位。在位二年，遂禪位于陳")])
 
+# ── Di sản ─────────────────────────────────────────────────────────
+H("ds.thang-long", "place", "Kinh thành Thăng Long (dời đô 1010)",
+  "Năm 1010 Lý Thái Tổ dời đô từ Hoa Lư về thành Đại La, đổi tên là Thăng Long.",
+  "Mùa thu tháng 7 năm Canh Tuất (1010), Lý Thái Tổ dời kinh đô từ thành Hoa Lư về thành Đại La, thấy rồng vàng hiện lên ở thuyền ngự nên đổi tên thành là Thăng Long. Vua cho dựng cung điện trong kinh thành: điện Càn Nguyên làm nơi thiết triều, bên trái là điện Tập Hiền, bên phải là điện Giảng Vũ, cửa Phi Long, cửa Đan Phượng. Đây là nền của Hà Nội ngày nay; khu Hoàng thành Thăng Long được UNESCO ghi danh Di sản thế giới năm 2010.",
+  [("ly.thai-to", "dời đô, đặt tên Thăng Long")],
+  [c("existence", 2, "năm Canh Tuất (1010)", "秋七月，帝自華閭城徙都于京府大羅城，暫泊城下，黄龍見于御舟，因改其城曰昇龍城"),
+   c("body", 2, "năm Canh Tuất (1010)", "遂於昇龍京城之内起造宫殿。前起乾元殿，以為視朝之所。左置集賢殿，右立講武殿"),
+   c("person:0", 2, "năm Canh Tuất (1010)", "帝自華閭城徙都于京府大羅城"),
+   c("location_name", 2, "năm Canh Tuất (1010)", "帝自華閭城徙都于京府大羅城", "Hà Nội (thành Đại La xưa)")], "Hà Nội (thành Đại La xưa)",
+  [pexels(38015799, "ancient-gate-at-imperial-citadel-of-thang-long", "valeria-drozdova-2148646707", "Cổng thành ở Hoàng thành Thăng Long, Hà Nội (ảnh Pexels)")])
+H("ds.chua-mot-cot", "place", "Chùa Một Cột (Diên Hựu)",
+  "Chùa Diên Hựu do Lý Thái Tông cho dựng năm 1049 trên một cột đá, theo giấc mộng thấy Phật Quan Âm ngồi tòa sen.",
+  "Mùa đông tháng 10 năm Kỷ Sửu (1049), Lý Thái Tông cho dựng chùa Diên Hựu. Trước đó vua mơ thấy Phật Quan Âm ngồi trên đài sen, dắt vua lên đài. Khi tỉnh dậy, vua kể lại với các quan, có người cho là điềm gở; sư Thiền Tuệ khuyên vua dựng chùa, dựng cột đá giữa đất, làm đài sen Quan Âm trên đó như trong mộng. Tăng chúng đi vòng tụng kinh cầu cho vua sống lâu, nên đặt tên là Diên Hựu. Chùa nay gọi là chùa Một Cột ở Hà Nội.",
+  [("ly.thai-tong", "cho dựng chùa")],
+  [c("existence", 2, "năm Kỷ Sửu (1049)", "冬十月，造延祐寺。初，帝夢觀音仸坐蓮花臺，引帝登臺"),
+   c("body", 2, "năm Kỷ Sửu (1049)", "有僧禪慧者勸帝造寺，立石柱于地中，搆觀音蓮花臺于其上，如夢中所見"),
+   c("body", 2, "năm Kỷ Sửu (1049)", "僧徒旋繞誦經求延壽，故名延祐"),
+   c("person:0", 2, "năm Kỷ Sửu (1049)", "冬十月，造延祐寺"),
+   c("location_name", 2, "năm Kỷ Sửu (1049)", "冬十月，造延祐寺", "Hà Nội", note="Vị trí hiện nay (chùa Một Cột); Toàn thư không ghi địa điểm.")], "Hà Nội",
+  [pexels(31688897, "one-pillar-pagoda-in-hanoi-vietnam", "dqnguyen15", "Chùa Một Cột (Diên Hựu), Hà Nội (ảnh Pexels)")])
+H("ds.van-mieu", "place", "Văn Miếu (1070)",
+  "Năm 1070 Lý Thánh Tông cho tu sửa Văn Miếu, tô tượng Khổng Tử, Chu Công và bốn vị phối thờ, vẽ tượng bảy mươi hai hiền; hoàng thái tử đến học.",
+  "Mùa thu tháng 8 năm Canh Tuất (1070), Lý Thánh Tông cho tu sửa Văn Miếu, tô tượng Khổng Tử, Chu Công và Tứ phối, vẽ hình bảy mươi hai người hiền, bốn mùa cúng tế; hoàng thái tử đến học ở đây. Sau này Văn Miếu – Quốc Tử Giám ở Hà Nội trở thành trường đại học đầu tiên của nước ta (Quốc Tử Giám lập năm 1076 đời Nhân Tông).",
+  [("ly.thanh-tong", "cho tu sửa, lập thờ Khổng Tử")],
+  [c("existence", 3, "năm Canh Tuất (1070)", "秋八月，脩文廟，塑孔子、周公及四配像，畫七十二賢像，四時享祀"),
+   c("body", 3, "năm Canh Tuất (1070)", "皇太子臨學焉"),
+   c("body", 3, "năm Bính Thìn (1076)", "選文職官員識字者入國子監"),
+   c("person:0", 3, "năm Canh Tuất (1070)", "秋八月，脩文廟，塑孔子"),
+   c("location_name", 3, "năm Canh Tuất (1070)", "秋八月，脩文廟，塑孔子、周公及四配像", "Hà Nội", note="Vị trí hiện nay (Văn Miếu – Quốc Tử Giám); Toàn thư không ghi địa điểm.")], "Hà Nội",
+  [pexels(38127389, "ancient-gate-at-the-temple-of-literature-hanoi", "valeria-drozdova-2148646707", "Cổng Văn Miếu, Hà Nội (ảnh Pexels)")])
+
 links += [
     {"person": "ly.chieu-hoang", "other_clan": "tran", "other_person": "tran.chieu-thanh",
      "note": "Vua cuối triều Lý, hoàng hậu đầu tiên của Trần Thái Tông",
@@ -289,7 +336,7 @@ links += [
 data = {
     "clan": {"key": "ly", "name": "Nhà Lý (1009–1225)", "category": "royal",
              "description": "Nhà Lý do Lý Công Uẩn (Thái Tổ) lập năm 1009, dời đô về Thăng Long, truyền chín đời qua 216 năm. Cao điểm dưới Thánh Tông, Nhân Tông; suy từ Anh Tông, Cao Tông; Lý Chiêu Hoàng nhường ngôi cho chồng là Trần Cảnh (1225), mở đầu nhà Trần. Gia phả này chép từ Thái Tổ qua các đời vua và hoàng hậu, theo Đại Việt sử ký toàn thư. Mỗi dữ kiện đều có nguyên văn trích dẫn; xem dòng \"Theo:\" cuối tiểu sử."},
-    "persons": persons, "unions": unions, "resting_places": graves, "heritage": [], "events": [], "same_person_links": links,
+    "persons": persons, "unions": unions, "resting_places": graves, "heritage": heritage, "events": [], "same_person_links": links,
 }
 json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
 print(f"{len(persons)} người, {len(unions)} hôn nhân, {len(graves)} lăng, {len(links)} thông gia")

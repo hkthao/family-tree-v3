@@ -27,7 +27,8 @@ import sys
 
 data = json.load(open(sys.argv[1], encoding="utf8"))
 ROOT = sys.argv[2]
-NUM = {2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九", 10: "十", 11: "十一"}
+NUM = {2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九", 10: "十", 11: "十一", 12: "十二", 13: "十三",
+       14: "十四", 15: "十五", 16: "十六", 17: "十七"}
 CAN = dict(zip("Giáp Ất Bính Đinh Mậu Kỷ Canh Tân Nhâm Quý".split(), "甲乙丙丁戊己庚辛壬癸"))
 CHI = dict(zip("Tý Sửu Dần Mão Thìn Tỵ Ngọ Mùi Thân Dậu Tuất Hợi".split(), "子丑寅卯辰巳午未申酉戌亥"))
 GZ, ZZ = "".join(CAN.values()), "".join(CHI.values())
@@ -44,6 +45,7 @@ def nxt(g, k=1):
 
 def clean(t, keep_cm_years=False):
     t = re.sub(r"-\{|\}-", "", t)
+    t = re.sub(r"\[\d+[ab]\]", "", t)  # số trang bản khắc chèn giữa câu (Q.10+)
     if keep_cm_years:
         # Cương mục đánh dấu năm bằng {{annotate|丙戌}} → giữ làm mốc riêng.
         t = re.sub(r"\{\{annotate\|([%s][%s])\}\}" % (GZ, ZZ), r"\n§\1§", t)
@@ -55,7 +57,9 @@ def clean(t, keep_cm_years=False):
 
 def tt_headers(text):
     """(vị trí, can chi đúng) của tiêu đề năm Toàn thư."""
-    return fix_sequence([(m.start(), m.group(1)) for m in re.finditer(r"(?m)^([%s][%s])[^\n，。]{0,6}年" % (GZ, ZZ), text)], text)
+    # Q.2–9: "戊辰十九年…" đầu dòng; Q.10+: "===庚辰，光順元年…===" hoặc "'''戊午，景統元年…'''".
+    return fix_sequence(
+        [(m.start(), m.group(1) or m.group(2)) for m in re.finditer(r"(?m)^(?:([%s][%s])[^\n，。]{0,6}年|(?:={3}|''')([%s][%s])，)" % (GZ, ZZ, GZ, ZZ), text)], text)
 
 
 def fix_sequence(hs, text):
