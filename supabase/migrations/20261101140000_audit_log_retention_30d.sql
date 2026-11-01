@@ -32,8 +32,12 @@ $$;
 
 do $$
 begin
-  if exists (select 1 from cron.job where jobid = 2 and command like '%prune_audit_log%') then
-    perform cron.alter_job(2, schedule := '30 3 * * *');
+  -- pg_cron không có ở môi trường local/CI → chỉ đụng tới cron.* khi extension tồn tại.
+  if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    if exists (select 1 from cron.job where command like '%prune_audit_log%') then
+      perform cron.alter_job(jobid, schedule := '30 3 * * *')
+        from cron.job where command like '%prune_audit_log%';
+    end if;
   end if;
 end $$;
 
