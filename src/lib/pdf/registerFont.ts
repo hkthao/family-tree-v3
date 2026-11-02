@@ -1,5 +1,7 @@
 import { Font } from "@react-pdf/renderer";
 
+import { readNameFontId } from "@/lib/tree/nameFonts";
+
 import { pdfAssets } from "./pdfAssets";
 
 let registered = false;
@@ -18,18 +20,30 @@ export function ensurePdfFontRegistered(): void {
       { src: pdfAssets.font600, fontWeight: 600 },
     ],
   });
-  // Serif cổ điển cho tiêu đề (có đủ dấu tiếng Việt).
-  Font.register({
-    family: "CormorantSerif",
-    fonts: [
-      { src: pdfAssets.serif600, fontWeight: 600 },
-      { src: pdfAssets.serif700, fontWeight: 700 },
-    ],
-  });
+  // Font tiêu đề theo lựa chọn của cây (đều có đủ dấu tiếng Việt).
+  for (const [id, [w600, w700]] of Object.entries(pdfAssets.nameFonts)) {
+    Font.register({
+      family: `NameFont_${id}`,
+      fonts: [
+        { src: w600, fontWeight: 600 },
+        { src: w700, fontWeight: 700 },
+      ],
+    });
+  }
   // Disable hyphenation — Vietnamese words shouldn't break mid-word.
   Font.registerHyphenationCallback((word) => [word]);
   registered = true;
 }
 
 export const PDF_FONT_FAMILY = "BeVietnamPro";
-export const PDF_SERIF_FAMILY = "CormorantSerif";
+
+/** Họ font tiêu đề theo lựa chọn "Font" đang lưu của người dùng (mặc định Playfair). */
+export function pdfSerifFamily(): string {
+  const id = readNameFontId();
+  return `NameFont_${id in pdfAssets.nameFonts ? id : "playfair"}`;
+}
+
+/** Style fontFamily cho tiêu đề — gọi lúc dựng để theo lựa chọn hiện tại. */
+export function serifStyle(): { fontFamily: string } {
+  return { fontFamily: pdfSerifFamily() };
+}

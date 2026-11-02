@@ -12,9 +12,11 @@ import type { BookWatermarkId } from "./bookWatermarks";
 export interface PdfAssets {
   font400: string;
   font600: string;
-  /** Font serif (Cormorant) cho tiêu đề — bìa, đề mục. */
-  serif600: string;
-  serif700: string;
+  /**
+   * Font tiêu đề theo lựa chọn "Font" của cây (id → [đậm vừa, đậm]).
+   * Thiếu id đang chọn thì lùi về playfair.
+   */
+  nameFonts: Record<string, [string, string]>;
   logo: string;
   avatarM: string;
   avatarF: string;
@@ -25,8 +27,13 @@ export interface PdfAssets {
 export const pdfAssets: PdfAssets = {
   font400: "/fonts/be-vietnam-pro-400.ttf",
   font600: "/fonts/be-vietnam-pro-600.ttf",
-  serif600: "/fonts/cormorant-SemiBold.ttf",
-  serif700: "/fonts/cormorant-Bold.ttf",
+  nameFonts: {
+    playfair: ["/fonts/name-playfair-600.ttf", "/fonts/name-playfair-700.ttf"],
+    cormorant: ["/fonts/name-cormorant-600.ttf", "/fonts/name-cormorant-700.ttf"],
+    charm: ["/fonts/name-charm-400.ttf", "/fonts/name-charm-700.ttf"],
+    playwrite: ["/fonts/name-playwrite-400.ttf", "/fonts/name-playwrite-400.ttf"],
+    dancing: ["/fonts/name-dancing-600.ttf", "/fonts/name-dancing-700.ttf"],
+  },
   logo: "/icons/app-icon-192.png",
   avatarM: "/avatars/male-royal.png",
   avatarF: "/avatars/female-royal.png",
