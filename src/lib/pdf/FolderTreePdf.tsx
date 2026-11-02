@@ -14,7 +14,7 @@ import {
   type FolderPdfPerson,
   type FolderPdfRow,
 } from "./folderTreeRows";
-import { PDF_FONT_FAMILY } from "./registerFont";
+import { PDF_FONT_FAMILY, serifStyle } from "./registerFont";
 
 /**
  * Trang "Cây thư mục" trong Sổ gia phả.
@@ -307,7 +307,14 @@ export function renderFolderTreePages(rows: FolderPdfRow[]) {
     >
       <VineBorder width={pg.width} height={pg.height} />
       <View style={{ height: HEADER_H }}>
-        <Text style={{ fontSize: 22, fontWeight: 600, color: COLORS.primary }}>
+        <Text
+          style={{
+            ...serifStyle(),
+            fontSize: 25,
+            fontWeight: 700,
+            color: COLORS.primary,
+          }}
+        >
           Sơ đồ cây gia phả
           {pages.length > 1 ? ` (${i + 1}/${pages.length})` : ""}
         </Text>
