@@ -333,6 +333,51 @@ links += [
      "citations": [c("same_person", 5, "năm Đinh Dậu (1237)", "納兄懷王柳妻順天公主李氏為順天皇后")], "review": DRAFT},
 ]
 
+
+# ── Tiểu sử có cấu trúc + dòng thời gian (bio_lib) ─────────────────
+
+import importlib.util
+import os
+
+_spec = importlib.util.spec_from_file_location("bio_lib", os.path.join(os.path.dirname(os.path.abspath(__file__)), "bio_lib.py"))
+bio_lib = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(bio_lib)
+
+EV = {
+    "ly.thai-to": [(1010, "Dời đô từ Hoa Lư về thành Đại La, đổi tên là Thăng Long.",
+                    c("bio", 2, "năm Canh Tuất (1010)", "秋七月，帝自華閭城徙都于京府大羅城，暫泊城下，黄龍見于御舟，因改其城曰昇龍城"))],
+    "ly.thai-tong": [(1028, "Ba vương Đông Chinh, Dực Thánh, Vũ Đức đem quân vào cung chống lại; Thái Tông dẹp yên rồi lên ngôi.",
+                      c("bio", 2, "năm Mậu Thìn (1028)", "東征、翊聖、武德三王聞之，皆帥府兵入伏禁城")),
+                     (1049, "Cho dựng chùa Diên Hựu (chùa Một Cột) theo giấc mộng thấy Phật Quan Âm.",
+                      c("bio", 2, "năm Kỷ Sửu (1049)", "冬十月，造延祐寺"))],
+    "ly.thanh-tong": [(1054, "Lên ngôi, đặt quốc hiệu là Đại Việt.", c("bio", 2, "năm Giáp Ngọ (1054)", "建國號曰大越")),
+                      (1070, "Tu sửa Văn Miếu, tô tượng Khổng Tử, Chu Công và Tứ phối; hoàng thái tử đến học.",
+                       c("bio", 3, "năm Canh Tuất (1070)", "秋八月，脩文廟，塑孔子、周公及四配像"))],
+    "ly.nhan-tong": [(1073, "Tôn hoàng thái phi Ỷ Lan làm Linh Nhân hoàng thái hậu.",
+                      c("bio", 3, "năm Quý Sửu (1073)", "尊皇太妃爲靈仁皇太后")),
+                     (1075, "Sai Lý Thường Kiệt và Tông Đản đem hơn mười vạn quân đánh nhà Tống, hạ các châu Khâm, Liêm, Ung.",
+                      c("bio", 3, "năm Ất Mão (1075)", "命李常傑、宗亶領兵十餘萬擊之")),
+                     (1076, "Chọn quan văn biết chữ cho vào Quốc Tử Giám.",
+                      c("bio", 3, "năm Bính Thìn (1076)", "選文職官員識字者入國子監"))],
+}
+RM = {
+    "ly.thai-to": ("Toàn thư khen vua ứng trời thuận người, nhân từ khoan dung, kín đáo ôn hòa, có độ lượng của bậc đế vương; chỉ chê là chưa hiểu chính học, ham đạo khác nên bị lụy.",
+                   c("bio", 2, f"{T1} — {TD}", "帝應天順人，乘時啓運，寬慈仁恕，密察温文，有帝之量。然未明正學，反好異端，為之累耳")),
+    "ly.thai-tong": ("Toàn thư khen vua trầm tĩnh, biết trước sự việc, đánh đâu thắng đó, sánh với Hán Quang Vũ và Đường Thái Tông; chỉ trách người quân tử thường chê vua kiêu căng.",
+                     c("bio", 2, f"{T2} — {TD}", "帝沉幾先物，同符漢光，征伐四克，比迹唐太。然君子每以矜大過舉，責備其賢")),
+    "ly.thanh-tong": ("Toàn thư khen vua khéo nối nghiệp, thật lòng thương dân, trọng nông tha hình, đặt khoa bác sĩ, văn trị võ bị, trong nước yên ổn, đủ là vua giỏi; chê việc làm khổ dân dựng tháp Báo Thiên và cung Dâm Đàm.",
+                      c("bio", 3, f"{T3} — {TD}", "帝善於繼承，誠心愛民，重農恤刑，柔遠能邇，置博士科，厚養廉禮，文脩武備，海内謐寕，足爲良主。然疲民力以築報天之塔，費民財以造霪潭之宫，此其所短也")),
+    "ly.nhan-tong": ("Toàn thư khen vua sáng suốt, thần võ, thông âm luật, làm nhạc ca, đưa dân đến giàu thịnh, là vua thịnh của nhà Lý; chỉ tiếc vua mộ đạo Phật, ham điềm lành nên thành cái lụy cho đức lớn.",
+                     c("bio", 3, f"{T4} — {TD}", "明哲神武，睿智孝仁，大畏小懷，神助人應，通音律，製樂歌，俗臻富庶，身致太平，爲李朝之盛主。惜其慕浮屠，好祥瑞，爲盛德之累耳")),
+    "ly.than-tong": ("Toàn thư khen đầu đời vua còn trẻ con, lớn lên thông minh độ lượng, dùng người giỏi, trước sau đều không sai; dù mang bệnh nặng nhưng có thuốc chữa, ấy là ý trời; chỉ chê ham điềm lành, sùng Phật.",
+                     c("bio", 3, f"{T5} — {TD}", "雖身嬰恶疾，尋有藥之，天意有在也。然酷好祥瑞，崇尚浮屠，奚足貴哉")),
+    "ly.anh-tong": ("Toàn thư khen việc phế lập không nghe lời đàn bà, gửi gắm được bề tôi hiền nên không hổ với trách nhiệm; nhưng chê vua không phân biệt kẻ nịnh, hình phạt không rõ nên thiên tai, giặc cướp nổi lên, kỷ cương rối loạn.",
+                    c("bio", 4, f"{T6} — {TD}", "廢立不惑婦人之言，寄託能得賢臣之輔，可謂無愧於負荷矣。然憸邪莫辨，刑罰不明，所以天災示警，㓂盗並興，紀綱紊舛，可勝言哉")),
+    "ly.cao-tong": ("Toàn thư chê vua rong chơi vô độ, hình chính không rõ, giặc cướp nổi lên như ong, đói kém liên miên, cơ nghiệp nhà Lý từ đó suy.",
+                    c("bio", 4, f"{T7} — {TD}", "觀逰無度，刑政不明，盗賊蜂起，饑饉荐臻，李家之業於是乎衰矣")),
+}
+bio_lib.structure(persons, unions, EV, RM)
+
 data = {
     "clan": {"key": "ly", "name": "Nhà Lý (1009–1225)", "category": "royal",
              "description": "Nhà Lý do Lý Công Uẩn (Thái Tổ) lập năm 1009, dời đô về Thăng Long, truyền chín đời qua 216 năm. Cao điểm dưới Thánh Tông, Nhân Tông; suy từ Anh Tông, Cao Tông; Lý Chiêu Hoàng nhường ngôi cho chồng là Trần Cảnh (1225), mở đầu nhà Trần. Gia phả này chép từ Thái Tổ qua các đời vua và hoàng hậu, theo Đại Việt sử ký toàn thư. Mỗi dữ kiện đều có nguyên văn trích dẫn; xem dòng \"Theo:\" cuối tiểu sử."},

@@ -514,6 +514,14 @@ heritage = []
 exec(open(__file__.replace("gen_tran.py", "gen_tran_ext.py"), encoding="utf8").read())
 exec(open(__file__.replace("gen_tran.py", "gen_tran_ext2.py"), encoding="utf8").read())
 
+# ── Tiểu sử có cấu trúc + dòng thời gian (bio_lib) ─────────────────
+import importlib.util as _iu
+import os as _os
+_spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
+bio_lib = _iu.module_from_spec(_spec)
+_spec.loader.exec_module(bio_lib)
+bio_lib.structure(persons, unions, globals().get("EV"), globals().get("RM"))
+
 data = {
     "clan": {"key": "tran", "name": "Nhà Trần (1225–1400)", "category": "royal",
              "description": "Họ Trần gốc người đất Mân, đến ở hương Tức Mặc, phủ Thiên Trường, đời đời làm nghề đánh cá. Năm Ất Dậu (1225), Trần Cảnh (Thái Tông) nhận ngôi từ Lý Chiêu Hoàng, mở đầu nhà Trần; truyền đến Thiếu Đế thì Lê Quý Ly cướp ngôi (1400). Gia phả này chép từ Trần Kinh qua các đời vua và những nhân vật hoàng tộc có tên trong sử, theo Đại Việt sử ký toàn thư, Khâm định Việt sử thông giám cương mục và Việt sử lược. Mỗi dữ kiện đều có nguyên văn trích dẫn; xem dòng \"Theo:\" cuối tiểu sử."},
