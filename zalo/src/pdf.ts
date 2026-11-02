@@ -5,8 +5,8 @@ import { supabase } from "@/lib/supabase";
 // Tệp tĩnh cho các bản PDF, đóng gói cùng Mini App (trang web lấy ở "/fonts/…").
 import font400 from "../../public/fonts/be-vietnam-pro-400.ttf?url";
 import font600 from "../../public/fonts/be-vietnam-pro-600.ttf?url";
-import serif600 from "../../public/fonts/cormorant-SemiBold.ttf?url";
-import serif700 from "../../public/fonts/cormorant-Bold.ttf?url";
+import playfair600 from "../../public/fonts/name-playfair-600.ttf?url";
+import playfair700 from "../../public/fonts/name-playfair-700.ttf?url";
 import logo from "../../public/icons/app-icon-192.png";
 import avatarF from "../../public/avatars/female.png";
 import avatarM from "../../public/avatars/male.png";
@@ -24,7 +24,7 @@ import phoenix from "../../public/watermarks/phoenix.png";
  */
 export async function preparePdfAssets(): Promise<void> {
   const { setPdfAssets } = await import("@/lib/pdf/pdfAssets");
-  setPdfAssets({ font400, font600, serif600, serif700, logo, avatarM, avatarF, watermarks: { dragon, phoenix } });
+  setPdfAssets({ font400, font600, nameFonts: { playfair: [playfair600, playfair700] }, logo, avatarM, avatarF, watermarks: { dragon, phoenix } });
 }
 
 /** Lưu PDF vào `book-exports/<userId>/<name>.pdf` (ghi đè), trả địa chỉ có chữ ký. */

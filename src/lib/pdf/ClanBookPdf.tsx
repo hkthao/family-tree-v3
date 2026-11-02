@@ -34,7 +34,7 @@ import { buildFolderPdfRows, type FolderPdfPerson } from "./folderTreeRows";
 import {
   ensurePdfFontRegistered,
   PDF_FONT_FAMILY,
-  PDF_SERIF_FAMILY,
+  serifStyle,
 } from "./registerFont";
 
 // ─── Page geometry (A4 in points) ──────────────────────────────────
@@ -75,7 +75,6 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   coverTitle: {
-    fontFamily: PDF_SERIF_FAMILY,
     fontSize: 44,
     fontWeight: 700,
     lineHeight: 1.3,
@@ -109,7 +108,6 @@ const styles = StyleSheet.create({
   // ("ạ", "ậ") stay inside the Text box; the underline sits just
   // below the box with minimal extra gap.
   h1: {
-    fontFamily: PDF_SERIF_FAMILY,
     fontSize: 25,
     fontWeight: 700,
     lineHeight: 1.2,
@@ -714,7 +712,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
         <View style={styles.coverWrap}>
           <Image src={pdfAssets.logo} style={styles.coverLogo} />
           <Text style={styles.coverEyebrow}>GIA PHẢ</Text>
-          <Text style={styles.coverTitle}>{withHoPrefix(cleanName)}</Text>
+          <Text style={[styles.coverTitle, serifStyle()]}>{withHoPrefix(cleanName)}</Text>
           <View style={styles.coverDivider} />
           <Text style={styles.coverTagline}>Phả hệ chính thức</Text>
           {clan.description && !looksLikeDebug(clan.description) ? (
@@ -744,7 +742,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {/* ─── Phàm lệ ─────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
         <VineBorder />
-        <Text style={styles.h1}>Phàm lệ</Text>
+        <Text style={[styles.h1, serifStyle()]}>Phàm lệ</Text>
         <View style={styles.h1Underline} />
         <Text style={styles.intro}>
           Một vài quy ước sử dụng trong cuốn gia phả này.
@@ -804,7 +802,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showDetail && bloodlineSorted.length > 0 && (
         <Page size="A4" style={styles.page}>
         <VineBorder />
-          <Text style={styles.h1}>Danh bạ chi tiết</Text>
+          <Text style={[styles.h1, serifStyle()]}>Danh bạ chi tiết</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Bắt đầu từ Thuỷ tổ, lần lượt theo từng đời; trong mỗi đời
@@ -847,7 +845,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {inLaws.length > 0 && (
         <Page size="A4" style={styles.page}>
         <VineBorder />
-          <Text style={styles.h1}>Dâu / rể kết hôn vào họ</Text>
+          <Text style={[styles.h1, serifStyle()]}>Dâu / rể kết hôn vào họ</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Người ngoài huyết thống. Không gắn số đời, sắp theo bảng
@@ -881,7 +879,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showHonor && data.honor.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
-          <Text style={styles.h1}>Bảng vàng công đức</Text>
+          <Text style={[styles.h1, serifStyle()]}>Bảng vàng công đức</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Ghi công những tấm lòng đóng góp và vinh danh thành tích của con
@@ -934,7 +932,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showRestingPlaces && data.restingPlaces.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
-          <Text style={styles.h1}>Mộ phần &amp; tro cốt</Text>
+          <Text style={[styles.h1, serifStyle()]}>Mộ phần &amp; tro cốt</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ.
@@ -971,7 +969,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showHeritage && data.heritage.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
-          <Text style={styles.h1}>Di sản &amp; Văn hoá</Text>
+          <Text style={[styles.h1, serifStyle()]}>Di sản &amp; Văn hoá</Text>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Từ đường, tục lệ, giai thoại, tư liệu — những giá trị tinh thần
@@ -1746,7 +1744,7 @@ function TreeDiagramPage({
       style={styles.page}
     >
       <VineBorder width={pageW} height={pageH} />
-      <Text style={styles.h1}>{title}</Text>
+      <Text style={[styles.h1, serifStyle()]}>{title}</Text>
       <View style={styles.h1Underline} />
       <Text style={styles.intro}>
         {subtitle ??
