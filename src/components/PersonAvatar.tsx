@@ -1,6 +1,8 @@
 import { createContext, useContext, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { readAvatarStyle } from "@/lib/familyChartAdapter";
+
 /**
  * Viền avatar do dòng họ chọn (lưu ở clans.avatar_frame). Khung vẽ
  * bằng SVG nên không cần tệp ảnh; ảnh người thu nhỏ vào trong để tổng kích
@@ -70,7 +72,14 @@ interface Props {
 export function PersonAvatar({ gender, photoUrl, size = 40, frame: frameProp, className }: Props) {
   const clanFrame = useContext(ClanAvatarFrameContext);
   const frame = frameProp !== undefined ? frameProp : clanFrame;
-  const fallback = gender === "M" ? "/avatars/male.png" : "/avatars/female.png";
+  const fallback =
+    readAvatarStyle() === "classic"
+      ? gender === "M"
+        ? "/avatars/male.png"
+        : "/avatars/female.png"
+      : gender === "M"
+        ? "/avatars/male-royal.svg"
+        : "/avatars/female-royal.svg";
   const framed = isAvatarFrame(frame);
   // Khung chiếm ~10% mỗi bên; ảnh nằm gọn trong vòng.
   const inner = framed ? Math.round(size * 0.8) : size;
