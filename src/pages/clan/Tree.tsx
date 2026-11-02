@@ -300,6 +300,24 @@ export default function Tree() {
     }
   }, [avatarStyle]);
 
+  // Khung viền thẻ: "royal" = viền vàng kép + hoa văn góc; "simple" = viền mảnh như cũ.
+  const [cardFrame, setCardFrame] = useState<"royal" | "simple">(() => {
+    try {
+      return localStorage.getItem("family-tree:card-frame") === "simple"
+        ? "simple"
+        : "royal";
+    } catch {
+      return "royal";
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("family-tree:card-frame", cardFrame);
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [cardFrame]);
+
   const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
   // gạt để tiết kiệm chỗ; desktop luôn hiện. Mặc định ẩn trên mobile.
@@ -795,12 +813,20 @@ export default function Tree() {
               // ngoài, thêm một đường chỉ mảnh bên trong (vẽ lại mỗi lần cập nhật).
               const rect = this.querySelector(".card-body rect");
               if (rect) {
+                this.querySelector(".card-body .card-inner-line")?.remove();
+                this.querySelector(".card-body .card-corners")?.remove();
+                if (cardFrame === "simple") {
+                  if (isInLaw) {
+                    rect.setAttribute("stroke", "#B8862A");
+                    rect.setAttribute("stroke-dasharray", "4 3");
+                    rect.setAttribute("stroke-width", "1.5");
+                  }
+                } else {
                 rect.setAttribute("rx", "4");
                 rect.setAttribute("ry", "4");
                 rect.setAttribute("stroke", "#B8862A");
                 rect.setAttribute("stroke-width", isInLaw ? "1.5" : "1.2");
                 if (isInLaw) rect.setAttribute("stroke-dasharray", "4 3");
-                this.querySelector(".card-body .card-inner-line")?.remove();
                 const line = document.createElementNS(
                   "http://www.w3.org/2000/svg",
                   "rect",
@@ -819,7 +845,6 @@ export default function Tree() {
                 rect.parentNode?.insertBefore(line, rect.nextSibling);
 
                 // Hoa văn chạm khắc 4 góc: góc vuông chữ L vàng + chấm tròn nhỏ.
-                this.querySelector(".card-body .card-corners")?.remove();
                 const L = 9;
                 const o = 3;
                 const w = cardW;
@@ -844,6 +869,7 @@ export default function Tree() {
                 corners.setAttribute("stroke-linecap", "round");
                 corners.setAttribute("pointer-events", "none");
                 line.parentNode?.insertBefore(corners, line.nextSibling);
+                }
               }
             }
 
@@ -1090,6 +1116,7 @@ export default function Tree() {
     clan.display_death_details,
     clan.display_living_full_dob,
     depth,
+    cardFrame,
     // Vẽ lại khi quay từ "Trực hệ" về "Cả cây" (container được mount lại).
     view,
     // Vào/ra toàn màn hình → container được portal sang body (node mới)
@@ -1363,6 +1390,17 @@ export default function Tree() {
                       <option value="phoenix">Nền: Phượng</option>
                       <option value="dragon">Nền: Rồng</option>
                       <option value="none">Tắt nền</option>
+                    </Select>
+                    <Select
+                      aria-label="Khung viền thẻ"
+                      value={cardFrame}
+                      onChange={(e) =>
+                        setCardFrame(e.target.value as "royal" | "simple")
+                      }
+                      className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
+                    >
+                      <option value="royal">Khung: Hoàng gia</option>
+                      <option value="simple">Khung: Đơn giản</option>
                     </Select>
                     <Select
                       aria-label="Avatar mặc định"
