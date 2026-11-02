@@ -12,6 +12,9 @@ import type { BookWatermarkId } from "./bookWatermarks";
 export interface PdfAssets {
   font400: string;
   font600: string;
+  /** Font serif (Cormorant) cho tiêu đề — bìa, đề mục. */
+  serif600: string;
+  serif700: string;
   logo: string;
   avatarM: string;
   avatarF: string;
@@ -22,9 +25,11 @@ export interface PdfAssets {
 export const pdfAssets: PdfAssets = {
   font400: "/fonts/be-vietnam-pro-400.ttf",
   font600: "/fonts/be-vietnam-pro-600.ttf",
+  serif600: "/fonts/cormorant-SemiBold.ttf",
+  serif700: "/fonts/cormorant-Bold.ttf",
   logo: "/icons/app-icon-192.png",
-  avatarM: "/avatars/male.png",
-  avatarF: "/avatars/female.png",
+  avatarM: "/avatars/male-royal.png",
+  avatarF: "/avatars/female-royal.png",
   watermarks: {},
 };
 

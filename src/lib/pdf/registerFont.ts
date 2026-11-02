@@ -18,9 +18,18 @@ export function ensurePdfFontRegistered(): void {
       { src: pdfAssets.font600, fontWeight: 600 },
     ],
   });
+  // Serif cổ điển cho tiêu đề (có đủ dấu tiếng Việt).
+  Font.register({
+    family: "CormorantSerif",
+    fonts: [
+      { src: pdfAssets.serif600, fontWeight: 600 },
+      { src: pdfAssets.serif700, fontWeight: 700 },
+    ],
+  });
   // Disable hyphenation — Vietnamese words shouldn't break mid-word.
   Font.registerHyphenationCallback((word) => [word]);
   registered = true;
 }
 
 export const PDF_FONT_FAMILY = "BeVietnamPro";
+export const PDF_SERIF_FAMILY = "CormorantSerif";

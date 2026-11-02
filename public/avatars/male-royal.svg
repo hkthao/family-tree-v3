@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 100 100">
 <!-- Icon "crown" by Lorc (game-icons.net), CC BY 3.0 -->
 <defs><radialGradient id="b" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#5A1F1F"/><stop offset="1" stop-color="#2A0F0F"/></radialGradient>
 <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2D68A"/><stop offset="1" stop-color="#B8862A"/></linearGradient></defs>

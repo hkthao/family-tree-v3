@@ -18,6 +18,12 @@ import {
   IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import {
+  NAME_FONTS,
+  NAME_FONT_KEY,
+  nameFontFamily as fontFamilyOf,
+  readNameFontId,
+} from "@/lib/tree/nameFonts";
 import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SearchInput } from "@/components/SearchInput";
@@ -130,15 +136,6 @@ async function loadF3(): Promise<typeof import("family-chart")> {
   if (!f3Module) f3Module = await import("family-chart");
   return f3Module;
 }
-
-/** Font tên trên thẻ cây 2D. `family` đưa vào biến CSS --tree-name-font. */
-const NAME_FONTS = [
-  { id: "playfair", label: "Trang nhã (Playfair)", family: '"Playfair Display"' },
-  { id: "cormorant", label: "Cổ điển (Cormorant)", family: '"Cormorant Garamond"' },
-  { id: "charm", label: "Thư pháp (Charm)", family: '"Charm"' },
-  { id: "playwrite", label: "Thư pháp (Playwrite VN)", family: '"Playwrite VN"' },
-  { id: "dancing", label: "Thư pháp (Dancing Script)", family: '"Dancing Script"' },
-] as const;
 
 type Orientation = "vertical" | "horizontal";
 const ORIENTATION_KEY = "family-tree:tree-orientation";
@@ -328,23 +325,15 @@ export default function Tree() {
   }, [cardFrame]);
 
   // Font tên trên thẻ: Playfair mặc định + vài font thư pháp có tiếng Việt.
-  const [nameFont, setNameFont] = useState<string>(() => {
-    try {
-      const v = localStorage.getItem("family-tree:tree-name-font");
-      return NAME_FONTS.some((f) => f.id === v) ? (v as string) : "playfair";
-    } catch {
-      return "playfair";
-    }
-  });
+  const [nameFont, setNameFont] = useState<string>(readNameFontId);
   useEffect(() => {
     try {
-      localStorage.setItem("family-tree:tree-name-font", nameFont);
+      localStorage.setItem(NAME_FONT_KEY, nameFont);
     } catch {
       /* private mode — ignore */
     }
   }, [nameFont]);
-  const nameFontFamily =
-    NAME_FONTS.find((f) => f.id === nameFont)?.family ?? NAME_FONTS[0].family;
+  const nameFontFamily = fontFamilyOf(nameFont);
 
   const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
