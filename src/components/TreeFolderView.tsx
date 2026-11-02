@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { PersonAvatar } from "@/components/PersonAvatar";
+import { nameFontFamily, readNameFontId } from "@/lib/tree/nameFonts";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { getInlawGhostSpouses } from "@/lib/queries/person-links";
@@ -167,6 +168,10 @@ function GenderIcon({ gender }: { gender: "M" | "F" }) {
  * Đời là HUY HIỆU tô màu chứ không phải chữ xám lẫn với năm sinh: đó là
  * thứ người ta dò đầu tiên khi lướt một cột dài.
  */
+// Đọc lúc render (không chốt lúc import) để theo font vừa chọn ở cây.
+const nameFontStack = () =>
+  `${nameFontFamily(readNameFontId())}, "Noto Serif", Georgia, serif`;
+
 function MetaLine({
   generation = null,
   text,
@@ -179,8 +184,8 @@ function MetaLine({
     <span className="flex min-h-[18px] flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
       {color && (
         <span
-          className="whitespace-nowrap rounded-full px-1.5 text-[10px] font-semibold leading-[16px] text-white"
-          style={{ backgroundColor: color }}
+          className="whitespace-nowrap rounded-[3px] px-1.5 text-[10px] font-bold leading-[16px] text-white ring-1 ring-inset ring-[#F2D68A]/70"
+          style={{ backgroundColor: color, fontFamily: nameFontStack() }}
         >
           Đời {generation}
         </span>
@@ -263,7 +268,7 @@ export function TreeFolderView({
 
   return (
     <GhostSpouseContext.Provider value={ghostsByPerson}>
-    <div className="rounded-xl border bg-card p-2 sm:p-3">
+    <div className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3">
       <Input
         type="search"
         icon={<IconSearch />}
@@ -495,7 +500,10 @@ function PersonNode({
                   thường ở gia phả Việt, mà "Nguyễn Hoàng Minh Quân Đại
                   Ng…" thì không tra được là ai. Mỗi người đã có hàng
                   riêng nên xuống dòng không làm lộn xộn. */}
-              <span className="block break-words text-sm font-medium">
+              <span
+                className="block break-words text-sm font-semibold"
+                style={{ fontFamily: nameFontStack() }}
+              >
                 {person.name}
                 <GenderIcon gender={person.gender} />
               </span>

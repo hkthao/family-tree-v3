@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 
+import { readAvatarStyle } from "@/lib/familyChartAdapter";
+
 import type {
   InlawPeerRelatives,
   InlawRelativeCard,
@@ -191,7 +193,10 @@ interface F3Datum {
 }
 
 function genderAvatar(g: "M" | "F"): string {
-  return g === "M" ? "/avatars/male.png" : "/avatars/female.png";
+  if (readAvatarStyle() === "classic") {
+    return g === "M" ? "/avatars/male.png" : "/avatars/female.png";
+  }
+  return g === "M" ? "/avatars/male-royal.svg" : "/avatars/female-royal.svg";
 }
 
 function entryFor(
