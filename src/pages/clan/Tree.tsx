@@ -1434,6 +1434,21 @@ export default function Tree() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg bg-card"
             >
+              {/* Chất liệu nền: hoa văn mây tản rất mờ + viền tối nhẹ (vignette) như giấy sắc / sơn mài. */}
+              <div
+                className="absolute inset-0 opacity-[0.07] dark:invert dark:opacity-[0.06]"
+                style={{
+                  backgroundImage: "url(/textures/pat-endless-clouds.svg)",
+                  backgroundSize: "56px 28px",
+                }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(ellipse at center, transparent 55%, rgba(90,50,20,0.10) 100%)",
+                }}
+              />
               {backdrop === "phoenix" && (
                 <img
                   src="/watermarks/phoenix.png"
