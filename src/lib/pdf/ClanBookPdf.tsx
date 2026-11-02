@@ -711,10 +711,10 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
         <VineBorder />
         <View style={styles.coverWrap}>
           <Image src={pdfAssets.logo} style={styles.coverLogo} />
-          <Text style={styles.coverEyebrow}>GIA PHẢ</Text>
+          <Text style={[styles.coverEyebrow, serifStyle()]}>GIA PHẢ</Text>
           <Text style={[styles.coverTitle, serifStyle()]}>{withHoPrefix(cleanName)}</Text>
           <View style={styles.coverDivider} />
-          <Text style={styles.coverTagline}>Phả hệ chính thức</Text>
+          <Text style={[styles.coverTagline, serifStyle()]}>Phả hệ chính thức</Text>
           {clan.description && !looksLikeDebug(clan.description) ? (
             <Text style={styles.coverSubtitle}>{clan.description}</Text>
           ) : null}
@@ -897,7 +897,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
             if (items.length === 0) return null;
             return (
               <View key={cat}>
-                <Text style={styles.honorSubhead}>
+                <Text style={[styles.honorSubhead, serifStyle()]}>
                   {HONOR_CATEGORY_LABEL[cat]}
                 </Text>
                 {items.map((h) => (
@@ -945,7 +945,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
                 return (
                   <View key={rp.id} style={ci === row.length - 1 ? [styles.mediaCard, styles.cardLast] : styles.mediaCard}>
                     {cover ? <Image src={cover} style={styles.mediaImg} /> : null}
-                    <Text style={styles.mediaTitle}>
+                    <Text style={[styles.mediaTitle, serifStyle()]}>
                       {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
                     </Text>
                     <Text style={styles.mediaMeta}>
@@ -980,7 +980,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
             if (items.length === 0) return null;
             return (
               <View key={cat}>
-                <Text style={styles.mediaSubhead}>{HERITAGE_CAT_LABEL[cat]}</Text>
+                <Text style={[styles.mediaSubhead, serifStyle()]}>{HERITAGE_CAT_LABEL[cat]}</Text>
                 {chunk(items, 3).map((row, i) => (
                   <View key={i} style={styles.cardRow} wrap={false}>
                     {row.map((h, ci) => {
@@ -992,7 +992,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
                       return (
                         <View key={h.id} style={ci === row.length - 1 ? [styles.mediaCard, styles.cardLast] : styles.mediaCard}>
                           {cover ? <Image src={cover} style={styles.mediaImg} /> : null}
-                          <Text style={styles.mediaTitle}>{h.title}</Text>
+                          <Text style={[styles.mediaTitle, serifStyle()]}>{h.title}</Text>
                           {meta ? <Text style={styles.mediaMeta}>{meta}</Text> : null}
                           {h.summary ? <Text style={styles.mediaSummary}>{h.summary}</Text> : null}
                           {body ? <Text style={styles.mediaText}>{body}</Text> : null}
