@@ -10,6 +10,12 @@
 @import "@fontsource/playfair-display/700.css";
 @import "@fontsource/dancing-script/600.css";
 @import "@fontsource/dancing-script/700.css";
+/* Font tên trên thẻ cây (chọn ở Tuỳ chọn) — đều có subset tiếng Việt. */
+@import "@fontsource/playwrite-vn/400.css";
+@import "@fontsource/charm/400.css";
+@import "@fontsource/charm/700.css";
+@import "@fontsource/cormorant-garamond/600.css";
+@import "@fontsource/cormorant-garamond/700.css";
 
 /* THƯ PHÁP tiếng Việt: hiện chưa có file font hợp lệ → dùng tạm Dancing
    Script (nút "Thư pháp"). Khi có file, đặt vào public/fonts/svn-thuphap.woff2
@@ -255,7 +261,7 @@
    height. Fill comes from --tree-card-text so dark mode swaps to
    cream against the darker cards. */
 .f3 svg.main_svg .card-text text {
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-family: var(--tree-name-font, "Playfair Display"), "Noto Serif", Georgia, serif;
   font-size: 13px;
   font-weight: 600;
   fill: var(--tree-card-text);
