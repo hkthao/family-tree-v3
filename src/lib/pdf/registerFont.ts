@@ -25,6 +25,7 @@ export function ensurePdfFontRegistered(): void {
     Font.register({
       family: `NameFont_${id}`,
       fonts: [
+        { src: w600, fontWeight: 400 },
         { src: w600, fontWeight: 600 },
         { src: w700, fontWeight: 700 },
       ],

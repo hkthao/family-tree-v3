@@ -136,7 +136,11 @@ function PersonBlock({
       <View>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text
-            style={{ fontSize: FOLDER_NAME_PT, fontWeight: bold ? 600 : 400 }}
+            style={{
+              ...serifStyle(),
+              fontSize: FOLDER_NAME_PT,
+              fontWeight: bold ? 600 : 400,
+            }}
           >
             {p.name}
           </Text>
