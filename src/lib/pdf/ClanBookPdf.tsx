@@ -35,6 +35,7 @@ import {
   ensurePdfFontRegistered,
   PDF_FONT_FAMILY,
   serifStyle,
+  pdfSerifFamily,
 } from "./registerFont";
 
 // ─── Page geometry (A4 in points) ──────────────────────────────────
@@ -1086,7 +1087,7 @@ function renderPersonCard(
         src={photoUri ?? avatarSrc(p.gender)}
         style={styles.avatarImg}
       />
-      <Text style={styles.personName}>{p.full_name}</Text>
+      <Text style={[styles.personName, serifStyle()]}>{p.full_name}</Text>
       {p.is_root && (
         <Text
           style={{
@@ -1165,7 +1166,7 @@ function renderInLawCard(
         src={photoUri ?? avatarSrc(p.gender)}
         style={styles.avatarImg}
       />
-      <Text style={styles.personName}>{p.full_name}</Text>
+      <Text style={[styles.personName, serifStyle()]}>{p.full_name}</Text>
       <Text style={styles.personMeta}>{metaParts.join(" · ")}</Text>
 
       <View style={styles.cardBody}>
@@ -1846,7 +1847,7 @@ function TreeDiagramPage({
                   x={c.cx}
                   y={c.y + PAD_T + (li + 1) * LINE_H - 1.8}
                   style={{
-                    fontFamily: PDF_FONT_FAMILY,
+                    fontFamily: pdfSerifFamily(),
                     fontSize: NAME_FS,
                     fontWeight: isSpouse ? 400 : 600,
                     fill: COLORS.ink,
