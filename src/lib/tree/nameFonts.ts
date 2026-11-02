@@ -1,9 +1,9 @@
 /** Font tên trên thẻ cây (2D + 3D). `family` đưa vào CSS / canvas. */
 export const NAME_FONTS = [
+  { id: "default", label: "Mặc định của app", family: '"Be Vietnam Pro"' },
   { id: "playfair", label: "Trang nhã (Playfair)", family: '"Playfair Display"' },
   { id: "cormorant", label: "Cổ điển (Cormorant)", family: '"Cormorant Garamond"' },
   { id: "charm", label: "Thư pháp (Charm)", family: '"Charm"' },
-  { id: "playwrite", label: "Thư pháp (Playwrite VN)", family: '"Playwrite VN"' },
   { id: "dancing", label: "Thư pháp (Dancing Script)", family: '"Dancing Script"' },
 ] as const;
 

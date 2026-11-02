@@ -31,7 +31,6 @@ export const pdfAssets: PdfAssets = {
     playfair: ["/fonts/name-playfair-600.ttf", "/fonts/name-playfair-700.ttf"],
     cormorant: ["/fonts/name-cormorant-600.ttf", "/fonts/name-cormorant-700.ttf"],
     charm: ["/fonts/name-charm-400.ttf", "/fonts/name-charm-700.ttf"],
-    playwrite: ["/fonts/name-playwrite-400.ttf", "/fonts/name-playwrite-400.ttf"],
     dancing: ["/fonts/name-dancing-600.ttf", "/fonts/name-dancing-700.ttf"],
   },
   logo: "/icons/app-icon-192.png",
