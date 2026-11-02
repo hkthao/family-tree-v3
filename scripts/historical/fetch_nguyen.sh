@@ -33,7 +33,7 @@ for k in 一:01 二:001 三:01 四:01 五:1 六:01 七:01; do
 done
 
 for n in 01 02 03; do get "大南寔錄/大南正編列傳初集/卷$n" "$R/lt1/lt1_$n.txt"; done
-for n in 01 02 03 04 05 06 07 08; do get "大南寔錄/大南正編列傳二集/卷$n" "$R/lt2/lt2_$n.txt"; done
+for n in 01 02 03 04 05 06 07 08 09 10; do get "大南寔錄/大南正編列傳二集/卷$n" "$R/lt2/lt2_$n.txt"; done
 # Chính biên kỷ 4 Q.70 + kỷ 5 Q.5 + kỷ 6 phụ biên Q.1, Q.20 (Phế đế, Kiến Phúc…, Thành Thái, Duy Tân)
 mkdir -p "$R/pb"
 get "大南寔錄/大南寔錄正編第四紀/卷70" "$R/cb/cb_四_q70.txt"

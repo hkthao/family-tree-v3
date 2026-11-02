@@ -1336,6 +1336,14 @@ if BAD:
         print("KHÔNG CÓ TRONG NGUYÊN VĂN:", b)
     sys.exit(1)
 
+# ── Tiểu sử có cấu trúc + dòng thời gian (bio_lib) ─────────────────
+import importlib.util as _iu
+import os as _os
+_spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
+bio_lib = _iu.module_from_spec(_spec)
+_spec.loader.exec_module(bio_lib)
+bio_lib.structure(persons, unions, globals().get("EV"), globals().get("RM"))
+
 data = {
     "clan": {"key": "nguyen", "name": "Nhà Nguyễn (1558–1945)", "category": "royal",
              "description": "Họ Nguyễn vốn ở xã Gia Miêu ngoại, huyện Tống Sơn, phủ Hà Trung, đất Thanh Hoa. Năm Mậu Ngọ (1558), Nguyễn Hoàng vào trấn Thuận Hóa, mở nghiệp các chúa Nguyễn; đến năm Gia Long thứ nhất (1802), Thế Tổ Nguyễn Phúc Ánh lên ngôi hoàng đế, lập nên nhà Nguyễn. Gia phả này chép từ Trừng quốc công Nguyễn Văn Lựu, qua các chúa và các vua, kèm hậu phi và hoàng tử có tên trong sử, theo Đại Nam thực lục và Đại Nam liệt truyện của Quốc sử quán triều Nguyễn. Mỗi dữ kiện đều có nguyên văn trích dẫn; xem dòng \"Theo:\" cuối tiểu sử."},

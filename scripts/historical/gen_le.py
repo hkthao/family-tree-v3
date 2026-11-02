@@ -460,9 +460,19 @@ H("ds.bia-tien-si", "artifact", "Bia Tiến sĩ (Văn Miếu – Quốc Tử Gi�
   "Văn Miếu – Quốc Tử Giám, Hà Nội",
   [pexels(38127389, "ancient-gate-at-the-temple-of-literature-hanoi", "valeria-drozdova-2148646707", "Cổng Văn Miếu, Hà Nội (ảnh Pexels)")])
 
+exec(open(__file__.replace("gen_le.py", "gen_le_th.py"), encoding="utf8").read())
+
+# ── Tiểu sử có cấu trúc + dòng thời gian (bio_lib) ─────────────────
+import importlib.util as _iu
+import os as _os
+_spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
+bio_lib = _iu.module_from_spec(_spec)
+_spec.loader.exec_module(bio_lib)
+bio_lib.structure(persons, unions, globals().get("EV"), globals().get("RM"))
+
 data = {
-    "clan": {"key": "le", "name": "Nhà Hậu Lê — Lê sơ (1428–1527)", "category": "royal",
-             "description": "Nhà Hậu Lê do Lê Lợi (Thái Tổ) lập sau mười năm khởi nghĩa Lam Sơn đánh đuổi quân Minh (1418–1427), lên ngôi năm 1428. Gia phả này chép giai đoạn Lê sơ: từ ông tổ ba đời của Lê Thái Tổ đến Lê Cung Hoàng (1527), khi Mạc Đăng Dung cướp ngôi. Giai đoạn Lê trung hưng (từ 1533) sẽ chép sau. Theo Đại Việt sử ký toàn thư; mỗi dữ kiện đều có nguyên văn trích dẫn, xem dòng \"Theo:\" cuối tiểu sử."},
+    "clan": {"key": "le", "name": "Nhà Hậu Lê (1428–1789)", "category": "royal",
+             "description": "Nhà Hậu Lê do Lê Lợi (Thái Tổ) lập sau mười năm khởi nghĩa Lam Sơn đánh đuổi quân Minh (1418–1427), lên ngôi năm 1428. Gia phả này chép giai đoạn Lê sơ (từ ông tổ ba đời của Lê Thái Tổ đến Lê Cung Hoàng, 1527, khi Mạc Đăng Dung cướp ngôi) và Lê trung hưng đến Lê Gia Tông (1675); các đời từ Hy Tông (1676) về sau sẽ chép sau. Theo Đại Việt sử ký toàn thư; mỗi dữ kiện đều có nguyên văn trích dẫn, xem dòng \"Theo:\" cuối tiểu sử."},
     "persons": persons, "unions": unions, "resting_places": graves, "heritage": heritage, "events": [], "same_person_links": links,
 }
 json.dump(data, open(OUT, "w", encoding="utf8"), ensure_ascii=False, indent=1)
