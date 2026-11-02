@@ -689,8 +689,9 @@ export default function Tree() {
                 rect.setAttribute("fill", "#FBF7F0");
               }
               this.querySelector(".ghost-clan-tag")?.remove();
-              // Bỏ phần "(1225–1400)" cuối tên cho thẻ gọn; đặt thẻ nằm đè mép dưới
-              // (không chồng lên dòng năm / giỗ bên trong khung).
+              // Bỏ phần "(1225–1400)" cuối tên cho thẻ gọn; đặt thẻ ở góc trên phải
+              // BÊN TRONG khung (ghost không có badge "Đời") để không bị cắt/đè mép
+              // dưới hay dòng năm; tên tự thu nhỏ nếu chạm thẻ.
               const clanName = (
                 (fields["ghost_peer_clan_name"] as string | undefined) ?? ""
               )
@@ -701,9 +702,24 @@ export default function Tree() {
                 const tag = document.createElementNS(ns, "g");
                 tag.setAttribute("class", "ghost-clan-tag");
                 const tagW = 10 + clanName.length * 6;
-                const cardH = showDeceasedDetails ? 74 : 64;
                 const tagX = cardW - tagW - 6;
-                const tagY = cardH - 7;
+                if (
+                  nameTspan &&
+                  typeof nameTspan.getComputedTextLength === "function"
+                ) {
+                  const availG = tagX - 64 - 4;
+                  nameTspan.removeAttribute("font-size");
+                  const lenG = nameTspan.getComputedTextLength();
+                  if (lenG > availG && availG > 0) {
+                    const curG =
+                      parseFloat(getComputedStyle(nameTspan).fontSize || "") || 15;
+                    nameTspan.setAttribute(
+                      "font-size",
+                      String(Math.max(9, Math.floor((curG * availG) / lenG))),
+                    );
+                  }
+                }
+                const tagY = 6;
                 const bg = document.createElementNS(ns, "rect");
                 bg.setAttribute("x", String(tagX));
                 bg.setAttribute("y", String(tagY));
