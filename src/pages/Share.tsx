@@ -34,6 +34,10 @@ import {
   SegmentedControl,
 } from "@/components/ui/segmented-control";
 import {
+  nameFontFamily as fontFamilyOf,
+  readNameFontId,
+} from "@/lib/tree/nameFonts";
+import {
   pickDefaultFocal,
   readAvatarStyle,
   toFamilyChart,
@@ -387,13 +391,54 @@ export default function Share() {
               meta.setAttribute("dy", "18");
             }
 
-            // Dâu/rể = KHÔNG thuộc huyết thống (đúng cả khi có cha/mẹ ghi).
-            if (datum?.id && !blood.has(datum.id)) {
+            // Khung thẻ hoàng gia: viền vàng + chỉ vàng trong + hoa văn 3 góc
+            // (bỏ góc trên-phải nhường chỗ triện Đời). Dâu/rể = KHÔNG thuộc
+            // huyết thống (đúng cả khi có cha/mẹ ghi) → viền đứt.
+            {
+              const inLaw = !!datum?.id && !blood.has(datum.id);
               const rect = this.querySelector(".card-body rect");
               if (rect) {
+                rect.setAttribute("rx", "4");
+                rect.setAttribute("ry", "4");
                 rect.setAttribute("stroke", "#B8862A");
-                rect.setAttribute("stroke-dasharray", "4 3");
-                rect.setAttribute("stroke-width", "1.5");
+                rect.setAttribute("stroke-width", inLaw ? "1.5" : "1.2");
+                if (inLaw) rect.setAttribute("stroke-dasharray", "4 3");
+                this.querySelector(".card-body .card-inner-line")?.remove();
+                this.querySelector(".card-body .card-corners")?.remove();
+                const ns = "http://www.w3.org/2000/svg";
+                const W = 220;
+                const H = 64;
+                const line = document.createElementNS(ns, "rect");
+                line.setAttribute("class", "card-inner-line");
+                line.setAttribute("x", "3");
+                line.setAttribute("y", "3");
+                line.setAttribute("width", String(W - 6));
+                line.setAttribute("height", String(H - 6));
+                line.setAttribute("rx", "2");
+                line.setAttribute("fill", "none");
+                line.setAttribute("stroke", "#D4A94A");
+                line.setAttribute("stroke-width", "0.6");
+                line.setAttribute("opacity", "0.4");
+                line.setAttribute("pointer-events", "none");
+                rect.parentNode?.insertBefore(line, rect.nextSibling);
+                const L = 7;
+                const o = 3;
+                const corners = document.createElementNS(ns, "path");
+                corners.setAttribute("class", "card-corners");
+                corners.setAttribute(
+                  "d",
+                  [
+                    `M${o} ${o + L}V${o}H${o + L}`,
+                    `M${o} ${H - o - L}V${H - o}H${o + L}`,
+                    `M${W - o - L} ${H - o}H${W - o}V${H - o - L}`,
+                  ].join(""),
+                );
+                corners.setAttribute("fill", "none");
+                corners.setAttribute("stroke", "#D4A94A");
+                corners.setAttribute("stroke-width", "1.4");
+                corners.setAttribute("stroke-linecap", "round");
+                corners.setAttribute("pointer-events", "none");
+                line.parentNode?.insertBefore(corners, line.nextSibling);
               }
             }
 
@@ -406,12 +451,17 @@ export default function Share() {
               );
               badge.setAttribute("class", "gen-badge");
               badge.innerHTML = `
-                <rect x="172" y="6" width="42" height="18" rx="9"
+                <rect x="190" y="6" width="24" height="18" rx="2"
                       fill="#7A2E2E" />
-                <text x="193" y="19" text-anchor="middle"
-                      fill="#FFFFFF" font-size="10" font-weight="700">
-                  Đời ${gen - (data?.generation_offset ?? 0)}
-                </text>`;
+                <rect class="seal-in" x="192" y="8" width="20" height="14"
+                      rx="1" fill="none" stroke="#F2D68A" stroke-width="0.8"
+                      opacity="0.75" />
+                <text x="202" y="18.5" text-anchor="middle"
+                      fill="#FFFFFF" font-size="10" font-weight="700"
+                      style="font-family: var(--tree-name-font, 'Playfair Display'), Georgia, serif">
+                  ${gen - (data?.generation_offset ?? 0)}
+                </text>
+                <title>Đời ${gen - (data?.generation_offset ?? 0)}</title>`;
               this.querySelector(".card-body")?.appendChild(badge);
             }
           });
@@ -934,6 +984,7 @@ export default function Share() {
                       {
                         "--male-color": "var(--tree-card-male)",
                         "--female-color": "var(--tree-card-female)",
+                        "--tree-name-font": fontFamilyOf(readNameFontId()),
                       } as React.CSSProperties
                     }
                     aria-label="Cây gia phả tương tác (chỉ xem)"
