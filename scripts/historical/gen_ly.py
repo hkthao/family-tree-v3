@@ -334,6 +334,113 @@ links += [
 ]
 
 
+# ── Hoàng tử, công chúa (chỉ người Toàn thư ghi rõ là con của vua / vương) ──
+# Mẹ không rõ → nối vào hôn nhân "khuyết" của cha. Không chép tên húy thì đặt theo tước hiệu.
+Y = lambda y, can: f"năm {can} ({y})"
+Y1013, Y1014, Y1015, Y1018, Y1028 = Y(1013, "Quý Sửu"), Y(1014, "Giáp Dần"), Y(1015, "Ất Mão"), Y(1018, "Mậu Ngọ"), Y(1028, "Mậu Thìn")
+
+U("u.thai-to--khuyet", "ly.thai-to")
+P(key="ly.thai-to.khai-quoc", full_name="Lý Bồ (Khai Quốc vương)", gender="M", parents="u.thai-to--khuyet", titles=[{"title": "Khai Quốc vương"}],
+  bio="Con của Lý Thái Tổ, em của Thái Tông. Năm 1013 được phong Khai Quốc vương, ở phủ Trường An. Thái Tổ mất, ông đem phủ binh nổi loạn; Thái Tông thân chinh, ông ra hàng, được tha tội và giữ lại tước.",
+  citations=[c("existence", 2, Y1013, "夏六月，封皇子菩為開國王，居長安府"), c("parents", 2, Y1013, "夏六月，封皇子菩為開國王，居長安府"),
+             c("title:0", 2, Y1013, "夏六月，封皇子菩為開國王，居長安府"),
+             c("bio", 2, Y1028, "開國王叛。初，王居長安府，以山川險固，因聚亡命，刼掠小民"),
+             c("bio", 2, Y1028, "詔徙開國王及其僚屬于昇龍京師。還自長安詔，免開國王罪，復其爵")])
+P(key="ly.thai-to.dong-chinh", full_name="Lý Lực (Đông Chinh vương)", gender="M", parents="u.thai-to--khuyet", titles=[{"title": "Đông Chinh vương"}],
+  death={"lunar_year": 1038},
+  bio="Con của Lý Thái Tổ. Năm 1018 được phong Đông Chinh vương. Khi Thái Tổ mất, cùng Dực Thánh và Vũ Đức đem quân vào kinh định đoạt ngôi vua nhưng thất bại, sau tới cung đình xin chịu tội, được tha và giữ tước. Mất năm 1038.",
+  citations=[c("existence", 2, Y1018, "冬十月，封皇子力為東征王"), c("parents", 2, Y1018, "冬十月，封皇子力為東征王"),
+             c("title:0", 2, Y1018, "冬十月，封皇子力為東征王"),
+             c("death", 2, "năm Mậu Dần (1038)", "是歲，東征王力卒", "âm 1038"),
+             c("bio", 2, Y1028, "東征、翊聖、武德三王聞之，皆帥府兵入伏禁城"),
+             c("bio", 2, Y1028, "是日，東征、翊聖二王詣闕伏罪。詔免之，復其爵")])
+P(key="ly.thai-to.duc-thanh", full_name="Dực Thánh vương", gender="M", parents="u.thai-to--khuyet", titles=[{"title": "Dực Thánh vương"}],
+  bio="Con của Lý Thái Tổ, em của Thái Tông; Toàn thư không chép tên húy. Thái Tổ sai ông đem quân dẹp người Man năm 1014 và đánh Đại Nguyên Lịch. Năm 1028 cùng hai vương Đông Chinh, Vũ Đức nổi loạn, sau đến cung đình xin chịu tội và được tha.",
+  citations=[c("existence", 2, Y1014, "帝命翊聖王帥師討之，斬首萬計"),
+             c("parents", 2, Y1028, "我於兄弟，無所毫負。今三王行不義，忘先帝之遺命，欲圖大位"),
+             c("title:0", 2, Y1014, "帝命翊聖王帥師討之，斬首萬計"),
+             c("bio", 2, Y1028, "東征、翊聖、武德三王聞之，皆帥府兵入伏禁城"),
+             c("bio", 2, Y1028, "是日，東征、翊聖二王詣闕伏罪。詔免之，復其爵")])
+P(key="ly.thai-to.vu-duc", full_name="Vũ Đức vương", gender="M", parents="u.thai-to--khuyet", titles=[{"title": "Vũ Đức vương"}],
+  death={"lunar_year": 1028},
+  bio="Con của Lý Thái Tổ, em của Thái Tông; Toàn thư không chép tên húy. Năm 1015 cùng Dực Thánh vương đánh các châu Đô Kim, Vị Long, Thường Tân, Bình Nguyên. Thái Tổ mất, ông nổi loạn cùng hai vương khác và bị giết năm 1028.",
+  citations=[c("existence", 2, Y1015, "詔翊聖王、武德王討都金、渭龍、常新、平原等州"),
+             c("parents", 2, Y1028, "我於兄弟，無所毫負。今三王行不義，忘先帝之遺命，欲圖大位"),
+             c("title:0", 2, Y1015, "詔翊聖王、武德王討都金、渭龍、常新、平原等州"),
+             c("death", 2, Y1028, "及聞太祖崩，武德王被誅，意愈不平", "âm 1028"),
+             c("bio", 2, Y1028, "東征、翊聖、武德三王聞之，皆帥府兵入伏禁城")])
+
+Y1035 = Y(1035, "Ất Hợi")
+U("u.thai-tong--khuyet", "ly.thai-tong")
+P(key="ly.thai-tong.phung-can", full_name="Lý Nhật Trung (Phụng Càn vương)", gender="M", parents="u.thai-tong--khuyet", nickname="Lý Nhật Trung", titles=[{"title": "Phụng Càn vương"}],
+  bio="Con của Lý Thái Tông, em của Thánh Tông. Năm 1035 được phong Phụng Càn vương, các hoàng tử khác phong hầu. Khi Thái Tông đi đánh Ái Châu, ông ở lại giữ kinh sư. Là cha của công chúa Ngọc Kiều.",
+  citations=[c("existence", 2, Y1035, "封皇子日中為奉乾王，其餘皇子皆封侯"), c("parents", 2, Y1035, "封皇子日中為奉乾王，其餘皇子皆封侯"),
+             c("nickname", 2, Y1035, "封皇子日中為奉乾王", "Lý Nhật Trung"),
+             c("title:0", 2, Y1035, "封皇子日中為奉乾王，其餘皇子皆封侯"),
+             c("bio", 2, Y1035, "冬十月，帝親征，以奉乾王為京師留守")])
+U("u.phung-can--khuyet", "ly.thai-tong.phung-can")
+P(key="ly.thai-tong.phung-can.ngoc-kieu", full_name="Lý Ngọc Kiều (Chân Đăng công chúa)", gender="F", parents="u.phung-can--khuyet", nickname="Ngọc Kiều",
+  titles=[{"title": "Công chúa"}], death={"lunar_year": 1113, "lunar_month": 6}, lifespan=72,
+  bio="Con của Phụng Càn vương, được Thánh Tông nuôi trong cung, lớn lên được phong công chúa, lấy châu mục Chân Đăng họ Lê. Chồng mất, bà thề ở góa, đi tu làm ni; mất năm 1113, thọ 72 tuổi, được Thần Tông tôn là ni sư. (Bản Toàn thư trên Wikisource chép 長子, nghĩa là con trưởng; theo ngữ cảnh là con gái.)",
+  citations=[c("existence", 3, Y(1113, "Quý Tỵ"), "夫人名玉嬌，奉乾王長子，聖宗鞠于宫中，及長封公主"),
+             c("parents", 3, Y(1113, "Quý Tỵ"), "夫人名玉嬌，奉乾王長子，聖宗鞠于宫中，及長封公主", note="Bản số chép 長子 (con trưởng); Ngọc Kiều là nữ nên hiểu là con gái của Phụng Càn vương."),
+             c("nickname", 3, Y(1113, "Quý Tỵ"), "夫人名玉嬌", "Ngọc Kiều"),
+             c("title:0", 3, Y(1113, "Quý Tỵ"), "及長封公主"),
+             c("death", 3, Y(1113, "Quý Tỵ"), "夏六月，真登州牧夫人公主李氏薨", "âm 1113-6"),
+             c("lifespan", 3, Y(1113, "Quý Tỵ"), "至是薨，年七十有二", "72"),
+             c("bio", 3, Y(1113, "Quý Tỵ"), "適真登州牧黎氏卒，自誓孀居出家爲尼")])
+
+P(key="ly.thanh-tong.dong-thien", full_name="Đông Thiên công chúa", gender="F", parents="u.thanh-tong--khuyet", titles=[{"title": "Đông Thiên công chúa"}],
+  bio="Con của Lý Thánh Tông (mẹ Toàn thư không chép; đã có trước khi Ỷ Lan vào cung). Năm 1064 đứng hầu bên Thánh Tông khi vua xử án, được vua chỉ vào mà nói rằng thương dân như thương con mình, rồi xuống chiếu khoan giảm hình phạt.",
+  citations=[c("existence", 3, Y(1064, "Giáp Thìn"), "時洞天公主侍側，帝指公主謂獄吏曰：「吾之愛吾子猶吾父母斯民之心"),
+             c("parents", 3, Y(1064, "Giáp Thìn"), "時洞天公主侍側，帝指公主謂獄吏曰：「吾之愛吾子猶吾父母斯民之心"),
+             c("title:0", 3, Y(1064, "Giáp Thìn"), "時洞天公主侍側"),
+             c("bio", 3, Y(1064, "Giáp Thìn"), "自今以後，罪無輕重，一從寬宥")])
+P(key="ly.thanh-tong.minh-nhan", full_name="Minh Nhân vương", gender="M", parents="u.thanh-tong--linh-nhan", titles=[{"title": "Minh Nhân vương"}],
+  birth={"lunar_year": 1068, "lunar_month": 2},
+  bio="Con của Lý Thánh Tông và Linh Nhân thái hậu, em cùng mẹ của Nhân Tông; Toàn thư không chép tên húy. Sinh tháng 2 năm 1068.",
+  citations=[c("existence", 3, f"{T3}, mùa xuân tháng 2 (bản số chép sai can chi ở tiêu đề năm)", "春二月，皇子明仁王生"), c("parents", 3, f"{T3}, mùa xuân tháng 2 (bản số chép sai can chi ở tiêu đề năm)", "春二月，皇子明仁王生"),
+             c("parents", 3, f"{T3}, mùa xuân tháng 2 (bản số chép sai can chi ở tiêu đề năm)", "仁宗同母弟也"),
+             c("title:0", 3, f"{T3}, mùa xuân tháng 2 (bản số chép sai can chi ở tiêu đề năm)", "春二月，皇子明仁王生"),
+             c("birth", 3, f"{T3}, mùa xuân tháng 2 (bản số chép sai can chi ở tiêu đề năm)", "春二月，皇子明仁王生", "âm 1068-2")])
+
+Y1138 = Y(1138, "Mậu Ngọ")
+U("u.than-tong--khuyet", "ly.than-tong")
+P(key="ly.than-tong.thuy-thien", full_name="Thụy Thiên công chúa", gender="F", parents="u.than-tong--khuyet", titles=[{"title": "Thụy Thiên công chúa"}],
+  birth={"lunar_year": 1137},
+  bio="Con gái thứ hai của Lý Thần Tông, sinh năm 1137, sau được phong Thụy Thiên công chúa. Về sau Anh Tông cho dựng phủ đệ của bà ở Lạng Châu.",
+  citations=[c("existence", 3, Y(1137, "Đinh Tỵ"), "乙丑，皇第二女生，候封瑞天公主"), c("parents", 3, Y(1137, "Đinh Tỵ"), "乙丑，皇第二女生，候封瑞天公主"),
+             c("title:0", 3, Y(1137, "Đinh Tỵ"), "乙丑，皇第二女生，候封瑞天公主"),
+             c("birth", 3, Y(1137, "Đinh Tỵ"), "乙丑，皇第二女生，候封瑞天公主", "âm 1137")])
+P(key="ly.than-tong.thien-loc", full_name="Lý Thiên Lộc (Minh Đạo vương)", gender="M", parents="u.than-tong--khuyet", nickname="Thiên Lộc", titles=[{"title": "Minh Đạo vương"}],
+  bio="Con của Lý Thần Tông với một người sủng cơ (Toàn thư không chép tên), từng được Thần Tông lập làm người nối ngôi. Tháng 9 năm 1138, Thần Tông ốm nặng, lập con cả của hoàng hậu là Thiên Tộ làm thái tử và phong Thiên Lộc làm Minh Đạo vương.",
+  citations=[c("existence", 3, Y1138, "初帝既立天祿爲嗣"), c("parents", 3, Y1138, "天祿嬖人之子"),
+             c("nickname", 3, Y1138, "初帝既立天祿爲嗣", "Thiên Lộc"),
+             c("title:0", 3, Y1138, "太子天祿可封明道王"),
+             c("bio", 3, Y1138, "九月，帝弗豫。立皇長子天祚爲皇太子")])
+
+U("u.anh-tong--khuyet", "ly.anh-tong")
+P(key="ly.anh-tong.long-xuong", full_name="Lý Long Xưởng (Hiển Trung vương)", gender="M", parents="u.anh-tong--khuyet", nickname="Long Xưởng", titles=[{"title": "Hiển Trung vương"}],
+  birth={"lunar_year": 1151, "lunar_month": 11},
+  bio="Con trưởng của Lý Anh Tông, sinh tháng 11 năm 1151 ở hành cung Ứng Phong, ít lâu sau được phong Hiển Trung vương, rồi làm thái tử. Năm 1174 bị phế làm dân thường và giam vì tội thông dâm với cung phi; Anh Tông lập Long Cán (Cao Tông) thay. Năm 1181 còn bị chép là đem người nhà nô lệ đi trộm cướp, toan làm loạn.",
+  citations=[c("existence", 4, Y(1151, "Tân Mùi"), "十一月，皇長子龍昶生于應豊行宫，尋冊爲顯忠王"),
+             c("parents", 4, Y(1151, "Tân Mùi"), "十一月，皇長子龍昶生于應豊行宫，尋冊爲顯忠王"),
+             c("nickname", 4, Y(1151, "Tân Mùi"), "皇長子龍昶生", "Long Xưởng"),
+             c("title:0", 4, Y(1151, "Tân Mùi"), "尋冊爲顯忠王"),
+             c("birth", 4, Y(1151, "Tân Mùi"), "十一月，皇長子龍昶生于應豊行宫", "âm 1151-11"),
+             c("bio", 4, Y(1174, "Giáp Ngọ"), "秋九月，太子龍昶有罪，廢爲庶人囚之"),
+             c("bio", 4, Y(1174, "Giáp Ngọ"), "先是龍昶烝于宫妃，帝不忍抵死，故有是命"),
+             c("bio", 4, Y(1181, "Tân Sửu"), "故太子龍昶率家属奴隸恣行盗竊，欲謀作亂")])
+
+U("u.cao-tong--khuyet", "ly.cao-tong")
+P(key="ly.cao-tong.tham", full_name="Lý Thầm", gender="M", parents="u.cao-tong--khuyet", nickname="Thầm",
+  birth={"lunar_year": 1202, "lunar_month": 8},
+  bio="Con thứ của Lý Cao Tông, sinh tháng 8 năm 1202 (cùng năm đổi niên hiệu Thiên Gia Bảo Hựu). Năm 1209 Quách Bốc nổi loạn giết Phạm Bỉnh Di, vào cung Vạn Diên lập Thầm làm vua, trong lúc Cao Tông và thái tử Sảm bỏ kinh thành chạy.",
+  citations=[c("existence", 4, Y(1202, "Nhâm Tuất"), "秋八月，皇次子忱生，改元天嘉寳祐元年"), c("parents", 4, Y(1202, "Nhâm Tuất"), "秋八月，皇次子忱生，改元天嘉寳祐元年"),
+             c("nickname", 4, Y(1202, "Nhâm Tuất"), "皇次子忱生", "Thầm"),
+             c("birth", 4, Y(1202, "Nhâm Tuất"), "秋八月，皇次子忱生，改元天嘉寳祐元年", "âm 1202-8"),
+             c("bio", 4, Y(1209, "Kỷ Tỵ"), "既而復入萬延宫，立皇子忱爲帝")])
+
 # ── Tiểu sử có cấu trúc + dòng thời gian (bio_lib) ─────────────────
 
 import importlib.util
