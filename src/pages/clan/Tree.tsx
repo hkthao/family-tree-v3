@@ -52,6 +52,9 @@ import {
   addInlawGhosts,
   pickDefaultFocal,
   toFamilyChart,
+  AVATAR_STYLE_KEY,
+  readAvatarStyle,
+  type AvatarStyle,
 } from "@/lib/familyChartAdapter";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
@@ -288,6 +291,15 @@ export default function Tree() {
     }
   }, [backdrop]);
 
+  const [avatarStyle, setAvatarStyle] = useState<AvatarStyle>(readAvatarStyle);
+  useEffect(() => {
+    try {
+      localStorage.setItem(AVATAR_STYLE_KEY, avatarStyle);
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [avatarStyle]);
+
   const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
   // gạt để tiết kiệm chỗ; desktop luôn hiện. Mặc định ẩn trên mobile.
@@ -341,12 +353,17 @@ export default function Tree() {
 
   const f3Data = useMemo(() => {
     if (!data) return null;
-    const base = toFamilyChart(data.persons, data.families, photoUrls);
+    const base = toFamilyChart(
+      data.persons,
+      data.families,
+      photoUrls,
+      avatarStyle,
+    );
     if (ghostSpouses && ghostSpouses.length > 0) {
-      addInlawGhosts(base, ghostSpouses);
+      addInlawGhosts(base, ghostSpouses, avatarStyle);
     }
     return base;
-  }, [data, photoUrls, ghostSpouses]);
+  }, [data, photoUrls, ghostSpouses, avatarStyle]);
 
   // Persons with an active cross-clan in-law link — used to decorate
   // their card with a "↔" badge. We only need the set of ids; the
@@ -1346,6 +1363,17 @@ export default function Tree() {
                       <option value="phoenix">Nền: Phượng</option>
                       <option value="dragon">Nền: Rồng</option>
                       <option value="none">Tắt nền</option>
+                    </Select>
+                    <Select
+                      aria-label="Avatar mặc định"
+                      value={avatarStyle}
+                      onChange={(e) =>
+                        setAvatarStyle(e.target.value as AvatarStyle)
+                      }
+                      className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
+                    >
+                      <option value="royal">Avatar: Hoàng gia</option>
+                      <option value="classic">Avatar: Cổ điển</option>
                     </Select>
                   </>
                 )}

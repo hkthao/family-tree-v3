@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { KhoeButton } from "@/components/KhoeButton";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
-import { toFamilyChart } from "@/lib/familyChartAdapter";
+import { readAvatarStyle, toFamilyChart } from "@/lib/familyChartAdapter";
 import {
   traceLineage,
   type LineageVia,
@@ -358,7 +358,7 @@ function LineageView({
         created_at: null,
       });
     }
-    return toFamilyChart(persons, families, photoUrls);
+    return toFamilyChart(persons, families, photoUrls, readAvatarStyle());
   }, [lineage, photoUrls]);
 
   // Build / rebuild the chart whenever the filtered slice changes
