@@ -6,6 +6,7 @@ Nguồn hỗ trợ (nguyên văn chữ Hán, zh.wikisource):
   TT  Đại Việt sử ký toàn thư  — locator "Bản kỷ Q.5, …"      → <root>/tt/q_五.txt
   CM  Khâm định Việt sử thông giám cương mục — "Chính biên Q.9, …" → <root>/cm/cm_九.txt
   VSL Việt sử lược, phụ "陳朝紀年" — "Phụ lục Trần triều kỷ niên" → <root>/vsl_tran.txt
+      và quyển trung/hạ — "Quyển trung, …" / "Quyển hạ, …" → <root>/vsl/vsl_卷中.txt, vsl_卷下.txt
 
 Tải nguyên văn vào một thư mục riêng (dữ liệu tải về — không chạy gì trong đó):
   R=/tmp/sources && mkdir -p $R/tt $R/cm
@@ -91,6 +92,12 @@ def load():
                 heads, errata = fix_sequence([(m.start(), m.group(1)) for m in re.finditer(r"§([%s][%s])§" % (GZ, ZZ), text)], text)
                 text = re.sub(r"\n§[^§]+§", lambda m: "\0" * len(m.group(0)), text)  # giữ vị trí
             vols[(kind, n)] = (text, heads, errata)
+    # Việt sử lược quyển trung (Lý) và hạ: locator "Quyển trung, …" / "Quyển hạ, …" → <root>/vsl/vsl_卷中.txt, vsl_卷下.txt (không có mốc năm để đối chiếu)
+    for vol, name in ((-1, "卷中"), (-2, "卷下")):
+        try:
+            vols[("VSL", vol)] = (clean(open(f"{ROOT}/vsl/vsl_{name}.txt", encoding="utf8").read()), [], [])
+        except FileNotFoundError:
+            pass
     try:
         vols[("VSL", 0)] = (clean(open(f"{ROOT}/vsl_tran.txt", encoding="utf8").read()), [], [])
     except FileNotFoundError:
@@ -148,7 +155,7 @@ for key, c in items():
         continue
     total += 1
     if src == "VSL":
-        vol = 0
+        vol = -1 if "Quyển trung" in c["locator"] else -2 if "Quyển hạ" in c["locator"] else 0
     else:
         m = re.search(r"Q\.(\d+)", c["locator"])
         vol = int(m.group(1)) if m else None

@@ -441,6 +441,68 @@ P(key="ly.cao-tong.tham", full_name="Lý Thầm", gender="M", parents="u.cao-ton
              c("birth", 4, Y(1202, "Nhâm Tuất"), "秋八月，皇次子忱生，改元天嘉寳祐元年", "âm 1202-8"),
              c("bio", 4, Y(1209, "Kỷ Tỵ"), "既而復入萬延宫，立皇子忱爲帝")])
 
+# ── Đối chiếu thêm Cương mục (CM), Việt sử lược (VSL), Việt sử tân biên (VSTB) và thêm người ──
+def cx(src, field, vol, where, quote, value=None, note=None):
+    d = {"field": field, "source": src, "locator": where if src == "VSTB" else f"{'Chính biên ' if src == 'CM' else ''}Q.{vol}, {where}" if src == "CM" else f"Quyển {vol}, {where}", "quote": quote}
+    if value is not None:
+        d["value"] = value
+    if note:
+        d["note"] = note
+    return d
+
+
+def add(key, *cites):
+    p = next(x for x in persons if x["key"] == key)
+    p.setdefault("citations", []).extend(cites)
+    return p
+
+
+add("ly.thai-to.khai-quoc", cx("CM", "parents", 2, Y1013, "夏六月，立子菩爲開國王"))
+add("ly.thai-to.dong-chinh", cx("CM", "parents", 2, Y1018, "冬十月，立子力爲東征王"))
+p = add("ly.thai-to.duc-thanh",
+        cx("CM", "parents", 2, "năm Kỷ Dậu (1009), chú", "翊聖王，太祖次子", note="Cương mục dẫn Phạm Phi Hiển (Thiên Nam trung nghĩa lục); Việt sử lược (Q. trung, Thái Tổ) lại chép 聖翊王 là em của Thái Tổ."),
+        cx("VSL", "bio", "trung", "Thái Tổ, năm Thuận Thiên thứ 1", "王兄某為武威王，弟為聖翊王", note="Việt sử lược chép Dực Thánh là em của Thái Tổ, khác Toàn thư (anh em của Thái Tông) và Cương mục (con thứ của Thái Tổ)."))
+p["bio"] += " Cương mục dẫn Phạm Phi Hiển chép ông là con thứ của Thái Tổ; riêng Việt sử lược chép là em của Thái Tổ."
+p = add("ly.thai-to.vu-duc",
+        cx("VSTB", "nickname", 1, "Quyển 1, Lý triều thế phổ", "Võ đức-vương Quang", "Quang",
+           note="Bảng thế phả nhà Lý trong Việt sử tân biên, bản quét OCR; ghi Võ Đức vương cùng hàng với Thái Tông, Dực Thánh, Khai Quốc, Đông Chinh."),
+        cx("CM", "death", 2, Y1028, "東征王力及翊聖王、武德王作亂，内侍員外郞李仁義、武衞將軍黎奉曉等討平之。武德王伏誅", "âm 1028"))
+p["nickname"] = "Quang"
+add("ly.thai-tong.phung-can", cx("CM", "parents", 2, Y1035, "立子日中爲奉乾王"))
+add("ly.than-tong.thien-loc", cx("CM", "parents", 4, Y1138, "立子天祚爲太子，改封故太子天祿爲明道王"))
+add("ly.thanh-tong.dong-thien", cx("VSL", "parents", "trung", "Thánh Tông, mùa hạ tháng 6", "時王女洞仙宮主侍側，王顧公主謂獄吏曰",
+    note="Việt sử lược chép là 洞仙宮主 và đặt ở năm Bính Ngọ (1066); Toàn thư ghi năm Giáp Thìn (1064)."))
+p = add("ly.anh-tong.long-xuong", cx("VSL", "title:1", "hạ", "Anh Tông, năm Thiên Cảm Chí Bảo thứ 1", "降太子龍昶為保國王", note="Việt sử lược chép tước Bảo Quốc vương khi bị giáng; Toàn thư chép Hiển Trung vương lúc mới sinh."))
+p["titles"].append({"title": "Bảo Quốc vương"})
+p = add("ly.cao-tong.tham",
+        cx("VSL", "bio", "hạ", "Huệ Tông, Quách Bốc lập Thầm", "忱雖長子，庶也。旵雖幼，嫡也", note="Việt sử lược chép Thầm là con trưởng (con thứ thiếp), Sảm là con nhỏ (con chính thất); Toàn thư chép Thầm là con thứ (皇次子)."))
+p["bio"] += " Việt sử lược chép Thầm là con trưởng nhưng sinh bởi thứ thất; Toàn thư chép là con thứ."
+
+Y1009, Y1015 = Y(1009, "Kỷ Dậu"), Y(1015, "Ất Mão")
+P(key="ly.thai-to.an-quoc", full_name="An Quốc công chúa", gender="F", parents="u.thai-to--khuyet", titles=[{"title": "An Quốc công chúa"}],
+  bio="Con gái trưởng của Lý Thái Tổ (Thái Tổ có mười ba người con gái, đều được phong công chúa). Được gả cho Đào Cam Mộc, người có công giúp Thái Tổ lên ngôi.",
+  citations=[cx("VSL", "existence", "trung", "Thái Tổ, năm Thuận Thiên thứ 1", "王女十三人皆公主，以長女安國公主嫁於陶甘沐，封為義信侯"),
+             cx("VSL", "parents", "trung", "Thái Tổ, năm Thuận Thiên thứ 1", "王女十三人皆公主，以長女安國公主嫁於陶甘沐，封為義信侯"),
+             cx("VSL", "title:0", "trung", "Thái Tổ, năm Thuận Thiên thứ 1", "以長女安國公主嫁於陶甘沐"),
+             cx("CM", "bio", 2, Y1009, "辰諸子悉皆封侯，女十三人皆封公主"),
+             cx("CM", "bio", 2, Y1009, "甘沐有翊戴功，封爲侯，尚安國公主")])
+P(key="ly.dao-cam-moc", full_name="Đào Cam Mộc", gender="M", titles=[{"title": "Nghĩa Tín hầu"}], death={"lunar_year": 1015, "lunar_month": 1},
+  bio="Bề tôi có công phò tá Thái Tổ lên ngôi, được phong Nghĩa Tín hầu và gả An Quốc công chúa. Mất tháng giêng năm 1015, được truy tặng Thái sư.",
+  citations=[cx("CM", "existence", 2, Y1009, "封陶甘沐爲義信侯"), cx("CM", "title:0", 2, Y1009, "封陶甘沐爲義信侯"),
+             cx("CM", "death", 2, Y1015, "春正月，陶甘沐卒", "âm 1015-1"),
+             c("death", 2, Y1015, "陶甘沐卒，贈太師亜王", "âm 1015-1", note="Toàn thư chép sau mục tháng giêng; lấy tháng giêng theo Cương mục."),
+             cx("CM", "bio", 2, Y1009, "甘沐有翊戴功，封爲侯，尚安國公主")])
+U("u.dao-cam-moc--an-quoc", "ly.dao-cam-moc", "ly.thai-to.an-quoc", 1,
+  [cx("VSL", "union", "trung", "Thái Tổ, năm Thuận Thiên thứ 1", "以長女安國公主嫁於陶甘沐"), cx("CM", "union", 2, Y1009, "甘沐有翊戴功，封爲侯，尚安國公主")])
+
+for k, n in (("thang-can", "Thắng Càn"), ("thai-phuc", "Thái Phúc")):
+    q = {"thang-can": "皇弟勝乾、太福等謀反", "thai-phuc": "皇弟勝乾、太福等謀反"}[k]
+    P(key=f"ly.thai-to.{k}", full_name=f"Lý {n}", gender="M", parents="u.thai-to--khuyet",
+      bio=f"Em của Lý Thái Tông (Toàn thư gọi là hoàng đệ), tức con của Thái Tổ; sử không chép tước hiệu. Năm 1035 bị tố cùng Nguyễn Khánh, sư Hồ và Đàm Toái Trạng mưu phản khi Thái Tông đi đánh Ái Châu; sử chỉ chép các chủ mưu bị xử, \"những người khác tùy tội nặng nhẹ\".",
+      citations=[c("existence", 2, Y1035, q), c("parents", 2, Y1035, q), c("bio", 2, Y1035, q),
+                 cx("CM", "parents", 2, Y1035, "皇弟勝乾太福等謀反"),
+                 cx("CM", "bio", 2, Y1035, "慶、碎狀及僧胡氏皆伏誅，餘論罪有差")])
+
 # ── Tiểu sử có cấu trúc + dòng thời gian (bio_lib) ─────────────────
 
 import importlib.util
