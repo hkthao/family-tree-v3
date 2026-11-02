@@ -545,6 +545,10 @@ RM = {
     "ly.cao-tong": ("Toàn thư chê vua rong chơi vô độ, hình chính không rõ, giặc cướp nổi lên như ong, đói kém liên miên, cơ nghiệp nhà Lý từ đó suy.",
                     c("bio", 4, f"{T7} — {TD}", "觀逰無度，刑政不明，盗賊蜂起，饑饉荐臻，李家之業於是乎衰矣")),
 }
+bio_lib.vstb(persons, "ly.thai-tong", "lifespan", "Quyển 1, mục Nhà Lý — Lý Thái Tông", "Thái-tôn ở ngôi được 27 năm, mất năm Giáp-Ngọ (1054) thọ 55 tuổi", "55")
+bio_lib.vstb(persons, "ly.than-tong", "lifespan", "Quyển 1, mục Nhà Lý — Lý Thần Tông", "Vua Thần-tôn ở ngôi được 10 năm thì qua đời, thọ 23 tuổi", "23")
+bio_lib.vstb(persons, "ly.anh-tong", "lifespan", "Quyển 1, mục Nhà Lý — Lý Anh Tông", "ngôi được 37 năm, thọ 40 tuổi đúng", "40")
+bio_lib.vstb(persons, "ly.cao-tong", "lifespan", "Quyển 1, mục Nhà Lý — Lý Cao Tông", "trị vì được 35 năm, thọ 38 tuổi", "38")
 bio_lib.structure(persons, unions, EV, RM)
 
 data = {
