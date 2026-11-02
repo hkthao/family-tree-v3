@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
  * trang (Danh bạ, Di sản, Cây gia phả). Chỉ hiện cho thành viên (gate ở nơi gọi).
  * Ẩn chữ trên mobile cho gọn.
  */
+// Đang ẨN nút ở header các trang (theo yêu cầu). Đổi về true để hiện lại;
+// menu điều hướng / Dashboard vẫn dẫn tới Phòng ký ức.
+const SHOW_MEMORY_ROOM_CTA = false;
+
 export function MemoryRoomCtaButton({
   clanId,
   className,
@@ -15,6 +19,7 @@ export function MemoryRoomCtaButton({
   clanId: string;
   className?: string;
 }) {
+  if (!SHOW_MEMORY_ROOM_CTA) return null;
   return (
     <Button
       asChild
