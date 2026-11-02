@@ -14,7 +14,7 @@ import {
   type FolderPdfPerson,
   type FolderPdfRow,
 } from "./folderTreeRows";
-import { PDF_FONT_FAMILY, serifStyle } from "./registerFont";
+import { pdfSerifFamily, serifStyle } from "./registerFont";
 
 /**
  * Trang "Cây thư mục" trong Sổ gia phả.
@@ -298,7 +298,7 @@ export function renderFolderTreePages(rows: FolderPdfRow[]) {
       key={`folder-tree-${i}`}
       size={[pg.width, pg.height]}
       style={{
-        fontFamily: PDF_FONT_FAMILY,
+        fontFamily: pdfSerifFamily(),
         // KHÔNG đặt lineHeight ở cấp trang: chữ trong các dòng xếp ngang
         // thừa hưởng nó là co về 0 và biến mất hẳn (đã dính, mất tên).
         fontSize: FOLDER_NAME_PT,

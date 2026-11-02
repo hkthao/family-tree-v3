@@ -464,6 +464,8 @@ interface Props {
 
 export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri }: Props) {
   ensurePdfFontRegistered();
+  // Toàn bộ sổ dùng MỘT font — font đã chọn ở cây (không còn trộn với Be Vietnam Pro).
+  styles.page.fontFamily = pdfSerifFamily();
 
   const showTree = include?.tree ?? true;
   const showFolderTree = include?.folderTree ?? true;
@@ -1862,7 +1864,7 @@ function TreeDiagramPage({
                   x={c.cx}
                   y={c.y + CARD_H - PAD_B - 1}
                   style={{
-                    fontFamily: PDF_FONT_FAMILY,
+                    fontFamily: pdfSerifFamily(),
                     fontSize: YEAR_FS,
                     fill: COLORS.muted,
                     textAnchor: "middle",
