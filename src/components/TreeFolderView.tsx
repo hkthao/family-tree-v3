@@ -268,7 +268,10 @@ export function TreeFolderView({
 
   return (
     <GhostSpouseContext.Provider value={ghostsByPerson}>
-    <div className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3">
+    <div
+      className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3"
+      style={{ fontFamily: nameFontStack() }}
+    >
       <Input
         type="search"
         icon={<IconSearch />}
