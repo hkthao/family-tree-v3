@@ -314,8 +314,8 @@ export function renderFolderTreePages(rows: FolderPdfRow[]) {
         <Text
           style={{
             ...serifStyle(),
-            fontSize: 25,
-            fontWeight: 700,
+            fontSize: 22,
+            fontWeight: 600,
             color: COLORS.primary,
           }}
         >

@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   coverTitle: {
-    fontSize: 44,
-    fontWeight: 700,
+    fontSize: 40,
+    fontWeight: 600,
     lineHeight: 1.3,
     color: COLORS.primary,
     textAlign: "center",
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
   // ("ạ", "ậ") stay inside the Text box; the underline sits just
   // below the box with minimal extra gap.
   h1: {
-    fontSize: 25,
-    fontWeight: 700,
+    fontSize: 22,
+    fontWeight: 600,
     lineHeight: 1.2,
     color: COLORS.primary,
     marginBottom: 2,

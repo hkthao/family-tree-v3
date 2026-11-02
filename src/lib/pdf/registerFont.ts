@@ -37,11 +37,11 @@ export function ensurePdfFontRegistered(): void {
 export const PDF_FONT_FAMILY = "BeVietnamPro";
 
 /**
- * Họ font DUY NHẤT của sổ PDF: serif mặc định (Playfair Display), không phụ
- * thuộc font chọn ở cây — để toàn sổ đồng nhất và dễ đọc khi in.
+ * Họ font DUY NHẤT của sổ PDF: Be Vietnam Pro (font mặc định của app, đủ dấu
+ * tiếng Việt). Các font serif/thư pháp bị lỗi dấu trong PDF nên không dùng.
  */
 export function pdfSerifFamily(): string {
-  return "NameFont_playfair";
+  return PDF_FONT_FAMILY;
 }
 
 /** Style fontFamily cho tiêu đề — gọi lúc dựng để theo lựa chọn hiện tại. */
