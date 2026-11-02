@@ -140,10 +140,10 @@ const styles = StyleSheet.create({
     width: 152, // (content_width 483 - 2*6gap) / 3 ≈ 157, leave breathing room
     marginRight: 6,
     padding: 8,
-    borderWidth: 0.5,
-    borderColor: COLORS.divider,
-    borderRadius: 4,
-    backgroundColor: "#FFFFFF",
+    borderWidth: 0.9,
+    borderColor: COLORS.accent,
+    borderRadius: 3,
+    backgroundColor: "#FFFBF0",
     alignItems: "center",
   },
   cardLast: { marginRight: 0 },
@@ -152,10 +152,10 @@ const styles = StyleSheet.create({
     width: 152,
     marginRight: 6,
     padding: 8,
-    borderWidth: 0.5,
-    borderColor: COLORS.divider,
-    borderRadius: 4,
-    backgroundColor: "#FFFFFF",
+    borderWidth: 0.9,
+    borderColor: COLORS.accent,
+    borderRadius: 3,
+    backgroundColor: "#FFFBF0",
   },
   mediaImg: { width: "100%", height: 82, borderRadius: 3, marginBottom: 5, objectFit: "cover" },
   mediaTitle: { fontSize: 10, fontWeight: 700, color: COLORS.primary, marginBottom: 1 },
@@ -1771,8 +1771,8 @@ function TreeDiagramPage({
             <Path
               key={`c${i}`}
               d={`M ${px} ${py} V ${midY} H ${cx} V ${cy}`}
-              stroke={COLORS.divider}
-              strokeWidth={0.6}
+              stroke={COLORS.accent}
+              strokeWidth={0.9}
               fill="none"
             />
           );
@@ -1784,8 +1784,8 @@ function TreeDiagramPage({
             <Path
               key={`m${i}`}
               d={`M ${m.a.cx + CARD_W / 2} ${y} H ${m.b.cx - CARD_W / 2}`}
-              stroke={COLORS.muted}
-              strokeWidth={0.6}
+              stroke={COLORS.primary}
+              strokeWidth={0.9}
               fill="none"
             />
           );
@@ -1800,12 +1800,12 @@ function TreeDiagramPage({
           // Ở trang nhánh cha mẹ của họ, họ là node chính → tô đặc bình thường.
           const isSpouse = c.kind === "spouse";
           const fill = isSpouse
-            ? "#EEE7DA"
+            ? "#F4EBD6"
             : p.gender === "M"
-              ? "#F1E8D3"
+              ? "#EFE0B8"
               : p.gender === "F"
-                ? "#F0D9CC"
-                : "#E8E0D2";
+                ? "#EFCDBE"
+                : "#EDE5D3";
           const sylls = nameSyllables(p.full_name);
           // Tên dài hơn số dòng cho phép: giữ MỖI DÒNG MỘT âm tiết (khỏi
           // tràn ngang), dòng cuối thêm "…" báo còn nữa (tên đầy đủ ở Danh bạ).
@@ -1824,9 +1824,21 @@ function TreeDiagramPage({
                 rx={2.5}
                 ry={2.5}
                 fill={fill}
-                stroke={isSpouse ? COLORS.muted : COLORS.primary}
-                strokeWidth={0.5}
+                stroke={COLORS.accent}
+                strokeWidth={0.9}
                 strokeDasharray={isSpouse ? "1.5 1.5" : undefined}
+              />
+              <Rect
+                x={x + 1.6}
+                y={c.y + 1.6}
+                width={CARD_W - 3.2}
+                height={CARD_H - 3.2}
+                rx={1.4}
+                ry={1.4}
+                fill="none"
+                stroke={COLORS.accent}
+                strokeWidth={0.3}
+                opacity={0.6}
               />
               {lines.map((ln, li) => (
                 <Text
