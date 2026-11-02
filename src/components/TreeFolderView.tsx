@@ -183,11 +183,14 @@ function MetaLine({
   return (
     <span className="flex min-h-[18px] flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
       {color && (
+        // Triện đỏ như cây 2D: khối vuông đỏ rượu, viền chỉ vàng, chỉ ghi số đời.
         <span
-          className="whitespace-nowrap rounded-[3px] px-1.5 text-[10px] font-bold leading-[16px] text-white ring-1 ring-inset ring-[#F2D68A]/70"
-          style={{ backgroundColor: color, fontFamily: nameFontStack() }}
+          title={`Đời ${generation}`}
+          aria-label={`Đời ${generation}`}
+          className="inline-flex min-w-[22px] justify-center whitespace-nowrap rounded-[3px] bg-[#7A2E2E] px-1 text-[11px] font-bold leading-[16px] text-white ring-1 ring-inset ring-[#F2D68A]/75"
+          style={{ fontFamily: nameFontStack() }}
         >
-          Đời {generation}
+          {generation}
         </span>
       )}
       {text}
