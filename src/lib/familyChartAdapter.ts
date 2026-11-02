@@ -66,7 +66,7 @@ export interface F3Datum {
  * the library's default genderless silhouette.
  */
 function genderAvatar(gender: "M" | "F"): string {
-  return gender === "M" ? "/avatars/male.png" : "/avatars/female.png";
+  return gender === "M" ? "/avatars/male-royal.svg" : "/avatars/female-royal.svg";
 }
 
 /**
@@ -294,7 +294,7 @@ export function addInlawGhosts(
         // dùng generation gốc của họ ở clan khác (số đời khác hệ quy chiếu →
         // vô nghĩa). Lấy generation của người local (đã theo offset clan này).
         generation: local.data.generation ?? null,
-        avatar: g.spouseGender === "M" ? "/avatars/male.png" : "/avatars/female.png",
+        avatar: g.spouseGender === "M" ? "/avatars/male-royal.svg" : "/avatars/female-royal.svg",
         is_ghost: true,
         ghost_link_id: g.linkId,
         ghost_peer_clan_name: g.peerClanName,

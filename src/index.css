@@ -280,6 +280,10 @@
 .f3 svg.main_svg .gen-badge text {
   fill: #FFFFFF;
 }
+.f3 svg.main_svg .gen-badge rect.seal-in,
+.dark .f3 svg.main_svg .gen-badge rect.seal-in {
+  fill: none;
+}
 
 /* Card quick-action icons (edit, add) — kept always visible on
    touch devices (no hover event) and hidden-until-hover on devices
