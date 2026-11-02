@@ -42,7 +42,7 @@ const RAIL_X = FOLDER_INDENT / 2;
 
 /** Ký hiệu ♂/♀ vẽ bằng nét — font của sổ không có hai glyph này. */
 function GenderMark({ gender }: { gender: "M" | "F" }) {
-  const color = gender === "M" ? "#2F7FD1" : "#D0458F";
+  const color = gender === "M" ? "#B8862A" : "#C27B6A";
   return (
     <Svg width={8.5} height={8.5} viewBox="0 0 24 24" style={{ marginLeft: 2 }}>
       {gender === "M" ? (

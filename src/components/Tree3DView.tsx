@@ -2,6 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 
 import { idsWithinDepth } from "@/lib/tree/depthFilter";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { readAvatarStyle } from "@/lib/familyChartAdapter";
+import {
+  nameFontFamily as fontFamilyOf,
+  readNameFontId,
+} from "@/lib/tree/nameFonts";
 import { createPortal } from "react-dom";
 
 import { IconMaximize, IconMinimize } from "@/components/icons";
@@ -46,30 +51,30 @@ function palette(dark: boolean) {
   return dark
     ? {
         bg: "#1A1612", // --background
-        card: "#221E19", // --card (lifted)
+        card: "#2E211B", // sơn mài nâu
         cardName: "#EFE9DB", // --foreground (cream)
         cardYears: "#BAB1A3", // --muted-foreground
         photoBg: "#2B2520", // --muted
-        link: "#5C5349",
+        link: "#8A6B2E",
         linkText: "#9C9082",
         marriage: "#D24545", // --primary (oxblood, dark) — cạnh hôn nhân
-        root: "#D4A045", // --accent (bronze, dark)
-        male: "#6FA0C8",
-        female: "#D08A91",
+        root: "#E26B6B", // đỏ son sáng — thuỷ tổ
+        male: "#D4A94A", // vàng kim
+        female: "#D99A8C", // vàng hồng
         particle: "#D4A045",
       }
     : {
         bg: "#FBF7F0", // --background (paper)
-        card: "#FFFFFF",
+        card: "#F7F0E0", // trắng ngà
         cardName: "#2A2320", // --foreground (ink)
         cardYears: "#7A6F66", // --muted-foreground
         photoBg: "#ECE6DA",
-        link: "#CBBFAC",
+        link: "#D9C08A",
         linkText: "#8A7F72",
         marriage: "#9B3535", // --primary (oxblood, light) — cạnh hôn nhân
-        root: "#B8862A", // --accent (bronze, light)
-        male: "#5B8FB8",
-        female: "#C97F86",
+        root: "#9B3535", // đỏ son — thuỷ tổ
+        male: "#B8862A", // vàng kim
+        female: "#C27B6A", // vàng hồng
         particle: "#B8862A",
       };
 }
@@ -81,7 +86,11 @@ function isDarkNow() {
   );
 }
 
-const DEFAULT_AVATARS = { M: "/avatars/male.png", F: "/avatars/female.png" };
+const DEFAULT_AVATARS_ROYAL = {
+  M: "/avatars/male-royal.svg",
+  F: "/avatars/female-royal.svg",
+};
+const DEFAULT_AVATARS_CLASSIC = { M: "/avatars/male.png", F: "/avatars/female.png" };
 
 /** Kích thước canvas (px logic) của thẻ node. */
 const CARD_W = 260;
@@ -271,7 +280,7 @@ export function Tree3DView({
   className,
   data: injectedData,
   photoUrls: injectedPhotoUrls,
-  avatars = DEFAULT_AVATARS,
+  avatars = readAvatarStyle() === "classic" ? DEFAULT_AVATARS_CLASSIC : DEFAULT_AVATARS_ROYAL,
 }: {
   clanId: string;
   genOffset: number;
@@ -375,6 +384,7 @@ export function Tree3DView({
     let onKey: ((e: KeyboardEvent) => void) | null = null;
 
     // Mỗi người = một THẺ bo tròn (ảnh tròn + tên + năm sinh–mất) vẽ trên canvas.
+    const nameFam = fontFamilyOf(readNameFontId());
     const makeNode = (n: NodeObject) => {
       const g = n as GNode;
       // Mobile: dpr 1 (giảm 4× bộ nhớ texture) để không crash; desktop 2 cho sắc.
@@ -437,7 +447,7 @@ export function Tree3DView({
         // line-height rộng (40 / 36) để thoáng.
         ctx.textAlign = "center";
         ctx.textBaseline = "alphabetic";
-        ctx.font = "700 30px system-ui, -apple-system, sans-serif";
+        ctx.font = `700 30px ${nameFam}, "Noto Serif", Georgia, serif`;
         const lines = wrapText(ctx, g.name, CARD_W - 40, 2);
         const sub = g.years || (g.gen != null ? `Đời ${g.gen}` : "");
         const nameGap = 40;
@@ -449,7 +459,7 @@ export function Tree3DView({
         lines.forEach((ln, i) => ctx.fillText(ln, cx, firstY + i * nameGap));
         if (sub) {
           ctx.fillStyle = pal.cardYears;
-          ctx.font = "500 22px system-ui, -apple-system, sans-serif";
+          ctx.font = `500 22px "Noto Serif", Georgia, serif`;
           ctx.fillText(sub, cx, firstY + (lines.length - 1) * nameGap + subGap);
         }
         // Badge số con (chế độ mở rộng dần) — nhắc bấm để bung/thu nhánh.
@@ -488,6 +498,17 @@ export function Tree3DView({
 
     void (async () => {
       const ForceGraph3D = (await import("3d-force-graph")).default;
+      if (cancelled || !elRef.current) return;
+      // Canvas không tự tải font: nạp trước để tên trên thẻ đúng font đã chọn.
+      try {
+        await Promise.all([
+          document.fonts?.load(`700 30px ${nameFam}`, "Đỗ Việt Nguyễn"),
+          document.fonts?.load(`500 22px "Noto Serif"`, "1218 - 1277"),
+          document.fonts?.load(`500 24px ${nameFam}`, "vợ chồng con trai"),
+        ]);
+      } catch {
+        /* bỏ qua */
+      }
       if (cancelled || !elRef.current) return;
       const keepIds = idsWithinDepth(data.persons, data.families, focal, depth);
       const { nodes, links } = buildGraph(
@@ -686,6 +707,7 @@ export function Tree3DView({
           s.color = link.kind === "marriage" ? pal.marriage : pal.linkText;
           s.textHeight = 2.4;
           s.fontWeight = "500";
+          s.fontFace = `${nameFam}, "Noto Serif", Georgia, serif`;
           return s;
         })
         .linkPositionUpdate((sprite, { start, end }) => {

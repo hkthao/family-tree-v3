@@ -31,7 +31,11 @@ import { BOOK_WATERMARKS, type BookWatermarkId } from "./bookWatermarks";
 import { renderFolderTreePages } from "./FolderTreePdf";
 import { pdfAssets } from "./pdfAssets";
 import { buildFolderPdfRows, type FolderPdfPerson } from "./folderTreeRows";
-import { ensurePdfFontRegistered, PDF_FONT_FAMILY } from "./registerFont";
+import {
+  ensurePdfFontRegistered,
+  PDF_FONT_FAMILY,
+  PDF_SERIF_FAMILY,
+} from "./registerFont";
 
 // ─── Page geometry (A4 in points) ──────────────────────────────────
 
@@ -46,8 +50,8 @@ export const COLORS = {
   muted: "#6F665F",
   divider: "#D8CFC2",
   primary: "#7A2230",
-  accent: "#C19A5B",
-  paper: "#FBF7F0",
+  accent: "#B8862A", // vàng kim
+  paper: "#F8F1E1", // trắng ngà
 };
 
 const styles = StyleSheet.create({
@@ -71,8 +75,9 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   coverTitle: {
-    fontSize: 40,
-    fontWeight: 600,
+    fontFamily: PDF_SERIF_FAMILY,
+    fontSize: 44,
+    fontWeight: 700,
     lineHeight: 1.3,
     color: COLORS.primary,
     textAlign: "center",
@@ -104,8 +109,9 @@ const styles = StyleSheet.create({
   // ("ạ", "ậ") stay inside the Text box; the underline sits just
   // below the box with minimal extra gap.
   h1: {
-    fontSize: 22,
-    fontWeight: 600,
+    fontFamily: PDF_SERIF_FAMILY,
+    fontSize: 25,
+    fontWeight: 700,
     lineHeight: 1.2,
     color: COLORS.primary,
     marginBottom: 2,
@@ -1798,9 +1804,9 @@ function TreeDiagramPage({
           const fill = isSpouse
             ? "#EEE7DA"
             : p.gender === "M"
-              ? "#D4DDE4"
+              ? "#F1E8D3"
               : p.gender === "F"
-                ? "#E8D2CC"
+                ? "#F0D9CC"
                 : "#E8E0D2";
           const sylls = nameSyllables(p.full_name);
           // Tên dài hơn số dòng cho phép: giữ MỖI DÒNG MỘT âm tiết (khỏi
