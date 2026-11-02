@@ -459,7 +459,7 @@ export function Tree3DView({
         lines.forEach((ln, i) => ctx.fillText(ln, cx, firstY + i * nameGap));
         if (sub) {
           ctx.fillStyle = pal.cardYears;
-          ctx.font = `500 22px "Noto Serif", Georgia, serif`;
+          ctx.font = `500 22px ${nameFam}, "Noto Serif", Georgia, serif`;
           ctx.fillText(sub, cx, firstY + (lines.length - 1) * nameGap + subGap);
         }
         // Badge số con (chế độ mở rộng dần) — nhắc bấm để bung/thu nhánh.
@@ -503,7 +503,7 @@ export function Tree3DView({
       try {
         await Promise.all([
           document.fonts?.load(`700 30px ${nameFam}`, "Đỗ Việt Nguyễn"),
-          document.fonts?.load(`500 22px "Noto Serif"`, "1218 - 1277"),
+          document.fonts?.load(`500 22px ${nameFam}`, "1218 - 1277"),
           document.fonts?.load(`500 24px ${nameFam}`, "vợ chồng con trai"),
         ]);
       } catch {

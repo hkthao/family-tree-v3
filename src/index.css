@@ -266,7 +266,7 @@
   fill: var(--tree-card-text);
 }
 .f3 svg.main_svg .card-text tspan:nth-child(2) {
-  font-family: "Noto Serif", Georgia, serif;
+  font-family: var(--tree-name-font, "Playfair Display"), "Noto Serif", Georgia, serif;
   font-size: 11px;
   fill: var(--tree-card-text);
   opacity: 0.7;
