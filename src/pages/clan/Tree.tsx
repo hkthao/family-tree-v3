@@ -926,7 +926,7 @@ export default function Tree() {
         built.setAncestryDepth?.(d);
 
         // Anchor the chart on the chosen focal (Thuỷ tổ by default).
-        // Tô màu đường nối theo giới người CON (con trai xanh / con gái hồng)
+        // Tô màu đường nối theo giới người CON (con trai vàng kim / con gái vàng hồng)
         // và đỏ cho hôn nhân — đồng bộ với cây 3D. family-chart 0.9 không gọi
         // afterUpdate, nên post-process SVG: mỗi path.link có __data__ =
         // {spouse?, source, target} (source/target là node, một đầu là mảng
