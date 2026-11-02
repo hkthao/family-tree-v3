@@ -131,6 +131,15 @@ async function loadF3(): Promise<typeof import("family-chart")> {
   return f3Module;
 }
 
+/** Font tên trên thẻ cây 2D. `family` đưa vào biến CSS --tree-name-font. */
+const NAME_FONTS = [
+  { id: "playfair", label: "Trang nhã (Playfair)", family: '"Playfair Display"' },
+  { id: "cormorant", label: "Cổ điển (Cormorant)", family: '"Cormorant Garamond"' },
+  { id: "charm", label: "Thư pháp (Charm)", family: '"Charm"' },
+  { id: "playwrite", label: "Thư pháp (Playwrite VN)", family: '"Playwrite VN"' },
+  { id: "dancing", label: "Thư pháp (Dancing Script)", family: '"Dancing Script"' },
+] as const;
+
 type Orientation = "vertical" | "horizontal";
 const ORIENTATION_KEY = "family-tree:tree-orientation";
 
@@ -317,6 +326,25 @@ export default function Tree() {
       /* private mode — ignore */
     }
   }, [cardFrame]);
+
+  // Font tên trên thẻ: Playfair mặc định + vài font thư pháp có tiếng Việt.
+  const [nameFont, setNameFont] = useState<string>(() => {
+    try {
+      const v = localStorage.getItem("family-tree:tree-name-font");
+      return NAME_FONTS.some((f) => f.id === v) ? (v as string) : "playfair";
+    } catch {
+      return "playfair";
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("family-tree:tree-name-font", nameFont);
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [nameFont]);
+  const nameFontFamily =
+    NAME_FONTS.find((f) => f.id === nameFont)?.family ?? NAME_FONTS[0].family;
 
   const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
@@ -543,6 +571,13 @@ export default function Tree() {
 
     (async () => {
       const f3 = await loadF3();
+      if (disposed) return;
+      // Tải trước font tên (đúng subset tiếng Việt) để đo độ dài tên chính xác.
+      try {
+        await document.fonts?.load(`600 13px ${nameFontFamily}`, "Đỗ Việt Nguyễn");
+      } catch {
+        /* bỏ qua */
+      }
       if (disposed) return;
 
       node.innerHTML = "";
@@ -1116,6 +1151,7 @@ export default function Tree() {
     clan.display_living_full_dob,
     depth,
     cardFrame,
+    nameFont,
     // Vẽ lại khi quay từ "Trực hệ" về "Cả cây" (container được mount lại).
     view,
     // Vào/ra toàn màn hình → container được portal sang body (node mới)
@@ -1391,6 +1427,18 @@ export default function Tree() {
                       <option value="none">Tắt nền</option>
                     </Select>
                     <Select
+                      aria-label="Font tên"
+                      value={nameFont}
+                      onChange={(e) => setNameFont(e.target.value)}
+                      className="col-span-2 sm:col-span-1 w-full sm:w-[12rem] h-10 text-sm"
+                    >
+                      {NAME_FONTS.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          Font: {f.label}
+                        </option>
+                      ))}
+                    </Select>
+                    <Select
                       aria-label="Khung viền thẻ"
                       value={cardFrame}
                       onChange={(e) =>
@@ -1580,6 +1628,7 @@ export default function Tree() {
                   "--male-color": "var(--tree-card-male)",
                   "--female-color": "var(--tree-card-female)",
                   "--genderless-color": "var(--tree-card-genderless)",
+                  "--tree-name-font": nameFontFamily,
                   // Only opt out of native scroll when the chart is
                   // "active" — otherwise we let the page scroll
                   // through, important on phones where the chart
