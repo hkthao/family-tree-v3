@@ -1,7 +1,5 @@
 import { Font } from "@react-pdf/renderer";
 
-import { readNameFontId } from "@/lib/tree/nameFonts";
-
 import { pdfAssets } from "./pdfAssets";
 
 let registered = false;
@@ -38,10 +36,12 @@ export function ensurePdfFontRegistered(): void {
 
 export const PDF_FONT_FAMILY = "BeVietnamPro";
 
-/** Họ font tiêu đề theo lựa chọn "Font" đang lưu của người dùng (mặc định Playfair). */
+/**
+ * Họ font DUY NHẤT của sổ PDF: serif mặc định (Playfair Display), không phụ
+ * thuộc font chọn ở cây — để toàn sổ đồng nhất và dễ đọc khi in.
+ */
 export function pdfSerifFamily(): string {
-  const id = readNameFontId();
-  return `NameFont_${id in pdfAssets.nameFonts ? id : "playfair"}`;
+  return "NameFont_playfair";
 }
 
 /** Style fontFamily cho tiêu đề — gọi lúc dựng để theo lựa chọn hiện tại. */
