@@ -53,6 +53,7 @@ import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanConte
 import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
+import { savePersonNav } from "@/lib/personNav";
 import { getClanCompletion, type ClanCompletion } from "@/lib/queries/todo";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
@@ -242,6 +243,21 @@ export default function People() {
     enabled: !!userId,
     placeholderData: keepPreviousData,
   });
+
+  // Ghi thứ tự đang xem để trang chi tiết có nút "Người trước / Người sau".
+  useEffect(() => {
+    if (!data) return;
+    const { page: _p, ...rest } = params;
+    savePersonNav({
+      clanId: clan.id,
+      params: rest,
+      ids: data.rows.map((r) => r.id),
+      pageLo: data.page,
+      pageHi: data.page,
+      total: data.total,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   // Branches list for filter dropdown
   const { data: branches } = useQuery({

@@ -86,6 +86,8 @@ import {
   type PersonDetail as PersonDetailT,
 } from "@/lib/queries/persons";
 
+import { PersonNavButtons } from "@/components/PersonNavButtons";
+
 export default function PersonDetail() {
   const { clanId, personId } = useParams<{ clanId: string; personId: string }>();
   const { user } = useAuth();
@@ -281,6 +283,9 @@ export default function PersonDetail() {
           { label: person?.full_name ?? "Người" },
         ]}
       />
+      {clanId && personId && (
+        <PersonNavButtons clanId={clanId} personId={personId} />
+      )}
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
 
