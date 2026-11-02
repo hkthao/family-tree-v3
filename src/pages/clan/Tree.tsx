@@ -334,6 +334,22 @@ export default function Tree() {
     }
   }, [nameFont]);
   const nameFontFamily = fontFamilyOf(nameFont);
+  // Ghi NGAY khi đổi (không chờ effect) để cây 3D / Thư mục — đọc localStorage
+  // lúc render — thấy giá trị mới ngay lần dựng lại.
+  const persistNameFont = (v: string) => {
+    try {
+      localStorage.setItem(NAME_FONT_KEY, v);
+    } catch {
+      /* ignore */
+    }
+  };
+  const persistAvatarStyle = (v: AvatarStyle) => {
+    try {
+      localStorage.setItem(AVATAR_STYLE_KEY, v);
+    } catch {
+      /* ignore */
+    }
+  };
 
   const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
@@ -1419,18 +1435,6 @@ export default function Tree() {
                       <option value="none">Tắt nền</option>
                     </Select>
                     <Select
-                      aria-label="Font tên"
-                      value={nameFont}
-                      onChange={(e) => setNameFont(e.target.value)}
-                      className="col-span-2 sm:col-span-1 w-full sm:w-[12rem] h-10 text-sm"
-                    >
-                      {NAME_FONTS.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          Font: {f.label}
-                        </option>
-                      ))}
-                    </Select>
-                    <Select
                       aria-label="Khung viền thẻ"
                       value={cardFrame}
                       onChange={(e) =>
@@ -1441,19 +1445,36 @@ export default function Tree() {
                       <option value="royal">Khung: Hoàng gia</option>
                       <option value="simple">Khung: Đơn giản</option>
                     </Select>
-                    <Select
-                      aria-label="Avatar mặc định"
-                      value={avatarStyle}
-                      onChange={(e) =>
-                        setAvatarStyle(e.target.value as AvatarStyle)
-                      }
-                      className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
-                    >
-                      <option value="royal">Avatar: Hoàng gia</option>
-                      <option value="classic">Avatar: Cổ điển</option>
-                    </Select>
                   </>
                 )}
+                {/* Font tên + avatar mặc định áp dụng cho cả 2D, 3D và Thư mục. */}
+                <Select
+                  aria-label="Font tên"
+                  value={nameFont}
+                  onChange={(e) => {
+                    persistNameFont(e.target.value);
+                    setNameFont(e.target.value);
+                  }}
+                  className="col-span-2 sm:col-span-1 w-full sm:w-[12rem] h-10 text-sm"
+                >
+                  {NAME_FONTS.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      Font: {f.label}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  aria-label="Avatar mặc định"
+                  value={avatarStyle}
+                  onChange={(e) => {
+                    persistAvatarStyle(e.target.value as AvatarStyle);
+                    setAvatarStyle(e.target.value as AvatarStyle);
+                  }}
+                  className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
+                >
+                  <option value="royal">Avatar: Hoàng gia</option>
+                  <option value="classic">Avatar: Cổ điển</option>
+                </Select>
                 {/* Phòng ký ức / Xuất sổ / Chia sẻ không phụ thuộc kiểu vẽ cây
                     (chỉ là đường dẫn / dựng PDF từ dữ liệu) nên luôn có, kể cả 3D. */}
                 <div className="col-span-2 grid grid-cols-3 gap-2 [&>*]:w-full sm:contents sm:[&>*]:w-auto">
@@ -1486,7 +1507,11 @@ export default function Tree() {
                 </p>
               }
             >
-              <TreeFolderView clanId={clan.id} source={treeSource} />
+              <TreeFolderView
+                key={`${nameFont}-${avatarStyle}`}
+                clanId={clan.id}
+                source={treeSource}
+              />
             </Suspense>
           </div>
         </div>
@@ -1501,6 +1526,7 @@ export default function Tree() {
             }
           >
             <Tree3DView
+              key={`${nameFont}-${avatarStyle}`}
               clanId={clan.id}
               genOffset={clan.generation_offset}
               focal={focal}
