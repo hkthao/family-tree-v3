@@ -440,12 +440,12 @@ export default function Share() {
         );
         if (disposed) return;
 
-        // Tô màu đường nối theo giới người con (con trai xanh / con gái hồng),
+        // Tô màu đường nối theo giới người con (con trai vàng kim / con gái vàng hồng),
         // hôn nhân đỏ — đồng bộ với cây 3D. Gắn observer TRƯỚC updateTree.
         const colorLinks = () => {
           const dark = document.documentElement.classList.contains("dark");
-          const MALE = dark ? "#6FA0C8" : "#5B8FB8";
-          const FEMALE = dark ? "#D08A91" : "#C97F86";
+          const MALE = dark ? "#D4A94A" : "#B8862A"; // vàng kim
+          const FEMALE = dark ? "#D99A8C" : "#C27B6A"; // vàng hồng
           const MARRIAGE = dark ? "#D24545" : "#9B3535";
           node
             .querySelectorAll<SVGPathElement>(".links_view .link")

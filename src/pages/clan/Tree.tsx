@@ -1050,8 +1050,8 @@ export default function Tree() {
         // [cha,mẹ] với link cha-con). Người con = đầu KHÔNG phải mảng.
         const colorLinks = () => {
           const dark = document.documentElement.classList.contains("dark");
-          const MALE = dark ? "#6FA0C8" : "#5B8FB8";
-          const FEMALE = dark ? "#D08A91" : "#C97F86";
+          const MALE = dark ? "#D4A94A" : "#B8862A"; // vàng kim
+          const FEMALE = dark ? "#D99A8C" : "#C27B6A"; // vàng hồng
           const MARRIAGE = dark ? "#D24545" : "#9B3535";
           node
             .querySelectorAll<SVGPathElement>(".links_view .link")
@@ -1830,10 +1830,10 @@ export default function Tree() {
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="inline-flex items-center gap-1">
-                      <span className="h-0.5 w-4 rounded" style={{ background: "#5B8FB8" }} /> Con trai
+                      <span className="h-0.5 w-4 rounded" style={{ background: "#B8862A" }} /> Con trai
                     </span>
                     <span className="inline-flex items-center gap-1">
-                      <span className="h-0.5 w-4 rounded" style={{ background: "#C97F86" }} /> Con gái
+                      <span className="h-0.5 w-4 rounded" style={{ background: "#C27B6A" }} /> Con gái
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <span className="h-0.5 w-4 rounded" style={{ background: "#9B3535" }} /> Vợ chồng
