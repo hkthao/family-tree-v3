@@ -800,6 +800,33 @@ export default function Tree() {
                 line.setAttribute("opacity", "0.4");
                 line.setAttribute("pointer-events", "none");
                 rect.parentNode?.insertBefore(line, rect.nextSibling);
+
+                // Hoa văn chạm khắc 4 góc: góc vuông chữ L vàng + chấm tròn nhỏ.
+                this.querySelector(".card-body .card-corners")?.remove();
+                const L = 9;
+                const o = 3;
+                const w = cardW;
+                const h = cardH;
+                const corners = document.createElementNS(
+                  "http://www.w3.org/2000/svg",
+                  "path",
+                );
+                corners.setAttribute("class", "card-corners");
+                corners.setAttribute(
+                  "d",
+                  [
+                    `M${o} ${o + L}V${o}H${o + L}`,
+                    `M${w - o - L} ${o}H${w - o}V${o + L}`,
+                    `M${o} ${h - o - L}V${h - o}H${o + L}`,
+                    `M${w - o - L} ${h - o}H${w - o}V${h - o - L}`,
+                  ].join(""),
+                );
+                corners.setAttribute("fill", "none");
+                corners.setAttribute("stroke", "#D4A94A");
+                corners.setAttribute("stroke-width", "1.4");
+                corners.setAttribute("stroke-linecap", "round");
+                corners.setAttribute("pointer-events", "none");
+                line.parentNode?.insertBefore(corners, line.nextSibling);
               }
             }
 
