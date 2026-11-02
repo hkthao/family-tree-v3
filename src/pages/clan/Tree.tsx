@@ -845,7 +845,7 @@ export default function Tree() {
                 rect.parentNode?.insertBefore(line, rect.nextSibling);
 
                 // Hoa văn chạm khắc 4 góc: góc vuông chữ L vàng + chấm tròn nhỏ.
-                const L = 9;
+                const L = 7; // bỏ góc trên-phải: nhường chỗ badge "Đời"/thông gia
                 const o = 3;
                 const w = cardW;
                 const h = cardH;
@@ -858,7 +858,6 @@ export default function Tree() {
                   "d",
                   [
                     `M${o} ${o + L}V${o}H${o + L}`,
-                    `M${w - o - L} ${o}H${w - o}V${o + L}`,
                     `M${o} ${h - o - L}V${h - o}H${o + L}`,
                     `M${w - o - L} ${h - o}H${w - o}V${h - o - L}`,
                   ].join(""),
