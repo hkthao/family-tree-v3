@@ -6,7 +6,18 @@ import { renderToStaticMarkup } from "react-dom/server";
  * bằng SVG nên không cần tệp ảnh; ảnh người thu nhỏ vào trong để tổng kích
  * thước vẫn đúng `size`.
  */
-export const AVATAR_FRAMES = ["laurel", "gold", "silver", "royal", "lotus", "fortune"] as const;
+export const AVATAR_FRAMES = [
+  "laurel",
+  "gold",
+  "silver",
+  "royal",
+  "lotus",
+  "fortune",
+  "cinnabar",
+  "imperial",
+  "jade",
+  "bronze",
+] as const;
 export type AvatarFrame = (typeof AVATAR_FRAMES)[number];
 
 export const AVATAR_FRAME_LABEL: Record<AvatarFrame, string> = {
@@ -16,6 +27,10 @@ export const AVATAR_FRAME_LABEL: Record<AvatarFrame, string> = {
   royal: "Hoàng gia",
   lotus: "Sen hồng",
   fortune: "Phúc lộc",
+  cinnabar: "Đỏ son viền vàng",
+  imperial: "Triều đình",
+  jade: "Ngọc bích",
+  bronze: "Trống đồng",
 };
 
 export function isAvatarFrame(v: string | null | undefined): v is AvatarFrame {
@@ -212,6 +227,60 @@ function FrameArt({ frame }: { frame: AvatarFrame }): ReactElement {
       );
     case "lotus":
       return <Ring id="af-lotus" stops={["#FFB3C7", "#FF6B9A", "#C13584", "#FF9966", "#FFB3C7"]} />;
+    case "cinnabar":
+      return (
+        <>
+          <Ring id="af-cinnabar" stops={["#C8362B", "#8E1A14", "#B3261E"]} width={5.5} />
+          <defs>
+            <Gradient id="af-cinnabar-g" stops={GOLD} />
+          </defs>
+          <circle cx="50" cy="50" r="49" fill="none" stroke="url(#af-cinnabar-g)" strokeWidth="1.2" />
+          <circle cx="50" cy="50" r="43.2" fill="none" stroke="url(#af-cinnabar-g)" strokeWidth="1" />
+        </>
+      );
+    case "imperial": {
+      // Vòng vàng kép + 4 viên khảm hình thoi ở bốn hướng.
+      const gems = [0, 90, 180, 270].map((a) => (
+        <rect
+          key={a}
+          x="47"
+          y="0.5"
+          width="6"
+          height="6"
+          transform={`rotate(45 50 3.5) rotate(${a} 50 50)`}
+          fill="#B3261E"
+          stroke="#FFF1B8"
+          strokeWidth="1"
+        />
+      ));
+      return (
+        <>
+          <Ring id="af-imperial" stops={GOLD} width={4} />
+          <circle cx="50" cy="50" r="42.6" fill="none" stroke="#9A6A07" strokeWidth="0.8" />
+          {gems}
+        </>
+      );
+    }
+    case "jade":
+      return (
+        <>
+          <Ring id="af-jade" stops={["#CDEFD9", "#4FB487", "#1F7A58", "#7FD1AE", "#2E8B6A"]} width={5} />
+          <circle cx="50" cy="50" r="42.4" fill="none" stroke="#F2D68A" strokeWidth="1" />
+        </>
+      );
+    case "bronze": {
+      // Vòng đồng sẫm có chấm tròn đều như viền mặt trống đồng.
+      const dots = Array.from({ length: 24 }, (_, i) => {
+        const a = (i / 24) * Math.PI * 2;
+        return <circle key={i} cx={50 + RING_R * Math.cos(a)} cy={50 + RING_R * Math.sin(a)} r="1.5" fill="#F3D9A0" />;
+      });
+      return (
+        <>
+          <Ring id="af-bronze" stops={["#C99A5B", "#8A5A24", "#6B4219", "#B9854A"]} width={5.5} />
+          {dots}
+        </>
+      );
+    }
     case "fortune":
       return (
         <>
