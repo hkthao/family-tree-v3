@@ -795,11 +795,16 @@ export default function Tree() {
               badge.setAttribute("class", "gen-badge");
               // Ghim sát góc trên bên phải, NẰM TRONG thẻ (y dương) để
               // không bị mép thẻ cắt mất.
+              // Dạng triện đỏ (con dấu sơn): khối vuông bo nhẹ, viền chỉ trong, chữ serif.
               badge.innerHTML = `
-                <rect x="${cardW - 48}" y="6" width="42" height="18" rx="9"
+                <rect x="${cardW - 48}" y="6" width="42" height="18" rx="2"
                       fill="#7A2E2E" />
-                <text x="${cardW - 27}" y="19" text-anchor="middle"
-                      fill="#FFFFFF" font-size="10" font-weight="700">
+                <rect class="seal-in" x="${cardW - 46}" y="8" width="38" height="14"
+                      rx="1" fill="none" stroke="#F2D68A" stroke-width="0.8"
+                      opacity="0.75" />
+                <text x="${cardW - 27}" y="18.5" text-anchor="middle"
+                      fill="#FFFFFF" font-size="10" font-weight="700"
+                      font-family="'Playfair Display', Georgia, 'Times New Roman', serif">
                   Đời ${gen - clan.generation_offset}
                 </text>`;
               this.querySelector(".card-body")?.appendChild(badge);
