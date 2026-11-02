@@ -773,12 +773,33 @@ export default function Tree() {
             // nối vào cây bằng hôn nhân → viền ĐỨT bronze, khớp "Cách xem".
             // Đúng cả khi dâu/rể có cha/mẹ được ghi.
             const isInLaw = !!personId && !blood.has(personId);
-            if (isInLaw) {
+            {
+              // Khung thẻ kiểu khung gỗ viền chỉ vàng: góc vuông hơn + viền vàng
+              // ngoài, thêm một đường chỉ mảnh bên trong (vẽ lại mỗi lần cập nhật).
               const rect = this.querySelector(".card-body rect");
               if (rect) {
+                rect.setAttribute("rx", "4");
+                rect.setAttribute("ry", "4");
                 rect.setAttribute("stroke", "#B8862A");
-                rect.setAttribute("stroke-dasharray", "4 3");
-                rect.setAttribute("stroke-width", "1.5");
+                rect.setAttribute("stroke-width", isInLaw ? "1.5" : "1.2");
+                if (isInLaw) rect.setAttribute("stroke-dasharray", "4 3");
+                this.querySelector(".card-body .card-inner-line")?.remove();
+                const line = document.createElementNS(
+                  "http://www.w3.org/2000/svg",
+                  "rect",
+                );
+                line.setAttribute("class", "card-inner-line");
+                line.setAttribute("x", "3");
+                line.setAttribute("y", "3");
+                line.setAttribute("width", String(cardW - 6));
+                line.setAttribute("height", String(cardH - 6));
+                line.setAttribute("rx", "2");
+                line.setAttribute("fill", "none");
+                line.setAttribute("stroke", "#D4A94A");
+                line.setAttribute("stroke-width", "0.6");
+                line.setAttribute("opacity", "0.4");
+                line.setAttribute("pointer-events", "none");
+                rect.parentNode?.insertBefore(line, rect.nextSibling);
               }
             }
 

@@ -61,9 +61,9 @@
     /* family-chart card fills (consumed via --male-color etc.
      * set inline on the .f3 container in Tree.tsx / Share.tsx).
      * Light pastel tones to match the warm-paper bg. */
-    --tree-card-male: #D4DDE4;
-    --tree-card-female: #E8D2CC;
-    --tree-card-genderless: #E8E0D2;
+    --tree-card-male: #F1E8D3;
+    --tree-card-female: #F0D9CC;
+    --tree-card-genderless: #EDE5D3;
     --tree-card-text: #2A2320;
 
     /* Vàng đồng — viền, đường kẻ, dấu nhấn nhỏ (lấy từ site gia phả tham khảo) */
@@ -115,9 +115,9 @@
      * 38 30% 92%) reads against them. Same hue family as light
      * mode (cool blue / warm rose / neutral) but shifted to
      * ~25% lightness so contrast clears 4.5:1 against cream. */
-    --tree-card-male: #2F3D48;
-    --tree-card-female: #4A2F2D;
-    --tree-card-genderless: #38322B;
+    --tree-card-male: #2E211B;
+    --tree-card-female: #4B1E1B;
+    --tree-card-genderless: #35291F;
     --tree-card-text: #EFE9DB;
 
     --gold: 43 55% 60%;
