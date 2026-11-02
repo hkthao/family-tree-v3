@@ -805,6 +805,8 @@ export default function Tree() {
                 txt.setAttribute("fill", "#FFFFFF");
                 txt.setAttribute("font-size", "9");
                 txt.setAttribute("font-weight", "600");
+                txt.style.fontFamily =
+                  "var(--tree-name-font, 'Playfair Display'), Georgia, serif";
                 txt.textContent = clanName;
                 tag.appendChild(bg);
                 tag.appendChild(txt);
@@ -929,7 +931,7 @@ export default function Tree() {
                       opacity="0.75" />
                 <text x="${cardW - 18}" y="18.5" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700"
-                      font-family="'Playfair Display', Georgia, 'Times New Roman', serif">
+                      style="font-family: var(--tree-name-font, 'Playfair Display'), Georgia, serif">
                   ${gen - clan.generation_offset}
                 </text>
                 <title>Đời ${gen - clan.generation_offset}</title>`;
