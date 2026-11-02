@@ -468,6 +468,20 @@ import os as _os
 _spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
 bio_lib = _iu.module_from_spec(_spec)
 _spec.loader.exec_module(bio_lib)
+# ── Đối chiếu Việt sử tân biên (VSTB): tuổi thọ các vua ──
+_Q3 = "Quyển 3, mục Nam-Bắc triều (1533–1592)"
+_Q3b = "Quyển 3, mục các vua chúa trong thời Nam-Bắc phân tranh (1600–1786)"
+bio_lib.vstb(persons, "le.thai-to", "lifespan", "Quyển 2, tr.497, mục Việc giết công thần", "Vua Lê Thái-tổ làm vua được 6 năm thì mất, thọ 49 tuổi", "49",
+             note="Việt sử tân biên chép thọ 49 tuổi; Toàn thư chép 51.")
+bio_lib.vstb(persons, "le.thai-tong", "lifespan", "Quyển 2, mục Lê Nhân Tông (1443–1459)", "Vua Thái-tông làm vua được 9 năm thọ được 20 tuổi", "20")
+bio_lib.vstb(persons, "le.trang-tong", "lifespan", _Q3, "Nhà vua lên ngôi năm 16 tuổi, thọ 31 tuổi", "31", note="Việt sử tân biên chép thọ 31 tuổi; Toàn thư chép 34.")
+bio_lib.vstb(persons, "le.trung-tong", "lifespan", _Q3, "Ngài làm vua được 8 năm thọ 28 tuổi", "28", note="Việt sử tân biên chép thọ 28 tuổi; Toàn thư chép 22.")
+bio_lib.vstb(persons, "le.anh-tong-th", "lifespan", _Q3, "Ngài làm vua được 16 năm, thọ 42 tuổi", "42")
+bio_lib.vstb(persons, "le.chan-tong", "lifespan", _Q3b, "Húy là Duy-Hựu, con vua Thần-Tông, làm vua được 6 năm, thọ 20 tuổi", "20")
+bio_lib.vstb(persons, "le.than-tong-th", "lifespan", _Q3b, "Ngài thọ được 56 tuổi", "56")
+bio_lib.vstb(persons, "le.huyen-tong", "lifespan", _Q3b, "Ngài làm vua được 9 năm thọ 18 tuổi", "18")
+_g = bio_lib.vstb(persons, "le.gia-tong", "bio", _Q3b, "Húy Duy-Hội, con thứ ba vua Thần-Tông", note="Toàn thư chép là con thứ (次子); tên húy đọc Cối (維禬) hoặc Hội.")
+_g["bio"] += " Việt sử tân biên chép tên húy là Duy Hội và là con thứ ba của Thần Tông."
 bio_lib.structure(persons, unions, globals().get("EV"), globals().get("RM"))
 
 data = {

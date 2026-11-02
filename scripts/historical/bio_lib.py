@@ -175,3 +175,15 @@ def structure(persons, unions, events=None, remarks=None, keep_all=False, summar
             if src:
                 p.setdefault("citations", []).append({**src, "field": "bio"})
         p["bio"] = "\n\n".join(f"## {s}\n{sec.get(s, '')}".rstrip() for s in order)
+
+
+def vstb(persons, key, field, where, quote, value=None, note=None):
+    """Thêm trích dẫn Việt sử tân biên (VSTB, hạng B; chữ lấy từ bản quét OCR, đã xem lại ảnh trang) vào người `key`."""
+    p = next(x for x in persons if x["key"] == key)
+    c = {"field": field, "source": "VSTB", "locator": where, "quote": quote}
+    if value is not None:
+        c["value"] = value
+    if note:
+        c["note"] = note
+    p.setdefault("citations", []).append(c)
+    return p

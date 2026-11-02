@@ -520,6 +520,9 @@ import os as _os
 _spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
 bio_lib = _iu.module_from_spec(_spec)
 _spec.loader.exec_module(bio_lib)
+# ── Đối chiếu Việt sử tân biên (VSTB): tuổi thọ ──
+bio_lib.vstb(persons, "tran.thai-tong", "lifespan", "Quyển 2, mục Trần Thánh Tông (1258–1278)", "Thái thượng hoàng được 19 năm, thọ 60 tuổi", "60")
+bio_lib.vstb(persons, "tran.nhan-tong", "lifespan", "Quyển 2, mục Trần Nhân Tông (1279–1293)", "Vua Nhân tông trị-vi được 14 năm, nhường ngôi được 13 năm, thọ được 51 tuổi", "51")
 bio_lib.structure(persons, unions, globals().get("EV"), globals().get("RM"))
 
 data = {
