@@ -33,7 +33,11 @@ import {
   SegmentedButton,
   SegmentedControl,
 } from "@/components/ui/segmented-control";
-import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
+import {
+  pickDefaultFocal,
+  readAvatarStyle,
+  toFamilyChart,
+} from "@/lib/familyChartAdapter";
 import {
   fetchPublicClanView,
   fetchShareView,
@@ -260,7 +264,7 @@ export default function Share() {
         photo_path: synthetic,
       };
     });
-    return toFamilyChart(adapted, data.families, photoByPath);
+    return toFamilyChart(adapted, data.families, photoByPath, readAvatarStyle());
   }, [data]);
 
   // Dữ liệu cho cây 3D (Tree3DView nhận qua props vì khách chưa đăng nhập không

@@ -65,7 +65,27 @@ export interface F3Datum {
  * card uses <image href=…/> when `data.avatar` is set, which trumps
  * the library's default genderless silhouette.
  */
-function genderAvatar(gender: "M" | "F"): string {
+export type AvatarStyle = "royal" | "classic";
+export const AVATAR_STYLE_KEY = "family-tree:avatar-style";
+
+/** Kiểu avatar mặc định (khi chưa có ảnh): hoàng gia (mặc định) hoặc cổ điển. */
+export function readAvatarStyle(): AvatarStyle {
+  try {
+    return localStorage.getItem(AVATAR_STYLE_KEY) === "classic"
+      ? "classic"
+      : "royal";
+  } catch {
+    return "royal";
+  }
+}
+
+function genderAvatar(
+  gender: "M" | "F",
+  style: AvatarStyle = "royal",
+): string {
+  if (style === "classic") {
+    return gender === "M" ? "/avatars/male.png" : "/avatars/female.png";
+  }
   return gender === "M" ? "/avatars/male-royal.svg" : "/avatars/female-royal.svg";
 }
 
@@ -87,6 +107,7 @@ export function toFamilyChart(
    * the card falls back to the gendered illustration.
    */
   photoUrlByPath?: Map<string, string>,
+  avatarStyle: AvatarStyle = "royal",
 ): F3Datum[] {
   const familyById = new Map(families.map((f) => [f.id, f]));
   // Set of LIVE person ids (already filtered by the query to
@@ -209,7 +230,7 @@ export function toFamilyChart(
         is_living: p.is_living,
         is_root: p.is_root,
         generation: p.generation,
-        avatar: uploaded || genderAvatar(p.gender),
+        avatar: uploaded || genderAvatar(p.gender, avatarStyle),
       },
       rels: { parents, spouses, children },
     } satisfies F3Datum;
@@ -243,6 +264,7 @@ export function ghostSpouseId(linkId: string, peerSpouseId: string): string {
 export function addInlawGhosts(
   data: F3Datum[],
   ghosts: InlawGhostSpouse[],
+  avatarStyle: AvatarStyle = "royal",
 ): F3Datum[] {
   if (ghosts.length === 0) return data;
 
@@ -294,7 +316,7 @@ export function addInlawGhosts(
         // dùng generation gốc của họ ở clan khác (số đời khác hệ quy chiếu →
         // vô nghĩa). Lấy generation của người local (đã theo offset clan này).
         generation: local.data.generation ?? null,
-        avatar: g.spouseGender === "M" ? "/avatars/male-royal.svg" : "/avatars/female-royal.svg",
+        avatar: genderAvatar(g.spouseGender, avatarStyle),
         is_ghost: true,
         ghost_link_id: g.linkId,
         ghost_peer_clan_name: g.peerClanName,
