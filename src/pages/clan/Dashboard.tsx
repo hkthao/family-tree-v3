@@ -23,7 +23,7 @@ import {
   IconWallet,
 } from "@/components/icons";
 import { ClanStatsPanel } from "@/components/ClanStatsPanel";
-import { SectionHeading } from "@/components/SectionHeading";
+import { SectionCard } from "@/components/SectionCard";
 import { PageHeader } from "@/components/PageHeader";
 import { EnablePushPrompt } from "@/components/EnablePushPrompt";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
@@ -350,31 +350,30 @@ export default function Dashboard() {
 
           {/* Sự kiện sắp tới — ưu tiên cao: nhắc giỗ/sinh nhật sắp đến. */}
           {upcomingTop5.length > 0 && (
-            <section aria-label="Sự kiện sắp tới" className="space-y-2">
-              <SectionHeading
-                icon={<IconCalendar />}
-                title="Sự kiện sắp tới"
-                action={
-                  <Link
-                    to={`/clans/${clan.id}/events`}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    Xem tất cả →
-                  </Link>
-                }
-              />
+            <SectionCard
+              id="events"
+              icon={<IconCalendar />}
+              title="Sự kiện sắp tới"
+              action={
+                <Link
+                  to={`/clans/${clan.id}/events`}
+                  className="shrink-0 text-sm text-primary hover:underline"
+                >
+                  Xem tất cả →
+                </Link>
+              }
+            >
               {/* Desktop: 2 cột cho gọn (mỗi sự kiện 1 hàng phí chỗ ngang). */}
               <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                 {upcomingTop5.map((e) => (
                   <UpcomingRow key={e.key} event={e} clanId={clan.id} />
                 ))}
               </ul>
-            </section>
+            </SectionCard>
           )}
 
           {/* Thao tác nhanh — điều hướng chính, đưa lên cao. */}
-          <section aria-label="Thao tác nhanh" className="space-y-2">
-            <SectionHeading icon={<IconGrid />} title="Thao tác nhanh" />
+          <SectionCard id="quick" icon={<IconGrid />} title="Thao tác nhanh">
             {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop
                 → thấp hơn hẳn ô vuông cũ, tiết kiệm diện tích. */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -452,7 +451,7 @@ export default function Dashboard() {
                   public-clan visitors. */}
               {isMember && <PdfActionTile clan={clan} />}
             </div>
-          </section>
+          </SectionCard>
 
           {/* Tiến độ hoàn thiện — nhắc bổ sung thông tin. */}
           {completion && completion.total > 0 && (
@@ -736,10 +735,11 @@ function CompletionTile({
     [...summary].sort((a, b) => b.count - a.count).find((r) => r.count > 0);
 
   return (
+    <SectionCard id="completion" icon={<IconCheck />} title="Tiến độ hoàn thiện">
     <Link
       to={`/clans/${clanId}/todo`}
       aria-label="Mở trang Việc cần làm để bổ sung thông tin"
-      className="block rounded-lg border bg-card p-4 sm:p-5 space-y-3 hover:bg-muted/30 transition-colors"
+      className="block space-y-3 rounded-md hover:bg-muted/30 transition-colors"
     >
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         <h3 className="font-medium">Họ ta đã hoàn thành</h3>
@@ -777,5 +777,6 @@ function CompletionTile({
         )}
       </p>
     </Link>
+    </SectionCard>
   );
 }
