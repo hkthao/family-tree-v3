@@ -191,14 +191,14 @@ function HistoricalClanCard({ clan }: { clan: HistoricalClanSummary }) {
         to={`/clans/${clan.id}`}
         className="flex h-full flex-col rounded-lg border bg-card p-3 sm:p-4 hover:border-primary transition-colors"
       >
-        <div className="flex items-start gap-2 min-w-0">
+        <div className="flex items-start justify-center gap-2 min-w-0">
           <IconScroll className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-          <h3 className="clan-name text-base font-semibold leading-snug line-clamp-2 min-w-0">
+          <h3 className="clan-name text-base font-semibold text-center leading-snug line-clamp-2 min-w-0">
             {clan.name}
           </h3>
         </div>
         {clan.description && (
-          <p className="text-muted-foreground text-sm line-clamp-3 mt-1.5">
+          <p className="text-muted-foreground text-sm text-justify line-clamp-3 mt-1.5">
             {clan.description}
           </p>
         )}
