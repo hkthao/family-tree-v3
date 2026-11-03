@@ -5,6 +5,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import {
   IconBuildings,
+  IconChevronDown,
   IconGrid,
   IconLink,
   IconList,
@@ -295,28 +296,7 @@ export default function Clans() {
               hẹp hơn thì để flex-1 chia đều và co được. */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {tab === "historical" && (
-              <div
-                className="flex min-w-0 flex-1 flex-wrap gap-1.5"
-                role="radiogroup"
-                aria-label="Sắp xếp"
-              >
-                {HISTORICAL_SORTS.map((o) => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={histSort === o.value}
-                    onClick={() => changeHistSort(o.value)}
-                    className={`h-9 rounded-full border px-3 text-sm ${
-                      histSort === o.value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "bg-card hover:border-primary"
-                    }`}
-                  >
-                    {o.label}
-                  </button>
-                ))}
-              </div>
+              <SortMenu value={histSort} onChange={changeHistSort} />
             )}
             {tab !== "historical" && (
               <Select
@@ -675,3 +655,62 @@ function ClanDates({ clan, className }: { clan: ClanSummary; className: string }
   );
 }
 
+/** Menu sắp xếp tự vẽ cho tab Lịch sử: chữ 16px, chỉ chiếm 1 ô khi đóng. */
+function SortMenu({
+  value,
+  onChange,
+}: {
+  value: HistoricalSort;
+  onChange: (v: HistoricalSort) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const current = HISTORICAL_SORTS.find((o) => o.value === value);
+  return (
+    <div className="relative min-w-0 flex-1 lg:flex-none lg:w-64">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label="Sắp xếp"
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-11 sm:h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-base sm:text-sm"
+      >
+        <IconList className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 flex-1 truncate text-left">{current?.label}</span>
+        <IconChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </button>
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            className="fixed inset-0 z-40 cursor-default"
+            onClick={() => setOpen(false)}
+          />
+          <ul
+            role="listbox"
+            className="absolute left-0 right-0 z-50 mt-1 overflow-hidden rounded-md border bg-card shadow-lg"
+          >
+            {HISTORICAL_SORTS.map((o) => (
+              <li key={o.value} role="option" aria-selected={o.value === value}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                  }}
+                  className={`block h-11 w-full px-3 text-left text-base ${
+                    o.value === value ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
