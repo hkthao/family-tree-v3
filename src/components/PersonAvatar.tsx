@@ -124,7 +124,14 @@ export function PersonAvatar({ gender, photoUrl, size = 40, frame: frameProp, cl
  * thẻ cây đồ thị (family-chart) tự dựng DOM SVG.
  */
 export function avatarFrameSvg(frame: string | null | undefined): string {
-  return isAvatarFrame(frame) ? renderToStaticMarkup(<FrameArt frame={frame} />) : "";
+  if (!isAvatarFrame(frame)) return "";
+  // Bọc <svg> để React dựng đúng namespace SVG (linearGradient… không báo sai
+  // chữ hoa/thường), rồi bóc lớp vỏ ra lấy phần ruột.
+  return renderToStaticMarkup(
+    <svg>
+      <FrameArt frame={frame} />
+    </svg>,
+  ).replace(/^<svg[^>]*>|<\/svg>$/g, "");
 }
 
 // Khung kiểu app hiện đại: viền mảnh + KHE HỞ giữa ảnh và viền (ảnh r=40, viền
