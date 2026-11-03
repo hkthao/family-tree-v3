@@ -96,7 +96,7 @@
     --popover: 24 14% 12%;
     --popover-foreground: 38 30% 92%;
 
-    --primary: 352 50% 44%;             /* #A83A4A đỏ rượu vang (không phải đỏ tươi) */
+    --primary: 0 60% 58%;               /* #D24545 brighter oxblood */
     --primary-foreground: 38 30% 92%;
 
     --secondary: 24 12% 18%;
@@ -116,7 +116,7 @@
      * surface uses the same computed border-color. */
     --border: 24 10% 20%;
     --input: 24 10% 20%;
-    --ring: 352 50% 44%;
+    --ring: 0 60% 58%;
 
     /* Darker family-chart card fills so cream text (--foreground
      * 38 30% 92%) reads against them. Same hue family as light
