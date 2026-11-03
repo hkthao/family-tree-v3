@@ -20,7 +20,13 @@ import {
 import { ClanBadges } from "@/components/ClanBadges";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { HistoricalClansSection } from "@/components/HistoricalClansSection";
+import {
+  HISTORICAL_SORT_KEY,
+  HISTORICAL_SORTS,
+  HistoricalClansSection,
+  readHistoricalSort,
+  type HistoricalSort,
+} from "@/components/HistoricalClansSection";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { PageHeader } from "@/components/PageHeader";
@@ -84,6 +90,15 @@ export default function Clans() {
   // The text box keeps its own live value (seeded from the URL); only
   // the debounced value is pushed to the URL + used for the query.
   const [search, setSearch] = useState(debounced);
+  const [histSort, setHistSort] = useState<HistoricalSort>(readHistoricalSort);
+  const changeHistSort = (v: HistoricalSort) => {
+    setHistSort(v);
+    try {
+      localStorage.setItem(HISTORICAL_SORT_KEY, v);
+    } catch {
+      /* bỏ qua */
+    }
+  };
 
   const setTab = (next: Tab) =>
     patch({ tab: next === "mine" ? null : next, page: null });
@@ -203,16 +218,20 @@ export default function Clans() {
               ? "Mọi dòng họ trên nền tảng."
               : "Dòng họ bạn tham gia hoặc theo dõi."
           }
+          actions={
+            <Button asChild size="sm" className="h-9 shrink-0">
+            <Link to="/clans/new" data-testid="create-clan-link">
+              <IconPlus className="h-4 w-4 sm:mr-1.5" />
+              <span className="sr-only sm:not-sr-only">Tạo dòng họ</span>
+            </Link>
+          </Button>
+          }
         />
 
-        {/* Tabs left + create-clan CTA right on the same row. Tabs
-            already eat ~230 px with the count badges, so the CTA
-            collapses to icon + "Tạo" on mobile and expands to
-            "Tạo dòng họ" on sm+ to keep both on one line at every
-            viewport width. */}
+        {/* Tab chiếm trọn một hàng (chia đều trên mobile); nút tạo dòng họ nằm ở tiêu đề trang. */}
         <div className="flex items-center gap-2">
           <div
-            className="inline-flex min-w-0 overflow-x-auto rounded-md border bg-card [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex w-full min-w-0 overflow-x-auto rounded-md border bg-card [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             role="tablist"
           >
             <TabButton
@@ -238,12 +257,6 @@ export default function Clans() {
               />
             )}
           </div>
-          <Button asChild size="sm" className="h-10 ml-auto shrink-0">
-            <Link to="/clans/new" data-testid="create-clan-link">
-              <IconPlus className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Tạo dòng họ</span>
-            </Link>
-          </Button>
         </div>
 
         {/* Filter row — single line on sm+. No external labels; the
@@ -251,18 +264,27 @@ export default function Clans() {
             label, carry the meaning. h-10 is denser than the default
             h-12 since we're not the primary tap target on this page. */}
         <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
-          <div className="sm:flex-1 sm:min-w-[200px]">
-            <SearchInput
-              label="Tìm dòng họ"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm dòng họ (gõ không dấu được)"
-            />
-          </div>
           {/* Sắp xếp + quy mô + kiểu hiển thị. Mobile: thu gọn sau "Bộ lọc". */}
           <CollapsibleFilters
+            search={(toggle) => (
+              <div className="sm:flex-1 sm:min-w-[200px]">
+                <SearchInput
+                  label="Tìm dòng họ"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Tìm dòng họ (gõ không dấu được)"
+                  rightSlot={toggle}
+                />
+              </div>
+            )}
             activeCount={
-              (sort !== "members" ? 1 : 0) +
+              (tab === "historical"
+                ? histSort !== "era_asc"
+                  ? 1
+                  : 0
+                : sort !== "members"
+                  ? 1
+                  : 0) +
               (tab === "community" && sizeBucket ? 1 : 0)
             }
           >
@@ -272,6 +294,21 @@ export default function Clans() {
               cộng lại tràn khỏi khung. Từ lg mới chốt bề ngang cố định;
               hẹp hơn thì để flex-1 chia đều và co được. */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            {tab === "historical" && (
+              <Select
+                value={histSort}
+                onChange={(e) => changeHistSort(e.target.value as HistoricalSort)}
+                aria-label="Sắp xếp"
+                icon={<IconList />}
+                className="h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-sm"
+              >
+                {HISTORICAL_SORTS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            )}
             {tab !== "historical" && (
               <Select
                 value={sort}
@@ -333,7 +370,7 @@ export default function Clans() {
           </p>
         )}
 
-        {tab === "historical" && <HistoricalClansSection view={view} search={debounced} />}
+        {tab === "historical" && <HistoricalClansSection view={view} search={debounced} sort={histSort} />}
 
         {isLoading && <LoadingState />}
 
@@ -448,7 +485,7 @@ function TabButton({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`shrink-0 whitespace-nowrap px-3 sm:px-4 h-10 text-sm border-l first:border-l-0 ${
+      className={`flex-1 sm:flex-none shrink-0 whitespace-nowrap px-2 sm:px-4 h-10 text-sm border-l first:border-l-0 ${
         active ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
       }`}
     >
