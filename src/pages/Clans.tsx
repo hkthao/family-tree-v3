@@ -231,8 +231,7 @@ export default function Clans() {
                 onClick={() => setTab("historical")}
                 label={
                   <>
-                    <span className="sm:hidden">Lịch sử</span>
-                    <span className="hidden sm:inline">Gia phả lịch sử</span>
+                    Lịch sử
                     {tabCount(historicalQ.data.length)}
                   </>
                 }
