@@ -47,7 +47,8 @@
           var v = localStorage.getItem("family-tree:theme");
           var dark =
             v === "dark" ||
-            ((v === "system" || !v) &&
+            !v ||
+            (v === "system" &&
               window.matchMedia("(prefers-color-scheme: dark)").matches);
           if (dark) document.documentElement.classList.add("dark");
           document.documentElement.style.colorScheme = dark

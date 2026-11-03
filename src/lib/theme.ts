@@ -30,7 +30,8 @@ function readStored(): Theme {
   } catch {
     /* private mode — ignore */
   }
-  return "system";
+  // Chưa chọn lần nào → giao diện tối.
+  return "dark";
 }
 
 function effectiveDark(t: Theme): boolean {
