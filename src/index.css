@@ -34,35 +34,35 @@
 
 @layer base {
   :root {
-    /* Oxblood palette — light mode. Nền xám ngà (trung tính ấm, ít hồng) để
-     * thẻ trắng ngà nổi lên rõ; chữ mực nâu đậm (tương phản >12:1); viền xám
-     * ấm đủ đậm để phân tách các khối. */
-    --background: 40 22% 95%;          /* #F5F3EE ngà xám */
-    --foreground: 20 18% 11%;          /* #211B17 mực */
+    /* Oxblood palette — light mode, dịu mắt: nền xám ngà tối vừa phải (không
+     * trắng chói), thẻ chỉ sáng hơn nền một bậc, chữ nâu đậm không phải đen
+     * tuyền, viền xám ấm đủ rõ để phân khối. */
+    --background: 40 16% 88%;          /* #E4E1DA ngà xám */
+    --foreground: 20 22% 13%;          /* #292019 mực */
 
-    --card: 40 40% 99%;                /* #FEFDFB trắng ngà — nổi trên nền */
-    --card-foreground: 20 18% 11%;
+    --card: 40 22% 93%;                /* #F1EFEA — nổi nhẹ trên nền, không chói */
+    --card-foreground: 20 22% 13%;
 
-    --popover: 40 40% 99%;
-    --popover-foreground: 20 18% 11%;
+    --popover: 40 22% 94%;
+    --popover-foreground: 20 22% 13%;
 
     --primary: 0 48% 32%;              /* #792A2A oxblood */
-    --primary-foreground: 40 40% 99%;
+    --primary-foreground: 40 30% 96%;
 
-    --secondary: 38 18% 91%;
-    --secondary-foreground: 20 18% 11%;
+    --secondary: 38 14% 83%;
+    --secondary-foreground: 20 22% 13%;
 
-    --muted: 38 16% 92%;               /* #EEEBE6 */
-    --muted-foreground: 25 10% 36%;    /* #655B54 — AA trên nền & thẻ */
+    --muted: 38 13% 84%;               /* #DBD8D1 */
+    --muted-foreground: 25 12% 30%;    /* #564C45 — tương phản cao trên nền xám */
 
-    --accent: 38 62% 36%;              /* #95631F đồng sẫm — icon/nhấn đạt tương phản */
-    --accent-foreground: 40 40% 99%;
+    --accent: 38 62% 33%;              /* #8A5B20 đồng sẫm */
+    --accent-foreground: 40 30% 96%;
 
-    --destructive: 0 70% 46%;          /* #C72323 */
-    --destructive-foreground: 40 40% 99%;
+    --destructive: 0 70% 44%;          /* #BF2222 */
+    --destructive-foreground: 40 30% 96%;
 
-    --border: 36 14% 84%;              /* #DAD5CD */
-    --input: 36 14% 80%;               /* #D1CBC1 — ô nhập đậm hơn viền thẻ một chút */
+    --border: 36 12% 76%;              /* #C7C2B8 */
+    --input: 36 12% 70%;               /* #B9B3A8 */
     --ring: 0 48% 32%;                  /* focus ring = primary */
 
     /* family-chart card fills (consumed via --male-color etc.

@@ -16,7 +16,7 @@ const SVGNS = "http://www.w3.org/2000/svg";
 function bgColor(): string {
   return document.documentElement.classList.contains("dark")
     ? "#1A1612"
-    : "#F5F3EE";
+    : "#E4E1DA";
 }
 
 /**
@@ -142,7 +142,7 @@ export async function exportFamilyChartPng(
   canvas.height = H * scale;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("no ctx");
-  ctx.fillStyle = dark ? "#1A1612" : "#F5F3EE";
+  ctx.fillStyle = dark ? "#1A1612" : "#E4E1DA";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.scale(scale, scale);
   ctx.drawImage(image, 0, 0, W, H);
