@@ -173,19 +173,23 @@ function ClanChips({
   className?: string;
 }) {
   const chip =
-    "min-w-0 truncate whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium";
+    "shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium";
   return (
-    <div className={`flex flex-nowrap justify-end gap-1.5 ${className ?? ""}`}>
-      <span
-        className={`${chip} shrink-0 border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`}
-      >
-        {clan.person_count.toLocaleString("vi-VN")} người
-      </span>
-      <span
-        className={`${chip} ${CATEGORY_CHIP[clan.historical_category ?? "royal"]}`}
-      >
-        {meta(clan)}
-      </span>
+    <div
+      className={`overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${className ?? ""}`}
+    >
+      <div className="ml-auto flex w-max gap-1.5">
+        <span
+          className={`${chip} border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`}
+        >
+          {clan.person_count.toLocaleString("vi-VN")} người
+        </span>
+        <span
+          className={`${chip} ${CATEGORY_CHIP[clan.historical_category ?? "royal"]}`}
+        >
+          {meta(clan)}
+        </span>
+      </div>
     </div>
   );
 }
