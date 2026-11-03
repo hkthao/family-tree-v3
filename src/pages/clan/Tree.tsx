@@ -15,6 +15,7 @@ import {
   IconTree,
   IconUpload,
 } from "@/components/icons";
+import { FilterDrawer } from "@/components/FilterDrawer";
 import { PageHeader } from "@/components/PageHeader";
 import {
   NAME_FONTS,
@@ -1234,6 +1235,20 @@ export default function Tree() {
     return { matches: filtered.slice(0, SEARCH_CAP), totalMatched: filtered.length };
   }, [data, search]);
 
+  // Phòng ký ức / Xuất sổ / Chia sẻ không phụ thuộc kiểu vẽ cây (chỉ là đường
+  // dẫn / dựng PDF từ dữ liệu) nên luôn có, kể cả 3D. Đứng cùng hàng ô tìm kiếm.
+  const actionButtons = (
+    <div className="flex shrink-0 items-center gap-2">
+      {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
+      {effectiveRole(clan) !== null && (
+        <>
+          <ExportBookButton clan={clan} />
+          <ShareTreeButton clanId={clan.id} clanName={clan.name} />
+        </>
+      )}
+    </div>
+  );
+
   // Ô "Đặt người trung tâm" — dùng CHUNG cho cả cây 2D và 3D.
   const focalSearch =
     data && data.persons.length > 0 ? (
@@ -1245,6 +1260,7 @@ export default function Tree() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Đặt người trung tâm — gõ tên để tìm…"
+              className="pr-[4.75rem]"
               rightSlot={
                 <div className="flex items-center">
                   {/* Phễu mở/đóng "Tuỳ chọn" (mặc định ẩn, mọi cỡ màn hình). */}
@@ -1290,6 +1306,7 @@ export default function Tree() {
               <span className="hidden sm:inline">Về Thuỷ tổ</span>
             </Button>
           )}
+          {actionButtons}
         </div>
         {matches.length > 0 && (
           <div className="absolute left-0 right-0 top-full mt-1 rounded-md border bg-card shadow-lg z-20">
@@ -1350,37 +1367,29 @@ export default function Tree() {
                 : "Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."}
             </span>
           }
-          actionsBelow
-          actions={
-            // Mobile: lưới 2 cột gọn gàng (chọn kiểu | số đời, chế độ | tuỳ chọn,
-            // hàng nút tiện ích, hàng tuỳ chọn). Desktop: `contents` — các phần tử
-            // trả về hàng flex của PageHeader như cũ.
-            <div className="grid w-full grid-cols-2 gap-2 sm:contents">
-              {/* 2D ↔ 3D — luôn hiển thị; đứng đầu. */}
+        />
+      <FilterDrawer
+        open={showOpts}
+        onClose={() => setShowOpts(false)}
+        title="Tuỳ chọn cây"
+      >
+              <div className="flex flex-col gap-3">
               <Select
                 aria-label="Kiểu hiển thị cây"
                 value={mode}
                 onChange={(e) => setMode(e.target.value as typeof mode)}
-                className="order-1 sm:order-first sm:mr-2 w-full sm:w-[9.5rem] h-10 text-sm"
+                className="w-full h-11 text-base"
               >
                 <option value="2d">Cây 2D</option>
                 <option value="3d">Cây 3D</option>
                 <option value="folder">Thư mục</option>
               </Select>
-              {/* Số đời hiển thị quanh người làm tâm — giới hạn để họ
-                  lớn không lag. Mặc định 3 đời; bấm thẻ để xem nhánh sâu
-                  hơn. Mobile (order-last + w-full): xuống dòng riêng phía
-                  dưới. Desktop (sm:order-first + sm:mr-auto): căn sang
-                  trái, đẩy các nút khác sang phải. */}
-              {/* Cây thư mục không cần chọn số đời: nó vốn chỉ tải nhánh
-                  đang mở, chính là "số đời" do người dùng tự quyết bằng
-                  cách bung tới đâu. */}
               {mode !== "folder" && (
               <Select
                 aria-label="Số đời hiển thị quanh người làm tâm"
                 value={depth}
                 onChange={(e) => setDepth(Number(e.target.value) as typeof depth)}
-                className="order-2 sm:order-first sm:mr-auto w-full sm:w-[10rem] h-10 text-sm"
+                className="w-full h-11 text-base"
               >
                 {DEPTH_OPTIONS.map((d) => (
                   <option key={d} value={d}>
@@ -1389,23 +1398,12 @@ export default function Tree() {
                 ))}
               </Select>
               )}
-              {/* Mấy nút này KHÔNG phụ thuộc kiểu vẽ cây — Phòng ký ức và
-                  Chia sẻ chỉ là đường dẫn, Xuất sổ dựng PDF từ dữ liệu
-                  chứ không chụp lại khung 2D. Trước đây chúng nằm trong
-                  khối chỉ-2D nên sang 3D là biến mất, mà người dùng
-                  không hiểu vì sao mất. Riêng Xuất ảnh/In thì ở lại 2D:
-                  chúng thật sự chụp SVG của cây 2D. */}
-              {/* Mobile: mọi thứ ngoài "kiểu" và "số đời" gói vào "Tuỳ chọn" cho gọn.
-                  Desktop: ẩn nút, các phần tử trải ra hàng flex như cũ. */}
-              <div
-                className={`${showOpts ? "grid sm:contents" : "hidden"} order-3 col-span-2 grid-cols-2 gap-2`}
-              >
                 {mode === "2d" && isMember && (
                   <Select
                     aria-label="Chế độ xem"
                     value={view}
                     onChange={(e) => setView(e.target.value as typeof view)}
-                    className="sm:order-first sm:mr-2 w-full sm:w-[9.5rem] h-10 text-sm"
+                    className="w-full h-11 text-base"
                   >
                     <option value="tree">Cả cây</option>
                     <option value="lineage">Trực hệ</option>
@@ -1417,7 +1415,7 @@ export default function Tree() {
                       aria-label="Hướng cây"
                       value={orientation}
                       onChange={(e) => setOrientation(e.target.value as typeof orientation)}
-                      className="w-full sm:w-[9.5rem] h-10 text-sm"
+                      className="w-full h-11 text-base"
                     >
                       <option value="vertical">Hướng dọc</option>
                       <option value="horizontal">Hướng ngang</option>
@@ -1426,7 +1424,7 @@ export default function Tree() {
                       aria-label="Hình nền cây"
                       value={backdrop}
                       onChange={(e) => setBackdrop(e.target.value as Backdrop)}
-                      className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
+                      className="w-full h-11 text-base"
                     >
                       <option value="phoenix">Nền: Phượng</option>
                       <option value="dragon">Nền: Rồng</option>
@@ -1438,7 +1436,7 @@ export default function Tree() {
                       onChange={(e) =>
                         setCardFrame(e.target.value as "royal" | "simple")
                       }
-                      className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
+                      className="w-full h-11 text-base"
                     >
                       <option value="royal">Khung: Hoàng gia</option>
                       <option value="simple">Khung: Đơn giản</option>
@@ -1453,7 +1451,7 @@ export default function Tree() {
                     persistNameFont(e.target.value);
                     setNameFont(e.target.value);
                   }}
-                  className="col-span-2 sm:col-span-1 w-full sm:w-[12rem] h-10 text-sm"
+                  className="w-full h-11 text-base"
                 >
                   {NAME_FONTS.map((f) => (
                     <option key={f.id} value={f.id}>
@@ -1468,26 +1466,13 @@ export default function Tree() {
                     persistAvatarStyle(e.target.value as AvatarStyle);
                     setAvatarStyle(e.target.value as AvatarStyle);
                   }}
-                  className="col-span-2 sm:col-span-1 w-full sm:w-[10rem] h-10 text-sm"
+                  className="w-full h-11 text-base"
                 >
                   <option value="royal">Avatar: Hoàng gia</option>
                   <option value="classic">Avatar: Cổ điển</option>
                 </Select>
-                {/* Phòng ký ức / Xuất sổ / Chia sẻ không phụ thuộc kiểu vẽ cây
-                    (chỉ là đường dẫn / dựng PDF từ dữ liệu) nên luôn có, kể cả 3D. */}
-                <div className="col-span-2 grid grid-cols-3 gap-2 [&>*]:w-full sm:contents sm:[&>*]:w-auto">
-                  {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
-                  {effectiveRole(clan) !== null && (
-                    <>
-                      <ExportBookButton clan={clan} />
-                      <ShareTreeButton clanId={clan.id} clanName={clan.name} />
-                    </>
-                  )}
-                </div>
               </div>
-            </div>
-          }
-        />
+      </FilterDrawer>
       </div>
 
       {mode === "folder" ? (
@@ -1496,6 +1481,21 @@ export default function Tree() {
         // làm gì còn tệ hơn là không có.
         // Cây thụt sâu nhiều đời: đặt bề ngang tối thiểu rồi cho cuộn ngang trên
         // điện thoại, thay vì ép tên người thành cột hẹp xuống nhiều dòng.
+        <>
+        <div className="flex items-center justify-end gap-2 print-hide order-first sm:order-none">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-10 gap-1.5 px-3"
+            onClick={() => setShowOpts(true)}
+            aria-haspopup="dialog"
+            aria-label="Tuỳ chọn"
+          >
+            <IconFilter className="h-4 w-4" /> Tuỳ chọn
+          </Button>
+          {actionButtons}
+        </div>
         <div className="space-y-2 overflow-x-auto">
           <div className="min-w-[640px] sm:min-w-0">
             <Suspense
@@ -1513,6 +1513,7 @@ export default function Tree() {
             </Suspense>
           </div>
         </div>
+        </>
       ) : mode === "3d" ? (
         <>
           {focalSearch}

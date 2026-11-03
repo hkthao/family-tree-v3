@@ -112,48 +112,55 @@ export default function RestingPlaces() {
         }
       />
 
-      <div className="sm:flex sm:items-center sm:gap-2 space-y-2 sm:space-y-0">
-        <div className="sm:flex-1 sm:min-w-[200px]">
-          <SearchInput
-            label="Tìm mộ phần"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên / nghĩa trang / chùa…"
-          />
-        </div>
+      <div className="space-y-2">
         <CollapsibleFilters
           activeCount={(kind ? 1 : 0) + (cemeteryId ? 1 : 0)}
+          onReset={() => {
+            setKind("");
+            setCemeteryId("");
+          }}
+          search={(toggle) => (
+            <SearchInput
+              label="Tìm mộ phần"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm theo tên / nghĩa trang / chùa…"
+              rightSlot={toggle}
+            />
+          )}
         >
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={kind}
-            onChange={(e) => setKind(e.target.value)}
-            aria-label="Lọc theo hình thức"
-            icon={<IconGrave />}
-            className="h-10 w-auto text-sm min-w-[160px]"
-          >
-            <option value="">Mọi hình thức</option>
-            {KINDS.map((k) => (
-              <option key={k} value={k}>
-                {RESTING_PLACE_KIND_LABEL[k]}
-              </option>
-            ))}
-          </Select>
-          {(cemeteries ?? []).length > 0 && (
+          <div className="flex flex-col gap-3">
             <Select
-              value={cemeteryId}
-              onChange={(e) => setCemeteryId(e.target.value)}
-              aria-label="Lọc theo cơ sở"
-              icon={<IconBuildings />}
-              className="h-10 w-auto text-sm min-w-[160px]"
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+              aria-label="Lọc theo hình thức"
+              icon={<IconGrave />}
+              className="h-11 w-full text-base"
             >
-              <option value="">Mọi cơ sở</option>
-              {(cemeteries ?? []).map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+              <option value="">Mọi hình thức</option>
+              {KINDS.map((k) => (
+                <option key={k} value={k}>
+                  {RESTING_PLACE_KIND_LABEL[k]}
+                </option>
               ))}
             </Select>
-          )}
-        </div>
+            {(cemeteries ?? []).length > 0 && (
+              <Select
+                value={cemeteryId}
+                onChange={(e) => setCemeteryId(e.target.value)}
+                aria-label="Lọc theo cơ sở"
+                icon={<IconBuildings />}
+                className="h-11 w-full text-base"
+              >
+                <option value="">Mọi cơ sở</option>
+                {(cemeteries ?? []).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </div>
         </CollapsibleFilters>
       </div>
 

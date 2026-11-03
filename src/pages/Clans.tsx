@@ -264,11 +264,16 @@ export default function Clans() {
             search icon + placeholder, and the dropdown's own default
             label, carry the meaning. h-10 is denser than the default
             h-12 since we're not the primary tap target on this page. */}
-        <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
-          {/* Sắp xếp + quy mô + kiểu hiển thị. Mobile: thu gọn sau "Bộ lọc". */}
+        <div className="space-y-2">
+          {/* Sắp xếp + quy mô + kiểu hiển thị: nằm trong ngăn kéo bên phải (phễu). */}
           <CollapsibleFilters
+            onReset={() => {
+              setSort("members");
+              setSizeBucket("");
+              changeHistSort("era_asc");
+            }}
             search={(toggle) => (
-              <div className="sm:flex-1 sm:min-w-[200px]">
+              <div>
                 <SearchInput
                   label="Tìm dòng họ"
                   value={search}
@@ -294,7 +299,7 @@ export default function Clans() {
               được (flex-none) mỗi ô đòi 100% bề ngang của hàng → hai ô
               cộng lại tràn khỏi khung. Từ lg mới chốt bề ngang cố định;
               hẹp hơn thì để flex-1 chia đều và co được. */}
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="flex flex-col gap-3">
             {tab === "historical" && (
               <SortMenu value={histSort} onChange={changeHistSort} />
             )}
@@ -304,7 +309,7 @@ export default function Clans() {
                 onChange={(e) => setSort(e.target.value as ClanSort)}
                 aria-label="Sắp xếp"
                 icon={<IconList />}
-                className="h-11 sm:h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-base sm:text-sm"
+                className="h-11 w-full text-base"
               >
                 {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
                   <option key={k} value={k}>
@@ -321,7 +326,7 @@ export default function Clans() {
                 }
                 aria-label="Lọc theo quy mô"
                 icon={<IconUsers />}
-                className="h-11 sm:h-10 min-w-0 flex-1 lg:flex-none lg:w-48 text-base sm:text-sm"
+                className="h-11 w-full text-base"
               >
                 <option value="">Tất cả quy mô</option>
                 {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
@@ -331,7 +336,7 @@ export default function Clans() {
                 ))}
               </Select>
             )}
-            <SegmentedControl ariaLabel="Kiểu hiển thị" className="shrink-0">
+            <SegmentedControl ariaLabel="Kiểu hiển thị" className="self-start">
               <SegmentedButton
                 active={view === "list"}
                 onClick={() => setView("list")}
@@ -665,14 +670,14 @@ function SortMenu({
   const [open, setOpen] = useState(false);
   const current = HISTORICAL_SORTS.find((o) => o.value === value);
   return (
-    <div className="relative min-w-0 flex-1 lg:flex-none lg:w-64">
+    <div className="relative w-full">
       <button
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Sắp xếp"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-11 sm:h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-base sm:text-sm"
+        className="flex h-11 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-base"
       >
         <IconList className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1 truncate text-left">{current?.label}</span>
