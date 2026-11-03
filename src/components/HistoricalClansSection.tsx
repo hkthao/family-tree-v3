@@ -172,11 +172,12 @@ function ClanChips({
   clan: HistoricalClanSummary;
   className?: string;
 }) {
-  const chip = "rounded-full border px-2 py-0.5 text-xs font-medium";
+  const chip =
+    "min-w-0 truncate whitespace-nowrap rounded-full border px-2 py-0.5 text-xs font-medium";
   return (
-    <div className={`flex flex-wrap justify-end gap-1.5 ${className ?? ""}`}>
+    <div className={`flex flex-nowrap justify-end gap-1.5 ${className ?? ""}`}>
       <span
-        className={`${chip} border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`}
+        className={`${chip} shrink-0 border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`}
       >
         {clan.person_count.toLocaleString("vi-VN")} người
       </span>
