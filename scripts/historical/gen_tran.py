@@ -520,6 +520,44 @@ import os as _os
 _spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
 bio_lib = _iu.module_from_spec(_spec)
 _spec.loader.exec_module(bio_lib)
+# ── Sự kiện theo năm và nhận xét của sử thần (Toàn thư, đoạn tiểu dẫn đầu kỷ mỗi vua) ──
+EV = {
+    "tran.thai-tong": [(1257, "Quân Mông Cổ vào đánh; vua cùng thái tử ngự thuyền lầu tiến quân đến Đông Bộ Đầu, đánh tan quân địch.",
+                        c("bio", 5, "năm Đinh Tỵ (1257)", "帝及太子御樓船，進軍東步頭逆戰，大破之"))],
+    "tran.nhan-tong": [(1284, "Thượng hoàng triệu các bô lão trong nước họp ở thềm điện Diên Hồng, ban yến hỏi kế; mọi người đều xin đánh.",
+                        c("bio", 5, "năm Giáp Thân (1284)", "上皇召天下父老，會于延洪堦，賜食問計。皆曰戰，萬人同辝，如出一口")),
+                       (1285, "Quân dân các lộ đánh thắng giặc ở kinh thành và Chương Dương, quân giặc tan vỡ.",
+                        c("bio", 5, "năm Ất Dậu (1285)", "敗賊于京城、章陽等處。賊軍大潰")),
+                       (1288, "Hưng Đạo vương đóng cọc ở sông Bạch Đằng, nhử thuyền giặc vào lúc nước lên rồi đánh, giặc chết đuối rất nhiều.",
+                        c("bio", 5, "năm Mậu Tý (1288)", "元人溺死不可勝計，江水為之盡赤"))],
+    "tran.quoc-tuan": [(1288, "Đánh quân Nguyên ở sông Bạch Đằng (đã cắm cọc từ trước), thuyền lương của Trương Văn Hổ bị lật đổ gần hết.",
+                        c("bio", 5, "năm Mậu Tý (1288)", "興道王擊敗之。先是，王已植樁於白藤"))],
+}
+RM = {
+    "tran.thai-tong": ("Toàn thư khen vua khoan nhân độ lượng, có khí độ đế vương, dựng nghiệp, đặt kỷ cương, chế độ nhà Trần nhờ đó mà lớn; chê mọi việc nước đều do Trần Thủ Độ sắp đặt, trong cung đình có nhiều điều đáng hổ.",
+                       c("bio", 5, f"{TONG} — {TD}", "帝寬仁大度，有帝王之量，所以創業再統，立紀張綱，陳家之制度偉矣。然䂓畫國事，皆陳守度所為，閨門多慙德矣")),
+    "tran.thanh-tong": ("Toàn thư khen vua trung hiếu nhân thứ, trọng người hiền, cha dựng trước con nối sau nên cơ nghiệp nhà Trần vững; chê việc say mê đạo Phật, chẳng phải cách trị nước của bậc đế vương.",
+                        c("bio", 5, f"{TT2} — {TD}", "帝忠孝仁恕，尊賢重道，父作於前，子述扵後，陳定基業固矣。然優游三昧，探頤一乘，非帝王之善治也")),
+    "tran.nhan-tong": ("Toàn thư khen vua nhân từ hòa nhã, kết chặt lòng dân, làm hưng thịnh sự nghiệp, rạng rỡ hơn xưa, thật là vua hiền nhà Trần; chỉ chê mải mê kinh Phật, không phải đạo trung dung của thánh nhân.",
+                       c("bio", 5, f"{NT} — {TD}", "帝仁慈和易，固結民心，重興事業，有光前古，真陳家之賢君也。然游心釋典，雖曰超詣，而非聖人中庸之道也")),
+    "tran.anh-tong": ("Toàn thư khen vua khéo nối nghiệp, nên thời ấy yên ổn, chính trị sáng rõ, văn vật chế độ dần thịnh, là vua thịnh của nhà Trần; chê việc họp sư ở núi An Tử, tốn sức dân dựng gác Anh Vân.",
+                      c("bio", 6, f"{AT} — {TD}", "帝善繼善承，所以時臻康泰，治底休明，文物制度漸盛，亦陳朝之盛主也。然聚沙門於安子之山，勞民力於英雲之閣，非醇中之小疪乎")),
+    "tran.minh-tong": ("Toàn thư khen vua văn minh, dựng nghiệp, trong yên ngoài phục, kỷ cương đầy đủ; tiếc là không phân biệt được kẻ gian không giữ được đến cùng, để Quốc Chẩn chết, thành cái lụy của sự thông minh.",
+                       c("bio", 6, f"{MT} — {TD}", "帝文明飾治，敷賁前功，忠厚存心，貽謀燕翼，内寧外撫，紀綱畢張。惜其不辨克終之奸，致國瑱之死，而為聰明之累也")),
+    "tran.hien-tong": ("Toàn thư khen vua tư chất sáng suốt, giữ được thái bình, nhưng thọ không dài, chưa thấy được việc làm của ông, đáng tiếc.",
+                       c("bio", 7, f"{HT} — {TD}", "帝天資英睿，運撫升平，然享年不永，未見其所行，惜哉")),
+    "tran.du-tong": ("Toàn thư khen vua tính thông minh, học vấn cao, võ bị văn tu, bốn phương quy phục, đầu niên hiệu Thiệu Phong mọi việc đều làm; nhưng sau thời đại trị lại hoang dâm vô độ, cơ nghiệp nhà Trần từ đó suy.",
+                     c("bio", 7, f"{DT} — {TD}", "帝至性聰睿，學問高明，武僃文脩，四夷賓服，紹豊之時，政事畢擧，大治之後，荒𨒣無度，陳家基業由此而衰")),
+    "tran.nghe-tong": ("Toàn thư khen vua dẹp yên nội nạn, khôi phục cơ nghiệp, công lớn rạng cõi; nhưng chê vua cung kiệm có thừa mà quyết đoán thiếu, giặc ngoài xâm kinh kỳ, gian thần trong rình ngôi báu, xã tắc mòn mỏi đến mất.",
+                       c("bio", 7, f"{NG} — {TD}", "帝削平内難，光復洪圖，䂓恢功烈，炳彪宇宙。然恭儉有餘，而剛斷不足。外冦侵犯京畿，内姦覬覦神噐，社稷消剥，以至於亡")),
+    "tran.due-tong": ("Toàn thư chê vua cứng đầu tự dùng, cự lời can, khinh địch, tai họa đến thân, không phải điều không may.",
+                      c("bio", 7, f"{DU} — {TD}", "帝剛愎自用，拒諫輕敵，殃及其身，非不幸也")),
+    "tran.phe-de": ("Toàn thư chê vua hôn nhược không làm nên việc, quyền uy ngày một về tay kẻ dưới, xã tắc nghiêng nguy, thân không giữ nổi.",
+                    c("bio", 8, f"{PD} — {TD}", "帝昏懦不能有為，威權日歸於下，社稷傾危，身不能保，悲夫")),
+    "tran.thuan-tong": ("Toàn thư chê vua chỉ ôm ngôi suông, chính quyền ở tay quyền thần, họa đến thân mà không biết.",
+                        c("bio", 8, f"{TU} — {TD}", "帝徒擁虚噐，政在權臣，禍及身而不覺，哀哉")),
+}
+
 # ── Đối chiếu Việt sử tân biên (VSTB): tuổi thọ ──
 bio_lib.vstb(persons, "tran.thai-tong", "lifespan", "Quyển 2, mục Trần Thánh Tông (1258–1278)", "Thái thượng hoàng được 19 năm, thọ 60 tuổi", "60")
 bio_lib.vstb(persons, "tran.nhan-tong", "lifespan", "Quyển 2, mục Trần Nhân Tông (1279–1293)", "Vua Nhân tông trị-vi được 14 năm, nhường ngôi được 13 năm, thọ được 51 tuổi", "51")

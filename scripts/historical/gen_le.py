@@ -468,6 +468,50 @@ import os as _os
 _spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
 bio_lib = _iu.module_from_spec(_spec)
 _spec.loader.exec_module(bio_lib)
+# ── Sự kiện theo năm và nhận xét của sử thần (Toàn thư, đoạn tiểu dẫn đầu kỷ mỗi vua) ──
+EV = {
+    "le.thai-to": [(1428, "Lên ngôi ở Đông Kinh, đại xá, đổi niên hiệu Thuận Thiên, đặt quốc hiệu Đại Việt.",
+                    c("bio", 10, "năm Mậu Thân (1428)", "帝即位于東京，大赦，改元順天，建國號大越"))],
+}
+RM = {
+    "le.thai-to": ("Toàn thư khen vua nổi nghĩa binh, dẹp giặc Minh, mười năm thiên hạ yên định; lên ngôi định luật lệnh, chế lễ nhạc, mở khoa thi, lập học hiệu, có mưu lược sáng nghiệp lớn; chê tính hay nghi kỵ, thích giết người.",
+                   c("bio", 10, f"{T[1]}", "可謂有創業之宏謨矣。然多忌好殺，此其所短也")),
+    "le.thai-tong": ("Toàn thư khen vua thông minh, giữ thái bình, trong chế cường thần, ngoài dẹp di địch, trọng đạo chuộng nho, đặt khoa thi, xử án khoan hậu, là vua giữ nghiệp giỏi; chê ham rượu sắc, chết đột ngột ở ngoài là do tự chuốc lấy.",
+                     c("bio", 11, f"{T[2]}", "帝天資明智，運撫昇平，内制強臣，外攘夷狄，重道崇儒，設科取士，讞獄訊囚，率多寬貨，亦守成之良主也。然耽心酒色，暴崩于外，自取之也")),
+    "le.nhan-tong": ("Toàn thư khen vua từ nhỏ đã sáng suốt, dung mạo trang trọng, chuộng nho nghe can, thương dân, thật là vua giữ nghiệp tốt; tiếc gặp cảnh bị giết, đau thay.",
+                     c("bio", 11, f"{T[3]}", "帝以童稚之年，有天資之明，神釆端俊，容止莊重，崇儒納諫，憫農愛民，真守成之令主也。不幸遭於簒弑，悲夫")),
+    "le.thanh-tong": ("Toàn thư khen vua đặt chế độ, văn vật đáng xem, mở mang bờ cõi, thật là bậc anh hùng tài lược, dù Hán Vũ Đế hay Đường Thái Tông cũng không hơn; chê việc xây dựng đất đá vượt quá chế độ xưa và nghĩa anh em thiếu tình bạn.",
+                      c("bio", 12, f"{T[4]}", "帝創制立度，文物可觀，拓土開疆，版章孔厚，真英䧺才畧之主。雖漢之武帝，唐之太宗，莫能過矣。然土木之興逾於古制，兄弟之義失於友于，此其所短也")),
+    "le.hien-tong": ("Toàn thư khen vua tư chất sáng suốt, giữ thái bình, chỉ bảy năm mà thiên hạ yên, đủ là vua giữ nghiệp tốt; tiếc ở ngôi không lâu.",
+                     c("bio", 14, f"{T[5]}", "帝天資英睿，運撫隆平，纔七年間，而天下晏然，足為守成之令主，享國不永，惜哉")),
+    "le.tuc-tong": ("Toàn thư khen vua chuyên chí học, gần người hiền, thích điều thiện, đủ là vua tốt thời thái bình; tiếc mất sớm.",
+                    c("bio", 14, f"{T[6]}", "帝篤志好學，親賢樂善，足爲承平之良主，不幸早歿，惜哉")),
+    "le.uy-muc": ("Toàn thư chê vua ham rượu thích giết, hoang sắc dựng uy, giết hại tôn thất, giam chết bà nội, ngoại thích ngang ngược, trăm họ oán giận, đương thời gọi là quỷ vương, điềm loạn đã lộ.",
+                  c("bio", 14, f"{T[7]}", "帝嗜酒好殺，荒色立威，屠戮宗室，幽殺祖母，外戚縱横，百讓怒，時稱鬼王，亂徴見矣")),
+    "le.tuong-duc": ("Toàn thư nói lúc đầu vua dạy dân, thận trọng hình phạt, cũng đủ để làm nên việc; nhưng do dự thiếu quyết, đất đá ầm ầm, dân mất nghiệp, giặc cướp sinh ra, dần đến nguy vong.",
+                     c("bio", 15, f"{T[8]}", "帝卽位之初，敷敎愼罰，亦足以有爲也。然優游不斷，土木紛紜，小民失業，盗賊滋起，馴致危亡，實由於此")),
+    "le.chieu-tong": ("Toàn thư chê vua gặp buổi rối loạn, chính sự không do mình, trong nghe kẻ nịnh, ngoài mê săn bắn, hôn ám không sáng, cứng đầu tự dùng, nên mất là phải.",
+                      c("bio", 15, f"{T[9]}", "時旣板蕩，政非己出，內聽奸諛，，外荒禽獸，昏暗不明，剛愎自用，其亡也宜哉")),
+    "le.trang-tong": ("Toàn thư khen vua gặp lúc gian nan, nhờ cựu thần tôn lập, kết láng giềng ngoài, dùng tướng giỏi trong, nên người đều vui theo, nền trung hưng đặt từ đây.",
+                      c("bio", 16, f"{TT[12]}", "帝遭屯避難，賴舊臣尊立，外結隣封，內任賢將，故人皆樂用，中興之基，實兆於此矣")),
+    "le.trung-tong": ("Toàn thư khen vua tin dùng người trung mưu, trừ kẻ tiếm ngôi, có chí lược đế vương; tiếc thọ không lâu, đất đai của vua trước chưa lấy lại hết.",
+                      c("bio", 16, f"{TT[13]}", "帝委任忠謀，剿誅潜篡，可謂有帝王之略。然享齢不久，先王境土，未盡克復，惜哉")),
+    "le.anh-tong-th": ("Toàn thư nói vua là dòng dõi nhà vua, nhờ huân thần tôn lập, mưu khôi phục trung hưng, thật thiên mệnh có về; nhưng việc chưa nửa đã sinh nghi, nghe lời gièm, phải chạy ra ngoài, đáng buồn.",
+                       c("bio", 16, f"{TT[14]}", "帝以帝室之冑，賴勳臣尊立，圖復中興，眞天命有歸矣。然事功未半，疑惑漸生，偏信讒言，播遷于外，悲夫")),
+    "le.the-tong": ("Toàn thư khen vua lên ngôi tuổi nhỏ, tin dùng công thần nên dẹp yên giặc phản, khôi phục cơ nghiệp cũ, thân đạt thái bình; công trung hưng không gì lớn bằng.",
+                    c("bio", 17, f"{TT[15]}", "帝以幼冲之年，信任勲臣，故能削平僭叛，光復舊物，身致太平，中興之功，孰大於此焉")),
+    "le.kinh-tong": ("Toàn thư nói vua dung mạo hùng vĩ, nối ngôi giữ nghiệp, thiên hạ yên; nhưng nghe một chiều mưu tà nên xảy ra việc chẳng lành, thật đáng buồn.",
+                     c("bio", 18, f"{TT[16]}", "帝容貌雄偉，繼體守成，而天下晏然，然偏聽邪謀，致有不祥之事，良可悲夫")),
+    "le.than-tong-th": ("Toàn thư khen vua mũi cao mặt rồng, thông minh học rộng, hiểu sâu văn chương, đáng gọi là vua giỏi; chê trong cung không có phép tắc, ham đạo Phật.",
+                        c("bio", 18, f"{TT[17]}", "帝隆準龍顔，聰明博覧，深畧緯文，可稱令辟，然宮闈無制，教惑浮屠，此其所短也")),
+    "le.chan-tong": ("Toàn thư khen vua tính trầm tĩnh, khoan dung rộng rãi, có đức của bậc vua, sáu bảy năm mùa màng liên tục được; nếu trời cho thêm tuổi thì sánh được Hán Văn Đế.",
+                     c("bio", 18, f"{TT[18]}", "帝天性沉潛，寛容博厚，有人君之德，六七載間，歳比豐稔，使其天假之年，則漢文富庶之效，同得美稱矣")),
+    "le.huyen-tong": ("Toàn thư khen vua tư chất nhân hậu, dáng vẻ đoan nghiêm, thời ông trị vì trong nước yên ổn, mùa màng được, cũng đáng gọi là vua hiền; tiếc ở ngôi không lâu.",
+                      c("bio", 19, f"{TT[19]}", "帝天資仁厚，神釆端嚴，居拱之年，海内安治，年穀豐登，亦可謂賢君矣。享國不永，惜哉")),
+    "le.gia-tong": ("Toàn thư khen vua thể chất hùng vĩ, tính rộng hòa, có đức người làm vua; tiếc ở ngôi không lâu, chưa thấy làm được việc gì.",
+                    c("bio", 19, f"{TT[20]}", "帝體貌英偉，天性寛和，有人君之德，惜夫享國不久，未見其有爲也")),
+}
+
 # ── Đối chiếu Việt sử tân biên (VSTB): tuổi thọ các vua ──
 _Q3 = "Quyển 3, mục Nam-Bắc triều (1533–1592)"
 _Q3b = "Quyển 3, mục các vua chúa trong thời Nam-Bắc phân tranh (1600–1786)"
