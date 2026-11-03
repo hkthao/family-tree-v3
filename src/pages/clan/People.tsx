@@ -331,24 +331,22 @@ export default function People() {
               <span className="hidden sm:inline">Thêm người</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="h-10 px-2.5 sm:px-3">
+          <Button asChild variant="outline" size="sm" className="h-10 px-2.5">
             <Link
               to={`/clans/${clan.id}/import`}
               aria-label="Nhập Excel"
               title="Nhập từ Excel"
             >
-              <IconUpload className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Nhập Excel</span>
+              <IconUpload className="h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="h-10 px-2.5 sm:px-3">
+          <Button asChild variant="outline" size="sm" className="h-10 px-2.5">
             <Link
               to={`/clans/${clan.id}/ai-generate`}
               aria-label="Sinh bằng AI"
               title="Mô tả gia đình → AI sinh dữ liệu"
             >
-              <IconSparkles className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Sinh bằng AI</span>
+              <IconSparkles className="h-4 w-4" />
             </Link>
           </Button>
         </>
@@ -455,13 +453,13 @@ search={(toggle) => (
             <IconGrid className="h-4 w-4" />
           </SegmentedButton>
         </SegmentedControl>
+        {view === "people" && (isMember || canEdit) && (
+          <div className="flex shrink-0 items-center gap-1.5">{actionButtons}</div>
+        )}
       </div>
       )}
         activeCount={
           (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "generation" ? 1 : 0)
-        }
-        actions={
-          view === "people" && (isMember || canEdit) ? actionButtons : undefined
         }
       >
       {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
