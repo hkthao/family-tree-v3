@@ -153,7 +153,18 @@ function meta(clan: HistoricalClanSummary): string {
     : "Lịch sử";
 }
 
-/** Số người + nhóm, dạng chip căn sát phải. */
+const CATEGORY_CHIP: Record<HistoricalCategory, string> = {
+  royal:
+    "border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-300",
+  noble:
+    "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  official:
+    "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  military:
+    "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+};
+
+/** Số người + nhóm, dạng chip màu căn sát phải. */
 function ClanChips({
   clan,
   className,
@@ -161,14 +172,19 @@ function ClanChips({
   clan: HistoricalClanSummary;
   className?: string;
 }) {
-  const chip =
-    "rounded-full border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground";
+  const chip = "rounded-full border px-2 py-0.5 text-xs font-medium";
   return (
     <div className={`flex flex-wrap justify-end gap-1.5 ${className ?? ""}`}>
-      <span className={chip}>
+      <span
+        className={`${chip} border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`}
+      >
         {clan.person_count.toLocaleString("vi-VN")} người
       </span>
-      <span className={chip}>{meta(clan)}</span>
+      <span
+        className={`${chip} ${CATEGORY_CHIP[clan.historical_category ?? "royal"]}`}
+      >
+        {meta(clan)}
+      </span>
     </div>
   );
 }
