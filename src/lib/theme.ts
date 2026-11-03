@@ -17,31 +17,6 @@
 
 export type Theme = "light" | "dark" | "system";
 
-/** Bảng màu (Material 3 + "oxblood" đỏ rượu gốc của app). `oxblood` không gắn
- *  data-palette nên dùng khối :root trong index.css; còn lại xem palettes.css. */
-export const PALETTES = [
-  { id: "blue", label: "Xanh dương", light: "#0B57D0", dark: "#A8C7FA" },
-  { id: "purple", label: "Tím Material", light: "#6750A4", dark: "#D0BCFF" },
-  { id: "teal", label: "Xanh ngọc", light: "#006A6A", dark: "#4CDADA" },
-  { id: "green", label: "Xanh lục", light: "#1B6D2F", dark: "#8ED99B" },
-  { id: "orange", label: "Cam", light: "#9A4600", dark: "#FFB68A" },
-  { id: "rose", label: "Hồng", light: "#9C3A5E", dark: "#FFB1C8" },
-  { id: "oxblood", label: "Đỏ rượu (gia phả)", light: "#7A2E2E", dark: "#D24545" },
-] as const;
-export type PaletteId = (typeof PALETTES)[number]["id"];
-export const DEFAULT_PALETTE: PaletteId = "blue";
-const PALETTE_KEY = "family-tree:palette";
-
-function readPalette(): PaletteId {
-  try {
-    const v = localStorage.getItem(PALETTE_KEY);
-    if (PALETTES.some((p) => p.id === v)) return v as PaletteId;
-  } catch {
-    /* private mode — ignore */
-  }
-  return DEFAULT_PALETTE;
-}
-
 const STORAGE_KEY = "family-tree:theme";
 
 type Listener = (t: Theme) => void;
@@ -68,6 +43,7 @@ function effectiveDark(t: Theme): boolean {
 /** Status bar / address-bar color cho iOS Safari + Android Chrome.
  *  Light dùng đỏ rượu vang (primary), dark dùng "warm ink" để hợp
  *  background tối — đỏ rượu vang quá chói trong dark mode. */
+const THEME_COLOR_LIGHT = "#7A2230";
 const THEME_COLOR_DARK = "#1A1612";
 
 function syncMetaThemeColor(dark: boolean): void {
@@ -76,8 +52,7 @@ function syncMetaThemeColor(dark: boolean): void {
     'meta[name="theme-color"]',
   );
   if (meta) {
-    const pal = PALETTES.find((p) => p.id === readPalette());
-    meta.setAttribute("content", dark ? THEME_COLOR_DARK : (pal?.light ?? "#7A2230"));
+    meta.setAttribute("content", dark ? THEME_COLOR_DARK : THEME_COLOR_LIGHT);
   }
 }
 
@@ -86,28 +61,7 @@ function apply(t: Theme): void {
   const dark = effectiveDark(t);
   document.documentElement.classList.toggle("dark", dark);
   document.documentElement.style.colorScheme = dark ? "dark" : "light";
-  applyPalette();
   syncMetaThemeColor(dark);
-}
-
-function applyPalette(): void {
-  const id = readPalette();
-  if (id === "oxblood") document.documentElement.removeAttribute("data-palette");
-  else document.documentElement.setAttribute("data-palette", id);
-}
-
-export function getPalette(): PaletteId {
-  return readPalette();
-}
-
-export function setPalette(id: PaletteId): void {
-  try {
-    localStorage.setItem(PALETTE_KEY, id);
-  } catch {
-    /* ignore */
-  }
-  apply(readStored());
-  for (const l of listeners) l(readStored());
 }
 
 export function getTheme(): Theme {
