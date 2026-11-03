@@ -198,7 +198,7 @@ function HistoricalClanCard({ clan }: { clan: HistoricalClanSummary }) {
           </h3>
         </div>
         {clan.description && (
-          <p className="text-muted-foreground text-sm line-clamp-1 sm:line-clamp-2 mt-1.5">
+          <p className="text-muted-foreground text-sm line-clamp-3 mt-1.5">
             {clan.description}
           </p>
         )}
