@@ -300,7 +300,7 @@ export default function Clans() {
                 onChange={(e) => changeHistSort(e.target.value as HistoricalSort)}
                 aria-label="Sắp xếp"
                 icon={<IconList />}
-                className="h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-sm"
+                className="h-11 sm:h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-base sm:text-sm"
               >
                 {HISTORICAL_SORTS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -315,7 +315,7 @@ export default function Clans() {
                 onChange={(e) => setSort(e.target.value as ClanSort)}
                 aria-label="Sắp xếp"
                 icon={<IconList />}
-                className="h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-sm"
+                className="h-11 sm:h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-base sm:text-sm"
               >
                 {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
                   <option key={k} value={k}>
@@ -332,7 +332,7 @@ export default function Clans() {
                 }
                 aria-label="Lọc theo quy mô"
                 icon={<IconUsers />}
-                className="h-10 min-w-0 flex-1 lg:flex-none lg:w-48 text-sm"
+                className="h-11 sm:h-10 min-w-0 flex-1 lg:flex-none lg:w-48 text-base sm:text-sm"
               >
                 <option value="">Tất cả quy mô</option>
                 {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
