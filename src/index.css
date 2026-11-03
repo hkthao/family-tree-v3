@@ -34,34 +34,36 @@
 
 @layer base {
   :root {
-    /* Oxblood palette — light mode (warm paper) */
-    --background: 38 60% 96%;          /* #FBF7F0 paper */
-    --foreground: 20 45% 12%;          /* #2C1A11 mực nâu */
+    /* Oxblood palette — light mode. Nền xám ngà (trung tính ấm, ít hồng) để
+     * thẻ trắng ngà nổi lên rõ; chữ mực nâu đậm (tương phản >12:1); viền xám
+     * ấm đủ đậm để phân tách các khối. */
+    --background: 40 22% 95%;          /* #F5F3EE ngà xám */
+    --foreground: 20 18% 11%;          /* #211B17 mực */
 
-    --card: 38 60% 96%;
-    --card-foreground: 20 45% 12%;
+    --card: 40 40% 99%;                /* #FEFDFB trắng ngà — nổi trên nền */
+    --card-foreground: 20 18% 11%;
 
-    --popover: 38 60% 96%;
-    --popover-foreground: 20 45% 12%;
+    --popover: 40 40% 99%;
+    --popover-foreground: 20 18% 11%;
 
-    --primary: 0 45% 33%;              /* #7A2E2E oxblood */
-    --primary-foreground: 38 60% 96%;
+    --primary: 0 48% 32%;              /* #792A2A oxblood */
+    --primary-foreground: 40 40% 99%;
 
-    --secondary: 36 30% 90%;
-    --secondary-foreground: 20 45% 12%;
+    --secondary: 38 18% 91%;
+    --secondary-foreground: 20 18% 11%;
 
-    --muted: 36 30% 90%;
-    --muted-foreground: 25 9% 44%;     /* #7A6F66 warm gray */
+    --muted: 38 16% 92%;               /* #EEEBE6 */
+    --muted-foreground: 25 10% 36%;    /* #655B54 — AA trên nền & thẻ */
 
-    --accent: 40 64% 45%;              /* #B8862A bronze */
-    --accent-foreground: 38 60% 96%;
+    --accent: 38 62% 36%;              /* #95631F đồng sẫm — icon/nhấn đạt tương phản */
+    --accent-foreground: 40 40% 99%;
 
-    --destructive: 0 70% 51%;          /* #D92E2E bright red — distinct from oxblood */
-    --destructive-foreground: 38 60% 96%;
+    --destructive: 0 70% 46%;          /* #C72323 */
+    --destructive-foreground: 40 40% 99%;
 
-    --border: 36 41% 86%;              /* #E8E0D2 */
-    --input: 36 41% 86%;
-    --ring: 0 45% 33%;                  /* focus ring = primary */
+    --border: 36 14% 84%;              /* #DAD5CD */
+    --input: 36 14% 80%;               /* #D1CBC1 — ô nhập đậm hơn viền thẻ một chút */
+    --ring: 0 48% 32%;                  /* focus ring = primary */
 
     /* family-chart card fills (consumed via --male-color etc.
      * set inline on the .f3 container in Tree.tsx / Share.tsx).
@@ -74,7 +76,7 @@
     /* Vàng đồng — viền, đường kẻ, dấu nhấn nhỏ (lấy từ site gia phả tham khảo) */
     --gold: 43 53% 56%;                /* #CAA455 */
     /* Bóng nâu mềm thay bóng đen */
-    --shadow-soft: 0 2px 8px rgba(44, 26, 17, 0.06);
+    --shadow-soft: 0 1px 2px rgba(44, 26, 17, 0.05), 0 2px 8px rgba(44, 26, 17, 0.06);
 
     --radius: 0.5rem;
   }

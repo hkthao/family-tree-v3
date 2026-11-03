@@ -64,7 +64,7 @@ function palette(dark: boolean) {
         particle: "#D4A045",
       }
     : {
-        bg: "#FBF7F0", // --background (paper)
+        bg: "#F5F3EE", // --background
         card: "#F7F0E0", // trắng ngà
         cardName: "#2A2320", // --foreground (ink)
         cardYears: "#7A6F66", // --muted-foreground
