@@ -83,10 +83,6 @@ export function HistoricalClansSection({
 
   return (
     <section aria-label="Lịch sử" className="space-y-3">
-      <p className="text-xs text-muted-foreground -mt-1">
-        Soạn từ chính sử, mỗi dữ kiện kèm trích dẫn nguyên văn. Không tính vào
-        bảng xếp hạng dòng họ.
-      </p>
       <div className="flex flex-wrap items-start justify-between gap-2">
         {present.length > 1 ? (
           <div
