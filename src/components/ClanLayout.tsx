@@ -169,7 +169,6 @@ export function ClanLayout() {
               <p className="text-xs text-muted-foreground truncate">
                 Lịch sử
                 {clan.historical_category ? ` · ${HISTORICAL_CATEGORY_LABEL[clan.historical_category]}` : ""}
-                {" · có trích dẫn nguồn"}
               </p>
             )}
           </div>

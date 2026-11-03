@@ -148,12 +148,9 @@ export function HistoricalClansSection({
 }
 
 function meta(clan: HistoricalClanSummary): string {
-  return [
-    clan.historical_category
-      ? HISTORICAL_CATEGORY_LABEL[clan.historical_category]
-      : "Lịch sử",
-    "Có trích dẫn nguồn",
-  ].join(" • ");
+  return clan.historical_category
+    ? HISTORICAL_CATEGORY_LABEL[clan.historical_category]
+    : "Lịch sử";
 }
 
 /** Cùng kiểu với ClanRow ở trang Dòng họ (chế độ danh sách). */
