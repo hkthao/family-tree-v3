@@ -13,9 +13,18 @@ import {
 } from "@/lib/queries/historical";
 import { unaccent } from "@/lib/unaccent";
 
-type SortKey = "name" | "name_desc" | "people_desc" | "people_asc";
+type SortKey =
+  "era_asc" | "era_desc" | "name" | "name_desc" | "people_desc" | "people_asc";
+/** Năm bắt đầu lấy từ tên dạng "Nhà Lý (1009–1225)"; không có thì xếp cuối. */
+function startYear(name: string): number {
+  const m = /\((\d{3,4})\s*[–-]/.exec(name);
+  return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
+}
+
 const SORT_KEY = "family-tree:historical-sort";
 const SORTS: { value: SortKey; label: string }[] = [
+  { value: "era_asc", label: "Thời kỳ: cũ → mới" },
+  { value: "era_desc", label: "Thời kỳ: mới → cũ" },
   { value: "name", label: "Tên A → Z" },
   { value: "name_desc", label: "Tên Z → A" },
   { value: "people_desc", label: "Nhiều người nhất" },
@@ -44,9 +53,9 @@ export function HistoricalClansSection({
   const [sort, setSort] = useState<SortKey>(() => {
     try {
       const v = localStorage.getItem(SORT_KEY);
-      return SORTS.some((o) => o.value === v) ? (v as SortKey) : "name";
+      return SORTS.some((o) => o.value === v) ? (v as SortKey) : "era_asc";
     } catch {
-      return "name";
+      return "era_asc";
     }
   });
   if (isLoading) return <LoadingState />;
@@ -63,14 +72,21 @@ export function HistoricalClansSection({
         (!needle || unaccent(d.name).includes(needle)),
     )
     .sort((a, b) =>
-      sort === "people_desc"
-        ? b.person_count - a.person_count || a.name.localeCompare(b.name, "vi")
-        : sort === "people_asc"
-          ? a.person_count - b.person_count ||
+      sort === "era_asc"
+        ? startYear(a.name) - startYear(b.name) ||
+          a.name.localeCompare(b.name, "vi")
+        : sort === "era_desc"
+          ? startYear(b.name) - startYear(a.name) ||
             a.name.localeCompare(b.name, "vi")
-          : sort === "name_desc"
-            ? b.name.localeCompare(a.name, "vi")
-            : a.name.localeCompare(b.name, "vi"),
+          : sort === "people_desc"
+            ? b.person_count - a.person_count ||
+              a.name.localeCompare(b.name, "vi")
+            : sort === "people_asc"
+              ? a.person_count - b.person_count ||
+                a.name.localeCompare(b.name, "vi")
+              : sort === "name_desc"
+                ? b.name.localeCompare(a.name, "vi")
+                : a.name.localeCompare(b.name, "vi"),
     );
   const changeSort = (v: SortKey) => {
     setSort(v);
