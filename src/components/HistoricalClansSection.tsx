@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { EmptyState } from "@/components/EmptyState";
-import { IconScroll, IconSearch } from "@/components/icons";
+import { IconSearch } from "@/components/icons";
 import { LoadingState } from "@/components/LoadingState";
 import {
   HISTORICAL_CATEGORY_LABEL,
@@ -192,7 +192,6 @@ function HistoricalClanCard({ clan }: { clan: HistoricalClanSummary }) {
         className="flex h-full flex-col rounded-lg border bg-card p-3 sm:p-4 hover:border-primary transition-colors"
       >
         <div className="flex items-start justify-center gap-2 min-w-0">
-          <IconScroll className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           <h3 className="clan-name text-base font-semibold text-center leading-snug line-clamp-2 min-w-0">
             {clan.name}
           </h3>
