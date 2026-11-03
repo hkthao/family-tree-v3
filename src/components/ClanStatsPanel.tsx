@@ -1,18 +1,8 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 
-import { IconChart, IconChevronDown, IconChevronUp } from "@/components/icons";
-import { SectionHeading } from "@/components/SectionHeading";
+import { IconChart } from "@/components/icons";
+import { SectionCard } from "@/components/SectionCard";
 import type { PersonForTree } from "@/lib/queries/tree";
-
-const COLLAPSE_KEY = "clan-stats-collapsed";
-
-function readCollapsed(): boolean {
-  try {
-    return localStorage.getItem(COLLAPSE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
 
 export interface ClanCounts {
   total: number;
@@ -120,16 +110,6 @@ export function ClanStatsPanel({
     }
     return [...m.entries()].sort((a, b) => a[0] - b[0]);
   }, [persons]);
-  const [collapsed, setCollapsed] = useState(readCollapsed);
-  const toggle = () =>
-    setCollapsed((c) => {
-      try {
-        localStorage.setItem(COLLAPSE_KEY, c ? "0" : "1");
-      } catch {
-        /* bỏ qua: chỉ là tiện ích nhớ trạng thái */
-      }
-      return !c;
-    });
   const maxInGen = Math.max(1, ...byGen.map(([, n]) => n));
   const biggest = byGen.reduce<[number, number] | null>(
     (best, cur) => (!best || cur[1] > best[1] ? cur : best),
@@ -137,27 +117,8 @@ export function ClanStatsPanel({
   );
 
   return (
-    <section aria-label="Số liệu dòng họ" className="space-y-2">
-      <SectionHeading
-        icon={<IconChart />}
-        title="Số liệu dòng họ"
-        action={
-          <button
-            type="button"
-            onClick={toggle}
-            aria-expanded={!collapsed}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-muted"
-          >
-            {collapsed ? "Mở rộng" : "Thu gọn"}
-            {collapsed ? (
-              <IconChevronDown className="h-4 w-4" />
-            ) : (
-              <IconChevronUp className="h-4 w-4" />
-            )}
-          </button>
-        }
-      />
-      <div className="space-y-5 rounded-lg border border-gold/30 bg-card p-4 shadow-sm">
+    <SectionCard id="stats" icon={<IconChart />} title="Số liệu dòng họ">
+      <div className="space-y-5">
         <div className="grid grid-cols-3 gap-4">
           <Kpi value={counts.total} label="Thành viên" />
           <Kpi value={counts.maxGen ?? "—"} label="Số đời" />
@@ -168,7 +129,7 @@ export function ClanStatsPanel({
           />
         </div>
 
-        {!collapsed && (
+        {
           <>
             <div className="grid grid-cols-1 gap-5 border-t pt-4 sm:grid-cols-2">
               <SplitBar
@@ -227,8 +188,8 @@ export function ClanStatsPanel({
 
             {children}
           </>
-        )}
+        }
       </div>
-    </section>
+    </SectionCard>
   );
 }

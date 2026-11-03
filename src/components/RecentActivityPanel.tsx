@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import { IconScroll } from "@/components/icons";
-import { SectionHeading } from "@/components/SectionHeading";
+import { SectionCard } from "@/components/SectionCard";
 import { useAuth } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queries/keys";
 import { listAudit, type AuditAction, type AuditRow } from "@/lib/queries/audit";
@@ -90,20 +90,21 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
   }
 
   return (
-    <section aria-label="Hoạt động gần đây" className="space-y-2">
-      <SectionHeading
-        icon={<IconScroll />}
-        title="Hoạt động gần đây"
-        action={
-          <Link
-            to={`/clans/${clanId}/audit`}
-            className="text-sm text-primary hover:underline"
-          >
-            Xem nhật ký →
-          </Link>
-        }
-      />
-      <ul className="rounded-lg border bg-card divide-y overflow-hidden">
+    <SectionCard
+      id="activity"
+      icon={<IconScroll />}
+      title="Hoạt động gần đây"
+      bodyClassName="p-0"
+      action={
+        <Link
+          to={`/clans/${clanId}/audit`}
+          className="shrink-0 text-sm text-primary hover:underline"
+        >
+          Xem nhật ký →
+        </Link>
+      }
+    >
+      <ul className="divide-y overflow-hidden">
         {data.rows.map((r) => {
           const action = (r.action as AuditAction) || "update";
           const linkTarget =
@@ -143,6 +144,6 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
           );
         })}
       </ul>
-    </section>
+    </SectionCard>
   );
 }
