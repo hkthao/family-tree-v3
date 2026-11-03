@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { EmptyState } from "@/components/EmptyState";
+import { Pagination } from "@/components/Pagination";
 import { IconSearch } from "@/components/icons";
 import { LoadingState } from "@/components/LoadingState";
 import {
@@ -12,6 +13,8 @@ import {
   type HistoricalClanSummary,
 } from "@/lib/queries/historical";
 import { unaccent } from "@/lib/unaccent";
+
+const PAGE_SIZE = 12;
 
 export type HistoricalSort =
   "era_asc" | "era_desc" | "name" | "name_desc" | "people_desc" | "people_asc";
@@ -63,6 +66,8 @@ export function HistoricalClansSection({
     staleTime: 10 * 60 * 1000,
   });
   const [category, setCategory] = useState<HistoricalCategory | null>(null);
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [search, sort, category]);
   if (isLoading) return <LoadingState />;
   if (!data) return null;
 
@@ -93,6 +98,10 @@ export function HistoricalClansSection({
                 ? b.name.localeCompare(a.name, "vi")
                 : a.name.localeCompare(b.name, "vi"),
     );
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const current = Math.min(page, totalPages);
+  const paged = rows.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
   return (
     <section aria-label="Lịch sử" className="space-y-3">
@@ -132,16 +141,26 @@ export function HistoricalClansSection({
         />
       ) : view === "grid" ? (
         <ul className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-          {rows.map((c) => (
+          {paged.map((c) => (
             <HistoricalClanCard key={c.id} clan={c} />
           ))}
         </ul>
       ) : (
         <ul className="space-y-2">
-          {rows.map((c) => (
+          {paged.map((c) => (
             <HistoricalClanRow key={c.id} clan={c} />
           ))}
         </ul>
+      )}
+      {rows.length > 0 && (
+        <Pagination
+          page={current}
+          totalPages={totalPages}
+          total={rows.length}
+          pageSize={PAGE_SIZE}
+          unit="mục"
+          onPageChange={setPage}
+        />
       )}
     </section>
   );
