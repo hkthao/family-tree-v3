@@ -232,7 +232,7 @@ export default function Clans() {
         {/* Tab chiếm trọn một hàng (chia đều trên mobile); nút tạo dòng họ nằm ở tiêu đề trang. */}
         <div className="flex items-center gap-2">
           <div
-            className="flex w-full min-w-0 overflow-x-auto rounded-md border bg-card [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex w-full sm:w-fit max-w-full min-w-0 overflow-x-auto rounded-md border bg-card [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             role="tablist"
           >
             <TabButton
