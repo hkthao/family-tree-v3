@@ -153,6 +153,26 @@ function meta(clan: HistoricalClanSummary): string {
     : "Lịch sử";
 }
 
+/** Số người + nhóm, dạng chip căn sát phải. */
+function ClanChips({
+  clan,
+  className,
+}: {
+  clan: HistoricalClanSummary;
+  className?: string;
+}) {
+  const chip =
+    "rounded-full border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground";
+  return (
+    <div className={`flex flex-wrap justify-end gap-1.5 ${className ?? ""}`}>
+      <span className={chip}>
+        {clan.person_count.toLocaleString("vi-VN")} người
+      </span>
+      <span className={chip}>{meta(clan)}</span>
+    </div>
+  );
+}
+
 /** Cùng kiểu với ClanRow ở trang Dòng họ (chế độ danh sách). */
 function HistoricalClanRow({ clan }: { clan: HistoricalClanSummary }) {
   return (
@@ -165,16 +185,13 @@ function HistoricalClanRow({ clan }: { clan: HistoricalClanSummary }) {
           <h3 className="clan-name text-lg font-semibold truncate">
             {clan.name}
           </h3>
-          <span className="text-xs text-muted-foreground shrink-0">
-            {clan.person_count.toLocaleString("vi-VN")} người
-          </span>
         </div>
         {clan.description && (
           <p className="text-muted-foreground text-sm line-clamp-2 mt-0.5">
             {clan.description}
           </p>
         )}
-        <p className="text-xs text-muted-foreground mt-1">{meta(clan)}</p>
+        <ClanChips clan={clan} className="mt-2" />
       </Link>
     </li>
   );
@@ -198,10 +215,7 @@ function HistoricalClanCard({ clan }: { clan: HistoricalClanSummary }) {
             {clan.description}
           </p>
         )}
-        <div className="mt-auto pt-3 text-xs text-muted-foreground">
-          <p>{clan.person_count.toLocaleString("vi-VN")} người</p>
-          <p className="mt-0.5">{meta(clan)}</p>
-        </div>
+        <ClanChips clan={clan} className="mt-auto pt-3" />
       </Link>
     </li>
   );
