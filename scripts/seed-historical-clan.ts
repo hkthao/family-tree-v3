@@ -114,7 +114,7 @@ async function inBatches<R, O>(label: string, rows: R[], size: number, run: (chu
   const attempt = async (chunk: R[], tag: string): Promise<void> => {
     const r = await run(chunk);
     if (r.error) {
-      if (/timing out|timeout|gateway/i.test(r.error.message) && chunk.length > 1) {
+      if (/timing out|timeout|gateway|fetch failed/i.test(r.error.message) && chunk.length > 1) {
         console.warn(`  ⚠ ${label} ${tag}: hết thời gian chờ — chia đôi (${chunk.length} → ${Math.ceil(chunk.length / 2)})`);
         await new Promise((res) => setTimeout(res, 20000));
         const mid = Math.ceil(chunk.length / 2);
