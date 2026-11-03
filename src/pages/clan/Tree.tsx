@@ -1237,7 +1237,7 @@ export default function Tree() {
   // Ô "Đặt người trung tâm" — dùng CHUNG cho cả cây 2D và 3D.
   const focalSearch =
     data && data.persons.length > 0 ? (
-      <div className="relative print-hide">
+      <div className="relative print-hide order-first sm:order-none">
         <div className="flex items-end gap-2">
           <div className="flex-1 min-w-0">
             <SearchInput
@@ -1325,7 +1325,8 @@ export default function Tree() {
     ) : null;
 
   return (
-    <div className="space-y-4">
+    // Mobile: flex-col để ô "Đặt người trung tâm" (order-first) lên trên cùng.
+    <div className="flex flex-col gap-4 sm:block sm:space-y-4">
       {/* Print-only title strip — shows "Họ Nguyễn — Cây gia phả · 2026-06-01"
           at the top of the printed page. The on-screen flow ignores it. */}
       <div className="print-only" aria-hidden="true">
@@ -1513,8 +1514,9 @@ export default function Tree() {
           </div>
         </div>
       ) : mode === "3d" ? (
-        <div className="space-y-2">
+        <>
           {focalSearch}
+          <div className="space-y-2">
           <Suspense
             fallback={
               <div className="grid h-[calc(100dvh-260px)] min-h-[440px] place-items-center rounded-xl border text-muted-foreground">
@@ -1531,7 +1533,8 @@ export default function Tree() {
               className="h-[calc(100dvh-260px)] min-h-[440px] rounded-xl border"
             />
           </Suspense>
-        </div>
+          </div>
+        </>
       ) : view === "lineage" ? (
         <LineageContent clanId={clanId} userId={userId} />
       ) : (
