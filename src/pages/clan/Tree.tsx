@@ -5,15 +5,13 @@ import { avatarFrameSvg } from "@/components/PersonAvatar";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
-  IconChevronDown,
-  IconChevronUp,
   IconDownload,
   IconGrid,
   IconHome,
   IconMaximize,
   IconMinimize,
   IconPlus,
-  IconSettings,
+  IconFilter,
   IconTree,
   IconUpload,
 } from "@/components/icons";
@@ -1248,12 +1246,26 @@ export default function Tree() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Đặt người trung tâm — gõ tên để tìm…"
               rightSlot={
-                <RefreshButton
-                  clanId={clan.id}
-                  cachedVersion={clan.data_version}
-                  compact
-                  className="h-8 w-8 border-0 bg-transparent shadow-none"
-                />
+                <div className="flex items-center">
+                  {/* Mobile: phễu mở/đóng "Tuỳ chọn" (desktop trải sẵn nên ẩn). */}
+                  <button
+                    type="button"
+                    onClick={() => setShowOpts((v) => !v)}
+                    aria-expanded={showOpts}
+                    aria-label="Tuỳ chọn"
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md sm:hidden ${
+                      showOpts ? "bg-primary/10 text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    <IconFilter className="h-4 w-4" />
+                  </button>
+                  <RefreshButton
+                    clanId={clan.id}
+                    cachedVersion={clan.data_version}
+                    compact
+                    className="h-8 w-8 border-0 bg-transparent shadow-none"
+                  />
+                </div>
               }
             />
           </div>
@@ -1384,23 +1396,8 @@ export default function Tree() {
                   chúng thật sự chụp SVG của cây 2D. */}
               {/* Mobile: mọi thứ ngoài "kiểu" và "số đời" gói vào "Tuỳ chọn" cho gọn.
                   Desktop: ẩn nút, các phần tử trải ra hàng flex như cũ. */}
-              <button
-                type="button"
-                onClick={() => setShowOpts((v) => !v)}
-                className="order-3 col-span-2 sm:hidden inline-flex items-center justify-between gap-1 rounded-md border bg-card px-3 h-10 text-sm"
-                aria-expanded={showOpts}
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <IconSettings className="h-4 w-4" /> Tuỳ chọn
-                </span>
-                {showOpts ? (
-                  <IconChevronUp className="h-4 w-4" />
-                ) : (
-                  <IconChevronDown className="h-4 w-4" />
-                )}
-              </button>
               <div
-                className={`${showOpts ? "grid" : "hidden"} order-4 col-span-2 grid-cols-2 gap-2 sm:contents`}
+                className={`${showOpts ? "grid" : "hidden"} order-3 col-span-2 grid-cols-2 gap-2 sm:contents`}
               >
                 {mode === "2d" && isMember && (
                   <Select
