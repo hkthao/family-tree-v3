@@ -369,41 +369,28 @@ export default function People() {
         }
       />
 
-      {isMember && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <SegmentedControl ariaLabel="Chế độ xem" className="w-full sm:w-auto sm:shrink-0">
-            <SegmentedButton
-              active={view === "people"}
-              onClick={() => patch({ view: null })}
-              ariaLabel="Xem danh bạ"
-              className="flex-1 px-3 whitespace-nowrap"
-            >
-              Danh bạ
-            </SegmentedButton>
-            <SegmentedButton
-              active={view === "kinship"}
-              onClick={() => patch({ view: "kinship" })}
-              ariaLabel="Tra cứu xưng hô"
-              className="flex-1 px-3 whitespace-nowrap"
-            >
-              Xưng hô
-            </SegmentedButton>
-          </SegmentedControl>
-
-          {/* Thanh tiến độ — cùng hàng với toggle trên desktop. */}
-          {view === "people" &&
-            completion &&
-            completion.total > 0 &&
-            completion.percent !== null && (
-              <div className="flex-1 min-w-0">
-                <CompactCompletion clanId={clan.id} completion={completion} />
-              </div>
-            )}
-        </div>
-      )}
+      {/* Tiến độ hồ sơ. Tra cứu xưng hô nằm trong ngăn kéo (phễu) của ô tìm kiếm. */}
+      {isMember &&
+        view === "people" &&
+        completion &&
+        completion.total > 0 &&
+        completion.percent !== null && (
+          <CompactCompletion clanId={clan.id} completion={completion} />
+        )}
 
       {view === "kinship" ? (
-        <KinshipContent clanId={clan.id} userId={userId} />
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="-ml-2 h-9"
+            onClick={() => patch({ view: null })}
+          >
+            ← Về danh bạ
+          </Button>
+          <KinshipContent clanId={clan.id} userId={userId} />
+        </>
       ) : (
       <>
       {/* Hàng tìm kiếm + toggle Danh sách/Thẻ — LUÔN hiện (không giấu sau
@@ -465,6 +452,16 @@ search={(toggle) => (
       {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
           parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc. */}
       <div className="flex flex-col gap-3">
+        {isMember && (
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full justify-start"
+            onClick={() => patch({ view: "kinship" })}
+          >
+            <IconUsers className="mr-2 h-4 w-4" /> Tra cứu xưng hô
+          </Button>
+        )}
         <Select
           icon={<IconGrid />}
           value={branchId}
@@ -1037,27 +1034,25 @@ function CompactCompletion({
   return (
     <Link
       to={`/clans/${clanId}/todo`}
-      aria-label={`Đã hoàn thành ${percent}%, mở Việc cần làm`}
-      className="flex items-center gap-3 -mx-2 px-2 py-1.5 rounded-md hover:bg-muted/40 transition-colors text-sm"
+      aria-label={`Hồ sơ đầy đủ ${percent}%, ${withGaps} người còn thiếu thông tin. Mở việc cần làm`}
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border bg-card px-3 py-2 text-sm hover:border-primary transition-colors"
     >
-      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+      <span className="shrink-0">
+        Hồ sơ đầy đủ <span className="tabular-nums font-semibold">{percent}%</span>
+      </span>
+      <div className="h-1.5 min-w-[80px] flex-1 overflow-hidden rounded-full bg-muted">
         <div
           className={`h-full ${tone} transition-[width] duration-500`}
           style={{ width: `${percent}%` }}
         />
       </div>
-      <span className="tabular-nums font-medium">{percent}%</span>
       {withGaps > 0 ? (
-        <>
-          <span className="text-muted-foreground text-xs">
-            <span className="tabular-nums">{withGaps}</span> việc còn
-          </span>
-          <span className="text-primary" aria-hidden="true">
-            →
-          </span>
-        </>
+        <span className="shrink-0 text-xs text-muted-foreground">
+          <span className="tabular-nums">{withGaps}</span> người còn thiếu thông tin ·{" "}
+          <span className="text-primary">Bổ sung →</span>
+        </span>
       ) : (
-        <span className="text-xs text-emerald-600">đầy đủ ✓</span>
+        <span className="shrink-0 text-xs text-emerald-600">Tất cả đã đầy đủ ✓</span>
       )}
     </Link>
   );
