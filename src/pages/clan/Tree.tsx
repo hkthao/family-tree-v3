@@ -1247,13 +1247,13 @@ export default function Tree() {
               placeholder="Đặt người trung tâm — gõ tên để tìm…"
               rightSlot={
                 <div className="flex items-center">
-                  {/* Mobile: phễu mở/đóng "Tuỳ chọn" (desktop trải sẵn nên ẩn). */}
+                  {/* Phễu mở/đóng "Tuỳ chọn" (mặc định ẩn, mọi cỡ màn hình). */}
                   <button
                     type="button"
                     onClick={() => setShowOpts((v) => !v)}
                     aria-expanded={showOpts}
                     aria-label="Tuỳ chọn"
-                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md sm:hidden ${
+                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md ${
                       showOpts ? "bg-primary/10 text-primary" : "text-muted-foreground"
                     }`}
                   >
@@ -1398,7 +1398,7 @@ export default function Tree() {
               {/* Mobile: mọi thứ ngoài "kiểu" và "số đời" gói vào "Tuỳ chọn" cho gọn.
                   Desktop: ẩn nút, các phần tử trải ra hàng flex như cũ. */}
               <div
-                className={`${showOpts ? "grid" : "hidden"} order-3 col-span-2 grid-cols-2 gap-2 sm:contents`}
+                className={`${showOpts ? "grid sm:contents" : "hidden"} order-3 col-span-2 grid-cols-2 gap-2`}
               >
                 {mode === "2d" && isMember && (
                   <Select
