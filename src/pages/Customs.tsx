@@ -16,6 +16,7 @@ import {
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { SearchInput } from "@/components/SearchInput";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -111,47 +112,55 @@ export default function Customs() {
           }
         />
 
-        {/* Desktop: search + 2 dropdown trên 1 hàng. Mobile: 2 hàng
-            (search hàng trên, 2 dropdown hàng dưới). */}
-        <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
-          <div className="sm:flex-1 sm:min-w-[200px]">
-            <SearchInput
-              label="Tìm phong tục"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder='Gõ tình huống cũng được — vd "nhà mới", "có em bé"…'
-            />
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Select
-              value={category}
-              onChange={(e) => setCat(e.target.value)}
-              aria-label="Lọc theo chủ đề"
-              icon={<IconTag />}
-              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-48 text-sm"
-            >
-              <option value="">Mọi chủ đề</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {CUSTOM_CATEGORY_LABEL[c]}
-                </option>
-              ))}
-            </Select>
-            <Select
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              aria-label="Lọc theo vùng"
-              icon={<IconMapPin />}
-              className="h-10 min-w-0 flex-1 sm:flex-none sm:w-40 text-sm"
-            >
-              <option value="">Mọi vùng</option>
-              {CUSTOM_REGIONS.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </Select>
-          </div>
+        {/* Chủ đề + vùng nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm). */}
+        <div className="space-y-2">
+          <CollapsibleFilters
+            activeCount={(category ? 1 : 0) + (region ? 1 : 0)}
+            onReset={() => {
+              setCat("");
+              setRegion("");
+            }}
+            search={(toggle) => (
+              <SearchInput
+                label="Tìm phong tục"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder='Gõ tình huống cũng được — vd "nhà mới", "có em bé"…'
+                rightSlot={toggle}
+              />
+            )}
+          >
+            <div className="flex flex-col gap-3">
+              <Select
+                value={category}
+                onChange={(e) => setCat(e.target.value)}
+                aria-label="Lọc theo chủ đề"
+                icon={<IconTag />}
+                className="h-11 w-full text-base"
+              >
+                <option value="">Mọi chủ đề</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {CUSTOM_CATEGORY_LABEL[c]}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                aria-label="Lọc theo vùng"
+                icon={<IconMapPin />}
+                className="h-11 w-full text-base"
+              >
+                <option value="">Mọi vùng</option>
+                {CUSTOM_REGIONS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </CollapsibleFilters>
         </div>
 
         {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
