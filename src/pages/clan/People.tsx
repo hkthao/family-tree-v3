@@ -410,6 +410,13 @@ export default function People() {
       <>
       {/* Hàng tìm kiếm + toggle Danh sách/Thẻ — LUÔN hiện (không giấu sau
           "Bộ lọc"), vì đổi kiểu xem là thao tác thường dùng. */}
+      <CollapsibleFilters
+        onReset={() => {
+          setBranchId("");
+          setGeneration("");
+          setSort("generation");
+        }}
+search={(toggle) => (
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
           <SearchInput
@@ -417,13 +424,14 @@ export default function People() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
+            className="pr-[4.75rem]"
             rightSlot={
-              <RefreshButton
+              <>{toggle}<RefreshButton
                 clanId={clan.id}
                 cachedVersion={clan.data_version}
                 compact
                 className="h-8 w-8 border-0 bg-transparent hover:bg-muted"
-              />
+              /></>
             }
           />
         </div>
@@ -448,10 +456,7 @@ export default function People() {
           </SegmentedButton>
         </SegmentedControl>
       </div>
-
-      {/* Bộ lọc chi/đời/sắp xếp. Mobile: thu sau nút "Bộ lọc" + XẾP DỌC
-          full-width cho dễ chạm; desktop: một hàng ngang. */}
-      <CollapsibleFilters
+      )}
         activeCount={
           (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "generation" ? 1 : 0)
         }
@@ -461,13 +466,13 @@ export default function People() {
       >
       {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
           parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc. */}
-      <div className="flex flex-col gap-2 sm:mt-2 sm:flex-row sm:flex-wrap sm:items-center">
+      <div className="flex flex-col gap-3">
         <Select
           icon={<IconGrid />}
           value={branchId}
           onChange={(e) => setBranchId(e.target.value)}
           aria-label="Lọc theo chi"
-          className="sm:w-auto sm:flex-1 sm:min-w-[140px]"
+          className="w-full"
         >
           <option value="">Tất cả chi</option>
           {branches?.map((b) => (
@@ -481,7 +486,7 @@ export default function People() {
           value={generation}
           onChange={(e) => setGeneration(e.target.value)}
           aria-label="Lọc theo đời"
-          className="disabled:opacity-50 sm:w-auto sm:flex-1 sm:min-w-[120px]"
+          className="w-full disabled:opacity-50"
           disabled={!maxGen}
         >
           <option value="">Tất cả đời</option>
@@ -498,7 +503,7 @@ export default function People() {
           value={sort}
           onChange={(e) => setSort(e.target.value as typeof sort)}
           aria-label="Sắp xếp"
-          className="sm:w-auto sm:flex-1 sm:min-w-[120px]"
+          className="w-full"
         >
           <option value="generation">Sắp: Đời</option>
           <option value="name">Sắp: Tên</option>
