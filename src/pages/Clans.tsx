@@ -295,19 +295,28 @@ export default function Clans() {
               hẹp hơn thì để flex-1 chia đều và co được. */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {tab === "historical" && (
-              <Select
-                value={histSort}
-                onChange={(e) => changeHistSort(e.target.value as HistoricalSort)}
+              <div
+                className="flex min-w-0 flex-1 flex-wrap gap-1.5"
+                role="radiogroup"
                 aria-label="Sắp xếp"
-                icon={<IconList />}
-                className="h-11 sm:h-10 min-w-0 flex-1 lg:flex-none lg:w-64 text-base sm:text-sm"
               >
                 {HISTORICAL_SORTS.map((o) => (
-                  <option key={o.value} value={o.value}>
+                  <button
+                    key={o.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={histSort === o.value}
+                    onClick={() => changeHistSort(o.value)}
+                    className={`h-9 rounded-full border px-3 text-sm ${
+                      histSort === o.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "bg-card hover:border-primary"
+                    }`}
+                  >
                     {o.label}
-                  </option>
+                  </button>
                 ))}
-              </Select>
+              </div>
             )}
             {tab !== "historical" && (
               <Select
