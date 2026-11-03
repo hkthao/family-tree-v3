@@ -38,7 +38,7 @@ export function HistoricalClansSection({ view, search }: { view: "list" | "grid"
   );
 
   return (
-    <section aria-label="Gia phả lịch sử" className="space-y-3">
+    <section aria-label="Lịch sử" className="space-y-3">
       <p className="text-xs text-muted-foreground -mt-1">
         Soạn từ chính sử, mỗi dữ kiện kèm trích dẫn nguyên văn. Không tính vào bảng xếp hạng dòng họ.
       </p>
@@ -64,7 +64,7 @@ export function HistoricalClansSection({ view, search }: { view: "list" | "grid"
       {rows.length === 0 ? (
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}
-          title={search ? `Không có gia phả lịch sử nào khớp "${search}"` : "Chưa có gia phả lịch sử"}
+          title={search ? `Không có mục lịch sử nào khớp "${search}"` : "Chưa có mục lịch sử"}
           description="Thử bỏ bớt từ khoá hoặc chọn nhóm khác."
         />
       ) : view === "grid" ? (
@@ -86,7 +86,7 @@ export function HistoricalClansSection({ view, search }: { view: "list" | "grid"
 
 function meta(clan: HistoricalClanSummary): string {
   return [
-    clan.historical_category ? HISTORICAL_CATEGORY_LABEL[clan.historical_category] : "Gia phả lịch sử",
+    clan.historical_category ? HISTORICAL_CATEGORY_LABEL[clan.historical_category] : "Lịch sử",
     "Có trích dẫn nguồn",
   ].join(" • ");
 }

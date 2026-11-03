@@ -167,7 +167,7 @@ export function ClanLayout() {
             </h1>
             {clan.kind === "historical" && (
               <p className="text-xs text-muted-foreground truncate">
-                Gia phả lịch sử
+                Lịch sử
                 {clan.historical_category ? ` · ${HISTORICAL_CATEGORY_LABEL[clan.historical_category]}` : ""}
                 {" · có trích dẫn nguồn"}
               </p>
