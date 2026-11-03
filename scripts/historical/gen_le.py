@@ -468,6 +468,36 @@ import os as _os
 _spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
 bio_lib = _iu.module_from_spec(_spec)
 _spec.loader.exec_module(bio_lib)
+# ── Hoàng tử (chỉ người Toàn thư ghi rõ là con của vua); mẹ không rõ → hôn nhân "khuyết" của cha ──
+_Y = lambda y, can: f"năm {can} ({y})"
+for _k, _h in (("u.thai-to--khuyet", "le.thai-to"), ("u.thai-tong--khuyet", "le.thai-tong"), ("u.hien-tong--khuyet", "le.hien-tong")):
+    if not any(u["key"] == _k for u in unions):
+        U(_k, _h)
+_Q = "皇子十有四，長皇太子鏳，次梁王銓，宋王縱，唐王鎬，建王鑌，福王錚"
+_Q13 = "帝生" + _Q
+_Q14 = "生皇子六，長子安王洵，第二威穆帝濬，第三嗣皇㵮，第四通王溶，第五明王治，第六思王養"
+P(key="le.thai-to.tu-te", full_name="Lê Tư Tề", gender="M", parents="u.thai-to--khuyet", titles=[{"title": "Quận vương"}],
+  bio="Con trưởng của Lê Thái Tổ. Tháng 8 năm 1433, ngay trước khi Thái Tổ mất, bị giáng làm quận vương để người con thứ là Nguyên Long (Thái Tông) nối ngôi.",
+  citations=[c("existence", 10, _Y(1433, "Quý Sửu"), "秋八月，降長子思齊爲郡王，以次子元龍継承宗統"), c("parents", 10, _Y(1433, "Quý Sửu"), "秋八月，降長子思齊爲郡王，以次子元龍継承宗統"),
+             c("title:0", 10, _Y(1433, "Quý Sửu"), "秋八月，降長子思齊爲郡王，以次子元龍継承宗統"), c("bio", 10, _Y(1433, "Quý Sửu"), "秋八月，降長子思齊爲郡王，以次子元龍継承宗統")])
+P(key="le.thai-tong.khac-xuong", full_name="Lê Khắc Xương (Tân Bình vương)", gender="M", parents="u.thai-tong--khuyet", titles=[{"title": "Tân Bình vương"}],
+  bio="Con của Lê Thái Tông. Tháng 3 năm 1441, khi lập Bang Cơ làm thái tử, vua phong anh là Nghi Dân làm Lạng Sơn vương và Khắc Xương làm Tân Bình vương.",
+  citations=[c("existence", 11, _Y(1441, "Tân Dậu"), "皇太子宜民可封諒山王，皇子克昌可封新平王"), c("parents", 11, _Y(1441, "Tân Dậu"), "皇太子宜民可封諒山王，皇子克昌可封新平王"),
+             c("title:0", 11, _Y(1441, "Tân Dậu"), "皇太子宜民可封諒山王，皇子克昌可封新平王"), c("bio", 11, _Y(1441, "Tân Dậu"), "皇太子宜民可封諒山王，皇子克昌可封新平王")])
+for _k, _t, _h in (("luong", "Lương vương", "銓"), ("tong", "Tống vương", "縱"), ("duong", "Đường vương", "鎬"), ("phuc", "Phúc vương", "錚")):
+    P(key=f"le.thanh-tong.{_k}", full_name=_t, gender="M", parents="u.thanh-tong--khuyet", titles=[{"title": _t}],
+      bio=f"Con của Lê Thánh Tông (tên húy chữ Hán là {_h}); Toàn thư chỉ chép tước vương trong danh sách mười bốn hoàng tử của vua. Mẹ không rõ.",
+      citations=[c("existence", 13, _Y(1497, "Đinh Tỵ"), _Q13), c("parents", 13, _Y(1497, "Đinh Tỵ"), _Q13),
+                 c("title:0", 13, _Y(1497, "Đinh Tỵ"), _Q13), c("bio", 13, _Y(1497, "Đinh Tỵ"), _Q13)])
+for _k, _t, _h in (("an", "An vương", "洵"), ("thong", "Thông vương", "溶"), ("minh", "Minh vương", "治"), ("tu", "Tư vương", "養")):
+    P(key=f"le.hien-tong.{_k}", full_name=_t, gender="M", parents="u.hien-tong--khuyet", titles=[{"title": _t}],
+      bio=f"Con của Lê Hiến Tông (tên húy chữ Hán là {_h}); Toàn thư chỉ chép tước vương trong danh sách sáu hoàng tử của vua. Mẹ không rõ.",
+      citations=[c("existence", 14, _Y(1504, "Giáp Tý"), _Q14), c("parents", 14, _Y(1504, "Giáp Tý"), _Q14),
+                 c("title:0", 14, _Y(1504, "Giáp Tý"), _Q14), c("bio", 14, _Y(1504, "Giáp Tý"), _Q14)])
+P_an = next(x for x in persons if x["key"] == "le.hien-tong.an")
+P_an["bio"] += " Toàn thư còn chép ông là hoàng tử thứ nhất nhưng thích mặc áo đàn bà và đầu độc mẹ nên không được chọn làm thái tử."
+P_an["citations"].append(c("bio", 14, _Y(1499, "Kỷ Mùi"), "第一皇子洵好服女衣，毒藥母氏"))
+
 # ── Sự kiện theo năm và nhận xét của sử thần (Toàn thư, đoạn tiểu dẫn đầu kỷ mỗi vua) ──
 EV = {
     "le.thai-to": [(1428, "Lên ngôi ở Đông Kinh, đại xá, đổi niên hiệu Thuận Thiên, đặt quốc hiệu Đại Việt.",
