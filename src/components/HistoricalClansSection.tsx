@@ -131,7 +131,7 @@ export function HistoricalClansSection({
           description="Thử bỏ bớt từ khoá hoặc chọn nhóm khác."
         />
       ) : view === "grid" ? (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <ul className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
           {rows.map((c) => (
             <HistoricalClanCard key={c.id} clan={c} />
           ))}
@@ -189,7 +189,7 @@ function HistoricalClanCard({ clan }: { clan: HistoricalClanSummary }) {
     <li>
       <Link
         to={`/clans/${clan.id}`}
-        className="flex h-full flex-col rounded-lg border bg-card p-4 hover:border-primary transition-colors"
+        className="flex h-full flex-col rounded-lg border bg-card p-3 sm:p-4 hover:border-primary transition-colors"
       >
         <div className="flex items-start gap-2 min-w-0">
           <IconScroll className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -198,7 +198,7 @@ function HistoricalClanCard({ clan }: { clan: HistoricalClanSummary }) {
           </h3>
         </div>
         {clan.description && (
-          <p className="text-muted-foreground text-sm line-clamp-2 mt-1.5">
+          <p className="text-muted-foreground text-sm line-clamp-1 sm:line-clamp-2 mt-1.5">
             {clan.description}
           </p>
         )}
