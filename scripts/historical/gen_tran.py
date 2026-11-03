@@ -520,6 +520,80 @@ import os as _os
 _spec = _iu.spec_from_file_location("bio_lib", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "bio_lib.py"))
 bio_lib = _iu.module_from_spec(_spec)
 _spec.loader.exec_module(bio_lib)
+# ── Hoàng tử, công chúa (chỉ người Toàn thư ghi rõ là con của vua / thượng hoàng); mẹ không rõ → hôn nhân "khuyết" của cha ──
+Y = lambda y, can: f"năm {can} ({y})"
+U("u.minh-tong--khuyet", "tran.minh-tong")
+U("u.thanh-tong--khuyet", "tran.thanh-tong") if not any(u["key"] == "u.thanh-tong--khuyet" for u in unions) else None
+
+
+def _prince(key, name, gender, parents, bio, cites, **kw):
+    import re as _re
+    # quote theo bản đã làm sạch (bỏ {{annotate|…}}, thẻ <sub>, -{…}-) như verify_quotes.py
+    _cl = lambda q: _re.sub(r"<[^>]+>", "", _re.sub(r"\{\{annotate\|([^}]*)\}\}", r"\1", _re.sub(r"-\{|\}-", "", q)))
+    cites = [c(f, v, w, _cl(q), *rest) for (f, v, w, q, *rest) in cites]
+    persons.append(dict(key=key, full_name=name, gender=gender, parents=parents, bio=bio, citations=cites, review=DRAFT, **kw))
+
+
+_prince("tran.thai-tong.thuy-ba", "Thụy Bà công chúa", "F", "u.thua--khuyet",
+        "Chị của Trần Thái Tông, cô của Trần Quốc Tuấn; nuôi Quốc Tuấn làm con. Năm 1251, Quốc Tuấn cướp Thiên Thành công chúa, bà theo đến gõ cửa điện tâu gấp với vua.",
+        [("existence", 5, Y(1251, "Tân Hợi"), "瑞婆公主{{annotate|太宗姊、國峻姑，養國峻為子}}隨叩殿門告急"),
+         ("parents", 5, Y(1251, "Tân Hợi"), "瑞婆公主{{annotate|太宗姊、國峻姑，養國峻為子}}隨叩殿門告急"),
+         ("title:0", 5, Y(1251, "Tân Hợi"), "瑞婆公主{{annotate|太宗姊、國峻姑，養國峻為子}}隨叩殿門告急"),
+         ("bio", 5, Y(1251, "Tân Hợi"), "瑞婆公主{{annotate|太宗姊、國峻姑，養國峻為子}}隨叩殿門告急")],
+        titles=[{"title": "Thụy Bà công chúa"}])
+_prince("tran.thanh-tong.duc-diep", "Trần Đức Diệp", "M", "u.thanh-tong--khuyet",
+        "Hoàng tử con của Trần Thánh Tông, sinh năm 1265; Toàn thư chỉ chép việc sinh, không ghi mẹ.",
+        [("existence", 5, Y(1265, "Ất Sửu"), "皇子德曄生"), ("parents", 5, Y(1265, "Ất Sửu"), "皇子德曄生"),
+         ("birth", 5, Y(1265, "Ất Sửu"), "皇子德曄生", "âm 1265"), ("bio", 5, Y(1265, "Ất Sửu"), "皇子德曄生")],
+        birth={"lunar_year": 1265})
+_prince("tran.thai-tong.thieu-duong", "Thiều Dương công chúa", "F", "u.thai-tong--khuyet",
+        "Con gái thứ hai của Trần Thái Tông, tên Thúy; đã lấy Văn Hưng hầu. Năm 1277, đang ở cữ, nghe tiếng chuông báo tin Thượng hoàng mất thì khóc than rồi chết theo.",
+        [("existence", 5, Y(1277, "Đinh Sửu"), "韶陽公主{{annotate|上皇次女名翠也}}方坐蓐"), ("parents", 5, Y(1277, "Đinh Sửu"), "韶陽公主{{annotate|上皇次女名翠也}}方坐蓐"),
+         ("title:0", 5, Y(1277, "Đinh Sửu"), "韶陽公主{{annotate|上皇次女名翠也}}方坐蓐"),
+         ("nickname", 5, Y(1277, "Đinh Sửu"), "韶陽公主{{annotate|上皇次女名翠也}}方坐蓐", "Thúy"),
+         ("death", 5, Y(1277, "Đinh Sửu"), "慟哭長號，瞑目而逝", "âm 1277"),
+         ("bio", 5, Y(1277, "Đinh Sửu"), "公主時已嫁上位文興侯{{annotate|缺名}}")],
+        titles=[{"title": "Thiều Dương công chúa"}], nickname="Thúy", death={"lunar_year": 1277})
+_prince("tran.thai-tong.thuy-bao", "Thụy Bảo công chúa", "F", "u.thai-tong--khuyet",
+        "Con gái của Trần Thái Tông, cô của Trần Nhân Tông; học giỏi, làm thơ. Lấy Uy Văn vương Trần Toại, sau lấy Bảo Nghĩa vương Trần Bình Trọng.",
+        [("existence", 5, Y(1277, "Đinh Sửu"), "時威文王遂尚上皇女瑞寶公主，好學能詩"), ("parents", 5, Y(1277, "Đinh Sửu"), "時威文王遂尚上皇女瑞寶公主，好學能詩"),
+         ("title:0", 5, Y(1277, "Đinh Sửu"), "時威文王遂尚上皇女瑞寶公主，好學能詩"),
+         ("bio", 5, Y(1277, "Đinh Sửu"), "時威文王遂尚上皇女瑞寶公主，好學能詩")],
+        titles=[{"title": "Thụy Bảo công chúa"}])
+_prince("tran.minh-tong.nguyen-trac", "Trần Nguyên Trác (Cung Tĩnh đại vương)", "M", "u.minh-tong--khuyet",
+        "Con thứ hai của Trần Minh Tông; năm 1328 được phong Cung Tĩnh đại vương khi em là Vượng (Hiến Tông) được lập làm thái tử. Về sau giữ chức thái tể.",
+        [("existence", 6, Y(1328, "Mậu Thìn"), "立皇子旺為東宫太子，封次子元晫為恭靖大王"), ("parents", 6, Y(1328, "Mậu Thìn"), "立皇子旺為東宫太子，封次子元晫為恭靖大王"),
+         ("title:0", 6, Y(1328, "Mậu Thìn"), "立皇子旺為東宫太子，封次子元晫為恭靖大王"), ("bio", 6, Y(1328, "Mậu Thìn"), "立皇子旺為東宫太子，封次子元晫為恭靖大王")],
+        titles=[{"title": "Cung Tĩnh đại vương"}])
+_prince("tran.minh-tong.cung-tuc", "Trần Dục (Cung Túc vương)", "M", "u.minh-tong--khuyet",
+        "Con trưởng của Trần Minh Tông; năm 1341 Thượng hoàng đón em là Hạo (Dụ Tông) lên ngôi, không lập ông vì tính sơ cuồng.",
+        [("existence", 7, Y(1341, "Tân Tỵ"), "不立長子恭肃王昱者，踈狂也"), ("parents", 7, Y(1341, "Tân Tỵ"), "不立長子恭肃王昱者，踈狂也"),
+         ("title:0", 7, Y(1341, "Tân Tỵ"), "不立長子恭肃王昱者，踈狂也"), ("bio", 7, Y(1341, "Tân Tỵ"), "不立長子恭肃王昱者，踈狂也")],
+        titles=[{"title": "Cung Túc vương"}])
+_prince("tran.minh-tong.thien-ninh", "Trần Ngọc Sa (Thiên Ninh công chúa)", "F", "u.minh-tong--khuyet",
+        "Con gái của Trần Minh Tông; năm 1342 được phong Thiên Ninh công chúa, gả cho Chính Túc vương Kham. Sau đổi tên Quốc Hinh, được phong Lượng Quốc thái trưởng công chúa.",
+        [("existence", 7, Y(1342, "Nhâm Ngọ"), "封上皇女玉瑳<sub>一作白瑳</sub>為天寕公主，嫁正-{肃}-王堪"), ("parents", 7, Y(1342, "Nhâm Ngọ"), "封上皇女玉瑳<sub>一作白瑳</sub>為天寕公主，嫁正-{肃}-王堪"),
+         ("nickname", 7, Y(1342, "Nhâm Ngọ"), "封上皇女玉瑳<sub>一作白瑳</sub>為天寕公主，嫁正-{肃}-王堪", "Ngọc Sa"),
+         ("title:0", 7, Y(1342, "Nhâm Ngọ"), "封上皇女玉瑳<sub>一作白瑳</sub>為天寕公主，嫁正-{肃}-王堪"), ("bio", 7, Y(1342, "Nhâm Ngọ"), "封上皇女玉瑳<sub>一作白瑳</sub>為天寕公主，嫁正-{肃}-王堪")],
+        titles=[{"title": "Thiên Ninh công chúa"}], nickname="Ngọc Sa")
+_prince("tran.nghe-tong.thuc-ngac", "Trần Thúc Ngạc (Trang Định vương)", "M", "u.nghe-tong--khuyet",
+        "Con của Trần Nghệ Tông. Năm 1375 được phong tư đồ, giữ trấn Thái Nguyên; thời Hồ Quý Ly lộng quyền, làm thái úy, có thơ khuyên can nhưng việc không thành.",
+        [("existence", 7, Y(1375, "Ất Mão"), "以上皇子叔𩖃為司徒，知太原鎮"), ("parents", 7, Y(1375, "Ất Mão"), "以上皇子叔𩖃為司徒，知太原鎮"),
+         ("parents", 8, Y(1388, "Mậu Thìn"), "莊定王𩖃為太尉，且藝皇之子"), ("title:0", 8, Y(1388, "Mậu Thìn"), "莊定王𩖃為太尉，且藝皇之子"),
+         ("bio", 7, Y(1375, "Ất Mão"), "以上皇子叔𩖃為司徒，知太原鎮")],
+        titles=[{"title": "Trang Định vương"}])
+_prince("tran.nghe-tong.quan-phuc", "Trần Húc (Quan Phục đại vương)", "M", "u.nghe-tong--khuyet",
+        "Con của Trần Nghệ Tông. Năm 1376 được gả Tuyên Huy công chúa; Thượng hoàng thân đi đón dâu.",
+        [("existence", 7, Y(1376, "Bính Thìn"), "以宣徽公主嫁冠服大王頊<sub>上皇子</sub>"), ("parents", 7, Y(1376, "Bính Thìn"), "以宣徽公主嫁冠服大王頊<sub>上皇子</sub>"),
+         ("title:0", 7, Y(1376, "Bính Thìn"), "以宣徽公主嫁冠服大王頊<sub>上皇子</sub>"), ("bio", 7, Y(1376, "Bính Thìn"), "以宣徽公主嫁冠服大王頊<sub>上皇子</sub>")],
+        titles=[{"title": "Quan Phục đại vương"}])
+_prince("tran.nghe-tong.thien-huy", "Thiên Huy công chúa (Thực Mỹ)", "F", "u.nghe-tong--khuyet",
+        "Con gái của Trần Nghệ Tông; năm 1377 được lập làm hoàng hậu, hiệu Quang Thánh.",
+        [("existence", 7, Y(1377, "Đinh Tỵ"), "冊上皇女天徽公主實羙為皇-{后}-，號光鵉"), ("parents", 7, Y(1377, "Đinh Tỵ"), "冊上皇女天徽公主實羙為皇-{后}-，號光鵉"),
+         ("nickname", 7, Y(1377, "Đinh Tỵ"), "冊上皇女天徽公主實羙為皇-{后}-，號光鵉", "Thực Mỹ"),
+         ("title:0", 7, Y(1377, "Đinh Tỵ"), "冊上皇女天徽公主實羙為皇-{后}-，號光鵉"), ("bio", 7, Y(1377, "Đinh Tỵ"), "冊上皇女天徽公主實羙為皇-{后}-，號光鵉")],
+        titles=[{"title": "Thiên Huy công chúa"}], nickname="Thực Mỹ")
+
 # ── Sự kiện theo năm và nhận xét của sử thần (Toàn thư, đoạn tiểu dẫn đầu kỷ mỗi vua) ──
 EV = {
     "tran.thai-tong": [(1257, "Quân Mông Cổ vào đánh; vua cùng thái tử ngự thuyền lầu tiến quân đến Đông Bộ Đầu, đánh tan quân địch.",
