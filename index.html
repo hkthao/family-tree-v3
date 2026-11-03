@@ -50,17 +50,12 @@
             ((v === "system" || !v) &&
               window.matchMedia("(prefers-color-scheme: dark)").matches);
           if (dark) document.documentElement.classList.add("dark");
-          // Palette Material (mặc định "blue"; "oxblood" = không thuộc tính).
-          var pal = localStorage.getItem("family-tree:palette") || "blue";
-          if (pal !== "oxblood")
-            document.documentElement.setAttribute("data-palette", pal);
-          var PL = {blue:"#0B57D0",purple:"#6750A4",teal:"#006A6A",green:"#1B6D2F",orange:"#9A4600",rose:"#9C3A5E",oxblood:"#7A2230"};
           document.documentElement.style.colorScheme = dark
             ? "dark"
             : "light";
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) {
-            meta.setAttribute("content", dark ? "#1A1612" : (PL[pal] || "#7A2230"));
+            meta.setAttribute("content", dark ? "#1A1612" : "#7A2230");
           }
         } catch (e) {
           /* private mode — leave default light */
