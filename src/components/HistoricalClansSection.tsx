@@ -13,16 +13,27 @@ import {
 } from "@/lib/queries/historical";
 import { unaccent } from "@/lib/unaccent";
 
-type SortKey =
+export type HistoricalSort =
   "era_asc" | "era_desc" | "name" | "name_desc" | "people_desc" | "people_asc";
+export function readHistoricalSort(): HistoricalSort {
+  try {
+    const v = localStorage.getItem(HISTORICAL_SORT_KEY);
+    return HISTORICAL_SORTS.some((o) => o.value === v)
+      ? (v as HistoricalSort)
+      : "era_asc";
+  } catch {
+    return "era_asc";
+  }
+}
+
 /** Năm bắt đầu lấy từ tên dạng "Nhà Lý (1009–1225)"; không có thì xếp cuối. */
 function startYear(name: string): number {
   const m = /\((\d{3,4})\s*[–-]/.exec(name);
   return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
 }
 
-const SORT_KEY = "family-tree:historical-sort";
-const SORTS: { value: SortKey; label: string }[] = [
+export const HISTORICAL_SORT_KEY = "family-tree:historical-sort";
+export const HISTORICAL_SORTS: { value: HistoricalSort; label: string }[] = [
   { value: "era_asc", label: "Thời kỳ: cũ → mới" },
   { value: "era_desc", label: "Thời kỳ: mới → cũ" },
   { value: "name", label: "Tên A → Z" },
@@ -40,9 +51,11 @@ const SORTS: { value: SortKey; label: string }[] = [
 export function HistoricalClansSection({
   view,
   search,
+  sort,
 }: {
   view: "list" | "grid";
   search: string;
+  sort: HistoricalSort;
 }) {
   const { data, isLoading } = useQuery({
     queryKey: ["historical-clans"],
@@ -50,14 +63,6 @@ export function HistoricalClansSection({
     staleTime: 10 * 60 * 1000,
   });
   const [category, setCategory] = useState<HistoricalCategory | null>(null);
-  const [sort, setSort] = useState<SortKey>(() => {
-    try {
-      const v = localStorage.getItem(SORT_KEY);
-      return SORTS.some((o) => o.value === v) ? (v as SortKey) : "era_asc";
-    } catch {
-      return "era_asc";
-    }
-  });
   if (isLoading) return <LoadingState />;
   if (!data) return null;
 
@@ -88,58 +93,33 @@ export function HistoricalClansSection({
                 ? b.name.localeCompare(a.name, "vi")
                 : a.name.localeCompare(b.name, "vi"),
     );
-  const changeSort = (v: SortKey) => {
-    setSort(v);
-    try {
-      localStorage.setItem(SORT_KEY, v);
-    } catch {
-      /* bỏ qua */
-    }
-  };
 
   return (
     <section aria-label="Lịch sử" className="space-y-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        {present.length > 1 ? (
-          <div
-            className="flex flex-wrap gap-1.5"
-            role="group"
-            aria-label="Lọc theo nhóm"
-          >
-            {[null, ...present].map((c) => (
-              <button
-                key={c ?? "all"}
-                type="button"
-                onClick={() => setCategory(c)}
-                aria-pressed={category === c}
-                className={
-                  category === c
-                    ? "rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
-                    : "rounded-full border bg-card px-3 py-1 text-sm hover:border-primary"
-                }
-              >
-                {c ? HISTORICAL_CATEGORY_LABEL[c] : "Tất cả"}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <span />
-        )}
-        <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          Sắp xếp
-          <select
-            value={sort}
-            onChange={(e) => changeSort(e.target.value as SortKey)}
-            className="rounded-md border bg-card px-2 py-1 text-sm text-foreground"
-          >
-            {SORTS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      {present.length > 1 ? (
+        <div
+          className="flex flex-wrap gap-1.5"
+          role="group"
+          aria-label="Lọc theo nhóm"
+        >
+          {[null, ...present].map((c) => (
+            <button
+              key={c ?? "all"}
+              type="button"
+              onClick={() => setCategory(c)}
+              aria-pressed={category === c}
+              className={
+                category === c
+                  ? "rounded-full border border-primary bg-primary px-3 py-1 text-sm text-primary-foreground"
+                  : "rounded-full border bg-card px-3 py-1 text-sm hover:border-primary"
+              }
+            >
+              {c ? HISTORICAL_CATEGORY_LABEL[c] : "Tất cả"}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {rows.length === 0 ? (
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}

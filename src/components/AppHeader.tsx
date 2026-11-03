@@ -56,7 +56,7 @@ export function AppHeader() {
               the page header creates a visible duplicate. */}
           <Link
             to="/clans"
-            className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2 lg:hidden"
+            className="clan-name shrink-0 whitespace-nowrap text-xl sm:text-2xl font-semibold text-primary inline-flex items-center gap-1.5 sm:gap-2 lg:hidden"
           >
             <AppLogo size={28} className="rounded" />
             Dòng Họ Việt
