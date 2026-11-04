@@ -39,6 +39,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+import { isFeatureEnabled } from "@/lib/clanFeatures";
 import { canEditClan, effectiveRole, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { getClanContentCounts, getClanStats } from "@/lib/queries/clan-stats";
 import { getClansInlawLinks } from "@/lib/queries/clans";
@@ -181,6 +182,17 @@ export default function Dashboard() {
           <div className="flex items-center gap-1">
             {/* Lối tắt tới Cài đặt dòng họ — chỉ quản trị mới thấy (trang đó chỉ
                 quản trị vào được), khỏi phải mở menu trái. */}
+            {isClanAdmin(clan) && isFeatureEnabled(clan.disabled_features, "inlaws") && (
+              <Link
+                to={`/clans/${clan.id}/inlaws`}
+                aria-label="Liên kết dòng họ"
+                title="Liên kết dòng họ"
+                data-testid="dashboard-inlaws-link"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                <IconLink className="h-4 w-4" />
+              </Link>
+            )}
             {isClanAdmin(clan) && (
               <Link
                 to={`/clans/${clan.id}/settings`}
@@ -441,11 +453,13 @@ export default function Dashboard() {
                     title="Việc làm"
                     badge={todoCount}
                   />
-                  <ActionTile
-                    to={`/clans/${clan.id}/inlaws`}
-                    icon={<IconLink />}
-                    title="Liên kết họ"
-                  />
+                  {isFeatureEnabled(clan.disabled_features, "inlaws") && (
+                    <ActionTile
+                      to={`/clans/${clan.id}/inlaws`}
+                      icon={<IconLink />}
+                      title="Liên kết họ"
+                    />
+                  )}
                 </>
               )}
               {canEdit && (
