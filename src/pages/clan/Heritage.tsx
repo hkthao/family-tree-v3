@@ -221,7 +221,7 @@ export default function Heritage() {
           }
           primary={
             canEdit && !debounced && !category
-              ? { label: "Thêm", to: `/clans/${clan.id}/heritage/new`, icon: <IconPlus className="h-4 w-4 mr-1.5" /> }
+              ? { label: "Thêm", to: `/clans/${clan.id}/heritage/new`, panel: { id: "heritage-new" as const }, icon: <IconPlus className="h-4 w-4 mr-1.5" /> }
               : undefined
           }
         />

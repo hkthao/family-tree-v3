@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
 
+import { PanelLink } from "@/components/panel/PanelLink";
+import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 import { Button } from "@/components/ui/button";
 
 interface ActionRouted {
   label: string;
   to: string;
   icon?: React.ReactNode;
+  /** Có thì bấm thường mở ngăn kéo (`to` vẫn là link dự phòng / mở tab mới). */
+  panel?: { id: PanelId; params?: PanelParams };
 }
 
 interface ActionClick {
@@ -84,7 +88,13 @@ function renderAction(a: Action, variant: "default" | "outline") {
   if ("to" in a) {
     return (
       <Button asChild variant={variant}>
-        <Link to={a.to}>{content}</Link>
+        {a.panel ? (
+          <PanelLink to={a.to} panel={a.panel.id} panelParams={a.panel.params}>
+            {content}
+          </PanelLink>
+        ) : (
+          <Link to={a.to}>{content}</Link>
+        )}
       </Button>
     );
   }

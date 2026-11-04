@@ -178,7 +178,7 @@ export default function RestingPlaces() {
           }
           primary={
             canEdit && !debounced && !kind
-              ? { label: "Thêm", to: `/clans/${clan.id}/graves/new`, icon: <IconPlus className="h-4 w-4 mr-1.5" /> }
+              ? { label: "Thêm", to: `/clans/${clan.id}/graves/new`, panel: { id: "grave-new" as const }, icon: <IconPlus className="h-4 w-4 mr-1.5" /> }
               : undefined
           }
         />

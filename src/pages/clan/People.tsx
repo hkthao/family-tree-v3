@@ -594,6 +594,7 @@ search={(toggle) => (
                 ? {
                     label: "Thêm người",
                     to: `/clans/${clan.id}/people/new`,
+                    panel: { id: "person-new" as const },
                     icon: <IconPlus className="h-4 w-4 mr-1.5" />,
                   }
                 : null

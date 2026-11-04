@@ -228,6 +228,7 @@ export default function Inlaws() {
           primary={{
             label: "Đề nghị mới",
             to: `/clans/${clan.id}/inlaws/new`,
+            panel: { id: "inlaw-new" },
             icon: <IconPlus className="h-4 w-4 mr-1.5" />,
           }}
         />

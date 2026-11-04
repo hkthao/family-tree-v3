@@ -390,6 +390,7 @@ export default function Clans() {
               primary={{
                 label: "Tạo dòng họ",
                 to: "/clans/new",
+                panel: { id: "clan-new" },
                 icon: <IconPlus className="h-4 w-4 mr-1.5" />,
               }}
               secondary={{
