@@ -25,7 +25,7 @@ export function CollapsibleCard({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <Card>
+    <Card collapsible={false}>
       <CardHeader className={open ? "" : "pb-6"}>
         <button
           type="button"
