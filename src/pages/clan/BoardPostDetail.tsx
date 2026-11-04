@@ -6,6 +6,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { usePanel } from "@/components/panel/usePanel";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
 import {
@@ -230,6 +231,7 @@ function PostActionsMenu({
   onAfter: (action: ClanPostModerateAction) => void;
 }) {
   const navigate = useNavigate();
+  const { open: openPanel } = usePanel();
   const qc = useQueryClient();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -281,7 +283,7 @@ function PostActionsMenu({
       icon: <IconPencil className="h-4 w-4" />,
       onClick: () => {
         setOpen(false);
-        navigate(`/clans/${clanId}/board/${postId}/edit`);
+        openPanel("board-edit", { pid: postId });
       },
     });
   }

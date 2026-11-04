@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
+import { usePanel } from "@/components/panel/usePanel";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
@@ -83,6 +84,7 @@ const MISSING_LABEL: Record<string, string> = {
  */
 export default function Todo() {
   const navigate = useNavigate();
+  const { open: openPanel } = usePanel();
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -255,10 +257,12 @@ export default function Todo() {
       setQuickParentFix(item);
       return;
     }
-    const path = canEdit
-      ? `/clans/${clan.id}/people/${item.person_id}/edit`
-      : `/clans/${clan.id}/people/${item.person_id}`;
-    navigate(path);
+    if (canEdit) {
+      // Sửa ngay trong ngăn kéo bên phải, danh sách việc phía sau giữ nguyên.
+      openPanel("person-edit", { pid: item.person_id });
+      return;
+    }
+    navigate(`/clans/${clan.id}/people/${item.person_id}`);
   }
 
   const totalLoadBearing =

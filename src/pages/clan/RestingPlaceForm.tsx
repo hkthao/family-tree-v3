@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import type { EmbeddedForm } from "@/components/panel/embedded";
 import {
   IconBuildings,
   IconCalendar,
@@ -56,9 +57,10 @@ interface StagedOccupant {
   occupantId: string | null; // set if already saved (edit mode)
 }
 
-export default function RestingPlaceForm() {
+export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm } = {}) {
   const { clan } = useClanContext();
-  const { graveId } = useParams<{ graveId?: string }>();
+  const routeParams = useParams<{ graveId?: string }>();
+  const graveId = embedded ? embedded.id : routeParams.graveId;
   const isEdit = !!graveId;
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -171,7 +173,8 @@ export default function RestingPlaceForm() {
       qc.invalidateQueries({ queryKey: ["resting-places", clan.id] });
       qc.invalidateQueries({ queryKey: ["resting-place", id] });
       toast.success(isEdit ? "Đã lưu" : "Đã thêm");
-      navigate(`/clans/${clan.id}/graves/${id}`);
+      if (embedded) embedded.onDone(id);
+      else navigate(`/clans/${clan.id}/graves/${id}`);
     },
     onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
   });
@@ -196,6 +199,7 @@ export default function RestingPlaceForm() {
 
   return (
     <div className="space-y-3">
+      {!embedded && (
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
@@ -203,10 +207,13 @@ export default function RestingPlaceForm() {
           { label: isEdit ? "Sửa" : "Thêm" },
         ]}
       />
+      )}
+      {!embedded && (
       <PageHeader
         icon={<IconGrave className="h-7 w-7" />}
         title={isEdit ? "Sửa nơi an nghỉ" : "Thêm nơi an nghỉ"}
       />
+      )}
 
       <form
         onSubmit={(e) => {
@@ -383,7 +390,7 @@ export default function RestingPlaceForm() {
         {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
 
         <FormActions>
-          <Button type="button" variant="outline" onClick={() => navigate(back)}>
+          <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(back))}>
             <IconX className="h-4 w-4 mr-1.5" /> Hủy
           </Button>
           <Button type="submit" variant="outline" disabled={save.isPending}>

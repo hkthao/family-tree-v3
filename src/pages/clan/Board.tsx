@@ -78,7 +78,7 @@ export default function Board() {
               </Link>
             )}
             {isMember && user && (
-              <Fab to={`/clans/${clanId}/board/new`} label="Đăng bài mới" />
+              <Fab to={`/clans/${clanId}/board/new`} panel={{ id: "board-new" }} label="Đăng bài mới" />
             )}
           </>
         }

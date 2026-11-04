@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import { displayGen } from "@/lib/displayGeneration";
+import { PanelLink } from "@/components/panel/PanelLink";
 import { Fab } from "@/components/Fab";
 import { RecordDates } from "@/components/RecordDates";
 import {
@@ -881,14 +882,16 @@ function PersonListItem({
         </div>
       </Link>
       {canCopy && (
-        <Link
+        <PanelLink
           to={`/clans/${clanId}/people/new?from=${person.id}`}
+          panel="person-new"
+          panelParams={{ pfrom: person.id }}
           aria-label={`Sao chép ${person.full_name}`}
           title="Sao chép thành người mới"
           className="absolute top-2 right-2 z-10 inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
         >
           <IconCopy className="h-4 w-4" />
-        </Link>
+        </PanelLink>
       )}
       {showKhoe && (
         <KhoeButton
@@ -952,14 +955,16 @@ function PersonGridCard({
         </label>
       )}
       {canCopy && (
-        <Link
+        <PanelLink
           to={`/clans/${clanId}/people/new?from=${person.id}`}
+          panel="person-new"
+          panelParams={{ pfrom: person.id }}
           aria-label={`Sao chép ${person.full_name}`}
           title="Sao chép thành người mới"
           className="absolute top-2 right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/80 text-muted-foreground hover:text-primary backdrop-blur"
         >
           <IconCopy className="h-4 w-4" />
-        </Link>
+        </PanelLink>
       )}
       <Link
         to={`/clans/${clanId}/people/${person.id}`}

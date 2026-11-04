@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
+import { GlobalPanelHost } from "@/components/panel/GlobalPanelHost";
 import { Fab } from "@/components/Fab";
 import { AppHeader } from "@/components/AppHeader";
 import {
@@ -221,7 +222,8 @@ export default function Clans() {
               : "Dòng họ bạn tham gia hoặc theo dõi."
           }
         />
-        <Fab to="/clans/new" label="Tạo dòng họ" testId="create-clan-link" />
+        <Fab to="/clans/new" panel={{ id: "clan-new" }} label="Tạo dòng họ" testId="create-clan-link" />
+        <GlobalPanelHost />
 
         {/* Tab chiếm trọn một hàng (chia đều trên mobile); nút tạo dòng họ nằm ở tiêu đề trang. */}
         <div className="flex items-center gap-2">

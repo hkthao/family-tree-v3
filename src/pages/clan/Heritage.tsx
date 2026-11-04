@@ -131,7 +131,7 @@ export default function Heritage() {
         <div className="flex shrink-0 items-center gap-2">
           {isMember && <MemoryRoomCtaButton clanId={clan.id} className="h-9" />}
           {tab === "clan" && canEdit && (
-            <Fab to={`/clans/${clan.id}/heritage/new`} label="Thêm di sản" />
+            <Fab to={`/clans/${clan.id}/heritage/new`} panel={{ id: "heritage-new" }} label="Thêm di sản" />
           )}
         </div>
       </div>

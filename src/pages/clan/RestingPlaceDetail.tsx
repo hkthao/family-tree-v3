@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { PanelLink } from "@/components/panel/PanelLink";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -215,9 +216,13 @@ export default function RestingPlaceDetail() {
                 </Button>
               )}
               <Button size="sm" variant="outline" asChild>
-                <Link to={`/clans/${clan.id}/graves/${place.id}/edit`}>
+                <PanelLink
+                  to={`/clans/${clan.id}/graves/${place.id}/edit`}
+                  panel="grave-edit"
+                  panelParams={{ pid: place.id }}
+                >
                   <IconPencil className="h-4 w-4 mr-1" /> Sửa
-                </Link>
+                </PanelLink>
               </Button>
               <Button
                 size="sm"

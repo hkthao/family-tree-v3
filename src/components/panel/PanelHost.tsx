@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
+import { isClanAdmin } from "@/hooks/useClanContext";
+import { getClanPost } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson } from "@/lib/queries/persons";
 
@@ -21,6 +23,12 @@ const NewPersonForm = lazy(() =>
 );
 const EditPersonForm = lazy(() =>
   import("@/pages/clan/EditPerson").then((m) => ({ default: m.EditPersonForm })),
+);
+
+const RestingPlaceForm = lazy(() => import("@/pages/clan/RestingPlaceForm"));
+const HeritageForm = lazy(() => import("@/pages/clan/HeritageForm"));
+const BoardPostForm = lazy(() =>
+  import("@/components/BoardPostForm").then((m) => ({ default: m.BoardPostForm })),
 );
 
 const Loading = () => <p className="py-6 text-sm text-muted-foreground">Đang tải…</p>;
@@ -86,6 +94,48 @@ export function PanelHost({ clan }: { clan: ClanDetail }) {
     );
   }
 
+  if (current === "grave-new" || (current === "grave-edit" && pid)) {
+    const isEdit = current === "grave-edit";
+    return (
+      <SidePanel open title={isEdit ? "Sửa nơi an nghỉ" : "Thêm nơi an nghỉ"} onClose={close} size="lg">
+        <Suspense fallback={<Loading />}>
+          <RestingPlaceForm embedded={{ id: isEdit ? pid : undefined, onDone: close, onCancel: close }} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
+  if (current === "heritage-new" || (current === "heritage-edit" && pid)) {
+    const isEdit = current === "heritage-edit";
+    return (
+      <SidePanel open title={isEdit ? "Sửa mục di sản" : "Thêm mục di sản"} onClose={close} size="lg">
+        <Suspense fallback={<Loading />}>
+          <HeritageForm embedded={{ id: isEdit ? pid : undefined, onDone: close, onCancel: close }} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
+  if (current === "board-new") {
+    return (
+      <SidePanel open title="Đăng bài mới" onClose={close} size="lg">
+        <Suspense fallback={<Loading />}>
+          <BoardPostForm clan={clan} onDone={close} onCancel={close} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
+  if (current === "board-edit" && pid) {
+    return (
+      <SidePanel open title="Sửa bài" onClose={close} size="lg">
+        <Suspense fallback={<Loading />}>
+          <BoardPostEditBody clan={clan} postId={pid} onClose={close} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
   if (current === "chat" && !isDesktop && chatOk) {
     return (
       <SidePanel open title="Trợ lý dòng họ" subtitle={clan.name} onClose={close} bare guard={false}>
@@ -107,4 +157,27 @@ export function PanelHost({ clan }: { clan: ClanDetail }) {
   }
 
   return null;
+}
+
+/** Tải bài rồi dựng form sửa; chỉ tác giả hoặc quản trị dòng họ được sửa (RLS vẫn chặn phía server). */
+function BoardPostEditBody({
+  clan,
+  postId,
+  onClose,
+}: {
+  clan: ClanDetail;
+  postId: string;
+  onClose: () => void;
+}) {
+  const { user } = useAuth();
+  const { data: post, isLoading } = useQuery({
+    queryKey: queryKeys.clanPost(postId),
+    queryFn: () => getClanPost(postId),
+  });
+  if (isLoading) return <Loading />;
+  if (!post) return <p className="py-6 text-sm text-muted-foreground">Không tìm thấy bài viết.</p>;
+  if (post.author_id !== user?.id && !isClanAdmin(clan)) {
+    return <p className="py-6 text-sm text-muted-foreground">Bạn không có quyền sửa bài này.</p>;
+  }
+  return <BoardPostForm clan={clan} post={post} onDone={onClose} onCancel={onClose} />;
 }

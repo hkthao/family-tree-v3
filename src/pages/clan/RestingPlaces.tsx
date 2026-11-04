@@ -104,7 +104,7 @@ export default function RestingPlaces() {
               </Link>
             </Button>
             {canEdit && (
-              <Fab to={`/clans/${clan.id}/graves/new`} label="Thêm mộ phần" />
+              <Fab to={`/clans/${clan.id}/graves/new`} panel={{ id: "grave-new" }} label="Thêm mộ phần" />
             )}
           </div>
         }

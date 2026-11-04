@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import type { EmbeddedForm } from "@/components/panel/embedded";
 import {
   IconBook,
   IconCalendar,
@@ -52,9 +53,10 @@ interface StagedPerson {
   linkId: string | null; // set if already saved (edit mode)
 }
 
-export default function HeritageForm() {
+export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } = {}) {
   const { clan } = useClanContext();
-  const { itemId } = useParams<{ itemId?: string }>();
+  const routeParams = useParams<{ itemId?: string }>();
+  const itemId = embedded ? embedded.id : routeParams.itemId;
   const isEdit = !!itemId;
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -155,7 +157,8 @@ export default function HeritageForm() {
       toast.success(isEdit ? "Đã lưu" : "Đã thêm", {
         description: isEdit ? undefined : "Giờ bạn có thể thêm ảnh và ghi âm kể chuyện.",
       });
-      navigate(`/clans/${clan.id}/heritage/${id}`);
+      if (embedded) embedded.onDone(id);
+      else navigate(`/clans/${clan.id}/heritage/${id}`);
     },
     onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
   });
@@ -181,6 +184,7 @@ export default function HeritageForm() {
 
   return (
     <div className="space-y-3">
+      {!embedded && (
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
@@ -188,10 +192,13 @@ export default function HeritageForm() {
           { label: isEdit ? "Sửa" : "Thêm" },
         ]}
       />
+      )}
+      {!embedded && (
       <PageHeader
         icon={<IconScroll className="h-7 w-7" />}
         title={isEdit ? "Sửa mục di sản" : "Thêm mục di sản"}
       />
+      )}
 
       <form
         onSubmit={(e) => {
@@ -459,7 +466,7 @@ export default function HeritageForm() {
         {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
 
         <FormActions>
-          <Button type="button" variant="outline" onClick={() => navigate(back)}>
+          <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(back))}>
             <IconX className="h-4 w-4 mr-1.5" /> Hủy
           </Button>
           <Button type="submit" disabled={save.isPending}>

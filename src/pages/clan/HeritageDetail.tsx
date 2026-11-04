@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { PanelLink } from "@/components/panel/PanelLink";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -308,9 +309,13 @@ export default function HeritageDetail() {
             {canEdit && (
               <>
                 <Button size="sm" variant="outline" asChild>
-                  <Link to={`/clans/${clan.id}/heritage/${item.id}/edit`}>
+                  <PanelLink
+                    to={`/clans/${clan.id}/heritage/${item.id}/edit`}
+                    panel="heritage-edit"
+                    panelParams={{ pid: item.id }}
+                  >
                     <IconPencil className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Sửa</span>
-                  </Link>
+                  </PanelLink>
                 </Button>
                 <Button
                   size="sm"
