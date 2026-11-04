@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import { displayGen } from "@/lib/displayGeneration";
+import { Fab } from "@/components/Fab";
 import { RecordDates } from "@/components/RecordDates";
 import {
   deletePersonsBulk,
@@ -321,16 +322,7 @@ export default function People() {
       {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
       {canEdit && (
         <>
-          <Button asChild size="sm" className="h-10 px-2.5 sm:px-3">
-            <Link
-              to={`/clans/${clan.id}/people/new`}
-              aria-label="Thêm người"
-              data-testid="add-person-link"
-            >
-              <IconPlus className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Thêm người</span>
-            </Link>
-          </Button>
+          <Fab to={`/clans/${clan.id}/people/new`} label="Thêm người" testId="add-person-link" />
           <Button asChild variant="outline" size="sm" className="h-10 px-2.5">
             <Link
               to={`/clans/${clan.id}/import`}

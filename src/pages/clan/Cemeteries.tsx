@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -67,9 +68,7 @@ export default function Cemeteries() {
         actionsBelow
         actions={
           canEdit && editing === null ? (
-            <Button size="sm" onClick={() => setEditing("new")}>
-              <IconPlus className="h-4 w-4 mr-1" /> Thêm cơ sở
-            </Button>
+            <Fab onClick={() => setEditing("new")} label="Thêm cơ sở" />
           ) : undefined
         }
       />

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -103,10 +104,7 @@ export default function RestingPlaces() {
               </Link>
             </Button>
             {canEdit && (
-              <Button size="sm" onClick={() => navigate(`/clans/${clan.id}/graves/new`)}>
-                <IconPlus className="h-4 w-4 mr-1" />
-                Thêm
-              </Button>
+              <Fab to={`/clans/${clan.id}/graves/new`} label="Thêm mộ phần" />
             )}
           </div>
         }

@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
+import { Fab } from "@/components/Fab";
 import { AppHeader } from "@/components/AppHeader";
 import {
   IconBuildings,
@@ -219,15 +220,8 @@ export default function Clans() {
               ? "Mọi dòng họ trên nền tảng."
               : "Dòng họ bạn tham gia hoặc theo dõi."
           }
-          actions={
-            <Button asChild size="sm" className="h-9 shrink-0">
-            <Link to="/clans/new" data-testid="create-clan-link">
-              <IconPlus className="h-4 w-4 sm:mr-1.5" />
-              <span className="sr-only sm:not-sr-only">Tạo dòng họ</span>
-            </Link>
-          </Button>
-          }
         />
+        <Fab to="/clans/new" label="Tạo dòng họ" testId="create-clan-link" />
 
         {/* Tab chiếm trọn một hàng (chia đều trên mobile); nút tạo dòng họ nằm ở tiêu đề trang. */}
         <div className="flex items-center gap-2">

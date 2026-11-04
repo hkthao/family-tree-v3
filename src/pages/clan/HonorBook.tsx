@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
+import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -98,19 +99,7 @@ export default function HonorBook() {
         actionsBelow
         actions={
           canEdit ? (
-            <Button size="sm" onClick={() => setShowAdd((v) => !v)}>
-              {showAdd ? (
-                <>
-                  <IconX className="mr-1 h-4 w-4" />
-                  Đóng
-                </>
-              ) : (
-                <>
-                  <IconPlus className="mr-1 h-4 w-4" />
-                  Ghi công đức
-                </>
-              )}
-            </Button>
+            <Fab onClick={() => setShowAdd((v) => !v)} active={showAdd} label="Ghi công đức" />
           ) : undefined
         }
       />

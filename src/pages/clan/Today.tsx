@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
+import { SectionCard } from "@/components/SectionCard";
 import { PodcastTodayCard } from "@/components/PodcastTodayCard";
 import { PageHeader } from "@/components/PageHeader";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
@@ -118,8 +119,7 @@ export default function Today() {
           focus of the page. */}
       <Section
         title="Hôm nay"
-        titleClassName="text-xl sm:text-2xl"
-        emptyHint="Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
+                emptyHint="Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
         events={todayEvents}
         clanId={clan.id}
         emphasised
@@ -183,19 +183,18 @@ function Section({
   emphasised?: boolean;
 }) {
   return (
-    <section className="space-y-2">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2 className={`font-semibold ${titleClassName ?? "text-lg"}`}>
-          {title}
-        </h2>
-        <span className="text-sm text-muted-foreground">
+    <SectionCard
+      id={`today-${title}`}
+      icon={<IconCalendar />}
+      title={title}
+      action={
+        <span className="shrink-0 text-sm text-muted-foreground">
           {events.length === 0 ? "—" : `${events.length} sự kiện`}
         </span>
-      </div>
+      }
+    >
       {events.length === 0 ? (
-        <Alert>
-          <AlertDescription>{emptyHint}</AlertDescription>
-        </Alert>
+        <p className="text-sm text-muted-foreground">{emptyHint}</p>
       ) : (
         <ul className="space-y-2">
           {events.map((e) => (
@@ -209,7 +208,7 @@ function Section({
           ))}
         </ul>
       )}
-    </section>
+    </SectionCard>
   );
 }
 
