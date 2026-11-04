@@ -1253,8 +1253,8 @@ export default function Tree() {
   const focalSearch =
     data && data.persons.length > 0 ? (
       <div className="relative print-hide order-first sm:order-none">
-        <div className="flex items-end gap-2">
-          <div className="flex-1 min-w-0">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <div className="min-w-0 sm:flex-1">
             <SearchInput
               label="Đặt người trung tâm"
               value={search}
@@ -1285,6 +1285,8 @@ export default function Tree() {
               }
             />
           </div>
+          {/* Mobile: hàng riêng dưới ô tìm kiếm cho ô tìm kiếm đủ rộng để gõ. */}
+          <div className="flex items-center justify-end gap-2">
           {defaultFocal && focal !== defaultFocal && (
             <Button
               type="button"
@@ -1307,6 +1309,7 @@ export default function Tree() {
             </Button>
           )}
           {actionButtons}
+          </div>
         </div>
         {matches.length > 0 && (
           <div className="absolute left-0 right-0 top-full mt-1 rounded-md border bg-card shadow-lg z-20">

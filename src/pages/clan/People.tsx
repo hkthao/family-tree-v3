@@ -402,8 +402,8 @@ export default function People() {
           setSort("generation");
         }}
 search={(toggle) => (
-      <div className="flex items-center gap-2">
-        <div className="flex-1 min-w-0">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="min-w-0 sm:flex-1">
           <SearchInput
             label="Tìm theo tên"
             value={search}
@@ -420,6 +420,9 @@ search={(toggle) => (
             }
           />
         </div>
+        {/* Mobile: hàng riêng dưới ô tìm kiếm (kiểu xem trái, thao tác phải) để ô
+            tìm kiếm đủ rộng để gõ; sm+: cùng một hàng. */}
+        <div className="flex items-center justify-between gap-2 sm:justify-start">
         <SegmentedControl ariaLabel="Chế độ hiển thị">
           <SegmentedButton
             active={viewMode === "list"}
@@ -443,6 +446,7 @@ search={(toggle) => (
         {view === "people" && (isMember || canEdit) && (
           <div className="flex shrink-0 items-center gap-1.5">{actionButtons}</div>
         )}
+        </div>
       </div>
       )}
         activeCount={
