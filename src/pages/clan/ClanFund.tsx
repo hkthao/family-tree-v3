@@ -8,12 +8,10 @@ import {
   IconCalendar,
   IconCheck,
   IconDownload,
-  IconPlus,
   IconScroll,
   IconTag,
   IconTrash,
   IconWallet,
-  IconX,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";

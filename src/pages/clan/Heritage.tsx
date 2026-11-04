@@ -1,20 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { SectionCard } from "@/components/SectionCard";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { HeritageThumb } from "@/components/HeritageThumb";
-import { IconChart, IconScroll, IconSearch } from "@/components/icons";
+import { IconChart, IconPlus, IconScroll, IconSearch } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
 import { CustomCard } from "@/pages/Customs";
 import { listCustomEntries } from "@/lib/queries/customs";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
@@ -35,7 +34,6 @@ export default function Heritage() {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
-  const navigate = useNavigate();
   const canEdit = canEditClan(clan);
   const isMember = effectiveRole(clan) !== null;
 

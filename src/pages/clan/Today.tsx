@@ -10,7 +10,6 @@ import {
   IconBell,
   IconCalendar,
 } from "@/components/icons";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { formatLunarDate, solarStringToLunar } from "@/lib/lunarDate";
@@ -169,14 +168,12 @@ export default function Today() {
 
 function Section({
   title,
-  titleClassName,
   events,
   clanId,
   emptyHint,
   emphasised,
 }: {
   title: string;
-  titleClassName?: string;
   events: UpcomingEvent[];
   clanId: string;
   emptyHint: string;
