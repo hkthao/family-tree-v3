@@ -55,7 +55,7 @@ export function FormActions({
  * cỡ sm (h-10) — bằng các nút Xuất sổ / Chia sẻ — dù form khai báo size nào.
  */
 export const PANEL_ACTIONS_CLASS =
-  "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background pl-4 pr-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:pl-5 [&>*]:h-10 [&>*]:flex-1 [&>*]:px-4";
+  "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background pl-2 pr-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:pl-2.5 [&>*]:h-10 [&>*]:flex-1 [&>*]:px-4";
 
 /**
  * Thanh nút dính đáy của ngăn kéo + một khoảng đệm 1rem phía trên để nội dung

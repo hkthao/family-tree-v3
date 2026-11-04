@@ -17,6 +17,7 @@ import {
   IconUpload,
 } from "@/components/icons";
 import { FilterDrawer } from "@/components/FilterDrawer";
+import { PanelLink } from "@/components/panel/PanelLink";
 import { SidePanel } from "@/components/SidePanel";
 import { PanelActionBar } from "@/components/ui/form-actions";
 import { PageHeader } from "@/components/PageHeader";
@@ -1569,10 +1570,10 @@ export default function Tree() {
                 </Link>
               </Button>
               <Button asChild>
-                <Link to={`/clans/${clanId}/people/new`}>
+                <PanelLink to={`/clans/${clanId}/people/new`} panel="person-new">
                   <IconPlus className="h-4 w-4 mr-1.5" />
                   Thêm người
-                </Link>
+                </PanelLink>
               </Button>
             </CardFooter>
           )}
