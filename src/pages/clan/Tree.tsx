@@ -18,7 +18,7 @@ import {
 } from "@/components/icons";
 import { FilterDrawer } from "@/components/FilterDrawer";
 import { SidePanel } from "@/components/SidePanel";
-import { PANEL_ACTIONS_CLASS } from "@/components/ui/form-actions";
+import { PanelActionBar } from "@/components/ui/form-actions";
 import { PageHeader } from "@/components/PageHeader";
 import {
   NAME_FONTS,
@@ -2183,7 +2183,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
                 </option>
               ))}
             </Select>
-          <div className={PANEL_ACTIONS_CLASS}>
+          <PanelActionBar>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               <IconX className="h-4 w-4 mr-1.5" />
               Đóng
@@ -2192,7 +2192,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
               <IconDownload className="h-4 w-4 mr-1.5" />
               Tải PDF
             </Button>
-          </div>
+          </PanelActionBar>
         </div>
       </SidePanel>
     </div>
