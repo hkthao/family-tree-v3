@@ -119,7 +119,7 @@ export function SidePanel({
           className={
             bare
               ? "flex min-h-0 flex-1 flex-col"
-              : "min-h-0 flex-1 overflow-y-auto px-4 pt-4 sm:px-5"
+              : "min-h-0 flex-1 overflow-y-auto px-4 pb-24 pt-4 sm:px-5"
           }
           onInput={() => {
             dirty.current = true;
