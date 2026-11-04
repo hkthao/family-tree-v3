@@ -56,7 +56,7 @@ function defaultPosition(): MascotPosition {
   // Đáy phải, trên bottom-tab-bar (mobile) / 16px lề (desktop).
   if (typeof window === "undefined") return { x: 600, y: 600 };
   const isMobile = window.innerWidth < 1024;
-  const bottomOffset = isMobile ? 144 : 88; // chừa chỗ cho nút nổi "+" (Fab) ở đáy phải
+  const bottomOffset = isMobile ? 144 : 140; // chừa chỗ cho nút nổi "+" (Fab) ở đáy phải
   return clamp({
     x: window.innerWidth - BUTTON_SIZE - EDGE_MARGIN,
     y: window.innerHeight - BUTTON_SIZE - bottomOffset,

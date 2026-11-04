@@ -29,9 +29,8 @@ export function AiChatView({
   actions?: ReactNode;
 }) {
   const chat = useAiChatSession(clan.id);
-  const tools = (
+  const toolButtons = (
     <>
-      <QuotaBadge quota={chat.quota} className="text-xs" />
       {/* icon-audit: ok — chữ "A" chính là ký hiệu, thêm icon nữa là thừa */}
       <Button
         variant="ghost"
@@ -56,21 +55,35 @@ export function AiChatView({
       </Button>
     </>
   );
+  const tools = (
+    <>
+      <QuotaBadge quota={chat.quota} className="text-xs" />
+      {toolButtons}
+    </>
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
       {variant === "dock" ? (
-        <header className="flex shrink-0 items-center gap-1 border-b bg-card px-3 py-2">
+        // Cao 64px + viền dưới + nền như appbar của trang (ClanLayout) để hai thanh thẳng hàng.
+        <header className="flex h-[65px] shrink-0 items-center gap-1 border-b bg-background px-3">
           <IconSparkles className="h-5 w-5 shrink-0 text-primary" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">Trợ lý dòng họ</p>
-            <p className="truncate text-xs text-muted-foreground">{clan.name}</p>
+            <p className="truncate text-base font-semibold leading-tight">
+              Trợ lý dòng họ
+            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="truncate">{clan.name}</span>
+              <QuotaBadge quota={chat.quota} className="shrink-0 text-xs" />
+            </div>
           </div>
-          {tools}
+          {toolButtons}
           {actions}
         </header>
       ) : (
-        <div className="flex shrink-0 items-center justify-end gap-1 border-b px-3 py-1.5">{tools}</div>
+        <div className="flex shrink-0 items-center justify-end gap-1 border-b px-3 py-1.5">
+          {tools}
+        </div>
       )}
 
       <ChatThread
@@ -82,7 +95,9 @@ export function AiChatView({
         fontSize={chat.fontSize}
         clanName={clan.name}
         canAddPeople={canEditClan(clan)}
-        quotaFallbackHref={chat.quotaExhausted ? `/clans/${clan.id}/ai-generate` : undefined}
+        quotaFallbackHref={
+          chat.quotaExhausted ? `/clans/${clan.id}/ai-generate` : undefined
+        }
         proposalCard={
           chat.proposal ? (
             <ProposalCard

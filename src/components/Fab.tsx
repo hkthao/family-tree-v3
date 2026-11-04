@@ -6,8 +6,11 @@ import { PanelLink } from "@/components/panel/PanelLink";
 import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 
 /** Vị trí chung của Fab / FabGroup (góc dưới phải, xem chú thích bên dưới). */
-export const FAB_POSITION =
-  "print-hide fixed bottom-[calc(4.5rem_+_env(safe-area-inset-bottom))] right-4 z-30 lg:bottom-6 lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
+/** Mép phải của cột nút nổi trên desktop: thẳng với khung nội dung, né khung chat gắn phải. */
+export const FAB_RIGHT_LG =
+  "lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
+
+export const FAB_POSITION = `print-hide fixed bottom-[calc(4.5rem_+_env(safe-area-inset-bottom))] right-4 z-30 lg:bottom-6 ${FAB_RIGHT_LG}`;
 
 /**
  * Nút nổi "Thêm…" của màn danh sách — thay nút ở header để tiết kiệm chỗ.
