@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -10,8 +9,10 @@ import {
   IconScroll,
   IconX,
 } from "@/components/icons";
+import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -110,18 +111,8 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
     )?.[1] ?? null;
 
   useEffect(() => {
-    // ESC + autofocus
     textareaRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
+  }, []);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -149,129 +140,81 @@ export function FeedbackDialog({ onClose }: { onClose: () => void }) {
     mutation.mutate();
   }
 
-  // Standalone modal (don't reuse RelationSheet — feedback should be
-  // available on auth pages too, where the sheet's surrounding
-  // context isn't relevant).
-  //
-  // Portal lên document.body để dialog không bị giam trong containing
-  // block của parent có `transform` (AppDrawer dùng translateX để
-  // slide → mọi `fixed` con bị reanchor vào aside 288px). Lift lên
-  // body → fixed thực sự cover full viewport.
-  return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Góp ý"
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4"
-      onClick={onClose}
+  // Ngăn kéo bên phải (SidePanel, portal ra <body>) — dùng được cả ở trang đăng
+  // nhập vì chỉ cần ConfirmDialogProvider ở gốc ứng dụng. Gõ dở mà đóng thì hỏi.
+  return (
+    <SidePanel
+      open
+      title="Góp ý / báo lỗi"
+      subtitle="Mọi phản hồi đều giúp app tốt hơn. Không cần ngại — viết ngắn cũng được."
+      onClose={onClose}
     >
-      <form
-        onClick={(e) => e.stopPropagation()}
-        onSubmit={onSubmit}
-        className="w-full sm:max-w-md bg-card border shadow-lg rounded-t-lg sm:rounded-lg flex flex-col max-h-[90vh]"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <header className="flex items-start gap-3 px-5 pt-4 pb-3 border-b shrink-0">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-lg font-semibold leading-tight">
-              Góp ý / báo lỗi
-            </h2>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Mọi phản hồi đều giúp app tốt hơn. Không cần ngại — viết
-              ngắn cũng được.
-            </p>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <fieldset className="space-y-2">
+          <legend className="text-base font-medium">Loại phản hồi</legend>
+          <div className="grid grid-cols-2 gap-2">
+            {CATEGORY_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer text-sm ${
+                  category === opt.value
+                    ? "border-primary bg-primary/5"
+                    : "hover:bg-muted/40"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="feedback-category"
+                  value={opt.value}
+                  checked={category === opt.value}
+                  onChange={() => setCategory(opt.value)}
+                  className="h-4 w-4 accent-primary"
+                />
+                <span>{opt.label}</span>
+              </label>
+            ))}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Đóng"
-            className="-mr-2 -mt-1 inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <IconX className="h-5 w-5" />
-          </button>
-        </header>
+        </fieldset>
 
-        <div className="overflow-y-auto px-5 py-4 space-y-4 flex-1 min-h-0">
-          <fieldset className="space-y-2">
-            <legend className="text-base font-medium">Loại phản hồi</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {CATEGORY_OPTIONS.map((opt) => (
-                <label
-                  key={opt.value}
-                  className={`flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer text-sm ${
-                    category === opt.value
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-muted/40"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="feedback-category"
-                    value={opt.value}
-                    checked={category === opt.value}
-                    onChange={() => setCategory(opt.value)}
-                    className="h-4 w-4 accent-primary"
-                  />
-                  <span>{opt.label}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
+        <Textarea
+          ref={textareaRef}
+          id="feedback-message"
+          label="Bạn muốn nói gì?"
+          icon={<IconScroll />}
+          required
+          maxLength={5000}
+          rows={4}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…"
+        />
 
-          <Textarea
-            ref={textareaRef}
-            id="feedback-message"
-            label="Bạn muốn nói gì?"
-            icon={<IconScroll />}
-            required
-            maxLength={5000}
-            rows={5}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…"
-            className="resize-y"
+        <div className="space-y-2">
+          <Label htmlFor="feedback-contact">Cách liên lạc lại (tuỳ chọn)</Label>
+          <Input
+            id="feedback-contact"
+            icon={<IconMail />}
+            maxLength={200}
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            placeholder="Email / số điện thoại / Zalo — để trống cũng được"
           />
-
-          <div className="space-y-2">
-            <Label htmlFor="feedback-contact">
-              Cách liên lạc lại (tuỳ chọn)
-            </Label>
-            <Input
-              id="feedback-contact"
-              icon={<IconMail />}
-              maxLength={200}
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
-              placeholder="Email / số điện thoại / Zalo — để trống cũng được"
-            />
-            <p className="text-xs text-muted-foreground">
-              Chỉ admin xem được; không hiện cho người khác trong họ.
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            Chỉ admin xem được; không hiện cho người khác trong họ.
+          </p>
         </div>
 
-        <div className="flex gap-2 px-5 py-3 border-t shrink-0 bg-card">
-          <Button
-            type="submit"
-            variant="outline"
-            className="flex-1"
-            disabled={mutation.isPending || !message.trim()}
-          >
-            <IconCheck className="h-4 w-4 mr-1.5" />
-            {mutation.isPending ? "Đang gửi…" : "Gửi"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="shrink-0"
-          >
+        <FormActions>
+          <Button type="button" variant="outline" onClick={onClose}>
             <IconX className="h-4 w-4 mr-1.5" />
             Huỷ
           </Button>
-        </div>
+          <Button type="submit" disabled={mutation.isPending || !message.trim()}>
+            <IconCheck className="h-4 w-4 mr-1.5" />
+            {mutation.isPending ? "Đang gửi…" : "Gửi"}
+          </Button>
+        </FormActions>
       </form>
-    </div>,
-    document.body,
+    </SidePanel>
   );
 }
