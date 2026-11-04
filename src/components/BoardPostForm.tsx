@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
+import { InSidePanelContext } from "@/components/panel/context";
 import { useToast } from "@/components/Toast";
 import {
   IconBook,
@@ -11,6 +12,7 @@ import {
 } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,6 +56,7 @@ export function BoardPostForm({
   onDone: (postId: string) => void;
   onCancel: () => void;
 }) {
+  const inPanel = useContext(InSidePanelContext);
   const { user } = useAuth();
   const qc = useQueryClient();
   const toast = useToast();
@@ -115,11 +118,9 @@ export function BoardPostForm({
         e.preventDefault();
         if (body.trim()) saveM.mutate();
       }}
-      className="rounded-xl border bg-card shadow-sm p-4 space-y-4"
+      // Trong ngăn kéo: không khung thẻ (panel đã có tiêu đề + nền); trên trang: giữ thẻ.
+      className={`space-y-4 ${inPanel ? "" : "rounded-xl border bg-card p-4 shadow-sm"}`}
     >
-      <h3 className="font-semibold">
-        {isEdit ? "Sửa bài" : "Đăng bài mới"}
-      </h3>
 
       {!admin && !isEdit && (
         <Alert>
@@ -173,11 +174,11 @@ export function BoardPostForm({
         icon={<IconBook />}
         required
         maxLength={20000}
-        rows={6}
+        rows={4}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="Viết tin cho cả họ đọc…"
-        className="text-sm resize-y"
+        className="text-sm"
       />
 
       {(type === "event" || type === "notice") && (
@@ -193,12 +194,12 @@ export function BoardPostForm({
         </div>
       )}
 
-      <div className="flex gap-2 pt-2 border-t">
-        <Button
-          type="submit"
-          variant="outline"
-          disabled={!body.trim() || saveM.isPending}
-        >
+      <FormActions>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          <IconX className="h-4 w-4 mr-1.5" />
+          Huỷ
+        </Button>
+        <Button type="submit" disabled={!body.trim() || saveM.isPending}>
           <IconCheck className="h-4 w-4 mr-1.5" />
           {saveM.isPending
             ? "Đang lưu…"
@@ -208,11 +209,7 @@ export function BoardPostForm({
                 ? "Đăng"
                 : "Gửi duyệt"}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          <IconX className="h-4 w-4 mr-1.5" />
-          Huỷ
-        </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }
