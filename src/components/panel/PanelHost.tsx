@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useMemo } from "react";
 
 import { AiChatView } from "@/components/ai/AiChatView";
 import { AI_DOCK_OPEN_EVENT } from "@/components/ai/AiChatDock";
@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
-import { isClanAdmin } from "@/hooks/useClanContext";
+import { ClanContextProvider, isClanAdmin } from "@/hooks/useClanContext";
 import { getClanPost } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson } from "@/lib/queries/persons";
@@ -39,6 +39,17 @@ const Loading = () => <p className="py-6 text-sm text-muted-foreground">Đang t�
  * loại panel mới = thêm một nhánh ở đây + một PanelId trong usePanel.
  */
 export function PanelHost({ clan }: { clan: ClanDetail }) {
+  // Form / chi tiết nhúng trong ngăn kéo gọi useClanContext() như khi nằm dưới
+  // <Outlet> — PanelHost đứng ngoài Outlet nên cấp lại qua provider.
+  const ctx = useMemo(() => ({ clan }), [clan]);
+  return (
+    <ClanContextProvider value={ctx}>
+      <PanelHostInner clan={clan} />
+    </ClanContextProvider>
+  );
+}
+
+function PanelHostInner({ clan }: { clan: ClanDetail }) {
   const clanId = clan.id;
   const { current, params, close } = usePanel();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
