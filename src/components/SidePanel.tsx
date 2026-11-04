@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { IconX } from "@/components/icons";
+
+/** Các SidePanel đang mở (cái cuối là trên cùng) — Esc chỉ đóng cái trên cùng. */
+const openStack: string[] = [];
 
 export interface SidePanelProps {
   open: boolean;
@@ -37,6 +41,7 @@ export function SidePanel({
   children,
 }: SidePanelProps) {
   const confirm = useConfirm();
+  const id = useId();
   const dirty = useRef(false);
   const panelRef = useRef<HTMLElement>(null);
 
@@ -59,9 +64,15 @@ export function SidePanel({
     dirty.current = false;
     const prevFocus = document.activeElement as HTMLElement | null;
     panelRef.current?.focus();
+    openStack.push(id);
     const onKey = (e: KeyboardEvent) => {
-      // Hộp thoại xác nhận đang mở (nằm ngoài panel) tự xử lý Esc của nó.
-      if (e.key === "Escape" && !document.querySelector("[data-confirm-dialog]")) {
+      // Hộp thoại xác nhận đang mở (nằm ngoài panel) tự xử lý Esc của nó;
+      // nhiều panel lồng nhau thì chỉ cái trên cùng đóng.
+      if (
+        e.key === "Escape" &&
+        openStack[openStack.length - 1] === id &&
+        !document.querySelector("[data-confirm-dialog]")
+      ) {
         void requestClose();
       }
     };
@@ -69,14 +80,19 @@ export function SidePanel({
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      const i = openStack.lastIndexOf(id);
+      if (i >= 0) openStack.splice(i, 1);
+      // Còn panel khác bên dưới thì giữ khoá cuộn của nó.
+      if (openStack.length === 0) document.body.style.overflow = "";
       prevFocus?.focus?.();
     };
-  }, [open, requestClose]);
+  }, [open, requestClose, id]);
 
   if (!open) return null;
 
-  return (
+  // Portal ra <body>: panel lồng trong panel (vd. thêm quan hệ trong Chi tiết người)
+  // không bị `transform` của panel cha làm lệch `position: fixed`.
+  return createPortal(
     <div className="print-hide fixed inset-0 z-50 flex justify-end bg-black/40 animate-in fade-in">
       <button
         type="button"
@@ -134,6 +150,7 @@ export function SidePanel({
           {children}
         </div>
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -814,7 +814,7 @@ function PersonListItem({
           />
         </label>
       )}
-      <Link
+      <PanelLink panel="person-view" panelParams={{ pid: person.id }}
         to={`/clans/${clanId}/people/${person.id}`}
         className="flex flex-1 min-w-0 items-start gap-3 p-3 hover:bg-muted/40 transition-colors"
       >
@@ -873,7 +873,7 @@ function PersonListItem({
             className="text-xs text-muted-foreground/80 mt-1 truncate"
           />
         </div>
-      </Link>
+      </PanelLink>
       {canCopy && (
         <PanelLink
           to={`/clans/${clanId}/people/new?from=${person.id}`}
@@ -959,7 +959,7 @@ function PersonGridCard({
           <IconCopy className="h-4 w-4" />
         </PanelLink>
       )}
-      <Link
+      <PanelLink panel="person-view" panelParams={{ pid: person.id }}
         to={`/clans/${clanId}/people/${person.id}`}
         className={`flex flex-col items-center text-center gap-2 rounded-xl border bg-card shadow-sm p-3 hover:border-primary transition-colors h-full ${
           selected ? "border-primary ring-1 ring-primary/30" : ""
@@ -1001,7 +1001,7 @@ function PersonGridCard({
             className="text-[10px] text-muted-foreground/80 mt-1 truncate"
           />
         </div>
-      </Link>
+      </PanelLink>
     </li>
   );
 }
