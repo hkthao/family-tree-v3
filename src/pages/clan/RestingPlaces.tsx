@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { Fab } from "@/components/Fab";
+import { FabGroup } from "@/components/FabGroup";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -95,19 +95,22 @@ export default function RestingPlaces() {
         icon={<IconGrave className="h-7 w-7" />}
         title="Mộ phần & tro cốt"
         description="Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ."
-        actionsBelow
-        actions={
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" asChild>
-              <Link to={`/clans/${clan.id}/graves/cemeteries`}>
-                <IconMapPin className="h-4 w-4 mr-1" /> Cơ sở
-              </Link>
-            </Button>
-            {canEdit && (
-              <Fab to={`/clans/${clan.id}/graves/new`} panel={{ id: "grave-new" }} label="Thêm mộ phần" />
-            )}
-          </div>
-        }
+      />
+      <FabGroup
+        label="Thêm"
+        actions={[
+          ...(canEdit
+            ? [
+                {
+                  label: "Thêm mộ phần",
+                  icon: <IconPlus />,
+                  to: `/clans/${clan.id}/graves/new`,
+                  panel: { id: "grave-new" as const },
+                },
+              ]
+            : []),
+          { label: "Quản lý cơ sở", icon: <IconMapPin />, to: `/clans/${clan.id}/graves/cemeteries` },
+        ]}
       />
 
       <div className="space-y-2">

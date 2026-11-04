@@ -5,6 +5,10 @@ import { IconPlus, IconX } from "@/components/icons";
 import { PanelLink } from "@/components/panel/PanelLink";
 import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 
+/** Vị trí chung của Fab / FabGroup (góc dưới phải, xem chú thích bên dưới). */
+export const FAB_POSITION =
+  "print-hide fixed bottom-[calc(4.5rem_+_env(safe-area-inset-bottom))] right-4 z-30 lg:bottom-6 lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
+
 /**
  * Nút nổi "Thêm…" của màn danh sách — thay nút ở header để tiết kiệm chỗ.
  * Mobile: ngay trên thanh tab dưới; linh vật (draggable) mặc định đặt cao hơn
@@ -36,8 +40,7 @@ export function Fab({
   /** Có thì bấm thường mở ngăn kéo (route `to` vẫn là link dự phòng). */
   panel?: { id: PanelId; params?: PanelParams };
 }) {
-  const cls =
-    "print-hide fixed bottom-[calc(4.5rem_+_env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:bottom-6 lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
+  const cls = `${FAB_POSITION} inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`;
   const content = active ? <IconX className="h-6 w-6" /> : (icon ?? <IconPlus className="h-6 w-6" />);
   if (to && panel && !active) {
     return (
