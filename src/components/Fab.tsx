@@ -7,9 +7,9 @@ import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 
 /**
  * Nút nổi "Thêm…" của màn danh sách — thay nút ở header để tiết kiệm chỗ.
- * Nằm góc dưới phải, CAO HƠN linh vật (draggable, ~48px, mặc định sát đáy
- * phải) và nút "Trợ lý" (AiChatDock, bottom-6) để không bị đè. Dưới dialog
- * (z-50) nên không che hộp thoại.
+ * Mobile: ngay trên thanh tab dưới; linh vật (draggable) mặc định đặt cao hơn
+ * nút này. Desktop: sát đáy (bottom-6); nút "Trợ lý" và linh vật nằm cao hơn nó. Dưới dialog (z-50) nên
+ * không che hộp thoại.
  *
  * Desktop: căn mép phải theo khung nội dung (max-w-4xl = 56rem, nằm bên phải
  * thanh menu rộng 18rem, lề 1rem) thay vì dính mép cửa sổ.
@@ -37,7 +37,7 @@ export function Fab({
   panel?: { id: PanelId; params?: PanelParams };
 }) {
   const cls =
-    "print-hide fixed bottom-[9.5rem] right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:bottom-24 lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
+    "print-hide fixed bottom-[calc(4.5rem_+_env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:bottom-6 lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
   const content = active ? <IconX className="h-6 w-6" /> : (icon ?? <IconPlus className="h-6 w-6" />);
   if (to && panel && !active) {
     return (

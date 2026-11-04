@@ -7,10 +7,18 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
  * tải lại trang khôi phục panel, link gửi người khác mở đúng panel). Tham số
  * mang tiền tố riêng để không đụng bộ lọc của trang (q, chi, đời…).
  */
-export type PanelId = "person-new" | "person-edit" | "person-add" | "notifications" | "chat";
+export type PanelId = "person-new" | "person-edit" | "person-add" | "notifications"
+  | "chat"
+  | "grave-new"
+  | "grave-edit"
+  | "heritage-new"
+  | "heritage-edit"
+  | "board-new"
+  | "board-edit"
+  | "clan-new";
 
 export interface PanelParams {
-  /** Người đang thao tác (sửa / thêm quan hệ cho). */
+  /** Id bản ghi đang thao tác: người (sửa / thêm quan hệ), mộ phần, di sản, bài đăng. */
   pid?: string;
   /** Quan hệ mở thẳng (bỏ qua bước chọn). */
   prel?: "child" | "spouse" | "parent";

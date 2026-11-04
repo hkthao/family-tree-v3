@@ -21,9 +21,15 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { createClan } from "@/lib/queries/clans";
 
-export default function NewClan() {
+interface NewClanFormProps {
+  /** Gọi sau khi tạo xong, nhận id dòng họ mới. */
+  onDone: (clanId: string) => void;
+  onCancel: () => void;
+}
+
+/** Form tạo dòng họ — dùng cho trang /clans/new VÀ ngăn kéo phải (?panel=clan-new). */
+export function NewClanForm({ onDone, onCancel }: NewClanFormProps) {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -41,29 +47,13 @@ export default function NewClan() {
           q.queryKey[0] === "clans",
       });
       toast.success("Đã tạo dòng họ", { description: name });
-      navigate(`/clans/${clan.id}`);
+      onDone(clan.id);
     },
     onError: (e) =>
       toast.error("Không tạo được", { description: (e as Error).message }),
   });
 
   return (
-    <div className="min-h-dvh bg-background lg:pl-72">
-      <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-3">
-        <Breadcrumb
-          items={[
-            { label: "Dòng họ", to: "/clans" },
-            { label: "Tạo dòng họ mới" },
-          ]}
-        />
-
-        <PageHeader
-          icon={<IconPlus className="h-7 w-7" />}
-          title="Tạo dòng họ mới"
-          description="Đặt tên và vài thông tin cơ bản — tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
-        />
-
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -146,11 +136,9 @@ export default function NewClan() {
           )}
 
           <FormActions>
-            <Button asChild variant="outline">
-              <Link to="/clans">
-                <IconX className="h-4 w-4 mr-1.5" />
-                Hủy
-              </Link>
+            <Button type="button" variant="outline" onClick={onCancel}>
+              <IconX className="h-4 w-4 mr-1.5" />
+              Hủy
             </Button>
             <Button
               type="submit"
@@ -169,6 +157,32 @@ export default function NewClan() {
             </Button>
           </FormActions>
         </form>
+  );
+}
+
+export default function NewClan() {
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-dvh bg-background lg:pl-72">
+      <AppHeader />
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
+        <Breadcrumb
+          items={[
+            { label: "Dòng họ", to: "/clans" },
+            { label: "Tạo dòng họ mới" },
+          ]}
+        />
+
+        <PageHeader
+          icon={<IconPlus className="h-7 w-7" />}
+          title="Tạo dòng họ mới"
+          description="Đặt tên và vài thông tin cơ bản — tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
+        />
+
+        <NewClanForm
+          onDone={(id) => navigate(`/clans/${id}`)}
+          onCancel={() => navigate("/clans")}
+        />
       </main>
     </div>
   );
