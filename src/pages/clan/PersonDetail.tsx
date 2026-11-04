@@ -7,6 +7,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { AddSpouseForm } from "@/pages/clan/AddSpouse";
 import { AddChildForm } from "@/pages/clan/AddChild";
 import { AddParentForm } from "@/pages/clan/AddParent";
+import { PanelLink } from "@/components/panel/PanelLink";
 import { RelationSheet } from "@/components/RelationSheet";
 
 import {
@@ -592,15 +593,17 @@ export default function PersonDetail() {
             <div className="flex flex-wrap items-center justify-end gap-2">
               {canEdit ? (
                 <Button asChild variant="outline" size="sm" className="w-[100px]">
-                  <Link
+                  <PanelLink
                     to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}
+                    panel="person-edit"
+                    panelParams={{ pid: personId }}
                     data-testid="edit-person-link"
                     aria-label="Sửa thông tin"
                     title="Sửa thông tin"
                   >
                     <IconPencil className="h-4 w-4 mr-1.5" />
                     Sửa
-                  </Link>
+                  </PanelLink>
                 </Button>
               ) : (
                 canContribute && (

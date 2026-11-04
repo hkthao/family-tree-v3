@@ -1,6 +1,15 @@
 # Kế hoạch: nhập liệu / thông báo / cài đặt / chat trong ngăn kéo (Side Panel)
 
-Trạng thái: **bản nháp chờ chốt 3 quyết định ở mục 9**. Ngày soạn 2026-11-04.
+Trạng thái: **P0 + P1 đã làm (2026-11-04)**; đã chốt **ngăn kéo bên phải**. P2–P6 chưa làm.
+
+### Đã làm ở P0 + P1
+- `SidePanel` (bên phải, mobile full-width, desktop 32–40rem) có bảo vệ dữ liệu chưa lưu (gõ vào ô → đóng bằng X / nền / Esc thì hỏi; gửi form xoá cờ; form tự đóng sau lưu thì không hỏi).
+- `RelationSheet` giờ là vỏ mỏng của `SidePanel` → mọi nơi đang nhúng form (Chi tiết người: thêm cha mẹ / vợ chồng / con; Cây: sửa + thêm nhanh; Việc làm) tự thành ngăn kéo phải.
+- `PanelHost` (gắn ở `ClanLayout`) + `usePanel` + `PanelLink`: panel điều khiển bằng URL `?panel=person-new|person-edit|person-add&pid=&prel=&pfrom=`; Back đóng panel; tải lại khôi phục; tham số lọc của trang giữ nguyên.
+- `NewPersonForm` tách khỏi trang `NewPerson` (trang route vẫn dùng cùng form). `EditPersonForm` đã có sẵn.
+- Nối: Danh bạ `Fab` "Thêm người" và nút "Sửa" ở Chi tiết người mở panel (bấm thường); Ctrl/Cmd-click / mở tab mới vẫn vào route đầy đủ.
+- Test: `src/test/components/sidePanel.dom.test.tsx` (guard + đồng bộ URL). Video 05 cập nhật chờ `?panel=person-edit`.
+- Còn lại của P1: gộp hẳn `QuickAddSheet` với các form đầy đủ `AddChild/Spouse/Parent`, nút "Thêm người" trên Cây / thẻ người mở `person-add`, "Lưu & thêm tiếp" cho thêm quan hệ.
 
 ## 1. Mục tiêu
 

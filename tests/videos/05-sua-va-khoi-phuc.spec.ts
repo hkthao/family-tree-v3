@@ -34,7 +34,8 @@ test("05 — Sửa, xoá, khôi phục", async ({ page }) => {
   const editBtn = page.getByTestId("edit-person-link");
   await highlight(editBtn);
   await editBtn.click();
-  await page.waitForURL(/\/edit$/);
+  // Sửa mở trong ngăn kéo bên phải (?panel=person-edit), không còn đổi route.
+  await page.waitForURL(/panel=person-edit/);
   await pause(page, 700);
 
   await narrate(page, "Đổi tên: thêm hậu tố ' (Cao Tằng Tổ)'.");
