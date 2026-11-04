@@ -2,7 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { IconBell } from "@/components/icons";
+import { IconBell, IconCheck } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { PanelActionBar } from "@/components/ui/form-actions";
 import { usePanel } from "@/components/panel/usePanel";
 import { SidePanel } from "@/components/SidePanel";
 import {
@@ -101,16 +103,22 @@ export function NotificationBell() {
 
   const reads = readsQ.data ?? new Set<string>();
   const allRows = mergeFeed(listQ.data ?? [], reads, inboxQ.data ?? []);
-  const rows = (filter === "unread" ? allRows.filter((r) => !r.read) : allRows).slice(0, 50);
+  const rows = (
+    filter === "unread" ? allRows.filter((r) => !r.read) : allRows
+  ).slice(0, 50);
 
   const markRead = (row: (typeof rows)[number]) => {
     if (row.read) return;
     const mark =
-      row.kind === "announcement" ? markAnnouncementRead(row.id) : markInboxRead(row.id);
+      row.kind === "announcement"
+        ? markAnnouncementRead(row.id)
+        : markInboxRead(row.id);
     mark
       .then(() => {
         qc.invalidateQueries({ queryKey: queryKeys.announcementReads() });
-        qc.invalidateQueries({ queryKey: queryKeys.announcementsUnreadCount() });
+        qc.invalidateQueries({
+          queryKey: queryKeys.announcementsUnreadCount(),
+        });
         qc.invalidateQueries({ queryKey: ["inbox-unread"] });
         qc.invalidateQueries({ queryKey: ["inbox-list"] });
       })
@@ -120,7 +128,8 @@ export function NotificationBell() {
   // Đi sang trang khác từ panel: nếu panel do app mở (đã đẩy 1 history entry)
   // thì THAY entry đó, để Back từ trang đích về trang cũ chứ không mở lại panel.
   const go = (to: string) => {
-    const pushed = (location.state as { panelOpened?: boolean } | null)?.panelOpened;
+    const pushed = (location.state as { panelOpened?: boolean } | null)
+      ?.panelOpened;
     navigate(to, { replace: !!pushed });
   };
 
@@ -139,7 +148,9 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => (open ? closePanel() : openPanel("notifications"))}
-        aria-label={count > 0 ? `${count} thông báo chưa đọc` : "Thông báo hệ thống"}
+        aria-label={
+          count > 0 ? `${count} thông báo chưa đọc` : "Thông báo hệ thống"
+        }
         aria-expanded={open}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-muted"
       >
@@ -157,9 +168,13 @@ export function NotificationBell() {
         subtitle={count > 0 ? `${count} chưa đọc` : "Bạn đã đọc hết"}
         onClose={closePanel}
       >
-        <div className="-mx-4 sm:-mx-5">
-          <div className="flex items-center justify-between gap-2 border-b px-4 pb-3 sm:px-5">
-            <div className="flex gap-1.5" role="group" aria-label="Lọc thông báo">
+        <div className="flex flex-1 flex-col">
+          <div className="flex items-center justify-between gap-2 pb-3">
+            <div
+              className="flex gap-1.5"
+              role="group"
+              aria-label="Lọc thông báo"
+            >
               {(
                 [
                   ["all", "Tất cả"],
@@ -181,31 +196,25 @@ export function NotificationBell() {
                 </button>
               ))}
             </div>
-            {count > 0 && (
-              <button
-                type="button"
-                onClick={() => markAllM.mutate()}
-                disabled={markAllM.isPending}
-                className="text-xs text-primary hover:underline disabled:opacity-60"
-              >
-                {markAllM.isPending ? "Đang lưu…" : "Đánh dấu tất cả đã đọc"}
-              </button>
-            )}
           </div>
 
           {(listQ.isLoading || inboxQ.isLoading) && (
-            <p className="px-4 py-8 text-center text-sm text-muted-foreground">Đang tải…</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Đang tải…
+            </p>
           )}
           {!listQ.isLoading && rows.length === 0 && (
-            <div className="px-4 py-10 text-center">
+            <div className="py-10 text-center">
               <IconBell className="mx-auto h-8 w-8 text-muted-foreground/40" />
               <p className="mt-2 text-sm text-muted-foreground">
-                {filter === "unread" ? "Không còn thông báo chưa đọc." : "Chưa có thông báo nào."}
+                {filter === "unread"
+                  ? "Không còn thông báo chưa đọc."
+                  : "Chưa có thông báo nào."}
               </p>
             </div>
           )}
           {rows.length > 0 && (
-            <ul className="divide-y">
+            <ul className="-mx-4 divide-y border-t sm:-mx-5">
               {rows.map((row) => {
                 const isRead = row.read;
                 const isOpen = expanded === row.key;
@@ -214,7 +223,9 @@ export function NotificationBell() {
                     <button
                       type="button"
                       onClick={() => openItem(row)}
-                      aria-expanded={row.kind === "announcement" ? isOpen : undefined}
+                      aria-expanded={
+                        row.kind === "announcement" ? isOpen : undefined
+                      }
                       className={`flex w-full gap-2.5 px-4 py-3 text-left transition-colors hover:bg-muted/60 sm:px-5 ${
                         isRead ? "" : "bg-primary/[0.045]"
                       }`}
@@ -262,15 +273,20 @@ export function NotificationBell() {
             </ul>
           )}
 
-          <div className="border-t px-4 py-3 text-center sm:px-5">
-            <button
+          <PanelActionBar>
+            <Button
               type="button"
-              onClick={() => go("/announcements")}
-              className="text-sm font-medium text-primary hover:underline"
+              variant="outline"
+              onClick={() => markAllM.mutate()}
+              disabled={count === 0 || markAllM.isPending}
             >
-              Mở trang thông báo đầy đủ
-            </button>
-          </div>
+              <IconCheck className="h-4 w-4 mr-1.5" />
+              {markAllM.isPending ? "Đang lưu…" : "Đánh dấu đã đọc"}
+            </Button>
+            <Button type="button" onClick={() => go("/announcements")}>
+              Xem tất cả
+            </Button>
+          </PanelActionBar>
         </div>
       </SidePanel>
     </>
