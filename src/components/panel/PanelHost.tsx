@@ -26,6 +26,7 @@ const EditPersonForm = lazy(() =>
 );
 
 const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
+const InlawsNew = lazy(() => import("@/pages/clan/InlawsNew"));
 const RestingPlaceForm = lazy(() => import("@/pages/clan/RestingPlaceForm"));
 const HeritageForm = lazy(() => import("@/pages/clan/HeritageForm"));
 const BoardPostForm = lazy(() =>
@@ -133,6 +134,16 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
       <SidePanel open title={isEdit ? "Sửa mục di sản" : "Thêm mục di sản"} onClose={close} size="lg">
         <Suspense fallback={<Loading />}>
           <HeritageForm embedded={{ id: isEdit ? pid : undefined, onDone: close, onCancel: close }} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
+  if (current === "inlaw-new") {
+    return (
+      <SidePanel open title="Đề nghị liên kết dòng họ" subtitle="Nối với dòng họ khác qua một thành viên — admin bên kia phải xác nhận." onClose={close} size="lg">
+        <Suspense fallback={<Loading />}>
+          <InlawsNew embedded={{ onDone: close, onCancel: close }} />
         </Suspense>
       </SidePanel>
     );

@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
+import type { EmbeddedForm } from "@/components/panel/embedded";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -65,7 +66,7 @@ import {
  */
 type Mode = "token" | "direct";
 
-export default function InlawsNew() {
+export default function InlawsNew({ embedded }: { embedded?: EmbeddedForm } = {}) {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -127,7 +128,8 @@ export default function InlawsNew() {
         description: "Bên kia sẽ nhận email và xem trong /inlaws.",
       });
       notifyInlaw(link.id);
-      navigate(`/clans/${clan.id}/inlaws`);
+      if (embedded) embedded.onDone();
+      else navigate(`/clans/${clan.id}/inlaws`);
     },
     onError: (e) =>
       toast.error("Không gửi được", { description: (e as Error).message }),
@@ -135,6 +137,8 @@ export default function InlawsNew() {
 
   return (
     <div className="space-y-3">
+      {!embedded && (
+        <>
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
@@ -148,6 +152,8 @@ export default function InlawsNew() {
         title="Đề nghị liên kết dòng họ"
         description="Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, hoặc họ hàng. Admin bên kia phải xác nhận."
       />
+        </>
+      )}
 
       {!createdLink && !picked && (
         <LinkTypeStep value={linkType} onChange={setLinkType} />
@@ -156,8 +162,16 @@ export default function InlawsNew() {
       {createdLink ? (
         <CreatedTokenView
           link={createdLink}
-          clanId={clan.id}
-          navigate={navigate}
+          onBack={() => (embedded ? embedded.onDone() : navigate(`/clans/${clan.id}/inlaws`))}
+          onAnother={() => {
+            // Tạo thêm: về bước đầu với biểu mẫu trống.
+            setCreatedLink(null);
+            setPicked(null);
+            setHint("");
+            setNote("");
+            setPeerClan(null);
+            setPeerPerson(null);
+          }}
         />
       ) : !picked ? (
         <PickLocalPersonStep
@@ -466,11 +480,7 @@ function TokenBody(props: ModeStepProps) {
           <IconX className="h-4 w-4 mr-1.5" />
           Huỷ
         </Button>
-        <Button
-          variant="outline"
-          onClick={props.submitToken}
-          disabled={props.submittingToken}
-        >
+        <Button onClick={props.submitToken} disabled={props.submittingToken}>
           {props.submittingToken ? (
             "Đang tạo…"
           ) : (
@@ -759,7 +769,7 @@ function PeerConfirmStep({
         </Alert>
       )}
 
-      <div className="flex gap-3">
+      <FormActions>
         <Button onClick={onSubmit} disabled={submitting}>
           {submitting ? (
             "Đang gửi…"
@@ -770,7 +780,7 @@ function PeerConfirmStep({
             </>
           )}
         </Button>
-      </div>
+      </FormActions>
     </div>
   );
 }
@@ -779,12 +789,12 @@ function PeerConfirmStep({
 
 function CreatedTokenView({
   link,
-  clanId,
-  navigate,
+  onBack,
+  onAnother,
 }: {
   link: PersonLink;
-  clanId: string;
-  navigate: (to: string) => void;
+  onBack: () => void;
+  onAnother: () => void;
 }) {
   const toast = useToast();
   const [copied, setCopied] = useState(false);
@@ -846,18 +856,16 @@ function CreatedTokenView({
         </p>
       </div>
 
-      <div className="flex gap-3">
-        <Button onClick={() => navigate(`/clans/${clanId}/inlaws`)}>
+      <FormActions>
+        <Button type="button" variant="outline" onClick={onAnother}>
+          <IconPlus className="h-4 w-4 mr-1.5" />
+          Tạo thêm
+        </Button>
+        <Button type="button" onClick={onBack}>
           <IconArrowLeft className="h-4 w-4 mr-1.5" />
           Về danh sách liên kết
         </Button>
-        <Button asChild variant="outline">
-          <Link to={`/clans/${clanId}/inlaws/new`}>
-            <IconPlus className="h-4 w-4 mr-1.5" />
-            Tạo thêm
-          </Link>
-        </Button>
-      </div>
+      </FormActions>
     </div>
   );
 }
