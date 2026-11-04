@@ -222,7 +222,7 @@ export default function Dashboard() {
       {clan.description && <ClanDescription text={clan.description} />}
 
       {inlaws.length > 0 && (
-        <section className="rounded-lg border bg-card p-4">
+        <section className="rounded-xl border bg-card shadow-sm p-4">
           <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
             <IconLink className="h-4 w-4 text-primary" />
             Đã kết thông gia với {inlaws.length} dòng họ
@@ -242,7 +242,7 @@ export default function Dashboard() {
       )}
 
       {linked.length > 0 && (
-        <section className="rounded-lg border bg-card p-4">
+        <section className="rounded-xl border bg-card shadow-sm p-4">
           <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
             <IconLink className="h-4 w-4 text-primary" />
             Liên kết với {linked.length} dòng họ khác
@@ -515,7 +515,7 @@ function ActionTile({
   return (
     <Link
       to={to}
-      className="group relative flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors"
+      className="group relative flex items-center gap-2.5 rounded-xl border bg-card shadow-sm px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors"
     >
       <span
         className="text-primary shrink-0 [&>svg]:h-5 [&>svg]:w-5"
@@ -563,7 +563,7 @@ function ExportPdfTile({ clan }: { clan: ClanDetail }) {
       onClick={onClick}
       disabled={busy}
       title={err ?? undefined}
-      className="group relative flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
+      className="group relative flex items-center gap-2.5 rounded-xl border bg-card shadow-sm px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
     >
       <span
         className="text-primary shrink-0 [&>svg]:h-5 [&>svg]:w-5"

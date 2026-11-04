@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 /**
  * Container for a row of mutually-exclusive segmented buttons. Pairs
  * with `<SegmentedButton>` children. Picks up the "inline-flex
- * rounded-md border bg-card overflow-hidden" shell pattern used in
+ * rounded-xl border bg-card shadow-sm overflow-hidden" shell pattern used in
  * 11 places across the app before this component existed.
  *
  * Use `role="group"` semantics + a required `ariaLabel` so the
@@ -36,7 +36,7 @@ export function SegmentedControl({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        "inline-flex rounded-md border bg-card overflow-hidden",
+        "inline-flex rounded-xl border bg-card shadow-sm overflow-hidden",
         className,
       )}
     >

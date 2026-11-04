@@ -129,7 +129,7 @@ export default function ClanFund() {
       />
 
       {/* Số dư + tổng thu/chi */}
-      <div className="rounded-lg border bg-card p-4">
+      <div className="rounded-xl border bg-card shadow-sm p-4">
         <p className="text-xs uppercase tracking-wide text-muted-foreground">
           Số dư hiện tại
         </p>
@@ -249,7 +249,7 @@ function FundRow({
 }) {
   const isIn = tx.direction === "in";
   return (
-    <li className="flex items-start gap-3 rounded-lg border bg-card p-3">
+    <li className="flex items-start gap-3 rounded-xl border bg-card shadow-sm p-3">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span
@@ -331,7 +331,7 @@ function AddFundForm({
         e.preventDefault();
         if (canSubmit) createM.mutate();
       }}
-      className="space-y-3 rounded-lg border bg-card p-4"
+      className="space-y-3 rounded-xl border bg-card shadow-sm p-4"
     >
       <SegmentedControl ariaLabel="Loại giao dịch" className="w-full">
         <SegmentedButton

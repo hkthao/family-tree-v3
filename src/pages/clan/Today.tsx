@@ -143,7 +143,7 @@ export default function Today() {
 
       <PodcastTodayCard />
 
-      <div className="rounded-md border bg-card p-3 text-sm flex items-center justify-between gap-3 flex-wrap">
+      <div className="rounded-xl border bg-card shadow-sm p-3 text-sm flex items-center justify-between gap-3 flex-wrap">
         {effectiveRole(clan) !== null ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <IconBell className="h-4 w-4" />

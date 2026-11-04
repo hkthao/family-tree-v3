@@ -192,7 +192,7 @@ export default function RestingPlaces() {
               <li key={p.id} className="min-w-0">
                 <Link
                   to={`/clans/${clan.id}/graves/${p.id}`}
-                  className="flex gap-3 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
+                  className="flex gap-3 rounded-xl border bg-card shadow-sm p-3 hover:border-primary transition-colors h-full"
                 >
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-muted grid place-items-center">
                     {thumb ? (

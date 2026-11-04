@@ -186,7 +186,7 @@ function UserRow({
     suspendM.error ?? grantM.error ?? deleteM.error ?? updateLimits.error;
 
   return (
-    <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-2">
+    <li className="rounded-xl border bg-card shadow-sm p-3 sm:p-4 space-y-2">
       {/* Header: tên + email, click toggle expand */}
       <button
         type="button"

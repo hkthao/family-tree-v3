@@ -294,7 +294,7 @@ function Stat({
         ? "text-amber-600 dark:text-amber-500"
         : "";
   return (
-    <div className="rounded-lg border bg-card px-3 py-2">
+    <div className="rounded-xl border bg-card shadow-sm px-3 py-2">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`text-xl font-semibold tabular-nums ${toneClass}`}>{value}</p>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}

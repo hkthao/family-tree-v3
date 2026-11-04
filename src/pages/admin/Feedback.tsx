@@ -201,7 +201,7 @@ function FeedbackRowCard({
   });
 
   return (
-    <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-3">
+    <li className="rounded-xl border bg-card shadow-sm p-3 sm:p-4 space-y-3">
       <div className="flex items-start justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span

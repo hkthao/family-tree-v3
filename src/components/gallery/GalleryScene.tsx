@@ -516,7 +516,7 @@ export function GalleryScene({
       {canEdit && onAddModel && addModelUrl !== null && (
         <div
           data-ui
-          className="absolute left-1/2 top-14 z-20 w-[min(22rem,80%)] -translate-x-1/2 space-y-2 rounded-lg border bg-card p-3 text-card-foreground shadow-xl"
+          className="absolute left-1/2 top-14 z-20 w-[min(22rem,80%)] -translate-x-1/2 space-y-2 rounded-xl border bg-card p-3 text-card-foreground shadow-xl"
         >
           <div className="text-sm font-medium">Thêm hiện vật 3D (GLB/GLTF)</div>
           <input
@@ -627,7 +627,7 @@ export function GalleryScene({
       {canEdit && onRoomColor && showRoomColors && (
         <div
           data-ui
-          className="absolute right-3 top-14 z-20 w-52 space-y-2 rounded-lg border bg-card p-3 text-card-foreground shadow-xl"
+          className="absolute right-3 top-14 z-20 w-52 space-y-2 rounded-xl border bg-card p-3 text-card-foreground shadow-xl"
         >
           <div className="text-sm font-medium">Màu phòng tuỳ chỉnh</div>
           {(

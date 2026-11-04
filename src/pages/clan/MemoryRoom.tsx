@@ -198,7 +198,7 @@ export default function MemoryRoom() {
           ) : photos.length > 0 ? (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {photos.map((p) => (
-                <li key={p.id} className="overflow-hidden rounded-lg border bg-card">
+                <li key={p.id} className="overflow-hidden rounded-xl border bg-card shadow-sm">
                   <img src={p.url} alt={p.title} loading="lazy" className="aspect-square w-full object-cover" />
                   <div className="p-2">
                     <p className="truncate text-sm font-medium">{p.title}</p>

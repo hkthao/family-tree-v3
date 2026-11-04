@@ -279,7 +279,7 @@ function StateTile({
 
 function RateTile({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border bg-card p-3">
+    <div className="rounded-xl border bg-card shadow-sm p-3">
       <p className="text-xl font-semibold tabular-nums">
         {formatNumber(value)}
       </p>
@@ -291,7 +291,7 @@ function RateTile({ label, value }: { label: string; value: number }) {
 function CronRow({ job }: { job: { jobname: string; schedule: string; active: boolean; last_run: { status: string; start_time: string; end_time: string | null; return_message: string | null } | null } }) {
   const ok = job.last_run?.status === "succeeded";
   return (
-    <li className="rounded-md border bg-card p-3 space-y-1">
+    <li className="rounded-xl border bg-card shadow-sm p-3 space-y-1">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <p className="font-mono text-xs">{job.jobname}</p>
         <span

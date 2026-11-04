@@ -538,7 +538,7 @@ function ClanRow({
     <li>
       <Link
         to={`/clans/${clan.id}`}
-        className="block rounded-lg border bg-card px-3 py-2.5 sm:px-4 sm:py-3 hover:border-primary transition-colors"
+        className="block rounded-xl border bg-card shadow-sm px-3 py-2.5 sm:px-4 sm:py-3 hover:border-primary transition-colors"
       >
         <div className="flex items-baseline justify-between gap-3 min-w-0">
           <h2 className="clan-name text-lg font-semibold truncate">
@@ -598,7 +598,7 @@ function ClanCard({
     <li>
       <Link
         to={`/clans/${clan.id}`}
-        className="flex h-full flex-col rounded-lg border bg-card p-3 sm:p-4 hover:border-primary transition-colors"
+        className="flex h-full flex-col rounded-xl border bg-card shadow-sm p-3 sm:p-4 hover:border-primary transition-colors"
       >
         <div className="flex items-start justify-center gap-2 min-w-0">
           <h2 className="clan-name text-base font-semibold text-center leading-snug line-clamp-2 min-w-0">

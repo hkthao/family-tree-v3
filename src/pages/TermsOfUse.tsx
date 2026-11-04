@@ -172,7 +172,7 @@ export default function TermsOfUse() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-2 rounded-lg border bg-card p-4">
+    <section className="space-y-2 rounded-xl border bg-card shadow-sm p-4">
       <h2 className="text-lg font-semibold">{title}</h2>
       <div className="space-y-2 text-sm leading-relaxed text-muted-foreground [&_b]:text-foreground">
         {children}

@@ -324,7 +324,7 @@ export default function HeritageForm() {
             đoạn, đỡ ngợp. Để trống nếu chỉ dùng ô Nội dung ở trên.
           </p>
           {sections.map((sec, i) => (
-            <div key={i} className="rounded-md border bg-card p-3 space-y-2">
+            <div key={i} className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-6 shrink-0">
                   {i + 1}.

@@ -100,7 +100,7 @@ export function KinshipContent({
       )}
 
       {result && personA && personB && (
-        <section className="rounded-lg border bg-card p-4 space-y-3">
+        <section className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
           <h2 className="text-lg font-semibold">Kết quả</h2>
 
           {result.kind === "same" ? (

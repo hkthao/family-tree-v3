@@ -535,7 +535,7 @@ function CompletionProgress({
   return (
     <section
       aria-label="Tiến độ hoàn thiện gia phả"
-      className="rounded-lg border bg-card p-4 sm:p-5 space-y-3"
+      className="rounded-xl border bg-card shadow-sm p-4 sm:p-5 space-y-3"
     >
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
         <h2 className="font-medium">Họ ta đã hoàn thành</h2>

@@ -154,7 +154,7 @@ function AnnouncementAdminCard({
         : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
 
   return (
-    <li className="rounded-lg border bg-card p-3 sm:p-4 space-y-2">
+    <li className="rounded-xl border bg-card shadow-sm p-3 sm:p-4 space-y-2">
       <h3 className="font-semibold">{row.title}</h3>
       <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-3">
         {row.body}
@@ -272,7 +272,7 @@ function AnnouncementEditor({
         e.preventDefault();
         if (title.trim() && body.trim()) saveM.mutate();
       }}
-      className="rounded-lg border bg-card p-4 space-y-4"
+      className="rounded-xl border bg-card shadow-sm p-4 space-y-4"
     >
       <h3 className="font-semibold">{row ? "Sửa tin" : "Tin mới"}</h3>
 

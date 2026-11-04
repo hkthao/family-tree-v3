@@ -94,7 +94,7 @@ export default function Cemeteries() {
       <ul className="space-y-2">
         {(cemeteries ?? []).map((c) => (
           <li key={c.id}>
-            <div className="rounded-lg border bg-card p-3">
+            <div className="rounded-xl border bg-card shadow-sm p-3">
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{c.name}</p>

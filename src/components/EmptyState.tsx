@@ -45,7 +45,7 @@ interface Props {
  */
 export function EmptyState({ icon, title, description, primary, secondary, tertiary }: Props) {
   return (
-    <div className="rounded-lg border bg-card text-center py-10 sm:py-14 px-6 space-y-4">
+    <div className="rounded-xl border bg-card shadow-sm text-center py-10 sm:py-14 px-6 space-y-4">
       {icon && (
         <div
           aria-hidden="true"

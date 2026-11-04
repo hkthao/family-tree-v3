@@ -98,7 +98,7 @@ export default function MemoryRooms() {
       />
 
       {open && canEdit && (
-        <div className="rounded-lg border bg-card p-4 space-y-3">
+        <div className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
           <div>
             <label className="mb-1 block text-sm font-medium">Tên phòng</label>
             <input
@@ -203,7 +203,7 @@ export default function MemoryRooms() {
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {rooms.map((r) => (
             <li key={r.id} className="min-w-0">
-              <div className="flex h-full gap-3 rounded-lg border bg-card p-3">
+              <div className="flex h-full gap-3 rounded-xl border bg-card shadow-sm p-3">
                 <Link
                   to={`/clans/${clan.id}/memory-room/${r.id}`}
                   className="flex min-w-0 flex-1 gap-3 hover:opacity-90"

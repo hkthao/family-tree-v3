@@ -98,7 +98,7 @@ export default function Changelog() {
 
 function ChangelogEntry({ row }: { row: Announcement }) {
   return (
-    <li className="rounded-lg border bg-card p-5 space-y-3">
+    <li className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
         <span
           className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${LEVEL_BADGE[row.level]}`}

@@ -115,7 +115,7 @@ export function BoardPostForm({
         e.preventDefault();
         if (body.trim()) saveM.mutate();
       }}
-      className="rounded-lg border bg-card p-4 space-y-4"
+      className="rounded-xl border bg-card shadow-sm p-4 space-y-4"
     >
       <h3 className="font-semibold">
         {isEdit ? "Sửa bài" : "Đăng bài mới"}
