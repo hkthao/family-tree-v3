@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Fab } from "@/components/Fab";
 import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -97,11 +98,7 @@ export default function Customs() {
           actions={
             isAdmin ? (
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" asChild>
-                  <Link to="/so-tay/new">
-                    <IconPlus className="h-4 w-4 mr-1" /> Thêm bài
-                  </Link>
-                </Button>
+                <Fab to="/so-tay/new" label="Thêm bài" />
                 <Button size="sm" variant="outline" asChild>
                   <Link to="/so-tay/import">
                     <IconUpload className="h-4 w-4 mr-1" /> Nhập Markdown

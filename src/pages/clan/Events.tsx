@@ -14,6 +14,7 @@ import {
   IconTrash,
   IconX,
 } from "@/components/icons";
+import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { eventWhenText } from "@/lib/eventWhen";
@@ -704,10 +705,7 @@ function AddEventForm({
 
   if (!open) {
     return (
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        <IconPlus className="h-4 w-4 mr-1.5" />
-        Thêm sự kiện
-      </Button>
+      <Fab onClick={() => setOpen(true)} label="Thêm sự kiện" />
     );
   }
 

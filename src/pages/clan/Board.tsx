@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 
+import { Fab } from "@/components/Fab";
 import { ClanPostCard } from "@/components/ClanPostCard";
 import {
   IconPlus,
@@ -77,12 +78,7 @@ export default function Board() {
               </Link>
             )}
             {isMember && user && (
-              <Button asChild size="sm" className="h-10">
-                <Link to={`/clans/${clanId}/board/new`}>
-                  <IconPlus className="h-4 w-4 mr-1.5" />
-                  Đăng bài mới
-                </Link>
-              </Button>
+              <Fab to={`/clans/${clanId}/board/new`} label="Đăng bài mới" />
             )}
           </>
         }

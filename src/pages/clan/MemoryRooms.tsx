@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { IconCamera, IconPlus } from "@/components/icons";
@@ -91,9 +92,7 @@ export default function MemoryRooms() {
         actionsBelow
         actions={
           canEdit ? (
-            <Button type="button" size="sm" onClick={() => setOpen((v) => !v)}>
-              <IconPlus className="mr-1.5 h-4 w-4" /> Tạo phòng
-            </Button>
+            <Fab onClick={() => setOpen((v) => !v)} active={open} label="Tạo phòng" />
           ) : undefined
         }
       />

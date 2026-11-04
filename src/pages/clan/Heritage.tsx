@@ -2,10 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { SectionCard } from "@/components/SectionCard";
+import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
 import { HeritageThumb } from "@/components/HeritageThumb";
-import { IconPlus, IconScroll, IconSearch } from "@/components/icons";
+import { IconChart, IconScroll, IconSearch } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
@@ -129,14 +131,7 @@ export default function Heritage() {
         <div className="flex shrink-0 items-center gap-2">
           {isMember && <MemoryRoomCtaButton clanId={clan.id} className="h-9" />}
           {tab === "clan" && canEdit && (
-            <Button
-              size="sm"
-              className="shrink-0"
-              onClick={() => navigate(`/clans/${clan.id}/heritage/new`)}
-            >
-              <IconPlus className="h-4 w-4 mr-1" />
-              Thêm
-            </Button>
+            <Fab to={`/clans/${clan.id}/heritage/new`} label="Thêm di sản" />
           )}
         </div>
       </div>
@@ -150,13 +145,17 @@ export default function Heritage() {
         const pct = Math.min(100, Math.round((storageBytes / HERITAGE_CLAN_QUOTA_BYTES) * 100));
         const near = pct >= 90;
         return (
-          <div className="rounded-md border bg-card px-3 py-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Dung lượng ảnh & ghi âm</span>
-              <span className={near ? "font-medium text-red-600" : "font-medium"}>
+          <SectionCard
+            id="heritage-storage"
+            icon={<IconChart />}
+            title="Dung lượng ảnh & ghi âm"
+            action={
+              <span className={`shrink-0 text-sm ${near ? "font-medium text-red-600" : "text-muted-foreground"}`}>
                 {formatBytes(storageBytes)} / {formatBytes(HERITAGE_CLAN_QUOTA_BYTES)}
               </span>
-            </div>
+            }
+          >
+            <div>
             <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
                 className={`h-full rounded-full ${near ? "bg-red-600" : "bg-primary"}`}
@@ -168,7 +167,8 @@ export default function Heritage() {
                 Sắp đầy. Hãy xoá bớt ảnh/ghi âm cũ trước khi thêm mới.
               </p>
             )}
-          </div>
+            </div>
+          </SectionCard>
         );
       })()}
 
@@ -238,7 +238,7 @@ export default function Heritage() {
               <li key={i.id} className="min-w-0">
                 <Link
                   to={`/clans/${clan.id}/heritage/${i.id}`}
-                  className="flex min-w-0 gap-3 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full"
+                  className="flex min-w-0 gap-3 rounded-xl border bg-card p-3 shadow-sm hover:border-primary transition-colors h-full"
                 >
                   <HeritageThumb category={i.category} src={thumb} />
                   <div className="min-w-0 flex-1">

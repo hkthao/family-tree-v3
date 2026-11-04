@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
+import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -164,12 +165,7 @@ export default function Inlaws() {
         description="Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, họ hàng. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi."
         actionsBelow
         actions={
-          <Button asChild size="sm" className="h-10">
-            <Link to={`/clans/${clan.id}/inlaws/new`}>
-              <IconPlus className="h-4 w-4 mr-1.5" />
-              Đề nghị mới
-            </Link>
-          </Button>
+          <Fab to={`/clans/${clan.id}/inlaws/new`} label="Đề nghị mới" />
         }
       />
 
