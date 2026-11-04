@@ -11,7 +11,8 @@ export interface ClanOutletContext {
  * Cấp dòng họ cho nội dung nằm NGOÀI <Outlet> của ClanLayout (ngăn kéo —
  * PanelHost — render ở layout nên useOutletContext không có giá trị).
  */
-export const ClanContextProvider = createContext<ClanOutletContext | null>(null);
+const ClanCtx = createContext<ClanOutletContext | null>(null);
+export const ClanContextProvider = ClanCtx.Provider;
 
 /**
  * Type-safe access to the current clan from inside nested routes under
@@ -19,7 +20,7 @@ export const ClanContextProvider = createContext<ClanOutletContext | null>(null)
  * ngăn kéo thì qua ClanContextProvider (ưu tiên khi có).
  */
 export function useClanContext(): ClanOutletContext {
-  const fromProvider = useContext(ClanContextProvider);
+  const fromProvider = useContext(ClanCtx);
   const fromOutlet = useOutletContext<ClanOutletContext | undefined>();
   const ctx = fromProvider ?? fromOutlet;
   if (!ctx) throw new Error("useClanContext cần nằm trong ClanLayout (Outlet hoặc PanelHost)");
