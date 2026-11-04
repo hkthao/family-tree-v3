@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { InSidePanelContext } from "@/components/panel/context";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,6 +30,8 @@ export function FormActions({
   children: React.ReactNode;
   className?: string;
 }) {
+  const inPanel = React.useContext(InSidePanelContext);
+  if (inPanel) return <div className={cn(PANEL_ACTIONS_CLASS, className)}>{children}</div>;
   return (
     <div
       className={cn(
@@ -43,3 +46,11 @@ export function FormActions({
     </div>
   );
 }
+
+/**
+ * Thanh nút cuối form NẰM TRONG ngăn kéo (SidePanel): dính đáy ngăn kéo (kể cả
+ * khi form ngắn — `mt-auto` trong cột flex của thân panel), nút phụ bên trái,
+ * nút chính ngoài cùng phải, cùng nền / viền / khoảng đệm ở mọi form.
+ */
+export const PANEL_ACTIONS_CLASS =
+  "sticky bottom-0 z-10 mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:px-5 [&>*]:w-auto";

@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PANEL_ACTIONS_CLASS } from "@/components/ui/form-actions";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
@@ -778,22 +779,20 @@ function QuickAddChild({
             onLiving={setIsLiving}
           />
 
-          <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={singleMutation.isPending || !name.trim()}
-            >
-              <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu & thêm người nữa
-            </Button>
+          <div className={PANEL_ACTIONS_CLASS}>
             <Button
               type="button"
               variant="outline"
               onClick={onDone}
-              className="shrink-0"
             >
               Xong
+            </Button>
+            <Button
+              type="submit"
+              disabled={singleMutation.isPending || !name.trim()}
+            >
+              <IconCheck className="h-4 w-4 mr-1.5" />
+              Lưu & thêm người nữa
             </Button>
           </div>
         </form>
@@ -901,10 +900,16 @@ function QuickAddChild({
             Thêm dòng
           </button>
 
-          <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
+          <div className={PANEL_ACTIONS_CLASS}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onDone}
+            >
+              Xong
+            </Button>
             <Button
               type="submit"
-              className="flex-1"
               disabled={
                 bulkMutation.isPending ||
                 rows.every((r) => !r.name.trim())
@@ -914,14 +919,6 @@ function QuickAddChild({
               {bulkMutation.isPending
                 ? "Đang lưu…"
                 : `Lưu ${rows.filter((r) => r.name.trim()).length} người`}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onDone}
-              className="shrink-0"
-            >
-              Xong
             </Button>
           </div>
         </form>
@@ -1047,22 +1044,20 @@ function QuickAddSpouse({
         onLiving={setIsLiving}
       />
 
-      <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
-        <Button
-          type="submit"
-          className="flex-1"
-          disabled={mutation.isPending || !name.trim()}
-        >
-          <IconCheck className="h-4 w-4 mr-1.5" />
-          Lưu & thêm người nữa
-        </Button>
+      <div className={PANEL_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
           onClick={onDone}
-          className="shrink-0"
         >
           Xong
+        </Button>
+        <Button
+          type="submit"
+          disabled={mutation.isPending || !name.trim()}
+        >
+          <IconCheck className="h-4 w-4 mr-1.5" />
+          Lưu & thêm người nữa
         </Button>
       </div>
     </form>
@@ -1270,22 +1265,20 @@ function QuickAddParent({
         onLiving={setIsLiving}
       />
 
-      <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-card border-t flex gap-2 z-10">
-        <Button
-          type="submit"
-          className="flex-1"
-          disabled={mutation.isPending || !name.trim()}
-        >
-          <IconCheck className="h-4 w-4 mr-1.5" />
-          Lưu
-        </Button>
+      <div className={PANEL_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
           onClick={onDone}
-          className="shrink-0"
         >
           Hủy
+        </Button>
+        <Button
+          type="submit"
+          disabled={mutation.isPending || !name.trim()}
+        >
+          <IconCheck className="h-4 w-4 mr-1.5" />
+          Lưu
         </Button>
       </div>
     </form>

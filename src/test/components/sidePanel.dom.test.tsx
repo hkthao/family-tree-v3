@@ -7,6 +7,7 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
+import { FormActions } from "@/components/ui/form-actions";
 import { usePanel } from "@/components/panel/usePanel";
 import { SidePanel } from "@/components/SidePanel";
 
@@ -107,5 +108,35 @@ describe("usePanel — đồng bộ URL", () => {
     fireEvent.click(screen.getByText("dong"));
     await waitFor(() => expect(screen.getByTestId("cur").textContent).toBe("-"));
     expect(screen.getByTestId("url").textContent).toBe("/clans/1/people?q=tran");
+  });
+});
+
+describe("FormActions trong ngăn kéo", () => {
+  it("dùng thanh dính đáy (mt-auto, sticky) thay vì xếp dọc như trên trang", () => {
+    render(
+      <ConfirmDialogProvider>
+        <SidePanel open title="Form" onClose={() => {}}>
+          <form>
+            <FormActions>
+              <button type="button">Hủy</button>
+              <button type="submit">Lưu</button>
+            </FormActions>
+          </form>
+        </SidePanel>
+      </ConfirmDialogProvider>,
+    );
+    const bar = screen.getByText("Lưu").parentElement!;
+    expect(bar.className).toContain("sticky");
+    expect(bar.className).toContain("mt-auto");
+    expect(bar.className).toContain("justify-end");
+  });
+
+  it("ngoài ngăn kéo vẫn là bố cục cũ (không sticky)", () => {
+    render(
+      <FormActions>
+        <button type="submit">Lưu</button>
+      </FormActions>,
+    );
+    expect(screen.getByText("Lưu").parentElement!.className).not.toContain("sticky");
   });
 });
