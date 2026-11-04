@@ -145,6 +145,9 @@
   /* Base font size — 17px, scales with user system preference via rem */
   html {
     font-size: 17px;
+    /* Chừa sẵn chỗ thanh cuộn: mở ngăn kéo khoá cuộn trang (overflow:hidden)
+       làm thanh cuộn biến mất → layout giật sang phải. Có gutter thì không lệch. */
+    scrollbar-gutter: stable;
   }
 
   body {
