@@ -38,7 +38,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, effectiveRole, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { getClanContentCounts, getClanStats } from "@/lib/queries/clan-stats";
 import { getClansInlawLinks } from "@/lib/queries/clans";
 import { getClansLinkedClans, LINKED_CLAN_RELATION_LABEL } from "@/lib/queries/person-links";
@@ -177,11 +177,26 @@ export default function Dashboard() {
         title="Tổng quan"
         description={`Trang chủ của ${clan.name}.`}
         actions={
-          <RefreshButton
-            clanId={clan.id}
-            cachedVersion={clan.data_version}
-            compact
-          />
+          <div className="flex items-center gap-1">
+            {/* Lối tắt tới Cài đặt dòng họ — chỉ quản trị mới thấy (trang đó chỉ
+                quản trị vào được), khỏi phải mở menu trái. */}
+            {isClanAdmin(clan) && (
+              <Link
+                to={`/clans/${clan.id}/settings`}
+                aria-label="Cài đặt dòng họ"
+                title="Cài đặt dòng họ"
+                data-testid="dashboard-settings-link"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                <IconSettings className="h-4 w-4" />
+              </Link>
+            )}
+            <RefreshButton
+              clanId={clan.id}
+              cachedVersion={clan.data_version}
+              compact
+            />
+          </div>
         }
       />
 
@@ -445,6 +460,13 @@ export default function Dashboard() {
                     title="Nhập Excel"
                   />
                 </>
+              )}
+              {isClanAdmin(clan) && (
+                <ActionTile
+                  to={`/clans/${clan.id}/settings`}
+                  icon={<IconSettings />}
+                  title="Cài đặt dòng họ"
+                />
               )}
               {/* PDF export is member-only — bulk-downloading the whole
                   clan book is owner territory, not for non-member
