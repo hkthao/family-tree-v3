@@ -11,6 +11,7 @@ import {
   IconDownload,
   IconGrave,
   IconGrid,
+  IconSettings,
   IconHome,
   IconLink,
   IconList,
