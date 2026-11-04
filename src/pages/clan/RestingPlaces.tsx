@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { FabGroup } from "@/components/FabGroup";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -16,7 +16,6 @@ import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { PageHeader } from "@/components/PageHeader";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
-import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
@@ -36,7 +35,6 @@ export default function RestingPlaces() {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
-  const navigate = useNavigate();
   const canEdit = canEditClan(clan);
 
   const [search, setSearch] = useState("");

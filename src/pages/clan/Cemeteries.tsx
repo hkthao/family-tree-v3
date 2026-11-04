@@ -11,7 +11,6 @@ import {
   IconGrave,
   IconMapPin,
   IconPencil,
-  IconPlus,
   IconScroll,
   IconTrash,
   IconX,

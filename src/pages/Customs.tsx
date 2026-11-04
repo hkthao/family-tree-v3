@@ -19,7 +19,6 @@ import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { SearchInput } from "@/components/SearchInput";
-import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlState } from "@/hooks/useUrlState";

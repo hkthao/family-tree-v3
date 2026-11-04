@@ -4,13 +4,11 @@ import { useSearchParams, Link, useParams } from "react-router-dom";
 import { Fab } from "@/components/Fab";
 import { ClanPostCard } from "@/components/ClanPostCard";
 import {
-  IconPlus,
   IconScroll,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listClanPosts, listPendingPosts } from "@/lib/queries/clan_posts";

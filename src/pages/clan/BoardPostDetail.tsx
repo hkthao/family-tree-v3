@@ -230,7 +230,6 @@ function PostActionsMenu({
   isAdmin: boolean;
   onAfter: (action: ClanPostModerateAction) => void;
 }) {
-  const navigate = useNavigate();
   const { open: openPanel } = usePanel();
   const qc = useQueryClient();
   const toast = useToast();

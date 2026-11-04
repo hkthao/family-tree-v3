@@ -13,9 +13,12 @@ import {
   IconPlus,
   IconFilter,
   IconTree,
+  IconX,
   IconUpload,
 } from "@/components/icons";
 import { FilterDrawer } from "@/components/FilterDrawer";
+import { SidePanel } from "@/components/SidePanel";
+import { PANEL_ACTIONS_CLASS } from "@/components/ui/form-actions";
 import { PageHeader } from "@/components/PageHeader";
 import {
   NAME_FONTS,
@@ -2090,7 +2093,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         variant="outline"
         size="sm"
         className="h-10 px-2.5 sm:px-3"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(true)}
         disabled={busy}
         aria-label="Xuất sổ PDF"
         title="Xuất toàn bộ thông tin dòng họ thành sổ PDF"
@@ -2100,14 +2103,14 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
           {busy ? "Đang xuất…" : "Xuất sổ"}
         </span>
       </Button>
-      {open && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
-            aria-hidden
-          />
-          <div className="absolute right-0 z-50 mt-1 w-72 space-y-2 rounded-xl border bg-card p-3 shadow-lg">
+      <SidePanel
+        open={open}
+        title="Xuất sổ PDF"
+        subtitle="Toàn bộ thông tin dòng họ thành một cuốn sổ PDF."
+        onClose={() => setOpen(false)}
+        guard={false}
+      >
+        <div className="flex flex-1 flex-col space-y-3">
             <p className="text-sm font-medium">Trang sơ đồ cây</p>
             <Select
               value={singlePage ? "single" : "paged"}
@@ -2180,13 +2183,18 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
                 </option>
               ))}
             </Select>
-            <Button size="sm" className="w-full" onClick={doExport} disabled={busy}>
+          <div className={PANEL_ACTIONS_CLASS}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <IconX className="h-4 w-4 mr-1.5" />
+              Đóng
+            </Button>
+            <Button type="button" onClick={doExport} disabled={busy}>
               <IconDownload className="h-4 w-4 mr-1.5" />
               Tải PDF
             </Button>
           </div>
-        </>
-      )}
+        </div>
+      </SidePanel>
     </div>
   );
 }
