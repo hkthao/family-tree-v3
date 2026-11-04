@@ -1,7 +1,7 @@
 import { CollapsibleCard } from "@/components/CollapsibleCard";
 import { CollapsibleBio } from "@/components/BioText";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ComponentProps } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { AddSpouseForm } from "@/pages/clan/AddSpouse";
@@ -89,8 +89,20 @@ import {
 
 import { PersonNavButtons } from "@/components/PersonNavButtons";
 
-export default function PersonDetail() {
-  const { clanId, personId } = useParams<{ clanId: string; personId: string }>();
+/** Đang chạy trong ngăn kéo: bấm người thân → đổi sang chi tiết người đó (cùng panel). */
+const EmbeddedPersonContext = createContext(false);
+
+export interface EmbeddedPerson {
+  id: string;
+  /** Đóng ngăn kéo (sau khi xoá người này…). */
+  onClose: () => void;
+}
+
+export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson } = {}) {
+  const routeParams = useParams<{ clanId: string; personId: string }>();
+  const { clan } = useClanContext();
+  const clanId = embedded ? clan.id : routeParams.clanId;
+  const personId = embedded ? embedded.id : routeParams.personId;
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
@@ -113,8 +125,6 @@ export default function PersonDetail() {
   // through Edit / AddSpouse / AddChild.
   const fromQs = fromTree ? "?from=tree" : "";
 
-  // Clan comes from the layout, not a duplicate fetch.
-  const { clan } = useClanContext();
   // Non-members of a public clan read through the masked view —
   // same source-selection pattern as /tree and /people. Without
   // this they'd hit "Không tìm thấy người này" the moment they
@@ -182,7 +192,8 @@ export default function PersonDetail() {
       toast.success(`Đã xoá ${person?.full_name ?? "người này"}`, {
         description: "Có thể khôi phục từ nhật ký.",
       });
-      navigate(backTo);
+      if (embedded) embedded.onClose();
+      else navigate(backTo);
     },
     onError: (e) =>
       toast.error("Không xoá được", { description: (e as Error).message }),
@@ -276,15 +287,18 @@ export default function PersonDetail() {
     !!user && (clan.isPlatformAdmin || clan.myRole !== null);
 
   return (
+    <EmbeddedPersonContext.Provider value={!!embedded}>
     <div className="space-y-3">
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Danh bạ", to: `/clans/${clanId}/people` },
-          { label: person?.full_name ?? "Người" },
-        ]}
-      />
-      {clanId && personId && (
+      {!embedded && (
+        <Breadcrumb
+          items={[
+            { label: clan.name, to: `/clans/${clanId}` },
+            { label: "Danh bạ", to: `/clans/${clanId}/people` },
+            { label: person?.full_name ?? "Người" },
+          ]}
+        />
+      )}
+      {!embedded && clanId && personId && (
         <PersonNavButtons clanId={clanId} personId={personId} />
       )}
 
@@ -790,7 +804,18 @@ export default function PersonDetail() {
         </>
       )}
     </div>
+    </EmbeddedPersonContext.Provider>
   );
+}
+
+/** Link tới người thân: trong ngăn kéo thì đổi sang chi tiết người đó (cùng panel), ngoài trang thì chuyển route như cũ. */
+function PersonLink({
+  personId,
+  ...rest
+}: ComponentProps<typeof Link> & { personId: string }) {
+  const embedded = useContext(EmbeddedPersonContext);
+  if (embedded) return <PanelLink {...rest} panel="person-view" panelParams={{ pid: personId }} />;
+  return <Link {...rest} />;
 }
 
 function DetailRow({
@@ -911,8 +936,9 @@ function RelationshipGroup({
         <ul className="space-y-1.5">
           {items.map((r, index) => (
             <li key={r.id} className="flex items-stretch gap-1.5">
-              <Link
+              <PersonLink
                 to={`/clans/${clanId}/people/${r.id}`}
+                personId={r.id}
                 className="flex flex-1 min-w-0 items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
               >
                 <PersonAvatar
@@ -941,7 +967,7 @@ function RelationshipGroup({
                     ›
                   </span>
                 )}
-              </Link>
+              </PersonLink>
               {onRemove && (
                 <button
                   type="button"

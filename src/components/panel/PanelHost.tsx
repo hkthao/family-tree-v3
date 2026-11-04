@@ -25,6 +25,7 @@ const EditPersonForm = lazy(() =>
   import("@/pages/clan/EditPerson").then((m) => ({ default: m.EditPersonForm })),
 );
 
+const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
 const RestingPlaceForm = lazy(() => import("@/pages/clan/RestingPlaceForm"));
 const HeritageForm = lazy(() => import("@/pages/clan/HeritageForm"));
 const BoardPostForm = lazy(() =>
@@ -61,6 +62,16 @@ export function PanelHost({ clan }: { clan: ClanDetail }) {
     queryFn: () => getPerson(pid!),
     enabled: !!pid && !!userId && (current === "person-edit"),
   });
+
+  if (current === "person-view" && pid) {
+    return (
+      <SidePanel open title="Chi tiết" onClose={close} size="lg">
+        <Suspense fallback={<Loading />}>
+          <PersonDetail embedded={{ id: pid, onClose: close }} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
 
   if (current === "person-new") {
     return (
