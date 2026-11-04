@@ -50,11 +50,12 @@ export function FormActions({
 /**
  * Thanh nút cuối form NẰM TRONG ngăn kéo (SidePanel): dính đáy ngăn kéo (kể cả
  * khi form ngắn — `mt-auto` trong cột flex của thân panel), nút phụ bên trái,
- * nút chính ngoài cùng phải, cùng nền / viền / khoảng đệm ở mọi form. Nút luôn
+ * nút chính ngoài cùng phải, cùng nền / viền / khoảng đệm ở mọi form. Không đệm
+ * trái/phải: nút giãn đều, sát mép ngăn kéo. Nút luôn
  * cỡ sm (h-10) — bằng các nút Xuất sổ / Chia sẻ — dù form khai báo size nào.
  */
 export const PANEL_ACTIONS_CLASS =
-  "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:px-5 [&>*]:w-auto [&>*]:h-10 [&>*]:px-4";
+  "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background px-0 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 [&>*]:h-10 [&>*]:flex-1 [&>*]:px-4";
 
 /**
  * Thanh nút dính đáy của ngăn kéo + một khoảng đệm 1rem phía trên để nội dung

@@ -15,7 +15,8 @@ export type PanelId = "person-view" | "person-new" | "person-edit" | "person-add
   | "heritage-edit"
   | "board-new"
   | "board-edit"
-  | "clan-new";
+  | "clan-new"
+  | "inlaw-new";
 
 export interface PanelParams {
   /** Id bản ghi đang thao tác: người (sửa / thêm quan hệ), mộ phần, di sản, bài đăng. */

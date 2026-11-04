@@ -165,7 +165,7 @@ export default function Inlaws() {
         description="Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, họ hàng. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi."
         actionsBelow
         actions={
-          <Fab to={`/clans/${clan.id}/inlaws/new`} label="Đề nghị mới" />
+          <Fab to={`/clans/${clan.id}/inlaws/new`} panel={{ id: "inlaw-new" }} label="Đề nghị mới" />
         }
       />
 
