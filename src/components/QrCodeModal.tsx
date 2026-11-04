@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 
-import { IconDownload, IconX } from "@/components/icons";
+import { IconDownload } from "@/components/icons";
+import { SidePanel } from "@/components/SidePanel";
 import { Button } from "@/components/ui/button";
+import { PanelActionBar } from "@/components/ui/form-actions";
 
 interface Props {
   url: string;
@@ -27,7 +28,7 @@ interface Props {
 }
 
 /**
- * Modal that renders a QR code for the given URL. Used by share
+ * Ngăn kéo hiển thị mã QR cho một URL. Used by share
  * links + the drawer "share this app" affordance so a phone next
  * to the screen can scan and jump straight to the URL without
  * typing.
@@ -80,120 +81,79 @@ export function QrCodeModal({
     };
   }, [open, url, loading]);
 
-  // ESC closes
-  useEffect(() => {
-    if (!open) return;
-    const h = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [open, onClose]);
-
   if (!open) return null;
-  if (typeof document === "undefined") return null;
 
-  // Render into <body> via portal so the dialog escapes any
-  // ancestor with `transform` / `filter` applied (the drawer uses
-  // translate-x for slide-in, which would otherwise pin our
-  // `position: fixed` to the drawer instead of the viewport).
-  return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={title ?? "Mã QR"}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
-      onClick={onClose}
+  // Ngăn kéo bên phải (SidePanel, portal ra <body>) thay cho hộp thoại giữa màn
+  // hình; Esc / nền mờ / X do SidePanel lo. Giữ tên QrCodeModal để các nơi gọi
+  // (chi tiết người, mộ phần, di sản, link chia sẻ, QR ứng dụng) không phải đổi.
+  return (
+    <SidePanel
+      open
+      title={title ?? "Mã QR"}
+      subtitle={description}
+      onClose={onClose}
+      guard={false}
     >
-      <div
-        className="relative w-full max-w-sm rounded-lg bg-card p-5 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Đóng"
-          className="absolute right-3 top-3 h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
-        >
-          <IconX className="h-5 w-5" />
-        </button>
-
-        <div className="space-y-3">
-          {title && (
-            <h2 className="clan-name text-lg font-semibold text-primary text-center">
-              {title}
-            </h2>
-          )}
-          {description && (
-            <p className="text-sm text-muted-foreground text-center">
-              {description}
-            </p>
-          )}
-
-          <div className="flex justify-center items-center bg-white rounded-md p-3 min-h-[344px]">
-            {loading || !url ? (
-              <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                <div
-                  className="h-10 w-10 rounded-full border-4 border-muted border-t-primary animate-spin"
-                  aria-hidden="true"
-                />
-                <p className="text-sm">Đang tạo mã QR…</p>
-              </div>
-            ) : (
-              <canvas
-                ref={canvasRef}
-                width={320}
-                height={320}
-                aria-label="Mã QR"
+      <div className="flex flex-1 flex-col space-y-3">
+        <div className="flex min-h-[344px] items-center justify-center rounded-md bg-white p-3">
+          {loading || !url ? (
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+              <div
+                className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"
+                aria-hidden="true"
               />
-            )}
-          </div>
-
-          {url && !loading && (
-            <p
-              className="text-xs text-muted-foreground text-center break-all font-mono"
-              aria-hidden="true"
-            >
-              {url}
-            </p>
-          )}
-
-          {err && (
-            <p className="text-sm text-destructive text-center">{err}</p>
-          )}
-
-          {dataUrl && (
-            <div className="flex justify-center gap-2 flex-wrap">
-              <Button asChild variant="outline" size="sm">
-                <a href={dataUrl} download="qr-gia-pha.png">
-                  <IconDownload className="h-4 w-4 mr-1.5" />
-                  Lưu ảnh QR
-                </a>
-              </Button>
-              {onDownloadPdf && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={pdfBusy}
-                  onClick={async () => {
-                    setPdfBusy(true);
-                    try {
-                      await onDownloadPdf();
-                    } finally {
-                      setPdfBusy(false);
-                    }
-                  }}
-                >
-                  <IconDownload className="h-4 w-4 mr-1.5" />
-                  {pdfBusy ? "Đang tạo PDF…" : "Tải PDF danh thiếp"}
-                </Button>
-              )}
+              <p className="text-sm">Đang tạo mã QR…</p>
             </div>
+          ) : (
+            <canvas
+              ref={canvasRef}
+              width={320}
+              height={320}
+              aria-label="Mã QR"
+            />
           )}
         </div>
+
+        {url && !loading && (
+          <p
+            className="break-all text-center font-mono text-xs text-muted-foreground"
+            aria-hidden="true"
+          >
+            {url}
+          </p>
+        )}
+
+        {err && <p className="text-center text-sm text-destructive">{err}</p>}
+
+        {dataUrl && (
+          <PanelActionBar>
+            {onDownloadPdf && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={pdfBusy}
+                onClick={async () => {
+                  setPdfBusy(true);
+                  try {
+                    await onDownloadPdf();
+                  } finally {
+                    setPdfBusy(false);
+                  }
+                }}
+              >
+                <IconDownload className="mr-1.5 h-4 w-4" />
+                {pdfBusy ? "Đang tạo PDF…" : "Tải PDF danh thiếp"}
+              </Button>
+            )}
+            <Button asChild>
+              <a href={dataUrl} download="qr-gia-pha.png">
+                <IconDownload className="mr-1.5 h-4 w-4" />
+                Lưu ảnh QR
+              </a>
+            </Button>
+          </PanelActionBar>
+        )}
       </div>
-    </div>,
-    document.body,
+    </SidePanel>
   );
 }
