@@ -25,6 +25,7 @@ import {
 import { extractCoverImage, parseCustomMarkdown } from "@/lib/customs/markdown";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import type { EmbeddedForm } from "@/components/panel/embedded";
 import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,8 +65,9 @@ const STATUSES: { value: CustomStatus; label: string }[] = [
   { value: "published", label: "Công khai" },
 ];
 
-export default function CustomsForm() {
-  const { entryId } = useParams<{ entryId?: string }>();
+export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = {}) {
+  const routeParams = useParams<{ entryId?: string }>();
+  const entryId = embedded ? embedded.id : routeParams.entryId;
   const isEdit = !!entryId;
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id ?? "";
@@ -245,7 +247,8 @@ export default function CustomsForm() {
       qc.invalidateQueries({ queryKey: ["customs"] });
       qc.invalidateQueries({ queryKey: ["custom-entry", res.id] });
       toast.success(isEdit ? "Đã lưu" : "Đã tạo bài");
-      navigate(`/so-tay/${res.id}`);
+      if (embedded) embedded.onDone(res.id);
+      else navigate(`/so-tay/${res.id}`);
     },
     onError: (e) => setErr((e as Error).message),
   });
@@ -253,13 +256,13 @@ export default function CustomsForm() {
   // Gate: chỉ platform admin. Chờ auth + profile load xong mới quyết định
   // (tránh redirect sớm khi userId/profile chưa kịp có → đá nhầm về list).
   if (authLoading || (!!userId && profile === undefined)) {
-    return (
-      <Shell>
-        <p className="text-muted-foreground">Đang tải…</p>
-      </Shell>
-    );
+    const loading = <p className="text-muted-foreground">Đang tải…</p>;
+    return embedded ? loading : <Shell>{loading}</Shell>;
   }
-  if (!profile?.is_platform_admin) return <Navigate to="/so-tay" replace />;
+  if (!profile?.is_platform_admin) {
+    if (embedded) return <p className="text-sm text-muted-foreground">Chỉ quản trị nền tảng được sửa Sổ tay.</p>;
+    return <Navigate to="/so-tay" replace />;
+  }
 
   const toggleRegion = (r: string) =>
     setRegions((prev) =>
@@ -283,15 +286,19 @@ export default function CustomsForm() {
         .slice(0, 6)
     : [];
 
-  return (
-    <Shell>
-      <Link to="/so-tay" className="text-sm text-primary hover:underline">
-        ← Sổ tay Văn hoá
-      </Link>
+  const content = (
+    <>
+      {!embedded && (
+        <Link to="/so-tay" className="text-sm text-primary hover:underline">
+          ← Sổ tay Văn hoá
+        </Link>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="clan-name text-2xl font-semibold">
-          {isEdit ? "Sửa bài" : "Thêm bài phong tục"}
-        </h1>
+        {!embedded && (
+          <h1 className="clan-name text-2xl font-semibold">
+            {isEdit ? "Sửa bài" : "Thêm bài phong tục"}
+          </h1>
+        )}
         <Button type="button" variant="outline" size="sm" onClick={() => setMdOpen((v) => !v)}>
           <IconUpload className="h-4 w-4 mr-1" /> Nhập từ Markdown
         </Button>
@@ -602,15 +609,16 @@ export default function CustomsForm() {
         {err && <p className="text-sm text-destructive">{err}</p>}
 
         <FormActions>
-          <Button type="button" variant="ghost" onClick={() => navigate(-1)}>Hủy</Button>
+          <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(-1))}>Hủy</Button>
           <Button type="submit" disabled={save.isPending || !title.trim()}>
             <IconCheck className="h-4 w-4 mr-1.5" />
             {save.isPending ? "Đang lưu…" : "Lưu"}
           </Button>
         </FormActions>
       </form>
-    </Shell>
+    </>
   );
+  return embedded ? <div className="space-y-3">{content}</div> : <Shell>{content}</Shell>;
 }
 
 function Shell({ children }: { children: React.ReactNode }) {

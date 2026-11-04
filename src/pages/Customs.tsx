@@ -98,8 +98,8 @@ export default function Customs() {
           <FabGroup
             label="Thêm"
             actions={[
-              { label: "Thêm bài", icon: <IconPlus />, to: "/so-tay/new" },
-              { label: "Nhập Markdown", icon: <IconUpload />, to: "/so-tay/import" },
+              { label: "Thêm bài", icon: <IconPlus />, to: "/so-tay/new", panel: { id: "custom-new" } },
+              { label: "Nhập Markdown", icon: <IconUpload />, to: "/so-tay/import", panel: { id: "custom-import" } },
             ]}
           />
         )}

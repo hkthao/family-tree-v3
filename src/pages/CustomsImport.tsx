@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { IconCheck, IconList, IconTag, IconUpload } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
+import type { EmbeddedForm } from "@/components/panel/embedded";
 import { FormActions } from "@/components/ui/form-actions";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,7 +48,7 @@ interface ImportResult {
   failed: { title: string; error: string }[];
 }
 
-export default function CustomsImport() {
+export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } = {}) {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
@@ -147,23 +148,27 @@ export default function CustomsImport() {
   });
 
   if (authLoading || (!!userId && profile === undefined)) {
-    return (
-      <Shell>
-        <p className="text-muted-foreground">Đang tải…</p>
-      </Shell>
-    );
+    const loading = <p className="text-muted-foreground">Đang tải…</p>;
+    return embedded ? loading : <Shell>{loading}</Shell>;
   }
-  if (!profile?.is_platform_admin) return <Navigate to="/so-tay" replace />;
+  if (!profile?.is_platform_admin) {
+    if (embedded) return <p className="text-sm text-muted-foreground">Chỉ quản trị nền tảng được nhập Sổ tay.</p>;
+    return <Navigate to="/so-tay" replace />;
+  }
 
   const toggleRegion = (r: string) =>
     setRegions((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
 
-  return (
-    <Shell>
-      <Link to="/so-tay" className="text-sm text-primary hover:underline">
-        ← Sổ tay Văn hoá
-      </Link>
-      <h1 className="clan-name text-2xl font-semibold">Nhập hàng loạt từ Markdown</h1>
+  const content = (
+    <>
+      {!embedded && (
+        <>
+          <Link to="/so-tay" className="text-sm text-primary hover:underline">
+            ← Sổ tay Văn hoá
+          </Link>
+          <h1 className="clan-name text-2xl font-semibold">Nhập hàng loạt từ Markdown</h1>
+        </>
+      )}
       <p className="text-sm text-muted-foreground">
         Dán nhiều bài, mỗi bài bắt đầu bằng <code>#</code> Tiêu đề. Trong mỗi bài:
         đoạn mở đầu là mô tả ngắn, mỗi <code>##</code> là một đoạn,
@@ -294,7 +299,7 @@ export default function CustomsImport() {
             </p>
           )}
           <div className="pt-1">
-            <Button size="sm" variant="outline" onClick={() => navigate("/so-tay")}>
+            <Button size="sm" variant="outline" onClick={() => (embedded ? embedded.onDone() : navigate("/so-tay"))}>
               <IconList className="h-4 w-4 mr-1.5" />
               Về danh sách
             </Button>
@@ -303,7 +308,7 @@ export default function CustomsImport() {
       )}
 
       <FormActions>
-        <Button type="button" variant="ghost" onClick={() => navigate("/so-tay")}>
+        <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate("/so-tay"))}>
           Hủy
         </Button>
         <Button
@@ -315,8 +320,9 @@ export default function CustomsImport() {
           {run.isPending ? "Đang tạo…" : `Tạo ${importable.length} bài`}
         </Button>
       </FormActions>
-    </Shell>
+    </>
   );
+  return embedded ? <div className="space-y-3">{content}</div> : <Shell>{content}</Shell>;
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
