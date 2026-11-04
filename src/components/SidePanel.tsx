@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -7,6 +7,8 @@ import { InSidePanelContext } from "@/components/panel/context";
 
 /** Các SidePanel đang mở (cái cuối là trên cùng) — Esc chỉ đóng cái trên cùng. */
 const openStack: string[] = [];
+/** Thời gian hiệu ứng đóng (khớp duration-200 của lớp animate-out). */
+const CLOSE_MS = 200;
 
 export interface SidePanelProps {
   open: boolean;
@@ -45,8 +47,33 @@ export function SidePanel({
   const id = useId();
   const dirty = useRef(false);
   const panelRef = useRef<HTMLElement>(null);
+  // Đang chạy hiệu ứng đóng (trượt ra phải + mờ nền) trước khi gỡ khỏi trang.
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef<number | undefined>(undefined);
+
+  const animateClose = useCallback(() => {
+    if (closeTimer.current !== undefined) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      onClose();
+      return;
+    }
+    setClosing(true);
+    closeTimer.current = window.setTimeout(() => {
+      closeTimer.current = undefined;
+      onClose();
+    }, CLOSE_MS);
+  }, [onClose]);
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current !== undefined) window.clearTimeout(closeTimer.current);
+    },
+    [],
+  );
 
   const requestClose = useCallback(async () => {
+    if (closeTimer.current !== undefined) return; // đang đóng
     if (guard && dirty.current) {
       const ok = await confirm({
         title: "Bỏ thay đổi chưa lưu?",
@@ -57,12 +84,13 @@ export function SidePanel({
       });
       if (!ok) return;
     }
-    onClose();
-  }, [confirm, onClose, guard]);
+    animateClose();
+  }, [confirm, animateClose, guard]);
 
   useEffect(() => {
     if (!open) return;
     dirty.current = false;
+    setClosing(false);
     const prevFocus = document.activeElement as HTMLElement | null;
     panelRef.current?.focus();
     openStack.push(id);
@@ -94,7 +122,11 @@ export function SidePanel({
   // Portal ra <body>: panel lồng trong panel (vd. thêm quan hệ trong Chi tiết người)
   // không bị `transform` của panel cha làm lệch `position: fixed`.
   return createPortal(
-    <div className="print-hide fixed inset-0 z-50 flex justify-end bg-black/40 animate-in fade-in">
+    <div
+      className={`print-hide fixed inset-0 z-50 flex justify-end bg-black/40 ${
+        closing ? "animate-out fade-out duration-200 fill-mode-forwards" : "animate-in fade-in"
+      }`}
+    >
       <button
         type="button"
         tabIndex={-1}
@@ -108,7 +140,11 @@ export function SidePanel({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative flex h-full min-h-0 w-full flex-col border-l bg-background shadow-xl outline-none animate-in slide-in-from-right duration-200 sm:w-[32rem] ${
+        className={`relative flex h-full min-h-0 w-full flex-col border-l bg-background shadow-xl outline-none duration-200 sm:w-[32rem] ${
+          closing
+            ? "animate-out slide-out-to-right fill-mode-forwards"
+            : "animate-in slide-in-from-right"
+        } ${
           size === "lg" ? "lg:w-[40rem]" : ""
         }`}
         style={{
