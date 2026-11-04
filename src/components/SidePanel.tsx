@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { IconX } from "@/components/icons";
+import { InSidePanelContext } from "@/components/panel/context";
 
 /** Các SidePanel đang mở (cái cuối là trên cùng) — Esc chỉ đóng cái trên cùng. */
 const openStack: string[] = [];
@@ -135,7 +136,7 @@ export function SidePanel({
           className={
             bare
               ? "flex min-h-0 flex-1 flex-col"
-              : "min-h-0 flex-1 overflow-y-auto px-4 pb-6 pt-4 sm:px-5"
+              : "min-h-0 flex-1 overflow-y-auto px-4 pt-4 sm:px-5"
           }
           onInput={() => {
             dirty.current = true;
@@ -147,7 +148,17 @@ export function SidePanel({
             dirty.current = false;
           }}
         >
-          {children}
+          {bare ? (
+            children
+          ) : (
+            // Cột flex cao tối thiểu bằng thân panel: gốc của form + <form> giãn hết
+            // chiều cao để thanh nút (mt-auto) luôn nằm sát đáy ngăn kéo.
+            <InSidePanelContext.Provider value>
+              <div className="flex min-h-full flex-col [&>*]:flex [&>*]:flex-1 [&>*]:flex-col [&_form]:flex [&_form]:flex-1 [&_form]:flex-col">
+                {children}
+              </div>
+            </InSidePanelContext.Provider>
+          )}
         </div>
       </aside>
     </div>,
