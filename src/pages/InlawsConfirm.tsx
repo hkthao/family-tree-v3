@@ -115,7 +115,7 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
           : "";
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-2">
+    <div className="rounded-xl border bg-card shadow-sm p-4 space-y-2">
       <p className="text-sm text-muted-foreground">Từ dòng họ:</p>
       <p className="text-lg font-semibold">{preview.clan_a_name}</p>
       <p>
@@ -355,7 +355,7 @@ function PickPerson({
 
   if (picked) {
     return (
-      <div className="rounded-md border bg-card p-3 flex items-center gap-3">
+      <div className="rounded-xl border bg-card shadow-sm p-3 flex items-center gap-3">
         <PersonAvatar gender={picked.gender} photoUrl={null} size={44} />
         <div className="min-w-0 flex-1">
           <p className="font-medium">{picked.full_name}</p>

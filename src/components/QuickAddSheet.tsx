@@ -344,7 +344,7 @@ function RelationCard({
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-left hover:bg-muted/40 transition-colors"
+      className="w-full flex items-center gap-3 rounded-xl border bg-card shadow-sm px-4 py-3 text-left hover:bg-muted/40 transition-colors"
     >
       <div className="h-10 w-10 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
         {icon}
@@ -807,7 +807,7 @@ function QuickAddChild({
             {rows.map((r, i) => (
               <li
                 key={i}
-                className="rounded-lg border bg-card p-2.5 space-y-2"
+                className="rounded-xl border bg-card shadow-sm p-2.5 space-y-2"
               >
                 {/* icon-audit: ok — hàng dày đặc (số thứ tự, giới tính, 2 ô năm, nút xoá), icon ăn mất chỗ gõ */}
                 {/* Hàng 1: số thứ tự + họ tên + xoá */}

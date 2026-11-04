@@ -25,7 +25,7 @@ export function UpdateBanner() {
       aria-live="polite"
       className="fixed inset-x-0 bottom-20 lg:bottom-4 z-30 mx-auto max-w-md px-4"
     >
-      <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-lg">
+      <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-lg">
         <p className="flex-1 text-sm">
           Đã có phiên bản mới. Cập nhật để dùng tính năng mới nhất.
         </p>

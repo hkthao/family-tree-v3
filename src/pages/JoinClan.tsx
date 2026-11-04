@@ -41,7 +41,7 @@ export default function JoinClan() {
 
   return (
     <div className="min-h-dvh bg-background grid place-items-center px-4 py-10">
-      <div className="w-full max-w-sm rounded-lg border bg-card p-6 shadow-sm space-y-5 text-center">
+      <div className="w-full max-w-sm rounded-xl border bg-card p-6 shadow-sm space-y-5 text-center">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary/10 text-primary">
           <IconUsers className="h-7 w-7" />
         </span>

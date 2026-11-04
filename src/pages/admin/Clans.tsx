@@ -153,7 +153,7 @@ function ClanRow({
   const isPublic = clan.visibility === "public";
 
   return (
-    <li className="rounded-lg border bg-card p-4 space-y-3">
+    <li className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
       {/* Header: clan name + visibility pill on top row, description
           (if any) wraps below the name on its own line. */}
       <div className="flex items-start justify-between gap-3">

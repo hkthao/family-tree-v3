@@ -364,7 +364,7 @@ function ModeStep(props: ModeStepProps) {
   return (
     <div className="space-y-5">
       {/* Local-person summary card */}
-      <div className="rounded-md border bg-card p-3 flex items-center gap-3">
+      <div className="rounded-xl border bg-card shadow-sm p-3 flex items-center gap-3">
         <PersonAvatar gender={local.gender} photoUrl={null} size={48} />
         <div className="min-w-0 flex-1">
           <p className="font-medium">{local.full_name}</p>
@@ -696,7 +696,7 @@ function PeerConfirmStep({
 }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-md border bg-card p-3 space-y-2">
+      <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
         <div className="flex items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2 text-sm">
             <IconBuildings className="h-4 w-4 text-primary" />

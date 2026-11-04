@@ -41,7 +41,7 @@ export function VideoEmptyState({
   const poster = tutorial ? getPosterUrl(tutorial.spec, viewport) : "";
 
   return (
-    <div className="rounded-lg border bg-card p-5 sm:p-6 space-y-4">
+    <div className="rounded-xl border bg-card shadow-sm p-5 sm:p-6 space-y-4">
       <div className="space-y-2 text-center sm:text-left">
         <h3 className="text-xl font-semibold">{title}</h3>
         <p className="text-muted-foreground">{description}</p>

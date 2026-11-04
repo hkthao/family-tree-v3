@@ -573,7 +573,7 @@ search={(toggle) => (
       )}
 
       {!data ? (
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border bg-card shadow-sm p-4">
           <p className="text-muted-foreground">Đang tải…</p>
         </div>
       ) : data.rows.length === 0 ? (
@@ -625,7 +625,7 @@ search={(toggle) => (
           />
         )
       ) : viewMode === "list" ? (
-        <ul className="divide-y rounded-lg border bg-card overflow-hidden">
+        <ul className="divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
           {canEdit && (
             <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 bg-muted/30">
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
@@ -963,7 +963,7 @@ function PersonGridCard({
       )}
       <Link
         to={`/clans/${clanId}/people/${person.id}`}
-        className={`flex flex-col items-center text-center gap-2 rounded-lg border bg-card p-3 hover:border-primary transition-colors h-full ${
+        className={`flex flex-col items-center text-center gap-2 rounded-xl border bg-card shadow-sm p-3 hover:border-primary transition-colors h-full ${
           selected ? "border-primary ring-1 ring-primary/30" : ""
         }`}
       >

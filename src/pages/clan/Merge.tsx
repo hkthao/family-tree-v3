@@ -340,7 +340,7 @@ function PersonPicker({
       </CardHeader>
       <CardContent className="space-y-3">
         {person ? (
-          <div className="flex items-start justify-between gap-3 rounded-md border bg-card p-3">
+          <div className="flex items-start justify-between gap-3 rounded-xl border bg-card shadow-sm p-3">
             <div className="min-w-0">
               <p className="font-medium truncate">{person.full_name}</p>
               <p className="text-xs text-muted-foreground">

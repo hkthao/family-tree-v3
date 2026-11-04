@@ -107,7 +107,7 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
         <h3 className="text-lg font-semibold">
           {VN_MONTHS[view.getMonth()]} {view.getFullYear()}
         </h3>
-        <div className="inline-flex rounded-md border bg-card overflow-hidden">
+        <div className="inline-flex rounded-xl border bg-card shadow-sm overflow-hidden">
           <button
             type="button"
             onClick={() =>

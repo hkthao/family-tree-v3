@@ -96,7 +96,7 @@ function EditPersonDiff({
     );
   }
   return (
-    <ul className="rounded-md border bg-card divide-y">
+    <ul className="rounded-xl border bg-card shadow-sm divide-y">
       {keys.map((k) => {
         const currentVal = formatVal(
           currentPerson?.[k as keyof PersonDetail] ?? null,
@@ -198,7 +198,7 @@ function AddNoteDiff({
   currentBio: string | null;
 }) {
   return (
-    <div className="rounded-md border bg-card overflow-hidden">
+    <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
       <div className="px-3 py-1.5 bg-muted/40 text-xs text-muted-foreground border-b">
         Tiểu sử sau khi duyệt
       </div>

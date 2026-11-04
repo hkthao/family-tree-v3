@@ -298,7 +298,7 @@ export default function CustomsForm() {
       </div>
 
       {mdOpen && (
-        <div className="rounded-md border bg-card p-3 space-y-2">
+        <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
           <p className="text-sm text-muted-foreground">
             Dán <strong>thân Markdown</strong>: <code>#</code> Tiêu đề · đoạn mở đầu là mô tả ngắn ·
             mỗi <code>##</code> là một đoạn · <code>![chú thích](https://…)</code> làm ảnh minh hoạ ·
@@ -477,7 +477,7 @@ export default function CustomsForm() {
             Nên / kiêng kỵ · Biến thể vùng miền.
           </p>
           {sections.map((sec, i) => (
-            <div key={i} className="rounded-md border bg-card p-3 space-y-2">
+            <div key={i} className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-6 shrink-0">{i + 1}.</span>
                 <Input icon={<IconTag />} value={sec.heading}
@@ -530,7 +530,7 @@ export default function CustomsForm() {
             Mỗi mục gồm 1 câu hỏi và câu trả lời ngắn gọn.
           </p>
           {faq.map((item, i) => (
-            <div key={i} className="rounded-md border bg-card p-3 space-y-2">
+            <div key={i} className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground w-6 shrink-0">{i + 1}.</span>
                 <Input icon={<IconHelp />} value={item.q}
@@ -579,7 +579,7 @@ export default function CustomsForm() {
           <Input icon={<IconSearch />} value={relatedQ} onChange={(e) => setRelatedQ(e.target.value)}
             placeholder="Gõ tên bài để tìm & thêm liên kết…" />
           {relatedMatches.length > 0 && (
-            <ul className="rounded-md border bg-card divide-y">
+            <ul className="rounded-xl border bg-card shadow-sm divide-y">
               {relatedMatches.map((r) => (
                 <li key={r.id}>
                   <button type="button"

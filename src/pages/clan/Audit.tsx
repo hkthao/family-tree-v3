@@ -142,7 +142,7 @@ export default function Audit() {
           description="Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm."
         />
       ) : (
-        <ul className="rounded-lg border bg-card divide-y overflow-hidden">
+        <ul className="rounded-xl border bg-card shadow-sm divide-y overflow-hidden">
           {data.rows.map((r) => (
             <AuditItem
               key={r.id}

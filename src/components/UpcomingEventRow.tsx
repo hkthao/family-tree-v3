@@ -107,7 +107,7 @@ export function UpcomingEventRow({
   // ── Card dọc (chế độ lưới) ──────────────────────────────────────
   if (variant === "card") {
     return (
-      <div className="flex h-full flex-col gap-2 p-4 rounded-lg border bg-card hover:border-primary transition-colors">
+      <div className="flex h-full flex-col gap-2 p-4 rounded-xl border bg-card shadow-sm hover:border-primary transition-colors">
         {wrap(
           <>
             <div className="flex items-start justify-between gap-2">

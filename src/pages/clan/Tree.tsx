@@ -2107,7 +2107,7 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute right-0 z-50 mt-1 w-72 space-y-2 rounded-lg border bg-card p-3 shadow-lg">
+          <div className="absolute right-0 z-50 mt-1 w-72 space-y-2 rounded-xl border bg-card p-3 shadow-lg">
             <p className="text-sm font-medium">Trang sơ đồ cây</p>
             <Select
               value={singlePage ? "single" : "paged"}

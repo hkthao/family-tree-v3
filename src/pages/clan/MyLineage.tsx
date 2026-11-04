@@ -137,7 +137,7 @@ function ChoosePersonView({
   }, [persons, search]);
 
   return (
-    <div className="rounded-lg border bg-card py-8 sm:py-10 px-6">
+    <div className="rounded-xl border bg-card shadow-sm py-8 sm:py-10 px-6">
       <div
         aria-hidden="true"
         className="mx-auto h-20 w-20 rounded-full bg-muted/40 inline-flex items-center justify-center text-muted-foreground"
@@ -557,7 +557,7 @@ function LineageView({
       )}
 
       {forks.length > 0 && (
-        <div className="rounded-md border bg-card p-3 space-y-2">
+        <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
           <p className="text-xs text-muted-foreground">
             Có {forks.length} điểm rẽ.{" "}
             <span className="text-foreground">Bên nội</span> = họ cha ·{" "}

@@ -852,7 +852,7 @@ export default function Share() {
                   placeholder="Đặt người trung tâm — gõ tên để tìm…"
                 />
                 {matches.length > 0 && (
-                  <ul className="absolute top-full left-0 right-0 z-10 mt-1 rounded-md border bg-card divide-y shadow-md">
+                  <ul className="absolute top-full left-0 right-0 z-10 mt-1 rounded-xl border bg-card divide-y shadow-md">
                     {matches.map((m) => (
                       <li key={m.id}>
                         <button
@@ -1189,7 +1189,7 @@ function EventsGioPanel({ data }: { data: ShareViewPayload }) {
           </p>
         )}
         {events.map((e) => (
-          <div key={e.id} className="rounded-md border bg-card p-3">
+          <div key={e.id} className="rounded-xl border bg-card shadow-sm p-3">
             <span className="font-medium">{e.title}</span>
             {eventWhen(e) && (
               <span className="text-sm text-muted-foreground"> · {eventWhen(e)}</span>
@@ -1202,7 +1202,7 @@ function EventsGioPanel({ data }: { data: ShareViewPayload }) {
         {gio.map((g, i) => (
           <div
             key={`gio-${i}`}
-            className="rounded-md border bg-card p-3 text-sm"
+            className="rounded-xl border bg-card shadow-sm p-3 text-sm"
           >
             🕯️ Ngày giỗ <b>{g.name}</b> · {g.d}/{g.m} ÂL
           </div>
@@ -1224,7 +1224,7 @@ function HeritagePanel({ data }: { data: ShareViewPayload }) {
           </p>
         )}
         {heritage.map((h) => (
-          <div key={h.id} className="rounded-md border bg-card p-3">
+          <div key={h.id} className="rounded-xl border bg-card shadow-sm p-3">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
               {HERITAGE_CATEGORY_LABEL[h.category]}
             </p>

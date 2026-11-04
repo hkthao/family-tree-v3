@@ -259,7 +259,7 @@ export default function CustomsImport() {
           <Label className="block">
             Xem trước — {preview.length} bài, {importable.length} sẽ được tạo
           </Label>
-          <ul className="rounded-md border bg-card divide-y text-sm">
+          <ul className="rounded-xl border bg-card shadow-sm divide-y text-sm">
             {preview.map((p, i) => (
               <li key={i} className="flex items-center justify-between gap-3 px-3 py-2">
                 <div className="min-w-0">
@@ -281,7 +281,7 @@ export default function CustomsImport() {
       )}
 
       {result && (
-        <div className="rounded-md border bg-card p-3 space-y-1 text-sm">
+        <div className="rounded-xl border bg-card shadow-sm p-3 space-y-1 text-sm">
           <p className="font-medium text-emerald-700">Đã tạo {result.created.length} bài.</p>
           {result.skipped.length > 0 && (
             <p className="text-amber-700">

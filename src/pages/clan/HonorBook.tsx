@@ -173,7 +173,7 @@ function HonorRow({
   onDelete: () => void;
 }) {
   return (
-    <li className="flex items-start gap-3 rounded-lg border bg-card p-3">
+    <li className="flex items-start gap-3 rounded-xl border bg-card shadow-sm p-3">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-semibold">{entry.honoree_name}</span>
@@ -254,7 +254,7 @@ function AddHonorForm({
         e.preventDefault();
         if (canSubmit) createM.mutate();
       }}
-      className="space-y-3 rounded-lg border bg-card p-4"
+      className="space-y-3 rounded-xl border bg-card shadow-sm p-4"
     >
       <div className="space-y-1.5">
         <Label htmlFor="honor-name" required>

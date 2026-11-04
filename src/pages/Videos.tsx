@@ -179,7 +179,7 @@ function VideoCard({
     <button
       type="button"
       onClick={onPlay}
-      className="group flex flex-col h-full w-full text-left rounded-lg border bg-card hover:bg-muted/30 overflow-hidden transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex flex-col h-full w-full text-left rounded-xl border bg-card shadow-sm hover:bg-muted/30 overflow-hidden transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="relative aspect-video bg-muted overflow-hidden shrink-0">
         <img

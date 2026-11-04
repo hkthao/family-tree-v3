@@ -79,7 +79,7 @@ export function ConfigTab() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-3 rounded-lg border bg-card p-4">
+      <div className="space-y-3 rounded-xl border bg-card shadow-sm p-4">
         <div>
           <h2 className="text-lg font-semibold">Linh vật</h2>
           <p className="text-sm text-muted-foreground">
@@ -102,7 +102,7 @@ export function ConfigTab() {
         </div>
       </div>
 
-      <div className="space-y-4 rounded-lg border bg-card p-4">
+      <div className="space-y-4 rounded-xl border bg-card shadow-sm p-4">
         <div>
           <h2 className="text-lg font-semibold">Dòng họ demo</h2>
           <p className="text-sm text-muted-foreground">

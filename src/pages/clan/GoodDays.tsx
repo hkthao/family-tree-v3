@@ -806,7 +806,7 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
   ].filter(Boolean);
 
   return (
-    <li className="flex gap-3 rounded-lg border bg-card p-3">
+    <li className="flex gap-3 rounded-xl border bg-card shadow-sm p-3">
       {/* Tờ lịch dương — gọn */}
       <div className="flex w-14 shrink-0 flex-col items-center justify-center rounded-md bg-primary/5 py-1 text-primary">
         <span className="text-[11px] font-semibold uppercase tracking-wide">
@@ -853,7 +853,7 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
                 />
                 <div
                   role="tooltip"
-                  className="absolute left-0 top-7 z-20 w-64 rounded-lg border bg-card p-3 text-sm leading-relaxed shadow-lg"
+                  className="absolute left-0 top-7 z-20 w-64 rounded-xl border bg-card p-3 text-sm leading-relaxed shadow-lg"
                 >
                   <span className="mb-0.5 block font-semibold text-primary">
                     Vì sao đẹp?

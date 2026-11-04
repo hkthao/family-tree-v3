@@ -86,7 +86,7 @@ export function TimelineFields({
         {drafts.map((d) => {
           const isOpen = open.has(d.key);
           return (
-            <li key={d.key} className="rounded-lg border bg-card">
+            <li key={d.key} className="rounded-xl border bg-card shadow-sm">
               <div className="flex items-center gap-1 pr-1">
                 <button
                   type="button"

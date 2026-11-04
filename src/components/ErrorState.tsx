@@ -78,7 +78,7 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className={`rounded-lg border bg-card text-center py-10 px-6 space-y-4 ${className ?? ""}`}
+      className={`rounded-xl border bg-card shadow-sm text-center py-10 px-6 space-y-4 ${className ?? ""}`}
     >
       <div className="space-y-1.5">
         <h3 className="clan-name text-xl font-semibold text-destructive">
