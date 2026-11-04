@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { Fab } from "@/components/Fab";
+import { FabGroup } from "@/components/FabGroup";
 import { CustomsShell } from "@/components/CustomsShell";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -94,20 +94,16 @@ export default function Customs() {
           icon={<IconBook className="h-7 w-7" />}
           title="Sổ tay Văn hoá"
           description="Tra cứu phong tục, nghi lễ, tín ngưỡng các vùng miền Việt Nam."
-          actionsBelow
-          actions={
-            isAdmin ? (
-              <div className="flex flex-wrap gap-2">
-                <Fab to="/so-tay/new" label="Thêm bài" />
-                <Button size="sm" variant="outline" asChild>
-                  <Link to="/so-tay/import">
-                    <IconUpload className="h-4 w-4 mr-1" /> Nhập Markdown
-                  </Link>
-                </Button>
-              </div>
-            ) : undefined
-          }
         />
+        {isAdmin && (
+          <FabGroup
+            label="Thêm"
+            actions={[
+              { label: "Thêm bài", icon: <IconPlus />, to: "/so-tay/new" },
+              { label: "Nhập Markdown", icon: <IconUpload />, to: "/so-tay/import" },
+            ]}
+          />
+        )}
 
         {/* Chủ đề + vùng nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm). */}
         <div className="space-y-2">
