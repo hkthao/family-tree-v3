@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
+import { FormActions } from "@/components/ui/form-actions";
+import { SidePanel } from "@/components/SidePanel";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
@@ -97,7 +99,7 @@ export default function HonorBook() {
         actionsBelow
         actions={
           canEdit ? (
-            <Fab onClick={() => setShowAdd((v) => !v)} active={showAdd} label="Ghi công đức" />
+            <Fab onClick={() => setShowAdd(true)} label="Ghi công đức" />
           ) : undefined
         }
       />
@@ -114,14 +116,22 @@ export default function HonorBook() {
         </div>
       )}
 
-      {canEdit && showAdd && (
-        <AddHonorForm
-          clanId={clan.id}
-          onDone={() => {
-            setShowAdd(false);
-            invalidate();
-          }}
-        />
+      {canEdit && (
+        <SidePanel
+          open={showAdd}
+          title="Ghi công đức"
+          subtitle="Vinh danh đóng góp hoặc thành tích của con cháu dòng họ."
+          onClose={() => setShowAdd(false)}
+        >
+          <AddHonorForm
+            clanId={clan.id}
+            onDone={() => {
+              setShowAdd(false);
+              invalidate();
+            }}
+            onCancel={() => setShowAdd(false)}
+          />
+        </SidePanel>
       )}
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
@@ -213,9 +223,11 @@ function HonorRow({
 function AddHonorForm({
   clanId,
   onDone,
+  onCancel,
 }: {
   clanId: string;
   onDone: () => void;
+  onCancel: () => void;
 }) {
   const toast = useToast();
   const [name, setName] = useState("");
@@ -252,7 +264,7 @@ function AddHonorForm({
         e.preventDefault();
         if (canSubmit) createM.mutate();
       }}
-      className="space-y-3 rounded-xl border bg-card shadow-sm p-4"
+      className="space-y-3"
     >
       <div className="space-y-1.5">
         <Label htmlFor="honor-name" required>
@@ -318,12 +330,15 @@ function AddHonorForm({
           placeholder="Vd: Ủng hộ xây từ đường / Đỗ Đại học Bách Khoa"
         />
       </div>
-      <div className="flex justify-end gap-2">
-        <Button type="submit" size="sm" disabled={!canSubmit}>
+      <FormActions>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Hủy
+        </Button>
+        <Button type="submit" disabled={!canSubmit}>
           <IconCheck className="mr-1.5 h-4 w-4" />
           {createM.isPending ? "Đang lưu…" : "Lưu"}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

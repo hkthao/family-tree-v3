@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
+import { FormActions } from "@/components/ui/form-actions";
+import { SidePanel } from "@/components/SidePanel";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
@@ -120,7 +122,7 @@ export default function ClanFund() {
               {exporting ? "Đang xuất…" : "Xuất PDF"}
             </Button>
             {canEdit && (
-              <Fab onClick={() => setShowAdd((v) => !v)} active={showAdd} label="Ghi giao dịch" />
+              <Fab onClick={() => setShowAdd(true)} label="Ghi giao dịch" />
             )}
           </div>
         }
@@ -164,15 +166,23 @@ export default function ClanFund() {
         )}
       </div>
 
-      {canEdit && showAdd && (
-        <AddFundForm
-          clanId={clan.id}
-          knownFunds={summary.byFund.map((f) => f.fund)}
-          onDone={() => {
-            setShowAdd(false);
-            invalidate();
-          }}
-        />
+      {canEdit && (
+        <SidePanel
+          open={showAdd}
+          title="Ghi giao dịch"
+          subtitle="Khoản thu / chi của quỹ họ."
+          onClose={() => setShowAdd(false)}
+        >
+          <AddFundForm
+            clanId={clan.id}
+            knownFunds={summary.byFund.map((f) => f.fund)}
+            onDone={() => {
+              setShowAdd(false);
+              invalidate();
+            }}
+            onCancel={() => setShowAdd(false)}
+          />
+        </SidePanel>
       )}
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
@@ -289,10 +299,12 @@ function AddFundForm({
   clanId,
   knownFunds,
   onDone,
+  onCancel,
 }: {
   clanId: string;
   knownFunds: string[];
   onDone: () => void;
+  onCancel: () => void;
 }) {
   const toast = useToast();
   const [direction, setDirection] = useState<FundDirection>("in");
@@ -329,7 +341,7 @@ function AddFundForm({
         e.preventDefault();
         if (canSubmit) createM.mutate();
       }}
-      className="space-y-3 rounded-xl border bg-card shadow-sm p-4"
+      className="space-y-3"
     >
       <SegmentedControl ariaLabel="Loại giao dịch" className="w-full">
         <SegmentedButton
@@ -411,12 +423,15 @@ function AddFundForm({
           placeholder="Người đóng góp / chi tiết khoản chi…"
         />
       </div>
-      <div className="flex justify-end">
-        <Button type="submit" size="sm" disabled={!canSubmit}>
+      <FormActions>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Hủy
+        </Button>
+        <Button type="submit" disabled={!canSubmit}>
           <IconCheck className="mr-1.5 h-4 w-4" />
           {createM.isPending ? "Đang lưu…" : "Lưu"}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }
