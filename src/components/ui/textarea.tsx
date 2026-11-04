@@ -2,8 +2,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   /**
    * Icon đặt cạnh nhãn, KHÔNG đặt trong ô.
    *
@@ -13,18 +12,78 @@ export interface TextareaProps
    */
   icon?: React.ReactNode;
   label?: string;
+  /**
+   * Mặc định true: ô tự cao theo nội dung (không cuộn trong ô), tối thiểu
+   * `rows` dòng (mặc định 3). Đặt false để giữ cỡ cố định + kéo giãn tay.
+   */
+  autoResize?: boolean;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, icon, label, id, ...props }, ref) => {
+  (
+    {
+      className,
+      icon,
+      label,
+      id,
+      autoResize = true,
+      rows = 3,
+      onInput,
+      ...props
+    },
+    ref,
+  ) => {
+    const innerRef = React.useRef<HTMLTextAreaElement | null>(null);
+    const setRefs = React.useCallback(
+      (el: HTMLTextAreaElement | null) => {
+        innerRef.current = el;
+        if (typeof ref === "function") ref(el);
+        else if (ref) ref.current = el;
+      },
+      [ref],
+    );
+
+    const fit = React.useCallback(() => {
+      const el = innerRef.current;
+      if (!el || !autoResize) return;
+      // Về auto trước để thu lại khi xoá bớt chữ; scrollHeight tính cả padding,
+      // `rows` giữ sàn tối thiểu vì height:auto của textarea = số dòng đó.
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight + (el.offsetHeight - el.clientHeight)}px`;
+    }, [autoResize]);
+
+    // Chạy lại khi giá trị đổi từ ngoài (nạp dữ liệu, reset form) và khi mount.
+    React.useLayoutEffect(fit, [fit, props.value]);
+    React.useEffect(() => {
+      if (!autoResize) return;
+      // Bề rộng đổi (mở ngăn kéo, xoay màn hình) làm số dòng xuống dòng đổi theo.
+      const el = innerRef.current;
+      if (!el || typeof ResizeObserver === "undefined") return;
+      let w = el.clientWidth;
+      const ro = new ResizeObserver(() => {
+        if (el.clientWidth !== w) {
+          w = el.clientWidth;
+          fit();
+        }
+      });
+      ro.observe(el);
+      return () => ro.disconnect();
+    }, [autoResize, fit]);
+
     const field = (
       <textarea
         id={id}
+        rows={rows}
+        onInput={(e) => {
+          fit();
+          onInput?.(e);
+        }}
         className={cn(
-          "flex min-h-[96px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          autoResize && "resize-none overflow-hidden",
           className,
         )}
-        ref={ref}
+        ref={setRefs}
         {...props}
       />
     );
@@ -38,7 +97,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className="flex items-center gap-1.5 text-sm font-medium"
         >
           {icon && (
-            <span className="text-muted-foreground [&>svg]:h-4 [&>svg]:w-4" aria-hidden="true">
+            <span
+              className="text-muted-foreground [&>svg]:h-4 [&>svg]:w-4"
+              aria-hidden="true"
+            >
               {icon}
             </span>
           )}

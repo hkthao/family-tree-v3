@@ -14,6 +14,8 @@ import {
   IconTrash,
   IconX,
 } from "@/components/icons";
+import { FormActions } from "@/components/ui/form-actions";
+import { SidePanel } from "@/components/SidePanel";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
@@ -703,19 +705,21 @@ function AddEventForm({
         Number(lunarDay) >= 1 &&
         Number(lunarDay) <= 30);
 
-  if (!open) {
-    return (
-      <Fab onClick={() => setOpen(true)} label="Thêm sự kiện" />
-    );
-  }
-
   return (
+    <>
+      <Fab onClick={() => setOpen(true)} label="Thêm sự kiện" />
+      <SidePanel
+        open={open}
+        title="Thêm sự kiện"
+        subtitle="Sinh nhật, giỗ, lễ tết hoặc sự kiện riêng của dòng họ."
+        onClose={() => setOpen(false)}
+      >
     <form
       onSubmit={(e) => {
         e.preventDefault();
         if (canSubmit) m.mutate();
       }}
-      className="space-y-3 border rounded-md p-3"
+      className="space-y-3"
     >
       <div className="space-y-2">
         <Label htmlFor="evt-title">Tên sự kiện</Label>
@@ -840,22 +844,22 @@ function AddEventForm({
         </Alert>
       )}
 
-      <div className="flex gap-2">
-        <Button type="submit" size="sm" disabled={!canSubmit || m.isPending}>
-          <IconPlus className="h-4 w-4 mr-1.5" />
-          {m.isPending ? "Đang thêm…" : "Thêm"}
-        </Button>
+      <FormActions>
         <Button
           type="button"
-          size="sm"
           variant="outline"
           onClick={() => setOpen(false)}
         >
           <IconX className="h-4 w-4 mr-1.5" />
           Hủy
         </Button>
-      </div>
+        <Button type="submit" disabled={!canSubmit || m.isPending}>
+          <IconPlus className="h-4 w-4 mr-1.5" />
+          {m.isPending ? "Đang thêm…" : "Thêm"}
+        </Button>
+      </FormActions>
     </form>
+      </SidePanel>
+    </>
   );
 }
-
