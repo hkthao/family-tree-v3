@@ -1,3 +1,4 @@
+import { CustomsPanelHost } from "@/components/panel/CustomsPanelHost";
 import { PlatformShell } from "@/components/PlatformShell";
 
 /**
@@ -5,5 +6,10 @@ import { PlatformShell } from "@/components/PlatformShell";
  * sổ tay. Giữ tên cũ vì các trang sổ tay đang gọi theo tên này.
  */
 export function CustomsShell({ children }: { children: React.ReactNode }) {
-  return <PlatformShell homeTo="/so-tay">{children}</PlatformShell>;
+  return (
+    <PlatformShell homeTo="/so-tay">
+      {children}
+      <CustomsPanelHost />
+    </PlatformShell>
+  );
 }

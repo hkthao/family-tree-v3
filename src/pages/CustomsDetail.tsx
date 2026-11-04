@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { CustomsShell } from "@/components/CustomsShell";
+import { PanelLink } from "@/components/panel/PanelLink";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
   IconArrowLeft,
@@ -211,10 +212,14 @@ export default function CustomsDetail() {
           {isAdmin && (
             <>
               <Button size="sm" variant="outline" asChild title="Sửa">
-                <Link to={`/so-tay/${entry.id}/edit`}>
+                <PanelLink
+                  to={`/so-tay/${entry.id}/edit`}
+                  panel="custom-edit"
+                  panelParams={{ pid: entry.id }}
+                >
                   <IconPencil className="h-4 w-4 sm:mr-1" />
                   <span className="hidden sm:inline">Sửa</span>
-                </Link>
+                </PanelLink>
               </Button>
               <Button
                 size="sm"
