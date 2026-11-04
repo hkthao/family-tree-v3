@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PANEL_ACTIONS_CLASS } from "@/components/ui/form-actions";
+import { PanelActionBar } from "@/components/ui/form-actions";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { invalidateClanData } from "@/lib/cache";
@@ -779,7 +779,7 @@ function QuickAddChild({
             onLiving={setIsLiving}
           />
 
-          <div className={PANEL_ACTIONS_CLASS}>
+          <PanelActionBar>
             <Button
               type="button"
               variant="outline"
@@ -794,7 +794,7 @@ function QuickAddChild({
               <IconCheck className="h-4 w-4 mr-1.5" />
               Lưu & thêm người nữa
             </Button>
-          </div>
+          </PanelActionBar>
         </form>
       ) : (
         <form onSubmit={onSubmitBulk} className="space-y-3">
@@ -900,7 +900,7 @@ function QuickAddChild({
             Thêm dòng
           </button>
 
-          <div className={PANEL_ACTIONS_CLASS}>
+          <PanelActionBar>
             <Button
               type="button"
               variant="outline"
@@ -920,7 +920,7 @@ function QuickAddChild({
                 ? "Đang lưu…"
                 : `Lưu ${rows.filter((r) => r.name.trim()).length} người`}
             </Button>
-          </div>
+          </PanelActionBar>
         </form>
       )}
     </div>
@@ -1044,7 +1044,7 @@ function QuickAddSpouse({
         onLiving={setIsLiving}
       />
 
-      <div className={PANEL_ACTIONS_CLASS}>
+      <PanelActionBar>
         <Button
           type="button"
           variant="outline"
@@ -1059,7 +1059,7 @@ function QuickAddSpouse({
           <IconCheck className="h-4 w-4 mr-1.5" />
           Lưu & thêm người nữa
         </Button>
-      </div>
+      </PanelActionBar>
     </form>
   );
 }
@@ -1265,7 +1265,7 @@ function QuickAddParent({
         onLiving={setIsLiving}
       />
 
-      <div className={PANEL_ACTIONS_CLASS}>
+      <PanelActionBar>
         <Button
           type="button"
           variant="outline"
@@ -1280,7 +1280,7 @@ function QuickAddParent({
           <IconCheck className="h-4 w-4 mr-1.5" />
           Lưu
         </Button>
-      </div>
+      </PanelActionBar>
     </form>
   );
 }

@@ -31,7 +31,7 @@ export function FormActions({
   className?: string;
 }) {
   const inPanel = React.useContext(InSidePanelContext);
-  if (inPanel) return <div className={cn(PANEL_ACTIONS_CLASS, className)}>{children}</div>;
+  if (inPanel) return <PanelActionBar className={className}>{children}</PanelActionBar>;
   return (
     <div
       className={cn(
@@ -55,3 +55,23 @@ export function FormActions({
  */
 export const PANEL_ACTIONS_CLASS =
   "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:px-5 [&>*]:w-auto [&>*]:h-10 [&>*]:px-4";
+
+/**
+ * Thanh nút dính đáy của ngăn kéo + một khoảng đệm 1rem phía trên để nội dung
+ * không dính sát thanh nút. Khoảng đệm là phần tử riêng (không phải margin) vì
+ * `space-y-*` của form sẽ ghi đè margin.
+ */
+export function PanelActionBar({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <>
+      <div aria-hidden="true" className="!mt-0 h-4 shrink-0" />
+      <div className={cn(PANEL_ACTIONS_CLASS, className)}>{children}</div>
+    </>
+  );
+}
