@@ -104,9 +104,9 @@ function Dock({ clan }: { clan: ClanDetail }) {
         onClick={() => setOpenPersisted(true)}
         // Nhô lên trên BottomTabBar (z-30) và header dính, nhưng nằm dưới
         // dialog — hỏi trợ lý giữa lúc đang xác nhận xoá là không nên.
-        className="fixed bottom-[9rem] right-6 z-40 flex h-14 items-center gap-2 rounded-full bg-primary pl-4 pr-5 font-medium text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="fixed bottom-[9rem] right-6 z-40 flex h-10 items-center gap-1.5 rounded-full bg-primary pl-3 pr-4 text-sm font-medium text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <IconSparkles className="h-5 w-5" />
+        <IconSparkles className="h-4 w-4" />
         Trợ lý
       </button>
     );
