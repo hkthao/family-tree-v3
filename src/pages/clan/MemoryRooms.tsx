@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { FormActions } from "@/components/ui/form-actions";
+import { SidePanel } from "@/components/SidePanel";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
@@ -92,97 +94,115 @@ export default function MemoryRooms() {
         actionsBelow
         actions={
           canEdit ? (
-            <Fab onClick={() => setOpen((v) => !v)} active={open} label="Tạo phòng" />
+            <Fab onClick={() => setOpen(true)} label="Tạo phòng" />
           ) : undefined
         }
       />
 
-      {open && canEdit && (
-        <div className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium">Tên phòng</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="VD: Ảnh kỷ niệm dòng họ"
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">Tông phòng</label>
-            <div className="flex flex-wrap gap-2">
-              {GALLERY_PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setTheme(p.id)}
-                  className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm transition ${
-                    theme === p.id
-                      ? "border-primary ring-1 ring-primary"
-                      : "hover:border-primary/60"
-                  }`}
-                >
-                  <span
-                    className="h-4 w-4 rounded-full border"
-                    style={{ background: p.pal.wall }}
-                  />
-                  {p.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Ảnh đại diện (tuỳ chọn)
-            </label>
-            <div className="flex items-center gap-2">
-              <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-md border bg-muted">
-                {coverUrl.trim() ? (
-                  <img src={coverUrl.trim()} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <IconCamera className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
+      {canEdit && (
+        <SidePanel
+          open={open}
+          title="Tạo phòng ký ức"
+          subtitle="Phòng trưng bày ảnh 3D của dòng họ."
+          onClose={() => {
+            setOpen(false);
+            setErr("");
+          }}
+        >
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              createM.mutate();
+            }}
+          >
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                Tên phòng
+              </label>
               <input
-                value={coverUrl}
-                onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder="Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định"
-                className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="VD: Ảnh kỷ niệm dòng họ"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               />
             </div>
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={seed}
-              onChange={(e) => setSeed(e.target.checked)}
-            />
-            Nạp sẵn ảnh từ danh sách thành viên (chỉ người có ảnh)
-          </label>
-          {err && <p className="text-sm text-destructive">{err}</p>}
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => createM.mutate()}
-              disabled={createM.isPending}
-            >
-              <IconPlus className="h-4 w-4 mr-1.5" />
-              {createM.isPending ? "Đang tạo…" : "Tạo phòng"}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setOpen(false);
-                setErr("");
-              }}
-            >
-              Huỷ
-            </Button>
-          </div>
-        </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                Tông phòng
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {GALLERY_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setTheme(p.id)}
+                    className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-sm transition ${
+                      theme === p.id
+                        ? "border-primary ring-1 ring-primary"
+                        : "hover:border-primary/60"
+                    }`}
+                  >
+                    <span
+                      className="h-4 w-4 rounded-full border"
+                      style={{ background: p.pal.wall }}
+                    />
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                Ảnh đại diện (tuỳ chọn)
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-md border bg-muted">
+                  {coverUrl.trim() ? (
+                    <img
+                      src={coverUrl.trim()}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <IconCamera className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
+                <input
+                  value={coverUrl}
+                  onChange={(e) => setCoverUrl(e.target.value)}
+                  placeholder="Dán URL ảnh (https://…) — bỏ trống dùng ảnh mặc định"
+                  className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm"
+                />
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={seed}
+                onChange={(e) => setSeed(e.target.checked)}
+              />
+              Nạp sẵn ảnh từ danh sách thành viên (chỉ người có ảnh)
+            </label>
+            {err && <p className="text-sm text-destructive">{err}</p>}
+            <FormActions>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setOpen(false);
+                  setErr("");
+                }}
+              >
+                Huỷ
+              </Button>
+              <Button type="submit" disabled={createM.isPending}>
+                <IconPlus className="h-4 w-4 mr-1.5" />
+                {createM.isPending ? "Đang tạo…" : "Tạo phòng"}
+              </Button>
+            </FormActions>
+          </form>
+        </SidePanel>
       )}
 
       {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
@@ -237,7 +257,8 @@ export default function MemoryRooms() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm(`Xoá phòng "${r.name}"?`)) deleteM.mutate(r.id);
+                      if (confirm(`Xoá phòng "${r.name}"?`))
+                        deleteM.mutate(r.id);
                     }}
                     className="self-start rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-destructive"
                   >
