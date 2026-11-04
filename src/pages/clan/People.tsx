@@ -322,7 +322,7 @@ export default function People() {
       {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
       {canEdit && (
         <>
-          <Fab to={`/clans/${clan.id}/people/new`} label="Thêm người" testId="add-person-link" />
+          <Fab to={`/clans/${clan.id}/people/new`} panel={{ id: "person-new" }} label="Thêm người" testId="add-person-link" />
           <Button asChild variant="outline" size="sm" className="h-10 px-2.5">
             <Link
               to={`/clans/${clan.id}/import`}

@@ -6,6 +6,7 @@ import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom
 import { AiChatDock } from "@/components/ai/AiChatDock";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
+import { PanelHost } from "@/components/panel/PanelHost";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
@@ -193,6 +194,8 @@ export function ClanLayout() {
       </main>
 
       <BottomTabBar tabs={tabs} />
+      {/* Ngăn kéo bên phải điều khiển bằng ?panel= (thêm / sửa người…). */}
+      <PanelHost clanId={clan.id} />
       {/* Khung chat nổi — tự ẩn trên điện thoại và khi trợ lý tắt. */}
       {(clan.myRole !== null || clan.isPlatformAdmin) && <AiChatDock clan={clan} />}
     </div>

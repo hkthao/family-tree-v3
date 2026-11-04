@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { IconPlus, IconX } from "@/components/icons";
+import { PanelLink } from "@/components/panel/PanelLink";
+import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 
 /**
  * Nút nổi "Thêm…" của màn danh sách — thay nút ở header để tiết kiệm chỗ.
@@ -22,6 +24,7 @@ export function Fab({
   active = false,
   icon,
   testId,
+  panel,
 }: {
   to?: string;
   onClick?: () => void;
@@ -30,10 +33,19 @@ export function Fab({
   active?: boolean;
   icon?: ReactNode;
   testId?: string;
+  /** Có thì bấm thường mở ngăn kéo (route `to` vẫn là link dự phòng). */
+  panel?: { id: PanelId; params?: PanelParams };
 }) {
   const cls =
     "print-hide fixed bottom-[9.5rem] right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:bottom-24 lg:right-[max(1rem,calc((100vw_-_74rem)/2_+_1rem))]";
   const content = active ? <IconX className="h-6 w-6" /> : (icon ?? <IconPlus className="h-6 w-6" />);
+  if (to && panel && !active) {
+    return (
+      <PanelLink to={to} panel={panel.id} panelParams={panel.params} aria-label={label} title={label} data-testid={testId} className={cls}>
+        {content}
+      </PanelLink>
+    );
+  }
   if (to && !active) {
     return (
       <Link to={to} aria-label={label} title={label} data-testid={testId} className={cls}>

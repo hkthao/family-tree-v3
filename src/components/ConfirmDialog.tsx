@@ -96,7 +96,8 @@ export function ConfirmDialogProvider({
       {children}
       {pending && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-in fade-in"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 animate-in fade-in"
+          data-confirm-dialog
           onClick={() => close(false)}
           role="dialog"
           aria-modal="true"

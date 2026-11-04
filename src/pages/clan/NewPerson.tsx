@@ -44,14 +44,23 @@ import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { createPerson, getPerson } from "@/lib/queries/persons";
 
-export default function NewPerson() {
-  const { clanId } = useParams<{ clanId: string }>();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+interface NewPersonFormProps {
+  clanId: string;
+  /** Sao chép từ người này (?from=). */
+  fromId?: string | null;
+  /** Gọi sau khi lưu xong (không phải "Lưu & thêm nữa"). */
+  onDone: () => void;
+  onCancel: () => void;
+}
+
+/**
+ * Form thêm / sao chép người — dùng cho trang /people/new VÀ ngăn kéo bên phải
+ * (xem components/panel/PanelHost).
+ */
+export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPersonFormProps) {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { user } = useAuth();
-  const { clan } = useClanContext();
   const userId = user?.id ?? "";
 
   // When ?from=<personId> is present, this is a "copy" flow: fetch the
@@ -59,7 +68,6 @@ export default function NewPerson() {
   // relationships (parents/spouses/children) are intentionally NOT
   // copied — those would point at the same shared records or be wrong
   // for a near-duplicate, so the user wires them up afterwards.
-  const fromId = searchParams.get("from");
   const { data: source } = useQuery({
     queryKey: queryKeys.person(fromId ?? "", userId),
     queryFn: () => getPerson(fromId!),
@@ -153,7 +161,7 @@ export default function NewPerson() {
       const deathCols = buildPersonDateColumns(death);
       const anniv = buildDeathAnniversary(death);
       return createPerson({
-        clan_id: clanId!,
+        clan_id: clanId,
         full_name: fullName.trim(),
         gender,
         is_living: isLiving,
@@ -185,7 +193,7 @@ export default function NewPerson() {
       });
     },
     onSuccess: async () => {
-      await invalidateClanData(queryClient, clanId!);
+      await invalidateClanData(queryClient, clanId);
       track("person_added", { copy: isCopy });
       const savedName = fullName.trim();
       if (andContinueRef.current) {
@@ -213,13 +221,13 @@ export default function NewPerson() {
       toast.success(isCopy ? "Đã tạo bản sao" : "Đã thêm người", {
         description: savedName,
       });
-      navigate(`/clans/${clanId}/people`);
+      onDone();
     },
     onError: (e) =>
       toast.error("Không thêm được", { description: (e as Error).message }),
   });
 
-  if (!clanId || !user) return null;
+  if (!user) return null;
 
   function handleSubmit(e: React.FormEvent, andContinue: boolean) {
     e.preventDefault();
@@ -239,23 +247,6 @@ export default function NewPerson() {
 
   return (
     <div className="space-y-3">
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Danh bạ", to: `/clans/${clanId}/people` },
-          { label: isCopy ? "Sao chép người" : "Thêm người" },
-        ]}
-      />
-
-      <PageHeader
-        icon={isCopy ? <IconCopy className="h-7 w-7" /> : <IconPlus className="h-7 w-7" />}
-        title={isCopy ? "Sao chép người" : "Thêm người"}
-        description={
-          isCopy
-            ? "Tạo bản sao thông tin — không sao chép quan hệ."
-            : "Thêm 1 người vào dòng họ. Có thể đánh dấu Thuỷ tổ."
-        }
-      />
       {isCopy && source && (
         <Alert>
           <AlertDescription>
@@ -502,11 +493,9 @@ export default function NewPerson() {
         )}
 
         <FormActions>
-          <Button asChild variant="outline">
-            <Link to={`/clans/${clanId}/people`}>
-              <IconX className="h-4 w-4 mr-1.5" />
-              Hủy
-            </Link>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            <IconX className="h-4 w-4 mr-1.5" />
+            Hủy
           </Button>
           {!isCopy && (
             <Button
@@ -543,6 +532,40 @@ export default function NewPerson() {
           </Button>
         </FormActions>
       </form>
+    </div>
+  );
+}
+
+export default function NewPerson() {
+  const { clanId } = useParams<{ clanId: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { clan } = useClanContext();
+  const fromId = searchParams.get("from");
+  const isCopy = !!fromId;
+  if (!clanId) return null;
+  const back = () => navigate(`/clans/${clanId}/people`);
+
+  return (
+    <div className="space-y-3">
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clanId}` },
+          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: isCopy ? "Sao chép người" : "Thêm người" },
+        ]}
+      />
+
+      <PageHeader
+        icon={isCopy ? <IconCopy className="h-7 w-7" /> : <IconPlus className="h-7 w-7" />}
+        title={isCopy ? "Sao chép người" : "Thêm người"}
+        description={
+          isCopy
+            ? "Tạo bản sao thông tin — không sao chép quan hệ."
+            : "Thêm 1 người vào dòng họ. Có thể đánh dấu Thuỷ tổ."
+        }
+      />
+      <NewPersonForm clanId={clanId} fromId={fromId} onDone={back} onCancel={back} />
     </div>
   );
 }
