@@ -53,4 +53,4 @@ export function FormActions({
  * nút chính ngoài cùng phải, cùng nền / viền / khoảng đệm ở mọi form.
  */
 export const PANEL_ACTIONS_CLASS =
-  "sticky bottom-0 z-10 mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:px-5 [&>*]:w-auto";
+  "sticky bottom-0 z-10 !mt-auto -mx-4 flex flex-row items-center justify-end gap-2 border-t bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:-mx-5 sm:px-5 [&>*]:w-auto";
