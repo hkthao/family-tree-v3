@@ -1,27 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { ChatComposer } from "@/components/ai/ChatComposer";
-import { ChatThread } from "@/components/ai/ChatThread";
-import { ProposalCard } from "@/components/ai/ProposalCard";
-import { QuotaBadge } from "@/components/ai/QuotaBadge";
-import {
-  IconChevronDown,
-  IconMaximize,
-  IconSparkles,
-  IconTrash,
-} from "@/components/icons";
+import { AiChatView } from "@/components/ai/AiChatView";
+import { IconChevronDown, IconMaximize, IconSparkles } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { useAiChatSession } from "@/hooks/useAiChatSession";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { canEditClan } from "@/hooks/useClanContext";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
 import { track } from "@/lib/analytics";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 /**
- * Khung chat nổi ở góc phải — kiểu Messenger, chỉ trên máy tính.
+ * Khung chat gắn bên phải (cao hết cửa sổ, đẩy nội dung sang trái) — chỉ trên máy tính.
+ * Điện thoại mở chat bằng ngăn kéo toàn màn hình (`?panel=chat`, xem PanelHost).
  *
  * Vì sao cần, khi đã có trang `/tro-ly`: câu hỏi về gia phả hầu như luôn
  * đi kèm việc **đang xem một thứ gì đó** — đang mở hồ sơ một người thì
@@ -36,6 +27,9 @@ import type { ClanDetail } from "@/lib/queries/clan-detail";
  */
 
 const OPEN_KEY = "family-tree:ai-dock-open";
+const DOCK_WIDTH = "24rem";
+/** Phát từ nơi khác để mở khung dock (xem PanelHost, ?panel=chat). */
+export const AI_DOCK_OPEN_EVENT = "family-tree:ai-dock-open";
 
 export function AiChatDock({ clan }: { clan: ClanDetail }) {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -63,7 +57,6 @@ export function AiChatDock({ clan }: { clan: ClanDetail }) {
  */
 function Dock({ clan }: { clan: ClanDetail }) {
   const navigate = useNavigate();
-  const chat = useAiChatSession(clan.id);
   const [open, setOpen] = useState(
     () => localStorage.getItem(OPEN_KEY) === "1",
   );
@@ -75,6 +68,20 @@ function Dock({ clan }: { clan: ClanDetail }) {
 
   useEffect(() => {
     if (open) track("ai_chat_opened");
+  }, [open]);
+
+  // Cho nơi khác (menu "Trợ lý dòng họ", ?panel=chat) mở khung này.
+  useEffect(() => {
+    const onOpen = () => setOpenPersisted(true);
+    window.addEventListener(AI_DOCK_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(AI_DOCK_OPEN_EVENT, onOpen);
+  }, [setOpenPersisted]);
+
+  // Khung gắn bên phải: báo bề rộng cho layout chừa chỗ (và các nút nổi né ra).
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--ai-dock-w", open ? DOCK_WIDTH : "0px");
+    return () => root.style.setProperty("--ai-dock-w", "0px");
   }, [open]);
 
   // ESC thu khung lại. Chỉ khi tiêu điểm đang ở trong khung, để không
@@ -110,92 +117,37 @@ function Dock({ clan }: { clan: ClanDetail }) {
       data-ai-dock
       role="complementary"
       aria-label="Trợ lý dòng họ"
-      className="fixed bottom-6 right-6 z-40 flex h-[min(34rem,calc(100dvh-8rem))] w-[24rem] flex-col overflow-hidden rounded-xl border bg-background shadow-2xl"
+      // Gắn cố định bên phải, cao hết cửa sổ: không đè lên nội dung mà ĐẨY nó
+      // sang trái (ClanLayout đọc --ai-dock-w), nên vẫn vừa xem vừa hỏi được.
+      className="fixed bottom-0 right-0 top-0 z-40 flex w-[24rem] flex-col border-l bg-background shadow-xl"
     >
-      <header className="flex shrink-0 items-center gap-1 border-b bg-card px-3 py-2">
-        <IconSparkles className="h-5 w-5 shrink-0 text-primary" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">Trợ lý dòng họ</p>
-          <p className="truncate text-xs text-muted-foreground">{clan.name}</p>
-        </div>
-        <QuotaBadge quota={chat.quota} className="text-xs" />
-        {/* icon-audit: ok — chữ "A" chính là ký hiệu, thêm icon nữa là thừa */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={chat.cycleFont}
-          aria-label="Đổi cỡ chữ"
-          title="Đổi cỡ chữ"
-          className="h-9 w-9 text-sm font-semibold"
-        >
-          A{chat.fontStep > 0 ? "+" : ""}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={chat.clearHistory}
-          aria-label="Xoá lịch sử trò chuyện"
-          title="Xoá lịch sử trò chuyện"
-          disabled={!chat.turns.length}
-          className="h-9 w-9"
-        >
-          <IconTrash className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(`/clans/${clan.id}/tro-ly`)}
-          aria-label="Mở toàn màn hình"
-          title="Mở toàn màn hình"
-          className="h-9 w-9"
-        >
-          <IconMaximize className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setOpenPersisted(false)}
-          aria-label="Thu nhỏ khung trò chuyện"
-          title="Thu nhỏ"
-          className="h-9 w-9"
-        >
-          <IconChevronDown className="h-5 w-5" />
-        </Button>
-      </header>
-
-      <ChatThread
-        turns={chat.turns}
-        pending={chat.pending}
-        streamingText={chat.streamingText}
-        onRate={chat.rateTurn}
-        error={chat.error}
-        fontSize={chat.fontSize}
-        clanName={clan.name}
-        canAddPeople={canEditClan(clan)}
-        quotaFallbackHref={
-          chat.quotaExhausted ? `/clans/${clan.id}/ai-generate` : undefined
+      <AiChatView
+        clan={clan}
+        variant="dock"
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(`/clans/${clan.id}/tro-ly`)}
+              aria-label="Mở toàn màn hình"
+              title="Mở toàn màn hình"
+              className="h-9 w-9"
+            >
+              <IconMaximize className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setOpenPersisted(false)}
+              aria-label="Thu nhỏ khung trò chuyện"
+              title="Thu nhỏ"
+              className="h-9 w-9"
+            >
+              <IconChevronDown className="h-5 w-5" />
+            </Button>
+          </>
         }
-        proposalCard={
-          chat.proposal ? (
-            <ProposalCard
-              proposal={chat.proposal}
-              applying={chat.applying}
-              onConfirm={chat.confirmProposal}
-              onEdit={chat.editProposal}
-              onReject={chat.rejectProposal}
-              fontSize={chat.fontSize}
-            />
-          ) : undefined
-        }
-      />
-      <ChatComposer
-        draft={chat.draft}
-        onDraftChange={chat.setDraft}
-        onSend={chat.send}
-        pending={chat.pending}
-        showSuggestions={!chat.turns.length}
-        suggestionLayout="wrap"
-        micSize="sm"
       />
     </div>
   );

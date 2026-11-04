@@ -37,7 +37,7 @@ export function Fab({
   panel?: { id: PanelId; params?: PanelParams };
 }) {
   const cls =
-    "print-hide fixed bottom-[9.5rem] right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:bottom-24 lg:right-[max(1rem,calc((100vw_-_74rem)/2_+_1rem))]";
+    "print-hide fixed bottom-[9.5rem] right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:bottom-24 lg:right-[max(calc(1rem_+_var(--ai-dock-w,0px)),calc((100vw_-_74rem_-_var(--ai-dock-w,0px))/2_+_1rem_+_var(--ai-dock-w,0px)))]";
   const content = active ? <IconX className="h-6 w-6" /> : (icon ?? <IconPlus className="h-6 w-6" />);
   if (to && panel && !active) {
     return (

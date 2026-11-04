@@ -10,6 +10,10 @@ export interface SidePanelProps {
   onClose: () => void;
   /** "md" 32rem (form ngắn) · "lg" 40rem (form dài / nhiều cột). Mobile luôn full-width. */
   size?: "md" | "lg";
+  /** Thân không padding / không tự cuộn — nội dung (vd. chat) tự quản bố cục. */
+  bare?: boolean;
+  /** Mặc định true: hỏi trước khi bỏ dữ liệu đã gõ. Tắt cho nội dung không phải form (chat). */
+  guard?: boolean;
   children: ReactNode;
 }
 
@@ -28,6 +32,8 @@ export function SidePanel({
   subtitle,
   onClose,
   size = "md",
+  bare = false,
+  guard = true,
   children,
 }: SidePanelProps) {
   const confirm = useConfirm();
@@ -35,7 +41,7 @@ export function SidePanel({
   const panelRef = useRef<HTMLElement>(null);
 
   const requestClose = useCallback(async () => {
-    if (dirty.current) {
+    if (guard && dirty.current) {
       const ok = await confirm({
         title: "Bỏ thay đổi chưa lưu?",
         description: "Những gì bạn vừa nhập sẽ mất.",
@@ -46,7 +52,7 @@ export function SidePanel({
       if (!ok) return;
     }
     onClose();
-  }, [confirm, onClose]);
+  }, [confirm, onClose, guard]);
 
   useEffect(() => {
     if (!open) return;
@@ -110,7 +116,11 @@ export function SidePanel({
         {/* min-h-0 + flex-1: để thân cuộn được trong cột flex. Không padding đáy
             vì form có thanh hành động dính đáy tự mang padding. */}
         <div
-          className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 sm:px-5"
+          className={
+            bare
+              ? "flex min-h-0 flex-1 flex-col"
+              : "min-h-0 flex-1 overflow-y-auto px-4 pt-4 sm:px-5"
+          }
           onInput={() => {
             dirty.current = true;
           }}

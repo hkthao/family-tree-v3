@@ -9,6 +9,9 @@ Trạng thái: **P0 + P1 đã làm (2026-11-04)**; đã chốt **ngăn kéo bên
 - `NewPersonForm` tách khỏi trang `NewPerson` (trang route vẫn dùng cùng form). `EditPersonForm` đã có sẵn.
 - Nối: Danh bạ `Fab` "Thêm người" và nút "Sửa" ở Chi tiết người mở panel (bấm thường); Ctrl/Cmd-click / mở tab mới vẫn vào route đầy đủ.
 - Test: `src/test/components/sidePanel.dom.test.tsx` (guard + đồng bộ URL). Video 05 cập nhật chờ `?panel=person-edit`.
+### Đã làm ở P3 + P5 (2026-11-04)
+- P3: `NotificationBell` mở `SidePanel` (`?panel=notifications`), lọc Tất cả / Chưa đọc, mở rộng thông báo hệ thống ngay trong panel, tin hộp thư có link thì thay history entry khi đi tới.
+- P5: `AiChatView` dùng chung. Máy tính: `AiChatDock` thành khung **gắn cố định bên phải**, cao hết cửa sổ, đẩy nội dung sang trái (`--ai-dock-w` trên `<html>`, ClanLayout chừa `pr`, `Fab` né); mục menu "Trợ lý dòng họ" mở dock (`?panel=chat` → sự kiện `AI_DOCK_OPEN_EVENT`). Điện thoại: `?panel=chat` là `SidePanel` toàn màn hình (`bare`, `guard={false}`). Route `/tro-ly` giữ làm link dự phòng + "Mở toàn màn hình".
 - Còn lại của P1: gộp hẳn `QuickAddSheet` với các form đầy đủ `AddChild/Spouse/Parent`, nút "Thêm người" trên Cây / thẻ người mở `person-add`, "Lưu & thêm tiếp" cho thêm quan hệ.
 
 ## 1. Mục tiêu

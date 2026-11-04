@@ -222,6 +222,8 @@ export interface DrawerItem {
    * `to` làm khoá React, nhưng render ra nút chứ không phải link.
    */
   kind?: "feedback";
+  /** Bấm thường mở ngăn kéo (?panel=…) thay vì chuyển trang; `to` là link dự phòng. */
+  panel?: "chat";
 }
 
 export interface DrawerSection {
@@ -380,6 +382,7 @@ export function buildSections(
     if (isMember && aiEnabled && feat("ai_assistant")) {
       topItems.push({
         to: `/clans/${clanId}/tro-ly`,
+        panel: "chat",
         label: "Trợ lý dòng họ",
         icon: <IconSparkles className={ic} />,
       });

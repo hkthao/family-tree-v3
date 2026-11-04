@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useParams } from "react-router-dom";
 
 
+import { usePanel } from "@/components/panel/usePanel";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
@@ -54,6 +55,7 @@ interface Props {
  * any layout can just render it with open/onClose and a hamburger button.
  */
 export function AppDrawer({ open, onClose }: Props) {
+  const { open: openPanel } = usePanel();
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const { clanId } = useParams<{ clanId?: string }>();
@@ -286,7 +288,13 @@ export function AppDrawer({ open, onClose }: Props) {
                           <NavLink
                             to={item.to}
                             end={item.end ?? false}
-                            onClick={pick}
+                            onClick={(e) => {
+                              if (item.panel && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+                                e.preventDefault();
+                                openPanel(item.panel);
+                              }
+                              pick();
+                            }}
                             className={({ isActive }) =>
                               cn(
                                 "flex items-center gap-3 px-4 py-2.5 text-sm",
