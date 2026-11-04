@@ -10,10 +10,10 @@ import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
 import { usePanel } from "@/components/panel/usePanel";
 import { SidePanel } from "@/components/SidePanel";
 
-function renderPanel(onClose = vi.fn()) {
+function renderPanel(onClose = vi.fn(), guard = true) {
   render(
     <ConfirmDialogProvider>
-      <SidePanel open title="Thêm người" onClose={onClose}>
+      <SidePanel open title="Thêm người" onClose={onClose} guard={guard}>
         <form onSubmit={(e) => e.preventDefault()}>
           <input aria-label="Họ tên" />
           <button type="submit">Lưu</button>
@@ -44,6 +44,14 @@ describe("SidePanel — bảo vệ dữ liệu chưa lưu", () => {
     fireEvent.click(screen.getAllByLabelText("Đóng")[1]);
     fireEvent.click(await screen.findByText("Bỏ thay đổi"));
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
+  it("guard=false (chat): đã gõ vẫn đóng ngay, không hỏi", async () => {
+    const onClose = renderPanel(vi.fn(), false);
+    fireEvent.input(screen.getByLabelText("Họ tên"), { target: { value: "Trần" } });
+    fireEvent.click(screen.getAllByLabelText("Đóng")[1]);
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText("Bỏ thay đổi chưa lưu?")).toBeNull();
   });
 
   it("gửi form xoá cờ đã sửa (Lưu & thêm nữa không bị hỏi oan)", async () => {

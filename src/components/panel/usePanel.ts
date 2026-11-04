@@ -7,7 +7,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
  * tải lại trang khôi phục panel, link gửi người khác mở đúng panel). Tham số
  * mang tiền tố riêng để không đụng bộ lọc của trang (q, chi, đời…).
  */
-export type PanelId = "person-new" | "person-edit" | "person-add" | "notifications";
+export type PanelId = "person-new" | "person-edit" | "person-add" | "notifications" | "chat";
 
 export interface PanelParams {
   /** Người đang thao tác (sửa / thêm quan hệ cho). */
