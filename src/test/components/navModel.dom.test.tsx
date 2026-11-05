@@ -99,7 +99,6 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Danh bạ",
       "Sự kiện",
       "Hôm nay",
-      "Trợ lý dòng họ",
     ]);
   });
 
