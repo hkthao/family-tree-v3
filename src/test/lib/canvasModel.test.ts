@@ -137,3 +137,43 @@ describe("canvasModel (nối kiểu PowerPoint)", () => {
     expect(l.links[0].toSide).toBeUndefined();
   });
 });
+
+import { flattenPath, linkGeometry, nearestOnPolylines, orthogonalize } from "@/lib/tree/canvasModel";
+
+describe("canvasModel (đường nối tự do)", () => {
+  it("orthogonalize: chỉ ra nét ngang/dọc", () => {
+    const pts = orthogonalize([{ x: 0, y: 0 }, { x: 100, y: 40 }, { x: 100, y: 200 }]);
+    for (let i = 2; i < pts.length; i += 2) {
+      expect(pts[i] === pts[i - 2] || pts[i + 1] === pts[i - 1]).toBe(true);
+    }
+  });
+  it("linkGeometry: có điểm uốn → đi qua điểm; bezier → tension", () => {
+    const g = linkGeometry("bezier", { x: 0, y: 0 }, undefined, { x: 100, y: 0 }, undefined, [{ x: 50, y: 80 }]);
+    expect(g.points).toEqual([0, 0, 50, 80, 100, 0]);
+    expect(g.tension).toBe(0.5);
+    expect(linkGeometry("straight", { x: 0, y: 0 }, undefined, { x: 9, y: 9 }, undefined).points).toEqual([0, 0, 9, 9]);
+  });
+  it("nearestOnPolylines bắt dính trong ngưỡng, bỏ khi xa", () => {
+    const poly = [{ x: 0, y: 0 }, { x: 100, y: 0 }];
+    const hit = nearestOnPolylines([poly], { x: 40, y: 6 }, 10);
+    expect(hit && Math.round(hit.x)).toBe(40);
+    expect(hit?.y).toBe(0);
+    expect(nearestOnPolylines([poly], { x: 40, y: 30 }, 10)).toBeNull();
+  });
+  it("flattenPath lấy mẫu bezier", () => {
+    const g = linkGeometry("bezier", { x: 0, y: 0 }, "right", { x: 200, y: 100 }, "left");
+    const f = flattenPath(g, 8);
+    expect(f).toHaveLength(9);
+    expect(f[0]).toEqual({ x: 0, y: 0 });
+    expect(Math.round(f[8].x)).toBe(200);
+  });
+  it("parseLayout: đầu tự do + điểm uốn; bỏ đường không có đầu nào", () => {
+    const l = parseLayout({ links: [
+      { id: "a", from: "", to: "n", fromPt: { x: 1, y: 2 }, points: [{ x: 3, y: 4 }, "x"] },
+      { id: "b", from: "", to: "n" },
+    ] });
+    expect(l.links).toHaveLength(1);
+    expect(l.links[0].fromPt).toEqual({ x: 1, y: 2 });
+    expect(l.links[0].points).toEqual([{ x: 3, y: 4 }]);
+  });
+});
