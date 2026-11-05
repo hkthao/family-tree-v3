@@ -2,6 +2,7 @@
 /**
  * @vitest-environment jsdom
  */
+import * as React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -138,5 +139,28 @@ describe("FormActions trong ngăn kéo", () => {
       </FormActions>,
     );
     expect(screen.getByText("Lưu").parentElement!.className).not.toContain("sticky");
+  });
+});
+
+describe("SidePanel — không cướp focus khi cha render lại", () => {
+  it("gõ liên tục vào ô trong panel (onClose inline) vẫn giữ focus", () => {
+    function Host() {
+      const [v, setV] = React.useState("");
+      return (
+        <ConfirmDialogProvider>
+          <SidePanel open title="Tên cây" onClose={() => undefined} guard={false}>
+            <input aria-label="Tên" value={v} onChange={(e) => setV(e.target.value)} />
+          </SidePanel>
+        </ConfirmDialogProvider>
+      );
+    }
+    render(<Host />);
+    const input = screen.getByLabelText("Tên") as HTMLInputElement;
+    input.focus();
+    for (const ch of ["a", "ab", "abc"]) {
+      fireEvent.change(input, { target: { value: ch } });
+      expect(document.activeElement).toBe(input);
+    }
+    expect(input.value).toBe("abc");
   });
 });
