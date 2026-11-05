@@ -46,7 +46,7 @@ export default function Tools() {
       hint: "Mở ra xem, không sửa gì.",
       tools: [
         {
-          to: `${base}/tree-canvas`,
+          to: `${base}/tree-canvases`,
           label: "Canvas phả đồ",
           desc: "Kéo thả sắp xếp cây, chọn nền, đường nối và xuất PDF khổ tuỳ ý.",
           icon: <IconTree className={ic} />,

@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type Konva from "konva";
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Circle, Group, RegularPolygon, Image as KImage, Layer, Line, Rect, Stage, Text } from "react-konva";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { IconCheck, IconCompass, IconCopy, IconDownload, IconLayers, IconMaximize, IconMinimize, IconPlus, IconRefresh, IconSettings, IconTree, IconUndo, IconUpload } from "@/components/icons";
@@ -365,6 +365,13 @@ export default function TreeCanvas() {
   const toast = useToast();
   const confirm = useConfirm();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const { canvasId: routeCanvasId } = useParams();
+  /** Địa chỉ trang chi tiết của một cây: /tree-canvases/:id (id | "auto"). */
+  const goCanvas = useCallback(
+    (id: string) => navigate(`/clans/${clan.id}/tree-canvases/${id || "auto"}`, { replace: true }),
+    [navigate, clan.id],
+  );
   const qc = useQueryClient();
 
   const treeSource = effectiveRole(clan) === null ? "persons_public_safe" : "persons";
@@ -470,11 +477,20 @@ export default function TreeCanvas() {
   useEffect(() => {
     if (initRef.current || !canvases) return;
     initRef.current = true;
-    if (canvases[0]) {
+    const want = routeCanvasId ?? params.get("c");
+    const isNew = routeCanvasId === "new" || params.get("new") === "1";
+    const target = want === "auto" || want === "new" ? undefined : (canvases.find((c) => c.id === want) ?? canvases[0]);
+    if (target) {
       clearHistory();
-      setCanvasName(canvases[0].name);
-      setCurrentId(canvases[0].id);
-      setLayout(canvases[0].layout);
+      setCanvasName(target.name);
+      setCurrentId(target.id);
+      setLayout(target.layout);
+    }
+    if (isNew) {
+      setNewName("");
+      setNewKind("members");
+      setTab("new");
+      goCanvas(target?.id ?? "auto");
     }
   }, [canvases]);
 
@@ -915,6 +931,7 @@ export default function TreeCanvas() {
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       clearHistory();
       setCurrentId(c.id);
+      goCanvas(c.id);
       setCanvasName(name);
       setLayout(fresh);
       setSel(null);
@@ -998,6 +1015,7 @@ export default function TreeCanvas() {
       } else {
         const c = await createTreeCanvas(clan.id, name, body);
         setCurrentId(c.id);
+        goCanvas(c.id);
       }
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       setCanvasName(name);
@@ -1020,6 +1038,7 @@ export default function TreeCanvas() {
       clearHistory();
       setCanvasName("");
       setCurrentId("");
+      goCanvas("auto");
       setLayout(DEFAULT_LAYOUT);
       setDirty(false);
       setTab("idle");
@@ -1170,7 +1189,8 @@ export default function TreeCanvas() {
         items={[
           { label: "Dòng họ", to: "/clans" },
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Canvas phả đồ" },
+          { label: "Canvas phả đồ", to: `/clans/${clan.id}/tree-canvases` },
+          { label: canvasName.trim() || "Cây tự xếp" },
         ]}
       />
       <PageHeader
@@ -1190,6 +1210,7 @@ export default function TreeCanvas() {
             clearHistory();
             setCanvasName(c?.name ?? "");
             setCurrentId(e.target.value);
+            goCanvas(e.target.value);
             setLayout(c ? c.layout : DEFAULT_LAYOUT);
             setSel(null);
             setDirty(false);

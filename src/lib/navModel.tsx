@@ -495,7 +495,7 @@ export function buildSections(
       }
       if (canTree) {
         workItems.push({
-          to: `/clans/${clanId}/tree-canvas`,
+          to: `/clans/${clanId}/tree-canvases`,
           label: "Canvas phả đồ",
           icon: <IconTree className={ic} />,
         });
