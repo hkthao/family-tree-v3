@@ -7,7 +7,6 @@ import {
   IconScroll,
   IconSettings,
   IconSparkles,
-  IconTree,
   IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
@@ -45,12 +44,7 @@ export default function Tools() {
       title: "Tra cứu",
       hint: "Mở ra xem, không sửa gì.",
       tools: [
-        {
-          to: `${base}/tree-canvases`,
-          label: "Canvas phả đồ",
-          desc: "Kéo thả sắp xếp cây, chọn nền, đường nối và xuất PDF khổ tuỳ ý.",
-          icon: <IconTree className={ic} />,
-        },
+        // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
         {
           // Trang lịch trước nay chỉ vào được từ thẻ "Hôm nay" ở Tổng
           // quan — ai không để ý dòng chữ đó thì coi như app không có
