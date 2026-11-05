@@ -949,7 +949,14 @@ export default function TreeCanvas() {
       x += sizes[id].w + 40;
       rowH = Math.max(rowH, sizes[id].h);
     });
-    update((l) => ({ ...l, positions: { ...tree, ...placed } }));
+    // Đường nối giữa hai thẻ: bỏ điểm uốn + cạnh nối cũ để nó tự chọn đường ngắn theo vị trí mới.
+    update((l) => ({
+      ...l,
+      positions: { ...tree, ...placed },
+      links: l.links.map((k) =>
+        k.from && k.to ? { ...k, points: undefined, fromSide: undefined, toSide: undefined } : k,
+      ),
+    }));
     setTimeout(() => fitRef.current(), 0);
   };
   const alignTidy = () => {
