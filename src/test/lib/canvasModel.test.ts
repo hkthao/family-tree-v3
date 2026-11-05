@@ -73,3 +73,43 @@ describe("canvasModel", () => {
     expect(parseLayout(null).background).toBe("paper");
   });
 });
+
+import { coverCrop, linkAnchors, tidyPositions } from "@/lib/tree/canvasModel";
+
+describe("canvasModel (canvas tuỳ biến)", () => {
+  it("tidyPositions: cùng hàng cùng y, không đè nhau, bám lưới", () => {
+    const out = tidyPositions({
+      a: { x: 3, y: 10 }, b: { x: 20, y: 31 }, c: { x: 0, y: 500 },
+    });
+    expect(out.a.y).toBe(out.b.y);
+    expect(out.c.y).toBeGreaterThan(out.a.y);
+    expect(out.b.x - out.a.x).toBeGreaterThanOrEqual(NODE_W);
+    expect(out.a.x % 20).toBe(0);
+  });
+
+  it("linkAnchors: chọn cạnh theo hướng", () => {
+    const a = { x: 0, y: 0, w: 100, h: 100 };
+    expect(linkAnchors(a, { x: 0, y: 300, w: 100, h: 100 }).vertical).toBe(true);
+    const side = linkAnchors(a, { x: 500, y: 0, w: 100, h: 100 });
+    expect(side.vertical).toBe(false);
+    expect(side.from.x).toBe(100);
+    expect(side.to.x).toBe(500);
+  });
+
+  it("coverCrop: lấp đầy khung", () => {
+    const c = coverCrop(200, 100, 100, 100);
+    expect(c).toEqual({ x: 50, y: 0, width: 100, height: 100 });
+  });
+
+  it("parseLayout: giữ liên kết/kiểu thẻ hợp lệ, bỏ màu hỏng", () => {
+    const l = parseLayout({
+      links: [{ id: "l1", from: "a", to: "b", color: "red", width: 99 }],
+      nodeStyles: { a: { color: "#112233", font: "zzz", size: 5 } },
+      bgImage: "javascript:alert(1)",
+    });
+    expect(l.links[0].color).toBe("#8B1E2D");
+    expect(l.links[0].width).toBe(12);
+    expect(l.nodeStyles.a).toEqual({ color: "#112233" });
+    expect(l.bgImage).toBeNull();
+  });
+});
