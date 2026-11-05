@@ -271,15 +271,6 @@ export default function TreeCanvases() {
               </li>
             );
           })}
-          <li className="rounded-xl border border-dashed bg-card/50">
-            <Link
-              to={`${base}/tree-canvases/auto`}
-              className="flex h-full min-h-[6rem] flex-col items-center justify-center gap-1 p-4 text-center text-sm text-muted-foreground hover:bg-secondary/40"
-            >
-              <span className="font-medium text-foreground">Cây tự xếp</span>
-              Xem cả gia phả xếp theo đời (không lưu)
-            </Link>
-          </li>
         </ul>
       )}
 
