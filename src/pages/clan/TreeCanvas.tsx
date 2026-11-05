@@ -5,7 +5,7 @@ import { Circle, Group, RegularPolygon, Image as KImage, Layer, Line, Rect, Stag
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconCheck, IconCompass, IconCopy, IconLayoutHorizontal, IconTrash, IconDownload, IconLayers, IconMaximize, IconMinimize, IconPlus, IconRefresh, IconSettings, IconTree, IconUndo, IconUpload } from "@/components/icons";
+import { IconCheck, IconCompass, IconLayoutHorizontal, IconTrash, IconDownload, IconLayers, IconMaximize, IconMinimize, IconPlus, IconRefresh, IconSettings, IconTree, IconUndo, IconUpload } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -16,7 +16,6 @@ import {
   type PaletteItem,
 } from "@/components/treeCanvas/CanvasPalette";
 import { SidePanel } from "@/components/SidePanel";
-import { NewCanvasPanel, type NewCanvasKind } from "@/components/treeCanvas/NewCanvasPanel";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
@@ -326,7 +325,7 @@ function IconBtn({
   );
 }
 
-type Tab = "idle" | "export" | "save" | "options" | "new";
+type Tab = "idle" | "export" | "save" | "options";
 
 /** Đọc ảnh người dùng chọn, thu nhỏ ≤1600px và nén JPEG để nhét vừa bố cục (≤ ~700KB). */
 async function fileToBgDataUrl(file: File): Promise<string> {
@@ -410,7 +409,6 @@ export default function TreeCanvas() {
   // Toàn màn hình kiểu CSS (fixed) thay vì Fullscreen API: dùng được cả iOS Safari,
   // và các ngăn kéo (portal ra body, z-50) vẫn hiện đè lên.
   const [fs, setFs] = useState(false);
-  const [copyMode, setCopyMode] = useState(false);
   const [canvasName, setCanvasName] = useState("");
   // Đang kéo đường nối từ chấm của một thẻ (kiểu PowerPoint).
   type ConnStart = { node: string; side: Side } | { pt: { x: number; y: number } };
@@ -477,17 +475,12 @@ export default function TreeCanvas() {
     if (initRef.current || !canvases) return;
     initRef.current = true;
     const want = routeCanvasId ?? params.get("c");
-    const isNew = routeCanvasId === "new" || params.get("new") === "1";
-    const target = want === "auto" || want === "new" ? undefined : (canvases.find((c) => c.id === want) ?? canvases[0]);
+    const target = want === "auto" ? undefined : (canvases.find((c) => c.id === want) ?? canvases[0]);
     if (target) {
       clearHistory();
       setCanvasName(target.name);
       setCurrentId(target.id);
       setLayout(target.layout);
-    }
-    if (isNew) {
-      setTab("new");
-      goCanvas(target?.id ?? "auto");
     }
   }, [canvases]);
 
@@ -905,48 +898,6 @@ export default function TreeCanvas() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sel]);
 
-  // ─── nhiều bố cục / dòng họ ───
-  function newCanvas() {
-    setTab("new");
-  }
-  /** Tạo bố cục mới: có sẵn thành viên (tự xếp) hoặc trang trống (ẩn hết, tự thêm từ bảng công cụ). */
-  async function createNew(rawName: string, newKind: NewCanvasKind) {
-    const name = rawName.trim();
-    if (!name) return toast.error("Hãy đặt tên cho cây mới");
-    setBusy(true);
-    try {
-      const fresh: CanvasLayout = {
-        ...DEFAULT_LAYOUT,
-        nodeStyles:
-          newKind === "blank"
-            ? Object.fromEntries(persons.map((p) => [p.id, { hidden: true }]))
-            : {},
-      };
-      const c = await createTreeCanvas(clan.id, name, fresh);
-      await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
-      clearHistory();
-      setCurrentId(c.id);
-      goCanvas(c.id);
-      setCanvasName(name);
-      setLayout(fresh);
-      setSel(null);
-      setDirty(false);
-      setTab("idle");
-      if (newKind === "blank") setShowPalette(true);
-      setTimeout(() => fitRef.current(), 0);
-      toast.success("Đã tạo cây mới");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không tạo được");
-    } finally {
-      setBusy(false);
-    }
-  }
-  function duplicateCanvas() {
-    setCopyMode(true);
-    setSaveName(`${canvasName.trim() || "Bố cục"} (bản sao)`);
-    setTab("save");
-  }
-
   // ─── reset / tự xếp / căn chỉnh ───
   async function doReset() {
     const ok = await confirm({
@@ -1015,7 +966,6 @@ export default function TreeCanvas() {
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       setCanvasName(name);
       setDirty(false);
-      setCopyMode(false);
       setTab("idle");
       toast.success("Đã lưu bố cục");
     } catch (e) {
@@ -1196,34 +1146,6 @@ export default function TreeCanvas() {
 
       <div className={fs ? "fixed inset-0 z-40 flex flex-col gap-3 overflow-hidden bg-background p-3" : "space-y-3"}>
       <div className="flex shrink-0 items-center gap-1.5 overflow-x-auto">
-        <Select
-          aria-label="Bố cục đã lưu"
-          className="h-10 w-auto min-w-[8rem] max-w-[12rem] text-sm"
-          value={currentId}
-          onChange={(e) => {
-            const c = canvases?.find((x) => x.id === e.target.value);
-            clearHistory();
-            setCanvasName(c?.name ?? "");
-            setCurrentId(e.target.value);
-            goCanvas(e.target.value);
-            setLayout(c ? c.layout : DEFAULT_LAYOUT);
-            setSel(null);
-            setDirty(false);
-          }}
-        >
-          <option value="">Tự xếp (chưa lưu)</option>
-          {canvases?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </Select>
-        {canEdit && (
-          <IconBtn label="Tạo bố cục mới" onClick={newCanvas}>
-            <IconPlus className="h-4 w-4" />
-          </IconBtn>
-        )}
-        {canEdit && (
-          <IconBtn label="Nhân bản thành bố cục mới" onClick={duplicateCanvas}>
-            <IconCopy className="h-4 w-4" />
-          </IconBtn>
-        )}
         <IconBtn label={showPalette ? "Đóng công cụ thiết kế" : "Công cụ thiết kế"} active={showPalette} onClick={() => setShowPalette((v) => !v)}>
           <IconLayers className="h-4 w-4" />
         </IconBtn>
@@ -1251,7 +1173,6 @@ export default function TreeCanvas() {
           </IconBtn>
           {canEdit && (
             <IconBtn label={dirty ? "Lưu bố cục (có thay đổi chưa lưu)" : "Lưu bố cục"} primary onClick={() => {
-              setCopyMode(false);
               if (currentId && canvasName.trim()) return void save(false, canvasName);
               setSaveName(canvasName);
               setTab("save");
@@ -1524,14 +1445,6 @@ export default function TreeCanvas() {
 
       </div>
 
-      <NewCanvasPanel
-        open={tab === "new"}
-        busy={busy}
-        warnUnsaved={dirty}
-        onClose={() => setTab("idle")}
-        onCreate={(name, kind) => void createNew(name, kind)}
-      />
-
       <SidePanel
         open={tab === "options"}
         title="Tuỳ chọn canvas"
@@ -1684,7 +1597,7 @@ export default function TreeCanvas() {
         open={tab === "save"}
         title="Lưu bố cục"
         subtitle="Bố cục lưu theo dòng họ, mọi thành viên đều xem được."
-        onClose={() => { setTab("idle"); setCopyMode(false); }}
+        onClose={() => setTab("idle")}
         guard={false}
       >
         <div className="flex flex-1 flex-col space-y-3">
@@ -1693,19 +1606,10 @@ export default function TreeCanvas() {
             <Input value={saveName} maxLength={80} onChange={(e) => setSaveName(e.target.value)} placeholder="VD: Phả đồ chi trưởng" />
           </label>
           <FormActions>
-            {copyMode ? (
-              <Button onClick={() => save(true)} disabled={busy}>Tạo bản sao</Button>
-            ) : (
-              <>
-                {currentId && (
-                  <Button variant="destructive-outline" onClick={remove} disabled={busy}>Xoá</Button>
-                )}
-                {currentId && (
-                  <Button variant="outline" onClick={() => save(true)} disabled={busy}>Lưu bản mới</Button>
-                )}
-                <Button onClick={() => save(false)} disabled={busy}>Lưu</Button>
-              </>
+            {currentId && (
+              <Button variant="destructive-outline" onClick={remove} disabled={busy}>Xoá</Button>
             )}
+            <Button onClick={() => save(false)} disabled={busy}>Lưu</Button>
           </FormActions>
         </div>
       </SidePanel>
