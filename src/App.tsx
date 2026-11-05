@@ -87,6 +87,7 @@ const Today = lazy(() => import("@/pages/clan/Today"));
 const Todo = lazy(() => import("@/pages/clan/Todo"));
 const Tools = lazy(() => import("@/pages/clan/Tools"));
 const Tree = lazy(() => import("@/pages/clan/Tree"));
+const TreeCanvas = lazy(() => import("@/pages/clan/TreeCanvas"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("@/pages/TermsOfUse"));
 const Contact = lazy(() => import("@/pages/Contact"));
@@ -250,6 +251,7 @@ export default function App() {
           <Route path="people/:personId/add-parent" element={<AddParent />} />
           <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
+          <Route path="tree-canvas" element={<TreeCanvas />} />
           <Route path="memory-room" element={<FeatureGuard feature="memory_room"><MemoryRooms /></FeatureGuard>} />
           <Route path="memory-room/:roomId" element={<FeatureGuard feature="memory_room"><MemoryRoom /></FeatureGuard>} />
           <Route path="graves" element={<FeatureGuard feature="graves"><RestingPlaces /></FeatureGuard>} />
