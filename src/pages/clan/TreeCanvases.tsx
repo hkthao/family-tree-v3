@@ -6,7 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
-import { IconCopy, IconPencil, IconTrash, IconTree } from "@/components/icons";
+import { IconArrowRight, IconCopy, IconPencil, IconTrash, IconTree } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
@@ -227,8 +227,10 @@ export default function TreeCanvases() {
                   </p>
                 </Link>
                 <div className="flex items-center justify-end gap-2 border-t p-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`${base}/tree-canvases/${c.id}`}>Mở</Link>
+                  <Button asChild size="sm" variant="outline" className="w-10 px-0">
+                    <Link to={`${base}/tree-canvases/${c.id}`} title="Mở" aria-label={`Mở ${c.name}`}>
+                      <IconArrowRight className="h-4 w-4" />
+                    </Link>
                   </Button>
                   {canEdit && (
                     <>

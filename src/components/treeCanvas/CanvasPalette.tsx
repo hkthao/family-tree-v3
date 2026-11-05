@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { IconLink, IconTrash, IconX } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -169,14 +170,20 @@ export function CanvasPalette({
           Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó.
         </p>
         <LinkPresetGallery value={linkPreset} onPick={onPickPreset} />
-        <Button
-          size="sm"
-          variant={linkMode ? "default" : "outline"}
-          className="h-auto min-h-10 w-full whitespace-normal py-2 text-center"
-          onClick={onToggleLink}
-        >
-          {linkMode ? "Đang nối: nhấp 2 thẻ (Esc để thoát)" : "Bật chế độ nối đường"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={linkMode ? "default" : "outline"}
+            className="h-10 w-10 shrink-0 px-0"
+            onClick={onToggleLink}
+            title={linkMode ? "Tắt chế độ nối (Esc)" : "Bật chế độ nối: nhấp lần lượt hai thẻ"}
+            aria-label="Chế độ nối đường"
+            aria-pressed={linkMode}
+          >
+            <IconLink className="h-4 w-4" />
+          </Button>
+          {linkMode && <span className="text-xs text-muted-foreground">Đang nối: nhấp 2 thẻ (Esc để thoát)</span>}
+        </div>
       </section>
 
       <section className="space-y-2">
@@ -265,7 +272,9 @@ export function NodeInspector({
           <input type="range" min={10} max={36} value={style.size ?? 14} onChange={(e) => onChange({ size: Number(e.target.value) })} className="h-9 w-full" />
         </label>
       </div>
-      <Button size="sm" variant="destructive-outline" className="w-full" onClick={onRemove}>{removeLabel}</Button>
+      <Button size="sm" variant="destructive-outline" className="h-10 w-10 px-0" onClick={onRemove} title={removeLabel} aria-label={removeLabel}>
+        <IconTrash className="h-4 w-4" />
+      </Button>
     </section>
   );
 }
@@ -305,8 +314,8 @@ export function LinkInspector({
         Kéo chấm xanh ở hai đầu để nối sang thẻ khác hoặc thả ra khoảng trống/lên một đường. Nhấp chấm nhỏ giữa đoạn để thêm điểm uốn, kéo ô vuông để uốn theo ý, nhấp đúp ô vuông để bỏ.
       </p>
       {(link.points?.length ?? 0) > 0 && (
-        <Button size="sm" variant="outline" className="w-full" onClick={() => onChange({ points: [] })}>
-          Bỏ {link.points?.length} điểm uốn
+        <Button size="sm" variant="outline" className="h-10 w-10 px-0" onClick={() => onChange({ points: [] })} title={`Bỏ ${link.points?.length} điểm uốn`} aria-label="Bỏ điểm uốn">
+          <IconX className="h-4 w-4" />
         </Button>
       )}
       <label className="block space-y-1">
@@ -321,7 +330,9 @@ export function LinkInspector({
         <input type="checkbox" checked={link.dash} onChange={(e) => onChange({ dash: e.target.checked })} />
         Nét đứt
       </label>
-      <Button size="sm" variant="destructive-outline" className="w-full" onClick={onRemove}>Xoá đường nối</Button>
+      <Button size="sm" variant="destructive-outline" className="h-10 w-10 px-0" onClick={onRemove} title="Xoá đường nối" aria-label="Xoá đường nối">
+        <IconTrash className="h-4 w-4" />
+      </Button>
     </section>
   );
 }

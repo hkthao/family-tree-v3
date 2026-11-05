@@ -5,7 +5,7 @@ import { Circle, Group, RegularPolygon, Image as KImage, Layer, Line, Rect, Stag
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconCheck, IconCompass, IconCopy, IconDownload, IconLayers, IconMaximize, IconMinimize, IconPlus, IconRefresh, IconSettings, IconTree, IconUndo, IconUpload } from "@/components/icons";
+import { IconCheck, IconCompass, IconCopy, IconLayoutHorizontal, IconTrash, IconDownload, IconLayers, IconMaximize, IconMinimize, IconPlus, IconRefresh, IconSettings, IconTree, IconUndo, IconUpload } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -1548,13 +1548,15 @@ export default function TreeCanvas() {
           )}
           <section className="space-y-2">
             <h3 className="text-sm font-semibold">Bố cục</h3>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Button variant="outline" size="sm" onClick={autoArrange}>
-                <IconRefresh className="h-4 w-4" /> Tự xếp lại
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="h-10 w-10 px-0" onClick={autoArrange} title="Tự xếp lại" aria-label="Tự xếp lại">
+                <IconRefresh className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={alignTidy}>Căn chỉnh</Button>
-              <Button variant="destructive-outline" size="sm" onClick={doReset}>
-                <IconUndo className="h-4 w-4" /> Đặt lại
+              <Button variant="outline" size="sm" className="h-10 w-10 px-0" onClick={alignTidy} title="Căn chỉnh" aria-label="Căn chỉnh">
+                <IconLayoutHorizontal className="h-4 w-4" />
+              </Button>
+              <Button variant="destructive-outline" size="sm" className="h-10 w-10 px-0" onClick={doReset} title="Đặt lại" aria-label="Đặt lại">
+                <IconUndo className="h-4 w-4" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -1606,12 +1608,14 @@ export default function TreeCanvas() {
             Hiện đường nối cha–con, vợ–chồng tự động
           </label>
           {canEdit && currentId && (
-            <Button variant="destructive-outline" size="sm" disabled={busy}
+            <Button variant="destructive-outline" size="sm" disabled={busy} className="h-10 w-10 px-0"
+              title={`Xoá bố cục "${canvasName || currentCanvas?.name || ""}"`}
+              aria-label="Xoá bố cục"
               onClick={async () => {
                 const ok = await confirm({ title: "Xoá bố cục này?", description: "Bố cục đã lưu sẽ bị xoá vĩnh viễn.", confirmLabel: "Xoá", destructive: true });
                 if (ok) await remove();
               }}>
-              Xoá bố cục "{canvasName || currentCanvas?.name}"
+              <IconTrash className="h-4 w-4" />
             </Button>
           )}
           <FormActions>
