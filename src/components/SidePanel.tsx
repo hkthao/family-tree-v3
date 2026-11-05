@@ -51,19 +51,25 @@ export function SidePanel({
   const [closing, setClosing] = useState(false);
   const closeTimer = useRef<number | undefined>(undefined);
 
+  // onClose thường là hàm inline (đổi identity mỗi lần cha render). Giữ qua ref để
+  // các callback bên dưới ổn định — nếu không, effect mở panel chạy lại sau MỖI
+  // lần gõ ký tự và `panelRef.focus()` cướp focus khỏi ô đang nhập.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   const animateClose = useCallback(() => {
     if (closeTimer.current !== undefined) return;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduce) {
-      onClose();
+      onCloseRef.current();
       return;
     }
     setClosing(true);
     closeTimer.current = window.setTimeout(() => {
       closeTimer.current = undefined;
-      onClose();
+      onCloseRef.current();
     }, CLOSE_MS);
-  }, [onClose]);
+  }, []);
 
   useEffect(
     () => () => {
