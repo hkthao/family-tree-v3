@@ -223,3 +223,26 @@ describe("layoutByLinks (cây tự do theo đường nối)", () => {
     expect(Object.keys(p).sort()).toEqual(["a", "b"]);
   });
 });
+
+import { nearestOnLines, pointOnPoly } from "@/lib/tree/canvasModel";
+
+describe("đầu đường nối gắn vào đường khác", () => {
+  const poly = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }];
+  it("pointOnPoly theo chiều dài", () => {
+    expect(pointOnPoly(poly, 0.5)).toEqual({ x: 100, y: 0 });
+    expect(pointOnPoly(poly, 0.25)).toEqual({ x: 50, y: 0 });
+    expect(pointOnPoly(poly, 1)).toEqual({ x: 100, y: 100 });
+  });
+  it("nearestOnLines trả ref + t, khớp pointOnPoly", () => {
+    const n = nearestOnLines([{ ref: "l:x", poly }], { x: 100, y: 52 }, 10)!;
+    expect(n.at.ref).toBe("l:x");
+    expect(n.at.t).toBeCloseTo(0.76);
+    expect(pointOnPoly(poly, n.at.t).y).toBeCloseTo(52);
+    expect(nearestOnLines([{ ref: "l:x", poly }], { x: 50, y: 40 }, 10)).toBeNull();
+  });
+  it("parseLayout giữ fromAt/toAt hợp lệ, kẹp t", () => {
+    const l = parseLayout({ links: [{ id: "a", from: "", to: "n", fromPt: { x: 1, y: 2 }, fromAt: { ref: "s:a:b", t: 7 }, toAt: { ref: 5, t: 0 } }] });
+    expect(l.links[0].fromAt).toEqual({ ref: "s:a:b", t: 1 });
+    expect(l.links[0].toAt).toBeUndefined();
+  });
+});

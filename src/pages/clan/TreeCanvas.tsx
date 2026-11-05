@@ -50,7 +50,9 @@ import {
   zigzagPoints,
   type LinkPreset,
   linkGeometry,
-  nearestOnPolylines,
+  nearestOnLines,
+  pointOnPoly,
+  type LineAt,
   nearestSide,
   NODE_H,
   NODE_W,
@@ -412,10 +414,10 @@ export default function TreeCanvas() {
   const [fs, setFs] = useState(false);
   const [canvasName, setCanvasName] = useState("");
   // Đang kéo đường nối từ chấm của một thẻ (kiểu PowerPoint).
-  type ConnStart = { node: string; side: Side } | { pt: { x: number; y: number } };
+  type ConnStart = { node: string; side: Side } | { pt: { x: number; y: number }; at?: LineAt };
   const [connecting, setConnecting] = useState<{ from: ConnStart } | null>(null);
   const [linkPresetId, setLinkPresetId] = useState<string>("curve");
-  const [lineHover, setLineHover] = useState<{ x: number; y: number } | null>(null);
+  const [lineHover, setLineHover] = useState<{ x: number; y: number; at?: LineAt } | null>(null);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const justLinkedRef = useRef(false);
 
@@ -643,7 +645,7 @@ export default function TreeCanvas() {
 
   // Các đường đang vẽ (tự động + tuỳ chỉnh) dạng đa tuyến — để bắt dính và rê chuột tìm điểm nối.
   const autoLines = useMemo(() => {
-    const out: Array<{ g: LinkGeometry; kind: "spouse" | "parent" }> = [];
+    const out: Array<{ g: LinkGeometry; kind: "spouse" | "parent"; ref: string }> = [];
     if (!layout.autoEdges) return out;
     for (const e of edges) {
       const a = positions[e.from];
@@ -653,7 +655,7 @@ export default function TreeCanvas() {
         const [l, r] = a.x <= b.x ? [a, b] : [b, a];
         const p1 = anchor(l, "right");
         const p2 = anchor(r, "left");
-        out.push({ g: { points: [p1.x, p1.y, p2.x, p2.y], bezier: false, tension: 0 }, kind: "spouse" });
+        out.push({ g: { points: [p1.x, p1.y, p2.x, p2.y], bezier: false, tension: 0 }, kind: "spouse", ref: `s:${e.from}:${e.to}` });
         continue;
       }
       const sp = spouseOf.get(e.from);
@@ -664,56 +666,94 @@ export default function TreeCanvas() {
         from = { x: (from.x + o.x) / 2, y: from.y };
       }
       const { points, bezier } = edgePoints(layout.edgeStyle, from, anchor(b, "top"));
-      out.push({ g: { points, bezier, tension: 0 }, kind: "parent" });
+      out.push({ g: { points, bezier, tension: 0 }, kind: "parent", ref: `p:${e.to}` });
     }
     return out;
   }, [edges, positions, spouseOf, layout.autoEdges, layout.edgeStyle]);
 
-  /** Giải đầu/cuối và hình học của một đường nối tuỳ chỉnh; null nếu thẻ đầu/cuối không còn. */
-  const linkEnds = useCallback(
-    (k: CustomLink) => {
+  /** Hình học của một đường nối tuỳ chỉnh với hai đầu tự do đã giải sẵn; null nếu thẻ đầu/cuối không còn. */
+  const buildEnds = useCallback(
+    (k: CustomLink, fromPt: { x: number; y: number } | undefined, toPt: { x: number; y: number } | undefined) => {
       const ra = k.from ? rectOf(k.from) : null;
       const rb = k.to ? rectOf(k.to) : null;
       if ((k.from && !ra) || (k.to && !rb)) return null;
-      const ca = ra ? { x: ra.x + ra.w / 2, y: ra.y + ra.h / 2 } : k.fromPt;
-      const cb = rb ? { x: rb.x + rb.w / 2, y: rb.y + rb.h / 2 } : k.toPt;
+      const ca = ra ? { x: ra.x + ra.w / 2, y: ra.y + ra.h / 2 } : fromPt;
+      const cb = rb ? { x: rb.x + rb.w / 2, y: rb.y + rb.h / 2 } : toPt;
       if (!ca || !cb) return null;
       const via = k.points ?? [];
       const as = ra ? (k.fromSide ?? dominantSide(ca, via[0] ?? cb)) : undefined;
       const bs = rb ? (k.toSide ?? dominantSide(cb, via[via.length - 1] ?? ca)) : undefined;
-      const a = ra && as ? sideAnchor(ra, as) : (k.fromPt as { x: number; y: number });
-      const b = rb && bs ? sideAnchor(rb, bs) : (k.toPt as { x: number; y: number });
+      const a = ra && as ? sideAnchor(ra, as) : (fromPt as { x: number; y: number });
+      const b = rb && bs ? sideAnchor(rb, bs) : (toPt as { x: number; y: number });
       return { a, b, g: linkGeometry(k.style, a, as, b, bs, via) };
     },
     [rectOf],
   );
 
-  const allPolys = useMemo(
+  type LinkEnds = NonNullable<ReturnType<typeof buildEnds>>;
+  /** Giải mọi đường nối; đầu gắn vào đường khác đi theo đường đó (chống vòng bằng `visiting`). */
+  const linkEndsMap = useMemo(() => {
+    const autoMap = new Map(autoLines.map((l) => [l.ref, flattenPath(l.g)]));
+    const byId = new Map(layout.links.map((k) => [k.id, k]));
+    const cache = new Map<string, LinkEnds | null>();
+    const visiting = new Set<string>();
+    const resolve = (id: string): LinkEnds | null => {
+      if (cache.has(id)) return cache.get(id) ?? null;
+      const k = byId.get(id);
+      if (!k || visiting.has(id)) return null;
+      visiting.add(id);
+      const at = (v: LineAt | undefined, fallback: { x: number; y: number } | undefined) => {
+        if (!v) return fallback;
+        let poly: Array<{ x: number; y: number }> | undefined;
+        if (v.ref.startsWith("l:")) {
+          const e = resolve(v.ref.slice(2));
+          poly = e ? flattenPath(e.g) : undefined;
+        } else poly = autoMap.get(v.ref);
+        return poly && poly.length ? pointOnPoly(poly, v.t) : fallback;
+      };
+      const out = buildEnds(k, at(k.fromAt, k.fromPt), at(k.toAt, k.toPt));
+      visiting.delete(id);
+      cache.set(id, out);
+      return out;
+    };
+    for (const k of layout.links) resolve(k.id);
+    return cache;
+  }, [layout.links, autoLines, buildEnds]);
+  const linkEnds = useCallback((k: CustomLink) => linkEndsMap.get(k.id) ?? null, [linkEndsMap]);
+
+  const allLines = useMemo(
     () => [
-      ...autoLines.map((l) => flattenPath(l.g)),
-      ...layout.links.map((k) => linkEnds(k)).filter((x): x is NonNullable<typeof x> => !!x).map((x) => flattenPath(x.g)),
+      ...autoLines.map((l) => ({ ref: l.ref, poly: flattenPath(l.g) })),
+      ...layout.links.flatMap((k) => {
+        const e = linkEndsMap.get(k.id);
+        return e ? [{ ref: `l:${k.id}`, poly: flattenPath(e.g) }] : [];
+      }),
     ],
-    [autoLines, layout.links, linkEnds],
+    [autoLines, layout.links, linkEndsMap],
   );
   const spouseMids = useMemo(
     () =>
       autoLines
         .filter((l) => l.kind === "spouse")
-        .map((l) => ({ x: (l.g.points[0] + l.g.points[2]) / 2, y: (l.g.points[1] + l.g.points[3]) / 2 })),
+        .map((l) => ({ x: (l.g.points[0] + l.g.points[2]) / 2, y: (l.g.points[1] + l.g.points[3]) / 2, at: { ref: l.ref, t: 0.5 } })),
     [autoLines],
   );
   /** Bắt dính điểm vào trung điểm đường vợ–chồng, hoặc điểm gần nhất trên một đường (≤14px màn hình). */
-  const snapPoint = (pt: { x: number; y: number }, maxPx = 14) => {
+  const snapPoint = (
+    pt: { x: number; y: number },
+    maxPx = 14,
+    exceptLink?: string,
+  ): { x: number; y: number; at?: LineAt } | null => {
     const tol = maxPx / view.scale;
-    let best: { x: number; y: number } | null = null;
+    let best: { x: number; y: number; at?: LineAt } | null = null;
     let bd = tol;
     for (const m of spouseMids) {
       const d = Math.hypot(m.x - pt.x, m.y - pt.y);
       if (d <= bd) { best = m; bd = d; }
     }
     if (best) return best;
-    const n = nearestOnPolylines(allPolys, pt, tol);
-    return n ? { x: n.x, y: n.y } : null;
+    const n = nearestOnLines(exceptLink ? allLines.filter((l) => l.ref !== `l:${exceptLink}`) : allLines, pt, tol);
+    return n ? { x: n.x, y: n.y, at: n.at } : null;
   };
 
   const lastHoverRef = useRef(0);
@@ -742,12 +782,13 @@ export default function TreeCanvas() {
     const pre = LINK_PRESETS.find((x) => x.id === linkPresetId) ?? LINK_PRESETS[4];
     const base = { id: newId("l"), color: "#8B1E2D", width: 3, dash: pre.dash, style: pre.style, arrow: pre.arrow };
     const f = connecting.from;
-    const fromPart = "node" in f ? { from: f.node, fromSide: f.side } : { from: "", fromPt: f.pt };
+    const fromPart = "node" in f ? { from: f.node, fromSide: f.side } : { from: "", fromPt: f.pt, fromAt: f.at };
     let lk: CustomLink | null = null;
     if (pt && target) {
       lk = { ...base, ...fromPart, to: target, toSide: nearestSide(rectOf(target)!, pt) };
     } else if (pt && start && Math.hypot(pt.x - start.x, pt.y - start.y) > 12 / view.scale) {
-      lk = { ...base, ...fromPart, to: "", toPt: snapPoint(pt) ?? pt };
+      const sp = snapPoint(pt);
+      lk = { ...base, ...fromPart, to: "", toPt: sp ? { x: sp.x, y: sp.y } : pt, toAt: sp?.at };
     }
     if (lk && pre.zigzag && start) {
       const endPt = target && pt ? sideAnchor(rectOf(target)!, lk.toSide ?? "top") : (lk.toPt as { x: number; y: number });
@@ -779,12 +820,13 @@ export default function TreeCanvas() {
         const next: CustomLink = { ...k };
         if (target && target !== (which === "from" ? k.to : k.from)) {
           const side = nearestSide(rectOf(target)!, pt);
-          if (which === "from") { next.from = target; next.fromSide = side; next.fromPt = undefined; }
-          else { next.to = target; next.toSide = side; next.toPt = undefined; }
+          if (which === "from") { next.from = target; next.fromSide = side; next.fromPt = undefined; next.fromAt = undefined; }
+          else { next.to = target; next.toSide = side; next.toPt = undefined; next.toAt = undefined; }
         } else {
-          const q = snapPoint(pt) ?? pt;
-          if (which === "from") { next.from = ""; next.fromSide = undefined; next.fromPt = q; }
-          else { next.to = ""; next.toSide = undefined; next.toPt = q; }
+          const sp = snapPoint(pt, 14, id);
+          const q = sp ? { x: sp.x, y: sp.y } : pt;
+          if (which === "from") { next.from = ""; next.fromSide = undefined; next.fromPt = q; next.fromAt = sp?.at; }
+          else { next.to = ""; next.toSide = undefined; next.toPt = q; next.toAt = sp?.at; }
         }
         return next;
       }),
@@ -1467,13 +1509,13 @@ export default function TreeCanvas() {
                     onMouseLeave={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = ""; }}
                     onMouseDown={(e) => {
                       e.cancelBubble = true;
-                      setConnecting({ from: { pt: { x: lineHover.x, y: lineHover.y } } });
+                      setConnecting({ from: { pt: { x: lineHover.x, y: lineHover.y }, at: lineHover.at } });
                       setPointer(null);
                       setLineHover(null);
                     }}
                     onTouchStart={(e) => {
                       e.cancelBubble = true;
-                      setConnecting({ from: { pt: { x: lineHover.x, y: lineHover.y } } });
+                      setConnecting({ from: { pt: { x: lineHover.x, y: lineHover.y }, at: lineHover.at } });
                       setPointer(null);
                       setLineHover(null);
                     }}
