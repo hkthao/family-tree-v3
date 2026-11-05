@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { SidePanel } from "@/components/SidePanel";
+import { NewCanvasPanel, type NewCanvasKind } from "@/components/treeCanvas/NewCanvasPanel";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
@@ -18,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { formatRelative } from "@/lib/formatDate";
+import { getTreeData } from "@/lib/queries/tree";
+import { DEFAULT_LAYOUT } from "@/lib/tree/canvasModel";
 import {
   createTreeCanvas,
   deleteTreeCanvas,
@@ -39,6 +42,9 @@ export default function TreeCanvases() {
   const confirm = useConfirm();
   const qc = useQueryClient();
   const base = `/clans/${clan.id}`;
+  const navigate = useNavigate();
+  const [creating, setCreating] = useState(false);
+  const [createBusy, setCreateBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"recent" | "name">("recent");
@@ -65,6 +71,28 @@ export default function TreeCanvases() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const curPage = Math.min(page, totalPages);
   const pageItems = filtered.slice((curPage - 1) * pageSize, curPage * pageSize);
+
+  async function createNew(rawName: string, kind: NewCanvasKind) {
+    const name = rawName.trim();
+    if (!name) return toast.error("Hãy đặt tên cho cây mới");
+    setCreateBusy(true);
+    try {
+      let nodeStyles: Record<string, { hidden: boolean }> = {};
+      if (kind === "blank") {
+        const tree = await getTreeData(clan.id);
+        nodeStyles = Object.fromEntries(tree.persons.map((p) => [p.id, { hidden: true }]));
+      }
+      const c = await createTreeCanvas(clan.id, name, { ...DEFAULT_LAYOUT, nodeStyles });
+      await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
+      setCreating(false);
+      toast.success("Đã tạo cây mới");
+      navigate(`${base}/tree-canvases/${c.id}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Không tạo được");
+    } finally {
+      setCreateBusy(false);
+    }
+  }
 
   async function rename() {
     if (!editing) return;
@@ -143,7 +171,7 @@ export default function TreeCanvases() {
           icon={<IconTree className="h-10 w-10" />}
           title="Chưa có cây nào"
           description="Tạo cây đầu tiên để tự sắp xếp phả đồ theo ý, hoặc mở cây tự xếp để xem thử."
-          primary={canEdit ? { label: "Tạo cây mới", to: `${base}/tree-canvases/new` } : null}
+          primary={canEdit ? { label: "Tạo cây mới", onClick: () => setCreating(true) } : null}
           secondary={{ label: "Xem cây tự xếp", to: `${base}/tree-canvases/auto` }}
         />
       )}
@@ -286,7 +314,14 @@ export default function TreeCanvases() {
         </div>
       </SidePanel>
 
-      {canEdit && <Fab to={`${base}/tree-canvases/new`} label="Tạo cây mới" />}
+      <NewCanvasPanel
+        open={creating}
+        busy={createBusy}
+        onClose={() => setCreating(false)}
+        onCreate={createNew}
+      />
+
+      {canEdit && <Fab onClick={() => setCreating(true)} label="Tạo cây mới" />}
     </div>
   );
 }
