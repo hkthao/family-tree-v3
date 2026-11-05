@@ -493,6 +493,13 @@ export function buildSections(
           badge: pendingContribCount > 0 ? pendingContribCount : undefined,
         });
       }
+      if (canTree) {
+        workItems.push({
+          to: `/clans/${clanId}/tree-canvas`,
+          label: "Canvas phả đồ",
+          icon: <IconTree className={ic} />,
+        });
+      }
       workItems.push({
         to: `/clans/${clanId}/tools`,
         label: "Công cụ",
