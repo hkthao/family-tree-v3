@@ -255,7 +255,7 @@ export function buildSections(
   pendingContribCount: number,
   pendingInlawCount: number,
   todoCount: number,
-  aiEnabled: boolean,
+  _aiEnabled: boolean,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -375,16 +375,6 @@ export function buildSections(
         to: `/clans/${clanId}/today`,
         label: "Hôm nay",
         icon: <IconSun className={ic} />,
-      });
-    }
-    // Trợ lý đứng trong nhóm lõi: nó là lối vào chính cho người lớn
-    // tuổi — hỏi bằng lời thay vì tự đi tìm trong menu.
-    if (isMember && aiEnabled && feat("ai_assistant")) {
-      topItems.push({
-        to: `/clans/${clanId}/tro-ly`,
-        panel: "chat",
-        label: "Trợ lý dòng họ",
-        icon: <IconSparkles className={ic} />,
       });
     }
     sections.push({
