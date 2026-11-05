@@ -1149,6 +1149,15 @@ export default function TreeCanvas() {
         <IconBtn label={showPalette ? "Đóng công cụ thiết kế" : "Công cụ thiết kế"} active={showPalette} onClick={() => setShowPalette((v) => !v)}>
           <IconLayers className="h-4 w-4" />
         </IconBtn>
+        <IconBtn label="Tự xếp lại theo đời" onClick={autoArrange}>
+          <IconRefresh className="h-4 w-4" />
+        </IconBtn>
+        <IconBtn label="Căn chỉnh: dồn thẻ cùng hàng, bám lưới" onClick={alignTidy}>
+          <IconLayoutHorizontal className="h-4 w-4" />
+        </IconBtn>
+        <IconBtn label="Đặt lại về ban đầu" onClick={doReset}>
+          <IconTrash className="h-4 w-4" />
+        </IconBtn>
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
           <IconBtn label="Hoàn tác (Ctrl+Z)" onClick={undo} disabled={pastRef.current.length === 0}>
             <IconUndo className="h-4 w-4" />
@@ -1459,23 +1468,6 @@ export default function TreeCanvas() {
               <Input value={canvasName} maxLength={80} onChange={(e) => { setCanvasName(e.target.value); setDirty(true); }} />
             </label>
           )}
-          <section className="space-y-2">
-            <h3 className="text-sm font-semibold">Bố cục</h3>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-10 w-10 px-0" onClick={autoArrange} title="Tự xếp lại" aria-label="Tự xếp lại">
-                <IconRefresh className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" className="h-10 w-10 px-0" onClick={alignTidy} title="Căn chỉnh" aria-label="Căn chỉnh">
-                <IconLayoutHorizontal className="h-4 w-4" />
-              </Button>
-              <Button variant="destructive-outline" size="sm" className="h-10 w-10 px-0" onClick={doReset} title="Đặt lại" aria-label="Đặt lại">
-                <IconUndo className="h-4 w-4" />
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Tự xếp lại: xếp lại cả cây theo đời. Căn chỉnh: dồn thẻ cùng hàng, không đè nhau, bám lưới. Đặt lại: về trạng thái ban đầu.
-            </p>
-          </section>
           <label className="block space-y-1 text-sm">
             <span className="font-medium">Nền</span>
             <Select value={layout.background} onChange={(e) => setOpt("background", e.target.value as CanvasBackground)}>
