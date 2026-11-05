@@ -67,7 +67,7 @@ export function CanvasPalette({
       <section className="space-y-2">
         <h3 className="font-semibold">Thẻ thiết kế sẵn</h3>
         <p className="text-xs text-muted-foreground">Kéo thả vào canvas (hoặc nhấp để thêm).</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {CARD_DESIGNS.map((d) => (
             <button
               key={d.id}
@@ -101,10 +101,10 @@ export function CanvasPalette({
         <Button
           size="sm"
           variant={linkMode ? "default" : "outline"}
-          className="w-full"
+          className="h-auto min-h-10 w-full whitespace-normal py-2 text-center"
           onClick={onToggleLink}
         >
-          {linkMode ? "Đang nối: chọn 2 thẻ (Esc để thoát)" : "Bật chế độ nối đường"}
+          {linkMode ? "Đang nối: nhấp 2 thẻ (Esc để thoát)" : "Bật chế độ nối đường"}
         </Button>
       </section>
 
