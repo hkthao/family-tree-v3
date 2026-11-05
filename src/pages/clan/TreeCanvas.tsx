@@ -42,9 +42,12 @@ import {
   DEFAULT_LAYOUT,
   edgePoints,
   linkAnchors,
+  nearestSide,
   NODE_H,
   NODE_W,
   nodeRect,
+  sideAnchor,
+  sidePath,
   paperSizeMm,
   TEXT_H,
   TEXT_W,
@@ -58,6 +61,7 @@ import {
   type NodeFrame,
   type NodeStyle,
   type PaperPreset,
+  type Side,
 } from "@/lib/tree/canvasModel";
 
 const FONT = '"Be Vietnam Pro", system-ui, sans-serif';
@@ -131,6 +135,37 @@ function yearsOf(p: PersonForTree): string {
   return "";
 }
 
+/** 4 chấm nối giữa các cạnh thẻ (hiện khi rê chuột / chọn): kéo từ chấm sang thẻ khác để nối. */
+function Handles({ w, h, onStart }: { w: number; h: number; onStart: (side: Side) => void }) {
+  return (
+    <>
+      {(["top", "right", "bottom", "left"] as Side[]).map((side) => {
+        const a = sideAnchor({ x: 0, y: 0, w, h }, side);
+        const begin = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+          e.cancelBubble = true;
+          onStart(side);
+        };
+        return (
+          <Circle
+            key={side}
+            x={a.x}
+            y={a.y}
+            radius={7}
+            fill="#fff"
+            stroke="#2563EB"
+            strokeWidth={2}
+            hitStrokeWidth={14}
+            onMouseEnter={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = "crosshair"; }}
+            onMouseLeave={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = ""; }}
+            onMouseDown={begin}
+            onTouchStart={begin}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 const DESIGN_LOOK: Record<CardDesign, { fill: string; stroke: string; inner: string; text: string; sub: string; border: number }> = {
   classic: { fill: "", stroke: "", inner: "", text: "#2A211B", sub: "#7A6B5A", border: 3 },
   royal: { fill: "#7A1A24", stroke: "#D4AF37", inner: "#E9CF7A", text: "#F6E7B4", sub: "#E3CF95", border: 3 },
@@ -157,6 +192,8 @@ interface NodeProps {
   picked: boolean;
   onMove: (id: string, x: number, y: number) => void;
   onDragStart: () => void;
+  connecting: boolean;
+  onConnectStart: (id: string, side: Side) => void;
   onOpen: (id: string) => void;
   onSelect: (id: string) => void;
 }
@@ -180,7 +217,12 @@ const CardNode = memo(function CardNode(p: NodeProps) {
   const R = 46;
   const cx = NODE_W / 2;
   const cy = 62;
+  const [hover, setHover] = useState(false);
+  const showHandles = hover || p.selected || p.connecting;
   const common = {
+    nodeId: p.id,
+    onMouseEnter: () => setHover(true),
+    onMouseLeave: () => setHover(false),
     x: p.x,
     y: p.y,
     draggable: true,
@@ -200,6 +242,7 @@ const CardNode = memo(function CardNode(p: NodeProps) {
         <Text text={p.name} width={TEXT_W} fontSize={nameSize} lineHeight={1.2} align="center"
           verticalAlign="middle" height={TEXT_H} fill={p.style?.color ?? "#2A211B"} fontFamily={family}
           fontStyle="bold" />
+        {showHandles && <Handles w={TEXT_W} h={TEXT_H} onStart={(sd) => p.onConnectStart(p.id, sd)} />}
       </Group>
     );
   }
@@ -244,6 +287,7 @@ const CardNode = memo(function CardNode(p: NodeProps) {
         <Rect x={-3} y={-3} width={NODE_W + 6} height={NODE_H + 6} cornerRadius={16}
           stroke={p.picked ? "#F59E0B" : "#2563EB"} strokeWidth={3} dash={[8, 4]} listening={false} />
       )}
+      {showHandles && <Handles w={NODE_W} h={NODE_H} onStart={(sd) => p.onConnectStart(p.id, sd)} />}
     </Group>
   );
 });
@@ -352,6 +396,11 @@ export default function TreeCanvas() {
   // và các ngăn kéo (portal ra body, z-50) vẫn hiện đè lên.
   const [fs, setFs] = useState(false);
   const [copyMode, setCopyMode] = useState(false);
+  const [canvasName, setCanvasName] = useState("");
+  // Đang kéo đường nối từ chấm của một thẻ (kiểu PowerPoint).
+  const [connecting, setConnecting] = useState<{ from: string; side: Side } | null>(null);
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const justLinkedRef = useRef(false);
 
   // Lịch sử hoàn tác: ảnh chụp bố cục trước mỗi thay đổi. Thay đổi liên tiếp cùng
   // `key` trong 1 giây (gõ chữ, kéo thanh trượt) gộp thành một bước.
@@ -411,6 +460,7 @@ export default function TreeCanvas() {
     initRef.current = true;
     if (canvases[0]) {
       clearHistory();
+      setCanvasName(canvases[0].name);
       setCurrentId(canvases[0].id);
       setLayout(canvases[0].layout);
     }
@@ -549,6 +599,55 @@ export default function TreeCanvas() {
     [linkMode, linkFrom, update],
   );
 
+  const rectOf = useCallback(
+    (id: string) => {
+      const pos = positions[id];
+      return pos ? nodeRect(pos, extraById.get(id)) : null;
+    },
+    [positions, extraById],
+  );
+  /** Thẻ nằm dưới điểm `pt` (canvas) — thẻ vẽ sau nằm trên. */
+  const nodeAt = (pt: { x: number; y: number }, except?: string): string | null => {
+    const ids = Object.keys(positions).reverse();
+    for (const id of ids) {
+      if (id === except) continue;
+      const r = rectOf(id);
+      if (r && pt.x >= r.x && pt.x <= r.x + r.w && pt.y >= r.y && pt.y <= r.y + r.h) return id;
+    }
+    return null;
+  };
+  const stagePoint = () => {
+    const st = stageRef.current;
+    const p = st?.getRelativePointerPosition();
+    return p ? { x: p.x, y: p.y } : null;
+  };
+  const trackConnect = () => {
+    if (connecting) setPointer(stagePoint());
+  };
+  const finishConnect = () => {
+    if (!connecting) return;
+    const pt = stagePoint() ?? pointer;
+    const target = pt ? nodeAt(pt, connecting.from) : null;
+    if (pt && target) {
+      const tr = rectOf(target)!;
+      const lk: CustomLink = {
+        id: newId("l"), from: connecting.from, to: target, color: "#8B1E2D", width: 3, dash: false,
+        style: "bezier", fromSide: connecting.side, toSide: nearestSide(tr, pt),
+      };
+      update((l) => ({ ...l, links: [...l.links, lk] }));
+      justLinkedRef.current = true;
+      setSel({ kind: "link", id: lk.id });
+    }
+    setConnecting(null);
+    setPointer(null);
+  };
+  useEffect(() => {
+    if (!connecting) return;
+    const cancel = () => { setConnecting(null); setPointer(null); };
+    const t = setTimeout(() => window.addEventListener("mouseup", cancel, { once: true }), 0);
+    return () => { clearTimeout(t); window.removeEventListener("mouseup", cancel); };
+  }, [connecting]);
+
   const toCanvas = (clientX: number, clientY: number) => {
     const r = wrapRef.current?.getBoundingClientRect();
     return {
@@ -649,6 +748,7 @@ export default function TreeCanvas() {
       if (!ok) return;
     }
     clearHistory();
+    setCanvasName("");
     setCurrentId("");
     setLayout(DEFAULT_LAYOUT);
     setSel(null);
@@ -658,7 +758,7 @@ export default function TreeCanvas() {
   }
   function duplicateCanvas() {
     setCopyMode(true);
-    setSaveName(`${canvases?.find((c) => c.id === currentId)?.name ?? "Bố cục"} (bản sao)`);
+    setSaveName(`${canvasName.trim() || "Bố cục"} (bản sao)`);
     setTab("save");
   }
 
@@ -711,8 +811,8 @@ export default function TreeCanvas() {
 
   // ─── lưu ───
   const currentCanvas = canvases?.find((c) => c.id === currentId);
-  async function save(asNew: boolean) {
-    const name = saveName.trim();
+  async function save(asNew: boolean, nameArg: string = saveName) {
+    const name = nameArg.trim();
     if (!name) return toast.error("Hãy đặt tên cho bố cục");
     setBusy(true);
     try {
@@ -727,6 +827,7 @@ export default function TreeCanvas() {
         setCurrentId(c.id);
       }
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
+      setCanvasName(name);
       setDirty(false);
       setCopyMode(false);
       setTab("idle");
@@ -744,6 +845,7 @@ export default function TreeCanvas() {
       await deleteTreeCanvas(currentId);
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       clearHistory();
+      setCanvasName("");
       setCurrentId("");
       setLayout(DEFAULT_LAYOUT);
       setDirty(false);
@@ -846,6 +948,7 @@ export default function TreeCanvas() {
   ) : null;
 
   useEffect(() => {
+    if (justLinkedRef.current) { justLinkedRef.current = false; return; }
     if (sel) setShowPalette(true);
   }, [sel]);
 
@@ -888,6 +991,7 @@ export default function TreeCanvas() {
           onChange={(e) => {
             const c = canvases?.find((x) => x.id === e.target.value);
             clearHistory();
+            setCanvasName(c?.name ?? "");
             setCurrentId(e.target.value);
             setLayout(c ? c.layout : DEFAULT_LAYOUT);
             setSel(null);
@@ -897,6 +1001,16 @@ export default function TreeCanvas() {
           <option value="">Tự xếp (chưa lưu)</option>
           {canvases?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Select>
+        <Input
+          aria-label="Tên cây gia phả"
+          title="Tên của cây (bố cục) này"
+          placeholder="Đặt tên cây…"
+          maxLength={80}
+          readOnly={!canEdit}
+          value={canvasName}
+          onChange={(e) => { setCanvasName(e.target.value); setDirty(true); }}
+          className="h-10 w-40 shrink-0 text-sm"
+        />
         {canEdit && (
           <IconBtn label="Tạo bố cục mới" onClick={newCanvas}>
             <IconPlus className="h-4 w-4" />
@@ -933,7 +1047,12 @@ export default function TreeCanvas() {
             <IconSettings className="h-4 w-4" />
           </IconBtn>
           {canEdit && (
-            <IconBtn label={dirty ? "Lưu bố cục (có thay đổi chưa lưu)" : "Lưu bố cục"} primary onClick={() => { setCopyMode(false); setSaveName(currentCanvas?.name ?? ""); setTab("save"); }}>
+            <IconBtn label={dirty ? "Lưu bố cục (có thay đổi chưa lưu)" : "Lưu bố cục"} primary onClick={() => {
+              setCopyMode(false);
+              if (currentId && canvasName.trim()) return void save(false, canvasName);
+              setSaveName(canvasName);
+              setTab("save");
+            }}>
               <span className="relative">
                 <IconCheck className="h-4 w-4" />
                 {dirty && <span className="absolute -right-1.5 -top-1.5 h-2 w-2 rounded-full bg-amber-300" />}
@@ -986,6 +1105,10 @@ export default function TreeCanvas() {
               scaleX={view.scale}
               scaleY={view.scale}
               draggable
+              onMouseMove={trackConnect}
+              onTouchMove={trackConnect}
+              onMouseUp={finishConnect}
+              onTouchEnd={finishConnect}
               onClick={(e) => { if (e.target === e.target.getStage() || e.target.name() === "bg") setSel(null); }}
               onDragEnd={(e) => {
                 if (e.target === e.target.getStage()) setView((v) => ({ ...v, x: e.target.x(), y: e.target.y() }));
@@ -1036,11 +1159,15 @@ export default function TreeCanvas() {
                   const pa = positions[k.from];
                   const pb = positions[k.to];
                   if (!pa || !pb) return null;
-                  const { from, to, vertical } = linkAnchors(
-                    nodeRect(pa, extraById.get(k.from)),
-                    nodeRect(pb, extraById.get(k.to)),
-                  );
-                  const { points, bezier } = edgePoints(k.style, from, to, !vertical);
+                  const ra = nodeRect(pa, extraById.get(k.from));
+                  const rb = nodeRect(pb, extraById.get(k.to));
+                  const { points, bezier } =
+                    k.fromSide && k.toSide
+                      ? sidePath(k.style, sideAnchor(ra, k.fromSide), k.fromSide, sideAnchor(rb, k.toSide), k.toSide)
+                      : (() => {
+                          const { from, to, vertical } = linkAnchors(ra, rb);
+                          return edgePoints(k.style, from, to, !vertical);
+                        })();
                   const on = sel?.kind === "link" && sel.id === k.id;
                   return (
                     <Line
@@ -1058,6 +1185,12 @@ export default function TreeCanvas() {
                     />
                   );
                 })}
+                {connecting && pointer && (() => {
+                  const r = rectOf(connecting.from);
+                  if (!r) return null;
+                  const a = sideAnchor(r, connecting.side);
+                  return <Line points={[a.x, a.y, pointer.x, pointer.y]} stroke="#2563EB" strokeWidth={2.5} dash={[8, 6]} listening={false} />;
+                })()}
                 {[...visiblePersons.map((p) => ({ p, e: undefined as ExtraItem | undefined })),
                   ...layout.extras.map((e) => ({ p: undefined as PersonForTree | undefined, e }))].map(({ p, e }) => {
                   const id = (p?.id ?? e!.id) as string;
@@ -1080,9 +1213,11 @@ export default function TreeCanvas() {
                       frame={layout.frame}
                       style={st}
                       selected={sel?.kind === "node" && sel.id === id}
-                      picked={linkFrom === id}
+                      picked={linkFrom === id || (!!connecting && !!pointer && nodeAt(pointer, connecting.from) === id)}
                       onMove={onMove}
                       onDragStart={() => pushHistory()}
+                      connecting={!!connecting}
+                      onConnectStart={(id, side) => { setConnecting({ from: id, side }); setPointer(null); }}
                       onOpen={onOpen}
                       onSelect={onSelect}
                     />
@@ -1167,6 +1302,15 @@ export default function TreeCanvas() {
             <input type="checkbox" checked={layout.autoEdges} onChange={(e) => setOpt("autoEdges", e.target.checked)} />
             Hiện đường nối cha–con, vợ–chồng tự động
           </label>
+          {canEdit && currentId && (
+            <Button variant="destructive-outline" size="sm" disabled={busy}
+              onClick={async () => {
+                const ok = await confirm({ title: "Xoá bố cục này?", description: "Bố cục đã lưu sẽ bị xoá vĩnh viễn.", confirmLabel: "Xoá", destructive: true });
+                if (ok) await remove();
+              }}>
+              Xoá bố cục "{canvasName || currentCanvas?.name}"
+            </Button>
+          )}
           <FormActions>
             <Button onClick={() => setTab("idle")}>Xong</Button>
           </FormActions>

@@ -45,8 +45,13 @@ export interface ExtraItem {
   gender?: "M" | "F";
 }
 
+export type Side = "top" | "bottom" | "left" | "right";
+
 export interface CustomLink {
   id: string;
+  /** Cạnh thẻ nơi đường bắt đầu/kết thúc (kéo từ chấm nối). Thiếu → tự chọn. */
+  fromSide?: Side;
+  toSide?: Side;
   from: string;
   to: string;
   color: string;
@@ -79,6 +84,8 @@ export const DEFAULT_LAYOUT: CanvasLayout = {
   autoEdges: true,
   bgImage: null,
 };
+
+const SIDES: Side[] = ["top", "bottom", "left", "right"];
 
 export const TEXT_W = 220;
 export const TEXT_H = 44;
@@ -183,6 +190,8 @@ export function parseLayout(raw: unknown): CanvasLayout {
           from: l.from as string,
           to: l.to as string,
           color: typeof l.color === "string" && /^#[0-9a-fA-F]{6}$/.test(l.color) ? l.color : "#8B1E2D",
+          fromSide: SIDES.includes(l.fromSide as Side) ? (l.fromSide as Side) : undefined,
+          toSide: SIDES.includes(l.toSide as Side) ? (l.toSide as Side) : undefined,
           width: typeof l.width === "number" ? Math.min(12, Math.max(1, l.width)) : 3,
           dash: l.dash === true,
           style: pick(l.style, ["bezier", "step", "straight"], "bezier"),
@@ -423,4 +432,72 @@ export function tidyPositions(
     }
   }
   return out;
+}
+
+/** Điểm giữa một cạnh của hình chữ nhật. */
+export function sideAnchor(r: Rect, side: Side): Pt {
+  switch (side) {
+    case "top": return { x: r.x + r.w / 2, y: r.y };
+    case "bottom": return { x: r.x + r.w / 2, y: r.y + r.h };
+    case "left": return { x: r.x, y: r.y + r.h / 2 };
+    case "right": return { x: r.x + r.w, y: r.y + r.h / 2 };
+  }
+}
+
+/** Cạnh của `r` gần điểm `p` nhất (dùng khi thả đầu đường nối lên thẻ). */
+export function nearestSide(r: Rect, p: Pt): Side {
+  const d: Array<[Side, number]> = [
+    ["top", Math.abs(p.y - r.y)],
+    ["bottom", Math.abs(p.y - (r.y + r.h))],
+    ["left", Math.abs(p.x - r.x)],
+    ["right", Math.abs(p.x - (r.x + r.w))],
+  ];
+  return d.sort((a, b) => a[1] - b[1])[0][0];
+}
+
+const DIR: Record<Side, Pt> = {
+  top: { x: 0, y: -1 },
+  bottom: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
+};
+const isVert = (s: Side) => s === "top" || s === "bottom";
+
+/**
+ * Đường nối giữa hai cạnh đã chọn (kiểu PowerPoint/Word): cong theo hướng
+ * thoát ra khỏi cạnh, vuông góc (gấp khúc 1–3 đoạn), hoặc thẳng.
+ */
+export function sidePath(
+  style: EdgeStyle,
+  a: Pt,
+  aSide: Side,
+  b: Pt,
+  bSide: Side,
+): { points: number[]; bezier: boolean } {
+  if (style === "straight") return { points: [a.x, a.y, b.x, b.y], bezier: false };
+  if (style === "bezier") {
+    const d = Math.max(40, Math.hypot(b.x - a.x, b.y - a.y) / 2.5);
+    return {
+      points: [
+        a.x, a.y,
+        a.x + DIR[aSide].x * d, a.y + DIR[aSide].y * d,
+        b.x + DIR[bSide].x * d, b.y + DIR[bSide].y * d,
+        b.x, b.y,
+      ],
+      bezier: true,
+    };
+  }
+  const av = isVert(aSide);
+  const bv = isVert(bSide);
+  if (av && bv) {
+    const my = a.y + (b.y - a.y) / 2;
+    return { points: [a.x, a.y, a.x, my, b.x, my, b.x, b.y], bezier: false };
+  }
+  if (!av && !bv) {
+    const mx = a.x + (b.x - a.x) / 2;
+    return { points: [a.x, a.y, mx, a.y, mx, b.y, b.x, b.y], bezier: false };
+  }
+  return av
+    ? { points: [a.x, a.y, a.x, b.y, b.x, b.y], bezier: false }
+    : { points: [a.x, a.y, b.x, a.y, b.x, b.y], bezier: false };
 }

@@ -113,3 +113,27 @@ describe("canvasModel (canvas tuỳ biến)", () => {
     expect(l.bgImage).toBeNull();
   });
 });
+
+import { nearestSide, sideAnchor, sidePath } from "@/lib/tree/canvasModel";
+
+describe("canvasModel (nối kiểu PowerPoint)", () => {
+  const r = { x: 0, y: 0, w: 100, h: 50 };
+  it("sideAnchor / nearestSide", () => {
+    expect(sideAnchor(r, "right")).toEqual({ x: 100, y: 25 });
+    expect(nearestSide(r, { x: 98, y: 20 })).toBe("right");
+    expect(nearestSide(r, { x: 50, y: 2 })).toBe("top");
+  });
+  it("sidePath: step L-shape khi lệch hướng, bezier có 8 số", () => {
+    const l = sidePath("step", { x: 0, y: 0 }, "bottom", { x: 100, y: 100 }, "left");
+    expect(l.points).toEqual([0, 0, 0, 100, 100, 100]);
+    const b = sidePath("bezier", { x: 0, y: 0 }, "right", { x: 200, y: 0 }, "left");
+    expect(b.points).toHaveLength(8);
+    expect(b.points[2]).toBeGreaterThan(0);
+    expect(b.points[4]).toBeLessThan(200);
+  });
+  it("parseLayout giữ fromSide hợp lệ", () => {
+    const l = parseLayout({ links: [{ id: "a", from: "x", to: "y", fromSide: "left", toSide: "zzz" }] });
+    expect(l.links[0].fromSide).toBe("left");
+    expect(l.links[0].toSide).toBeUndefined();
+  });
+});
