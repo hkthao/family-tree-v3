@@ -914,13 +914,33 @@ export default function TreeCanvas() {
     fitted.current = false;
     setTimeout(fit, 0);
   }
+  // Xếp lại: thành viên đang hiện xếp theo đời (bỏ người đã ẩn để không chừa khoảng trống);
+  // thẻ trống / ô chữ thêm tay xếp thành lưới ngay dưới cây (hoặc từ đầu nếu canvas trống).
   const autoArrange = () => {
-    update((l) => {
-      const keep: CanvasLayout["positions"] = {};
-      for (const e of l.extras) if (l.positions[e.id]) keep[e.id] = l.positions[e.id];
-      return { ...l, positions: { ...auto, ...keep } };
-    });
-    setTimeout(fit, 0);
+    const tree = autoLayout(visiblePersons, families);
+    let bottom = 0;
+    let any = false;
+    for (const p of Object.values(tree)) {
+      bottom = Math.max(bottom, p.y + NODE_H);
+      any = true;
+    }
+    const placed: CanvasLayout["positions"] = {};
+    const perRow = 6;
+    let x = 0;
+    let row = 0;
+    let rowH = 0;
+    let n = 0;
+    const startY = any ? bottom + 90 : 0;
+    for (const e of layout.extras) {
+      const r = nodeRect({ x: 0, y: 0 }, e);
+      if (n > 0 && n % perRow === 0) { x = 0; row += rowH + 40; rowH = 0; }
+      placed[e.id] = { x, y: startY + row };
+      x += r.w + 40;
+      rowH = Math.max(rowH, r.h);
+      n++;
+    }
+    update((l) => ({ ...l, positions: { ...tree, ...placed } }));
+    setTimeout(() => fitRef.current(), 0);
   };
   const alignTidy = () => {
     const widths: Record<string, number> = {};
