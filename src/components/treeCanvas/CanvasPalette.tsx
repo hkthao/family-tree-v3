@@ -227,9 +227,17 @@ export function LinkInspector({
         <Select value={link.style} onChange={(e) => onChange({ style: e.target.value as EdgeStyle })} className="h-9 text-sm">
           <option value="bezier">Đường cong</option>
           <option value="step">Vuông góc</option>
-          <option value="straight">Thẳng</option>
+          <option value="straight">Thẳng / gấp khúc</option>
         </Select>
       </label>
+      <p className="rounded-md bg-background/60 p-2 text-xs text-muted-foreground">
+        Kéo chấm xanh ở hai đầu để nối sang thẻ khác hoặc thả ra khoảng trống/lên một đường. Nhấp chấm nhỏ giữa đoạn để thêm điểm uốn, kéo ô vuông để uốn theo ý, nhấp đúp ô vuông để bỏ.
+      </p>
+      {(link.points?.length ?? 0) > 0 && (
+        <Button size="sm" variant="outline" className="w-full" onClick={() => onChange({ points: [] })}>
+          Bỏ {link.points?.length} điểm uốn
+        </Button>
+      )}
       <label className="flex items-center gap-2">
         <input type="checkbox" checked={link.dash} onChange={(e) => onChange({ dash: e.target.checked })} />
         Nét đứt

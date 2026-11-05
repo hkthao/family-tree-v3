@@ -41,13 +41,16 @@ import {
   coverCrop,
   DEFAULT_LAYOUT,
   edgePoints,
-  linkAnchors,
+  type LinkGeometry,
+  dominantSide,
+  flattenPath,
+  linkGeometry,
+  nearestOnPolylines,
   nearestSide,
   NODE_H,
   NODE_W,
   nodeRect,
   sideAnchor,
-  sidePath,
   paperSizeMm,
   TEXT_H,
   TEXT_W,
@@ -318,7 +321,7 @@ function IconBtn({
   );
 }
 
-type Tab = "idle" | "export" | "save" | "options";
+type Tab = "idle" | "export" | "save" | "options" | "new";
 
 /** Đọc ảnh người dùng chọn, thu nhỏ ≤1600px và nén JPEG để nhét vừa bố cục (≤ ~700KB). */
 async function fileToBgDataUrl(file: File): Promise<string> {
@@ -397,8 +400,12 @@ export default function TreeCanvas() {
   const [fs, setFs] = useState(false);
   const [copyMode, setCopyMode] = useState(false);
   const [canvasName, setCanvasName] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newKind, setNewKind] = useState<"members" | "blank">("members");
   // Đang kéo đường nối từ chấm của một thẻ (kiểu PowerPoint).
-  const [connecting, setConnecting] = useState<{ from: string; side: Side } | null>(null);
+  type ConnStart = { node: string; side: Side } | { pt: { x: number; y: number } };
+  const [connecting, setConnecting] = useState<{ from: ConnStart } | null>(null);
+  const [lineHover, setLineHover] = useState<{ x: number; y: number } | null>(null);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const justLinkedRef = useRef(false);
 
@@ -621,22 +628,119 @@ export default function TreeCanvas() {
     const p = st?.getRelativePointerPosition();
     return p ? { x: p.x, y: p.y } : null;
   };
-  const trackConnect = () => {
-    if (connecting) setPointer(stagePoint());
+
+  // Các đường đang vẽ (tự động + tuỳ chỉnh) dạng đa tuyến — để bắt dính và rê chuột tìm điểm nối.
+  const autoLines = useMemo(() => {
+    const out: Array<{ g: LinkGeometry; kind: "spouse" | "parent" }> = [];
+    if (!layout.autoEdges) return out;
+    for (const e of edges) {
+      const a = positions[e.from];
+      const b = positions[e.to];
+      if (!a || !b) continue;
+      if (e.kind === "spouse") {
+        const [l, r] = a.x <= b.x ? [a, b] : [b, a];
+        const p1 = anchor(l, "right");
+        const p2 = anchor(r, "left");
+        out.push({ g: { points: [p1.x, p1.y, p2.x, p2.y], bezier: false, tension: 0 }, kind: "spouse" });
+        continue;
+      }
+      const sp = spouseOf.get(e.from);
+      const spPos = sp ? positions[sp] : undefined;
+      let from = anchor(a, "bottom");
+      if (spPos && Math.abs(spPos.y - a.y) < 1) {
+        const o = anchor(spPos, "bottom");
+        from = { x: (from.x + o.x) / 2, y: from.y };
+      }
+      const { points, bezier } = edgePoints(layout.edgeStyle, from, anchor(b, "top"));
+      out.push({ g: { points, bezier, tension: 0 }, kind: "parent" });
+    }
+    return out;
+  }, [edges, positions, spouseOf, layout.autoEdges, layout.edgeStyle]);
+
+  /** Giải đầu/cuối và hình học của một đường nối tuỳ chỉnh; null nếu thẻ đầu/cuối không còn. */
+  const linkEnds = useCallback(
+    (k: CustomLink) => {
+      const ra = k.from ? rectOf(k.from) : null;
+      const rb = k.to ? rectOf(k.to) : null;
+      if ((k.from && !ra) || (k.to && !rb)) return null;
+      const ca = ra ? { x: ra.x + ra.w / 2, y: ra.y + ra.h / 2 } : k.fromPt;
+      const cb = rb ? { x: rb.x + rb.w / 2, y: rb.y + rb.h / 2 } : k.toPt;
+      if (!ca || !cb) return null;
+      const via = k.points ?? [];
+      const as = ra ? (k.fromSide ?? dominantSide(ca, via[0] ?? cb)) : undefined;
+      const bs = rb ? (k.toSide ?? dominantSide(cb, via[via.length - 1] ?? ca)) : undefined;
+      const a = ra && as ? sideAnchor(ra, as) : (k.fromPt as { x: number; y: number });
+      const b = rb && bs ? sideAnchor(rb, bs) : (k.toPt as { x: number; y: number });
+      return { a, b, g: linkGeometry(k.style, a, as, b, bs, via) };
+    },
+    [rectOf],
+  );
+
+  const allPolys = useMemo(
+    () => [
+      ...autoLines.map((l) => flattenPath(l.g)),
+      ...layout.links.map((k) => linkEnds(k)).filter((x): x is NonNullable<typeof x> => !!x).map((x) => flattenPath(x.g)),
+    ],
+    [autoLines, layout.links, linkEnds],
+  );
+  const spouseMids = useMemo(
+    () =>
+      autoLines
+        .filter((l) => l.kind === "spouse")
+        .map((l) => ({ x: (l.g.points[0] + l.g.points[2]) / 2, y: (l.g.points[1] + l.g.points[3]) / 2 })),
+    [autoLines],
+  );
+  /** Bắt dính điểm vào trung điểm đường vợ–chồng, hoặc điểm gần nhất trên một đường (≤14px màn hình). */
+  const snapPoint = (pt: { x: number; y: number }, maxPx = 14) => {
+    const tol = maxPx / view.scale;
+    let best: { x: number; y: number } | null = null;
+    let bd = tol;
+    for (const m of spouseMids) {
+      const d = Math.hypot(m.x - pt.x, m.y - pt.y);
+      if (d <= bd) { best = m; bd = d; }
+    }
+    if (best) return best;
+    const n = nearestOnPolylines(allPolys, pt, tol);
+    return n ? { x: n.x, y: n.y } : null;
+  };
+
+  const lastHoverRef = useRef(0);
+  const trackPointer = () => {
+    const pt = stagePoint();
+    if (connecting) return setPointer(pt);
+    const now = Date.now();
+    if (now - lastHoverRef.current < 40) return;
+    lastHoverRef.current = now;
+    if (!pt || nodeAt(pt)) return setLineHover((h) => (h ? null : h));
+    const n = snapPoint(pt, 10);
+    setLineHover(n);
+  };
+  const connFromId = connecting && "node" in connecting.from ? connecting.from.node : undefined;
+  const connStartPt = (): { x: number; y: number } | null => {
+    if (!connecting) return null;
+    if ("pt" in connecting.from) return connecting.from.pt;
+    const r = rectOf(connecting.from.node);
+    return r ? sideAnchor(r, connecting.from.side) : null;
   };
   const finishConnect = () => {
     if (!connecting) return;
     const pt = stagePoint() ?? pointer;
-    const target = pt ? nodeAt(pt, connecting.from) : null;
+    const start = connStartPt();
+    const target = pt ? nodeAt(pt, connFromId) : null;
+    const base = { id: newId("l"), color: "#8B1E2D", width: 3, dash: false, style: "bezier" as EdgeStyle };
+    const f = connecting.from;
+    const fromPart = "node" in f ? { from: f.node, fromSide: f.side } : { from: "", fromPt: f.pt };
+    let lk: CustomLink | null = null;
     if (pt && target) {
-      const tr = rectOf(target)!;
-      const lk: CustomLink = {
-        id: newId("l"), from: connecting.from, to: target, color: "#8B1E2D", width: 3, dash: false,
-        style: "bezier", fromSide: connecting.side, toSide: nearestSide(tr, pt),
-      };
-      update((l) => ({ ...l, links: [...l.links, lk] }));
+      lk = { ...base, ...fromPart, to: target, toSide: nearestSide(rectOf(target)!, pt) };
+    } else if (pt && start && Math.hypot(pt.x - start.x, pt.y - start.y) > 12 / view.scale) {
+      lk = { ...base, ...fromPart, to: "", toPt: snapPoint(pt) ?? pt };
+    }
+    if (lk) {
+      const made = lk;
+      update((l) => ({ ...l, links: [...l.links, made] }));
       justLinkedRef.current = true;
-      setSel({ kind: "link", id: lk.id });
+      setSel({ kind: "link", id: made.id });
     }
     setConnecting(null);
     setPointer(null);
@@ -647,6 +751,48 @@ export default function TreeCanvas() {
     const t = setTimeout(() => window.addEventListener("mouseup", cancel, { once: true }), 0);
     return () => { clearTimeout(t); window.removeEventListener("mouseup", cancel); };
   }, [connecting]);
+
+  // Sửa đầu / điểm uốn của đường nối đang chọn.
+  const moveEnd = (id: string, which: "from" | "to", pt: { x: number; y: number }) => {
+    const target = nodeAt(pt);
+    update((l) => ({
+      ...l,
+      links: l.links.map((k) => {
+        if (k.id !== id) return k;
+        const next: CustomLink = { ...k };
+        if (target && target !== (which === "from" ? k.to : k.from)) {
+          const side = nearestSide(rectOf(target)!, pt);
+          if (which === "from") { next.from = target; next.fromSide = side; next.fromPt = undefined; }
+          else { next.to = target; next.toSide = side; next.toPt = undefined; }
+        } else {
+          const q = snapPoint(pt) ?? pt;
+          if (which === "from") { next.from = ""; next.fromSide = undefined; next.fromPt = q; }
+          else { next.to = ""; next.toSide = undefined; next.toPt = q; }
+        }
+        return next;
+      }),
+    }));
+  };
+  const setWaypoint = (id: string, i: number, pt: { x: number; y: number }) =>
+    setLayout((l) => ({
+      ...l,
+      links: l.links.map((k) => (k.id === id ? { ...k, points: (k.points ?? []).map((q, j) => (j === i ? pt : q)) } : k)),
+    }));
+  const insertWaypoint = (id: string, at: number, pt: { x: number; y: number }) =>
+    update((l) => ({
+      ...l,
+      links: l.links.map((k) => {
+        if (k.id !== id) return k;
+        const pts = [...(k.points ?? [])];
+        pts.splice(at, 0, pt);
+        return { ...k, points: pts };
+      }),
+    }));
+  const removeWaypoint = (id: string, i: number) =>
+    update((l) => ({
+      ...l,
+      links: l.links.map((k) => (k.id === id ? { ...k, points: (k.points ?? []).filter((_, j) => j !== i) } : k)),
+    }));
 
   const toCanvas = (clientX: number, clientY: number) => {
     const r = wrapRef.current?.getBoundingClientRect();
@@ -737,24 +883,41 @@ export default function TreeCanvas() {
   }, [sel]);
 
   // ─── nhiều bố cục / dòng họ ───
-  async function newCanvas() {
-    if (dirty && canEdit) {
-      const ok = await confirm({
-        title: "Tạo bố cục mới?",
-        description: "Thay đổi chưa lưu ở bố cục hiện tại sẽ mất.",
-        confirmLabel: "Tạo mới",
-        destructive: true,
-      });
-      if (!ok) return;
+  function newCanvas() {
+    setNewName("");
+    setNewKind("members");
+    setTab("new");
+  }
+  /** Tạo bố cục mới: có sẵn thành viên (tự xếp) hoặc trang trống (ẩn hết, tự thêm từ bảng công cụ). */
+  async function createNew() {
+    const name = newName.trim();
+    if (!name) return toast.error("Hãy đặt tên cho cây mới");
+    setBusy(true);
+    try {
+      const fresh: CanvasLayout = {
+        ...DEFAULT_LAYOUT,
+        nodeStyles:
+          newKind === "blank"
+            ? Object.fromEntries(persons.map((p) => [p.id, { hidden: true }]))
+            : {},
+      };
+      const c = await createTreeCanvas(clan.id, name, fresh);
+      await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
+      clearHistory();
+      setCurrentId(c.id);
+      setCanvasName(name);
+      setLayout(fresh);
+      setSel(null);
+      setDirty(false);
+      setTab("idle");
+      if (newKind === "blank") setShowPalette(true);
+      setTimeout(() => fitRef.current(), 0);
+      toast.success("Đã tạo cây mới");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Không tạo được");
+    } finally {
+      setBusy(false);
     }
-    clearHistory();
-    setCanvasName("");
-    setCurrentId("");
-    setLayout(DEFAULT_LAYOUT);
-    setSel(null);
-    setDirty(false);
-    fitted.current = false;
-    setTimeout(() => fitRef.current(), 0);
   }
   function duplicateCanvas() {
     setCopyMode(true);
@@ -1105,8 +1268,9 @@ export default function TreeCanvas() {
               scaleX={view.scale}
               scaleY={view.scale}
               draggable
-              onMouseMove={trackConnect}
-              onTouchMove={trackConnect}
+              onMouseMove={trackPointer}
+              onTouchMove={trackPointer}
+              onMouseLeave={() => setLineHover(null)}
               onMouseUp={finishConnect}
               onTouchEnd={finishConnect}
               onClick={(e) => { if (e.target === e.target.getStage() || e.target.name() === "bg") setSel(null); }}
@@ -1130,50 +1294,22 @@ export default function TreeCanvas() {
                 {bgImg && <KImage ref={bgImgRef} image={bgImg} listening={false} />}
               </Layer>
               <Layer listening={false}>
-                {layout.autoEdges && edges.map((e, i) => {
-                  const a = positions[e.from];
-                  const b = positions[e.to];
-                  if (!a || !b) return null;
-                  if (e.kind === "spouse") {
-                    const [l, r] = a.x <= b.x ? [a, b] : [b, a];
-                    const p1 = anchor(l, "right");
-                    const p2 = anchor(r, "left");
-                    return <Line key={i} points={[p1.x, p1.y, p2.x, p2.y]} stroke={bg.edge} strokeWidth={3} />;
-                  }
-                  const sp = spouseOf.get(e.from);
-                  const spPos = sp ? positions[sp] : undefined;
-                  let from = anchor(a, "bottom");
-                  if (spPos && Math.abs(spPos.y - a.y) < 1) {
-                    const o = anchor(spPos, "bottom");
-                    from = { x: (from.x + o.x) / 2, y: from.y };
-                  }
-                  const { points, bezier } = edgePoints(layout.edgeStyle, from, anchor(b, "top"));
-                  return (
-                    <Line key={i} points={points} bezier={bezier} stroke={bg.edge} strokeWidth={2}
-                      lineJoin="round" lineCap="round" />
-                  );
-                })}
+                {autoLines.map((l, i) => (
+                  <Line key={i} points={l.g.points} bezier={l.g.bezier} stroke={bg.edge}
+                    strokeWidth={l.kind === "spouse" ? 3 : 2} lineJoin="round" lineCap="round" />
+                ))}
               </Layer>
               <Layer>
                 {layout.links.map((k) => {
-                  const pa = positions[k.from];
-                  const pb = positions[k.to];
-                  if (!pa || !pb) return null;
-                  const ra = nodeRect(pa, extraById.get(k.from));
-                  const rb = nodeRect(pb, extraById.get(k.to));
-                  const { points, bezier } =
-                    k.fromSide && k.toSide
-                      ? sidePath(k.style, sideAnchor(ra, k.fromSide), k.fromSide, sideAnchor(rb, k.toSide), k.toSide)
-                      : (() => {
-                          const { from, to, vertical } = linkAnchors(ra, rb);
-                          return edgePoints(k.style, from, to, !vertical);
-                        })();
+                  const ends = linkEnds(k);
+                  if (!ends) return null;
                   const on = sel?.kind === "link" && sel.id === k.id;
                   return (
                     <Line
                       key={k.id}
-                      points={points}
-                      bezier={bezier}
+                      points={ends.g.points}
+                      bezier={ends.g.bezier}
+                      tension={ends.g.tension}
                       stroke={k.color}
                       strokeWidth={on ? k.width + 2 : k.width}
                       dash={k.dash ? [k.width * 3, k.width * 2] : undefined}
@@ -1186,10 +1322,16 @@ export default function TreeCanvas() {
                   );
                 })}
                 {connecting && pointer && (() => {
-                  const r = rectOf(connecting.from);
-                  if (!r) return null;
-                  const a = sideAnchor(r, connecting.side);
-                  return <Line points={[a.x, a.y, pointer.x, pointer.y]} stroke="#2563EB" strokeWidth={2.5} dash={[8, 6]} listening={false} />;
+                  const a = connStartPt();
+                  if (!a) return null;
+                  const snap = snapPoint(pointer);
+                  const end = nodeAt(pointer, connFromId) ? pointer : (snap ?? pointer);
+                  return (
+                    <>
+                      <Line points={[a.x, a.y, end.x, end.y]} stroke="#2563EB" strokeWidth={2.5} dash={[8, 6]} listening={false} />
+                      {snap && !nodeAt(pointer, connFromId) && <Circle x={snap.x} y={snap.y} radius={6} fill="#2563EB" listening={false} />}
+                    </>
+                  );
                 })()}
                 {[...visiblePersons.map((p) => ({ p, e: undefined as ExtraItem | undefined })),
                   ...layout.extras.map((e) => ({ p: undefined as PersonForTree | undefined, e }))].map(({ p, e }) => {
@@ -1213,16 +1355,111 @@ export default function TreeCanvas() {
                       frame={layout.frame}
                       style={st}
                       selected={sel?.kind === "node" && sel.id === id}
-                      picked={linkFrom === id || (!!connecting && !!pointer && nodeAt(pointer, connecting.from) === id)}
+                      picked={linkFrom === id || (!!connecting && !!pointer && nodeAt(pointer, connFromId) === id)}
                       onMove={onMove}
                       onDragStart={() => pushHistory()}
                       connecting={!!connecting}
-                      onConnectStart={(id, side) => { setConnecting({ from: id, side }); setPointer(null); }}
+                      onConnectStart={(id, side) => { setConnecting({ from: { node: id, side } }); setPointer(null); setLineHover(null); }}
                       onOpen={onOpen}
                       onSelect={onSelect}
                     />
                   );
                 })}
+                {/* Chấm kéo của đường nối đang chọn: đầu (xanh), điểm uốn (vuông), thêm điểm (nhỏ) */}
+                {sel?.kind === "link" && !connecting && (() => {
+                  const k = layout.links.find((x) => x.id === sel.id);
+                  const ends = k ? linkEnds(k) : null;
+                  if (!k || !ends) return null;
+                  const chain = [ends.a, ...(k.points ?? []), ends.b];
+                  const endHandle = (which: "from" | "to", pt: { x: number; y: number }) => (
+                    <Circle
+                      key={which}
+                      x={pt.x}
+                      y={pt.y}
+                      radius={8}
+                      fill="#2563EB"
+                      stroke="#fff"
+                      strokeWidth={2}
+                      draggable
+                      onDragStart={() => pushHistory()}
+                      onDragEnd={() => { const q = stagePoint(); if (q) moveEnd(k.id, which, q); }}
+                      onMouseEnter={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = "grab"; }}
+                      onMouseLeave={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = ""; }}
+                    />
+                  );
+                  return (
+                    <>
+                      {chain.slice(0, -1).map((p, i) => {
+                        const q = chain[i + 1];
+                        return (
+                          <Circle
+                            key={`m${i}`}
+                            x={(p.x + q.x) / 2}
+                            y={(p.y + q.y) / 2}
+                            radius={5}
+                            fill="#fff"
+                            stroke="#2563EB"
+                            strokeWidth={1.5}
+                            opacity={0.85}
+                            onClick={() => insertWaypoint(k.id, i, { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 })}
+                            onTap={() => insertWaypoint(k.id, i, { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 })}
+                            onMouseEnter={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = "copy"; }}
+                            onMouseLeave={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = ""; }}
+                          />
+                        );
+                      })}
+                      {(k.points ?? []).map((p, i) => (
+                        <Rect
+                          key={`w${i}`}
+                          x={p.x}
+                          y={p.y}
+                          width={12}
+                          height={12}
+                          offsetX={6}
+                          offsetY={6}
+                          fill="#fff"
+                          stroke="#2563EB"
+                          strokeWidth={2}
+                          draggable
+                          onDragStart={() => pushHistory()}
+                          onDragMove={(e) => setWaypoint(k.id, i, { x: e.target.x(), y: e.target.y() })}
+                          onDblClick={() => removeWaypoint(k.id, i)}
+                          onDblTap={() => removeWaypoint(k.id, i)}
+                          onMouseEnter={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = "move"; }}
+                          onMouseLeave={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = ""; }}
+                        />
+                      ))}
+                      {endHandle("from", ends.a)}
+                      {endHandle("to", ends.b)}
+                    </>
+                  );
+                })()}
+                {/* Chấm nối tự do trên một đường: kéo từ đây để nối từ giữa đường (vd. giữa hai vợ chồng) */}
+                {lineHover && !connecting && (
+                  <Circle
+                    x={lineHover.x}
+                    y={lineHover.y}
+                    radius={6}
+                    fill="#fff"
+                    stroke="#2563EB"
+                    strokeWidth={2}
+                    hitStrokeWidth={12}
+                    onMouseEnter={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = "crosshair"; }}
+                    onMouseLeave={(e) => { const c = e.target.getStage()?.container(); if (c) c.style.cursor = ""; }}
+                    onMouseDown={(e) => {
+                      e.cancelBubble = true;
+                      setConnecting({ from: { pt: { x: lineHover.x, y: lineHover.y } } });
+                      setPointer(null);
+                      setLineHover(null);
+                    }}
+                    onTouchStart={(e) => {
+                      e.cancelBubble = true;
+                      setConnecting({ from: { pt: { x: lineHover.x, y: lineHover.y } } });
+                      setPointer(null);
+                      setLineHover(null);
+                    }}
+                  />
+                )}
               </Layer>
             </Stage>
           </div>
@@ -1234,6 +1471,43 @@ export default function TreeCanvas() {
       </div>
 
       </div>
+
+      <SidePanel
+        open={tab === "new"}
+        title="Tạo cây mới"
+        subtitle="Mỗi dòng họ có thể có nhiều cây (bố cục) riêng."
+        onClose={() => setTab("idle")}
+        guard={false}
+      >
+        <div className="flex flex-1 flex-col space-y-3">
+          <label className="block space-y-1 text-sm">
+            <span className="font-medium">Tên cây</span>
+            <Input value={newName} maxLength={80} autoFocus onChange={(e) => setNewName(e.target.value)} placeholder="VD: Phả đồ chi trưởng" />
+          </label>
+          <fieldset className="space-y-2 text-sm">
+            <legend className="font-medium">Bắt đầu với</legend>
+            {([
+              ["members", "Mặc định có thành viên", "Tự xếp toàn bộ gia phả theo đời, bạn chỉnh tiếp."],
+              ["blank", "Trang trống hoàn toàn", "Không có thẻ nào; kéo thành viên hoặc thẻ thiết kế sẵn từ bảng công cụ vào."],
+            ] as const).map(([v, label, desc]) => (
+              <label key={v} className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${newKind === v ? "border-primary bg-accent" : ""}`}>
+                <input type="radio" name="new-kind" className="mt-1" checked={newKind === v} onChange={() => setNewKind(v)} />
+                <span>
+                  <span className="block font-medium">{label}</span>
+                  <span className="block text-xs text-muted-foreground">{desc}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          {dirty && (
+            <p className="text-xs text-amber-600">Thay đổi chưa lưu ở cây hiện tại sẽ không được giữ.</p>
+          )}
+          <FormActions>
+            <Button variant="outline" onClick={() => setTab("idle")}>Huỷ</Button>
+            <Button onClick={createNew} disabled={busy}>{busy ? "Đang tạo…" : "Tạo"}</Button>
+          </FormActions>
+        </div>
+      </SidePanel>
 
       <SidePanel
         open={tab === "options"}

@@ -52,6 +52,11 @@ export interface CustomLink {
   /** Cạnh thẻ nơi đường bắt đầu/kết thúc (kéo từ chấm nối). Thiếu → tự chọn. */
   fromSide?: Side;
   toSide?: Side;
+  /** Đầu tự do (toạ độ canvas) thay cho thẻ — khi có, `from`/`to` tương ứng là "". */
+  fromPt?: { x: number; y: number };
+  toPt?: { x: number; y: number };
+  /** Điểm uốn do người dùng kéo: đường đi qua lần lượt các điểm này. */
+  points?: Array<{ x: number; y: number }>;
   from: string;
   to: string;
   color: string;
@@ -84,6 +89,9 @@ export const DEFAULT_LAYOUT: CanvasLayout = {
   autoEdges: true,
   bgImage: null,
 };
+
+const isPt = (v: unknown): v is { x: number; y: number } =>
+  !!v && typeof v === "object" && Number.isFinite((v as { x?: unknown }).x) && Number.isFinite((v as { y?: unknown }).y);
 
 const SIDES: Side[] = ["top", "bottom", "left", "right"];
 
@@ -184,12 +192,18 @@ export function parseLayout(raw: unknown): CanvasLayout {
   const links: CustomLink[] = Array.isArray(r.links)
     ? (r.links as Array<Record<string, unknown>>)
         .filter((l) => l && typeof l.id === "string" && typeof l.from === "string" && typeof l.to === "string")
+        .filter((l) => (l.from !== "" || isPt(l.fromPt)) && (l.to !== "" || isPt(l.toPt)))
         .slice(0, 2000)
         .map((l) => ({
           id: l.id as string,
           from: l.from as string,
           to: l.to as string,
           color: typeof l.color === "string" && /^#[0-9a-fA-F]{6}$/.test(l.color) ? l.color : "#8B1E2D",
+          fromPt: isPt(l.fromPt) ? { x: l.fromPt.x, y: l.fromPt.y } : undefined,
+          toPt: isPt(l.toPt) ? { x: l.toPt.x, y: l.toPt.y } : undefined,
+          points: Array.isArray(l.points)
+            ? (l.points as unknown[]).filter(isPt).slice(0, 40).map((q) => ({ x: q.x, y: q.y }))
+            : undefined,
           fromSide: SIDES.includes(l.fromSide as Side) ? (l.fromSide as Side) : undefined,
           toSide: SIDES.includes(l.toSide as Side) ? (l.toSide as Side) : undefined,
           width: typeof l.width === "number" ? Math.min(12, Math.max(1, l.width)) : 3,
@@ -500,4 +514,106 @@ export function sidePath(
   return av
     ? { points: [a.x, a.y, a.x, b.y, b.x, b.y], bezier: false }
     : { points: [a.x, a.y, b.x, a.y, b.x, b.y], bezier: false };
+}
+
+// ─── Đường nối tự do: đầu tự do, điểm uốn, bám vào đường khác ───
+
+/** Cạnh "thoát ra" hợp lý nhất từ `a` hướng tới `b` (khi đầu nối không gắn cạnh thẻ). */
+export function dominantSide(a: Pt, b: Pt): Side {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  return Math.abs(dy) >= Math.abs(dx) ? (dy >= 0 ? "bottom" : "top") : dx >= 0 ? "right" : "left";
+}
+const OPP: Record<Side, Side> = { top: "bottom", bottom: "top", left: "right", right: "left" };
+
+/** Ép từng đoạn của chuỗi điểm thành các nét ngang/dọc (khuỷu ở giữa mỗi đoạn lệch). */
+export function orthogonalize(chain: Pt[]): number[] {
+  if (chain.length === 0) return [];
+  const out: number[] = [chain[0].x, chain[0].y];
+  for (let i = 1; i < chain.length; i++) {
+    const p = chain[i - 1];
+    const q = chain[i];
+    if (p.x !== q.x && p.y !== q.y) {
+      if (Math.abs(q.x - p.x) >= Math.abs(q.y - p.y)) out.push(q.x, p.y);
+      else out.push(p.x, q.y);
+    }
+    out.push(q.x, q.y);
+  }
+  return out;
+}
+
+export interface LinkGeometry {
+  points: number[];
+  bezier: boolean;
+  /** >0: Konva làm mượt đường đi qua các điểm (kiểu "cong" khi có điểm uốn). */
+  tension: number;
+}
+
+/**
+ * Hình học một đường nối từ đầu `a` tới `b` (đã giải ra toạ độ), qua các điểm uốn
+ * `via`. `aSide`/`bSide` chỉ có khi đầu gắn vào cạnh thẻ.
+ */
+export function linkGeometry(
+  style: EdgeStyle,
+  a: Pt,
+  aSide: Side | undefined,
+  b: Pt,
+  bSide: Side | undefined,
+  via: Pt[] = [],
+): LinkGeometry {
+  if (via.length === 0) {
+    if (style === "straight") return { points: [a.x, a.y, b.x, b.y], bezier: false, tension: 0 };
+    const as = aSide ?? dominantSide(a, b);
+    const bs = bSide ?? OPP[dominantSide(a, b)];
+    const r = sidePath(style, a, as, b, bs);
+    return { ...r, tension: 0 };
+  }
+  const chain = [a, ...via, b];
+  if (style === "step") return { points: orthogonalize(chain), bezier: false, tension: 0 };
+  const flat = chain.flatMap((p) => [p.x, p.y]);
+  return { points: flat, bezier: false, tension: style === "bezier" ? 0.5 : 0 };
+}
+
+/** Xấp xỉ đường bằng đa tuyến (để bắt dính / tìm điểm gần nhất). */
+export function flattenPath(g: LinkGeometry, samples = 16): Pt[] {
+  const p = g.points;
+  if (g.bezier && p.length === 8) {
+    const out: Pt[] = [];
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples;
+      const u = 1 - t;
+      out.push({
+        x: u * u * u * p[0] + 3 * u * u * t * p[2] + 3 * u * t * t * p[4] + t * t * t * p[6],
+        y: u * u * u * p[1] + 3 * u * u * t * p[3] + 3 * u * t * t * p[5] + t * t * t * p[7],
+      });
+    }
+    return out;
+  }
+  const out: Pt[] = [];
+  for (let i = 0; i + 1 < p.length; i += 2) out.push({ x: p[i], y: p[i + 1] });
+  return out;
+}
+
+/** Điểm gần `pt` nhất trên các đa tuyến; null nếu xa hơn `maxDist`. */
+export function nearestOnPolylines(
+  polys: Pt[][],
+  pt: Pt,
+  maxDist: number,
+): { x: number; y: number; dist: number } | null {
+  let best: { x: number; y: number; dist: number } | null = null;
+  for (const poly of polys) {
+    for (let i = 0; i + 1 < poly.length; i++) {
+      const a = poly[i];
+      const b = poly[i + 1];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len2 = dx * dx + dy * dy;
+      const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((pt.x - a.x) * dx + (pt.y - a.y) * dy) / len2));
+      const x = a.x + t * dx;
+      const y = a.y + t * dy;
+      const dist = Math.hypot(pt.x - x, pt.y - y);
+      if (dist <= maxDist && (!best || dist < best.dist)) best = { x, y, dist };
+    }
+  }
+  return best;
 }
