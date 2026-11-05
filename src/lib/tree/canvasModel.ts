@@ -47,6 +47,12 @@ export interface ExtraItem {
 
 export type Side = "top" | "bottom" | "left" | "right";
 
+/** Điểm gắn trên một đường: `s:<a>:<b>` (vợ–chồng), `p:<con>` (cha–con), `l:<id>` (đường tuỳ chỉnh). */
+export interface LineAt {
+  ref: string;
+  t: number;
+}
+
 export interface CustomLink {
   id: string;
   /** Cạnh thẻ nơi đường bắt đầu/kết thúc (kéo từ chấm nối). Thiếu → tự chọn. */
@@ -55,6 +61,9 @@ export interface CustomLink {
   /** Đầu tự do (toạ độ canvas) thay cho thẻ — khi có, `from`/`to` tương ứng là "". */
   fromPt?: { x: number; y: number };
   toPt?: { x: number; y: number };
+  /** Đầu gắn vào một đường khác (ref + vị trí 0..1 theo chiều dài) — đi theo đường đó khi nó dời; `fromPt`/`toPt` là chỗ dự phòng. */
+  fromAt?: LineAt;
+  toAt?: LineAt;
   /** Mũi tên ở cuối / hai đầu. */
   arrow?: "none" | "end" | "both";
   /** Điểm uốn do người dùng kéo: đường đi qua lần lượt các điểm này. */
@@ -148,6 +157,12 @@ export interface CanvasEdge {
 type Pt = { x: number; y: number };
 
 /** Chuẩn hoá JSON đọc từ DB (có thể thiếu/rác) về CanvasLayout hợp lệ. */
+function parseAt(v: unknown): LineAt | undefined {
+  const o = v as { ref?: unknown; t?: unknown } | null;
+  if (!o || typeof o.ref !== "string" || o.ref.length > 120 || typeof o.t !== "number" || !Number.isFinite(o.t)) return undefined;
+  return { ref: o.ref, t: Math.min(1, Math.max(0, o.t)) };
+}
+
 export function parseLayout(raw: unknown): CanvasLayout {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const positions: CanvasLayout["positions"] = {};
@@ -203,6 +218,8 @@ export function parseLayout(raw: unknown): CanvasLayout {
           color: typeof l.color === "string" && /^#[0-9a-fA-F]{6}$/.test(l.color) ? l.color : "#8B1E2D",
           fromPt: isPt(l.fromPt) ? { x: l.fromPt.x, y: l.fromPt.y } : undefined,
           toPt: isPt(l.toPt) ? { x: l.toPt.x, y: l.toPt.y } : undefined,
+          fromAt: parseAt(l.fromAt),
+          toAt: parseAt(l.toAt),
           arrow: l.arrow === "end" || l.arrow === "both" ? (l.arrow as "end" | "both") : undefined,
           points: Array.isArray(l.points)
             ? (l.points as unknown[]).filter(isPt).slice(0, 40).map((q) => ({ x: q.x, y: q.y }))
@@ -744,4 +761,55 @@ export function layoutByLinks(
     cursor += span[r] + gapX * 2;
   }
   return { positions, loose };
+}
+
+/** Điểm ở vị trí `t` (0..1 theo chiều dài) trên đa tuyến. */
+export function pointOnPoly(poly: Pt[], t: number): Pt {
+  if (poly.length === 0) return { x: 0, y: 0 };
+  const lens: number[] = [];
+  let total = 0;
+  for (let i = 0; i + 1 < poly.length; i++) {
+    const d = Math.hypot(poly[i + 1].x - poly[i].x, poly[i + 1].y - poly[i].y);
+    lens.push(d);
+    total += d;
+  }
+  let want = Math.min(1, Math.max(0, t)) * total;
+  for (let i = 0; i < lens.length; i++) {
+    if (want <= lens[i] || i === lens.length - 1) {
+      const f = lens[i] === 0 ? 0 : Math.min(1, want / lens[i]);
+      return { x: poly[i].x + (poly[i + 1].x - poly[i].x) * f, y: poly[i].y + (poly[i + 1].y - poly[i].y) * f };
+    }
+    want -= lens[i];
+  }
+  return { ...poly[0] };
+}
+
+/** Như `nearestOnPolylines` nhưng trả thêm đường nào và vị trí `t` (0..1) trên đường đó. */
+export function nearestOnLines(
+  lines: Array<{ ref: string; poly: Pt[] }>,
+  pt: Pt,
+  maxDist: number,
+): { x: number; y: number; dist: number; at: LineAt } | null {
+  let best: { x: number; y: number; dist: number; at: LineAt } | null = null;
+  for (const ln of lines) {
+    const total = ln.poly.reduce((a, p, i) => (i ? a + Math.hypot(p.x - ln.poly[i - 1].x, p.y - ln.poly[i - 1].y) : 0), 0);
+    let before = 0;
+    for (let i = 0; i + 1 < ln.poly.length; i++) {
+      const a = ln.poly[i];
+      const b = ln.poly[i + 1];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const len2 = dx * dx + dy * dy;
+      const u = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((pt.x - a.x) * dx + (pt.y - a.y) * dy) / len2));
+      const x = a.x + u * dx;
+      const y = a.y + u * dy;
+      const dist = Math.hypot(pt.x - x, pt.y - y);
+      const seg = Math.sqrt(len2);
+      if (dist <= maxDist && (!best || dist < best.dist)) {
+        best = { x, y, dist, at: { ref: ln.ref, t: total === 0 ? 0 : (before + u * seg) / total } };
+      }
+      before += seg;
+    }
+  }
+  return best;
 }
