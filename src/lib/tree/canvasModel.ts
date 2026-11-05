@@ -55,6 +55,8 @@ export interface CustomLink {
   /** Đầu tự do (toạ độ canvas) thay cho thẻ — khi có, `from`/`to` tương ứng là "". */
   fromPt?: { x: number; y: number };
   toPt?: { x: number; y: number };
+  /** Mũi tên ở cuối / hai đầu. */
+  arrow?: "none" | "end" | "both";
   /** Điểm uốn do người dùng kéo: đường đi qua lần lượt các điểm này. */
   points?: Array<{ x: number; y: number }>;
   from: string;
@@ -201,6 +203,7 @@ export function parseLayout(raw: unknown): CanvasLayout {
           color: typeof l.color === "string" && /^#[0-9a-fA-F]{6}$/.test(l.color) ? l.color : "#8B1E2D",
           fromPt: isPt(l.fromPt) ? { x: l.fromPt.x, y: l.fromPt.y } : undefined,
           toPt: isPt(l.toPt) ? { x: l.toPt.x, y: l.toPt.y } : undefined,
+          arrow: l.arrow === "end" || l.arrow === "both" ? (l.arrow as "end" | "both") : undefined,
           points: Array.isArray(l.points)
             ? (l.points as unknown[]).filter(isPt).slice(0, 40).map((q) => ({ x: q.x, y: q.y }))
             : undefined,
@@ -616,4 +619,65 @@ export function nearestOnPolylines(
     }
   }
   return best;
+}
+
+// ─── Thư viện kiểu đường nối dựng sẵn ───
+
+export interface LinkPreset {
+  id: string;
+  label: string;
+  style: EdgeStyle;
+  dash: boolean;
+  arrow: "none" | "end" | "both";
+  /** Tự thêm các điểm uốn so le để thành đường gấp khúc (zigzag). */
+  zigzag?: boolean;
+}
+
+export const LINK_PRESETS: LinkPreset[] = [
+  { id: "straight", label: "Thẳng", style: "straight", dash: false, arrow: "none" },
+  { id: "straight-arrow", label: "Thẳng có mũi tên", style: "straight", dash: false, arrow: "end" },
+  { id: "step", label: "Vuông góc", style: "step", dash: false, arrow: "none" },
+  { id: "step-arrow", label: "Vuông góc có mũi tên", style: "step", dash: false, arrow: "end" },
+  { id: "curve", label: "Cong", style: "bezier", dash: false, arrow: "none" },
+  { id: "curve-arrow", label: "Cong có mũi tên", style: "bezier", dash: false, arrow: "end" },
+  { id: "zigzag", label: "Gấp khúc", style: "straight", dash: false, arrow: "none", zigzag: true },
+  { id: "dashed", label: "Nét đứt", style: "straight", dash: true, arrow: "none" },
+  { id: "dashed-curve", label: "Cong nét đứt", style: "bezier", dash: true, arrow: "both" },
+];
+
+/** Các điểm uốn so le (±amp, vuông góc với đoạn a→b) chia đoạn thành `segments` phần. */
+export function zigzagPoints(a: Pt, b: Pt, amp = 22, segments = 4): Pt[] {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy);
+  if (len < amp * 2) return [];
+  const nx = -dy / len;
+  const ny = dx / len;
+  const out: Pt[] = [];
+  for (let k = 1; k < segments; k++) {
+    const t = k / segments;
+    const sgn = k % 2 === 1 ? 1 : -1;
+    out.push({ x: a.x + dx * t + nx * amp * sgn, y: a.y + dy * t + ny * amp * sgn });
+  }
+  return out;
+}
+
+/** Đầu mũi tên tại cuối (hoặc đầu) của đa tuyến: tâm tam giác + góc quay (độ) cho RegularPolygon. */
+export function arrowHead(
+  poly: Pt[],
+  atEnd: boolean,
+  r: number,
+): { x: number; y: number; rotation: number } | null {
+  if (poly.length < 2) return null;
+  const tip = atEnd ? poly[poly.length - 1] : poly[0];
+  let prev = atEnd ? poly[poly.length - 2] : poly[1];
+  for (let i = 2; i <= poly.length && Math.hypot(tip.x - prev.x, tip.y - prev.y) < 1; i++) {
+    prev = atEnd ? poly[poly.length - 1 - i] ?? prev : poly[i] ?? prev;
+  }
+  const ang = Math.atan2(tip.y - prev.y, tip.x - prev.x);
+  return {
+    x: tip.x - Math.cos(ang) * r,
+    y: tip.y - Math.sin(ang) * r,
+    rotation: (ang * 180) / Math.PI + 90,
+  };
 }

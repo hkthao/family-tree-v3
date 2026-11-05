@@ -177,3 +177,30 @@ describe("canvasModel (đường nối tự do)", () => {
     expect(l.links[0].points).toEqual([{ x: 3, y: 4 }]);
   });
 });
+
+import { arrowHead, LINK_PRESETS, zigzagPoints } from "@/lib/tree/canvasModel";
+
+describe("canvasModel (kiểu đường nối dựng sẵn)", () => {
+  it("LINK_PRESETS có id duy nhất", () => {
+    expect(new Set(LINK_PRESETS.map((p) => p.id)).size).toBe(LINK_PRESETS.length);
+  });
+  it("zigzagPoints: so le hai phía, bỏ khi quá ngắn", () => {
+    const z = zigzagPoints({ x: 0, y: 0 }, { x: 200, y: 0 });
+    expect(z).toHaveLength(3);
+    expect(z[0].y).toBeGreaterThan(0);
+    expect(z[1].y).toBeLessThan(0);
+    expect(zigzagPoints({ x: 0, y: 0 }, { x: 10, y: 0 })).toEqual([]);
+  });
+  it("arrowHead: tip trùng điểm cuối, quay theo hướng", () => {
+    const h = arrowHead([{ x: 0, y: 0 }, { x: 100, y: 0 }], true, 10)!;
+    expect(h.x).toBeCloseTo(90);
+    expect(h.rotation).toBeCloseTo(90);
+    const s = arrowHead([{ x: 0, y: 0 }, { x: 100, y: 0 }], false, 10)!;
+    expect(s.x).toBeCloseTo(10);
+    expect(s.rotation).toBeCloseTo(270);
+  });
+  it("parseLayout giữ arrow hợp lệ", () => {
+    expect(parseLayout({ links: [{ id: "a", from: "x", to: "y", arrow: "both" }] }).links[0].arrow).toBe("both");
+    expect(parseLayout({ links: [{ id: "a", from: "x", to: "y", arrow: "zz" }] }).links[0].arrow).toBeUndefined();
+  });
+});

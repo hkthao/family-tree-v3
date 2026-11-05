@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type Konva from "konva";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text } from "react-konva";
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Circle, Group, RegularPolygon, Image as KImage, Layer, Line, Rect, Stage, Text } from "react-konva";
 import { useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -43,7 +43,11 @@ import {
   edgePoints,
   type LinkGeometry,
   dominantSide,
+  arrowHead,
   flattenPath,
+  LINK_PRESETS,
+  zigzagPoints,
+  type LinkPreset,
   linkGeometry,
   nearestOnPolylines,
   nearestSide,
@@ -405,6 +409,7 @@ export default function TreeCanvas() {
   // Đang kéo đường nối từ chấm của một thẻ (kiểu PowerPoint).
   type ConnStart = { node: string; side: Side } | { pt: { x: number; y: number } };
   const [connecting, setConnecting] = useState<{ from: ConnStart } | null>(null);
+  const [linkPresetId, setLinkPresetId] = useState<string>("curve");
   const [lineHover, setLineHover] = useState<{ x: number; y: number } | null>(null);
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const justLinkedRef = useRef(false);
@@ -727,7 +732,8 @@ export default function TreeCanvas() {
     const pt = stagePoint() ?? pointer;
     const start = connStartPt();
     const target = pt ? nodeAt(pt, connFromId) : null;
-    const base = { id: newId("l"), color: "#8B1E2D", width: 3, dash: false, style: "bezier" as EdgeStyle };
+    const pre = LINK_PRESETS.find((x) => x.id === linkPresetId) ?? LINK_PRESETS[4];
+    const base = { id: newId("l"), color: "#8B1E2D", width: 3, dash: pre.dash, style: pre.style, arrow: pre.arrow };
     const f = connecting.from;
     const fromPart = "node" in f ? { from: f.node, fromSide: f.side } : { from: "", fromPt: f.pt };
     let lk: CustomLink | null = null;
@@ -735,6 +741,10 @@ export default function TreeCanvas() {
       lk = { ...base, ...fromPart, to: target, toSide: nearestSide(rectOf(target)!, pt) };
     } else if (pt && start && Math.hypot(pt.x - start.x, pt.y - start.y) > 12 / view.scale) {
       lk = { ...base, ...fromPart, to: "", toPt: snapPoint(pt) ?? pt };
+    }
+    if (lk && pre.zigzag && start) {
+      const endPt = target && pt ? sideAnchor(rectOf(target)!, lk.toSide ?? "top") : (lk.toPt as { x: number; y: number });
+      lk = { ...lk, points: zigzagPoints(start, endPt) };
     }
     if (lk) {
       const made = lk;
@@ -1110,6 +1120,28 @@ export default function TreeCanvas() {
     />
   ) : null;
 
+  /** Chọn kiểu dựng sẵn: dùng cho đường nối mới, và đổi luôn kiểu của đường đang chọn. */
+  const pickPreset = (pre: LinkPreset) => {
+    setLinkPresetId(pre.id);
+    const k = sel?.kind === "link" ? layout.links.find((x) => x.id === sel.id) : undefined;
+    if (!k) return;
+    const ends = linkEnds(k);
+    update((l) => ({
+      ...l,
+      links: l.links.map((x) =>
+        x.id !== k.id
+          ? x
+          : {
+              ...x,
+              style: pre.style,
+              dash: pre.dash,
+              arrow: pre.arrow,
+              points: pre.zigzag && ends ? zigzagPoints(ends.a, ends.b) : undefined,
+            },
+      ),
+    }));
+  };
+
   useEffect(() => {
     if (justLinkedRef.current) { justLinkedRef.current = false; return; }
     if (sel) setShowPalette(true);
@@ -1126,6 +1158,8 @@ export default function TreeCanvas() {
       onAdd={(it) => addItem(it)}
       linkMode={linkMode}
       onToggleLink={() => { setLinkMode((v) => !v); setLinkFrom(null); }}
+      linkPreset={linkPresetId}
+      onPickPreset={pickPreset}
       selection={inspector}
     />
   );
@@ -1304,9 +1338,20 @@ export default function TreeCanvas() {
                   const ends = linkEnds(k);
                   if (!ends) return null;
                   const on = sel?.kind === "link" && sel.id === k.id;
+                  const poly = k.arrow && k.arrow !== "none" ? flattenPath(ends.g) : null;
+                  const r = 6 + k.width * 1.6;
+                  const heads = poly
+                    ? [arrowHead(poly, true, r), k.arrow === "both" ? arrowHead(poly, false, r) : null]
+                    : [];
                   return (
+                    <Fragment key={k.id}>
+                      {heads.map((h, i) =>
+                        h ? (
+                          <RegularPolygon key={i} x={h.x} y={h.y} sides={3} radius={r} rotation={h.rotation}
+                            fill={k.color} listening={false} />
+                        ) : null,
+                      )}
                     <Line
-                      key={k.id}
                       points={ends.g.points}
                       bezier={ends.g.bezier}
                       tension={ends.g.tension}
@@ -1319,6 +1364,7 @@ export default function TreeCanvas() {
                       onClick={() => setSel({ kind: "link", id: k.id })}
                       onTap={() => setSel({ kind: "link", id: k.id })}
                     />
+                    </Fragment>
                   );
                 })}
                 {connecting && pointer && (() => {

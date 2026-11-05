@@ -8,7 +8,9 @@ import {
   CARD_DESIGNS,
   type CardDesign,
   type CustomLink,
+  LINK_PRESETS,
   type EdgeStyle,
+  type LinkPreset,
   type NodeStyle,
 } from "@/lib/tree/canvasModel";
 
@@ -19,6 +21,67 @@ export type PaletteItem =
   | { t: "design"; design: CardDesign; gender: "M" | "F" }
   | { t: "text" }
   | { t: "person"; id: string };
+
+const PREVIEW_D: Record<string, string> = {
+  straight: "M6 22 L58 6",
+  step: "M6 22 H32 V6 H58",
+  bezier: "M6 22 C34 22 30 6 58 6",
+  zigzag: "M6 22 L18 8 L30 22 L42 8 L58 20",
+};
+
+/** Hình xem trước một kiểu đường nối. */
+function PresetPreview({ preset }: { preset: LinkPreset }) {
+  const d = PREVIEW_D[preset.zigzag ? "zigzag" : preset.style];
+  const mid = `pv-${preset.id}`;
+  return (
+    <svg viewBox="0 0 64 28" className="h-7 w-full" aria-hidden="true">
+      <defs>
+        <marker id={mid} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
+        </marker>
+      </defs>
+      <path
+        d={d}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray={preset.dash ? "5 4" : undefined}
+        markerEnd={preset.arrow !== "none" ? `url(#${mid})` : undefined}
+        markerStart={preset.arrow === "both" ? `url(#${mid})` : undefined}
+      />
+    </svg>
+  );
+}
+
+/** Danh sách kiểu đường nối dựng sẵn: chọn để dùng cho đường mới, và áp luôn cho đường đang chọn. */
+export function LinkPresetGallery({
+  value,
+  onPick,
+}: {
+  value: string | null;
+  onPick: (p: LinkPreset) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2" role="listbox" aria-label="Kiểu đường nối">
+      {LINK_PRESETS.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          role="option"
+          aria-selected={value === p.id}
+          title={p.label}
+          onClick={() => onPick(p)}
+          className={`flex flex-col items-center gap-0.5 rounded-lg border p-1.5 text-[11px] leading-tight hover:bg-accent ${value === p.id ? "border-primary bg-accent" : "bg-card"}`}
+        >
+          <PresetPreview preset={p} />
+          <span className="line-clamp-1 w-full text-center">{p.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export interface PaletteMember {
   id: string;
@@ -48,12 +111,16 @@ export function CanvasPalette({
   onAdd,
   linkMode,
   onToggleLink,
+  linkPreset,
+  onPickPreset,
   selection,
 }: {
   members: PaletteMember[];
   onAdd: (item: PaletteItem) => void;
   linkMode: boolean;
   onToggleLink: () => void;
+  linkPreset: string | null;
+  onPickPreset: (p: LinkPreset) => void;
   selection: React.ReactNode;
 }) {
   const [q, setQ] = useState("");
@@ -98,6 +165,10 @@ export function CanvasPalette({
 
       <section className="space-y-2">
         <h3 className="font-semibold">Đường nối tuỳ chỉnh</h3>
+        <p className="text-xs text-muted-foreground">
+          Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó.
+        </p>
+        <LinkPresetGallery value={linkPreset} onPick={onPickPreset} />
         <Button
           size="sm"
           variant={linkMode ? "default" : "outline"}
@@ -238,6 +309,14 @@ export function LinkInspector({
           Bỏ {link.points?.length} điểm uốn
         </Button>
       )}
+      <label className="block space-y-1">
+        <span className="text-xs text-muted-foreground">Mũi tên</span>
+        <Select value={link.arrow ?? "none"} onChange={(e) => onChange({ arrow: e.target.value as CustomLink["arrow"] })} className="h-9 text-sm">
+          <option value="none">Không</option>
+          <option value="end">Ở cuối</option>
+          <option value="both">Hai đầu</option>
+        </Select>
+      </label>
       <label className="flex items-center gap-2">
         <input type="checkbox" checked={link.dash} onChange={(e) => onChange({ dash: e.target.checked })} />
         Nét đứt
