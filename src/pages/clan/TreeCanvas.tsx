@@ -713,6 +713,10 @@ export default function TreeCanvas() {
     />
   ) : null;
 
+  useEffect(() => {
+    if (sel) setShowPalette(true);
+  }, [sel]);
+
   const members = useMemo(
     () => persons.map((p) => ({ id: p.id, name: p.full_name, onCanvas: !hiddenIds.has(p.id) })),
     [persons, hiddenIds],
@@ -759,8 +763,8 @@ export default function TreeCanvas() {
           <option value="">Bố cục tự xếp (chưa lưu)</option>
           {canvases?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Select>
-        <Button size="sm" variant="outline" className="lg:hidden" onClick={() => setShowPalette((v) => !v)}>
-          {showPalette ? "Ẩn công cụ" : "Công cụ thiết kế"}
+        <Button size="sm" variant={showPalette ? "default" : "outline"} onClick={() => setShowPalette((v) => !v)}>
+          {showPalette ? "Đóng công cụ" : "Công cụ thiết kế"}
         </Button>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => zoomBy(1 / 1.2)} aria-label="Thu nhỏ">−</Button>
@@ -782,18 +786,23 @@ export default function TreeCanvas() {
         </div>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-[17rem_minmax(0,1fr)]">
+      <div className="relative">
         <aside
-          className={`${showPalette ? "block" : "hidden"} max-h-[calc(100dvh-14rem)] overflow-y-auto rounded-xl border bg-card p-3 lg:block`}
+          className={`absolute bottom-2 right-2 top-2 z-10 w-[min(18rem,calc(100%-1rem))] overflow-y-auto rounded-xl border bg-card p-3 shadow-xl transition-transform duration-200 ${showPalette ? "translate-x-0" : "pointer-events-none translate-x-[calc(100%+1rem)]"}`}
+          aria-hidden={!showPalette}
           data-testid="canvas-palette"
         >
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-semibold">Công cụ thiết kế</span>
+            <button type="button" className="rounded-md px-2 py-1 text-sm hover:bg-accent" onClick={() => setShowPalette(false)} aria-label="Đóng công cụ">✕</button>
+          </div>
           {palette}
         </aside>
 
         <div>
           <div
             ref={wrapRef}
-            className="relative h-[calc(100dvh-20rem)] min-h-[360px] overflow-hidden rounded-xl border"
+            className="relative h-[calc(100dvh-13rem)] min-h-[480px] overflow-hidden rounded-xl border"
             style={{ background: bg.base, touchAction: "none", cursor: linkMode ? "crosshair" : undefined }}
             data-testid="tree-canvas"
             onDragOver={(e) => { if (e.dataTransfer.types.includes(PALETTE_MIME)) e.preventDefault(); }}
