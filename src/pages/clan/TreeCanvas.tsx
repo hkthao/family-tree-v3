@@ -1260,7 +1260,7 @@ export default function TreeCanvas() {
         >
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-semibold">Công cụ thiết kế</span>
-            <button type="button" className="rounded-md px-2 py-1 text-sm hover:bg-accent" onClick={() => setShowPalette(false)} aria-label="Đóng công cụ">✕</button>
+            <button type="button" className="rounded-md px-2 py-1 text-sm hover:bg-secondary" onClick={() => setShowPalette(false)} aria-label="Đóng công cụ">✕</button>
           </div>
           {palette}
         </aside>
@@ -1526,7 +1526,7 @@ export default function TreeCanvas() {
               ["members", "Mặc định có thành viên", "Tự xếp toàn bộ gia phả theo đời, bạn chỉnh tiếp."],
               ["blank", "Trang trống hoàn toàn", "Không có thẻ nào; kéo thành viên hoặc thẻ thiết kế sẵn từ bảng công cụ vào."],
             ] as const).map(([v, label, desc]) => (
-              <label key={v} className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${newKind === v ? "border-primary bg-accent" : ""}`}>
+              <label key={v} className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${newKind === v ? "border-primary bg-primary/10" : ""}`}>
                 <input type="radio" name="new-kind" className="mt-1" checked={newKind === v} onChange={() => setNewKind(v)} />
                 <span>
                   <span className="block font-medium">{label}</span>
@@ -1586,7 +1586,7 @@ export default function TreeCanvas() {
           <div className="space-y-1 text-sm">
             <span className="font-medium">Ảnh nền</span>
             <div className="flex items-center gap-2">
-              <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm hover:bg-accent">
+              <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm hover:bg-secondary">
                 <IconUpload className="h-4 w-4" /> Chọn ảnh
                 <input type="file" accept="image/*" className="hidden"
                   onChange={(e) => { void pickBgImage(e.target.files?.[0]); e.target.value = ""; }} />

@@ -73,7 +73,7 @@ export function LinkPresetGallery({
           aria-selected={value === p.id}
           title={p.label}
           onClick={() => onPick(p)}
-          className={`flex flex-col items-center gap-0.5 rounded-lg border p-1.5 text-[11px] leading-tight hover:bg-accent ${value === p.id ? "border-primary bg-accent" : "bg-card"}`}
+          className={`flex flex-col items-center gap-0.5 rounded-lg border p-1.5 text-[11px] leading-tight hover:bg-secondary ${value === p.id ? "border-primary bg-primary/10" : "bg-card"}`}
         >
           <PresetPreview preset={p} />
           <span className="line-clamp-1 w-full text-center">{p.label}</span>
@@ -142,7 +142,7 @@ export function CanvasPalette({
               draggable
               onDragStart={(e) => dragStart(e, { t: "design", design: d.id, gender: "M" })}
               onClick={() => onAdd({ t: "design", design: d.id, gender: "M" })}
-              className="flex flex-col items-center gap-1 rounded-lg border bg-card p-2 text-xs hover:bg-accent"
+              className="flex flex-col items-center gap-1 rounded-lg border bg-card p-2 text-xs hover:bg-secondary"
             >
               <span className={`flex h-12 w-10 items-center justify-center rounded-md border-2 ${DESIGN_SWATCH[d.id]}`}>
                 <span className="h-4 w-4 rounded-full bg-black/20" />
@@ -155,7 +155,7 @@ export function CanvasPalette({
             draggable
             onDragStart={(e) => dragStart(e, { t: "text" })}
             onClick={() => onAdd({ t: "text" })}
-            className="flex flex-col items-center gap-1 rounded-lg border bg-card p-2 text-xs hover:bg-accent"
+            className="flex flex-col items-center gap-1 rounded-lg border bg-card p-2 text-xs hover:bg-secondary"
           >
             <span className="flex h-12 w-10 items-center justify-center text-lg font-bold">Aa</span>
             Ô chữ
@@ -190,7 +190,7 @@ export function CanvasPalette({
                 draggable
                 onDragStart={(e) => dragStart(e, { t: "person", id: m.id })}
                 onClick={() => onAdd({ t: "person", id: m.id })}
-                className="flex w-full items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-left hover:bg-accent"
+                className="flex w-full items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-left hover:bg-secondary"
                 title={m.onCanvas ? "Đã có trên canvas — thả để dời tới chỗ mới" : "Thả vào canvas"}
               >
                 <span className="truncate">{m.name}</span>
