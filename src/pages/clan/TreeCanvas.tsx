@@ -5,7 +5,7 @@ import { Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text } from "
 import { useNavigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { IconDownload, IconMaximize, IconPlus, IconRefresh, IconTree, IconUndo, IconUpload } from "@/components/icons";
+import { IconCheck, IconCompass, IconCopy, IconDownload, IconLayers, IconMaximize, IconMinimize, IconPlus, IconRefresh, IconSettings, IconTree, IconUndo, IconUpload } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import {
@@ -248,6 +248,32 @@ const CardNode = memo(function CardNode(p: NodeProps) {
   );
 });
 
+/** Nút icon có tooltip (title) + nhãn cho trình đọc màn hình. */
+function IconBtn({
+  label, onClick, disabled, active, primary, children,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  active?: boolean;
+  primary?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Button
+      size="sm"
+      variant={primary || active ? "default" : "outline"}
+      className="h-10 w-10 shrink-0 px-0"
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={label}
+    >
+      {children}
+    </Button>
+  );
+}
+
 type Tab = "idle" | "export" | "save" | "options";
 
 /** Đọc ảnh người dùng chọn, thu nhỏ ≤1600px và nén JPEG để nhét vừa bố cục (≤ ~700KB). */
@@ -322,6 +348,10 @@ export default function TreeCanvas() {
   const [linkMode, setLinkMode] = useState(false);
   const [linkFrom, setLinkFrom] = useState<string | null>(null);
   const [showPalette, setShowPalette] = useState(false);
+  // Toàn màn hình kiểu CSS (fixed) thay vì Fullscreen API: dùng được cả iOS Safari,
+  // và các ngăn kéo (portal ra body, z-50) vẫn hiện đè lên.
+  const [fs, setFs] = useState(false);
+  const [copyMode, setCopyMode] = useState(false);
 
   // Lịch sử hoàn tác: ảnh chụp bố cục trước mỗi thay đổi. Thay đổi liên tiếp cùng
   // `key` trong 1 giây (gõ chữ, kéo thanh trượt) gộp thành một bước.
@@ -446,6 +476,21 @@ export default function TreeCanvas() {
     fitted.current = true;
     fit();
   }, [persons.length, fit]);
+
+  const fitRef = useRef(fit);
+  fitRef.current = fit;
+  useEffect(() => {
+    if (fs) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      const t = setTimeout(() => fitRef.current(), 150);
+      return () => {
+        document.body.style.overflow = prev;
+        clearTimeout(t);
+        setTimeout(() => fitRef.current(), 150);
+      };
+    }
+  }, [fs]);
 
   const zoomBy = (factor: number, cx = size.w / 2, cy = size.h / 2) =>
     setView((v) => {
@@ -582,7 +627,7 @@ export default function TreeCanvas() {
         redo();
         return;
       }
-      if (e.key === "Escape") { setLinkMode(false); setLinkFrom(null); setSel(null); }
+      if (e.key === "Escape") { setFs(false); setLinkMode(false); setLinkFrom(null); setSel(null); }
       if ((e.key === "Delete" || e.key === "Backspace") && sel) {
         sel.kind === "link" ? removeLink(sel.id) : removeNode(sel.id);
       }
@@ -591,6 +636,31 @@ export default function TreeCanvas() {
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sel]);
+
+  // ─── nhiều bố cục / dòng họ ───
+  async function newCanvas() {
+    if (dirty && canEdit) {
+      const ok = await confirm({
+        title: "Tạo bố cục mới?",
+        description: "Thay đổi chưa lưu ở bố cục hiện tại sẽ mất.",
+        confirmLabel: "Tạo mới",
+        destructive: true,
+      });
+      if (!ok) return;
+    }
+    clearHistory();
+    setCurrentId("");
+    setLayout(DEFAULT_LAYOUT);
+    setSel(null);
+    setDirty(false);
+    fitted.current = false;
+    setTimeout(() => fitRef.current(), 0);
+  }
+  function duplicateCanvas() {
+    setCopyMode(true);
+    setSaveName(`${canvases?.find((c) => c.id === currentId)?.name ?? "Bố cục"} (bản sao)`);
+    setTab("save");
+  }
 
   // ─── reset / tự xếp / căn chỉnh ───
   async function doReset() {
@@ -658,6 +728,7 @@ export default function TreeCanvas() {
       }
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       setDirty(false);
+      setCopyMode(false);
       setTab("idle");
       toast.success("Đã lưu bố cục");
     } catch (e) {
@@ -808,10 +879,11 @@ export default function TreeCanvas() {
         description="Kéo thả thẻ thiết kế sẵn, nối đường, sửa chữ, chọn nền rồi xuất PDF khổ tuỳ ý."
       />
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={fs ? "fixed inset-0 z-40 flex flex-col gap-3 overflow-hidden bg-background p-3" : "space-y-3"}>
+      <div className="flex shrink-0 items-center gap-1.5 overflow-x-auto">
         <Select
           aria-label="Bố cục đã lưu"
-          className="h-10 w-auto min-w-[10rem] max-w-[14rem] text-sm"
+          className="h-10 w-auto min-w-[8rem] max-w-[12rem] text-sm"
           value={currentId}
           onChange={(e) => {
             const c = canvases?.find((x) => x.id === e.target.value);
@@ -822,41 +894,61 @@ export default function TreeCanvas() {
             setDirty(false);
           }}
         >
-          <option value="">Bố cục tự xếp (chưa lưu)</option>
+          <option value="">Tự xếp (chưa lưu)</option>
           {canvases?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Select>
-        <Button size="sm" variant={showPalette ? "default" : "outline"} onClick={() => setShowPalette((v) => !v)}>
-          {showPalette ? "Đóng công cụ" : "Công cụ thiết kế"}
-        </Button>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" onClick={undo} disabled={pastRef.current.length === 0} aria-label="Hoàn tác (Ctrl+Z)" title="Hoàn tác (Ctrl+Z)">
-            <IconUndo className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="outline" onClick={redo} disabled={futureRef.current.length === 0} aria-label="Làm lại (Ctrl+Shift+Z)" title="Làm lại (Ctrl+Shift+Z)">
-            <IconUndo className="h-4 w-4 -scale-x-100" />
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => zoomBy(1 / 1.2)} aria-label="Thu nhỏ">−</Button>
-          <Button size="sm" variant="outline" onClick={() => zoomBy(1.2)} aria-label="Phóng to">
+        {canEdit && (
+          <IconBtn label="Tạo bố cục mới" onClick={newCanvas}>
             <IconPlus className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="outline" onClick={fit} aria-label="Vừa khung">
-            <IconMaximize className="h-4 w-4" />
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setTab("options")}>Tuỳ chọn</Button>
+          </IconBtn>
+        )}
+        {canEdit && (
+          <IconBtn label="Nhân bản thành bố cục mới" onClick={duplicateCanvas}>
+            <IconCopy className="h-4 w-4" />
+          </IconBtn>
+        )}
+        <IconBtn label={showPalette ? "Đóng công cụ thiết kế" : "Công cụ thiết kế"} active={showPalette} onClick={() => setShowPalette((v) => !v)}>
+          <IconLayers className="h-4 w-4" />
+        </IconBtn>
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          <IconBtn label="Hoàn tác (Ctrl+Z)" onClick={undo} disabled={pastRef.current.length === 0}>
+            <IconUndo className="h-4 w-4" />
+          </IconBtn>
+          <IconBtn label="Làm lại (Ctrl+Shift+Z)" onClick={redo} disabled={futureRef.current.length === 0}>
+            <IconUndo className="h-4 w-4 -scale-x-100" />
+          </IconBtn>
+          <IconBtn label="Thu nhỏ" onClick={() => zoomBy(1 / 1.2)}>
+            <span className="text-lg leading-none">−</span>
+          </IconBtn>
+          <IconBtn label="Phóng to" onClick={() => zoomBy(1.2)}>
+            <IconPlus className="h-4 w-4" />
+          </IconBtn>
+          <IconBtn label="Vừa khung" onClick={fit}>
+            <IconCompass className="h-4 w-4" />
+          </IconBtn>
+          <IconBtn label={fs ? "Thoát toàn màn hình (Esc)" : "Toàn màn hình"} onClick={() => setFs((v) => !v)}>
+            {fs ? <IconMinimize className="h-4 w-4" /> : <IconMaximize className="h-4 w-4" />}
+          </IconBtn>
+          <IconBtn label="Tuỳ chọn" onClick={() => setTab("options")}>
+            <IconSettings className="h-4 w-4" />
+          </IconBtn>
           {canEdit && (
-            <Button size="sm" onClick={() => { setSaveName(currentCanvas?.name ?? ""); setTab("save"); }}>
-              Lưu{dirty ? " *" : ""}
-            </Button>
+            <IconBtn label={dirty ? "Lưu bố cục (có thay đổi chưa lưu)" : "Lưu bố cục"} primary onClick={() => { setCopyMode(false); setSaveName(currentCanvas?.name ?? ""); setTab("save"); }}>
+              <span className="relative">
+                <IconCheck className="h-4 w-4" />
+                {dirty && <span className="absolute -right-1.5 -top-1.5 h-2 w-2 rounded-full bg-amber-300" />}
+              </span>
+            </IconBtn>
           )}
-          <Button size="sm" onClick={() => setTab("export")}>
-            <IconDownload className="h-4 w-4" /> Xuất PDF
-          </Button>
+          <IconBtn label="Xuất PDF" primary onClick={() => setTab("export")}>
+            <IconDownload className="h-4 w-4" />
+          </IconBtn>
         </div>
       </div>
 
-      <div className="relative">
+      <div className={fs ? "relative min-h-0 flex-1" : "relative"}>
         <aside
-          className={`absolute bottom-16 right-2 top-2 z-10 w-[min(18rem,calc(100%-1rem))] overflow-y-auto rounded-xl border bg-card p-3 shadow-xl transition-transform duration-200 ${showPalette ? "translate-x-0" : "pointer-events-none translate-x-[calc(100%+1rem)]"}`}
+          className={`absolute ${fs ? "bottom-2" : "bottom-16"} right-2 top-2 z-10 w-[min(18rem,calc(100%-1rem))] overflow-y-auto rounded-xl border bg-card p-3 shadow-xl transition-transform duration-200 ${showPalette ? "translate-x-0" : "pointer-events-none translate-x-[calc(100%+1rem)]"}`}
           aria-hidden={!showPalette}
           data-testid="canvas-palette"
         >
@@ -867,10 +959,10 @@ export default function TreeCanvas() {
           {palette}
         </aside>
 
-        <div>
+        <div className={fs ? "flex h-full flex-col" : ""}>
           <div
             ref={wrapRef}
-            className="relative h-[calc(100dvh-13rem)] min-h-[480px] overflow-hidden rounded-xl border"
+            className={`relative overflow-hidden rounded-xl border ${fs ? "min-h-0 flex-1" : "h-[calc(100dvh-13rem)] min-h-[480px]"}`}
             style={{ background: bg.base, touchAction: "none", cursor: linkMode ? "crosshair" : undefined }}
             data-testid="tree-canvas"
             onDragOver={(e) => { if (e.dataTransfer.types.includes(PALETTE_MIME)) e.preventDefault(); }}
@@ -999,11 +1091,13 @@ export default function TreeCanvas() {
               </Layer>
             </Stage>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className={`mt-2 text-xs text-muted-foreground ${fs ? "hidden" : ""}`}>
             Kéo thẻ để đổi vị trí · kéo nền để di chuyển · cuộn để thu phóng · nhấp thẻ để sửa ở bảng trái · nhấp đúp để mở hồ sơ · Delete để xoá mục đang chọn.
             {!canEdit && " Bạn chỉ có quyền xem: kéo thử và xuất PDF được nhưng không lưu."}
           </p>
         </div>
+      </div>
+
       </div>
 
       <SidePanel
@@ -1139,7 +1233,7 @@ export default function TreeCanvas() {
         open={tab === "save"}
         title="Lưu bố cục"
         subtitle="Bố cục lưu theo dòng họ, mọi thành viên đều xem được."
-        onClose={() => setTab("idle")}
+        onClose={() => { setTab("idle"); setCopyMode(false); }}
         guard={false}
       >
         <div className="flex flex-1 flex-col space-y-3">
@@ -1148,13 +1242,19 @@ export default function TreeCanvas() {
             <Input value={saveName} maxLength={80} onChange={(e) => setSaveName(e.target.value)} placeholder="VD: Phả đồ chi trưởng" />
           </label>
           <FormActions>
-            {currentId && (
-              <Button variant="destructive-outline" onClick={remove} disabled={busy}>Xoá</Button>
+            {copyMode ? (
+              <Button onClick={() => save(true)} disabled={busy}>Tạo bản sao</Button>
+            ) : (
+              <>
+                {currentId && (
+                  <Button variant="destructive-outline" onClick={remove} disabled={busy}>Xoá</Button>
+                )}
+                {currentId && (
+                  <Button variant="outline" onClick={() => save(true)} disabled={busy}>Lưu bản mới</Button>
+                )}
+                <Button onClick={() => save(false)} disabled={busy}>Lưu</Button>
+              </>
             )}
-            {currentId && (
-              <Button variant="outline" onClick={() => save(true)} disabled={busy}>Lưu bản mới</Button>
-            )}
-            <Button onClick={() => save(false)} disabled={busy}>Lưu</Button>
           </FormActions>
         </div>
       </SidePanel>
