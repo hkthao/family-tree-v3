@@ -156,6 +156,7 @@ interface NodeProps {
   selected: boolean;
   picked: boolean;
   onMove: (id: string, x: number, y: number) => void;
+  onDragStart: () => void;
   onOpen: (id: string) => void;
   onSelect: (id: string) => void;
 }
@@ -183,6 +184,7 @@ const CardNode = memo(function CardNode(p: NodeProps) {
     x: p.x,
     y: p.y,
     draggable: true,
+    onDragStart: () => p.onDragStart(),
     onDragMove: (e: Konva.KonvaEventObject<DragEvent>) => p.onMove(p.id, e.target.x(), e.target.y()),
     onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => p.onMove(p.id, e.target.x(), e.target.y()),
     onClick: () => p.onSelect(p.id),
@@ -321,17 +323,64 @@ export default function TreeCanvas() {
   const [linkFrom, setLinkFrom] = useState<string | null>(null);
   const [showPalette, setShowPalette] = useState(false);
 
-  /** Mọi thay đổi bố cục đi qua đây để đánh dấu "chưa lưu". */
-  const update = useCallback((fn: (l: CanvasLayout) => CanvasLayout) => {
-    setLayout(fn);
-    setDirty(true);
+  // Lịch sử hoàn tác: ảnh chụp bố cục trước mỗi thay đổi. Thay đổi liên tiếp cùng
+  // `key` trong 1 giây (gõ chữ, kéo thanh trượt) gộp thành một bước.
+  const layoutRef = useRef(layout);
+  layoutRef.current = layout;
+  const pastRef = useRef<CanvasLayout[]>([]);
+  const futureRef = useRef<CanvasLayout[]>([]);
+  const lastKeyRef = useRef({ k: "", t: 0 });
+  const pushHistory = useCallback((key?: string) => {
+    const now = Date.now();
+    if (key && lastKeyRef.current.k === key && now - lastKeyRef.current.t < 1000) {
+      lastKeyRef.current.t = now;
+      return;
+    }
+    lastKeyRef.current = { k: key ?? "", t: now };
+    pastRef.current.push(layoutRef.current);
+    if (pastRef.current.length > 100) pastRef.current.shift();
+    futureRef.current = [];
   }, []);
+  const clearHistory = useCallback(() => {
+    pastRef.current = [];
+    futureRef.current = [];
+    lastKeyRef.current = { k: "", t: 0 };
+  }, []);
+  const undo = useCallback(() => {
+    const prev = pastRef.current.pop();
+    if (!prev) return;
+    futureRef.current.push(layoutRef.current);
+    lastKeyRef.current = { k: "", t: 0 };
+    setLayout(prev);
+    setDirty(true);
+    setSel(null);
+  }, []);
+  const redo = useCallback(() => {
+    const next = futureRef.current.pop();
+    if (!next) return;
+    pastRef.current.push(layoutRef.current);
+    lastKeyRef.current = { k: "", t: 0 };
+    setLayout(next);
+    setDirty(true);
+    setSel(null);
+  }, []);
+
+  /** Mọi thay đổi bố cục đi qua đây để đánh dấu "chưa lưu" và ghi lịch sử. */
+  const update = useCallback(
+    (fn: (l: CanvasLayout) => CanvasLayout, key?: string) => {
+      pushHistory(key);
+      setLayout(fn);
+      setDirty(true);
+    },
+    [pushHistory],
+  );
 
   const initRef = useRef(false);
   useEffect(() => {
     if (initRef.current || !canvases) return;
     initRef.current = true;
     if (canvases[0]) {
+      clearHistory();
       setCurrentId(canvases[0].id);
       setLayout(canvases[0].layout);
     }
@@ -495,7 +544,7 @@ export default function TreeCanvas() {
   };
 
   const patchNode = (id: string, patch: NodeStyle) =>
-    update((l) => ({ ...l, nodeStyles: { ...l.nodeStyles, [id]: { ...l.nodeStyles[id], ...patch } } }));
+    update((l) => ({ ...l, nodeStyles: { ...l.nodeStyles, [id]: { ...l.nodeStyles[id], ...patch } } }), `node:${id}:${Object.keys(patch).join()}`);
 
   const removeNode = (id: string) => {
     update((l) => {
@@ -513,7 +562,7 @@ export default function TreeCanvas() {
     setSel(null);
   };
   const patchLink = (id: string, patch: Partial<CustomLink>) =>
-    update((l) => ({ ...l, links: l.links.map((k) => (k.id === id ? { ...k, ...patch } : k)) }));
+    update((l) => ({ ...l, links: l.links.map((k) => (k.id === id ? { ...k, ...patch } : k)) }), `link:${id}:${Object.keys(patch).join()}`);
   const removeLink = (id: string) => {
     update((l) => ({ ...l, links: l.links.filter((k) => k.id !== id) }));
     setSel(null);
@@ -523,6 +572,16 @@ export default function TreeCanvas() {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (t.closest("input, textarea, select, [contenteditable]")) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        e.shiftKey ? redo() : undo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
       if (e.key === "Escape") { setLinkMode(false); setLinkFrom(null); setSel(null); }
       if ((e.key === "Delete" || e.key === "Backspace") && sel) {
         sel.kind === "link" ? removeLink(sel.id) : removeNode(sel.id);
@@ -542,6 +601,7 @@ export default function TreeCanvas() {
       destructive: true,
     });
     if (!ok) return;
+    pushHistory();
     setLayout(DEFAULT_LAYOUT);
     setSel(null);
     setDirty(true);
@@ -612,6 +672,7 @@ export default function TreeCanvas() {
     try {
       await deleteTreeCanvas(currentId);
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
+      clearHistory();
       setCurrentId("");
       setLayout(DEFAULT_LAYOUT);
       setDirty(false);
@@ -754,6 +815,7 @@ export default function TreeCanvas() {
           value={currentId}
           onChange={(e) => {
             const c = canvases?.find((x) => x.id === e.target.value);
+            clearHistory();
             setCurrentId(e.target.value);
             setLayout(c ? c.layout : DEFAULT_LAYOUT);
             setSel(null);
@@ -767,6 +829,12 @@ export default function TreeCanvas() {
           {showPalette ? "Đóng công cụ" : "Công cụ thiết kế"}
         </Button>
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" onClick={undo} disabled={pastRef.current.length === 0} aria-label="Hoàn tác (Ctrl+Z)" title="Hoàn tác (Ctrl+Z)">
+            <IconUndo className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="outline" onClick={redo} disabled={futureRef.current.length === 0} aria-label="Làm lại (Ctrl+Shift+Z)" title="Làm lại (Ctrl+Shift+Z)">
+            <IconUndo className="h-4 w-4 -scale-x-100" />
+          </Button>
           <Button size="sm" variant="outline" onClick={() => zoomBy(1 / 1.2)} aria-label="Thu nhỏ">−</Button>
           <Button size="sm" variant="outline" onClick={() => zoomBy(1.2)} aria-label="Phóng to">
             <IconPlus className="h-4 w-4" />
@@ -922,6 +990,7 @@ export default function TreeCanvas() {
                       selected={sel?.kind === "node" && sel.id === id}
                       picked={linkFrom === id}
                       onMove={onMove}
+                      onDragStart={() => pushHistory()}
                       onOpen={onOpen}
                       onSelect={onSelect}
                     />
