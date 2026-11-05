@@ -205,7 +205,7 @@ export default function TreeCanvases() {
       )}
 
       {data && data.length > 0 && total > 0 && (
-        <ul className="grid gap-3 sm:grid-cols-2" data-testid="canvas-list">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="canvas-list">
           {pageItems.map((c) => {
             const people = Object.keys(c.layout.positions).length - c.layout.extras.length;
             const shown = Math.max(
