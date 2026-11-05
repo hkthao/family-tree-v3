@@ -788,7 +788,7 @@ export default function TreeCanvas() {
 
       <div className="relative">
         <aside
-          className={`absolute bottom-2 right-2 top-2 z-10 w-[min(18rem,calc(100%-1rem))] overflow-y-auto rounded-xl border bg-card p-3 shadow-xl transition-transform duration-200 ${showPalette ? "translate-x-0" : "pointer-events-none translate-x-[calc(100%+1rem)]"}`}
+          className={`absolute bottom-16 right-2 top-2 z-10 w-[min(18rem,calc(100%-1rem))] overflow-y-auto rounded-xl border bg-card p-3 shadow-xl transition-transform duration-200 ${showPalette ? "translate-x-0" : "pointer-events-none translate-x-[calc(100%+1rem)]"}`}
           aria-hidden={!showPalette}
           data-testid="canvas-palette"
         >
