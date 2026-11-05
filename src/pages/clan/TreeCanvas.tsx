@@ -1512,17 +1512,6 @@ export default function TreeCanvas() {
             <input type="checkbox" checked={layout.autoEdges} onChange={(e) => setOpt("autoEdges", e.target.checked)} />
             Hiện đường nối cha–con, vợ–chồng tự động
           </label>
-          {canEdit && currentId && (
-            <Button variant="destructive-outline" size="sm" disabled={busy} className="h-10 w-10 px-0"
-              title={`Xoá bố cục "${canvasName || currentCanvas?.name || ""}"`}
-              aria-label="Xoá bố cục"
-              onClick={async () => {
-                const ok = await confirm({ title: "Xoá bố cục này?", description: "Bố cục đã lưu sẽ bị xoá vĩnh viễn.", confirmLabel: "Xoá", destructive: true });
-                if (ok) await remove();
-              }}>
-              <IconTrash className="h-4 w-4" />
-            </Button>
-          )}
           <FormActions>
             <Button onClick={() => setTab("idle")}>Xong</Button>
           </FormActions>
