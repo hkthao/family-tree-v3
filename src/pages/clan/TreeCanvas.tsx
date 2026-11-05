@@ -16,6 +16,7 @@ import {
   type PaletteItem,
 } from "@/components/treeCanvas/CanvasPalette";
 import { SidePanel } from "@/components/SidePanel";
+import { NewCanvasPanel, type NewCanvasKind } from "@/components/treeCanvas/NewCanvasPanel";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
@@ -411,8 +412,6 @@ export default function TreeCanvas() {
   const [fs, setFs] = useState(false);
   const [copyMode, setCopyMode] = useState(false);
   const [canvasName, setCanvasName] = useState("");
-  const [newName, setNewName] = useState("");
-  const [newKind, setNewKind] = useState<"members" | "blank">("members");
   // Đang kéo đường nối từ chấm của một thẻ (kiểu PowerPoint).
   type ConnStart = { node: string; side: Side } | { pt: { x: number; y: number } };
   const [connecting, setConnecting] = useState<{ from: ConnStart } | null>(null);
@@ -487,8 +486,6 @@ export default function TreeCanvas() {
       setLayout(target.layout);
     }
     if (isNew) {
-      setNewName("");
-      setNewKind("members");
       setTab("new");
       goCanvas(target?.id ?? "auto");
     }
@@ -910,13 +907,11 @@ export default function TreeCanvas() {
 
   // ─── nhiều bố cục / dòng họ ───
   function newCanvas() {
-    setNewName("");
-    setNewKind("members");
     setTab("new");
   }
   /** Tạo bố cục mới: có sẵn thành viên (tự xếp) hoặc trang trống (ẩn hết, tự thêm từ bảng công cụ). */
-  async function createNew() {
-    const name = newName.trim();
+  async function createNew(rawName: string, newKind: NewCanvasKind) {
+    const name = rawName.trim();
     if (!name) return toast.error("Hãy đặt tên cho cây mới");
     setBusy(true);
     try {
@@ -1529,42 +1524,13 @@ export default function TreeCanvas() {
 
       </div>
 
-      <SidePanel
+      <NewCanvasPanel
         open={tab === "new"}
-        title="Tạo cây mới"
-        subtitle="Mỗi dòng họ có thể có nhiều cây (bố cục) riêng."
+        busy={busy}
+        warnUnsaved={dirty}
         onClose={() => setTab("idle")}
-        guard={false}
-      >
-        <div className="flex flex-1 flex-col space-y-3">
-          <label className="block space-y-1 text-sm">
-            <span className="font-medium">Tên cây</span>
-            <Input value={newName} maxLength={80} autoFocus onChange={(e) => setNewName(e.target.value)} placeholder="VD: Phả đồ chi trưởng" />
-          </label>
-          <fieldset className="space-y-2 text-sm">
-            <legend className="font-medium">Bắt đầu với</legend>
-            {([
-              ["members", "Mặc định có thành viên", "Tự xếp toàn bộ gia phả theo đời, bạn chỉnh tiếp."],
-              ["blank", "Trang trống hoàn toàn", "Không có thẻ nào; kéo thành viên hoặc thẻ thiết kế sẵn từ bảng công cụ vào."],
-            ] as const).map(([v, label, desc]) => (
-              <label key={v} className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${newKind === v ? "border-primary bg-primary/10" : ""}`}>
-                <input type="radio" name="new-kind" className="mt-1" checked={newKind === v} onChange={() => setNewKind(v)} />
-                <span>
-                  <span className="block font-medium">{label}</span>
-                  <span className="block text-xs text-muted-foreground">{desc}</span>
-                </span>
-              </label>
-            ))}
-          </fieldset>
-          {dirty && (
-            <p className="text-xs text-amber-600">Thay đổi chưa lưu ở cây hiện tại sẽ không được giữ.</p>
-          )}
-          <FormActions>
-            <Button variant="outline" onClick={() => setTab("idle")}>Huỷ</Button>
-            <Button onClick={createNew} disabled={busy}>{busy ? "Đang tạo…" : "Tạo"}</Button>
-          </FormActions>
-        </div>
-      </SidePanel>
+        onCreate={(name, kind) => void createNew(name, kind)}
+      />
 
       <SidePanel
         open={tab === "options"}
