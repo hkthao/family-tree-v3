@@ -1198,16 +1198,6 @@ export default function TreeCanvas() {
           <option value="">Tự xếp (chưa lưu)</option>
           {canvases?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Select>
-        <Input
-          aria-label="Tên cây gia phả"
-          title="Tên của cây (bố cục) này"
-          placeholder="Đặt tên cây…"
-          maxLength={80}
-          readOnly={!canEdit}
-          value={canvasName}
-          onChange={(e) => { setCanvasName(e.target.value); setDirty(true); }}
-          className="h-10 w-40 shrink-0 text-sm"
-        />
         {canEdit && (
           <IconBtn label="Tạo bố cục mới" onClick={newCanvas}>
             <IconPlus className="h-4 w-4" />
@@ -1563,6 +1553,12 @@ export default function TreeCanvas() {
         guard={false}
       >
         <div className="flex flex-1 flex-col space-y-4">
+          {canEdit && currentId && (
+            <label className="block space-y-1 text-sm">
+              <span className="font-medium">Tên cây</span>
+              <Input value={canvasName} maxLength={80} onChange={(e) => { setCanvasName(e.target.value); setDirty(true); }} />
+            </label>
+          )}
           <section className="space-y-2">
             <h3 className="text-sm font-semibold">Bố cục</h3>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
