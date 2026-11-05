@@ -35,6 +35,7 @@ import {
 import {
   anchor,
   autoLayout,
+  layoutByLinks,
   buildEdges,
   CANVAS_FONTS,
   contentBounds,
@@ -925,20 +926,29 @@ export default function TreeCanvas() {
       any = true;
     }
     const placed: CanvasLayout["positions"] = {};
+    const sizes: Record<string, { w: number; h: number }> = {};
+    for (const e of layout.extras) {
+      const r = nodeRect({ x: 0, y: 0 }, e);
+      sizes[e.id] = { w: r.w, h: r.h };
+    }
+    const startY = any ? bottom + 90 : 0;
+    const { positions: byLink, loose } = layoutByLinks(sizes, layout.links);
+    let linkedBottom = startY;
+    for (const [id, p] of Object.entries(byLink)) {
+      placed[id] = { x: p.x, y: startY + p.y };
+      linkedBottom = Math.max(linkedBottom, startY + p.y + sizes[id].h);
+    }
     const perRow = 6;
     let x = 0;
     let row = 0;
     let rowH = 0;
-    let n = 0;
-    const startY = any ? bottom + 90 : 0;
-    for (const e of layout.extras) {
-      const r = nodeRect({ x: 0, y: 0 }, e);
+    const looseY = Object.keys(byLink).length ? linkedBottom + 90 : startY;
+    loose.forEach((id, n) => {
       if (n > 0 && n % perRow === 0) { x = 0; row += rowH + 40; rowH = 0; }
-      placed[e.id] = { x, y: startY + row };
-      x += r.w + 40;
-      rowH = Math.max(rowH, r.h);
-      n++;
-    }
+      placed[id] = { x, y: looseY + row };
+      x += sizes[id].w + 40;
+      rowH = Math.max(rowH, sizes[id].h);
+    });
     update((l) => ({ ...l, positions: { ...tree, ...placed } }));
     setTimeout(() => fitRef.current(), 0);
   };

@@ -204,3 +204,22 @@ describe("canvasModel (kiểu đường nối dựng sẵn)", () => {
     expect(parseLayout({ links: [{ id: "a", from: "x", to: "y", arrow: "zz" }] }).links[0].arrow).toBeUndefined();
   });
 });
+
+import { layoutByLinks } from "@/lib/tree/canvasModel";
+
+describe("layoutByLinks (cây tự do theo đường nối)", () => {
+  const sz = (ids: string[]) => Object.fromEntries(ids.map((i) => [i, { w: 150, h: 190 }]));
+  it("con dưới cha, cha căn giữa các con, thẻ rời tách riêng", () => {
+    const { positions: p, loose } = layoutByLinks(sz(["r", "a", "b", "z"]), [
+      { from: "r", to: "a" }, { from: "r", to: "b" },
+    ]);
+    expect(loose).toEqual(["z"]);
+    expect(p.a.y).toBe(p.b.y);
+    expect(p.a.y).toBeGreaterThan(p.r.y);
+    expect(p.r.x + 75).toBeCloseTo((p.a.x + p.b.x + 150) / 2);
+  });
+  it("vòng nối không treo", () => {
+    const { positions: p } = layoutByLinks(sz(["a", "b"]), [{ from: "a", to: "b" }, { from: "b", to: "a" }]);
+    expect(Object.keys(p).sort()).toEqual(["a", "b"]);
+  });
+});

@@ -681,3 +681,67 @@ export function arrowHead(
     rotation: (ang * 180) / Math.PI + 90,
   };
 }
+
+/**
+ * Xếp thẻ tự do thành cây theo các đường nối (from → to), không cần "đời".
+ * Gốc = thẻ không có đường đi vào; con đặt dưới cha, cha căn giữa các con.
+ * Mỗi thẻ chỉ thuộc một cha đầu tiên tìm thấy (chống vòng). Thẻ không nối với ai
+ * được đưa vào `loose` để người gọi tự xếp lưới.
+ */
+export function layoutByLinks(
+  sizes: Record<string, { w: number; h: number }>,
+  links: Array<{ from: string; to: string }>,
+  gapX = GAP_X,
+  gapY = GAP_Y,
+): { positions: Record<string, Pt>; loose: string[] } {
+  const ids = Object.keys(sizes);
+  const kids: Record<string, string[]> = {};
+  const hasIn = new Set<string>();
+  const linked = new Set<string>();
+  for (const l of links) {
+    if (!sizes[l.from] || !sizes[l.to] || l.from === l.to) continue;
+    (kids[l.from] ??= []).push(l.to);
+    hasIn.add(l.to);
+    linked.add(l.from);
+    linked.add(l.to);
+  }
+  const loose = ids.filter((i) => !linked.has(i));
+  const order = ids.filter((i) => linked.has(i));
+  const roots = order.filter((i) => !hasIn.has(i));
+  const seen = new Set<string>();
+  const tree: Record<string, string[]> = {};
+  const build = (id: string) => {
+    seen.add(id);
+    tree[id] = [];
+    for (const c of kids[id] ?? []) {
+      if (seen.has(c)) continue;
+      tree[id].push(c);
+      build(c);
+    }
+  };
+  for (const r of roots) if (!seen.has(r)) build(r);
+  for (const i of order) if (!seen.has(i)) { roots.push(i); build(i); }
+
+  const rowH = Math.max(0, ...order.map((i) => sizes[i].h));
+  const positions: Record<string, Pt> = {};
+  const span: Record<string, number> = {};
+  const measure = (id: string): number => {
+    const kw = tree[id].map(measure);
+    const kids_w = kw.reduce((a, b) => a + b, 0) + Math.max(0, kw.length - 1) * gapX;
+    return (span[id] = Math.max(sizes[id].w, kids_w));
+  };
+  const place = (id: string, left: number, depth: number) => {
+    const w = span[id];
+    positions[id] = { x: left + (w - sizes[id].w) / 2, y: depth * (rowH + gapY) };
+    let x = left;
+    for (const c of tree[id]) { place(c, x, depth + 1); x += span[c] + gapX; }
+  };
+  let cursor = 0;
+  for (const r of roots) {
+    if (!tree[r]) continue;
+    measure(r);
+    place(r, cursor, 0);
+    cursor += span[r] + gapX * 2;
+  }
+  return { positions, loose };
+}
