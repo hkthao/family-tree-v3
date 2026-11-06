@@ -103,9 +103,10 @@ describe("buildSections — nhóm Quản trị hệ thống", () => {
 });
 
 describe("buildSections — nhóm của dòng họ", () => {
-  it("nhóm lõi KHÔNG gập được — gập rồi quên mở là mất đường vào Cây", () => {
+  it("nhóm lõi của dòng họ gập được, mặc định mở", () => {
     const core = build().find((s) => s.id === "clan-core")!;
-    expect(core.collapsible).toBe(false);
+    expect(core.collapsible).not.toBe(false);
+    expect(core.defaultOpen).toBe(true);
     expect(core.items.map((i) => i.label)).toEqual([
       "Tổng quan",
       "Cây gia phả",
@@ -330,13 +331,48 @@ describe("useCollapsedSections", () => {
     expect(second.result.current.isOpen(closed)).toBe(true);
   });
 
-  it("đang xem trang trong nhóm thì nhóm mở, kể cả người dùng đã gập", () => {
-    const { result } = renderHook(() =>
-      useCollapsedSections("/clans/c1/fund"),
-    );
-    act(() => result.current.toggle(closed)); // mở
-    act(() => result.current.toggle(closed)); // gập lại
+  it("đang xem trang trong nhóm thì nhóm tự mở, kể cả khi lần trước đã gập", () => {
+    // Gập từ trước (đã lưu), rồi VÀO một trang của nhóm đó → nhóm mở để menu còn sáng chỗ đang xem.
+    localStorage.setItem("drawer:sections", JSON.stringify({ "clan-money": false }));
+    const { result } = renderHook(() => useCollapsedSections("/clans/c1/fund"));
     expect(result.current.isOpen(closed)).toBe(true);
+  });
+
+  it("bấm gập nhóm chứa trang đang xem thì gập THẬT (không bị luật tự mở nuốt mất)", () => {
+    const core: DrawerSection = {
+      id: "clan-core",
+      label: "Họ Hồ",
+      defaultOpen: true,
+      items: [
+        { to: "/clans/c1", label: "Tổng quan", icon: null, end: true },
+        { to: "/clans/c1/tree", label: "Cây gia phả", icon: null },
+      ],
+    };
+    const { result } = renderHook(() => useCollapsedSections("/clans/c1"));
+    expect(result.current.isOpen(core)).toBe(true);
+    act(() => result.current.toggle(core));
+    expect(result.current.isOpen(core)).toBe(false);
+    act(() => result.current.toggle(core));
+    expect(result.current.isOpen(core)).toBe(true);
+  });
+
+  it("đã gập thủ công mà chuyển sang trang khác trong nhóm thì nhóm tự mở lại", () => {
+    const core: DrawerSection = {
+      id: "clan-core",
+      label: "Họ Hồ",
+      defaultOpen: true,
+      items: [
+        { to: "/clans/c1", label: "Tổng quan", icon: null, end: true },
+        { to: "/clans/c1/tree", label: "Cây gia phả", icon: null },
+      ],
+    };
+    const { result, rerender } = renderHook(({ p }) => useCollapsedSections(p), {
+      initialProps: { p: "/clans/c1" },
+    });
+    act(() => result.current.toggle(core));
+    expect(result.current.isOpen(core)).toBe(false);
+    rerender({ p: "/clans/c1/tree" });
+    expect(result.current.isOpen(core)).toBe(true);
   });
 
   it("nhóm không gập được thì luôn mở", () => {

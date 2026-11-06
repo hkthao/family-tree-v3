@@ -111,6 +111,10 @@ function readState(): Record<string, boolean> {
  */
 export function useCollapsedSections(pathname: string) {
   const [state, setState] = useState<Record<string, boolean>>(readState);
+  // Nhóm người dùng VỪA BẤM gập khi đang ở một trang của chính nhóm đó → nhớ trang đó. Luật 2 ("nhóm
+  // chứa trang đang xem luôn mở") tạm nhường cho cú bấm này, nhưng chỉ cho tới khi chuyển trang: sang
+  // trang khác trong nhóm thì nhóm tự mở lại, nên không ai bị lạc.
+  const [forcedClosed, setForcedClosed] = useState<Record<string, string>>({});
 
   const isOpenById = useCallback(
     (section: DrawerSection) => {
@@ -120,14 +124,20 @@ export function useCollapsedSections(pathname: string) {
     [state],
   );
 
+  const isOpen = useCallback(
+    (section: DrawerSection) => {
+      if (section.collapsible === false) return true;
+      if (sectionHasPath(section, pathname) && forcedClosed[section.id] !== pathname) return true;
+      return isOpenById(section);
+    },
+    [isOpenById, pathname, forcedClosed],
+  );
+
   const toggle = useCallback(
     (section: DrawerSection) => {
+      const closing = isOpen(section);
       setState((prev) => {
-        const cur =
-          prev[section.id] === undefined
-            ? section.defaultOpen ?? true
-            : prev[section.id];
-        const next = { ...prev, [section.id]: !cur };
+        const next = { ...prev, [section.id]: !closing };
         try {
           localStorage.setItem(COLLAPSE_KEY, JSON.stringify(next));
         } catch {
@@ -135,17 +145,14 @@ export function useCollapsedSections(pathname: string) {
         }
         return next;
       });
+      setForcedClosed((prev) => {
+        const next = { ...prev };
+        if (closing && sectionHasPath(section, pathname)) next[section.id] = pathname;
+        else delete next[section.id];
+        return next;
+      });
     },
-    [],
-  );
-
-  const isOpen = useCallback(
-    (section: DrawerSection) => {
-      if (section.collapsible === false) return true;
-      if (sectionHasPath(section, pathname)) return true;
-      return isOpenById(section);
-    },
-    [isOpenById, pathname],
+    [isOpen, pathname],
   );
 
   return { isOpen, toggle };
@@ -328,7 +335,6 @@ export function buildSections(
     // ─── Nhóm lõi: đúng những mục vào hằng ngày ────────────────────
     // Cùng bộ với thanh tab dưới trên điện thoại, và cùng THỨ TỰ — hai
     // thanh điều hướng nói khác nhau thì người dùng phải học hai lần.
-    // KHÔNG gập được: gập rồi quên mở là mất đường vào Cây và Danh bạ.
     const topItems: DrawerItem[] = [
       {
         to: `/clans/${clanId}`,
@@ -369,7 +375,9 @@ export function buildSections(
       id: "clan-core",
       label: clan.name,
       items: topItems,
-      collapsible: false,
+      // Gập được (mặc định mở). Vẫn an toàn: nhóm chứa trang đang xem luôn tự mở (xem
+      // useCollapsedSections), nên gập rồi bấm vào Cây / Danh bạ thì nhóm mở lại, không ai lạc.
+      defaultOpen: true,
     });
 
     // ─── Hai nhóm gộp của dòng họ ──────────────────────────────────
