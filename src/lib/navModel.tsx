@@ -310,7 +310,9 @@ export function buildSections(
     id: "global",
     label: "Chung",
     items: global,
-    collapsible: false,
+    // Gập được (mặc định mở): nhóm dùng chung không phải thứ người ta cần hằng ngày bằng nhóm lõi
+    // của dòng họ, nên cho thu gọn để menu ngắn lại. Nhóm lõi của dòng họ (Cây, Danh bạ) vẫn không gập được.
+    defaultOpen: true,
   });
 
   if (clanId && clan) {
