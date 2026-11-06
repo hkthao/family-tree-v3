@@ -404,7 +404,7 @@ export function AiSettingsTab() {
                 {st && (
                   <>
                     <Button
-                      variant="ghost"
+                      variant="destructive-outline"
                       disabled={busy}
                       onClick={async () => {
                         const ok = await confirm({

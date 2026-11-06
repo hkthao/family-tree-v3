@@ -59,7 +59,7 @@ export function AdminShell({
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-5xl space-y-4 px-4 py-6">
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
         {/* Đường lui rõ ràng: trên điện thoại menu trái đang đóng, không
             có dòng này thì phải mở menu mới quay về được. */}
         <Link

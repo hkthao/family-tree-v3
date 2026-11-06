@@ -1,11 +1,34 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { Chip } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { IconTile } from "@/components/IconTile";
+import {
+  IconBellOff,
+  IconCalendar,
+  IconCheck,
+  IconClock,
+  IconMicrophone,
+  IconPencil,
+  IconRefresh,
+  IconSearch,
+  IconTag,
+} from "@/components/icons";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
+import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
-import { IconMicrophone, IconRefresh } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
+import { Select } from "@/components/ui/select";
+import { ViewEditActions } from "@/components/ui/view-edit-actions";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { unaccent } from "@/lib/unaccent";
 import { formatDateOnly, formatRelative } from "@/lib/formatDate";
 import {
   checkFacebookConnection,
@@ -61,6 +84,20 @@ export default function PodcastPage() {
       toast.error("Đồng bộ hỏng", { description: (e as Error).message }),
   });
 
+  const [search, setSearch] = useState("");
+  const [visibility, setVisibility] = useState<"" | "visible" | "hidden">("");
+  const [panel, setPanel] = useState<EpisodePanel>(null);
+  const episodes = episodesQ.data ?? [];
+  const filtered = useMemo(() => {
+    const needle = unaccent(search.trim());
+    return episodes.filter(
+      (ep) =>
+        (visibility === "" || (visibility === "visible") === ep.is_visible) &&
+        (!needle || unaccent(ep.title).includes(needle)),
+    );
+  }, [episodes, search, visibility]);
+  const paging = useClientPaging(filtered, 20);
+
   const status = statusQ.data;
   const lastSync = status?.lastSyncAt ? new Date(status.lastSyncAt) : null;
   const staleDays = lastSync
@@ -76,8 +113,8 @@ export default function PodcastPage() {
       <div className="space-y-4">
         <FacebookConnection />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card shadow-sm p-3">
-          <div className="text-sm">
+        <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="p-3 text-sm">
             <p className="font-medium">
               {lastSync
                 ? `Đồng bộ gần nhất: ${formatRelative(status!.lastSyncAt!)}`
@@ -89,17 +126,16 @@ export default function PodcastPage() {
               </p>
             )}
           </div>
-          <Button
-            type="button"
-            onClick={() => syncM.mutate()}
-            disabled={syncM.isPending}
-          >
-            <IconRefresh
-              className={`mr-1.5 h-4 w-4 ${syncM.isPending ? "animate-spin" : ""}`}
-            />
-            {syncM.isPending ? "Đang đồng bộ…" : "Đồng bộ ngay"}
-          </Button>
-        </div>
+          {/* Hành động của cả thẻ nằm ở chân thẻ — docs/design-language.md. */}
+          <div className="flex justify-end gap-2 border-t p-3">
+            <Button type="button" onClick={() => syncM.mutate()} disabled={syncM.isPending}>
+              <IconRefresh
+                className={`mr-1.5 h-4 w-4 ${syncM.isPending ? "animate-spin" : ""}`}
+              />
+              {syncM.isPending ? "Đang đồng bộ…" : "Đồng bộ ngay"}
+            </Button>
+          </div>
+        </section>
 
         {status?.lastError && (
           <Alert variant="destructive">
@@ -119,135 +155,271 @@ export default function PodcastPage() {
           </Alert>
         )}
 
+        <CollapsibleFilters
+          activeCount={visibility ? 1 : 0}
+          onReset={() => {
+            setVisibility("");
+            paging.patchAndResetPage({});
+          }}
+          title="Lọc tập"
+          search={(toggle) => (
+            <SearchInput
+              label="Tìm tập"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                paging.patchAndResetPage({});
+              }}
+              placeholder="Tìm theo tiêu đề tập…"
+              rightSlot={toggle}
+            />
+          )}
+        >
+          <div className="flex flex-col gap-3">
+            <Select
+              value={visibility}
+              onChange={(e) => {
+                setVisibility(e.target.value as "" | "visible" | "hidden");
+                paging.patchAndResetPage({});
+              }}
+              aria-label="Lọc theo hiển thị"
+              icon={<IconTag />}
+              className="h-11 w-full text-base"
+            >
+              <option value="">Cả hiện và ẩn</option>
+              <option value="visible">Đang hiện</option>
+              <option value="hidden">Đang ẩn</option>
+            </Select>
+          </div>
+        </CollapsibleFilters>
+
         {episodesQ.isLoading && (
-          <p className="text-sm text-muted-foreground">Đang tải…</p>
+          <div className="rounded-xl border bg-card p-4 shadow-sm">
+            <p className="text-muted-foreground">Đang tải…</p>
+          </div>
         )}
 
-        <ul className="space-y-2">
-          {(episodesQ.data ?? []).map((ep) => (
-            <EpisodeRow key={ep.id} episode={ep} />
-          ))}
-        </ul>
-
-        {episodesQ.data?.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Chưa có tập nào trong kho. Bấm "Đồng bộ ngay" để kéo về.
-          </p>
+        {!episodesQ.isLoading && filtered.length === 0 && (
+          <EmptyState
+            icon={<IconSearch className="h-10 w-10" />}
+            title={episodes.length === 0 ? "Chưa có tập nào trong kho" : "Không có tập nào khớp"}
+            description={
+              episodes.length === 0
+                ? 'Bấm "Đồng bộ ngay" để kéo về.'
+                : "Thử bỏ bớt bộ lọc hoặc từ khoá."
+            }
+          />
         )}
+
+        {filtered.length > 0 && (
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+            {paging.paged.map((ep) => (
+              <EpisodeRowItem
+                key={ep.id}
+                episode={ep}
+                onOpen={() => setPanel({ mode: "view", episode: ep })}
+              />
+            ))}
+          </ul>
+        )}
+
+        {filtered.length > 0 && (
+          <Pagination
+            page={paging.page}
+            totalPages={paging.totalPages}
+            total={paging.total}
+            pageSize={paging.pageSize}
+            unit="tập"
+            onPageChange={paging.setPage}
+            pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+            onPageSizeChange={paging.setPageSize}
+          />
+        )}
+
+        <SidePanel
+          open={panel !== null}
+          title={panel?.mode === "edit" ? "Sửa tập" : "Tập podcast"}
+          subtitle={panel?.episode.title}
+          onClose={() => setPanel(null)}
+          guard={panel?.mode === "edit"}
+        >
+          {panel && (
+            <EpisodeForm
+              key={`${panel.mode}-${panel.episode.id}`}
+              episode={panel.episode}
+              readOnly={panel.mode === "view"}
+              onEdit={() => setPanel({ mode: "edit", episode: panel.episode })}
+              onCancel={() =>
+                setPanel(panel.mode === "edit" ? { mode: "view", episode: panel.episode } : null)
+              }
+              onSaved={() => setPanel(null)}
+            />
+          )}
+        </SidePanel>
       </div>
     </AdminShell>
   );
 }
 
-function EpisodeRow({ episode }: { episode: PodcastEpisode }) {
-  const qc = useQueryClient();
-  const toast = useToast();
-  const [title, setTitle] = useState(episode.title);
-  const [editing, setEditing] = useState(false);
+/** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa một tập. */
+type EpisodePanel = { mode: "view" | "edit"; episode: PodcastEpisode } | null;
 
-  const saveM = useMutation({
-    mutationFn: (patch: { title?: string; is_visible?: boolean }) =>
-      updatePodcastEpisode(episode.id, patch),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] });
-      qc.invalidateQueries({ queryKey: ["podcast-episodes"] });
-      qc.invalidateQueries({ queryKey: ["podcast-latest"] });
-      setEditing(false);
-    },
-    onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
-  });
-
+function EpisodeRowItem({ episode, onOpen }: { episode: PodcastEpisode; onOpen: () => void }) {
   const duration = formatDuration(episode.duration_seconds);
-
   return (
-    <li
-      className={`rounded-md border p-3 ${
-        episode.is_visible ? "bg-card" : "bg-muted/40"
-      }`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <li className={episode.is_visible ? "" : "bg-muted/30"}>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
         {/* Ảnh bìa ngay trong danh sách: admin cần NHÌN THẤY cái mà người
             dùng sẽ thấy, nhất là khi ảnh bìa lấy từ Facebook và URL có
             hạn dùng — hỏng ảnh thì phải phát hiện ở đây. */}
-        {episode.thumbnail_url && (
+        {episode.thumbnail_url ? (
           <img
             src={episode.thumbnail_url}
             alt=""
-            className="h-20 w-[45px] shrink-0 rounded object-cover"
             loading="lazy"
+            className="min-h-14 w-14 shrink-0 self-stretch rounded-lg border object-cover"
           />
+        ) : (
+          <IconTile icon={IconMicrophone} tone="violet" />
         )}
         <div className="min-w-0 flex-1">
-          {editing ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="sm:w-96"
-                aria-label="Tiêu đề tập"
-              />
-              <Button
-                size="sm"
-                onClick={() => saveM.mutate({ title: title.trim() })}
-                disabled={saveM.isPending || !title.trim()}
-              >
-                Lưu
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setTitle(episode.title);
-                  setEditing(false);
-                }}
-              >
-                Huỷ
-              </Button>
-            </div>
-          ) : (
-            <p className="font-medium leading-snug">{episode.title}</p>
-          )}
-          <p className="mt-1 text-xs text-muted-foreground">
-            {[
-              formatDateOnly(episode.published_at),
-              duration,
-              episode.title_edited && "tiêu đề đã sửa tay",
-              !episode.is_visible && "đang ẩn",
-            ]
-              .filter(Boolean)
-              .join(" · ")}
+          <p className="line-clamp-2 font-medium leading-snug">{episode.title}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground/80">
+            {[formatDateOnly(episode.published_at), duration].filter(Boolean).join(" · ")}
           </p>
-          <a
-            href={episode.permalink_url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs text-primary hover:underline"
-          >
-            Mở trên Facebook →
-          </a>
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            {episode.title_edited && (
+              <Chip tone="warning" icon={<IconPencil />}>
+                Tiêu đề đã sửa tay
+              </Chip>
+            )}
+            <Chip
+              tone={episode.is_visible ? "success" : "neutral"}
+              icon={episode.is_visible ? <IconCheck /> : <IconBellOff />}
+            >
+              {episode.is_visible ? "Đang hiện" : "Đang ẩn"}
+            </Chip>
+          </div>
         </div>
-
-        <div className="flex shrink-0 gap-2">
-          {!editing && (
-            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-              Sửa tiêu đề
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant={episode.is_visible ? "outline" : "default"}
-            onClick={() => saveM.mutate({ is_visible: !episode.is_visible })}
-            disabled={saveM.isPending}
-          >
-            {episode.is_visible ? "Ẩn" : "Hiện lại"}
-          </Button>
-        </div>
-      </div>
+      </button>
     </li>
   );
 }
 
+function EpisodeForm({
+  episode,
+  readOnly,
+  onEdit,
+  onCancel,
+  onSaved,
+}: {
+  episode: PodcastEpisode;
+  readOnly: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSaved: () => void;
+}) {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [title, setTitle] = useState(episode.title);
+  const [visible, setVisible] = useState(episode.is_visible);
+
+  const changed = title.trim() !== episode.title || visible !== episode.is_visible;
+
+  const saveM = useMutation({
+    mutationFn: () =>
+      updatePodcastEpisode(episode.id, {
+        ...(title.trim() !== episode.title ? { title: title.trim() } : {}),
+        ...(visible !== episode.is_visible ? { is_visible: visible } : {}),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] });
+      qc.invalidateQueries({ queryKey: ["podcast-episodes"] });
+      qc.invalidateQueries({ queryKey: ["podcast-latest"] });
+      toast.success("Đã cập nhật tập");
+      onSaved();
+    },
+    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (changed && title.trim()) saveM.mutate();
+      }}
+    >
+      <ReadOnlyFieldset readOnly={readOnly}>
+        <div className="space-y-1.5">
+          <Label htmlFor="ep-title" required>
+            Tiêu đề tập
+          </Label>
+          <Input
+            id="ep-title"
+            icon={<IconMicrophone />}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="ep-date">Ngày đăng</Label>
+            <Input
+              id="ep-date"
+              icon={<IconCalendar />}
+              value={formatDateOnly(episode.published_at) ?? ""}
+              readOnly
+            />
+          </div>
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="ep-dur">Thời lượng</Label>
+            <Input
+              id="ep-dur"
+              icon={<IconClock />}
+              value={formatDuration(episode.duration_seconds) ?? ""}
+              readOnly
+            />
+          </div>
+        </div>
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={visible}
+            onChange={(e) => setVisible(e.target.checked)}
+            className="mt-1 h-4 w-4 accent-primary"
+          />
+          <span>
+            <span className="font-medium">Hiện trên trang Podcast</span>
+            <span className="block text-sm text-muted-foreground">
+              Bỏ chọn để ẩn tập không phù hợp (không xoá khỏi kho).
+            </span>
+          </span>
+        </label>
+      </ReadOnlyFieldset>
+      <a
+        href={episode.permalink_url}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-block text-sm text-primary hover:underline"
+      >
+        Mở trên Facebook →
+      </a>
+
+      <ViewEditActions
+        readOnly={readOnly}
+        onEdit={onEdit}
+        onCancel={onCancel}
+        saving={saveM.isPending}
+        canSave={changed && !!title.trim()}
+      />
+    </form>
+  );
+}
 
 /**
  * Kết nối Facebook.
@@ -338,21 +510,6 @@ function FacebookConnection() {
             </p>
           )}
         </div>
-        <div className="flex shrink-0 gap-2">
-          {active && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => checkM.mutate()}
-              disabled={checkM.isPending}
-            >
-              {checkM.isPending ? "Đang kiểm tra…" : "Kiểm tra token"}
-            </Button>
-          )}
-          <Button size="sm" variant="outline" onClick={() => setOpen((v) => !v)}>
-            {open ? "Đóng" : active ? "Nối lại" : "Nối Trang"}
-          </Button>
-        </div>
       </div>
 
       {active && !active.last_check_ok && active.last_check_error && (
@@ -434,6 +591,21 @@ function FacebookConnection() {
           )}
         </div>
       )}
+      <div className="flex flex-wrap justify-end gap-2 border-t pt-3">
+        {active && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => checkM.mutate()}
+            disabled={checkM.isPending}
+          >
+            {checkM.isPending ? "Đang kiểm tra…" : "Kiểm tra token"}
+          </Button>
+        )}
+        <Button size="sm" variant={active ? "outline" : "default"} onClick={() => setOpen((v) => !v)}>
+          {open ? "Đóng" : active ? "Nối lại" : "Nối Trang"}
+        </Button>
+      </div>
     </section>
   );
 }

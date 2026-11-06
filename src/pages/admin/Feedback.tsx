@@ -2,29 +2,49 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Chip, type ChipTone } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { IconTile } from "@/components/IconTile";
 import {
+  IconBell,
+  IconBellOff,
+  IconCalendar,
   IconCheck,
-  IconRefresh,
+  IconFlame,
+  IconHelp,
+  IconMail,
   IconScroll,
+  IconSearch,
+  IconSparkles,
+  IconTag,
+  IconUser,
 } from "@/components/icons";
+import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
+import { SidePanel } from "@/components/SidePanel";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ViewEditActions } from "@/components/ui/view-edit-actions";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox } from "@/hooks/useClientPaging";
 import { useUrlState } from "@/hooks/useUrlState";
-import {
-} from "@/lib/queries/announcements";
 import {
   getFeedbackSenders,
   listFeedback,
   updateFeedback,
+  type FeedbackCategory,
   type FeedbackRow,
   type FeedbackSender,
   type FeedbackStatus,
 } from "@/lib/queries/feedback";
 import { queryKeys } from "@/lib/queries/keys";
-import type { FeedbackCategory } from "@/lib/queries/feedback";
 import { unaccent } from "@/lib/unaccent";
+import { RefreshIconButton } from "@/pages/admin/shared";
 
 const FEEDBACK_STATUS_LABEL: Record<FeedbackStatus, string> = {
   new: "Mới",
@@ -40,14 +60,43 @@ const FEEDBACK_CATEGORY_LABEL: Record<FeedbackCategory, string> = {
   other: "Khác",
 };
 
-const FEEDBACK_STATUS_BADGE: Record<FeedbackStatus, string> = {
-  new: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
-  seen: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
-  resolved: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-  spam: "bg-muted text-muted-foreground border-border",
+/** Màu chip + icon trạng thái: mới = vàng (cần xem); xử lý xong = xanh; spam = xám. */
+const STATUS_STYLE: Record<
+  FeedbackStatus,
+  { tone: ChipTone; icon: React.ComponentType<{ className?: string }> }
+> = {
+  new: { tone: "warning", icon: IconBell },
+  seen: { tone: "info", icon: IconCheck },
+  resolved: { tone: "success", icon: IconCheck },
+  spam: { tone: "neutral", icon: IconBellOff },
 };
 
+const CATEGORY_STYLE: Record<
+  FeedbackCategory,
+  { tone: ChipTone; icon: React.ComponentType<{ className?: string }> }
+> = {
+  bug: { tone: "danger", icon: IconFlame },
+  idea: { tone: "info", icon: IconSparkles },
+  question: { tone: "violet", icon: IconHelp },
+  other: { tone: "neutral", icon: IconMail },
+};
+
+const STATUSES = ["all", "new", "seen", "resolved", "spam"] as const;
+
+/** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa (đổi trạng thái / ghi chú nội bộ). */
+type PanelState = { mode: "view" | "edit"; row: FeedbackRow } | null;
+
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 export function FeedbackTab() {
+  const qc = useQueryClient();
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: queryKeys.adminFeedback(),
     queryFn: () => listFeedback(),
@@ -61,45 +110,39 @@ export function FeedbackTab() {
     queryFn: () => getFeedbackSenders(senderIds),
     enabled: senderIds.some(Boolean),
   });
-  const [search, setSearch] = useUrlState("q", "");
-  const [statusRaw, setStatusFilter] = useUrlState("status", "new");
+
+  const { q, text, setText } = useSearchBox();
+  const [statusRaw] = useUrlState("status", "new");
   const statusFilter = (
-    ["all", "new", "seen", "resolved", "spam"].includes(statusRaw)
-      ? statusRaw
-      : "new"
+    (STATUSES as readonly string[]).includes(statusRaw) ? statusRaw : "new"
   ) as FeedbackStatus | "all";
+  const [panel, setPanel] = useState<PanelState>(null);
+  const closePanel = () => setPanel(null);
 
   const filtered = useMemo(() => {
-    if (!data) return [];
-    let rows = data;
-    if (statusFilter !== "all") {
-      rows = rows.filter((r) => r.status === statusFilter);
-    }
-    if (search.trim()) {
-      const needle = unaccent(search);
-      rows = rows.filter((r) => {
-        const hay = unaccent(
-          `${r.message} ${r.contact ?? ""} ${r.page_path ?? ""} ${r.admin_note ?? ""}`,
-        );
-        return hay.includes(needle);
-      });
-    }
-    return rows;
-  }, [data, search, statusFilter]);
+    const needle = unaccent(q.trim());
+    return (data ?? []).filter((r) => {
+      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (!needle) return true;
+      return unaccent(
+        `${r.message} ${r.contact ?? ""} ${r.page_path ?? ""} ${r.admin_note ?? ""}`,
+      ).includes(needle);
+    });
+  }, [data, q, statusFilter]);
+  const paging = useClientPaging(filtered, 20);
 
   const counts = useMemo(() => {
-    const c: Record<FeedbackStatus, number> = {
-      new: 0,
-      seen: 0,
-      resolved: 0,
-      spam: 0,
-    };
+    const c: Record<FeedbackStatus, number> = { new: 0, seen: 0, resolved: 0, spam: 0 };
     for (const r of data ?? []) c[r.status]++;
     return c;
   }, [data]);
 
   if (isLoading) {
-    return <p className="text-muted-foreground">Đang tải…</p>;
+    return (
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <p className="text-muted-foreground">Đang tải…</p>
+      </div>
+    );
   }
   if (error) {
     return (
@@ -109,250 +152,312 @@ export function FeedbackTab() {
     );
   }
 
+  const senderOf = (r: FeedbackRow) => (r.user_id ? senders?.get(r.user_id) : undefined);
+
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-sm text-muted-foreground">
-          Tổng <strong>{data?.length ?? 0}</strong> phản hồi
-          {(data?.length ?? 0) >= 500 && " (đang giới hạn 500 mới nhất)"}
-          .
-        </p>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          aria-label="Tải lại"
-          title={isFetching ? "Đang tải…" : "Tải lại"}
-          className="h-9 w-9 p-0"
-        >
-          <IconRefresh
-            className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`}
+    <div className="space-y-3">
+      {/* Trạng thái nằm trong ngăn kéo của phễu (mặc định chỉ xem "Mới") — như Danh bạ. */}
+      <CollapsibleFilters
+        activeCount={statusFilter !== "new" ? 1 : 0}
+        onReset={() => paging.patchAndResetPage({ status: null })}
+        title="Lọc góp ý"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm trong nội dung / liên hệ / ghi chú"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Tìm theo nội dung, email/SĐT, hoặc ghi chú admin…"
+            className="pr-[4.75rem]"
+            rightSlot={
+              <>
+                {toggle}
+                <RefreshIconButton onClick={() => refetch()} busy={isFetching} compact />
+              </>
+            }
           />
-        </Button>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {(["all", "new", "seen", "resolved", "spam"] as const).map((s) => {
-          const active = statusFilter === s;
-          const label = s === "all" ? "Tất cả" : FEEDBACK_STATUS_LABEL[s];
-          const count = s === "all" ? data?.length ?? 0 : counts[s];
-          return (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatusFilter(s)}
-              className={`px-3 h-9 rounded-md border text-sm transition-colors ${
-                active
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "hover:bg-muted/40"
-              }`}
-            >
-              {label}{" "}
-              <span className={active ? "opacity-80" : "text-muted-foreground"}>
-                ({count})
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      <SearchInput
-        label="Tìm trong nội dung / liên hệ / ghi chú"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm theo nội dung, email/SĐT, hoặc ghi chú admin…"
-      />
-      {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic">
-          {data?.length === 0
-            ? "Chưa có phản hồi nào — chờ early users gửi."
-            : "Không khớp bộ lọc hiện tại."}
-        </p>
-      ) : (
-        <ul className="space-y-3">
-          {filtered.map((row) => (
-            <FeedbackRowCard
-              key={row.id}
-              row={row}
-              sender={row.user_id ? senders?.get(row.user_id) : undefined}
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={statusFilter}
+            onChange={(e) => paging.patchAndResetPage({ status: e.target.value })}
+            aria-label="Lọc theo trạng thái"
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
+          >
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s === "all" ? "Tất cả" : FEEDBACK_STATUS_LABEL[s]} ({s === "all" ? (data?.length ?? 0) : counts[s]})
+              </option>
+            ))}
+          </Select>
+          {(data?.length ?? 0) >= 500 && (
+            <p className="text-xs text-muted-foreground">Đang giới hạn 500 góp ý mới nhất.</p>
+          )}
+        </div>
+      </CollapsibleFilters>
+
+      {filtered.length === 0 && (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title={
+            data?.length === 0 ? "Chưa có góp ý nào" : "Không có góp ý nào khớp"
+          }
+          description={
+            data?.length === 0
+              ? "Chờ người dùng gửi."
+              : "Thử đổi trạng thái hoặc bỏ bớt từ khoá."
+          }
+        />
+      )}
+
+      {filtered.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paging.paged.map((r) => (
+            <FeedbackRowItem
+              key={r.id}
+              row={r}
+              sender={senderOf(r)}
+              onOpen={() => setPanel({ mode: "view", row: r })}
             />
           ))}
         </ul>
       )}
-    </section>
+
+      {filtered.length > 0 && (
+        <Pagination
+          page={paging.page}
+          totalPages={paging.totalPages}
+          total={paging.total}
+          pageSize={paging.pageSize}
+          unit="góp ý"
+          onPageChange={paging.setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={paging.setPageSize}
+        />
+      )}
+
+      <SidePanel
+        open={panel !== null}
+        title={panel?.mode === "edit" ? "Xử lý góp ý" : "Góp ý"}
+        subtitle={panel ? formatTime(panel.row.created_at) : undefined}
+        onClose={closePanel}
+        guard={panel?.mode === "edit"}
+      >
+        {panel && (
+          <FeedbackForm
+            key={`${panel.mode}-${panel.row.id}`}
+            row={panel.row}
+            sender={senderOf(panel.row)}
+            readOnly={panel.mode === "view"}
+            onEdit={() => setPanel({ mode: "edit", row: panel.row })}
+            onCancel={() =>
+              setPanel(panel.mode === "edit" ? { mode: "view", row: panel.row } : null)
+            }
+            onSaved={() => {
+              closePanel();
+              qc.invalidateQueries({ queryKey: queryKeys.adminFeedback() });
+            }}
+          />
+        )}
+      </SidePanel>
+    </div>
   );
 }
 
-function FeedbackRowCard({
+function FeedbackRowItem({
   row,
   sender,
+  onOpen,
 }: {
   row: FeedbackRow;
   sender?: FeedbackSender;
+  onOpen: () => void;
 }) {
-  const qc = useQueryClient();
-  const [note, setNote] = useState(row.admin_note ?? "");
-  const [showNote, setShowNote] = useState(!!row.admin_note);
-
-  const mutation = useMutation({
-    mutationFn: (patch: { status?: FeedbackStatus; admin_note?: string | null }) =>
-      updateFeedback(row.id, patch),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: queryKeys.adminFeedback() }),
-  });
-
+  const st = STATUS_STYLE[row.status];
+  const cat = CATEGORY_STYLE[row.category];
+  const StatusIcon = st.icon;
+  const CatIcon = cat.icon;
+  const who = row.user_id
+    ? (sender?.display_name || sender?.email || "Người dùng")
+    : "Khách (chưa đăng nhập)";
   return (
-    <li className="rounded-xl border bg-card shadow-sm p-3 sm:p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${FEEDBACK_STATUS_BADGE[row.status]}`}
-          >
-            {FEEDBACK_STATUS_LABEL[row.status]}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {FEEDBACK_CATEGORY_LABEL[row.category]}
-          </span>
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={CatIcon} tone={cat.tone} />
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-2 whitespace-pre-line font-medium">{row.message}</p>
+          <p className="mt-0.5 truncate text-sm text-muted-foreground">{who}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground/80 tabular-nums">{formatTime(row.created_at)}</p>
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <Chip tone={cat.tone} icon={<CatIcon />}>
+              {FEEDBACK_CATEGORY_LABEL[row.category]}
+            </Chip>
+            <Chip tone={st.tone} icon={<StatusIcon />}>
+              {FEEDBACK_STATUS_LABEL[row.status]}
+            </Chip>
+          </div>
         </div>
-        <time
-          className="text-xs text-muted-foreground shrink-0 tabular-nums"
-          dateTime={row.created_at}
-          title={row.created_at}
-        >
-          {new Date(row.created_at).toLocaleString("vi-VN", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </time>
-      </div>
-
-      <p className="whitespace-pre-wrap text-sm leading-relaxed">
-        {row.message}
-      </p>
-
-      <dl className="text-xs text-muted-foreground grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5">
-        {row.contact && (
-          <>
-            <dt>Liên lạc:</dt>
-            <dd className="break-all">{row.contact}</dd>
-          </>
-        )}
-        {row.user_id ? (
-          <>
-            <dt>Người gửi:</dt>
-            <dd className="break-all">
-              <span className="text-foreground font-medium">
-                {sender?.display_name || sender?.email || "(đang tải…)"}
-              </span>
-              {sender?.email && sender?.display_name && (
-                <span className="text-muted-foreground"> · {sender.email}</span>
-              )}
-              {/* Mở thẳng tab Quản trị → Người dùng, lọc sẵn theo email để
-                  xem dòng họ của họ + chỉnh giới hạn (vd mở khoá max_clans). */}
-              {sender?.email && (
-                <Link
-                  to={`/admin?tab=users&q=${encodeURIComponent(sender.email)}`}
-                  className="ml-2 text-primary hover:underline"
-                >
-                  Quản lý ↗
-                </Link>
-              )}
-              <span className="block font-mono opacity-50">{row.user_id}</span>
-            </dd>
-          </>
-        ) : (
-          <>
-            <dt>Người gửi:</dt>
-            <dd className="italic">khách (chưa đăng nhập)</dd>
-          </>
-        )}
-        {row.clan_id && (
-          <>
-            <dt>Clan:</dt>
-            <dd>
-              <Link
-                to={`/clans/${row.clan_id}`}
-                className="text-primary hover:underline font-mono break-all"
-              >
-                {row.clan_id} ↗
-              </Link>
-            </dd>
-          </>
-        )}
-        {row.page_path && (
-          <>
-            <dt>Trang:</dt>
-            <dd className="font-mono break-all">{row.page_path}</dd>
-          </>
-        )}
-        {row.app_version && (
-          <>
-            <dt>Phiên bản:</dt>
-            <dd className="font-mono">{row.app_version}</dd>
-          </>
-        )}
-        {row.user_agent && (
-          <>
-            <dt>UA:</dt>
-            <dd className="break-all opacity-70">{row.user_agent}</dd>
-          </>
-        )}
-      </dl>
-
-      <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t">
-        {(["seen", "resolved", "spam"] as FeedbackStatus[]).map((s) => {
-          const active = row.status === s;
-          return (
-            <Button
-              key={s}
-              size="sm"
-              variant={active ? "default" : "outline"}
-              disabled={mutation.isPending}
-              onClick={() => mutation.mutate({ status: s })}
-            >
-              {active && <IconCheck className="h-4 w-4 mr-1.5" />}
-              {FEEDBACK_STATUS_LABEL[s]}
-            </Button>
-          );
-        })}
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setShowNote((v) => !v)}
-        >
-          <IconScroll className="h-4 w-4 mr-1.5" />
-          {showNote ? "Ẩn ghi chú" : "Ghi chú"}
-        </Button>
-      </div>
-
-      {showNote && (
-        <div className="space-y-2">
-          <Textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ghi chú nội bộ (chỉ admin xem)…"
-            rows={2}
-            maxLength={4000}
-            className="text-sm resize-y"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={mutation.isPending || note === (row.admin_note ?? "")}
-            onClick={() =>
-              mutation.mutate({ admin_note: note.trim() || null })
-            }
-          >
-            <IconCheck className="h-4 w-4 mr-1.5" />
-            Lưu ghi chú
-          </Button>
-        </div>
-      )}
+      </button>
     </li>
   );
 }
 
-// ───────────── Announcements admin tab (§32.2) ──────────────────────
+function FeedbackForm({
+  row,
+  sender,
+  readOnly,
+  onEdit,
+  onCancel,
+  onSaved,
+}: {
+  row: FeedbackRow;
+  sender?: FeedbackSender;
+  readOnly: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSaved: () => void;
+}) {
+  const toast = useToast();
+  const [status, setStatus] = useState<FeedbackStatus>(row.status);
+  const [note, setNote] = useState(row.admin_note ?? "");
 
+  const changed = status !== row.status || note.trim() !== (row.admin_note ?? "").trim();
+
+  const saveM = useMutation({
+    mutationFn: () =>
+      updateFeedback(row.id, {
+        ...(status !== row.status ? { status } : {}),
+        admin_note: note.trim() || null,
+      }),
+    onSuccess: () => {
+      toast.success("Đã cập nhật góp ý");
+      onSaved();
+    },
+    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (changed) saveM.mutate();
+      }}
+    >
+      <ReadOnlyFieldset readOnly={readOnly}>
+        <div className="space-y-1.5">
+          <Label htmlFor="fb-msg">Nội dung</Label>
+          <Textarea id="fb-msg" value={row.message} readOnly />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="fb-cat">Phân loại</Label>
+            <Input id="fb-cat" icon={<IconTag />} value={FEEDBACK_CATEGORY_LABEL[row.category]} readOnly />
+          </div>
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="fb-time">Thời gian</Label>
+            <Input id="fb-time" icon={<IconCalendar />} value={formatTime(row.created_at)} readOnly />
+          </div>
+        </div>
+        {row.contact && (
+          <div className="space-y-1.5">
+            <Label htmlFor="fb-contact">Liên lạc</Label>
+            <Input id="fb-contact" icon={<IconMail />} value={row.contact} readOnly />
+          </div>
+        )}
+        <div className="space-y-1.5">
+          <Label htmlFor="fb-sender">Người gửi</Label>
+          <Input
+            id="fb-sender"
+            icon={<IconUser />}
+            value={
+              row.user_id
+                ? [sender?.display_name, sender?.email].filter(Boolean).join(" · ") || "(đang tải…)"
+                : "Khách (chưa đăng nhập)"
+            }
+            readOnly
+          />
+          {/* Mở thẳng Người dùng, lọc sẵn theo email để xem dòng họ + chỉnh giới hạn. */}
+          {sender?.email && (
+            <Link
+              to={`/admin/nguoi-dung?q=${encodeURIComponent(sender.email)}`}
+              className="inline-block text-sm text-primary hover:underline"
+            >
+              Quản lý người dùng này ↗
+            </Link>
+          )}
+        </div>
+        {row.clan_id && (
+          <div className="space-y-1.5">
+            <Label htmlFor="fb-clan">Dòng họ</Label>
+            <Input id="fb-clan" value={row.clan_id} readOnly className="font-mono text-xs" />
+            <Link to={`/clans/${row.clan_id}`} className="inline-block text-sm text-primary hover:underline">
+              Mở dòng họ ↗
+            </Link>
+          </div>
+        )}
+        {(row.page_path || row.app_version) && (
+          <div className="grid grid-cols-1 gap-3">
+            {row.page_path && (
+              <div className="space-y-1.5">
+                <Label htmlFor="fb-page">Trang</Label>
+                <Input id="fb-page" value={row.page_path} readOnly className="font-mono text-xs" />
+              </div>
+            )}
+            {row.app_version && (
+              <div className="space-y-1.5">
+                <Label htmlFor="fb-ver">Phiên bản</Label>
+                <Input id="fb-ver" value={row.app_version} readOnly className="font-mono text-xs" />
+              </div>
+            )}
+          </div>
+        )}
+        {row.user_agent && <p className="break-all text-xs text-muted-foreground/70">UA: {row.user_agent}</p>}
+
+        <div className="space-y-1.5">
+          <Label htmlFor="fb-status">Trạng thái</Label>
+          <Select
+            id="fb-status"
+            icon={<IconCheck />}
+            value={status}
+            onChange={(e) => setStatus(e.target.value as FeedbackStatus)}
+          >
+            {(Object.keys(FEEDBACK_STATUS_LABEL) as FeedbackStatus[]).map((s) => (
+              <option key={s} value={s}>
+                {FEEDBACK_STATUS_LABEL[s]}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="fb-note">Ghi chú nội bộ (chỉ admin xem)</Label>
+          <Textarea
+            id="fb-note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Ghi chú nội bộ…"
+            maxLength={4000}
+          />
+        </div>
+        {readOnly && !row.admin_note && (
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <IconScroll className="h-3.5 w-3.5" /> Chưa có ghi chú nội bộ.
+          </p>
+        )}
+      </ReadOnlyFieldset>
+
+      <ViewEditActions
+        readOnly={readOnly}
+        onEdit={onEdit}
+        onCancel={onCancel}
+        saving={saveM.isPending}
+        canSave={changed}
+      />
+    </form>
+  );
+}

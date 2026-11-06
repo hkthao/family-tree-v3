@@ -1,23 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { Chip, type ChipTone } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { useConfirm } from "@/components/ConfirmDialog";
-import { useToast } from "@/components/Toast";
+import { EmptyState } from "@/components/EmptyState";
+import { Fab } from "@/components/Fab";
+import { IconTile } from "@/components/IconTile";
 import {
+  IconBell,
   IconCalendar,
   IconCheck,
   IconClock,
+  IconGlobe,
   IconPencil,
-  IconPlus,
   IconScroll,
-  IconTrash,
-  IconX,
+  IconSearch,
+  IconTag,
 } from "@/components/icons";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
+import { SidePanel } from "@/components/SidePanel";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ViewEditActions } from "@/components/ui/view-edit-actions";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
 import {
   createAnnouncement,
   deleteAnnouncement,
@@ -27,6 +39,7 @@ import {
   type AnnouncementLevel,
 } from "@/lib/queries/announcements";
 import { queryKeys } from "@/lib/queries/keys";
+import { unaccent } from "@/lib/unaccent";
 
 const ANNOUNCEMENT_LEVELS: Array<{ value: AnnouncementLevel; label: string }> = [
   { value: "info", label: "Tin" },
@@ -35,10 +48,54 @@ const ANNOUNCEMENT_LEVELS: Array<{ value: AnnouncementLevel; label: string }> = 
   { value: "critical", label: "Quan trọng" },
 ];
 
+const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
+  info: "info",
+  update: "primary",
+  warning: "warning",
+  critical: "danger",
+};
+
+type StatusKey = "draft" | "expired" | "scheduled" | "live";
+
+const STATUS_LABEL: Record<StatusKey, string> = {
+  draft: "Nháp",
+  expired: "Hết hạn",
+  scheduled: "Lên lịch",
+  live: "Đang đăng",
+};
+
+/** Nháp = xám; hết hạn = xám; lên lịch = vàng; đang đăng = xanh. */
+const STATUS_TONE: Record<StatusKey, ChipTone> = {
+  draft: "neutral",
+  expired: "neutral",
+  scheduled: "warning",
+  live: "success",
+};
+
+function statusOf(row: Announcement): StatusKey {
+  const now = Date.now();
+  if (row.published_at === null) return "draft";
+  if (row.expires_at !== null && new Date(row.expires_at).getTime() < now) return "expired";
+  if (new Date(row.published_at).getTime() > now) return "scheduled";
+  return "live";
+}
+
+/** Trạng thái ngăn kéo: tạo mới, xem (chỉ đọc) hoặc sửa một tin. */
+type PanelState =
+  | { mode: "new" }
+  | { mode: "view" | "edit"; row: Announcement }
+  | null;
+
+const fmt = (iso: string) => new Date(iso).toLocaleString("vi-VN");
+
 export function AnnouncementsAdminTab() {
   const qc = useQueryClient();
   const confirm = useConfirm();
   const toast = useToast();
+  const [panel, setPanel] = useState<PanelState>(null);
+  const closePanel = () => setPanel(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusKey | "">("");
 
   const listQ = useQuery({
     queryKey: queryKeys.adminAnnouncements(),
@@ -46,184 +103,238 @@ export function AnnouncementsAdminTab() {
     staleTime: 30_000,
   });
 
-  const [editing, setEditing] = useState<Announcement | "new" | null>(null);
+  const filtered = useMemo(() => {
+    const needle = unaccent(search.trim());
+    return (listQ.data ?? []).filter(
+      (r) =>
+        (!statusFilter || statusOf(r) === statusFilter) &&
+        (!needle || unaccent(`${r.title} ${r.body}`).includes(needle)),
+    );
+  }, [listQ.data, search, statusFilter]);
+  const paging = useClientPaging(filtered, 20);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: queryKeys.adminAnnouncements() });
     qc.invalidateQueries({ queryKey: queryKeys.announcements() });
     qc.invalidateQueries({ queryKey: queryKeys.publicAnnouncements() });
-    qc.invalidateQueries({
-      queryKey: queryKeys.announcementsUnreadCount(),
-    });
+    qc.invalidateQueries({ queryKey: queryKeys.announcementsUnreadCount() });
   };
 
   const deleteM = useMutation({
     mutationFn: (id: string) => deleteAnnouncement(id),
     onSuccess: () => {
       invalidate();
+      closePanel();
       toast.success("Đã xoá tin");
     },
-    onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <p className="text-sm text-muted-foreground">
-          Tổng <strong>{listQ.data?.length ?? 0}</strong> tin
-          {listQ.data && ` (gồm nháp/đã hết hạn)`}.
-        </p>
-        <Button size="sm" onClick={() => setEditing("new")}>
-          <IconPlus className="h-4 w-4 mr-1.5" />
-          Tin mới
-        </Button>
-      </div>
+    <div className="space-y-3">
+      <Fab onClick={() => setPanel({ mode: "new" })} label="Tin mới" />
+
+      <CollapsibleFilters
+        activeCount={statusFilter ? 1 : 0}
+        onReset={() => {
+          setStatusFilter("");
+          paging.patchAndResetPage({});
+        }}
+        title="Lọc thông báo"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm thông báo"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              paging.patchAndResetPage({});
+            }}
+            placeholder="Tìm theo tiêu đề / nội dung…"
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as StatusKey | "");
+              paging.patchAndResetPage({});
+            }}
+            aria-label="Lọc theo trạng thái"
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">Mọi trạng thái</option>
+            {(Object.keys(STATUS_LABEL) as StatusKey[]).map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABEL[s]}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </CollapsibleFilters>
 
       {listQ.isLoading && (
-        <p className="text-muted-foreground">Đang tải…</p>
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
       )}
       {listQ.error && (
         <Alert variant="destructive">
-          <AlertDescription>
-            {(listQ.error as Error).message}
-          </AlertDescription>
+          <AlertDescription>{(listQ.error as Error).message}</AlertDescription>
         </Alert>
       )}
 
-      {editing && (
-        <AnnouncementEditor
-          row={editing === "new" ? null : editing}
-          onClose={() => setEditing(null)}
-          onSaved={() => {
-            invalidate();
-            setEditing(null);
-          }}
+      {!listQ.isLoading && filtered.length === 0 && (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title={
+            listQ.data?.length ? "Không có thông báo nào khớp" : "Chưa có thông báo nào"
+          }
+          description={
+            listQ.data?.length ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : "Bấm nút '+' để viết tin đầu tiên."
+          }
         />
       )}
 
-      <ul className="space-y-3">
-        {(listQ.data ?? []).map((row) => (
-          <AnnouncementAdminCard
-            key={row.id}
-            row={row}
-            onEdit={() => setEditing(row)}
-            onDelete={async () => {
-              const ok = await confirm({
-                title: `Xoá "${row.title}"?`,
-                description: "Hành động này không thể hoàn tác.",
-                confirmLabel: "Xoá",
-                destructive: true,
-              });
-              if (ok) deleteM.mutate(row.id);
+      {filtered.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paging.paged.map((row) => (
+            <AnnouncementRow
+              key={row.id}
+              row={row}
+              onOpen={() => setPanel({ mode: "view", row })}
+            />
+          ))}
+        </ul>
+      )}
+
+      {filtered.length > 0 && (
+        <Pagination
+          page={paging.page}
+          totalPages={paging.totalPages}
+          total={paging.total}
+          pageSize={paging.pageSize}
+          unit="tin"
+          onPageChange={paging.setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={paging.setPageSize}
+        />
+      )}
+
+      <SidePanel
+        open={panel !== null}
+        title={
+          panel?.mode === "new" ? "Tin mới" : panel?.mode === "edit" ? "Sửa tin" : "Thông báo"
+        }
+        subtitle={panel && panel.mode !== "new" ? panel.row.title : undefined}
+        onClose={closePanel}
+        size="lg"
+        guard={panel?.mode !== "view"}
+      >
+        {panel && (
+          <AnnouncementForm
+            key={panel.mode === "new" ? "new" : `${panel.mode}-${panel.row.id}`}
+            row={panel.mode === "new" ? null : panel.row}
+            readOnly={panel.mode === "view"}
+            onEdit={() => panel.mode === "view" && setPanel({ mode: "edit", row: panel.row })}
+            onCancel={() =>
+              setPanel(panel.mode === "edit" ? { mode: "view", row: panel.row } : null)
+            }
+            onSaved={() => {
+              closePanel();
+              invalidate();
             }}
+            onDelete={
+              panel.mode === "edit"
+                ? async () => {
+                    const ok = await confirm({
+                      title: `Xoá "${panel.row.title}"?`,
+                      description: "Hành động này không thể hoàn tác.",
+                      confirmLabel: "Xoá",
+                      destructive: true,
+                    });
+                    if (ok) deleteM.mutate(panel.row.id);
+                  }
+                : undefined
+            }
           />
-        ))}
-      </ul>
-    </section>
+        )}
+      </SidePanel>
+    </div>
   );
 }
 
-function AnnouncementAdminCard({
-  row,
-  onEdit,
-  onDelete,
-}: {
-  row: Announcement;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const now = Date.now();
-  const isDraft = row.published_at === null;
-  const isExpired = row.expires_at !== null && new Date(row.expires_at).getTime() < now;
-  const isFuture =
-    row.published_at !== null && new Date(row.published_at).getTime() > now;
-  const statusLabel = isDraft
-    ? "Nháp"
-    : isExpired
-      ? "Hết hạn"
-      : isFuture
-        ? "Lên lịch"
-        : "Đang đăng";
-  const statusClass = isDraft
-    ? "bg-muted text-muted-foreground"
-    : isExpired
-      ? "bg-muted/40 text-muted-foreground line-through"
-      : isFuture
-        ? "bg-amber-500/10 text-amber-700 dark:text-amber-300"
-        : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
-
+function AnnouncementRow({ row, onOpen }: { row: Announcement; onOpen: () => void }) {
+  const status = statusOf(row);
+  const level = ANNOUNCEMENT_LEVELS.find((l) => l.value === row.level)?.label ?? row.level;
   return (
-    <li className="rounded-xl border bg-card shadow-sm p-3 sm:p-4 space-y-2">
-      <h3 className="font-semibold">{row.title}</h3>
-      <p className="text-sm text-muted-foreground whitespace-pre-line line-clamp-3">
-        {row.body}
-      </p>
-      <dl className="text-xs text-muted-foreground grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5">
-        {row.published_at && (
-          <>
-            <dt>Đăng:</dt>
-            <dd>{new Date(row.published_at).toLocaleString("vi-VN")}</dd>
-          </>
-        )}
-        {row.expires_at && (
-          <>
-            <dt>Hết hạn:</dt>
-            <dd>{new Date(row.expires_at).toLocaleString("vi-VN")}</dd>
-          </>
-        )}
-      </dl>
-
-      <div className="flex items-center justify-between gap-2 flex-wrap pt-2 border-t">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${statusClass}`}
-          >
-            {statusLabel}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {ANNOUNCEMENT_LEVELS.find((l) => l.value === row.level)?.label ??
-              row.level}
-          </span>
-          {row.is_public && (
-            <span className="text-xs text-primary">Public</span>
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={IconBell} tone={LEVEL_TONE[row.level]} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{row.title}</p>
+          <p className="mt-0.5 line-clamp-2 whitespace-pre-line text-sm text-muted-foreground">
+            {row.body}
+          </p>
+          {(row.published_at || row.expires_at) && (
+            <p className="mt-0.5 text-xs text-muted-foreground/80">
+              {row.published_at && `Đăng ${fmt(row.published_at)}`}
+              {row.published_at && row.expires_at && " · "}
+              {row.expires_at && `Hết hạn ${fmt(row.expires_at)}`}
+            </p>
           )}
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <Chip tone={LEVEL_TONE[row.level]} icon={<IconBell />}>
+              {level}
+            </Chip>
+            <Chip
+              tone={STATUS_TONE[status]}
+              icon={
+                status === "live" ? (
+                  <IconCheck />
+                ) : status === "scheduled" ? (
+                  <IconCalendar />
+                ) : status === "expired" ? (
+                  <IconClock />
+                ) : (
+                  <IconPencil />
+                )
+              }
+            >
+              {STATUS_LABEL[status]}
+            </Chip>
+            {row.is_public && (
+              <Chip tone="primary" icon={<IconGlobe />}>
+                Public
+              </Chip>
+            )}
+          </div>
         </div>
-        <div className="flex gap-1.5">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onEdit}
-            aria-label="Sửa tin"
-            title="Sửa"
-            className="h-9 w-9 p-0"
-          >
-            <IconPencil className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive-outline"
-            onClick={onDelete}
-            aria-label="Xoá tin"
-            title="Xoá"
-            className="h-9 w-9 p-0 hover:"
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      </button>
     </li>
   );
 }
 
-function AnnouncementEditor({
+function AnnouncementForm({
   row,
-  onClose,
+  readOnly,
+  onEdit,
+  onCancel,
   onSaved,
+  onDelete,
 }: {
   row: Announcement | null;
-  onClose: () => void;
+  readOnly: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
   onSaved: () => void;
+  onDelete?: () => void;
 }) {
   const toast = useToast();
   const [title, setTitle] = useState(row?.title ?? "");
@@ -262,8 +373,7 @@ function AnnouncementEditor({
       toast.success(row ? "Đã cập nhật tin" : "Đã tạo tin");
       onSaved();
     },
-    onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
   return (
@@ -272,80 +382,69 @@ function AnnouncementEditor({
         e.preventDefault();
         if (title.trim() && body.trim()) saveM.mutate();
       }}
-      className="rounded-xl border bg-card shadow-sm p-4 space-y-4"
+      className="space-y-3"
     >
-      <h3 className="font-semibold">{row ? "Sửa tin" : "Tin mới"}</h3>
-
-      <div className="space-y-2">
-        <Label htmlFor="ann-title" required>
-          Tiêu đề
-        </Label>
-        <Input
-          id="ann-title"
-          icon={<IconScroll />}
-          required
-          maxLength={200}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="ann-body" required>
-          Nội dung
-        </Label>
-        <Textarea
-          id="ann-body"
-          required
-          maxLength={20000}
-          rows={6}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          className="text-sm resize-y"
-        />
-      </div>
-
-      <fieldset className="space-y-2">
-        <legend className="text-base font-medium">Mức độ</legend>
-        <div className="flex flex-wrap gap-2">
-          {ANNOUNCEMENT_LEVELS.map((opt) => (
-            <label
-              key={opt.value}
-              className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm ${
-                level === opt.value
-                  ? "border-primary bg-primary/5"
-                  : "hover:bg-muted/40"
-              }`}
-            >
-              <input
-                type="radio"
-                name="ann-level"
-                checked={level === opt.value}
-                onChange={() => setLevel(opt.value)}
-                className="h-4 w-4 accent-primary"
-              />
-              {opt.label}
-            </label>
-          ))}
+      <ReadOnlyFieldset readOnly={readOnly}>
+        <div className="space-y-2">
+          <Label htmlFor="ann-title" required>
+            Tiêu đề
+          </Label>
+          <Input
+            id="ann-title"
+            icon={<IconScroll />}
+            required
+            maxLength={200}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </div>
-      </fieldset>
 
-      <label className="flex items-start gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={isPublic}
-          onChange={(e) => setIsPublic(e.target.checked)}
-          className="mt-1 h-4 w-4 accent-primary shrink-0"
-        />
-        <span>
-          <span className="font-medium">Public — hiện ở /changelog</span>
-          <span className="block text-sm text-muted-foreground">
-            Anon đọc được. Bật khi đây là cập nhật muốn quảng bá ra ngoài.
+        <div className="space-y-2">
+          <Label htmlFor="ann-body" required>
+            Nội dung
+          </Label>
+          <Textarea
+            id="ann-body"
+            required
+            maxLength={20000}
+            rows={6}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            className="text-sm"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="ann-level">Mức độ</Label>
+          <Select
+            id="ann-level"
+            icon={<IconBell />}
+            value={level}
+            onChange={(e) => setLevel(e.target.value as AnnouncementLevel)}
+          >
+            {ANNOUNCEMENT_LEVELS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </Select>
+        </div>
+
+        <label className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.target.checked)}
+            className="mt-1 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span>
+            <span className="font-medium">Public — hiện ở /changelog</span>
+            <span className="block text-sm text-muted-foreground">
+              Anon đọc được. Bật khi đây là cập nhật muốn quảng bá ra ngoài.
+            </span>
           </span>
-        </span>
-      </label>
+        </label>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="ann-published">Lịch đăng</Label>
           <Input
@@ -359,18 +458,20 @@ function AnnouncementEditor({
             }}
             disabled={publishNow}
           />
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <label className="flex items-start gap-3">
             <input
               type="checkbox"
               checked={publishNow}
               onChange={(e) => setPublishNow(e.target.checked)}
-              className="h-4 w-4 accent-primary"
+              className="mt-1 h-4 w-4 shrink-0 accent-primary"
             />
-            Đăng ngay
+            <span>
+              <span className="font-medium">Đăng ngay</span>
+              <span className="block text-sm text-muted-foreground">
+                Đăng khi bấm Lưu. Để trống lịch đăng và bỏ chọn = lưu nháp.
+              </span>
+            </span>
           </label>
-          <p className="text-xs text-muted-foreground">
-            Để trống và bỏ check "Đăng ngay" = lưu nháp.
-          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="ann-expires">Hết hạn (tuỳ chọn)</Label>
@@ -382,27 +483,20 @@ function AnnouncementEditor({
             onChange={(e) => setExpiresAt(e.target.value)}
           />
         </div>
-      </div>
+      </ReadOnlyFieldset>
 
-      <div className="flex gap-2 pt-2 border-t">
-        <Button
-          type="submit"
-          variant="outline"
-          disabled={saveM.isPending || !title.trim() || !body.trim()}
-        >
-          <IconCheck className="h-4 w-4 mr-1.5" />
-          {saveM.isPending ? "Đang lưu…" : row ? "Cập nhật" : "Tạo"}
-        </Button>
-        <Button type="button" variant="outline" onClick={onClose}>
-          <IconX className="h-4 w-4 mr-1.5" />
-          Huỷ
-        </Button>
-      </div>
+      <ViewEditActions
+        readOnly={readOnly}
+        onEdit={onEdit}
+        onCancel={onCancel}
+        onDelete={onDelete}
+        saving={saveM.isPending}
+        canSave={!!title.trim() && !!body.trim()}
+        saveLabel={row ? "Lưu" : "Tạo"}
+      />
     </form>
   );
 }
-
-// ───────────── Nhập gia phả (vietnamgiapha.com) ─────────────────────
 
 function toLocalInput(iso: string): string {
   // YYYY-MM-DDTHH:mm — datetime-local input. Drop seconds + tz.
@@ -410,10 +504,3 @@ function toLocalInput(iso: string): string {
   const pad = (n: number) => n.toString().padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-
-// ─── Tab Cấu hình (demo config động) ──────────────────────────────
-
-/**
- * Cấu hình nền tảng động (không cần deploy). Hiện có: chọn các DÒNG HỌ DEMO —
- * những dòng họ CÔNG KHAI được tick sẽ dùng cho nút "Xem thử" ở trang Đăng nhập.
- */
