@@ -19,6 +19,7 @@ import {
   IconUserPlus,
   IconX,
 } from "@/components/icons";
+import { HeritagePhotosSection } from "@/components/HeritagePhotosSection";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
@@ -474,6 +475,11 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
 
         {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
         </fieldset>
+
+        {/* Ảnh chỉ thêm được khi mục đã có (đã lưu); thêm/gỡ lưu ngay, không chờ nút Lưu. */}
+        {isEdit && itemId && (
+          <HeritagePhotosSection itemId={itemId} editable={!readOnly && canEdit} />
+        )}
 
         {readOnly ? (
           canEdit && (
