@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import { InSidePanelContext } from "@/components/panel/context";
+import { ActionArea } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,17 +34,19 @@ export function FormActions({
   const inPanel = React.useContext(InSidePanelContext);
   if (inPanel) return <PanelActionBar className={className}>{children}</PanelActionBar>;
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-2 pt-2",
-        "sm:flex-row sm:justify-end sm:gap-3",
-        // Nút full-width ở màn hẹp, co lại theo nội dung từ sm.
-        "[&>*]:w-full sm:[&>*]:w-auto",
-        className,
-      )}
-    >
-      {children}
-    </div>
+    <ActionArea>
+      <div
+        className={cn(
+          "flex flex-col gap-2 pt-2",
+          "sm:flex-row sm:justify-end sm:gap-3",
+          // Nút full-width ở màn hẹp, co lại theo nội dung từ sm.
+          "[&>*]:w-full sm:[&>*]:w-auto",
+          className,
+        )}
+      >
+        {children}
+      </div>
+    </ActionArea>
   );
 }
 
@@ -72,7 +75,9 @@ export function PanelActionBar({
   return (
     <>
       <div aria-hidden="true" className="!mt-0 h-4 shrink-0" />
-      <div className={cn(PANEL_ACTIONS_CLASS, className)}>{children}</div>
+      <ActionArea>
+        <div className={cn(PANEL_ACTIONS_CLASS, className)}>{children}</div>
+      </ActionArea>
     </>
   );
 }

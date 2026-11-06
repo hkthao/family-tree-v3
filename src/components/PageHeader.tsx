@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { PageHelpVideo } from "@/components/PageHelpVideo";
+import { ActionArea } from "@/components/ui/button";
 
 /**
  * Header chuẩn cho mọi page — pattern khớp Today.tsx:
@@ -57,9 +58,11 @@ export function PageHeader({
     return (
       <div className="space-y-2 [&:not(:first-child)]:!mt-2">
         {header}
-        <div className="flex items-center justify-end gap-1.5 sm:gap-2 flex-wrap">
-          {actions}
-        </div>
+        <ActionArea>
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2 flex-wrap">
+            {actions}
+          </div>
+        </ActionArea>
       </div>
     );
   }
@@ -68,9 +71,11 @@ export function PageHeader({
     <div className="flex flex-row items-start gap-2 [&:not(:first-child)]:!mt-2">
       {header}
       {actions && (
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 sm:ml-auto flex-wrap justify-end">
-          {actions}
-        </div>
+        <ActionArea>
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 sm:ml-auto flex-wrap justify-end">
+            {actions}
+          </div>
+        </ActionArea>
       )}
     </div>
   );

@@ -52,12 +52,26 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
+/**
+ * Cỡ nút mặc định của một VÙNG HÀNH ĐỘNG (thanh nút form, chân thẻ, nút ở tiêu đề trang).
+ * Trong vùng đó mọi `<Button>` không tự khai `size` đều dùng cỡ này nên cả hàng luôn cùng
+ * chiều cao; nút ngoài vùng (vd cạnh một ô nhập h-12) giữ cỡ mặc định để thẳng hàng với ô.
+ * `size` khai tường minh luôn thắng.
+ */
+const ButtonSizeContext = React.createContext<ButtonProps["size"]>(undefined);
+
+/** Bọc một vùng hành động để mọi nút trong đó cùng cỡ `sm` (h-10). */
+function ActionArea({ children }: { children: React.ReactNode }) {
+  return <ButtonSizeContext.Provider value="sm">{children}</ButtonSizeContext.Provider>;
+}
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const areaSize = React.useContext(ButtonSizeContext);
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(buttonVariants({ variant, size: size ?? areaSize, className }))}
         ref={ref}
         {...props}
       />
@@ -66,4 +80,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-export { Button, buttonVariants };
+export { ActionArea, Button, buttonVariants };
