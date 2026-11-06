@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 
 import { IconChevronDown, IconChevronUp } from "@/components/icons";
+import { ActionArea } from "@/components/ui/button";
 
 const KEY_PREFIX = "family-tree:section-open:";
 
@@ -90,9 +91,11 @@ export function SectionCard({
       </header>
       {open && <div className={bodyClassName}>{children}</div>}
       {open && footer && (
-        <footer className="flex flex-wrap items-center justify-end gap-2 border-t bg-muted/20 px-3 py-2 sm:px-4">
-          {footer}
-        </footer>
+        <ActionArea>
+          <footer className="flex flex-wrap items-center justify-end gap-2 border-t bg-muted/20 px-3 py-2 sm:px-4">
+            {footer}
+          </footer>
+        </ActionArea>
       )}
     </section>
   );

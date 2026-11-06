@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { ActionArea } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface CardCtx {
@@ -163,15 +164,17 @@ const CardFooter = React.forwardRef<
   const ctx = React.useContext(CardContext);
   const closed = !!ctx?.collapsible && !ctx.open;
   return (
-    <div
-      ref={ref}
-      className={cn(
-        "flex items-center border-t px-4 py-3 sm:px-5",
-        closed && "hidden",
-        className,
-      )}
-      {...props}
-    />
+    <ActionArea>
+      <div
+        ref={ref}
+        className={cn(
+          "flex items-center border-t px-4 py-3 sm:px-5",
+          closed && "hidden",
+          className,
+        )}
+        {...props}
+      />
+    </ActionArea>
   );
 });
 CardFooter.displayName = "CardFooter";

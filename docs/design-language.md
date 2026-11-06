@@ -89,6 +89,13 @@ Hành động của cả thẻ **không đặt ở header** (vd nút "Thêm ản
   "Xem tất cả →". Prop `action` ở header **chỉ dành cho thông tin phụ không bấm
   được** ("3 sự kiện", dung lượng đã dùng).
 
+**Vùng hành động tự đồng nhất cỡ nút.** `FormActions`, `PanelActionBar`, `CardFooter`, footer của
+`SectionCard` và nút ở tiêu đề trang (`PageHeader actions`) bọc con trong `ActionArea`
+(`ui/button.tsx`): mọi `<Button>` trong đó không tự khai `size` đều là `sm` (h-10), nên cả hàng
+luôn cùng chiều cao — không cần nhớ gõ `size="sm"` từng nút. `size` khai tường minh vẫn thắng
+(vd nút icon). Nút nằm cạnh một ô nhập h-12 (vd "Lấy vị trí hiện tại") nằm ngoài vùng hành động
+nên giữ cỡ mặc định để thẳng hàng với ô.
+
 **Trang quản trị dùng `size="sm"` (h-10) cho mọi nút hành động** — màn quản trị dày thông tin, nút cỡ mặc định (h-12) trông quá to.
 
 **Cùng một hàng thì cùng một `size`.** Trộn `size="sm"` (h-10) với mặc định
