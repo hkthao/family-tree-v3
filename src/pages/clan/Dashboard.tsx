@@ -27,6 +27,7 @@ import { ClanStatsPanel } from "@/components/ClanStatsPanel";
 import { SectionCard } from "@/components/SectionCard";
 import { PageHeader } from "@/components/PageHeader";
 import { EnablePushPrompt } from "@/components/EnablePushPrompt";
+import { MapOverviewCard } from "@/components/MapOverviewCard";
 import { RecentActivityPanel } from "@/components/RecentActivityPanel";
 import { TodayHubCard } from "@/components/TodayHubCard";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -374,6 +375,9 @@ export default function Dashboard() {
               </ClanStatsPanel>
             );
           })()}
+
+          {/* Bản đồ dòng họ: nơi ở của con cháu, mộ phần, di sản theo tỉnh — ngay dưới số liệu. */}
+          {isMember && <MapOverviewCard clanId={clan.id} />}
 
 
           {/* Sự kiện sắp tới — ưu tiên cao: nhắc giỗ/sinh nhật sắp đến. */}

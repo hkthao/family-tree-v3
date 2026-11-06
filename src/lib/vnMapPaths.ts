@@ -3,6 +3,9 @@
 // đã đơn giản hoá. Gồm quần đảo Hoàng Sa (Đà Nẵng) và Trường Sa (Khánh Hoà).
 export const VN_MAP_VIEWBOX = "0 0 600 642.8";
 
+/** Tham số phép chiếu equirectangular đã dùng để vẽ — dùng để đặt marker theo kinh/vĩ độ thật. */
+export const VN_MAP_PROJECTION = { lon0: 102.14149, lat1: 23.39331, lon1: 117.82800, lat0: 7.18381, k: 0.964610, scale: 39.6527 };
+
 export interface VnMapProvince {
   code: string;
   name: string;

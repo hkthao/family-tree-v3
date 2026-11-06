@@ -62,3 +62,47 @@ export async function savePersonAddress(
   );
   if (error) throw new Error(error.message);
 }
+
+/** Một người có địa chỉ trong một tỉnh — cho danh sách khi bấm ghim / tỉnh trên Bản đồ. */
+export interface PersonInProvince {
+  person_id: string;
+  full_name: string;
+  gender: "M" | "F";
+  is_living: boolean;
+  ward_name: string | null;
+  ward_kind: string | null;
+}
+
+/** Người của dòng họ có địa chỉ ở `provinceCode` (RLS: chỉ thành viên dòng họ đọc được). */
+export async function listPeopleInProvince(
+  clanId: string,
+  provinceCode: string,
+  includeDeceased: boolean,
+  client: Client = defaultClient,
+): Promise<PersonInProvince[]> {
+  const { data, error } = await client
+    .from("person_addresses")
+    .select(
+      "person_id, persons!inner(full_name, gender, is_living, deleted_at), vn_wards(name, kind)",
+    )
+    .eq("clan_id", clanId)
+    .eq("province_code", provinceCode)
+    .eq("country", "VN")
+    .is("persons.deleted_at", null);
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []).map((r) => {
+    const p = r.persons as unknown as { full_name: string; gender: "M" | "F"; is_living: boolean };
+    const w = r.vn_wards as unknown as { name: string; kind: string } | null;
+    return {
+      person_id: r.person_id,
+      full_name: p.full_name,
+      gender: p.gender,
+      is_living: p.is_living,
+      ward_name: w?.name ?? null,
+      ward_kind: w?.kind ?? null,
+    };
+  });
+  return rows
+    .filter((r) => includeDeceased || r.is_living)
+    .sort((a, b) => a.full_name.localeCompare(b.full_name, "vi"));
+}
