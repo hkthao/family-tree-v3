@@ -1,25 +1,42 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { PageHeader } from "@/components/PageHeader";
+import { Chip, type ChipTone } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { IconScroll } from "@/components/icons";
+import { IconTile } from "@/components/IconTile";
+import {
+  IconCheck,
+  IconClock,
+  IconHelp,
+  IconPencil,
+  IconScroll,
+  IconSearch,
+  IconTag,
+  IconUserPlus,
+  IconX,
+} from "@/components/icons";
+import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
 import {
   listContributions,
   type ContributionRow,
   type ContributionStatus,
 } from "@/lib/queries/contributions";
 import { queryKeys } from "@/lib/queries/keys";
+import { unaccent } from "@/lib/unaccent";
 
-const STATUS_FILTERS: Array<{
-  value: ContributionStatus | "all";
-  label: string;
-}> = [
+type Icon = React.ComponentType<{ className?: string }>;
+
+const STATUS_FILTERS: Array<{ value: ContributionStatus | "all"; label: string }> = [
   { value: "pending", label: "Chờ duyệt" },
   { value: "approved", label: "Đã duyệt" },
   { value: "rejected", label: "Đã từ chối" },
@@ -33,11 +50,18 @@ const TYPE_LABEL: Record<ContributionRow["contribution_type"], string> = {
   add_person: "Thêm người",
 };
 
-const STATUS_TONE: Record<ContributionStatus, string> = {
-  pending: "text-amber-600 dark:text-amber-400",
-  approved: "text-accent",
-  rejected: "text-destructive",
-  needs_info: "text-muted-foreground",
+const TYPE_ICON: Record<ContributionRow["contribution_type"], Icon> = {
+  edit_person: IconPencil,
+  add_note: IconScroll,
+  add_person: IconUserPlus,
+};
+
+/** Chờ duyệt = vàng (cần xử lý); đã duyệt = xanh; từ chối = đỏ; cần thêm = xanh dương. */
+const STATUS_STYLE: Record<ContributionStatus, { label: string; tone: ChipTone; icon: Icon }> = {
+  pending: { label: "Chờ duyệt", tone: "warning", icon: IconClock },
+  approved: { label: "Đã duyệt", tone: "success", icon: IconCheck },
+  rejected: { label: "Đã từ chối", tone: "danger", icon: IconX },
+  needs_info: { label: "Cần thêm", tone: "info", icon: IconHelp },
 };
 
 /**
@@ -47,6 +71,9 @@ const STATUS_TONE: Record<ContributionStatus, string> = {
  * own submissions, never anyone else's), and the apply/reject RPCs
  * enforce admin-only at the SQL layer. We still gate the navigation
  * client-side so viewers don't accidentally land here.
+ *
+ * Bấm một dòng đi tới trang duyệt (có so sánh trước/sau và nút duyệt/từ chối) — đó là quy trình
+ * làm việc chứ không phải form xem/sửa nên không dùng ngăn kéo.
  */
 export default function Contributions() {
   const { clan } = useClanContext();
@@ -54,19 +81,30 @@ export default function Contributions() {
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
 
+  const [status, setStatus] = useState<ContributionStatus | "all">("pending");
+  const [search, setSearch] = useState("");
+  const { data: rows, isLoading, error } = useQuery({
+    queryKey: queryKeys.contributions(clan.id, userId, { status }),
+    queryFn: () => listContributions(clan.id, { status }),
+    enabled: !!userId && canEdit,
+  });
+
+  const filtered = useMemo(() => {
+    const q = unaccent(search.trim()).toLowerCase();
+    return (rows ?? []).filter(
+      (c) =>
+        !q ||
+        unaccent(`${c.submitter_name ?? ""} ${c.submitter_relation ?? ""}`).toLowerCase().includes(q),
+    );
+  }, [rows, search]);
+  const paging = useClientPaging(filtered, 20);
+
   if (!canEdit) {
     return <Navigate to={`/clans/${clan.id}`} replace />;
   }
 
-  const [status, setStatus] = useState<ContributionStatus | "all">("pending");
-  const { data: rows, isLoading, error } = useQuery({
-    queryKey: queryKeys.contributions(clan.id, userId, { status }),
-    queryFn: () => listContributions(clan.id, { status }),
-    enabled: !!userId,
-  });
-
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
@@ -80,23 +118,46 @@ export default function Contributions() {
         description="Người xem đề xuất sửa hoặc thêm thông tin — admin duyệt trước khi áp dụng vào gia phả."
       />
 
-      <div className="flex flex-wrap gap-2">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            onClick={() => setStatus(f.value)}
-            aria-pressed={status === f.value}
-            className={`px-3 h-9 text-sm rounded-md border ${
-              status === f.value
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-input bg-background hover:bg-muted/50"
-            }`}
+      {/* Trạng thái nằm trong ngăn kéo của phễu (mặc định "Chờ duyệt") — như Danh bạ. */}
+      <CollapsibleFilters
+        activeCount={status !== "pending" ? 1 : 0}
+        onReset={() => {
+          setStatus("pending");
+          paging.patchAndResetPage({});
+        }}
+        title="Lọc đóng góp"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm đóng góp"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              paging.patchAndResetPage({});
+            }}
+            placeholder="Tìm theo tên người gửi…"
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value as ContributionStatus | "all");
+              paging.patchAndResetPage({});
+            }}
+            aria-label="Lọc theo trạng thái"
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
           >
-            {f.label}
-          </button>
-        ))}
-      </div>
+            {STATUS_FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {f.label}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </CollapsibleFilters>
 
       {error && (
         <Alert variant="destructive">
@@ -104,72 +165,78 @@ export default function Contributions() {
         </Alert>
       )}
 
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && (
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
+      )}
 
-      {rows && rows.length === 0 && !isLoading && (
+      {!isLoading && filtered.length === 0 && (
         <EmptyState
-          icon={<IconScroll className="h-10 w-10" />}
-          title="Chưa có đóng góp nào"
-          description="Khi có người gửi đề xuất, danh sách sẽ xuất hiện ở đây."
+          icon={search.trim() ? <IconSearch className="h-10 w-10" /> : <IconScroll className="h-10 w-10" />}
+          title={search.trim() ? "Không có đóng góp nào khớp" : "Chưa có đóng góp nào"}
+          description={
+            search.trim()
+              ? "Thử bỏ bớt từ khoá hoặc đổi trạng thái."
+              : "Khi có người gửi đề xuất, danh sách sẽ xuất hiện ở đây."
+          }
         />
       )}
 
-      {rows && rows.length > 0 && (
-        <ul className="rounded-md border divide-y bg-card overflow-hidden">
-          {rows.map((c) => (
+      {filtered.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paging.paged.map((c) => (
             <ContributionRowItem key={c.id} c={c} clanId={clan.id} />
           ))}
         </ul>
+      )}
+
+      {filtered.length > 0 && (
+        <Pagination
+          page={paging.page}
+          totalPages={paging.totalPages}
+          total={paging.total}
+          pageSize={paging.pageSize}
+          unit="đóng góp"
+          onPageChange={paging.setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={paging.setPageSize}
+        />
       )}
     </div>
   );
 }
 
-function ContributionRowItem({
-  c,
-  clanId,
-}: {
-  c: ContributionRow;
-  clanId: string;
-}) {
-  const submitterDisplay =
-    c.submitter_name ??
-    (c.submitter_user_id ? "Thành viên" : "Khách");
+function ContributionRowItem({ c, clanId }: { c: ContributionRow; clanId: string }) {
+  const st = STATUS_STYLE[c.status];
+  const StatusIcon = st.icon;
+  const TypeIcon = TYPE_ICON[c.contribution_type];
+  const submitterDisplay = c.submitter_name ?? (c.submitter_user_id ? "Thành viên" : "Khách");
   return (
     <li>
       <Link
         to={`/clans/${clanId}/contributions/${c.id}`}
-        className="flex items-start gap-3 px-3 py-3 hover:bg-muted/30"
+        className="flex items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
       >
-        <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex items-center gap-2 flex-wrap text-sm">
-            <span className={`font-medium ${STATUS_TONE[c.status]}`}>
-              {c.status === "pending"
-                ? "Chờ duyệt"
-                : c.status === "approved"
-                  ? "Đã duyệt"
-                  : c.status === "rejected"
-                    ? "Đã từ chối"
-                    : "Cần thêm"}
-            </span>
-            <span className="text-muted-foreground">·</span>
-            <span className="text-muted-foreground">
-              {TYPE_LABEL[c.contribution_type]}
-            </span>
-          </div>
-          <p className="text-sm">
-            <span className="text-muted-foreground">Người gửi:</span>{" "}
-            <span className="font-medium">{submitterDisplay}</span>
-            {c.submitter_relation && (
-              <span className="text-muted-foreground"> · {c.submitter_relation}</span>
-            )}
-          </p>
-          <p className="text-xs text-muted-foreground">
+        <IconTile icon={TypeIcon} tone={st.tone} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{submitterDisplay}</p>
+          {c.submitter_relation && (
+            <p className="truncate text-sm text-muted-foreground">{c.submitter_relation}</p>
+          )}
+          <p className="mt-0.5 text-xs text-muted-foreground/80">
             {new Date(c.created_at).toLocaleString("vi-VN")}
             {c.submitter_user_id === null && " · qua link chia sẻ"}
           </p>
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <Chip tone="neutral" icon={<TypeIcon />}>
+              {TYPE_LABEL[c.contribution_type]}
+            </Chip>
+            <Chip tone={st.tone} icon={<StatusIcon />}>
+              {st.label}
+            </Chip>
+          </div>
         </div>
-        <span className="text-muted-foreground shrink-0 self-center">›</span>
       </Link>
     </li>
   );

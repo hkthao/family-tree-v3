@@ -92,7 +92,7 @@ export function ConfigTab() {
           <span className="text-sm text-muted-foreground">
             {mascotQ.data === false ? "Đang tắt với mọi người" : "Đang bật"}
           </span>
-          <Button
+          <Button size="sm"
             variant={mascotQ.data === false ? "default" : "outline"}
             disabled={mascotQ.isLoading || mascotM.isPending}
             onClick={() => mascotM.mutate(mascotQ.data === false)}
@@ -157,7 +157,7 @@ export function ConfigTab() {
               <span className="text-sm text-muted-foreground">
                 Đã chọn {chosen.size} dòng họ
               </span>
-              <Button
+              <Button size="sm"
                 onClick={() => saveM.mutate([...chosen])}
                 disabled={saveM.isPending || !dirty}
               >

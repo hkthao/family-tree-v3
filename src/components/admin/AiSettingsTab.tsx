@@ -249,7 +249,7 @@ export function AiSettingsTab() {
               </>
             )}
           </span>
-          <Button
+          <Button size="sm"
             variant={configQ.data?.enabled ? "outline" : "default"}
             disabled={configQ.isLoading || toggleEnabled.isPending}
             onClick={() => toggleEnabled.mutate(!configQ.data?.enabled)}
@@ -322,7 +322,7 @@ export function AiSettingsTab() {
           <span className="text-sm text-muted-foreground">
             {limits ? "Có thay đổi chưa lưu" : "Đang khớp với máy chủ"}
           </span>
-          <Button
+          <Button size="sm"
             disabled={!limits || saveLimits.isPending}
             onClick={() => limits && saveLimits.mutate(limits)}
           >
@@ -403,7 +403,7 @@ export function AiSettingsTab() {
               <div className="flex flex-wrap gap-2">
                 {st && (
                   <>
-                    <Button
+                    <Button size="sm"
                       variant="destructive-outline"
                       disabled={busy}
                       onClick={async () => {
@@ -420,7 +420,7 @@ export function AiSettingsTab() {
                       <IconTrash className="h-4 w-4" />
                       Xoá
                     </Button>
-                    <Button
+                    <Button size="sm"
                       variant="outline"
                       onClick={() => test.mutate(p.id)}
                       disabled={busy}
@@ -430,7 +430,7 @@ export function AiSettingsTab() {
                     </Button>
                   </>
                 )}
-                <Button
+                <Button size="sm"
                   onClick={() => save.mutate({ p: p.id, key: draft })}
                   disabled={!draft.trim() || busy}
                 >

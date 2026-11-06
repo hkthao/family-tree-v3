@@ -237,7 +237,7 @@ export function GiaPhaImportTab() {
         )}
 
         {!running ? (
-          <Button
+          <Button size="sm"
             variant="outline"
             disabled={!sourceUrl.trim() || (mode === "existing" && !targetClanId)}
             onClick={startImport}
@@ -351,7 +351,7 @@ export function GiaPhaImportTab() {
           </div>
         )}
 
-        <Button
+        <Button size="sm"
           variant="destructive"
           disabled={!canWipe || wipeM.isPending}
           onClick={() => wipeM.mutate()}
