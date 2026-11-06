@@ -4007,6 +4007,7 @@ export type Database = {
         | "le_tet"
         | "le_hoi"
         | "sinh_hoat"
+        | "van_khan"
       custom_mandatory: "bat_buoc" | "khuyen_khich" | "dia_phuong"
       custom_origin:
         | "nho_giao"
@@ -4169,6 +4170,7 @@ export const Constants = {
         "le_tet",
         "le_hoi",
         "sinh_hoat",
+        "van_khan",
       ],
       custom_mandatory: ["bat_buoc", "khuyen_khich", "dia_phuong"],
       custom_origin: [
