@@ -158,6 +158,9 @@ export interface HeritageItem {
   sections: HeritageSection[];
   location_name: string | null;
   address: string | null;
+  /** Tỉnh/thành + xã/phường chọn từ danh mục (hiện trên Bản đồ). */
+  province_code: string | null;
+  ward_code: string | null;
   latitude: number | null;
   longitude: number | null;
   built_year: number | null;
@@ -208,7 +211,7 @@ export interface HeritageDetail extends HeritageItem {
 }
 
 const COLS =
-  "id, clan_id, category, title, summary, body, sections, location_name, address, latitude, longitude, built_year, status, sort, cover_media_id, created_by, created_at, updated_at";
+  "id, clan_id, category, title, summary, body, sections, location_name, address, province_code, ward_code, latitude, longitude, built_year, status, sort, cover_media_id, created_by, created_at, updated_at";
 
 export async function listHeritageItems(
   clanId: string,

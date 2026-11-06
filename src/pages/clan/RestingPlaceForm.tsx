@@ -19,6 +19,7 @@ import {
   IconUserPlus,
   IconX,
 } from "@/components/icons";
+import { AddressPicker, type AddressValue } from "@/components/AddressPicker";
 import { PageHeader } from "@/components/PageHeader";
 import { RestingPlacePhotosSection } from "@/components/RestingPlacePhotosSection";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -78,6 +79,8 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
   const [locationName, setLocationName] = useState("");
   const [locationDetail, setLocationDetail] = useState("");
   const [address, setAddress] = useState("");
+  // Tỉnh + xã/phường chọn từ danh mục — để hiện trên Bản đồ dòng họ.
+  const [area, setArea] = useState<AddressValue>({ province_code: null, ward_code: null });
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [orientation, setOrientation] = useState("");
@@ -105,6 +108,7 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
     setLocationName(existing.location_name ?? "");
     setLocationDetail(existing.location_detail ?? "");
     setAddress(existing.address ?? "");
+    setArea({ province_code: existing.province_code, ward_code: existing.ward_code });
     setLat(existing.latitude != null ? String(existing.latitude) : "");
     setLng(existing.longitude != null ? String(existing.longitude) : "");
     setOrientation(existing.orientation ?? "");
@@ -149,6 +153,8 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
         location_name: locationName.trim() || null,
         location_detail: labels.detail ? locationDetail.trim() || null : null,
         address: address.trim() || null,
+        province_code: area.province_code,
+        ward_code: area.ward_code,
         latitude: lat.trim() ? Number(lat) : null,
         longitude: lng.trim() ? Number(lng) : null,
         orientation: kind === "grave" ? orientation.trim() || null : null,
@@ -285,7 +291,12 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="address">Địa chỉ</Label>
+          <Label>Khu vực (hiện trên Bản đồ)</Label>
+          <AddressPicker idPrefix="grave-area" value={area} onChange={setArea} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="address">Địa chỉ chi tiết</Label>
           <Input id="address" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)} placeholder={ADDRESS_PLACEHOLDER} />
         </div>
 

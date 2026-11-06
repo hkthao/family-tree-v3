@@ -42,6 +42,8 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { createPerson, getPerson } from "@/lib/queries/persons";
+import { PersonAddressCard, EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
+import { savePersonAddress, type PersonAddressInput } from "@/lib/queries/personAddresses";
 
 interface NewPersonFormProps {
   clanId: string;
@@ -101,6 +103,7 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
   // mất, nơi sinh/an táng, tiểu sử) are hidden by default to keep the
   // form short for the common case of "just add a name + birth year".
   const [showOptional, setShowOptional] = useState(false);
+  const [address, setAddress] = useState<PersonAddressInput>(EMPTY_PERSON_ADDRESS);
 
   useEffect(() => {
     if (!source || prefilled) return;
@@ -159,7 +162,7 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
       const birthCols = buildPersonDateColumns(birth);
       const deathCols = buildPersonDateColumns(death);
       const anniv = buildDeathAnniversary(death);
-      return createPerson({
+      const created = await createPerson({
         clan_id: clanId,
         full_name: fullName.trim(),
         gender,
@@ -190,6 +193,13 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
           ? Math.max(0, Math.min(150, Math.floor(Number(lifespanYears))))
           : null,
       });
+      // Nơi ở (tuỳ chọn): lỗi ở đây không được làm mất người vừa tạo.
+      try {
+        await savePersonAddress(created.id, address);
+      } catch (e) {
+        toast.error("Đã thêm người nhưng chưa lưu được nơi ở", { description: (e as Error).message });
+      }
+      return created;
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId);
@@ -211,6 +221,7 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
         setBirthPlace("");
         setBurialPlace("");
         setBio("");
+        setAddress(EMPTY_PERSON_ADDRESS);
         setFormError(null);
         toast.success("Đã thêm. Tiếp tục…", { description: savedName });
         // Refocus the name input so the user can type immediately.
@@ -482,6 +493,8 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
             />
           </div>
         )}
+
+        <PersonAddressCard value={address} onChange={setAddress} />
 
         {(formError || mutation.error) && (
           <Alert variant="destructive">

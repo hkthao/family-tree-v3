@@ -64,6 +64,9 @@ export interface RestingPlace {
   location_name: string | null;
   location_detail: string | null;
   address: string | null;
+  /** Tỉnh/thành + xã/phường chọn từ danh mục (hiện trên Bản đồ). */
+  province_code: string | null;
+  ward_code: string | null;
   latitude: number | null;
   longitude: number | null;
   orientation: string | null;
@@ -109,7 +112,7 @@ export interface RestingPlaceDetail extends RestingPlace {
 }
 
 const COLS =
-  "id, clan_id, kind, name, location_name, location_detail, address, latitude, longitude, orientation, status, built_year, material, notes, cemetery_id, created_at, updated_at";
+  "id, clan_id, kind, name, location_name, location_detail, address, province_code, ward_code, latitude, longitude, orientation, status, built_year, material, notes, cemetery_id, created_at, updated_at";
 
 export async function listRestingPlaces(
   clanId: string,

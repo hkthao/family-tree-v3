@@ -51,6 +51,12 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
+import { PersonAddressCard, EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
+import {
+  getPersonAddress,
+  savePersonAddress,
+  type PersonAddressInput,
+} from "@/lib/queries/personAddresses";
 import { getPersonTimeline, replacePersonTimeline } from "@/lib/queries/person-timeline";
 
 interface EditPersonFormProps {
@@ -99,6 +105,28 @@ export function EditPersonForm({
     enabled: !!personId && isHistorical,
   });
   const [timeline, setTimeline] = useState<TimelineDraft[] | null>(null);
+
+  // Nơi ở hiện tại (tuỳ chọn, chỉ thành viên dòng họ xem được) — bảng riêng person_addresses.
+  const { data: savedAddress, isSuccess: addressLoaded } = useQuery({
+    queryKey: ["person-address", personId],
+    queryFn: () => getPersonAddress(personId),
+    enabled: !!personId && !!person && effectiveRole(clan) !== null,
+  });
+  const [address, setAddress] = useState<PersonAddressInput>(EMPTY_PERSON_ADDRESS);
+  const [addressTouched, setAddressTouched] = useState(false);
+  useEffect(() => {
+    if (!addressLoaded) return;
+    setAddress(
+      savedAddress
+        ? {
+            province_code: savedAddress.province_code,
+            ward_code: savedAddress.ward_code,
+            street_detail: savedAddress.street_detail,
+          }
+        : EMPTY_PERSON_ADDRESS,
+    );
+    setAddressTouched(false);
+  }, [addressLoaded, savedAddress]);
 
   const [fullName, setFullName] = useState("");
   const [gender, setGender] = useState<"M" | "F">("M");
@@ -291,6 +319,12 @@ export function EditPersonForm({
         if (timelineRows) {
           await replacePersonTimeline(personId, clanId, timelineRows);
           await queryClient.invalidateQueries({ queryKey: ["person-timeline", personId] });
+        }
+        // Chỉ ghi khi người dùng đã đụng vào thẻ "Nơi ở hiện tại".
+        if (addressTouched) {
+          await savePersonAddress(personId, address);
+          await queryClient.invalidateQueries({ queryKey: ["person-address", personId] });
+          await queryClient.invalidateQueries({ queryKey: ["clan-map-stats", clanId] });
         }
         return res;
       });
@@ -621,6 +655,16 @@ export function EditPersonForm({
             <TimelineFields drafts={timeline} onChange={setTimeline} />
           </div>
         </div>
+      )}
+
+      {effectiveRole(clan) !== null && addressLoaded && (
+        <PersonAddressCard
+          value={address}
+          onChange={(next) => {
+            setAddress(next);
+            setAddressTouched(true);
+          }}
+        />
       )}
 
       {(formError || mutation.error) && (

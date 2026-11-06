@@ -14,6 +14,7 @@ import {
   IconLink,
   IconList,
   IconMail,
+  IconMapPin,
   IconPencil,
   IconScroll,
   IconSettings,
@@ -391,6 +392,13 @@ export function buildSections(
         to: `/clans/${clanId}/board`,
         label: "Bảng tin",
         icon: <IconSparkles className={ic} />,
+      });
+    }
+    if (isMember) {
+      communityItems.push({
+        to: `/clans/${clanId}/map`,
+        label: "Bản đồ",
+        icon: <IconMapPin className={ic} />,
       });
     }
     if (isMember && feat("memory_room")) {
