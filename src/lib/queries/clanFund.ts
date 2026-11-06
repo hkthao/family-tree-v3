@@ -66,6 +66,25 @@ export async function createFundTransaction(
   if (error) throw new Error(error.message);
 }
 
+export async function updateFundTransaction(
+  id: string,
+  input: FundInput,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("fund_transactions")
+    .update({
+      direction: input.direction,
+      amount: input.amount,
+      fund: input.fund,
+      category: input.category ?? null,
+      occurred_on: input.occurred_on ?? undefined,
+      note: input.note ?? null,
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 /** Xoá mềm (deleted_at) — giữ dấu vết minh bạch. */
 export async function deleteFundTransaction(
   id: string,
