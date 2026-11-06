@@ -243,9 +243,10 @@ export function AppDrawer({ open, onClose }: Props) {
           {visibleSections.map((section) => {
             const open = needle ? true : isOpen(section);
             return (
+              // font-sans ở nhãn nhóm: <h2> mặc định ăn font serif của tiêu đề, phải cùng font với nhãn nhóm gập được.
               <div key={section.id} className="py-1">
                 {section.collapsible === false ? (
-                  <h2 className="px-4 pb-1 pt-1 text-xs uppercase tracking-wider text-muted-foreground">
+                  <h2 className="px-4 pb-1 pt-1 font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     {section.label}
                   </h2>
                 ) : (
@@ -255,7 +256,7 @@ export function AppDrawer({ open, onClose }: Props) {
                     aria-expanded={open}
                     // 44px: nhóm gập được là thứ người dùng bấm thật,
                     // không phải nhãn trang trí như tiêu đề nhóm cố định.
-                    className="flex min-h-[44px] w-full items-center gap-2 px-4 text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                    className="flex min-h-[44px] w-full items-center gap-2 px-4 font-sans text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
                   >
                     <IconChevronDown
                       className={cn(

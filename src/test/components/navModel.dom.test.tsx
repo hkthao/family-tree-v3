@@ -115,22 +115,44 @@ describe("buildSections — nhóm của dòng họ", () => {
     ]);
   });
 
-  it("tách Tài chính khỏi Văn hoá — Quỹ họ không bị chôn dưới mục đọc-chơi", () => {
+  it("menu của dòng họ gộp còn đúng HAI nhóm: Cộng đồng & Di sản, Công cụ & Quản trị", () => {
     const s = build();
-    expect(ids(s)).toContain("clan-money");
-    expect(ids(s)).toContain("clan-culture");
-    const money = s.find((x) => x.id === "clan-money")!;
-    expect(money.items.map((i) => i.label)).toEqual([
+    const ids_ = ids(s);
+    expect(ids_).toContain("clan-community");
+    expect(ids_).toContain("clan-work");
+    // Các nhóm cũ không còn tồn tại.
+    for (const old of ["clan-culture", "clan-money", "clan-admin"]) expect(ids_).not.toContain(old);
+
+    const community = s.find((x) => x.id === "clan-community")!;
+    expect(community.items.map((i) => i.label)).toEqual([
+      "Bảng tin",
+      "Bản đồ",
+      "Phòng ký ức",
+      "Di sản dòng họ",
+      "Mộ phần & tro cốt",
       "Quỹ họ",
       "Bảng vàng công đức",
     ]);
+    const work = s.find((x) => x.id === "clan-work")!;
+    expect(work.items.map((i) => i.label)).toEqual([
+      "Việc cần làm",
+      "Công cụ",
+      "Thành viên",
+      "Liên kết dòng họ",
+      "Cài đặt dòng họ",
+    ]);
   });
 
-  it("có việc đang chờ thì nhóm đó mặc định MỞ — badge giấu trong nhóm gập là badge vô dụng", () => {
-    const quiet = build().find((s) => s.id === "clan-work")!;
-    expect(quiet.defaultOpen).toBe(false);
-    const busy = build({ todo: 3 }).find((s) => s.id === "clan-work")!;
-    expect(busy.defaultOpen).toBe(true);
+  it("không còn mục Đóng góp trong menu", () => {
+    const all = build({ contrib: 3 }).flatMap((x) => x.items.map((i) => i.label));
+    expect(all).not.toContain("Đóng góp");
+  });
+
+  it("badge việc cần làm và liên kết chờ nằm trong nhóm Công cụ & Quản trị", () => {
+    const work = build({ todo: 3, inlaw: 2 }).find((s) => s.id === "clan-work")!;
+    const byLabel = (l: string) => work.items.find((i) => i.label === l)!;
+    expect(byLabel("Việc cần làm").badge).toBeTruthy();
+    expect(byLabel("Liên kết dòng họ").badge).toBe(2);
   });
 
   it("nhóm Chung xếp theo lượt dùng thật (Umami 90 ngày)", () => {
@@ -144,14 +166,11 @@ describe("buildSections — nhóm của dòng họ", () => {
     ]);
   });
 
-  it("nhóm hay dùng mở sẵn, nhóm ít dùng gập sẵn", () => {
+  it("hai nhóm của dòng họ đều mở sẵn", () => {
     const s = build();
     const open = (id: string) => s.find((x) => x.id === id)!.defaultOpen;
-    // Mộ phần 40 + Di sản 32 so với Quỹ 11 + Công đức 11.
-    expect(open("clan-culture")).toBe(true);
-    expect(open("clan-money")).toBe(false);
-    // Cài đặt dòng họ 38 lượt — mục thứ tư trong một dòng họ.
-    expect(open("clan-admin")).toBe(true);
+    expect(open("clan-community")).toBe(true);
+    expect(open("clan-work")).toBe(true);
   });
 
   it("Góp ý là một mục trong menu, không còn là nút lẫn ở chân drawer", () => {
@@ -160,9 +179,13 @@ describe("buildSections — nhóm của dòng họ", () => {
     expect(fb?.label).toMatch(/Góp ý/);
   });
 
-  it("người chỉ xem không thấy nhóm quản trị dòng họ", () => {
+  it("người chỉ xem không thấy các mục quản trị dòng họ", () => {
     const viewer = { ...clan, myRole: "viewer" } as unknown as ClanDetail;
-    expect(ids(build({ clan: viewer }))).not.toContain("clan-admin");
+    const work = build({ clan: viewer }).find((x) => x.id === "clan-work")!;
+    const labels = work.items.map((i) => i.label);
+    for (const adminOnly of ["Thành viên", "Liên kết dòng họ", "Cài đặt dòng họ"]) {
+      expect(labels).not.toContain(adminOnly);
+    }
   });
 
   it("không ở trong dòng họ nào thì chỉ có nhóm Chung", () => {
