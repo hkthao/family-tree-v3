@@ -5,4 +5,6 @@ export interface EmbeddedForm {
   /** Gọi sau khi lưu thành công (thay cho navigate). */
   onDone: (id?: string) => void;
   onCancel: () => void;
+  /** Chế độ xem: cùng bố cục form nhưng khoá mọi ô, thanh nút chỉ còn "Sửa" (chuyển sang route sửa). */
+  readOnly?: boolean;
 }

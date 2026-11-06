@@ -4,11 +4,14 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import type { EmbeddedForm } from "@/components/panel/embedded";
+import { PanelLink } from "@/components/panel/PanelLink";
 import {
   IconBook,
   IconCalendar,
   IconCheck,
+  IconCompass,
   IconMapPin,
+  IconPencil,
   IconPlus,
   IconScroll,
   IconSearch,
@@ -27,7 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
 import {
@@ -55,6 +58,8 @@ interface StagedPerson {
 
 export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } = {}) {
   const { clan } = useClanContext();
+  const readOnly = !!embedded?.readOnly;
+  const canEdit = canEditClan(clan);
   const routeParams = useParams<{ itemId?: string }>();
   const itemId = embedded ? embedded.id : routeParams.itemId;
   const isEdit = !!itemId;
@@ -212,6 +217,10 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
         }}
         className="space-y-6"
       >
+        <fieldset
+          disabled={readOnly}
+          className={`m-0 min-w-0 space-y-6 border-0 p-0 ${readOnly ? "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100 [&_[data-edit-only]]:hidden" : ""}`}
+        >
         {/* Loại */}
         <div className="space-y-2">
           <Label htmlFor="category">Loại di sản</Label>
@@ -265,13 +274,13 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
             <div className="space-y-2">
               <Label>Vị trí trên bản đồ (tuỳ chọn)</Label>
               <div className="flex flex-wrap items-center gap-2">
-                <Input className="w-32 h-12" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="vĩ độ" />
-                <Input className="w-32 h-12" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="kinh độ" />
-                <Button type="button" variant="outline" onClick={useCurrentLocation}>
+                <Input className="w-32 h-12" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="vĩ độ" icon={<IconCompass />} />
+                <Input className="w-32 h-12" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="kinh độ" icon={<IconCompass />} />
+                <Button type="button" variant="outline" onClick={useCurrentLocation} data-edit-only>
                   <IconMapPin className="h-4 w-4 mr-1" /> Lấy vị trí hiện tại
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">Đứng tại từ đường rồi bấm "Lấy vị trí hiện tại" để lưu toạ độ chỉ đường.</p>
+              <p data-edit-only className="text-sm text-muted-foreground">Đứng tại từ đường rồi bấm "Lấy vị trí hiện tại" để lưu toạ độ chỉ đường.</p>
             </div>
           </>
         )}
@@ -351,7 +360,7 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
                   className="flex-1"
                 />
                 <button
-                  type="button"
+                  type="button" data-edit-only
                   aria-label="Lên"
                   disabled={i === 0}
                   onClick={() =>
@@ -366,7 +375,7 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
                   ▲
                 </button>
                 <button
-                  type="button"
+                  type="button" data-edit-only
                   aria-label="Xuống"
                   disabled={i === sections.length - 1}
                   onClick={() =>
@@ -381,7 +390,7 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
                   ▼
                 </button>
                 <button
-                  type="button"
+                  type="button" data-edit-only
                   aria-label="Xoá đoạn"
                   onClick={() =>
                     setSections((prev) => prev.filter((_, j) => j !== i))
@@ -407,7 +416,7 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
             </div>
           ))}
           <Button
-            type="button"
+            type="button" data-edit-only
             variant="outline"
             size="sm"
             onClick={() =>
@@ -427,7 +436,7 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
                 <li key={p.personId} className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
                   <PersonAvatar gender={p.gender} size={28} />
                   <span className="flex-1 truncate text-base">{p.name}</span>
-                  <button type="button" aria-label="Bỏ" onClick={() => setPeople((prev) => prev.filter((x) => x.personId !== p.personId))}>
+                  <button type="button" data-edit-only aria-label="Bỏ" onClick={() => setPeople((prev) => prev.filter((x) => x.personId !== p.personId))}>
                     <IconX className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                   </button>
                 </li>
@@ -435,7 +444,7 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
             </ul>
           )}
           {!pickerOpen ? (
-            <Button type="button" size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
+            <Button type="button" size="sm" variant="outline" data-edit-only onClick={() => setPickerOpen(true)}>
               <IconUserPlus className="h-4 w-4 mr-1.5" />
               Gắn người
             </Button>
@@ -464,16 +473,29 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
         </div>
 
         {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
+        </fieldset>
 
-        <FormActions>
-          <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(back))}>
-            <IconX className="h-4 w-4 mr-1.5" /> Hủy
-          </Button>
-          <Button type="submit" disabled={save.isPending}>
-            <IconCheck className="h-4 w-4 mr-1.5" />
-            {save.isPending ? "Đang lưu…" : "Lưu"}
-          </Button>
-        </FormActions>
+        {readOnly ? (
+          canEdit && (
+            <FormActions>
+              <Button asChild>
+                <PanelLink to={`/clans/${clan.id}/heritage/${itemId}/edit`} panel="heritage-edit" panelParams={{ pid: itemId }}>
+                  <IconPencil className="h-4 w-4 mr-1.5" /> Sửa
+                </PanelLink>
+              </Button>
+            </FormActions>
+          )
+        ) : (
+          <FormActions>
+            <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(back))}>
+              <IconX className="h-4 w-4 mr-1.5" /> Hủy
+            </Button>
+            <Button type="submit" disabled={save.isPending}>
+              <IconCheck className="h-4 w-4 mr-1.5" />
+              {save.isPending ? "Đang lưu…" : "Lưu"}
+            </Button>
+          </FormActions>
+        )}
       </form>
     </div>
   );

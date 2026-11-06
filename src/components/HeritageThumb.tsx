@@ -1,23 +1,9 @@
 import { useEffect, useState } from "react";
 
-import {
-  IconBook,
-  IconBuildings,
-  IconCamera,
-  IconUsers,
-} from "@/components/icons";
+import { CHIP_TONE_CLASS } from "@/components/Chip";
+import { HERITAGE_CATEGORY_ICON, HERITAGE_CATEGORY_TONE } from "@/components/heritageCategoryStyle";
+import { IconBook } from "@/components/icons";
 import type { HeritageCategory } from "@/lib/queries/heritage";
-
-/** Mỗi chủ đề một icon riêng để nhận biết nhanh khi không có/không tải được ảnh. */
-const CATEGORY_ICON: Record<
-  HeritageCategory,
-  React.ComponentType<{ className?: string }>
-> = {
-  place: IconBuildings, // từ đường / đền / chùa
-  custom: IconUsers, // tục lệ / gia phong
-  story: IconBook, // giai thoại / công trạng
-  artifact: IconCamera, // tư liệu / kỷ vật
-};
 
 /**
  * Ảnh đại diện mục di sản. Nếu chưa có ảnh hoặc ảnh lỗi (load fail) → hiện
@@ -27,21 +13,25 @@ export function HeritageThumb({
   category,
   src,
   className = "h-16 w-16",
+  flush = false,
 }: {
   category: HeritageCategory;
   src?: string | null;
   className?: string;
+  /** Cao bằng phần nội dung của dòng chứa nó (ô bo góc nằm trong đệm của thẻ) — dùng trong dòng danh sách. */
+  flush?: boolean;
 }) {
   const [errored, setErrored] = useState(false);
   // Reset trạng thái lỗi khi đổi nguồn ảnh (vd URL ký lại).
   useEffect(() => setErrored(false), [src]);
 
-  const Icon = CATEGORY_ICON[category] ?? IconBook;
+  const Icon = HERITAGE_CATEGORY_ICON[category] ?? IconBook;
+  const tint = CHIP_TONE_CLASS[HERITAGE_CATEGORY_TONE[category] ?? "neutral"];
   const showImg = !!src && !errored;
 
   return (
     <div
-      className={`${className} shrink-0 overflow-hidden rounded-md bg-muted grid place-items-center`}
+      className={`${flush ? "min-h-14 w-14 self-stretch rounded-lg border" : `${className} rounded-md border`} shrink-0 overflow-hidden grid place-items-center ${showImg ? "bg-muted" : tint}`}
     >
       {showImg ? (
         <img
@@ -53,7 +43,7 @@ export function HeritageThumb({
           className="h-full w-full object-cover"
         />
       ) : (
-        <Icon className="h-6 w-6 text-muted-foreground" />
+        <Icon className={flush ? "h-5 w-5" : "h-6 w-6"} />
       )}
     </div>
   );
