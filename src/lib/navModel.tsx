@@ -372,7 +372,11 @@ export function buildSections(
       collapsible: false,
     });
 
-    // ─── Cộng đồng ─────────────────────────────────────────────────
+    // ─── Hai nhóm gộp của dòng họ ──────────────────────────────────
+    // Trước đây năm nhóm (Cộng đồng, Văn hoá & Tưởng niệm, Tài chính, Cập nhật & Công cụ, Quản trị
+    // dòng họ) làm menu dài và rời rạc; gộp thành hai nhóm theo việc người ta đến để làm:
+    //   1. "Cộng đồng & Di sản": nội dung của dòng họ (tin, bản đồ, ký ức, di sản, mộ phần, quỹ).
+    //   2. "Công cụ & Quản trị": việc cần làm, công cụ và quản lý dòng họ (thành viên, liên kết, cài đặt).
     const communityItems: DrawerItem[] = [];
     if (isMember && feat("board")) {
       communityItems.push({
@@ -395,123 +399,85 @@ export function buildSections(
         icon: <IconCamera className={ic} />,
       });
     }
-    if (communityItems.length) {
-      sections.push({
-        id: "clan-community",
-        label: "Cộng đồng",
-        items: communityItems,
-        defaultOpen: true,
-      });
-    }
-
-    // ─── Văn hoá & Di sản ──────────────────────────────────────────
-    // Tách khỏi Tài chính: hai nhóm này trước đây nằm chung "Di sản &
-    // Tưởng niệm", nên Quỹ họ — thứ dính tiền và cần tìm nhanh — bị
-    // chôn dưới mấy mục đọc-chơi.
-    const cultureItems: DrawerItem[] = [];
     if (canHeritage && feat("heritage")) {
-      cultureItems.push({
+      communityItems.push({
         to: `/clans/${clanId}/heritage`,
         label: "Di sản dòng họ",
         icon: <IconScroll className={ic} />,
       });
     }
     if (canGraves && feat("graves")) {
-      cultureItems.push({
+      communityItems.push({
         to: `/clans/${clanId}/graves`,
         label: "Mộ phần & tro cốt",
         icon: <IconGrave className={ic} />,
       });
     }
-    if (cultureItems.length) {
-      sections.push({
-        id: "clan-culture",
-        label: "Văn hoá & Tưởng niệm",
-        items: cultureItems,
-        // Mộ phần 40 + Di sản 32 — dùng gấp ba nhóm Tài chính.
-        defaultOpen: true,
-      });
-    }
-
-    // ─── Tài chính ─────────────────────────────────────────────────
-    const moneyItems: DrawerItem[] = [];
     if (isMember && feat("fund")) {
-      moneyItems.push({
+      communityItems.push({
         to: `/clans/${clanId}/fund`,
         label: "Quỹ họ",
         icon: <IconWallet className={ic} />,
       });
     }
     if (isMember && feat("honor")) {
-      moneyItems.push({
+      communityItems.push({
         to: `/clans/${clanId}/honor`,
         label: "Bảng vàng công đức",
         icon: <IconAward className={ic} />,
       });
     }
-    if (moneyItems.length) {
+    if (communityItems.length) {
       sections.push({
-        id: "clan-money",
-        label: "Tài chính",
-        items: moneyItems,
-        defaultOpen: false,
+        id: "clan-community",
+        label: "Cộng đồng & Di sản",
+        items: communityItems,
+        defaultOpen: true,
       });
     }
 
-    // ─── Cập nhật & Công cụ ───────────────────────────────────────
-    // Mặc định MỞ khi có việc đang chờ: badge mà nằm trong nhóm gập thì
-    // người ta không thấy, và "có việc cần làm" là thứ phải thấy.
+    const workItems: DrawerItem[] = [];
     if (isMember) {
-      const workItems: DrawerItem[] = [
-        {
-          to: `/clans/${clanId}/todo`,
-          label: "Việc cần làm",
-          icon: <IconList className={ic} />,
-          badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
-        },
-      ];
+      workItems.push({
+        to: `/clans/${clanId}/todo`,
+        label: "Việc cần làm",
+        icon: <IconList className={ic} />,
+        badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
+      });
       // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
       workItems.push({
         to: `/clans/${clanId}/tools`,
         label: "Công cụ",
         icon: <IconSettings className={ic} />,
       });
-      sections.push({
-        id: "clan-work",
-        label: "Cập nhật & Công cụ",
-        items: workItems,
-        defaultOpen: todoCount > 0,
-      });
     }
-
-    // ─── Quản trị dòng họ ─────────────────────────────────────────
     if (isAdmin) {
-      const adminItems: DrawerItem[] = [
-        {
-          to: `/clans/${clanId}/members`,
-          label: "Thành viên",
-          icon: <IconUserPlus className={ic} />,
-        },
-      ];
+      workItems.push({
+        to: `/clans/${clanId}/members`,
+        label: "Thành viên",
+        icon: <IconUserPlus className={ic} />,
+      });
       if (feat("inlaws")) {
-        adminItems.push({
+        workItems.push({
           to: `/clans/${clanId}/inlaws`,
           label: "Liên kết dòng họ",
           icon: <IconLink className={ic} />,
           badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
         });
       }
-      adminItems.push({
+      workItems.push({
         to: `/clans/${clanId}/settings`,
         label: "Cài đặt dòng họ",
         icon: <IconSettings className={ic} />,
       });
+    }
+    if (workItems.length) {
       sections.push({
-        id: "clan-admin",
-        label: "Quản trị dòng họ",
-        items: adminItems,
-        // Cài đặt dòng họ là mục được xem nhiều thứ TƯ trong một dòng họ
-        // (38 lượt) — gập nó lại là giấu thứ người ta hay tìm.
+        id: "clan-work",
+        label: "Công cụ & Quản trị",
+        items: workItems,
+        // Có việc / liên kết đang chờ thì badge phải thấy; còn không, Cài đặt dòng họ vẫn là mục hay
+        // tìm (xem nhiều thứ tư trong một dòng họ) — nên mặc định mở.
         defaultOpen: true,
       });
     }
