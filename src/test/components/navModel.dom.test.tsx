@@ -89,6 +89,12 @@ describe("buildSections — nhóm Quản trị hệ thống", () => {
     expect(group.defaultOpen).toBe(false);
   });
 
+  it("nhóm Chung gập được và mặc định mở", () => {
+    const global = build().find((x) => x.id === "global")!;
+    expect(global.collapsible).not.toBe(false);
+    expect(global.defaultOpen).toBe(true);
+  });
+
   it("người thường không thấy nhóm quản trị", () => {
     expect(ids(build({ profile: normal }))).not.toContain("platform-admin");
     const all = build({ profile: normal }).flatMap((x) => x.items.map((i) => i.to));
