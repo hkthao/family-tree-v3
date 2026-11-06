@@ -1,33 +1,42 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import {
-  IconBell,
-  IconCheck,
-  IconChevronDown,
-  IconChevronUp,
-} from "@/components/icons";
+import { Chip, type ChipTone } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { IconTile } from "@/components/IconTile";
+import { IconBell, IconCheck, IconGlobe, IconSearch, IconTag } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
 import {
   announcementsMarkAllRead,
   listAnnouncements,
   listMyAnnouncementReads,
   markAnnouncementRead,
   type Announcement,
+  type AnnouncementLevel,
 } from "@/lib/queries/announcements";
-import {
-  LEVEL_ACCENT,
-  LEVEL_BADGE,
-  LEVEL_LABEL,
-  formatRelative,
-} from "@/lib/announcementFormat";
+import { LEVEL_LABEL, formatRelative } from "@/lib/announcementFormat";
 import { queryKeys } from "@/lib/queries/keys";
+import { unaccent } from "@/lib/unaccent";
+
+const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
+  info: "info",
+  update: "primary",
+  warning: "warning",
+  critical: "danger",
+};
+
+const LEVELS = Object.keys(LEVEL_LABEL) as AnnouncementLevel[];
 
 /**
  * `/announcements` — danh sách thông báo hệ thống cho mọi user đã
@@ -71,6 +80,21 @@ export default function Announcements() {
   const rows = listQ.data ?? [];
   const unreadCount = rows.filter((r) => !reads.has(r.id)).length;
 
+  const [search, setSearch] = useState("");
+  const [levelFilter, setLevelFilter] = useState<AnnouncementLevel | "">("");
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const filtered = useMemo(() => {
+    const q = unaccent(search.trim()).toLowerCase();
+    return rows.filter(
+      (r) =>
+        (!levelFilter || r.level === levelFilter) &&
+        (!unreadOnly || !reads.has(r.id)) &&
+        (!q || unaccent(`${r.title} ${r.body}`).toLowerCase().includes(q)),
+    );
+  }, [rows, search, levelFilter, unreadOnly, reads]);
+  const paging = useClientPaging(filtered, 20);
+  const filtering = !!search.trim() || !!levelFilter || unreadOnly;
+
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
@@ -104,8 +128,70 @@ export default function Announcements() {
           }
         />
 
+        {/* Mức độ và "chỉ chưa đọc" nằm trong ngăn kéo của phễu — như Danh bạ. */}
+        <CollapsibleFilters
+          activeCount={(levelFilter ? 1 : 0) + (unreadOnly ? 1 : 0)}
+          onReset={() => {
+            setLevelFilter("");
+            setUnreadOnly(false);
+            paging.patchAndResetPage({});
+          }}
+          title="Lọc thông báo"
+          search={(toggle) => (
+            <SearchInput
+              label="Tìm thông báo"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                paging.patchAndResetPage({});
+              }}
+              placeholder="Tìm theo tiêu đề / nội dung…"
+              rightSlot={toggle}
+            />
+          )}
+        >
+          <div className="flex flex-col gap-3">
+            <Select
+              value={levelFilter}
+              onChange={(e) => {
+                setLevelFilter(e.target.value as AnnouncementLevel | "");
+                paging.patchAndResetPage({});
+              }}
+              aria-label="Lọc theo mức độ"
+              icon={<IconTag />}
+              className="h-11 w-full text-base"
+            >
+              <option value="">Mọi mức độ</option>
+              {LEVELS.map((l) => (
+                <option key={l} value={l}>
+                  {LEVEL_LABEL[l]}
+                </option>
+              ))}
+            </Select>
+            {user && (
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={unreadOnly}
+                  onChange={(e) => {
+                    setUnreadOnly(e.target.checked);
+                    paging.patchAndResetPage({});
+                  }}
+                  className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                />
+                <span>
+                  <span className="font-medium">Chỉ chưa đọc</span>
+                  <span className="block text-sm text-muted-foreground">Ẩn các thông báo bạn đã đọc.</span>
+                </span>
+              </label>
+            )}
+          </div>
+        </CollapsibleFilters>
+
         {listQ.isLoading && (
-          <p className="text-muted-foreground">Đang tải…</p>
+          <div className="rounded-xl border bg-card p-4 shadow-sm">
+            <p className="text-muted-foreground">Đang tải…</p>
+          </div>
         )}
         {listQ.error && (
           <Alert variant="destructive">
@@ -114,40 +200,42 @@ export default function Announcements() {
             </AlertDescription>
           </Alert>
         )}
-        {!listQ.isLoading && rows.length === 0 && (
-          <p className="text-muted-foreground italic">
-            Chưa có thông báo nào.
-          </p>
+        {!listQ.isLoading && filtered.length === 0 && (
+          <EmptyState
+            icon={filtering ? <IconSearch className="h-10 w-10" /> : <IconBell className="h-10 w-10" />}
+            title={filtering ? "Không có thông báo nào khớp" : "Chưa có thông báo nào"}
+            description={filtering ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : undefined}
+          />
         )}
 
-        <ul className="space-y-3">
-          {rows.map((row) => (
-            <AnnouncementCard
-              key={row.id}
-              row={row}
-              isRead={reads.has(row.id)}
-            />
-          ))}
-        </ul>
+        {filtered.length > 0 && (
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+            {paging.paged.map((row) => (
+              <AnnouncementRow key={row.id} row={row} isRead={reads.has(row.id)} />
+            ))}
+          </ul>
+        )}
+
+        {filtered.length > 0 && (
+          <Pagination
+            page={paging.page}
+            totalPages={paging.totalPages}
+            total={paging.total}
+            pageSize={paging.pageSize}
+            unit="thông báo"
+            onPageChange={paging.setPage}
+            pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+            onPageSizeChange={paging.setPageSize}
+          />
+        )}
       </main>
     </div>
   );
 }
 
-function AnnouncementCard({
-  row,
-  isRead,
-}: {
-  row: Announcement;
-  isRead: boolean;
-}) {
+/** Bấm một dòng: đánh dấu đã đọc (nếu chưa) rồi mở trang chi tiết đầy đủ. */
+function AnnouncementRow({ row, isRead }: { row: Announcement; isRead: boolean }) {
   const qc = useQueryClient();
-  const [expanded, setExpanded] = useState(false);
-
-  // Body dài (nhiều dòng hoặc > ~160 ký tự) thì cho thu gọn; ngắn thì
-  // hiện nguyên, không cần nút.
-  const isLong = row.body.length > 160 || row.body.includes("\n");
-
   const markM = useMutation({
     mutationFn: () => markAnnouncementRead(row.id),
     onSuccess: () => {
@@ -155,123 +243,44 @@ function AnnouncementCard({
       qc.invalidateQueries({ queryKey: queryKeys.announcementsUnreadCount() });
     },
   });
-
-  function toggle() {
-    const next = !expanded;
-    setExpanded(next);
-    // Mở rộng = đã xem → tự đánh dấu đã đọc.
-    if (next && !isRead && !markM.isPending) markM.mutate();
-  }
-
+  const tone = LEVEL_TONE[row.level];
   return (
-    <li
-      className={`relative overflow-hidden rounded-lg border bg-card shadow-sm transition-colors ${
-        isRead ? "opacity-80" : ""
-      }`}
-    >
-      {/* Dải accent màu theo level ở mép trái — chỉ hiện khi chưa đọc. */}
-      {!isRead && (
-        <span
-          aria-hidden="true"
-          className={`absolute left-0 top-0 bottom-0 w-1 ${LEVEL_ACCENT[row.level]}`}
-        />
-      )}
-
-      <div className="px-5 py-3 space-y-1.5">
-        <button
-          type="button"
-          onClick={isLong ? toggle : undefined}
-          aria-expanded={isLong ? expanded : undefined}
-          className={`block w-full text-left rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-            isLong ? "cursor-pointer" : "cursor-default"
-          }`}
-        >
-          <h3
-            className={`text-lg leading-snug ${
-              isRead ? "font-medium text-foreground/80" : "font-semibold"
-            }`}
-          >
-            {row.title}
-          </h3>
-        </button>
-
-        <p
-          className={`text-sm leading-relaxed text-muted-foreground ${
-            expanded || !isLong
-              ? "whitespace-pre-line"
-              : "line-clamp-2"
-          }`}
-        >
-          {row.body}
-        </p>
-
-        {isLong && (
-          <button
-            type="button"
-            onClick={toggle}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
-            {expanded ? (
-              <>
-                <IconChevronUp className="h-4 w-4" />
-                Thu gọn
-              </>
-            ) : (
-              <>
-                <IconChevronDown className="h-4 w-4" />
-                Xem thêm
-              </>
-            )}
-          </button>
-        )}
-
-        <div className="flex items-center gap-2 flex-wrap text-xs pt-0.5">
+    <li className={isRead ? "opacity-80" : ""}>
+      <Link
+        to={`/announcements/${row.id}`}
+        onClick={() => {
+          if (!isRead && !markM.isPending) markM.mutate();
+        }}
+        className="flex items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={IconBell} tone={tone} />
+        <div className="min-w-0 flex-1">
+          <p className={`truncate ${isRead ? "font-medium text-foreground/80" : "font-semibold"}`}>{row.title}</p>
+          <p className="mt-0.5 line-clamp-2 whitespace-pre-line text-sm text-muted-foreground">{row.body}</p>
           {row.published_at && (
             <time
-              className="text-muted-foreground tabular-nums"
+              className="mt-0.5 block text-xs tabular-nums text-muted-foreground/80"
               dateTime={row.published_at}
               title={new Date(row.published_at).toLocaleString("vi-VN")}
             >
               {formatRelative(row.published_at)}
             </time>
           )}
-          {row.is_public && (
-            <span className="text-muted-foreground">· Public</span>
-          )}
-          <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${LEVEL_BADGE[row.level]}`}
-          >
-            {LEVEL_LABEL[row.level]}
-          </span>
-
-          {/* Đánh dấu đã đọc / trạng thái đã đọc — đẩy sang phải. */}
-          <span className="ml-auto inline-flex items-center gap-3">
-            {isRead ? (
-              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                <IconCheck className="h-3.5 w-3.5" />
-                Đã đọc
-              </span>
-            ) : (
-              <button
-                type="button"
-                onClick={() => markM.mutate()}
-                disabled={markM.isPending}
-                className="inline-flex items-center gap-1 text-primary hover:underline disabled:opacity-60"
-              >
-                <IconCheck className="h-3.5 w-3.5" />
-                {markM.isPending ? "Đang lưu…" : "Đánh dấu đã đọc"}
-              </button>
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            {row.is_public && (
+              <Chip tone="primary" icon={<IconGlobe />}>
+                Public
+              </Chip>
             )}
-            <Link
-              to={`/announcements/${row.id}`}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Chi tiết →
-            </Link>
-          </span>
+            <Chip tone={isRead ? "neutral" : "warning"} icon={<IconCheck />}>
+              {isRead ? "Đã đọc" : "Chưa đọc"}
+            </Chip>
+            <Chip tone={tone} icon={<IconBell />}>
+              {LEVEL_LABEL[row.level]}
+            </Chip>
+          </div>
         </div>
-      </div>
+      </Link>
     </li>
   );
 }
-

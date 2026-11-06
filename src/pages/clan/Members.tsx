@@ -3,13 +3,27 @@ import { useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { Chip, type ChipTone } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
+import { SidePanel } from "@/components/SidePanel";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { InviteLinkCard } from "@/components/InviteLinkCard";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconMail, IconShield, IconTrash, IconUserPlus } from "@/components/icons";
+import {
+  IconCalendar,
+  IconCheck,
+  IconMail,
+  IconPencil,
+  IconSearch,
+  IconShield,
+  IconTag,
+  IconUser,
+  IconUserPlus,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -23,6 +37,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
+import { ViewEditActions } from "@/components/ui/view-edit-actions";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
 import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
@@ -34,6 +50,7 @@ import {
   listClanMembers,
   removeMember,
   setMemberSelfVerified,
+  type ClanMember,
   type ClanRole,
 } from "@/lib/queries/members";
 
@@ -59,18 +76,6 @@ export default function Members() {
     kind: "success" | "error";
     text: string;
   } | null>(null);
-
-  const verifySelfMutation = useMutation({
-    mutationFn: (args: { uid: string; verified: boolean }) =>
-      setMemberSelfVerified(clanId!, args.uid, args.verified),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.clanMembers(clanId ?? "", userId),
-      });
-    },
-    onError: (e) =>
-      toast.error("Không cập nhật được", { description: (e as Error).message }),
-  });
 
   const inviteMutation = useMutation({
     mutationFn: () => inviteMemberByEmail(clanId!, inviteEmail.trim(), inviteRole),
@@ -103,39 +108,30 @@ export default function Members() {
     },
   });
 
-  const roleMutation = useMutation({
-    mutationFn: ({ uid, role }: { uid: string; role: ClanRole }) =>
-      changeMemberRole(clanId!, uid, role),
-    onSuccess: (_data, vars) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.clanMembers(clanId!, userId),
-      });
-      toast.success(`Đã đổi vai trò sang ${ROLE_LABEL[vars.role]}`);
-    },
-    onError: (e) =>
-      toast.error("Không đổi được", { description: (e as Error).message }),
-  });
-
   const removeMutation = useMutation({
     mutationFn: (uid: string) => removeMember(clanId!, uid),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.clanMembers(clanId!, userId),
       });
+      setPanel(null);
       toast.success("Đã xoá thành viên");
     },
     onError: (e) =>
       toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
+  const [panel, setPanel] = useState<PanelState>(null);
   const [memberSearch, setMemberSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<ClanRole | "">("");
   const filteredMembers = useMemo(() => {
     const q = unaccent(memberSearch.trim()).toLowerCase();
-    if (!q) return members ?? [];
-    return (members ?? []).filter((m) =>
-      unaccent(m.display_name ?? "").toLowerCase().includes(q),
+    return (members ?? []).filter(
+      (m) =>
+        (!roleFilter || m.role === roleFilter) &&
+        (!q || unaccent(m.display_name ?? "").toLowerCase().includes(q)),
     );
-  }, [members, memberSearch]);
+  }, [members, memberSearch, roleFilter]);
   const paging = useClientPaging(filteredMembers, 20);
 
   if (!clanId) return null;
@@ -238,155 +234,315 @@ export default function Members() {
           </form>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Danh sách thành viên</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {members && members.length > 0 && (
-              <SearchInput
-                label="Tìm thành viên"
-                value={memberSearch}
-                onChange={(e) => {
-                  setMemberSearch(e.target.value);
-                  paging.patchAndResetPage({});
-                }}
-                placeholder="Tìm theo tên…"
-                className="mb-3"
+        {/* Vai trò nằm trong ngăn kéo của phễu — như Danh bạ. */}
+        <CollapsibleFilters
+          activeCount={roleFilter ? 1 : 0}
+          onReset={() => {
+            setRoleFilter("");
+            paging.patchAndResetPage({});
+          }}
+          title="Lọc thành viên"
+          search={(toggle) => (
+            <SearchInput
+              label="Tìm thành viên"
+              value={memberSearch}
+              onChange={(e) => {
+                setMemberSearch(e.target.value);
+                paging.patchAndResetPage({});
+              }}
+              placeholder="Tìm theo tên…"
+              rightSlot={toggle}
+            />
+          )}
+        >
+          <div className="flex flex-col gap-3">
+            <Select
+              value={roleFilter}
+              onChange={(e) => {
+                setRoleFilter(e.target.value as ClanRole | "");
+                paging.patchAndResetPage({});
+              }}
+              aria-label="Lọc theo vai trò"
+              icon={<IconTag />}
+              className="h-11 w-full text-base"
+            >
+              <option value="">Mọi vai trò</option>
+              {(Object.keys(ROLE_LABEL) as ClanRole[]).map((r) => (
+                <option key={r} value={r}>
+                  {ROLE_LABEL[r]}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </CollapsibleFilters>
+
+        {isLoading && (
+          <div className="rounded-xl border bg-card p-4 shadow-sm">
+            <p className="text-muted-foreground">Đang tải…</p>
+          </div>
+        )}
+
+        {!isLoading && filteredMembers.length === 0 && (
+          <EmptyState
+            icon={<IconSearch className="h-10 w-10" />}
+            title={memberSearch.trim() || roleFilter ? "Không có thành viên nào khớp" : "Chưa có ai khác"}
+            description={
+              memberSearch.trim() || roleFilter
+                ? "Thử bỏ bớt bộ lọc hoặc từ khoá."
+                : "Dùng ô email phía trên để mời thành viên — họ cần đăng ký tài khoản trước."
+            }
+          />
+        )}
+
+        {filteredMembers.length > 0 && (
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+            {paging.paged.map((m) => (
+              <MemberRow
+                key={m.user_id}
+                member={m}
+                isSelf={m.user_id === userId}
+                onOpen={() => setPanel({ mode: "view", member: m })}
               />
-            )}
-            {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
-            {members && members.length > 0 && filteredMembers.length === 0 && (
-              <p className="text-muted-foreground">Không có thành viên nào khớp.</p>
-            )}
-            {members && members.length === 0 && (
-              <p className="text-muted-foreground">
-                Chưa có ai khác. Dùng ô email phía trên để mời thành viên — họ
-                cần đăng ký tài khoản trước, sau đó bạn gõ đúng email để gửi
-                lời mời.
-              </p>
-            )}
-            {filteredMembers.length > 0 && (
-              <ul className="divide-y">
-                {paging.paged.map((m) => (
-                  <li key={m.user_id} className="py-3 space-y-2">
-                    <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <div className="min-w-0">
-                        <p className="font-medium">
-                          {m.display_name ?? "(chưa đặt tên)"}
-                          {m.user_id === userId && (
-                            <span className="ml-2 text-sm text-muted-foreground">
-                              (bạn)
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Tham gia: {new Date(m.created_at).toLocaleDateString("vi-VN")}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Select
-                          value={m.role}
-                          disabled={m.user_id === userId}
-                          onChange={(e) =>
-                            roleMutation.mutate({
-                              uid: m.user_id,
-                              role: e.target.value as ClanRole,
-                            })
-                          }
-                          icon={<IconShield />}
-                          className="h-10 w-auto text-sm"
-                          aria-label={`Vai trò của ${m.display_name ?? m.user_id}`}
-                        >
-                          <option value="viewer">Xem</option>
-                          <option value="editor">Biên tập</option>
-                          <option value="admin">Quản trị</option>
-                        </Select>
-                        {m.user_id !== userId && (
-                          <Button
-                            variant="destructive-outline"
-                            size="sm"
-                            onClick={async () => {
-                              const ok = await confirm({
-                                title: `Xoá ${m.display_name ?? "thành viên"} khỏi clan?`,
-                                description:
-                                  "Tài khoản người đó vẫn tồn tại trên hệ thống, chỉ bị gỡ khỏi dòng họ này.",
-                                confirmLabel: "Xoá",
-                                destructive: true,
-                              });
-                              if (ok) removeMutation.mutate(m.user_id);
-                            }}
-                            disabled={removeMutation.isPending}
-                            aria-label="Xoá thành viên"
-                          >
-                            <IconTrash className="h-4 w-4 sm:mr-1.5" />
-                            <span className="hidden sm:inline">Xoá</span>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    {/* Self-person claim — shown when the member has
-                        picked themselves in the tree. Admin gets a
-                        verify toggle so the ✓ admin-confirmed badge
-                        on the lineage page is meaningful. */}
-                    {m.self_person_id && (
-                      <div className="flex items-center justify-between gap-2 flex-wrap text-sm pl-1 border-l-2 border-muted ml-1">
-                        <div className="min-w-0">
-                          <span className="text-muted-foreground mr-1">Tự xưng:</span>
-                          <Link
-                            to={`/clans/${clanId}/people/${m.self_person_id}`}
-                            className="font-medium hover:text-primary"
-                          >
-                            {m.self_person_full_name ?? "(người đã xoá)"}
-                          </Link>
-                          {m.self_person_verified ? (
-                            <span className="ml-2 inline-flex items-center gap-1 text-xs text-accent">
-                              <IconCheck className="h-3.5 w-3.5" />
-                              Đã xác nhận
-                            </span>
-                          ) : (
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              Chờ xác nhận
-                            </span>
-                          )}
-                        </div>
-                        <Button
-                          size="sm"
-                          variant={m.self_person_verified ? "outline" : "default"}
-                          onClick={() =>
-                            verifySelfMutation.mutate({
-                              uid: m.user_id,
-                              verified: !m.self_person_verified,
-                            })
-                          }
-                          disabled={verifySelfMutation.isPending}
-                        >
-                          <IconCheck className="h-4 w-4 mr-1.5" />
-                          {m.self_person_verified ? "Bỏ xác nhận" : "Xác nhận"}
-                        </Button>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {filteredMembers.length > 0 && (
-              <div className="pt-3">
-                <Pagination
-                  page={paging.page}
-                  totalPages={paging.totalPages}
-                  total={paging.total}
-                  pageSize={paging.pageSize}
-                  unit="thành viên"
-                  onPageChange={paging.setPage}
-                  pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
-                  onPageSizeChange={paging.setPageSize}
-                />
-              </div>
-            )}
-        </CardContent>
-      </Card>
+            ))}
+          </ul>
+        )}
+
+        {filteredMembers.length > 0 && (
+          <Pagination
+            page={paging.page}
+            totalPages={paging.totalPages}
+            total={paging.total}
+            pageSize={paging.pageSize}
+            unit="thành viên"
+            onPageChange={paging.setPage}
+            pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+            onPageSizeChange={paging.setPageSize}
+          />
+        )}
+
+        <SidePanel
+          open={panel !== null}
+          title={panel?.mode === "edit" ? "Sửa thành viên" : "Thành viên"}
+          subtitle={panel?.member.display_name ?? undefined}
+          onClose={() => setPanel(null)}
+          guard={panel?.mode === "edit"}
+        >
+          {panel && (
+            <MemberForm
+              key={`${panel.mode}-${panel.member.user_id}`}
+              clanId={clanId}
+              member={panel.member}
+              isSelf={panel.member.user_id === userId}
+              readOnly={panel.mode === "view"}
+              onEdit={() => setPanel({ mode: "edit", member: panel.member })}
+              onCancel={() =>
+                setPanel(panel.mode === "edit" ? { mode: "view", member: panel.member } : null)
+              }
+              onSaved={() => {
+                setPanel(null);
+                queryClient.invalidateQueries({ queryKey: queryKeys.clanMembers(clanId, userId) });
+              }}
+              onRemove={async () => {
+                const ok = await confirm({
+                  title: `Xoá ${panel.member.display_name ?? "thành viên"} khỏi clan?`,
+                  description:
+                    "Tài khoản người đó vẫn tồn tại trên hệ thống, chỉ bị gỡ khỏi dòng họ này.",
+                  confirmLabel: "Xoá",
+                  destructive: true,
+                });
+                if (ok) removeMutation.mutate(panel.member.user_id);
+              }}
+            />
+          )}
+        </SidePanel>
     </div>
+  );
+}
+
+/** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa vai trò / xác nhận tự xưng của một thành viên. */
+type PanelState = { mode: "view" | "edit"; member: ClanMember } | null;
+
+/** Vai trò: quản trị = chính; biên tập = xanh dương; xem = xám. */
+const ROLE_STYLE: Record<ClanRole, { tone: ChipTone; icon: React.ComponentType<{ className?: string }> }> = {
+  admin: { tone: "primary", icon: IconShield },
+  editor: { tone: "info", icon: IconPencil },
+  viewer: { tone: "neutral", icon: IconUser },
+};
+
+function MemberRow({
+  member: m,
+  isSelf,
+  onOpen,
+}: {
+  member: ClanMember;
+  isSelf: boolean;
+  onOpen: () => void;
+}) {
+  const role = ROLE_STYLE[m.role];
+  const RoleIcon = role.icon;
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{m.display_name ?? "(chưa đặt tên)"}</p>
+          <p className="text-xs text-muted-foreground/80">
+            Tham gia {new Date(m.created_at).toLocaleDateString("vi-VN")}
+          </p>
+          {m.self_person_id && (
+            <p className="mt-0.5 truncate text-sm text-muted-foreground">
+              Tự xưng: {m.self_person_full_name ?? "(người đã xoá)"}
+            </p>
+          )}
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            {isSelf && (
+              <Chip tone="neutral" icon={<IconUser />}>
+                Bạn
+              </Chip>
+            )}
+            {m.self_person_id && (
+              <Chip
+                tone={m.self_person_verified ? "success" : "warning"}
+                icon={<IconCheck />}
+              >
+                {m.self_person_verified ? "Đã xác nhận" : "Chờ xác nhận"}
+              </Chip>
+            )}
+            <Chip tone={role.tone} icon={<RoleIcon />}>
+              {ROLE_LABEL[m.role]}
+            </Chip>
+          </div>
+        </div>
+      </button>
+    </li>
+  );
+}
+
+function MemberForm({
+  clanId,
+  member: m,
+  isSelf,
+  readOnly,
+  onEdit,
+  onCancel,
+  onSaved,
+  onRemove,
+}: {
+  clanId: string;
+  member: ClanMember;
+  isSelf: boolean;
+  readOnly: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSaved: () => void;
+  onRemove: () => void;
+}) {
+  const toast = useToast();
+  const [role, setRole] = useState<ClanRole>(m.role);
+  const [verified, setVerified] = useState(m.self_person_verified);
+  const changed = role !== m.role || verified !== m.self_person_verified;
+
+  const saveM = useMutation({
+    // Chỉ gọi những thao tác thật sự đổi; dừng ở lỗi đầu tiên.
+    mutationFn: async () => {
+      if (role !== m.role) await changeMemberRole(clanId, m.user_id, role);
+      if (verified !== m.self_person_verified) await setMemberSelfVerified(clanId, m.user_id, verified);
+    },
+    onSuccess: () => {
+      toast.success("Đã cập nhật thành viên");
+      onSaved();
+    },
+    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+  });
+
+  return (
+    <form
+      className="space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (changed) saveM.mutate();
+      }}
+    >
+      <ReadOnlyFieldset readOnly={readOnly}>
+        <div className="space-y-1.5">
+          <Label htmlFor="mem-name">Tên hiển thị</Label>
+          <Input id="mem-name" icon={<IconUser />} value={m.display_name ?? ""} readOnly />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="mem-joined">Ngày tham gia</Label>
+          <Input
+            id="mem-joined"
+            icon={<IconCalendar />}
+            value={new Date(m.created_at).toLocaleDateString("vi-VN")}
+            readOnly
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="mem-role">Vai trò</Label>
+          <Select
+            id="mem-role"
+            icon={<IconShield />}
+            value={role}
+            disabled={isSelf}
+            onChange={(e) => setRole(e.target.value as ClanRole)}
+          >
+            <option value="viewer">Xem</option>
+            <option value="editor">Biên tập</option>
+            <option value="admin">Quản trị</option>
+          </Select>
+          {isSelf && (
+            <p className="text-xs text-muted-foreground">Không tự đổi vai trò của chính mình.</p>
+          )}
+        </div>
+        {/* Tự xưng: hiện khi thành viên đã chọn mình trong cây. Admin xác nhận để huy hiệu
+            "admin đã xác nhận" ở trang phả hệ có ý nghĩa. */}
+        {m.self_person_id && (
+          <>
+            <div className="space-y-1.5">
+              <Label htmlFor="mem-self">Tự xưng là</Label>
+              <Input
+                id="mem-self"
+                icon={<IconUser />}
+                value={m.self_person_full_name ?? "(người đã xoá)"}
+                readOnly
+              />
+              <Link
+                to={`/clans/${clanId}/people/${m.self_person_id}`}
+                className="inline-block text-sm text-primary hover:underline"
+              >
+                Mở trang người này →
+              </Link>
+            </div>
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={verified}
+                onChange={(e) => setVerified(e.target.checked)}
+                className="mt-1 h-4 w-4 shrink-0 accent-primary"
+              />
+              <span>
+                <span className="font-medium">Đã xác nhận tự xưng</span>
+                <span className="block text-sm text-muted-foreground">
+                  Bật khi bạn chắc người này đúng là người trong cây.
+                </span>
+              </span>
+            </label>
+          </>
+        )}
+      </ReadOnlyFieldset>
+
+      <ViewEditActions
+        readOnly={readOnly}
+        onEdit={onEdit}
+        onCancel={onCancel}
+        onDelete={isSelf ? undefined : onRemove}
+        saving={saveM.isPending}
+        canSave={changed}
+      />
+    </form>
   );
 }
 

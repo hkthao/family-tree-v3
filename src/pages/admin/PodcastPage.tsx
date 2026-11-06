@@ -128,7 +128,7 @@ export default function PodcastPage() {
           </div>
           {/* Hành động của cả thẻ nằm ở chân thẻ — docs/design-language.md. */}
           <div className="flex justify-end gap-2 border-t p-3">
-            <Button type="button" onClick={() => syncM.mutate()} disabled={syncM.isPending}>
+            <Button size="sm" type="button" onClick={() => syncM.mutate()} disabled={syncM.isPending}>
               <IconRefresh
                 className={`mr-1.5 h-4 w-4 ${syncM.isPending ? "animate-spin" : ""}`}
               />
@@ -580,7 +580,7 @@ function FacebookConnection() {
           )}
 
           {pages.length === 0 && (
-            <Button
+            <Button size="sm"
               onClick={() => connectM.mutate(undefined)}
               disabled={
                 connectM.isPending || !appId || !appSecret || !userToken

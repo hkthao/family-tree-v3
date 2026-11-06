@@ -89,6 +89,8 @@ Hành động của cả thẻ **không đặt ở header** (vd nút "Thêm ản
   "Xem tất cả →". Prop `action` ở header **chỉ dành cho thông tin phụ không bấm
   được** ("3 sự kiện", dung lượng đã dùng).
 
+**Trang quản trị dùng `size="sm"` (h-10) cho mọi nút hành động** — màn quản trị dày thông tin, nút cỡ mặc định (h-12) trông quá to.
+
 **Cùng một hàng thì cùng một `size`.** Trộn `size="sm"` (h-10) với mặc định
 (h-12) cho ra hai nút cao thấp so le, nhìn như lỗi dựng trang. Muốn nhấn nút
 chính thì đổi `variant`, đừng đổi chiều cao.
