@@ -20,6 +20,7 @@ import {
   IconX,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { RestingPlacePhotosSection } from "@/components/RestingPlacePhotosSection";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -397,6 +398,11 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
 
         {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
         </fieldset>
+
+        {/* Ảnh chỉ thêm được khi nơi an nghỉ đã có (đã lưu); thêm/gỡ lưu ngay, không chờ nút Lưu. */}
+        {isEdit && graveId && (
+          <RestingPlacePhotosSection placeId={graveId} editable={!readOnly && canEdit} />
+        )}
 
         {readOnly ? (
           canEdit && (
