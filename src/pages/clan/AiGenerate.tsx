@@ -263,29 +263,12 @@ export default function AiGenerate() {
       {prompt && (
         <Card>
           <CardHeader>
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div>
-                <CardTitle>3. Copy prompt + paste vào AI</CardTitle>
-                <CardDescription>
-                  Mở ChatGPT (chat.openai.com), Gemini (gemini.google.com)
-                  hoặc Claude (claude.ai), paste prompt → AI trả về nội
-                  dung file → save thành <code>.{format}</code> → nhập vào hệ thống.
-                </CardDescription>
-              </div>
-              <Button onClick={copyToClipboard} size="sm">
-                {copied ? (
-                  <>
-                    <IconCheck className="h-4 w-4 mr-1.5" />
-                    Đã chép
-                  </>
-                ) : (
-                  <>
-                    <IconCopy className="h-4 w-4 mr-1.5" />
-                    Chép prompt
-                  </>
-                )}
-              </Button>
-            </div>
+            <CardTitle>3. Copy prompt + paste vào AI</CardTitle>
+            <CardDescription>
+              Mở ChatGPT (chat.openai.com), Gemini (gemini.google.com)
+              hoặc Claude (claude.ai), paste prompt → AI trả về nội
+              dung file → save thành <code>.{format}</code> → nhập vào hệ thống.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Textarea
@@ -320,6 +303,21 @@ export default function AiGenerate() {
               </AlertDescription>
             </Alert>
           </CardContent>
+          <CardFooter className="justify-end gap-2 border-t pt-4">
+            <Button onClick={copyToClipboard} size="sm">
+              {copied ? (
+                <>
+                  <IconCheck className="h-4 w-4 mr-1.5" />
+                  Đã chép
+                </>
+              ) : (
+                <>
+                  <IconCopy className="h-4 w-4 mr-1.5" />
+                  Chép prompt
+                </>
+              )}
+            </Button>
+          </CardFooter>
         </Card>
       )}
 

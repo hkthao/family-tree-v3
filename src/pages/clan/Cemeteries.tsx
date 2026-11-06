@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Fab } from "@/components/Fab";
@@ -11,11 +11,15 @@ import {
   IconGrave,
   IconMapPin,
   IconPencil,
+  IconSearch,
   IconScroll,
   IconTrash,
   IconX,
 } from "@/components/icons";
+import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { RecordDates } from "@/components/RecordDates";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
@@ -24,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
 import {
   createCemetery,
   deleteCemetery,
@@ -31,6 +36,7 @@ import {
   updateCemetery,
   type CemeteryListItem,
 } from "@/lib/queries/cemeteries";
+import { unaccent } from "@/lib/unaccent";
 
 export default function Cemeteries() {
   const { clan } = useClanContext();
@@ -50,6 +56,17 @@ export default function Cemeteries() {
   // editing: null = closed, "new" = add form, or a cemetery being edited
   const [editing, setEditing] = useState<CemeteryListItem | "new" | null>(null);
   const invalidate = () => qc.invalidateQueries({ queryKey: ["cemeteries", clan.id] });
+
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    const q = unaccent(search.trim()).toLowerCase();
+    if (!q) return cemeteries ?? [];
+    return (cemeteries ?? []).filter((c) =>
+      unaccent(`${c.name} ${c.address ?? ""}`).toLowerCase().includes(q),
+    );
+  }, [cemeteries, search]);
+  const { page, totalPages, pageSize, total, paged, setPage, setPageSize, patchAndResetPage } =
+    useClientPaging(filtered, 20);
 
   return (
     <div className="space-y-3">
@@ -84,16 +101,39 @@ export default function Cemeteries() {
         />
       )}
 
-      {cemeteries && cemeteries.length === 0 && editing === null && (
-        <p className="text-sm text-muted-foreground">
-          Chưa có cơ sở nào.{canEdit ? " Bấm 'Thêm cơ sở' để tạo." : ""}
-        </p>
-      )}
+      <SearchInput
+        label="Tìm cơ sở"
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          patchAndResetPage({});
+        }}
+        placeholder="Tìm theo tên / địa chỉ…"
+      />
 
-      <ul className="space-y-2">
-        {(cemeteries ?? []).map((c) => (
+      {!cemeteries ? (
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        editing === null && (
+          <EmptyState
+            icon={<IconSearch className="h-10 w-10" />}
+            title={search.trim() ? "Không có cơ sở nào khớp" : "Chưa có cơ sở nào"}
+            description={
+              search.trim()
+                ? "Thử bỏ bớt từ khoá."
+                : canEdit
+                  ? "Bấm nút '+' để tạo cơ sở đầu tiên."
+                  : "Chưa có dữ liệu."
+            }
+          />
+        )
+      ) : (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paged.map((c) => (
           <li key={c.id}>
-            <div className="rounded-xl border bg-card shadow-sm p-3">
+            <div className="p-3 transition-colors hover:bg-muted/40">
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{c.name}</p>
@@ -150,8 +190,22 @@ export default function Cemeteries() {
               </div>
             </div>
           </li>
-        ))}
-      </ul>
+          ))}
+        </ul>
+      )}
+
+      {filtered.length > 0 && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={pageSize}
+          unit="cơ sở"
+          onPageChange={setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={setPageSize}
+        />
+      )}
 
       <p className="text-xs text-muted-foreground pt-2">
         <Link to={`/clans/${clan.id}/graves`} className="inline-flex items-center gap-1 text-primary hover:underline">

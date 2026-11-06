@@ -151,7 +151,7 @@ export default function Inlaws() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
@@ -185,7 +185,9 @@ export default function Inlaws() {
       </SegmentedControl>
 
       {isLoading && (
-        <p className="text-muted-foreground text-sm">Đang tải…</p>
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
       )}
 
       {tab === "confirmed" &&
@@ -197,7 +199,7 @@ export default function Inlaws() {
             description="Nối với dòng họ khác (thông gia, cùng tổ tiên, họ hàng) để tra cứu 2 chiều."
           />
         ) : (
-          <ul className="divide-y rounded-md border bg-background">
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {confirmed.map((l) => (
               <ConfirmedRow
                 key={l.id}
@@ -239,7 +241,7 @@ export default function Inlaws() {
           <h3 className="text-sm font-medium text-primary">
             Đề nghị đến với bạn ({pendingIncoming.length})
           </h3>
-          <ul className="divide-y rounded-md border bg-background">
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {pendingIncoming.map((l) => (
               <IncomingPendingRow
                 key={l.id}
@@ -275,7 +277,7 @@ export default function Inlaws() {
           <h3 className="text-sm font-medium text-muted-foreground">
             Đề nghị tôi đã gửi ({pendingOutgoing.length})
           </h3>
-          <ul className="divide-y rounded-md border bg-background">
+          <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {pendingOutgoing.map((l) => (
               <PendingRow
                 key={l.id}

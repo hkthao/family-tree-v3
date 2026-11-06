@@ -245,33 +245,8 @@ export default function RestingPlaceDetail() {
 
       {/* Photos */}
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader>
           <CardTitle>Hình ảnh{place.photos.length > 0 ? ` (${place.photos.length}/${MAX_GRAVE_PHOTOS})` : ""}</CardTitle>
-          {canEdit && (
-            <>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) uploadM.mutate(f);
-                  e.target.value = "";
-                }}
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={uploadM.isPending || place.photos.length >= MAX_GRAVE_PHOTOS}
-                onClick={() => fileRef.current?.click()}
-                title={place.photos.length >= MAX_GRAVE_PHOTOS ? `Tối đa ${MAX_GRAVE_PHOTOS} ảnh` : undefined}
-              >
-                <IconPlus className="h-4 w-4 mr-1" />
-                {uploadM.isPending ? "Đang tải…" : "Thêm ảnh"}
-              </Button>
-            </>
-          )}
         </CardHeader>
         <CardContent>
           {place.photos.length === 0 ? (
@@ -302,6 +277,31 @@ export default function RestingPlaceDetail() {
             </div>
           )}
         </CardContent>
+        {canEdit && (
+          <CardFooter className="justify-end gap-2 border-t pt-4">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadM.mutate(f);
+                e.target.value = "";
+              }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={uploadM.isPending || place.photos.length >= MAX_GRAVE_PHOTOS}
+              onClick={() => fileRef.current?.click()}
+              title={place.photos.length >= MAX_GRAVE_PHOTOS ? `Tối đa ${MAX_GRAVE_PHOTOS} ảnh` : undefined}
+            >
+              <IconPlus className="h-4 w-4 mr-1" />
+              {uploadM.isPending ? "Đang tải…" : "Thêm ảnh"}
+            </Button>
+          </CardFooter>
+        )}
       </Card>
 
       {/* Thông tin */}
@@ -374,13 +374,8 @@ export default function RestingPlaceDetail() {
       {/* Lịch sử cải táng */}
       {(place.relocations.length > 0 || canEdit) && (
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
+          <CardHeader>
             <CardTitle>Lịch sử cải táng</CardTitle>
-            {canEdit && !relOpen && (
-              <Button size="sm" variant="outline" onClick={() => setRelOpen(true)}>
-                <IconPlus className="h-4 w-4 mr-1" /> Thêm
-              </Button>
-            )}
           </CardHeader>
           <CardContent className="space-y-3">
             {place.relocations.length === 0 && !relOpen && (
@@ -439,6 +434,13 @@ export default function RestingPlaceDetail() {
               </div>
             )}
           </CardContent>
+          {canEdit && !relOpen && (
+            <CardFooter className="justify-end gap-2 border-t pt-4">
+              <Button type="button" size="sm" variant="outline" onClick={() => setRelOpen(true)}>
+                <IconPlus className="h-4 w-4 mr-1" /> Thêm lần cải táng
+              </Button>
+            </CardFooter>
+          )}
           {relOpen && (
             <CardFooter className="justify-end gap-2 border-t pt-4">
               <Button type="button" size="sm" variant="ghost" onClick={() => setRelOpen(false)}>
@@ -448,7 +450,6 @@ export default function RestingPlaceDetail() {
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
                 disabled={addRelM.isPending || (!relFrom.trim() && !relDate && !relNote.trim())}
                 onClick={() => addRelM.mutate()}
               >
@@ -463,22 +464,10 @@ export default function RestingPlaceDetail() {
       {/* Nhắc tảo mộ / chạp họ */}
       {canEdit && (
         <Card>
-          <CardHeader className="flex-row items-center justify-between">
+          <CardHeader>
             <CardTitle className="inline-flex items-center gap-2">
               <IconBell className="h-5 w-5" /> Nhắc tảo mộ / chạp họ
             </CardTitle>
-            {!reminderOpen && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setRTitle(`Tảo mộ ${title}`);
-                  setReminderOpen(true);
-                }}
-              >
-                <IconPlus className="h-4 w-4 mr-1" /> Đặt nhắc
-              </Button>
-            )}
           </CardHeader>
           <CardContent>
             {!reminderOpen ? (
@@ -505,6 +494,21 @@ export default function RestingPlaceDetail() {
               </div>
             )}
           </CardContent>
+          {!reminderOpen && (
+            <CardFooter className="justify-end gap-2 border-t pt-4">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setRTitle(`Tảo mộ ${title}`);
+                  setReminderOpen(true);
+                }}
+              >
+                <IconPlus className="h-4 w-4 mr-1" /> Đặt nhắc
+              </Button>
+            </CardFooter>
+          )}
           {reminderOpen && (
             <CardFooter className="justify-end gap-2 border-t pt-4">
               <Button type="button" size="sm" variant="ghost" onClick={() => setReminderOpen(false)}>
@@ -514,7 +518,6 @@ export default function RestingPlaceDetail() {
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
                 disabled={!canRemind || reminderM.isPending}
                 onClick={() => reminderM.mutate()}
               >

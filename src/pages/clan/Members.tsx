@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { InviteLinkCard } from "@/components/InviteLinkCard";
 import { useToast } from "@/components/Toast";
@@ -23,6 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { unaccent } from "@/lib/unaccent";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   changeMemberRole,
@@ -123,6 +127,16 @@ export default function Members() {
     onError: (e) =>
       toast.error("Không xoá được", { description: (e as Error).message }),
   });
+
+  const [memberSearch, setMemberSearch] = useState("");
+  const filteredMembers = useMemo(() => {
+    const q = unaccent(memberSearch.trim()).toLowerCase();
+    if (!q) return members ?? [];
+    return (members ?? []).filter((m) =>
+      unaccent(m.display_name ?? "").toLowerCase().includes(q),
+    );
+  }, [members, memberSearch]);
+  const paging = useClientPaging(filteredMembers, 20);
 
   if (!clanId) return null;
   // Treat platform admin as clan admin everywhere.
@@ -229,7 +243,22 @@ export default function Members() {
             <CardTitle>Danh sách thành viên</CardTitle>
           </CardHeader>
           <CardContent>
+            {members && members.length > 0 && (
+              <SearchInput
+                label="Tìm thành viên"
+                value={memberSearch}
+                onChange={(e) => {
+                  setMemberSearch(e.target.value);
+                  paging.patchAndResetPage({});
+                }}
+                placeholder="Tìm theo tên…"
+                className="mb-3"
+              />
+            )}
             {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+            {members && members.length > 0 && filteredMembers.length === 0 && (
+              <p className="text-muted-foreground">Không có thành viên nào khớp.</p>
+            )}
             {members && members.length === 0 && (
               <p className="text-muted-foreground">
                 Chưa có ai khác. Dùng ô email phía trên để mời thành viên — họ
@@ -237,9 +266,9 @@ export default function Members() {
                 lời mời.
               </p>
             )}
-            {members && members.length > 0 && (
+            {filteredMembers.length > 0 && (
               <ul className="divide-y">
-                {members.map((m) => (
+                {paging.paged.map((m) => (
                   <li key={m.user_id} className="py-3 space-y-2">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="min-w-0">
@@ -340,6 +369,20 @@ export default function Members() {
                   </li>
                 ))}
               </ul>
+            )}
+            {filteredMembers.length > 0 && (
+              <div className="pt-3">
+                <Pagination
+                  page={paging.page}
+                  totalPages={paging.totalPages}
+                  total={paging.total}
+                  pageSize={paging.pageSize}
+                  unit="thành viên"
+                  onPageChange={paging.setPage}
+                  pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+                  onPageSizeChange={paging.setPageSize}
+                />
+              </div>
             )}
         </CardContent>
       </Card>

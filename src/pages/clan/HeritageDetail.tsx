@@ -339,37 +339,10 @@ export default function HeritageDetail() {
 
       {/* Ảnh */}
       <Card>
-        <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
+        <CardHeader>
           <SectionTitle icon={<IconCamera className="h-4 w-4" />}>
             Hình ảnh{photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}
           </SectionTitle>
-          {canEdit && (
-            <>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
-              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
-              <div className="flex flex-wrap justify-end gap-2 w-full sm:w-auto">
-                <Button size="sm" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
-                  onClick={() => cameraRef.current?.click()}>
-                  <IconCamera className="h-4 w-4 mr-1" /> Chụp ảnh
-                </Button>
-                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
-                  onClick={() => fileRef.current?.click()}>
-                  <IconPlus className="h-4 w-4 mr-1" /> {uploadPhotoM.isPending ? "Đang tải…" : "Tải ảnh"}
-                </Button>
-                <Button size="sm" variant="outline"
-                  disabled={addPhotoLinkM.isPending || photos.length >= MAX_PHOTOS}
-                  title="Dán link ảnh có sẵn trên mạng — không tốn dung lượng"
-                  onClick={() => {
-                    const u = window.prompt("Dán link ảnh (https://…):");
-                    if (u?.trim()) addPhotoLinkM.mutate(u.trim());
-                  }}>
-                  <IconLink className="h-4 w-4 mr-1" /> Liên kết ngoài
-                </Button>
-              </div>
-            </>
-          )}
         </CardHeader>
         <CardContent>
           {photos.length === 0 ? (
@@ -403,6 +376,33 @@ export default function HeritageDetail() {
             </div>
           )}
         </CardContent>
+        {canEdit && (
+          <CardFooter className="justify-end gap-2 border-t pt-4">
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhotoM.mutate(f); e.target.value = ""; }} />
+              <div className="flex flex-wrap justify-end gap-2 w-full">
+                <Button size="sm" variant="outline" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
+                  onClick={() => fileRef.current?.click()}>
+                  <IconPlus className="h-4 w-4 mr-1" /> {uploadPhotoM.isPending ? "Đang tải…" : "Tải ảnh"}
+                </Button>
+                <Button size="sm" variant="outline"
+                  disabled={addPhotoLinkM.isPending || photos.length >= MAX_PHOTOS}
+                  title="Dán link ảnh có sẵn trên mạng — không tốn dung lượng"
+                  onClick={() => {
+                    const u = window.prompt("Dán link ảnh (https://…):");
+                    if (u?.trim()) addPhotoLinkM.mutate(u.trim());
+                  }}>
+                  <IconLink className="h-4 w-4 mr-1" /> Liên kết ngoài
+                </Button>
+                <Button size="sm" disabled={uploadPhotoM.isPending || photos.length >= MAX_PHOTOS || overQuota}
+                  onClick={() => cameraRef.current?.click()}>
+                  <IconCamera className="h-4 w-4 mr-1" /> Chụp ảnh
+                </Button>
+              </div>
+          </CardFooter>
+        )}
       </Card>
 
       {/* Ghi âm kể chuyện */}

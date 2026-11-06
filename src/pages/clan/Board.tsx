@@ -1,20 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 
 import { Fab } from "@/components/Fab";
 import { ClanPostCard } from "@/components/ClanPostCard";
-import {
-  IconScroll,
-} from "@/components/icons";
+import { EmptyState } from "@/components/EmptyState";
+import { IconScroll } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import { LIST_PAGE_SIZE_OPTIONS } from "@/hooks/useClientPaging";
 import { listClanPosts, listPendingPosts } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
-const PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 20;
 
 /**
  * `/clans/:clanId/board` — bảng tin dòng họ. Có phân trang qua
@@ -28,10 +29,11 @@ export default function Board() {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Math.max(1, Number(searchParams.get("page") ?? "1") || 1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const postsQ = useQuery({
-    queryKey: [...queryKeys.clanPosts(clanId!), page],
-    queryFn: () => listClanPosts(clanId!, { page, pageSize: PAGE_SIZE }),
+    queryKey: [...queryKeys.clanPosts(clanId!), page, pageSize],
+    queryFn: () => listClanPosts(clanId!, { page, pageSize }),
     enabled: !!clanId,
     staleTime: 30_000,
   });
@@ -46,7 +48,7 @@ export default function Board() {
 
   const isMember = clan.myRole !== null || clan.isPlatformAdmin;
   const total = postsQ.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function goToPage(next: number) {
     if (next < 1 || next > totalPages) return;
@@ -92,7 +94,9 @@ export default function Board() {
       )}
 
       {postsQ.isLoading && (
-        <p className="text-muted-foreground">Đang tải…</p>
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
       )}
       {postsQ.error && (
         <Alert variant="destructive">
@@ -102,10 +106,16 @@ export default function Board() {
         </Alert>
       )}
 
-      {total === 0 && !postsQ.isLoading && (
-        <p className="text-muted-foreground italic">
-          Chưa có bài viết nào. Hãy là người đầu tiên đăng tin cho cả họ.
-        </p>
+      {total === 0 && !postsQ.isLoading && !postsQ.error && (
+        <EmptyState
+          icon={<IconScroll className="h-10 w-10" />}
+          title="Chưa có bài viết nào"
+          description={
+            isMember
+              ? "Hãy là người đầu tiên đăng tin cho cả họ — bấm nút '+'."
+              : "Chưa có bài viết nào trong bảng tin."
+          }
+        />
       )}
 
       <ul className="space-y-2">
@@ -120,9 +130,14 @@ export default function Board() {
         page={page}
         totalPages={totalPages}
         total={total}
-        pageSize={PAGE_SIZE}
+        pageSize={pageSize}
         unit="bài"
         onPageChange={goToPage}
+        pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+        onPageSizeChange={(n) => {
+          setPageSize(n);
+          goToPage(1);
+        }}
       />
     </div>
   );
