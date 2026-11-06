@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { BirthOrderPicker } from "@/components/BirthOrderPicker";
 import {
@@ -31,11 +31,13 @@ import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
+import { PersonRelationsQuick } from "@/components/PersonRelationsQuick";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
-import { useClanContext } from "@/hooks/useClanContext";
+import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
@@ -56,6 +58,11 @@ interface EditPersonFormProps {
   personId: string;
   onSaved: () => void;
   onCancel: () => void;
+  /**
+   * Chế độ xem nhanh (Danh bạ): cùng form nhưng khoá mọi ô, không nút thêm nào; thanh nút chỉ còn
+   * MỘT nút chuyển sang trang chi tiết (nơi sửa, thêm quan hệ…).
+   */
+  readOnly?: boolean;
 }
 
 /**
@@ -68,20 +75,23 @@ export function EditPersonForm({
   personId,
   onSaved,
   onCancel,
+  readOnly = false,
 }: EditPersonFormProps) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const queryClient = useQueryClient();
   const toast = useToast();
 
+  // Chế độ xem: người ngoài dòng họ công khai chỉ đọc được view đã che (giống trang chi tiết).
+  const { clan } = useClanContext();
+  const personSource = effectiveRole(clan) === null ? "persons_public_safe" : "persons";
   const { data: person, isLoading } = useQuery({
-    queryKey: queryKeys.person(personId, userId),
-    queryFn: () => getPerson(personId),
+    queryKey: [...queryKeys.person(personId, userId), personSource],
+    queryFn: () => getPerson(personId, undefined, personSource),
     enabled: !!personId,
   });
 
   // Dòng thời gian chỉ có ở dòng họ lịch sử; lưu cùng nút "Lưu" của form.
-  const { clan } = useClanContext();
   const isHistorical = clan.kind === "historical";
   const { data: savedTimeline } = useQuery({
     queryKey: ["person-timeline", personId],
@@ -109,7 +119,7 @@ export function EditPersonForm({
   // Progressive disclosure for the optional fields. Auto-opens when
   // any of them is already filled so existing data isn't hidden after
   // the person loads.
-  const [showOptional, setShowOptional] = useState(false);
+  const [showOptional, setShowOptional] = useState(readOnly);
 
   // Draft persistence — debounce-saves form state into localStorage
   // so a network drop / accidental tab close doesn't nuke half an
@@ -135,7 +145,8 @@ export function EditPersonForm({
   const { existing: existingDraft, clearDraft } = useFormDraft({
     key: `edit-person:${personId}`,
     current: formState,
-    enabled: !!person,
+    // Chế độ xem không ghi / không đề nghị khôi phục bản nháp.
+    enabled: !!person && !readOnly,
   });
   const [draftDismissed, setDraftDismissed] = useState(false);
 
@@ -317,7 +328,8 @@ export function EditPersonForm({
       }}
       className="space-y-6"
     >
-      {existingDraft && !draftDismissed && (
+      <ReadOnlyFieldset readOnly={readOnly} className="space-y-6">
+      {existingDraft && !draftDismissed && !readOnly && (
         <div className="rounded-md border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/20 p-3 flex items-start gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium">
@@ -352,7 +364,7 @@ export function EditPersonForm({
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className={`space-y-2 ${readOnly ? "[&_button]:hidden" : ""}`}>
         <Label>Ảnh đại diện</Label>
         <PhotoUploadField
           clanId={clanId}
@@ -461,6 +473,7 @@ export function EditPersonForm({
             </span>
             <button
               type="button"
+              data-edit-only
               onClick={() => setShowOptional(false)}
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
@@ -604,7 +617,9 @@ export function EditPersonForm({
           <p className="text-sm text-muted-foreground">
             Các mốc trong đời người, từ lúc sinh đến lúc mất. Mốc “Sinh” và “Mất” tự thêm từ ngày sinh, ngày mất.
           </p>
-          <TimelineFields drafts={timeline} onChange={setTimeline} />
+          <div className={readOnly ? "[&_button]:hidden" : ""}>
+            <TimelineFields drafts={timeline} onChange={setTimeline} />
+          </div>
         </div>
       )}
 
@@ -616,31 +631,53 @@ export function EditPersonForm({
         </Alert>
       )}
 
-      <FormActions>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-        >
-          <IconX className="h-4 w-4 mr-1.5" />
-          Hủy
-        </Button>
-        <Button
-          type="submit"
-          variant="default"
-          data-testid="edit-person-submit-button"
-          disabled={mutation.isPending || !fullName.trim()}
-        >
-          {mutation.isPending ? (
-            "Đang lưu…"
-          ) : (
-            <>
-              <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu
-            </>
-          )}
-        </Button>
-      </FormActions>
+      </ReadOnlyFieldset>
+
+      {readOnly && <PersonRelationsQuick clanId={clanId} personId={personId} />}
+
+      {readOnly ? (
+        <FormActions>
+          {/* Sửa, thêm cha mẹ / vợ chồng / con… đều làm ở trang chi tiết. */}
+          <Button asChild>
+            <Link to={`/clans/${clanId}/people/${personId}`}>
+              {canEditClan(clan) ? (
+                <>
+                  <IconPencil className="h-4 w-4 mr-1.5" />
+                  Sửa
+                </>
+              ) : (
+                "Xem chi tiết"
+              )}
+            </Link>
+          </Button>
+        </FormActions>
+      ) : (
+        <FormActions>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+          >
+            <IconX className="h-4 w-4 mr-1.5" />
+            Hủy
+          </Button>
+          <Button
+            type="submit"
+            variant="default"
+            data-testid="edit-person-submit-button"
+            disabled={mutation.isPending || !fullName.trim()}
+          >
+            {mutation.isPending ? (
+              "Đang lưu…"
+            ) : (
+              <>
+                <IconCheck className="h-4 w-4 mr-1.5" />
+                Lưu
+              </>
+            )}
+          </Button>
+        </FormActions>
+      )}
     </form>
   );
 }

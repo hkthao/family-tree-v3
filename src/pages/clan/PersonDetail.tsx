@@ -9,10 +9,10 @@ import { AddChildForm } from "@/pages/clan/AddChild";
 import { AddParentForm } from "@/pages/clan/AddParent";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { RelationSheet } from "@/components/RelationSheet";
+import { RelationshipGroup } from "@/components/RelationshipGroup";
 
 import {
   IconBell,
-  IconChevronDown,
   IconChevronUp,
   IconLink,
   IconPencil,
@@ -22,7 +22,6 @@ import {
   IconTrash,
   IconUser,
   IconUsers,
-  IconX,
 } from "@/components/icons";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
@@ -509,6 +508,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                 contentClassName="space-y-5"
               >
                   <RelationshipGroup
+                    LinkComponent={PersonLink}
                     label="Cha mẹ"
                     items={relationships.parents}
                     clanId={clanId}
@@ -530,6 +530,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                     }
                   />
                   <RelationshipGroup
+                    LinkComponent={PersonLink}
                     label="Vợ / chồng"
                     items={relationships.spouses}
                     clanId={clanId}
@@ -559,6 +560,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                     }
                   />
                   <RelationshipGroup
+                    LinkComponent={PersonLink}
                     label="Con cái"
                     items={relationships.children}
                     clanId={clanId}
@@ -888,126 +890,6 @@ function LunarDetailRow({
         </span>
       }
     />
-  );
-}
-
-function RelationshipGroup({
-  label,
-  items,
-  clanId,
-  emptyHint,
-  action,
-  reorder,
-  onRemove,
-  photoUrls,
-}: {
-  label: string;
-  items: Relationship[];
-  clanId: string;
-  /** photo_path → URL đã ký; thiếu thì vẽ hình minh hoạ theo giới tính. */
-  photoUrls?: Map<string, string>;
-  emptyHint: string;
-  action?: React.ReactNode;
-  /** Có → mỗi dòng có nút gỡ liên kết (nhập nhầm); người không bị xoá khỏi dòng họ. */
-  onRemove?: (rel: Relationship) => void;
-  /** When set, renders ↑/↓ controls to re-rank the list (vợ cả/hai/ba).
-   *  `onMove(index, dir)` swaps the item with its neighbour. */
-  reorder?: {
-    onMove: (index: number, dir: -1 | 1) => void;
-    busy?: boolean;
-  };
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">{label}</h3>
-        {action}
-      </div>
-      {reorder && (
-        <p className="text-xs text-muted-foreground">
-          Dùng mũi tên để xếp thứ tự (vợ cả lên trên cùng).
-        </p>
-      )}
-      {items.length === 0 ? (
-        <div className="rounded-md border border-dashed bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-          {emptyHint}
-        </div>
-      ) : (
-        <ul className="space-y-1.5">
-          {items.map((r, index) => (
-            <li key={r.id} className="flex items-stretch gap-1.5">
-              <PersonLink
-                to={`/clans/${clanId}/people/${r.id}`}
-                personId={r.id}
-                className="flex flex-1 min-w-0 items-center gap-3 rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
-              >
-                <PersonAvatar
-                  gender={r.gender}
-                  photoUrl={
-                    r.photo_path ? (photoUrls?.get(r.photo_path) ?? null) : null
-                  }
-                  size={40}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">{r.full_name}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {r.gender === "M" ? "Nam" : "Nữ"}
-                    {!r.is_living &&
-                      ` · đã mất${r.death_date ? ` ${r.death_date.slice(0, 4)}` : ""}`}
-                    {r.is_living &&
-                      r.birth_date &&
-                      ` · sinh ${r.birth_date.slice(0, 4)}`}
-                  </p>
-                </div>
-                {!reorder && (
-                  <span
-                    className="text-muted-foreground shrink-0"
-                    aria-hidden="true"
-                  >
-                    ›
-                  </span>
-                )}
-              </PersonLink>
-              {onRemove && (
-                <button
-                  type="button"
-                  onClick={() => onRemove(r)}
-                  aria-label={`Gỡ liên kết với ${r.full_name}`}
-                  title="Gỡ liên kết (nhập nhầm)"
-                  className="flex w-9 shrink-0 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-destructive hover:border-destructive"
-                >
-                  <IconX className="h-4 w-4" />
-                </button>
-              )}
-              {reorder && (
-                <div className="flex flex-col justify-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => reorder.onMove(index, -1)}
-                    disabled={index === 0 || reorder.busy}
-                    aria-label={`Đưa ${r.full_name} lên`}
-                    title="Lên"
-                    className="flex h-7 w-8 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-foreground hover:border-primary disabled:opacity-30 disabled:hover:border-input"
-                  >
-                    <IconChevronUp className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => reorder.onMove(index, 1)}
-                    disabled={index === items.length - 1 || reorder.busy}
-                    aria-label={`Đưa ${r.full_name} xuống`}
-                    title="Xuống"
-                    className="flex h-7 w-8 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-foreground hover:border-primary disabled:opacity-30 disabled:hover:border-input"
-                  >
-                    <IconChevronDown className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   );
 }
 

@@ -471,7 +471,7 @@ không phải nút rời trên dòng.
 ## Thanh nút dính đáy
 
 - Dùng `FormActions` — trong ngăn kéo nó tự thành `PanelActionBar` dính đáy.
-- **Nút co theo nội dung, dồn phải, không đệm phải** (nút chính sát mép phải ngăn kéo; đệm trái bằng lề form). Không `flex-1` / full-width (đã bỏ — nút
+- **Nút co theo nội dung, dồn phải; đệm hai bên bằng lề của nội dung** — mép phải nút chính thẳng hàng với mép phải các ô nhập, kể cả khi ngăn kéo có thanh cuộn (không để nút nhô ra sát thanh cuộn). Không `flex-1` / full-width (đã bỏ — nút
   giãn kín chiều ngang trông thô và khó phân biệt nút chính).
 - **Thứ tự: phá huỷ → phụ → chính**, chính ngoài cùng bên phải. Ví dụ đầy đủ:
 

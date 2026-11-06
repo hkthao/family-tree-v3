@@ -331,7 +331,9 @@ test("00 — Tour giới thiệu app gia phả", async ({ page }) => {
   const firstPersonCard = page
     .locator('a[href*="/people/"]:not([href$="/new"])')
     .first();
+  // Bấm thẻ chỉ mở ngăn kéo xem nhanh → bấm "Sửa" (admin) để vào trang chi tiết.
   await firstPersonCard.click();
+  await page.getByRole("link", { name: /^(Sửa|Xem chi tiết)$/ }).click();
   await page.waitForURL(/\/people\/[0-9a-f-]+$/, { timeout: 10_000 });
   await pause(page, 1500);
 

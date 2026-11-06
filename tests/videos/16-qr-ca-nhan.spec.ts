@@ -30,7 +30,8 @@ test("16 — QR cá nhân", async ({ page }) => {
     .locator(`a[href*="/clans/${clanId}/people/"]`)
     .filter({ hasNotText: "Thêm" })
     .first();
-  await firstPerson.click();
+  // Bấm dòng Danh bạ chỉ mở ngăn kéo xem nhanh; muốn vào trang chi tiết thì đi thẳng theo href.
+  await page.goto((await firstPerson.getAttribute("href"))!);
   await page.waitForURL(/\/people\/[0-9a-f-]+$/);
   await pause(page, 1500);
 

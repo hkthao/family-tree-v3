@@ -215,7 +215,9 @@ export async function createClanWithRoot(
   await page.getByTestId("person-submit-button").click();
   await page.waitForURL(/\/people$/, { timeout: 15_000 });
   // Click vào person card mới tạo để vào PersonDetail.
-  await page.locator(`a[href*="/people/"]`, { hasText: rootName }).first().click();
+  // Bấm dòng Danh bạ chỉ mở ngăn kéo xem nhanh → đi thẳng tới trang chi tiết theo href.
+  const personLink = page.locator(`a[href*="/people/"]`, { hasText: rootName }).first();
+  await page.goto((await personLink.getAttribute("href"))!);
   await page.waitForURL(/\/people\/[0-9a-f-]+$/);
   const personId = page.url().match(/\/people\/([0-9a-f-]+)$/)?.[1] ?? "";
   return { clanId, personId };
