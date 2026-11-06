@@ -1,25 +1,71 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useSearchParams, Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
-import { Fab } from "@/components/Fab";
-import { ClanPostCard } from "@/components/ClanPostCard";
+import { Chip, type ChipTone } from "@/components/Chip";
+import { formatRelative } from "@/components/ClanPostCard";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
-import { IconScroll } from "@/components/icons";
+import { Fab } from "@/components/Fab";
+import { IconTile } from "@/components/IconTile";
+import {
+  IconAward,
+  IconBell,
+  IconBellOff,
+  IconCalendar,
+  IconClock,
+  IconFlame,
+  IconScroll,
+  IconSearch,
+  IconSparkles,
+  IconTag,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
+import { PanelLink } from "@/components/panel/PanelLink";
+import { SearchInput } from "@/components/SearchInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS } from "@/hooks/useClientPaging";
-import { listClanPosts, listPendingPosts } from "@/lib/queries/clan_posts";
+import { LIST_PAGE_SIZE_OPTIONS, useSearchBox } from "@/hooks/useClientPaging";
+import { useUrlPatch, useUrlState } from "@/hooks/useUrlState";
+import {
+  listClanPosts,
+  listPendingPosts,
+  type ClanPost,
+  type ClanPostType,
+} from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
 const DEFAULT_PAGE_SIZE = 20;
 
+const TYPE_LABEL: Record<ClanPostType, string> = {
+  news: "Tin",
+  event: "Sự kiện",
+  birth: "Sinh",
+  death: "Cáo phó",
+  notice: "Thông báo",
+};
+
+/** Icon + màu theo loại bài — dùng chung cho ô icon và chip của dòng. */
+const TYPE_STYLE: Record<
+  ClanPostType,
+  { tone: ChipTone; icon: React.ComponentType<{ className?: string }> }
+> = {
+  news: { tone: "info", icon: IconScroll },
+  event: { tone: "primary", icon: IconCalendar },
+  birth: { tone: "success", icon: IconSparkles },
+  death: { tone: "warning", icon: IconFlame },
+  notice: { tone: "teal", icon: IconBell },
+};
+
+const TYPES = Object.keys(TYPE_LABEL) as ClanPostType[];
+
 /**
- * `/clans/:clanId/board` — bảng tin dòng họ. Có phân trang qua
- * `?page=N`. Thêm bài → `/board/new`; xem chi tiết → `/board/:id`.
+ * `/clans/:clanId/board` — bảng tin dòng họ, kiểu Danh bạ: tìm kiếm + phễu (loại bài trong ngăn
+ * kéo), danh sách chia vạch, phân trang phía máy chủ. Bấm một bài mở ngăn kéo xem (chỉ đọc);
+ * bình luận và duyệt bài ở trang bài viết.
  */
 export default function Board() {
   const { clanId } = useParams<{ clanId: string }>();
@@ -27,13 +73,17 @@ export default function Board() {
   const { clan } = useClanContext();
   const admin = isClanAdmin(clan);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const page = Math.max(1, Number(searchParams.get("page") ?? "1") || 1);
+  const patch = useUrlPatch();
+  const { q, text, setText } = useSearchBox();
+  const [typeRaw] = useUrlState("loai", "");
+  const type = (TYPES as string[]).includes(typeRaw) ? (typeRaw as ClanPostType) : "";
+  const [pageRaw] = useUrlState("trang", "");
+  const page = Math.max(1, Number(pageRaw) || 1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const postsQ = useQuery({
-    queryKey: [...queryKeys.clanPosts(clanId!), page, pageSize],
-    queryFn: () => listClanPosts(clanId!, { page, pageSize }),
+    queryKey: [...queryKeys.clanPosts(clanId!), page, pageSize, type, q],
+    queryFn: () => listClanPosts(clanId!, { page, pageSize, type: type || null, search: q }),
     enabled: !!clanId,
     staleTime: 30_000,
   });
@@ -49,15 +99,12 @@ export default function Board() {
   const isMember = clan.myRole !== null || clan.isPlatformAdmin;
   const total = postsQ.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rows = postsQ.data?.rows ?? [];
+  const filtering = !!q || !!type;
 
   function goToPage(next: number) {
     if (next < 1 || next > totalPages) return;
-    const params = new URLSearchParams(searchParams);
-    if (next === 1) params.delete("page");
-    else params.set("page", String(next));
-    // replace (not push) so paging doesn't stack history entries and
-    // Back from a post detail returns to the page you were on.
-    setSearchParams(params, { replace: true });
+    patch({ trang: next === 1 ? null : String(next) });
   }
 
   return (
@@ -93,6 +140,39 @@ export default function Board() {
         </Alert>
       )}
 
+      {/* Loại bài nằm trong ngăn kéo của phễu — như Danh bạ. */}
+      <CollapsibleFilters
+        activeCount={type ? 1 : 0}
+        onReset={() => patch({ loai: null, trang: null })}
+        title="Lọc bài viết"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm bài viết"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Tìm theo tiêu đề / nội dung…"
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={type}
+            onChange={(e) => patch({ loai: e.target.value || null, trang: null })}
+            aria-label="Lọc theo loại bài"
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">Mọi loại</option>
+            {TYPES.map((t) => (
+              <option key={t} value={t}>
+                {TYPE_LABEL[t]}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </CollapsibleFilters>
+
       {postsQ.isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
           <p className="text-muted-foreground">Đang tải…</p>
@@ -100,31 +180,37 @@ export default function Board() {
       )}
       {postsQ.error && (
         <Alert variant="destructive">
-          <AlertDescription>
-            {(postsQ.error as Error).message}
-          </AlertDescription>
+          <AlertDescription>{(postsQ.error as Error).message}</AlertDescription>
         </Alert>
       )}
 
       {total === 0 && !postsQ.isLoading && !postsQ.error && (
         <EmptyState
-          icon={<IconScroll className="h-10 w-10" />}
-          title="Chưa có bài viết nào"
+          icon={filtering ? <IconSearch className="h-10 w-10" /> : <IconScroll className="h-10 w-10" />}
+          title={filtering ? "Không có bài nào khớp" : "Chưa có bài viết nào"}
           description={
-            isMember
-              ? "Hãy là người đầu tiên đăng tin cho cả họ — bấm nút '+'."
-              : "Chưa có bài viết nào trong bảng tin."
+            filtering
+              ? "Thử bỏ bớt bộ lọc hoặc từ khoá."
+              : isMember
+                ? "Hãy là người đầu tiên đăng tin cho cả họ — bấm nút '+'."
+                : "Chưa có bài viết nào trong bảng tin."
           }
         />
       )}
 
-      <ul className="space-y-2">
-        {(postsQ.data?.rows ?? []).map((post) => (
-          <li key={post.id}>
-            <ClanPostCard post={post} clan={clan} />
-          </li>
-        ))}
-      </ul>
+      {rows.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {rows.map((post) => (
+            <PostRow
+              key={post.id}
+              post={post}
+              clanId={clan.id}
+              isAuthor={post.author_id === user?.id}
+              admin={admin}
+            />
+          ))}
+        </ul>
+      )}
 
       <Pagination
         page={page}
@@ -132,6 +218,7 @@ export default function Board() {
         total={total}
         pageSize={pageSize}
         unit="bài"
+        isFetching={postsQ.isFetching}
         onPageChange={goToPage}
         pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
         onPageSizeChange={(n) => {
@@ -140,5 +227,64 @@ export default function Board() {
         }}
       />
     </div>
+  );
+}
+
+function PostRow({
+  post,
+  clanId,
+  isAuthor,
+  admin,
+}: {
+  post: ClanPost;
+  clanId: string;
+  isAuthor: boolean;
+  admin: boolean;
+}) {
+  const style = TYPE_STYLE[post.type];
+  const TypeIcon = style.icon;
+  const isPending = post.status === "pending";
+  const isHidden = post.status === "hidden";
+  return (
+    <li className={isHidden ? "opacity-60" : ""}>
+      <PanelLink
+        to={`/clans/${clanId}/board/${post.id}`}
+        panel="board-view"
+        panelParams={{ pid: post.id }}
+        className="flex items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={TypeIcon} tone={style.tone} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{post.title || post.body}</p>
+          {post.title && (
+            <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{post.body}</p>
+          )}
+          <p className="mt-0.5 text-xs text-muted-foreground/80">
+            {formatRelative(post.created_at)}
+            {(isAuthor || admin) && ` · ${isAuthor ? "bạn" : post.author_id.slice(0, 8)}`}
+          </p>
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            {post.pinned && (
+              <Chip tone="primary" icon={<IconAward />}>
+                Đã ghim
+              </Chip>
+            )}
+            {isPending && (
+              <Chip tone="warning" icon={<IconClock />}>
+                Chờ duyệt
+              </Chip>
+            )}
+            {isHidden && (
+              <Chip tone="neutral" icon={<IconBellOff />}>
+                Đã ẩn
+              </Chip>
+            )}
+            <Chip tone={style.tone} icon={<TypeIcon />}>
+              {TYPE_LABEL[post.type]}
+            </Chip>
+          </div>
+        </div>
+      </PanelLink>
+    </li>
   );
 }

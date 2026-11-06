@@ -15,6 +15,7 @@ export type PanelId = "person-view" | "person-new" | "person-edit" | "person-add
   | "heritage-view"
   | "heritage-new"
   | "heritage-edit"
+  | "board-view"
   | "board-new"
   | "board-edit"
   | "clan-new"
