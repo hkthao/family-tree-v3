@@ -5,18 +5,36 @@ import { Link } from "react-router-dom";
 import { SectionCard } from "@/components/SectionCard";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { Chip } from "@/components/Chip";
+import { HERITAGE_CATEGORY_ICON, HERITAGE_CATEGORY_TONE } from "@/components/heritageCategoryStyle";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { HeritageThumb } from "@/components/HeritageThumb";
-import { IconChart, IconPlus, IconScroll, IconSearch } from "@/components/icons";
+import {
+  IconCamera,
+  IconChart,
+  IconMapPin,
+  IconMicrophone,
+  IconPlay,
+  IconPlus,
+  IconScroll,
+  IconSearch,
+  IconTag,
+  IconUsers,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { PanelLink } from "@/components/panel/PanelLink";
 import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
+import { Select } from "@/components/ui/select";
 import { CustomCard } from "@/pages/Customs";
 import { listCustomEntries } from "@/lib/queries/customs";
 import { useAuth } from "@/hooks/useAuth";
 import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { unaccent } from "@/lib/unaccent";
 import { useUrlState } from "@/hooks/useUrlState";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import {
@@ -30,6 +48,7 @@ import {
 
 const CATEGORIES = Object.keys(HERITAGE_CATEGORY_LABEL) as HeritageCategory[];
 
+
 export default function Heritage() {
   const { clan } = useClanContext();
   const { user } = useAuth();
@@ -38,12 +57,12 @@ export default function Heritage() {
   const isMember = effectiveRole(clan) !== null;
 
   // 2 tab: "clan" = di sản riêng của họ · "sotay" = Sổ tay Văn hoá chung.
-  const [tabRaw, setTab] = useUrlState("tab", "clan");
+  const [tabRaw] = useUrlState("tab", "clan");
   const tab = tabRaw === "sotay" ? "sotay" : "clan";
 
   const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useUrlState("q", "");
-  const [catRaw, setCat] = useUrlState("loai", "");
+  const [debounced] = useUrlState("q", "");
+  const [catRaw] = useUrlState("loai", "");
   const category = (CATEGORIES.includes(catRaw as HeritageCategory) ? catRaw : "") as
     | HeritageCategory
     | "";
@@ -51,7 +70,7 @@ export default function Heritage() {
   useEffect(() => setSearch(debounced), []); // seed from URL on mount
   useEffect(() => {
     const h = setTimeout(() => {
-      if (search !== debounced) setDebounced(search);
+      if (search !== debounced) patchAndResetPage({ q: search });
     }, 300);
     return () => clearTimeout(h);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,6 +104,9 @@ export default function Heritage() {
     staleTime: PHOTO_URL_STALE_MS,
   });
 
+  const { page, totalPages, pageSize, total, paged, setPage, setPageSize, patchAndResetPage } =
+    useClientPaging(items ?? [], 20);
+
   return (
     <div className="space-y-3">
       <Breadcrumb
@@ -99,42 +121,76 @@ export default function Heritage() {
         description="Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
       />
 
-      {/* Tab + nút Thêm CÙNG MỘT HÀNG cho tiết kiệm diện tích. Nút Thêm
-          chỉ hiện ở tab "Của dòng họ" (thêm di sản của họ). */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex w-fit gap-1 rounded-lg border bg-card p-1">
-          <button
-            type="button"
-            onClick={() => setTab("clan")}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              tab === "clan"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Của dòng họ
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("sotay")}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              tab === "sotay"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Sổ tay Văn hoá
-          </button>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {isMember && <MemoryRoomCtaButton clanId={clan.id} className="h-9" />}
-          {tab === "clan" && canEdit && (
-            <Fab to={`/clans/${clan.id}/heritage/new`} panel={{ id: "heritage-new" }} label="Thêm di sản" />
+      {/* Nguồn (Của dòng họ / Sổ tay Văn hoá) và loại di sản nằm trong ngăn kéo bên phải
+          (phễu trong ô tìm kiếm) — như Danh bạ. */}
+      <CollapsibleFilters
+        activeCount={(tab !== "clan" ? 1 : 0) + (tab === "clan" && category ? 1 : 0)}
+        onReset={() => patchAndResetPage({ tab: null, loai: null, sp: null })}
+        title="Lọc di sản"
+        actions={isMember ? <MemoryRoomCtaButton clanId={clan.id} className="h-9" /> : undefined}
+        search={(toggle) => (
+          <SearchInput
+            label={tab === "clan" ? "Tìm di sản" : "Tìm bài phong tục"}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={tab === "clan" ? "Tìm theo tên / nội dung…" : "Tìm theo tên / mô tả bài…"}
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <fieldset className="space-y-2">
+            <legend className="text-base font-medium">Nguồn</legend>
+            <div role="tablist" className="flex gap-2">
+              {(
+                [
+                  ["clan", "Của dòng họ"],
+                  ["sotay", "Sổ tay Văn hoá"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  role="tab"
+                  type="button"
+                  aria-selected={tab === value}
+                  onClick={() =>
+                    patchAndResetPage({ tab: value === "clan" ? null : value, sp: null })
+                  }
+                  className={`min-h-[44px] flex-1 rounded-md border px-3 text-sm ${
+                    tab === value
+                      ? "border-primary bg-primary/5 font-medium"
+                      : "hover:bg-muted/40"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          {tab === "clan" && (
+            <Select
+              value={category}
+              onChange={(e) => patchAndResetPage({ loai: e.target.value })}
+              aria-label="Lọc theo loại"
+              icon={<IconTag />}
+              className="h-11 w-full text-base"
+            >
+              <option value="">Mọi loại</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {HERITAGE_CATEGORY_LABEL[c]}
+                </option>
+              ))}
+            </Select>
           )}
         </div>
-      </div>
+      </CollapsibleFilters>
 
-      {tab === "sotay" && <SoTayTab />}
+      {tab === "clan" && canEdit && (
+        <Fab to={`/clans/${clan.id}/heritage/new`} panel={{ id: "heritage-new" }} label="Thêm di sản" />
+      )}
+
+      {tab === "sotay" && <SoTayTab search={debounced} />}
 
       {tab === "clan" && (
         <>
@@ -170,43 +226,11 @@ export default function Heritage() {
         );
       })()}
 
-      {/* Lọc theo loại — mobile: 1 hàng cuộn ngang (tiết kiệm chỗ); sm+: xuống dòng.
-          -mx-4 px-4 để cuộn sát mép màn; scrollbar ẩn cho gọn. */}
-      <div
-        className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0"
-        style={{ scrollbarWidth: "none" }}
-      >
-        <button
-          type="button"
-          onClick={() => setCat("")}
-          className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm ${
-            category === "" ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"
-          }`}
-        >
-          Tất cả
-        </button>
-        {CATEGORIES.map((c) => (
-          <button
-            key={c}
-            type="button"
-            onClick={() => setCat(c)}
-            className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-1.5 text-sm ${
-              category === c ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:border-primary"
-            }`}
-          >
-            {HERITAGE_CATEGORY_LABEL[c]}
-          </button>
-        ))}
-      </div>
-
-      <SearchInput
-        label="Tìm di sản"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm theo tên / nội dung…"
-      />
-
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && (
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
+      )}
 
       {items && items.length === 0 && (
         <EmptyState
@@ -228,47 +252,83 @@ export default function Heritage() {
       )}
 
       {items && items.length > 0 && (
-        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {items.map((i) => {
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paged.map((i) => {
             const thumb = i.cover_external_url
               ?? (i.cover_media_path ? photoUrls?.get(i.cover_media_path) : null);
             return (
-              <li key={i.id} className="min-w-0">
-                <Link
+              <li key={i.id}>
+                <PanelLink
                   to={`/clans/${clan.id}/heritage/${i.id}`}
-                  className="flex min-w-0 gap-3 rounded-xl border bg-card p-3 shadow-sm hover:border-primary transition-colors h-full"
+                  panel="heritage-view"
+                  panelParams={{ pid: i.id }}
+                  className="flex min-w-0 items-stretch gap-3 p-3 transition-colors hover:bg-muted/40"
                 >
-                  <HeritageThumb category={i.category} src={thumb} />
+                  <HeritageThumb category={i.category} src={thumb} flush />
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">{i.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {HERITAGE_CATEGORY_LABEL[i.category]}
-                      {i.location_name ? ` · ${i.location_name}` : ""}
-                    </p>
                     {i.summary && (
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{i.summary}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{i.summary}</p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {[
-                        i.photo_count ? `${i.photo_count} ảnh` : null,
-                        i.audio_count ? `${i.audio_count} ghi âm` : null,
-                        i.video_count ? `${i.video_count} video` : null,
-                        i.people_count ? `${i.people_count} người` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ") || "—"}
-                    </p>
                     <RecordDates
                       createdAt={i.created_at}
                       updatedAt={i.updated_at}
                       className="text-xs text-muted-foreground/80 mt-0.5 truncate"
                     />
+                    <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+                      {(() => {
+                        const CatIcon = HERITAGE_CATEGORY_ICON[i.category];
+                        return (
+                          <Chip tone={HERITAGE_CATEGORY_TONE[i.category]} icon={<CatIcon />}>
+                            {HERITAGE_CATEGORY_LABEL[i.category]}
+                          </Chip>
+                        );
+                      })()}
+                      {i.location_name && (
+                        <Chip tone="teal" icon={<IconMapPin />}>
+                          {i.location_name}
+                        </Chip>
+                      )}
+                      {i.photo_count > 0 && (
+                        <Chip tone="rose" icon={<IconCamera />}>
+                          {i.photo_count} ảnh
+                        </Chip>
+                      )}
+                      {i.audio_count > 0 && (
+                        <Chip tone="orange" icon={<IconMicrophone />}>
+                          {i.audio_count} ghi âm
+                        </Chip>
+                      )}
+                      {i.video_count > 0 && (
+                        <Chip tone="indigo" icon={<IconPlay />}>
+                          {i.video_count} video
+                        </Chip>
+                      )}
+                      {i.people_count > 0 && (
+                        <Chip tone="success" icon={<IconUsers />}>
+                          {i.people_count} người
+                        </Chip>
+                      )}
+                    </div>
                   </div>
-                </Link>
+                </PanelLink>
               </li>
             );
           })}
         </ul>
+      )}
+
+      {items && items.length > 0 && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={pageSize}
+          unit="mục"
+          onPageChange={setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={setPageSize}
+        />
       )}
         </>
       )}
@@ -281,7 +341,7 @@ export default function Heritage() {
  * phong tục CHUNG của hệ thống (bảng custom_entries, chỉ bài published),
  * có phân trang. Bấm một bài mở trang Sổ tay.
  */
-function SoTayTab() {
+function SoTayTab({ search }: { search: string }) {
   const { data: entries, isLoading } = useQuery({
     queryKey: ["customs-embed"],
     queryFn: () => listCustomEntries({}),
@@ -290,7 +350,10 @@ function SoTayTab() {
 
   const PAGE_SIZE = 8;
   const [pageRaw, setPage] = useUrlState("sp", "");
-  const all = entries ?? [];
+  const q = unaccent(search.trim()).toLowerCase();
+  const all = (entries ?? []).filter(
+    (e) => !q || unaccent(`${e.title} ${e.short_description ?? ""}`).toLowerCase().includes(q),
+  );
   const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
   const page = Math.min(Math.max(1, Number(pageRaw) || 1), totalPages);
   const paged = all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -309,8 +372,8 @@ function SoTayTab() {
       {!isLoading && all.length === 0 && (
         <EmptyState
           icon={<IconScroll className="h-10 w-10" />}
-          title="Sổ tay đang được biên soạn"
-          description="Chưa có bài phong tục nào."
+          title={q ? "Không có bài nào khớp" : "Sổ tay đang được biên soạn"}
+          description={q ? "Thử bỏ bớt từ khoá." : "Chưa có bài phong tục nào."}
         />
       )}
 

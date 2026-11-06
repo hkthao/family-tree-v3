@@ -95,7 +95,7 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
       icon={<IconScroll />}
       title="Hoạt động gần đây"
       bodyClassName="p-0"
-      action={
+      footer={
         <Link
           to={`/clans/${clanId}/audit`}
           className="shrink-0 text-sm text-primary hover:underline"

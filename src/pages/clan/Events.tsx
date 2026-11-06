@@ -22,7 +22,9 @@ import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { eventWhenText } from "@/lib/eventWhen";
 import type { CardGenre } from "@/lib/cards/types";
 import { PageHeader } from "@/components/PageHeader";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { RecordDates } from "@/components/RecordDates";
 import { IconBellOff, IconDownload } from "@/components/icons";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -71,6 +73,8 @@ import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { getTreeData } from "@/lib/queries/tree";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
+import { LIST_PAGE_SIZE_OPTIONS } from "@/hooks/useClientPaging";
+import { unaccent } from "@/lib/unaccent";
 import { EventDetailDialog } from "@/components/EventDetailDialog";
 import {
   computeUpcomingAnniversaries,
@@ -98,8 +102,9 @@ export default function Events() {
   const [view, setView] = useState<"list" | "grid" | "calendar">("list");
   // Phân trang danh sách sự kiện sắp tới (họ lớn có thể hàng trăm
   // sinh nhật / ngày giỗ trong khoảng đã chọn).
-  const EVENTS_PAGE_SIZE = 15;
+  const [pageSize, setPageSize] = useState(20);
   const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
 
   // Non-members of a public clan need the masked view; raw `persons`
   // RLS would return zero rows. Same pattern as /tree and Dashboard.
@@ -151,6 +156,15 @@ export default function Events() {
     );
   }, [tree, events, anniversaries, effectiveDays]);
 
+  // Tìm theo tên sự kiện / dòng phụ, không phân biệt dấu.
+  const filtered = useMemo(() => {
+    const q = unaccent(query.trim()).toLowerCase();
+    if (!q) return upcoming;
+    return upcoming.filter((e) =>
+      unaccent(`${e.title} ${e.subtitle ?? ""}`).toLowerCase().includes(q),
+    );
+  }, [upcoming, query]);
+
   // Danh sách thành viên để chọn ảnh nền thiệp (id, tên, ảnh).
   const cardMembers = useMemo(
     () =>
@@ -165,16 +179,16 @@ export default function Events() {
   // Về trang 1 khi đổi khoảng thời gian / danh sách thay đổi.
   useEffect(() => {
     setPage(1);
-  }, [daysAhead, upcoming.length]);
+  }, [daysAhead, filtered.length, pageSize]);
 
   const totalEventPages = Math.max(
     1,
-    Math.ceil(upcoming.length / EVENTS_PAGE_SIZE),
+    Math.ceil(filtered.length / pageSize),
   );
   const safePage = Math.min(page, totalEventPages);
-  const pagedUpcoming = upcoming.slice(
-    (safePage - 1) * EVENTS_PAGE_SIZE,
-    safePage * EVENTS_PAGE_SIZE,
+  const pagedUpcoming = filtered.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize,
   );
 
   function handleExportIcs() {
@@ -288,37 +302,62 @@ export default function Events() {
         }
       />
 
-      {/* Look-ahead pills — only meaningful in list view. Full-width
-          on mobile (each pill flex-1) so taps are large; auto-width
-          on sm+ where the row has plenty of room. */}
-      {view !== "calendar" && (
-        <SegmentedControl
-          ariaLabel="Khoảng thời gian"
-          className="flex sm:inline-flex"
-        >
-          {LOOKAHEAD_OPTIONS.map((opt) => (
-            <SegmentedButton
-              key={opt.value}
-              active={daysAhead === opt.value}
-              onClick={() => setDaysAhead(opt.value)}
-              className="flex-1 sm:flex-none px-3"
-            >
-              {opt.label}
-            </SegmentedButton>
-          ))}
-        </SegmentedControl>
-      )}
+      {/* Tìm kiếm + khoảng thời gian (trong ngăn kéo của phễu) — như Danh bạ. */}
+      <CollapsibleFilters
+        activeCount={view !== "calendar" && daysAhead !== 90 ? 1 : 0}
+        onReset={() => setDaysAhead(90)}
+        title="Lọc sự kiện"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm sự kiện"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Tìm theo tên người, ngày giỗ, sự kiện…"
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          {view === "calendar" ? (
+            <p className="text-sm text-muted-foreground">
+              Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc Lưới để chọn khoảng thời gian.
+            </p>
+          ) : (
+            <>
+              <p className="text-base font-medium">Khoảng thời gian</p>
+              <SegmentedControl ariaLabel="Khoảng thời gian" className="flex">
+                {LOOKAHEAD_OPTIONS.map((opt) => (
+                  <SegmentedButton
+                    key={opt.value}
+                    active={daysAhead === opt.value}
+                    onClick={() => setDaysAhead(opt.value)}
+                    className="flex-1 px-3"
+                  >
+                    {opt.label}
+                  </SegmentedButton>
+                ))}
+              </SegmentedControl>
+            </>
+          )}
+        </div>
+      </CollapsibleFilters>
 
       {/* Upcoming list / calendar */}
       {!tree || !events || !anniversaries ? (
-        <p className="text-muted-foreground">Đang tải…</p>
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
       ) : view === "calendar" ? (
-        <EventsCalendar events={upcoming} clanId={clan.id} onOpenEvent={setDetailEventId} />
-      ) : upcoming.length === 0 ? (
+        <EventsCalendar events={filtered} clanId={clan.id} onOpenEvent={setDetailEventId} />
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={<IconBellOff className="h-10 w-10" />}
-          title="Không có sự kiện sắp tới"
-          description={`Trong ${daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới.`}
+          title={query.trim() ? "Không có sự kiện nào khớp" : "Không có sự kiện sắp tới"}
+          description={
+            query.trim()
+              ? "Thử bỏ bớt từ khoá hoặc mở rộng khoảng thời gian."
+              : `Trong ${daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới.`
+          }
         />
       ) : (
         <>
@@ -341,16 +380,16 @@ export default function Events() {
               </li>
             ))}
           </ul>
-          {upcoming.length > EVENTS_PAGE_SIZE && (
-            <Pagination
-              page={safePage}
-              totalPages={totalEventPages}
-              total={upcoming.length}
-              pageSize={EVENTS_PAGE_SIZE}
-              unit="sự kiện"
-              onPageChange={setPage}
-            />
-          )}
+          <Pagination
+            page={safePage}
+            totalPages={totalEventPages}
+            total={filtered.length}
+            pageSize={pageSize}
+            unit="sự kiện"
+            onPageChange={setPage}
+            pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+            onPageSizeChange={setPageSize}
+          />
         </>
       )}
 

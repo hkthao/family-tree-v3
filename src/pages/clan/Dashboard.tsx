@@ -382,7 +382,7 @@ export default function Dashboard() {
               id="events"
               icon={<IconCalendar />}
               title="Sự kiện sắp tới"
-              action={
+              footer={
                 <Link
                   to={`/clans/${clan.id}/events`}
                   className="shrink-0 text-sm text-primary hover:underline"
