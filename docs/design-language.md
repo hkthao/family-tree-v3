@@ -439,6 +439,25 @@ Bấm một dòng **không chuyển trang**: mở ngăn kéo bên phải.
 
 Xoá nằm **trong form sửa**, không ở từng dòng danh sách.
 
+## Khối dùng chung
+
+Màn mới (nhất là màn quản trị) không tự dựng lại — dùng:
+
+- `ReadOnlyFieldset` (`ui/readonly-fieldset.tsx`): khung bọc các ô, `readOnly` thì khoá
+  nhưng giữ chữ rõ và ẩn `data-edit-only`.
+- `ViewEditActions` (`ui/view-edit-actions.tsx`): thanh nút dính đáy đúng thứ tự —
+  xem `[ Sửa ]`, sửa `[ Xoá ] [ Hủy ] [ Lưu ]`, tạo `[ Hủy ] [ Thêm ]`.
+- `IconTile`, `Chip`: ô icon bên trái và chip ở dòng cuối của mỗi dòng danh sách.
+- `useClientPaging` + `useSearchBox` (`hooks/useClientPaging.ts`): phân trang và ô tìm
+  kiếm có debounce, cả hai nằm trên URL. Đổi từ khoá / bộ lọc thì về trang đầu trong
+  một lần ghi URL.
+
+Khuôn một màn quản trị dạng danh sách (Người dùng, Dòng họ, Góp ý, Thông báo, Podcast):
+tìm kiếm + phễu (bộ lọc trong ngăn kéo) → danh sách chia vạch có `IconTile` và chip →
+`Pagination` → ngăn kéo xem (chỉ đọc) → "Sửa" → form sửa. Thao tác nguy hiểm (khoá, cấp
+quyền, đổi trạng thái) là *trường của form sửa* (checkbox / ô chọn), áp dụng khi Lưu —
+không phải nút rời trên dòng.
+
 ## Cách điều khiển
 
 - Màn có route chi tiết: `?panel=<id>-view|-edit&pid=` qua `PanelLink` — Back đóng
@@ -452,7 +471,7 @@ Xoá nằm **trong form sửa**, không ở từng dòng danh sách.
 ## Thanh nút dính đáy
 
 - Dùng `FormActions` — trong ngăn kéo nó tự thành `PanelActionBar` dính đáy.
-- **Nút co theo nội dung, dồn phải.** Không `flex-1` / full-width (đã bỏ — nút
+- **Nút co theo nội dung, dồn phải, không đệm phải** (nút chính sát mép phải ngăn kéo; đệm trái bằng lề form). Không `flex-1` / full-width (đã bỏ — nút
   giãn kín chiều ngang trông thô và khó phân biệt nút chính).
 - **Thứ tự: phá huỷ → phụ → chính**, chính ngoài cùng bên phải. Ví dụ đầy đủ:
 

@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 export function RefreshIconButton({
   onClick,
   busy,
+  compact = false,
 }: {
   onClick: () => void;
   busy: boolean;
+  /** Dạng nhỏ không viền để nhét vào ô tìm kiếm (rightSlot), như Danh bạ. */
+  compact?: boolean;
 }) {
   return (
     <Button
@@ -20,7 +23,7 @@ export function RefreshIconButton({
       disabled={busy}
       aria-label="Tải lại"
       title={busy ? "Đang tải…" : "Tải lại dữ liệu mới nhất"}
-      className="h-9 w-9 p-0 shrink-0"
+      className={compact ? "h-8 w-8 shrink-0 border-0 bg-transparent p-0 hover:bg-muted" : "h-9 w-9 p-0 shrink-0"}
     >
       <IconRefresh className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} />
     </Button>
