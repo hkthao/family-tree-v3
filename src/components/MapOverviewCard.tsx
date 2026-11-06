@@ -63,7 +63,7 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
       {!stats ? (
         <p className="text-sm text-muted-foreground">Đang tải…</p>
       ) : (
-        <div className="grid items-center gap-4 sm:grid-cols-[minmax(0,15rem)_1fr]">
+        <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[minmax(0,15rem)_1fr]">
           {/* Bản đồ thu nhỏ: bấm là vào trang bản đồ đầy đủ. */}
           <div className="mx-auto w-full max-w-[15rem]">
             <ProvinceMap
