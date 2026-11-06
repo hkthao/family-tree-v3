@@ -12,7 +12,8 @@ export type CustomCategory =
   | "vong_doi"
   | "le_tet"
   | "le_hoi"
-  | "sinh_hoat";
+  | "sinh_hoat"
+  | "van_khan";
 export type CustomScope = "gia_dinh" | "dong_ho" | "lang_xa" | "ton_giao";
 export type CustomMandatory = "bat_buoc" | "khuyen_khich" | "dia_phuong";
 export type CustomOrigin =
@@ -30,6 +31,7 @@ export const CUSTOM_CATEGORY_LABEL: Record<CustomCategory, string> = {
   le_tet: "Lễ Tết theo mùa",
   le_hoi: "Lễ hội cộng đồng",
   sinh_hoat: "Phong tục sinh hoạt",
+  van_khan: "Văn khấn & văn tế",
 };
 
 export const CUSTOM_SCOPE_LABEL: Record<CustomScope, string> = {
