@@ -1,12 +1,15 @@
 # Ngôn ngữ thiết kế
 
-Ba quy ước trình bày của app. Quy ước icon là phần dài nhất nên đứng đầu; hai
-phần sau ngắn hơn nhưng cùng một loại lỗi: **không ai thấy khi review code, chỉ
-lộ ra trên máy người dùng.**
+Năm quy ước trình bày của app. Quy ước icon là phần dài nhất nên đứng đầu; ba
+phần sau (ngày, lưới, danh sách) cùng một loại lỗi: **không ai thấy khi review
+code, chỉ lộ ra trên máy người dùng.** Phần ngăn kéo gom cách xem / sửa một bản
+ghi và thứ tự nút.
 
 - [Control phải có icon](#control-phải-có-icon)
 - [Hiển thị ngày](#hiển-thị-ngày)
 - [Lưới trên màn hẹp](#lưới-trên-màn-hẹp)
+- [Màn hình danh sách: Danh bạ là chuẩn](#màn-hình-danh-sách-danh-bạ-là-chuẩn)
+- [Ngăn kéo xem / sửa](#ngăn-kéo-xem--sửa)
 
 ---
 
@@ -79,6 +82,12 @@ trọn chiều ngang, và mắt có một chỗ cố định để tìm nút —
 
 Thứ tự trong footer: **phá huỷ → phụ → chính**, chính nằm ngoài cùng bên phải
 (gần ngón cái nhất trên điện thoại). Meta text đẩy sang trái để hai bên cân nhau.
+
+Hành động của cả thẻ **không đặt ở header** (vd nút "Thêm ảnh" cạnh tiêu đề):
+- `Card` → `<CardFooter className="justify-end gap-2 border-t pt-4">`.
+- `SectionCard` → prop `footer` (hàng căn phải dưới cùng thẻ), ví dụ link
+  "Xem tất cả →". Prop `action` ở header **chỉ dành cho thông tin phụ không bấm
+  được** ("3 sự kiện", dung lượng đã dùng).
 
 **Cùng một hàng thì cùng một `size`.** Trộn `size="sm"` (h-10) với mặc định
 (h-12) cho ra hai nút cao thấp so le, nhìn như lỗi dựng trang. Muốn nhấn nút
@@ -334,6 +343,133 @@ và `min-w-0` cần để làm việc.
 
 Ngoại lệ hợp lệ: `lg:grid lg:grid-cols-[...]` — màn hẹp không phải lưới, mà là
 khối xếp chồng bình thường.
+
+---
+
+# Màn hình danh sách: Danh bạ là chuẩn
+
+Mọi màn hình danh sách theo **Danh bạ** (`src/pages/clan/People.tsx`). Lệch khỏi
+chuẩn chỉ khi dữ liệu không phải "danh sách để duyệt" (xem Ngoại lệ).
+
+## Bố cục, từ trên xuống
+
+1. `PageHeader` (có `Breadcrumb` ở màn con của một dòng họ).
+2. **Một hàng tìm kiếm**: `CollapsibleFilters` + `SearchInput`, phễu nằm *trong* ô
+   tìm kiếm. **Mọi bộ lọc nằm trong ngăn kéo của phễu** — loại, trạng thái, vùng,
+   và cả việc chọn *nguồn* (vd "Của dòng họ / Sổ tay Văn hoá", "Tỉnh / Xã").
+   Không có chip lọc hay tab hiện sẵn trên trang. Phễu hiện số bộ lọc đang bật;
+   ngăn kéo có "Đặt lại".
+3. **Danh sách một khung chia vạch**:
+   `ul.divide-y.overflow-hidden.rounded-xl.border.bg-card.shadow-sm`, mỗi dòng
+   `p-3`, `hover:bg-muted/40`, bấm cả dòng.
+4. **`Pagination` luôn hiện** (không ẩn khi ít dòng), có chọn 10/20/50 mỗi trang.
+5. **Nút nổi `Fab`** để thêm — không nút "Thêm" ở header hay trong thanh lọc.
+
+## Dòng danh sách
+
+- Ô ảnh / icon bên trái là **ô bo góc nằm trong phần đệm của dòng**, cao bằng phần
+  nội dung (`HeritageThumb flush`), cỡ vừa (56px, icon 20px). Không dán sát mép thẻ,
+  không to hơn chữ — đã thử cả hai và đều xấu.
+- Dòng **không có ảnh** (Quỹ họ, Bảng vàng…) vẫn có ô bên trái: `IconTile`
+  (`src/components/IconTile.tsx`) — icon + tông màu cùng loại với chip của dòng
+  (Thu = tải xuống / xanh, Chi = tải lên / đỏ; công đức theo loại).
+- Thứ tự trong dòng: **tên → thông tin (nơi chốn, mô tả) → ngày tạo/cập nhật →
+  hàng chip căn phải ở dòng cuối cùng.**
+- **Thông tin dài không làm chip.** Tên nghĩa trang, địa chỉ, nơi chôn cất → dòng
+  chữ có icon dưới tên (cho xuống dòng, `line-clamp-2`). Chip chỉ cho giá trị
+  *ngắn, rời rạc*: loại, trạng thái, số lượng.
+
+## Chip (`src/components/Chip.tsx`)
+
+- **Mọi chip đều có icon** và mỗi nhóm một màu — chip có icon xen chip không icon
+  trông lệch.
+- Tông theo nghĩa: `success` = tốt / hiện hữu / thu; `warning` = cần để ý / cải
+  táng; `danger` = có vấn đề / thất lạc / chi; `info`, `teal`, `violet`, `rose`,
+  `orange`, `indigo` = phân loại, chọn để các chip cạnh nhau khác màu.
+- **Không chỉ dựa vào màu**: luôn có chữ. Chip không bấm được.
+- Một nguồn cho cả chip và ô ảnh đại diện (`heritageCategoryStyle.ts`,
+  `restingPlaceStyle.ts`) để hai nơi luôn cùng màu, cùng hình.
+
+## Trạng thái
+
+- Đang tải: hộp `rounded-xl border bg-card p-4` + "Đang tải…".
+- Trống: `EmptyState` có icon; **hai thông điệp riêng** — "không khớp bộ lọc" (kèm
+  gợi ý bỏ bộ lọc) và "chưa có dữ liệu" (kèm gợi ý nút +).
+
+## Phân trang và URL
+
+Danh sách tải đủ rồi cắt trang ở client dùng `useClientPaging`
+(`src/hooks/useClientPaging.ts`): số trang nằm trên URL (`?trang=`).
+
+**Bẫy:** hai setter `useUrlState` gọi liền nhau **ghi đè nhau** (react-router đọc
+params của lần render, không phải bản mới nhất). Đổi bộ lọc *và* về trang 1 phải
+là một lần ghi: `patchAndResetPage({ loai: "story" })`. Đừng viết
+`setLoai(x); setPage("")`.
+
+## Ngoại lệ hợp lệ
+
+- Thư viện ảnh / video (Phòng ký ức, Video): lưới thẻ có hình.
+- Dòng tin (Bảng tin): thẻ bài viết, phân trang phía máy chủ — chỉ đồng bộ trạng
+  thái trống, tải và chọn số bài mỗi trang.
+- Sự kiện: giữ `UpcomingEventRow` vì dùng chung với trang Hôm nay; chỉ đồng bộ
+  tìm kiếm / ngăn kéo / phân trang.
+- Công cụ thao tác (Việc làm, Gộp trùng): không phải danh sách để duyệt.
+
+---
+
+# Ngăn kéo xem / sửa
+
+Bấm một dòng **không chuyển trang**: mở ngăn kéo bên phải.
+
+## Hai bước: xem rồi mới sửa
+
+1. **Xem** = chính *form sửa* ở chế độ **chỉ đọc** — không dựng một bản "xem nhanh"
+   riêng (hai bản sẽ lệch nhau mỗi lần thêm trường). Bật bằng
+   `EmbeddedForm.readOnly` (hoặc `readOnly` của form).
+   - Toàn bộ ô nằm trong `<fieldset disabled>`; thêm
+     `[&_:disabled]:!opacity-100 !cursor-default` để chữ vẫn rõ, không mờ như ô
+     bị khoá thông thường.
+   - **Nút chỉnh sửa trong thân form ẩn đi** (Gắn người, dấu X gỡ người, Lấy vị trí
+     hiện tại, Thêm đoạn, ▲ ▼ ✕): gắn `data-edit-only`, khung chỉ đọc có
+     `[&_[data-edit-only]]:hidden`.
+   - Thanh nút dính đáy chỉ còn **một nút "Sửa"** (chính), và chỉ hiện với người
+     có quyền sửa.
+2. **Sửa** = bấm "Sửa" thì ngăn kéo **chuyển sang form sửa** (không chuyển route).
+   "Hủy" ở form sửa quay về ngăn kéo xem; "Lưu" xong thì đóng.
+
+Xoá nằm **trong form sửa**, không ở từng dòng danh sách.
+
+## Cách điều khiển
+
+- Màn có route chi tiết: `?panel=<id>-view|-edit&pid=` qua `PanelLink` — Back đóng
+  ngăn kéo, tải lại khôi phục ngăn kéo, Ctrl/Cmd-click vẫn mở route đầy đủ. Thêm
+  loại mới = một `PanelId` trong `usePanel.ts` + một nhánh trong `PanelHost.tsx`.
+- Màn chỉ có danh sách (Quỹ họ, Bảng vàng, Danh mục địa giới): trạng thái cục bộ
+  `{ mode: "new" | "view" | "edit", … }`. Khác biệt đã biết: Back không đóng ngăn
+  kéo, tải lại thì đóng.
+- `SidePanel`: `guard={false}` cho chế độ xem (không hỏi "bỏ thay đổi").
+
+## Thanh nút dính đáy
+
+- Dùng `FormActions` — trong ngăn kéo nó tự thành `PanelActionBar` dính đáy.
+- **Nút co theo nội dung, dồn phải.** Không `flex-1` / full-width (đã bỏ — nút
+  giãn kín chiều ngang trông thô và khó phân biệt nút chính).
+- **Thứ tự: phá huỷ → phụ → chính**, chính ngoài cùng bên phải. Ví dụ đầy đủ:
+
+  `[ Xoá ]  [ Hủy ]  [ Lưu ]`  ·  tạo mới: `[ Hủy ]  [ Lưu ]`  ·  xem: `[ Sửa ]`
+
+- **Chính = nền đặc** (variant mặc định). Đừng để "Lưu" là `outline` — cạnh "Hủy" cũng
+  `outline` thì không còn nút nào nổi bật.
+- Xoá dùng `variant="destructive-outline"` (xem "Nút xoá dùng đúng một kiểu").
+- "Hủy" luôn có ở form tạo / sửa — kể cả form chỉ có Xoá và Lưu.
+
+## Trường trong ngăn kéo hẹp (~32rem)
+
+- Trường dài mỗi trường **một hàng riêng** (Mục đích, Ngày, Tên…). Chỉ ghép hai
+  cột khi cả hai trường đều ngắn (Số tiền + Quỹ).
+- Ghi chú dùng `Textarea` (tự giãn theo nội dung, tối thiểu 3 dòng) — không dùng
+  ô một dòng `Input`.
+- Ô ngày, toạ độ… đều phải có icon (quy ước icon ở đầu tài liệu).
 
 ---
 
