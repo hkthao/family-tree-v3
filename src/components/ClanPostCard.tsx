@@ -120,7 +120,7 @@ export function ClanPostCard({
   );
 }
 
-function formatRelative(iso: string): string {
+export function formatRelative(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();
   const diffMs = now - then;

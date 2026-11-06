@@ -63,18 +63,23 @@ export interface PaginatedPosts {
  */
 export async function listClanPosts(
   clanId: string,
-  opts: { page?: number; pageSize?: number } = {},
+  opts: { page?: number; pageSize?: number; type?: ClanPostType | null; search?: string } = {},
   client: Client = defaultClient,
 ): Promise<PaginatedPosts> {
   const page = Math.max(1, opts.page ?? 1);
   const pageSize = Math.max(1, opts.pageSize ?? 20);
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
-  const { data, error, count } = await client
+  let q = client
     .from("clan_posts")
     .select(POST_COLUMNS, { count: "exact" })
     .eq("clan_id", clanId)
-    .neq("status", "hidden")
+    .neq("status", "hidden");
+  if (opts.type) q = q.eq("type", opts.type);
+  // Bỏ ký tự có nghĩa trong cú pháp `or`/`ilike` của PostgREST; khớp có dấu (cột chưa có bản không dấu).
+  const term = (opts.search ?? "").replace(/[%_,()\\]/g, " ").trim();
+  if (term) q = q.or(`title.ilike.%${term}%,body.ilike.%${term}%`);
+  const { data, error, count } = await q
     .order("pinned", { ascending: false })
     .order("created_at", { ascending: false })
     .range(from, to);

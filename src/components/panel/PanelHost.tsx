@@ -25,7 +25,6 @@ const EditPersonForm = lazy(() =>
   import("@/pages/clan/EditPerson").then((m) => ({ default: m.EditPersonForm })),
 );
 
-const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
 const InlawsNew = lazy(() => import("@/pages/clan/InlawsNew"));
 const RestingPlaceForm = lazy(() => import("@/pages/clan/RestingPlaceForm"));
 const HeritageForm = lazy(() => import("@/pages/clan/HeritageForm"));
@@ -52,7 +51,7 @@ export function PanelHost({ clan }: { clan: ClanDetail }) {
 
 function PanelHostInner({ clan }: { clan: ClanDetail }) {
   const clanId = clan.id;
-  const { current, params, close } = usePanel();
+  const { current, params, close, open } = usePanel();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const aiEnabled = useAiEnabled();
   const chatOk =
@@ -72,14 +71,21 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
   const { data: person } = useQuery({
     queryKey: queryKeys.person(pid ?? "", userId),
     queryFn: () => getPerson(pid!),
-    enabled: !!pid && !!userId && (current === "person-edit"),
+    enabled: !!pid && !!userId && (current === "person-edit" || current === "person-view"),
   });
 
+  // Xem nhanh (chỉ đọc): cùng form sửa nhưng khoá mọi ô; nút "Sửa" chuyển sang trang chi tiết của người đó.
   if (current === "person-view" && pid) {
     return (
-      <SidePanel open title="Chi tiết" onClose={close} size="lg">
+      <SidePanel open title="Thông tin người" subtitle={person?.full_name} onClose={close} size="lg" guard={false}>
         <Suspense fallback={<Loading />}>
-          <PersonDetail embedded={{ id: pid, onClose: close }} />
+          <EditPersonForm
+            clanId={clanId}
+            personId={pid}
+            readOnly
+            onSaved={close}
+            onCancel={close}
+          />
         </Suspense>
       </SidePanel>
     );
@@ -170,6 +176,16 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
     );
   }
 
+  if (current === "board-view" && pid) {
+    return (
+      <SidePanel open title="Bài viết" onClose={close} size="lg" guard={false}>
+        <Suspense fallback={<Loading />}>
+          <BoardPostViewBody clan={clan} postId={pid} onClose={close} onEdit={() => open("board-edit", { pid })} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
   if (current === "board-new") {
     return (
       <SidePanel open title="Đăng bài mới" onClose={close} size="lg">
@@ -234,4 +250,37 @@ function BoardPostEditBody({
     return <p className="py-6 text-sm text-muted-foreground">Bạn không có quyền sửa bài này.</p>;
   }
   return <BoardPostForm clan={clan} post={post} onDone={onClose} onCancel={onClose} />;
+}
+
+/** Xem một bài (chỉ đọc): cùng form đăng/sửa nhưng khoá mọi ô; "Sửa" chỉ cho tác giả hoặc quản trị. */
+function BoardPostViewBody({
+  clan,
+  postId,
+  onClose,
+  onEdit,
+}: {
+  clan: ClanDetail;
+  postId: string;
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  const { user } = useAuth();
+  const { data: post, isLoading } = useQuery({
+    queryKey: queryKeys.clanPost(postId),
+    queryFn: () => getClanPost(postId),
+  });
+  if (isLoading) return <Loading />;
+  if (!post) return <p className="py-6 text-sm text-muted-foreground">Không tìm thấy bài viết.</p>;
+  const canEdit = post.author_id === user?.id || isClanAdmin(clan);
+  return (
+    <BoardPostForm
+      clan={clan}
+      post={post}
+      readOnly
+      canEdit={canEdit}
+      onEdit={onEdit}
+      onDone={onClose}
+      onCancel={onClose}
+    />
+  );
 }

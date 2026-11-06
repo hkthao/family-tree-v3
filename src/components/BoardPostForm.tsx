@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { InSidePanelContext } from "@/components/panel/context";
 import { useToast } from "@/components/Toast";
@@ -7,6 +8,7 @@ import {
   IconBook,
   IconCalendar,
   IconCheck,
+  IconPencil,
   IconScroll,
   IconX,
 } from "@/components/icons";
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin } from "@/hooks/useClanContext";
@@ -48,6 +51,9 @@ export function BoardPostForm({
   post,
   onDone,
   onCancel,
+  readOnly = false,
+  canEdit = false,
+  onEdit,
 }: {
   clan: ClanDetail;
   /** Có giá trị → edit; null/undef → create. */
@@ -55,6 +61,10 @@ export function BoardPostForm({
   /** Sau khi save thành công — Page điều hướng. */
   onDone: (postId: string) => void;
   onCancel: () => void;
+  /** Chế độ xem (ngăn kéo): khoá mọi ô; thanh nút chỉ còn "Sửa" (nếu `canEdit`). */
+  readOnly?: boolean;
+  canEdit?: boolean;
+  onEdit?: () => void;
 }) {
   const inPanel = useContext(InSidePanelContext);
   const { user } = useAuth();
@@ -122,7 +132,7 @@ export function BoardPostForm({
       className={`space-y-4 ${inPanel ? "" : "rounded-xl border bg-card p-4 shadow-sm"}`}
     >
 
-      {!admin && !isEdit && (
+      {!admin && !isEdit && !readOnly && (
         <Alert>
           <AlertDescription>
             Bài sẽ chuyển vào hàng chờ duyệt. Admin của dòng họ sẽ kiểm tra
@@ -131,85 +141,108 @@ export function BoardPostForm({
         </Alert>
       )}
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Loại bài</legend>
-        <div className="flex flex-wrap gap-2">
-          {TYPE_OPTIONS.map((opt) => (
-            <label
-              key={opt.value}
-              className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm ${
-                type === opt.value
-                  ? "border-primary bg-primary/5"
-                  : "hover:bg-muted/40"
-              }`}
-            >
-              <input
-                type="radio"
-                name="post-type"
-                checked={type === opt.value}
-                onChange={() => setType(opt.value)}
-                className="h-4 w-4 accent-primary"
-              />
-              {opt.label}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <ReadOnlyFieldset readOnly={readOnly} className="space-y-4">
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">Loại bài</legend>
+          <div className="flex flex-wrap gap-2">
+            {TYPE_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex items-center gap-2 rounded-md border px-3 py-1.5 cursor-pointer text-sm ${
+                  type === opt.value
+                    ? "border-primary bg-primary/5"
+                    : "hover:bg-muted/40"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="post-type"
+                  checked={type === opt.value}
+                  onChange={() => setType(opt.value)}
+                  className="h-4 w-4 accent-primary"
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
-      <div className="space-y-2">
-        <Label htmlFor="post-title">Tiêu đề (tuỳ chọn)</Label>
-        <Input
-          id="post-title"
-          icon={<IconScroll />}
-          maxLength={200}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Vd: Họp họ rằm tháng Bảy"
-        />
-      </div>
-
-      <Textarea
-        id="post-body"
-        label="Nội dung"
-        icon={<IconBook />}
-        required
-        maxLength={20000}
-        rows={4}
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder="Viết tin cho cả họ đọc…"
-        className="text-sm"
-      />
-
-      {(type === "event" || type === "notice") && (
         <div className="space-y-2">
-          <Label htmlFor="post-event-date">Ngày diễn ra (tuỳ chọn)</Label>
+          <Label htmlFor="post-title">Tiêu đề (tuỳ chọn)</Label>
           <Input
-            id="post-event-date"
-            icon={<IconCalendar />}
-            type="date"
-            value={eventDate}
-            onChange={(e) => setEventDate(e.target.value)}
+            id="post-title"
+            icon={<IconScroll />}
+            maxLength={200}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Vd: Họp họ rằm tháng Bảy"
           />
         </div>
-      )}
 
-      <FormActions>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          <IconX className="h-4 w-4 mr-1.5" />
-          Huỷ
-        </Button>
-        <Button type="submit" disabled={!body.trim() || saveM.isPending}>
-          <IconCheck className="h-4 w-4 mr-1.5" />
-          {saveM.isPending
-            ? "Đang lưu…"
-            : isEdit
-              ? "Cập nhật"
-              : admin
-                ? "Đăng"
-                : "Gửi duyệt"}
-        </Button>
-      </FormActions>
+        <Textarea
+          id="post-body"
+          label="Nội dung"
+          icon={<IconBook />}
+          required
+          maxLength={20000}
+          rows={4}
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Viết tin cho cả họ đọc…"
+          className="text-sm"
+        />
+
+        {(type === "event" || type === "notice") && (
+          <div className="space-y-2">
+            <Label htmlFor="post-event-date">Ngày diễn ra (tuỳ chọn)</Label>
+            <Input
+              id="post-event-date"
+              icon={<IconCalendar />}
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+            />
+          </div>
+        )}
+
+      </ReadOnlyFieldset>
+
+      {readOnly ? (
+        <>
+          {/* Bình luận và duyệt bài ở trang bài viết. */}
+          <Link
+            to={`/clans/${clan.id}/board/${post?.id}`}
+            className="inline-block text-sm text-primary hover:underline"
+          >
+            Xem bình luận →
+          </Link>
+          {canEdit && onEdit && (
+            <FormActions>
+              <Button type="button" onClick={onEdit}>
+                <IconPencil className="h-4 w-4 mr-1.5" />
+                Sửa
+              </Button>
+            </FormActions>
+          )}
+        </>
+      ) : (
+        <FormActions>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            <IconX className="h-4 w-4 mr-1.5" />
+            Huỷ
+          </Button>
+          <Button type="submit" disabled={!body.trim() || saveM.isPending}>
+            <IconCheck className="h-4 w-4 mr-1.5" />
+            {saveM.isPending
+              ? "Đang lưu…"
+              : isEdit
+                ? "Cập nhật"
+                : admin
+                  ? "Đăng"
+                  : "Gửi duyệt"}
+          </Button>
+        </FormActions>
+      )}
     </form>
   );
 }

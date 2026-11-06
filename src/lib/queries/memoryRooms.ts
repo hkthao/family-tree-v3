@@ -99,7 +99,7 @@ export async function createMemoryRoom(
 
 export async function updateMemoryRoom(
   roomId: string,
-  patch: Partial<Pick<MemoryRoom, "name" | "theme" | "description">>,
+  patch: Partial<Pick<MemoryRoom, "name" | "theme" | "description" | "cover_image_url">>,
 ): Promise<void> {
   const { error } = await db.from("memory_rooms").update(patch).eq("id", roomId);
   if (error) throw new Error(error.message);
