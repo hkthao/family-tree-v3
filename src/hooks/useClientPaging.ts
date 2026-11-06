@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useUrlPatch, useUrlState } from "@/hooks/useUrlState";
 
@@ -31,4 +31,23 @@ export function useClientPaging<T>(items: T[], defaultSize = 20) {
       setPageRaw("");
     },
   };
+}
+
+/**
+ * Ô tìm kiếm có debounce, giá trị tìm nằm trên URL (`?q=`) để link sâu / Back giữ nguyên
+ * (vd Góp ý → "Quản lý ↗" mở Người dùng đã lọc sẵn theo email). Đổi từ khoá thì về trang đầu
+ * trong MỘT lần ghi URL. `text` là chữ đang gõ, `q` là từ khoá đã áp dụng.
+ */
+export function useSearchBox(delay = 300) {
+  const patch = useUrlPatch();
+  const [q] = useUrlState("q", "");
+  const [text, setText] = useState(q);
+  useEffect(() => {
+    const h = setTimeout(() => {
+      if (text !== q) patch({ q: text || null, trang: null });
+    }, delay);
+    return () => clearTimeout(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text]);
+  return { q, text, setText };
 }
