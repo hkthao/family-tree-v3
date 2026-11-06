@@ -9,8 +9,10 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
  */
 export type PanelId = "person-view" | "person-new" | "person-edit" | "person-add" | "notifications"
   | "chat"
+  | "grave-view"
   | "grave-new"
   | "grave-edit"
+  | "heritage-view"
   | "heritage-new"
   | "heritage-edit"
   | "board-new"

@@ -117,6 +117,27 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
     );
   }
 
+  // Xem (chỉ đọc): dùng lại đúng form sửa nhưng khoá mọi ô; nút "Sửa" mới chuyển sang route sửa.
+  if (current === "grave-view" && pid) {
+    return (
+      <SidePanel open title="Nơi an nghỉ" onClose={close} size="lg" guard={false}>
+        <Suspense fallback={<Loading />}>
+          <RestingPlaceForm embedded={{ id: pid, readOnly: true, onDone: close, onCancel: close }} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
+  if (current === "heritage-view" && pid) {
+    return (
+      <SidePanel open title="Mục di sản" onClose={close} size="lg" guard={false}>
+        <Suspense fallback={<Loading />}>
+          <HeritageForm embedded={{ id: pid, readOnly: true, onDone: close, onCancel: close }} />
+        </Suspense>
+      </SidePanel>
+    );
+  }
+
   if (current === "grave-new" || (current === "grave-edit" && pid)) {
     const isEdit = current === "grave-edit";
     return (

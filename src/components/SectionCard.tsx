@@ -14,8 +14,9 @@ function readOpen(id: string, def: boolean): boolean {
 }
 
 /**
- * Khối nội dung dạng thẻ: header (icon + tiêu đề, action bên phải, nút thu
- * gọn) tách khỏi body để phân biệt rõ từng nhóm. Trạng thái thu gọn/mở rộng
+ * Khối nội dung dạng thẻ: header (icon + tiêu đề, thông tin phụ bên phải, nút thu
+ * gọn) tách khỏi body để phân biệt rõ từng nhóm. Nút / liên kết HÀNH ĐỘNG ("Xem tất
+ * cả →", "Thêm…") đặt ở `footer` dưới cùng thẻ, không ở header. Trạng thái thu gọn/mở rộng
  * được nhớ theo `id` (localStorage, hỏng thì dùng `defaultOpen`).
  */
 export function SectionCard({
@@ -23,6 +24,7 @@ export function SectionCard({
   icon,
   title,
   action,
+  footer,
   defaultOpen = true,
   bodyClassName = "p-3 sm:p-4",
   children,
@@ -30,8 +32,10 @@ export function SectionCard({
   id: string;
   icon: ReactNode;
   title: string;
-  /** Link/nút phụ ở header (vd "Xem tất cả →"). */
+  /** Thông tin phụ, KHÔNG phải hành động, ở header (vd "3 sự kiện", dung lượng). */
   action?: ReactNode;
+  /** Hành động của thẻ (vd link "Xem tất cả →"): hàng căn phải dưới cùng thẻ. */
+  footer?: ReactNode;
   defaultOpen?: boolean;
   bodyClassName?: string;
   children: ReactNode;
@@ -85,6 +89,11 @@ export function SectionCard({
         </button>
       </header>
       {open && <div className={bodyClassName}>{children}</div>}
+      {open && footer && (
+        <footer className="flex flex-wrap items-center justify-end gap-2 border-t bg-muted/20 px-3 py-2 sm:px-4">
+          {footer}
+        </footer>
+      )}
     </section>
   );
 }
