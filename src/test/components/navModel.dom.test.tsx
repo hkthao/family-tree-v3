@@ -61,31 +61,38 @@ const build = (
 
 const ids = (sections: DrawerSection[]) => sections.map((s) => s.id);
 
-describe("buildSections — lối vào khu quản trị", () => {
-  it("admin chỉ thấy MỘT mục dẫn vào khu quản trị", () => {
-    // Chín mục quản trị nằm ở LƯỚI trong /admin. Đổ chúng vào menu trái
-    // nữa là hai bản sao của cùng một danh sách, và người dùng phải đoán
-    // xem cái nào mới là chỗ đi.
+describe("buildSections — nhóm Quản trị hệ thống", () => {
+  it("nhóm Chung không còn mục quản trị nào", () => {
     const global = build({ profile: admin }).find((x) => x.id === "global")!;
-    const entries = global.items.filter((i) => i.to.startsWith("/admin"));
-    expect(entries).toHaveLength(1);
-    expect(entries[0].to).toBe("/admin");
+    expect(global.items.filter((i) => i.to.startsWith("/admin"))).toHaveLength(0);
   });
 
-  it("menu KHÔNG liệt kê từng màn quản trị", () => {
-    const tos = build({ profile: admin }).flatMap((x) =>
-      x.items.map((i) => i.to),
-    );
-    for (const sc of ADMIN_SCREENS) {
-      expect(tos).not.toContain(adminPath(sc.slug));
+  it("admin thấy MỘT nhóm quản trị hệ thống chứa tổng quan và TỪNG màn quản trị", () => {
+    const group = build({ profile: admin }).find((x) => x.id === "platform-admin")!;
+    expect(group).toBeDefined();
+    const tos = group.items.map((i) => i.to);
+    expect(tos[0]).toBe("/admin");
+    for (const sc of ADMIN_SCREENS) expect(tos).toContain(adminPath(sc.slug));
+    expect(tos).toHaveLength(ADMIN_SCREENS.length + 1);
+  });
+
+  it("nhóm quản trị nằm DƯỚI CÙNG, kể cả khi đang ở trong một dòng họ", () => {
+    for (const withClan of [undefined, { clan: clan }]) {
+      const all = ids(build({ profile: admin, ...(withClan ?? {}) }));
+      expect(all[all.length - 1]).toBe("platform-admin");
     }
   });
 
-  it("người thường không thấy lối vào quản trị", () => {
-    const all = build({ profile: normal }).flatMap((x) =>
-      x.items.map((i) => i.label),
-    );
-    expect(all).not.toContain("Quản trị nền tảng");
+  it("nhóm quản trị gập được và mặc định gập", () => {
+    const group = build({ profile: admin }).find((x) => x.id === "platform-admin")!;
+    expect(group.collapsible).not.toBe(false);
+    expect(group.defaultOpen).toBe(false);
+  });
+
+  it("người thường không thấy nhóm quản trị", () => {
+    expect(ids(build({ profile: normal }))).not.toContain("platform-admin");
+    const all = build({ profile: normal }).flatMap((x) => x.items.map((i) => i.to));
+    expect(all.some((t) => t.startsWith("/admin"))).toBe(false);
   });
 });
 
