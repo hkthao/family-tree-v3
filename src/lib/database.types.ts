@@ -1696,12 +1696,14 @@ export type Database = {
           latitude: number | null
           location_name: string | null
           longitude: number | null
+          province_code: string | null
           sections: Json
           sort: number
           status: Database["public"]["Enums"]["heritage_status"]
           summary: string | null
           title: string
           updated_at: string
+          ward_code: string | null
         }
         Insert: {
           address?: string | null
@@ -1718,12 +1720,14 @@ export type Database = {
           latitude?: number | null
           location_name?: string | null
           longitude?: number | null
+          province_code?: string | null
           sections?: Json
           sort?: number
           status?: Database["public"]["Enums"]["heritage_status"]
           summary?: string | null
           title: string
           updated_at?: string
+          ward_code?: string | null
         }
         Update: {
           address?: string | null
@@ -1740,12 +1744,14 @@ export type Database = {
           latitude?: number | null
           location_name?: string | null
           longitude?: number | null
+          province_code?: string | null
           sections?: Json
           sort?: number
           status?: Database["public"]["Enums"]["heritage_status"]
           summary?: string | null
           title?: string
           updated_at?: string
+          ward_code?: string | null
         }
         Relationships: [
           {
@@ -1768,6 +1774,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heritage_items_province_code_fkey"
+            columns: ["province_code"]
+            isOneToOne: false
+            referencedRelation: "vn_provinces"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "heritage_items_ward_code_fkey"
+            columns: ["ward_code"]
+            isOneToOne: false
+            referencedRelation: "vn_wards"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -2234,6 +2254,75 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      person_addresses: {
+        Row: {
+          clan_id: string
+          country: string
+          person_id: string
+          province_code: string | null
+          street_detail: string | null
+          updated_at: string
+          updated_by: string | null
+          ward_code: string | null
+        }
+        Insert: {
+          clan_id: string
+          country?: string
+          person_id: string
+          province_code?: string | null
+          street_detail?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          ward_code?: string | null
+        }
+        Update: {
+          clan_id?: string
+          country?: string
+          person_id?: string
+          province_code?: string | null
+          street_detail?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          ward_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "person_addresses_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_addresses_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: true
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_addresses_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: true
+            referencedRelation: "persons_public_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "person_addresses_province_code_fkey"
+            columns: ["province_code"]
+            isOneToOne: false
+            referencedRelation: "vn_provinces"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "person_addresses_ward_code_fkey"
+            columns: ["ward_code"]
+            isOneToOne: false
+            referencedRelation: "vn_wards"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       person_citations: {
         Row: {
@@ -3123,8 +3212,10 @@ export type Database = {
           name: string | null
           notes: string | null
           orientation: string | null
+          province_code: string | null
           status: Database["public"]["Enums"]["resting_place_status"]
           updated_at: string
+          ward_code: string | null
         }
         Insert: {
           address?: string | null
@@ -3144,8 +3235,10 @@ export type Database = {
           name?: string | null
           notes?: string | null
           orientation?: string | null
+          province_code?: string | null
           status?: Database["public"]["Enums"]["resting_place_status"]
           updated_at?: string
+          ward_code?: string | null
         }
         Update: {
           address?: string | null
@@ -3165,8 +3258,10 @@ export type Database = {
           name?: string | null
           notes?: string | null
           orientation?: string | null
+          province_code?: string | null
           status?: Database["public"]["Enums"]["resting_place_status"]
           updated_at?: string
+          ward_code?: string | null
         }
         Relationships: [
           {
@@ -3182,6 +3277,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clans"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resting_places_province_code_fkey"
+            columns: ["province_code"]
+            isOneToOne: false
+            referencedRelation: "vn_provinces"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "resting_places_ward_code_fkey"
+            columns: ["ward_code"]
+            isOneToOne: false
+            referencedRelation: "vn_wards"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -3762,6 +3871,10 @@ export type Database = {
         Returns: Json
       }
       can_edit_clan: { Args: { target_clan: string }; Returns: boolean }
+      clan_map_stats: {
+        Args: { p_clan: string; p_include_deceased?: boolean }
+        Returns: Json
+      }
       clan_post_moderate: {
         Args: { p_action: string; p_note?: string; p_post_id: string }
         Returns: undefined

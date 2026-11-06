@@ -124,6 +124,7 @@ export const ROUTE_META: RouteMeta[] = [
   { pattern: "/clans/:clanId/people", title: "Danh sách thành viên" },
   { pattern: "/clans/:clanId/tree", title: "Cây gia phả" },
   { pattern: "/clans/:clanId/members", title: "Thành viên tài khoản" },
+  { pattern: "/clans/:clanId/map", title: "Bản đồ dòng họ" },
   { pattern: "/clans/:clanId/memory-room/:roomId", title: "Phòng tưởng niệm" },
   { pattern: "/clans/:clanId/memory-room", title: "Phòng tưởng niệm" },
   { pattern: "/clans/:clanId/graves/cemeteries", title: "Nghĩa trang" },

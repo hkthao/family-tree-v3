@@ -19,6 +19,7 @@ import {
   IconUserPlus,
   IconX,
 } from "@/components/icons";
+import { AddressPicker, type AddressValue } from "@/components/AddressPicker";
 import { HeritagePhotosSection } from "@/components/HeritagePhotosSection";
 import { PageHeader } from "@/components/PageHeader";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -77,6 +78,8 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
   const [sections, setSections] = useState<HeritageSection[]>([]);
   const [locationName, setLocationName] = useState("");
   const [address, setAddress] = useState("");
+  // Tỉnh + xã/phường chọn từ danh mục — để hiện trên Bản đồ dòng họ (chỉ mục kiểu nơi chốn).
+  const [area, setArea] = useState<AddressValue>({ province_code: null, ward_code: null });
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [builtYear, setBuiltYear] = useState("");
@@ -100,6 +103,7 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
     setSections(existing.sections ?? []);
     setLocationName(existing.location_name ?? "");
     setAddress(existing.address ?? "");
+    setArea({ province_code: existing.province_code, ward_code: existing.ward_code });
     setLat(existing.latitude != null ? String(existing.latitude) : "");
     setLng(existing.longitude != null ? String(existing.longitude) : "");
     setBuiltYear(existing.built_year != null ? String(existing.built_year) : "");
@@ -138,6 +142,8 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
           .filter((s) => s.heading || s.body),
         location_name: isPlace ? locationName.trim() || null : null,
         address: isPlace ? address.trim() || null : null,
+        province_code: isPlace ? area.province_code : null,
+        ward_code: isPlace ? area.ward_code : null,
         latitude: isPlace && lat.trim() ? Number(lat) : null,
         longitude: isPlace && lng.trim() ? Number(lng) : null,
         built_year: isPlace && builtYear.trim() ? Math.floor(Number(builtYear)) : null,
@@ -261,7 +267,11 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
                 placeholder="vd: thôn …, xã …" className="h-12 text-base" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="address">Địa chỉ (tuỳ chọn)</Label>
+              <Label>Khu vực (hiện trên Bản đồ)</Label>
+              <AddressPicker idPrefix="heritage-area" value={area} onChange={setArea} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="address">Địa chỉ chi tiết (tuỳ chọn)</Label>
               <Input id="address" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)}
                 placeholder="vd: xã …, huyện …, tỉnh …" className="h-12 text-base" />
             </div>

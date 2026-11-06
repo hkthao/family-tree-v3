@@ -73,6 +73,7 @@ const Kinship = lazy(() => import("@/pages/clan/Kinship"));
 const Members = lazy(() => import("@/pages/clan/Members"));
 const MemoryRoom = lazy(() => import("@/pages/clan/MemoryRoom"));
 const MemoryRooms = lazy(() => import("@/pages/clan/MemoryRooms"));
+const MapStats = lazy(() => import("@/pages/clan/MapStats"));
 const Merge = lazy(() => import("@/pages/clan/Merge"));
 const RestingPlaces = lazy(() => import("@/pages/clan/RestingPlaces"));
 const RestingPlaceDetail = lazy(() => import("@/pages/clan/RestingPlaceDetail"));
@@ -251,6 +252,7 @@ export default function App() {
           <Route path="people/:personId/add-parent" element={<AddParent />} />
           <Route path="members" element={<Members />} />
           <Route path="tree" element={<Tree />} />
+          <Route path="map" element={<MapStats />} />
           <Route path="memory-room" element={<FeatureGuard feature="memory_room"><MemoryRooms /></FeatureGuard>} />
           <Route path="memory-room/:roomId" element={<FeatureGuard feature="memory_room"><MemoryRoom /></FeatureGuard>} />
           <Route path="graves" element={<FeatureGuard feature="graves"><RestingPlaces /></FeatureGuard>} />

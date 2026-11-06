@@ -175,3 +175,18 @@ export const deleteProvinces = (codes: string[], client: Client = defaultClient)
 
 export const deleteWards = (codes: string[], client: Client = defaultClient) =>
   deleteMany(codes, (c) => deleteWard(c, client));
+
+/** Toàn bộ xã/phường của một tỉnh (≤ ~250 dòng) — cho ô chọn địa chỉ. */
+export async function listWardsOfProvince(
+  provinceCode: string,
+  client: Client = defaultClient,
+): Promise<VnWard[]> {
+  const { data, error } = await client
+    .from("vn_wards")
+    .select("code, province_code, name, kind")
+    .eq("province_code", provinceCode)
+    .order("name_unaccent")
+    .range(0, 999);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as VnWard[];
+}
