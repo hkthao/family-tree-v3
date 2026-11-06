@@ -4,6 +4,7 @@ import {
   IconBell,
   IconBuildings,
   IconMail,
+  IconMapPin,
   IconMicrophone,
   IconScroll,
   IconSettings,
@@ -123,6 +124,14 @@ export const ADMIN_SCREENS: AdminScreen[] = [
     icon: <IconBell className={ic} />,
     area: "settings",
     legacyTab: "announcements",
+  },
+  {
+    slug: "danh-muc-dia-gioi",
+    label: "Danh mục địa giới",
+    description: "Tỉnh/thành và xã/phường dùng cho ô chọn địa chỉ.",
+    icon: <IconMapPin className={ic} />,
+    area: "settings",
+    legacyTab: "divisions",
   },
   {
     slug: "nhap-gia-pha",

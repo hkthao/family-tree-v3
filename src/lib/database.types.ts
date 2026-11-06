@@ -3291,6 +3291,71 @@ export type Database = {
         }
         Relationships: []
       }
+      vn_provinces: {
+        Row: {
+          code: string
+          created_at: string
+          name: string
+          name_unaccent: string
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          name: string
+          name_unaccent: string
+          region: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          name?: string
+          name_unaccent?: string
+          region?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vn_wards: {
+        Row: {
+          code: string
+          created_at: string
+          kind: string
+          name: string
+          name_unaccent: string
+          province_code: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          kind?: string
+          name: string
+          name_unaccent: string
+          province_code: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          kind?: string
+          name?: string
+          name_unaccent?: string
+          province_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vn_wards_province_code_fkey"
+            columns: ["province_code"]
+            isOneToOne: false
+            referencedRelation: "vn_provinces"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       zalo_identities: {
         Row: {
           created_at: string
