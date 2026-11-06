@@ -5,31 +5,42 @@ import { FormActions } from "@/components/ui/form-actions";
 import { SidePanel } from "@/components/SidePanel";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { Chip, type ChipTone } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
+import { IconTile } from "@/components/IconTile";
 import {
   IconAward,
   IconCalendar,
   IconCheck,
-  IconScroll,
+  IconPencil,
+  IconSearch,
   IconTag,
   IconTrash,
   IconUser,
+  IconUsers,
   IconWallet,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useAuth } from "@/hooks/useAuth";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { unaccent } from "@/lib/unaccent";
 import {
   createHonorEntry,
   deleteHonorEntry,
   HONOR_CATEGORY_LABEL,
   listHonorEntries,
+  updateHonorEntry,
   type HonorCategory,
   type HonorEntry,
 } from "@/lib/queries/honor";
@@ -45,11 +56,21 @@ function formatVnd(n: number): string {
   return new Intl.NumberFormat("vi-VN").format(n) + " đ";
 }
 
-const CAT_TONE: Record<HonorCategory, string> = {
-  donation_money: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  donation_labor: "bg-primary/10 text-primary",
-  academic: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-  other: "bg-muted text-muted-foreground",
+/** Trạng thái ngăn kéo: thêm mới, xem (chỉ đọc) hoặc sửa một ghi nhận. */
+type PanelState =
+  | { mode: "new" }
+  | { mode: "view" | "edit"; entry: HonorEntry }
+  | null;
+
+/** Màu + icon chip theo loại ghi nhận. */
+const CAT_STYLE: Record<
+  HonorCategory,
+  { tone: ChipTone; icon: React.ComponentType<{ className?: string }> }
+> = {
+  donation_money: { tone: "warning", icon: IconWallet },
+  donation_labor: { tone: "primary", icon: IconUsers },
+  academic: { tone: "success", icon: IconAward },
+  other: { tone: "neutral", icon: IconTag },
 };
 
 export default function HonorBook() {
@@ -59,7 +80,9 @@ export default function HonorBook() {
   const qc = useQueryClient();
   const toast = useToast();
   const confirm = useConfirm();
-  const [showAdd, setShowAdd] = useState(false);
+  // Ngăn kéo: thêm mới / xem (chỉ đọc) / sửa. Bấm dòng = xem; "Sửa" mới mở form sửa.
+  const [panel, setPanel] = useState<PanelState>(null);
+  const closePanel = () => setPanel(null);
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["honor", clan.id, user?.id ?? ""],
@@ -75,12 +98,27 @@ export default function HonorBook() {
     [entries],
   );
 
+  const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState<HonorCategory | "">("");
+  const filtered = useMemo(() => {
+    const q = unaccent(search.trim()).toLowerCase();
+    return entries.filter(
+      (e) =>
+        (!catFilter || e.category === catFilter) &&
+        (!q || unaccent(`${e.honoree_name} ${e.note ?? ""}`).toLowerCase().includes(q)),
+    );
+  }, [entries, search, catFilter]);
+  const paging = useClientPaging(filtered, 20);
+
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ["honor", clan.id] });
 
   const delM = useMutation({
     mutationFn: (id: string) => deleteHonorEntry(id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      closePanel();
+    },
     onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
   });
 
@@ -99,7 +137,7 @@ export default function HonorBook() {
         actionsBelow
         actions={
           canEdit ? (
-            <Fab onClick={() => setShowAdd(true)} label="Ghi công đức" />
+            <Fab onClick={() => setPanel({ mode: "new" })} label="Ghi công đức" />
           ) : undefined
         }
       />
@@ -116,25 +154,101 @@ export default function HonorBook() {
         </div>
       )}
 
-      {canEdit && (
-        <SidePanel
-          open={showAdd}
-          title="Ghi công đức"
-          subtitle="Vinh danh đóng góp hoặc thành tích của con cháu dòng họ."
-          onClose={() => setShowAdd(false)}
-        >
-          <AddHonorForm
+      <SidePanel
+        open={panel !== null}
+        title={
+          panel?.mode === "new"
+            ? "Ghi công đức"
+            : panel?.mode === "edit"
+              ? "Sửa công đức"
+              : "Công đức"
+        }
+        subtitle={
+          panel?.mode === "new"
+            ? "Vinh danh đóng góp hoặc thành tích của con cháu dòng họ."
+            : undefined
+        }
+        onClose={closePanel}
+        guard={panel?.mode !== "view"}
+      >
+        {panel && (
+          <HonorForm
+            key={panel.mode === "new" ? "new" : `${panel.mode}-${panel.entry.id}`}
             clanId={clan.id}
-            onDone={() => {
-              setShowAdd(false);
+            entry={panel.mode === "new" ? null : panel.entry}
+            readOnly={panel.mode === "view"}
+            canEdit={canEdit}
+            onSaved={() => {
+              closePanel();
               invalidate();
             }}
-            onCancel={() => setShowAdd(false)}
+            onCancel={() =>
+              setPanel(panel.mode === "edit" ? { mode: "view", entry: panel.entry } : null)
+            }
+            onEdit={() => panel.mode === "view" && setPanel({ mode: "edit", entry: panel.entry })}
+            onDelete={
+              panel.mode === "edit"
+                ? async () => {
+                    const ok = await confirm({
+                      title: `Xoá ghi nhận của "${panel.entry.honoree_name}"?`,
+                      confirmLabel: "Xoá",
+                      destructive: true,
+                    });
+                    if (ok) delM.mutate(panel.entry.id);
+                  }
+                : undefined
+            }
           />
-        </SidePanel>
-      )}
+        )}
+      </SidePanel>
 
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {/* Loại ghi nhận nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm) — như Danh bạ. */}
+      <CollapsibleFilters
+        activeCount={catFilter ? 1 : 0}
+        onReset={() => {
+          setCatFilter("");
+          paging.patchAndResetPage({});
+        }}
+        title="Lọc công đức"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm công đức"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              paging.patchAndResetPage({});
+            }}
+            placeholder="Tìm theo tên người, ghi chú…"
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={catFilter}
+            onChange={(e) => {
+              setCatFilter(e.target.value as HonorCategory | "");
+              paging.patchAndResetPage({});
+            }}
+            aria-label="Lọc theo loại"
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">Mọi loại</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {HONOR_CATEGORY_LABEL[c]}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </CollapsibleFilters>
+
+      {isLoading && (
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
+      )}
 
       {!isLoading && entries.length === 0 && (
         <EmptyState
@@ -142,103 +256,111 @@ export default function HonorBook() {
           title="Chưa có ghi nhận công đức"
           description={
             canEdit
-              ? 'Bấm "+ Ghi công đức" để vinh danh người đóng góp đầu tiên.'
+              ? "Bấm nút '+' để vinh danh người đóng góp đầu tiên."
               : "Trưởng họ sẽ cập nhật khi có đóng góp."
           }
         />
       )}
 
-      {entries.length > 0 && (
-        <ul className="space-y-2">
-          {entries.map((e) => (
-            <HonorRow
-              key={e.id}
-              entry={e}
-              canEdit={canEdit}
-              onDelete={async () => {
-                const ok = await confirm({
-                  title: `Xoá ghi nhận của "${e.honoree_name}"?`,
-                  confirmLabel: "Xoá",
-                  destructive: true,
-                });
-                if (ok) delM.mutate(e.id);
-              }}
-            />
+      {!isLoading && entries.length > 0 && filtered.length === 0 && (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title="Không có ghi nhận nào khớp"
+          description="Thử bỏ bớt bộ lọc hoặc từ khoá."
+        />
+      )}
+
+      {filtered.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paging.paged.map((e) => (
+            <HonorRow key={e.id} entry={e} onOpen={() => setPanel({ mode: "view", entry: e })} />
           ))}
         </ul>
+      )}
+
+      {filtered.length > 0 && (
+        <Pagination
+          page={paging.page}
+          totalPages={paging.totalPages}
+          total={paging.total}
+          pageSize={paging.pageSize}
+          unit="ghi nhận"
+          onPageChange={paging.setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={paging.setPageSize}
+        />
       )}
     </div>
   );
 }
 
-function HonorRow({
-  entry,
-  canEdit,
-  onDelete,
-}: {
-  entry: HonorEntry;
-  canEdit: boolean;
-  onDelete: () => void;
-}) {
+function HonorRow({ entry, onOpen }: { entry: HonorEntry; onOpen: () => void }) {
+  const style = CAT_STYLE[entry.category];
+  const CatIcon = style.icon;
   return (
-    <li className="flex items-start gap-3 rounded-xl border bg-card shadow-sm p-3">
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-semibold">{entry.honoree_name}</span>
-          <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${CAT_TONE[entry.category]}`}
-          >
-            {HONOR_CATEGORY_LABEL[entry.category]}
-          </span>
-          {entry.amount != null && (
-            <span className="text-sm font-semibold text-amber-600 dark:text-amber-400 tabular-nums">
-              {formatVnd(entry.amount)}
-            </span>
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={style.icon} tone={style.tone} />
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">{entry.honoree_name}</p>
+          {entry.note && (
+            <p className="mt-0.5 text-sm text-muted-foreground">{entry.note}</p>
           )}
+          {entry.occurred_on && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {entry.occurred_on.split("-").reverse().join("/")}
+            </p>
+          )}
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <Chip tone={style.tone} icon={<CatIcon />}>
+              {HONOR_CATEGORY_LABEL[entry.category]}
+            </Chip>
+            {entry.amount != null && (
+              <Chip tone="warning" icon={<IconWallet />}>
+                {formatVnd(entry.amount)}
+              </Chip>
+            )}
+          </div>
         </div>
-        {entry.note && (
-          <p className="mt-0.5 text-sm text-muted-foreground">{entry.note}</p>
-        )}
-        {entry.occurred_on && (
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {entry.occurred_on.split("-").reverse().join("/")}
-          </p>
-        )}
-      </div>
-      {canEdit && (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"
-          aria-label="Xoá"
-          title="Xoá"
-        >
-          <IconTrash className="h-4 w-4" />
-        </button>
-      )}
+      </button>
     </li>
   );
 }
 
-function AddHonorForm({
+function HonorForm({
   clanId,
-  onDone,
+  entry,
+  readOnly,
+  canEdit,
+  onSaved,
   onCancel,
+  onEdit,
+  onDelete,
 }: {
   clanId: string;
-  onDone: () => void;
+  /** null = thêm mới. */
+  entry: HonorEntry | null;
+  readOnly: boolean;
+  canEdit: boolean;
+  onSaved: () => void;
   onCancel: () => void;
+  onEdit: () => void;
+  onDelete?: () => void;
 }) {
   const toast = useToast();
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<HonorCategory>("donation_money");
-  const [amount, setAmount] = useState("");
-  const [occurredOn, setOccurredOn] = useState("");
-  const [note, setNote] = useState("");
+  const [name, setName] = useState(entry?.honoree_name ?? "");
+  const [category, setCategory] = useState<HonorCategory>(entry?.category ?? "donation_money");
+  const [amount, setAmount] = useState(entry?.amount != null ? String(entry.amount) : "");
+  const [occurredOn, setOccurredOn] = useState(entry?.occurred_on ?? "");
+  const [note, setNote] = useState(entry?.note ?? "");
 
   const createM = useMutation({
-    mutationFn: () =>
-      createHonorEntry(clanId, {
+    mutationFn: () => {
+      const payload = {
         honoree_name: name.trim(),
         category,
         amount:
@@ -247,10 +369,12 @@ function AddHonorForm({
             : null,
         occurred_on: occurredOn || null,
         note: note.trim() || null,
-      }),
+      };
+      return entry ? updateHonorEntry(entry.id, payload) : createHonorEntry(clanId, payload);
+    },
     onSuccess: () => {
-      toast.success("Đã ghi công đức.");
-      onDone();
+      toast.success(entry ? "Đã cập nhật." : "Đã ghi công đức.");
+      onSaved();
     },
     onError: (e) =>
       toast.error("Không lưu được", { description: (e as Error).message }),
@@ -266,6 +390,10 @@ function AddHonorForm({
       }}
       className="space-y-3"
     >
+      <fieldset
+        disabled={readOnly}
+        className={`m-0 min-w-0 space-y-3 border-0 p-0 ${readOnly ? "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100" : ""}`}
+      >
       <div className="space-y-1.5">
         <Label htmlFor="honor-name" required>
           Người được vinh danh
@@ -322,23 +450,40 @@ function AddHonorForm({
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="honor-note">Ghi chú (tuỳ chọn)</Label>
-        <Input
+        <Textarea
           id="honor-note"
-          icon={<IconScroll />}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Vd: Ủng hộ xây từ đường / Đỗ Đại học Bách Khoa"
         />
       </div>
-      <FormActions>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Hủy
-        </Button>
-        <Button type="submit" disabled={!canSubmit}>
-          <IconCheck className="mr-1.5 h-4 w-4" />
-          {createM.isPending ? "Đang lưu…" : "Lưu"}
-        </Button>
-      </FormActions>
+      </fieldset>
+      {readOnly ? (
+        canEdit && (
+          <FormActions>
+            <Button type="button" onClick={onEdit}>
+              <IconPencil className="mr-1.5 h-4 w-4" />
+              Sửa
+            </Button>
+          </FormActions>
+        )
+      ) : (
+        <FormActions>
+          {onDelete && (
+            <Button type="button" variant="destructive-outline" onClick={onDelete}>
+              <IconTrash className="mr-1.5 h-4 w-4" />
+              Xoá
+            </Button>
+          )}
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Hủy
+          </Button>
+          <Button type="submit" disabled={!canSubmit}>
+            <IconCheck className="mr-1.5 h-4 w-4" />
+            {createM.isPending ? "Đang lưu…" : "Lưu"}
+          </Button>
+        </FormActions>
+      )}
     </form>
   );
 }

@@ -5,37 +5,55 @@ import { FormActions } from "@/components/ui/form-actions";
 import { SidePanel } from "@/components/SidePanel";
 import { Fab } from "@/components/Fab";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { Chip } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
+import { IconTile } from "@/components/IconTile";
 import {
   IconCalendar,
   IconCheck,
   IconDownload,
-  IconScroll,
+  IconPencil,
+  IconSearch,
   IconTag,
   IconTrash,
+  IconUpload,
   IconWallet,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
+import { Pagination } from "@/components/Pagination";
+import { SearchInput } from "@/components/SearchInput";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   SegmentedButton,
   SegmentedControl,
 } from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { unaccent } from "@/lib/unaccent";
 import {
   createFundTransaction,
   deleteFundTransaction,
   listFundAudit,
   listFundTransactions,
   summarizeFund,
+  updateFundTransaction,
   type FundDirection,
   type FundTransaction,
 } from "@/lib/queries/clanFund";
+
+/** Trạng thái ngăn kéo: thêm mới, xem (chỉ đọc) hoặc sửa một giao dịch. */
+type PanelState =
+  | { mode: "new" }
+  | { mode: "view" | "edit"; tx: FundTransaction }
+  | null;
 
 const AUDIT_ACTION_LABEL: Record<"insert" | "update" | "delete", string> = {
   insert: "Thêm",
@@ -54,7 +72,9 @@ export default function ClanFund() {
   const qc = useQueryClient();
   const toast = useToast();
   const confirm = useConfirm();
-  const [showAdd, setShowAdd] = useState(false);
+  // Ngăn kéo: thêm mới / xem (chỉ đọc) / sửa. Bấm dòng = xem; "Sửa" mới mở form sửa.
+  const [panel, setPanel] = useState<PanelState>(null);
+  const closePanel = () => setPanel(null);
   const [showAudit, setShowAudit] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -69,6 +89,20 @@ export default function ClanFund() {
     enabled: showAudit && !!user?.id,
   });
   const summary = useMemo(() => summarizeFund(txs), [txs]);
+
+  const [search, setSearch] = useState("");
+  const [dirFilter, setDirFilter] = useState<FundDirection | "">("");
+  const [fundFilter, setFundFilter] = useState("");
+  const filtered = useMemo(() => {
+    const q = unaccent(search.trim()).toLowerCase();
+    return txs.filter(
+      (t) =>
+        (!dirFilter || t.direction === dirFilter) &&
+        (!fundFilter || t.fund === fundFilter) &&
+        (!q || unaccent(`${t.fund} ${t.category ?? ""} ${t.note ?? ""} ${t.amount}`).toLowerCase().includes(q)),
+    );
+  }, [txs, search, dirFilter, fundFilter]);
+  const paging = useClientPaging(filtered, 20);
 
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: ["clan-fund", clan.id] });
@@ -95,7 +129,10 @@ export default function ClanFund() {
 
   const delM = useMutation({
     mutationFn: (id: string) => deleteFundTransaction(id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      closePanel();
+    },
     onError: (e) =>
       toast.error("Không xoá được", { description: (e as Error).message }),
   });
@@ -122,7 +159,7 @@ export default function ClanFund() {
               {exporting ? "Đang xuất…" : "Xuất PDF"}
             </Button>
             {canEdit && (
-              <Fab onClick={() => setShowAdd(true)} label="Ghi giao dịch" />
+              <Fab onClick={() => setPanel({ mode: "new" })} label="Ghi giao dịch" />
             )}
           </div>
         }
@@ -166,26 +203,111 @@ export default function ClanFund() {
         )}
       </div>
 
-      {canEdit && (
-        <SidePanel
-          open={showAdd}
-          title="Ghi giao dịch"
-          subtitle="Khoản thu / chi của quỹ họ."
-          onClose={() => setShowAdd(false)}
-        >
-          <AddFundForm
+      <SidePanel
+        open={panel !== null}
+        title={
+          panel?.mode === "new"
+            ? "Ghi giao dịch"
+            : panel?.mode === "edit"
+              ? "Sửa giao dịch"
+              : "Giao dịch"
+        }
+        subtitle={panel?.mode === "new" ? "Khoản thu / chi của quỹ họ." : undefined}
+        onClose={closePanel}
+        guard={panel?.mode !== "view"}
+      >
+        {panel && (
+          <FundForm
+            key={panel.mode === "new" ? "new" : `${panel.mode}-${panel.tx.id}`}
             clanId={clan.id}
+            tx={panel.mode === "new" ? null : panel.tx}
+            readOnly={panel.mode === "view"}
+            canEdit={canEdit}
             knownFunds={summary.byFund.map((f) => f.fund)}
-            onDone={() => {
-              setShowAdd(false);
+            onSaved={() => {
+              closePanel();
               invalidate();
             }}
-            onCancel={() => setShowAdd(false)}
+            onCancel={() => setPanel(panel.mode === "edit" ? { mode: "view", tx: panel.tx } : null)}
+            onEdit={() => panel.mode === "view" && setPanel({ mode: "edit", tx: panel.tx })}
+            onDelete={
+              panel.mode === "edit"
+                ? async () => {
+                    const ok = await confirm({
+                      title: `Xoá giao dịch ${formatVnd(panel.tx.amount)}?`,
+                      confirmLabel: "Xoá",
+                      destructive: true,
+                    });
+                    if (ok) delM.mutate(panel.tx.id);
+                  }
+                : undefined
+            }
           />
-        </SidePanel>
-      )}
+        )}
+      </SidePanel>
 
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {/* Thu/chi và quỹ nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm) — như Danh bạ. */}
+      <CollapsibleFilters
+        activeCount={(dirFilter ? 1 : 0) + (fundFilter ? 1 : 0)}
+        onReset={() => {
+          setDirFilter("");
+          setFundFilter("");
+          paging.patchAndResetPage({});
+        }}
+        title="Lọc giao dịch"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm giao dịch"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              paging.patchAndResetPage({});
+            }}
+            placeholder="Tìm theo quỹ, mục đích, ghi chú, số tiền…"
+            rightSlot={toggle}
+          />
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={dirFilter}
+            onChange={(e) => {
+              setDirFilter(e.target.value as FundDirection | "");
+              paging.patchAndResetPage({});
+            }}
+            aria-label="Lọc thu / chi"
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">Cả thu và chi</option>
+            <option value="in">Chỉ khoản thu</option>
+            <option value="out">Chỉ khoản chi</option>
+          </Select>
+          <Select
+            value={fundFilter}
+            onChange={(e) => {
+              setFundFilter(e.target.value);
+              paging.patchAndResetPage({});
+            }}
+            aria-label="Lọc theo quỹ"
+            icon={<IconWallet />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">Mọi quỹ</option>
+            {summary.byFund.map((f) => (
+              <option key={f.fund} value={f.fund}>
+                {f.fund}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </CollapsibleFilters>
+
+      {isLoading && (
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
+      )}
 
       {!isLoading && txs.length === 0 && (
         <EmptyState
@@ -193,30 +315,39 @@ export default function ClanFund() {
           title="Chưa có giao dịch"
           description={
             canEdit
-              ? 'Bấm "+ Ghi giao dịch" để ghi khoản thu/chi đầu tiên.'
+              ? "Bấm nút '+' để ghi khoản thu/chi đầu tiên."
               : "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
           }
         />
       )}
 
-      {txs.length > 0 && (
-        <ul className="space-y-2">
-          {txs.map((t) => (
-            <FundRow
-              key={t.id}
-              tx={t}
-              canEdit={canEdit}
-              onDelete={async () => {
-                const ok = await confirm({
-                  title: `Xoá giao dịch ${formatVnd(t.amount)}?`,
-                  confirmLabel: "Xoá",
-                  destructive: true,
-                });
-                if (ok) delM.mutate(t.id);
-              }}
-            />
+      {!isLoading && txs.length > 0 && filtered.length === 0 && (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title="Không có giao dịch nào khớp"
+          description="Thử bỏ bớt bộ lọc hoặc từ khoá."
+        />
+      )}
+
+      {filtered.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paging.paged.map((t) => (
+            <FundRow key={t.id} tx={t} onOpen={() => setPanel({ mode: "view", tx: t })} />
           ))}
         </ul>
+      )}
+
+      {filtered.length > 0 && (
+        <Pagination
+          page={paging.page}
+          totalPages={paging.totalPages}
+          total={paging.total}
+          pageSize={paging.pageSize}
+          unit="giao dịch"
+          onPageChange={paging.setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={paging.setPageSize}
+        />
       )}
 
       {/* Nhật ký thay đổi — minh bạch ai thêm/sửa/xoá khi nào. */}
@@ -246,87 +377,95 @@ export default function ClanFund() {
   );
 }
 
-function FundRow({
-  tx,
-  canEdit,
-  onDelete,
-}: {
-  tx: FundTransaction;
-  canEdit: boolean;
-  onDelete: () => void;
-}) {
+function FundRow({ tx, onOpen }: { tx: FundTransaction; onOpen: () => void }) {
   const isIn = tx.direction === "in";
   return (
-    <li className="flex items-start gap-3 rounded-xl border bg-card shadow-sm p-3">
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={isIn ? IconDownload : IconUpload} tone={isIn ? "success" : "danger"} />
+        <div className="min-w-0 flex-1">
+          <p
             className={`text-base font-semibold tabular-nums ${
               isIn ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
             }`}
           >
             {isIn ? "+" : "−"}
             {formatVnd(tx.amount)}
-          </span>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            {tx.fund}
-          </span>
+          </p>
+          {tx.note && (
+            <p className="mt-0.5 text-sm text-muted-foreground">{tx.note}</p>
+          )}
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {tx.occurred_on.split("-").reverse().join("/")}
+          </p>
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <Chip tone={isIn ? "success" : "danger"} icon={isIn ? <IconDownload /> : <IconUpload />}>
+              {isIn ? "Thu" : "Chi"}
+            </Chip>
+            <Chip tone="teal" icon={<IconWallet />}>
+              {tx.fund}
+            </Chip>
+            {tx.category && (
+              <Chip tone="violet" icon={<IconTag />}>
+                {tx.category}
+              </Chip>
+            )}
+          </div>
         </div>
-        {tx.category && <p className="mt-0.5 text-sm">{tx.category}</p>}
-        {tx.note && (
-          <p className="mt-0.5 text-sm text-muted-foreground">{tx.note}</p>
-        )}
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          {tx.occurred_on.split("-").reverse().join("/")}
-        </p>
-      </div>
-      {canEdit && (
-        <button
-          type="button"
-          onClick={onDelete}
-          className="shrink-0 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"
-          aria-label="Xoá"
-          title="Xoá"
-        >
-          <IconTrash className="h-4 w-4" />
-        </button>
-      )}
+      </button>
     </li>
   );
 }
 
-function AddFundForm({
+function FundForm({
   clanId,
+  tx,
+  readOnly,
+  canEdit,
   knownFunds,
-  onDone,
+  onSaved,
   onCancel,
+  onEdit,
+  onDelete,
 }: {
   clanId: string;
+  /** null = thêm mới. */
+  tx: FundTransaction | null;
+  readOnly: boolean;
+  canEdit: boolean;
   knownFunds: string[];
-  onDone: () => void;
+  onSaved: () => void;
   onCancel: () => void;
+  onEdit: () => void;
+  onDelete?: () => void;
 }) {
   const toast = useToast();
-  const [direction, setDirection] = useState<FundDirection>("in");
-  const [amount, setAmount] = useState("");
-  const [fund, setFund] = useState(knownFunds[0] ?? "Quỹ chung");
-  const [category, setCategory] = useState("");
-  const [occurredOn, setOccurredOn] = useState("");
-  const [note, setNote] = useState("");
+  const [direction, setDirection] = useState<FundDirection>(tx?.direction ?? "in");
+  const [amount, setAmount] = useState(tx ? String(tx.amount) : "");
+  const [fund, setFund] = useState(tx?.fund ?? knownFunds[0] ?? "Quỹ chung");
+  const [category, setCategory] = useState(tx?.category ?? "");
+  const [occurredOn, setOccurredOn] = useState(tx?.occurred_on ?? "");
+  const [note, setNote] = useState(tx?.note ?? "");
 
   const createM = useMutation({
-    mutationFn: () =>
-      createFundTransaction(clanId, {
+    mutationFn: () => {
+      const input = {
         direction,
         amount: Math.round(Number(amount)),
         fund: fund.trim() || "Quỹ chung",
         category: category.trim() || null,
         occurred_on: occurredOn || null,
         note: note.trim() || null,
-      }),
+      };
+      return tx ? updateFundTransaction(tx.id, input) : createFundTransaction(clanId, input);
+    },
     onSuccess: () => {
-      toast.success("Đã ghi giao dịch.");
-      onDone();
+      toast.success(tx ? "Đã cập nhật giao dịch." : "Đã ghi giao dịch.");
+      onSaved();
     },
     onError: (e) =>
       toast.error("Không lưu được", { description: (e as Error).message }),
@@ -343,6 +482,10 @@ function AddFundForm({
       }}
       className="space-y-3"
     >
+      <fieldset
+        disabled={readOnly}
+        className={`m-0 min-w-0 space-y-3 border-0 p-0 ${readOnly ? "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100" : ""}`}
+      >
       <SegmentedControl ariaLabel="Loại giao dịch" className="w-full">
         <SegmentedButton
           active={direction === "in"}
@@ -392,46 +535,63 @@ function AddFundForm({
             ))}
           </datalist>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="fund-cat">Mục đích (tuỳ chọn)</Label>
-          <Input
-            id="fund-cat"
-            icon={<IconTag />}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Vd: Đóng góp giỗ tổ / Mua vật liệu"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="fund-date">Ngày (tuỳ chọn)</Label>
-          <Input
-            id="fund-date"
-            icon={<IconCalendar />}
-            type="date"
-            value={occurredOn}
-            onChange={(e) => setOccurredOn(e.target.value)}
-          />
-        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="fund-cat">Mục đích (tuỳ chọn)</Label>
+        <Input
+          id="fund-cat"
+          icon={<IconTag />}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder="Vd: Đóng góp giỗ tổ / Mua vật liệu"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="fund-date">Ngày (tuỳ chọn)</Label>
+        <Input
+          id="fund-date"
+          icon={<IconCalendar />}
+          type="date"
+          value={occurredOn}
+          onChange={(e) => setOccurredOn(e.target.value)}
+        />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="fund-note">Ghi chú (tuỳ chọn)</Label>
-        <Input
+        <Textarea
           id="fund-note"
-          icon={<IconScroll />}
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Người đóng góp / chi tiết khoản chi…"
         />
       </div>
-      <FormActions>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Hủy
-        </Button>
-        <Button type="submit" disabled={!canSubmit}>
-          <IconCheck className="mr-1.5 h-4 w-4" />
-          {createM.isPending ? "Đang lưu…" : "Lưu"}
-        </Button>
-      </FormActions>
+      </fieldset>
+      {readOnly ? (
+        canEdit && (
+          <FormActions>
+            <Button type="button" onClick={onEdit}>
+              <IconPencil className="mr-1.5 h-4 w-4" />
+              Sửa
+            </Button>
+          </FormActions>
+        )
+      ) : (
+        <FormActions>
+          {onDelete && (
+            <Button type="button" variant="destructive-outline" onClick={onDelete}>
+              <IconTrash className="mr-1.5 h-4 w-4" />
+              Xoá
+            </Button>
+          )}
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Hủy
+          </Button>
+          <Button type="submit" disabled={!canSubmit}>
+            <IconCheck className="mr-1.5 h-4 w-4" />
+            {createM.isPending ? "Đang lưu…" : "Lưu"}
+          </Button>
+        </FormActions>
+      )}
     </form>
   );
 }
