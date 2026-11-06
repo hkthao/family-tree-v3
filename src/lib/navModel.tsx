@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode } from "react";
+import { cloneElement, useCallback, useState, type ReactElement, type ReactNode } from "react";
 
 import {
   IconAward,
@@ -15,7 +15,6 @@ import {
   IconList,
   IconMail,
   IconMapPin,
-  IconPencil,
   IconScroll,
   IconSettings,
   IconShield,
@@ -26,6 +25,7 @@ import {
   IconUsers,
   IconWallet,
 } from "@/components/icons";
+import { adminPath, screensByArea } from "@/lib/adminScreens";
 import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { MyProfile } from "@/lib/queries/profile";
@@ -253,7 +253,8 @@ export function buildSections(
   clanId: string | undefined,
   clan: ClanDetail | null,
   profile: MyProfile | null,
-  pendingContribCount: number,
+  /** Còn nhận để giữ chữ ký hàm; mục "Đóng góp" đã bỏ khỏi menu. */
+  _pendingContribCount: number,
   pendingInlawCount: number,
   todoCount: number,
   _aiEnabled: boolean,
@@ -305,18 +306,6 @@ export function buildSections(
       kind: "feedback",
     },
   ];
-  if (profile?.is_platform_admin) {
-    // MỘT mục dẫn sang khu quản trị, hết. Trong khu đó, việc điều hướng
-    // là của LƯỚI ở /admin — chín mục quản trị đổ vào menu trái nữa là
-    // hai bản sao của cùng một danh sách, và người dùng phải đoán xem
-    // cái nào mới là chỗ đi.
-    global.push({
-      to: "/admin",
-      label: "Quản trị nền tảng",
-      icon: <IconShield className={ic} />,
-      end: true,
-    });
-  }
   sections.push({
     id: "global",
     label: "Chung",
@@ -326,10 +315,6 @@ export function buildSections(
 
   if (clanId && clan) {
     const isAdmin = clan.isPlatformAdmin || clan.myRole === "admin";
-    const canEdit =
-      clan.isPlatformAdmin ||
-      clan.myRole === "admin" ||
-      clan.myRole === "editor";
     const isMember = clan.myRole !== null || clan.isPlatformAdmin;
     const canTree = isMember || clan.public_show_tree;
     const canEvents = isMember || clan.public_show_events;
@@ -483,14 +468,6 @@ export function buildSections(
           badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
         },
       ];
-      if (canEdit) {
-        workItems.push({
-          to: `/clans/${clanId}/contributions`,
-          label: "Đóng góp",
-          icon: <IconPencil className={ic} />,
-          badge: pendingContribCount > 0 ? pendingContribCount : undefined,
-        });
-      }
       // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
       workItems.push({
         to: `/clans/${clanId}/tools`,
@@ -501,7 +478,7 @@ export function buildSections(
         id: "clan-work",
         label: "Cập nhật & Công cụ",
         items: workItems,
-        defaultOpen: todoCount > 0 || pendingContribCount > 0,
+        defaultOpen: todoCount > 0,
       });
     }
 
@@ -536,6 +513,35 @@ export function buildSections(
         defaultOpen: true,
       });
     }
+  }
+
+  // ─── Quản trị hệ thống (chỉ platform admin) ──────────────────────
+  // Gom MỌI chức năng của admin hệ thống vào MỘT nhóm riêng, đặt DƯỚI CÙNG menu: tách khỏi nhóm
+  // "Chung" (dành cho mọi người) để không lẫn vào việc hằng ngày. Gập được và mặc định gập; khi
+  // đang ở một trang quản trị thì nhóm tự mở (xem useCollapsedSections).
+  if (profile?.is_platform_admin) {
+    const adminGroup: DrawerItem[] = [
+      {
+        to: "/admin",
+        label: "Tổng quan quản trị",
+        icon: <IconShield className={ic} />,
+        end: true,
+      },
+      ...(["report", "settings"] as const).flatMap((area) =>
+        screensByArea(area).map((sc) => ({
+          to: adminPath(sc.slug),
+          label: sc.label,
+          // Icon của lưới quản trị cỡ h-6; menu dùng h-5 như mọi mục khác.
+          icon: cloneElement(sc.icon as ReactElement<{ className?: string }>, { className: ic }),
+        })),
+      ),
+    ];
+    sections.push({
+      id: "platform-admin",
+      label: "Quản trị hệ thống",
+      items: adminGroup,
+      defaultOpen: false,
+    });
   }
 
   return sections;
