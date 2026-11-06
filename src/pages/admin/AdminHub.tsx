@@ -61,7 +61,7 @@ export default function AdminHub() {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-5xl space-y-6 px-4 py-6">
+      <main className="container max-w-4xl py-6 px-4 space-y-5">
         <PageHeader
           icon={<IconShield className="h-7 w-7" />}
           title="Quản trị nền tảng"

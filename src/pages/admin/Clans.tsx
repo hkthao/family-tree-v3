@@ -1,22 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-import { useToast } from "@/components/Toast";
+import { Chip } from "@/components/Chip";
+import { CollapsibleFilters } from "@/components/CollapsibleFilters";
+import { EmptyState } from "@/components/EmptyState";
+import { IconTile } from "@/components/IconTile";
 import {
-  IconCheck,
-  IconUser,
+  IconBuildings,
+  IconGlobe,
+  IconLock,
+  IconScroll,
+  IconSearch,
   IconSparkles,
+  IconTag,
+  IconUser,
   IconUsers,
 } from "@/components/icons";
 import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
+import { SidePanel } from "@/components/SidePanel";
+import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useUrlPatch } from "@/hooks/useUrlState";
+import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ViewEditActions } from "@/components/ui/view-edit-actions";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox } from "@/hooks/useClientPaging";
 import {
   listAllClans,
   updateClanLimits,
@@ -24,18 +37,19 @@ import {
 } from "@/lib/queries/admin";
 import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
-import { CollapsibleHint, RefreshIconButton } from "@/pages/admin/shared";
+import { RefreshIconButton } from "@/pages/admin/shared";
 
-const PAGE_SIZE = 15;
+type VisibilityFilter = "" | "public" | "private";
+
+/** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa hạn mức một dòng họ. */
+type PanelState = { mode: "view" | "edit"; clan: AdminClanRow } | null;
 
 export function ClansTab() {
-  const [sp] = useSearchParams();
-  const patch = useUrlPatch();
-  const search = sp.get("q") ?? "";
-  const page = Math.max(1, Number(sp.get("page")) || 1);
-  const setSearch = (v: string) => patch({ q: v || null, page: null });
-  const setPage = (n: number) => patch({ page: n <= 1 ? null : String(n) });
   const qc = useQueryClient();
+  const { q, text, setText } = useSearchBox();
+  const [visibility, setVisibility] = useState<VisibilityFilter>("");
+  const [panel, setPanel] = useState<PanelState>(null);
+  const closePanel = () => setPanel(null);
 
   const { data: clans, isLoading, refetch, isFetching } = useQuery({
     queryKey: queryKeys.adminClans(),
@@ -46,72 +60,170 @@ export function ClansTab() {
   });
 
   const filtered = useMemo(() => {
-    if (!clans) return [];
-    if (!search.trim()) return clans;
-    const needle = unaccent(search);
-    return clans.filter((c) => unaccent(c.name).includes(needle));
-  }, [clans, search]);
-
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const needle = unaccent(q.trim());
+    return (clans ?? []).filter(
+      (c) =>
+        (!visibility || c.visibility === visibility) && (!needle || unaccent(c.name).includes(needle)),
+    );
+  }, [clans, q, visibility]);
+  const paging = useClientPaging(filtered, 20);
 
   return (
     <div className="space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <CollapsibleHint>
-          {clans?.length ?? 0} dòng họ. Chỉnh giới hạn số người / tài khoản
-          tại đây.
-        </CollapsibleHint>
-        <RefreshIconButton onClick={() => refetch()} busy={isFetching} />
-      </div>
-
-      <SearchInput
-        label="Tìm dòng họ theo tên"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm dòng họ theo tên — gõ không dấu cũng được"
-      />
-
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
-
-      <ul className="space-y-2">
-        {pageRows.map((c) => (
-          <ClanRow
-            key={c.id}
-            clan={c}
-            onChange={() =>
-              qc.invalidateQueries({ queryKey: queryKeys.adminClans() })
+      <CollapsibleFilters
+        activeCount={visibility ? 1 : 0}
+        onReset={() => {
+          setVisibility("");
+          paging.patchAndResetPage({});
+        }}
+        title="Lọc dòng họ"
+        search={(toggle) => (
+          <SearchInput
+            label="Tìm dòng họ theo tên"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Tìm dòng họ theo tên — gõ không dấu cũng được"
+            className="pr-[4.75rem]"
+            rightSlot={
+              <>
+                {toggle}
+                <RefreshIconButton onClick={() => refetch()} busy={isFetching} compact />
+              </>
             }
           />
-        ))}
-      </ul>
+        )}
+      >
+        <div className="flex flex-col gap-3">
+          <Select
+            value={visibility}
+            onChange={(e) => {
+              setVisibility(e.target.value as VisibilityFilter);
+              paging.patchAndResetPage({});
+            }}
+            aria-label="Lọc theo chế độ hiển thị"
+            icon={<IconTag />}
+            className="h-11 w-full text-base"
+          >
+            <option value="">Mọi dòng họ</option>
+            <option value="public">Công khai</option>
+            <option value="private">Riêng tư</option>
+          </Select>
+        </div>
+      </CollapsibleFilters>
 
-      {total > 0 && (
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          total={total}
-          pageSize={PAGE_SIZE}
-          onPageChange={setPage}
+      {isLoading && (
+        <div className="rounded-xl border bg-card p-4 shadow-sm">
+          <p className="text-muted-foreground">Đang tải…</p>
+        </div>
+      )}
+
+      {!isLoading && filtered.length === 0 && (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title={q || visibility ? "Không có dòng họ nào khớp" : "Chưa có dòng họ nào"}
+          description={q || visibility ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : undefined}
         />
       )}
+
+      {filtered.length > 0 && (
+        <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+          {paging.paged.map((c) => (
+            <ClanRow key={c.id} clan={c} onOpen={() => setPanel({ mode: "view", clan: c })} />
+          ))}
+        </ul>
+      )}
+
+      {filtered.length > 0 && (
+        <Pagination
+          page={paging.page}
+          totalPages={paging.totalPages}
+          total={paging.total}
+          pageSize={paging.pageSize}
+          unit="dòng họ"
+          onPageChange={paging.setPage}
+          pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
+          onPageSizeChange={paging.setPageSize}
+        />
+      )}
+
+      <SidePanel
+        open={panel !== null}
+        title={panel?.mode === "edit" ? "Sửa hạn mức dòng họ" : "Dòng họ"}
+        subtitle={panel?.clan.name}
+        onClose={closePanel}
+        guard={panel?.mode === "edit"}
+      >
+        {panel && (
+          <ClanForm
+            key={`${panel.mode}-${panel.clan.id}`}
+            clan={panel.clan}
+            readOnly={panel.mode === "view"}
+            onEdit={() => setPanel({ mode: "edit", clan: panel.clan })}
+            onCancel={() =>
+              setPanel(panel.mode === "edit" ? { mode: "view", clan: panel.clan } : null)
+            }
+            onSaved={() => {
+              closePanel();
+              qc.invalidateQueries({ queryKey: queryKeys.adminClans() });
+            }}
+          />
+        )}
+      </SidePanel>
     </div>
   );
 }
 
 /** Số → ô nhập. `null` (chưa đặt) và `undefined` (dữ liệu cũ) đều thành rỗng. */
-
 function asText(v: number | null | undefined): string {
   return v === null || v === undefined ? "" : String(v);
 }
 
-function ClanRow({
+function ClanRow({ clan, onOpen }: { clan: AdminClanRow; onOpen: () => void }) {
+  const isPublic = clan.visibility === "public";
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={IconBuildings} tone={isPublic ? "info" : "neutral"} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{clan.name}</p>
+          {clan.description && (
+            <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{clan.description}</p>
+          )}
+          <RecordDates
+            createdAt={clan.created_at}
+            updatedAt={clan.updated_at}
+            className="mt-0.5 truncate text-xs text-muted-foreground/80"
+          />
+          <div className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <Chip tone={isPublic ? "info" : "neutral"} icon={isPublic ? <IconGlobe /> : <IconLock />}>
+              {isPublic ? "Công khai" : "Riêng tư"}
+            </Chip>
+            <Chip tone="success" icon={<IconUsers />}>
+              {clan.person_count} người
+            </Chip>
+          </div>
+        </div>
+      </button>
+    </li>
+  );
+}
+
+function ClanForm({
   clan,
-  onChange,
+  readOnly,
+  onEdit,
+  onCancel,
+  onSaved,
 }: {
   clan: AdminClanRow;
-  onChange: () => void;
+  readOnly: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSaved: () => void;
 }) {
   const toast = useToast();
   const [maxPersons, setMaxPersons] = useState(String(clan.max_persons));
@@ -128,6 +240,12 @@ function ClanRow({
   const [aiMonthly, setAiMonthly] = useState(asText(clan.ai_monthly_limit));
   const asLimit = (v: string) => (v.trim() === "" ? null : Number(v));
 
+  const changed =
+    String(clan.max_persons) !== maxPersons ||
+    String(clan.max_users) !== maxUsers ||
+    asText(clan.ai_daily_limit) !== aiDaily ||
+    asText(clan.ai_monthly_limit) !== aiMonthly;
+
   const m = useMutation({
     mutationFn: () =>
       updateClanLimits(clan.id, {
@@ -137,160 +255,106 @@ function ClanRow({
         ai_monthly_limit: asLimit(aiMonthly),
       }),
     onSuccess: () => {
-      onChange();
-      toast.success("Đã cập nhật giới hạn clan");
+      toast.success("Đã cập nhật giới hạn dòng họ");
+      onSaved();
     },
-    onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
   });
 
-  const changed =
-    String(clan.max_persons) !== maxPersons ||
-    String(clan.max_users) !== maxUsers ||
-    asText(clan.ai_daily_limit) !== aiDaily ||
-    asText(clan.ai_monthly_limit) !== aiMonthly;
-
-  const isPublic = clan.visibility === "public";
-
   return (
-    <li className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
-      {/* Header: clan name + visibility pill on top row, description
-          (if any) wraps below the name on its own line. */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <Link
-            to={`/clans/${clan.id}`}
-            className="font-semibold hover:underline truncate block"
-          >
-            {clan.name}
+    <form
+      className="space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (changed) m.mutate();
+      }}
+    >
+      <ReadOnlyFieldset readOnly={readOnly}>
+        <div className="space-y-1.5">
+          <Label htmlFor="c-name">Tên dòng họ</Label>
+          <Input id="c-name" icon={<IconBuildings />} value={clan.name} readOnly />
+          <Link to={`/clans/${clan.id}`} className="inline-block text-sm text-primary hover:underline">
+            Mở dòng họ →
           </Link>
-          {clan.description && (
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-              {clan.description}
-            </p>
-          )}
-          <RecordDates
-            createdAt={clan.created_at}
-            updatedAt={clan.updated_at}
-            className="text-xs text-muted-foreground/80 mt-0.5 truncate"
-          />
         </div>
-        <span
-          className={`shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-full ${
-            isPublic
-              ? "bg-accent/20 text-accent"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {isPublic ? "Công khai" : "Riêng tư"}
-        </span>
-      </div>
+        {clan.description && (
+          <div className="space-y-1.5">
+            <Label htmlFor="c-desc">Mô tả</Label>
+            <Textarea id="c-desc" value={clan.description} readOnly />
+          </div>
+        )}
 
-      {/* Hạn mức. Bốn ô chia đều chiều ngang, KHÔNG chen nút vào hàng:
-          nút nằm cạnh ô nhập thì ở màn hẹp nó bóp ô nhập còn vài ký tự,
-          mà ô nhập mới là thứ cần nhìn. Nút xuống chân thẻ — xem
-          docs/design-language.md §Đặt hành động ở đâu.
-
-          Hai ô AI để trống = dùng mức chung của nền tảng (sửa ở Cài đặt ›
-          Trợ lý AI); 0 = khoá hẳn. */}
-      <div className="border-t pt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="space-y-1 min-w-0">
-          <Label htmlFor={`mp-${clan.id}`} className="text-xs">
-            Giới hạn người
-          </Label>
-          <Input
-            id={`mp-${clan.id}`}
-            icon={<IconUsers />}
-            type="number"
-            min={1}
-            value={maxPersons}
-            onChange={(e) => setMaxPersons(e.target.value)}
-            className="w-full"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="mp">Giới hạn người</Label>
+            <Input
+              id="mp"
+              icon={<IconUsers />}
+              type="number"
+              min={1}
+              value={maxPersons}
+              onChange={(e) => setMaxPersons(e.target.value)}
+            />
+          </div>
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="mu">Giới hạn tài khoản</Label>
+            <Input
+              id="mu"
+              icon={<IconUser />}
+              type="number"
+              min={1}
+              value={maxUsers}
+              onChange={(e) => setMaxUsers(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="space-y-1 min-w-0">
-          <Label htmlFor={`mu-${clan.id}`} className="text-xs">
-            Giới hạn tài khoản
-          </Label>
-          <Input
-            id={`mu-${clan.id}`}
-            icon={<IconUser />}
-            type="number"
-            min={1}
-            value={maxUsers}
-            onChange={(e) => setMaxUsers(e.target.value)}
-            className="w-full"
-          />
+        {/* Hai ô AI để trống = dùng mức chung của nền tảng (sửa ở Cài đặt › Trợ lý AI);
+            0 = khoá hẳn. */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="ad">Lượt AI / ngày</Label>
+            <Input
+              id="ad"
+              icon={<IconSparkles />}
+              type="number"
+              min={0}
+              placeholder="mặc định"
+              value={aiDaily}
+              onChange={(e) => setAiDaily(e.target.value)}
+            />
+          </div>
+          <div className="min-w-0 space-y-1.5">
+            <Label htmlFor="am">Lượt AI / tháng</Label>
+            <Input
+              id="am"
+              icon={<IconSparkles />}
+              type="number"
+              min={0}
+              placeholder="mặc định"
+              value={aiMonthly}
+              onChange={(e) => setAiMonthly(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="space-y-1 min-w-0">
-          <Label htmlFor={`ad-${clan.id}`} className="text-xs">
-            Lượt AI / ngày
-          </Label>
-          <Input
-            id={`ad-${clan.id}`}
-            icon={<IconSparkles />}
-            type="number"
-            min={0}
-            placeholder="mặc định"
-            value={aiDaily}
-            onChange={(e) => setAiDaily(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <div className="space-y-1 min-w-0">
-          <Label htmlFor={`am-${clan.id}`} className="text-xs">
-            Lượt AI / tháng
-          </Label>
-          <Input
-            id={`am-${clan.id}`}
-            icon={<IconSparkles />}
-            type="number"
-            min={0}
-            placeholder="mặc định"
-            value={aiMonthly}
-            onChange={(e) => setAiMonthly(e.target.value)}
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      {/* Chân thẻ: meta bên trái, hành động ngoài cùng bên phải — gần
-          ngón cái nhất trên điện thoại. */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
-        <span className="text-xs text-muted-foreground">
-          {changed ? "Có thay đổi chưa lưu" : `${clan.person_count} người`}
-        </span>
-        <Button
-          variant="outline"
-          onClick={() => m.mutate()}
-          disabled={m.isPending || !changed}
-        >
-          {m.isPending ? (
-            "Đang lưu…"
-          ) : (
-            <>
-              <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu
-            </>
-          )}
-        </Button>
-      </div>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <IconScroll className="h-3.5 w-3.5 shrink-0" />
+          {clan.person_count} người hiện có · để trống hai ô AI = dùng mức chung của nền tảng.
+        </p>
+      </ReadOnlyFieldset>
 
       {m.error && (
         <Alert variant="destructive">
           <AlertDescription>{(m.error as Error).message}</AlertDescription>
         </Alert>
       )}
-    </li>
+
+      <ViewEditActions
+        readOnly={readOnly}
+        onEdit={onEdit}
+        onCancel={onCancel}
+        saving={m.isPending}
+        canSave={changed}
+      />
+    </form>
   );
 }
-
-/**
- * Help-text block that clamps to 1 line on mobile + offers a "Xem
- * thêm / Thu gọn" toggle. On sm+ it shows the full text — there's
- * enough vertical room there that hiding it is overkill.
- */
-/**
- * Nút tải lại dùng chung cho các tab admin (Người dùng / Dòng họ).
- * PWA hay giữ cache cũ → cho admin chủ động fetch lại dữ liệu mới nhất.
- */
