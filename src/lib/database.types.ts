@@ -3291,6 +3291,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tree_canvases: {
+        Row: {
+          clan_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          layout: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          layout?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tree_canvases_clan_id_fkey"
+            columns: ["clan_id"]
+            isOneToOne: false
+            referencedRelation: "clans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vn_provinces: {
         Row: {
           code: string
