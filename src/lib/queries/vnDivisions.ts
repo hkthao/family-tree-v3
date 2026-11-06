@@ -53,20 +53,25 @@ export async function listProvinces(
 
 export interface ListWardsParams {
   provinceCode?: string | null;
+  kind?: VnWardKind | null;
   search?: string;
+  /** Trang tính từ 0. */
   page: number;
+  pageSize?: number;
 }
 
 export async function listWards(
   params: ListWardsParams,
   client: Client = defaultClient,
 ): Promise<{ rows: VnWard[]; total: number }> {
+  const size = params.pageSize ?? WARD_PAGE_SIZE;
   let q = client
     .from("vn_wards")
     .select("code, province_code, name, kind", { count: "exact" })
     .order("name_unaccent")
-    .range(params.page * WARD_PAGE_SIZE, (params.page + 1) * WARD_PAGE_SIZE - 1);
+    .range(params.page * size, (params.page + 1) * size - 1);
   if (params.provinceCode) q = q.eq("province_code", params.provinceCode);
+  if (params.kind) q = q.eq("kind", params.kind);
   const term = unaccent((params.search ?? "").trim()).toLowerCase();
   // Bỏ ký tự có nghĩa trong cú pháp `ilike` / `or` của PostgREST.
   const safe = term.replace(/[%_,()\\]/g, " ").trim();
@@ -147,3 +152,26 @@ export async function deleteWard(
   const { error } = await client.from("vn_wards").delete().eq("code", code);
   if (error) throw new Error(error.message);
 }
+
+/** Xoá lần lượt theo cụm nhỏ; mục nào bị chặn (còn xã/phường, đang được dùng làm địa chỉ) thì đếm là lỗi, không dừng cả lượt. */
+async function deleteMany(
+  codes: string[],
+  remove: (code: string) => Promise<void>,
+): Promise<{ deleted: number; failed: number }> {
+  let deleted = 0;
+  let failed = 0;
+  for (let i = 0; i < codes.length; i += 10) {
+    const results = await Promise.allSettled(codes.slice(i, i + 10).map(remove));
+    for (const r of results) {
+      if (r.status === "fulfilled") deleted++;
+      else failed++;
+    }
+  }
+  return { deleted, failed };
+}
+
+export const deleteProvinces = (codes: string[], client: Client = defaultClient) =>
+  deleteMany(codes, (c) => deleteProvince(c, client));
+
+export const deleteWards = (codes: string[], client: Client = defaultClient) =>
+  deleteMany(codes, (c) => deleteWard(c, client));
