@@ -46,3 +46,4 @@ docs/security-hardening-*.md
 
 # Dữ liệu gia phả lịch sử nằm ở repo riêng ../family-tree-data (symlink)
 /data/historical
+build-bg/
