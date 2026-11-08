@@ -147,7 +147,7 @@ export function ClanLayout() {
       )}
       <header className="border-b bg-background sticky top-0 z-30">
         <div className="container max-w-4xl flex items-center justify-between gap-3 px-4 h-[64px]">
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 xl:absolute xl:left-3 xl:top-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -254,7 +254,7 @@ function DrawerToggle({
       onClick={isDesktop ? toggleSidebar : onOpen}
       aria-label={label}
       title={isDesktop ? label : undefined}
-      className="relative xl:absolute xl:left-3 xl:top-3 h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
+      className="relative lg:-order-1 h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
     >
       <span className="text-2xl leading-none" aria-hidden="true">
         ☰
