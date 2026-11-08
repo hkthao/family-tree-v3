@@ -5,8 +5,16 @@ import { avatarFrameSvg } from "@/components/PersonAvatar";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
+  IconAward,
   IconDownload,
   IconGrid,
+  IconLayers,
+  IconLayoutHorizontal,
+  IconLayoutVertical,
+  IconPencil,
+  IconSparkles,
+  IconUser,
+  IconUsers,
   IconHome,
   IconMaximize,
   IconMinimize,
@@ -169,7 +177,7 @@ function readOrientation(): Orientation {
 /**
  * Số đời hiển thị quanh người làm tâm. 0 = "tất cả".
  *
- * **Mỗi lần vào lại về 3 đời**, KHÔNG nhớ lựa chọn cũ. Cố ý: họ lớn
+ * **Mỗi lần vào lại về 5 đời**, KHÔNG nhớ lựa chọn cũ. Cố ý: họ lớn
  * (4000–5000 người) vẽ toàn bộ là lag nặng trên điện thoại, mà lựa chọn
  * "Tất cả" thì người ta bấm một lần rồi quên — lần sau mở cây trên máy
  * yếu lại đứng hình, và không ai đoán ra vì sao. Muốn xem sâu thì bấm
@@ -177,7 +185,7 @@ function readOrientation(): Orientation {
  */
 const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
 type TreeDepth = (typeof DEPTH_OPTIONS)[number];
-const DEFAULT_DEPTH: TreeDepth = 3;
+const DEFAULT_DEPTH: TreeDepth = 5;
 
 export default function Tree() {
   const { clan } = useClanContext();
@@ -1053,7 +1061,7 @@ export default function Tree() {
 
         // Giới hạn số đời hiển thị quanh người làm tâm. Họ lớn
         // (4000-5000 người) render toàn bộ sẽ lag + thẻ nhỏ xíu; mặc
-        // định chỉ 3 đời. Người dùng bấm vào một thẻ để đặt làm tâm rồi
+        // định chỉ 5 đời. Người dùng bấm vào một thẻ để đặt làm tâm rồi
         // xem sâu tiếp.
         // family-chart đếm theo "số tầng quanh tâm", nên "3 đời" (tính
         // cả người làm tâm) = depth - 1 tầng mỗi phía. 0 = tất cả.
@@ -1383,6 +1391,7 @@ export default function Tree() {
               <div className="flex flex-col gap-3">
               <Select
                 aria-label="Kiểu hiển thị cây"
+                icon={<IconTree />}
                 value={mode}
                 onChange={(e) => setMode(e.target.value as typeof mode)}
                 className="w-full h-11 text-base"
@@ -1394,6 +1403,7 @@ export default function Tree() {
               {mode !== "folder" && (
               <Select
                 aria-label="Số đời hiển thị quanh người làm tâm"
+                icon={<IconLayers />}
                 value={depth}
                 onChange={(e) => setDepth(Number(e.target.value) as typeof depth)}
                 className="w-full h-11 text-base"
@@ -1408,6 +1418,7 @@ export default function Tree() {
                 {mode === "2d" && isMember && (
                   <Select
                     aria-label="Chế độ xem"
+                    icon={<IconUsers />}
                     value={view}
                     onChange={(e) => setView(e.target.value as typeof view)}
                     className="w-full h-11 text-base"
@@ -1420,6 +1431,7 @@ export default function Tree() {
                   <>
                     <Select
                       aria-label="Hướng cây"
+                      icon={orientation === "vertical" ? <IconLayoutVertical /> : <IconLayoutHorizontal />}
                       value={orientation}
                       onChange={(e) => setOrientation(e.target.value as typeof orientation)}
                       className="w-full h-11 text-base"
@@ -1429,6 +1441,7 @@ export default function Tree() {
                     </Select>
                     <Select
                       aria-label="Hình nền cây"
+                      icon={<IconSparkles />}
                       value={backdrop}
                       onChange={(e) => setBackdrop(e.target.value as Backdrop)}
                       className="w-full h-11 text-base"
@@ -1439,6 +1452,7 @@ export default function Tree() {
                     </Select>
                     <Select
                       aria-label="Khung viền thẻ"
+                      icon={<IconAward />}
                       value={cardFrame}
                       onChange={(e) =>
                         setCardFrame(e.target.value as "royal" | "simple")
@@ -1453,6 +1467,7 @@ export default function Tree() {
                 {/* Font tên + avatar mặc định áp dụng cho cả 2D, 3D và Thư mục. */}
                 <Select
                   aria-label="Font tên"
+                  icon={<IconPencil />}
                   value={nameFont}
                   onChange={(e) => {
                     persistNameFont(e.target.value);
@@ -1468,6 +1483,7 @@ export default function Tree() {
                 </Select>
                 <Select
                   aria-label="Avatar mặc định"
+                  icon={<IconUser />}
                   value={avatarStyle}
                   onChange={(e) => {
                     persistAvatarStyle(e.target.value as AvatarStyle);
@@ -1481,6 +1497,29 @@ export default function Tree() {
               </div>
       </FilterDrawer>
       </div>
+
+      {/* Báo mặc định chỉ hiện một số đời để người dùng biết còn nữa — xem thêm ở Tuỳ chọn. */}
+      {mode !== "folder" && !(mode === "2d" && view === "lineage") && (
+        <p className="print-hide flex flex-wrap items-center gap-x-1 text-sm text-muted-foreground">
+          <IconLayers className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {depth === 0
+            ? "Đang hiển thị tất cả các đời."
+            : `Đang hiển thị ${depth} đời quanh người làm tâm.`}
+          {depth !== 0 && (
+            <>
+              {" "}Muốn xem thêm, mở{" "}
+              <button
+                type="button"
+                onClick={() => setShowOpts(true)}
+                className="font-medium text-primary underline-offset-2 hover:underline"
+              >
+                Tuỳ chọn
+              </button>
+              .
+            </>
+          )}
+        </p>
+      )}
 
       {mode === "folder" ? (
         // KHÔNG hiện ô "đặt người trung tâm" ở đây: cây thư mục đi từ
