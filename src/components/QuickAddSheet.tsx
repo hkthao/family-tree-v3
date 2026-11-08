@@ -691,14 +691,16 @@ function QuickAddChild({
     <div className="space-y-5 pb-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {onBack && <BackToPickerButton onBack={onBack} />}
-        <SegmentedControl ariaLabel="Chế độ thêm con">
+        <SegmentedControl ariaLabel="Chế độ thêm con" className="w-full">
           <SegmentedButton
+            className="flex-1 px-3"
             active={!bulkMode}
             onClick={() => setBulkMode(false)}
           >
             1 người
           </SegmentedButton>
           <SegmentedButton
+            className="flex-1 px-3"
             active={bulkMode}
             onClick={() => setBulkMode(true)}
           >
@@ -1231,8 +1233,9 @@ function QuickAddParent({
 
       <div className="flex flex-col items-start gap-2">
         <Label>Vai trò</Label>
-        <SegmentedControl ariaLabel="Vai trò cha mẹ">
+        <SegmentedControl ariaLabel="Vai trò cha mẹ" className="w-full">
           <SegmentedButton
+            className="flex-1 px-3"
             active={role === "M"}
             onClick={() => {
               setRole("M");
@@ -1243,6 +1246,7 @@ function QuickAddParent({
             Cha
           </SegmentedButton>
           <SegmentedButton
+            className="flex-1 px-3"
             active={role === "F"}
             onClick={() => {
               setRole("F");

@@ -106,3 +106,39 @@ export async function listPeopleInProvince(
     .filter((r) => includeDeceased || r.is_living)
     .sort((a, b) => a.full_name.localeCompare(b.full_name, "vi"));
 }
+
+/**
+ * Đặt CÙNG một nơi ở cho nhiều người (cả nhà ở chung một chỗ) — dùng ở Danh bạ khi chọn nhiều người.
+ * Ghi đè địa chỉ cũ của từng người. `input` rỗng hoàn toàn thì XOÁ địa chỉ của họ.
+ * Chia lô 200 người một lượt để không vượt giới hạn kích thước yêu cầu.
+ */
+export async function savePersonAddressesBulk(
+  personIds: string[],
+  input: PersonAddressInput,
+  client: Client = defaultClient,
+): Promise<number> {
+  const empty = !input.province_code && !input.ward_code && !input.street_detail?.trim();
+  const CHUNK = 200;
+  for (let i = 0; i < personIds.length; i += CHUNK) {
+    const ids = personIds.slice(i, i + CHUNK);
+    if (empty) {
+      const { error } = await client.from("person_addresses").delete().in("person_id", ids);
+      if (error) throw new Error(error.message);
+      continue;
+    }
+    const { error } = await client.from("person_addresses").upsert(
+      ids.map((person_id) => ({
+        person_id,
+        // clan_id bị trigger ghi đè từ persons (xem savePersonAddress).
+        clan_id: "00000000-0000-0000-0000-000000000000",
+        province_code: input.province_code,
+        ward_code: input.province_code ? input.ward_code : null,
+        street_detail: input.street_detail?.trim() || null,
+        country: "VN",
+      })),
+      { onConflict: "person_id" },
+    );
+    if (error) throw new Error(error.message);
+  }
+  return personIds.length;
+}

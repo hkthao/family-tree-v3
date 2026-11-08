@@ -44,6 +44,24 @@ describe("invalidateClanData", () => {
     expect(qc.getQueryState(queryKeys.personRelationships("p1", user))?.isInvalidated).toBe(true);
   });
 
+  it("invalidates bản đồ + cây thư mục + địa chỉ của dòng họ (nhập hàng loạt phải thấy ngay)", async () => {
+    const qc = makeClient();
+    const keys = [
+      ["clan-map-stats", "clan-a", false],
+      ["map-people", "clan-a", "01", false],
+      ["folder-roots", "clan-a", "all"],
+      ["folder-node", "clan-a", "p1", "all"],
+      ["person-address", "p1"],
+    ];
+    for (const k of keys) qc.setQueryData(k, {});
+    qc.setQueryData(["clan-map-stats", "clan-b", false], {});
+
+    await invalidateClanData(qc, "clan-a");
+
+    for (const k of keys) expect(qc.getQueryState(k)?.isInvalidated).toBe(true);
+    expect(qc.getQueryState(["clan-map-stats", "clan-b", false])?.isInvalidated).toBe(false);
+  });
+
   it("does not touch other-clan queries", async () => {
     const qc = makeClient();
     qc.setQueryData(queryKeys.persons("clan-b", "u", { page: 1 }), { rows: [] });
