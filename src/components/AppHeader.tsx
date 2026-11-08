@@ -6,9 +6,13 @@ import { AppLogo } from "@/components/AppLogo";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
+import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useSidebarHidden } from "@/lib/sidebarHidden";
 
 export function AppHeader() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const [sidebarHidden, toggleSidebar] = useSidebarHidden();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   // Nút Back hữu ích khi chạy dạng PWA (không có nút back của trình duyệt).
@@ -43,11 +47,14 @@ export function AppHeader() {
               </svg>
             </button>
           )}
+          {/* Điện thoại: mở ngăn kéo. Máy tính: ẩn / hiện menu trái. */}
           <button
             type="button"
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Mở menu"
-            className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted lg:hidden"
+            onClick={() => (isDesktop ? toggleSidebar() : setDrawerOpen(true))}
+            aria-label={isDesktop ? (sidebarHidden ? "Hiện menu" : "Ẩn menu") : "Mở menu"}
+            aria-expanded={isDesktop ? !sidebarHidden : drawerOpen}
+            title={isDesktop ? (sidebarHidden ? "Hiện menu" : "Ẩn menu") : undefined}
+            className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted"
           >
             <span className="text-2xl leading-none" aria-hidden="true">☰</span>
           </button>
@@ -56,7 +63,7 @@ export function AppHeader() {
               the page header creates a visible duplicate. */}
           <Link
             to="/clans"
-            className="clan-name shrink-0 whitespace-nowrap text-xl sm:text-2xl font-semibold text-primary inline-flex items-center gap-1.5 sm:gap-2 lg:hidden"
+            className={`clan-name shrink-0 whitespace-nowrap text-xl sm:text-2xl font-semibold text-primary inline-flex items-center gap-1.5 sm:gap-2 ${sidebarHidden ? "" : "lg:hidden"}`}
           >
             <AppLogo size={28} className="rounded" />
             Dòng Họ Việt
