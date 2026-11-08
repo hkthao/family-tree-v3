@@ -524,3 +524,19 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
     padding-left: 0;
   }
 }
+
+/* Hình nền thuỷ mặc (lib/background.ts, components/AppBackground.tsx): khi bật, nền đặc của layout trong
+ * suốt để lớp tranh cố định phía sau lộ ra; header / menu trái bán trong suốt + mờ để chữ vẫn rõ. */
+html[data-bg="on"] {
+  background-color: hsl(var(--background));
+}
+html[data-bg="on"] body,
+html[data-bg="on"] .min-h-dvh.bg-background {
+  background-color: transparent;
+}
+html[data-bg="on"] header.bg-background,
+html[data-bg="on"] aside.bg-background {
+  background-color: hsl(var(--background) / 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}

@@ -8,12 +8,14 @@ import { initAnalytics } from "./lib/analytics";
 import { initPwa } from "./lib/pwa";
 import { persister, queryClient } from "./lib/queryClient";
 import { initSentry } from "./lib/sentry";
+import { initBackground } from "./lib/background";
 import { initTheme } from "./lib/theme";
 import "./index.css";
 
 // Sentry first — captures any error in subsequent boot steps too.
 initSentry();
 initTheme();
+initBackground();
 initPwa();
 initAnalytics();
 
