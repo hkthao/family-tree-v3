@@ -1,17 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-
-import { IconHome, IconMapPin, IconSearch } from "@/components/icons";
-import { Input } from "@/components/ui/input";
+import { FilterableSelect } from "@/components/FilterableSelect";
+import { IconHome, IconMapPin } from "@/components/icons";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   listProvinces,
   listWardsOfProvince,
   VN_WARD_KIND_LABEL,
 } from "@/lib/queries/vnDivisions";
-import { unaccent } from "@/lib/unaccent";
 
 export interface AddressValue {
   province_code: string | null;
@@ -32,8 +28,6 @@ export function AddressPicker({
   onChange: (next: AddressValue) => void;
   idPrefix?: string;
 }) {
-  const [wardFilter, setWardFilter] = useState("");
-
   const { data: provinces = [] } = useQuery({
     queryKey: queryKeys.vnProvinces(),
     queryFn: () => listProvinces(),
@@ -46,61 +40,35 @@ export function AddressPicker({
     staleTime: 60 * 60_000,
   });
 
-  const shownWards = useMemo(() => {
-    const q = unaccent(wardFilter.trim()).toLowerCase();
-    if (!q) return wards;
-    return wards.filter(
-      (w) => w.code === value.ward_code || unaccent(w.name).toLowerCase().includes(q),
-    );
-  }, [wards, wardFilter, value.ward_code]);
-
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
         <Label htmlFor={`${idPrefix}-province`}>Tỉnh / Thành phố</Label>
-        <Select
+        <FilterableSelect
           id={`${idPrefix}-province`}
           icon={<IconMapPin />}
           value={value.province_code ?? ""}
-          onChange={(e) => {
-            setWardFilter("");
-            onChange({ province_code: e.target.value || null, ward_code: null });
-          }}
-        >
-          <option value="">Chưa chọn</option>
-          {provinces.map((p) => (
-            <option key={p.code} value={p.code}>
-              {p.name}
-            </option>
-          ))}
-        </Select>
+          onChange={(code) => onChange({ province_code: code || null, ward_code: null })}
+          options={provinces.map((p) => ({ value: p.code, label: p.name }))}
+          emptyLabel="Chưa chọn"
+          filterLabel="Lọc tỉnh / thành phố"
+          filterPlaceholder="Gõ để lọc tỉnh / thành (không cần dấu)"
+        />
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor={`${idPrefix}-ward`}>Xã / Phường</Label>
-        {wards.length > 20 && (
-          <Input
-            icon={<IconSearch />}
-            value={wardFilter}
-            onChange={(e) => setWardFilter(e.target.value)}
-            placeholder="Gõ để lọc xã / phường (không cần dấu)"
-            aria-label="Lọc xã / phường"
-          />
-        )}
-        <Select
+        <FilterableSelect
           id={`${idPrefix}-ward`}
           icon={<IconHome />}
           value={value.ward_code ?? ""}
           disabled={!value.province_code}
-          onChange={(e) => onChange({ province_code: value.province_code, ward_code: e.target.value || null })}
-        >
-          <option value="">{value.province_code ? "Chưa chọn" : "Chọn tỉnh / thành trước"}</option>
-          {shownWards.map((w) => (
-            <option key={w.code} value={w.code}>
-              {VN_WARD_KIND_LABEL[w.kind]} {w.name}
-            </option>
-          ))}
-        </Select>
+          onChange={(code) => onChange({ province_code: value.province_code, ward_code: code || null })}
+          options={wards.map((w) => ({ value: w.code, label: `${VN_WARD_KIND_LABEL[w.kind]} ${w.name}` }))}
+          emptyLabel={value.province_code ? "Chưa chọn" : "Chọn tỉnh / thành trước"}
+          filterLabel="Lọc xã / phường"
+          filterPlaceholder="Gõ để lọc xã / phường (không cần dấu)"
+        />
       </div>
     </div>
   );

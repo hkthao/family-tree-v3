@@ -33,6 +33,22 @@ export async function invalidateClanData(
       if (head === "clan-todo-items" && second === clanId) return true;
       if (head === "clan-todo-count" && second === clanId) return true;
       if (head === "clan-completion" && second === clanId) return true;
+      // Bản đồ + cây thư mục + địa chỉ: nhập hàng loạt / đổi địa chỉ phải thấy ngay,
+      // không phải đăng xuất rồi đăng nhập lại (cache còn được lưu trong máy 24 giờ).
+      if (
+        (head === "clan-map-stats" ||
+          head === "map-people" ||
+          head === "map-graves" ||
+          head === "map-heritage" ||
+          head === "folder-roots" ||
+          head === "folder-node" ||
+          head === "folder-search" ||
+          head === "folder-unlinked" ||
+          head === "folder-ghosts") &&
+        second === clanId
+      )
+        return true;
+      if (head === "person-address") return true;
       // person + person-relationships are keyed by personId, not clanId,
       // so we invalidate broadly. Cheap — these queries are small.
       if (head === "person" || head === "person-relationships") return true;

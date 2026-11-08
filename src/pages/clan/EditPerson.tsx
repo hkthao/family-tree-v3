@@ -681,9 +681,15 @@ export function EditPersonForm({
 
       {readOnly ? (
         <FormActions>
-          {/* Sửa, thêm cha mẹ / vợ chồng / con… đều làm ở trang chi tiết. */}
+          {/* Sửa: sang trang chi tiết và MỞ SẴN ngăn kéo sửa; thêm cha mẹ / vợ chồng / con… làm ở trang chi tiết. */}
           <Button asChild>
-            <Link to={`/clans/${clanId}/people/${personId}`}>
+            <Link
+              to={
+                canEditClan(clan)
+                  ? `/clans/${clanId}/people/${personId}?panel=person-edit&pid=${personId}`
+                  : `/clans/${clanId}/people/${personId}`
+              }
+            >
               {canEditClan(clan) ? (
                 <>
                   <IconPencil className="h-4 w-4 mr-1.5" />

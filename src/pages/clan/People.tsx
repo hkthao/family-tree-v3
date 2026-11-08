@@ -18,6 +18,11 @@ import {
   listMatchingPersonIds,
   updatePersonsBranchBulk,
 } from "@/lib/queries/persons";
+import { AddressPicker } from "@/components/AddressPicker";
+import { EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
+import { FilterDrawer } from "@/components/FilterDrawer";
+import { Input } from "@/components/ui/input";
+import { savePersonAddressesBulk, type PersonAddressInput } from "@/lib/queries/personAddresses";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -26,6 +31,7 @@ import {
   IconCopy,
   IconGrid,
   IconList,
+  IconMapPin,
   IconPlus,
   IconSearch,
   IconSparkles,
@@ -190,6 +196,26 @@ export default function People() {
     },
     onError: (e) =>
       toast.error("Không chọn được", { description: (e as Error).message }),
+  });
+
+  // Đặt cùng một nơi ở cho nhiều người (cả nhà ở chung) → hiện trên Bản đồ.
+  const [addrOpen, setAddrOpen] = useState(false);
+  const [bulkAddr, setBulkAddr] = useState<PersonAddressInput>(EMPTY_PERSON_ADDRESS);
+  const bulkAddressM = useMutation({
+    mutationFn: () => savePersonAddressesBulk([...selected], bulkAddr),
+    onSuccess: async (n) => {
+      await invalidateClanData(qc, clan.id);
+      toast.success(
+        bulkAddr.province_code || bulkAddr.ward_code || bulkAddr.street_detail
+          ? `Đã đặt nơi ở cho ${n} người`
+          : `Đã xoá nơi ở của ${n} người`,
+        { description: "Bản đồ sẽ cập nhật ngay." },
+      );
+      setAddrOpen(false);
+      setBulkAddr(EMPTY_PERSON_ADDRESS);
+      setSelected(new Set());
+    },
+    onError: (e) => toast.error("Không lưu được nơi ở", { description: (e as Error).message }),
   });
 
   const bulkDeleteM = useMutation({
@@ -530,6 +556,10 @@ search={(toggle) => (
             <IconTree className="h-4 w-4 mr-1.5" />
             {bulkChangeBranchM.isPending ? "Đang đổi…" : "Đổi chi"}
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setAddrOpen(true)}>
+            <IconMapPin className="h-4 w-4 mr-1.5" />
+            Nơi ở
+          </Button>
           <Button
             size="sm"
             variant="destructive-outline"
@@ -558,6 +588,38 @@ search={(toggle) => (
           </Button>
         </div>
       )}
+      <FilterDrawer
+        open={addrOpen}
+        onClose={() => setAddrOpen(false)}
+        title={`Nơi ở cho ${selected.size} người`}
+        onReset={() => setBulkAddr(EMPTY_PERSON_ADDRESS)}
+      >
+        <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+          Đặt <strong>cùng một nơi ở</strong> cho {selected.size} người đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ.
+          Để trống rồi lưu thì <strong>xoá</strong> nơi ở của họ.
+        </p>
+        <AddressPicker
+          idPrefix="bulk-addr"
+          value={{ province_code: bulkAddr.province_code, ward_code: bulkAddr.ward_code }}
+          onChange={(a) => setBulkAddr({ ...bulkAddr, ...a })}
+        />
+        <Input
+          icon={<IconMapPin />}
+          maxLength={300}
+          value={bulkAddr.street_detail ?? ""}
+          onChange={(e) => setBulkAddr({ ...bulkAddr, street_detail: e.target.value || null })}
+          placeholder="Số nhà, thôn / xóm (tuỳ chọn)"
+          aria-label="Số nhà, thôn / xóm"
+        />
+        <Button
+          type="button"
+          className="w-full"
+          disabled={bulkAddressM.isPending || selected.size === 0}
+          onClick={() => bulkAddressM.mutate()}
+        >
+          {bulkAddressM.isPending ? "Đang lưu…" : `Lưu cho ${selected.size} người`}
+        </Button>
+      </FilterDrawer>
       {(bulkChangeBranchM.error || bulkDeleteM.error) && (
         <Alert variant="destructive">
           <AlertDescription>

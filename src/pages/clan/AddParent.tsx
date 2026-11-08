@@ -215,14 +215,16 @@ export function AddParentForm({
       }}
       className="space-y-6"
     >
-      <SegmentedControl ariaLabel="Chế độ thêm cha/mẹ">
+      <SegmentedControl ariaLabel="Chế độ thêm cha/mẹ" className="w-full">
         <SegmentedButton
+          className="flex-1 px-3"
           active={mode === "new"}
           onClick={() => setMode("new")}
         >
           Người mới
         </SegmentedButton>
         <SegmentedButton
+          className="flex-1 px-3"
           active={mode === "existing"}
           onClick={() => setMode("existing")}
         >
