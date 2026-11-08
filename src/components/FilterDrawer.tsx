@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 
 import { IconX } from "@/components/icons";
-import { Button } from "@/components/ui/button";
+import { ActionArea, Button } from "@/components/ui/button";
 
 /**
  * Ngăn kéo bên phải chứa bộ lọc / tuỳ chọn của một màn hình. Mở bằng icon phễu
@@ -60,7 +60,8 @@ export function FilterDrawer({
             <IconX className="h-5 w-5" />
           </button>
         </header>
-        <div className="flex-1 space-y-3 overflow-y-auto p-4">{open ? children : null}</div>
+        <ActionArea>
+          <div className="flex-1 space-y-3 overflow-y-auto p-4">{open ? children : null}</div>
         <footer className="flex gap-2 border-t p-3 shrink-0">
           {onReset && (
             <Button type="button" variant="outline" className="flex-1" onClick={onReset}>
@@ -71,6 +72,7 @@ export function FilterDrawer({
             Xong
           </Button>
         </footer>
+        </ActionArea>
       </aside>
     </div>
   );
