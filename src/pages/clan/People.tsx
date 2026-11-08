@@ -18,6 +18,7 @@ import {
   listMatchingPersonIds,
   updatePersonsBranchBulk,
 } from "@/lib/queries/persons";
+import { BranchesSection } from "@/components/BranchesSection";
 import { AddressPicker } from "@/components/AddressPicker";
 import { EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
 import { FilterDrawer } from "@/components/FilterDrawer";
@@ -124,6 +125,7 @@ export default function People() {
   const [viewMode, setViewMode] = useState<ViewMode>(() => readViewMode());
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [bulkBranch, setBulkBranch] = useState<string>("");
+  const [branchOpen, setBranchOpen] = useState(false);
 
   // Persist viewMode globally — same preference across clans.
   useEffect(() => {
@@ -176,6 +178,7 @@ export default function People() {
         description: `Mới: ${branchName}`,
       });
       setSelected(new Set());
+      setBranchOpen(false);
     },
     onError: (e) => toast.error("Không đổi được chi", { description: (e as Error).message }),
   });
@@ -562,51 +565,37 @@ search={(toggle) => (
           false at the same time. */}
       {/* Bulk-action toolbar — shows when ≥ 1 person is selected. */}
       {canEdit && selected.size > 0 && (
-        <div className="space-y-2 rounded-md border bg-primary/5 p-3 text-sm">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-medium">
-              Đã chọn {selected.size}
-              {total > 0 ? ` / ${total}` : ""} người
-            </span>
-            <Button size="sm" variant="ghost" className="h-9 px-2" onClick={() => setSelected(new Set())}>
-              <IconX className="h-4 w-4 mr-1" />
-              Bỏ chọn
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-primary/5 px-3 py-2 text-sm">
+          <span className="font-medium">
+            Đã chọn {selected.size}
+            {total > 0 ? ` / ${total}` : ""} người
+          </span>
+          {/* Chỉ icon cho gọn — nhãn nằm ở title / aria-label. */}
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              className="h-10 w-10 px-0"
+              onClick={() => setBranchOpen(true)}
+              aria-label="Đổi chi / quản lý chi"
+              title="Đổi chi / quản lý chi"
+            >
+              <IconGrid className="h-4 w-4" />
             </Button>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Đổi chi: ô chọn + nút đi liền một khối, chiếm cả hàng trên điện thoại. */}
-            <div className="flex w-full items-center gap-2 sm:w-auto">
-              <Select
-                icon={<IconGrid />}
-                value={bulkBranch}
-                onChange={(e) => setBulkBranch(e.target.value)}
-                aria-label="Đổi chi cho lựa chọn"
-                className="h-10 flex-1 text-sm sm:w-56 sm:flex-none"
-              >
-                <option value="">(không có chi)</option>
-                {branches?.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </Select>
-              <Button
-                className="h-10 shrink-0"
-                onClick={() => bulkChangeBranchM.mutate()}
-                disabled={bulkChangeBranchM.isPending}
-              >
-                <IconTree className="h-4 w-4 mr-1.5" />
-                {bulkChangeBranchM.isPending ? "Đang đổi…" : "Đổi chi"}
-              </Button>
-            </div>
-            <Button variant="outline" className="h-10 flex-1 sm:flex-none" onClick={() => setAddrOpen(true)}>
-              <IconMapPin className="h-4 w-4 mr-1.5" />
-              Nơi ở
+            <Button
+              variant="outline"
+              className="h-10 w-10 px-0"
+              onClick={() => setAddrOpen(true)}
+              aria-label="Đặt nơi ở"
+              title="Đặt nơi ở"
+            >
+              <IconMapPin className="h-4 w-4" />
             </Button>
             <Button
               variant="destructive-outline"
-              className="h-10 flex-1 sm:flex-none"
+              className="h-10 w-10 px-0"
               disabled={bulkDeleteM.isPending}
+              aria-label="Xoá"
+              title="Xoá"
               onClick={async () => {
                 const ok = await confirm({
                   title: `Xoá ${selected.size} người?`,
@@ -618,12 +607,55 @@ search={(toggle) => (
                 if (ok) bulkDeleteM.mutate();
               }}
             >
-              <IconTrash className="h-4 w-4 mr-1.5" />
-              {bulkDeleteM.isPending ? "Đang xoá…" : "Xoá"}
+              <IconTrash className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              className="h-10 w-10 px-0"
+              onClick={() => setSelected(new Set())}
+              aria-label="Bỏ chọn"
+              title="Bỏ chọn"
+            >
+              <IconX className="h-4 w-4" />
             </Button>
           </div>
         </div>
       )}
+      <FilterDrawer
+        open={branchOpen}
+        onClose={() => setBranchOpen(false)}
+        title="Chi họ"
+      >
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold">Đặt chi cho {selected.size} người đã chọn</h3>
+          <Select
+            icon={<IconGrid />}
+            value={bulkBranch}
+            onChange={(e) => setBulkBranch(e.target.value)}
+            aria-label="Chi áp cho lựa chọn"
+          >
+            <option value="">(không có chi)</option>
+            {branches?.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </Select>
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() => bulkChangeBranchM.mutate()}
+            disabled={bulkChangeBranchM.isPending || selected.size === 0}
+          >
+            <IconTree className="h-4 w-4 mr-1.5" />
+            {bulkChangeBranchM.isPending ? "Đang đổi…" : `Đổi chi cho ${selected.size} người`}
+          </Button>
+        </section>
+        <section className="space-y-2 border-t pt-4">
+          <h3 className="text-sm font-semibold">Quản lý chi</h3>
+          <BranchesSection clanId={clan.id} canEdit={canEdit} />
+        </section>
+      </FilterDrawer>
       <FilterDrawer
         open={addrOpen}
         onClose={() => setAddrOpen(false)}
