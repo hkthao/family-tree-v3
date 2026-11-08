@@ -76,9 +76,15 @@ export function FilterableSelect({
     };
   }, [open, place]);
 
+  // Danh sách chỉ vẽ khi đã đo được vị trí (rect), nên ô tìm xuất hiện SAU lần mở một nhịp —
+  // focus phải đợi tới lúc nó có mặt.
+  const popVisible = open && !!rect;
+  useEffect(() => {
+    if (popVisible) inputRef.current?.focus();
+  }, [popVisible]);
+
   useEffect(() => {
     if (!open) return;
-    inputRef.current?.focus();
     const onDown = (e: MouseEvent | TouchEvent) => {
       const t = e.target as Node;
       if (popRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
