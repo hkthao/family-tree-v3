@@ -562,63 +562,66 @@ search={(toggle) => (
           false at the same time. */}
       {/* Bulk-action toolbar — shows when ≥ 1 person is selected. */}
       {canEdit && selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border bg-primary/5 px-3 py-2 text-sm">
-          <span className="font-medium mr-1">
-            Đã chọn {selected.size}
-            {total > 0 ? ` / ${total}` : ""} người
-          </span>
-          <Select
-          icon={<IconGrid />}
-            value={bulkBranch}
-            onChange={(e) => setBulkBranch(e.target.value)}
-            aria-label="Đổi chi cho lựa chọn"
-            className="sm:w-auto"
-          >
-            <option value="">(không có chi)</option>
-            {branches?.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </Select>
-          <Button
-            size="sm"
-            onClick={() => bulkChangeBranchM.mutate()}
-            disabled={bulkChangeBranchM.isPending}
-          >
-            <IconTree className="h-4 w-4 mr-1.5" />
-            {bulkChangeBranchM.isPending ? "Đang đổi…" : "Đổi chi"}
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setAddrOpen(true)}>
-            <IconMapPin className="h-4 w-4 mr-1.5" />
-            Nơi ở
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive-outline"
-            disabled={bulkDeleteM.isPending}
-            onClick={async () => {
-              const ok = await confirm({
-                title: `Xoá ${selected.size} người?`,
-                description:
-                  "Mỗi người được xoá mềm và có thể khôi phục từ nhật ký.",
-                confirmLabel: "Xoá",
-                destructive: true,
-              });
-              if (ok) bulkDeleteM.mutate();
-            }}
-          >
-            <IconTrash className="h-4 w-4 mr-1.5" />
-            {bulkDeleteM.isPending ? "Đang xoá…" : "Xoá"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setSelected(new Set())}
-          >
-            <IconX className="h-4 w-4 mr-1.5" />
-            Bỏ chọn
-          </Button>
+        <div className="space-y-2 rounded-md border bg-primary/5 p-3 text-sm">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-medium">
+              Đã chọn {selected.size}
+              {total > 0 ? ` / ${total}` : ""} người
+            </span>
+            <Button size="sm" variant="ghost" className="h-9 px-2" onClick={() => setSelected(new Set())}>
+              <IconX className="h-4 w-4 mr-1" />
+              Bỏ chọn
+            </Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Đổi chi: ô chọn + nút đi liền một khối, chiếm cả hàng trên điện thoại. */}
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <Select
+                icon={<IconGrid />}
+                value={bulkBranch}
+                onChange={(e) => setBulkBranch(e.target.value)}
+                aria-label="Đổi chi cho lựa chọn"
+                className="h-10 flex-1 text-sm sm:w-56 sm:flex-none"
+              >
+                <option value="">(không có chi)</option>
+                {branches?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </Select>
+              <Button
+                className="h-10 shrink-0"
+                onClick={() => bulkChangeBranchM.mutate()}
+                disabled={bulkChangeBranchM.isPending}
+              >
+                <IconTree className="h-4 w-4 mr-1.5" />
+                {bulkChangeBranchM.isPending ? "Đang đổi…" : "Đổi chi"}
+              </Button>
+            </div>
+            <Button variant="outline" className="h-10 flex-1 sm:flex-none" onClick={() => setAddrOpen(true)}>
+              <IconMapPin className="h-4 w-4 mr-1.5" />
+              Nơi ở
+            </Button>
+            <Button
+              variant="destructive-outline"
+              className="h-10 flex-1 sm:flex-none"
+              disabled={bulkDeleteM.isPending}
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Xoá ${selected.size} người?`,
+                  description:
+                    "Mỗi người được xoá mềm và có thể khôi phục từ nhật ký.",
+                  confirmLabel: "Xoá",
+                  destructive: true,
+                });
+                if (ok) bulkDeleteM.mutate();
+              }}
+            >
+              <IconTrash className="h-4 w-4 mr-1.5" />
+              {bulkDeleteM.isPending ? "Đang xoá…" : "Xoá"}
+            </Button>
+          </div>
         </div>
       )}
       <FilterDrawer
