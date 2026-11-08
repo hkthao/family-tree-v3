@@ -16,13 +16,12 @@ import {
   IconChevronsUp,
   IconFemale,
   IconMale,
-  IconSearch,
   IconTree,
   IconUser,
   IconUsers,
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/SearchInput";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -319,42 +318,42 @@ export function TreeFolderView({
       className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3"
       style={{ fontFamily: nameFontStack() }}
     >
-      <div className="mb-2 flex items-center gap-1.5">
-        <Input
-          type="search"
-          icon={<IconSearch />}
+      <div className="mb-2">
+        <SearchInput
+          label="Tìm người trong cây"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Tìm người theo tên…"
-          aria-label="Tìm người trong cây"
-          className="min-w-0 flex-1"
+          className="pr-[4.75rem]"
+          rightSlot={
+            !searching && (focus || roots.some((r) => r.hasChildren)) ? (
+              <div className="flex items-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 px-0 text-muted-foreground"
+                  onClick={() => bump("expand")}
+                  aria-label="Mở rộng tất cả"
+                  title={`Mở rộng tất cả (tới ${EXPAND_ALL_DEPTH} đời; sâu hơn thì bấm mũi tên từng người)`}
+                >
+                  <IconChevronsDown className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 px-0 text-muted-foreground"
+                  onClick={() => bump("collapse")}
+                  aria-label="Thu gọn tất cả"
+                  title="Thu gọn tất cả"
+                >
+                  <IconChevronsUp className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : undefined
+          }
         />
-        {!searching && (focus || roots.some((r) => r.hasChildren)) && (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 w-10 shrink-0 px-0"
-              onClick={() => bump("expand")}
-              aria-label="Mở rộng tất cả"
-              title={`Mở rộng tất cả (tới ${EXPAND_ALL_DEPTH} đời; sâu hơn thì bấm mũi tên từng người)`}
-            >
-              <IconChevronsDown className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 w-10 shrink-0 px-0"
-              onClick={() => bump("collapse")}
-              aria-label="Thu gọn tất cả"
-              title="Thu gọn tất cả"
-            >
-              <IconChevronsUp className="h-4 w-4" />
-            </Button>
-          </>
-        )}
       </div>
       {focus && !searching && (
         <div className="mb-2 flex items-center gap-2 px-1 text-sm text-muted-foreground">
@@ -846,12 +845,11 @@ function UnlinkedSection({
 
       {open && (
         <div className="space-y-2 pl-6">
-          <Input
-            icon={<IconSearch />}
+          <SearchInput
+            label="Tìm người chưa gắn vào cây"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Tìm trong danh sách này…"
-            aria-label="Tìm người chưa gắn vào cây"
           />
           {listQ.isLoading && (
             <p className="text-xs text-muted-foreground">Đang tải…</p>
