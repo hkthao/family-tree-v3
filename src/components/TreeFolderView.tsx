@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
 } from "react";
@@ -11,12 +12,14 @@ import { Link } from "react-router-dom";
 
 import {
   IconChevronDown,
+  IconChevronUp,
   IconFemale,
   IconMale,
   IconSearch,
   IconUser,
   IconUsers,
 } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
@@ -220,6 +223,17 @@ function metaLine(p: {
   return `${p.birthYear ?? "?"}–${p.deathYear ?? (p.isLiving ? "nay" : "?")}`;
 }
 
+/**
+ * "Mở rộng / Thu gọn tất cả": mỗi lần bấm tăng `tick`; mỗi nút nghe tick đổi
+ * rồi tự mở/đóng. Cây tải theo nhánh nên "tất cả" có chặn độ sâu — mở hết
+ * một dòng họ chín nghìn người là chín nghìn lượt truy vấn.
+ */
+const EXPAND_ALL_DEPTH = 6;
+const ExpandCtx = createContext<{ mode: "expand" | "collapse" | null; tick: number }>({
+  mode: null,
+  tick: 0,
+});
+
 export function TreeFolderView({
   clanId,
   source,
@@ -237,6 +251,13 @@ export function TreeFolderView({
     const h = setTimeout(() => setDebounced(search), 300);
     return () => clearTimeout(h);
   }, [search]);
+
+  const [expand, setExpand] = useState<{ mode: "expand" | "collapse" | null; tick: number }>({
+    mode: null,
+    tick: 0,
+  });
+  const bump = (mode: "expand" | "collapse") =>
+    setExpand((e) => ({ mode, tick: e.tick + 1 }));
 
   const rootsQ = useQuery({
     queryKey: ["folder-roots", clanId, source],
@@ -271,6 +292,7 @@ export function TreeFolderView({
 
   return (
     <GhostSpouseContext.Provider value={ghostsByPerson}>
+    <ExpandCtx.Provider value={expand}>
     <div
       className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3"
       style={{ fontFamily: nameFontStack() }}
@@ -284,6 +306,29 @@ export function TreeFolderView({
         aria-label="Tìm người trong cây"
         className="mb-2"
       />
+      {!searching && roots.some((r) => r.hasChildren) && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5 px-3"
+            onClick={() => bump("expand")}
+            title={`Mở các nhánh tới ${EXPAND_ALL_DEPTH} đời; muốn sâu hơn thì bấm mũi tên từng người`}
+          >
+            <IconChevronDown className="h-4 w-4" /> Mở rộng tất cả
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5 px-3"
+            onClick={() => bump("collapse")}
+          >
+            <IconChevronUp className="h-4 w-4" /> Thu gọn tất cả
+          </Button>
+        </div>
+      )}
       {searching && (
         <SearchResults clanId={clanId} source={source} q={debounced.trim()} />
       )}
@@ -318,6 +363,7 @@ export function TreeFolderView({
       )}
       </div>
     </div>
+    </ExpandCtx.Provider>
     </GhostSpouseContext.Provider>
   );
 }
@@ -387,10 +433,13 @@ function PersonNode({
   note,
   branch = false,
   reserveArrow = true,
+  depth = 0,
 }: {
   clanId: string;
   source: TreeSource;
   person: FolderChild;
+  /** Tầng so với gốc — để "Mở rộng tất cả" biết dừng ở đâu. */
+  depth?: number;
   defaultOpen?: boolean;
   /** Ghi chú thêm ở dòng phụ — kết quả tìm kiếm dùng để nêu cha mẹ. */
   note?: string;
@@ -404,7 +453,22 @@ function PersonNode({
    */
   reserveArrow?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const expandCtx = useContext(ExpandCtx);
+  const canAutoOpen = person.hasChildren && depth < EXPAND_ALL_DEPTH;
+  // Nút mới mọc ra giữa lúc đang "mở rộng tất cả" cũng tự mở tiếp.
+  const [open, setOpen] = useState(
+    defaultOpen || (expandCtx.mode === "expand" && canAutoOpen),
+  );
+  const seenTick = useRef(expandCtx.tick);
+  useEffect(() => {
+    if (seenTick.current === expandCtx.tick) return;
+    seenTick.current = expandCtx.tick;
+    if (expandCtx.mode === "expand") {
+      if (canAutoOpen) setOpen(true);
+    } else if (expandCtx.mode === "collapse") {
+      setOpen(false);
+    }
+  }, [expandCtx, canAutoOpen]);
 
   // Chỉ tải khi đã mở — đó là toàn bộ lý do có kiểu xem này.
   const nodeQ = useQuery({
@@ -555,6 +619,7 @@ function PersonNode({
                   clanId={clanId}
                   source={source}
                   person={c}
+                  depth={depth + 1}
                   branch
                 />
               ))}
@@ -580,6 +645,7 @@ function PersonNode({
                           clanId={clanId}
                           source={source}
                           person={c}
+                          depth={depth + 1}
                           branch
                         />
                       ))}
