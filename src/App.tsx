@@ -8,6 +8,7 @@ import { CriticalBanner } from "@/components/CriticalBanner";
 import { MascotTip } from "@/components/MascotTip";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { RequireAuth } from "@/components/RequireAuth";
+import { AppBackground } from "@/components/AppBackground";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { DocumentTitle } from "@/components/DocumentTitle";
 import { ScrollManager } from "@/components/ScrollManager";
@@ -118,6 +119,7 @@ function PageLoader() {
 export default function App() {
   return (
     <BrowserRouter>
+      <AppBackground />
       <ScrollManager />
       {/* Thứ tự quan trọng: DocumentTitle đặt tiêu đề route trước, rồi
           AnalyticsTracker mới gửi pageview kèm tiêu đề đó. */}

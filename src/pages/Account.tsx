@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { QrSignInButton } from "@/components/QrSignInButton";
+import { BackgroundPicker } from "@/components/BackgroundPicker";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/Toast";
 import {
@@ -155,6 +156,18 @@ export default function Account() {
           </CardHeader>
           <CardContent>
             <ThemeToggle />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Hình nền</CardTitle>
+            <CardDescription>
+              Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BackgroundPicker />
           </CardContent>
         </Card>
 
