@@ -43,6 +43,12 @@ describe("FilterableSelect", () => {
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
+  it("mở ra là con trỏ nằm sẵn trong ô tìm", () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole("combobox"));
+    expect(document.activeElement).toBe(screen.getByLabelText("Lọc tỉnh"));
+  });
+
   it("bấm một mục để chọn; Esc đóng không đổi giá trị", () => {
     render(<Harness />);
     fireEvent.click(screen.getByRole("combobox"));
