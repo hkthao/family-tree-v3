@@ -507,3 +507,15 @@ export async function deletePersonsBulk(
   if (error) throw new Error(error.message);
   return { deleted: count ?? 0 };
 }
+
+/** Dòng họ đã có Thuỷ tổ (`is_root`) chưa — cây chỉ vẽ đúng khi có. Chỉ thành viên đọc được. */
+export async function clanHasRoot(clanId: string, client: Client = defaultClient): Promise<boolean> {
+  const { count, error } = await client
+    .from("persons")
+    .select("id", { count: "exact", head: true })
+    .eq("clan_id", clanId)
+    .eq("is_root", true)
+    .is("deleted_at", null);
+  if (error) throw new Error(error.message);
+  return (count ?? 0) > 0;
+}

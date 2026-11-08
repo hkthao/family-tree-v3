@@ -64,7 +64,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { savePersonNav } from "@/lib/personNav";
 import { getClanCompletion, type ClanCompletion } from "@/lib/queries/todo";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
-import { listPersons, type PersonRow } from "@/lib/queries/persons";
+import { clanHasRoot, listPersons, type PersonRow } from "@/lib/queries/persons";
 import {
   getRelativesIndex,
   type RelativesIndex,
@@ -311,6 +311,15 @@ export default function People() {
     staleTime: 60_000,
   });
 
+  // Chưa có Thuỷ tổ thì cây không biết bắt đầu từ ai → nhắc người trong họ.
+  const { data: hasRoot } = useQuery({
+    queryKey: ["persons", clan.id, "has-root"],
+    queryFn: () => clanHasRoot(clan.id),
+    enabled: !!userId && effectiveRole(clan) !== null,
+    staleTime: 60_000,
+  });
+  const missingRoot = hasRoot === false && (completion?.total ?? 0) > 0;
+
   // Clan-wide relatives lookup (father / mother / spouses by id).
   // Only members + platform admin should see relatives; non-members of a
   // public clan get hidden relatives because the query reads `persons`
@@ -389,6 +398,30 @@ export default function People() {
         completion.percent !== null && (
           <CompactCompletion clanId={clan.id} completion={completion} />
         )}
+
+      {isMember && view === "people" && missingRoot && (
+        <Alert>
+          <AlertDescription>
+            <strong>Dòng họ chưa có Thuỷ tổ.</strong> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ
+            đúng.{" "}
+            {canEdit
+              ? "Thêm người mới và đánh dấu là Thuỷ tổ, hoặc sửa một người đã có."
+              : "Nhờ quản trị viên hoặc người biên tập của dòng họ bổ sung."}
+            {canEdit && (
+              <>
+                {" "}
+                <PanelLink
+                  to={`/clans/${clan.id}/people/new`}
+                  panel="person-new"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Thêm Thuỷ tổ
+                </PanelLink>
+              </>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {view === "kinship" ? (
         <>
