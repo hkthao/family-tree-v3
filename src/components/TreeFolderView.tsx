@@ -12,7 +12,8 @@ import { Link } from "react-router-dom";
 
 import {
   IconChevronDown,
-  IconChevronUp,
+  IconChevronsDown,
+  IconChevronsUp,
   IconFemale,
   IconMale,
   IconSearch,
@@ -318,30 +319,56 @@ export function TreeFolderView({
       className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3"
       style={{ fontFamily: nameFontStack() }}
     >
-      <Input
-        type="search"
-        icon={<IconSearch />}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Tìm người theo tên…"
-        aria-label="Tìm người trong cây"
-        className="mb-2"
-      />
+      <div className="mb-2 flex items-center gap-1.5">
+        <Input
+          type="search"
+          icon={<IconSearch />}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Tìm người theo tên…"
+          aria-label="Tìm người trong cây"
+          className="min-w-0 flex-1"
+        />
+        {!searching && (focus || roots.some((r) => r.hasChildren)) && (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 w-10 shrink-0 px-0"
+              onClick={() => bump("expand")}
+              aria-label="Mở rộng tất cả"
+              title={`Mở rộng tất cả (tới ${EXPAND_ALL_DEPTH} đời; sâu hơn thì bấm mũi tên từng người)`}
+            >
+              <IconChevronsDown className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 w-10 shrink-0 px-0"
+              onClick={() => bump("collapse")}
+              aria-label="Thu gọn tất cả"
+              title="Thu gọn tất cả"
+            >
+              <IconChevronsUp className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+      </div>
       {focus && !searching && (
-        <div className="mb-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+        <div className="mb-2 flex items-center gap-2 px-1 text-sm text-muted-foreground">
           <IconTree className="h-4 w-4 shrink-0 text-primary" />
-          <span className="min-w-0 flex-1">
-            Đang xem riêng nhánh <strong>{focus.name}</strong> trở xuống.
+          <span className="min-w-0 flex-1 truncate">
+            Nhánh <strong className="text-foreground">{focus.name}</strong> trở xuống
           </span>
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 px-3"
             onClick={() => setFocus(null)}
+            className="shrink-0 font-medium text-primary hover:underline"
           >
             Xem cả cây
-          </Button>
+          </button>
         </div>
       )}
       {focus && !searching && (
@@ -355,29 +382,6 @@ export function TreeFolderView({
             defaultOpen
           />
         </ul>
-      )}
-      {!searching && roots.some((r) => r.hasChildren) && (
-        <div className="mb-2 flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 gap-1.5 px-3"
-            onClick={() => bump("expand")}
-            title={`Mở các nhánh tới ${EXPAND_ALL_DEPTH} đời; muốn sâu hơn thì bấm mũi tên từng người`}
-          >
-            <IconChevronDown className="h-4 w-4" /> Mở rộng tất cả
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 gap-1.5 px-3"
-            onClick={() => bump("collapse")}
-          >
-            <IconChevronUp className="h-4 w-4" /> Thu gọn tất cả
-          </Button>
-        </div>
       )}
       {searching && (
         <SearchResults clanId={clanId} source={source} q={debounced.trim()} />
