@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useSidebarHidden } from "@/lib/sidebarHidden";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useParams } from "react-router-dom";
 
@@ -55,6 +56,7 @@ interface Props {
  * any layout can just render it with open/onClose and a hamburger button.
  */
 export function AppDrawer({ open, onClose }: Props) {
+  const [sidebarHidden] = useSidebarHidden();
   const { open: openPanel } = usePanel();
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -187,8 +189,8 @@ export function AppDrawer({ open, onClose }: Props) {
           "flex flex-col",
           "transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
-          // ≥lg: always visible, no transform regardless of `open`.
-          "lg:translate-x-0",
+          // ≥lg: luôn hiện (không phụ thuộc `open`), trừ khi người dùng ẩn bằng nút ☰ (sidebarHidden).
+          sidebarHidden ? "lg:-translate-x-full" : "lg:translate-x-0",
         )}
       >
         {/* Header — matches AppHeader's min-h-[64px] + text-2xl so both

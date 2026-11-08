@@ -517,3 +517,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
 input[type="time"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
+
+/* Menu trái ẩn trên máy tính (lib/sidebarHidden.ts): bỏ phần đệm trái dành cho menu của mọi trang. */
+@media (min-width: 1024px) {
+  html[data-sidebar="hidden"] .lg\:pl-72 {
+    padding-left: 0;
+  }
+}

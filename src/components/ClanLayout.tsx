@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useAuth } from "@/hooks/useAuth";
+import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
+import { useSidebarHidden } from "@/lib/sidebarHidden";
 import { useClanRealtime } from "@/hooks/useClanRealtime";
 import { useCompletionMilestone } from "@/hooks/useCompletionMilestone";
 import { getClanDetail, type ClanDetail } from "@/lib/queries/clan-detail";
@@ -236,16 +238,23 @@ function DrawerToggle({
     staleTime: 60_000,
   });
   const hasWork = (todoCount ?? 0) > 0;
+  // Điện thoại: mở ngăn kéo. Máy tính: ẩn / hiện menu trái.
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const [sidebarHidden, toggleSidebar] = useSidebarHidden();
+  const label = isDesktop
+    ? sidebarHidden
+      ? "Hiện menu"
+      : "Ẩn menu"
+    : hasWork
+      ? `Mở menu — có ${todoCount} việc cần làm`
+      : "Mở menu";
   return (
     <button
       type="button"
-      onClick={onOpen}
-      aria-label={
-        hasWork
-          ? `Mở menu — có ${todoCount} việc cần làm`
-          : "Mở menu"
-      }
-      className="relative h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0 lg:hidden"
+      onClick={isDesktop ? toggleSidebar : onOpen}
+      aria-label={label}
+      title={isDesktop ? label : undefined}
+      className="relative h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
     >
       <span className="text-2xl leading-none" aria-hidden="true">
         ☰
