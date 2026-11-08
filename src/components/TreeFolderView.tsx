@@ -16,6 +16,7 @@ import {
   IconFemale,
   IconMale,
   IconSearch,
+  IconTree,
   IconUser,
   IconUsers,
 } from "@/components/icons";
@@ -234,6 +235,12 @@ const ExpandCtx = createContext<{ mode: "expand" | "collapse" | null; tick: numb
   tick: 0,
 });
 
+/** "Xem riêng nhánh": null khi không có chỗ để chuyển (ví dụ danh sách chưa gắn vào cây). */
+const FocusCtx = createContext<{
+  focusId: string | null;
+  onFocus: ((p: FolderChild) => void) | null;
+}>({ focusId: null, onFocus: null });
+
 export function TreeFolderView({
   clanId,
   source,
@@ -252,6 +259,19 @@ export function TreeFolderView({
     return () => clearTimeout(h);
   }, [search]);
 
+  // Nhánh đang xem riêng: chỉ vẽ người này và con cháu. Cây đầy đủ được GIẤU
+  // chứ không gỡ, để quay lại vẫn giữ nguyên các nhánh đã bung.
+  const [focus, setFocus] = useState<FolderChild | null>(null);
+  const focusCtx = useMemo(
+    () => ({
+      focusId: focus?.id ?? null,
+      onFocus: (p: FolderChild) => {
+        setSearch("");
+        setFocus(p);
+      },
+    }),
+    [focus],
+  );
   const [expand, setExpand] = useState<{ mode: "expand" | "collapse" | null; tick: number }>({
     mode: null,
     tick: 0,
@@ -293,6 +313,7 @@ export function TreeFolderView({
   return (
     <GhostSpouseContext.Provider value={ghostsByPerson}>
     <ExpandCtx.Provider value={expand}>
+    <FocusCtx.Provider value={focusCtx}>
     <div
       className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3"
       style={{ fontFamily: nameFontStack() }}
@@ -306,6 +327,35 @@ export function TreeFolderView({
         aria-label="Tìm người trong cây"
         className="mb-2"
       />
+      {focus && !searching && (
+        <div className="mb-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+          <IconTree className="h-4 w-4 shrink-0 text-primary" />
+          <span className="min-w-0 flex-1">
+            Đang xem riêng nhánh <strong>{focus.name}</strong> trở xuống.
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 px-3"
+            onClick={() => setFocus(null)}
+          >
+            Xem cả cây
+          </Button>
+        </div>
+      )}
+      {focus && !searching && (
+        <ul className="space-y-1">
+          <PersonNode
+            key={focus.id}
+            clanId={clanId}
+            source={source}
+            person={focus}
+            reserveArrow={focus.hasChildren}
+            defaultOpen
+          />
+        </ul>
+      )}
       {!searching && roots.some((r) => r.hasChildren) && (
         <div className="mb-2 flex flex-wrap gap-2">
           <Button
@@ -335,7 +385,7 @@ export function TreeFolderView({
 
       {/* Đang tìm thì GIẤU cây chứ không gỡ ra: gỡ là mất sạch những
           nhánh người dùng đã bung, xoá ô tìm xong phải mở lại từ đầu. */}
-      <div className={searching ? "hidden" : undefined}>
+      <div className={searching || focus ? "hidden" : undefined}>
       {roots.length === 0 && orphanCount === 0 && (
         <p className="p-4 text-sm text-muted-foreground">
           Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu.
@@ -363,6 +413,7 @@ export function TreeFolderView({
       )}
       </div>
     </div>
+    </FocusCtx.Provider>
     </ExpandCtx.Provider>
     </GhostSpouseContext.Provider>
   );
@@ -454,6 +505,7 @@ function PersonNode({
   reserveArrow?: boolean;
 }) {
   const expandCtx = useContext(ExpandCtx);
+  const focusCtx = useContext(FocusCtx);
   const canAutoOpen = person.hasChildren && depth < EXPAND_ALL_DEPTH;
   // Nút mới mọc ra giữa lúc đang "mở rộng tất cả" cũng tự mở tiếp.
   const [open, setOpen] = useState(
@@ -601,6 +653,17 @@ function PersonNode({
           ))}
 
         </div>
+        {person.hasChildren && focusCtx.onFocus && focusCtx.focusId !== person.id && (
+          <button
+            type="button"
+            onClick={() => focusCtx.onFocus!(person)}
+            aria-label={`Xem riêng nhánh ${person.name}`}
+            title="Xem riêng nhánh này trở xuống"
+            className="mt-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <IconTree className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {open && (nodeQ.isLoading || nodeQ.data) && (
