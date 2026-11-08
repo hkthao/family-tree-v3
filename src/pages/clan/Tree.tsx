@@ -729,9 +729,9 @@ export default function Tree() {
               );
               // Mép phải vùng tên = trước badge (inlaw nằm trái badge Đời).
               const badgeLeft = hasInlaw
-                ? cardW - 52
+                ? cardW - 64
                 : hasGen
-                  ? cardW - 34
+                  ? cardW - 46
                   : cardW - 8;
               const avail = badgeLeft - 64 - 4; // text_x=64, chừa 4px
               nameTspan.removeAttribute("font-size"); // reset trước khi đo
@@ -898,7 +898,7 @@ export default function Tree() {
                 rect.parentNode?.insertBefore(line, rect.nextSibling);
 
                 // Hoa văn chạm khắc 4 góc: góc vuông chữ L vàng + chấm tròn nhỏ.
-                const L = 7; // bỏ góc trên-phải: nhường chỗ badge "Đời"/thông gia
+                const L = 7; // badge "Đời"/thông gia lùi vào trong để chừa góc trên-phải
                 const o = 3;
                 const w = cardW;
                 const h = cardH;
@@ -912,6 +912,7 @@ export default function Tree() {
                   [
                     `M${o} ${o + L}V${o}H${o + L}`,
                     `M${o} ${h - o - L}V${h - o}H${o + L}`,
+                    `M${w - o - L} ${o}H${w - o}V${o + L}`,
                     `M${w - o - L} ${h - o}H${w - o}V${h - o - L}`,
                   ].join(""),
                 );
@@ -940,12 +941,12 @@ export default function Tree() {
               // không bị mép thẻ cắt mất.
               // Dạng triện đỏ (con dấu sơn): khối vuông bo nhẹ, viền chỉ trong, chữ serif.
               badge.innerHTML = `
-                <rect x="${cardW - 30}" y="6" width="24" height="18" rx="2"
+                <rect x="${cardW - 42}" y="6" width="24" height="18" rx="2"
                       fill="#7A2E2E" />
-                <rect class="seal-in" x="${cardW - 28}" y="8" width="20" height="14"
+                <rect class="seal-in" x="${cardW - 40}" y="8" width="20" height="14"
                       rx="1" fill="none" stroke="#F2D68A" stroke-width="0.8"
                       opacity="0.75" />
-                <text x="${cardW - 18}" y="18.5" text-anchor="middle"
+                <text x="${cardW - 30}" y="18.5" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700"
                       style="font-family: var(--tree-name-font, 'Playfair Display'), Georgia, serif">
                   ${gen - clan.generation_offset}
@@ -968,9 +969,9 @@ export default function Tree() {
               );
               inlaw.setAttribute("class", "inlaw-badge");
               inlaw.innerHTML = `
-                <circle cx="${cardW - 43}" cy="15" r="9" fill="#B8862A"
+                <circle cx="${cardW - 55}" cy="15" r="9" fill="#B8862A"
                         stroke="#FBF7F0" stroke-width="1" />
-                <text x="${cardW - 43}" y="19" text-anchor="middle"
+                <text x="${cardW - 55}" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="12" font-weight="700">↔</text>
                 <title>Liên kết thông gia — bấm để xem</title>`;
               inlaw.style.cursor = "pointer";
