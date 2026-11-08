@@ -54,7 +54,7 @@ export function AppHeader() {
             aria-label={isDesktop ? (sidebarHidden ? "Hiện menu" : "Ẩn menu") : "Mở menu"}
             aria-expanded={isDesktop ? !sidebarHidden : drawerOpen}
             title={isDesktop ? (sidebarHidden ? "Hiện menu" : "Ẩn menu") : undefined}
-            className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted"
+            className="xl:absolute xl:left-3 xl:top-3 h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted"
           >
             <span className="text-2xl leading-none" aria-hidden="true">☰</span>
           </button>

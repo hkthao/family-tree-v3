@@ -254,7 +254,7 @@ function DrawerToggle({
       onClick={isDesktop ? toggleSidebar : onOpen}
       aria-label={label}
       title={isDesktop ? label : undefined}
-      className="relative h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
+      className="relative xl:absolute xl:left-3 xl:top-3 h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
     >
       <span className="text-2xl leading-none" aria-hidden="true">
         ☰
