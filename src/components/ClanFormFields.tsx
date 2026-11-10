@@ -109,7 +109,6 @@ export function ClanBasicFields({ value, onChange, disabled, idPrefix = "clan" }
           icon={<IconScroll />}
           data-testid="clan-description-input"
           maxLength={500}
-          maxRows={10}
           rows={3}
           disabled={disabled}
           value={value.description}
