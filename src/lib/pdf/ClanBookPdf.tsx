@@ -721,7 +721,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
     for (const p of bloodlineSorted) {
       detailModels.set(
         p.id,
-        personCardModel(
+        fitCardModel(personCardModel(
           p,
           orderInSiblings,
           childrenByParent,
@@ -733,7 +733,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           clan.generation_offset,
           photoByPersonId,
           clan.display_death_details,
-        ),
+        )),
       );
     }
   }
@@ -743,7 +743,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   );
   const inLawsSorted = [...inLaws].sort((a, b) => a.full_name.localeCompare(b.full_name, "vi"));
   const inLawModels = new Map(
-    inLawsSorted.map((p) => [p.id, inLawCardModel(p, spousesByPerson, personById, photoByPersonId)] as const),
+    inLawsSorted.map((p) => [p.id, fitCardModel(inLawCardModel(p, spousesByPerson, personById, photoByPersonId))] as const),
   );
   const inLawCardH = Math.max(0, ...[...inLawModels.values()].map(estimateCardHeight));
 
@@ -1301,7 +1301,14 @@ interface CardModel {
   meta: string;
   photoUri?: string;
   gender: "M" | "F";
-  fields: { label: string; value: string }[];
+  fields: CardField[];
+}
+
+/** `items` có thì giá trị là danh sách tên (Vợ, Con…) — có thể rút gọn "… và N người khác". */
+interface CardField {
+  label: string;
+  value: string;
+  items?: string[];
 }
 
 function personCardModel(
@@ -1356,9 +1363,9 @@ function personCardModel(
   if (!p.is_living) metaParts.push("đã mất");
   if (branchName) metaParts.push(`chi ${branchName}`);
 
-  const fields: { label: string; value: string }[] = [];
-  const add = (label: string, value: string | null | undefined) => {
-    if (value) fields.push({ label, value });
+  const fields: CardField[] = [];
+  const add = (label: string, value: string | null | undefined, items?: string[]) => {
+    if (value) fields.push({ label, value, items });
   };
   add("Sinh", birthSolar || null);
   add("Sinh ÂL", birthLunar || null);
@@ -1369,8 +1376,16 @@ function personCardModel(
   }
   add("Cha", father?.full_name);
   add("Mẹ", mother?.full_name);
-  add(p.gender === "M" ? "Vợ" : "Chồng", spouses.length > 0 ? spouses.map((x) => x.full_name).join(", ") : null);
-  add("Con", children.length > 0 ? children.map((c) => c.full_name).join(", ") : null);
+  add(
+    p.gender === "M" ? "Vợ" : "Chồng",
+    spouses.length > 0 ? spouses.map((x) => x.full_name).join(", ") : null,
+    spouses.map((x) => x.full_name),
+  );
+  add(
+    "Con",
+    children.length > 0 ? children.map((c) => c.full_name).join(", ") : null,
+    children.map((c) => c.full_name),
+  );
 
   return {
     name: p.full_name,
@@ -1400,6 +1415,60 @@ function renderCardModel(m: CardModel): React.ReactNode {
       </View>
     </>
   );
+}
+
+/** Thẻ danh bạ cao tối đa bấy nhiêu pt để một trang luôn xếp được 2 hàng × 3 thẻ = 6 thẻ. */
+const MAX_CARD_H = 288;
+
+/**
+ * Rút gọn nội dung thẻ cho vừa MAX_CARD_H: danh sách dài (vợ, con…) cắt bớt
+ * thành "A, B, C và N người khác", rồi nếu vẫn dài thì cắt tiểu sử.
+ * Người nhiều vợ/con (vd vua) không còn làm cả trang thẻ cao theo.
+ */
+function fitCardModel(m: CardModel): CardModel {
+  const keep = new Map<string, number>();
+  for (const f of m.fields) if (f.items) keep.set(f.label, f.items.length);
+  const build = (bioCut: number): CardModel => ({
+    ...m,
+    fields: m.fields.map((f) => {
+      if (f.items) {
+        const k = keep.get(f.label) ?? f.items.length;
+        const hidden = f.items.length - k;
+        return {
+          ...f,
+          value:
+            f.items.slice(0, k).join(", ") + (hidden > 0 ? ` và ${hidden} người khác` : ""),
+        };
+      }
+      if (f.label === "Tiểu sử" && f.value.length > bioCut) {
+        return { ...f, value: `${f.value.slice(0, bioCut).trimEnd()}…` };
+      }
+      return f;
+    }),
+  });
+  let bioCut = 10_000;
+  let out = build(bioCut);
+  for (let guard = 0; guard < 400 && estimateCardHeight(out) > MAX_CARD_H; guard++) {
+    // Cắt bớt từ danh sách còn nhiều tên nhất.
+    let target: string | null = null;
+    let most = 1;
+    for (const f of m.fields) {
+      const k = keep.get(f.label);
+      if (f.items && k !== undefined && k > most) {
+        most = k;
+        target = f.label;
+      }
+    }
+    if (target) {
+      keep.set(target, Math.max(1, (keep.get(target) ?? 1) - Math.max(1, Math.floor(most * 0.15))));
+    } else if (bioCut > 60) {
+      bioCut = Math.max(60, Math.min(bioCut, 400) - 40);
+    } else {
+      break;
+    }
+    out = build(bioCut);
+  }
+  return out;
 }
 
 /**
@@ -1468,11 +1537,15 @@ function inLawCardModel(
   if (ls) metaParts.push(ls);
   if (!p.is_living) metaParts.push("đã mất");
 
-  const fields: { label: string; value: string }[] = [];
-  const add = (label: string, value: string | null | undefined) => {
-    if (value) fields.push({ label, value });
+  const fields: CardField[] = [];
+  const add = (label: string, value: string | null | undefined, items?: string[]) => {
+    if (value) fields.push({ label, value, items });
   };
-  add("Vợ/chồng của", spouseList.length > 0 ? spouseList.map((x) => x.full_name).join(", ") : null);
+  add(
+    "Vợ/chồng của",
+    spouseList.length > 0 ? spouseList.map((x) => x.full_name).join(", ") : null,
+    spouseList.map((x) => x.full_name),
+  );
   add("Nơi sinh", p.birth_place);
   add("Nơi an táng", p.burial_place);
   // Tiểu sử dài làm cả trang thẻ cao theo (mọi thẻ cùng chiều cao), nên cắt gọn.
