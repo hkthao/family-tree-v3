@@ -732,6 +732,15 @@ export function PhaHePages({ input }: { input: PhaHeInput }) {
                       .filter((x): x is PersonDetail => !!x);
                     const kids = (childrenOf.get(k.id) ?? []);
                     const kySu = k.bio ? bioToPlainText(k.bio).trim() : "";
+                    // Người quá nhiều vợ/con (cả khối cao hơn một trang) thì không được cấm
+                    // ngắt trang — khối không vừa trang sẽ bị vẽ chồng lên nhau.
+                    const kidsChars = kids.reduce((n, c) => n + c.full_name.length + 12, 0);
+                    const estHeight =
+                      70 +
+                      Math.ceil(kidsChars / 80) * 13 +
+                      spouses.length * 30 +
+                      Math.ceil((kySu ? Math.min(kySu.length, 500) : 0) / 85) * 13;
+                    const splittable = estHeight > 440;
                     const alias = [
                       k.courtesy_name && `Tự ${k.courtesy_name}`,
                       k.nickname && `Hiệu ${k.nickname}`,
@@ -739,15 +748,15 @@ export function PhaHePages({ input }: { input: PhaHeInput }) {
                     ].filter(Boolean);
                     return (
                       // Dải đời + tiêu đề nhóm + người đầu tiên là MỘT khối không ngắt trang, để dải không bị bỏ lại cuối trang.
-                      <View key={k.id} wrap={false}>
+                      <View key={k.id} wrap={splittable}>
                         {i === 0 && gi === 0 ? (
-                          <View style={s.genBand}>
+                          <View style={s.genBand} wrap={false} minPresenceAhead={splittable ? 120 : 0}>
                             <Text style={[s.genBandText, serifStyle()]}>ĐỜI THỨ {toRoman2(g)}</Text>
                             <Text style={s.genBandCount}>{count} người</Text>
                           </View>
                         ) : null}
                         {i === 0 ? (
-                          <View style={s.grpHead}>
+                          <View style={s.grpHead} wrap={false} minPresenceAhead={splittable ? 100 : 0}>
                             <Text style={s.grpLabel}>
                               {names.length === 0 ? "" : "Con của"}
                             </Text>
@@ -780,7 +789,7 @@ export function PhaHePages({ input }: { input: PhaHeInput }) {
                               </Text>
                             ) : null}
                             {spouses.map((sp) => (
-                              <View key={sp.id} style={s.spouseLine}>
+                              <View key={sp.id} style={s.spouseLine} wrap={false}>
                                 <Text style={s.spouseTag}>{k.gender === "M" ? "Vợ" : "Chồng"}</Text>
                                 <View style={s.spouseBody}>
                                   <Text style={s.spouseName}>{sp.full_name}</Text>
