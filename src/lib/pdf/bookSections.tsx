@@ -691,6 +691,19 @@ export function PhaHePages({ input }: { input: PhaHeInput }) {
     return aa.length - bb.length;
   };
 
+  // Con của từng người (theo cha, không có cha thì theo mẹ), đúng thứ tự trưởng – thứ.
+  const childrenOf = new Map<string, PersonDetail[]>();
+  for (const c of bloodline) {
+    const parent = fatherOf.get(c.id) ?? motherOf.get(c.id);
+    if (!parent) continue;
+    const arr = childrenOf.get(parent) ?? [];
+    arr.push(c);
+    childrenOf.set(parent, arr);
+  }
+  for (const arr of childrenOf.values()) {
+    arr.sort((a, b) => cmp(sttById.get(a.id) ?? "999", sttById.get(b.id) ?? "999"));
+  }
+
   const genList = [...groups.keys()].sort((a, b) => a - b);
   return (
     <Page size="A4" style={BOOK_PAGE()}>
@@ -717,6 +730,7 @@ export function PhaHePages({ input }: { input: PhaHeInput }) {
                     const spouses = (spousesByPerson.get(k.id) ?? [])
                       .map((id) => personById.get(id))
                       .filter((x): x is PersonDetail => !!x);
+                    const kids = (childrenOf.get(k.id) ?? []);
                     const kySu = k.bio ? bioToPlainText(k.bio).trim() : "";
                     const alias = [
                       k.courtesy_name && `Tự ${k.courtesy_name}`,
@@ -757,6 +771,14 @@ export function PhaHePages({ input }: { input: PhaHeInput }) {
                               <Text style={s.fact}>{alias.join(" · ")}</Text>
                             ) : null}
                             <Facts items={personFacts(k, burial)} />
+                            {kids.length > 0 ? (
+                              <Text style={[s.fact, { marginTop: 3 }]}>
+                                <Text style={s.factLabel}>Con: </Text>
+                                {kids
+                                  .map((c, ci) => `${ci === 0 ? "trưởng" : `thứ ${ci + 1}`} ${c.full_name}`)
+                                  .join("; ")}
+                              </Text>
+                            ) : null}
                             {spouses.map((sp) => (
                               <View key={sp.id} style={s.spouseLine}>
                                 <Text style={s.spouseTag}>{k.gender === "M" ? "Vợ" : "Chồng"}</Text>
