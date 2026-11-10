@@ -1,6 +1,7 @@
 import { pdf } from "@react-pdf/renderer";
 
 import type { BookWatermarkId } from "@/lib/pdf/bookWatermarks";
+import { pageRegistry, resetPageRegistry } from "@/lib/pdf/bookPages";
 import { ClanBookPdf } from "@/lib/pdf/ClanBookPdf";
 import { makeQrDataUrl } from "@/lib/cards/exportCard";
 import { getSignedPhotoUrlMap } from "@/lib/photoUpload";
@@ -62,12 +63,12 @@ export async function buildClanBookPdf(
   try {
     const link = await getOrCreateTreeShareLink(clan.id);
     const url = `${options.shareOrigin ?? window.location.origin}/share/${link.token}`;
-    coverQrDataUri = (await makeQrDataUrl(url)) ?? undefined;
+    coverQrDataUri = (await makeQrDataUrl(url, "#00000000")) ?? undefined;
   } catch {
     /* không có QR */
   }
 
-  const blob = await pdf(
+  const doc = (tocPages?: Record<string, number>) => (
     <ClanBookPdf
       clan={clan}
       data={data}
@@ -82,8 +83,17 @@ export async function buildClanBookPdf(
       photoByPersonId={photoByPersonId}
       coverByItemId={coverByItemId}
       coverQrDataUri={coverQrDataUri}
-    />,
-  ).toBlob();
+      tocPages={tocPages}
+    />
+  );
+
+  // Hai lượt: lượt một để tiêu đề từng mục ghi số trang của nó, lượt hai in
+  // các số đó vào mục lục (xem bookPages). Trang mục lục không đổi cỡ giữa
+  // hai lượt nên số trang không lệch.
+  resetPageRegistry();
+  await pdf(doc()).toBlob();
+  const tocPages = { ...pageRegistry };
+  const blob = await pdf(doc(tocPages)).toBlob();
 
   const safe = clan.name
     .normalize("NFD")

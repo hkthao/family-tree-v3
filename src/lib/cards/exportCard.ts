@@ -25,14 +25,18 @@ export async function imageUrlToDataUrl(
 }
 
 /** Tạo QR (data URL) trỏ tới một URL — dùng lib qrcode đã có. */
-export async function makeQrDataUrl(text: string | null | undefined): Promise<string | null> {
+export async function makeQrDataUrl(
+  text: string | null | undefined,
+  /** Màu nền ô sáng của QR; mặc định trắng. "#00000000" = trong suốt (QR trên nền giấy màu). */
+  light = "#FFFFFF",
+): Promise<string | null> {
   if (!text) return null;
   try {
     const QR = (await import("qrcode")).default;
     return await QR.toDataURL(text, {
       margin: 1,
       width: 240,
-      color: { dark: "#2B2320", light: "#FFFFFF" },
+      color: { dark: "#2B2320", light },
     });
   } catch {
     return null;

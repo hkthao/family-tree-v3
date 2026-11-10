@@ -29,7 +29,11 @@ import {
 
 import { BOOK_WATERMARKS, type BookWatermarkId } from "./bookWatermarks";
 import {
+  ClanIntroPage,
   DeathAnniversaryPages,
+  hasAnniversaries,
+  hasClanIntro,
+  hasMarriages,
   MarriageTablePages,
   NgoaiPhaTextPage,
   PhaHePages,
@@ -37,7 +41,9 @@ import {
   PhuKhaoPage,
   PrefacePage,
   TocPage,
+  type TocEntry,
 } from "./bookSections";
+import { PageNumber, SectionTitle } from "./bookPages";
 import { renderFolderTreePages } from "./FolderTreePdf";
 import { pdfAssets } from "./pdfAssets";
 import { buildFolderPdfRows, type FolderPdfPerson } from "./folderTreeRows";
@@ -131,10 +137,10 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.accent,
     marginBottom: 14,
   },
-  intro: { color: COLORS.muted, marginBottom: 14, fontSize: 10 },
+  intro: { color: COLORS.muted, marginBottom: 14, fontSize: 11 },
 
   // Preface / phàm lệ
-  prefaceItem: { fontSize: 10.5, marginBottom: 4 },
+  prefaceItem: { fontSize: 11.5, marginBottom: 5, textAlign: "justify" },
 
   // Indented tree
   treeRow: { marginBottom: 2 },
@@ -147,13 +153,15 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 6,
   },
+  // Khung gỗ sẫm giống thẻ trên cây gia phả: viền gỗ dày + đường chỉ vàng
+  // bên trong + bốn góc vàng (xem CardFrame).
   card: {
     width: 152, // (content_width 483 - 2*6gap) / 3 ≈ 157, leave breathing room
     marginRight: 6,
     padding: 8,
-    borderWidth: 0.9,
-    borderColor: COLORS.accent,
-    borderRadius: 3,
+    borderWidth: 3.5,
+    borderColor: "#3A2A22",
+    borderRadius: 4,
     backgroundColor: "#FFFBF0",
     alignItems: "center",
   },
@@ -472,9 +480,11 @@ interface Props {
   coverByItemId?: Map<string, string>;
   /** QR (data URI) trỏ tới trang gia phả công khai — in ở trang bìa. */
   coverQrDataUri?: string;
+  /** id mục → số trang, in vào mục lục (xem bookPages). */
+  tocPages?: Record<string, number>;
 }
 
-export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri }: Props) {
+export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemId, coverQrDataUri, tocPages }: Props) {
   ensurePdfFontRegistered();
   // Toàn bộ sổ dùng MỘT font — font đã chọn ở cây (không còn trộn với Be Vietnam Pro).
   styles.page.fontFamily = pdfSerifFamily();
@@ -705,6 +715,114 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   const todayLabel = `${pad(today.getDate())}/${pad(today.getMonth() + 1)}/${today.getFullYear()}`;
   const cleanName = stripParenthetical(clan.name);
 
+  // Thẻ danh bạ: dựng dữ liệu trước để biết thẻ cao nhất rồi đặt MỌI thẻ cùng chiều cao.
+  const detailModels = new Map<string, CardModel>();
+  if (showDetail) {
+    for (const p of bloodlineSorted) {
+      detailModels.set(
+        p.id,
+        personCardModel(
+          p,
+          orderInSiblings,
+          childrenByParent,
+          spousesByPerson,
+          fatherOf,
+          motherOf,
+          personById,
+          branchById,
+          clan.generation_offset,
+          photoByPersonId,
+          clan.display_death_details,
+        ),
+      );
+    }
+  }
+  const detailCardH = Math.max(
+    0,
+    ...[...detailModels.values()].map(estimateCardHeight),
+  );
+  const inLawsSorted = [...inLaws].sort((a, b) => a.full_name.localeCompare(b.full_name, "vi"));
+  const inLawModels = new Map(
+    inLawsSorted.map((p) => [p.id, inLawCardModel(p, spousesByPerson, personById, photoByPersonId)] as const),
+  );
+  const inLawCardH = Math.max(0, ...[...inLawModels.values()].map(estimateCardHeight));
+
+  // Thẻ Mộ phần / Di sản: cùng một chiều cao (thẻ cao nhất).
+  const restingTitle = (rp: (typeof data.restingPlaces)[number]) =>
+    rp.name || rp.location_name || RP_KIND_LABEL[rp.kind];
+  const restingLoc = (rp: (typeof data.restingPlaces)[number]) =>
+    [rp.location_name, rp.location_detail].filter(Boolean).join(" · ");
+  const restingCardH = Math.max(
+    0,
+    ...data.restingPlaces.map((rp) =>
+      estimateMediaHeight([
+        { text: restingTitle(rp), perLine: 20, lineH: 12.5, gap: 1 },
+        {
+          text: `${RP_KIND_LABEL[rp.kind]}${rp.status !== "existing" ? ` · ${RP_STATUS_LABEL[rp.status]}` : ""}`,
+          perLine: 30,
+          lineH: 10.5,
+          gap: 3,
+        },
+        ...(restingLoc(rp) ? [{ text: restingLoc(rp), perLine: 27, lineH: 11, gap: 2 }] : []),
+        ...(rp.address ? [{ text: rp.address, perLine: 27, lineH: 11, gap: 2 }] : []),
+        ...(rp.occupant_names.length > 0
+          ? [{ text: `An nghỉ: ${rp.occupant_names.join(", ")}`, perLine: 30, lineH: 10.5, gap: 3 }]
+          : []),
+      ]),
+    ),
+  );
+  const heritageBody = (h: (typeof data.heritage)[number]) =>
+    h.body && h.body.length > 150 ? `${h.body.slice(0, 150)}…` : h.body;
+  const heritageMeta = (h: (typeof data.heritage)[number]) =>
+    [h.location_name || null, h.built_year ? `năm ${h.built_year}` : null].filter(Boolean).join(" · ");
+  const heritageCardH = Math.max(
+    0,
+    ...data.heritage.map((h) =>
+      estimateMediaHeight([
+        { text: h.title, perLine: 20, lineH: 12.5, gap: 1 },
+        ...(heritageMeta(h) ? [{ text: heritageMeta(h), perLine: 30, lineH: 10.5, gap: 3 }] : []),
+        ...(h.summary ? [{ text: h.summary, perLine: 27, lineH: 11, gap: 2 }] : []),
+        ...(heritageBody(h) ? [{ text: heritageBody(h) as string, perLine: 27, lineH: 11, gap: 2 }] : []),
+        ...(h.people_names.length > 0
+          ? [{ text: `Liên quan: ${h.people_names.join(", ")}`, perLine: 30, lineH: 10.5, gap: 3 }]
+          : []),
+      ]),
+    ),
+  );
+
+  // Mục lục liệt kê ĐÚNG những trang sẽ có trong sổ, theo thứ tự trang, với
+  // tiêu đề y như tiêu đề trang. Điều kiện ở đây phải khớp điều kiện dựng
+  // từng trang bên dưới.
+  const tocItems: TocEntry[] = [
+    { title: "Phàm lệ", id: "sec-phamle" },
+    ...(hasClanIntro(texts) ? [{ title: "Giới thiệu dòng họ", id: "sec-intro" }] : []),
+    ...(texts?.preface ? [{ title: "Lời nói đầu", id: "sec-preface" }] : []),
+    { title: "Phả ký", id: "sec-phaky" },
+    ...(bloodline.length > 0 ? [{ title: "Phả hệ", id: "sec-phahe" }] : []),
+    ...((showTree && bloodline.length > 0) || folderRows.length > 0
+      ? [{ title: "Sơ đồ cây gia phả", id: showTree && bloodline.length > 0 ? "sec-tree" : "sec-tree-folder" }]
+      : []),
+    ...(showDetail && bloodlineSorted.length > 0
+      ? [{ title: "Danh bạ chi tiết", id: "sec-danhba" }]
+      : []),
+    ...(inLaws.length > 0 ? [{ title: "Dâu / rể kết hôn vào họ", id: "sec-dauree" }] : []),
+    ...(texts?.ngoai_pha ? [{ title: "Ngoại phả", id: "sec-ngoaipha" }] : []),
+    ...(hasAnniversaries(persons) ? [{ title: "Danh sách ngày giỗ", id: "sec-gio" }] : []),
+    ...(hasMarriages(bloodlineSorted, spousesByPerson, personById)
+      ? [{ title: "Quan hệ cưới gả", id: "sec-cuoiga" }]
+      : []),
+    ...(showHonor && data.honor.length > 0
+      ? [{ title: "Bảng vàng công đức", id: "sec-bangvang" }]
+      : []),
+    ...(showRestingPlaces && data.restingPlaces.length > 0
+      ? [{ title: "Mộ phần & tro cốt", id: "sec-mophan" }]
+      : []),
+    ...(showHeritage && data.heritage.length > 0
+      ? [{ title: "Di sản & Văn hoá", id: "sec-disan" }]
+      : []),
+    ...(texts?.phu_khao ? [{ title: "Phụ khảo", id: "sec-phukhao" }] : []),
+  ];
+
   return (
     <Document
       title={`Gia phả - ${cleanName}`}
@@ -731,7 +849,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           <Text style={[styles.coverEyebrow, serifStyle()]}>GIA PHẢ</Text>
           <Text style={[styles.coverTitle, serifStyle()]}>{withHoPrefix(cleanName)}</Text>
           {texts?.place_line ? (
-            <Text style={[styles.coverTagline, serifStyle()]}>{texts.place_line}</Text>
+            <Text style={[styles.coverTagline, serifStyle(), { marginBottom: 10 }]}>{texts.place_line}</Text>
           ) : null}
           <View style={styles.coverDivider} />
           <Text style={[styles.coverTagline, serifStyle()]}>Phả hệ chính thức</Text>
@@ -759,27 +877,13 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
         </View>
       </Page>
 
-      {showGenealogy && (
-        <TocPage
-          items={[
-            "Phàm lệ",
-            ...(texts?.preface ? ["Lời nói đầu"] : []),
-            "Phả ký",
-            "Phả hệ",
-            ...(showTree ? ["Phả đồ"] : []),
-            "Ngoại phả",
-            ...(showHeritage && (data.heritage.length > 0 || texts?.phu_khao)
-              ? ["Phụ khảo"]
-              : []),
-            ...(showDetail ? ["Danh bạ chi tiết"] : []),
-          ]}
-        />
-      )}
+      {showGenealogy && <TocPage items={tocItems} pages={tocPages} />}
 
       {/* ─── Phàm lệ ─────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
         <VineBorder />
-        <Text style={[styles.h1, serifStyle()]}>Phàm lệ</Text>
+<PageNumber />
+        <SectionTitle id="sec-phamle" style={[styles.h1, serifStyle()]}>Phàm lệ</SectionTitle>
         <View style={styles.h1Underline} />
         <Text style={styles.intro}>
           Một vài quy ước sử dụng trong cuốn gia phả này.
@@ -819,6 +923,9 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
         </Text>
       </Page>
 
+      {showGenealogy && texts && hasClanIntro(texts) && (
+        <ClanIntroPage clanName={withHoPrefix(cleanName)} texts={texts} />
+      )}
       {showGenealogy && texts?.preface && <PrefacePage text={texts.preface} />}
       {showGenealogy && (
         <PhaKyPages
@@ -868,7 +975,8 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showDetail && bloodlineSorted.length > 0 && (
         <Page size="A4" style={styles.page}>
         <VineBorder />
-          <Text style={[styles.h1, serifStyle()]}>Danh bạ chi tiết</Text>
+<PageNumber />
+          <SectionTitle id="sec-danhba" style={[styles.h1, serifStyle()]}>Danh bạ chi tiết</SectionTitle>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Bắt đầu từ Thuỷ tổ, lần lượt theo từng đời; trong mỗi đời
@@ -881,25 +989,14 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
               {row.map((p, ci) => (
                 <View
                   key={p.id}
-                  style={
-                    ci === row.length - 1
-                      ? [styles.card, styles.cardLast]
-                      : styles.card
-                  }
+                  style={[
+                    styles.card,
+                    ci === row.length - 1 ? styles.cardLast : {},
+                    { height: detailCardH },
+                  ]}
                 >
-                  {renderPersonCard(
-                    p,
-                    orderInSiblings,
-                    childrenByParent,
-                    spousesByPerson,
-                    fatherOf,
-                    motherOf,
-                    personById,
-                    branchById,
-                    clan.generation_offset,
-                    photoByPersonId,
-                    clan.display_death_details,
-                  )}
+                  <CardFrameDeco />
+                  {renderCardModel(detailModels.get(p.id)!)}
                 </View>
               ))}
             </View>
@@ -911,29 +1008,26 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {inLaws.length > 0 && (
         <Page size="A4" style={styles.page}>
         <VineBorder />
-          <Text style={[styles.h1, serifStyle()]}>Dâu / rể kết hôn vào họ</Text>
+<PageNumber />
+          <SectionTitle id="sec-dauree" style={[styles.h1, serifStyle()]}>Dâu / rể kết hôn vào họ</SectionTitle>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Người ngoài huyết thống. Không gắn số đời, sắp theo bảng
             chữ cái. Ghi kèm vợ/chồng trong họ để tra ngược.
           </Text>
-          {chunk(
-            [...inLaws].sort((a, b) =>
-              a.full_name.localeCompare(b.full_name, "vi"),
-            ),
-            3,
-          ).map((row, i) => (
+          {chunk(inLawsSorted, 3).map((row, i) => (
             <View key={i} style={styles.cardRow} wrap={false}>
               {row.map((p, ci) => (
                 <View
                   key={p.id}
-                  style={
-                    ci === row.length - 1
-                      ? [styles.card, styles.cardLast]
-                      : styles.card
-                  }
+                  style={[
+                    styles.card,
+                    ci === row.length - 1 ? styles.cardLast : {},
+                    { height: inLawCardH },
+                  ]}
                 >
-                  {renderInLawCard(p, spousesByPerson, personById, photoByPersonId)}
+                  <CardFrameDeco />
+                  {renderCardModel(inLawModels.get(p.id)!)}
                 </View>
               ))}
             </View>
@@ -961,7 +1055,8 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showHonor && data.honor.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
-          <Text style={[styles.h1, serifStyle()]}>Bảng vàng công đức</Text>
+<PageNumber />
+          <SectionTitle id="sec-bangvang" style={[styles.h1, serifStyle()]}>Bảng vàng công đức</SectionTitle>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Ghi công những tấm lòng đóng góp và vinh danh thành tích của con
@@ -1014,7 +1109,8 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showRestingPlaces && data.restingPlaces.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
-          <Text style={[styles.h1, serifStyle()]}>Mộ phần &amp; tro cốt</Text>
+<PageNumber />
+          <SectionTitle id="sec-mophan" style={[styles.h1, serifStyle()]}>Mộ phần & tro cốt</SectionTitle>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ.
@@ -1025,8 +1121,19 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
                 const cover = coverByItemId?.get(rp.id);
                 const loc = [rp.location_name, rp.location_detail].filter(Boolean).join(" · ");
                 return (
-                  <View key={rp.id} style={ci === row.length - 1 ? [styles.mediaCard, styles.cardLast] : styles.mediaCard}>
-                    {cover ? <Image src={cover} style={styles.mediaImg} /> : null}
+                  <View
+                    key={rp.id}
+                    style={[
+                      styles.mediaCard,
+                      ci === row.length - 1 ? styles.cardLast : {},
+                      { height: restingCardH },
+                    ]}
+                  >
+                    {cover ? (
+                      <Image src={cover} style={styles.mediaImg} />
+                    ) : (
+                      <CoverPlaceholder kind="grave" />
+                    )}
                     <Text style={[styles.mediaTitle, serifStyle()]}>
                       {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
                     </Text>
@@ -1051,7 +1158,8 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
       {showHeritage && data.heritage.length > 0 && (
         <Page size="A4" style={styles.page}>
           <VineBorder />
-          <Text style={[styles.h1, serifStyle()]}>Di sản &amp; Văn hoá</Text>
+<PageNumber />
+          <SectionTitle id="sec-disan" style={[styles.h1, serifStyle()]}>Di sản & Văn hoá</SectionTitle>
           <View style={styles.h1Underline} />
           <Text style={styles.intro}>
             Từ đường, tục lệ, giai thoại, tư liệu — những giá trị tinh thần
@@ -1072,8 +1180,19 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
                         .join(" · ");
                       const body = h.body && h.body.length > 150 ? `${h.body.slice(0, 150)}…` : h.body;
                       return (
-                        <View key={h.id} style={ci === row.length - 1 ? [styles.mediaCard, styles.cardLast] : styles.mediaCard}>
-                          {cover ? <Image src={cover} style={styles.mediaImg} /> : null}
+                        <View
+                          key={h.id}
+                          style={[
+                            styles.mediaCard,
+                            ci === row.length - 1 ? styles.cardLast : {},
+                            { height: heritageCardH },
+                          ]}
+                        >
+                          {cover ? (
+                            <Image src={cover} style={styles.mediaImg} />
+                          ) : (
+                            <CoverPlaceholder kind="heritage" />
+                          )}
                           <Text style={[styles.mediaTitle, serifStyle()]}>{h.title}</Text>
                           {meta ? <Text style={styles.mediaMeta}>{meta}</Text> : null}
                           {h.summary ? <Text style={styles.mediaSummary}>{h.summary}</Text> : null}
@@ -1098,9 +1217,94 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   );
 }
 
+// ─── Ảnh mặc định cho thẻ Mộ phần / Di sản ─────────────────────────
+
+/**
+ * Khung ảnh cùng cỡ với ảnh thật (mediaImg) khi mục chưa có ảnh bìa, để các
+ * thẻ trong cùng hàng luôn cao bằng nhau và lưới không bị lệch.
+ */
+function CoverPlaceholder({ kind }: { kind: "grave" | "heritage" }) {
+  const stroke = COLORS.accent;
+  return (
+    <View
+      style={{
+        width: "100%",
+        height: 82,
+        borderRadius: 3,
+        marginBottom: 5,
+        backgroundColor: "#EFE4CB",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Svg width={44} height={44} viewBox="0 0 44 44">
+        {kind === "grave" ? (
+          <G fill="none" stroke={stroke} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            {/* bia */}
+            <Path d="M14 36 V18 a8 8 0 0 1 16 0 V36 Z" />
+            {/* vạch chữ khắc trên bia */}
+            <Path d="M22 16 V30 M18.5 20 V28 M25.5 20 V28" />
+            {/* nền đất */}
+            <Path d="M8 36 H36" />
+          </G>
+        ) : (
+          <G fill="none" stroke={stroke} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            {/* mái đình */}
+            <Path d="M5 17 L22 7 L39 17 Z" />
+            <Path d="M9 17 H35" />
+            {/* cột */}
+            <Path d="M13 17 V35 M22 17 V35 M31 17 V35" />
+            {/* nền */}
+            <Path d="M7 35 H37" />
+          </G>
+        )}
+      </Svg>
+    </View>
+  );
+}
+
 // ─── Person card (3-up grid version) ──────────────────────────────
 
-function renderPersonCard(
+/** Đường chỉ vàng + bốn góc vàng nằm trong viền gỗ của thẻ. Đặt làm con đầu của thẻ. */
+function CardFrameDeco() {
+  const gold = COLORS.accent;
+  const corner = (pos: object, borders: object) => (
+    <View
+      style={{ position: "absolute", width: 9, height: 9, borderColor: gold, ...pos, ...borders }}
+    />
+  );
+  return (
+    <>
+      <View
+        style={{
+          position: "absolute",
+          top: 1.5,
+          left: 1.5,
+          right: 1.5,
+          bottom: 1.5,
+          borderWidth: 0.7,
+          borderColor: gold,
+          borderRadius: 2,
+        }}
+      />
+      {corner({ top: 4, left: 4 }, { borderTopWidth: 1.4, borderLeftWidth: 1.4 })}
+      {corner({ top: 4, right: 4 }, { borderTopWidth: 1.4, borderRightWidth: 1.4 })}
+      {corner({ bottom: 4, left: 4 }, { borderBottomWidth: 1.4, borderLeftWidth: 1.4 })}
+      {corner({ bottom: 4, right: 4 }, { borderBottomWidth: 1.4, borderRightWidth: 1.4 })}
+    </>
+  );
+}
+
+interface CardModel {
+  name: string;
+  isRoot: boolean;
+  meta: string;
+  photoUri?: string;
+  gender: "M" | "F";
+  fields: { label: string; value: string }[];
+}
+
+function personCardModel(
   p: PersonDetail,
   orderInSiblings: Map<string, number>,
   childrenByParent: Map<string, string[]>,
@@ -1112,7 +1316,7 @@ function renderPersonCard(
   genOffset: number,
   photoByPersonId?: Map<string, string>,
   showDeathDetails = false,
-): React.ReactNode {
+): CardModel {
   const birthSolar = formatPartialDate({
     date: p.birth_date,
     precision: p.birth_date_precision ?? null,
@@ -1130,11 +1334,7 @@ function renderPersonCard(
     month: p.death_anniv_lunar_month ?? undefined,
     day: p.death_anniv_lunar_day ?? undefined,
   });
-  const thoYears = computeLifespanYears(
-    p.lifespan_years,
-    p.birth_date,
-    p.death_date,
-  );
+  const thoYears = computeLifespanYears(p.lifespan_years, p.birth_date, p.death_date);
 
   const spouses = (spousesByPerson.get(p.id) ?? [])
     .map((id) => personById.get(id))
@@ -1143,130 +1343,150 @@ function renderPersonCard(
     .map((id) => personById.get(id))
     .filter((c): c is PersonDetail => !!c && c.generation !== null)
     .sort(birthOrder);
-
-  const father = fatherOf.has(p.id)
-    ? (personById.get(fatherOf.get(p.id)!) ?? null)
-    : null;
-  const mother = motherOf.has(p.id)
-    ? (personById.get(motherOf.get(p.id)!) ?? null)
-    : null;
+  const father = fatherOf.has(p.id) ? (personById.get(fatherOf.get(p.id)!) ?? null) : null;
+  const mother = motherOf.has(p.id) ? (personById.get(motherOf.get(p.id)!) ?? null) : null;
 
   const branchName = p.branch_id ? branchById.get(p.branch_id) : null;
   const order = orderInSiblings.get(p.id) ?? 0;
   const vaiVe = order === 0 ? "trưởng" : "thứ";
 
   const metaParts: string[] = [];
-  if (p.generation !== null)
-    metaParts.push(`Đời ${p.generation - genOffset}`);
+  if (p.generation !== null) metaParts.push(`Đời ${p.generation - genOffset}`);
   metaParts.push(`${p.gender === "M" ? "Nam" : "Nữ"} (${vaiVe})`);
   if (!p.is_living) metaParts.push("đã mất");
   if (branchName) metaParts.push(`chi ${branchName}`);
 
-  const photoUri = photoByPersonId?.get(p.id);
+  const fields: { label: string; value: string }[] = [];
+  const add = (label: string, value: string | null | undefined) => {
+    if (value) fields.push({ label, value });
+  };
+  add("Sinh", birthSolar || null);
+  add("Sinh ÂL", birthLunar || null);
+  if (!p.is_living) {
+    add("Mất", deathSolar || null);
+    add("Giỗ", gioRow || null);
+    if (showDeathDetails && thoYears != null) add(lifespanLabel(thoYears), `${thoYears} tuổi`);
+  }
+  add("Cha", father?.full_name);
+  add("Mẹ", mother?.full_name);
+  add(p.gender === "M" ? "Vợ" : "Chồng", spouses.length > 0 ? spouses.map((x) => x.full_name).join(", ") : null);
+  add("Con", children.length > 0 ? children.map((c) => c.full_name).join(", ") : null);
 
+  return {
+    name: p.full_name,
+    isRoot: p.is_root,
+    meta: metaParts.join(" · "),
+    photoUri: photoByPersonId?.get(p.id),
+    gender: p.gender,
+    fields,
+  };
+}
+
+function renderCardModel(m: CardModel): React.ReactNode {
   return (
     <>
-      <Image
-        src={photoUri ?? avatarSrc(p.gender)}
-        style={styles.avatarImg}
-      />
-      <Text style={[styles.personName, serifStyle()]}>{p.full_name}</Text>
-      {p.is_root && (
-        <Text
-          style={{
-            fontSize: 8,
-            color: COLORS.accent,
-            marginBottom: 2,
-            textAlign: "center",
-          }}
-        >
+      <Image src={m.photoUri ?? avatarSrc(m.gender)} style={styles.avatarImg} />
+      <Text style={[styles.personName, serifStyle()]}>{m.name}</Text>
+      {m.isRoot && (
+        <Text style={{ fontSize: 8, color: COLORS.accent, marginBottom: 2, textAlign: "center" }}>
           Thuỷ tổ
         </Text>
       )}
-      <Text style={styles.personMeta}>{metaParts.join(" · ")}</Text>
-
+      <Text style={styles.personMeta}>{m.meta}</Text>
       <View style={styles.cardBody}>
-        <FieldLine label="Sinh" value={birthSolar || null} />
-        {birthLunar ? <FieldLine label="Sinh ÂL" value={birthLunar} /> : null}
-        {!p.is_living && (
-          <>
-            <FieldLine label="Mất" value={deathSolar || null} />
-            <FieldLine label="Giỗ" value={gioRow || null} />
-            {showDeathDetails && thoYears != null ? (
-              <FieldLine
-                label={lifespanLabel(thoYears)}
-                value={`${thoYears} tuổi`}
-              />
-            ) : null}
-          </>
-        )}
-        <FieldLine label="Cha" value={father?.full_name ?? null} />
-        <FieldLine label="Mẹ" value={mother?.full_name ?? null} />
-        <FieldLine
-          label={p.gender === "M" ? "Vợ" : "Chồng"}
-          value={
-            spouses.length > 0
-              ? spouses.map((s) => s.full_name).join(", ")
-              : null
-          }
-        />
-        <FieldLine
-          label="Con"
-          value={
-            children.length > 0
-              ? children.map((c) => c.full_name).join(", ")
-              : null
-          }
-        />
+        {m.fields.map((f) => (
+          <FieldLine key={f.label} label={f.label} value={f.value} />
+        ))}
       </View>
     </>
   );
 }
 
+/**
+ * Ước lượng chiều cao thẻ (pt) từ nội dung, để MỌI thẻ trong một trang cao
+ * bằng nhau (lấy thẻ cao nhất). Chữ 8,5pt trong thẻ rộng ~136pt ≈ 29 ký tự
+ * mỗi dòng; dư vài pt cho an toàn để không bao giờ tràn khung.
+ */
+function estimateCardHeight(m: CardModel): number {
+  const lines = (text: string, perLine: number) =>
+    Math.max(1, Math.ceil(text.length / perLine));
+  const nameLines = lines(m.name, 21);
+  const rootLine = m.isRoot ? 11 : 0;
+  const metaLines = lines(m.meta, 33);
+  // Giá trị có xuống dòng (vd tiểu sử có dòng "Theo: …") tính từng dòng một.
+  const fieldLines = m.fields.reduce(
+    (n, f) =>
+      n +
+      `${f.label}: ${f.value}`
+        .split("\n")
+        .reduce((k, seg) => k + lines(seg, 27), 0),
+    0,
+  );
+  const wrapSlack = m.fields.length * 1.2;
+  return Math.ceil(
+    2 * 8 /* padding */ + 2 * 3.5 /* khung gỗ */ + 44 + 6 /* ảnh */ +
+      nameLines * 13 + 1 + rootLine + metaLines * 10.5 + 5 +
+      fieldLines * 12.5 + wrapSlack + 4,
+  );
+}
+
+/**
+ * Chiều cao thẻ Mộ phần / Di sản ước lượng từ nội dung (ảnh 82 + các dòng chữ),
+ * để mọi thẻ trong sổ cao bằng thẻ cao nhất. Mỗi phần tử: chữ, số ký tự mỗi
+ * dòng, cao mỗi dòng, khoảng cách dưới.
+ */
+function estimateMediaHeight(
+  parts: { text: string; perLine: number; lineH: number; gap: number }[],
+): number {
+  const body = parts.reduce(
+    (n, p) =>
+      n +
+      p.text
+        .split("\n")
+        .reduce((k, seg) => k + Math.max(1, Math.ceil(seg.length / p.perLine)), 0) *
+        p.lineH +
+      p.gap,
+    0,
+  );
+  return Math.ceil(16 /* padding */ + 2 /* viền */ + 82 + 5 /* ảnh */ + body + 4);
+}
 
 // ─── In-law card (matches bloodline card layout) ──────────────────
 
-function renderInLawCard(
+function inLawCardModel(
   p: PersonDetail,
   spousesByPerson: Map<string, string[]>,
   personById: Map<string, PersonDetail>,
   photoByPersonId?: Map<string, string>,
-): React.ReactNode {
+): CardModel {
   const ls = lifespanText(p);
   const spouseList = (spousesByPerson.get(p.id) ?? [])
     .map((id) => personById.get(id))
-    .filter((s): s is PersonDetail => !!s);
+    .filter((x): x is PersonDetail => !!x);
 
   const metaParts: string[] = [p.gender === "M" ? "Nam" : "Nữ"];
   if (ls) metaParts.push(ls);
   if (!p.is_living) metaParts.push("đã mất");
 
-  const photoUri = photoByPersonId?.get(p.id);
+  const fields: { label: string; value: string }[] = [];
+  const add = (label: string, value: string | null | undefined) => {
+    if (value) fields.push({ label, value });
+  };
+  add("Vợ/chồng của", spouseList.length > 0 ? spouseList.map((x) => x.full_name).join(", ") : null);
+  add("Nơi sinh", p.birth_place);
+  add("Nơi an táng", p.burial_place);
+  // Tiểu sử dài làm cả trang thẻ cao theo (mọi thẻ cùng chiều cao), nên cắt gọn.
+  const bio = bioToPlainText(p.bio);
+  add("Tiểu sử", bio.length > 200 ? `${bio.slice(0, 200).trimEnd()}…` : bio);
 
-  return (
-    <>
-      <Image
-        src={photoUri ?? avatarSrc(p.gender)}
-        style={styles.avatarImg}
-      />
-      <Text style={[styles.personName, serifStyle()]}>{p.full_name}</Text>
-      <Text style={styles.personMeta}>{metaParts.join(" · ")}</Text>
-
-      <View style={styles.cardBody}>
-        <FieldLine
-          label="Vợ/chồng của"
-          value={
-            spouseList.length > 0
-              ? spouseList.map((s) => s.full_name).join(", ")
-              : null
-          }
-        />
-        <FieldLine label="Nơi sinh" value={p.birth_place} />
-        <FieldLine label="Nơi an táng" value={p.burial_place} />
-        <FieldLine label="Tiểu sử" value={bioToPlainText(p.bio) || null} />
-      </View>
-    </>
-  );
+  return {
+    name: p.full_name,
+    isRoot: false,
+    meta: metaParts.join(" · "),
+    photoUri: photoByPersonId?.get(p.id),
+    gender: p.gender,
+    fields,
+  };
 }
 
 // ─── Tree diagram (A4 landscape SVG) ───────────────────────────────
@@ -1828,7 +2048,8 @@ function TreeDiagramPage({
       style={styles.page}
     >
       <VineBorder width={pageW} height={pageH} />
-      <Text style={[styles.h1, serifStyle()]}>{title}</Text>
+<PageNumber pageHeight={fitPage ? pageH : 595} />
+      <SectionTitle id="sec-tree" style={[styles.h1]}>{title}</SectionTitle>
       <View style={styles.h1Underline} />
       <Text style={styles.intro}>
         {subtitle ??
