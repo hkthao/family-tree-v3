@@ -44,7 +44,77 @@ export interface ClanBookHeritage {
   cover_url: string | null;
 }
 
+/** Văn bản tự soạn của sổ gia phả (bảng clan_book_texts). */
+export interface ClanBookTexts {
+  place_line: string | null;
+  preface: string | null;
+  phaky: string | null;
+  ngoai_pha: string | null;
+  phu_khao: string | null;
+  origin_place: string | null;
+  ancestral_hall: string | null;
+  ancestor_anniversary: string | null;
+  chief_name: string | null;
+  compilers: string | null;
+  compiled_year: string | null;
+  contact: string | null;
+}
+
+export const BOOK_TEXT_COLS = "place_line, preface, phaky, ngoai_pha, phu_khao, origin_place, ancestral_hall, ancestor_anniversary, chief_name, compilers, compiled_year, contact";
+
+export const EMPTY_BOOK_TEXTS: ClanBookTexts = {
+  place_line: null,
+  preface: null,
+  phaky: null,
+  ngoai_pha: null,
+  phu_khao: null,
+  origin_place: null,
+  ancestral_hall: null,
+  ancestor_anniversary: null,
+  chief_name: null,
+  compilers: null,
+  compiled_year: null,
+  contact: null,
+};
+
+export async function getClanBookTexts(
+  clanId: string,
+  client: Client = defaultClient,
+): Promise<ClanBookTexts | null> {
+  const { data, error } = await client
+    .from("clan_book_texts")
+    .select(BOOK_TEXT_COLS)
+    .eq("clan_id", clanId)
+    .maybeSingle();
+  // Bảng chưa có (chưa áp migration) hoặc lỗi đọc: sổ vẫn xuất được, chỉ
+  // thiếu phần văn bản tự soạn.
+  if (error) return null;
+  return (data as ClanBookTexts | null) ?? null;
+}
+
+/** Bỏ khoảng trắng; ô trống thành null. Giữ cả khoá null để lưu được việc xoá chữ. */
+export function cleanBookTexts(t: Partial<ClanBookTexts>): Partial<ClanBookTexts> {
+  const out: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(t)) out[k] = v && v.trim() ? v.trim() : null;
+  // Chỉ có ô trống hết thì không cần ghi (dùng khi tạo mới).
+  return out as Partial<ClanBookTexts>;
+}
+
+/** Ghi từng cột được truyền, không đụng cột khác (form thông tin và form văn bản cùng một dòng). */
+export async function saveClanBookTexts(
+  clanId: string,
+  texts: Partial<ClanBookTexts>,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await client
+    .from("clan_book_texts")
+    .upsert({ clan_id: clanId, ...texts }, { onConflict: "clan_id" });
+  if (error) throw new Error(error.message);
+}
+
 export interface ClanBookData {
+  /** Lời nói đầu, phả ký, ngoại phả, phụ khảo do dòng họ tự soạn. */
+  texts?: ClanBookTexts | null;
   persons: PersonDetail[];
   families: ClanBookFamily[];
   branches: ClanBookBranch[];
@@ -75,7 +145,7 @@ export async function getClanBookData(
   // queries. Used by PDF export + GEDCOM — both want every row,
   // not the first 1000. Same defensive ceiling as getTreeData.
   const MAX_ROWS = 9999;
-  const [pq, fq, bq, rq, hq, honq] = await Promise.all([
+  const [pq, fq, bq, rq, hq, honq, texts] = await Promise.all([
     client
       .from("persons")
       .select(`${DETAIL_COLS}, birth_family_id`)
@@ -125,6 +195,7 @@ export async function getClanBookData(
       .order("occurred_on", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
       .range(0, MAX_ROWS),
+    getClanBookTexts(clanId, client),
   ]);
 
   if (pq.error) throw new Error(pq.error.message);
@@ -184,6 +255,7 @@ export async function getClanBookData(
   }));
 
   return {
+    texts,
     persons: persons.map(({ birth_family_id: _b, ...rest }) => rest as PersonDetail),
     families: (fq.data ?? []) as ClanBookFamily[],
     branches: (bq.data ?? []) as ClanBookBranch[],

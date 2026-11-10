@@ -94,7 +94,7 @@ export function BranchesSection({ clanId, canEdit }: Props) {
         >
           <div className="space-y-2">
             <Label htmlFor="new-branch">Tên chi mới</Label>
-            <Input
+            <Input className="h-10"
               id="new-branch"
               icon={<IconTree />}
               value={newName}
@@ -107,7 +107,7 @@ export function BranchesSection({ clanId, canEdit }: Props) {
               docs/design-language.md §Đặt hành động ở đâu. Đứng cạnh ô
               nhập thì trên màn hẹp nó bóp ô còn vài ký tự. */}
           <div className="flex justify-end border-t pt-3">
-            <Button type="submit" disabled={!newName.trim() || addM.isPending}>
+            <Button size="sm" type="submit" disabled={!newName.trim() || addM.isPending}>
               {addM.isPending ? (
                 "Đang thêm…"
               ) : (
@@ -178,7 +178,7 @@ function BranchItem({
     <li className="px-3 py-2.5">
       {editing ? (
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-          <Input
+          <Input className="h-10"
             icon={<IconTree />}
             value={name}
             onChange={(e) => setName(e.target.value)}

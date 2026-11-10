@@ -65,7 +65,7 @@ export function GedcomButtons({ clan }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
-        <Button
+        <Button size="sm"
           variant="outline"
           onClick={() => exportM.mutate()}
           disabled={exportM.isPending}

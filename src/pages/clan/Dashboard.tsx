@@ -11,10 +11,12 @@ import {
   IconDownload,
   IconGrave,
   IconGrid,
+  IconBook,
   IconSettings,
   IconHome,
   IconLink,
   IconList,
+  IconPencil,
   IconPlus,
   IconAward,
   IconScroll,
@@ -192,6 +194,17 @@ export default function Dashboard() {
                 className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
               >
                 <IconLink className="h-4 w-4" />
+              </Link>
+            )}
+            {canEditClan(clan) && (
+              <Link
+                to={`/clans/${clan.id}/so-gia-pha`}
+                aria-label="Chỉnh sửa thông tin dòng họ"
+                title="Chỉnh sửa thông tin dòng họ"
+                data-testid="dashboard-edit-clan-link"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+              >
+                <IconPencil className="h-4 w-4" />
               </Link>
             )}
             {isClanAdmin(clan) && (
@@ -479,6 +492,13 @@ export default function Dashboard() {
                     title="Nhập Excel"
                   />
                 </>
+              )}
+              {canEditClan(clan) && (
+                <ActionTile
+                  to={`/clans/${clan.id}/so-gia-pha`}
+                  icon={<IconBook />}
+                  title="Thông tin & Sổ gia phả"
+                />
               )}
               {isClanAdmin(clan) && (
                 <ActionTile
