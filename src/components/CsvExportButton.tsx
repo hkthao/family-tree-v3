@@ -40,7 +40,7 @@ export function CsvExportButton({ clan }: Props) {
   });
 
   return (
-    <Button
+    <Button size="sm"
       variant="outline"
       onClick={() => m.mutate()}
       disabled={m.isPending}

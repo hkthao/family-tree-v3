@@ -28,6 +28,16 @@ import {
 } from "@/lib/lunarDate";
 
 import { BOOK_WATERMARKS, type BookWatermarkId } from "./bookWatermarks";
+import {
+  DeathAnniversaryPages,
+  MarriageTablePages,
+  NgoaiPhaTextPage,
+  PhaHePages,
+  PhaKyPages,
+  PhuKhaoPage,
+  PrefacePage,
+  TocPage,
+} from "./bookSections";
 import { renderFolderTreePages } from "./FolderTreePdf";
 import { pdfAssets } from "./pdfAssets";
 import { buildFolderPdfRows, type FolderPdfPerson } from "./folderTreeRows";
@@ -55,7 +65,7 @@ export const COLORS = {
   paper: "#F8F1E1", // trắng ngà
 };
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   page: {
     fontFamily: PDF_FONT_FAMILY,
     fontSize: 10.5,
@@ -448,6 +458,8 @@ interface Props {
     treeSinglePage?: boolean;
     /** Hình nền mờ in chìm dưới mọi trang; bỏ trống = không có. */
     watermark?: BookWatermarkId;
+    /** Mục lục, lời nói đầu, phả ký, phả hệ theo đời, ngoại phả, phụ khảo (mặc định có). */
+    genealogy?: boolean;
   };
   /**
    * Optional personId → JPEG data URI map for embedding real avatar
@@ -473,6 +485,8 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   const showRestingPlaces = include?.restingPlaces ?? true;
   const showHeritage = include?.heritage ?? true;
   const showHonor = include?.honor ?? true;
+  const showGenealogy = include?.genealogy ?? true;
+  const texts = data.texts ?? null;
 
   const HERITAGE_CAT_LABEL: Record<string, string> = {
     place: "Từ đường / đền / chùa",
@@ -716,6 +730,9 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           <Image src={pdfAssets.logo} style={styles.coverLogo} />
           <Text style={[styles.coverEyebrow, serifStyle()]}>GIA PHẢ</Text>
           <Text style={[styles.coverTitle, serifStyle()]}>{withHoPrefix(cleanName)}</Text>
+          {texts?.place_line ? (
+            <Text style={[styles.coverTagline, serifStyle()]}>{texts.place_line}</Text>
+          ) : null}
           <View style={styles.coverDivider} />
           <Text style={[styles.coverTagline, serifStyle()]}>Phả hệ chính thức</Text>
           {clan.description && !looksLikeDebug(clan.description) ? (
@@ -741,6 +758,23 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           ) : null}
         </View>
       </Page>
+
+      {showGenealogy && (
+        <TocPage
+          items={[
+            "Phàm lệ",
+            ...(texts?.preface ? ["Lời nói đầu"] : []),
+            "Phả ký",
+            "Phả hệ",
+            ...(showTree ? ["Phả đồ"] : []),
+            "Ngoại phả",
+            ...(showHeritage && (data.heritage.length > 0 || texts?.phu_khao)
+              ? ["Phụ khảo"]
+              : []),
+            ...(showDetail ? ["Danh bạ chi tiết"] : []),
+          ]}
+        />
+      )}
 
       {/* ─── Phàm lệ ─────────────────────────────────────────── */}
       <Page size="A4" style={styles.page}>
@@ -784,6 +818,35 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           {" "}phải là không tồn tại.
         </Text>
       </Page>
+
+      {showGenealogy && texts?.preface && <PrefacePage text={texts.preface} />}
+      {showGenealogy && (
+        <PhaKyPages
+          text={texts?.phaky ?? null}
+          stats={{
+            bloodline,
+            inLaws,
+            branchName: (id) => (id ? (branchById.get(id) ?? null) : null),
+            genOffset: clan.generation_offset ?? 0,
+            spousesByPerson,
+            personById,
+          }}
+        />
+      )}
+      {showGenealogy && bloodline.length > 0 && (
+        <PhaHePages
+          input={{
+            data,
+            bloodline: bloodlineSorted,
+            personById,
+            spousesByPerson,
+            fatherOf,
+            motherOf,
+            sttById,
+            genOffset: clan.generation_offset ?? 0,
+          }}
+        />
+      )}
 
       {/* ─── Cây phả hệ (SVG diagram, paginated) ─────────────── */}
       {showTree && bloodline.length > 0 &&
@@ -876,6 +939,22 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
             </View>
           ))}
         </Page>
+      )}
+
+      {showGenealogy && texts?.ngoai_pha && <NgoaiPhaTextPage text={texts.ngoai_pha} />}
+      {showGenealogy && (
+        <DeathAnniversaryPages
+          persons={persons}
+          genOffset={clan.generation_offset ?? 0}
+        />
+      )}
+      {showGenealogy && (
+        <MarriageTablePages
+          bloodline={bloodlineSorted}
+          spousesByPerson={spousesByPerson}
+          personById={personById}
+          genOffset={clan.generation_offset ?? 0}
+        />
       )}
 
       {/* ─── Bảng vàng công đức (nhóm theo loại, dạng hàng) ─── */}
@@ -1012,6 +1091,8 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
           })}
         </Page>
       )}
+
+      {showGenealogy && texts?.phu_khao && <PhuKhaoPage text={texts.phu_khao} />}
       </WatermarkContext.Provider>
     </Document>
   );

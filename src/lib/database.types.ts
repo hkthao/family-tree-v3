@@ -772,6 +772,57 @@ export type Database = {
           },
         ]
       }
+      clan_book_texts: {
+        Row: {
+          origin_place: string | null
+          ancestral_hall: string | null
+          ancestor_anniversary: string | null
+          chief_name: string | null
+          compilers: string | null
+          compiled_year: string | null
+          contact: string | null
+          clan_id: string
+          ngoai_pha: string | null
+          phaky: string | null
+          phu_khao: string | null
+          place_line: string | null
+          preface: string | null
+          updated_at: string
+        }
+        Insert: {
+          origin_place?: string | null
+          ancestral_hall?: string | null
+          ancestor_anniversary?: string | null
+          chief_name?: string | null
+          compilers?: string | null
+          compiled_year?: string | null
+          contact?: string | null
+          clan_id: string
+          ngoai_pha?: string | null
+          phaky?: string | null
+          phu_khao?: string | null
+          place_line?: string | null
+          preface?: string | null
+          updated_at?: string
+        }
+        Update: {
+          origin_place?: string | null
+          ancestral_hall?: string | null
+          ancestor_anniversary?: string | null
+          chief_name?: string | null
+          compilers?: string | null
+          compiled_year?: string | null
+          contact?: string | null
+          clan_id?: string
+          ngoai_pha?: string | null
+          phaky?: string | null
+          phu_khao?: string | null
+          place_line?: string | null
+          preface?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clans: {
         Row: {
           ai_daily_limit: number | null

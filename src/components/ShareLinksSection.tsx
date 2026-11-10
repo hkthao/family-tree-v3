@@ -117,10 +117,10 @@ export function ShareLinksSection({ clanId }: Props) {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label htmlFor="ttl">Số ngày link còn hiệu lực</Label>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="ttl">Hiệu lực (ngày)</Label>
           <Input
             id="ttl"
             icon={<IconClock />}
@@ -129,26 +129,22 @@ export function ShareLinksSection({ clanId }: Props) {
             max={365}
             value={ttl}
             onChange={(e) => setTtl(e.target.value)}
-            className="max-w-[140px]"
+            className="h-10 w-[120px]"
           />
         </div>
-        {/* Hành động ở hàng riêng, căn phải — xem
-            docs/design-language.md §Đặt hành động ở đâu. */}
-        <div className="flex justify-end border-t pt-3">
-          <Button
-            onClick={() => createM.mutate()}
-            disabled={createM.isPending || !ttl}
-          >
-            {createM.isPending ? (
-              "Đang tạo…"
-            ) : (
-              <>
-                <IconPlus className="h-4 w-4 mr-1.5" />
-                Tạo link mới
-              </>
-            )}
-          </Button>
-        </div>
+        <Button size="sm"
+          onClick={() => createM.mutate()}
+          disabled={createM.isPending || !ttl}
+        >
+          {createM.isPending ? (
+            "Đang tạo…"
+          ) : (
+            <>
+              <IconPlus className="h-4 w-4 mr-1.5" />
+              Tạo link mới
+            </>
+          )}
+        </Button>
       </div>
 
       {createM.error && (
@@ -163,7 +159,7 @@ export function ShareLinksSection({ clanId }: Props) {
         <EmptyState
           icon={<IconLink className="h-10 w-10" />}
           title="Chưa có link chia sẻ"
-          description="Bấm “Tạo link mới” ở trên để tạo link công khai cho cây gia phả. QR cá nhân của từng người sinh tự động ở trang chi tiết người."
+          description="Bấm “Tạo link mới” để tạo link công khai cho cây gia phả."
         />
       ) : links && links.length > 0 ? (
         <ul className="divide-y border-t">
@@ -261,88 +257,85 @@ function ShareLinkItem({
 
   const active = !link.is_revoked && !expired;
   return (
-    <li className="py-3 space-y-3">
-      {/* Header — status + scope on one wrapping line, expiry below */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span
-            className={`font-medium ${
-              status.tone === "destructive"
-                ? "text-destructive"
-                : status.tone === "muted"
-                  ? "text-muted-foreground"
-                  : "text-accent"
-            }`}
-          >
-            {status.label}
-          </span>
-          <span className="text-muted-foreground">·</span>
-          <span className="font-medium text-foreground">{scopeLabel}</span>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Hết hạn{" "}
-          {new Date(link.expires_at).toLocaleDateString("vi-VN")}
-        </p>
+    <li className="py-2.5 space-y-1.5">
+      <div className="flex items-center gap-x-2 gap-y-0.5 flex-wrap text-xs">
+        <span
+          className={`font-medium ${
+            status.tone === "destructive"
+              ? "text-destructive"
+              : status.tone === "muted"
+                ? "text-muted-foreground"
+                : "text-accent"
+          }`}
+        >
+          {status.label}
+        </span>
+        <span className="text-muted-foreground">·</span>
+        <span className="font-medium text-foreground">{scopeLabel}</span>
+        <span className="text-muted-foreground">
+          · hết hạn {new Date(link.expires_at).toLocaleDateString("vi-VN")}
+        </span>
       </div>
 
-      {/* URL field — copy button sits inside as an icon adornment so
-          the URL gets the full row width instead of being squeezed by
-          a separate "Chép" button. */}
-      <Input
-        readOnly
-        icon={<IconLink />}
-        value={shareUrl}
-        className="font-mono text-xs"
-        onFocus={(e) => e.currentTarget.select()}
-        action={
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            onClick={copyToClipboard}
-            aria-label={copied ? "Đã chép" : "Chép link"}
-            title={copied ? "Đã chép" : "Chép link"}
-            className="h-10 w-10"
-          >
-            {copied ? (
-              <IconCheck className="h-4 w-4" />
-            ) : (
-              <IconCopy className="h-4 w-4" />
-            )}
-          </Button>
-        }
-      />
-
-      {/* Action row — equal-width buttons in a single row. flex-wrap
-          kicks in only when content actually overflows. */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex items-center gap-1">
+        <Input
+          readOnly
+          icon={<IconLink />}
+          value={shareUrl}
+          className="h-10 font-mono text-xs flex-1"
+          onFocus={(e) => e.currentTarget.select()}
+          action={
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              onClick={copyToClipboard}
+              aria-label={copied ? "Đã chép" : "Chép link"}
+              title={copied ? "Đã chép" : "Chép link"}
+              className="h-10 w-10"
+            >
+              {copied ? (
+                <IconCheck className="h-4 w-4" />
+              ) : (
+                <IconCopy className="h-4 w-4" />
+              )}
+            </Button>
+          }
+        />
         {active && (
           <>
             <Button
-              size="sm"
+              type="button"
+              size="icon"
               variant="outline"
               onClick={() => setQrOpen(true)}
-              className="flex-1 min-w-[80px]"
+              aria-label="Hiện mã QR"
+              title="Hiện mã QR"
+              className="h-10 w-10 shrink-0"
             >
-              <IconQrCode className="h-4 w-4 mr-1.5" />
-              QR
+              <IconQrCode className="h-4 w-4" />
             </Button>
             <Button
-              size="sm"
+              type="button"
+              size="icon"
               variant="outline"
               onClick={() => revokeM.mutate()}
               disabled={revokeM.isPending}
-              className="flex-1 min-w-[80px]"
+              aria-label="Thu hồi link"
+              title="Thu hồi link"
+              className="h-10 w-10 shrink-0"
             >
-              <IconUndo className="h-4 w-4 mr-1.5" />
-              Thu hồi
+              <IconUndo className="h-4 w-4" />
             </Button>
           </>
         )}
         <Button
-          size="sm"
+          type="button"
+          size="icon"
           variant="destructive-outline"
-          className="flex-1 min-w-[80px]"
+          aria-label="Xoá link"
+          title="Xoá link"
+          className="h-10 w-10 shrink-0"
           onClick={async () => {
             const ok = await confirm({
               title: "Xoá link này vĩnh viễn?",
@@ -354,8 +347,7 @@ function ShareLinkItem({
           }}
           disabled={deleteM.isPending}
         >
-          <IconTrash className="h-4 w-4 mr-1.5" />
-          Xoá
+          <IconTrash className="h-4 w-4" />
         </Button>
       </div>
       <QrCodeModal

@@ -5,21 +5,31 @@ import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
-import {
-  IconBuildings,
-  IconCheck,
-  IconPlus,
-  IconScroll,
-  IconX,
-} from "@/components/icons";
+import { IconCheck, IconPlus, IconTrash, IconX } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { createClan } from "@/lib/queries/clans";
+import { BookMetaFields } from "@/components/BookMetaFields";
+import { BookTextsSection } from "@/components/BookTextsSection";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { createBranch } from "@/lib/queries/branches";
+import {
+  ClanBasicFields,
+  ClanDisplayFields,
+  DEFAULT_CLAN_FORM,
+  clanFormToColumns,
+  type ClanFormValues,
+} from "@/components/ClanFormFields";
+import {
+  EMPTY_BOOK_TEXTS,
+  cleanBookTexts,
+  saveClanBookTexts,
+  type ClanBookTexts,
+} from "@/lib/queries/clan-book";
 
 interface NewClanFormProps {
   /** Gọi sau khi tạo xong, nhận id dòng họ mới. */
@@ -33,130 +43,171 @@ export function NewClanForm({ onDone, onCancel }: NewClanFormProps) {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<"private" | "public">("private");
+  // Cùng bộ ô với form Chỉnh sửa (ClanFormFields + BookMetaFields).
+  const [values, setValues] = useState<ClanFormValues>(DEFAULT_CLAN_FORM);
+  const [meta, setMeta] = useState<ClanBookTexts>(EMPTY_BOOK_TEXTS);
+  const [branches, setBranches] = useState<string[]>([]);
+  const [branchDraft, setBranchDraft] = useState("");
+
+  function addBranch() {
+    const n = branchDraft.trim();
+    if (!n || branches.includes(n)) return;
+    setBranches([...branches, n]);
+    setBranchDraft("");
+  }
 
   const mutation = useMutation({
-    mutationFn: () =>
-      createClan({ name, description: description || undefined, visibility }, user!.id),
+    mutationFn: async () => {
+      const clan = await createClan(clanFormToColumns(values), user!.id);
+      // Thông tin biên soạn sổ gia phả: lỗi (vd chưa áp migration) không được
+      // làm hỏng việc tạo dòng họ — sửa lại được ở trang Sổ gia phả.
+      const clean = cleanBookTexts(meta);
+      if (Object.values(clean).some(Boolean)) {
+        try {
+          await saveClanBookTexts(clan.id, clean);
+        } catch {
+          /* bỏ qua */
+        }
+      }
+      // Các chi nhập trong form: lỗi từng chi không làm hỏng việc tạo, thêm lại được ở trang Sổ gia phả.
+      for (const name of branches) {
+        try {
+          await createBranch({ clan_id: clan.id, name });
+        } catch {
+          /* bỏ qua */
+        }
+      }
+      return clan;
+    },
     onSuccess: async (clan) => {
       await queryClient.invalidateQueries({
-        predicate: (q) =>
-          Array.isArray(q.queryKey) &&
-          q.queryKey[0] === "clans",
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey[0] === "clans",
       });
-      toast.success("Đã tạo dòng họ", { description: name });
+      toast.success("Đã tạo dòng họ", { description: values.name });
       onDone(clan.id);
     },
-    onError: (e) =>
-      toast.error("Không tạo được", { description: (e as Error).message }),
+    onError: (e) => toast.error("Không tạo được", { description: (e as Error).message }),
   });
 
   return (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (name.trim()) mutation.mutate();
-          }}
-          className="space-y-5"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="name" required>
-              Tên dòng họ
-            </Label>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (values.name.trim()) mutation.mutate();
+      }}
+      className="space-y-5"
+    >
+      <ClanBasicFields value={values} onChange={setValues} idPrefix="new" />
+
+      <fieldset className="space-y-3">
+        <legend className="text-base font-medium mb-1">Thông tin cho sổ gia phả</legend>
+        <p className="text-sm text-muted-foreground">
+          Tuỳ chọn, in ở bìa và trang giới thiệu của sổ; điền sau cũng được.
+        </p>
+        <BookMetaFields value={meta} onChange={setMeta} idPrefix="new" />
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className="text-base font-medium mb-1">Chi (nhánh)</legend>
+        <p className="text-sm text-muted-foreground">
+          Các chi/nhánh của dòng họ; có thể thêm sau.
+        </p>
+        <div className="space-y-1.5">
+          <Label htmlFor="new-branch">Tên chi</Label>
+          <div className="flex items-center gap-2">
             <Input
-              id="name"
-              icon={<IconBuildings />}
-              data-testid="clan-name-input"
-              required
+              id="new-branch"
+              className="h-10"
               maxLength={100}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Vd: Họ Nguyễn Hữu"
+              value={branchDraft}
+              placeholder="Vd: Chi cả"
+              onChange={(e) => setBranchDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addBranch();
+                }
+              }}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Mô tả (tuỳ chọn)</Label>
-            <Input
-              id="description"
-              icon={<IconScroll />}
-              data-testid="clan-description-input"
-              maxLength={500}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Vài dòng giới thiệu về dòng họ"
-            />
-          </div>
-
-          <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">Chế độ hiển thị</legend>
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="radio"
-                name="visibility"
-                value="private"
-                checked={visibility === "private"}
-                onChange={() => setVisibility("private")}
-                className="mt-1.5 h-4 w-4 accent-primary"
-              />
-              <div>
-                <p className="font-medium">Riêng tư</p>
-                <p className="text-sm text-muted-foreground">
-                  Chỉ thành viên được mời mới xem được.
-                </p>
-              </div>
-            </label>
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="radio"
-                name="visibility"
-                value="public"
-                checked={visibility === "public"}
-                onChange={() => setVisibility("public")}
-                className="mt-1.5 h-4 w-4 accent-primary"
-              />
-              <div>
-                <p className="font-medium">Công khai</p>
-                <p className="text-sm text-muted-foreground">
-                  Mọi tài khoản đã đăng nhập đều xem được (thông tin nhạy cảm
-                  của người còn sống vẫn ẩn).
-                </p>
-              </div>
-            </label>
-          </fieldset>
-
-          {mutation.error && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                {(mutation.error as Error).message}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <FormActions>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              <IconX className="h-4 w-4 mr-1.5" />
-              Hủy
-            </Button>
             <Button
-              type="submit"
-              variant="default"
-              data-testid="clan-submit-button"
-              disabled={mutation.isPending || !name.trim()}
+              size="sm"
+              type="button"
+              variant="outline"
+              className="shrink-0"
+              disabled={!branchDraft.trim()}
+              onClick={addBranch}
             >
-              {mutation.isPending ? (
-                "Đang tạo…"
-              ) : (
-                <>
-                  <IconCheck className="h-4 w-4 mr-1.5" />
-                  Tạo dòng họ
-                </>
-              )}
+              <IconPlus className="h-4 w-4 mr-1.5" />
+              Thêm chi
             </Button>
-          </FormActions>
-        </form>
+          </div>
+        </div>
+        {branches.length > 0 && (
+          <ul className="divide-y rounded-md border">
+            {branches.map((b) => (
+              <li key={b} className="flex items-center justify-between gap-2 px-3 py-1.5">
+                <span className="truncate">{b}</span>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-10 w-10 shrink-0"
+                  aria-label={`Bỏ chi ${b}`}
+                  title="Bỏ chi này"
+                  onClick={() => setBranches(branches.filter((x) => x !== b))}
+                >
+                  <IconTrash className="h-4 w-4" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className="text-base font-medium mb-1">Nội dung Sổ gia phả</legend>
+        <p className="text-sm text-muted-foreground">
+          Chọn mẫu để có sẵn bài hoàn chỉnh rồi sửa lại; AI soạn theo mô tả dùng được sau khi tạo.
+        </p>
+        <BookTextsSection
+          clanName={values.name}
+          canEdit
+          value={meta}
+          onChange={setMeta}
+        />
+      </fieldset>
+
+      <ClanDisplayFields value={values} onChange={setValues} />
+
+      {mutation.error && (
+        <Alert variant="destructive">
+          <AlertDescription>{(mutation.error as Error).message}</AlertDescription>
+        </Alert>
+      )}
+
+      <FormActions>
+        <Button size="sm" type="button" variant="outline" onClick={onCancel}>
+          <IconX className="h-4 w-4 mr-1.5" />
+          Hủy
+        </Button>
+        <Button
+          size="sm"
+          type="submit"
+          variant="default"
+          data-testid="clan-submit-button"
+          disabled={mutation.isPending || !values.name.trim()}
+        >
+          {mutation.isPending ? (
+            "Đang tạo…"
+          ) : (
+            <>
+              <IconCheck className="h-4 w-4 mr-1.5" />
+              Tạo dòng họ
+            </>
+          )}
+        </Button>
+      </FormActions>
+    </form>
   );
 }
 

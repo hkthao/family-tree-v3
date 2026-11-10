@@ -17,6 +17,8 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
    * `rows` dòng (mặc định 3). Đặt false để giữ cỡ cố định + kéo giãn tay.
    */
   autoResize?: boolean;
+  /** Với autoResize: cao tối đa bấy nhiêu dòng, quá thì cuộn trong ô. */
+  maxRows?: number;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
@@ -27,6 +29,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       label,
       id,
       autoResize = true,
+      maxRows,
       rows = 3,
       onInput,
       ...props
@@ -49,8 +52,21 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       // Về auto trước để thu lại khi xoá bớt chữ; scrollHeight tính cả padding,
       // `rows` giữ sàn tối thiểu vì height:auto của textarea = số dòng đó.
       el.style.height = "auto";
-      el.style.height = `${el.scrollHeight + (el.offsetHeight - el.clientHeight)}px`;
-    }, [autoResize]);
+      const full = el.scrollHeight + (el.offsetHeight - el.clientHeight);
+      let max = Infinity;
+      if (maxRows) {
+        const cs = getComputedStyle(el);
+        const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5;
+        const pad =
+          parseFloat(cs.paddingTop) +
+          parseFloat(cs.paddingBottom) +
+          parseFloat(cs.borderTopWidth) +
+          parseFloat(cs.borderBottomWidth);
+        max = lh * maxRows + pad;
+      }
+      el.style.height = `${Math.min(full, max)}px`;
+      el.style.overflowY = full > max ? "auto" : "hidden";
+    }, [autoResize, maxRows]);
 
     // Chạy lại khi giá trị đổi từ ngoài (nạp dữ liệu, reset form) và khi mount.
     React.useLayoutEffect(fit, [fit, props.value]);

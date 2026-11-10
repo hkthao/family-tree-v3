@@ -86,6 +86,7 @@ const People = lazy(() => import("@/pages/clan/People"));
 const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
 const QrExport = lazy(() => import("@/pages/clan/QrExport"));
 const Settings = lazy(() => import("@/pages/clan/Settings"));
+const BookInfo = lazy(() => import("@/pages/clan/BookInfo"));
 const Today = lazy(() => import("@/pages/clan/Today"));
 const Todo = lazy(() => import("@/pages/clan/Todo"));
 const Tools = lazy(() => import("@/pages/clan/Tools"));
@@ -270,6 +271,7 @@ export default function App() {
           <Route path="heritage/:itemId" element={<FeatureGuard feature="heritage"><HeritageDetail /></FeatureGuard>} />
           <Route path="heritage/:itemId/edit" element={<FeatureGuard feature="heritage"><HeritageForm /></FeatureGuard>} />
           <Route path="settings" element={<Settings />} />
+          <Route path="so-gia-pha" element={<BookInfo />} />
           <Route path="import" element={<Import />} />
           <Route path="ai-generate" element={<AiGenerate />} />
           <Route path="tro-ly" element={<FeatureGuard feature="ai_assistant"><AiChat /></FeatureGuard>} />
