@@ -178,9 +178,9 @@ export const styles = StyleSheet.create({
   },
   mediaImg: { width: "100%", height: 82, borderRadius: 3, marginBottom: 5, objectFit: "cover" },
   mediaTitle: { fontSize: 10, fontWeight: 700, color: COLORS.primary, marginBottom: 1 },
-  mediaMeta: { fontSize: 8, color: COLORS.muted, marginBottom: 3 },
-  mediaSummary: { fontSize: 8.5, fontWeight: 700, marginBottom: 2 },
-  mediaText: { fontSize: 8.5, marginBottom: 2 },
+  mediaMeta: { fontSize: 8, color: COLORS.muted, marginBottom: 3, textAlign: "justify" },
+  mediaSummary: { fontSize: 8.5, fontWeight: 700, marginBottom: 2, textAlign: "justify" },
+  mediaText: { fontSize: 8.5, marginBottom: 2, textAlign: "justify" },
   mediaSubhead: {
     fontSize: 12,
     fontWeight: 700,
@@ -217,7 +217,7 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   cardBody: { alignSelf: "stretch" },
-  field: { fontSize: 8.5, marginBottom: 1 },
+  field: { fontSize: 8.5, marginBottom: 1, textAlign: "justify" },
   // Solo entry (in-laws + fallback) keeps the simple full-width row.
   personEntry: {
     marginTop: 12,
@@ -747,47 +747,55 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
   );
   const inLawCardH = Math.max(0, ...[...inLawModels.values()].map(estimateCardHeight));
 
-  // Thẻ Mộ phần / Di sản: cùng một chiều cao (thẻ cao nhất).
-  const restingTitle = (rp: (typeof data.restingPlaces)[number]) =>
-    rp.name || rp.location_name || RP_KIND_LABEL[rp.kind];
-  const restingLoc = (rp: (typeof data.restingPlaces)[number]) =>
-    [rp.location_name, rp.location_detail].filter(Boolean).join(" · ");
+  // Thẻ Mộ phần / Di sản: chữ cắt ngắn để vừa thẻ, rồi mọi thẻ cùng chiều cao (thẻ cao nhất).
+  type RP = (typeof data.restingPlaces)[number];
+  type HR = (typeof data.heritage)[number];
+  const restingText = (rp: RP) => ({
+    title: clip(rp.name || rp.location_name || RP_KIND_LABEL[rp.kind], 44),
+    meta: `${RP_KIND_LABEL[rp.kind]}${rp.status !== "existing" ? ` · ${RP_STATUS_LABEL[rp.status]}` : ""}`,
+    loc: clip([rp.location_name, rp.location_detail].filter(Boolean).join(" · "), 70),
+    address: rp.address ? clip(rp.address, 70) : "",
+    who: rp.occupant_names.length > 0 ? clip(`An nghỉ: ${rp.occupant_names.join(", ")}`, 80) : "",
+  });
+  const heritageText = (h: HR) => ({
+    title: clip(h.title, 44),
+    meta: clip(
+      [h.location_name || null, h.built_year ? `năm ${h.built_year}` : null].filter(Boolean).join(" · "),
+      50,
+    ),
+    summary: h.summary ? clip(h.summary, 90) : "",
+    body: h.body ? clip(h.body, 110) : "",
+    who: h.people_names.length > 0 ? clip(`Liên quan: ${h.people_names.join(", ")}`, 80) : "",
+  });
+  // Dòng cao = cỡ chữ × 1,45 (lineHeight của trang); số ký tự mỗi dòng tính dư để không bao giờ thiếu chỗ.
+  const T = { perLine: 17, lineH: 14.6 }; // tiêu đề 10pt đậm
+  const M = { perLine: 26, lineH: 11.8 }; // 8pt
+  const B = { perLine: 23, lineH: 12.4 }; // 8,5pt
   const restingCardH = Math.max(
     0,
-    ...data.restingPlaces.map((rp) =>
-      estimateMediaHeight([
-        { text: restingTitle(rp), perLine: 20, lineH: 12.5, gap: 1 },
-        {
-          text: `${RP_KIND_LABEL[rp.kind]}${rp.status !== "existing" ? ` · ${RP_STATUS_LABEL[rp.status]}` : ""}`,
-          perLine: 30,
-          lineH: 10.5,
-          gap: 3,
-        },
-        ...(restingLoc(rp) ? [{ text: restingLoc(rp), perLine: 27, lineH: 11, gap: 2 }] : []),
-        ...(rp.address ? [{ text: rp.address, perLine: 27, lineH: 11, gap: 2 }] : []),
-        ...(rp.occupant_names.length > 0
-          ? [{ text: `An nghỉ: ${rp.occupant_names.join(", ")}`, perLine: 30, lineH: 10.5, gap: 3 }]
-          : []),
-      ]),
-    ),
+    ...data.restingPlaces.map((rp) => {
+      const t = restingText(rp);
+      return estimateMediaHeight([
+        { text: t.title, ...T, gap: 1 },
+        { text: t.meta, ...M, gap: 3 },
+        ...(t.loc ? [{ text: t.loc, ...B, gap: 2 }] : []),
+        ...(t.address ? [{ text: t.address, ...B, gap: 2 }] : []),
+        ...(t.who ? [{ text: t.who, ...M, gap: 3 }] : []),
+      ]);
+    }),
   );
-  const heritageBody = (h: (typeof data.heritage)[number]) =>
-    h.body && h.body.length > 150 ? `${h.body.slice(0, 150)}…` : h.body;
-  const heritageMeta = (h: (typeof data.heritage)[number]) =>
-    [h.location_name || null, h.built_year ? `năm ${h.built_year}` : null].filter(Boolean).join(" · ");
   const heritageCardH = Math.max(
     0,
-    ...data.heritage.map((h) =>
-      estimateMediaHeight([
-        { text: h.title, perLine: 20, lineH: 12.5, gap: 1 },
-        ...(heritageMeta(h) ? [{ text: heritageMeta(h), perLine: 30, lineH: 10.5, gap: 3 }] : []),
-        ...(h.summary ? [{ text: h.summary, perLine: 27, lineH: 11, gap: 2 }] : []),
-        ...(heritageBody(h) ? [{ text: heritageBody(h) as string, perLine: 27, lineH: 11, gap: 2 }] : []),
-        ...(h.people_names.length > 0
-          ? [{ text: `Liên quan: ${h.people_names.join(", ")}`, perLine: 30, lineH: 10.5, gap: 3 }]
-          : []),
-      ]),
-    ),
+    ...data.heritage.map((h) => {
+      const t = heritageText(h);
+      return estimateMediaHeight([
+        { text: t.title, ...T, gap: 1 },
+        ...(t.meta ? [{ text: t.meta, ...M, gap: 3 }] : []),
+        ...(t.summary ? [{ text: t.summary, ...B, gap: 2 }] : []),
+        ...(t.body ? [{ text: t.body, ...B, gap: 2 }] : []),
+        ...(t.who ? [{ text: t.who, ...M, gap: 3 }] : []),
+      ]);
+    }),
   );
 
   // Mục lục liệt kê ĐÚNG những trang sẽ có trong sổ, theo thứ tự trang, với
@@ -1119,7 +1127,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
             <View key={i} style={styles.cardRow} wrap={false}>
               {row.map((rp, ci) => {
                 const cover = coverByItemId?.get(rp.id);
-                const loc = [rp.location_name, rp.location_detail].filter(Boolean).join(" · ");
+                const t = restingText(rp);
                 return (
                   <View
                     key={rp.id}
@@ -1134,18 +1142,11 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
                     ) : (
                       <CoverPlaceholder kind="grave" />
                     )}
-                    <Text style={[styles.mediaTitle, serifStyle()]}>
-                      {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
-                    </Text>
-                    <Text style={styles.mediaMeta}>
-                      {RP_KIND_LABEL[rp.kind]}
-                      {rp.status !== "existing" ? ` · ${RP_STATUS_LABEL[rp.status]}` : ""}
-                    </Text>
-                    {loc ? <Text style={styles.mediaText}>{loc}</Text> : null}
-                    {rp.address ? <Text style={styles.mediaText}>{rp.address}</Text> : null}
-                    {rp.occupant_names.length > 0 ? (
-                      <Text style={styles.mediaMeta}>An nghỉ: {rp.occupant_names.join(", ")}</Text>
-                    ) : null}
+                    <Text style={[styles.mediaTitle, serifStyle()]}>{t.title}</Text>
+                    <Text style={styles.mediaMeta}>{t.meta}</Text>
+                    {t.loc ? <Text style={styles.mediaText}>{t.loc}</Text> : null}
+                    {t.address ? <Text style={styles.mediaText}>{t.address}</Text> : null}
+                    {t.who ? <Text style={styles.mediaMeta}>{t.who}</Text> : null}
                   </View>
                 );
               })}
@@ -1175,10 +1176,7 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
                   <View key={i} style={styles.cardRow} wrap={false}>
                     {row.map((h, ci) => {
                       const cover = coverByItemId?.get(h.id);
-                      const meta = [h.location_name || null, h.built_year ? `năm ${h.built_year}` : null]
-                        .filter(Boolean)
-                        .join(" · ");
-                      const body = h.body && h.body.length > 150 ? `${h.body.slice(0, 150)}…` : h.body;
+                      const t = heritageText(h);
                       return (
                         <View
                           key={h.id}
@@ -1193,13 +1191,11 @@ export function ClanBookPdf({ clan, data, include, photoByPersonId, coverByItemI
                           ) : (
                             <CoverPlaceholder kind="heritage" />
                           )}
-                          <Text style={[styles.mediaTitle, serifStyle()]}>{h.title}</Text>
-                          {meta ? <Text style={styles.mediaMeta}>{meta}</Text> : null}
-                          {h.summary ? <Text style={styles.mediaSummary}>{h.summary}</Text> : null}
-                          {body ? <Text style={styles.mediaText}>{body}</Text> : null}
-                          {h.people_names.length > 0 ? (
-                            <Text style={styles.mediaMeta}>Liên quan: {h.people_names.join(", ")}</Text>
-                          ) : null}
+                          <Text style={[styles.mediaTitle, serifStyle()]}>{t.title}</Text>
+                          {t.meta ? <Text style={styles.mediaMeta}>{t.meta}</Text> : null}
+                          {t.summary ? <Text style={styles.mediaSummary}>{t.summary}</Text> : null}
+                          {t.body ? <Text style={styles.mediaText}>{t.body}</Text> : null}
+                          {t.who ? <Text style={styles.mediaMeta}>{t.who}</Text> : null}
                         </View>
                       );
                     })}
@@ -1415,6 +1411,14 @@ function renderCardModel(m: CardModel): React.ReactNode {
       </View>
     </>
   );
+}
+
+/** Cắt chữ dài thành `max` ký tự có dấu …, cắt ở khoảng trắng cho khỏi đứt giữa từ. */
+function clip(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const sp = cut.lastIndexOf(" ");
+  return `${(sp > max * 0.6 ? cut.slice(0, sp) : cut).trimEnd()}…`;
 }
 
 /** Thẻ danh bạ cao tối đa bấy nhiêu pt để một trang luôn xếp được 2 hàng × 3 thẻ = 6 thẻ. */
