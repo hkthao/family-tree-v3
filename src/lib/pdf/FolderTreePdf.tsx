@@ -2,6 +2,7 @@ import { Circle, Image, Page, Path, Svg, Text, View } from "@react-pdf/renderer"
 
 import { generationColor } from "@/lib/tree/folderModel";
 
+import { PageNumber, SectionTitle } from "./bookPages";
 import { COLORS, VineBorder } from "./ClanBookPdf";
 import {
   FOLDER_AVATAR as PERSON_AVATAR,
@@ -310,18 +311,14 @@ export function renderFolderTreePages(rows: FolderPdfRow[]) {
       }}
     >
       <VineBorder width={pg.width} height={pg.height} />
+      <PageNumber pageHeight={pg.height} />
       <View style={{ height: HEADER_H }}>
-        <Text
-          style={{
-            ...serifStyle(),
-            fontSize: 22,
-            fontWeight: 600,
-            color: COLORS.primary,
-          }}
+        <SectionTitle
+          id="sec-tree-folder"
+          style={[{ fontSize: 22, fontWeight: 600, color: COLORS.primary }]}
         >
-          Sơ đồ cây gia phả
-          {pages.length > 1 ? ` (${i + 1}/${pages.length})` : ""}
-        </Text>
+          {`Sơ đồ cây gia phả${pages.length > 1 ? ` (${i + 1}/${pages.length})` : ""}`}
+        </SectionTitle>
         <View
           style={{
             width: 60,

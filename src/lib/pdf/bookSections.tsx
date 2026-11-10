@@ -1,11 +1,13 @@
-import { Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Fragment } from "react";
+import { Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 import { bioToPlainText } from "@/lib/bio";
-import type { ClanBookData } from "@/lib/queries/clan-book";
+import type { ClanBookData, ClanBookTexts } from "@/lib/queries/clan-book";
 import type { PersonDetail } from "@/lib/queries/persons";
 import { formatLunarAnniversary } from "@/lib/lunarDate";
 
 import { COLORS, VineBorder, styles as bookStyles } from "./ClanBookPdf";
+import { PageNumber, SectionTitle } from "./bookPages";
 import { serifStyle } from "./registerFont";
 
 /**
@@ -34,25 +36,32 @@ function makeStyles() {
       backgroundColor: COLORS.accent,
       marginBottom: 14,
     },
-    intro: { color: COLORS.muted, marginBottom: 12, fontSize: 10 },
-    para: { fontSize: 10.5, lineHeight: 1.5, marginBottom: 6, textAlign: "justify" },
+    intro: { color: COLORS.muted, marginBottom: 12, fontSize: 11 },
+    para: { fontSize: 12, lineHeight: 1.55, marginBottom: 7, textAlign: "justify" },
     sub: {
-      fontSize: 12.5,
+      fontSize: 14,
       fontWeight: 600,
       color: COLORS.primary,
       marginTop: 10,
       marginBottom: 4,
     },
     genHead: {
-      fontSize: 15,
+      fontSize: 17,
       fontWeight: 600,
       color: COLORS.primary,
       textAlign: "center",
       marginTop: 8,
       marginBottom: 6,
     },
+    heading: {
+      fontSize: 13.5,
+      fontWeight: 700,
+      color: COLORS.primary,
+      marginTop: 10,
+      marginBottom: 4,
+    },
     groupHead: {
-      fontSize: 10.5,
+      fontSize: 12,
       fontWeight: 700,
       color: COLORS.ink,
       textAlign: "center",
@@ -72,37 +81,153 @@ function makeStyles() {
       borderLeftWidth: 0.8,
       borderLeftColor: COLORS.primary,
     },
-    boxName: { fontSize: 10, fontWeight: 700, color: COLORS.ink },
-    boxLine: { fontSize: 8.5, color: COLORS.ink },
+    genBand: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: COLORS.primary,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      marginTop: 14,
+      marginBottom: 8,
+      borderRadius: 5,
+    },
+    genBandText: { fontSize: 13, fontWeight: 700, color: "#FFFFFF", letterSpacing: 1 },
+    genBandCount: { fontSize: 9.5, color: "#F3E3C0" },
+    grpHead: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 6,
+      marginTop: 4,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      backgroundColor: "#EFE3C6",
+      borderRadius: 4,
+    },
+    grpLabel: { fontSize: 9.5, color: COLORS.muted, marginRight: 5 },
+    grpNames: { fontSize: 11.5, fontWeight: 700, color: COLORS.primary, flex: 1 },
+    // Mỗi người một nền kem nhạt bo nhẹ để tách khỏi người khác; vợ/chồng và
+    // kỷ sự có nền đậm hơn một chút để phân biệt từng loại thông tin.
+    entry: {
+      flexDirection: "row",
+      paddingVertical: 7,
+      paddingHorizontal: 8,
+      marginBottom: 6,
+      backgroundColor: "#FCF8EC",
+      borderWidth: 0.5,
+      borderColor: COLORS.divider,
+      borderRadius: 5,
+    },
+    entryNo: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: COLORS.accent,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 9,
+      marginTop: 1,
+    },
+    entryNoText: { fontSize: 10, fontWeight: 700, color: "#FFFFFF" },
+    entryBody: { flex: 1 },
+    entryName: { fontSize: 12.5, fontWeight: 700, color: COLORS.ink },
+    entryTag: { fontSize: 9, fontWeight: 400, color: COLORS.muted },
+    entryFacts: { flexDirection: "row", flexWrap: "wrap", marginTop: 2 },
+    fact: { fontSize: 10, color: COLORS.ink, marginRight: 12 },
+    factLabel: { color: COLORS.muted },
+    spouseLine: {
+      marginTop: 4,
+      flexDirection: "row",
+      backgroundColor: "#F4ECD6",
+      borderRadius: 4,
+      paddingVertical: 3,
+      paddingHorizontal: 6,
+    },
+    spouseTag: {
+      fontSize: 9,
+      fontWeight: 700,
+      color: COLORS.primary,
+      width: 34,
+      marginTop: 1,
+    },
+    spouseBody: { flex: 1 },
+    spouseName: { fontSize: 10.5, fontWeight: 700, color: COLORS.ink },
+    kySuBox: {
+      marginTop: 5,
+      paddingVertical: 4,
+      paddingHorizontal: 7,
+      backgroundColor: "#F1EAD9",
+      borderRadius: 4,
+      borderLeftWidth: 2,
+      borderLeftColor: COLORS.accent,
+    },
+    boxName: { fontSize: 11.5, fontWeight: 700, color: COLORS.ink },
+    boxLine: { fontSize: 10, color: COLORS.ink },
     boxSep: { marginTop: 4, paddingTop: 3, borderTopWidth: 0.4, borderTopColor: COLORS.divider },
-    kySu: { fontSize: 9, lineHeight: 1.4, color: COLORS.ink, marginBottom: 6, marginTop: 2 },
+    kySu: { fontSize: 10, lineHeight: 1.45, color: COLORS.muted },
     row: {
       flexDirection: "row",
       paddingVertical: 3,
       borderBottomWidth: 0.4,
       borderBottomColor: COLORS.divider,
     },
-    th: { fontSize: 9, fontWeight: 700, color: COLORS.primary },
-    td: { fontSize: 9.5, color: COLORS.ink },
-    tocRow: { flexDirection: "row", marginBottom: 7, fontSize: 12 },
-    tocNum: { width: 34, fontWeight: 700, color: COLORS.primary },
+    th: { fontSize: 10.5, fontWeight: 700, color: COLORS.primary },
+    td: { fontSize: 11, color: COLORS.ink },
+    tocRow: { flexDirection: "row", alignItems: "flex-end", marginBottom: 9, fontSize: 14 },
+    tocLeader: {
+      flex: 1,
+      marginHorizontal: 6,
+      marginBottom: 3,
+      borderBottomWidth: 1,
+      borderBottomStyle: "dotted",
+      borderBottomColor: COLORS.muted,
+    },
+    tocPage: { width: 28, textAlign: "right", fontWeight: 700 },
+    tocNum: { width: 40, fontWeight: 700, color: COLORS.primary },
   });
+}
+
+/** Bỏ ký hiệu markdown AI hay chèn (#, **) để không in ra dấu thừa. */
+function stripMarkdown(t: string): string {
+  return t.replace(/^#{1,6}\s+/, "").replace(/\*\*(.+?)\*\*/g, "$1").trim();
+}
+
+const NUMBERED = /^((?:\d+|[IVXLC]+)[.)])\s+(\S.*)$/;
+
+/**
+ * Dòng đánh số "1. …", "2) …", "II. …" hoặc "PHẦN …" là chỉ mục: luôn in
+ * đậm. Dòng ngắn thì đậm cả dòng (đề mục); dòng dài (cả đoạn văn mở đầu
+ * bằng số) thì chỉ đậm phần số và tiêu đề đầu câu.
+ */
+export function parseNumbered(t: string): { prefix: string; rest: string; heading: boolean } | null {
+  const m = NUMBERED.exec(t);
+  if (m) return { prefix: m[1], rest: m[2], heading: t.length <= 120 };
+  if (/^PHẦN\s+\S/.test(t)) return { prefix: "", rest: t, heading: true };
+  return null;
+}
+
+/** Giữ cho test cũ/nơi khác còn dùng: dòng đó là đề mục đậm nguyên dòng. */
+export function isHeadingLine(t: string): boolean {
+  return parseNumbered(t)?.heading ?? false;
 }
 
 function paragraphs(text: string): string[] {
   return text
     .split(/\n+/)
-    .map((t) => t.trim())
+    .map((t) => stripMarkdown(t))
     .filter(Boolean);
 }
 
 function TextPage({
   title,
+  id,
   intro,
   text,
   children,
 }: {
   title: string;
+  /** Mốc để mục lục bấm nhảy tới. */
+  id?: string;
   intro?: string;
   text?: string | null;
   children?: React.ReactNode;
@@ -111,15 +236,34 @@ function TextPage({
   return (
     <Page size="A4" style={BOOK_PAGE()}>
       <VineBorder />
-      <Text style={[s.h1, serifStyle()]}>{title}</Text>
+      <PageNumber />
+      {id ? <SectionTitle id={id} style={[s.h1]}>{title}</SectionTitle> : <Text style={[s.h1, serifStyle()]}>{title}</Text>}
       <View style={s.underline} />
       {intro ? <Text style={s.intro}>{intro}</Text> : null}
       {text
-        ? paragraphs(text).map((t, i) => (
-            <Text key={i} style={s.para}>
-              {t}
-            </Text>
-          ))
+        ? paragraphs(text).map((t, i) => {
+            const n = parseNumbered(t);
+            if (n?.heading) {
+              return (
+                <Text key={i} style={[s.heading, serifStyle()]} minPresenceAhead={60}>
+                  {t}
+                </Text>
+              );
+            }
+            if (n) {
+              return (
+                <Text key={i} style={s.para}>
+                  <Text style={{ fontWeight: 700, color: COLORS.primary }}>{n.prefix} </Text>
+                  {n.rest}
+                </Text>
+              );
+            }
+            return (
+              <Text key={i} style={s.para}>
+                {t}
+              </Text>
+            );
+          })
         : null}
       {children}
     </Page>
@@ -133,36 +277,193 @@ function BOOK_PAGE() {
 
 // ─── Mục lục ───────────────────────────────────────────────────────
 
-export function TocPage({ items }: { items: string[] }) {
+export interface TocEntry {
+  title: string;
+  /** Có mốc thì dòng mục lục bấm nhảy tới đúng trang. */
+  id?: string;
+}
+
+export function TocPage({
+  items,
+  pages,
+}: {
+  items: TocEntry[];
+  /** id mục → số trang (lượt dựng thứ hai). Chưa có thì để trống. */
+  pages?: Record<string, number>;
+}) {
   const s = S();
   return (
     <Page size="A4" style={BOOK_PAGE()}>
       <VineBorder />
+      <PageNumber />
       <Text style={[s.h1, serifStyle()]}>Mục lục</Text>
       <View style={s.underline} />
-      {items.map((t, i) => (
-        <View key={i} style={s.tocRow}>
-          <Text style={s.tocNum}>{toRoman(i + 1)}.</Text>
-          <Text style={serifStyle()}>{t}</Text>
-        </View>
-      ))}
+      {items.map((it, i) => {
+        const n = it.id ? pages?.[it.id] : undefined;
+        const row = (
+          <View style={s.tocRow}>
+            <Text style={s.tocNum}>{toRoman(i + 1)}.</Text>
+            <Text style={serifStyle()}>{it.title}</Text>
+            <View style={s.tocLeader} />
+            <Text style={[s.tocPage, serifStyle()]}>{n ?? ""}</Text>
+          </View>
+        );
+        return it.id ? (
+          <Link key={i} src={`#${it.id}`} style={{ textDecoration: "none", color: COLORS.ink }}>
+            {row}
+          </Link>
+        ) : (
+          <View key={i}>{row}</View>
+        );
+      })}
     </Page>
   );
 }
 
 function toRoman(n: number): string {
-  const map: [number, string][] = [
-    [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"],
-  ];
-  let out = "";
-  for (const [v, r] of map) while (n >= v) { out += r; n -= v; }
-  return out;
+  return toRoman2(n);
+}
+
+// ─── Giới thiệu dòng họ (thông tin biên soạn) ──────────────────────
+
+const INTRO_ROWS: { key: keyof ClanBookTexts; label: string }[] = [
+  { key: "origin_place", label: "Nguyên quán / tổ quán" },
+  { key: "ancestral_hall", label: "Nhà thờ họ" },
+  { key: "ancestor_anniversary", label: "Ngày giỗ tổ" },
+  { key: "chief_name", label: "Trưởng họ / người chủ trì" },
+  { key: "compilers", label: "Ban biên soạn" },
+  { key: "compiled_year", label: "Năm biên soạn" },
+  { key: "contact", label: "Liên hệ" },
+];
+
+export function hasClanIntro(t: ClanBookTexts | null | undefined): boolean {
+  return !!t && INTRO_ROWS.some((r) => !!t[r.key]);
+}
+
+// ─── Bảng dùng chung ───────────────────────────────────────────────
+
+interface Col {
+  label: string;
+  width?: number;
+  /** Cột co giãn lấp chỗ trống (mặc định nếu không có width). */
+  align?: "left" | "center" | "right";
+  bold?: boolean;
+}
+
+/**
+ * Kiểu bảng chuẩn của sổ (lấy bảng "Theo đời" làm mẫu): khung bo nhẹ, hàng
+ * tiêu đề tô nền, kẻ ngang giữa các hàng và kẻ dọc giữa các cột, hàng
+ * "Tổng" ở cuối nếu có. Đặt `wrap={false}` để một bảng không bị cắt giữa trang.
+ */
+function DataTable({
+  cols,
+  rows,
+  total,
+}: {
+  cols: Col[];
+  rows: (string | number)[][];
+  total?: (string | number)[];
+}) {
+  const s = S();
+  const edge = COLORS.primary;
+  const cellStyle = (c: Col, ci: number) =>
+    [
+      c.width ? { width: c.width } : { flex: 1 },
+      {
+        paddingVertical: 4,
+        paddingHorizontal: 6,
+        textAlign: c.align ?? "left",
+      },
+      ci > 0 ? { borderLeftWidth: 0.6, borderLeftColor: edge } : {},
+    ] as const;
+  return (
+    <View
+      wrap={false}
+      style={{ borderWidth: 0.6, borderColor: edge, borderRadius: 5, overflow: "hidden", marginBottom: 8 }}
+    >
+      <View style={{ flexDirection: "row", borderBottomWidth: 0.6, borderBottomColor: edge }}>
+        {cols.map((c, ci) => (
+          <Text key={ci} style={[s.th, ...cellStyle(c, ci), { backgroundColor: COLORS.divider }]}>
+            {c.label}
+          </Text>
+        ))}
+      </View>
+      {rows.map((r, ri) => (
+        <View
+          key={ri}
+          style={[
+            { flexDirection: "row" },
+            ri < rows.length - 1 || total ? { borderBottomWidth: 0.6, borderBottomColor: edge } : {},
+          ]}
+        >
+          {cols.map((c, ci) => (
+            <Text key={ci} style={[s.td, ...cellStyle(c, ci), c.bold ? { fontWeight: 700 } : {}]}>
+              {r[ci] ?? ""}
+            </Text>
+          ))}
+        </View>
+      ))}
+      {total ? (
+        <View style={{ flexDirection: "row" }}>
+          {cols.map((c, ci) => (
+            <Text key={ci} style={[s.th, ...cellStyle(c, ci)]}>
+              {total[ci] ?? ""}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+/** Bảng dài chia thành các khối (mỗi khối một khung đủ tiêu đề) để khung không bị cắt giữa trang. */
+function ChunkedTable({
+  cols,
+  rows,
+  chunk = 24,
+}: {
+  cols: Col[];
+  rows: (string | number)[][];
+  chunk?: number;
+}) {
+  const parts: (string | number)[][][] = [];
+  for (let i = 0; i < rows.length; i += chunk) parts.push(rows.slice(i, i + chunk));
+  return (
+    <>
+      {parts.map((part, i) => (
+        <DataTable key={i} cols={cols} rows={part} />
+      ))}
+    </>
+  );
+}
+
+export function ClanIntroPage({
+  clanName,
+  texts,
+}: {
+  clanName: string;
+  texts: ClanBookTexts;
+}) {
+  const s = S();
+  return (
+    <Page size="A4" style={BOOK_PAGE()}>
+      <VineBorder />
+      <PageNumber />
+      <SectionTitle id="sec-intro" style={[s.h1, serifStyle()]}>Giới thiệu dòng họ</SectionTitle>
+      <View style={s.underline} />
+      <Text style={s.intro}>{clanName}</Text>
+      <DataTable
+        cols={[{ label: "Mục", width: 160 }, { label: "Nội dung" }]}
+        rows={INTRO_ROWS.filter((r) => texts[r.key]).map((r) => [r.label, texts[r.key] as string])}
+      />
+    </Page>
+  );
 }
 
 // ─── Lời nói đầu ───────────────────────────────────────────────────
 
 export function PrefacePage({ text }: { text: string }) {
-  return <TextPage title="Lời nói đầu" text={text} />;
+  return <TextPage title="Lời nói đầu" id="sec-preface" text={text} />;
 }
 
 // ─── Phả ký (văn bản + số liệu tự tính) ────────────────────────────
@@ -174,6 +475,42 @@ export interface PhaKyStats {
   genOffset: number;
   spousesByPerson: Map<string, string[]>;
   personById: Map<string, PersonDetail>;
+}
+
+/** Bảng số liệu: Đời/Chi — Nam — Nữ — Tổng, đơn vị người. */
+function StatTable({
+  title,
+  firstHead,
+  rows,
+}: {
+  title: string;
+  firstHead: string;
+  rows: { label: string; m: number; f: number }[];
+}) {
+  const s = S();
+  return (
+    <View wrap={false}>
+      <Text style={[s.groupHead, { textAlign: "left" }]}>
+        {title}{" "}
+        <Text style={{ fontWeight: 400, color: COLORS.muted, fontSize: 10 }}>(đơn vị: người)</Text>
+      </Text>
+      <DataTable
+        cols={[
+          { label: firstHead },
+          { label: "Nam", width: 64, align: "center" },
+          { label: "Nữ", width: 64, align: "center" },
+          { label: "Tổng", width: 64, align: "center", bold: true },
+        ]}
+        rows={rows.map((r) => [r.label, r.m, r.f, r.m + r.f])}
+        total={[
+          "Tổng",
+          rows.reduce((a, r) => a + r.m, 0),
+          rows.reduce((a, r) => a + r.f, 0),
+          rows.reduce((a, r) => a + r.m + r.f, 0),
+        ]}
+      />
+    </View>
+  );
 }
 
 export function PhaKyPages({ text, stats }: { text: string | null; stats: PhaKyStats }) {
@@ -213,6 +550,7 @@ export function PhaKyPages({ text, stats }: { text: string | null; stats: PhaKyS
   return (
     <TextPage
       title="Phả ký"
+      id="sec-phaky"
       intro="Lịch sử tổng hợp của dòng họ."
       text={text}
     >
@@ -226,42 +564,18 @@ export function PhaKyPages({ text, stats }: { text: string | null; stats: PhaKyS
           : ""}
       </Text>
       {gens.length > 0 ? (
-        <View wrap={false}>
-          <Text style={[s.groupHead, { textAlign: "left" }]}>Theo đời</Text>
-          <View style={s.row}>
-            <Text style={[s.th, { width: 70 }]}>Đời</Text>
-            <Text style={[s.th, { width: 60 }]}>Nam</Text>
-            <Text style={[s.th, { width: 60 }]}>Nữ</Text>
-            <Text style={[s.th, { width: 60 }]}>Cộng</Text>
-          </View>
-          {gens.map(([g, c]) => (
-            <View key={g} style={s.row}>
-              <Text style={[s.td, { width: 70 }]}>{g}</Text>
-              <Text style={[s.td, { width: 60 }]}>{c.m}</Text>
-              <Text style={[s.td, { width: 60 }]}>{c.f}</Text>
-              <Text style={[s.td, { width: 60 }]}>{c.m + c.f}</Text>
-            </View>
-          ))}
-        </View>
+        <StatTable
+          title="Theo đời"
+          firstHead="Đời"
+          rows={gens.map(([g, c]) => ({ label: String(g), m: c.m, f: c.f }))}
+        />
       ) : null}
       {byBranch.size > 0 ? (
-        <View wrap={false}>
-          <Text style={[s.groupHead, { textAlign: "left" }]}>Theo chi</Text>
-          <View style={s.row}>
-            <Text style={[s.th, { flex: 1 }]}>Chi</Text>
-            <Text style={[s.th, { width: 50 }]}>Nam</Text>
-            <Text style={[s.th, { width: 50 }]}>Nữ</Text>
-            <Text style={[s.th, { width: 50 }]}>Cộng</Text>
-          </View>
-          {[...byBranch.entries()].map(([name, c]) => (
-            <View key={name} style={s.row}>
-              <Text style={[s.td, { flex: 1 }]}>{name}</Text>
-              <Text style={[s.td, { width: 50 }]}>{c.m}</Text>
-              <Text style={[s.td, { width: 50 }]}>{c.f}</Text>
-              <Text style={[s.td, { width: 50 }]}>{c.m + c.f}</Text>
-            </View>
-          ))}
-        </View>
+        <StatTable
+          title="Theo chi"
+          firstHead="Chi"
+          rows={[...byBranch.entries()].map(([name, c]) => ({ label: name, m: c.m, f: c.f }))}
+        />
       ) : null}
     </TextPage>
   );
@@ -286,36 +600,44 @@ function yearOf(p: PersonDetail, kind: "birth" | "death"): string | null {
   return solar?.slice(0, 4) ?? (lunar ? String(lunar) : null);
 }
 
-function PersonBoxCell({
-  p,
-  index,
-  burial,
-}: {
-  p: PersonDetail;
-  index?: number;
-  burial: (p: PersonDetail) => string | null;
-}) {
-  const s = S();
+/** Các dữ kiện của một người: sinh–mất, giỗ âm lịch, mộ. */
+function personFacts(
+  p: PersonDetail,
+  burial: (p: PersonDetail) => string | null,
+): { label: string; value: string }[] {
   const b = yearOf(p, "birth");
   const d = yearOf(p, "death");
-  const years = b || d ? `(${b ?? "?"}–${d ?? (p.is_living ? "nay" : "?")})` : "";
-  const gio = !p.is_living
-    ? formatLunarAnniversary({
-        month: p.death_anniv_lunar_month ?? undefined,
-        day: p.death_anniv_lunar_day ?? undefined,
-      })
-    : "";
-  const mo = !p.is_living ? burial(p) : null;
+  const out: { label: string; value: string }[] = [];
+  if (b || d) {
+    out.push({
+      label: "Sinh – mất",
+      value: `${b ?? "?"} – ${d ?? (p.is_living ? "nay" : "?")}`,
+    });
+  }
+  if (!p.is_living) {
+    const gio = formatLunarAnniversary({
+      month: p.death_anniv_lunar_month ?? undefined,
+      day: p.death_anniv_lunar_day ?? undefined,
+    });
+    if (gio) out.push({ label: "Giỗ", value: gio });
+    const mo = burial(p);
+    if (mo) out.push({ label: "Mộ", value: mo });
+  }
+  return out;
+}
+
+function Facts({ items }: { items: { label: string; value: string }[] }) {
+  const s = S();
+  if (items.length === 0) return null;
   return (
-    <>
-      <Text style={s.boxName}>
-        {index != null ? `${index}. ` : ""}
-        {p.full_name}
-      </Text>
-      {years ? <Text style={s.boxLine}>{years}</Text> : null}
-      {gio ? <Text style={s.boxLine}>Giỗ: {gio}</Text> : null}
-      {mo ? <Text style={s.boxLine}>Mộ: {mo}</Text> : null}
-    </>
+    <View style={s.entryFacts}>
+      {items.map((f) => (
+        <Text key={f.label} style={s.fact}>
+          <Text style={s.factLabel}>{f.label}: </Text>
+          {f.value}
+        </Text>
+      ))}
+    </View>
   );
 }
 
@@ -373,74 +695,95 @@ export function PhaHePages({ input }: { input: PhaHeInput }) {
   return (
     <Page size="A4" style={BOOK_PAGE()}>
       <VineBorder />
-      <Text style={[s.h1, serifStyle()]}>Phả hệ</Text>
+      <PageNumber />
+      <SectionTitle id="sec-phahe" style={[s.h1, serifStyle()]}>Phả hệ</SectionTitle>
       <View style={s.underline} />
       <Text style={s.intro}>
         Trình bày theo từng đời; trong mỗi đời, các con của cùng một cặp cha mẹ
-        xếp theo thứ tự trưởng – thứ. Ô trái là người trong họ, ô phải là vợ/chồng.
-        Ngày giỗ tính theo âm lịch.
+        xếp theo thứ tự trưởng – thứ, kèm vợ/chồng. Ngày giỗ tính theo âm lịch.
       </Text>
-      {genList.map((g) => (
-        <View key={g}>
-          <Text style={[s.genHead, serifStyle()]} minPresenceAhead={80}>
-            ĐỜI {toRoman2(g)}
-          </Text>
-          {[...groups.get(g)!.values()]
-            .sort((a, b) => cmp(sttKey(a), sttKey(b)))
-            .map((grp) => {
-              const parents = [grp.father?.full_name, grp.mother?.full_name]
-                .filter(Boolean);
+      {genList.map((g) => {
+        const gGroups = [...groups.get(g)!.values()].sort((x, y) => cmp(sttKey(x), sttKey(y)));
+        const count = gGroups.reduce((n, grp) => n + grp.kids.length, 0);
+        return (
+          <Fragment key={g}>
+            {gGroups.map((grp, gi) => {
+              const names = [grp.father?.full_name, grp.mother?.full_name].filter(Boolean);
               const head =
-                parents.length === 0
-                  ? "THUỶ TỔ"
-                  : grp.father && grp.mother
-                    ? `CÁC CON ÔNG ${grp.father.full_name.toUpperCase()} VÀ BÀ ${grp.mother.full_name.toUpperCase()}`
-                    : grp.father
-                      ? `CÁC CON ÔNG ${grp.father.full_name.toUpperCase()}`
-                      : `CÁC CON BÀ ${grp.mother!.full_name.toUpperCase()}`;
+                names.length === 0 ? "Thuỷ tổ" : names.join(" và ");
               return (
-                <View key={grp.key}>
-                  <Text style={s.groupHead} minPresenceAhead={70}>
-                    {head}
-                  </Text>
+                <Fragment key={grp.key}>
                   {grp.kids.map((k, i) => {
                     const spouses = (spousesByPerson.get(k.id) ?? [])
                       .map((id) => personById.get(id))
                       .filter((x): x is PersonDetail => !!x);
                     const kySu = k.bio ? bioToPlainText(k.bio).trim() : "";
+                    const alias = [
+                      k.courtesy_name && `Tự ${k.courtesy_name}`,
+                      k.nickname && `Hiệu ${k.nickname}`,
+                      k.posthumous_name && `Thuỵ ${k.posthumous_name}`,
+                    ].filter(Boolean);
                     return (
+                      // Dải đời + tiêu đề nhóm + người đầu tiên là MỘT khối không ngắt trang, để dải không bị bỏ lại cuối trang.
                       <View key={k.id} wrap={false}>
-                        <View style={s.box}>
-                          <View style={s.boxCell}>
-                            <PersonBoxCell p={k} index={i + 1} burial={burial} />
+                        {i === 0 && gi === 0 ? (
+                          <View style={s.genBand}>
+                            <Text style={[s.genBandText, serifStyle()]}>ĐỜI THỨ {toRoman2(g)}</Text>
+                            <Text style={s.genBandCount}>{count} người</Text>
                           </View>
-                          <View style={s.boxCellRight}>
-                            {spouses.length === 0 ? (
-                              <Text style={s.boxLine}> </Text>
-                            ) : (
-                              spouses.map((sp, si) => (
-                                <View key={sp.id} style={si > 0 ? s.boxSep : undefined}>
-                                  <PersonBoxCell p={sp} burial={burial} />
+                        ) : null}
+                        {i === 0 ? (
+                          <View style={s.grpHead}>
+                            <Text style={s.grpLabel}>
+                              {names.length === 0 ? "" : "Con của"}
+                            </Text>
+                            <Text style={s.grpNames}>{head}</Text>
+                          </View>
+                        ) : null}
+                        <View style={s.entry}>
+                          <View style={s.entryNo}>
+                            <Text style={s.entryNoText}>{i + 1}</Text>
+                          </View>
+                          <View style={s.entryBody}>
+                            <Text style={s.entryName}>
+                              {k.full_name}
+                              <Text style={s.entryTag}>
+                                {"  "}
+                                {k.is_root ? "Thuỷ tổ · " : ""}
+                                {k.gender === "M" ? "Nam" : "Nữ"}
+                              </Text>
+                            </Text>
+                            {alias.length > 0 ? (
+                              <Text style={s.fact}>{alias.join(" · ")}</Text>
+                            ) : null}
+                            <Facts items={personFacts(k, burial)} />
+                            {spouses.map((sp) => (
+                              <View key={sp.id} style={s.spouseLine}>
+                                <Text style={s.spouseTag}>{k.gender === "M" ? "Vợ" : "Chồng"}</Text>
+                                <View style={s.spouseBody}>
+                                  <Text style={s.spouseName}>{sp.full_name}</Text>
+                                  <Facts items={personFacts(sp, burial)} />
                                 </View>
-                              ))
-                            )}
+                              </View>
+                            ))}
+                            {kySu ? (
+                              <View style={s.kySuBox}>
+                                <Text style={s.kySu}>
+                                  {kySu.length > 500 ? `${kySu.slice(0, 500).trimEnd()}…` : kySu}
+                                </Text>
+                              </View>
+                            ) : null}
                           </View>
                         </View>
-                        <Text style={s.kySu}>
-                          {kySu
-                            ? kySu.length > 500
-                              ? `${kySu.slice(0, 500).trimEnd()}…`
-                              : kySu
-                            : " "}
-                        </Text>
                       </View>
                     );
                   })}
-                </View>
+                </Fragment>
               );
             })}
-        </View>
-      ))}
+          </Fragment>
+        );
+      })}
     </Page>
   );
 }
@@ -459,7 +802,7 @@ function toRoman2(n: number): string {
 // ─── Ngoại phả ─────────────────────────────────────────────────────
 
 export function NgoaiPhaTextPage({ text }: { text: string }) {
-  return <TextPage title="Ngoại phả" text={text} />;
+  return <TextPage title="Ngoại phả" id="sec-ngoaipha" text={text} />;
 }
 
 /** Danh sách ngày giỗ theo âm lịch, xếp từ tháng 1 đến tháng 12. */
@@ -483,25 +826,22 @@ export function DeathAnniversaryPages({
   return (
     <Page size="A4" style={BOOK_PAGE()}>
       <VineBorder />
-      <Text style={[s.h1, serifStyle()]}>Danh sách ngày giỗ</Text>
+      <PageNumber />
+      <SectionTitle id="sec-gio" style={[s.h1, serifStyle()]}>Danh sách ngày giỗ</SectionTitle>
       <View style={s.underline} />
       <Text style={s.intro}>Ngày giỗ tính theo âm lịch.</Text>
-      <View style={s.row} fixed>
-        <Text style={[s.th, { width: 90 }]}>Ngày giỗ</Text>
-        <Text style={[s.th, { flex: 1 }]}>Người mất</Text>
-        <Text style={[s.th, { width: 50 }]}>Đời</Text>
-      </View>
-      {rows.map((p) => (
-        <View key={p.id} style={s.row} wrap={false}>
-          <Text style={[s.td, { width: 90 }]}>
-            {p.death_anniv_lunar_day}/{p.death_anniv_lunar_month} ÂL
-          </Text>
-          <Text style={[s.td, { flex: 1 }]}>{p.full_name}</Text>
-          <Text style={[s.td, { width: 50 }]}>
-            {p.generation === null ? "" : p.generation - genOffset}
-          </Text>
-        </View>
-      ))}
+      <ChunkedTable
+        cols={[
+          { label: "Ngày giỗ", width: 96 },
+          { label: "Người mất" },
+          { label: "Đời", width: 56, align: "center" },
+        ]}
+        rows={rows.map((p) => [
+          `${p.death_anniv_lunar_day}/${p.death_anniv_lunar_month} ÂL`,
+          p.full_name,
+          p.generation === null ? "" : p.generation - genOffset,
+        ])}
+      />
     </Page>
   );
 }
@@ -535,27 +875,26 @@ export function MarriageTablePages({
   return (
     <Page size="A4" style={BOOK_PAGE()}>
       <VineBorder />
-      <Text style={[s.h1, serifStyle()]}>Quan hệ cưới gả</Text>
+      <PageNumber />
+      <SectionTitle id="sec-cuoiga" style={[s.h1, serifStyle()]}>Quan hệ cưới gả</SectionTitle>
       <View style={s.underline} />
       <Text style={s.intro}>
         Con trai cưới vợ, con gái gả chồng; ghi theo đời của người trong họ.
       </Text>
-      <View style={s.row} fixed>
-        <Text style={[s.th, { width: 36 }]}>Đời</Text>
-        <Text style={[s.th, { flex: 1 }]}>Người trong họ</Text>
-        <Text style={[s.th, { width: 44 }]}>Quan hệ</Text>
-        <Text style={[s.th, { flex: 1 }]}>Vợ / chồng</Text>
-      </View>
-      {rows.map((r, i) => (
-        <View key={i} style={s.row} wrap={false}>
-          <Text style={[s.td, { width: 36 }]}>
-            {r.who.generation === null ? "" : r.who.generation - genOffset}
-          </Text>
-          <Text style={[s.td, { flex: 1 }]}>{r.who.full_name}</Text>
-          <Text style={[s.td, { width: 44 }]}>{r.who.gender === "M" ? "cưới" : "gả"}</Text>
-          <Text style={[s.td, { flex: 1 }]}>{r.spouse.full_name}</Text>
-        </View>
-      ))}
+      <ChunkedTable
+        cols={[
+          { label: "Đời", width: 44, align: "center" },
+          { label: "Người trong họ" },
+          { label: "Quan hệ", width: 66, align: "center" },
+          { label: "Vợ / chồng" },
+        ]}
+        rows={rows.map((r) => [
+          r.who.generation === null ? "" : r.who.generation - genOffset,
+          r.who.full_name,
+          r.who.gender === "M" ? "cưới" : "gả",
+          r.spouse.full_name,
+        ])}
+      />
     </Page>
   );
 }
@@ -563,5 +902,19 @@ export function MarriageTablePages({
 // ─── Phụ khảo ──────────────────────────────────────────────────────
 
 export function PhuKhaoPage({ text }: { text: string }) {
-  return <TextPage title="Phụ khảo" text={text} />;
+  return <TextPage title="Phụ khảo" id="sec-phukhao" text={text} />;
+}
+
+/** Có người đã mất ghi ngày giỗ âm lịch (để mục lục biết trang Danh sách ngày giỗ có hay không). */
+export function hasAnniversaries(persons: PersonDetail[]): boolean {
+  return persons.some((p) => !p.is_living && p.death_anniv_lunar_month && p.death_anniv_lunar_day);
+}
+
+/** Có ít nhất một cặp vợ chồng trong họ (trang Quan hệ cưới gả có hay không). */
+export function hasMarriages(
+  bloodline: PersonDetail[],
+  spousesByPerson: Map<string, string[]>,
+  personById: Map<string, PersonDetail>,
+): boolean {
+  return bloodline.some((p) => (spousesByPerson.get(p.id) ?? []).some((id) => personById.has(id)));
 }
