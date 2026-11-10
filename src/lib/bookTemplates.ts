@@ -41,17 +41,21 @@ Về thể lệ ghi chép, cuốn phả này thống nhất như sau: số đờ
 Thừa mệnh Hội đồng gia tộc họ {họ}
 Trưởng họ: […]
 Người biên soạn: […]`,
-    phaky: `1. Tổ phụ và tổ quán
+    phaky: `1. Ý nghĩa của gia phả
+
+Gia phả là cuốn sử của một dòng họ. Có phả, con cháu biết rõ tổ tiên, nhớ đúng ngày giỗ, giữ đúng thứ bậc trong xưng hô, tránh việc kết hôn trong phạm vi họ hàng gần và có chỗ để tự hào, noi theo truyền thống cha ông. Với họ {họ}, bộ phả này là sợi dây nối các chi, các phái, nối người ở quê với người đi xa.
+
+2. Tổ phụ và tổ quán
 
 Theo lời truyền lại và các ghi chép còn giữ được, thuỷ tổ họ {họ} là cụ […] (thuỷ tổ khảo), sinh khoảng năm […], vốn người […]. Vào khoảng năm […], vì [loạn lạc / thiếu đất canh tác / theo việc quan], cụ cùng gia quyến đến vùng đất […] khai khẩn, lập ấp, dựng nhà, từ đó sinh con đẻ cháu nối dõi. Cụ bà (thuỷ tổ tỷ) là […], người […], tính tình hiền hậu, tảo tần, được con cháu đời đời kính nhớ. Về các đời trước thuỷ tổ, vì không có tài liệu xác thực nên phả không ghi, để tránh nhận nhầm tổ tiên và tránh kéo dài những chuyện xa xôi không liên quan đến quê hương hiện tại.
 
-Vùng đất tổ tiên chọn làm nơi lập nghiệp nằm ở […], phía đông giáp […], phía tây giáp […], phía nam giáp […], phía bắc giáp […]. Nơi đây có sông […] chảy qua, đồng ruộng phì nhiêu, đường đi lại thuận tiện. Cùng sinh sống trên mảnh đất này còn có các dòng họ […], hai bên gắn bó, thông gia, giúp đỡ nhau qua nhiều thế hệ.
+Vùng đất tổ tiên chọn làm nơi lập nghiệp nằm ở […], phía đông giáp […], phía tây giáp […], phía nam giáp […], phía bắc giáp […]. Nơi đây có sông […] chảy qua, đồng ruộng phì nhiêu, đường đi lại thuận tiện; có chợ […], đình […], chùa […]. Cùng sinh sống trên mảnh đất này còn có các dòng họ […], hai bên gắn bó, thông gia, giúp đỡ nhau qua nhiều thế hệ. Nhà thờ họ và khu mộ tổ nằm ở […]. (Có thể kèm bản đồ xóm ấp vẽ tay hoặc lấy từ bản đồ trực tuyến.)
 
-2. Sự phát triển của dòng họ
+3. Sự phát triển của dòng họ
 
 Từ cụ thuỷ tổ, họ {họ} sinh ra các chi, các phái. Đến nay dòng họ đã trải qua […] đời, gồm […] chi: […]. Tổng số con cháu được ghi trong phả là […] người, trong đó nam […], nữ […]. Con cháu đã kết thông gia với nhiều dòng họ trong vùng và ngoài vùng, làm cho tình nghĩa xóm làng ngày thêm rộng.
 
-3. Truyền thống của dòng họ
+4. Truyền thống của dòng họ
 
 Về lao động, sản xuất: các đời trong họ chủ yếu làm nông, cần cù bám đất, giữ làng; một số người làm nghề thủ công, buôn bán nhỏ, rồi dần có người làm thầy giáo, thầy thuốc, cán bộ, công nhân, doanh nhân. Cuộc sống nhiều thời kỳ còn khó khăn nhưng anh em trong họ luôn đùm bọc, chia nhau từng bát gạo, từng mảnh ruộng.
 
@@ -59,9 +63,13 @@ Về văn hoá, tín ngưỡng: dòng họ giữ nếp thờ cúng tổ tiên, l
 
 Về học tập: nhiều thế hệ coi trọng việc học, trong họ có […] người học đến đại học trở lên, […] người làm nghề dạy học.
 
-Về truyền thống yêu nước: trong các cuộc kháng chiến, nhiều con cháu họ {họ} đã lên đường nhập ngũ, tham gia cách mạng; có […] người đã hy sinh, […] người được tặng thưởng huân, huy chương và danh hiệu cao quý.
+Về truyền thống yêu nước: trong các cuộc kháng chiến, nhiều con cháu họ {họ} đã lên đường nhập ngũ, tham gia cách mạng; có […] người đã hy sinh, […] người được tặng thưởng huân, huy chương và danh hiệu cao quý; nhiều gia đình có mẹ được phong tặng danh hiệu Bà mẹ Việt Nam anh hùng […].
 
-4. Đặc điểm và phương hướng
+5. Gia đình và dòng họ trong đời sống
+
+Gia đình, dòng họ là nơi sinh ra và nuôi dưỡng các thế hệ nối tiếp nhau. Về kinh tế, mỗi gia đình tự lo cuộc sống, anh em trong họ giúp nhau khi hoạn nạn. Về giáo dục, ông bà, cha mẹ dạy con cháu chủ yếu bằng chính tấm gương của mình: cách ăn ở, cách làm ăn, cách đối xử với người trên kẻ dưới. Về tinh thần, dòng họ là chỗ dựa tình cảm, nơi con cháu tìm thấy sự sẻ chia sau những nhọc nhằn lao động và mất mát chiến tranh, trong đó vai trò của người mẹ, người bà rất lớn.
+
+6. Đặc điểm và phương hướng
 
 Họ {họ} có đặc điểm là cần cù, thật thà, trọng nghĩa, biết đoàn kết trong khó khăn. Bên cạnh những mặt tốt đẹp ấy, dòng họ cũng còn những hạn chế như con cháu đi làm ăn xa chưa thường xuyên về thăm quê, việc liên lạc giữa các chi còn lỏng lẻo; chúng ta thẳng thắn nhìn nhận để cùng khắc phục.
 
@@ -88,7 +96,11 @@ Mộ thuỷ tổ và các cụ đời đầu đặt tại […]. Các chi có kh
 
 6. Người học vị và các quan hệ cưới gả
 
-Danh sách người có học vị, người có công với quê hương đất nước và bảng quan hệ cưới gả với các dòng họ khác được tổng hợp ở các mục tiếp theo của sổ.`,
+Danh sách người có học vị, người có công với quê hương đất nước và bảng quan hệ cưới gả với các dòng họ khác được tổng hợp ở các mục tiếp theo của sổ.
+
+7. Tiểu sử nhân vật tiêu biểu
+
+Những người có đóng góp nổi bật cho dòng họ và quê hương: cụ […] (đời […]), […, hành trạng tóm tắt]; ông […] (đời […]), […]; bà […] (đời […]), […]. Mỗi người ghi ngắn gọn họ tên, năm sinh – mất, quê quán, quá trình học tập, công tác và những việc đáng nhớ.`,
     phu_khao: `1. Địa chí quê hương
 
 Quê hương họ {họ} là vùng […], thuộc […]. Xưa gọi là […], đến thời […] đổi thành […], nay thuộc xã […]. Đây là vùng đất bằng phẳng, có sông […] bồi đắp phù sa, khí hậu [nóng ẩm, bốn mùa rõ rệt], cư dân sống chủ yếu bằng nghề nông, cấy lúa nước, trồng màu, kết hợp chăn nuôi và nghề phụ.
@@ -103,7 +115,11 @@ Chợ […] họp vào các ngày […]; bến đò […] nối làng với bên
 
 4. Nghề truyền thống và đặc sản
 
-Ngoài nghề nông, làng còn có nghề […], sản vật nổi tiếng là […], được nhiều nơi biết đến. Các nghề này góp phần nuôi sống nhiều gia đình trong họ.`,
+Ngoài nghề nông, làng còn có nghề […], sản vật nổi tiếng là […], được nhiều nơi biết đến. Các nghề này góp phần nuôi sống nhiều gia đình trong họ.
+
+5. Bản đồ và tư liệu
+
+Bản đồ xóm ấp (vẽ tay hoặc lấy từ bản đồ trực tuyến), bản đồ khu mộ tổ, ảnh nhà thờ họ, câu đối, bia ký và các tài liệu khác được lưu kèm để con cháu tra cứu.`,
   },
 
   // ─── 2. Gia đình / chi họ nhỏ ───────────────────────────────────
