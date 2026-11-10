@@ -15,7 +15,7 @@ export interface SidePanelProps {
   title: string;
   subtitle?: string;
   onClose: () => void;
-  /** "md" 32rem (form ngắn) · "lg" 40rem (form dài / nhiều cột). Mobile luôn full-width. */
+  /** Mobile full-width · sm: "md" 32rem / "lg" 40rem · desktop (lg+): 45% màn hình, tối thiểu bằng cỡ sm. */
   size?: "md" | "lg";
   /** Thân không padding / không tự cuộn — nội dung (vd. chat) tự quản bố cục. */
   bare?: boolean;
@@ -151,7 +151,7 @@ export function SidePanel({
             ? "animate-out slide-out-to-right fill-mode-forwards"
             : "animate-in slide-in-from-right"
         } ${
-          size === "lg" ? "lg:w-[40rem]" : ""
+          size === "lg" ? "sm:w-[40rem] lg:w-[max(40rem,45vw)]" : "lg:w-[max(32rem,45vw)]"
         }`}
         style={{
           paddingTop: "env(safe-area-inset-top)",

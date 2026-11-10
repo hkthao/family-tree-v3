@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconPlus, IconTrash, IconX } from "@/components/icons";
+import { IconCheck, IconPlus, IconX } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { createClan } from "@/lib/queries/clans";
 import { BookMetaFields } from "@/components/BookMetaFields";
 import { BookTextsSection } from "@/components/BookTextsSection";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { createBranch } from "@/lib/queries/branches";
 import {
   ClanBasicFields,
   ClanDisplayFields,
@@ -46,15 +43,6 @@ export function NewClanForm({ onDone, onCancel }: NewClanFormProps) {
   // Cùng bộ ô với form Chỉnh sửa (ClanFormFields + BookMetaFields).
   const [values, setValues] = useState<ClanFormValues>(DEFAULT_CLAN_FORM);
   const [meta, setMeta] = useState<ClanBookTexts>(EMPTY_BOOK_TEXTS);
-  const [branches, setBranches] = useState<string[]>([]);
-  const [branchDraft, setBranchDraft] = useState("");
-
-  function addBranch() {
-    const n = branchDraft.trim();
-    if (!n || branches.includes(n)) return;
-    setBranches([...branches, n]);
-    setBranchDraft("");
-  }
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -65,16 +53,10 @@ export function NewClanForm({ onDone, onCancel }: NewClanFormProps) {
       if (Object.values(clean).some(Boolean)) {
         try {
           await saveClanBookTexts(clan.id, clean);
-        } catch {
-          /* bỏ qua */
-        }
-      }
-      // Các chi nhập trong form: lỗi từng chi không làm hỏng việc tạo, thêm lại được ở trang Sổ gia phả.
-      for (const name of branches) {
-        try {
-          await createBranch({ clan_id: clan.id, name });
-        } catch {
-          /* bỏ qua */
+        } catch (e) {
+          toast.error("Chưa lưu được thông tin sổ gia phả", {
+            description: `${(e as Error).message}. Dòng họ đã tạo; bạn nhập lại ở trang Thông tin & Sổ gia phả.`,
+          });
         }
       }
       return clan;
@@ -105,63 +87,6 @@ export function NewClanForm({ onDone, onCancel }: NewClanFormProps) {
           Tuỳ chọn, in ở bìa và trang giới thiệu của sổ; điền sau cũng được.
         </p>
         <BookMetaFields value={meta} onChange={setMeta} idPrefix="new" />
-      </fieldset>
-
-      <fieldset className="space-y-3">
-        <legend className="text-base font-medium mb-1">Chi (nhánh)</legend>
-        <p className="text-sm text-muted-foreground">
-          Các chi/nhánh của dòng họ; có thể thêm sau.
-        </p>
-        <div className="space-y-1.5">
-          <Label htmlFor="new-branch">Tên chi</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="new-branch"
-              className="h-10"
-              maxLength={100}
-              value={branchDraft}
-              placeholder="Vd: Chi cả"
-              onChange={(e) => setBranchDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addBranch();
-                }
-              }}
-            />
-            <Button
-              size="sm"
-              type="button"
-              variant="outline"
-              className="shrink-0"
-              disabled={!branchDraft.trim()}
-              onClick={addBranch}
-            >
-              <IconPlus className="h-4 w-4 mr-1.5" />
-              Thêm chi
-            </Button>
-          </div>
-        </div>
-        {branches.length > 0 && (
-          <ul className="divide-y rounded-md border">
-            {branches.map((b) => (
-              <li key={b} className="flex items-center justify-between gap-2 px-3 py-1.5">
-                <span className="truncate">{b}</span>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="h-10 w-10 shrink-0"
-                  aria-label={`Bỏ chi ${b}`}
-                  title="Bỏ chi này"
-                  onClick={() => setBranches(branches.filter((x) => x !== b))}
-                >
-                  <IconTrash className="h-4 w-4" />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
       </fieldset>
 
       <fieldset className="space-y-3">

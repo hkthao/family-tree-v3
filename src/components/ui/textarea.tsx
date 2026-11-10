@@ -17,7 +17,7 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
    * `rows` dòng (mặc định 3). Đặt false để giữ cỡ cố định + kéo giãn tay.
    */
   autoResize?: boolean;
-  /** Với autoResize: cao tối đa bấy nhiêu dòng, quá thì cuộn trong ô. */
+  /** Với autoResize: cao tối đa bấy nhiêu dòng (mặc định 10), quá thì cuộn trong ô. */
   maxRows?: number;
 }
 
@@ -29,7 +29,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       label,
       id,
       autoResize = true,
-      maxRows,
+      maxRows = 10,
       rows = 3,
       onInput,
       ...props
@@ -56,12 +56,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       let max = Infinity;
       if (maxRows) {
         const cs = getComputedStyle(el);
-        const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.5;
+        const px = (v: string) => parseFloat(v) || 0;
+        const lh = px(cs.lineHeight) || (px(cs.fontSize) || 16) * 1.5;
         const pad =
-          parseFloat(cs.paddingTop) +
-          parseFloat(cs.paddingBottom) +
-          parseFloat(cs.borderTopWidth) +
-          parseFloat(cs.borderBottomWidth);
+          px(cs.paddingTop) +
+          px(cs.paddingBottom) +
+          px(cs.borderTopWidth) +
+          px(cs.borderBottomWidth);
         max = lh * maxRows + pad;
       }
       el.style.height = `${Math.min(full, max)}px`;
