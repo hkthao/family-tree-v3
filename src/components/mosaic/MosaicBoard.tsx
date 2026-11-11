@@ -4,7 +4,13 @@ import type { MosaicTile } from "@/lib/queries/mosaics";
 
 import { CELL, TAB_MARGIN, gridRows, gridTotal, jigsawPath } from "./jigsaw";
 
-type Drag = { id: string; from: number; dx: number; dy: number; moved: boolean };
+type Drag = {
+  id: string;
+  from: number;
+  dx: number;
+  dy: number;
+  moved: boolean;
+};
 
 /**
  * Bức ảnh ghép dạng puzzle (SVG). Mỗi mảnh = ảnh cắt theo viền răng cưa; ô
@@ -43,7 +49,7 @@ export function MosaicBoard({
   const origin = useRef({ x: 0, y: 0 });
 
   const maxPos = tiles.reduce((m, t) => Math.max(m, t.position), -1);
-  const total = gridTotal(maxPos, slots);
+  const total = gridTotal(maxPos, slots, cols);
   const rows = gridRows(total, cols);
   const W = cols * CELL;
   const H = rows * CELL;
@@ -53,12 +59,17 @@ export function MosaicBoard({
   /** Toạ độ con trỏ trong hệ SVG. */
   const toSvg = (e: React.PointerEvent) => {
     const rect = svgRef.current!.getBoundingClientRect();
-    return { x: ((e.clientX - rect.left) / rect.width) * W, y: ((e.clientY - rect.top) / rect.height) * H };
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * W,
+      y: ((e.clientY - rect.top) / rect.height) * H,
+    };
   };
   const slotAt = (x: number, y: number) => {
     const c = Math.floor(x / CELL);
     const r = Math.floor(y / CELL);
-    return c < 0 || c >= cols || r < 0 || r >= rows || r * cols + c >= total ? null : r * cols + c;
+    return c < 0 || c >= cols || r < 0 || r >= rows || r * cols + c >= total
+      ? null
+      : r * cols + c;
   };
 
   const startDrag = (e: React.PointerEvent, t: MosaicTile) => {
@@ -115,7 +126,13 @@ export function MosaicBoard({
           <path d={jigsawPath(seed, r, c, rows, cols, total)} />
         </clipPath>
         <g clipPath={`url(#${clipId})`}>
-          <rect x={c * CELL - m} y={r * CELL - m} width={CELL + 2 * m} height={CELL + 2 * m} fill="#d9d2c7" />
+          <rect
+            x={c * CELL - m}
+            y={r * CELL - m}
+            width={CELL + 2 * m}
+            height={CELL + 2 * m}
+            fill="#d9d2c7"
+          />
           {t.url && (
             <image
               href={t.url}

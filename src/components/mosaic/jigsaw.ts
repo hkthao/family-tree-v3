@@ -19,7 +19,13 @@ function sign(seed: string, kind: "h" | "v", r: number, c: number): 1 | -1 {
 }
 
 /** Một cạnh từ (x1,y1) → (x2,y2), thuận chiều kim đồng hồ; dir>0 lồi ra ngoài. */
-function edge(x1: number, y1: number, x2: number, y2: number, dir: number): string {
+function edge(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  dir: number,
+): string {
   if (dir === 0) return `L${x2} ${y2}`;
   const ux = (x2 - x1) / CELL;
   const uy = (y2 - y1) / CELL;
@@ -56,7 +62,8 @@ export function jigsawPath(
   // Hàng cuối có thể lẻ: ô không có hàng xóm → cạnh thẳng.
   const top = r === 0 ? 0 : -sign(seed, "h", r - 1, c);
   const right = c === cols - 1 || idx + 1 >= total ? 0 : sign(seed, "v", r, c);
-  const bottom = r === rows - 1 || idx + cols >= total ? 0 : sign(seed, "h", r, c);
+  const bottom =
+    r === rows - 1 || idx + cols >= total ? 0 : sign(seed, "h", r, c);
   const left = c === 0 ? 0 : -sign(seed, "v", r, c - 1);
   return [
     `M${x0} ${y0}`,
@@ -68,9 +75,13 @@ export function jigsawPath(
   ].join(" ");
 }
 
-/** Tổng số ô hiển thị: đủ `slots`, và luôn dư một ô trống sau mảnh cuối. */
-export function gridTotal(maxPosition: number, slots: number): number {
-  return Math.max(slots, maxPosition + 2);
+/** Tổng số ô hiển thị: đủ `slots`, dư một ô trống sau mảnh cuối, và luôn tròn hàng. */
+export function gridTotal(
+  maxPosition: number,
+  slots: number,
+  cols: number,
+): number {
+  return Math.ceil(Math.max(slots, maxPosition + 2) / cols) * cols;
 }
 
 export function gridRows(total: number, cols: number): number {
