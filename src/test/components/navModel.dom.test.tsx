@@ -129,6 +129,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Bảng tin",
       "Bản đồ",
       "Phòng ký ức",
+      "Ảnh ghép",
       "Di sản dòng họ",
       "Mộ phần & tro cốt",
       "Quỹ họ",

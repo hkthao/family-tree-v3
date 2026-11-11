@@ -9,6 +9,7 @@
 export type ClanFeatureKey =
   | "board"
   | "memory_room"
+  | "mosaic"
   | "heritage"
   | "graves"
   | "honor"
@@ -26,6 +27,7 @@ export interface ClanFeatureDef {
 export const CLAN_FEATURES: ClanFeatureDef[] = [
   { key: "board", label: "Bảng tin", description: "Diễn đàn/bảng tin nội bộ dòng họ." },
   { key: "memory_room", label: "Phòng ký ức", description: "Phòng trưng bày ảnh 3D." },
+  { key: "mosaic", label: "Ảnh ghép đại gia đình", description: "Mỗi người góp một mảnh ảnh, ghép thành bức tranh chung." },
   { key: "heritage", label: "Di sản dòng họ", description: "Di sản, văn hoá, hiện vật." },
   { key: "graves", label: "Mộ phần & tro cốt", description: "Danh mục mộ phần, nghĩa trang." },
   { key: "honor", label: "Bảng vàng công đức", description: "Ghi nhận đóng góp công đức." },
