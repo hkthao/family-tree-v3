@@ -40,6 +40,7 @@ import {
   createMosaic,
   listMosaicSummaries,
   seedMosaicFromMembers,
+  setMosaicDashboard,
   type MosaicSummary,
 } from "@/lib/queries/mosaics";
 import { unaccent } from "@/lib/unaccent";
@@ -333,6 +334,7 @@ function NewMosaicForm({
   const [slots, setSlots] = useState(24);
   const [perMember, setPerMember] = useState(1);
   const [seed, setSeed] = useState(true);
+  const [onDash, setOnDash] = useState(false);
 
   const createM = useMutation({
     mutationFn: async () => {
@@ -348,6 +350,13 @@ function NewMosaicForm({
         slots: normalizeSlots(slots, cols),
         cols,
       });
+      if (onDash) {
+        try {
+          await setMosaicDashboard(clanId, created.id, true);
+        } catch {
+          /* không chặn tạo bức */
+        }
+      }
       if (seed) {
         try {
           await seedMosaicFromMembers(created.id);
@@ -425,6 +434,20 @@ function NewMosaicForm({
           }
         />
       </div>
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={onDash}
+          onChange={(e) => setOnDash(e.target.checked)}
+          className="mt-1 h-4 w-4 shrink-0 accent-primary"
+        />
+        <span>
+          <span className="font-medium">Hiển thị ở màn Tổng quan</span>
+          <span className="block text-sm text-muted-foreground">
+            Không chọn bức nào thì Tổng quan lấy bức đầu tiên trong danh sách.
+          </span>
+        </span>
+      </label>
       <label className="flex items-start gap-3">
         <input
           type="checkbox"

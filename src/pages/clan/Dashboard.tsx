@@ -27,6 +27,7 @@ import {
 } from "@/components/icons";
 import { ClanStatsPanel } from "@/components/ClanStatsPanel";
 import { MyProfileCard } from "@/components/MyProfileCard";
+import { FamilyPhotoCard } from "@/components/mosaic/FamilyPhotoCard";
 import { SectionCard } from "@/components/SectionCard";
 import { PageHeader } from "@/components/PageHeader";
 import { EnablePushPrompt } from "@/components/EnablePushPrompt";
@@ -518,6 +519,11 @@ export default function Dashboard() {
           {/* Hồ sơ của tôi: nhận vị trí trên cây + tự cập nhật (quản trị duyệt). */}
           {isMember && userId && (
             <MyProfileCard clanId={clan.id} userId={userId} persons={tree?.persons} />
+          )}
+
+          {/* Ảnh gia đình: bức ảnh ghép mới nhất của họ. */}
+          {isMember && userId && isFeatureEnabled(clan.disabled_features, "mosaic") && (
+            <FamilyPhotoCard clanId={clan.id} userId={userId} />
           )}
 
           {/* Tiến độ hoàn thiện — nhắc bổ sung thông tin. */}

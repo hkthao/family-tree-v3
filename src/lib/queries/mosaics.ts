@@ -17,6 +17,8 @@ export type Mosaic = {
   cols: number;
   /** Tổng số ô của bức. */
   slots: number;
+  /** Hiển thị ở màn Tổng quan (không bức nào bật thì lấy bức đầu danh sách). */
+  show_on_dashboard: boolean;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -61,7 +63,7 @@ export async function listMosaicSummaries(
       "mosaic_id",
       mosaics.map((m) => m.id),
     )
-    .lt("position", 4)
+    .lt("position", 8)
     .order("position", { ascending: true });
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as { mosaic_id: string; photo_path: string }[];
@@ -116,12 +118,39 @@ export async function createMosaic(
   return data as Mosaic;
 }
 
+/** Chỉ một bức được hiện ở Tổng quan: bật bức này thì gỡ cờ của các bức khác trong họ. */
+export async function setMosaicDashboard(
+  clanId: string,
+  id: string,
+  on: boolean,
+): Promise<void> {
+  if (on) {
+    const { error } = await db
+      .from("clan_mosaics")
+      .update({ show_on_dashboard: false })
+      .eq("clan_id", clanId)
+      .neq("id", id);
+    if (error) throw new Error(error.message);
+  }
+  const { error } = await db
+    .from("clan_mosaics")
+    .update({ show_on_dashboard: on })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export async function updateMosaic(
   id: string,
   patch: Partial<
     Pick<
       Mosaic,
-      "title" | "description" | "status" | "max_per_member" | "cols" | "slots"
+      | "title"
+      | "description"
+      | "status"
+      | "max_per_member"
+      | "cols"
+      | "slots"
+      | "show_on_dashboard"
     >
   >,
 ): Promise<void> {
