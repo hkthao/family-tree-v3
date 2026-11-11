@@ -2,7 +2,7 @@
 export const CELL = 100;
 
 /** Phần ảnh nhô ra ngoài ô để phủ kín răng cưa (tỉ lệ theo ô). */
-export const TAB_MARGIN = 0.3;
+export const TAB_MARGIN = 0.2;
 
 function hash(str: string): number {
   let h = 2166136261;
@@ -37,10 +37,11 @@ function edge(
     return `${X.toFixed(2)} ${Y.toFixed(2)}`;
   };
   return [
-    `L${p(0.38, 0)}`,
-    `C${p(0.38, 0.08)} ${p(0.3, 0.1)} ${p(0.3, 0.18)}`,
-    `C${p(0.3, 0.3)} ${p(0.7, 0.3)} ${p(0.7, 0.18)}`,
-    `C${p(0.7, 0.1)} ${p(0.62, 0.08)} ${p(0.62, 0)}`,
+    // Răng nhỏ, gọn: chen ít ảnh sang ô bên cạnh cho bức đỡ lộn xộn.
+    `L${p(0.42, 0)}`,
+    `C${p(0.42, 0.05)} ${p(0.37, 0.07)} ${p(0.37, 0.12)}`,
+    `C${p(0.37, 0.2)} ${p(0.63, 0.2)} ${p(0.63, 0.12)}`,
+    `C${p(0.63, 0.07)} ${p(0.58, 0.05)} ${p(0.58, 0)}`,
     `L${x2} ${y2}`,
   ].join(" ");
 }
