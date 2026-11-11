@@ -169,6 +169,15 @@ function readBackdrop(): Backdrop {
   }
 }
 
+/** Viết hoa chữ đầu mỗi tiếng của tên: "lê  thị hà" → "Lê Thị Hà" (cả sau "(" và "-"). */
+function titleCaseName(name: string): string {
+  return name
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("vi")
+    .replace(/(^|[\s(\-])(\p{L})/gu, (_m, pre: string, ch: string) => pre + ch.toLocaleUpperCase("vi"));
+}
+
 function readOrientation(): Orientation {
   try {
     return localStorage.getItem(ORIENTATION_KEY) === "horizontal"
@@ -696,7 +705,7 @@ export default function Tree() {
         };
 
         const displayLines: CardDisplayFn[] = [
-          (d) => String((d as DatumNode).data?.["full name"] ?? ""),
+          (d) => titleCaseName(String((d as DatumNode).data?.["full name"] ?? "")),
           (d) => dateLine(d as DatumNode),
         ];
         if (showDeceasedDetails) {
@@ -790,7 +799,7 @@ export default function Tree() {
               nameTspan.parentNode
                 ?.querySelectorAll(".name-extra")
                 .forEach((n) => n.remove());
-              const words = String(fields["full name"] ?? "").trim().split(/\s+/);
+              const words = titleCaseName(String(fields["full name"] ?? "")).split(" ");
               const lines = [
                 ...words.slice(0, nameLines - 1),
                 words.slice(nameLines - 1).join(" "),
