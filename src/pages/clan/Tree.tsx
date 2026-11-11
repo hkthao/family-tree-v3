@@ -108,7 +108,12 @@ interface F3Chart {
     b: boolean,
     opts?: { label?: string },
   ) => F3Chart;
-  updateTree: (opts: { initial?: boolean }) => void;
+  updateTree: (opts: {
+    initial?: boolean;
+    tree_position?: "fit" | "main_to_middle" | "inherit";
+    scale?: number;
+    transition_time?: number;
+  }) => void;
   updateMainId?: (id: string) => void;
   // setCardSvg / setCardHtml return a NEW Card instance (CardSvg /
   // CardHtml), not the Chart. Configuration like setCardDisplay,
@@ -1243,6 +1248,30 @@ export default function Tree() {
         chart = built;
         chartRef.current = built;
 
+        // Cây đông người thì "vừa khít" làm chữ nhỏ không đọc được: nếu tỉ lệ vừa
+        // khít dưới ngưỡng đọc được thì phóng lên ngưỡng đó và đặt người làm tâm
+        // giữa khung (kéo/lăn chuột để xem phần còn lại).
+        const currentK = async (): Promise<number> => {
+          const svgEl = node.querySelector("svg.main_svg") as
+            | (SVGSVGElement & { __zoomObj?: unknown })
+            | null;
+          if (!svgEl) return 1;
+          const listener = (svgEl.__zoomObj ? svgEl : svgEl.parentElement) as Element;
+          const { zoomTransform } = await import("d3-zoom");
+          return zoomTransform(listener).k;
+        };
+        const READABLE_K = 0.85;
+        const k0 = await currentK();
+        if (disposed) return;
+        if (k0 < READABLE_K) {
+          built.updateTree({
+            initial: false,
+            tree_position: "main_to_middle",
+            scale: READABLE_K,
+            transition_time: 0,
+          });
+        }
+
         // Tô link ngay + vài frame sau (phòng updateTree dựng path trễ trong
         // rAF/transition). Observer ở trên lo các lần cập nhật về sau.
         colorLinks();
@@ -1258,7 +1287,19 @@ export default function Tree() {
             const next = node.getBoundingClientRect().width;
             if (Math.abs(next - last) < 1) return; // ignore sub-pixel noise
             last = next;
-            chart?.updateTree({ initial: false });
+            // Giữ mức zoom đang xem, chỉ đặt lại người tâm giữa khung.
+            void currentK().then((k) =>
+              chart?.updateTree(
+                k < READABLE_K
+                  ? {
+                      initial: false,
+                      tree_position: "main_to_middle",
+                      scale: Math.max(k, 0.2),
+                      transition_time: 0,
+                    }
+                  : { initial: false },
+              ),
+            );
           });
           resizeObserver.observe(node);
         }
