@@ -169,7 +169,6 @@ export function MosaicBoard({
       role="img"
       aria-label="Bức ảnh đại gia đình ghép mảnh"
     >
-      <rect x={-m} y={-m} width={W + 2 * m} height={H + 2 * m} fill="#efe9df" />
       {/* Ô trống: gỗ + răng cưa để nhìn ra chỗ cần ghép */}
       {cells
         .filter((i) => !bySlot.has(i))
