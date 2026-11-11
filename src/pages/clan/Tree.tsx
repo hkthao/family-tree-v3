@@ -335,6 +335,39 @@ export default function Tree() {
     }
   }, [cardFrame]);
 
+  // Kiểu thẻ: "wide" = ngang (ảnh trái, chữ phải); "tall" = dọc (ảnh trên, chữ dưới)
+  // — hẹp hơn nên một màn hình xem được nhiều người hơn.
+  const [cardLayout, setCardLayout] = useState<"wide" | "tall">(() => {
+    try {
+      return localStorage.getItem("family-tree:card-layout") === "tall" ? "tall" : "wide";
+    } catch {
+      return "wide";
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("family-tree:card-layout", cardLayout);
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [cardLayout]);
+
+  // Thẻ dọc: ẩn ảnh đại diện cho gọn, xem được nhiều người hơn.
+  const [cardAvatar, setCardAvatar] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("family-tree:card-avatar") !== "off";
+    } catch {
+      return true;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("family-tree:card-avatar", cardAvatar ? "on" : "off");
+    } catch {
+      /* private mode — ignore */
+    }
+  }, [cardAvatar]);
+
   // Font tên trên thẻ: Playfair mặc định + vài font thư pháp có tiếng Việt.
   const [nameFont, setNameFont] = useState<string>(readNameFontId);
   useEffect(() => {
@@ -668,8 +701,32 @@ export default function Tree() {
         // Bề ngang thẻ — 248 để chứa tên Việt 4 chữ + chừa góc phải cho
         // badge "Đời"/thông gia. Tên dài hơn sẽ tự thu nhỏ cỡ chữ trong
         // onCardUpdate nên không bao giờ bị cắt/đè badge.
-        const cardW = 248;
-        const cardH = showDeceasedDetails ? 74 : 64;
+        const tall = cardLayout === "tall";
+        const cardW = tall ? 96 : 248;
+        // Thẻ dọc: mỗi chữ của tên một dòng; chiều cao theo tên dài nhất (2–4 chữ)
+        // để mọi thẻ vẫn bằng nhau.
+        const NAME_LINE = 17;
+        const noAvatar = tall && !cardAvatar;
+        const nameTop = noAvatar ? 26 : 72;
+        const nameLines = tall
+          ? Math.min(
+              4,
+              Math.max(
+                2,
+                ...(f3Data as { data?: Record<string, unknown> }[]).map(
+                  (n) => String(n.data?.["full name"] ?? "").trim().split(/\s+/).length,
+                ),
+              ),
+            )
+          : 1;
+        const cardH = tall
+          ? nameTop + 16 + (nameLines - 1) * NAME_LINE + 20 + (showDeceasedDetails ? 16 : 0) + 8
+          : showDeceasedDetails
+            ? 74
+            : 64;
+        const imgX = tall ? (cardW - 50) / 2 : 8;
+        const imgY = tall ? 8 : showDeceasedDetails ? 12 : 7;
+        const textX = tall ? cardW / 2 : 64;
         // 2 nút +/sửa neo sát góc phải-dưới thẻ (mép phải cardW-8, mép
         // dưới cardH-4); mỗi nút tròn r=11 (22px), cách nhau 4px.
         const actAddX = cardW - 56;
@@ -684,13 +741,13 @@ export default function Tree() {
           // dòng giỗ/thọ.
           .setCardDim({
             w: cardW,
-            h: showDeceasedDetails ? 74 : 64,
-            text_x: 64,
-            text_y: 18,
+            h: cardH,
+            text_x: textX,
+            text_y: tall ? nameTop : 18,
             img_w: 50,
             img_h: 50,
-            img_x: 8,
-            img_y: showDeceasedDetails ? 12 : 7,
+            img_x: imgX,
+            img_y: imgY,
           })
           .setOnCardUpdate(function (d) {
             const datum = d.data as DatumNode | undefined;
@@ -703,12 +760,13 @@ export default function Tree() {
             // `this` là .card_cont; avatar nằm trong .card (đã dịch về góc thẻ).
             const cardEl = this.querySelector(".card");
             cardEl?.querySelector(":scope > .clan-frame")?.remove();
-            if (frameSvgRef.current && cardEl) {
+            if (noAvatar) cardEl?.querySelector(".card_image")?.remove();
+            if (frameSvgRef.current && cardEl && !noAvatar) {
               const fg = document.createElementNS("http://www.w3.org/2000/svg", "g");
               fg.setAttribute("class", "clan-frame");
               fg.setAttribute(
                 "transform",
-                `translate(8 ${showDeceasedDetails ? 12 : 7}) scale(0.5)`,
+                `translate(${imgX} ${imgY}) scale(0.5)`,
               );
               fg.setAttribute("pointer-events", "none");
               fg.innerHTML = frameSvgRef.current;
@@ -721,19 +779,51 @@ export default function Tree() {
             // Tên (dòng 1): tự thu nhỏ cỡ chữ nếu quá dài để không bị
             // cắt ở mép phải hoặc đè vào badge "Đời"/thông gia ở góc.
             const nameTspan = tspans[0];
-            if (nameTspan && typeof nameTspan.getComputedTextLength === "function") {
+            if (tall && nameTspan) {
+              // Mỗi chữ một dòng; chữ thứ 4 trở đi dồn vào dòng cuối.
+              nameTspan.parentNode
+                ?.querySelectorAll(".name-extra")
+                .forEach((n) => n.remove());
+              const words = String(fields["full name"] ?? "").trim().split(/\s+/);
+              const lines = [
+                ...words.slice(0, nameLines - 1),
+                words.slice(nameLines - 1).join(" "),
+              ].filter(Boolean);
+              nameTspan.textContent = lines[0] ?? "";
+              nameTspan.setAttribute("dy", "16");
+              nameTspan.style.fontSize = "15px";
+              nameTspan.style.fontWeight = "700";
+              let anchor: Element = nameTspan;
+              for (const ln of lines.slice(1)) {
+                const t = nameTspan.cloneNode(false) as SVGTSpanElement;
+                t.setAttribute("class", "name-extra");
+                t.setAttribute("text-anchor", "middle");
+                t.setAttribute("x", "0");
+                t.setAttribute("dy", String(NAME_LINE));
+                t.textContent = ln;
+                // CSS chỉ định dòng thứ 2 là dòng năm (nhỏ, mờ): trả lại kiểu tên.
+                t.style.fontSize = "15px";
+                t.style.opacity = "1";
+                t.style.fontWeight = "700";
+                anchor.after(t);
+                anchor = t;
+              }
+            } else if (nameTspan && typeof nameTspan.getComputedTextLength === "function") {
               const genVal = fields["generation"];
               const hasGen = typeof genVal === "number" && genVal > 0;
               const hasInlaw = !!(
                 personId && linkedIdsRef.current.has(personId)
               );
               // Mép phải vùng tên = trước badge (inlaw nằm trái badge Đời).
-              const badgeLeft = hasInlaw
+              // Thẻ dọc: huy hiệu nằm ở hàng trên cùng, tên có cả bề ngang thẻ.
+              const badgeLeft = tall
+                ? cardW - 6
+                : hasInlaw
                 ? cardW - 64
                 : hasGen
                   ? cardW - 46
                   : cardW - 8;
-              const avail = badgeLeft - 64 - 4; // text_x=64, chừa 4px
+              const avail = tall ? cardW - 12 : badgeLeft - 64 - 4; // text_x=64, chừa 4px
               nameTspan.removeAttribute("font-size"); // reset trước khi đo
               const len = nameTspan.getComputedTextLength();
               if (len > avail && avail > 0) {
@@ -747,16 +837,24 @@ export default function Tree() {
                 nameTspan.setAttribute("font-size", String(next));
               }
             }
+            if (tall && nameTspan) nameTspan.setAttribute("text-anchor", "middle");
             const meta = tspans[1];
             if (meta) {
-              meta.setAttribute("text-anchor", "start");
+              meta.setAttribute("text-anchor", tall ? "middle" : "start");
+              if (tall) {
+                meta.textContent = (meta.textContent ?? "").trim();
+                meta.style.fontSize = "12px";
+                meta.style.opacity = "0.7";
+                meta.style.fontWeight = "400";
+              }
               meta.setAttribute("x", "0");
               meta.setAttribute("dy", "18");
             }
             // Dòng 3 (giỗ + tuổi thọ) — đặt dưới dòng năm, chữ nhỏ + mờ.
             const extra = tspans[2];
             if (extra) {
-              extra.setAttribute("text-anchor", "start");
+              extra.setAttribute("text-anchor", tall ? "middle" : "start");
+              if (tall) extra.textContent = (extra.textContent ?? "").trim();
               extra.setAttribute("x", "0");
               extra.setAttribute("dy", "16");
               extra.setAttribute("font-size", "10");
@@ -778,22 +876,24 @@ export default function Tree() {
               // Bỏ phần "(1225–1400)" cuối tên cho thẻ gọn; đặt thẻ ở góc trên phải
               // BÊN TRONG khung (ghost không có badge "Đời") để không bị cắt/đè mép
               // dưới hay dòng năm; tên tự thu nhỏ nếu chạm thẻ.
-              const clanName = (
+              let clanName = (
                 (fields["ghost_peer_clan_name"] as string | undefined) ?? ""
               )
                 .replace(/\s*\([^)]*\)\s*$/, "")
                 .trim();
+              // Thẻ dọc: nhãn nằm góc trên-trái, ngắn lại để không đè ảnh.
+              if (tall && clanName.length > 5) clanName = `${clanName.slice(0, 4)}…`;
               if (clanName) {
                 const ns = "http://www.w3.org/2000/svg";
                 const tag = document.createElementNS(ns, "g");
                 tag.setAttribute("class", "ghost-clan-tag");
                 const tagW = 10 + clanName.length * 6;
-                const tagX = cardW - tagW - 6;
+                const tagX = tall ? 4 : cardW - tagW - 6;
                 if (
                   nameTspan &&
                   typeof nameTspan.getComputedTextLength === "function"
                 ) {
-                  const availG = tagX - 64 - 4;
+                  const availG = tall ? cardW - 12 : tagX - 64 - 4;
                   nameTspan.removeAttribute("font-size");
                   const lenG = nameTspan.getComputedTextLength();
                   if (lenG > availG && availG > 0) {
@@ -843,7 +943,7 @@ export default function Tree() {
                 overlay.setAttribute("x", "0");
                 overlay.setAttribute("y", "0");
                 overlay.setAttribute("width", String(cardW));
-                overlay.setAttribute("height", "64");
+                overlay.setAttribute("height", String(cardH));
                 overlay.setAttribute("fill", "transparent");
                 overlay.style.cursor = "pointer";
                 overlay.addEventListener("click", (e) => {
@@ -940,13 +1040,14 @@ export default function Tree() {
               // Ghim sát góc trên bên phải, NẰM TRONG thẻ (y dương) để
               // không bị mép thẻ cắt mất.
               // Dạng triện đỏ (con dấu sơn): khối vuông bo nhẹ, viền chỉ trong, chữ serif.
+              const gx = tall ? cardW - 30 : cardW - 42;
               badge.innerHTML = `
-                <rect x="${cardW - 42}" y="6" width="24" height="18" rx="2"
+                <rect x="${gx}" y="6" width="24" height="18" rx="2"
                       fill="#7A2E2E" />
-                <rect class="seal-in" x="${cardW - 40}" y="8" width="20" height="14"
+                <rect class="seal-in" x="${gx + 2}" y="8" width="20" height="14"
                       rx="1" fill="none" stroke="#F2D68A" stroke-width="0.8"
                       opacity="0.75" />
-                <text x="${cardW - 30}" y="18.5" text-anchor="middle"
+                <text x="${gx + 12}" y="18.5" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700"
                       style="font-family: var(--tree-name-font, 'Playfair Display'), Georgia, serif">
                   ${gen - clan.generation_offset}
@@ -968,10 +1069,11 @@ export default function Tree() {
                 "g",
               );
               inlaw.setAttribute("class", "inlaw-badge");
+              const ix = tall ? 16 : cardW - 55;
               inlaw.innerHTML = `
-                <circle cx="${cardW - 55}" cy="15" r="9" fill="#B8862A"
+                <circle cx="${ix}" cy="15" r="9" fill="#B8862A"
                         stroke="#FBF7F0" stroke-width="1" />
-                <text x="${cardW - 55}" y="19" text-anchor="middle"
+                <text x="${ix}" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="12" font-weight="700">↔</text>
                 <title>Liên kết thông gia — bấm để xem</title>`;
               inlaw.style.cursor = "pointer";
@@ -1048,16 +1150,21 @@ export default function Tree() {
         // Thẻ rộng 248 + cao hơn khi bật giỗ/thọ → nới khoảng cách để
         // không đè ngang (anh-em/vợ-chồng) lẫn dọc (các đời).
         const wide = showDeceasedDetails;
+        const tallCards = cardLayout === "tall";
         if (orientation === "horizontal") {
           built.setOrientationHorizontal?.();
           // Generations flow left→right → X must clear card width.
           // Siblings stack top→bottom → Y must clear card height.
-          built.setCardXSpacing(300).setCardYSpacing(wide ? 116 : 92);
+          built
+            .setCardXSpacing(tallCards ? cardW + 40 : 300)
+            .setCardYSpacing(tallCards ? cardH + 20 : wide ? 116 : 92);
         } else {
           built.setOrientationVertical?.();
           // Siblings stack left→right → X must clear card width.
           // Generations flow top→bottom → Y must clear card height.
-          built.setCardXSpacing(292).setCardYSpacing(wide ? 168 : 152);
+          built
+            .setCardXSpacing(tallCards ? cardW + 22 : 292)
+            .setCardYSpacing(tallCards ? cardH + 58 : wide ? 168 : 152);
         }
 
         // Giới hạn số đời hiển thị quanh người làm tâm. Họ lớn
@@ -1171,6 +1278,8 @@ export default function Tree() {
     clan.display_living_full_dob,
     depth,
     cardFrame,
+    cardLayout,
+    cardAvatar,
     nameFont,
     // Vẽ lại khi quay từ "Trực hệ" về "Cả cây" (container được mount lại).
     view,
@@ -1463,6 +1572,28 @@ export default function Tree() {
                       <option value="royal">Khung: Hoàng gia</option>
                       <option value="simple">Khung: Đơn giản</option>
                     </Select>
+                    <Select
+                      aria-label="Kiểu thẻ"
+                      icon={<IconLayoutVertical />}
+                      value={cardLayout}
+                      onChange={(e) => setCardLayout(e.target.value as "wide" | "tall")}
+                      className="w-full h-11 text-base"
+                    >
+                      <option value="wide">Thẻ: Ngang</option>
+                      <option value="tall">Thẻ: Dọc (xem được nhiều người hơn)</option>
+                    </Select>
+                    {cardLayout === "tall" && (
+                      <Select
+                        aria-label="Ảnh trên thẻ"
+                        icon={<IconUser />}
+                        value={cardAvatar ? "on" : "off"}
+                        onChange={(e) => setCardAvatar(e.target.value === "on")}
+                        className="w-full h-11 text-base"
+                      >
+                        <option value="on">Ảnh: Hiện</option>
+                        <option value="off">Ảnh: Ẩn</option>
+                      </Select>
+                    )}
                   </>
                 )}
                 {/* Font tên + avatar mặc định áp dụng cho cả 2D, 3D và Thư mục. */}
