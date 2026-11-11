@@ -46,6 +46,7 @@ import {
   getMyAvatar,
   listMosaicTiles,
   moveMosaicTile,
+  setMosaicDashboard,
   updateMosaic,
   updateMosaicTile,
   type Mosaic,
@@ -612,12 +613,13 @@ function EditMosaicForm({
   const [slots, setSlots] = useState(mosaic.slots);
   const [cols, setCols] = useState(mosaic.cols);
   const [perMember, setPerMember] = useState(mosaic.max_per_member);
+  const [onDash, setOnDash] = useState(mosaic.show_on_dashboard);
 
   const clamp = (v: number, lo: number, hi: number) =>
     Math.min(hi, Math.max(lo, v));
   const saveM = useMutation({
-    mutationFn: () =>
-      updateMosaic(mosaic.id, {
+    mutationFn: async () => {
+      await updateMosaic(mosaic.id, {
         title: title.trim() || "Ảnh đại gia đình",
         description: description.trim() || null,
         // Số ô luôn tròn hàng theo số cột (không để hàng cuối thiếu mảnh).
@@ -627,7 +629,11 @@ function EditMosaicForm({
         ),
         cols: clamp(cols, 3, 12),
         max_per_member: clamp(perMember, 1, 50),
-      }),
+      });
+      if (onDash !== mosaic.show_on_dashboard) {
+        await setMosaicDashboard(mosaic.clan_id, mosaic.id, onDash);
+      }
+    },
     onSuccess: onSaved,
     onError: (e) =>
       toast.error("Không lưu được", { description: (e as Error).message }),
@@ -701,6 +707,20 @@ function EditMosaicForm({
           onChange={(e) => setPerMember(Number(e.target.value) || 1)}
         />
       </div>
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={onDash}
+          onChange={(e) => setOnDash(e.target.checked)}
+          className="mt-1 h-4 w-4 shrink-0 accent-primary"
+        />
+        <span>
+          <span className="font-medium">Hiển thị ở màn Tổng quan</span>
+          <span className="block text-sm text-muted-foreground">
+            Không chọn bức nào thì Tổng quan lấy bức đầu tiên trong danh sách.
+          </span>
+        </span>
+      </label>
       <FormActions>
         <Button type="button" variant="outline" onClick={onCancel}>
           Huỷ
