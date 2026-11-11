@@ -733,8 +733,11 @@ export default function Tree() {
               ),
             )
           : 1;
+        // Người sửa được thấy hai nút +/sửa ở đáy thẻ dọc: dành hẳn một hàng cho chúng
+        // (không đè lên dòng năm sinh – mất).
+        const tallActionRow = tall && canEdit ? 26 : 0;
         const tallContentH =
-          nameTop + 24 + (nameLines - 1) * NAME_LINE + 30 + (showDeceasedDetails ? 20 : 0) + 8;
+          nameTop + 24 + (nameLines - 1) * NAME_LINE + 30 + (showDeceasedDetails ? 20 : 0) + 8 + tallActionRow;
         // Thẻ dọc luôn là hình chữ nhật đứng cân đối (cao ≥ ~1,55 × rộng);
         // phần dôi ra chia đều quanh khối tên, năm vẫn nằm đáy thẻ.
         const tallH = Math.max(tallContentH, Math.round(cardW * 1.55));
@@ -749,8 +752,9 @@ export default function Tree() {
         const textX = tall ? cardW / 2 : 64;
         // 2 nút +/sửa neo sát góc phải-dưới thẻ (mép phải cardW-8, mép
         // dưới cardH-4); mỗi nút tròn r=11 (22px), cách nhau 4px.
-        const actAddX = cardW - 56;
-        const actEditX = cardW - 30;
+        // Thẻ dọc: hai nút căn giữa ở hàng riêng dưới cùng; thẻ ngang: góc phải-dưới.
+        const actAddX = tall ? cardW / 2 - 24 : cardW - 56;
+        const actEditX = tall ? cardW / 2 + 2 : cardW - 30;
         const actY = cardH - 26;
         card
           ?.setCardDisplay(
@@ -1348,6 +1352,8 @@ export default function Tree() {
     cardFrame,
     cardLayout,
     cardAvatar,
+    // Quyền sửa quyết định có hàng nút +/sửa ở đáy thẻ (đổi chiều cao thẻ).
+    canEdit,
     nameFont,
     // Vẽ lại khi quay từ "Trực hệ" về "Cả cây" (container được mount lại).
     view,
@@ -1442,7 +1448,7 @@ export default function Tree() {
   // Ô "Đặt người trung tâm" — dùng CHUNG cho cả cây 2D và 3D.
   const focalSearch =
     data && data.persons.length > 0 ? (
-      <div className="relative print-hide order-first sm:order-none">
+      <div className="relative print-hide">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="min-w-0 sm:flex-1">
             <SearchInput
@@ -1535,7 +1541,7 @@ export default function Tree() {
     ) : null;
 
   return (
-    // Mobile: flex-col để ô "Đặt người trung tâm" (order-first) lên trên cùng.
+    // Mobile: flex-col, tiêu đề trang đứng trên, rồi tới ô "Đặt người trung tâm".
     <div className="flex flex-col gap-4 sm:block sm:space-y-4">
       {/* Print-only title strip — shows "Họ Nguyễn — Cây gia phả · 2026-06-01"
           at the top of the printed page. The on-screen flow ignores it. */}
@@ -1728,7 +1734,7 @@ export default function Tree() {
         // Cây thụt sâu nhiều đời: đặt bề ngang tối thiểu rồi cho cuộn ngang trên
         // điện thoại, thay vì ép tên người thành cột hẹp xuống nhiều dòng.
         <>
-        <div className="flex items-center justify-end gap-2 print-hide order-first sm:order-none">
+        <div className="flex items-center justify-end gap-2 print-hide">
           <Button
             type="button"
             variant="outline"
