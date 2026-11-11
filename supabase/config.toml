@@ -390,6 +390,11 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+[functions.calendar-feed]
+# Ứng dụng lịch (Google/Apple) gọi bằng URL thuần, không gửi được JWT. Hàm tự
+# kiểm token riêng của người dùng (bảng calendar_feeds) và còn là thành viên.
+verify_jwt = false
+
 [functions.share-view]
 # Anonymous tree viewer — no JWT required (plan §9).
 verify_jwt = false

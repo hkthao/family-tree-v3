@@ -225,11 +225,6 @@ export interface DrawerItem {
   end?: boolean;
   /** Optional pill rendered after the label — e.g. pending count. */
   badge?: string | number;
-  /**
-   * Mục MỞ HỘP THOẠI thay vì điều hướng (hiện chỉ có Góp ý). Vẫn để
-   * `to` làm khoá React, nhưng render ra nút chứ không phải link.
-   */
-  kind?: "feedback";
   /** Bấm thường mở ngăn kéo (?panel=…) thay vì chuyển trang; `to` là link dự phòng. */
   panel?: "chat";
 }
@@ -307,10 +302,9 @@ export function buildSections(
     // tiện ích ở chân drawer, cạnh QR và Cập nhật — chỗ người dùng chỉ
     // nhìn khi đã đi tìm. Muốn nghe góp ý thì phải để chỗ dễ thấy.
     {
-      to: "#feedback",
+      to: "/gop-y",
       label: "Góp ý / báo lỗi",
       icon: <IconMail className={ic} />,
-      kind: "feedback",
     },
   ];
   sections.push({

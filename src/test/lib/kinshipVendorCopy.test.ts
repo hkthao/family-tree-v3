@@ -34,6 +34,12 @@ const VENDORED: VendorFile[] = [
       ['from "@dqcai/vn-lunar";', 'from "npm:@dqcai/vn-lunar@1.0.1";'],
     ],
   },
+  {
+    source: "src/lib/icalBuild.ts",
+    vendor: "supabase/functions/_shared/vendor/icalBuild.ts",
+    marker: "// ─── nguyên văn src/lib/icalBuild.ts ─",
+    rewrites: [['from "@/lib/lunarDate";', 'from "./lunarDate.ts";']],
+  },
 ];
 
 describe.each(VENDORED)("bản sao $vendor", ({ source, vendor, marker, rewrites }) => {

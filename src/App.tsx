@@ -97,6 +97,7 @@ const Contact = lazy(() => import("@/pages/Contact"));
 const InlawsConfirm = lazy(() => import("@/pages/InlawsConfirm"));
 const Login = lazy(() => import("@/pages/Login"));
 const NewClan = lazy(() => import("@/pages/NewClan"));
+const MyFeedback = lazy(() => import("@/pages/MyFeedback"));
 const Share = lazy(() => import("@/pages/Share"));
 const KhoeCard = lazy(() => import("@/pages/KhoeCard"));
 const JoinClan = lazy(() => import("@/pages/JoinClan"));
@@ -225,6 +226,14 @@ export default function App() {
           element={
             <RequireAuth>
               <Clans />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/gop-y"
+          element={
+            <RequireAuth>
+              <MyFeedback />
             </RequireAuth>
           }
         />

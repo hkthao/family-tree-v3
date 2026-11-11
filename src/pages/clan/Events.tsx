@@ -27,6 +27,7 @@ import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { RecordDates } from "@/components/RecordDates";
 import { IconBellOff, IconDownload } from "@/components/icons";
+import { CalendarFeedPanel } from "@/components/CalendarFeedPanel";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
@@ -100,6 +101,7 @@ export default function Events() {
 
   const [daysAhead, setDaysAhead] = useState<number>(90);
   const [view, setView] = useState<"list" | "grid" | "calendar">("list");
+  const [feedOpen, setFeedOpen] = useState(false);
   // Phân trang danh sách sự kiện sắp tới (họ lớn có thể hàng trăm
   // sinh nhật / ngày giỗ trong khoảng đã chọn).
   const [pageSize, setPageSize] = useState(20);
@@ -280,6 +282,18 @@ export default function Events() {
                 <span className="hidden sm:inline">Lịch</span>
               </SegmentedButton>
             </SegmentedControl>
+            {effectiveRole(clan) !== null && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10"
+                onClick={() => setFeedOpen(true)}
+                title="Đăng ký lịch — Google / Apple Calendar tự cập nhật"
+              >
+                <IconCalendar className="h-4 w-4 sm:mr-1.5" />
+                <span className="hidden sm:inline">Đăng ký lịch</span>
+              </Button>
+            )}
             {effectiveRole(clan) !== null && (
               <Button
                 variant="outline"
@@ -476,6 +490,14 @@ export default function Events() {
           dateText={upcomingDateText(cardEvt)}
           defaultGenre={upcomingGenre(cardEvt.kind)}
           members={cardMembers}
+        />
+      )}
+      {userId && (
+        <CalendarFeedPanel
+          clanId={clan.id}
+          userId={userId}
+          open={feedOpen}
+          onClose={() => setFeedOpen(false)}
         />
       )}
     </div>
