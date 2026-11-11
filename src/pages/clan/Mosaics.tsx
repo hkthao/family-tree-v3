@@ -31,6 +31,7 @@ import {
 import {
   createMosaic,
   listMosaicSummaries,
+  seedMosaicFromMembers,
   type MosaicSummary,
 } from "@/lib/queries/mosaics";
 import { unaccent } from "@/lib/unaccent";
@@ -323,21 +324,30 @@ function NewMosaicForm({
   const [description, setDescription] = useState("");
   const [slots, setSlots] = useState(24);
   const [perMember, setPerMember] = useState(1);
+  const [seed, setSeed] = useState(true);
 
   const createM = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       // Lưới hơi ngang (~4:3); số ô làm tròn lên cho đủ hàng cuối.
       const cols = Math.min(
         12,
         Math.max(3, Math.round(Math.sqrt((slots * 4) / 3))),
       );
-      return createMosaic(clanId, {
+      const created = await createMosaic(clanId, {
         title: title.trim() || "Ảnh đại gia đình",
         description: description.trim() || null,
         max_per_member: perMember,
         slots: Math.min(500, Math.ceil(slots / cols) * cols),
         cols,
       });
+      if (seed) {
+        try {
+          await seedMosaicFromMembers(created.id);
+        } catch {
+          /* nạp lỗi không chặn tạo bức */
+        }
+      }
+      return created;
     },
     onSuccess: (m) => {
       qc.invalidateQueries({ queryKey: ["mosaics", clanId] });
@@ -401,6 +411,21 @@ function NewMosaicForm({
           }
         />
       </div>
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          checked={seed}
+          onChange={(e) => setSeed(e.target.checked)}
+          className="mt-1 h-4 w-4 shrink-0 accent-primary"
+        />
+        <span>
+          <span className="font-medium">Nạp sẵn avatar thành viên</span>
+          <span className="block text-sm text-muted-foreground">
+            Mỗi người có ảnh đại diện trên cây thành một mảnh; đổi avatar thì
+            mảnh tự đổi theo.
+          </span>
+        </span>
+      </label>
       <FormActions>
         <Button type="button" variant="outline" onClick={onCancel}>
           Huỷ
