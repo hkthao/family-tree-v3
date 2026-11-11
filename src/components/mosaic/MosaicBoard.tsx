@@ -2,7 +2,14 @@ import { useId, useRef, useState } from "react";
 
 import type { MosaicTile } from "@/lib/queries/mosaics";
 
-import { CELL, TAB_MARGIN, gridRows, gridTotal, jigsawPath } from "./jigsaw";
+import {
+  CELL,
+  TAB_MARGIN,
+  cellPath,
+  gridRows,
+  gridTotal,
+  type MosaicVariant,
+} from "./jigsaw";
 
 type Drag = {
   id: string;
@@ -27,6 +34,7 @@ const cells0 = (n: number) => Array.from({ length: n }, (_, i) => i);
 
 export function MosaicBoard({
   seed,
+  variant,
   cols,
   slots,
   tiles,
@@ -38,6 +46,7 @@ export function MosaicBoard({
   onMove,
 }: {
   seed: string;
+  variant: MosaicVariant;
   cols: number;
   slots: number;
   tiles: MosaicTile[];
@@ -112,6 +121,8 @@ export function MosaicBoard({
     const r = Math.floor(t.position / cols);
     const c = t.position % cols;
     const clipId = `${uid}-${t.id}`;
+    // Puzzle: ảnh tràn ra để phủ kín răng; Lưới: ảnh vừa đúng ô.
+    const pad = variant === "puzzle" ? m : 0;
     const dragging = drag?.id === t.id;
     const movable = arrange && canMove(t);
     return (
@@ -129,44 +140,55 @@ export function MosaicBoard({
         }}
       >
         <clipPath id={clipId}>
-          <path d={jigsawPath(seed, r, c, rows, cols, total)} />
+          <path d={cellPath(variant, seed, r, c, rows, cols, total)} />
         </clipPath>
         <g clipPath={`url(#${clipId})`}>
           <rect
-            x={c * CELL - m}
-            y={r * CELL - m}
-            width={CELL + 2 * m}
-            height={CELL + 2 * m}
+            x={c * CELL - pad}
+            y={r * CELL - pad}
+            width={CELL + 2 * pad}
+            height={CELL + 2 * pad}
             fill="#d9d2c7"
           />
           {t.url && (
             <image
               href={t.url}
-              x={c * CELL - m}
-              y={r * CELL - m}
-              width={CELL + 2 * m}
-              height={CELL + 2 * m}
+              x={c * CELL - pad}
+              y={r * CELL - pad}
+              width={CELL + 2 * pad}
+              height={CELL + 2 * pad}
               preserveAspectRatio="xMidYMid slice"
               // Phủ một tông ấm chung lên mọi ảnh để các mảnh hài hoà.
               style={{ filter: TILE_FILTER }}
             />
           )}
         </g>
-        {/* Viền: bóng mờ bên dưới + nét kem sáng bên trên, mỗi mảnh như một tấm ảnh in */}
-        <path
-          d={jigsawPath(seed, r, c, rows, cols, total)}
-          fill="none"
-          stroke="rgba(40,25,10,0.4)"
-          strokeWidth={2.8}
-          strokeLinejoin="round"
-        />
-        <path
-          d={jigsawPath(seed, r, c, rows, cols, total)}
-          fill="none"
-          stroke="rgba(255,246,228,0.92)"
-          strokeWidth={1.4}
-          strokeLinejoin="round"
-        />
+        {variant === "puzzle" ? (
+          <>
+            {/* Viền: bóng mờ bên dưới + nét kem sáng bên trên */}
+            <path
+              d={cellPath(variant, seed, r, c, rows, cols, total)}
+              fill="none"
+              stroke="rgba(40,25,10,0.4)"
+              strokeWidth={2.8}
+              strokeLinejoin="round"
+            />
+            <path
+              d={cellPath(variant, seed, r, c, rows, cols, total)}
+              fill="none"
+              stroke="rgba(255,246,228,0.92)"
+              strokeWidth={1.4}
+              strokeLinejoin="round"
+            />
+          </>
+        ) : (
+          <path
+            d={cellPath(variant, seed, r, c, rows, cols, total)}
+            fill="none"
+            stroke="rgba(0,0,0,0.25)"
+            strokeWidth={0.8}
+          />
+        )}
       </g>
     );
   };
@@ -206,7 +228,7 @@ export function MosaicBoard({
                 onClick={() => canAdd && !arrange && onAdd(i)}
               >
                 <path
-                  d={jigsawPath(seed, r, c, rows, cols, total)}
+                  d={cellPath(variant, seed, r, c, rows, cols, total)}
                   fill={isTarget ? "#c9a46b" : "#a9824f"}
                   fillOpacity={isTarget ? 0.9 : 0.55}
                   stroke="rgba(0,0,0,0.3)"

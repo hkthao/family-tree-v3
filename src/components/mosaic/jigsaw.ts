@@ -97,3 +97,42 @@ export function normalizeSlots(slots: number, cols: number): number {
   const rounded = Math.ceil(slots / cols) * cols;
   return rounded <= MAX_SLOTS ? rounded : Math.floor(MAX_SLOTS / cols) * cols;
 }
+
+export type MosaicVariant = "grid" | "puzzle";
+
+/** Ô vuông bo góc, thụt vào một khe nhỏ — kiểu lưới ảnh gọn, không răng cưa. */
+function flatPath(r: number, c: number): string {
+  const inset = 1.5;
+  const rad = 5;
+  const x0 = c * CELL + inset;
+  const y0 = r * CELL + inset;
+  const x1 = (c + 1) * CELL - inset;
+  const y1 = (r + 1) * CELL - inset;
+  return [
+    `M${x0 + rad} ${y0}`,
+    `H${x1 - rad}`,
+    `A${rad} ${rad} 0 0 1 ${x1} ${y0 + rad}`,
+    `V${y1 - rad}`,
+    `A${rad} ${rad} 0 0 1 ${x1 - rad} ${y1}`,
+    `H${x0 + rad}`,
+    `A${rad} ${rad} 0 0 1 ${x0} ${y1 - rad}`,
+    `V${y0 + rad}`,
+    `A${rad} ${rad} 0 0 1 ${x0 + rad} ${y0}`,
+    "Z",
+  ].join(" ");
+}
+
+/** Đường viền một ô theo kiểu hiển thị đang chọn. */
+export function cellPath(
+  variant: MosaicVariant,
+  seed: string,
+  r: number,
+  c: number,
+  rows: number,
+  cols: number,
+  total: number,
+): string {
+  return variant === "puzzle"
+    ? jigsawPath(seed, r, c, rows, cols, total)
+    : flatPath(r, c);
+}
