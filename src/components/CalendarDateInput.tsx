@@ -29,6 +29,8 @@ interface Props {
   value: CalendarDateValue;
   onChange: (next: CalendarDateValue) => void;
   helperText?: string;
+  /** Chế độ xem (chỉ đọc): ẩn lời hướng dẫn và nút chuyển lịch Âm. */
+  hideHelp?: boolean;
   /**
    * Year to bias can-chi disambiguation toward (Bính Thìn matches
    * 1856/1916/1976/2036 — we pick the candidate nearest to this).
@@ -62,6 +64,7 @@ export function CalendarDateInput({
   value,
   onChange,
   helperText,
+  hideHelp = false,
   referenceYear,
 }: Props) {
   const isLunar = value.mode === "lunar";
@@ -141,13 +144,15 @@ export function CalendarDateInput({
   return (
     <fieldset className="space-y-2">
       <legend className="text-base font-medium">{label}</legend>
-      {helperText && (
-        <p className="text-sm text-muted-foreground">{helperText}</p>
-      )}
-      <p className="text-xs text-muted-foreground">
-        Không nhớ đủ thì bỏ trống ngày, hoặc cả ngày-tháng — chỉ năm
-        cũng được.
-      </p>
+      {!hideHelp &&
+        (helperText ? (
+          <p className="text-sm text-muted-foreground">{helperText}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Không nhớ đủ thì bỏ trống ngày, hoặc cả ngày-tháng — chỉ năm
+            cũng được.
+          </p>
+        ))}
 
       {showLunarControls ? (
         <SegmentedControl ariaLabel="Chọn lịch">
@@ -166,7 +171,7 @@ export function CalendarDateInput({
             Âm
           </SegmentedButton>
         </SegmentedControl>
-      ) : (
+      ) : hideHelp ? null : (
         <button
           type="button"
           onClick={() => setLunarUiOpen(true)}

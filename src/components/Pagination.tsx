@@ -49,7 +49,8 @@ export function Pagination({
       : "—";
 
   return (
-    <div className="flex items-center justify-between flex-wrap gap-3 text-sm">
+    // pb-16 (mobile): chừa chỗ cho nút nổi (FAB) góc phải dưới, tránh che nút "Sau".
+    <div className="flex items-center justify-between flex-wrap gap-3 pb-16 sm:pb-0 text-sm">
       <div className="text-muted-foreground">
         {totalLabel}
         {isFetching && <span className="ml-2 italic">đang tải…</span>}
@@ -84,8 +85,8 @@ export function Pagination({
           onClick={() => onPageChange(page - 1)}
           aria-label="Trang trước"
         >
-          <IconArrowLeft className="h-4 w-4 mr-1" />
-          Trước
+          <IconArrowLeft className="h-4 w-4 sm:mr-1" />
+          <span className="hidden sm:inline">Trước</span>
         </Button>
         <span className="px-2 tabular-nums">
           {page}/{totalPages}
@@ -97,8 +98,8 @@ export function Pagination({
           onClick={() => onPageChange(page + 1)}
           aria-label="Trang sau"
         >
-          Sau
-          <IconArrowRight className="h-4 w-4 ml-1" />
+          <span className="hidden sm:inline">Sau</span>
+          <IconArrowRight className="h-4 w-4 sm:ml-1" />
         </Button>
       </div>
     </div>

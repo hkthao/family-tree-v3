@@ -398,7 +398,7 @@ export function EditPersonForm({
         </div>
       )}
 
-      <div className={`space-y-2 ${readOnly ? "[&_button]:hidden" : ""}`}>
+      <div className={`space-y-2 ${readOnly ? "[&_button]:hidden [&_p]:hidden" : ""}`}>
         <Label>Ảnh đại diện</Label>
         <PhotoUploadField
           clanId={clanId}
@@ -450,6 +450,7 @@ export function EditPersonForm({
       <CalendarDateInput
         label="Ngày sinh"
         idPrefix="birth"
+        hideHelp={readOnly}
         value={birth}
         onChange={setBirth}
         helperText="Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu bia mộ ghi ngày âm."
@@ -553,6 +554,7 @@ export function EditPersonForm({
           <CalendarDateInput
             label="Ngày mất (nếu đã mất)"
             idPrefix="death"
+            hideHelp={readOnly}
             value={death}
             onChange={(next) => {
               setDeath(next);
