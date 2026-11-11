@@ -87,3 +87,12 @@ export function gridTotal(
 export function gridRows(total: number, cols: number): number {
   return Math.max(1, Math.ceil(total / cols));
 }
+
+/** Trần số ô của một bức. */
+export const MAX_SLOTS = 150;
+
+/** Số ô tròn hàng theo số cột, không vượt MAX_SLOTS. */
+export function normalizeSlots(slots: number, cols: number): number {
+  const rounded = Math.ceil(slots / cols) * cols;
+  return rounded <= MAX_SLOTS ? rounded : Math.floor(MAX_SLOTS / cols) * cols;
+}

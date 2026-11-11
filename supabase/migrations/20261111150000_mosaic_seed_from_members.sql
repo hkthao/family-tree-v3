@@ -1,3 +1,10 @@
+-- Trần số ô của một bức: 150 (trước đó 500). Bức nào lỡ vượt thì hạ về mức tròn hàng ≤150.
+update public.clan_mosaics
+set slots = (150 / cols) * cols
+where slots > 150;
+alter table public.clan_mosaics drop constraint if exists clan_mosaics_slots;
+alter table public.clan_mosaics add constraint clan_mosaics_slots check (slots between 4 and 150);
+
 -- Tạo bức ảnh ghép với tuỳ chọn "nạp sẵn avatar thành viên": mỗi người trong cây CÓ ảnh
 -- đại diện thành một mảnh (photo_path trỏ thẳng avatar nên đổi avatar là mảnh đổi theo).
 -- Mảnh nạp sẵn không gắn user_id (không tính vào hạn mức của ai).
@@ -55,7 +62,7 @@ create or replace function public.clan_mosaic_tile_before_insert()
   end; $$;
 
 -- RPC: nạp avatar thành viên vào bức (chỉ admin/editor). Trả số mảnh đã thêm. Nếu số người
--- có ảnh vượt số ô thì nới `slots` (tròn hàng, tối đa 500).
+-- có ảnh vượt số ô thì nới `slots` (tròn hàng, tối đa 150).
 create or replace function public.seed_clan_mosaic_from_members(p_mosaic_id uuid)
   returns int
   language plpgsql
@@ -69,6 +76,7 @@ create or replace function public.seed_clan_mosaic_from_members(p_mosaic_id uuid
     v_existing int;
     v_candidates int;
     v_added int;
+    v_cap int;
   begin
     select clan_id, cols, slots into v_clan, v_cols, v_slots
     from public.clan_mosaics where id = p_mosaic_id;
@@ -79,6 +87,7 @@ create or replace function public.seed_clan_mosaic_from_members(p_mosaic_id uuid
       raise exception 'Không có quyền chỉnh sửa dòng họ này' using errcode = '42501';
     end if;
 
+    v_cap := (150 / v_cols) * v_cols; -- trần 150 ô, tròn hàng
     select count(*) into v_existing from public.clan_mosaic_tiles where mosaic_id = p_mosaic_id;
     select count(*) into v_candidates
     from public.persons p
@@ -86,10 +95,10 @@ create or replace function public.seed_clan_mosaic_from_members(p_mosaic_id uuid
       and not exists (select 1 from public.clan_mosaic_tiles t
                       where t.mosaic_id = p_mosaic_id and t.person_id = p.id);
 
-    -- Nới số ô cho đủ (tròn hàng, trần 500).
+    -- Nới số ô cho đủ (tròn hàng, trần 150).
     if v_existing + v_candidates > v_slots then
       update public.clan_mosaics
-      set slots = least(500, ceil((v_existing + v_candidates)::numeric / v_cols)::int * v_cols)
+      set slots = least(v_cap, ceil((v_existing + v_candidates)::numeric / v_cols)::int * v_cols)
       where id = p_mosaic_id;
     end if;
 
@@ -102,7 +111,7 @@ create or replace function public.seed_clan_mosaic_from_members(p_mosaic_id uuid
         and not exists (select 1 from public.clan_mosaic_tiles t
                         where t.mosaic_id = p_mosaic_id and t.person_id = p.id)
       order by p.generation nulls last, p.birth_order nulls last, p.full_name
-      limit greatest(0, 500 - v_existing)
+      limit greatest(0, v_cap - v_existing)
       returning 1
     )
     select count(*) into v_added from ins;
