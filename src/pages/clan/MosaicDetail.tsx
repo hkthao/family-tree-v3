@@ -251,10 +251,7 @@ export default function MosaicDetail() {
         </p>
       )}
 
-      <MosaicFrame
-        title={mosaic.title}
-        caption={`${tiles.length}/${mosaic.slots} mảnh · ${clan.name}`}
-      >
+      <MosaicFrame>
         <MosaicBoard
           seed={mosaic.id}
           cols={mosaic.cols}
