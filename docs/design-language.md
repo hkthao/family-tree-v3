@@ -1,15 +1,18 @@
 # Ngôn ngữ thiết kế
 
-Năm quy ước trình bày của app. Quy ước icon là phần dài nhất nên đứng đầu; ba
+Quy ước trình bày của app. Quy ước icon là phần dài nhất nên đứng đầu; ba
 phần sau (ngày, lưới, danh sách) cùng một loại lỗi: **không ai thấy khi review
 code, chỉ lộ ra trên máy người dùng.** Phần ngăn kéo gom cách xem / sửa một bản
-ghi và thứ tự nút.
+ghi và thứ tự nút. Hai phần cuối nói về **cỡ ô nhập / nút / form** và **Sổ gia
+phả PDF** (bố cục, bảng, thẻ, số trang và các bẫy của react-pdf).
 
 - [Control phải có icon](#control-phải-có-icon)
 - [Hiển thị ngày](#hiển-thị-ngày)
 - [Lưới trên màn hẹp](#lưới-trên-màn-hẹp)
 - [Màn hình danh sách: Danh bạ là chuẩn](#màn-hình-danh-sách-danh-bạ-là-chuẩn)
 - [Ngăn kéo xem / sửa](#ngăn-kéo-xem--sửa)
+- [Cỡ ô nhập, nút, ô nhiều dòng và form](#cỡ-ô-nhập-nút-ô-nhiều-dòng-và-form)
+- [Sổ gia phả PDF](#sổ-gia-phả-pdf)
 
 ---
 
@@ -184,6 +187,22 @@ dùng phải đoán. Thử nhanh: nếu nhãn nút cần thêm chữ để biế
 
 Nếu chỉ kéo nút ra ngoài `<form>`, nút submit rời khỏi form: bấm Enter trong ô
 nhập không còn gửi được, mà đó lại là cách người quen máy tính hay dùng.
+
+**Thẻ thu gọn được (`Card` mặc định `collapsible`) chỉ nhận ra phần thân khi
+`CardContent` / `CardFooter` là con TRỰC TIẾP của `Card`.** Bọc chúng trong
+`<form>` bên trong `Card` thì thẻ không thu gọn được (không có mũi tên, bấm
+tiêu đề không có tác dụng). Muốn một thẻ vừa có form vừa thu gọn: đảo thứ tự,
+`<form>` bọc **ngoài cả `Card`**:
+
+```tsx
+<form onSubmit={…}>
+  <Card>
+    <CardHeader>…</CardHeader>
+    <CardContent>…ô nhập…</CardContent>
+    <CardFooter className="justify-end border-t pt-4">…</CardFooter>
+  </Card>
+</form>
+```
 
 ### Icon-only phải có nhãn cho trình đọc màn hình
 
@@ -368,6 +387,9 @@ chuẩn chỉ khi dữ liệu không phải "danh sách để duyệt" (xem Ngo�
    và cả việc chọn *nguồn* (vd "Của dòng họ / Sổ tay Văn hoá", "Tỉnh / Xã").
    Không có chip lọc hay tab hiện sẵn trên trang. Phễu hiện số bộ lọc đang bật;
    ngăn kéo có "Đặt lại".
+   Tiêu chí **sắp xếp** cũng nằm trong ngăn kéo (một ô chọn, lưu trên URL).
+   Danh sách dòng họ có: Số thành viên · Tên · Mới tạo · **Cập nhật gần đây**
+   (theo `updated_at`, đổi cả khi cây thay đổi).
 3. **Danh sách một khung chia vạch**:
    `ul.divide-y.overflow-hidden.rounded-xl.border.bg-card.shadow-sm`, mỗi dòng
    `p-3`, `hover:bg-muted/40`, bấm cả dòng.
@@ -491,13 +513,151 @@ không phải nút rời trên dòng.
 - Xoá dùng `variant="destructive-outline"` (xem "Nút xoá dùng đúng một kiểu").
 - "Hủy" luôn có ở form tạo / sửa — kể cả form chỉ có Xoá và Lưu.
 
+## Độ rộng ngăn kéo
+
+Điện thoại: full chiều ngang · `sm`: 32rem (`size="md"`) hoặc 40rem (`size="lg"`) ·
+**desktop (`lg`+): 45% chiều rộng màn hình**, không hẹp hơn cỡ `sm` tương ứng
+(`lg:w-[max(32rem,45vw)]`). Form dài (tạo dòng họ, sổ gia phả) cần chỗ nên đừng
+đặt cỡ cố định ở nơi gọi.
+
 ## Trường trong ngăn kéo hẹp (~32rem)
 
 - Trường dài mỗi trường **một hàng riêng** (Mục đích, Ngày, Tên…). Chỉ ghép hai
   cột khi cả hai trường đều ngắn (Số tiền + Quỹ).
-- Ghi chú dùng `Textarea` (tự giãn theo nội dung, tối thiểu 3 dòng) — không dùng
-  ô một dòng `Input`.
+- Ghi chú dùng `Textarea` (tự giãn theo nội dung, tối thiểu 3 dòng, tối đa 10
+  dòng rồi cuộn trong ô) — không dùng ô một dòng `Input`. Nhớ có `placeholder`.
 - Ô ngày, toạ độ… đều phải có icon (quy ước icon ở đầu tài liệu).
+
+---
+
+# Cỡ ô nhập, nút, ô nhiều dòng và form
+
+## Cỡ ô nhập và nút
+
+- Mặc định `Input` / `Select` / `Button` cao 48px (`h-12`). Màn quản trị, cài đặt
+  và các form dày thông tin dùng **ô nhập `h-10` và nút `size="sm"` (cũng
+  `h-10`)** để chữ, ô và nút cùng một hàng thẳng nhau.
+- **Cùng một hàng thì cùng chiều cao**: ô chọn + nút "Dùng mẫu", ô URL + nút QR/
+  Thu hồi/Xoá, ô nhập + nút "Thêm". Nút icon trong hàng đó là `h-10 w-10`.
+- Ô nhập giữ cỡ chữ `text-base` — **không** hạ xuống `text-sm`: iOS Safari tự
+  phóng to trang khi bấm vào ô có chữ dưới 16px.
+- Ô chọn đi cùng nút trên một hàng: ô co giãn (`w-full flex-1`), nút `shrink-0`,
+  để tên mục dài không bị cắt.
+
+## Ô nhiều dòng (`Textarea`)
+
+Mặc định tự giãn theo nội dung: **tối thiểu 3 dòng, tối đa 10 dòng rồi cuộn trong
+ô** (`maxRows`, mặc định 10; `rows` đặt sàn). Không `resize-y` đi kèm (xung đột với
+tự giãn). `autoResize={false}` trả lại ô cố định kéo tay.
+
+## Form thêm mới và sửa phải giống nhau
+
+Tạo và sửa cùng một thứ thì **cùng một bộ ô, một nguồn code**, không hai bản rồi
+lệch dần. Ví dụ dòng họ: `ClanFormFields` (tên, mô tả, viền avatar, chế độ hiển
+thị, người xem công khai, cách hiển thị) + `BookMetaFields` (thông tin biên soạn)
++ `BookTextsSection` (lời nói đầu, phả ký, ngoại phả, phụ khảo). Dùng ở form Tạo
+(ngăn kéo / `/clans/new`), trang Thông tin & Sổ gia phả và Cài đặt dòng họ.
+
+- Phần dùng chung nhận giá trị và `onChange` (điều khiển từ ngoài); nơi gọi lo việc
+  lưu. Phần nhúng trong form khác **không được lồng thêm `<form>`**.
+- Tính năng cần dữ liệu đã tồn tại (vd AI soạn cần `clanId`) thì ẩn ở form tạo và
+  nói rõ "dùng được sau khi tạo".
+- Phần lưu phụ (thông tin sổ) lỗi không được làm hỏng việc chính: dòng họ vẫn tạo,
+  hiện toast lỗi nói rõ và chỉ cách nhập lại.
+
+## Thẻ công cụ: gộp các thẻ chỉ có một nút
+
+Các thẻ chỉ gồm tiêu đề + mô tả + **một nút** (Thành viên, Nhật ký, Xuất QR, Xuất
+CSV…) gộp thành **một thẻ "Quản lý & công cụ"**: mỗi dòng là tiêu đề đậm, mô tả
+xám, nút bên phải (xuống dưới trên điện thoại), các dòng chia vạch. Thẻ có nhiều
+hơn một thao tác hoặc có nội dung riêng (Link chia sẻ, Giới hạn, form) thì giữ
+thẻ riêng.
+
+Danh sách có hàng thao tác lặp lại (Link chia sẻ): mỗi mục **hai dòng** — dòng
+trạng thái, dòng URL kèm nút icon (chép nằm trong ô); hành động của dòng là nút
+icon `h-10 w-10` có `title` + `aria-label`.
+
+---
+
+# Sổ gia phả PDF
+
+Cuốn sổ (`src/lib/pdf/ClanBookPdf.tsx` + `bookSections.tsx`) dựng bằng
+`@react-pdf/renderer` ngay trên trình duyệt. Bố cục theo "bộ gia phả hoàn chỉnh":
+**Tựa → Mục lục → Phàm lệ → Giới thiệu dòng họ → Lời nói đầu → Phả ký (kèm số
+liệu) → Phả hệ → Phả đồ → Danh bạ → Dâu/rể → Ngoại phả (+ ngày giỗ, cưới gả) →
+Bảng vàng → Mộ phần → Di sản → Phụ khảo.** Văn bản tự soạn lưu ở
+`clan_book_texts` (xem `docs/` và migration `clan_book_texts`, `clan_book_meta`).
+
+## Trang và mục lục
+
+- Mọi trang (trừ bìa) có **số trang giữa chân trang** (`PageNumber`).
+- **Mục lục** liệt kê đúng các trang sẽ có, đúng thứ tự và đúng tiêu đề trang, mỗi
+  dòng: số La Mã · tên · dòng chấm · số trang, bấm nhảy tới mục. Điều kiện hiện từng
+  mục (`tocItems`) phải khớp điều kiện dựng trang đó.
+- Số trang lấy bằng **dựng hai lượt** (`bookPages.tsx`): lượt một để tiêu đề từng mục
+  ghi số trang vào `pageRegistry`, lượt hai in vào mục lục (trang mục lục không đổi
+  cỡ nên không lệch). Hệ quả: xuất sổ chậm gần gấp đôi.
+- Tiêu đề mục dùng `SectionTitle` (có `id` để mục lục nhảy tới).
+
+## Kiểu chữ
+
+- Cỡ chữ thân bài 12 (đoạn văn), 11 (bảng, phàm lệ), 10–10,5 (kỷ sự, dữ kiện).
+  Thẻ nhỏ giữ 8,5.
+- **Chỉ mục đánh số "1.", "2)", "II.", "PHẦN …" luôn in đậm** (`parseNumbered`):
+  dòng ngắn đậm cả dòng, dòng dài chỉ đậm phần số. Bỏ ký hiệu markdown (`#`, `**`).
+- Đoạn văn, Phàm lệ và chữ trong thẻ **căn đều hai bên (justify)**.
+
+## Phả hệ
+
+Theo **ĐỜI**: dải đời (nền rượu vang, bo `5`, ghi "N người") → tiêu đề nhóm "Con của
+…" (nền vàng nhạt) → mỗi người một thẻ nền kem nhạt bo nhẹ: số thứ tự trong vòng
+tròn vàng, tên đậm + giới tính, dòng tự/hiệu/thuỵ, dữ kiện có nhãn (Sinh – mất,
+Giỗ ÂL, Mộ), dòng **Con: trưởng …; thứ 2 …**, vợ/chồng nền kem đậm, kỷ sự nền xám be
+có vạch vàng. Mỗi loại thông tin một sắc nền để phân biệt.
+
+- Người **quá nhiều vợ/con** (khối cao hơn một trang — `estHeight > 440`) được phép
+  ngắt trang; còn lại khối "dải đời + nhóm + người đầu" không ngắt (tránh dải mồ côi
+  cuối trang). Mỗi hàng vợ/chồng không bị cắt ngang.
+
+## Bảng (chuẩn: bảng "Theo đời")
+
+`DataTable`: khung viền rượu vang **bo nhẹ** (`borderRadius: 5`, `overflow: hidden`),
+hàng tiêu đề tô nền `divider`, kẻ ngang giữa các hàng, kẻ dọc giữa các cột, số căn
+giữa, hàng "Tổng" ở cuối nếu là bảng số liệu, chú thích đơn vị ("đơn vị: người").
+Mọi bảng (Giới thiệu, Theo đời/chi, Ngày giỗ, Cưới gả) dùng chung. Bảng dài chia
+thành **khối 24 hàng** (`ChunkedTable`), mỗi khối đủ khung + tiêu đề, để khung không
+bị cắt giữa trang.
+
+## Thẻ lưới (Danh bạ, Dâu/rể, Mộ phần, Di sản)
+
+- **Mọi thẻ trong sổ cùng chiều cao** = thẻ cao nhất (ước lượng từ nội dung). Lưới
+  3 cột; danh bạ tối đa **6 thẻ/trang** (cao ≤ 288pt).
+- Để không thẻ nào kéo cả lưới cao theo: **rút gọn nội dung** — danh sách vợ/con dài
+  thành "A, B và N người khác" (`fitCardModel`), tiểu sử cắt ở 200 ký tự, thẻ Mộ
+  phần/Di sản cắt tiêu đề 44, tóm tắt 90, nội dung 110, liên quan 80 ký tự (`clip`).
+  Ước lượng số dòng phải **dư** (dòng 8,5pt cao ~12,4pt; ~23–27 ký tự/dòng) — thiếu
+  thì chữ tràn khỏi thẻ.
+- Thẻ danh bạ/dâu rể: **khung gỗ** giống thẻ trên cây — viền gỗ sẫm 3,5pt, đường chỉ
+  vàng bên trong, bốn góc vàng (`CardFrameDeco`).
+- Thẻ chưa có ảnh dùng **ảnh mặc định cùng cỡ ảnh thật** (`CoverPlaceholder`: bia mộ có
+  vạch chữ khắc, mái đình). Không dùng chữ thập cho mộ phần.
+- QR ở bìa nền **trong suốt** (`makeQrDataUrl(url, "#00000000")`) cho khớp nền giấy.
+
+## Bẫy của react-pdf (đã dính, đừng lặp lại)
+
+| Bẫy | Triệu chứng | Cách tránh |
+|-----|-------------|------------|
+| Phần tử `fixed` dùng `bottom` | Trang có khối `wrap={false}` chạm mép trang → "unsupported number: -1.5e22" | Đặt số trang bằng `top` tính từ cỡ trang (`PageNumber pageHeight`) |
+| Khối `wrap={false}` cao hơn một trang | Chữ vẽ chồng lên nhau | Cho phép ngắt trang khi ước lượng quá cao |
+| `wrap={false}` lồng trong `View` bọc ngoài | Tiêu đề đè lên khung | Bỏ khối bọc trung gian, dùng `Fragment` có `key` |
+| `Text render` + font tuỳ chỉnh | Chữ không hiện | Tiêu đề là `Text` thường; số trang lấy từ `Text render` vô hình riêng |
+| Dải tô nền bị tách khi ngắt trang | Dải trơ cuối trang, chữ sang trang sau | Gom dải + tiêu đề nhóm + hàng đầu vào một khối không ngắt |
+| `minPresenceAhead` | Không đủ tin cậy để giữ tiêu đề đi cùng nội dung | Dùng khối `wrap={false}` |
+| Số trang mục lục | `Text render` không tham chiếu được trang khác | Dựng hai lượt, thu số trang vào `pageRegistry` |
+
+Kiểm bố cục: dựng sổ bằng vitest trong Node (đặt `setPdfAssets` trỏ tới `public/`,
+lấy dữ liệu bằng `adminClient`), mở bằng PyMuPDF hoặc xem ảnh trang. Thử cả **ca
+cực đoan** (một người 20+ vợ, 20 con; thẻ có chữ rất dài) — lỗi bố cục chỉ lộ ở đó.
 
 ---
 
