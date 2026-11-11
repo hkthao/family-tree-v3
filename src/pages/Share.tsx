@@ -51,6 +51,7 @@ import {
 import { HERITAGE_CATEGORY_LABEL, videoEmbedUrl } from "@/lib/queries/heritage";
 
 import "family-chart/styles/family-chart.css";
+import { layoutTallText, tallMetrics, titleCaseName } from "@/lib/tree/tallCard";
 
 type DatumNode = {
   id?: string;
@@ -86,7 +87,12 @@ interface F3Chart {
   setOrientationHorizontal?: () => F3Chart;
   setProgenyDepth?: (n: number) => F3Chart;
   setAncestryDepth?: (n: number) => F3Chart;
-  updateTree: (opts: { initial?: boolean }) => void;
+  updateTree: (opts: {
+    initial?: boolean;
+    tree_position?: "fit" | "main_to_middle" | "inherit";
+    scale?: number;
+    transition_time?: number;
+  }) => void;
   updateMainId?: (id: string) => void;
 }
 
@@ -178,8 +184,11 @@ export default function Share() {
   const [orientation, setOrientation] = useState<Orientation>("vertical");
   // Số đời hiển thị quanh người làm tâm — mặc định 3 để họ lớn không
   // render toàn bộ gây lag trên điện thoại. 0 = tất cả.
-  const [depth, setDepth] = useState<number>(3);
-  const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
+  const [depth, setDepth] = useState<number>(8);
+  const DEPTH_OPTIONS = [3, 4, 5, 8, 0] as const;
+  // Kiểu thẻ: dọc (hẹp, xem được nhiều người) hoặc ngang; ảnh mặc định ẩn.
+  const [cardLayout, setCardLayout] = useState<"wide" | "tall">("tall");
+  const [cardAvatar, setCardAvatar] = useState(false);
 
   // Trang xem thử công khai chia TAB: Cây | Sự kiện & giỗ | Di sản. Giữ cây
   // luôn mounted (ẩn bằng CSS) để khỏi dựng lại chart; refit khi quay lại.
@@ -362,21 +371,43 @@ export default function Share() {
           if (d.data?.id) setFocal(d.data.id);
         });
 
+        const tall = cardLayout === "tall";
+        const tm = tallMetrics(
+          (f3Data as { data?: Record<string, unknown> }[]).map((n) =>
+            String(n.data?.["full name"] ?? ""),
+          ),
+          { showAvatar: cardAvatar },
+        );
+        const CW = tall ? tm.w : 220;
+        const CH = tall ? tm.h : 64;
         card
           ?.setCardDisplay([
-            (d) => String((d as DatumNode).data?.["full name"] ?? ""),
+            (d) => titleCaseName(String((d as DatumNode).data?.["full name"] ?? "")),
             (d) => lifespan(d as DatumNode),
           ])
-          .setCardDim({
-            w: 220,
-            h: 64,
-            text_x: 64,
-            text_y: 18,
-            img_w: 50,
-            img_h: 50,
-            img_x: 8,
-            img_y: 7,
-          })
+          .setCardDim(
+            tall
+              ? {
+                  w: tm.w,
+                  h: tm.h,
+                  text_x: tm.textX,
+                  text_y: tm.nameTop,
+                  img_w: 50,
+                  img_h: 50,
+                  img_x: tm.imgX,
+                  img_y: tm.imgY,
+                }
+              : {
+                  w: 220,
+                  h: 64,
+                  text_x: 64,
+                  text_y: 18,
+                  img_w: 50,
+                  img_h: 50,
+                  img_x: 8,
+                  img_y: 7,
+                },
+          )
           .setOnCardUpdate(function (d) {
             const datum = d.data as DatumNode | undefined;
             const fields = datum?.data ?? {};
@@ -384,7 +415,11 @@ export default function Share() {
             const tspans = this.querySelectorAll<SVGTSpanElement>(
               ".card-text text tspan",
             );
-            const meta = tspans[1];
+            if (tall) {
+              if (!cardAvatar) this.querySelector(".card_image")?.remove();
+              layoutTallText(Array.from(tspans), String(fields["full name"] ?? ""), tm);
+            }
+            const meta = tall ? null : tspans[1];
             if (meta) {
               meta.setAttribute("text-anchor", "start");
               meta.setAttribute("x", "0");
@@ -406,8 +441,8 @@ export default function Share() {
                 this.querySelector(".card-body .card-inner-line")?.remove();
                 this.querySelector(".card-body .card-corners")?.remove();
                 const ns = "http://www.w3.org/2000/svg";
-                const W = 220;
-                const H = 64;
+                const W = CW;
+                const H = CH;
                 const line = document.createElementNS(ns, "rect");
                 line.setAttribute("class", "card-inner-line");
                 line.setAttribute("x", "3");
@@ -451,12 +486,12 @@ export default function Share() {
               );
               badge.setAttribute("class", "gen-badge");
               badge.innerHTML = `
-                <rect x="190" y="6" width="24" height="18" rx="2"
+                <rect x="${CW - 30}" y="6" width="24" height="18" rx="2"
                       fill="#7A2E2E" />
-                <rect class="seal-in" x="192" y="8" width="20" height="14"
+                <rect class="seal-in" x="${CW - 28}" y="8" width="20" height="14"
                       rx="1" fill="none" stroke="#F2D68A" stroke-width="0.8"
                       opacity="0.75" />
-                <text x="202" y="18.5" text-anchor="middle"
+                <text x="${CW - 18}" y="18.5" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700"
                       style="font-family: var(--tree-name-font, 'Playfair Display'), Georgia, serif">
                   ${gen - (data?.generation_offset ?? 0)}
@@ -469,10 +504,14 @@ export default function Share() {
         built.setTransitionTime(200);
         if (orientation === "horizontal") {
           built.setOrientationHorizontal?.();
-          built.setCardXSpacing(280).setCardYSpacing(92);
+          built
+            .setCardXSpacing(tall ? CW + 40 : 280)
+            .setCardYSpacing(tall ? CH + 20 : 92);
         } else {
           built.setOrientationVertical?.();
-          built.setCardXSpacing(250).setCardYSpacing(152);
+          built
+            .setCardXSpacing(tall ? CW + 22 : 250)
+            .setCardYSpacing(tall ? CH + 58 : 152);
         }
 
         // "3 đời" tính cả người làm tâm = depth - 1 tầng mỗi phía.
@@ -528,6 +567,26 @@ export default function Share() {
 
         built.updateTree({ initial: true });
         chartRef.current = built;
+        // Cây đông người: không "vừa khít" làm chữ nhỏ — phóng lên mức đọc được.
+        const currentK = async (): Promise<number> => {
+          const svgEl = node.querySelector("svg.main_svg") as
+            | (SVGSVGElement & { __zoomObj?: unknown })
+            | null;
+          if (!svgEl) return 1;
+          const listener = (svgEl.__zoomObj ? svgEl : svgEl.parentElement) as Element;
+          const { zoomTransform } = await import("d3-zoom");
+          return zoomTransform(listener).k;
+        };
+        const READABLE_K = 0.85;
+        if ((await currentK()) < READABLE_K) {
+          if (disposed) return;
+          built.updateTree({
+            initial: false,
+            tree_position: "main_to_middle",
+            scale: READABLE_K,
+            transition_time: 0,
+          });
+        }
         colorLinks();
         requestAnimationFrame(colorLinks);
         requestAnimationFrame(() => requestAnimationFrame(colorLinks));
@@ -555,7 +614,7 @@ export default function Share() {
       if (linkRaf) cancelAnimationFrame(linkRaf);
       node.innerHTML = "";
     };
-  }, [f3Data, orientation, data?.generation_offset, depth, isFullscreen, treeMode]);
+  }, [f3Data, orientation, data?.generation_offset, depth, isFullscreen, treeMode, cardLayout, cardAvatar]);
 
   // Toàn màn hình → portal khối cây ra <body> để phủ kín, không kẹt
   // trong stacking context của trang.
@@ -919,6 +978,40 @@ export default function Share() {
                       Ngang
                     </SegmentedButton>
                   </SegmentedControl>
+                  <SegmentedControl ariaLabel="Kiểu thẻ">
+                    <SegmentedButton
+                      active={cardLayout === "tall"}
+                      onClick={() => setCardLayout("tall")}
+                      className="px-3"
+                    >
+                      Thẻ dọc
+                    </SegmentedButton>
+                    <SegmentedButton
+                      active={cardLayout === "wide"}
+                      onClick={() => setCardLayout("wide")}
+                      className="px-3"
+                    >
+                      Thẻ ngang
+                    </SegmentedButton>
+                  </SegmentedControl>
+                  {cardLayout === "tall" && (
+                    <SegmentedControl ariaLabel="Ảnh trên thẻ">
+                      <SegmentedButton
+                        active={!cardAvatar}
+                        onClick={() => setCardAvatar(false)}
+                        className="px-3"
+                      >
+                        Ẩn ảnh
+                      </SegmentedButton>
+                      <SegmentedButton
+                        active={cardAvatar}
+                        onClick={() => setCardAvatar(true)}
+                        className="px-3"
+                      >
+                        Hiện ảnh
+                      </SegmentedButton>
+                    </SegmentedControl>
+                  )}
                   {/* Số đời hiển thị quanh người làm tâm — mặc định 3 cho
                       nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. w-full →
                       xuống dòng riêng trên mobile. */}
