@@ -19,7 +19,15 @@ import {
 } from "@/components/icons";
 import { MosaicBoard } from "@/components/mosaic/MosaicBoard";
 import { MosaicFrame } from "@/components/mosaic/MosaicFrame";
-import { MAX_SLOTS, normalizeSlots } from "@/components/mosaic/jigsaw";
+import {
+  MAX_SLOTS,
+  normalizeSlots,
+  type MosaicVariant,
+} from "@/components/mosaic/jigsaw";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { PageHeader } from "@/components/PageHeader";
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
@@ -56,6 +64,24 @@ export default function MosaicDetail() {
   const toast = useToast();
 
   const [arrange, setArrange] = useState(false);
+  // Kiểu hiển thị nhớ theo thiết bị: lưới gọn (mặc định) hoặc puzzle răng cưa.
+  const [variant, setVariant] = useState<MosaicVariant>(() => {
+    try {
+      return localStorage.getItem("family-tree:mosaic-variant") === "puzzle"
+        ? "puzzle"
+        : "grid";
+    } catch {
+      return "grid";
+    }
+  });
+  const pickVariant = (v: MosaicVariant) => {
+    setVariant(v);
+    try {
+      localStorage.setItem("family-tree:mosaic-variant", v);
+    } catch {
+      /* bỏ qua */
+    }
+  };
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(false);
   const [selected, setSelected] = useState<MosaicTile | null>(null);
@@ -199,6 +225,20 @@ export default function MosaicDetail() {
             {arrange ? "Xong" : "Sắp xếp"}
           </Button>
         )}
+        <SegmentedControl ariaLabel="Kiểu hiển thị">
+          <SegmentedButton
+            active={variant === "grid"}
+            onClick={() => pickVariant("grid")}
+          >
+            Lưới
+          </SegmentedButton>
+          <SegmentedButton
+            active={variant === "puzzle"}
+            onClick={() => pickVariant("puzzle")}
+          >
+            Puzzle
+          </SegmentedButton>
+        </SegmentedControl>
         {canEdit && (
           <>
             <Button
@@ -257,6 +297,7 @@ export default function MosaicDetail() {
       <MosaicFrame>
         <MosaicBoard
           seed={mosaic.id}
+          variant={variant}
           cols={mosaic.cols}
           slots={mosaic.slots}
           tiles={tiles}
