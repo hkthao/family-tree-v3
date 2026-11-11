@@ -344,9 +344,9 @@ export default function Tree() {
   // — hẹp hơn nên một màn hình xem được nhiều người hơn.
   const [cardLayout, setCardLayout] = useState<"wide" | "tall">(() => {
     try {
-      return localStorage.getItem("family-tree:card-layout") === "tall" ? "tall" : "wide";
+      return localStorage.getItem("family-tree:card-layout") === "wide" ? "wide" : "tall";
     } catch {
-      return "wide";
+      return "tall";
     }
   });
   useEffect(() => {
@@ -360,9 +360,9 @@ export default function Tree() {
   // Thẻ dọc: ẩn ảnh đại diện cho gọn, xem được nhiều người hơn.
   const [cardAvatar, setCardAvatar] = useState<boolean>(() => {
     try {
-      return localStorage.getItem("family-tree:card-avatar") !== "off";
+      return localStorage.getItem("family-tree:card-avatar") === "on";
     } catch {
-      return true;
+      return false;
     }
   });
   useEffect(() => {
