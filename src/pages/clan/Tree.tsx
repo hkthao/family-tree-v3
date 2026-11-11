@@ -702,15 +702,15 @@ export default function Tree() {
         // badge "Đời"/thông gia. Tên dài hơn sẽ tự thu nhỏ cỡ chữ trong
         // onCardUpdate nên không bao giờ bị cắt/đè badge.
         const tall = cardLayout === "tall";
-        const cardW = tall ? 96 : 248;
+        const cardW = tall ? 108 : 248;
         // Thẻ dọc: mỗi chữ của tên một dòng; chiều cao theo tên dài nhất (2–4 chữ)
         // để mọi thẻ vẫn bằng nhau.
-        const NAME_LINE = 17;
+        const NAME_LINE = 21;
         const noAvatar = tall && !cardAvatar;
         const nameTop = noAvatar ? 26 : 72;
         const nameLines = tall
           ? Math.min(
-              4,
+              6,
               Math.max(
                 2,
                 ...(f3Data as { data?: Record<string, unknown> }[]).map(
@@ -720,7 +720,7 @@ export default function Tree() {
             )
           : 1;
         const cardH = tall
-          ? nameTop + 16 + (nameLines - 1) * NAME_LINE + 20 + (showDeceasedDetails ? 16 : 0) + 8
+          ? nameTop + 20 + (nameLines - 1) * NAME_LINE + 24 + (showDeceasedDetails ? 18 : 0) + 8
           : showDeceasedDetails
             ? 74
             : 64;
@@ -779,8 +779,9 @@ export default function Tree() {
             // Tên (dòng 1): tự thu nhỏ cỡ chữ nếu quá dài để không bị
             // cắt ở mép phải hoặc đè vào badge "Đời"/thông gia ở góc.
             const nameTspan = tspans[0];
+            let nameLinesUsed = 1;
             if (tall && nameTspan) {
-              // Mỗi chữ một dòng; chữ thứ 4 trở đi dồn vào dòng cuối.
+              // Mỗi chữ một dòng; chữ thứ 6 trở đi dồn vào dòng cuối.
               nameTspan.parentNode
                 ?.querySelectorAll(".name-extra")
                 .forEach((n) => n.remove());
@@ -790,10 +791,11 @@ export default function Tree() {
                 words.slice(nameLines - 1).join(" "),
               ].filter(Boolean);
               nameTspan.textContent = lines[0] ?? "";
-              nameTspan.setAttribute("dy", "16");
-              nameTspan.style.fontSize = "15px";
+              nameTspan.setAttribute("dy", "20");
+              nameTspan.style.fontSize = "17px";
               nameTspan.style.fontWeight = "700";
               let anchor: Element = nameTspan;
+              nameLinesUsed = lines.length;
               for (const ln of lines.slice(1)) {
                 const t = nameTspan.cloneNode(false) as SVGTSpanElement;
                 t.setAttribute("class", "name-extra");
@@ -802,7 +804,7 @@ export default function Tree() {
                 t.setAttribute("dy", String(NAME_LINE));
                 t.textContent = ln;
                 // CSS chỉ định dòng thứ 2 là dòng năm (nhỏ, mờ): trả lại kiểu tên.
-                t.style.fontSize = "15px";
+                t.style.fontSize = "17px";
                 t.style.opacity = "1";
                 t.style.fontWeight = "700";
                 anchor.after(t);
@@ -843,12 +845,16 @@ export default function Tree() {
               meta.setAttribute("text-anchor", tall ? "middle" : "start");
               if (tall) {
                 meta.textContent = (meta.textContent ?? "").trim();
-                meta.style.fontSize = "12px";
+                meta.style.fontSize = "13px";
                 meta.style.opacity = "0.7";
                 meta.style.fontWeight = "400";
               }
               meta.setAttribute("x", "0");
-              meta.setAttribute("dy", "18");
+              // Thẻ dọc: năm luôn nằm đáy thẻ — bù số dòng tên còn thiếu.
+              meta.setAttribute(
+                "dy",
+                String((tall ? 22 : 18) + (tall ? (nameLines - nameLinesUsed) * NAME_LINE : 0)),
+              );
             }
             // Dòng 3 (giỗ + tuổi thọ) — đặt dưới dòng năm, chữ nhỏ + mờ.
             const extra = tspans[2];
