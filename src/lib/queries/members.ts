@@ -122,3 +122,36 @@ export async function setMemberSelfVerified(
     .eq("user_id", userId);
   if (error) throw new Error(error.message);
 }
+
+/** Quản trị đổi tên hiển thị của thành viên (RPC SECURITY DEFINER, kiểm quyền phía server). */
+export async function adminSetMemberDisplayName(
+  clanId: string,
+  userId: string,
+  name: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  // RPC mới chưa có trong database.types.ts (sẽ regen sau khi áp migration).
+  const { error } = await (client as unknown as SupabaseClient).rpc("admin_set_member_display_name", {
+    p_clan_id: clanId,
+    p_user_id: userId,
+    p_name: name,
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Quản trị gắn (hoặc gỡ, personId=null) "Tự xưng là" cho thành viên. */
+export async function adminSetMemberSelfPerson(
+  clanId: string,
+  userId: string,
+  personId: string | null,
+  verified: boolean,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await (client as unknown as SupabaseClient).rpc("admin_set_member_self_person", {
+    p_clan_id: clanId,
+    p_user_id: userId,
+    p_person_id: personId,
+    p_verified: verified,
+  });
+  if (error) throw new Error(error.message);
+}

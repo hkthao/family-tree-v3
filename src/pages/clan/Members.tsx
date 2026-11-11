@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
@@ -44,7 +45,10 @@ import { useClanContext } from "@/hooks/useClanContext";
 import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
 import { unaccent } from "@/lib/unaccent";
 import { queryKeys } from "@/lib/queries/keys";
+import { getKinshipIndex } from "@/lib/queries/kinship";
 import {
+  adminSetMemberDisplayName,
+  adminSetMemberSelfPerson,
   changeMemberRole,
   inviteMemberByEmail,
   listClanMembers,
@@ -443,13 +447,39 @@ function MemberForm({
   const toast = useToast();
   const [role, setRole] = useState<ClanRole>(m.role);
   const [verified, setVerified] = useState(m.self_person_verified);
-  const changed = role !== m.role || verified !== m.self_person_verified;
+  const [name, setName] = useState(m.display_name ?? "");
+  const [selfId, setSelfId] = useState(m.self_person_id ?? "");
+  const nameChanged = name.trim() !== (m.display_name ?? "");
+  const selfChanged = selfId !== (m.self_person_id ?? "");
+  const changed =
+    role !== m.role || verified !== m.self_person_verified || nameChanged || selfChanged;
+
+  // Danh sách người trong cây để chọn "Tự xưng là" — chỉ tải khi đang sửa.
+  const { data: kin } = useQuery({
+    queryKey: ["kinship-index", clanId, "member-form"],
+    queryFn: () => getKinshipIndex(clanId),
+    enabled: !readOnly,
+    staleTime: 5 * 60_000,
+  });
+  const personOptions = useMemo(
+    () =>
+      (kin?.ordered ?? []).map((p) => ({
+        value: p.id,
+        label: p.birth_year ? `${p.full_name} (${p.birth_year})` : p.full_name,
+      })),
+    [kin],
+  );
 
   const saveM = useMutation({
     // Chỉ gọi những thao tác thật sự đổi; dừng ở lỗi đầu tiên.
     mutationFn: async () => {
+      if (nameChanged) await adminSetMemberDisplayName(clanId, m.user_id, name);
       if (role !== m.role) await changeMemberRole(clanId, m.user_id, role);
-      if (verified !== m.self_person_verified) await setMemberSelfVerified(clanId, m.user_id, verified);
+      if (selfChanged) {
+        await adminSetMemberSelfPerson(clanId, m.user_id, selfId || null, verified);
+      } else if (verified !== m.self_person_verified) {
+        await setMemberSelfVerified(clanId, m.user_id, verified);
+      }
     },
     onSuccess: () => {
       toast.success("Đã cập nhật thành viên");
@@ -469,7 +499,18 @@ function MemberForm({
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-1.5">
           <Label htmlFor="mem-name">Tên hiển thị</Label>
-          <Input id="mem-name" icon={<IconUser />} value={m.display_name ?? ""} readOnly />
+          <Input
+            id="mem-name"
+            icon={<IconUser />}
+            value={name}
+            maxLength={100}
+            onChange={(e) => setName(e.target.value)}
+          />
+          {!readOnly && (
+            <p className="text-xs text-muted-foreground">
+              Tên này là tên tài khoản của người ấy, hiện ở mọi dòng họ họ tham gia.
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="mem-joined">Ngày tham gia</Label>
@@ -499,37 +540,53 @@ function MemberForm({
         </div>
         {/* Tự xưng: hiện khi thành viên đã chọn mình trong cây. Admin xác nhận để huy hiệu
             "admin đã xác nhận" ở trang phả hệ có ý nghĩa. */}
-        {m.self_person_id && (
+        {(m.self_person_id || !readOnly) && (
           <>
             <div className="space-y-1.5">
               <Label htmlFor="mem-self">Tự xưng là</Label>
-              <Input
-                id="mem-self"
-                icon={<IconUser />}
-                value={m.self_person_full_name ?? "(người đã xoá)"}
-                readOnly
-              />
-              <Link
-                to={`/clans/${clanId}/people/${m.self_person_id}`}
-                className="inline-block text-sm text-primary hover:underline"
-              >
-                Mở trang người này →
-              </Link>
+              {readOnly ? (
+                <Input
+                  id="mem-self"
+                  icon={<IconUser />}
+                  value={m.self_person_full_name ?? "(người đã xoá)"}
+                  readOnly
+                />
+              ) : (
+                <FilterableSelect
+                  id="mem-self"
+                  icon={<IconUser />}
+                  value={selfId}
+                  onChange={setSelfId}
+                  options={personOptions}
+                  emptyLabel="(Chưa gắn với người nào)"
+                  filterLabel="Tìm người trong cây"
+                />
+              )}
+              {selfId && (
+                <Link
+                  to={`/clans/${clanId}/people/${selfId}`}
+                  className="inline-block text-sm text-primary hover:underline"
+                >
+                  Mở trang người này →
+                </Link>
+              )}
             </div>
-            <label className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                checked={verified}
-                onChange={(e) => setVerified(e.target.checked)}
-                className="mt-1 h-4 w-4 shrink-0 accent-primary"
-              />
-              <span>
-                <span className="font-medium">Đã xác nhận tự xưng</span>
-                <span className="block text-sm text-muted-foreground">
-                  Bật khi bạn chắc người này đúng là người trong cây.
+            {selfId && (
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={verified}
+                  onChange={(e) => setVerified(e.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                />
+                <span>
+                  <span className="font-medium">Đã xác nhận tự xưng</span>
+                  <span className="block text-sm text-muted-foreground">
+                    Bật khi bạn chắc người này đúng là người trong cây.
+                  </span>
                 </span>
-              </span>
-            </label>
+              </label>
+            )}
           </>
         )}
       </ReadOnlyFieldset>
