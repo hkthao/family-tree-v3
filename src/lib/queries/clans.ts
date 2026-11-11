@@ -41,12 +41,13 @@ export const CLAN_SIZE_BUCKETS: Record<
   large: { label: "Lớn (≥50)", min: 50, max: null },
 };
 
-export type ClanSort = "members" | "name" | "newest";
+export type ClanSort = "members" | "name" | "newest" | "updated";
 
 export const CLAN_SORT_LABEL: Record<ClanSort, string> = {
   members: "Số thành viên (nhiều → ít)",
   name: "Tên (A → Z)",
   newest: "Mới tạo",
+  updated: "Cập nhật gần đây",
 };
 
 export interface ListClansParams {
@@ -68,6 +69,8 @@ function sortColumn(sort: ClanSort | undefined): {
       return { col: "name_unaccent", ascending: true };
     case "newest":
       return { col: "created_at", ascending: false };
+    case "updated":
+      return { col: "updated_at", ascending: false };
     case "members":
     default:
       return { col: "person_count", ascending: false };

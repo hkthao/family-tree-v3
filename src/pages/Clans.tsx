@@ -84,7 +84,9 @@ export default function Clans() {
   const sizeBucket = (sp.get("size") ?? "") as ClanSizeBucket | "";
   const rawSort = sp.get("sort");
   const sort: ClanSort =
-    rawSort === "name" || rawSort === "newest" ? rawSort : "members";
+    rawSort === "name" || rawSort === "newest" || rawSort === "updated"
+      ? rawSort
+      : "members";
   const debounced = sp.get("q") ?? "";
   const page = Math.max(1, Number(sp.get("page")) || 1);
   const view: "list" | "grid" = sp.get("view") === "grid" ? "grid" : "list";
