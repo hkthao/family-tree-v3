@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { MAX_SLOTS, normalizeSlots } from "@/components/mosaic/jigsaw";
+import { IconTextarea } from "@/components/mosaic/IconTextarea";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip } from "@/components/Chip";
 import { EmptyState } from "@/components/EmptyState";
@@ -29,7 +30,6 @@ import {
 } from "@/components/ui/segmented-control";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import {
@@ -385,16 +385,14 @@ function NewMosaicForm({
           placeholder="VD: Đại gia đình Tết 2027"
         />
       </div>
-      <div className="space-y-1.5">
-        <Textarea
-          id="mosaic-desc"
-          icon={<IconScroll />}
-          label="Mô tả (tuỳ chọn)"
-          placeholder="Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
+      <IconTextarea
+        id="mosaic-desc"
+        icon={<IconScroll />}
+        label="Mô tả (tuỳ chọn)"
+        placeholder="Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
       <div className="space-y-1.5">
         <Label htmlFor="mosaic-slots">Số mảnh của bức (số ô ghép)</Label>
         <Input

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { IconTextarea } from "@/components/mosaic/IconTextarea";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -26,7 +27,6 @@ import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { uploadMosaicPhoto } from "@/lib/photoUpload";
@@ -610,16 +610,14 @@ function EditMosaicForm({
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
-      <div className="space-y-1.5">
-        <Textarea
-          id="edit-desc"
-          icon={<IconScroll />}
-          label="Mô tả (tuỳ chọn)"
-          placeholder="Vài dòng giới thiệu bức ảnh…"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
+      <IconTextarea
+        id="edit-desc"
+        icon={<IconScroll />}
+        label="Mô tả (tuỳ chọn)"
+        placeholder="Vài dòng giới thiệu bức ảnh…"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
       <div className="space-y-1.5">
         <Label htmlFor="edit-slots">Số mảnh của bức (số ô ghép)</Label>
         <Input
