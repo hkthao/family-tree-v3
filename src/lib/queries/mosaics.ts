@@ -251,3 +251,12 @@ export async function getMyAvatar(
     url: await getSignedPhotoUrl(person.photo_path),
   };
 }
+
+/** Nạp avatar của các thành viên có ảnh vào bức (admin/editor). Trả số mảnh đã thêm. */
+export async function seedMosaicFromMembers(mosaicId: string): Promise<number> {
+  const { data, error } = await db.rpc("seed_clan_mosaic_from_members", {
+    p_mosaic_id: mosaicId,
+  });
+  if (error) throw new Error(error.message);
+  return (data as number | null) ?? 0;
+}
