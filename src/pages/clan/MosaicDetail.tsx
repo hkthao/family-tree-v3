@@ -15,6 +15,7 @@ import {
   IconUnlock,
 } from "@/components/icons";
 import { MosaicBoard } from "@/components/mosaic/MosaicBoard";
+import { MosaicFrame } from "@/components/mosaic/MosaicFrame";
 import { PageHeader } from "@/components/PageHeader";
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
@@ -22,10 +23,6 @@ import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
@@ -44,8 +41,6 @@ import {
   type MosaicTile,
 } from "@/lib/queries/mosaics";
 
-const ZOOMS = [1, 1.5, 2, 3];
-
 export default function MosaicDetail() {
   const { mosaicId = "" } = useParams();
   const { clan } = useClanContext();
@@ -58,7 +53,6 @@ export default function MosaicDetail() {
   const toast = useToast();
 
   const [arrange, setArrange] = useState(false);
-  const [zoom, setZoom] = useState(1);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState(false);
   const [selected, setSelected] = useState<MosaicTile | null>(null);
@@ -245,17 +239,6 @@ export default function MosaicDetail() {
             </Button>
           </>
         )}
-        <SegmentedControl ariaLabel="Thu phóng" className="ml-auto">
-          {ZOOMS.map((z) => (
-            <SegmentedButton
-              key={z}
-              active={zoom === z}
-              onClick={() => setZoom(z)}
-            >
-              {z === 1 ? "Vừa" : `${z}×`}
-            </SegmentedButton>
-          ))}
-        </SegmentedControl>
       </div>
 
       {arrange && (
@@ -268,22 +251,23 @@ export default function MosaicDetail() {
         </p>
       )}
 
-      <div className="overflow-auto rounded-xl border bg-card p-2 shadow-sm">
-        <div style={{ width: `${zoom * 100}%` }}>
-          <MosaicBoard
-            seed={mosaic.id}
-            cols={mosaic.cols}
-            slots={mosaic.slots}
-            tiles={tiles}
-            arrange={arrange}
-            canMove={canMove}
-            canAdd={canAddMore}
-            onSelect={setSelected}
-            onAdd={() => setAdding(true)}
-            onMove={(id, slot) => moveM.mutate({ id, slot })}
-          />
-        </div>
-      </div>
+      <MosaicFrame
+        title={mosaic.title}
+        caption={`${tiles.length}/${mosaic.slots} mảnh · ${clan.name}`}
+      >
+        <MosaicBoard
+          seed={mosaic.id}
+          cols={mosaic.cols}
+          slots={mosaic.slots}
+          tiles={tiles}
+          arrange={arrange}
+          canMove={canMove}
+          canAdd={canAddMore}
+          onSelect={setSelected}
+          onAdd={() => setAdding(true)}
+          onMove={(id, slot) => moveM.mutate({ id, slot })}
+        />
+      </MosaicFrame>
 
       <SidePanel
         open={editing}
