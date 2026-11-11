@@ -2,11 +2,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { MAX_SLOTS, normalizeSlots } from "@/components/mosaic/jigsaw";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip } from "@/components/Chip";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
-import { IconCamera, IconGrid, IconList, IconSearch } from "@/components/icons";
+import {
+  IconCamera,
+  IconGrid,
+  IconList,
+  IconSearch,
+  IconUsers,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
@@ -337,7 +344,7 @@ function NewMosaicForm({
         title: title.trim() || "Ảnh đại gia đình",
         description: description.trim() || null,
         max_per_member: perMember,
-        slots: Math.min(500, Math.ceil(slots / cols) * cols),
+        slots: normalizeSlots(slots, cols),
         cols,
       });
       if (seed) {
@@ -381,6 +388,7 @@ function NewMosaicForm({
         <Label htmlFor="mosaic-desc">Mô tả (tuỳ chọn)</Label>
         <Textarea
           id="mosaic-desc"
+          placeholder="Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -389,12 +397,16 @@ function NewMosaicForm({
         <Label htmlFor="mosaic-slots">Số mảnh của bức (số ô ghép)</Label>
         <Input
           id="mosaic-slots"
+          icon={<IconGrid />}
+          placeholder="VD: 24 (tối đa 150)"
           type="number"
           min={4}
-          max={500}
+          max={MAX_SLOTS}
           value={slots}
           onChange={(e) =>
-            setSlots(Math.min(500, Math.max(4, Number(e.target.value) || 4)))
+            setSlots(
+              Math.min(MAX_SLOTS, Math.max(4, Number(e.target.value) || 4)),
+            )
           }
         />
       </div>
@@ -402,6 +414,8 @@ function NewMosaicForm({
         <Label htmlFor="mosaic-per">Số mảnh mỗi người được góp</Label>
         <Input
           id="mosaic-per"
+          icon={<IconUsers />}
+          placeholder="VD: 1"
           type="number"
           min={1}
           max={50}

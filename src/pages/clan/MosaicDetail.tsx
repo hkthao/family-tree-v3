@@ -13,9 +13,11 @@ import {
   IconPencil,
   IconTrash,
   IconUnlock,
+  IconUsers,
 } from "@/components/icons";
 import { MosaicBoard } from "@/components/mosaic/MosaicBoard";
 import { MosaicFrame } from "@/components/mosaic/MosaicFrame";
+import { MAX_SLOTS, normalizeSlots } from "@/components/mosaic/jigsaw";
 import { PageHeader } from "@/components/PageHeader";
 import { SidePanel } from "@/components/SidePanel";
 import { useToast } from "@/components/Toast";
@@ -577,10 +579,9 @@ function EditMosaicForm({
         title: title.trim() || "Ảnh đại gia đình",
         description: description.trim() || null,
         // Số ô luôn tròn hàng theo số cột (không để hàng cuối thiếu mảnh).
-        slots: Math.min(
-          500,
-          Math.ceil(clamp(slots, minSlots, 500) / clamp(cols, 3, 12)) *
-            clamp(cols, 3, 12),
+        slots: normalizeSlots(
+          clamp(slots, minSlots, MAX_SLOTS),
+          clamp(cols, 3, 12),
         ),
         cols: clamp(cols, 3, 12),
         max_per_member: clamp(perMember, 1, 50),
@@ -621,9 +622,11 @@ function EditMosaicForm({
         <Label htmlFor="edit-slots">Số mảnh của bức (số ô ghép)</Label>
         <Input
           id="edit-slots"
+          icon={<IconGrid />}
+          placeholder="VD: 24 (tối đa 150)"
           type="number"
           min={minSlots}
-          max={500}
+          max={MAX_SLOTS}
           value={slots}
           onChange={(e) => setSlots(Number(e.target.value) || minSlots)}
         />
@@ -635,6 +638,8 @@ function EditMosaicForm({
         <Label htmlFor="edit-cols">Số cột</Label>
         <Input
           id="edit-cols"
+          icon={<IconGrid />}
+          placeholder="VD: 6 (từ 3 đến 12)"
           type="number"
           min={3}
           max={12}
@@ -646,6 +651,8 @@ function EditMosaicForm({
         <Label htmlFor="edit-per">Số mảnh mỗi người được góp</Label>
         <Input
           id="edit-per"
+          icon={<IconUsers />}
+          placeholder="VD: 1"
           type="number"
           min={1}
           max={50}
