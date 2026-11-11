@@ -131,7 +131,7 @@ export async function uploadRestingPlacePhoto(
 
 /**
  * Upload one mosaic tile (mảnh ảnh ghép). Cắt vuông giữa ảnh rồi nén rất
- * nhỏ — mảnh chỉ hiển thị cỡ ô lưới nên 480×480 / ≤60 KB là đủ nét, tiết
+ * nhỏ — mảnh chỉ hiển thị cỡ ô lưới nên 360×360 / ≤35 KB là đủ nét, tiết
  * kiệm storage VPS. Path `{clanId}/mosaic/{userId}/{uuid}.jpg`: đoạn thứ 3 là
  * user id để policy storage cho thành viên (kể cả viewer) tự up/xoá ảnh mình.
  */
@@ -145,10 +145,10 @@ export async function uploadMosaicPhoto(
     throw new Error("File phải là ảnh (JPG / PNG / WebP / HEIC)");
   }
   onProgress?.({ phase: "compress", percent: 0 });
-  const squared = await cropSquare(file, 640);
+  const squared = await cropSquare(file, 480);
   const compressed = await imageCompression(squared, {
-    maxSizeMB: 0.06,
-    maxWidthOrHeight: 480,
+    maxSizeMB: 0.035,
+    maxWidthOrHeight: 360,
     useWebWorker: true,
     initialQuality: 0.8,
     fileType: "image/jpeg",

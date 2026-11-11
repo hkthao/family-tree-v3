@@ -325,15 +325,20 @@ function NewMosaicForm({
   const [perMember, setPerMember] = useState(1);
 
   const createM = useMutation({
-    mutationFn: () =>
-      createMosaic(clanId, {
+    mutationFn: () => {
+      // Lưới hơi ngang (~4:3); số ô làm tròn lên cho đủ hàng cuối.
+      const cols = Math.min(
+        12,
+        Math.max(3, Math.round(Math.sqrt((slots * 4) / 3))),
+      );
+      return createMosaic(clanId, {
         title: title.trim() || "Ảnh đại gia đình",
         description: description.trim() || null,
         max_per_member: perMember,
-        slots,
-        // lưới hơi ngang (~4:3)
-        cols: Math.min(12, Math.max(3, Math.round(Math.sqrt((slots * 4) / 3)))),
-      }),
+        slots: Math.min(500, Math.ceil(slots / cols) * cols),
+        cols,
+      });
+    },
     onSuccess: (m) => {
       qc.invalidateQueries({ queryKey: ["mosaics", clanId] });
       navigate(`/clans/${clanId}/mosaics/${m.id}`);

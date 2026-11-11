@@ -276,11 +276,7 @@ export default function MosaicDetail() {
       )}
 
       <div className="overflow-auto rounded-xl border bg-card p-2 shadow-sm">
-        {/* Mảnh vừa phải: ô tối đa ~72px ở mức "Vừa", nhân theo mức thu phóng. */}
-        <div
-          className="mx-auto"
-          style={{ width: `min(${zoom * 100}%, ${mosaic.cols * 72 * zoom}px)` }}
-        >
+        <div style={{ width: `${zoom * 100}%` }}>
           <MosaicBoard
             seed={mosaic.id}
             cols={mosaic.cols}
@@ -523,7 +519,7 @@ function AddTileForm({
             className="block w-full text-sm"
           />
           <p className="text-xs text-muted-foreground">
-            Ảnh được tự cắt vuông và nén nhỏ (≈480 px, vài chục KB) để tiết kiệm
+            Ảnh được tự cắt vuông và nén nhỏ (≈360 px, dưới 40 KB) để tiết kiệm
             dung lượng.
           </p>
         </div>
@@ -600,7 +596,12 @@ function EditMosaicForm({
       updateMosaic(mosaic.id, {
         title: title.trim() || "Ảnh đại gia đình",
         description: description.trim() || null,
-        slots: clamp(slots, minSlots, 500),
+        // Số ô luôn tròn hàng theo số cột (không để hàng cuối thiếu mảnh).
+        slots: Math.min(
+          500,
+          Math.ceil(clamp(slots, minSlots, 500) / clamp(cols, 3, 12)) *
+            clamp(cols, 3, 12),
+        ),
         cols: clamp(cols, 3, 12),
         max_per_member: clamp(perMember, 1, 50),
       }),
