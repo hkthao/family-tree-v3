@@ -401,6 +401,13 @@ export function buildSections(
         icon: <IconCamera className={ic} />,
       });
     }
+    if (isMember && feat("mosaic")) {
+      communityItems.push({
+        to: `/clans/${clanId}/mosaics`,
+        label: "Ảnh ghép",
+        icon: <IconCamera className={ic} />,
+      });
+    }
     if (canHeritage && feat("heritage")) {
       communityItems.push({
         to: `/clans/${clanId}/heritage`,

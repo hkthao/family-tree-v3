@@ -130,6 +130,72 @@ export async function uploadRestingPlacePhoto(
 }
 
 /**
+ * Upload one mosaic tile (mảnh ảnh ghép). Cắt vuông giữa ảnh rồi nén rất
+ * nhỏ — mảnh chỉ hiển thị cỡ ô lưới nên 480×480 / ≤60 KB là đủ nét, tiết
+ * kiệm storage VPS. Path `{clanId}/mosaic/{userId}/{uuid}.jpg`: đoạn thứ 3 là
+ * user id để policy storage cho thành viên (kể cả viewer) tự up/xoá ảnh mình.
+ */
+export async function uploadMosaicPhoto(
+  clanId: string,
+  userId: string,
+  file: File,
+  onProgress?: (p: UploadProgress) => void,
+): Promise<UploadResult> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("File phải là ảnh (JPG / PNG / WebP / HEIC)");
+  }
+  onProgress?.({ phase: "compress", percent: 0 });
+  const squared = await cropSquare(file, 640);
+  const compressed = await imageCompression(squared, {
+    maxSizeMB: 0.06,
+    maxWidthOrHeight: 480,
+    useWebWorker: true,
+    initialQuality: 0.8,
+    fileType: "image/jpeg",
+    onProgress: (percent: number) => onProgress?.({ phase: "compress", percent }),
+  });
+  onProgress?.({ phase: "upload", percent: 0 });
+  const path = `${clanId}/mosaic/${userId}/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, compressed, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: "image/jpeg",
+    });
+  if (error) throw new Error(`upload: ${error.message}`);
+  onProgress?.({ phase: "upload", percent: 100 });
+  return { path, bytes: compressed.size };
+}
+
+/** Cắt vuông chính giữa ảnh (cover) về `size` px; trả JPEG. */
+async function cropSquare(file: File, size: number): Promise<File> {
+  const bmp = await createImageBitmap(file);
+  const side = Math.min(bmp.width, bmp.height);
+  const out = Math.min(size, side);
+  const canvas = document.createElement("canvas");
+  canvas.width = out;
+  canvas.height = out;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Trình duyệt không hỗ trợ xử lý ảnh");
+  ctx.drawImage(
+    bmp,
+    (bmp.width - side) / 2,
+    (bmp.height - side) / 2,
+    side,
+    side,
+    0,
+    0,
+    out,
+    out,
+  );
+  bmp.close();
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.9));
+  if (!blob) throw new Error("Không xử lý được ảnh");
+  return new File([blob], "tile.jpg", { type: "image/jpeg" });
+}
+
+/**
  * Upload one photo of a heritage item (di sản: từ đường, sắc phong…).
  * Same private `person-photos` bucket, path
  * `{clanId}/heritage/{itemId}/{uuid}.jpg`. Tight compression (≤250 KB /

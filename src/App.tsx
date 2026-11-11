@@ -74,6 +74,8 @@ const Kinship = lazy(() => import("@/pages/clan/Kinship"));
 const Members = lazy(() => import("@/pages/clan/Members"));
 const MemoryRoom = lazy(() => import("@/pages/clan/MemoryRoom"));
 const MemoryRooms = lazy(() => import("@/pages/clan/MemoryRooms"));
+const Mosaics = lazy(() => import("@/pages/clan/Mosaics"));
+const MosaicDetail = lazy(() => import("@/pages/clan/MosaicDetail"));
 const MapStats = lazy(() => import("@/pages/clan/MapStats"));
 const Merge = lazy(() => import("@/pages/clan/Merge"));
 const RestingPlaces = lazy(() => import("@/pages/clan/RestingPlaces"));
@@ -267,6 +269,8 @@ export default function App() {
           <Route path="map" element={<MapStats />} />
           <Route path="memory-room" element={<FeatureGuard feature="memory_room"><MemoryRooms /></FeatureGuard>} />
           <Route path="memory-room/:roomId" element={<FeatureGuard feature="memory_room"><MemoryRoom /></FeatureGuard>} />
+          <Route path="mosaics" element={<FeatureGuard feature="mosaic"><Mosaics /></FeatureGuard>} />
+          <Route path="mosaics/:mosaicId" element={<FeatureGuard feature="mosaic"><MosaicDetail /></FeatureGuard>} />
           <Route path="graves" element={<FeatureGuard feature="graves"><RestingPlaces /></FeatureGuard>} />
           <Route path="graves/cemeteries" element={<FeatureGuard feature="graves"><Cemeteries /></FeatureGuard>} />
           <Route path="graves/new" element={<FeatureGuard feature="graves"><RestingPlaceForm /></FeatureGuard>} />
