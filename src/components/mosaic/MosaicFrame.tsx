@@ -39,13 +39,13 @@ export function MosaicFrame({ children }: { children: ReactNode }) {
   return (
     <figure className="mx-auto w-full max-w-5xl">
       <div className="relative p-5 shadow-md sm:p-7" style={card}>
-        {/* Đường chỉ mảnh bên trong */}
+        {/* Đường chỉ vàng bên trong */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-[8px]"
           style={{
-            border: `1px solid ${INNER}`,
-            opacity: 0.4,
+            border: `1.5px solid ${INNER}`,
+            opacity: 0.9,
             borderRadius: 2,
           }}
         />
