@@ -11,7 +11,6 @@ import {
   IconGrid,
   IconLink,
   IconPencil,
-  IconPlus,
   IconTrash,
   IconUnlock,
 } from "@/components/icons";
@@ -184,12 +183,6 @@ export default function MosaicDetail() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        {canAddMore && (
-          <Button size="sm" onClick={() => setAdding(true)}>
-            <IconPlus className="mr-1.5 h-4 w-4" />
-            Thêm
-          </Button>
-        )}
         {!canEdit && mosaic.status === "open" && !canAddMore && (
           <span className="text-sm text-muted-foreground">
             Bạn đã góp đủ {quota} mảnh.
