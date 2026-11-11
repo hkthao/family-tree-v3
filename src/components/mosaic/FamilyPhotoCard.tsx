@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { IconCamera } from "@/components/icons";
 import { SectionCard } from "@/components/SectionCard";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { listMosaicSummaries } from "@/lib/queries/mosaics";
+import { MosaicBoard } from "@/components/mosaic/MosaicBoard";
+import { MosaicFrame } from "@/components/mosaic/MosaicFrame";
+import { listMosaicSummaries, listMosaicTiles } from "@/lib/queries/mosaics";
 
 /**
  * Thẻ "Ảnh gia đình" ở màn Tổng quan: bức ghép được chọn hiển thị (hoặc bức đầu danh sách) (dải ảnh xem trước + số
@@ -20,19 +22,30 @@ export function FamilyPhotoCard({
 }) {
   const { clan } = useClanContext();
   const canEdit = canEditClan(clan);
+  const navigate = useNavigate();
   const { data } = useQuery({
     queryKey: ["mosaics", clanId, userId, "summary"],
     queryFn: () => listMosaicSummaries(clanId),
     enabled: !!userId,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   // Bức được chọn hiển thị ở Tổng quan; không có thì lấy bức đầu tiên trong danh sách.
   const latest = data?.find((m) => m.show_on_dashboard) ?? data?.[0];
+  // Vẽ cả bức (mọi mảnh) ngay trên thẻ — không chỉ vài ảnh đầu.
+  const { data: tiles } = useQuery({
+    queryKey: ["mosaic-tiles", latest?.id, userId],
+    queryFn: () => listMosaicTiles(latest!.id),
+    enabled: !!latest && !!userId,
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+
   if (!latest && !canEdit) return null;
   if (data === undefined) return null;
 
   const base = `/clans/${clanId}/mosaics`;
-  const previews = (latest?.previews ?? []).slice(0, 8);
 
   return (
     <SectionCard
@@ -50,20 +63,22 @@ export function FamilyPhotoCard({
       }
     >
       {latest ? (
-        <Link to={`${base}/${latest.id}`} className="block space-y-2">
-          {previews.length > 0 && (
-            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-8">
-              {previews.map((u, i) => (
-                <img
-                  key={i}
-                  src={u}
-                  alt=""
-                  loading="lazy"
-                  className="aspect-square w-full rounded-md border object-cover"
-                />
-              ))}
-            </div>
-          )}
+        <div className="space-y-2">
+          <MosaicFrame>
+            <MosaicBoard
+              seed={latest.id}
+              variant="grid"
+              cols={latest.cols}
+              slots={latest.slots}
+              tiles={tiles ?? []}
+              arrange={false}
+              canMove={() => false}
+              canAdd={false}
+              onSelect={() => navigate(`${base}/${latest.id}`)}
+              onAdd={() => undefined}
+              onMove={() => undefined}
+            />
+          </MosaicFrame>
           <p className="text-sm">
             <span className="font-medium">{latest.title}</span>
             <span className="text-muted-foreground">
@@ -72,7 +87,7 @@ export function FamilyPhotoCard({
               {latest.status === "open" ? " · đang nhận ảnh" : ""}
             </span>
           </p>
-        </Link>
+        </div>
       ) : (
         <p className="text-sm text-muted-foreground">
           Mỗi thành viên góp một tấm ảnh, ghép thành bức tranh chung của dòng
