@@ -197,9 +197,9 @@ function readOrientation(): Orientation {
  * yếu lại đứng hình, và không ai đoán ra vì sao. Muốn xem sâu thì bấm
  * thêm, đó là một cú bấm; còn máy treo thì không sửa được bằng cú bấm nào.
  */
-const DEPTH_OPTIONS = [3, 4, 5, 0] as const;
+const DEPTH_OPTIONS = [3, 4, 5, 8, 0] as const;
 type TreeDepth = (typeof DEPTH_OPTIONS)[number];
-const DEFAULT_DEPTH: TreeDepth = 5;
+const DEFAULT_DEPTH: TreeDepth = 8;
 
 export default function Tree() {
   const { clan } = useClanContext();
