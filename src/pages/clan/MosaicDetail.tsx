@@ -525,6 +525,12 @@ function AddTileForm({
         <Label htmlFor="tile-caption">Chú thích (tuỳ chọn)</Label>
         <Input
           id="tile-caption"
+          icon={<IconPencil />}
+          placeholder={
+            mode === "avatar" && avatar
+              ? `Bỏ trống sẽ dùng tên: ${avatar.name}`
+              : "VD: Cả nhà ngày Tết 2026"
+          }
           value={caption}
           maxLength={200}
           onChange={(e) => setCaption(e.target.value)}
@@ -597,6 +603,7 @@ function EditMosaicForm({
         <Input
           id="edit-title"
           icon={<IconCamera />}
+          placeholder="VD: Đại gia đình Tết 2027"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -605,6 +612,7 @@ function EditMosaicForm({
         <Label htmlFor="edit-desc">Mô tả (tuỳ chọn)</Label>
         <Textarea
           id="edit-desc"
+          placeholder="Vài dòng giới thiệu bức ảnh…"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
