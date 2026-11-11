@@ -11,6 +11,7 @@ import {
   IconCamera,
   IconGrid,
   IconList,
+  IconScroll,
   IconSearch,
   IconUsers,
 } from "@/components/icons";
@@ -385,9 +386,10 @@ function NewMosaicForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="mosaic-desc">Mô tả (tuỳ chọn)</Label>
         <Textarea
           id="mosaic-desc"
+          icon={<IconScroll />}
+          label="Mô tả (tuỳ chọn)"
           placeholder="Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"
           value={description}
           onChange={(e) => setDescription(e.target.value)}

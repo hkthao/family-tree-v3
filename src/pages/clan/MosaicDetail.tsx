@@ -11,6 +11,7 @@ import {
   IconGrid,
   IconLink,
   IconPencil,
+  IconScroll,
   IconTrash,
   IconUnlock,
   IconUsers,
@@ -610,9 +611,10 @@ function EditMosaicForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="edit-desc">Mô tả (tuỳ chọn)</Label>
         <Textarea
           id="edit-desc"
+          icon={<IconScroll />}
+          label="Mô tả (tuỳ chọn)"
           placeholder="Vài dòng giới thiệu bức ảnh…"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
