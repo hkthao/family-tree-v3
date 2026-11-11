@@ -710,7 +710,7 @@ export default function Tree() {
         const cardW = tall ? 108 : 248;
         // Thẻ dọc: mỗi chữ của tên một dòng; chiều cao theo tên dài nhất (2–4 chữ)
         // để mọi thẻ vẫn bằng nhau.
-        const NAME_LINE = 21;
+        const NAME_LINE = 26;
         const noAvatar = tall && !cardAvatar;
         const nameTop = noAvatar ? 26 : 72;
         const nameLines = tall
@@ -725,7 +725,7 @@ export default function Tree() {
             )
           : 1;
         const cardH = tall
-          ? nameTop + 20 + (nameLines - 1) * NAME_LINE + 24 + (showDeceasedDetails ? 18 : 0) + 8
+          ? nameTop + 24 + (nameLines - 1) * NAME_LINE + 30 + (showDeceasedDetails ? 20 : 0) + 8
           : showDeceasedDetails
             ? 74
             : 64;
@@ -796,7 +796,7 @@ export default function Tree() {
                 words.slice(nameLines - 1).join(" "),
               ].filter(Boolean);
               nameTspan.textContent = lines[0] ?? "";
-              nameTspan.setAttribute("dy", "20");
+              nameTspan.setAttribute("dy", "24");
               nameTspan.style.fontSize = "17px";
               nameTspan.style.fontWeight = "700";
               let anchor: Element = nameTspan;
@@ -858,7 +858,7 @@ export default function Tree() {
               // Thẻ dọc: năm luôn nằm đáy thẻ — bù số dòng tên còn thiếu.
               meta.setAttribute(
                 "dy",
-                String((tall ? 22 : 18) + (tall ? (nameLines - nameLinesUsed) * NAME_LINE : 0)),
+                String((tall ? 28 : 18) + (tall ? (nameLines - nameLinesUsed) * NAME_LINE : 0)),
               );
             }
             // Dòng 3 (giỗ + tuổi thọ) — đặt dưới dòng năm, chữ nhỏ + mờ.
@@ -867,7 +867,7 @@ export default function Tree() {
               extra.setAttribute("text-anchor", tall ? "middle" : "start");
               if (tall) extra.textContent = (extra.textContent ?? "").trim();
               extra.setAttribute("x", "0");
-              extra.setAttribute("dy", "16");
+              extra.setAttribute("dy", tall ? "20" : "16");
               extra.setAttribute("font-size", "10");
               extra.setAttribute("fill", "#8A7A66");
             }
