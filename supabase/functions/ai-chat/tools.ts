@@ -20,6 +20,7 @@ import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 import { computeKinship, type KinshipPerson } from "../_shared/vendor/kinship.ts";
 import { lunarAnniversaryInSolarYear } from "../_shared/vendor/lunarDate.ts";
+import { formatPassages, keywords, rankPassages, splitPassages, type Passage } from "./bookSearch.ts";
 
 /** Trần cứng cho mọi tool trả danh sách — chặn model kéo cả dòng họ về. */
 const MAX_ROWS = 25;
@@ -102,6 +103,8 @@ export async function runTool(
         );
       case "upcoming_anniversaries":
         return await upcomingAnniversaries(ctx, Number(args.days ?? 60));
+      case "search_book":
+        return await searchBook(ctx, String(args.query ?? ""));
       case "clan_stats":
         return await clanStats(ctx);
       default:
@@ -264,4 +267,71 @@ async function clanStats(ctx: ToolContext): Promise<string> {
     `Đang còn sống: ${living.count ?? 0}`,
     maxGen ? `Số đời đã ghi: ${maxGen}` : "Chưa tính được số đời.",
   ].join("\n");
+}
+
+const BOOK_SECTIONS: { col: string; label: string }[] = [
+  { col: "preface", label: "Lời nói đầu" },
+  { col: "phaky", label: "Phả ký" },
+  { col: "ngoai_pha", label: "Ngoại phả" },
+  { col: "phu_khao", label: "Phụ khảo" },
+];
+
+const HERITAGE_LABEL: Record<string, string> = {
+  place: "Từ đường / nơi thờ",
+  custom: "Tục lệ / gia phong",
+  story: "Giai thoại",
+  artifact: "Tư liệu / kỷ vật",
+};
+
+/**
+ * Tìm đoạn văn liên quan trong sổ gia phả + di sản + tiểu sử. Chạy bằng JWT của
+ * người gọi nên RLS vẫn giữ nguyên (người ngoài không đọc được).
+ */
+async function searchBook(ctx: ToolContext, query: string): Promise<string> {
+  const q = query.trim();
+  if (!q) return "Cần nhập từ khoá để tìm.";
+  if (keywords(q).length === 0) return "Từ khoá quá chung, bạn nêu cụ thể hơn giúp.";
+
+  const [book, heritage, bios] = await Promise.all([
+    ctx.sb
+      .from("clan_book_texts")
+      .select("preface, phaky, ngoai_pha, phu_khao")
+      .eq("clan_id", ctx.clanId)
+      .maybeSingle(),
+    ctx.sb
+      .from("heritage_items")
+      .select("title, category, summary, body")
+      .eq("clan_id", ctx.clanId)
+      .is("deleted_at", null)
+      .limit(300),
+    ctx.sb
+      .from("persons")
+      .select("full_name, bio")
+      .eq("clan_id", ctx.clanId)
+      .is("deleted_at", null)
+      .not("bio", "is", null)
+      .limit(400),
+  ]);
+
+  const passages: Passage[] = [];
+  // Bảng chưa có (chưa áp migration) → bỏ qua, vẫn tìm ở di sản và tiểu sử.
+  if (!book.error && book.data) {
+    for (const sec of BOOK_SECTIONS) {
+      const text = (book.data as Record<string, string | null>)[sec.col];
+      if (text) passages.push(...splitPassages(sec.label, text));
+    }
+  }
+  for (const h of heritage.data ?? []) {
+    const label = `Di sản — ${HERITAGE_LABEL[h.category as string] ?? "Di sản"}: ${h.title}`;
+    const text = [h.summary, h.body].filter(Boolean).join("\n");
+    if (text) passages.push(...splitPassages(label, text));
+  }
+  for (const p of bios.data ?? []) {
+    if (p.bio) passages.push(...splitPassages(`Tiểu sử ${p.full_name}`, String(p.bio)));
+  }
+
+  if (passages.length === 0) {
+    return "Dòng họ chưa có phả ký, di sản hay tiểu sử nào được ghi để tra cứu.";
+  }
+  return formatPassages(rankPassages(passages, q));
 }

@@ -26,6 +26,7 @@ import {
   IconWallet,
 } from "@/components/icons";
 import { ClanStatsPanel } from "@/components/ClanStatsPanel";
+import { MyProfileCard } from "@/components/MyProfileCard";
 import { SectionCard } from "@/components/SectionCard";
 import { PageHeader } from "@/components/PageHeader";
 import { EnablePushPrompt } from "@/components/EnablePushPrompt";
@@ -513,6 +514,11 @@ export default function Dashboard() {
               {isMember && <PdfActionTile clan={clan} />}
             </div>
           </SectionCard>
+
+          {/* Hồ sơ của tôi: nhận vị trí trên cây + tự cập nhật (quản trị duyệt). */}
+          {isMember && userId && (
+            <MyProfileCard clanId={clan.id} userId={userId} persons={tree?.persons} />
+          )}
 
           {/* Tiến độ hoàn thiện — nhắc bổ sung thông tin. */}
           {completion && completion.total > 0 && (

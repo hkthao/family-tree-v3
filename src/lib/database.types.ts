@@ -772,6 +772,33 @@ export type Database = {
           },
         ]
       }
+      calendar_feeds: {
+        Row: {
+          clan_id: string
+          created_at: string
+          id: string
+          last_fetched_at: string | null
+          token: string
+          user_id: string
+        }
+        Insert: {
+          clan_id: string
+          created_at?: string
+          id?: string
+          last_fetched_at?: string | null
+          token: string
+          user_id: string
+        }
+        Update: {
+          clan_id?: string
+          created_at?: string
+          id?: string
+          last_fetched_at?: string | null
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       clan_book_texts: {
         Row: {
           origin_place: string | null
@@ -1470,6 +1497,8 @@ export type Database = {
       feedback: {
         Row: {
           admin_note: string | null
+          admin_reply: string | null
+          replied_at: string | null
           app_version: string | null
           category: Database["public"]["Enums"]["feedback_category"]
           clan_id: string | null
@@ -1487,6 +1516,8 @@ export type Database = {
         }
         Insert: {
           admin_note?: string | null
+          admin_reply?: string | null
+          replied_at?: string | null
           app_version?: string | null
           category?: Database["public"]["Enums"]["feedback_category"]
           clan_id?: string | null
@@ -1504,6 +1535,8 @@ export type Database = {
         }
         Update: {
           admin_note?: string | null
+          admin_reply?: string | null
+          replied_at?: string | null
           app_version?: string | null
           category?: Database["public"]["Enums"]["feedback_category"]
           clan_id?: string | null

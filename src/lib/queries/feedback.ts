@@ -65,13 +65,16 @@ export interface FeedbackRow {
   user_agent: string | null;
   app_version: string | null;
   admin_note: string | null;
+  /** Phản hồi gửi cho người góp ý (khác admin_note nội bộ). */
+  admin_reply: string | null;
+  replied_at: string | null;
   resolved_at: string | null;
   resolved_by: string | null;
   created_at: string;
 }
 
 const FEEDBACK_COLUMNS =
-  "id, user_id, clan_id, message, category, status, contact, page_path, user_agent, app_version, admin_note, resolved_at, resolved_by, created_at";
+  "id, user_id, clan_id, message, category, status, contact, page_path, user_agent, app_version, admin_note, admin_reply, replied_at, resolved_at, resolved_by, created_at";
 
 /**
  * Admin-only firehose. RLS gates SELECT to platform admins; non-admin
@@ -94,23 +97,40 @@ export async function listFeedback(
   return (data ?? []) as FeedbackRow[];
 }
 
+/** Phần của một góp ý mà người gửi được xem — KHÔNG gồm ghi chú nội bộ của admin. */
+export interface MyFeedbackRow {
+  id: string;
+  message: string;
+  contact: string | null;
+  category: FeedbackCategory;
+  status: FeedbackStatus;
+  admin_reply: string | null;
+  replied_at: string | null;
+  resolved_at: string | null;
+  created_at: string;
+}
+
+const MY_FEEDBACK_COLUMNS =
+  "id, message, contact, category, status, admin_reply, replied_at, resolved_at, created_at";
+
 /**
- * Lịch sử "đã gửi" — user đọc lại feedback của chính mình. RLS
- * `feedback_select_owner` enforce.
+ * Lịch sử "đã gửi" — người dùng đọc lại góp ý của chính mình, trạng thái xử lý
+ * và phản hồi của quản trị. Chỉ chọn các cột được phép hiện (không có admin_note
+ * nội bộ). RLS `feedback_select_owner` chỉ cho đọc dòng của chính mình.
  */
 export async function listMyFeedback(
   client: Client = defaultClient,
-): Promise<FeedbackRow[]> {
+): Promise<MyFeedbackRow[]> {
   const { data: authData } = await client.auth.getUser();
   if (!authData.user) return [];
   const { data, error } = await client
     .from("feedback")
-    .select(FEEDBACK_COLUMNS)
+    .select(MY_FEEDBACK_COLUMNS)
     .eq("user_id", authData.user.id)
     .order("created_at", { ascending: false })
     .limit(100);
   if (error) throw new Error(error.message);
-  return (data ?? []) as FeedbackRow[];
+  return (data ?? []) as MyFeedbackRow[];
 }
 
 /** Thông tin nhận diện người gửi feedback (để admin biết là ai mà hỗ trợ). */
@@ -162,6 +182,8 @@ export interface UpdateFeedbackPatch {
   status?: FeedbackStatus;
   category?: FeedbackCategory;
   admin_note?: string | null;
+  /** Phản hồi hiện cho người gửi. */
+  admin_reply?: string | null;
 }
 
 /**
@@ -180,9 +202,14 @@ export async function updateFeedback(
     status?: FeedbackStatus;
     category?: FeedbackCategory;
     admin_note?: string | null;
+    admin_reply?: string | null;
+    replied_at?: string | null;
     resolved_at?: string | null;
     resolved_by?: string | null;
   } = { ...patch };
+  if (patch.admin_reply !== undefined) {
+    payload.replied_at = patch.admin_reply ? new Date().toISOString() : null;
+  }
   if (patch.status !== undefined) {
     if (patch.status === "resolved") {
       payload.resolved_at = new Date().toISOString();
@@ -197,4 +224,51 @@ export async function updateFeedback(
     .update(payload)
     .eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+export interface UpdateMyFeedbackInput {
+  message: string;
+  category: FeedbackCategory;
+  contact: string | null;
+}
+
+/**
+ * Người gửi sửa góp ý của chính mình. Chỉ làm được khi quản trị chưa xem
+ * (status = 'new'): RLS + trigger ở DB chặn phần còn lại, nên hỏng thì báo lỗi.
+ * `.select()` để biết có dòng nào thật sự được sửa (RLS chặn thì 0 dòng, không lỗi).
+ */
+export async function updateMyFeedback(
+  id: string,
+  input: UpdateMyFeedbackInput,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { data, error } = await client
+    .from("feedback")
+    .update({
+      message: input.message,
+      category: input.category,
+      contact: input.contact,
+    })
+    .eq("id", id)
+    .select("id");
+  if (error) throw new Error(error.message);
+  if (!data || data.length === 0) {
+    throw new Error("Góp ý này quản trị đã xem nên không sửa được nữa.");
+  }
+}
+
+/** Người gửi xoá góp ý của mình khi quản trị chưa xem. */
+export async function deleteMyFeedback(
+  id: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { data, error } = await client
+    .from("feedback")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (error) throw new Error(error.message);
+  if (!data || data.length === 0) {
+    throw new Error("Góp ý này quản trị đã xem nên không xoá được nữa.");
+  }
 }

@@ -67,6 +67,22 @@ export const TOOL_SPECS: ToolSpec[] = [
     },
   },
   {
+    name: "search_book",
+    description:
+      "Tìm trong tư liệu chữ của dòng họ: phả ký, lời nói đầu, ngoại phả, phụ khảo, di sản (từ đường, tục lệ, giai thoại, kỷ vật) và tiểu sử từng người. Dùng cho câu hỏi về LỊCH SỬ, nguồn gốc, quê quán, di cư, tục lệ, nhà thờ, ý nghĩa tên/chữ lót, hành trạng một người. Truyền vào vài từ khoá chính của câu hỏi.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "Từ khoá chính, vd: \"di cư vào Nam chi thứ ba\", \"nhà thờ họ\", \"chữ lót Đức\"",
+        },
+      },
+      required: ["query"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "clan_stats",
     description:
       "Thống kê nhanh dòng họ: tổng số người, số người còn sống, số đời.",

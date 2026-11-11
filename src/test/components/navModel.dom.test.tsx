@@ -176,8 +176,10 @@ describe("buildSections — nhóm của dòng họ", () => {
 
   it("Góp ý là một mục trong menu, không còn là nút lẫn ở chân drawer", () => {
     const global = build().find((s) => s.id === "global")!;
-    const fb = global.items.find((i) => i.kind === "feedback");
+    const fb = global.items.find((i) => /Góp ý/.test(i.label));
     expect(fb?.label).toMatch(/Góp ý/);
+    // Bấm vào mở trang danh sách góp ý (đủ thêm/xem/sửa/xoá), không còn mở hộp thoại.
+    expect(fb?.to).toBe("/gop-y");
   });
 
   it("người chỉ xem không thấy các mục quản trị dòng họ", () => {

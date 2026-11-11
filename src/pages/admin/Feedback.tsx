@@ -325,14 +325,21 @@ function FeedbackForm({
   const toast = useToast();
   const [status, setStatus] = useState<FeedbackStatus>(row.status);
   const [note, setNote] = useState(row.admin_note ?? "");
+  const [reply, setReply] = useState(row.admin_reply ?? "");
 
-  const changed = status !== row.status || note.trim() !== (row.admin_note ?? "").trim();
+  const changed =
+    status !== row.status ||
+    note.trim() !== (row.admin_note ?? "").trim() ||
+    reply.trim() !== (row.admin_reply ?? "").trim();
 
   const saveM = useMutation({
     mutationFn: () =>
       updateFeedback(row.id, {
         ...(status !== row.status ? { status } : {}),
         admin_note: note.trim() || null,
+        ...(reply.trim() !== (row.admin_reply ?? "").trim()
+          ? { admin_reply: reply.trim() || null }
+          : {}),
       }),
     onSuccess: () => {
       toast.success("Đã cập nhật góp ý");
@@ -433,6 +440,21 @@ function FeedbackForm({
               </option>
             ))}
           </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="fb-reply">Phản hồi cho người gửi (người gửi sẽ thấy)</Label>
+          <Textarea
+            id="fb-reply"
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            placeholder="Vd: Cảm ơn bạn, lỗi này đã được sửa ở bản mới nhất."
+            maxLength={2000}
+          />
+          {!row.user_id && (
+            <p className="text-xs text-muted-foreground">
+              Góp ý này gửi khi chưa đăng nhập nên người gửi không xem lại được phản hồi.
+            </p>
+          )}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="fb-note">Ghi chú nội bộ (chỉ admin xem)</Label>

@@ -25,7 +25,7 @@ import {
 /**
  * /lien-he — trang liên hệ / gửi phản hồi đầy đủ.
  *
- * Bổ sung cho nút floating `FeedbackButton`. Trang standalone tiện cho:
+ * Bổ sung cho trang "Góp ý của tôi" (/gop-y, dành cho người đã đăng nhập). Trang standalone tiện cho:
  *  - Người đăng nhập gửi report dài có thời gian suy nghĩ
  *  - Anon visitor không gặp scroll-lock của modal
  *  - Link share được trên mạng xã hội ("Liên hệ tác giả")

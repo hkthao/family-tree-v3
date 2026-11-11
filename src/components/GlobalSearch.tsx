@@ -120,7 +120,6 @@ export function GlobalSearch() {
     if (!open) return [];
     return buildSections(clanId, clan ?? null, profile ?? null, 0, 0, 0, aiEnabled).flatMap((s) =>
       s.items
-        .filter((i) => i.kind !== "feedback")
         .map<StaticEntry>((i) => ({ group: "menu", title: i.label, subtitle: s.label, to: i.to })),
     );
   }, [open, clanId, clan, profile, aiEnabled]);
