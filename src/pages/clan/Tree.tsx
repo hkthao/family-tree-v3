@@ -733,8 +733,14 @@ export default function Tree() {
               ),
             )
           : 1;
+        const tallContentH =
+          nameTop + 24 + (nameLines - 1) * NAME_LINE + 30 + (showDeceasedDetails ? 20 : 0) + 8;
+        // Thẻ dọc luôn là hình chữ nhật đứng cân đối (cao ≥ ~1,55 × rộng);
+        // phần dôi ra chia đều quanh khối tên, năm vẫn nằm đáy thẻ.
+        const tallH = Math.max(tallContentH, Math.round(cardW * 1.55));
+        const tallSlack = tallH - tallContentH;
         const cardH = tall
-          ? nameTop + 24 + (nameLines - 1) * NAME_LINE + 30 + (showDeceasedDetails ? 20 : 0) + 8
+          ? tallH
           : showDeceasedDetails
             ? 74
             : 64;
@@ -805,7 +811,9 @@ export default function Tree() {
                 words.slice(nameLines - 1).join(" "),
               ].filter(Boolean);
               nameTspan.textContent = lines[0] ?? "";
-              nameTspan.setAttribute("dy", "24");
+              // Căn khối tên giữa vùng chữ: nửa phần dôi + nửa số dòng còn thiếu.
+              const padTop = tallSlack / 2 + ((nameLines - lines.length) * NAME_LINE) / 2;
+              nameTspan.setAttribute("dy", String(24 + padTop));
               nameTspan.style.fontSize = "17px";
               nameTspan.style.fontWeight = "700";
               let anchor: Element = nameTspan;
@@ -867,7 +875,11 @@ export default function Tree() {
               // Thẻ dọc: năm luôn nằm đáy thẻ — bù số dòng tên còn thiếu.
               meta.setAttribute(
                 "dy",
-                String((tall ? 28 : 18) + (tall ? (nameLines - nameLinesUsed) * NAME_LINE : 0)),
+                String(
+                  tall
+                    ? 28 + tallSlack / 2 + ((nameLines - nameLinesUsed) * NAME_LINE) / 2
+                    : 18,
+                ),
               );
             }
             // Dòng 3 (giỗ + tuổi thọ) — đặt dưới dòng năm, chữ nhỏ + mờ.
