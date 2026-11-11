@@ -17,6 +17,9 @@ type Drag = {
  * chưa có mảnh hiện ô gỗ. Ở chế độ sắp xếp, kéo mảnh (chuột/cảm ứng) thả vào
  * ô khác để di chuyển / đổi chỗ.
  */
+/** Tông màu chung cho ảnh mảnh: bớt rực, ngả ấm. */
+const TILE_FILTER = "sepia(0.3) saturate(0.8) contrast(0.95) brightness(1.02)";
+
 /** Bán kính bo góc của bức (đơn vị SVG, 1 ô = 100). */
 const BOARD_RADIUS = 7;
 
@@ -144,14 +147,24 @@ export function MosaicBoard({
               width={CELL + 2 * m}
               height={CELL + 2 * m}
               preserveAspectRatio="xMidYMid slice"
+              // Phủ một tông ấm chung lên mọi ảnh để các mảnh hài hoà.
+              style={{ filter: TILE_FILTER }}
             />
           )}
         </g>
+        {/* Viền: bóng mờ bên dưới + nét kem sáng bên trên, mỗi mảnh như một tấm ảnh in */}
         <path
           d={jigsawPath(seed, r, c, rows, cols, total)}
           fill="none"
-          stroke="rgba(0,0,0,0.45)"
-          strokeWidth={1.2}
+          stroke="rgba(40,25,10,0.4)"
+          strokeWidth={2.8}
+          strokeLinejoin="round"
+        />
+        <path
+          d={jigsawPath(seed, r, c, rows, cols, total)}
+          fill="none"
+          stroke="rgba(255,246,228,0.92)"
+          strokeWidth={1.4}
           strokeLinejoin="round"
         />
       </g>
