@@ -5,7 +5,7 @@
 > theo mùa, sinh nhật, ngày giỗ. Bản plan này chốt **kỹ thuật dựng hình cho cây chân
 > thực nhất**, mô hình dữ liệu, màn hình, thông báo và phân kỳ.
 >
-> Trạng thái: **mới lập kế hoạch, CHƯA code.** Có một bước thử nghiệm kỹ thuật (spike)
+> Trạng thái: **TẠM DỪNG (11/11/2026): chức năng chưa phù hợp, bỏ qua spike.** Spike đã làm nằm ở nhánh `spike/cay-ban-menh` (chưa merge, chưa push): ez-tree MIT, có gió, chunk 34KB nếu alias sang mã nguồn; điều khiển 3D khó dùng với người lớn tuổi. Nội dung bên dưới là bản gốc: mới lập kế hoạch, CHƯA code. Có một bước thử nghiệm kỹ thuật (spike)
 > ở mục 7 để chọn công nghệ trước khi cam kết.
 
 ## 1. Vì sao làm
