@@ -17,6 +17,9 @@ type Drag = {
  * chưa có mảnh hiện ô gỗ. Ở chế độ sắp xếp, kéo mảnh (chuột/cảm ứng) thả vào
  * ô khác để di chuyển / đổi chỗ.
  */
+/** Bán kính bo góc của bức (đơn vị SVG, 1 ô = 100). */
+const BOARD_RADIUS = 7;
+
 const cells0 = (n: number) => Array.from({ length: n }, (_, i) => i);
 
 export function MosaicBoard({
@@ -60,8 +63,8 @@ export function MosaicBoard({
   const toSvg = (e: React.PointerEvent) => {
     const rect = svgRef.current!.getBoundingClientRect();
     return {
-      x: ((e.clientX - rect.left) / rect.width) * W,
-      y: ((e.clientY - rect.top) / rect.height) * H,
+      x: ((e.clientX - rect.left) / rect.width) * (W + 2 * m) - m,
+      y: ((e.clientY - rect.top) / rect.height) * (H + 2 * m) - m,
     };
   };
   const slotAt = (x: number, y: number) => {
@@ -169,43 +172,51 @@ export function MosaicBoard({
       role="img"
       aria-label="Bức ảnh đại gia đình ghép mảnh"
     >
-      {/* Ô trống: gỗ + răng cưa để nhìn ra chỗ cần ghép */}
-      {cells
-        .filter((i) => !bySlot.has(i))
-        .map((i) => {
-          const r = Math.floor(i / cols);
-          const c = i % cols;
-          const isTarget = hover === i && drag?.moved;
-          return (
-            <g
-              key={i}
-              style={{ cursor: canAdd && !arrange ? "pointer" : "default" }}
-              onClick={() => canAdd && !arrange && onAdd(i)}
-            >
-              <path
-                d={jigsawPath(seed, r, c, rows, cols, total)}
-                fill={isTarget ? "#c9a46b" : "#a9824f"}
-                fillOpacity={isTarget ? 0.9 : 0.55}
-                stroke="rgba(0,0,0,0.3)"
-                strokeWidth={1}
-              />
-              {canAdd && !arrange && i === firstEmpty && (
-                <text
-                  x={c * CELL + CELL / 2}
-                  y={r * CELL + CELL / 2 + 8}
-                  textAnchor="middle"
-                  fontSize={26}
-                  fill="#fff"
-                  fillOpacity={0.85}
-                >
-                  +
-                </text>
-              )}
-            </g>
-          );
-        })}
-      {tiles.filter((t) => t.id !== drag?.id).map(renderTile)}
-      {drag && tiles.filter((t) => t.id === drag.id).map(renderTile)}
+      <defs>
+        {/* Bo tròn nhẹ bốn góc của cả bức */}
+        <clipPath id={`${uid}-board`}>
+          <rect width={W} height={H} rx={BOARD_RADIUS} />
+        </clipPath>
+      </defs>
+      <g clipPath={`url(#${uid}-board)`}>
+        {/* Ô trống: gỗ + răng cưa để nhìn ra chỗ cần ghép */}
+        {cells
+          .filter((i) => !bySlot.has(i))
+          .map((i) => {
+            const r = Math.floor(i / cols);
+            const c = i % cols;
+            const isTarget = hover === i && drag?.moved;
+            return (
+              <g
+                key={i}
+                style={{ cursor: canAdd && !arrange ? "pointer" : "default" }}
+                onClick={() => canAdd && !arrange && onAdd(i)}
+              >
+                <path
+                  d={jigsawPath(seed, r, c, rows, cols, total)}
+                  fill={isTarget ? "#c9a46b" : "#a9824f"}
+                  fillOpacity={isTarget ? 0.9 : 0.55}
+                  stroke="rgba(0,0,0,0.3)"
+                  strokeWidth={1}
+                />
+                {canAdd && !arrange && i === firstEmpty && (
+                  <text
+                    x={c * CELL + CELL / 2}
+                    y={r * CELL + CELL / 2 + 8}
+                    textAnchor="middle"
+                    fontSize={26}
+                    fill="#fff"
+                    fillOpacity={0.85}
+                  >
+                    +
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        {tiles.filter((t) => t.id !== drag?.id).map(renderTile)}
+        {drag && tiles.filter((t) => t.id === drag.id).map(renderTile)}
+      </g>
     </svg>
   );
 }
