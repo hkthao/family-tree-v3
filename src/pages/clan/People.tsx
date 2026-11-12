@@ -941,8 +941,8 @@ function PersonListItem({
   if (dispGen !== null) metaBits.push(`Đời ${dispGen}`);
 
   return (
-    <li className="relative transition-colors hover:bg-muted/40">
-      <div className="flex items-start gap-2">
+    <li className="relative transition-colors hover:bg-muted/40 sm:flex sm:items-center">
+      <div className="flex items-start gap-2 sm:min-w-0 sm:flex-1">
       {selectable && (
         <label className="pl-3 pt-4 cursor-pointer">
           <input
@@ -1017,9 +1017,10 @@ function PersonListItem({
         </div>
       </PanelLink>
       </div>
-      {/* Hành động của người: MỘT hàng ngang ở đáy hàng, căn phải (quan hệ · khoe · sao chép). */}
+      {/* Hành động của người: MỘT hàng ngang (quan hệ · khoe · sao chép). Điện thoại: ở đáy hàng, căn phải;
+          từ sm: nằm bên phải, giữa chiều cao mục — khỏi tốn thêm một dòng. */}
       {(canCopy || showKhoe) && (
-        <div className="flex items-center justify-end gap-0.5 px-3 pb-2 -mt-1">
+        <div className="-mt-1 flex items-center justify-end gap-0.5 px-3 pb-2 sm:mt-0 sm:shrink-0 sm:pb-0">
           {showKhoe && (
             <Link
               to={`/clans/${clanId}/relations?p=${person.id}`}
