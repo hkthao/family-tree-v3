@@ -33,7 +33,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import { useAuth } from "@/hooks/useAuth";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox, useUrlFilter } from "@/hooks/useClientPaging";
 import { unaccent } from "@/lib/unaccent";
 import {
   createHonorEntry,
@@ -98,8 +98,9 @@ export default function HonorBook() {
     [entries],
   );
 
-  const [search, setSearch] = useState("");
-  const [catFilter, setCatFilter] = useState<HonorCategory | "">("");
+  // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
+  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
+  const [catFilter, setCatFilter] = useUrlFilter<HonorCategory | "">("loai", "");
   const filtered = useMemo(() => {
     const q = unaccent(search.trim()).toLowerCase();
     return entries.filter(
@@ -206,17 +207,15 @@ export default function HonorBook() {
       <CollapsibleFilters
         activeCount={catFilter ? 1 : 0}
         onReset={() => {
-          setCatFilter("");
-          paging.patchAndResetPage({});
+          paging.patchAndResetPage({ loai: null });
         }}
         title="Lọc công đức"
         search={(toggle) => (
           <SearchInput
             label="Tìm công đức"
-            value={search}
+            value={searchText}
             onChange={(e) => {
-              setSearch(e.target.value);
-              paging.patchAndResetPage({});
+              setSearchText(e.target.value);
             }}
             placeholder="Tìm theo tên người, ghi chú…"
             rightSlot={toggle}
@@ -228,7 +227,6 @@ export default function HonorBook() {
             value={catFilter}
             onChange={(e) => {
               setCatFilter(e.target.value as HonorCategory | "");
-              paging.patchAndResetPage({});
             }}
             aria-label="Lọc theo loại"
             icon={<IconTag />}

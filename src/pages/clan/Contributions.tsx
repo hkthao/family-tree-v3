@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -25,7 +25,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox, useUrlFilter } from "@/hooks/useClientPaging";
 import {
   listContributions,
   type ContributionRow,
@@ -81,8 +81,9 @@ export default function Contributions() {
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
 
-  const [status, setStatus] = useState<ContributionStatus | "all">("pending");
-  const [search, setSearch] = useState("");
+  const [status, setStatus] = useUrlFilter<ContributionStatus | "all">("tt", "pending");
+  // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
+  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
   const { data: rows, isLoading, error } = useQuery({
     queryKey: queryKeys.contributions(clan.id, userId, { status }),
     queryFn: () => listContributions(clan.id, { status }),
@@ -122,17 +123,15 @@ export default function Contributions() {
       <CollapsibleFilters
         activeCount={status !== "pending" ? 1 : 0}
         onReset={() => {
-          setStatus("pending");
-          paging.patchAndResetPage({});
+          paging.patchAndResetPage({ tt: null });
         }}
         title="Lọc đóng góp"
         search={(toggle) => (
           <SearchInput
             label="Tìm đóng góp"
-            value={search}
+            value={searchText}
             onChange={(e) => {
-              setSearch(e.target.value);
-              paging.patchAndResetPage({});
+              setSearchText(e.target.value);
             }}
             placeholder="Tìm theo tên người gửi…"
             rightSlot={toggle}
@@ -144,7 +143,6 @@ export default function Contributions() {
             value={status}
             onChange={(e) => {
               setStatus(e.target.value as ContributionStatus | "all");
-              paging.patchAndResetPage({});
             }}
             aria-label="Lọc theo trạng thái"
             icon={<IconTag />}

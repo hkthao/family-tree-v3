@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox, useUrlFilter } from "@/hooks/useClientPaging";
 import { unaccent } from "@/lib/unaccent";
 import {
   createFundTransaction,
@@ -90,9 +90,10 @@ export default function ClanFund() {
   });
   const summary = useMemo(() => summarizeFund(txs), [txs]);
 
-  const [search, setSearch] = useState("");
-  const [dirFilter, setDirFilter] = useState<FundDirection | "">("");
-  const [fundFilter, setFundFilter] = useState("");
+  // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
+  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
+  const [dirFilter, setDirFilter] = useUrlFilter<FundDirection | "">("dir", "");
+  const [fundFilter, setFundFilter] = useUrlFilter<string>("quy", "");
   const filtered = useMemo(() => {
     const q = unaccent(search.trim()).toLowerCase();
     return txs.filter(
@@ -250,18 +251,15 @@ export default function ClanFund() {
       <CollapsibleFilters
         activeCount={(dirFilter ? 1 : 0) + (fundFilter ? 1 : 0)}
         onReset={() => {
-          setDirFilter("");
-          setFundFilter("");
-          paging.patchAndResetPage({});
+          paging.patchAndResetPage({ dir: null, quy: null });
         }}
         title="Lọc giao dịch"
         search={(toggle) => (
           <SearchInput
             label="Tìm giao dịch"
-            value={search}
+            value={searchText}
             onChange={(e) => {
-              setSearch(e.target.value);
-              paging.patchAndResetPage({});
+              setSearchText(e.target.value);
             }}
             placeholder="Tìm theo quỹ, mục đích, ghi chú, số tiền…"
             rightSlot={toggle}
@@ -273,7 +271,6 @@ export default function ClanFund() {
             value={dirFilter}
             onChange={(e) => {
               setDirFilter(e.target.value as FundDirection | "");
-              paging.patchAndResetPage({});
             }}
             aria-label="Lọc thu / chi"
             icon={<IconTag />}
@@ -287,7 +284,6 @@ export default function ClanFund() {
             value={fundFilter}
             onChange={(e) => {
               setFundFilter(e.target.value);
-              paging.patchAndResetPage({});
             }}
             aria-label="Lọc theo quỹ"
             icon={<IconWallet />}

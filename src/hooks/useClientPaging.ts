@@ -51,3 +51,17 @@ export function useSearchBox(delay = 300) {
   }, [text]);
   return { q, text, setText };
 }
+
+/**
+ * Bộ lọc chọn-một nằm trên URL (vd `?loai=donation_money`) để Back / chia sẻ link giữ nguyên.
+ * Đổi giá trị thì về trang đầu trong CÙNG MỘT lần ghi URL — đừng gọi thêm `patchAndResetPage` ngay
+ * sau setter này (hai lần ghi liền nhau ghi đè nhau).
+ */
+export function useUrlFilter<T extends string>(
+  key: string,
+  defaultValue: T,
+): [T, (next: T) => void] {
+  const [raw] = useUrlState(key, defaultValue);
+  const patch = useUrlPatch();
+  return [raw as T, (next: T) => patch({ [key]: next === defaultValue ? null : next, trang: null })];
+}

@@ -9,18 +9,19 @@ import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { QuickDateFixSheet } from "@/components/QuickDateFixSheet";
-import {
-  IconCheck,
-  IconScroll,
-  IconX,
-} from "@/components/icons";
+import { IconCheck, IconScroll, IconX } from "@/components/icons";
 import { Pagination } from "@/components/Pagination";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
+import { useUrlPatch, useUrlState } from "@/hooks/useUrlState";
+import {
+  canEditClan,
+  effectiveRole,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import { queryKeys } from "@/lib/queries/keys";
 import {
   getClanCompletion,
@@ -179,9 +180,20 @@ export default function Todo() {
     if (ok) bulkExcludeMutation.mutate(ids);
   }
 
-  const [category, setCategory] = useState<TodoCategory>("missing_parents");
+  // Loại việc + số trang nằm trên URL (?loai=&trang=) nên bấm Back vẫn giữ nguyên.
+  const patchUrl = useUrlPatch();
+  const [categoryRaw] = useUrlState("loai", "missing_parents");
+  const category: TodoCategory = (TODO_CATEGORIES as string[]).includes(
+    categoryRaw,
+  )
+    ? (categoryRaw as TodoCategory)
+    : "missing_parents";
   // 1-based for consistency with Audit/Clans/People pagination.
-  const [page, setPage] = useState(1);
+  const [pageRaw] = useUrlState("trang", "");
+  const page = Math.max(1, Number(pageRaw) || 1);
+  const setCategory = (cat: TodoCategory) =>
+    patchUrl({ loai: cat === "missing_parents" ? null : cat, trang: null });
+  const setPage = (n: number) => patchUrl({ trang: n <= 1 ? null : String(n) });
 
   // Clear bulk selection on category / page change — a row only
   // exists on one (category, page) tuple, so carrying selection over
@@ -284,12 +296,14 @@ export default function Todo() {
         title="Việc cần làm"
         description={
           <>
-            App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung. Bấm
-            vào một người để {canEdit ? "sửa thẳng." : "đề xuất bổ sung."}
+            App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung. Bấm vào một
+            người để {canEdit ? "sửa thẳng." : "đề xuất bổ sung."}
             {summary && (
               <>
                 {" "}
-                Tổng <strong>{totalLoadBearing.toLocaleString("vi-VN")}</strong>{" "}
+                Tổng <strong>
+                  {totalLoadBearing.toLocaleString("vi-VN")}
+                </strong>{" "}
                 mục cần xử lý trong họ.
               </>
             )}
@@ -303,9 +317,7 @@ export default function Todo() {
 
       {summaryError && (
         <Alert variant="destructive">
-          <AlertDescription>
-            {(summaryError as Error).message}
-          </AlertDescription>
+          <AlertDescription>{(summaryError as Error).message}</AlertDescription>
         </Alert>
       )}
 
@@ -327,7 +339,6 @@ export default function Todo() {
               aria-selected={active}
               onClick={() => {
                 setCategory(cat);
-                setPage(1);
               }}
               className={`inline-flex items-center gap-2 px-3 h-9 text-sm rounded-md border transition-colors ${
                 active
@@ -398,9 +409,7 @@ export default function Todo() {
             className="h-9"
           >
             <IconX className="h-4 w-4 mr-1.5" />
-            {bulkExcludeMutation.isPending
-              ? "Đang loại…"
-              : `Loại khỏi DS`}
+            {bulkExcludeMutation.isPending ? "Đang loại…" : `Loại khỏi DS`}
           </Button>
         </div>
       )}
@@ -448,17 +457,11 @@ export default function Todo() {
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-x-3 gap-y-1">
-                    {row.birth_year && (
-                      <span>Sinh {row.birth_year}</span>
+                    {row.birth_year && <span>Sinh {row.birth_year}</span>}
+                    {row.death_year && <span>Mất {row.death_year}</span>}
+                    {!row.is_living && !row.death_year && !row.birth_year && (
+                      <span>Đã mất, chưa rõ năm</span>
                     )}
-                    {row.death_year && (
-                      <span>Mất {row.death_year}</span>
-                    )}
-                    {!row.is_living &&
-                      !row.death_year &&
-                      !row.birth_year && (
-                        <span>Đã mất, chưa rõ năm</span>
-                      )}
                     {row.missing.map((m) => (
                       <span
                         key={m}
@@ -560,11 +563,9 @@ function CompletionProgress({
         />
       </div>
       <p className="text-sm text-muted-foreground">
-        <span className="tabular-nums">
-          {complete.toLocaleString("vi-VN")}
-        </span>{" "}
-        / {total.toLocaleString("vi-VN")} người có đủ năm sinh và quan
-        hệ cha/mẹ. Cùng nhau bổ sung để kéo lên 100%.
+        <span className="tabular-nums">{complete.toLocaleString("vi-VN")}</span>{" "}
+        / {total.toLocaleString("vi-VN")} người có đủ năm sinh và quan hệ
+        cha/mẹ. Cùng nhau bổ sung để kéo lên 100%.
       </p>
     </section>
   );
