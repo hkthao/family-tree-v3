@@ -941,7 +941,7 @@ function PersonListItem({
   if (dispGen !== null) metaBits.push(`Đời ${dispGen}`);
 
   return (
-    <li className="relative">
+    <li className="relative transition-colors hover:bg-muted/40">
       <div className="flex items-start gap-2">
       {selectable && (
         <label className="pl-3 pt-4 cursor-pointer">
@@ -958,7 +958,7 @@ function PersonListItem({
         to={`/clans/${clanId}/people/${person.id}`}
         panel="person-view"
         panelParams={{ pid: person.id }}
-        className="flex flex-1 min-w-0 items-start gap-3 p-3 hover:bg-muted/40 transition-colors"
+        className="flex flex-1 min-w-0 items-start gap-3 p-3"
       >
         <PersonAvatar
           gender={person.gender}
