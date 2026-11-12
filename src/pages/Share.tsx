@@ -32,6 +32,7 @@ import { FilterDrawer } from "@/components/FilterDrawer";
 import { FilterableSelect } from "@/components/FilterableSelect";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
+import { TreeGuide } from "@/components/tree/TreeGuide";
 import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
 import { useTreeViewPrefs } from "@/lib/tree/viewPrefs";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
@@ -1125,6 +1126,13 @@ export default function Share() {
                           } as React.CSSProperties
                         }
                         aria-label="Cây gia phả tương tác (chỉ xem)"
+                      />
+                      {/* Cách xem: mở sẵn trên máy tính, thu gọn thành nút trên điện thoại để khỏi che cây. */}
+                      <TreeGuide
+                        defaultOpen={
+                          typeof window === "undefined" ||
+                          window.matchMedia("(min-width: 640px)").matches
+                        }
                       />
                       <div className="absolute bottom-2 right-2 z-10 flex flex-col gap-1">
                         <button
