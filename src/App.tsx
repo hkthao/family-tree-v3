@@ -71,6 +71,7 @@ const Import = lazy(() => import("@/pages/clan/Import"));
 const Inlaws = lazy(() => import("@/pages/clan/Inlaws"));
 const InlawsNew = lazy(() => import("@/pages/clan/InlawsNew"));
 const Kinship = lazy(() => import("@/pages/clan/Kinship"));
+const Relations = lazy(() => import("@/pages/clan/Relations"));
 const Members = lazy(() => import("@/pages/clan/Members"));
 const MemoryRoom = lazy(() => import("@/pages/clan/MemoryRoom"));
 const MemoryRooms = lazy(() => import("@/pages/clan/MemoryRooms"));
@@ -297,6 +298,7 @@ export default function App() {
           <Route path="todo" element={<Todo />} />
           <Route path="tools" element={<Tools />} />
           <Route path="kinship" element={<Kinship />} />
+          <Route path="relations" element={<Relations />} />
           <Route path="contributions" element={<Contributions />} />
           <Route path="contributions/:contribId" element={<ContributionDetail />} />
           <Route path="inlaws" element={<FeatureGuard feature="inlaws"><Inlaws /></FeatureGuard>} />

@@ -514,6 +514,13 @@ search={(toggle) => (
             <IconUsers className="mr-2 h-4 w-4" /> Tra cứu xưng hô
           </Button>
         )}
+        {isMember && (
+          <Button asChild variant="outline" className="h-11 w-full justify-start">
+            <Link to={`/clans/${clan.id}/relations`}>
+              <IconTree className="mr-2 h-4 w-4" /> Tra cứu quan hệ
+            </Link>
+          </Button>
+        )}
         <Select
           icon={<IconGrid />}
           value={branchId}
