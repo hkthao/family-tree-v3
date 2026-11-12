@@ -111,6 +111,7 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Tổng quan",
       "Cây gia phả",
       "Danh bạ",
+      "Tra cứu quan hệ",
       "Sự kiện",
       "Hôm nay",
     ]);
@@ -138,7 +139,6 @@ describe("buildSections — nhóm của dòng họ", () => {
     const work = s.find((x) => x.id === "clan-work")!;
     expect(work.items.map((i) => i.label)).toEqual([
       "Việc cần làm",
-      "Tra cứu quan hệ",
       "Công cụ",
       "Thành viên",
       "Liên kết dòng họ",

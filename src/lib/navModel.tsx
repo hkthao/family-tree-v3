@@ -350,6 +350,14 @@ export function buildSections(
           icon: <IconUsers className={ic} />,
         },
       );
+      // Tra cứu quan hệ của một người — đứng ngay dưới Danh bạ (cùng việc tra cứu người trong họ).
+      if (isMember) {
+        topItems.push({
+          to: `/clans/${clanId}/relations`,
+          label: "Tra cứu quan hệ",
+          icon: <IconTree className={ic} />,
+        });
+      }
     }
     if (canEvents) {
       topItems.push({
@@ -452,11 +460,6 @@ export function buildSections(
         label: "Việc cần làm",
         icon: <IconList className={ic} />,
         badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
-      });
-      workItems.push({
-        to: `/clans/${clanId}/relations`,
-        label: "Tra cứu quan hệ",
-        icon: <IconTree className={ic} />,
       });
       // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
       workItems.push({
