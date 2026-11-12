@@ -7,6 +7,7 @@ import {
   IconDownload,
   IconFilter,
   IconShield,
+  IconUser,
   IconLogIn,
   IconMaximize,
   IconMinimize,
@@ -28,7 +29,7 @@ const Tree3DView = lazy(() =>
   import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
 );
 import { FilterDrawer } from "@/components/FilterDrawer";
-import { SearchInput } from "@/components/SearchInput";
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
 import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
@@ -106,14 +107,6 @@ async function loadF3(): Promise<typeof import("family-chart")> {
   return f3Module;
 }
 
-function normalize(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d");
-}
-
 /**
  * /share/:token — read-only family tree for anonymous viewers. Calls the
  * Edge Function, which has already masked living persons' sensitive data.
@@ -155,7 +148,6 @@ export default function Share() {
   // picked from the data) once we have it. We don't gate the chart on
   // it — family-chart picks its own default main when none is set.
   const [focal, setFocal] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
   const toast = useToast();
   // Xuất ảnh cây đang xem (PNG) — dùng chung helper với trang Cây chính.
   const [savingImg, setSavingImg] = useState(false);
@@ -681,14 +673,27 @@ export default function Share() {
     chartRef.current?.updateTree({ initial: false });
   }, [focal]);
 
-  // Search → top 5 matches by normalised name.
-  const matches = useMemo(() => {
-    if (!data || !search.trim()) return [];
-    const needle = normalize(search.trim());
-    return data.persons
-      .filter((p) => normalize(p.full_name).includes(needle))
-      .slice(0, 5);
-  }, [data, search]);
+  // Danh sách chọn người trung tâm: theo đời rồi theo tên; nhãn kèm đời + năm sinh để phân biệt trùng tên.
+  const personOptions = useMemo(() => {
+    if (!data) return [];
+    const off = data.generation_offset ?? 0;
+    return [...data.persons]
+      .sort(
+        (x, y) =>
+          (x.generation ?? 999) - (y.generation ?? 999) ||
+          x.full_name.localeCompare(y.full_name, "vi"),
+      )
+      .map((p) => ({
+        value: p.id,
+        label: [
+          p.full_name,
+          p.generation !== null ? `Đời ${p.generation - off}` : null,
+          p.birth_date ? `sinh ${p.birth_date.slice(0, 4)}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      }));
+  }, [data]);
 
   // QR tại mộ — scope='resting_place' renders the grave card.
   if (data && data.scope === "resting_place" && data.resting_place) {
@@ -1030,42 +1035,19 @@ export default function Share() {
                   : "hidden"
               }
             >
-              {/* Thanh công cụ gọn: ô tìm kiếm + nút phễu mở ngăn kéo "Tuỳ chọn cây". */}
+              {/* Thanh công cụ gọn: ô chọn người trung tâm (có ô tìm) + nút phễu mở ngăn kéo "Tuỳ chọn cây". */}
               <div className="container flex max-w-6xl shrink-0 items-center gap-2 py-3 print-hide">
-                <div className="min-w-0 flex-1 relative">
-                  <SearchInput
-                    label="Đặt người trung tâm"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Đặt người trung tâm — gõ tên để tìm…"
+                <div className="min-w-0 flex-1">
+                  <FilterableSelect
+                    id="share-focal"
+                    icon={<IconUser />}
+                    value={focal ?? ""}
+                    onChange={(v) => v && setFocal(v)}
+                    options={personOptions}
+                    emptyLabel="Chọn người làm trung tâm"
+                    filterPlaceholder="Gõ tên để tìm (không cần dấu)"
+                    filterLabel="Tìm người làm trung tâm"
                   />
-                  {matches.length > 0 && (
-                    <ul className="absolute top-full left-0 right-0 z-10 mt-1 rounded-xl border bg-card divide-y shadow-md">
-                      {matches.map((m) => (
-                        <li key={m.id}>
-                          <button
-                            type="button"
-                            className="w-full text-left px-3 py-2 hover:bg-muted/40"
-                            onClick={() => {
-                              setFocal(m.id);
-                              setSearch("");
-                            }}
-                          >
-                            <p className="font-medium">{m.full_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {m.gender === "M" ? "Nam" : "Nữ"}
-                              {m.birth_date
-                                ? ` · sinh ${m.birth_date.slice(0, 4)}`
-                                : ""}
-                              {m.generation !== null
-                                ? ` · Đời ${m.generation - (data.generation_offset ?? 0)}`
-                                : ""}
-                            </p>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
                 <Button
                   type="button"
