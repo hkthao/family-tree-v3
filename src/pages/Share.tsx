@@ -6,10 +6,12 @@ import { Link, useParams } from "react-router-dom";
 import {
   IconDownload,
   IconFilter,
+  IconShield,
   IconLogIn,
   IconMaximize,
   IconMinimize,
   IconPlus,
+  IconX,
 } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -36,13 +38,8 @@ import { SharedPersonCard } from "@/components/SharedPersonCard";
 import { SharedRestingPlaceCard } from "@/components/SharedRestingPlaceCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  nameFontFamily as fontFamilyOf,
-} from "@/lib/tree/nameFonts";
-import {
-  pickDefaultFocal,
-  toFamilyChart,
-} from "@/lib/familyChartAdapter";
+import { nameFontFamily as fontFamilyOf } from "@/lib/tree/nameFonts";
+import { pickDefaultFocal, toFamilyChart } from "@/lib/familyChartAdapter";
 import {
   fetchPublicClanView,
   fetchShareView,
@@ -190,10 +187,28 @@ export default function Share() {
   // render toàn bộ gây lag trên điện thoại. 0 = tất cả.
   const [depth, setDepth] = useState<number>(8);
   const [showOpts, setShowOpts] = useState(false);
+  // Lưu ý quyền riêng tư: người xem đóng được, nhớ theo thiết bị.
+  const NOTICE_KEY = "family-tree:share-notice-dismissed";
+  const [noticeOpen, setNoticeOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(NOTICE_KEY) !== "1";
+    } catch {
+      return true;
+    }
+  });
+  const dismissNotice = () => {
+    setNoticeOpen(false);
+    try {
+      localStorage.setItem(NOTICE_KEY, "1");
+    } catch {
+      /* private mode — ignore */
+    }
+  };
   // Kiểu thẻ: dọc (hẹp, xem được nhiều người) hoặc ngang; ảnh mặc định ẩn.
   // Nền / khung / kiểu thẻ / ảnh / font / avatar: dùng CHUNG với trang Cây (lib/tree/viewPrefs).
   const prefs = useTreeViewPrefs();
-  const { cardLayout, cardAvatar, cardFrame, nameFont, backdrop, avatarStyle } = prefs;
+  const { cardLayout, cardAvatar, cardFrame, nameFont, backdrop, avatarStyle } =
+    prefs;
 
   // Trang xem thử công khai chia TAB: Cây | Sự kiện & giỗ | Di sản. Giữ cây
   // luôn mounted (ẩn bằng CSS) để khỏi dựng lại chart; refit khi quay lại.
@@ -284,12 +299,7 @@ export default function Share() {
         photo_path: synthetic,
       };
     });
-    return toFamilyChart(
-      adapted,
-      data.families,
-      photoByPath,
-      avatarStyle,
-    );
+    return toFamilyChart(adapted, data.families, photoByPath, avatarStyle);
   }, [data, avatarStyle]);
 
   // Dữ liệu cho cây 3D (Tree3DView nhận qua props vì khách chưa đăng nhập không
@@ -885,39 +895,61 @@ export default function Share() {
 
   return (
     <div className="h-dvh bg-background flex flex-col">
-      <header className="relative border-b py-3 px-4 shrink-0">
-        {/* Nút sáng/tối — trang công khai không có thanh đầu của app nên đặt ở đây. */}
-        <div className="absolute right-2 top-2 print-hide">
-          <ThemeQuickToggle />
-        </div>
-        <h1 className="clan-name px-10 text-xl font-semibold text-center">
-          {data?.clan_name ? `Gia phả ${data.clan_name}` : "Cây gia phả"}
-        </h1>
-        <p className="text-xs text-center text-muted-foreground mt-1">
-          {publicClan
-            ? "Bản xem công khai — thông tin nhạy cảm của người còn sống (ngày tháng, nơi chốn) đã được ẩn."
-            : "Đang xem qua liên kết chia sẻ — thông tin nhạy cảm của người còn sống (ngày tháng, nơi chốn) đã được ẩn."}
-        </p>
-        {publicClan && (
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-2 print-hide">
-            {/* Nút này dài, mà nút mặc định KHÔNG cho chữ xuống dòng —
-                trên màn 390px nó rộng 408px, tức thò hẳn ra ngoài mép và
-                kéo cả trang trôi ngang. Cho phép xuống dòng ở đây. */}
-            <Button
-              asChild
-              size="sm"
-              className="h-auto max-w-full whitespace-normal py-2 text-center"
-            >
-              <Link
-                to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}
-              >
-                <IconLogIn className="h-4 w-4 mr-1.5" />
-                Đăng nhập để xem đầy đủ &amp; cùng vun đắp
-              </Link>
-            </Button>
+      {/* Thanh đầu theo kiểu app: tên dòng họ ở giữa, nút sáng/tối bên phải (trang công khai
+          không có thanh đầu của app). Hai đầu cân nhau để tên luôn nằm giữa. */}
+      <header className="sticky top-0 z-30 shrink-0 border-b bg-background">
+        <div className="container flex h-[64px] max-w-4xl items-center justify-between gap-3 px-4">
+          <div className="w-10 shrink-0" aria-hidden="true" />
+          <h1 className="clan-name min-w-0 flex-1 truncate text-center text-lg font-semibold sm:text-xl">
+            {data?.clan_name ? `Gia phả ${data.clan_name}` : "Cây gia phả"}
+          </h1>
+          <div className="flex shrink-0 items-center print-hide">
+            <ThemeQuickToggle />
           </div>
-        )}
+        </div>
       </header>
+
+      {/* Lưu ý quyền riêng tư: đóng được bằng dấu X, nhớ lựa chọn trên thiết bị này. */}
+      {noticeOpen && (
+        <div className="shrink-0 px-4 pt-2 print-hide">
+          {/* Dải lưu ý mỏng một dòng: chữ nhỏ, đệm ít, đóng được bằng dấu X. */}
+          <Alert className="relative mx-auto flex max-w-4xl items-center gap-2 py-1.5 pl-3 pr-9 text-xs leading-snug">
+            <span aria-hidden="true" className="shrink-0 text-muted-foreground">
+              <IconShield className="h-3.5 w-3.5" />
+            </span>
+            <span className="min-w-0 text-muted-foreground">
+              Thông tin nhạy cảm của người còn sống (ngày tháng, nơi chốn) đã
+              được ẩn.
+            </span>
+            <button
+              type="button"
+              onClick={dismissNotice}
+              aria-label="Đóng thông báo"
+              title="Đóng"
+              className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <IconX className="h-3.5 w-3.5" />
+            </button>
+          </Alert>
+        </div>
+      )}
+
+      {publicClan && (
+        <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 px-4 pt-2 print-hide">
+          {/* Nút này dài, mà nút mặc định KHÔNG cho chữ xuống dòng — trên màn 390px nó rộng
+              408px, tức thò hẳn ra ngoài mép và kéo cả trang trôi ngang. Cho phép xuống dòng. */}
+          <Button
+            asChild
+            size="sm"
+            className="h-auto max-w-full whitespace-normal py-2 text-center"
+          >
+            <Link to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}>
+              <IconLogIn className="mr-1.5 h-4 w-4" />
+              Đăng nhập để xem đầy đủ &amp; cùng vun đắp
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {/* Thanh TAB (chỉ trang xem thử công khai): Cây | Sự kiện & giỗ | Di sản. */}
       {publicClan && data && data.persons.length > 0 && (
