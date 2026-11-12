@@ -42,7 +42,7 @@ import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset";
 import { ViewEditActions } from "@/components/ui/view-edit-actions";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox, useUrlFilter } from "@/hooks/useClientPaging";
 import { unaccent } from "@/lib/unaccent";
 import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
@@ -126,8 +126,9 @@ export default function Members() {
   });
 
   const [panel, setPanel] = useState<PanelState>(null);
-  const [memberSearch, setMemberSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<ClanRole | "">("");
+  // Từ khoá + vai trò nằm trên URL nên bấm Back vẫn giữ nguyên.
+  const { q: memberSearch, text: memberSearchText, setText: setMemberSearchText } = useSearchBox();
+  const [roleFilter, setRoleFilter] = useUrlFilter<ClanRole | "">("vai", "");
   const filteredMembers = useMemo(() => {
     const q = unaccent(memberSearch.trim()).toLowerCase();
     return (members ?? []).filter(
@@ -242,17 +243,15 @@ export default function Members() {
         <CollapsibleFilters
           activeCount={roleFilter ? 1 : 0}
           onReset={() => {
-            setRoleFilter("");
-            paging.patchAndResetPage({});
+            paging.patchAndResetPage({ vai: null });
           }}
           title="Lọc thành viên"
           search={(toggle) => (
             <SearchInput
               label="Tìm thành viên"
-              value={memberSearch}
+              value={memberSearchText}
               onChange={(e) => {
-                setMemberSearch(e.target.value);
-                paging.patchAndResetPage({});
+                setMemberSearchText(e.target.value);
               }}
               placeholder="Tìm theo tên…"
               rightSlot={toggle}
@@ -264,7 +263,6 @@ export default function Members() {
               value={roleFilter}
               onChange={(e) => {
                 setRoleFilter(e.target.value as ClanRole | "");
-                paging.patchAndResetPage({});
               }}
               aria-label="Lọc theo vai trò"
               icon={<IconTag />}

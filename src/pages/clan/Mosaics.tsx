@@ -35,6 +35,7 @@ import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 import {
   LIST_PAGE_SIZE_OPTIONS,
   useClientPaging,
+  useSearchBox,
 } from "@/hooks/useClientPaging";
 import {
   createMosaic,
@@ -62,7 +63,8 @@ export default function Mosaics() {
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
   const [creating, setCreating] = useState(false);
-  const [search, setSearch] = useState("");
+  // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
+  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
   const [viewMode, setViewMode] = useState<ViewMode>(() => readViewMode());
   useEffect(() => {
     try {
@@ -116,10 +118,9 @@ export default function Mosaics() {
         <div className="min-w-0 sm:flex-1">
           <SearchInput
             label="Tìm bức ảnh"
-            value={search}
+            value={searchText}
             onChange={(e) => {
-              setSearch(e.target.value);
-              paging.patchAndResetPage({});
+              setSearchText(e.target.value);
             }}
             placeholder="Tìm theo tên, mô tả…"
           />

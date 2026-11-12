@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   IconBell,
@@ -74,7 +74,12 @@ import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { getTreeData } from "@/lib/queries/tree";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
-import { LIST_PAGE_SIZE_OPTIONS } from "@/hooks/useClientPaging";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+  useSearchBox,
+} from "@/hooks/useClientPaging";
+import { useUrlState } from "@/hooks/useUrlState";
 import { unaccent } from "@/lib/unaccent";
 import { EventDetailDialog } from "@/components/EventDetailDialog";
 import {
@@ -99,14 +104,14 @@ export default function Events() {
   const qc = useQueryClient();
   const toast = useToast();
 
-  const [daysAhead, setDaysAhead] = useState<number>(90);
-  const [view, setView] = useState<"list" | "grid" | "calendar">("list");
+  // Khoảng ngày, kiểu xem, từ khoá và số trang nằm trên URL nên bấm Back vẫn giữ nguyên.
+  const [daysRaw] = useUrlState("ngay", "90");
+  const daysAhead = Number(daysRaw) > 0 ? Number(daysRaw) : 90;
+  const [viewRaw, setView] = useUrlState("kieu", "list");
+  const view: "list" | "grid" | "calendar" =
+    viewRaw === "grid" || viewRaw === "calendar" ? viewRaw : "list";
   const [feedOpen, setFeedOpen] = useState(false);
-  // Phân trang danh sách sự kiện sắp tới (họ lớn có thể hàng trăm
-  // sinh nhật / ngày giỗ trong khoảng đã chọn).
-  const [pageSize, setPageSize] = useState(20);
-  const [page, setPage] = useState(1);
-  const [query, setQuery] = useState("");
+  const { q: query, text: queryText, setText: setQueryText } = useSearchBox();
 
   // Non-members of a public clan need the masked view; raw `persons`
   // RLS would return zero rows. Same pattern as /tree and Dashboard.
@@ -127,8 +132,7 @@ export default function Events() {
       ...queryKeys.anniversaries(clan.id, userId),
       treeSource,
     ] as const,
-    queryFn: () =>
-      listAnniversaryCandidates(clan.id, undefined, treeSource),
+    queryFn: () => listAnniversaryCandidates(clan.id, undefined, treeSource),
     enabled: !!userId,
   });
 
@@ -163,7 +167,9 @@ export default function Events() {
     const q = unaccent(query.trim()).toLowerCase();
     if (!q) return upcoming;
     return upcoming.filter((e) =>
-      unaccent(`${e.title} ${e.subtitle ?? ""}`).toLowerCase().includes(q),
+      unaccent(`${e.title} ${e.subtitle ?? ""}`)
+        .toLowerCase()
+        .includes(q),
     );
   }, [upcoming, query]);
 
@@ -178,29 +184,19 @@ export default function Events() {
     [tree],
   );
 
-  // Về trang 1 khi đổi khoảng thời gian / danh sách thay đổi.
-  useEffect(() => {
-    setPage(1);
-  }, [daysAhead, filtered.length, pageSize]);
-
-  const totalEventPages = Math.max(
-    1,
-    Math.ceil(filtered.length / pageSize),
-  );
-  const safePage = Math.min(page, totalEventPages);
-  const pagedUpcoming = filtered.slice(
-    (safePage - 1) * pageSize,
-    safePage * pageSize,
-  );
+  // Phân trang danh sách sự kiện sắp tới (họ lớn có thể hàng trăm sinh nhật / ngày giỗ). Số trang
+  // nằm trên URL; đổi khoảng ngày thì về trang đầu trong cùng một lần ghi URL.
+  const paging = useClientPaging(filtered, 20);
+  const setDaysAhead = (v: number) =>
+    paging.patchAndResetPage({ ngay: v === 90 ? null : String(v) });
+  const pagedUpcoming = paging.paged;
 
   function handleExportIcs() {
     if (!tree || !events || !anniversaries) return;
     // Stitch the giỗ-lunar fields (from listAnniversaryCandidates)
     // onto the tree's persons by id — tree query doesn't include
     // death_anniv_lunar_* in its lighter projection.
-    const annivById = new Map(
-      anniversaries.map((a) => [a.id, a]),
-    );
+    const annivById = new Map(anniversaries.map((a) => [a.id, a]));
     const persons: IcsPerson[] = tree.persons.map((p) => {
       const a = annivById.get(p.id);
       return {
@@ -324,8 +320,8 @@ export default function Events() {
         search={(toggle) => (
           <SearchInput
             label="Tìm sự kiện"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={queryText}
+            onChange={(e) => setQueryText(e.target.value)}
             placeholder="Tìm theo tên người, ngày giỗ, sự kiện…"
             rightSlot={toggle}
           />
@@ -334,7 +330,8 @@ export default function Events() {
         <div className="flex flex-col gap-3">
           {view === "calendar" ? (
             <p className="text-sm text-muted-foreground">
-              Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc Lưới để chọn khoảng thời gian.
+              Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc Lưới
+              để chọn khoảng thời gian.
             </p>
           ) : (
             <>
@@ -362,11 +359,19 @@ export default function Events() {
           <p className="text-muted-foreground">Đang tải…</p>
         </div>
       ) : view === "calendar" ? (
-        <EventsCalendar events={filtered} clanId={clan.id} onOpenEvent={setDetailEventId} />
+        <EventsCalendar
+          events={filtered}
+          clanId={clan.id}
+          onOpenEvent={setDetailEventId}
+        />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<IconBellOff className="h-10 w-10" />}
-          title={query.trim() ? "Không có sự kiện nào khớp" : "Không có sự kiện sắp tới"}
+          title={
+            query.trim()
+              ? "Không có sự kiện nào khớp"
+              : "Không có sự kiện sắp tới"
+          }
           description={
             query.trim()
               ? "Thử bỏ bớt từ khoá hoặc mở rộng khoảng thời gian."
@@ -395,14 +400,14 @@ export default function Events() {
             ))}
           </ul>
           <Pagination
-            page={safePage}
-            totalPages={totalEventPages}
-            total={filtered.length}
-            pageSize={pageSize}
+            page={paging.page}
+            totalPages={paging.totalPages}
+            total={paging.total}
+            pageSize={paging.pageSize}
             unit="sự kiện"
-            onPageChange={setPage}
+            onPageChange={paging.setPage}
             pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
-            onPageSizeChange={setPageSize}
+            onPageSizeChange={paging.setPageSize}
           />
         </>
       )}
@@ -460,8 +465,8 @@ export default function Events() {
               Theo dõi sự kiện
             </CardTitle>
             <CardDescription>
-              Nhận thông báo qua email khi có sinh nhật, ngày giỗ hoặc sự
-              kiện sắp đến. Chỉ áp dụng cho riêng bạn.
+              Nhận thông báo qua email khi có sinh nhật, ngày giỗ hoặc sự kiện
+              sắp đến. Chỉ áp dụng cho riêng bạn.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -537,7 +542,11 @@ function CustomEventItem({
   canDelete: boolean;
   onOpen: () => void;
   onDeleted: () => void;
-  members?: Array<{ id: string; full_name: string; photo_path?: string | null }>;
+  members?: Array<{
+    id: string;
+    full_name: string;
+    photo_path?: string | null;
+  }>;
 }) {
   const confirm = useConfirm();
   const toast = useToast();
@@ -662,18 +671,21 @@ function LunarFestivalsQuickAdd({
       toast.success("Đã thêm lễ tiết", { description: f.title });
       onCreated();
     },
-    onError: (e) => toast.error("Không thêm được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error("Không thêm được", { description: (e as Error).message }),
   });
 
   const has = (f: Festival) =>
-    existing.some((e) => e.lunar_month === f.lunar_month && e.lunar_day === f.lunar_day);
+    existing.some(
+      (e) => e.lunar_month === f.lunar_month && e.lunar_day === f.lunar_day,
+    );
 
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium">Thêm nhanh lễ tiết truyền thống</p>
       <p className="text-xs text-muted-foreground">
-        Tạo sự kiện âm lịch lặp hằng năm — cả họ được nhắc trước. Giỗ Tổ / Chạp họ /
-        Tảo mộ có ngày riêng, dùng "Thêm sự kiện" bên dưới.
+        Tạo sự kiện âm lịch lặp hằng năm — cả họ được nhắc trước. Giỗ Tổ / Chạp
+        họ / Tảo mộ có ngày riêng, dùng "Thêm sự kiện" bên dưới.
       </p>
       <div className="flex flex-wrap gap-2">
         {LUNAR_FESTIVALS.map((f) => {
@@ -685,7 +697,9 @@ function LunarFestivalsQuickAdd({
               disabled={added || add.isPending}
               onClick={() => add.mutate(f)}
               className={`rounded-full border px-3 py-1.5 text-sm ${
-                added ? "opacity-50 cursor-default" : "bg-card hover:border-primary"
+                added
+                  ? "opacity-50 cursor-default"
+                  : "bg-card hover:border-primary"
               }`}
               title={`${f.lunar_day}/${f.lunar_month} âm lịch`}
             >
@@ -775,151 +789,153 @@ function AddEventForm({
         subtitle="Sinh nhật, giỗ, lễ tết hoặc sự kiện riêng của dòng họ."
         onClose={() => setOpen(false)}
       >
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (canSubmit) m.mutate();
-      }}
-      className="space-y-3"
-    >
-      <div className="space-y-2">
-        <Label htmlFor="evt-title">Tên sự kiện</Label>
-        <Input
-          id="evt-title"
-          icon={<IconCalendar />}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Họp họ, tảo mộ, chạp họ, kỷ niệm…"
-          maxLength={150}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="evt-type">Loại</Label>
-        <Select
-          id="evt-type"
-          icon={<IconTag />}
-          value={eventType}
-          onChange={(e) => setEventType(e.target.value as EventType)}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (canSubmit) m.mutate();
+          }}
+          className="space-y-3"
         >
-          <option value="custom">Tuỳ chỉnh</option>
-          <option value="reunion">Họp họ</option>
-          <option value="memorial">Giỗ chung</option>
-          <option value="tomb_visit">Tảo mộ / Chạp họ</option>
-        </Select>
-      </div>
-
-      {eventType === "tomb_visit" && (
-        <div className="space-y-2">
-          <Label htmlFor="evt-grave">Gắn nơi an nghỉ (tuỳ chọn)</Label>
-          <Select
-            id="evt-grave"
-            icon={<IconGrave />}
-            value={restingPlaceId}
-            onChange={(e) => setRestingPlaceId(e.target.value)}
-          >
-            <option value="">— Không gắn —</option>
-            {(places ?? []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name || p.location_name || RESTING_PLACE_KIND_LABEL[p.kind]}
-              </option>
-            ))}
-          </Select>
-        </div>
-      )}
-
-      <fieldset className="flex gap-4">
-        <label className="flex items-center gap-2 cursor-pointer text-sm">
-          <input
-            type="radio"
-            checked={calendar === "solar"}
-            onChange={() => setCalendar("solar")}
-            className="accent-primary"
-          />
-          Dương lịch
-        </label>
-        <label className="flex items-center gap-2 cursor-pointer text-sm">
-          <input
-            type="radio"
-            checked={calendar === "lunar"}
-            onChange={() => setCalendar("lunar")}
-            className="accent-primary"
-          />
-          Âm lịch
-        </label>
-      </fieldset>
-
-      {calendar === "solar" ? (
-        <div className="space-y-2">
-          <Label htmlFor="evt-solar">Ngày dương lịch</Label>
-          <Input
-            id="evt-solar"
-            icon={<IconCalendar />}
-            type="date"
-            value={dateSolar}
-            onChange={(e) => setDateSolar(e.target.value)}
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 max-w-xs">
           <div className="space-y-2">
-            <Label htmlFor="evt-lunar-day">Ngày âm</Label>
+            <Label htmlFor="evt-title">Tên sự kiện</Label>
             <Input
-              id="evt-lunar-day"
-              icon={<IconMoon />}
-              inputMode="numeric"
-              value={lunarDay}
-              maxLength={2}
-              onChange={(e) => setLunarDay(e.target.value)}
-              placeholder="1–30"
+              id="evt-title"
+              icon={<IconCalendar />}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Họp họ, tảo mộ, chạp họ, kỷ niệm…"
+              maxLength={150}
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="evt-lunar-month">Tháng âm</Label>
-            <Input
-              id="evt-lunar-month"
-              icon={<IconMoon />}
-              inputMode="numeric"
-              value={lunarMonth}
-              maxLength={2}
-              onChange={(e) => setLunarMonth(e.target.value)}
-              placeholder="1–12"
-            />
+            <Label htmlFor="evt-type">Loại</Label>
+            <Select
+              id="evt-type"
+              icon={<IconTag />}
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value as EventType)}
+            >
+              <option value="custom">Tuỳ chỉnh</option>
+              <option value="reunion">Họp họ</option>
+              <option value="memorial">Giỗ chung</option>
+              <option value="tomb_visit">Tảo mộ / Chạp họ</option>
+            </Select>
           </div>
-        </div>
-      )}
 
-      <label className="flex items-center gap-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={isYearly}
-          onChange={(e) => setIsYearly(e.target.checked)}
-          className="h-5 w-5 accent-primary shrink-0"
-        />
-        <span>Lặp lại hằng năm</span>
-      </label>
+          {eventType === "tomb_visit" && (
+            <div className="space-y-2">
+              <Label htmlFor="evt-grave">Gắn nơi an nghỉ (tuỳ chọn)</Label>
+              <Select
+                id="evt-grave"
+                icon={<IconGrave />}
+                value={restingPlaceId}
+                onChange={(e) => setRestingPlaceId(e.target.value)}
+              >
+                <option value="">— Không gắn —</option>
+                {(places ?? []).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name ||
+                      p.location_name ||
+                      RESTING_PLACE_KIND_LABEL[p.kind]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
 
-      {m.error && (
-        <Alert variant="destructive">
-          <AlertDescription>{(m.error as Error).message}</AlertDescription>
-        </Alert>
-      )}
+          <fieldset className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer text-sm">
+              <input
+                type="radio"
+                checked={calendar === "solar"}
+                onChange={() => setCalendar("solar")}
+                className="accent-primary"
+              />
+              Dương lịch
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm">
+              <input
+                type="radio"
+                checked={calendar === "lunar"}
+                onChange={() => setCalendar("lunar")}
+                className="accent-primary"
+              />
+              Âm lịch
+            </label>
+          </fieldset>
 
-      <FormActions>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setOpen(false)}
-        >
-          <IconX className="h-4 w-4 mr-1.5" />
-          Hủy
-        </Button>
-        <Button type="submit" disabled={!canSubmit || m.isPending}>
-          <IconPlus className="h-4 w-4 mr-1.5" />
-          {m.isPending ? "Đang thêm…" : "Thêm"}
-        </Button>
-      </FormActions>
-    </form>
+          {calendar === "solar" ? (
+            <div className="space-y-2">
+              <Label htmlFor="evt-solar">Ngày dương lịch</Label>
+              <Input
+                id="evt-solar"
+                icon={<IconCalendar />}
+                type="date"
+                value={dateSolar}
+                onChange={(e) => setDateSolar(e.target.value)}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 max-w-xs">
+              <div className="space-y-2">
+                <Label htmlFor="evt-lunar-day">Ngày âm</Label>
+                <Input
+                  id="evt-lunar-day"
+                  icon={<IconMoon />}
+                  inputMode="numeric"
+                  value={lunarDay}
+                  maxLength={2}
+                  onChange={(e) => setLunarDay(e.target.value)}
+                  placeholder="1–30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="evt-lunar-month">Tháng âm</Label>
+                <Input
+                  id="evt-lunar-month"
+                  icon={<IconMoon />}
+                  inputMode="numeric"
+                  value={lunarMonth}
+                  maxLength={2}
+                  onChange={(e) => setLunarMonth(e.target.value)}
+                  placeholder="1–12"
+                />
+              </div>
+            </div>
+          )}
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isYearly}
+              onChange={(e) => setIsYearly(e.target.checked)}
+              className="h-5 w-5 accent-primary shrink-0"
+            />
+            <span>Lặp lại hằng năm</span>
+          </label>
+
+          {m.error && (
+            <Alert variant="destructive">
+              <AlertDescription>{(m.error as Error).message}</AlertDescription>
+            </Alert>
+          )}
+
+          <FormActions>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              <IconX className="h-4 w-4 mr-1.5" />
+              Hủy
+            </Button>
+            <Button type="submit" disabled={!canSubmit || m.isPending}>
+              <IconPlus className="h-4 w-4 mr-1.5" />
+              {m.isPending ? "Đang thêm…" : "Thêm"}
+            </Button>
+          </FormActions>
+        </form>
       </SidePanel>
     </>
   );

@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ViewEditActions } from "@/components/ui/view-edit-actions";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox } from "@/hooks/useClientPaging";
 import {
   createMemoryRoom,
   deleteMemoryRoom,
@@ -60,7 +60,8 @@ export default function MemoryRooms() {
 
   const [panel, setPanel] = useState<PanelState>(null);
   const closePanel = () => setPanel(null);
-  const [search, setSearch] = useState("");
+  // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
+  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
 
   const { data: rooms, isLoading } = useQuery({
     queryKey: ["memory-rooms", clan.id, userId],
@@ -106,10 +107,9 @@ export default function MemoryRooms() {
 
       <SearchInput
         label="Tìm phòng"
-        value={search}
+        value={searchText}
         onChange={(e) => {
-          setSearch(e.target.value);
-          paging.patchAndResetPage({});
+          setSearchText(e.target.value);
         }}
         placeholder="Tìm theo tên phòng…"
       />

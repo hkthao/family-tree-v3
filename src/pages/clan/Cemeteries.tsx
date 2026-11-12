@@ -29,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ViewEditActions } from "@/components/ui/view-edit-actions";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox } from "@/hooks/useClientPaging";
 import {
   createCemetery,
   deleteCemetery,
@@ -64,7 +64,8 @@ export default function Cemeteries() {
   const closePanel = () => setPanel(null);
   const invalidate = () => qc.invalidateQueries({ queryKey: ["cemeteries", clan.id] });
 
-  const [search, setSearch] = useState("");
+  // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
+  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
   const filtered = useMemo(() => {
     const q = unaccent(search.trim()).toLowerCase();
     if (!q) return cemeteries ?? [];
@@ -103,10 +104,9 @@ export default function Cemeteries() {
 
       <SearchInput
         label="Tìm cơ sở"
-        value={search}
+        value={searchText}
         onChange={(e) => {
-          setSearch(e.target.value);
-          paging.patchAndResetPage({});
+          setSearchText(e.target.value);
         }}
         placeholder="Tìm theo tên / địa chỉ…"
       />
