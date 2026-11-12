@@ -600,15 +600,16 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
             <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
             <RelatedPostsSection personId={personId!} clanId={clan.id} />
 
-            {/* Actions row — nút rộng cố định 100px cho cân nhau, dạt
-                phải. Xưng hô đã chuyển xuống thẻ "Quan hệ" (mỗi người
+            {/* Actions row — desktop: nút rộng cố định 100px, dạt phải; mobile: các nút
+                chia đều bề ngang để cả hàng nằm gọn một dòng (cố định 100px thì 4 nút
+                tràn xuống dòng thứ hai). Xưng hô đã chuyển xuống thẻ "Quan hệ" (mỗi người
                 thân đã có nút tra cứu cạnh tên), bỏ ở đây.
 
                 flex-wrap: bốn nút × 100px + khoảng cách vượt khung 360px,
                 không cho xuống dòng thì nút đầu bị đẩy khuất mép trái. */}
             <div className="flex flex-wrap items-center justify-end gap-2">
               {canEdit ? (
-                <Button asChild variant="outline" size="sm" className="w-[100px]">
+                <Button asChild variant="outline" size="sm" className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none">
                   <PanelLink
                     to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}
                     panel="person-edit"
@@ -626,7 +627,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-[100px]"
+                    className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
                     onClick={() => setContribOpen(true)}
                     aria-label="Đề xuất sửa"
                     title="Đề xuất sửa"
@@ -648,14 +649,14 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                     generation: person.generation,
                     photo_path: person.photo_path,
                   }}
-                  className="w-[100px]"
+                  className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
                 />
               )}
               {canCreateQr && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-[100px]"
+                  className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
                   data-testid="person-qr-button"
                   onClick={() => {
                     setQrOpen(true);
@@ -673,7 +674,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                   variant="destructive-outline"
                   size="sm"
                   data-testid="delete-person-button"
-                  className="w-[100px] hover:bg-destructive/10 hover:"
+                  className="min-w-0 flex-1 px-2 hover:bg-destructive/10 sm:w-[100px] sm:flex-none"
                   onClick={async () => {
                     const ok = await askConfirm({
                       title: `Xoá ${person.full_name}?`,

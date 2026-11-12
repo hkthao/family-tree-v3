@@ -26,8 +26,12 @@ export function PageHeader({
   title: string;
   description?: ReactNode;
   actions?: ReactNode;
-  /** Khi true, actions render dưới title (1 hàng riêng) thay vì inline. */
-  actionsBelow?: boolean;
+  /**
+   * Khi true, actions render dưới title (1 hàng riêng) thay vì inline.
+   * "mobile": chỉ xuống hàng riêng trên màn hẹp (<sm), từ sm trở lên vẫn cùng hàng —
+   * dùng khi nhiều nút làm title bị bóp xuống nhiều dòng trên điện thoại.
+   */
+  actionsBelow?: boolean | "mobile";
 }) {
   const header = (
     <header className="flex items-start gap-2 flex-1 min-w-0">
@@ -54,6 +58,19 @@ export function PageHeader({
   // [&:not(:first-child)]:!mt-2 — khi PageHeader đứng sau Breadcrumb,
   // override mt-3/mt-6 do parent space-y-* gây ra, ép gap = 8px.
   // Đứng đầu (không Breadcrumb) thì selector ko match.
+  if (actionsBelow === "mobile" && actions) {
+    return (
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start [&:not(:first-child)]:!mt-2">
+        {header}
+        <ActionArea>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:ml-auto sm:gap-2">
+            {actions}
+          </div>
+        </ActionArea>
+      </div>
+    );
+  }
+
   if (actionsBelow && actions) {
     return (
       <div className="space-y-2 [&:not(:first-child)]:!mt-2">
