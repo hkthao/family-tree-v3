@@ -941,7 +941,8 @@ function PersonListItem({
   if (dispGen !== null) metaBits.push(`Đời ${dispGen}`);
 
   return (
-    <li className={`relative flex items-start gap-2 ${showKhoe ? (canCopy ? "min-h-[7.25rem]" : "min-h-[5.5rem]") : ""}`}>
+    <li className="relative">
+      <div className="flex items-start gap-2">
       {selectable && (
         <label className="pl-3 pt-4 cursor-pointer">
           <input
@@ -966,10 +967,10 @@ function PersonListItem({
           className={person.is_living ? "" : "opacity-80"}
         />
         <div className="min-w-0 flex-1">
-          {/* Name line: pr-9 chừa chỗ cho copy button (absolute top-right).
+          {/* Name line: các nút hành động nằm ở hàng riêng dưới đáy, không đè lên tên.
               Các dòng meta + cha/mẹ/vợ phía dưới full width → hiển thị
               được nhiều hơn vì copy button ko còn chiếm 1 cột bên phải. */}
-          <p className={`font-medium truncate ${canCopy ? "pr-9" : ""}`}>
+          <p className="font-medium truncate">
             {person.full_name}
             {person.is_root && (
               <span className="ml-2 text-xs text-accent font-medium">
@@ -1015,48 +1016,50 @@ function PersonListItem({
           />
         </div>
       </PanelLink>
-      {canCopy && (
-        <PanelLink
-          to={`/clans/${clanId}/people/new?from=${person.id}`}
-          panel="person-new"
-          panelParams={{ pfrom: person.id }}
-          aria-label={`Sao chép ${person.full_name}`}
-          title="Sao chép thành người mới"
-          className="absolute top-2 right-2 z-10 inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-muted"
-        >
-          <IconCopy className="h-4 w-4" />
-        </PanelLink>
-      )}
-      {showKhoe && (
-        <KhoeButton
-          iconOnly
-          variant="ghost"
-          clanId={clanId}
-          clanName={clanName}
-          genOffset={genOffset}
-          canCreateQr={canCreateQr}
-          person={{
-            id: person.id,
-            full_name: person.full_name,
-            generation: person.generation,
-            photo_path: person.photo_path,
-          }}
-          className={`absolute right-2 z-10 h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-muted ${
-            canCopy ? "top-11" : "top-2"
-          }`}
-        />
-      )}
-      {showKhoe && (
-        <Link
-          to={`/clans/${clanId}/relations?p=${person.id}`}
-          aria-label={`Tra cứu quan hệ của ${person.full_name}`}
-          title="Tra cứu quan hệ"
-          className={`absolute right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary ${
-            canCopy ? "top-[80px]" : "top-11"
-          }`}
-        >
-          <IconTree className="h-4 w-4" />
-        </Link>
+      </div>
+      {/* Hành động của người: MỘT hàng ngang ở đáy hàng, căn phải (quan hệ · khoe · sao chép). */}
+      {(canCopy || showKhoe) && (
+        <div className="flex items-center justify-end gap-0.5 px-3 pb-2 -mt-1">
+          {showKhoe && (
+            <Link
+              to={`/clans/${clanId}/relations?p=${person.id}`}
+              aria-label={`Tra cứu quan hệ của ${person.full_name}`}
+              title="Tra cứu quan hệ"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary"
+            >
+              <IconTree className="h-4 w-4" />
+            </Link>
+          )}
+          {showKhoe && (
+            <KhoeButton
+              iconOnly
+              variant="ghost"
+              clanId={clanId}
+              clanName={clanName}
+              genOffset={genOffset}
+              canCreateQr={canCreateQr}
+              person={{
+                id: person.id,
+                full_name: person.full_name,
+                generation: person.generation,
+                photo_path: person.photo_path,
+              }}
+              className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted hover:text-primary"
+            />
+          )}
+          {canCopy && (
+            <PanelLink
+              to={`/clans/${clanId}/people/new?from=${person.id}`}
+              panel="person-new"
+              panelParams={{ pfrom: person.id }}
+              aria-label={`Sao chép ${person.full_name}`}
+              title="Sao chép thành người mới"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary"
+            >
+              <IconCopy className="h-4 w-4" />
+            </PanelLink>
+          )}
+        </div>
       )}
     </li>
   );
