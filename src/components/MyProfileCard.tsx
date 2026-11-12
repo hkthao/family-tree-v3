@@ -44,9 +44,9 @@ export function MyProfileCard({
         icon={<IconUser />}
         title="Hồ sơ của tôi"
         footer={
-          <Button asChild size="sm">
-            <Link to={lineageTo}>Chọn vị trí của tôi trên cây</Link>
-          </Button>
+          <Link to={lineageTo} className="shrink-0 text-sm text-primary hover:underline">
+            Chọn vị trí của tôi trên cây →
+          </Link>
         }
       >
         <p className="text-sm">
