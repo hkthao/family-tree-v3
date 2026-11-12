@@ -820,6 +820,7 @@ search={(toggle) => (
               selected={selected.has(p.id)}
               onToggleSelect={() => toggleSelected(p.id)}
               canCopy={canEdit}
+              canRelate={isMember}
             />
           ))}
         </ul>
@@ -940,7 +941,7 @@ function PersonListItem({
   if (dispGen !== null) metaBits.push(`Đời ${dispGen}`);
 
   return (
-    <li className="relative flex items-start gap-2">
+    <li className={`relative flex items-start gap-2 ${showKhoe ? (canCopy ? "min-h-[7.25rem]" : "min-h-[5.5rem]") : ""}`}>
       {selectable && (
         <label className="pl-3 pt-4 cursor-pointer">
           <input
@@ -1045,6 +1046,18 @@ function PersonListItem({
           }`}
         />
       )}
+      {showKhoe && (
+        <Link
+          to={`/clans/${clanId}/relations?p=${person.id}`}
+          aria-label={`Tra cứu quan hệ của ${person.full_name}`}
+          title="Tra cứu quan hệ"
+          className={`absolute right-2 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary ${
+            canCopy ? "top-[80px]" : "top-11"
+          }`}
+        >
+          <IconTree className="h-4 w-4" />
+        </Link>
+      )}
     </li>
   );
 }
@@ -1059,12 +1072,14 @@ function PersonGridCard({
   selected,
   onToggleSelect,
   canCopy,
+  canRelate,
 }: {
   person: PersonRow;
   clanId: string;
   genOffset: number;
   relatives: RelativesIndex | undefined;
   photoUrl: string | null;
+  canRelate?: boolean;
   selectable?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
@@ -1098,6 +1113,18 @@ function PersonGridCard({
         >
           <IconCopy className="h-4 w-4" />
         </PanelLink>
+      )}
+      {canRelate && (
+        <Link
+          to={`/clans/${clanId}/relations?p=${person.id}`}
+          aria-label={`Tra cứu quan hệ của ${person.full_name}`}
+          title="Tra cứu quan hệ"
+          className={`absolute right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/80 text-muted-foreground backdrop-blur hover:text-primary ${
+            canCopy ? "top-12" : "top-2"
+          }`}
+        >
+          <IconTree className="h-4 w-4" />
+        </Link>
       )}
       <PanelLink
         to={`/clans/${clanId}/people/${person.id}`}
