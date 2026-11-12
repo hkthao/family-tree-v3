@@ -453,6 +453,11 @@ export function buildSections(
         icon: <IconList className={ic} />,
         badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
       });
+      workItems.push({
+        to: `/clans/${clanId}/relations`,
+        label: "Tra cứu quan hệ",
+        icon: <IconTree className={ic} />,
+      });
       // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
       workItems.push({
         to: `/clans/${clanId}/tools`,

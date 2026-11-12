@@ -31,16 +31,6 @@ import {
   type RelPerson,
 } from "@/lib/relations";
 
-/** "Lê Văn Mùi (1894)" → phần phụ: năm sinh – năm mất. */
-function lifeYears(p: RelPerson): string {
-  const b = yearOf(p.birth_date);
-  const d = yearOf(p.death_date);
-  if (b && d) return `${b}–${d}`;
-  if (b) return p.is_living ? `sinh ${b}` : `${b}–?`;
-  if (d) return `?–${d}`;
-  return "";
-}
-
 /**
  * Tra cứu quan hệ của một người — như bảng Excel gia phả: thông tin cá nhân, vợ/chồng, tổ tiên
  * (cha, ông, cụ, kỵ), mẹ, anh chị em, bác–chú–cô–cậu–dì, và bảng con cháu theo từng đời (tải CSV được).
@@ -169,6 +159,56 @@ export default function Relations() {
           />
         </>
       )}
+    </div>
+  );
+}
+
+/** Ô "Sinh", "Mất", "Quê quán" dùng chung cho mọi bảng người. */
+function personCells(p: RelPerson): string[] {
+  return [
+    yearOf(p.birth_date) || "—",
+    p.death_date ? yearOf(p.death_date) : p.is_living ? "—" : "đã mất",
+    p.birth_place || "—",
+  ];
+}
+
+/** Bảng cùng kiểu với bảng Con cháu: tiêu đề cột nhỏ nền nhạt, hàng ngăn bằng đường kẻ. */
+function RelTable({
+  head,
+  rows,
+  empty,
+}: {
+  head: string[];
+  rows: { key: string; cells: React.ReactNode[] }[];
+  empty: string;
+}) {
+  if (rows.length === 0) {
+    return <p className="p-3 text-sm text-muted-foreground sm:p-4">{empty}</p>;
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[520px] text-sm">
+        <thead>
+          <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
+            {head.map((h) => (
+              <th key={h} className="whitespace-nowrap px-3 py-2 font-medium">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {rows.map((r) => (
+            <tr key={r.key}>
+              {r.cells.map((c, i) => (
+                <td key={i} className="px-3 py-2 first:whitespace-nowrap">
+                  {c}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -304,162 +344,107 @@ function RelationsBody({
         </div>
       </SectionCard>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <SectionCard
-          id="rel-ancestors"
-          icon={<IconTree />}
-          title="Tổ tiên (dòng cha)"
-        >
-          {line.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Chưa ghi nhận cha.</p>
-          ) : (
-            <ul className="space-y-1 text-sm">
-              {line.map((a, i) => (
-                <li key={a.id} className="flex gap-2">
-                  <span className="w-24 shrink-0 text-muted-foreground">
-                    {ancestorLabel(i + 1)}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <Person p={a} />
-                    {lifeYears(a) && (
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · {lifeYears(a)}
-                      </span>
-                    )}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="mt-2 flex gap-2 border-t pt-2 text-sm">
-            <span className="w-24 shrink-0 text-muted-foreground">Mẹ</span>
-            <span className="min-w-0 flex-1">
-              {parents.mother ? (
-                <>
-                  <Person p={parents.mother} />
-                  {lifeYears(parents.mother) && (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      · {lifeYears(parents.mother)}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <span className="text-muted-foreground">Chưa ghi nhận</span>
-              )}
-            </span>
-          </div>
-        </SectionCard>
+      <SectionCard
+        id="rel-ancestors"
+        icon={<IconTree />}
+        title="Tổ tiên (dòng cha)"
+        bodyClassName="p-0"
+      >
+        <RelTable
+          head={["Quan hệ", "Họ tên", "Sinh", "Mất", "Quê quán"]}
+          empty="Chưa ghi nhận cha mẹ."
+          rows={[
+            ...line.map((a, i) => ({
+              key: a.id,
+              cells: [
+                ancestorLabel(i + 1),
+                <Person key="n" p={a} />,
+                ...personCells(a),
+              ],
+            })),
+            ...(parents.mother
+              ? [
+                  {
+                    key: parents.mother.id,
+                    cells: [
+                      "Mẹ",
+                      <Person key="n" p={parents.mother} />,
+                      ...personCells(parents.mother),
+                    ],
+                  },
+                ]
+              : []),
+          ]}
+        />
+      </SectionCard>
 
-        <SectionCard
-          id="rel-spouses"
-          icon={<IconUsers />}
-          title={`Vợ / chồng (${spouses.length})`}
-        >
-          {spouses.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Chưa ghi nhận vợ/chồng.
-            </p>
-          ) : (
-            <ul className="space-y-2 text-sm">
-              {spouses.map(({ person: s }) => (
-                <li key={s.id}>
-                  <Person p={s} />
-                  <p className="text-muted-foreground">
-                    {[lifeYears(s), s.birth_place]
-                      .filter(Boolean)
-                      .join(" · ") || "—"}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
-      </div>
+      <SectionCard
+        id="rel-spouses"
+        icon={<IconUsers />}
+        title={`Vợ / chồng (${spouses.length})`}
+        bodyClassName="p-0"
+      >
+        <RelTable
+          head={["Họ tên", "Sinh", "Mất", "Quê quán"]}
+          empty="Chưa ghi nhận vợ/chồng."
+          rows={spouses.map(({ person: sp }) => ({
+            key: sp.id,
+            cells: [<Person key="n" p={sp} />, ...personCells(sp)],
+          }))}
+        />
+      </SectionCard>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <SectionCard
-          id="rel-siblings"
-          icon={<IconUsers />}
-          title={`Anh chị em (${siblings.length})`}
-        >
-          {siblings.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Không có anh chị em được ghi nhận.
-            </p>
-          ) : (
-            <ul className="space-y-1 text-sm">
-              {siblings.map((s) => (
-                <li key={s.id}>
-                  <Person p={s} />
-                  {lifeYears(s) && (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      · {lifeYears(s)}
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
+      <SectionCard
+        id="rel-siblings"
+        icon={<IconUsers />}
+        title={`Anh chị em (${siblings.length})`}
+        bodyClassName="p-0"
+      >
+        <RelTable
+          head={["Họ tên", "Giới tính", "Sinh", "Mất", "Quê quán"]}
+          empty="Không có anh chị em được ghi nhận."
+          rows={siblings.map((sb) => ({
+            key: sb.id,
+            cells: [
+              <Person key="n" p={sb} />,
+              sb.gender === "M" ? "Nam" : "Nữ",
+              ...personCells(sb),
+            ],
+          }))}
+        />
+      </SectionCard>
 
-        <SectionCard
-          id="rel-uncles"
-          icon={<IconUsers />}
-          title={`Bác, chú, cô, cậu, dì (${fatherSiblings.length + motherSiblings.length})`}
-        >
-          {fatherSiblings.length + motherSiblings.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Chưa ghi nhận anh chị em của cha mẹ.
-            </p>
-          ) : (
-            <div className="space-y-2 text-sm">
-              {fatherSiblings.length > 0 && (
-                <div>
-                  <p className="text-muted-foreground">
-                    Bên cha ({fatherSiblings.length})
-                  </p>
-                  <ul className="space-y-1">
-                    {fatherSiblings.map((s) => (
-                      <li key={s.id}>
-                        <Person p={s} />
-                        {lifeYears(s) && (
-                          <span className="text-muted-foreground">
-                            {" "}
-                            · {lifeYears(s)}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {motherSiblings.length > 0 && (
-                <div>
-                  <p className="text-muted-foreground">
-                    Bên mẹ ({motherSiblings.length})
-                  </p>
-                  <ul className="space-y-1">
-                    {motherSiblings.map((s) => (
-                      <li key={s.id}>
-                        <Person p={s} />
-                        {lifeYears(s) && (
-                          <span className="text-muted-foreground">
-                            {" "}
-                            · {lifeYears(s)}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </SectionCard>
-      </div>
+      <SectionCard
+        id="rel-uncles"
+        icon={<IconUsers />}
+        title={`Bác, chú, cô, cậu, dì (${fatherSiblings.length + motherSiblings.length})`}
+        bodyClassName="p-0"
+      >
+        <RelTable
+          head={["Bên", "Họ tên", "Giới tính", "Sinh", "Mất", "Quê quán"]}
+          empty="Chưa ghi nhận anh chị em của cha mẹ."
+          rows={[
+            ...fatherSiblings.map((u) => ({
+              key: `f-${u.id}`,
+              cells: [
+                "Bên cha",
+                <Person key="n" p={u} />,
+                u.gender === "M" ? "Nam" : "Nữ",
+                ...personCells(u),
+              ],
+            })),
+            ...motherSiblings.map((u) => ({
+              key: `m-${u.id}`,
+              cells: [
+                "Bên mẹ",
+                <Person key="n" p={u} />,
+                u.gender === "M" ? "Nam" : "Nữ",
+                ...personCells(u),
+              ],
+            })),
+          ]}
+        />
+      </SectionCard>
 
       <SectionCard
         id="rel-descendants"
