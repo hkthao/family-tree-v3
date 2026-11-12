@@ -37,7 +37,8 @@ export interface RelationsIndex {
   childrenOf: Map<string, RelPerson[]>;
 }
 
-export const yearOf = (d: string | null | undefined): string => (d ? d.slice(0, 4) : "");
+export const yearOf = (d: string | null | undefined): string =>
+  d ? d.slice(0, 4) : "";
 
 /** Con thứ mấy → năm sinh → tên. Người không có thứ tự xếp sau. */
 function compareSiblings(a: RelPerson, b: RelPerson): number {
@@ -57,7 +58,10 @@ function compareFamilies(a: RelFamily, b: RelFamily): number {
   return (a.created_at ?? "").localeCompare(b.created_at ?? "");
 }
 
-export function buildRelationsIndex(persons: RelPerson[], families: RelFamily[]): RelationsIndex {
+export function buildRelationsIndex(
+  persons: RelPerson[],
+  families: RelFamily[],
+): RelationsIndex {
   const byId = new Map(persons.map((p) => [p.id, p]));
   const familyById = new Map(families.map((f) => [f.id, f]));
   const familiesOf = new Map<string, RelFamily[]>();
@@ -89,16 +93,24 @@ export interface Parents {
 
 export function parentsOf(idx: RelationsIndex, id: string): Parents {
   const p = idx.byId.get(id);
-  const family = p?.birth_family_id ? (idx.familyById.get(p.birth_family_id) ?? null) : null;
+  const family = p?.birth_family_id
+    ? (idx.familyById.get(p.birth_family_id) ?? null)
+    : null;
   return {
     family,
-    father: family?.husband_id ? (idx.byId.get(family.husband_id) ?? null) : null,
+    father: family?.husband_id
+      ? (idx.byId.get(family.husband_id) ?? null)
+      : null,
     mother: family?.wife_id ? (idx.byId.get(family.wife_id) ?? null) : null,
   };
 }
 
 /** Dòng cha: cha, ông, cụ, kỵ… (tối đa `max` đời). Dừng khi không còn cha ghi nhận. */
-export function paternalLine(idx: RelationsIndex, id: string, max = 15): RelPerson[] {
+export function paternalLine(
+  idx: RelationsIndex,
+  id: string,
+  max = 15,
+): RelPerson[] {
   const out: RelPerson[] = [];
   const seen = new Set([id]);
   let cur = id;
@@ -131,14 +143,20 @@ export function spousesOf(idx: RelationsIndex, id: string): SpouseEntry[] {
 export function siblingsOf(idx: RelationsIndex, id: string): RelPerson[] {
   const p = idx.byId.get(id);
   if (!p?.birth_family_id) return [];
-  return (idx.childrenOf.get(p.birth_family_id) ?? []).filter((s) => s.id !== id);
+  return (idx.childrenOf.get(p.birth_family_id) ?? []).filter(
+    (s) => s.id !== id,
+  );
 }
 
 /** Con của người này qua mọi cuộc hôn nhân, kèm gia đình sinh ra chúng. */
-export function childrenOf(idx: RelationsIndex, id: string): { person: RelPerson; family: RelFamily }[] {
+export function childrenOf(
+  idx: RelationsIndex,
+  id: string,
+): { person: RelPerson; family: RelFamily }[] {
   const out: { person: RelPerson; family: RelFamily }[] = [];
   for (const f of idx.familiesOf.get(id) ?? []) {
-    for (const c of idx.childrenOf.get(f.id) ?? []) out.push({ person: c, family: f });
+    for (const c of idx.childrenOf.get(f.id) ?? [])
+      out.push({ person: c, family: f });
   }
   return out;
 }
@@ -156,7 +174,11 @@ export interface DescendantRow {
  * Mọi con cháu của một người, xếp theo đời (con → cháu → chắt…), trong từng đời giữ thứ tự
  * theo nhánh cha mẹ. `maxLevel` chặn họ rất đông / dữ liệu vòng lặp.
  */
-export function descendantRows(idx: RelationsIndex, id: string, maxLevel = 12): DescendantRow[] {
+export function descendantRows(
+  idx: RelationsIndex,
+  id: string,
+  maxLevel = 12,
+): DescendantRow[] {
   const rows: DescendantRow[] = [];
   const seen = new Set([id]);
   const walk = (pid: string, level: number) => {
@@ -177,20 +199,33 @@ export function descendantRows(idx: RelationsIndex, id: string, maxLevel = 12): 
   };
   walk(id, 1);
   // Xếp ổn định theo đời: cùng đời giữ nguyên thứ tự duyệt (nhánh cha mẹ).
-  return rows.map((r, i) => ({ r, i })).sort((a, b) => a.r.level - b.r.level || a.i - b.i).map((x) => x.r);
+  return rows
+    .map((r, i) => ({ r, i }))
+    .sort((a, b) => a.r.level - b.r.level || a.i - b.i)
+    .map((x) => x.r);
 }
 
 const LEVEL_NAMES = ["", "con", "cháu", "chắt", "chít"];
-export const levelName = (level: number): string => LEVEL_NAMES[level] ?? `đời thứ ${level} dưới`;
+/** Tên bậc con cháu: con, cháu, chắt, chít, rồi "thế hệ thứ N" (N tính từ người đang xem). */
+export const levelName = (level: number): string =>
+  LEVEL_NAMES[level] ?? `thế hệ thứ ${level}`;
 
-/** "4 con, 19 cháu, 3 chắt" — rỗng nếu không có con cháu. */
+/**
+ * "4 con, 19 cháu, 3 chắt, 2 chít, 14 đời sau" — chỉ gọi tên đến chít, các đời xa hơn gộp
+ * thành "đời sau" cho gọn. Rỗng nếu không có con cháu.
+ */
 export function descendantSummary(rows: DescendantRow[]): string {
   const counts = new Map<number, number>();
-  for (const r of rows) counts.set(r.level, (counts.get(r.level) ?? 0) + 1);
-  return [...counts.entries()]
+  let further = 0;
+  for (const r of rows) {
+    if (r.level <= 4) counts.set(r.level, (counts.get(r.level) ?? 0) + 1);
+    else further += 1;
+  }
+  const parts = [...counts.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([level, n]) => `${n} ${levelName(level)}`)
-    .join(", ");
+    .map(([level, n]) => `${n} ${levelName(level)}`);
+  if (further > 0) parts.push(`${further} đời sau`);
+  return parts.join(", ");
 }
 
 /** Nhãn dòng cha theo thứ bậc: cha, ông, cụ, kỵ, rồi "tiên tổ đời N". */
