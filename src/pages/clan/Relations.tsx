@@ -173,23 +173,6 @@ export default function Relations() {
   );
 }
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  if (children === null || children === undefined || children === "")
-    return null;
-  return (
-    <div className="flex gap-2 text-sm">
-      <dt className="w-28 shrink-0 text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 flex-1">{children}</dd>
-    </div>
-  );
-}
-
 function RelationsBody({
   clanId,
   off,
@@ -258,6 +241,7 @@ function RelationsBody({
         id="rel-info"
         icon={<IconUser />}
         title={focal.full_name}
+        bodyClassName="p-0"
         footer={
           <Link
             to={`/clans/${clanId}/people/${focal.id}`}
@@ -267,23 +251,57 @@ function RelationsBody({
           </Link>
         }
       >
-        <dl className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-          <Field label="Đời">{gen !== null ? String(gen) : null}</Field>
-          <Field label="Giới tính">{focal.gender === "M" ? "Nam" : "Nữ"}</Field>
-          <Field label="Sinh">{yearOf(focal.birth_date) || null}</Field>
-          <Field label="Mất">
-            {focal.death_date
-              ? yearOf(focal.death_date)
-              : focal.is_living
-                ? null
-                : "đã mất"}
-          </Field>
-          <Field label="Hưởng thọ">
-            {focal.lifespan_years ? `${focal.lifespan_years} tuổi` : null}
-          </Field>
-          <Field label="Quê quán">{focal.birth_place}</Field>
-          <Field label="Nơi an táng">{focal.burial_place}</Field>
-        </dl>
+        {/* Cùng kiểu bảng với phần Con cháu: tiêu đề cột nhỏ, một hàng thông tin. */}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm">
+            <thead>
+              <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
+                <th className="whitespace-nowrap px-3 py-2 font-medium">Đời</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                  Giới tính
+                </th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                  Sinh
+                </th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">Mất</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                  Hưởng thọ
+                </th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                  Quê quán
+                </th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">
+                  Nơi an táng
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {gen !== null ? gen : "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {focal.gender === "M" ? "Nam" : "Nữ"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {yearOf(focal.birth_date) || "—"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {focal.death_date
+                    ? yearOf(focal.death_date)
+                    : focal.is_living
+                      ? "—"
+                      : "đã mất"}
+                </td>
+                <td className="whitespace-nowrap px-3 py-2">
+                  {focal.lifespan_years ? `${focal.lifespan_years} tuổi` : "—"}
+                </td>
+                <td className="px-3 py-2">{focal.birth_place || "—"}</td>
+                <td className="px-3 py-2">{focal.burial_place || "—"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </SectionCard>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
