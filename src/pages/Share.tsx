@@ -912,25 +912,27 @@ export default function Share() {
       {/* Lưu ý quyền riêng tư: đóng được bằng dấu X, nhớ lựa chọn trên thiết bị này. */}
       {noticeOpen && (
         <div className="shrink-0 px-4 pt-2 print-hide">
-          {/* Dải lưu ý mỏng một dòng: chữ nhỏ, đệm ít, đóng được bằng dấu X. */}
-          <Alert className="relative mx-auto flex max-w-4xl items-center gap-2 py-1.5 pl-3 pr-9 text-xs leading-snug">
-            <span aria-hidden="true" className="shrink-0 text-muted-foreground">
-              <IconShield className="h-3.5 w-3.5" />
-            </span>
-            <span className="min-w-0 text-muted-foreground">
-              Thông tin nhạy cảm của người còn sống (ngày tháng, nơi chốn) đã
-              được ẩn.
-            </span>
+          {/* Cùng kiểu thông báo của app (EnablePushPrompt): nền/viền nhạt màu chủ đạo, icon bên
+              trái, đóng được bằng dấu X và nhớ lựa chọn trên thiết bị này. */}
+          <div className="mx-auto flex max-w-4xl items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+            <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="font-medium">Thông tin nhạy cảm đã được ẩn</p>
+              <p className="text-muted-foreground">
+                Ngày tháng, nơi chốn của người còn sống không hiển thị ở bản xem
+                này.
+              </p>
+            </div>
             <button
               type="button"
               onClick={dismissNotice}
+              className="shrink-0 text-muted-foreground hover:text-foreground"
               aria-label="Đóng thông báo"
               title="Đóng"
-              className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             >
-              <IconX className="h-3.5 w-3.5" />
+              <IconX className="h-4 w-4" />
             </button>
-          </Alert>
+          </div>
         </div>
       )}
 
