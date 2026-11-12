@@ -5,8 +5,7 @@ import { Link, useParams } from "react-router-dom";
 
 import {
   IconDownload,
-  IconLayoutHorizontal,
-  IconLayoutVertical,
+  IconFilter,
   IconLogIn,
   IconMaximize,
   IconMinimize,
@@ -16,30 +15,32 @@ import { useToast } from "@/components/Toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { track } from "@/lib/analytics";
 import { bloodlineIds } from "@/lib/bloodline";
-import { clanHasSources, getHistoricalPersonExtras } from "@/lib/queries/historical";
+import {
+  clanHasSources,
+  getHistoricalPersonExtras,
+} from "@/lib/queries/historical";
 import type { TreeData } from "@/lib/queries/tree";
 
 // Lazy — kéo three.js + 3d-force-graph ra chunk riêng, chỉ tải khi bật 3D.
 const Tree3DView = lazy(() =>
   import("@/components/Tree3DView").then((m) => ({ default: m.Tree3DView })),
 );
+import { FilterDrawer } from "@/components/FilterDrawer";
 import { SearchInput } from "@/components/SearchInput";
+import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
+import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
+import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
+import { useTreeViewPrefs } from "@/lib/tree/viewPrefs";
 import { HistoricalPersonSections } from "@/components/HistoricalPersonSections";
 import { SharedPersonCard } from "@/components/SharedPersonCard";
 import { SharedRestingPlaceCard } from "@/components/SharedRestingPlaceCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  SegmentedButton,
-  SegmentedControl,
-} from "@/components/ui/segmented-control";
-import {
   nameFontFamily as fontFamilyOf,
-  readNameFontId,
 } from "@/lib/tree/nameFonts";
 import {
   pickDefaultFocal,
-  readAvatarStyle,
   toFamilyChart,
 } from "@/lib/familyChartAdapter";
 import {
@@ -51,7 +52,11 @@ import {
 import { HERITAGE_CATEGORY_LABEL, videoEmbedUrl } from "@/lib/queries/heritage";
 
 import "family-chart/styles/family-chart.css";
-import { layoutTallText, tallMetrics, titleCaseName } from "@/lib/tree/tallCard";
+import {
+  layoutTallText,
+  tallMetrics,
+  titleCaseName,
+} from "@/lib/tree/tallCard";
 
 type DatumNode = {
   id?: string;
@@ -59,9 +64,7 @@ type DatumNode = {
 };
 
 interface F3Card {
-  setCardDisplay: (
-    lines: ((d: unknown) => string)[] | string[][],
-  ) => F3Card;
+  setCardDisplay: (lines: ((d: unknown) => string)[] | string[][]) => F3Card;
   setCardDim: (dim: {
     w?: number;
     h?: number;
@@ -75,7 +78,9 @@ interface F3Card {
   setOnCardUpdate: (
     fn: (this: SVGGElement, d: { data?: DatumNode }) => void,
   ) => F3Card;
-  setOnCardClick?: (fn: (e: MouseEvent, d: { data?: { id?: string } }) => void) => F3Card;
+  setOnCardClick?: (
+    fn: (e: MouseEvent, d: { data?: { id?: string } }) => void,
+  ) => F3Card;
   onCardClickDefault?: (e: MouseEvent, d: unknown) => void;
 }
 
@@ -162,9 +167,8 @@ export default function Share() {
     if (!el || savingImg) return;
     setSavingImg(true);
     try {
-      const { exportFamilyChartPng, fileSlug } = await import(
-        "@/lib/tree/exportTreePng"
-      );
+      const { exportFamilyChartPng, fileSlug } =
+        await import("@/lib/tree/exportTreePng");
       const focalName = focal
         ? (data?.persons.find((p) => p.id === focal)?.full_name ?? "")
         : "";
@@ -185,14 +189,17 @@ export default function Share() {
   // Số đời hiển thị quanh người làm tâm — mặc định 3 để họ lớn không
   // render toàn bộ gây lag trên điện thoại. 0 = tất cả.
   const [depth, setDepth] = useState<number>(8);
-  const DEPTH_OPTIONS = [3, 4, 5, 8, 0] as const;
+  const [showOpts, setShowOpts] = useState(false);
   // Kiểu thẻ: dọc (hẹp, xem được nhiều người) hoặc ngang; ảnh mặc định ẩn.
-  const [cardLayout, setCardLayout] = useState<"wide" | "tall">("tall");
-  const [cardAvatar, setCardAvatar] = useState(false);
+  // Nền / khung / kiểu thẻ / ảnh / font / avatar: dùng CHUNG với trang Cây (lib/tree/viewPrefs).
+  const prefs = useTreeViewPrefs();
+  const { cardLayout, cardAvatar, cardFrame, nameFont, backdrop, avatarStyle } = prefs;
 
   // Trang xem thử công khai chia TAB: Cây | Sự kiện & giỗ | Di sản. Giữ cây
   // luôn mounted (ẩn bằng CSS) để khỏi dựng lại chart; refit khi quay lại.
-  const [tab, setTab] = useState<"tree" | "events" | "heritage" | "details">("tree");
+  const [tab, setTab] = useState<"tree" | "events" | "heritage" | "details">(
+    "tree",
+  );
   // Dòng họ có nguồn sử liệu (gia phả lịch sử) → thêm tab "Chi tiết" cho người
   // đang chọn: tiểu sử, trị vì, nguồn — khách chưa đăng nhập cũng đọc được.
   const { data: hasSources } = useQuery({
@@ -277,8 +284,13 @@ export default function Share() {
         photo_path: synthetic,
       };
     });
-    return toFamilyChart(adapted, data.families, photoByPath, readAvatarStyle());
-  }, [data]);
+    return toFamilyChart(
+      adapted,
+      data.families,
+      photoByPath,
+      avatarStyle,
+    );
+  }, [data, avatarStyle]);
 
   // Dữ liệu cho cây 3D (Tree3DView nhận qua props vì khách chưa đăng nhập không
   // fetch DB được). Ảnh dùng key tổng hợp "share/<id>" → map sang URL đã ký.
@@ -352,9 +364,11 @@ export default function Share() {
           }
         ).createChart(node, f3Data);
 
-        const card = (built as F3Chart & {
-          setCardSvg?: () => F3Card;
-        }).setCardSvg?.();
+        const card = (
+          built as F3Chart & {
+            setCardSvg?: () => F3Card;
+          }
+        ).setCardSvg?.();
 
         const lifespan = (d: DatumNode): string => {
           const f = d.data ?? {};
@@ -382,7 +396,8 @@ export default function Share() {
         const CH = tall ? tm.h : 64;
         card
           ?.setCardDisplay([
-            (d) => titleCaseName(String((d as DatumNode).data?.["full name"] ?? "")),
+            (d) =>
+              titleCaseName(String((d as DatumNode).data?.["full name"] ?? "")),
             (d) => lifespan(d as DatumNode),
           ])
           .setCardDim(
@@ -417,7 +432,11 @@ export default function Share() {
             );
             if (tall) {
               if (!cardAvatar) this.querySelector(".card_image")?.remove();
-              layoutTallText(Array.from(tspans), String(fields["full name"] ?? ""), tm);
+              layoutTallText(
+                Array.from(tspans),
+                String(fields["full name"] ?? ""),
+                tm,
+              );
             }
             const meta = tall ? null : tspans[1];
             if (meta) {
@@ -432,7 +451,14 @@ export default function Share() {
             {
               const inLaw = !!datum?.id && !blood.has(datum.id);
               const rect = this.querySelector(".card-body rect");
-              if (rect) {
+              if (rect && cardFrame === "simple") {
+                // Khung đơn giản: giữ viền mặc định, chỉ dâu/rể có viền đứt.
+                if (inLaw) {
+                  rect.setAttribute("stroke", "#B8862A");
+                  rect.setAttribute("stroke-dasharray", "4 3");
+                  rect.setAttribute("stroke-width", "1.5");
+                }
+              } else if (rect) {
                 rect.setAttribute("rx", "4");
                 rect.setAttribute("ry", "4");
                 rect.setAttribute("stroke", "#B8862A");
@@ -541,7 +567,11 @@ export default function Share() {
             .forEach((p) => {
               const d = (
                 p as unknown as {
-                  __data__?: { spouse?: boolean; source?: unknown; target?: unknown };
+                  __data__?: {
+                    spouse?: boolean;
+                    source?: unknown;
+                    target?: unknown;
+                  };
                 }
               ).__data__;
               if (!d) return;
@@ -570,10 +600,11 @@ export default function Share() {
         // Cây đông người: không "vừa khít" làm chữ nhỏ — phóng lên mức đọc được.
         const currentK = async (): Promise<number> => {
           const svgEl = node.querySelector("svg.main_svg") as
-            | (SVGSVGElement & { __zoomObj?: unknown })
-            | null;
+            (SVGSVGElement & { __zoomObj?: unknown }) | null;
           if (!svgEl) return 1;
-          const listener = (svgEl.__zoomObj ? svgEl : svgEl.parentElement) as Element;
+          const listener = (
+            svgEl.__zoomObj ? svgEl : svgEl.parentElement
+          ) as Element;
           const { zoomTransform } = await import("d3-zoom");
           return zoomTransform(listener).k;
         };
@@ -614,7 +645,18 @@ export default function Share() {
       if (linkRaf) cancelAnimationFrame(linkRaf);
       node.innerHTML = "";
     };
-  }, [f3Data, orientation, data?.generation_offset, depth, isFullscreen, treeMode, cardLayout, cardAvatar]);
+  }, [
+    f3Data,
+    orientation,
+    data?.generation_offset,
+    depth,
+    isFullscreen,
+    treeMode,
+    cardLayout,
+    cardAvatar,
+    cardFrame,
+    nameFont,
+  ]);
 
   // Toàn màn hình → portal khối cây ra <body> để phủ kín, không kẹt
   // trong stacking context của trang.
@@ -645,7 +687,7 @@ export default function Share() {
           <h1 className="clan-name text-xl font-semibold text-center">
             Mộ phần / tro cốt
           </h1>
-          <p className="text-xs text-center text-muted-foreground mt-1">
+          <p className="mt-1 text-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
             Đang xem qua liên kết chia sẻ.
           </p>
         </header>
@@ -666,7 +708,9 @@ export default function Share() {
     return (
       <div className="min-h-dvh bg-background flex flex-col">
         <header className="border-b py-3 px-4 shrink-0">
-          <h1 className="clan-name text-xl font-semibold text-center">Di sản & Văn hoá</h1>
+          <h1 className="clan-name text-xl font-semibold text-center">
+            Di sản & Văn hoá
+          </h1>
           <p className="text-xs text-center text-muted-foreground mt-1">
             Đang xem qua liên kết chia sẻ.
           </p>
@@ -674,7 +718,9 @@ export default function Share() {
         <main className="flex-1 min-h-0 overflow-y-auto">
           <div className="mx-auto max-w-2xl p-4 space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground">{HERITAGE_CATEGORY_LABEL[h.category]}</p>
+              <p className="text-sm text-muted-foreground">
+                {HERITAGE_CATEGORY_LABEL[h.category]}
+              </p>
               <h2 className="text-2xl font-semibold">{h.title}</h2>
               {h.summary && <p className="text-base mt-1">{h.summary}</p>}
             </div>
@@ -682,7 +728,12 @@ export default function Share() {
             {h.photo_urls.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {h.photo_urls.map((u, i) => (
-                  <img key={i} src={u} alt="" className="aspect-square w-full rounded-md object-cover bg-muted" />
+                  <img
+                    key={i}
+                    src={u}
+                    alt=""
+                    className="aspect-square w-full rounded-md object-cover bg-muted"
+                  />
                 ))}
               </div>
             )}
@@ -702,7 +753,13 @@ export default function Share() {
                       referrerPolicy="strict-origin-when-cross-origin"
                     />
                   ) : (
-                    <video key={i} controls preload="none" src={v.url} className="w-full rounded-md border" />
+                    <video
+                      key={i}
+                      controls
+                      preload="none"
+                      src={v.url}
+                      className="w-full rounded-md border"
+                    />
                   );
                 })}
               </div>
@@ -712,22 +769,52 @@ export default function Share() {
               <div className="space-y-2">
                 <p className="font-medium">Ghi âm kể chuyện</p>
                 {h.audios.map((a, i) => (
-                  <audio key={i} controls preload="none" src={a.url} className="w-full" />
+                  <audio
+                    key={i}
+                    controls
+                    preload="none"
+                    src={a.url}
+                    className="w-full"
+                  />
                 ))}
               </div>
             )}
 
             {h.body && (
-              <p className="whitespace-pre-wrap text-base leading-relaxed">{h.body}</p>
+              <p className="whitespace-pre-wrap text-base leading-relaxed">
+                {h.body}
+              </p>
             )}
 
             {(h.location_name || h.address || h.built_year || dir) && (
               <div className="rounded-md border p-3 text-base space-y-1">
-                {h.location_name && <p><span className="text-muted-foreground">Ở đâu: </span>{h.location_name}</p>}
-                {h.address && <p><span className="text-muted-foreground">Địa chỉ: </span>{h.address}</p>}
-                {h.built_year && <p><span className="text-muted-foreground">Lập / xây năm: </span>{h.built_year}</p>}
+                {h.location_name && (
+                  <p>
+                    <span className="text-muted-foreground">Ở đâu: </span>
+                    {h.location_name}
+                  </p>
+                )}
+                {h.address && (
+                  <p>
+                    <span className="text-muted-foreground">Địa chỉ: </span>
+                    {h.address}
+                  </p>
+                )}
+                {h.built_year && (
+                  <p>
+                    <span className="text-muted-foreground">
+                      Lập / xây năm:{" "}
+                    </span>
+                    {h.built_year}
+                  </p>
+                )}
                 {dir && (
-                  <a href={dir} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-block mt-1">
+                  <a
+                    href={dir}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-block mt-1"
+                  >
                     Chỉ đường →
                   </a>
                 )}
@@ -741,7 +828,12 @@ export default function Share() {
                   {h.people.map((p, i) => (
                     <li key={i}>
                       {p.full_name}
-                      {p.role_note ? <span className="text-muted-foreground"> — {p.role_note}</span> : null}
+                      {p.role_note ? (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          — {p.role_note}
+                        </span>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
@@ -793,8 +885,12 @@ export default function Share() {
 
   return (
     <div className="h-dvh bg-background flex flex-col">
-      <header className="border-b py-3 px-4 shrink-0">
-        <h1 className="clan-name text-xl font-semibold text-center">
+      <header className="relative border-b py-3 px-4 shrink-0">
+        {/* Nút sáng/tối — trang công khai không có thanh đầu của app nên đặt ở đây. */}
+        <div className="absolute right-2 top-2 print-hide">
+          <ThemeQuickToggle />
+        </div>
+        <h1 className="clan-name px-10 text-xl font-semibold text-center">
           {data?.clan_name ? `Gia phả ${data.clan_name}` : "Cây gia phả"}
         </h1>
         <p className="text-xs text-center text-muted-foreground mt-1">
@@ -870,9 +966,7 @@ export default function Share() {
         {error && (
           <div className="p-4 max-w-md mx-auto w-full space-y-3">
             <Alert variant="destructive">
-              <AlertDescription>
-                {(error as Error).message}
-              </AlertDescription>
+              <AlertDescription>{(error as Error).message}</AlertDescription>
             </Alert>
             {publicClan && (
               <Button asChild className="w-full">
@@ -901,224 +995,164 @@ export default function Share() {
                   : "hidden"
               }
             >
-            {/* Filter toolbar */}
-            <div className="border-b px-4 py-3 shrink-0 flex flex-wrap items-start gap-3 print-hide">
-              <div className="flex-1 min-w-[200px] max-w-md relative">
-                <SearchInput
-                  label="Đặt người trung tâm"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Đặt người trung tâm — gõ tên để tìm…"
-                />
-                {matches.length > 0 && (
-                  <ul className="absolute top-full left-0 right-0 z-10 mt-1 rounded-xl border bg-card divide-y shadow-md">
-                    {matches.map((m) => (
-                      <li key={m.id}>
-                        <button
-                          type="button"
-                          className="w-full text-left px-3 py-2 hover:bg-muted/40"
-                          onClick={() => {
-                            setFocal(m.id);
-                            setSearch("");
-                          }}
-                        >
-                          <p className="font-medium">{m.full_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {m.gender === "M" ? "Nam" : "Nữ"}
-                            {m.birth_date
-                              ? ` · sinh ${m.birth_date.slice(0, 4)}`
-                              : ""}
-                            {m.generation !== null
-                              ? ` · Đời ${m.generation - (data.generation_offset ?? 0)}`
-                              : ""}
-                          </p>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              {/* 2D ↔ 3D — luôn hiển thị. */}
-              <SegmentedControl ariaLabel="Chế độ cây">
-                <SegmentedButton
-                  active={treeMode === "2d"}
-                  onClick={() => setTreeMode("2d")}
-                  ariaLabel="Xem cây 2D"
-                  className="px-3"
-                >
-                  2D
-                </SegmentedButton>
-                <SegmentedButton
-                  active={treeMode === "3d"}
-                  onClick={() => setTreeMode("3d")}
-                  ariaLabel="Xem cây 3D"
-                  className="px-3"
-                >
-                  3D
-                </SegmentedButton>
-              </SegmentedControl>
-              {/* Hướng cây + số đời chỉ áp cho cây 2D. */}
-              {treeMode === "2d" && (
-                <>
-                  <SegmentedControl ariaLabel="Hướng cây">
-                    <SegmentedButton
-                      active={orientation === "vertical"}
-                      onClick={() => setOrientation("vertical")}
-                      className="inline-flex items-center gap-1.5 px-3"
-                    >
-                      <IconLayoutVertical className="h-4 w-4" />
-                      Dọc
-                    </SegmentedButton>
-                    <SegmentedButton
-                      active={orientation === "horizontal"}
-                      onClick={() => setOrientation("horizontal")}
-                      className="inline-flex items-center gap-1.5 px-3"
-                    >
-                      <IconLayoutHorizontal className="h-4 w-4" />
-                      Ngang
-                    </SegmentedButton>
-                  </SegmentedControl>
-                  <SegmentedControl ariaLabel="Kiểu thẻ">
-                    <SegmentedButton
-                      active={cardLayout === "tall"}
-                      onClick={() => setCardLayout("tall")}
-                      className="px-3"
-                    >
-                      Thẻ dọc
-                    </SegmentedButton>
-                    <SegmentedButton
-                      active={cardLayout === "wide"}
-                      onClick={() => setCardLayout("wide")}
-                      className="px-3"
-                    >
-                      Thẻ ngang
-                    </SegmentedButton>
-                  </SegmentedControl>
-                  {cardLayout === "tall" && (
-                    <SegmentedControl ariaLabel="Ảnh trên thẻ">
-                      <SegmentedButton
-                        active={!cardAvatar}
-                        onClick={() => setCardAvatar(false)}
-                        className="px-3"
-                      >
-                        Ẩn ảnh
-                      </SegmentedButton>
-                      <SegmentedButton
-                        active={cardAvatar}
-                        onClick={() => setCardAvatar(true)}
-                        className="px-3"
-                      >
-                        Hiện ảnh
-                      </SegmentedButton>
-                    </SegmentedControl>
-                  )}
-                  {/* Số đời hiển thị quanh người làm tâm — mặc định 3 cho
-                      nhẹ máy; bấm vào thẻ để xem nhánh sâu hơn. w-full →
-                      xuống dòng riêng trên mobile. */}
-                  <div className="w-full sm:w-auto flex items-center gap-2 justify-end">
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">
-                      Số đời hiển thị:
-                    </span>
-                    <SegmentedControl ariaLabel="Số đời hiển thị quanh người làm tâm">
-                      {DEPTH_OPTIONS.map((d) => (
-                        <SegmentedButton
-                          key={d}
-                          active={depth === d}
-                          onClick={() => setDepth(d)}
-                          title={
-                            d === 0
-                              ? "Hiện tất cả các đời"
-                              : `Hiện ${d} đời tính từ người làm tâm`
-                          }
-                          className="px-2 sm:px-3"
-                        >
-                          {d === 0 ? "Tất cả" : d}
-                        </SegmentedButton>
+              {/* Thanh công cụ gọn: ô tìm kiếm + nút phễu mở ngăn kéo "Tuỳ chọn cây". */}
+              <div className="border-b px-4 py-3 shrink-0 flex items-center gap-2 print-hide">
+                <div className="min-w-0 flex-1 max-w-md relative">
+                  <SearchInput
+                    label="Đặt người trung tâm"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Đặt người trung tâm — gõ tên để tìm…"
+                  />
+                  {matches.length > 0 && (
+                    <ul className="absolute top-full left-0 right-0 z-10 mt-1 rounded-xl border bg-card divide-y shadow-md">
+                      {matches.map((m) => (
+                        <li key={m.id}>
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2 hover:bg-muted/40"
+                            onClick={() => {
+                              setFocal(m.id);
+                              setSearch("");
+                            }}
+                          >
+                            <p className="font-medium">{m.full_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {m.gender === "M" ? "Nam" : "Nữ"}
+                              {m.birth_date
+                                ? ` · sinh ${m.birth_date.slice(0, 4)}`
+                                : ""}
+                              {m.generation !== null
+                                ? ` · Đời ${m.generation - (data.generation_offset ?? 0)}`
+                                : ""}
+                            </p>
+                          </button>
+                        </li>
                       ))}
-                    </SegmentedControl>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {treeMode === "3d" && tree3dData ? (
-              <div className="relative flex-1 min-h-0 w-full">
-                <Suspense
-                  fallback={
-                    <p className="p-8 text-center text-muted-foreground">
-                      Đang dựng cây 3D…
-                    </p>
-                  }
+                    </ul>
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1.5"
+                  onClick={() => setShowOpts(true)}
+                  aria-haspopup="dialog"
+                  aria-expanded={showOpts}
+                  aria-label="Tuỳ chọn cây"
                 >
-                  <Tree3DView
-                    clanId={data.clan_id}
-                    genOffset={data.generation_offset ?? 0}
-                    focal={focal}
-                    data={tree3dData}
-                    photoUrls={tree3dPhotos}
-                    className="h-full w-full"
-                  />
-                </Suspense>
+                  <IconFilter className="h-4 w-4" />
+                  <span className="hidden sm:inline">Tuỳ chọn</span>
+                </Button>
               </div>
-            ) : (
-              renderTreeWrap(
-                <div
-                  ref={shareWrapRef}
-                  className={
-                    isFullscreen
-                      ? "fixed inset-0 z-[60] bg-background p-2"
-                      : "relative flex-1 min-h-0 w-full"
-                  }
-                >
-                  <div
-                    ref={containerRef}
-                    className="f3 h-full w-full text-foreground"
-                    style={
-                      {
-                        "--male-color": "var(--tree-card-male)",
-                        "--female-color": "var(--tree-card-female)",
-                        "--tree-name-font": fontFamilyOf(readNameFontId()),
-                      } as React.CSSProperties
+
+              <FilterDrawer
+                open={showOpts}
+                onClose={() => setShowOpts(false)}
+                title="Tuỳ chọn cây"
+              >
+                <TreeOptionsPanel
+                  prefs={prefs}
+                  mode={treeMode}
+                  onModeChange={(m) => setTreeMode(m === "3d" ? "3d" : "2d")}
+                  modes={["2d", "3d"]}
+                  depth={depth}
+                  onDepthChange={setDepth}
+                  orientation={orientation}
+                  onOrientationChange={setOrientation}
+                />
+              </FilterDrawer>
+
+              {treeMode === "3d" && tree3dData ? (
+                <div className="relative flex-1 min-h-0 w-full">
+                  <Suspense
+                    fallback={
+                      <p className="p-8 text-center text-muted-foreground">
+                        Đang dựng cây 3D…
+                      </p>
                     }
-                    aria-label="Cây gia phả tương tác (chỉ xem)"
-                  />
-                  <div className="absolute bottom-2 right-2 z-10 flex flex-col gap-1">
-                    <button
-                      type="button"
-                      onClick={exportShareImage}
-                      disabled={savingImg}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
-                      aria-label="Xuất ảnh cây đang hiển thị (PNG)"
-                      title={savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"}
-                    >
-                      <IconDownload className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={toggleFullscreen}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
-                      aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-                      title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-                    >
-                      {isFullscreen ? (
-                        <IconMinimize className="h-4 w-4" />
-                      ) : (
-                        <IconMaximize className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>,
-              )
-            )}
+                  >
+                    <Tree3DView
+                      clanId={data.clan_id}
+                      genOffset={data.generation_offset ?? 0}
+                      focal={focal}
+                      data={tree3dData}
+                      photoUrls={tree3dPhotos}
+                      className="h-full w-full"
+                    />
+                  </Suspense>
+                </div>
+              ) : (
+                renderTreeWrap(
+                  <div
+                    ref={shareWrapRef}
+                    className={
+                      isFullscreen
+                        ? "fixed inset-0 z-[60] bg-background p-2"
+                        : "relative flex-1 min-h-0 w-full"
+                    }
+                  >
+                    <TreeBackdrop backdrop={backdrop} />
+                    <div
+                      ref={containerRef}
+                      className="f3 relative h-full w-full bg-transparent text-foreground"
+                      style={
+                        {
+                          "--male-color": "var(--tree-card-male)",
+                          "--female-color": "var(--tree-card-female)",
+                          "--tree-name-font": fontFamilyOf(nameFont),
+                        } as React.CSSProperties
+                      }
+                      aria-label="Cây gia phả tương tác (chỉ xem)"
+                    />
+                    <div className="absolute bottom-2 right-2 z-10 flex flex-col gap-1">
+                      <button
+                        type="button"
+                        onClick={exportShareImage}
+                        disabled={savingImg}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
+                        aria-label="Xuất ảnh cây đang hiển thị (PNG)"
+                        title={savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"}
+                      >
+                        <IconDownload className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={toggleFullscreen}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
+                        aria-label={
+                          isFullscreen
+                            ? "Thoát toàn màn hình"
+                            : "Xem toàn màn hình"
+                        }
+                        title={
+                          isFullscreen
+                            ? "Thoát toàn màn hình"
+                            : "Xem toàn màn hình"
+                        }
+                      >
+                        {isFullscreen ? (
+                          <IconMinimize className="h-4 w-4" />
+                        ) : (
+                          <IconMaximize className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>,
+                )
+              )}
             </div>
 
             {/* TAB Sự kiện & giỗ / Di sản — chỉ trang xem thử công khai. */}
             {publicClan && tab === "events" && <EventsGioPanel data={data} />}
-            {publicClan && tab === "heritage" && (
-              <HeritagePanel data={data} />
-            )}
+            {publicClan && tab === "heritage" && <HeritagePanel data={data} />}
             {publicClan && tab === "details" && (
-              <DetailsPanel data={data} focal={focal} onPersonClick={setFocal} />
+              <DetailsPanel
+                data={data}
+                focal={focal}
+                onPersonClick={setFocal}
+              />
             )}
           </>
         )}
@@ -1137,7 +1171,7 @@ export default function Share() {
                   Đây là gia phả <b>{data.clan_name}</b>.{" "}
                 </>
               ) : (
-                <>Bạn đang xem một gia phả trên Dòng Họ Việt.{" "}</>
+                <>Bạn đang xem một gia phả trên Dòng Họ Việt. </>
               )}
               <span className="text-muted-foreground">
                 Tạo cây gia phả cho dòng họ bạn — miễn phí, chỉ vài phút.
@@ -1285,7 +1319,10 @@ function EventsGioPanel({ data }: { data: ShareViewPayload }) {
           <div key={e.id} className="rounded-xl border bg-card shadow-sm p-3">
             <span className="font-medium">{e.title}</span>
             {eventWhen(e) && (
-              <span className="text-sm text-muted-foreground"> · {eventWhen(e)}</span>
+              <span className="text-sm text-muted-foreground">
+                {" "}
+                · {eventWhen(e)}
+              </span>
             )}
             {e.notes && (
               <p className="text-sm text-muted-foreground">{e.notes}</p>
