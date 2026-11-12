@@ -447,7 +447,7 @@ function RelationsBody({
         id="rel-descendants"
         icon={<IconTree />}
         title="Con cháu"
-        action={summary ? `Có ${summary}` : undefined}
+        action={rows.length > 0 ? `${rows.length} người` : undefined}
         bodyClassName="p-0"
         footer={
           rows.length > 0 ? (
@@ -468,73 +468,90 @@ function RelationsBody({
             Chưa ghi nhận con cháu.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm">
-              <thead>
-                <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-                  <th className="px-3 py-2 font-medium">Đời</th>
-                  <th className="px-3 py-2 font-medium">Họ tên</th>
-                  <th className="px-3 py-2 font-medium">Năm sinh</th>
-                  <th className="px-3 py-2 font-medium">Vợ / chồng</th>
-                  <th className="px-3 py-2 font-medium">Quê quán</th>
-                  <th className="px-3 py-2 font-medium">Bố / Mẹ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {rows.map((r, i) => {
-                  const newLevel = i === 0 || rows[i - 1].level !== r.level;
-                  return (
-                    <tr
-                      key={r.person.id}
-                      className={newLevel ? "border-t-2 border-border" : ""}
-                    >
-                      <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
-                        {r.person.generation !== null
-                          ? r.person.generation - off
-                          : "—"}
-                        {newLevel && (
-                          <span className="ml-1 text-xs">
-                            ({levelName(r.level)})
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2">
-                        <Person p={r.person} />
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2">
-                        {yearOf(r.person.birth_date) || "—"}
-                      </td>
-                      <td className="px-3 py-2">
-                        {r.spouses.length === 0
-                          ? "—"
-                          : r.spouses.map((s) => (
-                              <div key={s.id}>
-                                <Person p={s} />
-                                {yearOf(s.birth_date) && (
-                                  <span className="text-muted-foreground">
-                                    {" "}
-                                    · {yearOf(s.birth_date)}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                      </td>
-                      <td className="px-3 py-2">
-                        {r.person.birth_place ??
-                          r.spouses.map((s) => s.birth_place).find(Boolean) ??
-                          "—"}
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">
-                        {[r.father?.full_name, r.mother?.full_name]
-                          .filter(Boolean)
-                          .join(" · ") || "—"}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <p className="border-b px-3 py-2 text-sm text-muted-foreground sm:px-4">
+              Có {summary}.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      Đời
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      Họ tên
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      Năm sinh
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      Vợ / chồng
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      Quê quán
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 font-medium">
+                      Bố / Mẹ
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {rows.map((r, i) => {
+                    const newLevel = i === 0 || rows[i - 1].level !== r.level;
+                    return (
+                      <tr
+                        key={r.person.id}
+                        className={newLevel ? "border-t-2 border-border" : ""}
+                      >
+                        <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                          {r.person.generation !== null
+                            ? r.person.generation - off
+                            : "—"}
+                          {newLevel && r.level <= 4 && (
+                            <span className="ml-1 text-xs">
+                              ({levelName(r.level)})
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">
+                          <Person p={r.person} />
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2">
+                          {yearOf(r.person.birth_date) || "—"}
+                        </td>
+                        <td className="px-3 py-2">
+                          {r.spouses.length === 0
+                            ? "—"
+                            : r.spouses.map((s) => (
+                                <div key={s.id}>
+                                  <Person p={s} />
+                                  {yearOf(s.birth_date) && (
+                                    <span className="text-muted-foreground">
+                                      {" "}
+                                      · {yearOf(s.birth_date)}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                        </td>
+                        <td className="px-3 py-2">
+                          {r.person.birth_place ??
+                            r.spouses.map((s) => s.birth_place).find(Boolean) ??
+                            "—"}
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {[r.father?.full_name, r.mother?.full_name]
+                            .filter(Boolean)
+                            .join(" · ") || "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </SectionCard>
     </div>
