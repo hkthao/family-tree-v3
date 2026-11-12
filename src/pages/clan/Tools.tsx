@@ -7,6 +7,7 @@ import {
   IconScroll,
   IconSettings,
   IconSparkles,
+  IconTree,
   IconUpload,
 } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
@@ -44,6 +45,12 @@ export default function Tools() {
       title: "Tra cứu",
       hint: "Mở ra xem, không sửa gì.",
       tools: [
+        {
+          to: `${base}/relations`,
+          label: "Tra cứu quan hệ",
+          desc: "Chọn một người: xem tổ tiên, vợ/chồng, anh chị em và bảng con cháu theo đời.",
+          icon: <IconTree className={ic} />,
+        },
         // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
         {
           // Trang lịch trước nay chỉ vào được từ thẻ "Hôm nay" ở Tổng
