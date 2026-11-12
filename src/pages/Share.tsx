@@ -899,7 +899,7 @@ export default function Share() {
       {/* Thanh đầu theo kiểu app: tên dòng họ ở giữa, nút sáng/tối bên phải (trang công khai
           không có thanh đầu của app). Hai đầu cân nhau để tên luôn nằm giữa. */}
       <header className="sticky top-0 z-30 shrink-0 border-b bg-background">
-        <div className="container flex h-[64px] max-w-4xl items-center justify-between gap-3 px-4">
+        <div className="container flex h-[64px] max-w-6xl items-center justify-between gap-3">
           <div className="w-10 shrink-0" aria-hidden="true" />
           <h1 className="clan-name min-w-0 flex-1 truncate text-center text-lg font-semibold sm:text-xl">
             {data?.clan_name ? `Gia phả ${data.clan_name}` : "Cây gia phả"}
@@ -912,10 +912,10 @@ export default function Share() {
 
       {/* Lưu ý quyền riêng tư: đóng được bằng dấu X, nhớ lựa chọn trên thiết bị này. */}
       {noticeOpen && (
-        <div className="shrink-0 px-4 pt-2 print-hide">
+        <div className="container max-w-6xl shrink-0 pt-2 print-hide">
           {/* Cùng kiểu thông báo của app (EnablePushPrompt): nền/viền nhạt màu chủ đạo, icon bên
               trái, đóng được bằng dấu X và nhớ lựa chọn trên thiết bị này. */}
-          <div className="mx-auto flex max-w-4xl items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+          <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
             <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div className="min-w-0 flex-1 text-sm">
               <p className="font-medium">Thông tin nhạy cảm đã được ẩn</p>
@@ -938,7 +938,7 @@ export default function Share() {
       )}
 
       {publicClan && (
-        <div className="flex shrink-0 flex-wrap items-center justify-center gap-2 px-4 pt-2 print-hide">
+        <div className="container flex max-w-6xl shrink-0 flex-wrap items-center justify-center gap-2 pt-2 print-hide">
           {/* Nút này dài, mà nút mặc định KHÔNG cho chữ xuống dòng — trên màn 390px nó rộng
               408px, tức thò hẳn ra ngoài mép và kéo cả trang trôi ngang. Cho phép xuống dòng. */}
           <Button
@@ -960,7 +960,7 @@ export default function Share() {
           <div
             role="tablist"
             aria-label="Nội dung dòng họ"
-            className="container flex max-w-4xl overflow-x-auto px-2"
+            className="container flex max-w-6xl overflow-x-auto px-2"
             style={{ scrollbarWidth: "none" }}
           >
             <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
@@ -1031,8 +1031,8 @@ export default function Share() {
               }
             >
               {/* Thanh công cụ gọn: ô tìm kiếm + nút phễu mở ngăn kéo "Tuỳ chọn cây". */}
-              <div className="border-b px-4 py-3 shrink-0 flex items-center gap-2 print-hide">
-                <div className="min-w-0 flex-1 max-w-md relative">
+              <div className="container flex max-w-6xl shrink-0 items-center gap-2 py-3 print-hide">
+                <div className="min-w-0 flex-1 relative">
                   <SearchInput
                     label="Đặt người trung tâm"
                     value={search}
@@ -1099,84 +1099,89 @@ export default function Share() {
                 />
               </FilterDrawer>
 
-              {treeMode === "3d" && tree3dData ? (
-                <div className="relative flex-1 min-h-0 w-full">
-                  <Suspense
-                    fallback={
-                      <p className="p-8 text-center text-muted-foreground">
-                        Đang dựng cây 3D…
-                      </p>
-                    }
-                  >
-                    <Tree3DView
-                      clanId={data.clan_id}
-                      genOffset={data.generation_offset ?? 0}
-                      focal={focal}
-                      data={tree3dData}
-                      photoUrls={tree3dPhotos}
-                      className="h-full w-full"
-                    />
-                  </Suspense>
-                </div>
-              ) : (
-                renderTreeWrap(
-                  <div
-                    ref={shareWrapRef}
-                    className={
-                      isFullscreen
-                        ? "fixed inset-0 z-[60] bg-background p-2"
-                        : "relative flex-1 min-h-0 w-full"
-                    }
-                  >
-                    <TreeBackdrop backdrop={backdrop} />
-                    <div
-                      ref={containerRef}
-                      className="f3 relative h-full w-full bg-transparent text-foreground"
-                      style={
-                        {
-                          "--male-color": "var(--tree-card-male)",
-                          "--female-color": "var(--tree-card-female)",
-                          "--tree-name-font": fontFamilyOf(nameFont),
-                        } as React.CSSProperties
+              {/* Điện thoại: cây tràn mép cho rộng; từ sm: nằm trong khung có viền, cùng bề rộng với phần trên. */}
+              <div className="container flex min-h-0 max-w-6xl flex-1 flex-col px-0 sm:px-4 sm:pb-3">
+                {treeMode === "3d" && tree3dData ? (
+                  <div className="relative min-h-0 w-full flex-1 overflow-hidden border-y sm:rounded-lg sm:border">
+                    <Suspense
+                      fallback={
+                        <p className="p-8 text-center text-muted-foreground">
+                          Đang dựng cây 3D…
+                        </p>
                       }
-                      aria-label="Cây gia phả tương tác (chỉ xem)"
-                    />
-                    <div className="absolute bottom-2 right-2 z-10 flex flex-col gap-1">
-                      <button
-                        type="button"
-                        onClick={exportShareImage}
-                        disabled={savingImg}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
-                        aria-label="Xuất ảnh cây đang hiển thị (PNG)"
-                        title={savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"}
-                      >
-                        <IconDownload className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={toggleFullscreen}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
-                        aria-label={
-                          isFullscreen
-                            ? "Thoát toàn màn hình"
-                            : "Xem toàn màn hình"
+                    >
+                      <Tree3DView
+                        clanId={data.clan_id}
+                        genOffset={data.generation_offset ?? 0}
+                        focal={focal}
+                        data={tree3dData}
+                        photoUrls={tree3dPhotos}
+                        className="h-full w-full"
+                      />
+                    </Suspense>
+                  </div>
+                ) : (
+                  renderTreeWrap(
+                    <div
+                      ref={shareWrapRef}
+                      className={
+                        isFullscreen
+                          ? "fixed inset-0 z-[60] bg-background p-2"
+                          : "relative min-h-0 w-full flex-1 overflow-hidden border-y sm:rounded-lg sm:border"
+                      }
+                    >
+                      <TreeBackdrop backdrop={backdrop} />
+                      <div
+                        ref={containerRef}
+                        className="f3 relative h-full w-full bg-transparent text-foreground"
+                        style={
+                          {
+                            "--male-color": "var(--tree-card-male)",
+                            "--female-color": "var(--tree-card-female)",
+                            "--tree-name-font": fontFamilyOf(nameFont),
+                          } as React.CSSProperties
                         }
-                        title={
-                          isFullscreen
-                            ? "Thoát toàn màn hình"
-                            : "Xem toàn màn hình"
-                        }
-                      >
-                        {isFullscreen ? (
-                          <IconMinimize className="h-4 w-4" />
-                        ) : (
-                          <IconMaximize className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>,
-                )
-              )}
+                        aria-label="Cây gia phả tương tác (chỉ xem)"
+                      />
+                      <div className="absolute bottom-2 right-2 z-10 flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={exportShareImage}
+                          disabled={savingImg}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
+                          aria-label="Xuất ảnh cây đang hiển thị (PNG)"
+                          title={
+                            savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"
+                          }
+                        >
+                          <IconDownload className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={toggleFullscreen}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
+                          aria-label={
+                            isFullscreen
+                              ? "Thoát toàn màn hình"
+                              : "Xem toàn màn hình"
+                          }
+                          title={
+                            isFullscreen
+                              ? "Thoát toàn màn hình"
+                              : "Xem toàn màn hình"
+                          }
+                        >
+                          {isFullscreen ? (
+                            <IconMinimize className="h-4 w-4" />
+                          ) : (
+                            <IconMaximize className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>,
+                  )
+                )}
+              </div>
             </div>
 
             {/* TAB Sự kiện & giỗ / Di sản — chỉ trang xem thử công khai. */}
@@ -1199,7 +1204,7 @@ export default function Share() {
           màn hình và khi in. */}
       {data && data.persons.length > 0 && !isFullscreen && (
         <div className="shrink-0 border-t bg-primary/5 px-4 py-3 print-hide">
-          <div className="container mx-auto flex max-w-4xl flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div className="container mx-auto flex max-w-6xl flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-left">
             <p className="text-sm">
               {data.clan_name ? (
                 <>
