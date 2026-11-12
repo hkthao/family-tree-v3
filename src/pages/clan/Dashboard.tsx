@@ -183,6 +183,7 @@ export default function Dashboard() {
         icon={<IconHome className="h-7 w-7" />}
         title="Tổng quan"
         description={`Trang chủ của ${clan.name}.`}
+        actionsBelow="mobile"
         actions={
           <div className="flex items-center gap-1">
             {/* Lối tắt tới Cài đặt dòng họ — chỉ quản trị mới thấy (trang đó chỉ
