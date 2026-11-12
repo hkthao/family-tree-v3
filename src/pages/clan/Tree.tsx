@@ -259,7 +259,6 @@ export default function Tree() {
   // (kể cả header sticky), không bị kẹt trong stacking context của trang.
   const renderTreeWrap = (node: React.ReactNode) =>
     isFullscreen ? createPortal(node, document.body) : node;
-  const [focal, setFocal] = useState<string | null>(null);
   // Touch-mode gate: on phones, the chart starts "locked" so the
   // user can scroll the page past it with one finger; tapping the
   // overlay unlocks pan/zoom. Desktops (hover-capable pointers) keep
@@ -293,7 +292,22 @@ export default function Tree() {
   const { backdrop, cardFrame, cardLayout, cardAvatar, nameFont, avatarStyle } = prefs;
   const nameFontFamily = fontFamilyOf(nameFont);
 
-  const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
+  // Số đời quanh người trung tâm: nằm trên URL (?depth=) để quay lại từ trang khác vẫn giữ nguyên.
+  const depthParam = searchParams.get("depth");
+  const depth: TreeDepth =
+    depthParam !== null && (DEPTH_OPTIONS as readonly number[]).includes(Number(depthParam))
+      ? (Number(depthParam) as TreeDepth)
+      : DEFAULT_DEPTH;
+  const setDepth = (d: TreeDepth) =>
+    setSearchParams(
+      (prev) => {
+        const p = new URLSearchParams(prev);
+        if (d === DEFAULT_DEPTH) p.delete("depth");
+        else p.set("depth", String(d));
+        return p;
+      },
+      { replace: true },
+    );
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
   // gạt để tiết kiệm chỗ; desktop luôn hiện. Mặc định ẩn trên mobile.
   const [showOpts, setShowOpts] = useState(false);
@@ -439,11 +453,21 @@ export default function Tree() {
     () => (data ? pickDefaultFocal(data.persons) : null),
     [data],
   );
-  useEffect(() => {
-    if (defaultFocal && focal === null) {
-      setFocal(defaultFocal);
-    }
-  }, [defaultFocal, focal]);
+  // Người trung tâm nằm trên URL (?p=<id>): bấm vào một người rồi Back vẫn ở đúng người đó. Không có
+  // (hoặc id không còn trong họ) thì dùng Thuỷ tổ mặc định.
+  const focalParam = searchParams.get("p");
+  const focal: string | null =
+    focalParam && data?.persons.some((p) => p.id === focalParam) ? focalParam : defaultFocal;
+  const setFocal = (id: string) =>
+    setSearchParams(
+      (prev) => {
+        const p = new URLSearchParams(prev);
+        if (id === defaultFocal) p.delete("p");
+        else p.set("p", id);
+        return p;
+      },
+      { replace: true },
+    );
 
   // Human-readable name of the current focal — used in the "Về mặc
   // định" hint so the user knows what they're switching away from.
