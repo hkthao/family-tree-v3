@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import { HeaderActions } from "@/components/HeaderActions";
 import { AppDrawer } from "@/components/AppDrawer";
 import { AppLogo } from "@/components/AppLogo";
-import { GlobalSearch } from "@/components/GlobalSearch";
-import { NotificationBell } from "@/components/NotificationBell";
-import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
 import { useSidebarHidden } from "@/lib/sidebarHidden";
 
@@ -87,11 +85,7 @@ export function AppHeader() {
             Dòng Họ Việt
           </Link>
           <div className="hidden lg:block flex-1" aria-hidden="true" />
-          <div className="flex items-center gap-1">
-            <GlobalSearch />
-            <NotificationBell />
-            <ThemeQuickToggle />
-          </div>
+          <HeaderActions />
         </div>
       </header>
       <AppDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />

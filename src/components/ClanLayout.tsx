@@ -4,11 +4,10 @@ import { ClanAvatarFrameProvider } from "@/components/PersonAvatar";
 import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 
 import { AiChatDock } from "@/components/ai/AiChatDock";
+import { HeaderActions } from "@/components/HeaderActions";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { PanelHost } from "@/components/panel/PanelHost";
-import { GlobalSearch } from "@/components/GlobalSearch";
-import { NotificationBell } from "@/components/NotificationBell";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -17,7 +16,6 @@ import {
   IconTree,
   IconUsers,
 } from "@/components/icons";
-import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
@@ -175,10 +173,8 @@ export function ClanLayout() {
               </p>
             )}
           </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <GlobalSearch />
-            <NotificationBell />
-            <ThemeQuickToggle />
+          <div className="shrink-0">
+            <HeaderActions />
           </div>
         </div>
       </header>

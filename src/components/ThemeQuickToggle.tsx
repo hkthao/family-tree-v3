@@ -15,7 +15,8 @@ import { getTheme, setTheme, subscribeTheme, type Theme } from "@/lib/theme";
  * what they just picked. The Account page still has the 3-way
  * radio for users who want to opt back into system auto.
  */
-export function ThemeQuickToggle() {
+/** Trạng thái sáng/tối hiện tại + hành động đổi — dùng cho nút riêng lẫn mục trong menu. */
+export function useThemeToggle() {
   const [theme, setLocalTheme] = useState<Theme>(() => getTheme());
 
   useEffect(() => subscribeTheme(setLocalTheme), []);
@@ -23,11 +24,16 @@ export function ThemeQuickToggle() {
   const dark = effectiveDark(theme);
   const next: Theme = dark ? "light" : "dark";
   const label = dark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối";
+  return { dark, label, toggle: () => setTheme(next) };
+}
+
+export function ThemeQuickToggle() {
+  const { dark, label, toggle } = useThemeToggle();
 
   return (
     <button
       type="button"
-      onClick={() => setTheme(next)}
+      onClick={toggle}
       aria-label={label}
       title={label}
       className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0 text-muted-foreground hover:text-foreground"
