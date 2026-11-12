@@ -6,21 +6,23 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import {
   IconDownload,
+  IconFilter,
   IconGrid,
-  IconLayers,
   IconHome,
+  IconLayers,
   IconMaximize,
   IconMinimize,
   IconPlus,
-  IconFilter,
   IconTree,
-  IconX,
   IconUpload,
+  IconUser,
+  IconX,
 } from "@/components/icons";
 import { FilterDrawer } from "@/components/FilterDrawer";
 import { PanelLink } from "@/components/panel/PanelLink";
 import { SidePanel } from "@/components/SidePanel";
 import { PanelActionBar } from "@/components/ui/form-actions";
+import { FilterableSelect } from "@/components/FilterableSelect";
 import { PageHeader } from "@/components/PageHeader";
 import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
 import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
@@ -30,7 +32,6 @@ import {
 } from "@/lib/tree/nameFonts";
 import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { RefreshButton } from "@/components/RefreshButton";
-import { SearchInput } from "@/components/SearchInput";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,7 +78,6 @@ import { ShareTreeButton } from "@/components/ShareTreeButton";
 import { EditPersonForm } from "@/pages/clan/EditPerson";
 import { LineageContent } from "@/pages/clan/MyLineage";
 import { track } from "@/lib/analytics";
-import { matchesName } from "@/lib/unaccent";
 import { bloodlineIds } from "@/lib/bloodline";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { getTreeData } from "@/lib/queries/tree";
@@ -261,7 +261,6 @@ export default function Tree() {
   const renderTreeWrap = (node: React.ReactNode) =>
     isFullscreen ? createPortal(node, document.body) : node;
   const [focal, setFocal] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
   // Touch-mode gate: on phones, the chart starts "locked" so the
   // user can scroll the page past it with one finger; tapping the
   // overlay unlocks pan/zoom. Desktops (hover-capable pointers) keep
@@ -1306,16 +1305,28 @@ export default function Tree() {
     };
   }, []);
 
-  // Search-by-name → set focal. Diacritic-insensitive so "Hung" finds
-  // "Hùng". 8 results was too few for a big clan ("Nguyễn" often hits
-  // hundreds); cap at 50 and scroll inside the popover so the list
-  // stays compact but reachable.
-  const SEARCH_CAP = 50;
-  const { matches, totalMatched } = useMemo(() => {
-    if (!data || !search.trim()) return { matches: [], totalMatched: 0 };
-    const filtered = data.persons.filter((p) => matchesName(p.full_name, search));
-    return { matches: filtered.slice(0, SEARCH_CAP), totalMatched: filtered.length };
-  }, [data, search]);
+  // Danh sách chọn người làm trung tâm: theo đời rồi theo tên; nhãn kèm đời + năm sinh để
+  // phân biệt người trùng tên. Ô chọn tự có ô tìm không dấu.
+  const personOptions = useMemo(() => {
+    if (!data) return [];
+    const off = clan.generation_offset ?? 0;
+    return [...data.persons]
+      .sort(
+        (x, y) =>
+          (x.generation ?? 999) - (y.generation ?? 999) ||
+          x.full_name.localeCompare(y.full_name, "vi"),
+      )
+      .map((p) => ({
+        value: p.id,
+        label: [
+          p.full_name,
+          p.generation !== null ? `Đời ${p.generation - off}` : null,
+          p.birth_date ? `sinh ${p.birth_date.slice(0, 4)}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      }));
+  }, [data, clan.generation_offset]);
 
   // Phòng ký ức / Xuất sổ / Chia sẻ không phụ thuộc kiểu vẽ cây (chỉ là đường
   // dẫn / dựng PDF từ dữ liệu) nên luôn có, kể cả 3D. Đứng cùng hàng ô tìm kiếm.
@@ -1335,36 +1346,40 @@ export default function Tree() {
   const focalSearch =
     data && data.persons.length > 0 ? (
       <div className="relative print-hide">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-          <div className="min-w-0 sm:flex-1">
-            <SearchInput
-              label="Đặt người trung tâm"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Đặt người trung tâm — gõ tên để tìm…"
-              className="pr-[4.75rem]"
-              rightSlot={
-                <div className="flex items-center">
-                  {/* Phễu mở/đóng "Tuỳ chọn" (mặc định ẩn, mọi cỡ màn hình). */}
-                  <button
-                    type="button"
-                    onClick={() => setShowOpts((v) => !v)}
-                    aria-expanded={showOpts}
-                    aria-label="Tuỳ chọn"
-                    className={`inline-flex h-8 w-8 items-center justify-center rounded-md ${
-                      showOpts ? "bg-primary/10 text-primary" : "text-muted-foreground"
-                    }`}
-                  >
-                    <IconFilter className="h-4 w-4" />
-                  </button>
-                  <RefreshButton
-                    clanId={clan.id}
-                    cachedVersion={clan.data_version}
-                    compact
-                    className="h-8 w-8 border-0 bg-transparent shadow-none"
-                  />
-                </div>
-              }
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+            <div className="min-w-0 flex-1">
+              <FilterableSelect
+                id="tree-focal"
+                icon={<IconUser />}
+                value={focal ?? ""}
+                onChange={(v) => v && setFocal(v)}
+                options={personOptions}
+                emptyLabel="Chọn thuỷ tổ làm trung tâm"
+                filterPlaceholder="Gõ tên để tìm (không cần dấu)"
+                filterLabel="Tìm người làm trung tâm"
+                className="h-10 text-sm"
+              />
+            </div>
+            {/* Phễu mở/đóng "Tuỳ chọn" + làm mới: nút riêng cạnh ô chọn. */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={`shrink-0 px-0 sm:px-3 w-10 sm:w-auto ${showOpts ? "border-primary text-primary" : ""}`}
+              onClick={() => setShowOpts((v) => !v)}
+              aria-expanded={showOpts}
+              aria-label="Tuỳ chọn"
+              title="Tuỳ chọn"
+            >
+              <IconFilter className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Tuỳ chọn</span>
+            </Button>
+            <RefreshButton
+              clanId={clan.id}
+              cachedVersion={clan.data_version}
+              compact
+              className="h-10 w-10 shrink-0"
             />
           </div>
           {/* Mobile: hàng riêng dưới ô tìm kiếm cho ô tìm kiếm đủ rộng để gõ. */}
@@ -1377,7 +1392,6 @@ export default function Tree() {
               className="h-10 shrink-0 w-10 sm:w-auto px-0 sm:px-3"
               onClick={() => {
                 setFocal(defaultFocal);
-                setSearch("");
               }}
               aria-label="Về Thuỷ tổ"
               title={
@@ -1393,36 +1407,6 @@ export default function Tree() {
           {actionButtons}
           </div>
         </div>
-        {matches.length > 0 && (
-          <div className="absolute left-0 right-0 top-full mt-1 rounded-md border bg-card shadow-lg z-20">
-            <div className="px-3 py-1.5 text-xs text-muted-foreground border-b bg-muted/30">
-              {totalMatched > SEARCH_CAP
-                ? `Hiện ${SEARCH_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp`
-                : `${totalMatched} kết quả`}
-            </div>
-            <ul className="max-h-80 overflow-y-auto divide-y">
-              {matches.map((m) => (
-                <li key={m.id}>
-                  <button
-                    type="button"
-                    className="w-full text-left px-3 py-2 hover:bg-muted/40"
-                    onClick={() => {
-                      setFocal(m.id);
-                      setSearch("");
-                    }}
-                  >
-                    <span className="font-medium">{m.full_name}</span>
-                    {m.generation !== null && (
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        Đời {m.generation}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     ) : null;
 

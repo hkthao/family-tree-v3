@@ -1044,9 +1044,10 @@ export default function Share() {
                     value={focal ?? ""}
                     onChange={(v) => v && setFocal(v)}
                     options={personOptions}
-                    emptyLabel="Chọn người làm trung tâm"
+                    emptyLabel="Chọn thuỷ tổ làm trung tâm"
                     filterPlaceholder="Gõ tên để tìm (không cần dấu)"
                     filterLabel="Tìm người làm trung tâm"
+                    className="h-10 text-sm"
                   />
                 </div>
                 <Button

@@ -25,6 +25,7 @@ export function FilterableSelect({
   disabled,
   filterPlaceholder = "Gõ để tìm (không cần dấu)",
   filterLabel,
+  className,
 }: {
   id?: string;
   icon?: ReactNode;
@@ -36,6 +37,8 @@ export function FilterableSelect({
   disabled?: boolean;
   filterPlaceholder?: string;
   filterLabel: string;
+  /** Ghi đè lớp của ô bấm (vd. `h-10 text-sm` để thấp bằng nút `size="sm"`). */
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -136,6 +139,7 @@ export function FilterableSelect({
         className={cn(
           "flex h-12 w-full items-center rounded-md border border-input bg-background px-3 py-2 pr-9 text-left text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           icon && "pl-10",
+          className,
         )}
       >
         <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.label ?? emptyLabel}</span>
