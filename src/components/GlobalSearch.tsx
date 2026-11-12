@@ -57,14 +57,34 @@ const staticRow = (e: StaticEntry): Row => ({
  * (người, dòng họ, mộ phần, di sản, sự kiện, bảng tin, đóng góp, thông gia, Sổ tay — qua RPC global_search,
  * RLS quyết định), hướng dẫn sử dụng và các trang quy định / quyền riêng tư.
  */
-export function GlobalSearch() {
+export function GlobalSearch({
+  open: openProp,
+  onOpenChange,
+  hideTrigger = false,
+}: {
+  /** Điều khiển từ ngoài (vd. mục "Tìm kiếm" trong menu ba chấm trên điện thoại). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Ẩn nút kính lúp khi có nơi khác mở ô tìm kiếm. */
+  hideTrigger?: boolean;
+} = {}) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const { clanId } = useParams<{ clanId?: string }>();
   const aiEnabled = useAiEnabled();
 
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  // Ref để phím tắt (effect đăng ký một lần) luôn thấy trạng thái mới nhất.
+  const openRef = useRef(open);
+  openRef.current = open;
+  const setOpen = (v: boolean | ((o: boolean) => boolean)) => {
+    const next = typeof v === "function" ? v(openRef.current) : v;
+    openRef.current = next;
+    onOpenChange?.(next);
+    if (openProp === undefined) setOpenState(next);
+  };
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [focus, setFocus] = useState(0);
@@ -166,7 +186,7 @@ export function GlobalSearch() {
       <IconSearch className="h-5 w-5" />
     </button>
   );
-  if (!open || typeof document === "undefined") return trigger;
+  if (!open || typeof document === "undefined") return hideTrigger ? null : trigger;
 
   const searching = debounced.length >= 2;
   return (
