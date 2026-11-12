@@ -455,8 +455,8 @@ export default function Share() {
               meta.setAttribute("dy", "18");
             }
 
-            // Khung thẻ hoàng gia: viền vàng + chỉ vàng trong + hoa văn 3 góc
-            // (bỏ góc trên-phải nhường chỗ triện Đời). Dâu/rể = KHÔNG thuộc
+            // Khung thẻ hoàng gia: viền vàng + chỉ vàng trong + hoa văn đủ 4 góc
+            // (triện Đời lùi vào trong nên không đè góc trên-phải). Dâu/rể = KHÔNG thuộc
             // huyết thống (đúng cả khi có cha/mẹ ghi) → viền đứt.
             {
               const inLaw = !!datum?.id && !blood.has(datum.id);
@@ -501,6 +501,7 @@ export default function Share() {
                   [
                     `M${o} ${o + L}V${o}H${o + L}`,
                     `M${o} ${H - o - L}V${H - o}H${o + L}`,
+                    `M${W - o - L} ${o}H${W - o}V${o + L}`,
                     `M${W - o - L} ${H - o}H${W - o}V${H - o - L}`,
                   ].join(""),
                 );
