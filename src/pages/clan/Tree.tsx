@@ -5,16 +5,9 @@ import { avatarFrameSvg } from "@/components/PersonAvatar";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
-  IconAward,
   IconDownload,
   IconGrid,
   IconLayers,
-  IconLayoutHorizontal,
-  IconLayoutVertical,
-  IconPencil,
-  IconSparkles,
-  IconUser,
-  IconUsers,
   IconHome,
   IconMaximize,
   IconMinimize,
@@ -29,11 +22,11 @@ import { PanelLink } from "@/components/panel/PanelLink";
 import { SidePanel } from "@/components/SidePanel";
 import { PanelActionBar } from "@/components/ui/form-actions";
 import { PageHeader } from "@/components/PageHeader";
+import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
+import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
+import { useTreeViewPrefs } from "@/lib/tree/viewPrefs";
 import {
-  NAME_FONTS,
-  NAME_FONT_KEY,
   nameFontFamily as fontFamilyOf,
-  readNameFontId,
 } from "@/lib/tree/nameFonts";
 import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { RefreshButton } from "@/components/RefreshButton";
@@ -69,9 +62,6 @@ import {
   addInlawGhosts,
   pickDefaultFocal,
   toFamilyChart,
-  AVATAR_STYLE_KEY,
-  readAvatarStyle,
-  type AvatarStyle,
 } from "@/lib/familyChartAdapter";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
@@ -155,19 +145,6 @@ async function loadF3(): Promise<typeof import("family-chart")> {
 
 type Orientation = "vertical" | "horizontal";
 const ORIENTATION_KEY = "family-tree:tree-orientation";
-
-/** Hình nền sau biểu đồ cây 2D: chỉ một hình, người xem tự chọn (mặc định phượng). */
-type Backdrop = "phoenix" | "dragon" | "none";
-const BACKDROP_KEY = "family-tree:tree-backdrop";
-
-function readBackdrop(): Backdrop {
-  try {
-    const v = localStorage.getItem(BACKDROP_KEY);
-    return v === "dragon" || v === "none" ? v : "phoenix";
-  } catch {
-    return "phoenix";
-  }
-}
 
 /** Viết hoa chữ đầu mỗi tiếng của tên: "lê  thị hà" → "Lê Thị Hà" (cả sau "(" và "-"). */
 function titleCaseName(name: string): string {
@@ -313,101 +290,10 @@ export default function Tree() {
     }
   }, [orientation]);
 
-  const [backdrop, setBackdrop] = useState<Backdrop>(readBackdrop);
-  useEffect(() => {
-    try {
-      localStorage.setItem(BACKDROP_KEY, backdrop);
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [backdrop]);
-
-  const [avatarStyle, setAvatarStyle] = useState<AvatarStyle>(readAvatarStyle);
-  useEffect(() => {
-    try {
-      localStorage.setItem(AVATAR_STYLE_KEY, avatarStyle);
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [avatarStyle]);
-
-  // Khung viền thẻ: "royal" = viền vàng kép + hoa văn góc; "simple" = viền mảnh như cũ.
-  const [cardFrame, setCardFrame] = useState<"royal" | "simple">(() => {
-    try {
-      return localStorage.getItem("family-tree:card-frame") === "simple"
-        ? "simple"
-        : "royal";
-    } catch {
-      return "royal";
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem("family-tree:card-frame", cardFrame);
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [cardFrame]);
-
-  // Kiểu thẻ: "wide" = ngang (ảnh trái, chữ phải); "tall" = dọc (ảnh trên, chữ dưới)
-  // — hẹp hơn nên một màn hình xem được nhiều người hơn.
-  const [cardLayout, setCardLayout] = useState<"wide" | "tall">(() => {
-    try {
-      return localStorage.getItem("family-tree:card-layout") === "wide" ? "wide" : "tall";
-    } catch {
-      return "tall";
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem("family-tree:card-layout", cardLayout);
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [cardLayout]);
-
-  // Thẻ dọc: ẩn ảnh đại diện cho gọn, xem được nhiều người hơn.
-  const [cardAvatar, setCardAvatar] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem("family-tree:card-avatar") === "on";
-    } catch {
-      return false;
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem("family-tree:card-avatar", cardAvatar ? "on" : "off");
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [cardAvatar]);
-
-  // Font tên trên thẻ: Playfair mặc định + vài font thư pháp có tiếng Việt.
-  const [nameFont, setNameFont] = useState<string>(readNameFontId);
-  useEffect(() => {
-    try {
-      localStorage.setItem(NAME_FONT_KEY, nameFont);
-    } catch {
-      /* private mode — ignore */
-    }
-  }, [nameFont]);
+  // Tuỳ chọn hiển thị (nền, khung, kiểu thẻ, ảnh, font, avatar) dùng CHUNG với trang Chia sẻ.
+  const prefs = useTreeViewPrefs();
+  const { backdrop, cardFrame, cardLayout, cardAvatar, nameFont, avatarStyle } = prefs;
   const nameFontFamily = fontFamilyOf(nameFont);
-  // Ghi NGAY khi đổi (không chờ effect) để cây 3D / Thư mục — đọc localStorage
-  // lúc render — thấy giá trị mới ngay lần dựng lại.
-  const persistNameFont = (v: string) => {
-    try {
-      localStorage.setItem(NAME_FONT_KEY, v);
-    } catch {
-      /* ignore */
-    }
-  };
-  const persistAvatarStyle = (v: AvatarStyle) => {
-    try {
-      localStorage.setItem(AVATAR_STYLE_KEY, v);
-    } catch {
-      /* ignore */
-    }
-  };
 
   const [depth, setDepth] = useState<TreeDepth>(DEFAULT_DEPTH);
   // Mobile: ẩn bớt tuỳ chọn hiển thị (hướng/xuất/chia sẻ/số đời) sau nút
@@ -1572,135 +1458,17 @@ export default function Tree() {
         onClose={() => setShowOpts(false)}
         title="Tuỳ chọn cây"
       >
-              <div className="flex flex-col gap-3">
-              <Select
-                aria-label="Kiểu hiển thị cây"
-                icon={<IconTree />}
-                value={mode}
-                onChange={(e) => setMode(e.target.value as typeof mode)}
-                className="w-full h-11 text-base"
-              >
-                <option value="2d">Cây 2D</option>
-                <option value="3d">Cây 3D</option>
-                <option value="folder">Thư mục</option>
-              </Select>
-              {mode !== "folder" && (
-              <Select
-                aria-label="Số đời hiển thị quanh người làm tâm"
-                icon={<IconLayers />}
-                value={depth}
-                onChange={(e) => setDepth(Number(e.target.value) as typeof depth)}
-                className="w-full h-11 text-base"
-              >
-                {DEPTH_OPTIONS.map((d) => (
-                  <option key={d} value={d}>
-                    {d === 0 ? "Tất cả các đời" : `Số đời: ${d}`}
-                  </option>
-                ))}
-              </Select>
-              )}
-                {mode === "2d" && isMember && (
-                  <Select
-                    aria-label="Chế độ xem"
-                    icon={<IconUsers />}
-                    value={view}
-                    onChange={(e) => setView(e.target.value as typeof view)}
-                    className="w-full h-11 text-base"
-                  >
-                    <option value="tree">Cả cây</option>
-                    <option value="lineage">Trực hệ</option>
-                  </Select>
-                )}
-                {mode === "2d" && view === "tree" && (
-                  <>
-                    <Select
-                      aria-label="Hướng cây"
-                      icon={orientation === "vertical" ? <IconLayoutVertical /> : <IconLayoutHorizontal />}
-                      value={orientation}
-                      onChange={(e) => setOrientation(e.target.value as typeof orientation)}
-                      className="w-full h-11 text-base"
-                    >
-                      <option value="vertical">Hướng dọc</option>
-                      <option value="horizontal">Hướng ngang</option>
-                    </Select>
-                    <Select
-                      aria-label="Hình nền cây"
-                      icon={<IconSparkles />}
-                      value={backdrop}
-                      onChange={(e) => setBackdrop(e.target.value as Backdrop)}
-                      className="w-full h-11 text-base"
-                    >
-                      <option value="phoenix">Nền: Phượng</option>
-                      <option value="dragon">Nền: Rồng</option>
-                      <option value="none">Tắt nền</option>
-                    </Select>
-                    <Select
-                      aria-label="Khung viền thẻ"
-                      icon={<IconAward />}
-                      value={cardFrame}
-                      onChange={(e) =>
-                        setCardFrame(e.target.value as "royal" | "simple")
-                      }
-                      className="w-full h-11 text-base"
-                    >
-                      <option value="royal">Khung: Hoàng gia</option>
-                      <option value="simple">Khung: Đơn giản</option>
-                    </Select>
-                    <Select
-                      aria-label="Kiểu thẻ"
-                      icon={<IconLayoutVertical />}
-                      value={cardLayout}
-                      onChange={(e) => setCardLayout(e.target.value as "wide" | "tall")}
-                      className="w-full h-11 text-base"
-                    >
-                      <option value="wide">Thẻ: Ngang</option>
-                      <option value="tall">Thẻ: Dọc (xem được nhiều người hơn)</option>
-                    </Select>
-                    {cardLayout === "tall" && (
-                      <Select
-                        aria-label="Ảnh trên thẻ"
-                        icon={<IconUser />}
-                        value={cardAvatar ? "on" : "off"}
-                        onChange={(e) => setCardAvatar(e.target.value === "on")}
-                        className="w-full h-11 text-base"
-                      >
-                        <option value="on">Ảnh: Hiện</option>
-                        <option value="off">Ảnh: Ẩn</option>
-                      </Select>
-                    )}
-                  </>
-                )}
-                {/* Font tên + avatar mặc định áp dụng cho cả 2D, 3D và Thư mục. */}
-                <Select
-                  aria-label="Font tên"
-                  icon={<IconPencil />}
-                  value={nameFont}
-                  onChange={(e) => {
-                    persistNameFont(e.target.value);
-                    setNameFont(e.target.value);
-                  }}
-                  className="w-full h-11 text-base"
-                >
-                  {NAME_FONTS.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      Font: {f.label}
-                    </option>
-                  ))}
-                </Select>
-                <Select
-                  aria-label="Avatar mặc định"
-                  icon={<IconUser />}
-                  value={avatarStyle}
-                  onChange={(e) => {
-                    persistAvatarStyle(e.target.value as AvatarStyle);
-                    setAvatarStyle(e.target.value as AvatarStyle);
-                  }}
-                  className="w-full h-11 text-base"
-                >
-                  <option value="royal">Avatar: Hoàng gia</option>
-                  <option value="classic">Avatar: Cổ điển</option>
-                </Select>
-              </div>
+              <TreeOptionsPanel
+                prefs={prefs}
+                mode={mode}
+                onModeChange={setMode}
+                depth={depth}
+                onDepthChange={(d) => setDepth(d as TreeDepth)}
+                view={view}
+                onViewChange={isMember ? setView : undefined}
+                orientation={orientation}
+                onOrientationChange={setOrientation}
+              />
       </FilterDrawer>
       </div>
 
@@ -1841,44 +1609,7 @@ export default function Tree() {
             {/* Nền phượng / rồng (chọn ở Tuỳ chọn): lớp trang trí sau biểu đồ, rất mờ
                 để không át chữ trong thẻ; PNG đen trong suốt nên đảo màu ở giao diện tối. */}
             <div className={isFullscreen ? "relative h-full" : "relative"}>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg bg-card"
-            >
-              {/* Chất liệu nền: hoa văn mây tản rất mờ + viền tối nhẹ (vignette) như giấy sắc / sơn mài. */}
-              <div
-                className="absolute inset-0 opacity-[0.07] dark:invert dark:opacity-[0.06]"
-                style={{
-                  backgroundImage: "url(/textures/pat-endless-clouds.svg)",
-                  backgroundSize: "56px 28px",
-                }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(ellipse at center, transparent 55%, rgba(90,50,20,0.10) 100%)",
-                }}
-              />
-              {backdrop === "phoenix" && (
-                <img
-                  src="/watermarks/phoenix.png"
-                  alt=""
-                  loading="lazy"
-                  draggable={false}
-                  className="absolute left-1/2 top-1/2 h-[80%] max-h-[560px] w-auto -translate-x-1/2 -translate-y-1/2 opacity-[0.08] dark:invert dark:opacity-[0.11]"
-                />
-              )}
-              {backdrop === "dragon" && (
-                <img
-                  src="/watermarks/dragon.png"
-                  alt=""
-                  loading="lazy"
-                  draggable={false}
-                  className="absolute left-1/2 top-1/2 w-[92%] max-w-[640px] -translate-x-1/2 -translate-y-1/2 opacity-[0.10] dark:invert dark:opacity-[0.12]"
-                />
-              )}
-            </div>
+            <TreeBackdrop backdrop={backdrop} />
             <div
               ref={containerRef}
               // The `f3` class is required — family-chart's stylesheet scopes
