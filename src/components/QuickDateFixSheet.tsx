@@ -119,8 +119,8 @@ export function QuickDateFixSheet({
   }
 
   const titleParts: string[] = [];
-  if (fixBirth) titleParts.push("năm sinh");
-  if (fixDeath) titleParts.push("năm mất");
+  if (fixBirth) titleParts.push(t`năm sinh`);
+  if (fixDeath) titleParts.push(t`năm mất`);
   const title = t`Bổ sung ${titleParts.join(" & ")}`;
 
   return (

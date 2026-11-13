@@ -79,7 +79,7 @@ export function PersonRelationsQuick({
         items={relationships.parents}
         clanId={clanId}
         photoUrls={photoUrls}
-        emptyHint="Chưa nhập cha mẹ"
+        emptyHint={t`Chưa nhập cha mẹ`}
       />
       <RelationshipGroup
         LinkComponent={PanelPersonLink}
@@ -87,7 +87,7 @@ export function PersonRelationsQuick({
         items={relationships.spouses}
         clanId={clanId}
         photoUrls={photoUrls}
-        emptyHint="Chưa có vợ / chồng."
+        emptyHint={t`Chưa có vợ / chồng.`}
       />
       <RelationshipGroup
         LinkComponent={PanelPersonLink}
@@ -95,7 +95,7 @@ export function PersonRelationsQuick({
         items={relationships.children}
         clanId={clanId}
         photoUrls={photoUrls}
-        emptyHint="Chưa có con cái."
+        emptyHint={t`Chưa có con cái.`}
       />
     </section>
   );

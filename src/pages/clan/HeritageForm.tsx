@@ -240,7 +240,7 @@ export default function HeritageForm({
           e.preventDefault();
           setFormError(null);
           if (!title.trim()) {
-            setFormError("Hãy nhập tên / tiêu đề cho mục này.");
+            setFormError(t`Hãy nhập tên / tiêu đề cho mục này.`);
             return;
           }
           save.mutate();
@@ -415,8 +415,10 @@ export default function HeritageForm({
               className="leading-relaxed"
             />
             <p className="text-sm text-muted-foreground">
-              Sau khi lưu, bạn có thể <strong>{t`thêm ảnh`}</strong> và{" "}
-              <strong>{t`ghi âm kể chuyện`}</strong> ở trang chi tiết.
+              <Trans>
+              Sau khi lưu, bạn có thể <strong>thêm ảnh</strong> và{" "}
+              <strong>ghi âm kể chuyện</strong> ở trang chi tiết.
+              </Trans>
             </p>
           </div>
 

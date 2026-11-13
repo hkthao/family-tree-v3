@@ -340,11 +340,13 @@ export default function CustomsForm({
       {mdOpen && (
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
           <p className="text-sm text-muted-foreground">
-            Dán <strong>{t`thân Markdown`}</strong>: <code>#</code> Tiêu đề ·
+            <Trans>
+            Dán <strong>thân Markdown</strong>: <code>#</code> Tiêu đề ·
             đoạn mở đầu là mô tả ngắn · mỗi <code>##</code> là một đoạn ·{" "}
-            <code>{t`![chú thích](https://…)`}</code> làm ảnh minh hoạ · đoạn{" "}
-            <code>{t`## Câu hỏi thường gặp`}</code> với các <code>###</code>{" "}
+            <code>![chú thích](https://…)</code> làm ảnh minh hoạ · đoạn{" "}
+            <code>## Câu hỏi thường gặp</code> với các <code>###</code>{" "}
             thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới.
+            </Trans>
           </p>
           <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-primary hover:underline">
             <IconUpload className="h-4 w-4" /> {t`Chọn file .md…`}

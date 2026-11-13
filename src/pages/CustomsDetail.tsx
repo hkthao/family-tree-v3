@@ -36,6 +36,7 @@ import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 export default function CustomsDetail() {
   const { entryId } = useParams<{ entryId: string }>();
   const isNew = entryId === "new"; // phòng khớp nhầm route
@@ -111,7 +112,7 @@ export default function CustomsDetail() {
     const url = entry
       ? `${window.location.origin}/xem/so-tay/${entry.id}`
       : window.location.href;
-    const title = entry?.title ?? "Sổ tay Văn hoá";
+    const title = entry?.title ?? t`Sổ tay Văn hoá`;
     const text = entry?.short_description ?? title;
     try {
       if (navigator.share) {
@@ -266,7 +267,9 @@ export default function CustomsDetail() {
         </h1>
         {entry.aliases.length > 0 && (
           <p className="mt-1 text-center text-base italic text-muted-foreground">
+            <Trans>
             Còn gọi: {entry.aliases.join(", ")}
+            </Trans>
           </p>
         )}
 

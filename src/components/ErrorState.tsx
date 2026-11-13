@@ -15,21 +15,21 @@ export function friendlyError(error: unknown): string {
         ? error
         : "";
   const m = raw.toLowerCase();
-  if (!raw) return "Đã có lỗi xảy ra. Vui lòng thử lại.";
+  if (!raw) return t`Đã có lỗi xảy ra. Vui lòng thử lại.`;
   if (
     m.includes("failed to fetch") ||
     m.includes("networkerror") ||
     m.includes("network request failed") ||
     m.includes("load failed")
   )
-    return "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.";
+    return t`Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.`;
   if (
     m.includes("jwt") ||
     m.includes("expired") ||
     m.includes("not authenticated") ||
     m.includes("invalid claim")
   )
-    return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+    return t`Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.`;
   if (
     m.includes("permission") ||
     m.includes("rls") ||
@@ -38,22 +38,22 @@ export function friendlyError(error: unknown): string {
     m.includes("forbidden") ||
     m.includes("403")
   )
-    return "Bạn không có quyền thực hiện thao tác này.";
+    return t`Bạn không có quyền thực hiện thao tác này.`;
   if (
     m.includes("not found") ||
     m.includes("404") ||
     m.includes("does not exist")
   )
-    return "Không tìm thấy dữ liệu — có thể đã bị xoá hoặc đổi liên kết.";
+    return t`Không tìm thấy dữ liệu — có thể đã bị xoá hoặc đổi liên kết.`;
   if (
     m.includes("duplicate") ||
     m.includes("unique") ||
     m.includes("already exists")
   )
-    return "Dữ liệu đã tồn tại (trùng lặp).";
+    return t`Dữ liệu đã tồn tại (trùng lặp).`;
   if (m.includes("timeout") || m.includes("timed out"))
-    return "Máy chủ phản hồi chậm. Vui lòng thử lại.";
-  return "Đã có lỗi xảy ra. Vui lòng thử lại.";
+    return t`Máy chủ phản hồi chậm. Vui lòng thử lại.`;
+  return t`Đã có lỗi xảy ra. Vui lòng thử lại.`;
 }
 
 interface Props {
@@ -72,7 +72,7 @@ interface Props {
  */
 export function ErrorState({
   error,
-  title = "Không tải được dữ liệu",
+  title = t`Không tải được dữ liệu`,
   onRetry,
   className,
 }: Props) {

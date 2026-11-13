@@ -38,6 +38,7 @@ import { unaccent } from "@/lib/unaccent";
 import { cn } from "@/lib/utils";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -248,7 +249,9 @@ export function AppDrawer({ open, onClose }: Props) {
         <nav className="flex-1 overflow-y-auto py-2">
           {needle && visibleSections.length === 0 && (
             <p className="px-4 py-3 text-sm text-muted-foreground">
+              <Trans>
               Không có mục nào khớp "{menuQuery}".
+              </Trans>
             </p>
           )}
           {visibleSections.map((section) => {

@@ -252,7 +252,7 @@ export default function RestingPlaceForm({
           e.preventDefault();
           setFormError(null);
           if (!locationName.trim() && !name.trim()) {
-            setFormError("Cần ít nhất tên hoặc nơi (nghĩa trang / chùa…).");
+            setFormError(t`Cần ít nhất tên hoặc nơi (nghĩa trang / chùa…).`);
             return;
           }
           save.mutate();

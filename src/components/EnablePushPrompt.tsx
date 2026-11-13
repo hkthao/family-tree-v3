@@ -101,8 +101,10 @@ export function EnablePushPrompt() {
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-medium">{t`Bật thông báo để không bỏ lỡ`}</p>
         <p className="text-muted-foreground">
-          Nhận nhắc <b>{t`giỗ`}</b>, <b>{t`sinh nhật`}</b> và sự kiện dòng họ
+          <Trans>
+          Nhận nhắc <b>giỗ</b>, <b>sinh nhật</b> và sự kiện dòng họ
           ngay trên máy.
+          </Trans>
         </p>
       </div>
       <Button size="sm" onClick={enable} disabled={setPref.isPending}>

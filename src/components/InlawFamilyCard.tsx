@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /**
  * Renders a peer person + their parents / spouses / children as a
  * compact "mini family" view, fetched via get_inlaw_peer_relatives.
@@ -51,7 +52,9 @@ export function InlawFamilyCard({
   if (error)
     return (
       <p className="text-sm text-destructive">
+        <Trans>
         Không lấy được dữ liệu — {(error as Error).message}
+        </Trans>
       </p>
     );
   if (!data) return null;
@@ -163,10 +166,10 @@ function FocalRow({
       <PersonAvatar gender={focal.gender} photoUrl={null} size={48} />
       <div className="min-w-0 flex-1">
         <p className="font-semibold">
-          {focal.masked ? "Người còn sống" : (focal.full_name ?? "—")}
+          {focal.masked ? t`Người còn sống` : (focal.full_name ?? "—")}
         </p>
         <p className="text-xs text-muted-foreground">
-          {focal.masked ? "Họ này chưa công khai" : metaLine(focal, genOffset)}
+          {focal.masked ? t`Họ này chưa công khai` : metaLine(focal, genOffset)}
         </p>
       </div>
       {!focal.masked && focal.caller_can_visit && (
@@ -238,10 +241,10 @@ function RelativeRow({
       <PersonAvatar gender={row.gender} photoUrl={null} size={28} />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium truncate">
-          {row.masked ? "Người còn sống" : (row.full_name ?? "—")}
+          {row.masked ? t`Người còn sống` : (row.full_name ?? "—")}
         </p>
         <p className="text-[11px] text-muted-foreground truncate">
-          {row.masked ? "chưa công khai" : metaLine(row, genOffset)}
+          {row.masked ? t`chưa công khai` : metaLine(row, genOffset)}
         </p>
       </div>
     </div>
@@ -258,18 +261,18 @@ function RelativeRow({
 
 function metaLine(p: InlawRelativeCard, genOffset: number): string {
   const bits: string[] = [];
-  bits.push(p.gender === "M" ? "Nam" : t`Nữ`);
+  bits.push(p.gender === "M" ? t`Nam` : t`Nữ`);
   if (p.generation !== null && p.generation !== undefined) {
     bits.push(t`Đời ${p.generation - genOffset}`);
   }
   if (p.birth_year && p.death_year) {
     bits.push(`${p.birth_year}–${p.death_year}`);
   } else if (p.birth_year) {
-    bits.push(`sinh ${p.birth_year}`);
+    bits.push(t`sinh ${p.birth_year}`);
   } else if (p.death_year) {
     bits.push(t`mất ${p.death_year}`);
   } else if (!p.is_living) {
-    bits.push("đã mất");
+    bits.push(t`đã mất`);
   }
   return bits.join(" · ");
 }

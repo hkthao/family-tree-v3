@@ -76,6 +76,7 @@ import {
 } from "@/lib/queries/heritage";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 // Giới hạn để chặn phình dung lượng storage VPS.
 const MAX_PHOTOS = 12;
 const MAX_AUDIO = 5;
@@ -497,7 +498,7 @@ export default function HeritageDetail() {
                 }
                 title={t`Dán link ảnh có sẵn trên mạng — không tốn dung lượng`}
                 onClick={() => {
-                  const u = window.prompt("Dán link ảnh (https://…):");
+                  const u = window.prompt(t`Dán link ảnh (https://…):`);
                   if (u?.trim()) addPhotoLinkM.mutate(u.trim());
                 }}
               >
@@ -570,8 +571,10 @@ export default function HeritageDetail() {
           )}
           {canEdit && overQuota && (
             <p className="text-sm text-red-600">
+              <Trans>
               Dòng họ đã dùng hết {formatBytes(HERITAGE_CLAN_QUOTA_BYTES)} — hãy
               xoá bớt ảnh/ghi âm cũ trước khi thêm.
+              </Trans>
             </p>
           )}
           {audios.length === 0 && !canEdit && (
@@ -643,9 +646,11 @@ export default function HeritageDetail() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              {t`Dán link ảnh / video / âm thanh đã đăng ở nơi khác.`}{" "}
-              <strong>{t`Không tính vào dung lượng`}</strong> của họ — dùng khi
+              <Trans>
+              Dán link ảnh / video / âm thanh đã đăng ở nơi khác.{" "}
+              <strong>Không tính vào dung lượng</strong> của họ — dùng khi
               đã đầy, hoặc muốn nhúng video YouTube.
+              </Trans>
             </p>
             <div className="flex flex-wrap gap-2">
               <Select
@@ -724,9 +729,11 @@ export default function HeritageDetail() {
                   <code>.mp3</code> trực tiếp.
                 </p>
                 <p className="text-xs">
+                  <Trans>
                   Lưu ý: link phải bắt đầu bằng <code>https://</code> và để chế
                   độ ai có link đều xem được, nếu không người trong họ sẽ không
                   mở được.
+                  </Trans>
                 </p>
               </div>
             </details>
@@ -991,7 +998,9 @@ function AudioRecorder({
     return (
       <div className="space-y-2 rounded-md border p-3">
         <p className="text-sm font-medium">
+          <Trans>
           Nghe thử trước khi lưu ({fmtDuration(rec.result.durationSec)}):
+          </Trans>
         </p>
         <audio controls src={rec.result.url} className="w-full" />
         <div className="flex gap-2">
@@ -1028,8 +1037,10 @@ function AudioRecorder({
     return (
       <div className="flex items-center gap-3 rounded-md border p-3">
         <span className="inline-flex items-center gap-2 text-base font-medium text-red-600">
+          <Trans>
           <span className="h-3 w-3 animate-pulse rounded-full bg-red-600" />
           Đang ghi… {fmtDuration(rec.seconds)} / {fmtDuration(rec.maxSeconds)}
+          </Trans>
         </span>
         <Button
           size="sm"
@@ -1056,8 +1067,10 @@ function AudioRecorder({
       </Button>
       {rec.error && <p className="text-sm text-red-600">{rec.error}</p>}
       <p className="text-sm text-muted-foreground">
+        <Trans>
         Tối đa {Math.round(HERITAGE_AUDIO_MAX_SEC / 60)} phút mỗi đoạn. Hãy kể
         tự nhiên bằng lời của bạn.
+        </Trans>
       </p>
     </div>
   );

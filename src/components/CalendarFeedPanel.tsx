@@ -24,6 +24,7 @@ import {
 } from "@/lib/queries/calendar-feeds";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /**
  * Ngăn kéo "Đăng ký lịch": đưa ngày giỗ, sinh nhật, sự kiện vào Google/Apple
  * Calendar MỘT LẦN, sau đó lịch tự cập nhật. Khác nút "Xuất lịch" (tải file một
@@ -94,10 +95,12 @@ export function CalendarFeedPanel({
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Dán link dưới đây vào ứng dụng lịch <strong>{t`một lần`}</strong>. Từ
+          <Trans>
+          Dán link dưới đây vào ứng dụng lịch <strong>một lần</strong>. Từ
           đó, khi dòng họ thêm người, sửa ngày giỗ hay tạo sự kiện mới, lịch của
           bạn tự cập nhật (làm mới mỗi vài giờ). Ngày giỗ đã được đổi từ âm lịch
           sang dương lịch.
+          </Trans>
         </p>
 
         {isLoading ? (

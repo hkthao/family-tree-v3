@@ -19,6 +19,7 @@ import {
 } from "@/lib/queries/credits";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /**
  * Lịch sử sử dụng — sổ đối soát lượt trợ lý của chính mình.
  *
@@ -39,7 +40,7 @@ import { t } from "@lingui/core/macro";
  */
 
 export default function CreditHistory() {
-  usePageTitle("Lịch sử sử dụng");
+  usePageTitle(t`Lịch sử sử dụng`);
 
   const quota = useQuery({
     queryKey: ["credit-quota"],
@@ -67,18 +68,24 @@ export default function CreditHistory() {
           <Card>
             <CardContent className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4">
               <p className="text-2xl font-semibold tabular-nums">
+                <Trans>
                 {quota.data.balance} lượt
+                </Trans>
               </p>
               <p className="text-sm text-muted-foreground">
+                <Trans>
                 còn lại · đã dùng {quota.data.usedThisMonth} lượt trong tháng
                 này
+                </Trans>
               </p>
               <p className="w-full text-sm text-muted-foreground">
+                <Trans>
                 Mỗi tháng bạn được tặng {quota.data.freeThisMonth} lượt; lượt
-                {t`tặng chưa dùng hết sẽ không cộng dồn sang tháng sau.`}{" "}
+                tặng chưa dùng hết sẽ không cộng dồn sang tháng sau.{" "}
                 <Link to="/clans" className="underline">
-                  {t`Mở trợ lý`}
+                  Mở trợ lý
                 </Link>
+                </Trans>
               </p>
             </CardContent>
           </Card>
@@ -144,7 +151,9 @@ function LedgerRow({
       {/* Số dư sau bút toán: sổ phải cộng thay người dùng, không bắt họ
           tự cộng một dãy +10 −1 −1 trong đầu. */}
       <p className="w-16 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+        <Trans>
         còn {balance}
+        </Trans>
       </p>
     </div>
   );

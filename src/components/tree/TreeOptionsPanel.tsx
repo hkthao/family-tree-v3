@@ -84,7 +84,7 @@ export function TreeOptionsPanel({
         >
           {TREE_DEPTH_OPTIONS.map((d) => (
             <option key={d} value={d}>
-              {d === 0 ? "Tất cả các đời" : t`Số đời: ${d}`}
+              {d === 0 ? t`Tất cả các đời` : t`Số đời: ${d}`}
             </option>
           ))}
         </Select>

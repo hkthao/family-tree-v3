@@ -50,6 +50,7 @@ import {
 import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
+import { Trans } from "@lingui/react/macro";
 const LAYER_UNIT: Record<MapLayer, string> = lazyMessages({
   people: msg`người`,
   graves: msg`nơi an nghỉ`,
@@ -164,7 +165,7 @@ export default function MapStats() {
             p.ward_name
               ? `${VN_WARD_KIND_LABEL[(p.ward_kind as VnWardKind) ?? "xa"] ?? ""} ${p.ward_name}`.trim()
               : null,
-            p.is_living ? null : "đã mất",
+            p.is_living ? null : t`đã mất`,
           ]
             .filter(Boolean)
             .join(" · "),
@@ -234,7 +235,7 @@ export default function MapStats() {
       layer === "graves"
         ? (gravesQ.data ?? []).map((g) => ({
             id: g.id,
-            name: g.name || g.location_name || "Nơi an nghỉ",
+            name: g.name || g.location_name || t`Nơi an nghỉ`,
             lat: g.latitude,
             lng: g.longitude,
             province: g.province_code,
@@ -381,6 +382,7 @@ export default function MapStats() {
             </p>
             {layer !== "people" && (
               <p className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <Trans>
                 <span className="inline-flex items-center gap-1">
                   <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />{" "}
                   Ghim đỏ: vị trí GPS
@@ -389,6 +391,7 @@ export default function MapStats() {
                   <span className="inline-block h-2.5 w-2.5 rounded-full bg-muted-foreground" />{" "}
                   Ghim xám: chỉ biết tỉnh
                 </span>
+                </Trans>
               </p>
             )}
           </SectionCard>
@@ -505,7 +508,9 @@ export default function MapStats() {
           <p className="py-4 text-sm text-muted-foreground">{t`Đang tải…`}</p>
         ) : listItems.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">
+            <Trans>
             Chưa có {unit} nào ở tỉnh này.
+            </Trans>
           </p>
         ) : (
           <div className="space-y-3 pb-4">

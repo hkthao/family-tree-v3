@@ -142,10 +142,12 @@ export function InviteLinkCard({
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">
+                    <Trans>
                     {ROLE_LABEL[inv.role]}{" "}
                     <span className="text-muted-foreground font-normal">
                       · {inv.use_count} lượt tham gia
                     </span>
+                    </Trans>
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
                     {urlFor(inv.token)}

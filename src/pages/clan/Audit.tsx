@@ -124,7 +124,7 @@ export default function Audit() {
               <option value="">{t`Mọi đối tượng`}</option>
               <option value="person">{t`Người`}</option>
               <option value="family">{t`Gia đình`}</option>
-              <option value="branch">Chi</option>
+              <option value="branch">{t`Chi`}</option>
               <option value="person_link">{t`Liên kết dòng họ`}</option>
             </Select>
             <Select
@@ -374,10 +374,10 @@ function formatAuditRelative(iso: string): string {
   const diffMin = Math.round(diffMs / 60_000);
   const diffHr = Math.round(diffMs / 3_600_000);
   const diffDay = Math.round(diffMs / 86_400_000);
-  if (diffMin < 1) return "vừa xong";
+  if (diffMin < 1) return t`vừa xong`;
   if (diffMin < 60) return t`${diffMin} phút`;
   if (diffHr < 24) return t`${diffHr} giờ`;
-  if (diffDay === 1) return "Hôm qua";
+  if (diffDay === 1) return t`Hôm qua`;
   if (diffDay < 7) return t`${diffDay} ngày`;
   return new Date(iso).toLocaleDateString("vi-VN", {
     day: "2-digit",

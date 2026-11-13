@@ -150,7 +150,7 @@ export function NotificationBell() {
         type="button"
         onClick={() => (open ? closePanel() : openPanel("notifications"))}
         aria-label={
-          count > 0 ? t`${count} thông báo chưa đọc` : "Thông báo hệ thống"
+          count > 0 ? t`${count} thông báo chưa đọc` : t`Thông báo hệ thống`
         }
         aria-expanded={open}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-muted"
@@ -166,7 +166,7 @@ export function NotificationBell() {
       <SidePanel
         open={open}
         title={t`Thông báo`}
-        subtitle={count > 0 ? t`${count} chưa đọc` : "Bạn đã đọc hết"}
+        subtitle={count > 0 ? t`${count} chưa đọc` : t`Bạn đã đọc hết`}
         onClose={closePanel}
       >
         <div className="flex flex-1 flex-col">
@@ -178,8 +178,8 @@ export function NotificationBell() {
             >
               {(
                 [
-                  ["all", "Tất cả"],
-                  ["unread", "Chưa đọc"],
+                  ["all", t`Tất cả`],
+                  ["unread", t`Chưa đọc`],
                 ] as const
               ).map(([v, label]) => (
                 <button

@@ -55,9 +55,11 @@ export function MyProfileCard({
         }
       >
         <p className="text-sm">
-          <strong>{t`Bạn là ai trong dòng họ?`}</strong> Chọn vị trí của mình
+          <Trans>
+          <strong>Bạn là ai trong dòng họ?</strong> Chọn vị trí của mình
           trên cây để xem đường trực hệ từ thuỷ tổ xuống bạn và tự cập nhật ảnh,
           ngày sinh, tiểu sử của mình.
+          </Trans>
         </p>
       </SectionCard>
     );
@@ -65,8 +67,8 @@ export function MyProfileCard({
 
   const me = persons?.find((p) => p.id === mine.self_person_id);
   const missing: string[] = [];
-  if (me && !me.photo_path) missing.push("ảnh đại diện");
-  if (me && !me.birth_date) missing.push("ngày sinh");
+  if (me && !me.photo_path) missing.push(t`ảnh đại diện`);
+  if (me && !me.birth_date) missing.push(t`ngày sinh`);
 
   return (
     <SectionCard
@@ -100,8 +102,10 @@ export function MyProfileCard({
       </p>
       {missing.length > 0 ? (
         <p className="mt-1 text-sm text-muted-foreground">
+          <Trans>
           Hồ sơ của bạn còn thiếu {missing.join(", ")}. Bổ sung để người thân dễ
           nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên cây.
+          </Trans>
         </p>
       ) : (
         <p className="mt-1 text-sm text-muted-foreground">

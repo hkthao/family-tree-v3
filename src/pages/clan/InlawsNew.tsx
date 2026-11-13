@@ -343,11 +343,11 @@ function PickLocalPersonStep({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {p.gender === "M" ? "Nam" : t`Nữ`}
+                    {p.gender === "M" ? t`Nam` : t`Nữ`}
                     {p.generation !== null
                       ? t` · Đời ${p.generation - genOffset}`
                       : ""}
-                    {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
+                    {p.birth_date ? t` · sinh ${p.birth_date.slice(0, 4)}` : ""}
                   </p>
                 </div>
               </button>
@@ -397,11 +397,11 @@ function ModeStep(props: ModeStepProps) {
         <div className="min-w-0 flex-1">
           <p className="font-medium">{local.full_name}</p>
           <p className="text-xs text-muted-foreground">
-            {local.gender === "M" ? "Nam" : t`Nữ`}
+            {local.gender === "M" ? t`Nam` : t`Nữ`}
             {local.generation !== null
               ? t` · Đời ${local.generation - localGenOffset}`
               : ""}
-            {local.birth_date ? ` · sinh ${local.birth_date.slice(0, 4)}` : ""}
+            {local.birth_date ? t` · sinh ${local.birth_date.slice(0, 4)}` : ""}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onBackToPick}>
@@ -676,11 +676,11 @@ function PickPeerPersonStep({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {p.gender === "M" ? "Nam" : t`Nữ`}
+                    {p.gender === "M" ? t`Nam` : t`Nữ`}
                     {p.generation !== null
                       ? t` · Đời ${p.generation - peerClan.generation_offset}`
                       : ""}
-                    {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
+                    {p.birth_date ? t` · sinh ${p.birth_date.slice(0, 4)}` : ""}
                   </p>
                 </div>
               </button>
@@ -749,12 +749,12 @@ function PeerConfirmStep({
             <div className="min-w-0">
               <p className="font-medium">{peerPerson.full_name}</p>
               <p className="text-xs text-muted-foreground">
-                {peerPerson.gender === "M" ? "Nam" : t`Nữ`}
+                {peerPerson.gender === "M" ? t`Nam` : t`Nữ`}
                 {peerPerson.generation !== null
                   ? t` · Đời ${peerPerson.generation - peerClan.generation_offset}`
                   : ""}
                 {peerPerson.birth_date
-                  ? ` · sinh ${peerPerson.birth_date.slice(0, 4)}`
+                  ? t` · sinh ${peerPerson.birth_date.slice(0, 4)}`
                   : ""}
               </p>
             </div>
@@ -874,7 +874,7 @@ function CreatedTokenView({
         />
         <p className="text-xs text-muted-foreground">
           <Trans>
-            {t`Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự huỷ.`}
+            Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự huỷ.
           </Trans>
         </p>
       </div>

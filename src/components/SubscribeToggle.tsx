@@ -40,8 +40,8 @@ export function SubscribeToggle({
   scope,
   targetId,
   icon,
-  labelOn = "Đang theo dõi",
-  labelOff = "Theo dõi",
+  labelOn = t`Đang theo dõi`,
+  labelOff = t`Theo dõi`,
   size = "sm",
   disabled,
 }: Props) {
@@ -99,7 +99,7 @@ export function SubscribeToggle({
       aria-pressed={on}
     >
       {icon}
-      {m.isPending ? "Đang lưu…" : on ? labelOn : labelOff}
+      {m.isPending ? t`Đang lưu…` : on ? labelOn : labelOff}
     </Button>
   );
 }

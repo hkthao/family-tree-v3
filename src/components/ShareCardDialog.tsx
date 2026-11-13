@@ -550,8 +550,10 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                       {!props.members.find((m) => m.id === pickedMemberId)
                         ?.photo_path && (
                         <span className="text-muted-foreground">
+                          <Trans>
                           {" "}
                           (chưa có ảnh)
+                          </Trans>
                         </span>
                       )}
                     </span>
@@ -593,8 +595,10 @@ export function ShareCardDialog(props: ShareCardDialogProps) {
                                 {m.full_name}
                                 {!m.photo_path && (
                                   <span className="text-muted-foreground">
+                                    <Trans>
                                     {" "}
                                     · chưa có ảnh
+                                    </Trans>
                                   </span>
                                 )}
                               </button>

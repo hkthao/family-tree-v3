@@ -132,7 +132,7 @@ export function InlawMiniTree({ data }: { data: InlawPeerRelatives }) {
           "--genderless-color": "var(--tree-card-genderless)",
         } as React.CSSProperties
       }
-      aria-label={t`Mini cây gia đình của ${data.peer.full_name ?? "người này"}`}
+      aria-label={t`Mini cây gia đình của ${data.peer.full_name ?? t`người này`}`}
     />
   );
 }
@@ -215,9 +215,9 @@ function entryFor(r: InlawRelativeCard, rels: F3Datum["rels"]): F3Datum {
 
 function formatLifespan(p: InlawRelativeCard): string {
   if (p.birth_year && p.death_year) return `${p.birth_year}–${p.death_year}`;
-  if (p.birth_year) return `sinh ${p.birth_year}`;
+  if (p.birth_year) return t`sinh ${p.birth_year}`;
   if (p.death_year) return t`mất ${p.death_year}`;
-  if (!p.is_living) return "đã mất";
+  if (!p.is_living) return t`đã mất`;
   return "";
 }
 

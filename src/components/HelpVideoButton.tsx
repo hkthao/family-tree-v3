@@ -20,7 +20,7 @@ import { t } from "@lingui/core/macro";
  */
 export function HelpVideoButton({
   videoId,
-  label = "Hướng dẫn",
+  label = t`Hướng dẫn`,
   size = "icon",
 }: {
   videoId: string;

@@ -38,6 +38,7 @@ import {
 import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
+import { Trans } from "@lingui/react/macro";
 const PAGE_SIZE = 15;
 
 const CATEGORY_META: Record<
@@ -383,8 +384,10 @@ export default function Todo() {
       {canEdit && selected.size > 0 && (
         <div className="sticky top-0 z-10 -mx-4 sm:mx-0 px-4 sm:px-3 py-2 bg-card border-y sm:border sm:rounded-md flex flex-wrap items-center gap-x-3 gap-y-2 shadow-sm">
           <span className="text-sm">
+            <Trans>
             Đã chọn <strong className="tabular-nums">{selected.size}</strong>{" "}
             người
+            </Trans>
           </span>
           {/* Đẩy nút sang phải khi còn chỗ; hết chỗ thì cả cụm xuống dòng
               thay vì tràn khỏi mép. */}
@@ -408,7 +411,7 @@ export default function Todo() {
             className="h-9"
           >
             <IconX className="h-4 w-4 mr-1.5" />
-            {bulkExcludeMutation.isPending ? "Đang loại…" : `Loại khỏi DS`}
+            {bulkExcludeMutation.isPending ? t`Đang loại…` : `Loại khỏi DS`}
           </Button>
         </div>
       )}
@@ -451,7 +454,9 @@ export default function Todo() {
                     </span>
                     {row.generation !== null && (
                       <span className="text-xs text-muted-foreground shrink-0">
+                        <Trans>
                         Đời {row.generation - clan.generation_offset}
+                        </Trans>
                       </span>
                     )}
                   </div>
@@ -562,9 +567,11 @@ function CompletionProgress({
         />
       </div>
       <p className="text-sm text-muted-foreground">
+        <Trans>
         <span className="tabular-nums">{complete.toLocaleString(currentIntlTag())}</span>{" "}
         / {total.toLocaleString(currentIntlTag())} người có đủ năm sinh và quan hệ
         cha/mẹ. Cùng nhau bổ sung để kéo lên 100%.
+        </Trans>
       </p>
     </section>
   );

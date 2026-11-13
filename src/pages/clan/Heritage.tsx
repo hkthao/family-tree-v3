@@ -180,8 +180,8 @@ export default function Heritage() {
             <div role="tablist" className="flex gap-2">
               {(
                 [
-                  ["clan", "Của dòng họ"],
-                  ["sotay", "Sổ tay Văn hoá"],
+                  ["clan", t`Của dòng họ`],
+                  ["sotay", t`Sổ tay Văn hoá`],
                 ] as const
               ).map(([value, label]) => (
                 <button

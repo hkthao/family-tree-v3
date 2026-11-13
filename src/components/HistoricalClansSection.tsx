@@ -127,7 +127,7 @@ export function HistoricalClansSection({
                   : "rounded-full border bg-card px-3 py-1 text-sm hover:border-primary"
               }
             >
-              {c ? HISTORICAL_CATEGORY_LABEL[c] : "Tất cả"}
+              {c ? HISTORICAL_CATEGORY_LABEL[c] : t`Tất cả`}
             </button>
           ))}
         </div>

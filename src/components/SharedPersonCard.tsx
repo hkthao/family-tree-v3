@@ -168,7 +168,7 @@ export function SharedPersonCard({
         <CardContent className="space-y-2 text-base">
           <Row
             label={t`Giới tính`}
-            value={focal.gender === "M" ? "Nam" : t`Nữ`}
+            value={focal.gender === "M" ? t`Nam` : t`Nữ`}
           />
           <Row label={t`Tên tự`} value={focal.courtesy_name ?? null} />
           <Row label={t`Tên húy`} value={focal.nickname ?? null} />
@@ -362,14 +362,14 @@ function Group({
             <div className="min-w-0 flex-1">
               <p className="font-medium truncate">{p.full_name}</p>
               <p className="text-xs text-muted-foreground truncate">
-                {p.gender === "M" ? "Nam" : t`Nữ`}
+                {p.gender === "M" ? t`Nam` : t`Nữ`}
                 {!p.is_living &&
                   ` · đã mất${
                     p.death_date ? ` ${p.death_date.slice(0, 4)}` : ""
                   }`}
                 {p.is_living &&
                   p.birth_date &&
-                  ` · sinh ${p.birth_date.slice(0, 4)}`}
+                  t` · sinh ${p.birth_date.slice(0, 4)}`}
               </p>
             </div>
           </li>

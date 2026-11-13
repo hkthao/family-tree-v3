@@ -205,7 +205,9 @@ export function PhotoUploadField({
       </p>
       {stats && (
         <p className="text-xs text-muted-foreground">
+          <Trans>
           Đã tải lên — {Math.round(stats.bytes / 1024)} KB.
+          </Trans>
         </p>
       )}
       {uploadM.error && (

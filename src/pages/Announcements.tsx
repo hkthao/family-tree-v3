@@ -225,7 +225,7 @@ export default function Announcements() {
                 : t`Chưa có thông báo nào`
             }
             description={
-              filtering ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : undefined
+              filtering ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.` : undefined
             }
           />
         )}

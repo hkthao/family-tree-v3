@@ -11,6 +11,7 @@ import {
   VIDEO_BY_ID,
 } from "@/lib/videoTutorials";
 
+import { Trans } from "@lingui/react/macro";
 /**
  * Empty-state card kèm video hướng dẫn — onboarding cho người mới.
  *
@@ -78,7 +79,9 @@ export function VideoEmptyState({
             </span>
           </span>
           <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 text-white text-xs tabular-nums">
+            <Trans>
             {formatDuration(tutorial.duration)} · video hướng dẫn
+            </Trans>
           </span>
         </button>
       )}

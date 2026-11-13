@@ -117,7 +117,7 @@ export default function Today() {
           focus of the page. */}
       <Section
         title={t`Hôm nay`}
-        emptyHint="Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
+        emptyHint={t`Hôm nay không có giỗ, sinh nhật hay lễ tết nào.`}
         events={todayEvents}
         clanId={clan.id}
         emphasised
@@ -126,7 +126,7 @@ export default function Today() {
       {/* Section: this week */}
       <Section
         title={t`7 ngày tới`}
-        emptyHint="Không có sự kiện nào trong tuần."
+        emptyHint={t`Không có sự kiện nào trong tuần.`}
         events={weekEvents}
         clanId={clan.id}
       />
@@ -134,7 +134,7 @@ export default function Today() {
       {/* Section: this month */}
       <Section
         title={t`30 ngày tới`}
-        emptyHint="Không có sự kiện nào trong tháng."
+        emptyHint={t`Không có sự kiện nào trong tháng.`}
         events={monthEvents}
         clanId={clan.id}
       />

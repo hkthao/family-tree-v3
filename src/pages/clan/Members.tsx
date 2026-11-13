@@ -381,7 +381,7 @@ export default function Members() {
             }}
             onRemove={async () => {
               const ok = await confirm({
-                title: t`Xoá ${panel.member.display_name ?? "thành viên"} khỏi clan?`,
+                title: t`Xoá ${panel.member.display_name ?? t`thành viên`} khỏi clan?`,
                 description: t`Tài khoản người đó vẫn tồn tại trên hệ thống, chỉ bị gỡ khỏi dòng họ này.`,
                 confirmLabel: t`Xoá`,
                 destructive: true,
@@ -428,14 +428,14 @@ function MemberRow({
       >
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">
-            {m.display_name ?? "(chưa đặt tên)"}
+            {m.display_name ?? t`(chưa đặt tên)`}
           </p>
           <p className="text-xs text-muted-foreground/80">
             Tham gia {new Date(m.created_at).toLocaleDateString("vi-VN")}
           </p>
           {m.self_person_id && (
             <p className="mt-0.5 truncate text-sm text-muted-foreground">
-              Tự xưng: {m.self_person_full_name ?? "(người đã xoá)"}
+              Tự xưng: {m.self_person_full_name ?? t`(người đã xoá)`}
             </p>
           )}
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
@@ -576,7 +576,7 @@ function MemberForm({
             disabled={isSelf}
             onChange={(e) => setRole(e.target.value as ClanRole)}
           >
-            <option value="viewer">Xem</option>
+            <option value="viewer">{t`Xem`}</option>
             <option value="editor">{t`Biên tập`}</option>
             <option value="admin">{t`Quản trị`}</option>
           </Select>
@@ -594,7 +594,7 @@ function MemberForm({
                 <Input
                   id="mem-self"
                   icon={<IconUser />}
-                  value={m.self_person_full_name ?? "(người đã xoá)"}
+                  value={m.self_person_full_name ?? t`(người đã xoá)`}
                   readOnly
                 />
               ) : (

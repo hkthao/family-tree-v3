@@ -21,10 +21,25 @@ msgstr " — đơn thân"
 msgid " — xem lại rồi Lưu."
 msgstr " — xem lại rồi Lưu."
 
-#. placeholder {0}: isAuthor ? "bạn" : post.author_id.slice(0, 8)
+#. placeholder {0}: isAuthor ? t`bạn` : post.author_id.slice(0, 8)
 #: src/pages/clan/Board.tsx
 msgid " · {0}"
 msgstr " · {0}"
+
+#. placeholder {0}: selected.size
+#: src/pages/clan/QrExport.tsx
+msgid " · {0} đã chọn"
+msgstr " · {0} đã chọn"
+
+#. placeholder {0}: info.lunar.day
+#. placeholder {1}: info.lunar.month
+#: src/components/TodayHubCard.tsx
+msgid " · Âm {0}/{1}{leap}"
+msgstr " · Âm {0}/{1}{leap}"
+
+#: src/components/ShareCardDialog.tsx
+msgid " · chưa có ảnh"
+msgstr " · chưa có ảnh"
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid " · đã đóng"
@@ -77,9 +92,34 @@ msgstr " · Đời {0}"
 msgid " · miếu hiệu {0}"
 msgstr " · miếu hiệu {0}"
 
+#. placeholder {0}: local.birth_date.slice(0, 4)
+#. placeholder {0}: p.birth_date.slice(0, 4)
+#. placeholder {0}: peerPerson.birth_date.slice(0, 4)
+#: src/components/RelationshipGroup.tsx
+#: src/components/SharedPersonCard.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/MyLineage.tsx
+#: src/pages/InlawsConfirm.tsx
+#: src/pages/InlawsConfirm.tsx
+msgid " · sinh {0}"
+msgstr " · sinh {0}"
+
+#: src/pages/clan/QrExport.tsx
+msgid " · sinh {birthYear}"
+msgstr " · sinh {birthYear}"
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid " (chỉ kéo được mảnh của bạn vào ô trống)"
 msgstr " (chỉ kéo được mảnh của bạn vào ô trống)"
+
+#: src/components/ShareCardDialog.tsx
+msgid " (chưa có ảnh)"
+msgstr " (chưa có ảnh)"
 
 #. placeholder {0}: f.child.generation - clan.generation_offset
 #: src/pages/clan/MyLineage.tsx
@@ -176,10 +216,6 @@ msgstr ", thọ {0} tuổi"
 msgid ": tải ảnh lên, bấm \"Chia sẻ\" → \"Bất kỳ ai có liên kết\", rồi copy link. (Hoặc dùng dịch vụ ảnh có link trực tiếp như imgur.com.)"
 msgstr ": tải ảnh lên, bấm \"Chia sẻ\" → \"Bất kỳ ai có liên kết\", rồi copy link. (Hoặc dùng dịch vụ ảnh có link trực tiếp như imgur.com.)"
 
-#: src/pages/CustomsForm.tsx
-msgid "![chú thích](https://…)"
-msgstr "![chú thích](https://…)"
-
 #. placeholder {0}: res.warnings.length
 #: src/components/GedcomButtons.tsx
 msgid ". Có {0} cảnh báo (xem console)."
@@ -193,6 +229,15 @@ msgstr "· Chờ duyệt"
 msgid "· Đã ẩn"
 msgstr "· Đã ẩn"
 
+#: src/pages/clan/QrExport.tsx
+msgid "· Giới hạn {MAX_PER_EXPORT} người mỗi lần"
+msgstr "· Giới hạn {MAX_PER_EXPORT} người mỗi lần"
+
+#. placeholder {0}: new Date(link.expires_at).toLocaleDateString(currentIntlTag())
+#: src/components/ShareLinksSection.tsx
+msgid "· hết hạn {0}"
+msgstr "· hết hạn {0}"
+
 #: src/lib/festivals.ts
 msgid "“Cúng quanh năm không bằng rằm tháng Giêng.”"
 msgstr "“Cúng quanh năm không bằng rằm tháng Giêng.”"
@@ -201,35 +246,63 @@ msgstr "“Cúng quanh năm không bằng rằm tháng Giêng.”"
 msgid "“Dù ai đi ngược về xuôi…” — ngày nghỉ lễ."
 msgstr "“Dù ai đi ngược về xuôi…” — ngày nghỉ lễ."
 
-#: src/components/MapOverviewCard.tsx
-msgid "\"Nơi ở hiện tại\""
-msgstr "\"Nơi ở hiện tại\""
-
 #: src/components/QuickDateFixSheet.tsx
 msgid "\"Sửa đầy đủ\""
 msgstr "\"Sửa đầy đủ\""
+
+#: src/components/HistoricalPersonSections.tsx
+#: src/components/HistoricalPersonSections.tsx
+msgid "(ẩn)"
+msgstr "(ẩn)"
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "(chia sẻ công khai) rồi dán link; hoặc dùng link file"
 msgstr "(chia sẻ công khai) rồi dán link; hoặc dùng link file"
 
 #: src/pages/clan/Members.tsx
+msgid "(chưa đặt tên)"
+msgstr "(chưa đặt tên)"
+
+#: src/pages/clan/Members.tsx
 msgid "(Chưa gắn với người nào)"
 msgstr "(Chưa gắn với người nào)"
+
+#. placeholder {0}: issues.length - ISSUE_PREVIEW_CAP
+#: src/pages/clan/Import.tsx
+msgid "(còn {0} vấn đề khác — bấm <0>Tải file lỗi</0> ở trên để xem hết)"
+msgstr "(còn {0} vấn đề khác — bấm <0>Tải file lỗi</0> ở trên để xem hết)"
 
 #: src/pages/clan/People.tsx
 msgid "(không có chi)"
 msgstr "(không có chi)"
 
-#: src/pages/clan/Import.tsx
-#: src/pages/clan/Import.tsx
-msgid "(mới)"
-msgstr "(mới)"
+#: src/components/RecentActivityPanel.tsx
+msgid "(không tên)"
+msgstr "(không tên)"
+
+#: src/pages/CustomsImport.tsx
+#: src/pages/CustomsImport.tsx
+msgid "(không tiêu đề)"
+msgstr "(không tiêu đề)"
+
+#: src/pages/clan/Inlaws.tsx
+msgid "(người bên kia)"
+msgstr "(người bên kia)"
+
+#: src/pages/clan/Members.tsx
+#: src/pages/clan/Members.tsx
+msgid "(người đã xoá)"
+msgstr "(người đã xoá)"
+
+#: src/pages/clan/ContributionDetail.tsx
+msgid "(thành viên đã đăng nhập)"
+msgstr "(thành viên đã đăng nhập)"
 
 #: src/components/ContributionDiffView.tsx
 msgid "(tiểu sử hiện tại đang trống)"
 msgstr "(tiểu sử hiện tại đang trống)"
 
+#: src/components/ContributionDiffView.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/Merge.tsx
 msgid "(trống)"
@@ -248,12 +321,15 @@ msgstr "(tuỳ chọn)"
 msgid "). Dán vào đây."
 msgstr "). Dán vào đây."
 
-#. placeholder {0}: import { t } from "@lingui/core/macro"; import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEffect, useState, type ReactNode } from "react"; import { Link, useNavigate } from "react-router-dom"; import { AppHeader } from "@/components/AppHeader"; import { QrSignInButton } from "@/components/QrSignInButton"; import { BackgroundPicker } from "@/components/BackgroundPicker"; import { LanguageSelect } from "@/components/LanguageSwitcher"; import { ThemeToggle } from "@/components/ThemeToggle"; import { useToast } from "@/components/Toast"; import { IconBell, IconCheck, IconClock, IconLock, IconLogOut, IconMail, IconShield, IconTrash, IconUser, IconX, } from "@/components/icons"; import { PageHeader } from "@/components/PageHeader"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from "@/components/ui/card"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { useAiEnabled } from "@/hooks/useAiEnabled"; import { useAuth } from "@/hooks/useAuth"; import { usePushSubscription } from "@/hooks/usePushSubscription"; import { clearAllCache } from "@/lib/queryClient"; import { signOutAndClearCache } from "@/lib/auth-actions"; import { queryKeys } from "@/lib/queries/keys"; import { countMyBlockingClans, deleteMyAccount, getMyProfile, updateMyDisplayName, updateMyMonthlyLunarPref, updateMyWeeklyDigestPref, } from "@/lib/queries/profile"; import { sendTestPush, updateMyNotifyViaPush } from "@/lib/queries/push"; import { listMyFollowedClans, unfollowClan, type SubScope, } from "@/lib/queries/subscriptions"; import { supabase } from "@/lib/supabase"; import { Trans } from "@lingui/react/macro"; import { msg } from "@lingui/core/macro"; import { lazyMessages } from "@/lib/i18n/lazy"; export default function Account() { const { user } = useAuth(); const userId = user?.id ?? ""; const aiEnabled = useAiEnabled(); const queryClient = useQueryClient(); const navigate = useNavigate(); const { data: profile } = useQuery({ queryKey: queryKeys.myProfile(userId), queryFn: () => getMyProfile(userId), enabled: !!userId, }); return ( <div className="min-h-dvh bg-background lg:pl-72"> <AppHeader /> <main className="container max-w-4xl py-6 px-4 space-y-3"> <PageHeader icon={<IconUser className="h-7 w-7" />} title={t`Tài khoản`} description={t`Email, mật khẩu, theme, QR đăng nhập sang máy khác.`} /> {profile?.is_platform_admin && ( <Card className="border-accent/40"> <CardHeader> <CardTitle className="text-accent">{t`Quản trị nền tảng`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá tài khoản, gán quyền. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <Button asChild variant="outline" className="w-full sm:w-auto"> <Link to="/admin"> <IconShield className="h-4 w-4 mr-1.5" /> {t`Mở trang quản trị`} </Link> </Button> </CardFooter> </Card> )} {aiEnabled && ( <Card> <CardHeader> <CardTitle className="text-base">{t`Lượt hỏi trợ lý`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Xem đã dùng bao nhiêu lượt, còn lại bao nhiêu. Sổ này không hiện nội dung câu hỏi — muốn đọc lại thì mở khung trò chuyện. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <Button asChild variant="outline" className="w-full sm:w-auto"> <Link to="/account/luot-dung"> <IconClock className="h-4 w-4 mr-1.5" /> {t`Lịch sử sử dụng`} </Link> </Button> </CardFooter> </Card> )} <DisplayNameCard userId={userId} current={profile?.display_name ?? null} queryClient={queryClient} /> <WeeklyDigestCard userId={userId} enabled={profile?.notify_weekly_digest ?? true} queryClient={queryClient} /> <MonthlyLunarCard userId={userId} enabled={profile?.notify_monthly_lunar ?? false} queryClient={queryClient} /> <PushNotifyCard userId={userId} enabled={profile?.notify_via_push ?? false} queryClient={queryClient} /> <FollowedClansCard userId={userId} /> <EmailCard currentEmail={user?.email ?? null} /> <PasswordCard /> <Card> <CardHeader> <CardTitle>{t`Ngôn ngữ`}</CardTitle> <CardDescription> {t`Ngôn ngữ của giao diện. Phần chưa có bản dịch sẽ hiện bằng tiếng Việt.`} </CardDescription> </CardHeader> <CardContent> <LanguageSelect /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Giao diện`}</CardTitle> <CardDescription> {t`Chế độ màu cho riêng tài khoản này trên thiết bị hiện tại.`} </CardDescription> </CardHeader> <CardContent> <ThemeToggle /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Hình nền`}</CardTitle> <CardDescription> {t`Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này.`} </CardDescription> </CardHeader> <CardContent> <BackgroundPicker /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Đăng nhập trên điện thoại`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Hiện mã QR — mở camera điện thoại, quét để đăng nhập cùng tài khoản, không phải gõ mật khẩu. Mã hiệu lực ~5 phút và chỉ dùng được một lần. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <QrSignInButton /> </CardFooter> </Card> <Card> <CardHeader> <CardTitle>{t`Đăng xuất`}</CardTitle> <CardDescription> {t`Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy).`} </CardDescription> </CardHeader> <CardFooter> <Button variant="outline" onClick={signOutAndClearCache} className="w-full sm:w-auto" > <IconLogOut className="h-4 w-4 mr-1.5" /> {t`Đăng xuất`} </Button> </CardFooter> </Card> <DeleteAccountCard userId={userId} onDeleted={async () => { await clearAllCache(); navigate("/login", { replace: true }); }} /> </main> </div> ); } // --------------------------------------------------------------------------- const SCOPE_LABEL: Record<SubScope, string> = lazyMessages({ clan: msg`cả dòng họ`, branch: "theo chi", person: msg`theo người`, }) as Record<SubScope, string>; /** * "Dòng họ đang theo dõi" — liệt kê các dòng họ user đăng ký nhận nhắc * sự kiện (sinh nhật / ngày giỗ / sự kiện), cho phép huỷ theo dõi từng họ. */ function FollowedClansCard({ userId }: { userId: string }) { const qc = useQueryClient(); const toast = useToast(); const { data: clans, isLoading } = useQuery({ queryKey: ["followed-clans", userId], queryFn: () => listMyFollowedClans(userId), enabled: !!userId, }); const unfollowM = useMutation({ mutationFn: (clanId: string) => unfollowClan(clanId, userId), onSuccess: () => { qc.invalidateQueries({ queryKey: ["followed-clans", userId] }); toast.success(t`Đã huỷ theo dõi dòng họ này`); }, onError: (e) => toast.error(t`Không huỷ được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Dòng họ đang theo dõi`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> {isLoading ? ( <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p> ) : !clans || clans.length === 0 ? ( <p className="text-sm text-muted-foreground"> <Trans> <Trans> <Trans> Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của một dòng họ và bật “Theo dõi sự kiện”. </Trans> </Trans> </Trans> </p> ) : ( <ul className="divide-y rounded-md border"> {clans.map((c) => ( <li key={c.clan_id} className="flex items-center justify-between gap-3 p-3" > <div className="min-w-0"> <Link to={`/clans/${c.clan_id}`} className="font-medium hover:underline truncate block" > {c.clan_name} </Link> <p className="text-xs text-muted-foreground"> Theo dõi: {c.scopes.map((s) => SCOPE_LABEL[s]).join(", ")} {!c.any_enabled ? t` · đang tắt` : ""} </p> </div> <Button size="sm" variant="outline" disabled={unfollowM.isPending} onClick={() => unfollowM.mutate(c.clan_id)} className="shrink-0 text-destructive hover:text-destructive" > <IconX className="h-4 w-4 mr-1" /> {t`Huỷ theo dõi`} </Button> </li> ))} </ul> )} </CardContent> </Card> ); } interface DisplayNameProps { userId: string; current: string | null; queryClient: ReturnType<typeof useQueryClient>; } function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) { const [name, setName] = useState(current ?? ""); useEffect(() => { setName(current ?? ""); }, [current]); const toast = useToast(); const m = useMutation({ mutationFn: () => updateMyDisplayName(userId, name.trim()), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); toast.success(t`Đã đổi tên hiển thị`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); const changed = name.trim() !== (current ?? "").trim(); return ( <Card> <CardHeader> <CardTitle>{t`Tên hiển thị`}</CardTitle> <CardDescription> {t`Tên hiển thị trong dòng họ và các sự kiện. Không phải email.`} </CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (changed && name.trim()) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="display-name">{t`Tên hiển thị`}</Label> <Input icon={<IconUser />} id="display-name" value={name} maxLength={100} onChange={(e) => setName(e.target.value)} /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && !changed && ( <Alert> <AlertDescription>{t`Đã lưu.`}</AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!changed || !name.trim() || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang lưu…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Lưu`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- function EmailCard({ currentEmail }: { currentEmail: string | null }) { const toast = useToast(); const [newEmail, setNewEmail] = useState(""); const m = useMutation({ mutationFn: async () => { const { error } = await supabase.auth.updateUser({ email: newEmail.trim(), }); if (error) throw new Error(error.message); }, onSuccess: () => { setNewEmail(""); toast.success(t`Đã gửi email xác nhận`, { description: t`Bấm link trong email để hoàn tất.`, }); }, onError: (e) => toast.error(t`Không đổi được email`, { description: (e as Error).message, }), }); return ( <Card> <CardHeader> <CardTitle>Email</CardTitle> <CardDescription> {t`Email hiện tại:`}{" "} <span className="font-medium">{currentEmail ?? "—"}</span>. Đổi email sẽ gửi liên kết xác nhận đến địa chỉ mới (kiểm tra Mailpit ở local). </CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (newEmail.trim()) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="new-email">{t`Email mới`}</Label> <Input icon={<IconMail />} id="new-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="ten@vidu.com" /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Đã gửi email xác nhận. Mở liên kết trong email để hoàn tất đổi địa chỉ. </Trans> </Trans> </Trans> </AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!newEmail.trim() || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang gửi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Đổi email`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- function PasswordCard() { const toast = useToast(); const [password, setPassword] = useState(""); const [confirm, setConfirm] = useState(""); const tooShort = password.length > 0 && password.length < 8; const mismatch = confirm.length > 0 && password !== confirm; const canSubmit = password.length >= 8 && password === confirm; const m = useMutation({ mutationFn: async () => { const { error } = await supabase.auth.updateUser({ password }); if (error) throw new Error(error.message); }, onSuccess: () => { setPassword(""); setConfirm(""); toast.success(t`Đã đổi mật khẩu`); }, onError: (e) => toast.error(t`Không đổi được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Mật khẩu`}</CardTitle> <CardDescription>{t`Ít nhất 8 ký tự.`}</CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (canSubmit) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="pw">{t`Mật khẩu mới`}</Label> <Input icon={<IconLock />} id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /> {tooShort && ( <p className="text-sm text-destructive">{t`Tối thiểu 8 ký tự.`}</p> )} </div> <div className="space-y-2"> <Label htmlFor="pw2">{t`Xác nhận mật khẩu mới`}</Label> <Input icon={<IconLock />} id="pw2" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" /> {mismatch && ( <p className="text-sm text-destructive">{t`Không khớp.`}</p> )} </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && ( <Alert> <AlertDescription>{t`Đã đổi mật khẩu.`}</AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!canSubmit || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang đổi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Đổi mật khẩu`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- interface DeleteProps { userId: string; onDeleted: () => Promise<void> | void; } function DeleteAccountCard({ userId, onDeleted }: DeleteProps) { const toast = useToast(); const [confirmText, setConfirmText] = useState(""); const [expanded, setExpanded] = useState(false); const { data: blocking } = useQuery({ queryKey: queryKeys.myBlockingClans(userId), queryFn: () => countMyBlockingClans(), enabled: !!userId && expanded, }); const m = useMutation({ mutationFn: () => deleteMyAccount(), onSuccess: () => { toast.success(t`Đã xoá tài khoản`); onDeleted(); }, onError: (e) => toast.error(t`Không xoá được`, { description: (e as Error).message }), }); const blockingCount = blocking ?? 0; const blocked = blockingCount > 0; const canSubmit = !blocked && confirmText === "XOA"; return ( <Card className="border-destructive/40"> <CardHeader> <CardTitle className="text-destructive">{t`Xoá tài khoản`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Hành động này không thể hoàn tác. Nếu bạn đang sở hữu dòng họ có thành viên, hãy chuyển quyền hoặc xoá dòng họ trước. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent className="space-y-4"> {expanded && ( <> {blocked && ( <Alert variant="destructive"> <AlertDescription> Bạn còn sở hữu {blockingCount} dòng họ có thành viên. Phải chuyển quyền hoặc xoá dòng họ trước khi xoá tài khoản. </AlertDescription> </Alert> )} <div className="space-y-2"> <Label htmlFor="confirm"> Gõ <code className="font-bold">XOA</code> để xác nhận </Label> <Input icon={<IconLock />} id="confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} disabled={blocked} /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription> {(m.error as Error).message} </AlertDescription> </Alert> )} </> )} </CardContent> {!expanded ? ( <CardFooter> <Button variant="outline" onClick={() => setExpanded(true)} className="w-full sm:w-auto" > <IconTrash className="h-4 w-4 mr-1.5 text-destructive" /> {t`Tôi muốn xoá tài khoản`} </Button> </CardFooter> ) : ( <CardFooter className="flex-wrap justify-end gap-3 border-t pt-4"> <Button variant="destructive" disabled={!canSubmit || m.isPending} onClick={() => m.mutate()} > {m.isPending ? ( t`Đang xoá…` ) : ( <> <IconTrash className="h-4 w-4 mr-1.5" /> {t`Xoá tài khoản vĩnh viễn`} </> )} </Button> <Button variant="outline" onClick={() => { setExpanded(false); setConfirmText(""); }} > <IconX className="h-4 w-4 mr-1.5" /> {t`Hủy`} </Button> </CardFooter> )} </Card> ); } // ─── Web Push toggle ────────────────────────────────────────────── function PushNotifyCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const push = usePushSubscription(); const [showPrePrompt, setShowPrePrompt] = useState(false); const updatePref = useMutation({ mutationFn: (next: boolean) => updateMyNotifyViaPush(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); async function handleEnable() { setShowPrePrompt(false); await push.enable(); if (push.error) return; // Only flip the DB toggle if browser-level subscribe succeeded — // otherwise the cron has no endpoint to push to. updatePref.mutate(true); } async function handleDisable() { await push.disable(); updatePref.mutate(false); } // ─── Render: branch by capability state ──────────────────────── let body: ReactNode; if (push.state === "loading") { body = ( <p className="text-sm text-muted-foreground">{t`Đang kiểm tra trình duyệt…`}</p> ); } else if (push.state === "unsupported") { body = ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Trình duyệt này không hỗ trợ thông báo đẩy. Hãy dùng Xuất lịch (.ics) ở trang Sự kiện để nhận nhắc qua lịch điện thoại quen thuộc. </Trans> </Trans> </Trans> </AlertDescription> </Alert> ); } else if (push.state === "ios-not-standalone") { body = ( <Alert> <AlertDescription> {t`Trên iOS, để nhận thông báo đẩy, cần`}{" "} <strong>{t`Thêm app vào màn hình chính`}</strong> rồi mở app từ icon đó (không phải Safari). Sau khi cài, quay lại đây để bật. </AlertDescription> </Alert> ); } else if (push.state === "denied") { body = ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây. Hoặc dùng Xuất lịch (.ics) làm thay thế. </Trans> </Trans> </Trans> </AlertDescription> </Alert> ); } else if (showPrePrompt && !enabled) { body = ( <div className="space-y-3"> <p className="text-sm"> <Trans> <Trans> <Trans> Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào. </Trans> </Trans> </Trans> </p> <div className="flex gap-2 flex-wrap"> <Button onClick={handleEnable}> <IconBell className="h-4 w-4 mr-1.5" /> {t`Cho phép thông báo`} </Button> <Button variant="outline" onClick={() => setShowPrePrompt(false)}> {t`Không bây giờ`} </Button> </div> </div> ); } else { const isOn = enabled && push.state === "subscribed"; body = ( <div className="space-y-3"> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={isOn} onChange={(e) => { if (e.target.checked) { setShowPrePrompt(true); } else { void handleDisable(); } }} disabled={updatePref.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {isOn ? t`Đang bật trên thiết bị này` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> {isOn ? t`Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại.` : t`Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt.`} </p> </div> </label> {isOn && <TestPushButton />} <p className="text-xs text-muted-foreground"> {t`Cần trợ giúp? Xem`}{" "} <Link to="/docs/web-push" className="underline underline-offset-2 hover:text-foreground" > {t`hướng dẫn thông báo đẩy`} </Link> . </p> </div> ); } return ( <Card> <CardHeader> <CardTitle>{t`Thông báo đẩy (Web Push)`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt + (trên iOS) đã cài app vào màn hình chính. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> {push.error && ( <Alert variant="destructive" className="mb-3"> <AlertDescription>{push.error}</AlertDescription> </Alert> )} {body} </CardContent> </Card> ); } // ─── Test push button — fires a one-shot notification to verify ─── function TestPushButton() { const toast = useToast(); const m = useMutation({ mutationFn: sendTestPush, onSuccess: (res) => { if (res.sent > 0) { toast.success(t`Đã gửi push test`, { description: t`${res.sent} thiết bị nhận được${res.failed > 0 ? ` · ${res.failed} thất bại` : ""}.`, }); } else { toast.error(t`Chưa nhận được`, { description: res.message === "no-subscriptions" ? t`Chưa có thiết bị nào đăng ký push trên tài khoản này.` : t`Push không gửi được — thử tắt rồi bật lại.`, }); } }, onError: (e) => toast.error(t`Lỗi khi test`, { description: (e as Error).message }), }); return ( <Button type="button" variant="outline" size="sm" onClick={() => m.mutate()} disabled={m.isPending} > <IconBell className="h-4 w-4 mr-1.5" /> {m.isPending ? t`Đang gửi…` : t`Gửi thông báo test`} </Button> ); } // ─── Bản tin tuần toggle ────────────────────────────────────────── function WeeklyDigestCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const m = useMutation({ mutationFn: (next: boolean) => updateMyWeeklyDigestPref(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Bản tin tuần`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Mỗi tuần một email (và thông báo đẩy) gộp: sự kiện 7 ngày tới, người mới thêm vào cây, và thông báo mới của dòng họ bạn. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={enabled} onChange={(e) => m.mutate(e.target.checked)} disabled={m.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {enabled ? t`Đang bật — nhận bản tin mỗi tuần` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> {t`Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng.`} </p> </div> </label> </CardContent> </Card> ); } // ─── Mùng 1 / Rằm reminder toggle ───────────────────────────────── function MonthlyLunarCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const m = useMutation({ mutationFn: (next: boolean) => updateMyMonthlyLunarPref(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Nhắc mùng 1 / rằm âm lịch`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Mỗi ngày 1 và ngày 15 âm lịch, app gửi email nhắc thắp hương. Áp dụng cho tài khoản này, không phụ thuộc dòng họ nào. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={enabled} onChange={(e) => m.mutate(e.target.checked)} disabled={m.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {enabled ? t`Đang bật — nhận email mùng 1 và rằm` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> <Trans> {t`Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để dừng.`} </Trans> </p> </div> </label> </CardContent> </Card> ); } 
-#. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { Navigate, useNavigate } from "react-router-dom"; import type { EmbeddedForm } from "@/components/panel/embedded"; import { Breadcrumb } from "@/components/Breadcrumb"; import { PageHeader } from "@/components/PageHeader"; import { IconArrowLeft, IconBuildings, IconCheck, IconCopy, IconLink, IconPlus, IconRefresh, IconScroll, IconSearch, IconUser, IconX, } from "@/components/icons"; import { PersonAvatar } from "@/components/PersonAvatar"; import { SearchInput } from "@/components/SearchInput"; import { useToast } from "@/components/Toast"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { FormActions } from "@/components/ui/form-actions"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { Textarea } from "@/components/ui/textarea"; import { useAuth } from "@/hooks/useAuth"; import { isClanAdmin, useClanContext } from "@/hooks/useClanContext"; import { listCommunityClans, type ClanSummary } from "@/lib/queries/clans"; import { SegmentedButton, SegmentedControl, } from "@/components/ui/segmented-control"; import { track } from "@/lib/analytics"; import { listPersons, type PersonRow } from "@/lib/queries/persons"; import { LINK_TYPE_HELP, LINK_TYPE_LABEL, notifyInlaw, proposeLink, proposeLinkDirect, isInlawCacheKey, type PersonLink, type PersonLinkType, } from "@/lib/queries/person-links"; import { Trans } from "@lingui/react/macro"; import { t } from "@lingui/core/macro"; /** * Propose-link page. Two modes: * * 1. Token — admin A creates a pending row with an invite_token, * shares the URL out-of-band with admin B. Works for * private clans (B is who A talks to). * 2. Direct — admin A searches the community of public clans, picks * clan B + person B directly. The row has both sides * filled, no token, and notify-inlaw emails admin B * about the new pending invite. Works only for public * clans. * * Step 1 (pick local person) is shared. Step 2 forks by mode. */ type Mode = "token" | "direct"; export default function InlawsNew({ embedded, }: { embedded?: EmbeddedForm } = {}) { const { clan } = useClanContext(); const { user } = useAuth(); const userId = user?.id ?? ""; const navigate = useNavigate(); const qc = useQueryClient(); const toast = useToast(); if (!isClanAdmin(clan)) { return <Navigate to={`/clans/${clan.id}`} replace />; } const [linkType, setLinkType] = useState<PersonLinkType>("same_person"); const [picked, setPicked] = useState<PersonRow | null>(null); const [mode, setMode] = useState<Mode>("token"); // Token-mode inputs const [hint, setHint] = useState(""); const [note, setNote] = useState(""); // Direct-mode picks const [peerClan, setPeerClan] = useState<ClanSummary | null>(null); const [peerPerson, setPeerPerson] = useState<PersonRow | null>(null); const [createdLink, setCreatedLink] = useState<PersonLink | null>(null); const tokenM = useMutation({ mutationFn: () => proposeLink({ linkType, clanAId: clan.id, personAId: picked!.id, personBNameHint: hint, note, createdBy: userId, }), onSuccess: (link) => { setCreatedLink(link); qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) }); track("inlaw_proposed", { mode: "token", type: linkType }); toast.success(t`Đã tạo mã mời`); }, onError: (e) => toast.error(t`Không tạo được`, { description: (e as Error).message }), }); const directM = useMutation({ mutationFn: () => proposeLinkDirect({ linkType, clanAId: clan.id, personAId: picked!.id, clanBId: peerClan!.id, personBId: peerPerson!.id, note, createdBy: userId, }), onSuccess: (link) => { qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) }); track("inlaw_proposed", { mode: "direct", type: linkType }); toast.success(t`Đã gửi đề nghị tới ` + (peerClan?.name ?? ""), { description: t`Bên kia sẽ nhận email và xem trong /inlaws.`, }); notifyInlaw(link.id); if (embedded) embedded.onDone(); else navigate(`/clans/${clan.id}/inlaws`); }, onError: (e) => toast.error(t`Không gửi được`, { description: (e as Error).message }), }); return ( <div className="space-y-3"> {!embedded && ( <> <Breadcrumb items={[ { label: clan.name, to: `/clans/${clan.id}` }, { label: t`Liên kết dòng họ`, to: `/clans/${clan.id}/inlaws` }, { label: t`Đề nghị mới` }, ]} /> <PageHeader icon={<IconLink className="h-7 w-7" />} title={t`Đề nghị liên kết dòng họ`} description={t`Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, hoặc họ hàng. Admin bên kia phải xác nhận.`} /> </> )} {!createdLink && !picked && ( <LinkTypeStep value={linkType} onChange={setLinkType} /> )} {createdLink ? ( <CreatedTokenView link={createdLink} onBack={() => embedded ? embedded.onDone() : navigate(`/clans/${clan.id}/inlaws`) } onAnother={() => { // Tạo thêm: về bước đầu với biểu mẫu trống. setCreatedLink(null); setPicked(null); setHint(""); setNote(""); setPeerClan(null); setPeerPerson(null); }} /> ) : !picked ? ( <PickLocalPersonStep clanId={clan.id} genOffset={clan.generation_offset} linkType={linkType} onPick={setPicked} /> ) : ( <ModeStep mode={mode} setMode={setMode} local={picked} localGenOffset={clan.generation_offset} onBackToPick={() => setPicked(null)} // token mode hint={hint} setHint={setHint} note={note} setNote={setNote} submitToken={() => tokenM.mutate()} submittingToken={tokenM.isPending} tokenError={tokenM.error as Error | null} // direct mode ownClanId={clan.id} peerClan={peerClan} setPeerClan={setPeerClan} peerPerson={peerPerson} setPeerPerson={setPeerPerson} submitDirect={() => directM.mutate()} submittingDirect={directM.isPending} directError={directM.error as Error | null} /> )} </div> ); } // ─── Step 1: pick a person from this clan ──────────────────────────── /** Bước đầu: chọn loại liên kết (thông gia / tổ tiên – hậu duệ / họ hàng). */ function LinkTypeStep({ value, onChange, }: { value: PersonLinkType; onChange: (t: PersonLinkType) => void; }) { const types: PersonLinkType[] = [ "same_person", "ancestor_of", "descendant_of", "related", ]; return ( <div className="space-y-3"> <StepHeader number={1} title={t`Loại liên kết`} /> <div role="radiogroup" aria-label={t`Loại liên kết`} className="grid grid-cols-1 gap-2 sm:grid-cols-2" > {types.map((t) => ( <button key={t} type="button" role="radio" aria-checked={value === t} onClick={() => onChange(t)} className={`rounded-lg border p-3 text-left transition-colors ${ value === t ? "border-primary bg-primary/5" : "bg-card hover:border-primary/60" }`} > <span className="block font-medium">{LINK_TYPE_LABEL[t]}</span> <span className="mt-0.5 block text-sm text-muted-foreground"> {LINK_TYPE_HELP[t]} </span> </button> ))} </div> </div> ); } const PICK_DESCRIPTION: Record<PersonLinkType, string> = { same_person: "Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của bên kia.", ancestor_of: "Chọn người trong dòng họ này là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ).", descendant_of: "Chọn người trong dòng họ này là HẬU DUỆ của một người ở dòng họ kia.", related: "Chọn người trong dòng họ này làm đầu mối liên kết; nêu rõ quan hệ ở phần ghi chú.", }; function PickLocalPersonStep({ clanId, genOffset, linkType, onPick, }: { clanId: string; genOffset: number; linkType: PersonLinkType; onPick: (p: PersonRow) => void; }) { const [search, setSearch] = useState(""); const { data, isFetching } = useQuery({ queryKey: ["inlaws-people-search", clanId, search], queryFn: () => listPersons(clanId, { page: 1, pageSize: 15, search: search.trim(), branchId: null, generation: null, sort: "name", source: "persons", }), enabled: search.trim().length > 0, staleTime: 30_000, }); const rows = data?.rows ?? []; return ( <div className="space-y-4"> <div className="space-y-3"> <StepHeader number={2} title={t`Chọn người trong dòng họ này`} description={PICK_DESCRIPTION[linkType]} /> <SearchInput label={t`Tìm theo tên`} value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t`Gõ tên đầy đủ hoặc một phần…`} /> </div> {isFetching && ( <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p> )} {search.trim() && !isFetching && rows.length === 0 && ( <div className="rounded-md border bg-card px-4 py-3 text-sm text-muted-foreground inline-flex items-start gap-2"> <IconSearch className="h-4 w-4 mt-0.5 shrink-0" /> <p>{t`Không tìm thấy ai khớp tên. Thử từ khoá ngắn hơn.`}</p> </div> )} {rows.length > 0 && ( <ul className="divide-y rounded-md border bg-background"> {rows.map((p) => ( <li key={p.id}> <button type="button" onClick={() => onPick(p)} className="w-full text-left flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40" > <PersonAvatar gender={p.gender} photoUrl={null} size={40} /> <div className="min-w-0 flex-1"> <p className="font-medium truncate">{p.full_name}</p> <p className="text-xs text-muted-foreground truncate"> {p.gender === "M" ? "Nam" : t`Nữ`} {p.generation !== null ? t` · Đời ${p.generation - genOffset}` : ""} {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""} </p> </div> </button> </li> ))} </ul> )} </div> ); } // ─── Step 2: mode + per-mode body ──────────────────────────────────── interface ModeStepProps { mode: Mode; setMode: (m: Mode) => void; local: PersonRow; localGenOffset: number; onBackToPick: () => void; // token mode hint: string; setHint: (s: string) => void; note: string; setNote: (s: string) => void; submitToken: () => void; submittingToken: boolean; tokenError: Error | null; // direct mode ownClanId: string; peerClan: ClanSummary | null; setPeerClan: (c: ClanSummary | null) => void; peerPerson: PersonRow | null; setPeerPerson: (p: PersonRow | null) => void; submitDirect: () => void; submittingDirect: boolean; directError: Error | null; } function ModeStep(props: ModeStepProps) { const { mode, setMode, local, localGenOffset, onBackToPick } = props; return ( <div className="space-y-5"> {/* Local-person summary card */} <div className="rounded-xl border bg-card shadow-sm p-3 flex items-center gap-3"> <PersonAvatar gender={local.gender} photoUrl={null} size={48} /> <div className="min-w-0 flex-1"> <p className="font-medium">{local.full_name}</p> <p className="text-xs text-muted-foreground"> {local.gender === "M" ? "Nam" : t`Nữ`} {local.generation !== null ? t` · Đời ${local.generation - localGenOffset}` : ""} {local.birth_date ? ` · sinh ${local.birth_date.slice(0, 4)}` : ""} </p> </div> <Button variant="outline" size="sm" onClick={onBackToPick}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi`} </Button> </div> {/* Step 2 header — rendered as a block heading so the inline-flex SegmentedControl below doesn't sit on the same row as the label (previous issue). */} <div className="space-y-3"> <StepHeader number={3} title={t`Cách đề nghị`} /> <SegmentedControl ariaLabel={t`Cách đề nghị`} className="w-full sm:w-auto" > <SegmentedButton active={mode === "token"} onClick={() => setMode("token")} className="flex-1 sm:flex-none" > {t`Gửi mã mời`} </SegmentedButton> <SegmentedButton active={mode === "direct"} onClick={() => setMode("direct")} className="flex-1 sm:flex-none" > {t`Tìm dòng họ công khai`} </SegmentedButton> </SegmentedControl> <p className="text-xs text-muted-foreground"> {mode === "token" ? t`Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư.` : t`Chỉ áp dụng cho clan bên kia đặt công khai. App tự email admin bên đó.`} </p> </div> {mode === "token" ? <TokenBody {...props} /> : <DirectBody {...props} />} </div> ); } // ─── Mode A: token ─────────────────────────────────────────────────── function TokenBody(props: ModeStepProps) { return ( <div className="space-y-5"> <div className="space-y-2"> <Label htmlFor="hint">{t`Người bên kia là ai (gợi ý)`}</Label> <Input id="hint" icon={<IconUser />} maxLength={200} value={props.hint} onChange={(e) => props.setHint(e.target.value)} placeholder={t`Vd: Đỗ Thị B, sinh 1975, quê Hà Nội`} /> <p className="text-xs text-muted-foreground"> {t`Tuỳ chọn. Admin bên kia thấy khi nhập mã mời.`} </p> </div> <Textarea id="note" label={t`Ghi chú`} icon={<IconScroll />} rows={3} maxLength={500} value={props.note} onChange={(e) => props.setNote(e.target.value)} placeholder={t`Tuỳ chọn. Ghi chú thêm về quan hệ.`} /> {props.tokenError && ( <Alert variant="destructive"> <AlertDescription>{props.tokenError.message}</AlertDescription> </Alert> )} <FormActions> <Button variant="outline" onClick={props.onBackToPick} disabled={props.submittingToken} > <IconX className="h-4 w-4 mr-1.5" /> {t`Huỷ`} </Button> <Button onClick={props.submitToken} disabled={props.submittingToken}> {props.submittingToken ? ( t`Đang tạo…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Tạo mã mời`} </> )} </Button> </FormActions> </div> ); } // ─── Mode B: public-discovery ──────────────────────────────────────── function DirectBody(props: ModeStepProps) { const { ownClanId, peerClan, setPeerClan, peerPerson, setPeerPerson } = props; return ( <div className="space-y-5"> {!peerClan ? ( <PickPeerClanStep ownClanId={ownClanId} onPick={setPeerClan} /> ) : !peerPerson ? ( <PickPeerPersonStep peerClan={peerClan} onPick={setPeerPerson} onBack={() => setPeerClan(null)} /> ) : ( <PeerConfirmStep peerClan={peerClan} peerPerson={peerPerson} note={props.note} setNote={props.setNote} onChangePerson={() => setPeerPerson(null)} onChangeClan={() => { setPeerPerson(null); setPeerClan(null); }} onSubmit={props.submitDirect} submitting={props.submittingDirect} error={props.directError} /> )} </div> ); } function PickPeerClanStep({ ownClanId, onPick, }: { ownClanId: string; onPick: (c: ClanSummary) => void; }) { const { user } = useAuth(); const userId = user?.id ?? ""; const [q, setQ] = useState(""); const { data, isFetching } = useQuery({ queryKey: ["inlaws-peer-clans", userId, q], queryFn: () => listCommunityClans(userId, { page: 1, pageSize: 15, search: q.trim() || undefined, }), enabled: !!userId, staleTime: 60_000, }); const rows = (data?.rows ?? []).filter((c) => c.id !== ownClanId); return ( <div className="space-y-3"> <Label>{t`Tìm dòng họ công khai`}</Label> <SearchInput label={t`Tìm theo tên dòng họ`} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t`Tên dòng họ bên kia…`} /> {isFetching && ( <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p> )} {rows.length > 0 && ( <ul className="divide-y rounded-md border bg-background"> {rows.map((c) => ( <li key={c.id}> <button type="button" onClick={() => onPick(c)} className="w-full text-left flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40" > <IconBuildings className="h-5 w-5 text-primary shrink-0" /> <div className="min-w-0 flex-1"> <p className="font-medium truncate">{c.name}</p> <p className="text-xs text-muted-foreground truncate"> {c.person_count} người {c.description ? ` · ${c.description}` : ""} </p> </div> </button> </li> ))} </ul> )} {!isFetching && rows.length === 0 && ( <p className="text-sm text-muted-foreground"> <Trans> <Trans> <Trans> Không có dòng họ công khai nào khớp. Nếu dòng họ bên kia đang đặt riêng tư, dùng tab "Gửi mã mời". </Trans> </Trans> </Trans> </p> )} </div> ); } function PickPeerPersonStep({ peerClan, onPick, onBack, }: { peerClan: ClanSummary; onPick: (p: PersonRow) => void; onBack: () => void; }) { const [q, setQ] = useState(""); const { data, isFetching } = useQuery({ queryKey: ["inlaws-peer-persons", peerClan.id, q], queryFn: () => // Non-members read through the masked view; the persons table // itself rejects them. Switch source so search works even when // the caller is just browsing a public clan. listPersons(peerClan.id, { page: 1, pageSize: 15, search: q.trim(), branchId: null, generation: null, sort: "name", source: "persons_public_safe", }), enabled: q.trim().length > 0, staleTime: 30_000, }); const rows = data?.rows ?? []; return ( <div className="space-y-3"> <div className="flex items-center justify-between"> <Label>Chọn người trong {peerClan.name}</Label> <Button variant="outline" size="sm" onClick={onBack}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi dòng họ`} </Button> </div> <SearchInput label={t`Tìm theo tên`} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t`Gõ tên đầy đủ hoặc một phần…`} /> {isFetching && ( <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p> )} {rows.length > 0 && ( <ul className="divide-y rounded-md border bg-background"> {rows.map((p) => ( <li key={p.id}> <button type="button" onClick={() => onPick(p)} className="w-full text-left flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40" > <PersonAvatar gender={p.gender} photoUrl={null} size={40} /> <div className="min-w-0 flex-1"> <p className="font-medium truncate">{p.full_name}</p> <p className="text-xs text-muted-foreground truncate"> {p.gender === "M" ? "Nam" : t`Nữ`} {p.generation !== null ? t` · Đời ${p.generation - peerClan.generation_offset}` : ""} {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""} </p> </div> </button> </li> ))} </ul> )} {q.trim() && !isFetching && rows.length === 0 && ( <p className="text-sm text-muted-foreground"> <Trans> <Trans> <Trans> Không tìm thấy ai khớp tên (lưu ý: clan công khai có thể ẩn người còn sống — chỉ liệt kê người đã mất nếu bạn không phải thành viên). </Trans> </Trans> </Trans> </p> )} </div> ); } function PeerConfirmStep({ peerClan, peerPerson, note, setNote, onChangePerson, onChangeClan, onSubmit, submitting, error, }: { peerClan: ClanSummary; peerPerson: PersonRow; note: string; setNote: (s: string) => void; onChangePerson: () => void; onChangeClan: () => void; onSubmit: () => void; submitting: boolean; error: Error | null; }) { return ( <div className="space-y-4"> <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2"> <div className="flex items-center justify-between gap-3"> <div className="inline-flex items-center gap-2 text-sm"> <IconBuildings className="h-4 w-4 text-primary" /> <span className="font-medium">{peerClan.name}</span> </div> <Button variant="outline" size="sm" onClick={onChangeClan}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi`} </Button> </div> <div className="flex items-center justify-between gap-3 pt-2 border-t"> <div className="flex items-center gap-3 min-w-0"> <PersonAvatar gender={peerPerson.gender} photoUrl={null} size={40} /> <div className="min-w-0"> <p className="font-medium">{peerPerson.full_name}</p> <p className="text-xs text-muted-foreground"> {peerPerson.gender === "M" ? "Nam" : t`Nữ`} {peerPerson.generation !== null ? t` · Đời ${peerPerson.generation - peerClan.generation_offset}` : ""} {peerPerson.birth_date ? ` · sinh ${peerPerson.birth_date.slice(0, 4)}` : ""} </p> </div> </div> <Button variant="outline" size="sm" onClick={onChangePerson}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi`} </Button> </div> </div> <Textarea id="note" label={t`Ghi chú (tuỳ chọn)`} icon={<IconScroll />} rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t`Vd: Cưới năm 2010, có 2 con.`} /> <Alert> <AlertDescription> Đề nghị sẽ ở trạng thái <strong>{t`Đang chờ`}</strong> cho tới khi admin bên kia mở <code>/clans/&lt;id&gt;/inlaws</code> → tab "Đang chờ" → Xác nhận hoặc Từ chối. </AlertDescription> </Alert> {error && ( <Alert variant="destructive"> <AlertDescription>{error.message}</AlertDescription> </Alert> )} <FormActions> <Button onClick={onSubmit} disabled={submitting}> {submitting ? ( t`Đang gửi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Gửi đề nghị`} </> )} </Button> </FormActions> </div> ); } // ─── Token created — show URL ──────────────────────────────────────── function CreatedTokenView({ link, onBack, onAnother, }: { link: PersonLink; onBack: () => void; onAnother: () => void; }) { const toast = useToast(); const [copied, setCopied] = useState(false); const confirmUrl = useMemo( () => `${window.location.origin}/inlaws/confirm/${link.invite_token}`, [link.invite_token], ); async function copy() { try { await navigator.clipboard.writeText(confirmUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); toast.success(t`Đã chép link mời`); } catch { toast.error(t`Không chép được — chọn và copy thủ công`); } } return ( <div className="space-y-4"> <Alert> <AlertDescription> <strong>{t`Đã tạo mã mời.`}</strong> Gửi link dưới cho admin của dòng họ bên kia (qua Zalo, email, tin nhắn…). Họ mở link → chọn người → liên kết được xác nhận. </AlertDescription> </Alert> <div className="space-y-2"> <Label>{t`Link mời`}</Label> <Input readOnly icon={<IconLink />} value={confirmUrl} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} action={ <Button type="button" size="icon" variant="ghost" onClick={copy} aria-label={copied ? t`Đã chép` : t`Chép link`} title={copied ? t`Đã chép` : t`Chép link`} className="h-10 w-10" > {copied ? ( <IconCheck className="h-4 w-4" /> ) : ( <IconCopy className="h-4 w-4" /> )} </Button> } /> <p className="text-xs text-muted-foreground"> <Trans> {t`Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự huỷ.`} </Trans> </p> </div> <FormActions> <Button type="button" variant="outline" onClick={onAnother}> <IconPlus className="h-4 w-4 mr-1.5" /> {t`Tạo thêm`} </Button> <Button type="button" onClick={onBack}> <IconArrowLeft className="h-4 w-4 mr-1.5" /> {t`Về danh sách liên kết`} </Button> </FormActions> </div> ); } // ─── StepHeader ───────────────────────────────────────────────────── // Block-level step heading used by Bước 1 + Bước 2. A small numeric // pill on the left + bold title; optional one-line description below. // Replaces the previous bare `<Label>Bước N: …</Label>` which rendered // inline (since radix Label is a `<label>` element) and collided with // any sibling inline-flex control on the same row. function StepHeader({ number, title, description, }: { number: number; title: string; description?: string; }) { return ( <div> <div className="flex items-baseline gap-2.5"> <span aria-hidden="true" className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold shrink-0" > {number} </span> <h3 className="text-base font-semibold">{title}</h3> </div> {description && ( <p className="text-sm text-muted-foreground mt-1.5 ml-8"> {description} </p> )} </div> ); } 
-#: src/pages/Account.tsx
-#: src/pages/clan/InlawsNew.tsx
-msgid "{0}"
-msgstr "{0}"
+#. placeholder {0}: formatDraftAge(existingDraft.savedAt)
+#: src/pages/clan/EditPerson.tsx
+msgid "{0} · Bạn đã sửa hồ sơ này nhưng chưa bấm Lưu lần trước."
+msgstr "{0} · Bạn đã sửa hồ sơ này nhưng chưa bấm Lưu lần trước."
+
+#. placeholder {0}: formatDuration(tutorial.duration)
+#: src/components/VideoEmptyState.tsx
+msgid "{0} · video hướng dẫn"
+msgstr "{0} · video hướng dẫn"
 
 #. placeholder {0}: c.name
 #: src/pages/clan/TreeCanvases.tsx
@@ -264,6 +340,18 @@ msgstr "{0} (bản sao)"
 #: src/lib/eventWhen.ts
 msgid "{0} (dương lịch)"
 msgstr "{0} (dương lịch)"
+
+#. placeholder {0}: complete.toLocaleString(currentIntlTag())
+#. placeholder {1}: total.toLocaleString(currentIntlTag())
+#: src/pages/clan/Dashboard.tsx
+msgid "{0} / {1} người đã đủ thông tin."
+msgstr "{0} / {1} người đã đủ thông tin."
+
+#. placeholder {0}: ROLE_LABEL[inv.role]
+#. placeholder {1}: inv.use_count
+#: src/components/InviteLinkCard.tsx
+msgid "{0} <0>· {1} lượt tham gia</0>"
+msgstr "{0} <0>· {1} lượt tham gia</0>"
 
 #. placeholder {0}: data.length
 #: src/components/mosaic/FamilyPhotoCard.tsx
@@ -285,6 +373,11 @@ msgstr "{0} gia đình, {1} chi."
 #: src/components/PhotoUploadField.tsx
 msgid "{0} KB sau khi nén."
 msgstr "{0} KB sau khi nén."
+
+#. placeholder {0}: quota.data.balance
+#: src/pages/CreditHistory.tsx
+msgid "{0} lượt"
+msgstr "{0} lượt"
 
 #. placeholder {0}: -offset
 #: src/components/TodayHubCard.tsx
@@ -315,9 +408,16 @@ msgid "{0} sự kiện"
 msgstr "{0} sự kiện"
 
 #. placeholder {0}: clan.person_count
+#. placeholder {0}: clan.person_count.toLocaleString("vi-VN")
 #: src/components/ClanBadges.tsx
+#: src/pages/Clans.tsx
 msgid "{0} thành viên"
 msgstr "{0} thành viên"
+
+#. placeholder {0}: clan.person_count.toLocaleString("vi-VN")
+#: src/pages/Clans.tsx
+msgid "{0} thành viên • "
+msgstr "{0} thành viên • "
 
 #. placeholder {0}: res.sent
 #. placeholder {1}: res.failed > 0 ? ` · ${res.failed} thất bại` : ""
@@ -377,6 +477,13 @@ msgstr "{0}. Dòng họ đã tạo; bạn nhập lại ở trang Thông tin & S�
 msgid "{0}/{1} âm lịch"
 msgstr "{0}/{1} âm lịch"
 
+#. placeholder {0}: mosaic.tileCount
+#. placeholder {1}: mosaic.slots
+#: src/pages/clan/Mosaics.tsx
+#: src/pages/clan/Mosaics.tsx
+msgid "{0}/{1} mảnh"
+msgstr "{0}/{1} mảnh"
+
 #: src/components/NotificationBell.tsx
 msgid "{count} chưa đọc"
 msgstr "{count} chưa đọc"
@@ -432,6 +539,10 @@ msgstr "{inviteEmail} đã là thành viên."
 msgid "{mins} phút trước"
 msgstr "{mins} phút trước"
 
+#: src/components/MapOverviewCard.tsx
+msgid "{n} người"
+msgstr "{n} người"
+
 #: src/components/TodayHubCard.tsx
 msgid "{offset} ngày nữa"
 msgstr "{offset} ngày nữa"
@@ -444,6 +555,12 @@ msgstr "{pctBirth}% thành viên đã có năm sinh"
 msgid "{relation} của người đang xem"
 msgstr "{relation} của người đang xem"
 
+#. placeholder {0}: c.layout.extras.length
+#. placeholder {1}: c.layout.links.length
+#: src/pages/clan/TreeCanvases.tsx
+msgid "{shown} người · {0} thẻ/chữ thêm · {1} đường nối"
+msgstr "{shown} người · {0} thẻ/chữ thêm · {1} đường nối"
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "{tho} tuổi"
 msgstr "{tho} tuổi"
@@ -451,10 +568,6 @@ msgstr "{tho} tuổi"
 #: src/lib/eventWhen.ts
 msgid "{when} · hằng năm"
 msgstr "{when} · hằng năm"
-
-#: src/pages/CustomsForm.tsx
-msgid "## Câu hỏi thường gặp"
-msgstr "## Câu hỏi thường gặp"
 
 #: src/components/QuickAddSheet.tsx
 msgid "← Đổi quan hệ"
@@ -511,9 +624,67 @@ msgstr "+ Thêm mới"
 msgid "+{grow} tháng này"
 msgstr "+{grow} tháng này"
 
+#. placeholder {0}: fmtDuration(rec.seconds)
+#. placeholder {1}: fmtDuration(rec.maxSeconds)
+#: src/pages/clan/HeritageDetail.tsx
+msgid "<0/>Đang ghi… {0} / {1}"
+msgstr "<0/>Đang ghi… {0} / {1}"
+
+#. placeholder {0}: complete.toLocaleString(currentIntlTag())
+#. placeholder {1}: total.toLocaleString(currentIntlTag())
+#: src/pages/clan/Todo.tsx
+msgid "<0>{0}</0> / {1} người có đủ năm sinh và quan hệ cha/mẹ. Cùng nhau bổ sung để kéo lên 100%."
+msgstr "<0>{0}</0> / {1} người có đủ năm sinh và quan hệ cha/mẹ. Cùng nhau bổ sung để kéo lên 100%."
+
+#. placeholder {0}: p.title || t`(không tiêu đề)`
+#. placeholder {1}: p.sections.length
+#. placeholder {2}: p.faq.length
+#: src/pages/CustomsImport.tsx
+msgid "<0>{0}</0><1> · {1} đoạn · {2} câu hỏi</1>"
+msgstr "<0>{0}</0><1> · {1} đoạn · {2} câu hỏi</1>"
+
+#: src/pages/clan/Kinship.tsx
+msgid "<0>{fromName}</0> gọi <1>{toName}</1> là"
+msgstr "<0>{fromName}</0> gọi <1>{toName}</1> là"
+
+#: src/pages/clan/People.tsx
+msgid "<0>{withGaps}</0> người còn thiếu thông tin · <1>Bổ sung →</1>"
+msgstr "<0>{withGaps}</0> người còn thiếu thông tin · <1>Bổ sung →</1>"
+
+#: src/pages/clan/Import.tsx
+msgid "<0>• <1>ID</1>: mã tạm bạn tự đặt (vd C1, V1…) — cha/mẹ/vợ/chồng nối theo ID này, <2>không theo tên</2>.</0><3>• <4>ID Vợ/Chồng</4> <5>(mới)</5>: nối cặp vợ chồng trực tiếp — dâu/rể chỉ cần điền ID người trong họ, không cần qua con. Mẹo: vợ 2 đặt ID thêm chữ \"b\" (vd C2 → vợ V2, vợ hai V2b).</3><6>• <7>Thuỷ tổ</7> <8>(mới)</8>: đánh \"x\" cho đời 1 (khỏi phải đánh dấu sau khi nhập). Chỉ Họ tên + Giới tính là bắt buộc.</6>"
+msgstr "<0>• <1>ID</1>: mã tạm bạn tự đặt (vd C1, V1…) — cha/mẹ/vợ/chồng nối theo ID này, <2>không theo tên</2>.</0><3>• <4>ID Vợ/Chồng</4> <5>(mới)</5>: nối cặp vợ chồng trực tiếp — dâu/rể chỉ cần điền ID người trong họ, không cần qua con. Mẹo: vợ 2 đặt ID thêm chữ \"b\" (vd C2 → vợ V2, vợ hai V2b).</3><6>• <7>Thuỷ tổ</7> <8>(mới)</8>: đánh \"x\" cho đời 1 (khỏi phải đánh dấu sau khi nhập). Chỉ Họ tên + Giới tính là bắt buộc.</6>"
+
+#: src/pages/clan/MapStats.tsx
+msgid "<0><1/> Ghim đỏ: vị trí GPS</0><2><3/> Ghim xám: chỉ biết tỉnh</2>"
+msgstr "<0><1/> Ghim đỏ: vị trí GPS</0><2><3/> Ghim xám: chỉ biết tỉnh</2>"
+
+#: src/pages/clan/GoodDays.tsx
+msgid "<0><1/>Ngày tốt (hoàng đạo)</0><2><3/>Ngày xấu (hắc đạo)</2><4><5>•</5> Ngày kiêng</4><6><7>🏮</7> Lễ, tết</6><8><9/>Có sự kiện dòng họ</8>"
+msgstr "<0><1/>Ngày tốt (hoàng đạo)</0><2><3/>Ngày xấu (hắc đạo)</2><4><5>•</5> Ngày kiêng</4><6><7>🏮</7> Lễ, tết</6><8><9/>Có sự kiện dòng họ</8>"
+
+#. placeholder {0}: formatVnd(summary.totalIn)
+#. placeholder {1}: formatVnd(summary.totalOut)
+#: src/pages/clan/ClanFund.tsx
+msgid "<0><1>Tổng thu: </1><2>{0}</2></0><3><4>Tổng chi: </4><5>{1}</5></3>"
+msgstr "<0><1>Tổng thu: </1><2>{0}</2></0><3><4>Tổng chi: </4><5>{1}</5></3>"
+
+#: src/pages/Account.tsx
+msgid "<0>Bạn còn sở hữu {blockingCount} dòng họ có thành viên. Phải chuyển quyền hoặc xoá dòng họ trước khi xoá tài khoản.</0>"
+msgstr "<0>Bạn còn sở hữu {blockingCount} dòng họ có thành viên. Phải chuyển quyền hoặc xoá dòng họ trước khi xoá tài khoản.</0>"
+
+#: src/components/MyProfileCard.tsx
+msgid "<0>Bạn là ai trong dòng họ?</0> Chọn vị trí của mình trên cây để xem đường trực hệ từ thuỷ tổ xuống bạn và tự cập nhật ảnh, ngày sinh, tiểu sử của mình."
+msgstr "<0>Bạn là ai trong dòng họ?</0> Chọn vị trí của mình trên cây để xem đường trực hệ từ thuỷ tổ xuống bạn và tự cập nhật ảnh, ngày sinh, tiểu sử của mình."
+
 #: src/pages/clan/People.tsx
 msgid "<0>Dòng họ chưa có Thuỷ tổ.</0> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ đúng."
 msgstr "<0>Dòng họ chưa có Thuỷ tổ.</0> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ đúng."
+
+#. placeholder {0}: new Date(post.event_date).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", })
+#: src/pages/clan/BoardPostDetail.tsx
+msgid "<0>Ngày diễn ra: </0><1>{0}</1>"
+msgstr "<0>Ngày diễn ra: </0><1>{0}</1>"
 
 #: src/components/CalendarDateInput.tsx
 msgid "= {solarStr} dương lịch"
@@ -526,6 +697,10 @@ msgstr "≠ xung đột"
 #: src/pages/clan/People.tsx
 msgid "♀ Nữ"
 msgstr "♀ Nữ"
+
+#: src/pages/clan/People.tsx
+msgid "♂ Nam"
+msgstr "♂ Nam"
 
 #: src/pages/clan/GoodDays.tsx
 msgid "⚱️ Tảo mộ / Chạp họ"
@@ -698,9 +873,10 @@ msgstr "90 ngày"
 msgid "Admin đã xác nhận"
 msgstr "Admin đã xác nhận"
 
+#. placeholder {0}: submitterContact || t`thông tin bạn đã ghi`
 #: src/components/ContributeDialog.tsx
-msgid "Admin sẽ liên hệ qua"
-msgstr "Admin sẽ liên hệ qua"
+msgid "Admin sẽ liên hệ qua {0} nếu cần."
+msgstr "Admin sẽ liên hệ qua {0} nếu cần."
 
 #: src/components/ContributeDialog.tsx
 msgid "Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự động sửa cây gia phả."
@@ -722,10 +898,15 @@ msgstr "AI đang soạn…"
 msgid "AI soạn theo mô tả"
 msgstr "AI soạn theo mô tả"
 
+#: src/lib/eventWhen.ts
+msgid "ÂL"
+msgstr "ÂL"
+
 #: src/components/CalendarDateInput.tsx
 msgid "Âm"
 msgstr "Âm"
 
+#: src/components/EventDetailDialog.tsx
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/GoodDays.tsx
@@ -782,6 +963,10 @@ msgstr "Ẩn mảnh"
 msgid "Ẩn menu"
 msgstr "Ẩn menu"
 
+#: src/pages/clan/PersonDetail.tsx
+msgid "ảnh"
+msgstr "ảnh"
+
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Ảnh"
@@ -792,6 +977,10 @@ msgstr "Ảnh"
 msgid "Anh chị em ({0})"
 msgstr "Anh chị em ({0})"
 
+#: src/components/MyProfileCard.tsx
+msgid "ảnh đại diện"
+msgstr "ảnh đại diện"
+
 #: src/pages/clan/EditPerson.tsx
 msgid "Ảnh đại diện"
 msgstr "Ảnh đại diện"
@@ -799,6 +988,11 @@ msgstr "Ảnh đại diện"
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Ảnh đại diện (tuỳ chọn)"
 msgstr "Ảnh đại diện (tuỳ chọn)"
+
+#: src/pages/clan/MosaicDetail.tsx
+#: src/pages/clan/Mosaics.tsx
+msgid "Ảnh đại gia đình"
+msgstr "Ảnh đại gia đình"
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Ảnh được tự cắt vuông và nén nhỏ (≈360 px, dưới 40 KB) để tiết kiệm dung lượng."
@@ -818,6 +1012,10 @@ msgstr "Ảnh gia đình"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Ảnh giữ ở nơi khác; nếu chủ link xoá ảnh thì mảnh sẽ trống."
 msgstr "Ảnh giữ ở nơi khác; nếu chủ link xoá ảnh thì mảnh sẽ trống."
+
+#: src/components/gallery/GalleryScene.tsx
+msgid "Ảnh kỷ niệm"
+msgstr "Ảnh kỷ niệm"
 
 #: src/pages/CustomsForm.tsx
 msgid "Ảnh minh hoạ (https://…, tuỳ chọn)"
@@ -896,6 +1094,10 @@ msgstr "Áp dụng:"
 msgid "App chặn nếu người đã chọn là con cháu của"
 msgstr "App chặn nếu người đã chọn là con cháu của"
 
+#: src/pages/clan/AddChild.tsx
+msgid "App gợi ý dựa trên số con đã có. Sửa nếu cần."
+msgstr "App gợi ý dựa trên số con đã có. Sửa nếu cần."
+
 #: src/pages/Contact.tsx
 msgid "App hỏng, dữ liệu sai, trang trắng…"
 msgstr "App hỏng, dữ liệu sai, trang trắng…"
@@ -949,6 +1151,8 @@ msgstr "Bài sẽ chuyển vào hàng chờ duyệt. Admin của dòng họ sẽ
 
 #: src/components/panel/PanelHost.tsx
 #: src/lib/pageTitle.ts
+#: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/BoardPostEdit.tsx
 #: src/pages/Docs.tsx
 #: src/pages/Videos.tsx
 msgid "Bài viết"
@@ -1027,6 +1231,13 @@ msgstr "Bấm nút '+' để vinh danh người đóng góp đầu tiên."
 msgid "Bấm nút Chia sẻ trong Safari → \"Thêm vào Màn hình chính\", rồi mở app từ biểu tượng để bật nhắc giỗ, sinh nhật."
 msgstr "Bấm nút Chia sẻ trong Safari → \"Thêm vào Màn hình chính\", rồi mở app từ biểu tượng để bật nhắc giỗ, sinh nhật."
 
+#: src/components/ClanPostCard.tsx
+#: src/pages/clan/Board.tsx
+#: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/BoardPostDetail.tsx
+msgid "bạn"
+msgstr "bạn"
+
 #: src/pages/clan/Members.tsx
 msgid "Bạn"
 msgstr "Bạn"
@@ -1067,6 +1278,14 @@ msgstr "Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của mộ
 msgid "Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá tài khoản, gán quyền."
 msgstr "Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá tài khoản, gán quyền."
 
+#: src/components/NotificationBell.tsx
+msgid "Bạn đã đọc hết"
+msgstr "Bạn đã đọc hết"
+
+#: src/pages/clan/MosaicDetail.tsx
+msgid "Bạn đã góp đủ {quota} mảnh."
+msgstr "Bạn đã góp đủ {quota} mảnh."
+
 #: src/pages/clan/Today.tsx
 msgid "Bạn đang xem dòng họ ở chế độ công khai."
 msgstr "Bạn đang xem dòng họ ở chế độ công khai."
@@ -1098,13 +1317,13 @@ msgstr "Bản đồ Việt Nam theo tỉnh"
 msgid "Bạn không có quyền sửa bài này."
 msgstr "Bạn không có quyền sửa bài này."
 
+#: src/components/ErrorState.tsx
+msgid "Bạn không có quyền thực hiện thao tác này."
+msgstr "Bạn không có quyền thực hiện thao tác này."
+
 #: src/components/MyProfileCard.tsx
 msgid "Bạn là"
 msgstr "Bạn là"
-
-#: src/components/MyProfileCard.tsx
-msgid "Bạn là ai trong dòng họ?"
-msgstr "Bạn là ai trong dòng họ?"
 
 #: src/pages/clan/MyLineage.tsx
 msgid "Bạn là ai trong gia phả này?"
@@ -1210,6 +1429,10 @@ msgstr "Bật để nhận thông báo đẩy. App vẫn nhắc qua email và tr
 msgid "Bật khi bạn chắc người này đúng là người trong cây."
 msgstr "Bật khi bạn chắc người này đúng là người trong cây."
 
+#: src/pages/clan/EditPerson.tsx
+msgid "Bật khi thông tin thiếu là <0>cố ý</0> hoặc không thể bổ sung (vd. thuỷ tổ không có cha mẹ, người mất tích không rõ năm sinh/mất). App sẽ không nhắc nữa."
+msgstr "Bật khi thông tin thiếu là <0>cố ý</0> hoặc không thể bổ sung (vd. thuỷ tổ không có cha mẹ, người mất tích không rõ năm sinh/mất). App sẽ không nhắc nữa."
+
 #: src/components/SubscriptionSettings.tsx
 msgid "Bật lại"
 msgstr "Bật lại"
@@ -1247,6 +1470,10 @@ msgid "bay tới xem"
 msgstr "bay tới xem"
 
 #: src/pages/clan/Relations.tsx
+msgid "Bên"
+msgstr "Bên"
+
+#: src/pages/clan/Relations.tsx
 msgid "Bên cha"
 msgstr "Bên cha"
 
@@ -1271,11 +1498,9 @@ msgid "Bên mẹ"
 msgstr "Bên mẹ"
 
 #: src/pages/clan/MyLineage.tsx
-#: src/pages/clan/MyLineage.tsx
 msgid "Bên ngoại"
 msgstr "Bên ngoại"
 
-#: src/pages/clan/MyLineage.tsx
 #: src/pages/clan/MyLineage.tsx
 msgid "Bên nội"
 msgstr "Bên nội"
@@ -1283,6 +1508,7 @@ msgstr "Bên nội"
 #: src/components/InviteLinkCard.tsx
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/Clans.tsx
 #: src/pages/JoinClan.tsx
 msgid "Biên tập"
 msgstr "Biên tập"
@@ -1376,10 +1602,6 @@ msgstr "Bỏ qua"
 msgid "Bổ sung {0}"
 msgstr "Bổ sung {0}"
 
-#: src/pages/clan/People.tsx
-msgid "Bổ sung →"
-msgstr "Bổ sung →"
-
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/pages/clan/ContributionDetail.tsx
@@ -1394,6 +1616,10 @@ msgstr "Bỏ thay đổi"
 #: src/components/SidePanel.tsx
 msgid "Bỏ thay đổi chưa lưu?"
 msgstr "Bỏ thay đổi chưa lưu?"
+
+#: src/components/BirthOrderPicker.tsx
+msgid "Bỏ trống nếu không rõ — app xếp theo năm sinh."
+msgstr "Bỏ trống nếu không rõ — app xếp theo năm sinh."
 
 #. placeholder {0}: avatar.name
 #: src/pages/clan/MosaicDetail.tsx
@@ -1542,10 +1768,6 @@ msgstr "Cài app"
 msgid "Cài app lên màn hình chính"
 msgstr "Cài app lên màn hình chính"
 
-#: src/components/ShareTreeButton.tsx
-msgid "Cài đặt"
-msgstr "Cài đặt"
-
 #: src/pages/clan/AiGenerate.tsx
 msgid "Cài đặt → GEDCOM"
 msgstr "Cài đặt → GEDCOM"
@@ -1582,6 +1804,13 @@ msgstr "Can chi (tự tính theo năm)"
 msgid "Can chi ngày {0}"
 msgstr "Can chi ngày {0}"
 
+#. placeholder {0}: info.canChi.day
+#. placeholder {1}: info.canChi.month
+#. placeholder {2}: info.canChi.year
+#: src/pages/clan/GoodDays.tsx
+msgid "Can chi: ngày {0} · tháng {1} · năm {2}"
+msgstr "Can chi: ngày {0} · tháng {1} · năm {2}"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Căn chỉnh: dồn thẻ cùng hàng, bám lưới"
 msgstr "Căn chỉnh: dồn thẻ cùng hàng, bám lưới"
@@ -1593,6 +1822,10 @@ msgstr "Cần email/sđt liên hệ hoặc ghi chú"
 #: src/components/ContributeDialog.tsx
 msgid "Cần ghi quan hệ của bạn với người này"
 msgstr "Cần ghi quan hệ của bạn với người này"
+
+#: src/pages/clan/RestingPlaceForm.tsx
+msgid "Cần ít nhất tên hoặc nơi (nghĩa trang / chùa…)."
+msgstr "Cần ít nhất tên hoặc nơi (nghĩa trang / chùa…)."
 
 #: src/pages/clan/AiGenerate.tsx
 msgid "Cần mô tả gia đình trước"
@@ -1738,6 +1971,7 @@ msgstr "Cây 3D"
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
+#: src/pages/Share.tsx
 msgid "Cây gia phả"
 msgstr "Cây gia phả"
 
@@ -1766,6 +2000,14 @@ msgstr "Cây gia phả tương tác (chỉ xem)"
 msgid "Cây sâu {doi} đời"
 msgstr "Cây sâu {doi} đời"
 
+#: src/pages/clan/TreeCanvas.tsx
+msgid "Cây tự xếp"
+msgstr "Cây tự xếp"
+
+#: src/pages/clan/Import.tsx
+msgid "Cha"
+msgstr "Cha"
+
 #: src/components/QuickAddSheet.tsx
 msgid "Cha / mẹ"
 msgstr "Cha / mẹ"
@@ -1785,17 +2027,17 @@ msgstr "Cha mẹ nuôi / thừa tự"
 msgid "Cha nuôi: "
 msgstr "Cha nuôi: "
 
-#: src/pages/clan/Import.tsx
-msgid "cha/mẹ/vợ/chồng nối theo ID này,"
-msgstr "cha/mẹ/vợ/chồng nối theo ID này,"
+#: src/pages/clan/People.tsx
+msgid "Cha:"
+msgstr "Cha:"
+
+#: src/pages/clan/PersonDetail.tsx
+msgid "cha/mẹ"
+msgstr "cha/mẹ"
 
 #: src/pages/clan/Tree.tsx
 msgid "Chạm để di chuyển / phóng to cây"
 msgstr "Chạm để di chuyển / phóng to cây"
-
-#: src/components/gallery/GalleryScene.tsx
-msgid "chạm đúp sàn"
-msgstr "chạm đúp sàn"
 
 #: src/components/gallery/GalleryScene.tsx
 msgid "Chạm sàn để đặt…"
@@ -1820,6 +2062,11 @@ msgstr "Chào bạn 👋"
 #: src/pages/clan/Dashboard.tsx
 msgid "Chào mừng"
 msgstr "Chào mừng"
+
+#. placeholder {0}: clan.name
+#: src/pages/clan/Dashboard.tsx
+msgid "Chào mừng bạn đến với dòng họ {0}! 🎉"
+msgstr "Chào mừng bạn đến với dòng họ {0}! 🎉"
 
 #: src/pages/clan/AiGenerate.tsx
 msgid "ChatGPT/Gemini/Claude, AI trả file CSV/GEDCOM, sau đó nhập qua trang"
@@ -1870,7 +2117,7 @@ msgstr "Chế độ xem"
 msgid "Chèn mốc mới bên dưới"
 msgstr "Chèn mốc mới bên dưới"
 
-#. placeholder {0}: d.year || "này"
+#. placeholder {0}: d.year || t`này`
 #: src/components/TimelineFields.tsx
 msgid "Chèn mốc mới bên dưới mốc năm {0}"
 msgstr "Chèn mốc mới bên dưới mốc năm {0}"
@@ -1908,6 +2155,11 @@ msgstr "chép link trên thanh địa chỉ (dạng"
 #: src/pages/clan/AiGenerate.tsx
 msgid "Chép prompt"
 msgstr "Chép prompt"
+
+#: src/pages/clan/Audit.tsx
+#: src/pages/clan/Import.tsx
+msgid "Chi"
+msgstr "Chi"
 
 #: src/pages/clan/BookInfo.tsx
 msgid "Chi (nhánh)"
@@ -2007,6 +2259,7 @@ msgstr "Chỉ quản trị xem được; không hiện cho người khác trong 
 msgid "Chỉ thành viên được mời xem được."
 msgstr "Chỉ thành viên được mời xem được."
 
+#: src/pages/AnnouncementDetail.tsx
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Chi tiết"
 msgstr "Chi tiết"
@@ -2108,6 +2361,11 @@ msgstr "Chọn {0}"
 msgid "Chọn ảnh"
 msgstr "Chọn ảnh"
 
+#. placeholder {0}: data.rows.length
+#: src/pages/clan/People.tsx
+msgid "Chọn cả trang này ({0})"
+msgstr "Chọn cả trang này ({0})"
+
 #: src/pages/clan/Todo.tsx
 msgid "Chọn để xử lý hàng loạt"
 msgstr "Chọn để xử lý hàng loạt"
@@ -2177,6 +2435,15 @@ msgstr "Chọn người cần xem"
 #: src/pages/clan/AddSpouse.tsx
 msgid "Chọn người đã có"
 msgstr "Chọn người đã có"
+
+#: src/pages/clan/AddParent.tsx
+#: src/pages/clan/AddSpouse.tsx
+msgid "Chọn người trong danh sách để gắn"
+msgstr "Chọn người trong danh sách để gắn"
+
+#: src/pages/clan/AddChild.tsx
+msgid "Chọn người trong danh sách để gắn làm con"
+msgstr "Chọn người trong danh sách để gắn làm con"
 
 #: src/pages/clan/InlawsNew.tsx
 #: src/pages/InlawsConfirm.tsx
@@ -2259,6 +2526,10 @@ msgstr "Chưa chọn người để gắn"
 msgid "Chưa có {unit} nào có khu vực"
 msgstr "Chưa có {unit} nào có khu vực"
 
+#: src/pages/clan/MapStats.tsx
+msgid "Chưa có {unit} nào ở tỉnh này."
+msgstr "Chưa có {unit} nào ở tỉnh này."
+
 #: src/pages/clan/Members.tsx
 msgid "Chưa có ai khác"
 msgstr "Chưa có ai khác"
@@ -2317,6 +2588,11 @@ msgstr "Chưa có cơ sở nào"
 msgid "chưa có con"
 msgstr "chưa có con"
 
+#: src/components/PersonRelationsQuick.tsx
+#: src/pages/clan/PersonDetail.tsx
+msgid "Chưa có con cái."
+msgstr "Chưa có con cái."
+
 #: src/pages/Share.tsx
 msgid "Chưa có di sản."
 msgstr "Chưa có di sản."
@@ -2338,8 +2614,8 @@ msgid "Chưa có dữ liệu để xuất"
 msgstr "Chưa có dữ liệu để xuất"
 
 #: src/components/MapOverviewCard.tsx
-msgid "Chưa có dữ liệu khu vực. Nhập"
-msgstr "Chưa có dữ liệu khu vực. Nhập"
+msgid "Chưa có dữ liệu khu vực. Nhập <0>\"Nơi ở hiện tại\"</0> cho từng người trong Danh bạ (hoặc chọn Tỉnh / Xã cho mộ phần, di sản) để con cháu hiện lên bản đồ."
+msgstr "Chưa có dữ liệu khu vực. Nhập <0>\"Nơi ở hiện tại\"</0> cho từng người trong Danh bạ (hoặc chọn Tỉnh / Xã cho mộ phần, di sản) để con cháu hiện lên bản đồ."
 
 #: src/pages/Share.tsx
 msgid "Chưa có dữ liệu trong dòng họ."
@@ -2404,6 +2680,7 @@ msgstr "Chưa có mục di sản nào"
 msgid "Chưa có mục lịch sử"
 msgstr "Chưa có mục lịch sử"
 
+#: src/components/TimelineFields.tsx
 #: src/pages/Customs.tsx
 msgid "Chưa có nội dung"
 msgstr "Chưa có nội dung"
@@ -2460,10 +2737,20 @@ msgstr "Chưa có thông báo nào."
 msgid "Chưa có thông tin tổ tiên trong gia phả."
 msgstr "Chưa có thông tin tổ tiên trong gia phả."
 
+#: src/components/PersonRelationsQuick.tsx
+#: src/pages/clan/PersonDetail.tsx
+msgid "Chưa có vợ / chồng."
+msgstr "Chưa có vợ / chồng."
+
 #: src/components/MapOverviewCard.tsx
 msgid "Chưa có."
 msgstr "Chưa có."
 
+#: src/components/InlawFamilyCard.tsx
+msgid "chưa công khai"
+msgstr "chưa công khai"
+
+#: src/components/NotificationBell.tsx
 #: src/pages/Announcements.tsx
 msgid "Chưa đọc"
 msgstr "Chưa đọc"
@@ -2489,8 +2776,20 @@ msgid "Chưa ghi lần cải táng nào (bốc mộ / sang cát)."
 msgstr "Chưa ghi lần cải táng nào (bốc mộ / sang cát)."
 
 #: src/pages/clan/Relations.tsx
+msgid "Chưa ghi nhận anh chị em của cha mẹ."
+msgstr "Chưa ghi nhận anh chị em của cha mẹ."
+
+#: src/pages/clan/Relations.tsx
+msgid "Chưa ghi nhận cha mẹ."
+msgstr "Chưa ghi nhận cha mẹ."
+
+#: src/pages/clan/Relations.tsx
 msgid "Chưa ghi nhận con cháu."
 msgstr "Chưa ghi nhận con cháu."
+
+#: src/pages/clan/Relations.tsx
+msgid "Chưa ghi nhận vợ/chồng."
+msgstr "Chưa ghi nhận vợ/chồng."
 
 #: src/pages/NewClan.tsx
 msgid "Chưa lưu được thông tin sổ gia phả"
@@ -2503,6 +2802,11 @@ msgstr "Chưa nhận được"
 #: src/pages/CustomsForm.tsx
 msgid "Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'."
 msgstr "Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'."
+
+#: src/components/PersonRelationsQuick.tsx
+#: src/pages/clan/PersonDetail.tsx
+msgid "Chưa nhập cha mẹ"
+msgstr "Chưa nhập cha mẹ"
 
 #: src/components/QuickDateFixSheet.tsx
 msgid "Chưa nhập năm nào"
@@ -2536,6 +2840,15 @@ msgstr "Chuyển sang giao diện tối"
 #: src/components/ContributionDiffView.tsx
 msgid "Có"
 msgstr "Có"
+
+#. placeholder {0}: forks.length
+#: src/pages/clan/MyLineage.tsx
+msgid "Có {0} điểm rẽ. <0>Bên nội</0> = họ cha · <1>Bên ngoại</1> = họ mẹ."
+msgstr "Có {0} điểm rẽ. <0>Bên nội</0> = họ cha · <1>Bên ngoại</1> = họ mẹ."
+
+#: src/pages/clan/Relations.tsx
+msgid "Có {summary}."
+msgstr "Có {summary}."
 
 #: src/components/CheckUpdateButton.tsx
 msgid "Có bản mới — bấm Cập nhật ở banner phía dưới"
@@ -2604,10 +2917,6 @@ msgstr "Cơ sở / nghĩa trang"
 msgid "Cơ sở / nghĩa trang (tuỳ chọn)"
 msgstr "Cơ sở / nghĩa trang (tuỳ chọn)"
 
-#: src/pages/clan/GoodDays.tsx
-msgid "Có sự kiện dòng họ"
-msgstr "Có sự kiện dòng họ"
-
 #: src/pages/clan/Dashboard.tsx
 msgid "có thể còn thiếu con"
 msgstr "có thể còn thiếu con"
@@ -2623,19 +2932,15 @@ msgstr "Có thể khôi phục từ nhật ký."
 msgid "Có vị trí"
 msgstr "Có vị trí"
 
-#: src/pages/clan/EditPerson.tsx
-msgid "cố ý"
-msgstr "cố ý"
-
-#: src/pages/clan/Dashboard.tsx
-msgid "Còn"
-msgstr "Còn"
-
 #. placeholder {0}: event.daysUntil
 #: src/components/UpcomingEventRow.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Còn {0} ngày"
 msgstr "Còn {0} ngày"
+
+#: src/pages/CreditHistory.tsx
+msgid "còn {balance}"
+msgstr "còn {balance}"
 
 #: src/components/ai/QuotaBadge.tsx
 msgid "Còn {balance} lượt"
@@ -2644,6 +2949,16 @@ msgstr "Còn {balance} lượt"
 #: src/components/ai/QuotaBadge.tsx
 msgid "Còn {balance}/{freeThisMonth} lượt"
 msgstr "Còn {balance}/{freeThisMonth} lượt"
+
+#. placeholder {0}: top.count
+#. placeholder {1}: CATEGORY_CTA[top.category]
+#: src/pages/clan/Dashboard.tsx
+msgid "Còn <0>{0}</0> người {1}"
+msgstr "Còn <0>{0}</0> người {1}"
+
+#: src/components/BirthOrderPicker.tsx
+msgid "Con cả"
+msgstr "Con cả"
 
 #: src/components/PersonRelationsQuick.tsx
 #: src/components/SharedPersonCard.tsx
@@ -2681,11 +2996,25 @@ msgstr "con gái"
 msgid "Con gái"
 msgstr "Con gái"
 
+#. placeholder {0}: entry.aliases.join(", ")
+#: src/pages/CustomsDetail.tsx
+msgid "Còn gọi: {0}"
+msgstr "Còn gọi: {0}"
+
+#. placeholder {0}: quota.data.usedThisMonth
+#: src/pages/CreditHistory.tsx
+msgid "còn lại · đã dùng {0} lượt trong tháng này"
+msgstr "còn lại · đã dùng {0} lượt trong tháng này"
+
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 msgid "Còn sống"
 msgstr "Còn sống"
+
+#: src/components/BirthOrderPicker.tsx
+msgid "Con thứ mấy"
+msgstr "Con thứ mấy"
 
 #: src/components/Tree3DView.tsx
 msgid "con trai"
@@ -2744,6 +3073,10 @@ msgstr "CSV nhập qua \"Nhập từ Excel\" (cùng 9 cột với mẫu). GEDCOM
 #: src/components/ContributeDialog.tsx
 msgid "Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
 msgstr "Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
+
+#: src/pages/clan/Heritage.tsx
+msgid "Của dòng họ"
+msgstr "Của dòng họ"
 
 #: src/pages/Clans.tsx
 msgid "Của tôi"
@@ -2874,9 +3207,23 @@ msgstr "Đã chọn — chờ admin xác nhận"
 msgid "Đã chọn {0} người khớp bộ lọc"
 msgstr "Đã chọn {0} người khớp bộ lọc"
 
+#. placeholder {0}: selected.size
+#: src/pages/clan/Todo.tsx
+msgid "Đã chọn <0>{0}</0> người"
+msgstr "Đã chọn <0>{0}</0> người"
+
+#: src/pages/CustomsImport.tsx
+msgid "Đã có bài cùng tên"
+msgstr "Đã có bài cùng tên"
+
 #: src/components/RefreshButton.tsx
 msgid "Đã có dữ liệu mới"
 msgstr "Đã có dữ liệu mới"
+
+#: src/components/ErrorState.tsx
+#: src/components/ErrorState.tsx
+msgid "Đã có lỗi xảy ra. Vui lòng thử lại."
+msgstr "Đã có lỗi xảy ra. Vui lòng thử lại."
 
 #: src/components/UpdateBanner.tsx
 msgid "Đã có phiên bản mới. Cập nhật để dùng tính năng mới nhất."
@@ -3145,6 +3492,11 @@ msgstr "Đã lưu thông tin dòng họ"
 msgid "Đã lưu."
 msgstr "Đã lưu."
 
+#: src/components/InlawFamilyCard.tsx
+#: src/components/InlawMiniTree.tsx
+#: src/pages/clan/MapStats.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/People.tsx
 #: src/pages/clan/Relations.tsx
 msgid "đã mất"
 msgstr "đã mất"
@@ -3190,6 +3542,13 @@ msgstr "Đã nhập {0} đoạn, {1} câu hỏi"
 msgid "Đã nhập {0} người, {1} gia đình"
 msgstr "Đã nhập {0} người, {1} gia đình"
 
+#. placeholder {0}: result.imported_persons
+#. placeholder {1}: result.imported_families
+#. placeholder {2}: result.imported_branches
+#: src/pages/clan/Import.tsx
+msgid "Đã nhập <0>{0}</0> người, {1} gia đình, {2} chi."
+msgstr "Đã nhập <0>{0}</0> người, {1} gia đình, {2} chi."
+
 #: src/components/GedcomButtons.tsx
 msgid "Đã nhập GEDCOM"
 msgstr "Đã nhập GEDCOM"
@@ -3214,6 +3573,11 @@ msgstr "Đã tải ảnh thiệp"
 msgid "Đã tải file lịch"
 msgstr "Đã tải file lịch"
 
+#. placeholder {0}: Math.round(stats.bytes / 1024)
+#: src/components/PhotoUploadField.tsx
+msgid "Đã tải lên — {0} KB."
+msgstr "Đã tải lên — {0} KB."
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Đã tải PDF danh thiếp"
 msgstr "Đã tải PDF danh thiếp"
@@ -3228,6 +3592,8 @@ msgid "Đã tạm tắt theo dõi"
 msgstr "Đã tạm tắt theo dõi"
 
 #. placeholder {0}: res.created.length
+#. placeholder {0}: result.created.length
+#: src/pages/CustomsImport.tsx
 #: src/pages/CustomsImport.tsx
 msgid "Đã tạo {0} bài."
 msgstr "Đã tạo {0} bài."
@@ -3420,7 +3786,7 @@ msgstr "Đá xám"
 msgid "Đã xoá"
 msgstr "Đã xoá"
 
-#. placeholder {0}: person?.full_name ?? "người này"
+#. placeholder {0}: person?.full_name ?? t`người này`
 #: src/pages/clan/PersonDetail.tsx
 msgid "Đã xoá {0}"
 msgstr "Đã xoá {0}"
@@ -3519,6 +3885,10 @@ msgstr "Đã xuất GEDCOM"
 msgid "Đã xuất PDF"
 msgstr "Đã xuất PDF"
 
+#: src/pages/CustomsForm.tsx
+msgid "Dán <0>thân Markdown</0>: <1>#</1> Tiêu đề · đoạn mở đầu là mô tả ngắn · mỗi <2>##</2> là một đoạn · <3>![chú thích](https://…)</3> làm ảnh minh hoạ · đoạn <4>## Câu hỏi thường gặp</4> với các <5>###</5> thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới."
+msgstr "Dán <0>thân Markdown</0>: <1>#</1> Tiêu đề · đoạn mở đầu là mô tả ngắn · mỗi <2>##</2> là một đoạn · <3>![chú thích](https://…)</3> làm ảnh minh hoạ · đoạn <4>## Câu hỏi thường gặp</4> với các <5>###</5> thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới."
+
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ."
 msgstr "Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ."
@@ -3527,18 +3897,35 @@ msgstr "Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông
 msgid "Dán link ảnh"
 msgstr "Dán link ảnh"
 
+#: src/components/HeritagePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
-msgid "Dán link ảnh / video / âm thanh đã đăng ở nơi khác."
-msgstr "Dán link ảnh / video / âm thanh đã đăng ở nơi khác."
+msgid "Dán link ảnh (https://…):"
+msgstr "Dán link ảnh (https://…):"
+
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Dán link ảnh / video / âm thanh đã đăng ở nơi khác. <0>Không tính vào dung lượng</0> của họ — dùng khi đã đầy, hoặc muốn nhúng video YouTube."
+msgstr "Dán link ảnh / video / âm thanh đã đăng ở nơi khác. <0>Không tính vào dung lượng</0> của họ — dùng khi đã đầy, hoặc muốn nhúng video YouTube."
 
 #: src/components/HeritagePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Dán link ảnh có sẵn trên mạng — không tốn dung lượng"
 msgstr "Dán link ảnh có sẵn trên mạng — không tốn dung lượng"
 
+#: src/components/CalendarFeedPanel.tsx
+msgid "Dán link dưới đây vào ứng dụng lịch <0>một lần</0>. Từ đó, khi dòng họ thêm người, sửa ngày giỗ hay tạo sự kiện mới, lịch của bạn tự cập nhật (làm mới mỗi vài giờ). Ngày giỗ đã được đổi từ âm lịch sang dương lịch."
+msgstr "Dán link dưới đây vào ứng dụng lịch <0>một lần</0>. Từ đó, khi dòng họ thêm người, sửa ngày giỗ hay tạo sự kiện mới, lịch của bạn tự cập nhật (làm mới mỗi vài giờ). Ngày giỗ đã được đổi từ âm lịch sang dương lịch."
+
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Dán link https://… vào đây"
 msgstr "Dán link https://… vào đây"
+
+#: src/pages/CustomsImport.tsx
+msgid "Dán nhiều bài, mỗi bài bắt đầu bằng <0>#</0> Tiêu đề. Trong mỗi bài: đoạn mở đầu là mô tả ngắn, mỗi <1>##</1> là một đoạn,<2> ![chú thích](https://…)</2> làm ảnh minh hoạ, đoạn<3> ## Câu hỏi thường gặp</3> với các <4>###</4> thành FAQ. Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong lần nhập này."
+msgstr "Dán nhiều bài, mỗi bài bắt đầu bằng <0>#</0> Tiêu đề. Trong mỗi bài: đoạn mở đầu là mô tả ngắn, mỗi <1>##</1> là một đoạn,<2> ![chú thích](https://…)</2> làm ảnh minh hoạ, đoạn<3> ## Câu hỏi thường gặp</3> với các <4>###</4> thành FAQ. Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong lần nhập này."
+
+#: src/pages/clan/AiGenerate.tsx
+msgid "Dán nội dung AI trả về vào ô bên trên trước."
+msgstr "Dán nội dung AI trả về vào ô bên trên trước."
 
 #: src/pages/clan/AiGenerate.tsx
 msgid "Dán nội dung CSV ở đây — ID,Họ tên,Giới tính,…"
@@ -3680,6 +4067,7 @@ msgstr "Đang kiểm tra trình duyệt…"
 #: src/components/CheckUpdateButton.tsx
 #: src/components/CheckUpdateButton.tsx
 #: src/components/RefreshButton.tsx
+#: src/components/RefreshButton.tsx
 msgid "Đang kiểm tra…"
 msgstr "Đang kiểm tra…"
 
@@ -3699,13 +4087,19 @@ msgstr "Đăng ký lịch — Google / Apple Calendar tự cập nhật"
 msgid "Đăng ký lịch tự cập nhật"
 msgstr "Đăng ký lịch tự cập nhật"
 
+#: src/pages/clan/Todo.tsx
+msgid "Đang loại…"
+msgstr "Đang loại…"
+
 #: src/components/BoardPostForm.tsx
 #: src/components/BookTextsSection.tsx
 #: src/components/CriticalBanner.tsx
 #: src/components/NotificationBell.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/components/SubscribeToggle.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/ui/view-edit-actions.tsx
 #: src/pages/Account.tsx
 #: src/pages/Announcements.tsx
 #: src/pages/clan/AddChild.tsx
@@ -3745,6 +4139,10 @@ msgstr "Đang nén ảnh…"
 #: src/components/PhotoUploadField.tsx
 msgid "Đang nén ảnh… {0}%"
 msgstr "Đang nén ảnh… {0}%"
+
+#: src/components/ai/MicButton.tsx
+msgid "Đang nghe…"
+msgstr "Đang nghe…"
 
 #: src/components/ai/ChatThread.tsx
 msgid "Đang nghĩ…"
@@ -3916,6 +4314,7 @@ msgstr "đang tải…"
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/Inlaws.tsx
 #: src/pages/clan/MapStats.tsx
 #: src/pages/clan/MapStats.tsx
 #: src/pages/clan/Members.tsx
@@ -3925,6 +4324,7 @@ msgstr "đang tải…"
 #: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/QrExport.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
@@ -3964,6 +4364,7 @@ msgstr "Đang tạo PDF…"
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 #: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/InlawsNew.tsx
+#: src/pages/CustomsImport.tsx
 #: src/pages/NewClan.tsx
 #: src/pages/Signup.tsx
 msgid "Đang tạo…"
@@ -3979,6 +4380,8 @@ msgstr "Đang tham gia…"
 msgid "Đang thêm…"
 msgstr "Đang thêm…"
 
+#: src/components/SubscribeToggle.tsx
+#: src/components/SubscriptionSettings.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Đang theo dõi"
 msgstr "Đang theo dõi"
@@ -4104,6 +4507,11 @@ msgstr "Danh sách thành viên với lọc, tìm kiếm và import hàng loạt
 msgid "Đặt <0>cùng một nơi ở</0> cho {0} người đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì <1>xoá</1> nơi ở của họ."
 msgstr "Đặt <0>cùng một nơi ở</0> cho {0} người đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì <1>xoá</1> nơi ở của họ."
 
+#. placeholder {0}: selected.size
+#: src/pages/clan/People.tsx
+msgid "Đặt chi cho {0} người đã chọn"
+msgstr "Đặt chi cho {0} người đã chọn"
+
 #: src/components/FilterDrawer.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đặt lại"
@@ -4153,6 +4561,11 @@ msgstr "Dâu/rể bên {0}"
 msgid "Đầy đủ {pctBirth}%"
 msgstr "Đầy đủ {pctBirth}%"
 
+#. placeholder {0}: pendingIncoming.length
+#: src/pages/clan/Inlaws.tsx
+msgid "Đề nghị đến với bạn ({0})"
+msgstr "Đề nghị đến với bạn ({0})"
+
 #: src/pages/clan/Inlaws.tsx
 msgid "Đề nghị gửi thẳng tới dòng họ công khai — chờ admin bên kia xác nhận trong /inlaws của họ."
 msgstr "Đề nghị gửi thẳng tới dòng họ công khai — chờ admin bên kia xác nhận trong /inlaws của họ."
@@ -4168,6 +4581,11 @@ msgstr "Đề nghị liên kết dòng họ"
 #: src/pages/clan/InlawsNew.tsx
 msgid "Đề nghị mới"
 msgstr "Đề nghị mới"
+
+#. placeholder {0}: pendingOutgoing.length
+#: src/pages/clan/Inlaws.tsx
+msgid "Đề nghị tôi đã gửi ({0})"
+msgstr "Đề nghị tôi đã gửi ({0})"
 
 #: src/components/UpdateBanner.tsx
 #: src/pages/clan/Dashboard.tsx
@@ -4200,6 +4618,11 @@ msgstr "Đề xuất / ý kiến"
 #: src/pages/clan/Todo.tsx
 msgid "đề xuất bổ sung."
 msgstr "đề xuất bổ sung."
+
+#. placeholder {0}: focalPerson.full_name
+#: src/components/ContributeDialog.tsx
+msgid "Đề xuất cho {0}"
+msgstr "Đề xuất cho {0}"
 
 #: src/pages/clan/Merge.tsx
 msgid "Đề xuất gộp"
@@ -4329,6 +4752,11 @@ msgstr "Độ chính xác ngày mất"
 msgid "Độ chính xác ngày sinh"
 msgstr "Độ chính xác ngày sinh"
 
+#. placeholder {0}: link.width
+#: src/components/treeCanvas/CanvasPalette.tsx
+msgid "Độ dày ({0})"
+msgstr "Độ dày ({0})"
+
 #: src/components/BackgroundPicker.tsx
 msgid "Độ mờ lớp phủ"
 msgstr "Độ mờ lớp phủ"
@@ -4388,17 +4816,19 @@ msgstr "Đổi"
 msgid "Đời"
 msgstr "Đời"
 
+#. placeholder {0}: g - clan.generation_offset
 #. placeholder {0}: g.gen
 #. placeholder {0}: gen - (data?.generation_offset ?? 0)
-#. placeholder {0}: gen - clan.generation_offset
 #: src/components/InlawFamilyCard.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/TreeFolderView.tsx
 #: src/components/TreeFolderView.tsx
 #: src/pages/clan/Merge.tsx
+#: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/clan/Todo.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
@@ -4406,6 +4836,7 @@ msgstr "Đời"
 msgid "Đời {0}"
 msgstr "Đời {0}"
 
+#: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 msgid "Đời {dispGen}"
 msgstr "Đời {dispGen}"
@@ -4500,12 +4931,14 @@ msgid "Đối tượng áp dụng"
 msgstr "Đối tượng áp dụng"
 
 #: src/components/QuickAddSheet.tsx
+#: src/components/QuickAddSheet.tsx
 msgid "Đơn thân"
 msgstr "Đơn thân"
 
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/EventDetailDialog.tsx
+#: src/components/FabGroup.tsx
 #: src/components/FabGroup.tsx
 #: src/components/FilterDrawer.tsx
 #: src/components/FilterDrawer.tsx
@@ -4604,6 +5037,11 @@ msgid "Dòng họ của tôi"
 msgstr "Dòng họ của tôi"
 
 #. placeholder {0}: formatBytes(HERITAGE_CLAN_QUOTA_BYTES)
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Dòng họ đã dùng hết {0} — hãy xoá bớt ảnh/ghi âm cũ trước khi thêm."
+msgstr "Dòng họ đã dùng hết {0} — hãy xoá bớt ảnh/ghi âm cũ trước khi thêm."
+
+#. placeholder {0}: formatBytes(HERITAGE_CLAN_QUOTA_BYTES)
 #: src/components/HeritagePhotosSection.tsx
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/HeritageDetail.tsx
@@ -4631,7 +5069,6 @@ msgstr "Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để th
 #: src/components/AuthLayout.tsx
 #: src/components/PlatformShell.tsx
 #: src/pages/Changelog.tsx
-#: src/pages/KhoeCard.tsx
 msgid "Dòng Họ Việt"
 msgstr "Dòng Họ Việt"
 
@@ -4676,6 +5113,10 @@ msgstr "Đồng ý"
 #: src/components/Fab.tsx
 msgid "Đóng: {label}"
 msgstr "Đóng: {label}"
+
+#: src/components/ErrorState.tsx
+msgid "Dữ liệu đã tồn tại (trùng lặp)."
+msgstr "Dữ liệu đã tồn tại (trùng lặp)."
 
 #. placeholder {0}: r.full_name
 #: src/components/RelationshipGroup.tsx
@@ -4873,10 +5314,6 @@ msgstr "GEDCOM 5.5.1 là chuẩn trao đổi dữ liệu phả hệ. Nhập sẽ
 msgid "GEDCOM hợp lệ. Bấm \"Tạo thành viên từ GEDCOM\" để nhập."
 msgstr "GEDCOM hợp lệ. Bấm \"Tạo thành viên từ GEDCOM\" để nhập."
 
-#: src/pages/clan/HeritageForm.tsx
-msgid "ghi âm kể chuyện"
-msgstr "ghi âm kể chuyện"
-
 #: src/pages/Share.tsx
 msgid "Ghi âm kể chuyện"
 msgstr "Ghi âm kể chuyện"
@@ -4905,6 +5342,11 @@ msgstr "Ghi chú / nguồn (tuỳ chọn)"
 #: src/pages/InlawsConfirm.tsx
 msgid "Ghi chú:"
 msgstr "Ghi chú:"
+
+#. placeholder {0}: link.note
+#: src/pages/clan/Inlaws.tsx
+msgid "Ghi chú: {0}"
+msgstr "Ghi chú: {0}"
 
 #: src/pages/clan/HonorBook.tsx
 #: src/pages/clan/HonorBook.tsx
@@ -4993,10 +5435,6 @@ msgstr "Giao diện tối"
 msgid "Giấy kẻ ô"
 msgstr "Giấy kẻ ô"
 
-#: src/components/EnablePushPrompt.tsx
-msgid "giỗ"
-msgstr "giỗ"
-
 #: src/pages/clan/Tree.tsx
 msgid "Giỗ {anniv}"
 msgstr "Giỗ {anniv}"
@@ -5026,6 +5464,11 @@ msgstr "Giỗ Tổ Hùng Vương"
 msgid "Giờ tốt (hoàng đạo):"
 msgstr "Giờ tốt (hoàng đạo):"
 
+#. placeholder {0}: goodChi.join(" · ")
+#: src/pages/clan/GoodDays.tsx
+msgid "Giờ tốt: {0}"
+msgstr "Giờ tốt: {0}"
+
 #: src/pages/clan/Events.tsx
 msgid "Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar."
 msgstr "Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar."
@@ -5047,6 +5490,8 @@ msgstr "Giới hạn"
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Giới tính"
 msgstr "Giới tính"
@@ -5074,6 +5519,10 @@ msgstr "Gỡ {0} khỏi cha mẹ của {name}?"
 msgid "Gỡ {0} khỏi con cái của {name}?"
 msgstr "Gỡ {0} khỏi con cái của {name}?"
 
+#: src/pages/Account.tsx
+msgid "Gõ <0>XOA</0> để xác nhận"
+msgstr "Gõ <0>XOA</0> để xác nhận"
+
 #: src/components/AddressPicker.tsx
 msgid "Gõ để lọc tỉnh / thành (không cần dấu)"
 msgstr "Gõ để lọc tỉnh / thành (không cần dấu)"
@@ -5081,6 +5530,10 @@ msgstr "Gõ để lọc tỉnh / thành (không cần dấu)"
 #: src/components/AddressPicker.tsx
 msgid "Gõ để lọc xã / phường (không cần dấu)"
 msgstr "Gõ để lọc xã / phường (không cần dấu)"
+
+#: src/components/FilterableSelect.tsx
+msgid "Gõ để tìm (không cần dấu)"
+msgstr "Gõ để tìm (không cần dấu)"
 
 #: src/pages/clan/Merge.tsx
 msgid "Gõ ít nhất 2 ký tự để tìm theo tên."
@@ -5151,6 +5604,11 @@ msgstr "Gợi ý — bạn chỉ cần lần lượt trả lời:"
 #: src/pages/CustomsForm.tsx
 msgid "Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực hiện · Nên / kiêng kỵ · Biến thể vùng miền."
 msgstr "Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực hiện · Nên / kiêng kỵ · Biến thể vùng miền."
+
+#. placeholder {0}: link.person_b_name_hint
+#: src/pages/clan/Inlaws.tsx
+msgid "Gợi ý người bên kia: {0}"
+msgstr "Gợi ý người bên kia: {0}"
 
 #: src/pages/InlawsConfirm.tsx
 msgid "Gợi ý: ai trong dòng họ của bạn?"
@@ -5250,6 +5708,11 @@ msgstr "Gửi lúc"
 msgid "Gửi mã mời"
 msgstr "Gửi mã mời"
 
+#. placeholder {0}: fmt(row.created_at)
+#: src/pages/MyFeedback.tsx
+msgid "Gửi ngày {0}"
+msgstr "Gửi ngày {0}"
+
 #: src/pages/Contact.tsx
 msgid "Gửi phản hồi"
 msgstr "Gửi phản hồi"
@@ -5304,6 +5767,10 @@ msgstr "Hãy là người đầu tiên đăng tin cho cả họ — bấm nút '
 #: src/components/QuickDateFixSheet.tsx
 msgid "Hãy nhập ít nhất một năm — hoặc đóng nếu chưa rõ."
 msgstr "Hãy nhập ít nhất một năm — hoặc đóng nếu chưa rõ."
+
+#: src/pages/clan/HeritageForm.tsx
+msgid "Hãy nhập tên / tiêu đề cho mục này."
+msgstr "Hãy nhập tên / tiêu đề cho mục này."
 
 #: src/components/ThemeToggle.tsx
 msgid "Hệ thống"
@@ -5412,6 +5879,10 @@ msgstr "Hình thức"
 msgid "Họ lớn, nhiều chi – trang trọng"
 msgstr "Họ lớn, nhiều chi – trang trọng"
 
+#: src/components/InlawFamilyCard.tsx
+msgid "Họ này chưa công khai"
+msgstr "Họ này chưa công khai"
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Họ này chưa công khai thông tin người sống."
 msgstr "Họ này chưa công khai thông tin người sống."
@@ -5419,6 +5890,11 @@ msgstr "Họ này chưa công khai thông tin người sống."
 #: src/pages/clan/Todo.tsx
 msgid "Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa."
 msgstr "Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa."
+
+#. placeholder {0}: missing.join(", ")
+#: src/components/MyProfileCard.tsx
+msgid "Hồ sơ của bạn còn thiếu {0}. Bổ sung để người thân dễ nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên cây."
+msgstr "Hồ sơ của bạn còn thiếu {0}. Bổ sung để người thân dễ nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên cây."
 
 #: src/components/MyProfileCard.tsx
 msgid "Hồ sơ của bạn đã đủ ảnh và ngày sinh. Có gì thay đổi (em bé mới chào đời, đổi nơi ở…) bạn cứ cập nhật, quản trị sẽ duyệt."
@@ -5437,6 +5913,10 @@ msgstr "Hồ sơ đầy đủ"
 msgid "Hồ sơ đầy đủ {percent}%, {withGaps} người còn thiếu thông tin. Mở việc cần làm"
 msgstr "Hồ sơ đầy đủ {percent}%, {withGaps} người còn thiếu thông tin. Mở việc cần làm"
 
+#: src/pages/clan/Import.tsx
+msgid "Hồ sơ mới có chỗ chưa đầy đủ — bấm <0>Việc cần làm</0> để bổ sung dần."
+msgstr "Hồ sơ mới có chỗ chưa đầy đủ — bấm <0>Việc cần làm</0> để bổ sung dần."
+
 #: src/lib/pageTitle.ts
 msgid "Hồ sơ thành viên"
 msgstr "Hồ sơ thành viên"
@@ -5453,6 +5933,10 @@ msgstr "Họ ta giờ đã hoàn thành"
 #: src/components/BookMetaFields.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/pages/clan/Import.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Họ tên"
 msgstr "Họ tên"
@@ -5539,11 +6023,18 @@ msgstr "Hôm nay"
 msgid "Hôm nay — {label}"
 msgstr "Hôm nay — {label}"
 
+#: src/pages/clan/Today.tsx
+msgid "Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
+msgstr "Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
+
 #: src/components/TodayHubCard.tsx
 msgid "Hôm nay trong dòng họ"
 msgstr "Hôm nay trong dòng họ"
 
+#: src/components/ClanPostCard.tsx
+#: src/components/RecentActivityPanel.tsx
 #: src/components/TodayHubCard.tsx
+#: src/pages/clan/Audit.tsx
 msgid "Hôm qua"
 msgstr "Hôm qua"
 
@@ -5586,6 +6077,7 @@ msgstr "Hướng cây"
 
 #: src/components/HelpButton.tsx
 #: src/components/HelpButton.tsx
+#: src/components/HelpVideoButton.tsx
 #: src/pages/Docs.tsx
 #: src/pages/Videos.tsx
 msgid "Hướng dẫn"
@@ -5698,10 +6190,6 @@ msgid "ID | Họ tên | Giới tính | Năm sinh | Năm mất | ID Cha | ID Mẹ
 msgstr "ID | Họ tên | Giới tính | Năm sinh | Năm mất | ID Cha | ID Mẹ | ID Vợ/Chồng | Thuỷ tổ | Chi | Ghi chú"
 
 #: src/pages/clan/Import.tsx
-msgid "ID Vợ/Chồng"
-msgstr "ID Vợ/Chồng"
-
-#: src/pages/clan/Import.tsx
 msgid "Import gia phả lớn từ file .xlsx hoặc .csv."
 msgstr "Import gia phả lớn từ file .xlsx hoặc .csv."
 
@@ -5759,6 +6247,14 @@ msgstr "Kéo chọn màu bất kỳ; hoặc dùng các \"tông phòng\" có sẵ
 msgid "Kéo để nhìn quanh · WASD/phím mũi tên (hoặc joystick) để đi · chạm khung để xem ảnh."
 msgstr "Kéo để nhìn quanh · WASD/phím mũi tên (hoặc joystick) để đi · chạm khung để xem ảnh."
 
+#: src/components/gallery/GalleryScene.tsx
+msgid "Kéo nhìn · <0>chạm đúp sàn</0> để đi"
+msgstr "Kéo nhìn · <0>chạm đúp sàn</0> để đi"
+
+#: src/components/gallery/GalleryScene.tsx
+msgid "Kéo nhìn · WASD/<0>nhấp đúp sàn</0> để đi · chạm khung xem"
+msgstr "Kéo nhìn · WASD/<0>nhấp đúp sàn</0> để đi · chạm khung xem"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Kéo thả thẻ thiết kế sẵn, nối đường, sửa chữ, chọn nền rồi xuất PDF khổ tuỳ ý."
 msgstr "Kéo thả thẻ thiết kế sẵn, nối đường, sửa chữ, chọn nền rồi xuất PDF khổ tuỳ ý."
@@ -5796,6 +6292,10 @@ msgstr "Khi bạn hỏi trợ lý dòng họ, mỗi câu hỏi sẽ được ghi
 msgid "Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào."
 msgstr "Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào."
 
+#: src/pages/clan/EditPerson.tsx
+msgid "Khi bật, đời = 1; trigger tự cập nhật đời cho con cháu."
+msgstr "Khi bật, đời = 1; trigger tự cập nhật đời cho con cháu."
+
 #: src/pages/Clans.tsx
 msgid "Khi có dòng họ chuyển sang chế độ công khai, họ sẽ xuất hiện ở đây."
 msgstr "Khi có dòng họ chuyển sang chế độ công khai, họ sẽ xuất hiện ở đây."
@@ -5808,6 +6308,12 @@ msgstr "Khi có người gửi đề xuất, danh sách sẽ xuất hiện ở �
 msgid "Khổ giấy"
 msgstr "Khổ giấy"
 
+#. placeholder {0}: (pageMm.w / 10).toFixed(1)
+#. placeholder {1}: (pageMm.h / 10).toFixed(1)
+#: src/pages/clan/TreeCanvas.tsx
+msgid "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
+msgstr "Khổ giấy: {0} × {1} cm (tối đa 500 cm mỗi cạnh)."
+
 #: src/pages/clan/Tree.tsx
 msgid "Khoá để cuộn trang"
 msgstr "Khoá để cuộn trang"
@@ -5815,6 +6321,10 @@ msgstr "Khoá để cuộn trang"
 #: src/pages/clan/Tree.tsx
 msgid "Khoá để cuộn trang. Chạm vào ảnh cây để mở chế độ di chuyển."
 msgstr "Khoá để cuộn trang. Chạm vào ảnh cây để mở chế độ di chuyển."
+
+#: src/pages/clan/ClanFund.tsx
+msgid "Khoản thu / chi của quỹ họ."
+msgstr "Khoản thu / chi của quỹ họ."
 
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
@@ -5842,8 +6352,8 @@ msgid "Không"
 msgstr "Không"
 
 #: src/components/PersonAddressCard.tsx
-msgid "Không bắt buộc. Nếu bạn nhập thông tin ở đây,"
-msgstr "Không bắt buộc. Nếu bạn nhập thông tin ở đây,"
+msgid "Không bắt buộc. Nếu bạn nhập thông tin ở đây, <0>tỉnh/thành sẽ được hiển thị trên Bản đồ</0> của dòng họ (chỉ thành viên dòng họ xem được). Không nhập thì người này sẽ không xuất hiện trên bản đồ."
+msgstr "Không bắt buộc. Nếu bạn nhập thông tin ở đây, <0>tỉnh/thành sẽ được hiển thị trên Bản đồ</0> của dòng họ (chỉ thành viên dòng họ xem được). Không nhập thì người này sẽ không xuất hiện trên bản đồ."
 
 #: src/components/EnablePushPrompt.tsx
 msgid "Không bật được thông báo"
@@ -5907,6 +6417,10 @@ msgstr "Không có ai khớp bộ lọc"
 msgid "Không có ai khớp tên này."
 msgstr "Không có ai khớp tên này."
 
+#: src/pages/clan/Relations.tsx
+msgid "Không có anh chị em được ghi nhận."
+msgstr "Không có anh chị em được ghi nhận."
+
 #: src/pages/clan/BoardModeration.tsx
 msgid "Không có bài nào đang chờ. Tất cả đã được xử lý."
 msgstr "Không có bài nào đang chờ. Tất cả đã được xử lý."
@@ -5917,6 +6431,10 @@ msgstr "Không có bài nào đang chờ. Tất cả đã được xử lý."
 msgid "Không có bài nào khớp"
 msgstr "Không có bài nào khớp"
 
+#: src/pages/Docs.tsx
+msgid "Không có bài nào khớp \"{query}\". Thử từ khoá ngắn hơn."
+msgstr "Không có bài nào khớp \"{query}\". Thử từ khoá ngắn hơn."
+
 #: src/pages/clan/Mosaics.tsx
 msgid "Không có bức nào khớp"
 msgstr "Không có bức nào khớp"
@@ -5924,6 +6442,10 @@ msgstr "Không có bức nào khớp"
 #: src/pages/clan/Todo.tsx
 msgid "Không có cả dương lẫn âm lịch năm sinh, hoặc đã mất mà chưa biết năm mất/giỗ."
 msgstr "Không có cả dương lẫn âm lịch năm sinh, hoặc đã mất mà chưa biết năm mất/giỗ."
+
+#: src/pages/clan/TreeCanvases.tsx
+msgid "Không có cây nào khớp \"{search}\"."
+msgstr "Không có cây nào khớp \"{search}\"."
 
 #: src/pages/clan/People.tsx
 msgid "không có chi"
@@ -5990,6 +6512,10 @@ msgstr "Không có mục lịch sử nào khớp \"{search}\""
 msgid "Không có mục nào khớp"
 msgstr "Không có mục nào khớp"
 
+#: src/components/AppDrawer.tsx
+msgid "Không có mục nào khớp \"{menuQuery}\"."
+msgstr "Không có mục nào khớp \"{menuQuery}\"."
+
 #: src/pages/clan/AddSpouse.tsx
 msgid "Không có người khớp giới tính + tên."
 msgstr "Không có người khớp giới tính + tên."
@@ -6015,6 +6541,14 @@ msgstr "Không có phòng nào khớp"
 #: src/pages/clan/Events.tsx
 msgid "Không có sự kiện nào khớp"
 msgstr "Không có sự kiện nào khớp"
+
+#: src/pages/clan/Today.tsx
+msgid "Không có sự kiện nào trong tháng."
+msgstr "Không có sự kiện nào trong tháng."
+
+#: src/pages/clan/Today.tsx
+msgid "Không có sự kiện nào trong tuần."
+msgstr "Không có sự kiện nào trong tuần."
 
 #: src/components/EventsCalendar.tsx
 msgid "Không có sự kiện ngày này."
@@ -6089,6 +6623,14 @@ msgstr "Không đổi được email"
 msgid "Không đổi được thứ tự"
 msgstr "Không đổi được thứ tự"
 
+#: src/pages/clan/TreeCanvases.tsx
+msgid "Không đổi tên được"
+msgstr "Không đổi tên được"
+
+#: src/pages/clan/TreeCanvas.tsx
+msgid "Không dùng được ảnh này"
+msgstr "Không dùng được ảnh này"
+
 #: src/pages/clan/AddSpouse.tsx
 msgid "Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người đã chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép."
 msgstr "Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người đã chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép."
@@ -6118,6 +6660,10 @@ msgstr "Không gửi được"
 msgid "Không huỷ được"
 msgstr "Không huỷ được"
 
+#: src/components/ErrorState.tsx
+msgid "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại."
+msgstr "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại."
+
 #: src/pages/clan/Audit.tsx
 msgid "Không khôi phục được"
 msgstr "Không khôi phục được"
@@ -6133,6 +6679,11 @@ msgstr "Không khung"
 #: src/components/CheckUpdateButton.tsx
 msgid "Không kiểm tra được"
 msgstr "Không kiểm tra được"
+
+#. placeholder {0}: (error as Error).message
+#: src/components/InlawFamilyCard.tsx
+msgid "Không lấy được dữ liệu — {0}"
+msgstr "Không lấy được dữ liệu — {0}"
 
 #: src/pages/clan/HeritageForm.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -6166,6 +6717,7 @@ msgstr "Không lấy được vị trí (cần cấp quyền)"
 #: src/pages/clan/Settings.tsx
 #: src/pages/clan/Todo.tsx
 #: src/pages/clan/Todo.tsx
+#: src/pages/clan/TreeCanvas.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Không lưu được"
 msgstr "Không lưu được"
@@ -6185,6 +6737,10 @@ msgstr "Không lưu được phòng: {msg}"
 #: src/components/QrScannerModal.tsx
 msgid "Không mở được camera. Cho phép quyền camera trong trình duyệt rồi thử lại."
 msgstr "Không mở được camera. Cho phép quyền camera trong trình duyệt rồi thử lại."
+
+#: src/pages/clan/TreeCanvases.tsx
+msgid "Không nhân bản được"
+msgstr "Không nhân bản được"
 
 #: src/components/QrSignInButton.tsx
 msgid "Không nhận được link"
@@ -6207,11 +6763,16 @@ msgstr "Không tải được"
 msgid "Không tải được danh sách:"
 msgstr "Không tải được danh sách:"
 
+#: src/components/ErrorState.tsx
+msgid "Không tải được dữ liệu"
+msgstr "Không tải được dữ liệu"
+
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/TreeCanvases.tsx
 #: src/pages/NewClan.tsx
 msgid "Không tạo được"
 msgstr "Không tạo được"
@@ -6271,10 +6832,6 @@ msgstr "Không thêm được"
 msgid "Không thêm được ảnh"
 msgstr "Không thêm được ảnh"
 
-#: src/pages/clan/Import.tsx
-msgid "không theo tên"
-msgstr "không theo tên"
-
 #: src/components/CalendarFeedPanel.tsx
 #: src/components/InviteLinkCard.tsx
 #: src/components/ShareLinksSection.tsx
@@ -6332,6 +6889,10 @@ msgstr "Không tìm thấy đóng góp này."
 msgid "Không tìm thấy dòng họ này hoặc bạn không có quyền xem."
 msgstr "Không tìm thấy dòng họ này hoặc bạn không có quyền xem."
 
+#: src/components/ErrorState.tsx
+msgid "Không tìm thấy dữ liệu — có thể đã bị xoá hoặc đổi liên kết."
+msgstr "Không tìm thấy dữ liệu — có thể đã bị xoá hoặc đổi liên kết."
+
 #: src/pages/clan/GoodDays.tsx
 msgid "Không tìm thấy ngày đẹp phù hợp trong khoảng này."
 msgstr "Không tìm thấy ngày đẹp phù hợp trong khoảng này."
@@ -6356,10 +6917,6 @@ msgstr "Không tìm thấy thông tin người này."
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Không tìm thấy."
 msgstr "Không tìm thấy."
-
-#: src/pages/clan/HeritageDetail.tsx
-msgid "Không tính vào dung lượng"
-msgstr "Không tính vào dung lượng"
 
 #: src/pages/clan/Inlaws.tsx
 msgid "Không từ chối được"
@@ -6395,6 +6952,8 @@ msgstr "Không xác nhận được"
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
+#: src/pages/clan/TreeCanvas.tsx
+#: src/pages/clan/TreeCanvases.tsx
 #: src/pages/CustomsDetail.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Không xoá được"
@@ -6426,6 +6985,7 @@ msgstr "Không xuất được ảnh. Thử lại sau."
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/QrExport.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/clan/TreeCanvas.tsx
 msgid "Không xuất được PDF"
 msgstr "Không xuất được PDF"
 
@@ -6570,6 +7130,11 @@ msgstr "Lề (cm)"
 msgid "Lễ Phật Đản"
 msgstr "Lễ Phật Đản"
 
+#: src/components/EventsCalendar.tsx
+#: src/components/UpcomingEventRow.tsx
+msgid "Lễ, tết"
+msgstr "Lễ, tết"
+
 #: src/pages/clan/GoodDays.tsx
 msgid "Lễ, tết ngày này"
 msgstr "Lễ, tết ngày này"
@@ -6621,6 +7186,7 @@ msgid "Lịch sử mọi thay đổi với người, gia đình và chi. Editor/
 msgstr "Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
 
 #: src/pages/Account.tsx
+#: src/pages/CreditHistory.tsx
 #: src/pages/CreditHistory.tsx
 msgid "Lịch sử sử dụng"
 msgstr "Lịch sử sử dụng"
@@ -6701,10 +7267,6 @@ msgstr "Linh vật"
 msgid "Linh vật (kéo để di chuyển)"
 msgstr "Linh vật (kéo để di chuyển)"
 
-#: src/components/gallery/GalleryScene.tsx
-msgid "link .mp4 trực tiếp"
-msgstr "link .mp4 trực tiếp"
-
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Link ảnh (https://…)"
 msgstr "Link ảnh (https://…)"
@@ -6744,6 +7306,11 @@ msgstr "Link công khai cho khách xem cây (đã ẩn người sống), có h�
 #: src/components/CalendarFeedPanel.tsx
 msgid "Link cũ ngừng hoạt động; bạn cần đăng ký lại lịch bằng link mới."
 msgstr "Link cũ ngừng hoạt động; bạn cần đăng ký lại lịch bằng link mới."
+
+#. placeholder {0}: expiresAt.toLocaleDateString(currentIntlTag())
+#: src/components/ShareTreeButton.tsx
+msgid "Link hết hạn ngày {0}. Quản lý / thu hồi sớm trong <0>Cài đặt</0>."
+msgstr "Link hết hạn ngày {0}. Quản lý / thu hồi sớm trong <0>Cài đặt</0>."
 
 #: src/components/ShareCardDialog.tsx
 msgid "Link khoe có hạn"
@@ -6944,6 +7511,10 @@ msgstr "Lỗi / sự cố"
 msgid "Lỗi khi test"
 msgstr "Lỗi khi test"
 
+#: src/pages/clan/TreeCanvases.tsx
+msgid "lỗi không rõ"
+msgstr "lỗi không rõ"
+
 #: src/pages/JoinClan.tsx
 msgid "Lời mời tham gia"
 msgstr "Lời mời tham gia"
@@ -6999,6 +7570,7 @@ msgstr "Lượt hỏi trợ lý đã dùng và còn lại. Trang này không hi�
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickDateFixSheet.tsx
+#: src/components/ui/view-edit-actions.tsx
 #: src/pages/Account.tsx
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
@@ -7079,9 +7651,18 @@ msgstr "Lưu rồi tiếp tục thêm người khác (giữ giới tính)"
 msgid "Lưu thay đổi"
 msgstr "Lưu thay đổi"
 
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Lưu ý: link phải bắt đầu bằng <0>https://</0> và để chế độ ai có link đều xem được, nếu không người trong họ sẽ không mở được."
+msgstr "Lưu ý: link phải bắt đầu bằng <0>https://</0> và để chế độ ai có link đều xem được, nếu không người trong họ sẽ không mở được."
+
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Lý do (nếu từ chối hoặc cần thêm thông tin)"
 msgstr "Lý do (nếu từ chối hoặc cần thêm thông tin)"
+
+#. placeholder {0}: result.reason
+#: src/pages/clan/Kinship.tsx
+msgid "Lý do: {0}"
+msgstr "Lý do: {0}"
 
 #: src/pages/InlawsConfirm.tsx
 msgid "Mã mời không hợp lệ hoặc đã được dùng. Hãy hỏi lại bên gửi."
@@ -7091,6 +7672,7 @@ msgstr "Mã mời không hợp lệ hoặc đã được dùng. Hãy hỏi lại
 msgid "Mã mời sẽ không dùng được nữa. Có thể tạo mã mới."
 msgstr "Mã mời sẽ không dùng được nữa. Có thể tạo mã mới."
 
+#: src/components/QrCodeModal.tsx
 #: src/components/QrCodeModal.tsx
 msgid "Mã QR"
 msgstr "Mã QR"
@@ -7116,10 +7698,18 @@ msgid "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… B
 msgstr "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc."
 
 #: src/pages/clan/MosaicDetail.tsx
+msgid "Mảnh ghép"
+msgstr "Mảnh ghép"
+
+#: src/pages/clan/MosaicDetail.tsx
 msgid "Mảnh này đang bị ẩn với người khác."
 msgstr "Mảnh này đang bị ẩn với người khác."
 
 #: src/pages/clan/Import.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Mất"
 msgstr "Mất"
@@ -7186,6 +7776,10 @@ msgstr "Màu trơn"
 msgid "Mẫu: {0}"
 msgstr "Mẫu: {0}"
 
+#: src/components/ErrorState.tsx
+msgid "Máy chủ phản hồi chậm. Vui lòng thử lại."
+msgstr "Máy chủ phản hồi chậm. Vui lòng thử lại."
+
 #: src/components/ShareCardDialog.tsx
 msgid "Máy tính:"
 msgstr "Máy tính:"
@@ -7213,7 +7807,7 @@ msgstr "Mẹ:"
 msgid "merge-picker-{0}-input"
 msgstr "merge-picker-{0}-input"
 
-#. placeholder {0}: data.peer.full_name ?? "người này"
+#. placeholder {0}: data.peer.full_name ?? t`người này`
 #: src/components/InlawMiniTree.tsx
 msgid "Mini cây gia đình của {0}"
 msgstr "Mini cây gia đình của {0}"
@@ -7401,10 +7995,6 @@ msgstr "Mở trang sửa đầy đủ"
 msgid "Mở trang Việc cần làm để bổ sung thông tin"
 msgstr "Mở trang Việc cần làm để bổ sung thông tin"
 
-#: src/pages/CreditHistory.tsx
-msgid "Mở trợ lý"
-msgstr "Mở trợ lý"
-
 #: src/components/HelpButton.tsx
 msgid "Mở trong trang Hướng dẫn đầy đủ →"
 msgstr "Mở trong trang Hướng dẫn đầy đủ →"
@@ -7528,6 +8118,11 @@ msgstr "Mọi tài khoản đăng nhập xem được; người còn sống bị
 msgid "Mới tạo"
 msgstr "Mới tạo"
 
+#. placeholder {0}: quota.data.freeThisMonth
+#: src/pages/CreditHistory.tsx
+msgid "Mỗi tháng bạn được tặng {0} lượt; lượt tặng chưa dùng hết sẽ không cộng dồn sang tháng sau. <0>Mở trợ lý</0>"
+msgstr "Mỗi tháng bạn được tặng {0} lượt; lượt tặng chưa dùng hết sẽ không cộng dồn sang tháng sau. <0>Mở trợ lý</0>"
+
 #: src/pages/clan/Mosaics.tsx
 msgid "Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ."
 msgstr "Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ."
@@ -7576,10 +8171,6 @@ msgstr "Mới: {branchName}"
 #: src/pages/clan/HeritageForm.tsx
 msgid "Một câu tóm tắt, hiện ở danh sách"
 msgstr "Một câu tóm tắt, hiện ở danh sách"
-
-#: src/components/CalendarFeedPanel.tsx
-msgid "một lần"
-msgstr "một lần"
 
 #: src/pages/clan/Tree.tsx
 msgid "Một trang lớn chứa cả cây (mặc định)"
@@ -7653,8 +8244,40 @@ msgstr "Muốn thêm người thì cứ kể, ví dụ “Bố tôi là Nguyễn
 msgid "Muốn xem thêm, mở"
 msgstr "Muốn xem thêm, mở"
 
+#: src/components/ClanStatsPanel.tsx
+#: src/components/ContributeDialog.tsx
+#: src/components/ContributionDiffView.tsx
+#: src/components/InlawFamilyCard.tsx
+#: src/components/RelationshipGroup.tsx
+#: src/components/SharedPersonCard.tsx
+#: src/components/SharedPersonCard.tsx
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
+#: src/pages/clan/AddChild.tsx
+#: src/pages/clan/AddSpouse.tsx
+#: src/pages/clan/EditPerson.tsx
+#: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/InlawsNew.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/MyLineage.tsx
+#: src/pages/clan/NewPerson.tsx
+#: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/QrExport.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/InlawsConfirm.tsx
+#: src/pages/InlawsConfirm.tsx
+#: src/pages/InlawsConfirm.tsx
 msgid "Nam"
 msgstr "Nam"
 
@@ -7674,6 +8297,10 @@ msgstr "Năm {0}"
 msgid "Năm biên soạn"
 msgstr "Năm biên soạn"
 
+#: src/components/QuickDateFixSheet.tsx
+msgid "năm mất"
+msgstr "năm mất"
+
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/QuickAddSheet.tsx
@@ -7689,6 +8316,15 @@ msgstr "Năm mất (âm)"
 #: src/components/QuickDateFixSheet.tsx
 msgid "Năm mất không hợp lệ"
 msgstr "Năm mất không hợp lệ"
+
+#: src/pages/clan/PersonDetail.tsx
+msgid "năm mất/giỗ"
+msgstr "năm mất/giỗ"
+
+#: src/components/QuickDateFixSheet.tsx
+#: src/pages/clan/PersonDetail.tsx
+msgid "năm sinh"
+msgstr "năm sinh"
 
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
@@ -7723,6 +8359,12 @@ msgstr "Nạp sẵn ảnh thành viên"
 msgid "Nạp sẵn avatar thành viên"
 msgstr "Nạp sẵn avatar thành viên"
 
+#: src/components/TimelineFields.tsx
+#: src/components/TimelineFields.tsx
+msgid "này"
+msgstr "này"
+
+#: src/components/gallery/GalleryScene.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Nền"
 msgstr "Nền"
@@ -7811,8 +8453,10 @@ msgstr "Ngày Giải phóng miền Nam"
 
 #: src/components/ContributionDiffView.tsx
 #: src/components/EventsCalendar.tsx
+#: src/components/EventsCalendar.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/UpcomingEventRow.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Ngày giỗ"
@@ -7867,6 +8511,10 @@ msgstr "Ngày mất (nếu đã mất)"
 msgid "Ngày nghỉ lễ."
 msgstr "Ngày nghỉ lễ."
 
+#: src/components/MyProfileCard.tsx
+msgid "ngày sinh"
+msgstr "ngày sinh"
+
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
@@ -7906,10 +8554,6 @@ msgstr "Ngày tháng, nơi chốn của người còn sống không hiển thị
 msgid "Ngày tốt"
 msgstr "Ngày tốt"
 
-#: src/pages/clan/GoodDays.tsx
-msgid "Ngày tốt (hoàng đạo)"
-msgstr "Ngày tốt (hoàng đạo)"
-
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Ngày tốt (Hoàng đạo)"
@@ -7923,10 +8567,6 @@ msgstr "ngày tốt chung"
 msgid "Ngày tốt tính theo lịch cổ truyền (12 trực chỉ việc nên/kiêng, kết hợp ngày hoàng đạo). Đây là thông tin tham khảo theo phong tục, không phải lời khuyên bắt buộc — nên cân nhắc thêm tuổi của gia chủ khi làm việc lớn."
 msgstr "Ngày tốt tính theo lịch cổ truyền (12 trực chỉ việc nên/kiêng, kết hợp ngày hoàng đạo). Đây là thông tin tham khảo theo phong tục, không phải lời khuyên bắt buộc — nên cân nhắc thêm tuổi của gia chủ khi làm việc lớn."
 
-#: src/pages/clan/GoodDays.tsx
-msgid "Ngày xấu (hắc đạo)"
-msgstr "Ngày xấu (hắc đạo)"
-
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Ngày xấu (Hắc đạo)"
@@ -7935,6 +8575,11 @@ msgstr "Ngày xấu (Hắc đạo)"
 #: src/components/PodcastTodayCard.tsx
 msgid "Nghe gì hôm nay"
 msgstr "Nghe gì hôm nay"
+
+#. placeholder {0}: fmtDuration(rec.result.durationSec)
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Nghe thử trước khi lưu ({0}):"
+msgstr "Nghe thử trước khi lưu ({0}):"
 
 #: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
@@ -7987,9 +8632,13 @@ msgid "người"
 msgstr "người"
 
 #: src/components/RecentActivityPanel.tsx
+#: src/pages/clan/AddChild.tsx
+#: src/pages/clan/AddParent.tsx
+#: src/pages/clan/AddSpouse.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/EditPerson.tsx
+#: src/pages/clan/PersonDetail.tsx
 msgid "Người"
 msgstr "Người"
 
@@ -8021,6 +8670,8 @@ msgstr "Người chưa có ảnh, hoặc đã có ngày dương nhưng chưa quy
 msgid "Người chưa có bố/mẹ trong cây — bổ sung để gắn vào đúng đời và nhánh."
 msgstr "Người chưa có bố/mẹ trong cây — bổ sung để gắn vào đúng đời và nhánh."
 
+#: src/components/InlawFamilyCard.tsx
+#: src/components/InlawFamilyCard.tsx
 #: src/components/InlawMiniTree.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Người còn sống"
@@ -8050,6 +8701,10 @@ msgstr "Người được mời cần có sẵn tài khoản (đã đăng ký b�
 msgid "Người được vinh danh"
 msgstr "Người được vinh danh"
 
+#: src/pages/clan/AddSpouse.tsx
+msgid "người gốc"
+msgstr "người gốc"
+
 #: src/components/EventDetailDialog.tsx
 #: src/pages/Share.tsx
 msgid "Người liên quan"
@@ -8062,6 +8717,7 @@ msgstr "Người liên quan trong họ (tuỳ chọn)"
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/AddSpouse.tsx
+#: src/pages/clan/ContributionDetail.tsx
 msgid "Người mới"
 msgstr "Người mới"
 
@@ -8072,6 +8728,19 @@ msgstr "Người mới đề xuất"
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Người mới sẽ được thêm vào cây gia phả. Tiếp tục?"
 msgstr "Người mới sẽ được thêm vào cây gia phả. Tiếp tục?"
+
+#: src/components/InlawMiniTree.tsx
+#: src/pages/clan/AddChild.tsx
+#: src/pages/clan/AddParent.tsx
+#: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/PersonDetail.tsx
+msgid "người này"
+msgstr "người này"
+
+#: src/components/QuickAddSheet.tsx
+#: src/pages/clan/AddChild.tsx
+msgid "Người này"
+msgstr "Người này"
 
 #: src/components/ShareTreeButton.tsx
 msgid "Người nhận xem được cây chỉ-đọc, không cần đăng nhập."
@@ -8088,6 +8757,10 @@ msgstr "Người sau →"
 #: src/components/ClanFormFields.tsx
 msgid "Người sống: hiện đầy đủ ngày-tháng-năm sinh"
 msgstr "Người sống: hiện đầy đủ ngày-tháng-năm sinh"
+
+#: src/components/ai/ProposalCard.tsx
+msgid "người trong gia phả"
+msgstr "người trong gia phả"
 
 #: src/components/ClanFormFields.tsx
 msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
@@ -8172,6 +8845,10 @@ msgstr "Nhân bản"
 msgid "Nhân bản {0}"
 msgstr "Nhân bản {0}"
 
+#: src/components/EnablePushPrompt.tsx
+msgid "Nhận nhắc <0>giỗ</0>, <1>sinh nhật</1> và sự kiện dòng họ ngay trên máy."
+msgstr "Nhận nhắc <0>giỗ</0>, <1>sinh nhật</1> và sự kiện dòng họ ngay trên máy."
+
 #: src/pages/Account.tsx
 msgid "Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại."
 msgstr "Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại."
@@ -8218,10 +8895,6 @@ msgstr "Nhấp để sửa chữ"
 #: src/lib/pageTitle.ts
 msgid "Nhập dữ liệu"
 msgstr "Nhập dữ liệu"
-
-#: src/components/gallery/GalleryScene.tsx
-msgid "nhấp đúp sàn"
-msgstr "nhấp đúp sàn"
 
 #: src/pages/ForgotPassword.tsx
 msgid "Nhập email để nhận liên kết đặt lại mật khẩu"
@@ -8369,6 +9042,7 @@ msgid "nơi an nghỉ"
 msgstr "nơi an nghỉ"
 
 #: src/components/panel/PanelHost.tsx
+#: src/pages/clan/MapStats.tsx
 msgid "Nơi an nghỉ"
 msgstr "Nơi an nghỉ"
 
@@ -8546,6 +9220,11 @@ msgstr "Ở cuối"
 msgid "Ở đâu"
 msgstr "Ở đâu"
 
+#. placeholder {0}: years(r.reign_start_year, r.reign_end_year)
+#: src/components/HistoricalPersonSections.tsx
+msgid "Ở ngôi {0}"
+msgstr "Ở ngôi {0}"
+
 #: src/lib/festivals.ts
 msgid "Ông Công Ông Táo"
 msgstr "Ông Công Ông Táo"
@@ -8576,6 +9255,10 @@ msgstr "Phần {0}"
 msgid "Phân bố {unit} theo tỉnh"
 msgstr "Phân bố {unit} theo tỉnh"
 
+#: src/components/ErrorState.tsx
+msgid "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+msgstr "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+
 #: src/components/Tree3DView.tsx
 msgid "Phím tắt:"
 msgstr "Phím tắt:"
@@ -8597,6 +9280,9 @@ msgstr "Phòng đang dùng bảng màu tuỳ chỉnh (đổi ngay trong phòng).
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/MemoryRoom.tsx
+#: src/pages/clan/MemoryRoom.tsx
+#: src/pages/clan/MemoryRooms.tsx
+#: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MemoryRooms.tsx
 #: src/pages/clan/MemoryRooms.tsx
@@ -8656,7 +9342,7 @@ msgstr "Phúc lộc"
 msgid "Push không gửi được — thử tắt rồi bật lại."
 msgstr "Push không gửi được — thử tắt rồi bật lại."
 
-#. placeholder {0}: personName ?? "Trang cá nhân"
+#. placeholder {0}: personName ?? t`Trang cá nhân`
 #: src/components/ShareLinksSection.tsx
 msgid "QR · {0}"
 msgstr "QR · {0}"
@@ -8676,6 +9362,7 @@ msgstr "QR cá nhân · {0}"
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/Relations.tsx
 msgid "Quan hệ"
 msgstr "Quan hệ"
 
@@ -8691,10 +9378,6 @@ msgstr "Quan hệ và trường còn trống của người giữ lại sẽ l�
 #: src/components/ContributeDialog.tsx
 msgid "Quan hệ:"
 msgstr "Quan hệ:"
-
-#: src/components/ShareTreeButton.tsx
-msgid "Quản lý / thu hồi sớm trong"
-msgstr "Quản lý / thu hồi sớm trong"
 
 #: src/pages/clan/People.tsx
 msgid "Quản lý chi"
@@ -8714,6 +9397,7 @@ msgstr "Quản lý thành viên"
 
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/Clans.tsx
 msgid "Quản trị"
 msgstr "Quản trị"
 
@@ -8777,6 +9461,10 @@ msgstr "Quay về bảng tin"
 
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
+#: src/pages/clan/Relations.tsx
 msgid "Quê quán"
 msgstr "Quê quán"
 
@@ -8802,6 +9490,7 @@ msgstr "Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, 
 msgid "Quét để xem cây gia phả"
 msgstr "Quét để xem cây gia phả"
 
+#: src/components/QrScannerModal.tsx
 #: src/pages/Login.tsx
 msgid "Quét mã QR"
 msgstr "Quét mã QR"
@@ -8826,6 +9515,8 @@ msgstr "Quốc tế Lao động"
 msgid "Quỹ"
 msgstr "Quỹ"
 
+#: src/pages/clan/ClanFund.tsx
+#: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/ClanFund.tsx
 msgid "Quỹ chung"
 msgstr "Quỹ chung"
@@ -8876,6 +9567,10 @@ msgstr "Rộng (cm)"
 #: src/pages/clan/Todo.tsx
 msgid "Sạch sẽ ở nhóm này"
 msgstr "Sạch sẽ ở nhóm này"
+
+#: src/components/gallery/GalleryScene.tsx
+msgid "Sàn"
+msgstr "Sàn"
 
 #: src/components/ThemeToggle.tsx
 msgid "Sáng"
@@ -8928,6 +9623,10 @@ msgstr "Sắp: Năm sinh"
 msgid "Sắp: Tên"
 msgstr "Sắp: Tên"
 
+#: src/pages/clan/HeritageForm.tsx
+msgid "Sau khi lưu, bạn có thể <0>thêm ảnh</0> và <1>ghi âm kể chuyện</1> ở trang chi tiết."
+msgstr "Sau khi lưu, bạn có thể <0>thêm ảnh</0> và <1>ghi âm kể chuyện</1> ở trang chi tiết."
+
 #: src/pages/clan/Inlaws.tsx
 msgid "Sau khi thu hồi, không bên nào còn thấy link này. Có thể tạo lại sau."
 msgstr "Sau khi thu hồi, không bên nào còn thấy link này. Có thể tạo lại sau."
@@ -8943,6 +9642,37 @@ msgstr "Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung má
 #: src/components/PersonAvatar.tsx
 msgid "Sen hồng"
 msgstr "Sen hồng"
+
+#: src/pages/clan/Import.tsx
+msgid "Sinh"
+msgstr "Sinh"
+
+#. placeholder {0}: p.birth_date.slice(0, 4)
+#. placeholder {0}: p.birth_year
+#. placeholder {0}: peek.birth_year
+#: src/components/InlawFamilyCard.tsx
+#: src/components/InlawMiniTree.tsx
+#: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/Inlaws.tsx
+#: src/pages/clan/Merge.tsx
+#: src/pages/clan/PersonDetail.tsx
+#: src/pages/clan/Tree.tsx
+#: src/pages/InlawsConfirm.tsx
+#: src/pages/Share.tsx
+msgid "sinh {0}"
+msgstr "sinh {0}"
+
+#: src/pages/clan/TreeCanvas.tsx
+msgid "sinh {b}"
+msgstr "sinh {b}"
+
+#: src/pages/clan/Relations.tsx
+msgid "sinh {born}"
+msgstr "sinh {born}"
+
+#: src/pages/clan/People.tsx
+msgid "sinh {by}"
+msgstr "sinh {by}"
 
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
@@ -8963,12 +9693,10 @@ msgstr "Sinh file bằng AI"
 msgid "Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư."
 msgstr "Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư."
 
-#: src/components/EnablePushPrompt.tsx
-msgid "sinh nhật"
-msgstr "sinh nhật"
-
+#: src/components/EventsCalendar.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/UpcomingEventRow.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Sinh nhật"
 msgstr "Sinh nhật"
@@ -9069,7 +9797,9 @@ msgstr "Sổ tay đang được biên soạn."
 #: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
+#: src/pages/clan/Heritage.tsx
 #: src/pages/Customs.tsx
+#: src/pages/CustomsDetail.tsx
 msgid "Sổ tay Văn hoá"
 msgstr "Sổ tay Văn hoá"
 
@@ -9103,7 +9833,10 @@ msgstr "sự kiện"
 #: src/components/ClanLayout.tsx
 #: src/components/ClanPostCard.tsx
 #: src/components/EventDetailDialog.tsx
+#: src/components/EventDetailDialog.tsx
+#: src/components/EventsCalendar.tsx
 #: src/components/TimelineFields.tsx
+#: src/components/UpcomingEventRow.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Board.tsx
@@ -9289,10 +10022,6 @@ msgid "Tải file .ics — import vào Google / Apple Calendar"
 msgstr "Tải file .ics — import vào Google / Apple Calendar"
 
 #: src/pages/clan/Import.tsx
-msgid "Tải file lỗi"
-msgstr "Tải file lỗi"
-
-#: src/pages/clan/Import.tsx
 msgid "Tải file mẫu (.xlsx)"
 msgstr "Tải file mẫu (.xlsx)"
 
@@ -9340,10 +10069,6 @@ msgstr "Tạm tắt"
 #: src/pages/KhoeCard.tsx
 msgid "Tấm thiệp này có thể đã hết hạn chia sẻ hoặc đã bị gỡ."
 msgstr "Tấm thiệp này có thể đã hết hạn chia sẻ hoặc đã bị gỡ."
-
-#: src/pages/CreditHistory.tsx
-msgid "tặng chưa dùng hết sẽ không cộng dồn sang tháng sau."
-msgstr "tặng chưa dùng hết sẽ không cộng dồn sang tháng sau."
 
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 msgid "Tạo"
@@ -9469,7 +10194,9 @@ msgid "Tảo mộ {title}"
 msgstr "Tảo mộ {title}"
 
 #: src/components/EventDetailDialog.tsx
+#: src/components/EventsCalendar.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/UpcomingEventRow.tsx
 #: src/pages/clan/Events.tsx
 msgid "Tảo mộ / Chạp họ"
 msgstr "Tảo mộ / Chạp họ"
@@ -9545,6 +10272,15 @@ msgstr "Tắt"
 #: src/pages/clan/Settings.tsx
 msgid "Tắt bớt tính năng phụ để menu gọn hơn cho dòng họ này. Lõi (Cây, Danh bạ, Sự kiện, Hôm nay) luôn bật. Tắt chỉ ẩn khỏi menu — dữ liệu cũ vẫn còn, bật lại là hiện."
 msgstr "Tắt bớt tính năng phụ để menu gọn hơn cho dòng họ này. Lõi (Cây, Danh bạ, Sự kiện, Hôm nay) luôn bật. Tắt chỉ ẩn khỏi menu — dữ liệu cũ vẫn còn, bật lại là hiện."
+
+#: src/components/HistoricalClansSection.tsx
+#: src/components/NotificationBell.tsx
+msgid "Tất cả"
+msgstr "Tất cả"
+
+#: src/components/tree/TreeOptionsPanel.tsx
+msgid "Tất cả các đời"
+msgstr "Tất cả các đời"
 
 #: src/pages/clan/People.tsx
 #: src/pages/clan/QrExport.tsx
@@ -9806,10 +10542,6 @@ msgstr "Thả vào canvas"
 msgid "Tham gia dòng họ"
 msgstr "Tham gia dòng họ"
 
-#: src/pages/CustomsForm.tsx
-msgid "thân Markdown"
-msgstr "thân Markdown"
-
 #: src/components/CalendarDateInput.tsx
 msgid "Tháng"
 msgstr "Tháng"
@@ -9817,6 +10549,11 @@ msgstr "Tháng"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Thẳng"
 msgstr "Thẳng"
+
+#. placeholder {0}: m + 1
+#: src/pages/clan/GoodDays.tsx
+msgid "Tháng {0}/{y}"
+msgstr "Tháng {0}/{y}"
 
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Thẳng / gấp khúc"
@@ -9858,6 +10595,7 @@ msgid "Tháng trước"
 msgstr "Tháng trước"
 
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Members.tsx
 msgid "thành viên"
 msgstr "thành viên"
 
@@ -9869,6 +10607,7 @@ msgstr "thành viên"
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Settings.tsx
+#: src/pages/JoinClan.tsx
 msgid "Thành viên"
 msgstr "Thành viên"
 
@@ -9943,6 +10682,7 @@ msgstr "Thẻ: Dọc (xem được nhiều người hơn)"
 msgid "Thẻ: Ngang"
 msgstr "Thẻ: Ngang"
 
+#: src/components/FabGroup.tsx
 #: src/components/gallery/GalleryScene.tsx
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/ClanFund.tsx
@@ -9968,10 +10708,6 @@ msgstr "Thêm {grow} người trong 30 ngày qua"
 #: src/pages/clan/NewPerson.tsx
 msgid "Thêm 1 người vào dòng họ. Có thể đánh dấu Thuỷ tổ."
 msgstr "Thêm 1 người vào dòng họ. Có thể đánh dấu Thuỷ tổ."
-
-#: src/pages/clan/HeritageForm.tsx
-msgid "thêm ảnh"
-msgstr "thêm ảnh"
 
 #: src/components/RestingPlacePhotosSection.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
@@ -10005,6 +10741,7 @@ msgstr "Thêm câu hỏi"
 msgid "Thêm cha / mẹ"
 msgstr "Thêm cha / mẹ"
 
+#: src/components/QuickAddSheet.tsx
 #: src/lib/pageTitle.ts
 msgid "Thêm cha/mẹ"
 msgstr "Thêm cha/mẹ"
@@ -10026,6 +10763,7 @@ msgstr "Thêm chi tiết khác"
 msgid "Thêm cơ sở"
 msgstr "Thêm cơ sở"
 
+#: src/components/QuickAddSheet.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddChild.tsx
@@ -10105,6 +10843,7 @@ msgid "Thêm mục di sản"
 msgstr "Thêm mục di sản"
 
 #: src/components/panel/PanelHost.tsx
+#: src/components/QuickAddSheet.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Contributions.tsx
 #: src/pages/clan/Dashboard.tsx
@@ -10146,6 +10885,7 @@ msgstr "Thêm nơi an nghỉ"
 msgid "Thêm sự kiện"
 msgstr "Thêm sự kiện"
 
+#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/People.tsx
 msgid "Thêm Thuỷ tổ"
 msgstr "Thêm Thuỷ tổ"
@@ -10168,6 +10908,7 @@ msgstr "Thêm vào Google Calendar"
 msgid "Thêm vợ / chồng"
 msgstr "Thêm vợ / chồng"
 
+#: src/components/QuickAddSheet.tsx
 #: src/lib/pageTitle.ts
 msgid "Thêm vợ/chồng"
 msgstr "Thêm vợ/chồng"
@@ -10180,9 +10921,14 @@ msgstr "Thêm vợ/chồng/con"
 msgid "Theo cài đặt thiết bị / trình duyệt."
 msgstr "Theo cài đặt thiết bị / trình duyệt."
 
+#: src/components/SubscribeToggle.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Theo dõi"
 msgstr "Theo dõi"
+
+#: src/components/SubscriptionSettings.tsx
+msgid "Theo dõi chi"
+msgstr "Theo dõi chi"
 
 #: src/components/SubscriptionSettings.tsx
 msgid "Theo dõi riêng theo chi"
@@ -10280,6 +11026,10 @@ msgstr "Thiếu năm sinh/mất"
 msgid "Thiếu thông tin"
 msgstr "Thiếu thông tin"
 
+#: src/pages/CustomsImport.tsx
+msgid "Thiếu tiêu đề (dòng '# ')"
+msgstr "Thiếu tiêu đề (dòng '# ')"
+
 #: src/pages/CustomsForm.tsx
 msgid "Thiếu tiêu đề."
 msgstr "Thiếu tiêu đề."
@@ -10343,6 +11093,7 @@ msgstr "Thông báo"
 msgid "Thông báo đẩy (Web Push)"
 msgstr "Thông báo đẩy (Web Push)"
 
+#: src/components/NotificationBell.tsx
 #: src/pages/Announcements.tsx
 #: src/pages/Announcements.tsx
 msgid "Thông báo hệ thống"
@@ -10367,6 +11118,10 @@ msgstr "Thông tin"
 #: src/pages/clan/Settings.tsx
 msgid "Thông tin & Sổ gia phả"
 msgstr "Thông tin & Sổ gia phả"
+
+#: src/components/ContributeDialog.tsx
+msgid "thông tin bạn đã ghi"
+msgstr "thông tin bạn đã ghi"
 
 #: src/pages/clan/BookInfo.tsx
 #: src/pages/NewClan.tsx
@@ -10403,6 +11158,7 @@ msgstr "Thu (đóng góp)"
 msgid "thứ {0}"
 msgstr "thứ {0}"
 
+#: src/pages/Announcements.tsx
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/HonorBook.tsx
@@ -10530,9 +11286,12 @@ msgstr "Thu nhỏ khung trò chuyện"
 msgid "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
 msgstr "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
 
+#: src/components/QuickAddSheet.tsx
+msgid "Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi thứ tự."
+msgstr "Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi thứ tự."
+
 #: src/components/Tree3DView.tsx
 #: src/pages/clan/EditPerson.tsx
-#: src/pages/clan/Import.tsx
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/People.tsx
@@ -10559,6 +11318,10 @@ msgstr "Tiến độ hoàn thiện gia phả"
 #: src/pages/Docs.tsx
 msgid "Tiếp →"
 msgstr "Tiếp →"
+
+#: src/components/SidePanel.tsx
+msgid "Tiếp tục nhập"
+msgstr "Tiếp tục nhập"
 
 #: src/components/SocialAuthButtons.tsx
 #: src/components/SocialAuthButtons.tsx
@@ -10876,10 +11639,6 @@ msgstr "Tính năng muốn có, chỗ chưa tiện…"
 msgid "Tình trạng"
 msgstr "Tình trạng"
 
-#: src/components/PersonAddressCard.tsx
-msgid "tỉnh/thành sẽ được hiển thị trên Bản đồ"
-msgstr "tỉnh/thành sẽ được hiển thị trên Bản đồ"
-
 #: src/pages/clan/Relations.tsx
 msgid "Tổ tiên (dòng cha)"
 msgstr "Tổ tiên (dòng cha)"
@@ -10910,6 +11669,10 @@ msgstr "Toàn màn hình"
 msgid "Tối"
 msgstr "Tối"
 
+#: src/components/ai/ChatThread.tsx
+msgid "Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời thường ngày — ngày giỗ, cách xưng hô, ai là con ai."
+msgstr "Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời thường ngày — ngày giỗ, cách xưng hô, ai là con ai."
+
 #: src/components/ContributeDialog.tsx
 msgid "Tôi có giấy chứng tử, hoặc bố tôi kể lại…"
 msgstr "Tôi có giấy chứng tử, hoặc bố tôi kể lại…"
@@ -10917,6 +11680,11 @@ msgstr "Tôi có giấy chứng tử, hoặc bố tôi kể lại…"
 #: src/pages/clan/Tree.tsx
 msgid "Tối đa — thẻ nhỏ, ít trang"
 msgstr "Tối đa — thẻ nhỏ, ít trang"
+
+#. placeholder {0}: Math.round(HERITAGE_AUDIO_MAX_SEC / 60)
+#: src/pages/clan/HeritageDetail.tsx
+msgid "Tối đa {0} phút mỗi đoạn. Hãy kể tự nhiên bằng lời của bạn."
+msgstr "Tối đa {0} phút mỗi đoạn. Hãy kể tự nhiên bằng lời của bạn."
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Tối đa {MAX_AUDIO} đoạn ghi âm mỗi mục."
@@ -10952,6 +11720,10 @@ msgstr "Tôi là ai trong cây?"
 #: src/pages/Account.tsx
 msgid "Tôi muốn xoá tài khoản"
 msgstr "Tôi muốn xoá tài khoản"
+
+#: src/pages/clan/MosaicDetail.tsx
+msgid "Tối thiểu {minSlots} (đang có mảnh ở ô xa nhất)."
+msgstr "Tối thiểu {minSlots} (đang có mảnh ở ô xa nhất)."
 
 #: src/pages/Account.tsx
 #: src/pages/Signup.tsx
@@ -11021,10 +11793,15 @@ msgid "Tra cứu xưng hô"
 msgstr "Tra cứu xưng hô"
 
 #: src/components/gallery/GalleryScene.tsx
+msgid "Trần"
+msgstr "Trần"
+
+#: src/components/gallery/GalleryScene.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Trắng"
 msgstr "Trắng"
 
+#: src/components/ShareLinksSection.tsx
 #: src/pages/Share.tsx
 msgid "Trang cá nhân"
 msgstr "Trang cá nhân"
@@ -11035,8 +11812,8 @@ msgid "Trang chủ của {0}."
 msgstr "Trang chủ của {0}."
 
 #: src/pages/KhoeCard.tsx
-msgid "Trang này được tạo từ"
-msgstr "Trang này được tạo từ"
+msgid "Trang này được tạo từ <0>Dòng Họ Việt</0> — nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của dòng họ."
+msgstr "Trang này được tạo từ <0>Dòng Họ Việt</0> — nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của dòng họ."
 
 #: src/pages/clan/Tree.tsx
 msgid "Trang sơ đồ cây"
@@ -11115,6 +11892,7 @@ msgstr "Trợ lý"
 #: src/components/panel/PanelHost.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/AiChat.tsx
+#: src/pages/clan/AiChat.tsx
 msgid "Trợ lý dòng họ"
 msgstr "Trợ lý dòng họ"
 
@@ -11153,6 +11931,10 @@ msgstr "Trùng tên"
 #: src/pages/clan/Merge.tsx
 msgid "Trùng tên + năm sinh"
 msgstr "Trùng tên + năm sinh"
+
+#: src/pages/CustomsImport.tsx
+msgid "Trùng tên trong danh sách dán"
+msgstr "Trùng tên trong danh sách dán"
 
 #: src/components/Pagination.tsx
 #: src/pages/clan/Audit.tsx
@@ -11248,6 +12030,10 @@ msgstr "Tước hiệu, chức vị"
 msgid "Tuổi thọ"
 msgstr "Tuổi thọ"
 
+#: src/components/gallery/GalleryScene.tsx
+msgid "Tường"
+msgstr "Tường"
+
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Tuỳ chỉnh"
@@ -11332,6 +12118,10 @@ msgstr "Vài dòng giới thiệu phòng…"
 #: src/components/ClanFormFields.tsx
 msgid "Vài dòng giới thiệu về dòng họ"
 msgstr "Vài dòng giới thiệu về dòng họ"
+
+#: src/pages/clan/EditPerson.tsx
+msgid "Vài giây trước"
+msgstr "Vài giây trước"
 
 #: src/components/QuickAddSheet.tsx
 #: src/pages/clan/AddParent.tsx
@@ -11618,9 +12408,12 @@ msgstr "Video hướng dẫn"
 msgid "Video hướng dẫn từng bước cách lập gia phả dòng họ trên Dòng Họ Việt."
 msgstr "Video hướng dẫn từng bước cách lập gia phả dòng họ trên Dòng Họ Việt."
 
+#: src/components/gallery/GalleryScene.tsx
+msgid "Video nên dùng <0>link .mp4 trực tiếp</0> (chuột phải video đang phát → “Copy video address”). Link trang chia sẻ có thể không hiện trên tường."
+msgstr "Video nên dùng <0>link .mp4 trực tiếp</0> (chuột phải video đang phát → “Copy video address”). Link trang chia sẻ có thể không hiện trên tường."
+
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/clan/Import.tsx
 #: src/pages/clan/Todo.tsx
 #: src/pages/clan/Todo.tsx
 msgid "Việc cần làm"
@@ -11634,6 +12427,7 @@ msgstr "Việc làm"
 msgid "Việc xảy ra trong năm này"
 msgstr "Việc xảy ra trong năm này"
 
+#: src/components/AvatarFramePicker.tsx
 #: src/components/AvatarFramePicker.tsx
 msgid "Viền avatar"
 msgstr "Viền avatar"
@@ -11744,8 +12538,11 @@ msgstr "Vừa (mặc định)"
 msgid "Vừa khung"
 msgstr "Vừa khung"
 
+#: src/components/ClanPostCard.tsx
+#: src/components/RecentActivityPanel.tsx
 #: src/lib/formatDate.ts
 #: src/lib/formatDate.ts
+#: src/pages/clan/Audit.tsx
 msgid "vừa xong"
 msgstr "vừa xong"
 
@@ -11803,6 +12600,11 @@ msgstr "Xác nhận liên kết này?"
 #: src/pages/Account.tsx
 msgid "Xác nhận mật khẩu mới"
 msgstr "Xác nhận mật khẩu mới"
+
+#: src/pages/clan/Members.tsx
+#: src/pages/Clans.tsx
+msgid "Xem"
+msgstr "Xem"
 
 #: src/components/InviteLinkCard.tsx
 #: src/pages/JoinClan.tsx
@@ -11977,6 +12779,12 @@ msgstr "Xem trang người đã được cập nhật →"
 msgid "Xem trang người liên quan →"
 msgstr "Xem trang người liên quan →"
 
+#. placeholder {0}: preview.length
+#. placeholder {1}: importable.length
+#: src/pages/CustomsImport.tsx
+msgid "Xem trước — {0} bài, {1} sẽ được tạo"
+msgstr "Xem trước — {0} bài, {1} sẽ được tạo"
+
 #: src/components/ClanFormFields.tsx
 msgid "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
 msgstr "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
@@ -12036,7 +12844,7 @@ msgstr "Xoá \"{0}\"?"
 msgid "Xoá {0}"
 msgstr "Xoá {0}"
 
-#. placeholder {0}: panel.member.display_name ?? "thành viên"
+#. placeholder {0}: panel.member.display_name ?? t`thành viên`
 #: src/pages/clan/Members.tsx
 msgid "Xoá {0} khỏi clan?"
 msgstr "Xoá {0} khỏi clan?"
@@ -12166,7 +12974,7 @@ msgstr "Xoá link này vĩnh viễn?"
 msgid "Xoá mảnh này?"
 msgstr "Xoá mảnh này?"
 
-#. placeholder {0}: d.year || "này"
+#. placeholder {0}: d.year || t`này`
 #: src/components/TimelineFields.tsx
 msgid "Xoá mốc năm {0}"
 msgstr "Xoá mốc năm {0}"
@@ -12213,6 +13021,11 @@ msgstr "Xoá từ khoá"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Xoá video"
 msgstr "Xoá video"
+
+#. placeholder {0}: Math.round((editModel.rotY * 180) / Math.PI)
+#: src/components/gallery/GalleryScene.tsx
+msgid "Xoay hướng: {0}°"
+msgstr "Xoay hướng: {0}°"
 
 #: src/components/FilterDrawer.tsx
 msgid "Xong"

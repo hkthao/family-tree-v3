@@ -54,7 +54,7 @@ export function EventDetailDialog({
   if (!open || !event) return null;
 
   const cardDate = eventWhenText(event, {
-    lunarLabel: "Âm lịch",
+    lunarLabel: t`Âm lịch`,
     withYearly: true,
   });
 
@@ -84,7 +84,7 @@ export function EventDetailDialog({
         <div className="p-5 space-y-4">
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              {EVENT_TYPE_LABEL[event.event_type] ?? "Sự kiện"}
+              {EVENT_TYPE_LABEL[event.event_type] ?? t`Sự kiện`}
             </p>
             <h3 className="text-xl font-semibold mt-0.5">{event.title}</h3>
           </div>

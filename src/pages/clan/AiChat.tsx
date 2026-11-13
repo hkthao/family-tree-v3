@@ -47,7 +47,7 @@ export default function AiChat() {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const vp = useVisualViewport();
 
-  usePageTitle("Trợ lý dòng họ");
+  usePageTitle(t`Trợ lý dòng họ`);
 
   const chat = useAiChatSession(clanId);
 

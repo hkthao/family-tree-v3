@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { getOrCreateTreeShareLink } from "@/lib/queries/share-links";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 interface Props {
   clanId: string;
   clanName: string;
@@ -203,12 +204,14 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
 
               {expiresAt && (
                 <p className="text-xs text-muted-foreground">
+                  <Trans>
                   Link hết hạn ngày {expiresAt.toLocaleDateString(currentIntlTag())}.
-                  {t`Quản lý / thu hồi sớm trong`}{" "}
+                  Quản lý / thu hồi sớm trong{" "}
                   <a href={`/clans/${clanId}/settings`} className="underline">
-                    {t`Cài đặt`}
+                    Cài đặt
                   </a>
                   .
+                  </Trans>
                 </p>
               )}
             </>

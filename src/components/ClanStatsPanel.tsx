@@ -137,7 +137,7 @@ export function ClanStatsPanel({
                 title={t`Giới tính`}
                 segments={[
                   {
-                    label: "Nam",
+                    label: t`Nam`,
                     value: counts.males,
                     className: "bg-primary",
                   },

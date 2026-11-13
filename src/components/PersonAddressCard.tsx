@@ -9,6 +9,7 @@ import { Chip } from "@/components/Chip";
 import type { PersonAddressInput } from "@/lib/queries/personAddresses";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 export const EMPTY_PERSON_ADDRESS: PersonAddressInput = {
   province_code: null,
   ward_code: null,
@@ -43,10 +44,12 @@ export function PersonAddressCard({
         </Chip>
       </div>
       <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-        {t`Không bắt buộc. Nếu bạn nhập thông tin ở đây,`}{" "}
-        <strong>{t`tỉnh/thành sẽ được hiển thị trên Bản đồ`}</strong> của dòng
+        <Trans>
+        Không bắt buộc. Nếu bạn nhập thông tin ở đây,{" "}
+        <strong>tỉnh/thành sẽ được hiển thị trên Bản đồ</strong> của dòng
         họ (chỉ thành viên dòng họ xem được). Không nhập thì người này sẽ không
         xuất hiện trên bản đồ.
+        </Trans>
       </p>
       <AddressPicker
         idPrefix="person-addr"

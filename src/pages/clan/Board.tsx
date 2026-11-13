@@ -289,7 +289,7 @@ function PostRow({
           <p className="mt-0.5 text-xs text-muted-foreground/80">
             {formatRelative(post.created_at)}
             {(isAuthor || admin) &&
-              t` · ${isAuthor ? "bạn" : post.author_id.slice(0, 8)}`}
+              t` · ${isAuthor ? t`bạn` : post.author_id.slice(0, 8)}`}
           </p>
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
             {post.pinned && (

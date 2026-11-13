@@ -38,6 +38,7 @@ import {
 import { supabase } from "@/lib/supabase";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 interface Props {
   clanId: string;
 }
@@ -286,7 +287,9 @@ function ShareLinkItem({
         <span className="text-muted-foreground">·</span>
         <span className="font-medium text-foreground">{scopeLabel}</span>
         <span className="text-muted-foreground">
+          <Trans>
           · hết hạn {new Date(link.expires_at).toLocaleDateString(currentIntlTag())}
+          </Trans>
         </span>
       </div>
 
@@ -369,7 +372,7 @@ function ShareLinkItem({
         url={shareUrl}
         title={
           isPersonScope
-            ? t`QR · ${personName ?? "Trang cá nhân"}`
+            ? t`QR · ${personName ?? t`Trang cá nhân`}`
             : t`Quét để xem cây gia phả`
         }
         description={

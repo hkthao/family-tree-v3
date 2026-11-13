@@ -82,12 +82,12 @@ export function RelationshipGroup({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{r.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {r.gender === "M" ? "Nam" : t`Nữ`}
+                    {r.gender === "M" ? t`Nam` : t`Nữ`}
                     {!r.is_living &&
                       t` · đã mất${r.death_date ? ` ${r.death_date.slice(0, 4)}` : ""}`}
                     {r.is_living &&
                       r.birth_date &&
-                      ` · sinh ${r.birth_date.slice(0, 4)}`}
+                      t` · sinh ${r.birth_date.slice(0, 4)}`}
                   </p>
                 </div>
                 {!reorder && (

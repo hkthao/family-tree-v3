@@ -112,6 +112,7 @@ import {
 } from "@/lib/tree/canvasModel";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 const FONT = '"Be Vietnam Pro", system-ui, sans-serif';
 
 const FRAME_COLOR: Record<
@@ -191,7 +192,7 @@ function yearsOf(p: PersonForTree): string {
   const b = p.birth_date?.slice(0, 4);
   const d = !p.is_living ? p.death_date?.slice(0, 4) : null;
   if (b && d) return `${b} – ${d}`;
-  if (b) return p.is_living ? `sinh ${b}` : `${b} – ?`;
+  if (b) return p.is_living ? t`sinh ${b}` : `${b} – ?`;
   if (d) return `? – ${d}`;
   return "";
 }
@@ -1489,7 +1490,7 @@ export default function TreeCanvas() {
       const url = await fileToBgDataUrl(file);
       update((l) => ({ ...l, bgImage: url }));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không dùng được ảnh này");
+      toast.error(e instanceof Error ? e.message : t`Không dùng được ảnh này`);
     }
   }
 
@@ -1521,7 +1522,7 @@ export default function TreeCanvas() {
       setTab("idle");
       toast.success(t`Đã lưu bố cục`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không lưu được");
+      toast.error(e instanceof Error ? e.message : t`Không lưu được`);
     } finally {
       setBusy(false);
     }
@@ -1541,7 +1542,7 @@ export default function TreeCanvas() {
       setTab("idle");
       toast.success(t`Đã xoá bố cục`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không xoá được");
+      toast.error(e instanceof Error ? e.message : t`Không xoá được`);
     } finally {
       setBusy(false);
     }
@@ -1626,7 +1627,7 @@ export default function TreeCanvas() {
       setTab("idle");
       toast.success(t`Đã xuất ${res.filename}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không xuất được PDF");
+      toast.error(e instanceof Error ? e.message : t`Không xuất được PDF`);
     } finally {
       setSel(prevSel);
       setBusy(false);
@@ -1739,7 +1740,7 @@ export default function TreeCanvas() {
           { label: t`Dòng họ`, to: "/clans" },
           { label: clan.name, to: `/clans/${clan.id}` },
           { label: t`Canvas phả đồ`, to: `/clans/${clan.id}/tree-canvases` },
-          { label: canvasName.trim() || "Cây tự xếp" },
+          { label: canvasName.trim() || t`Cây tự xếp` },
         ]}
       />
       <PageHeader
@@ -2427,8 +2428,10 @@ export default function TreeCanvas() {
             />
           </label>
           <p className="text-xs text-muted-foreground">
+            <Trans>
             Khổ giấy: {(pageMm.w / 10).toFixed(1)} ×{" "}
             {(pageMm.h / 10).toFixed(1)} cm (tối đa 500 cm mỗi cạnh).
+            </Trans>
           </p>
           <FormActions>
             <Button

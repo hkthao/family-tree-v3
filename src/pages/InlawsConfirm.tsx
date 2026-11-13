@@ -123,7 +123,7 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
     preview.person_a_birth_year && preview.person_a_death_year
       ? `${preview.person_a_birth_year}–${preview.person_a_death_year}`
       : preview.person_a_birth_year
-        ? `sinh ${preview.person_a_birth_year}`
+        ? t`sinh ${preview.person_a_birth_year}`
         : preview.person_a_death_year
           ? t`mất ${preview.person_a_death_year}`
           : "";
@@ -146,7 +146,7 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
         <p className="font-medium">
           {preview.person_a_name}
           <span className="ml-2 text-sm text-muted-foreground">
-            ({preview.person_a_gender === "M" ? "Nam" : t`Nữ`}
+            ({preview.person_a_gender === "M" ? t`Nam` : t`Nữ`}
             {lifespan ? ` · ${lifespan}` : ""})
           </span>
         </p>
@@ -378,12 +378,12 @@ function PickPerson({
         <div className="min-w-0 flex-1">
           <p className="font-medium">{picked.full_name}</p>
           <p className="text-xs text-muted-foreground">
-            {picked.gender === "M" ? "Nam" : t`Nữ`}
+            {picked.gender === "M" ? t`Nam` : t`Nữ`}
             {picked.generation !== null
               ? t` · Đời ${picked.generation - genOffset}`
               : ""}
             {picked.birth_date
-              ? ` · sinh ${picked.birth_date.slice(0, 4)}`
+              ? t` · sinh ${picked.birth_date.slice(0, 4)}`
               : ""}
           </p>
         </div>
@@ -426,11 +426,11 @@ function PickPerson({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {p.gender === "M" ? "Nam" : t`Nữ`}
+                    {p.gender === "M" ? t`Nam` : t`Nữ`}
                     {p.generation !== null
                       ? t` · Đời ${p.generation - genOffset}`
                       : ""}
-                    {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
+                    {p.birth_date ? t` · sinh ${p.birth_date.slice(0, 4)}` : ""}
                   </p>
                 </div>
               </button>

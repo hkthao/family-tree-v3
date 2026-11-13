@@ -347,7 +347,7 @@ function RoomForm({
     mutationFn: async () => {
       if (room) {
         await updateMemoryRoom(room.id, {
-          name: name.trim() || "Phòng ký ức",
+          name: name.trim() || t`Phòng ký ức`,
           theme,
           description: description.trim() || null,
           cover_image_url: coverUrl.trim() || null,
@@ -355,7 +355,7 @@ function RoomForm({
         return null;
       }
       const created = await createMemoryRoom(clanId, {
-        name: name.trim() || "Phòng ký ức",
+        name: name.trim() || t`Phòng ký ức`,
         theme,
         description: description.trim() || undefined,
         cover_image_url: coverUrl.trim() || null,

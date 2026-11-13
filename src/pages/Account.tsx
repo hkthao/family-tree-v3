@@ -682,15 +682,19 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
           <>
             {blocked && (
               <Alert variant="destructive">
+                <Trans>
                 <AlertDescription>
                   Bạn còn sở hữu {blockingCount} dòng họ có thành viên. Phải
                   chuyển quyền hoặc xoá dòng họ trước khi xoá tài khoản.
                 </AlertDescription>
+                </Trans>
               </Alert>
             )}
             <div className="space-y-2">
               <Label htmlFor="confirm">
+                <Trans>
                 Gõ <code className="font-bold">XOA</code> để xác nhận
+                </Trans>
               </Label>
               <Input
                 icon={<IconLock />}
@@ -1090,7 +1094,7 @@ function MonthlyLunarCard({
             </p>
             <p className="text-sm text-muted-foreground">
               <Trans>
-                {t`Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để dừng.`}
+                Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để dừng.
               </Trans>
             </p>
           </div>

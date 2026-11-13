@@ -202,7 +202,7 @@ export default function PersonDetail({
     onSuccess: async () => {
       track("person_deleted");
       await invalidateClanData(queryClient, clanId!);
-      toast.success(t`Đã xoá ${person?.full_name ?? "người này"}`, {
+      toast.success(t`Đã xoá ${person?.full_name ?? t`người này`}`, {
         description: t`Có thể khôi phục từ nhật ký.`,
       });
       if (embedded) embedded.onClose();
@@ -252,7 +252,7 @@ export default function PersonDetail({
     kind: "parent" | "spouse" | "child",
     rel: Relationship,
   ) {
-    const name = person?.full_name ?? "người này";
+    const name = person?.full_name ?? t`người này`;
     const text = {
       parent: {
         title: t`Gỡ ${rel.full_name} khỏi cha mẹ của ${name}?`,
@@ -321,7 +321,7 @@ export default function PersonDetail({
             items={[
               { label: clan.name, to: `/clans/${clanId}` },
               { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
-              { label: person?.full_name ?? "Người" },
+              { label: person?.full_name ?? t`Người` },
             ]}
           />
         )}
@@ -402,7 +402,7 @@ export default function PersonDetail({
             >
               <DetailRow
                 label={t`Giới tính`}
-                value={person.gender === "M" ? "Nam" : t`Nữ`}
+                value={person.gender === "M" ? t`Nam` : t`Nữ`}
               />
               <DetailRow label={t`Tên tự`} value={person.courtesy_name} />
               <DetailRow label={t`Tên húy`} value={person.nickname} />
@@ -564,7 +564,7 @@ export default function PersonDetail({
                   items={relationships.parents}
                   clanId={clanId}
                   photoUrls={relationPhotoUrls}
-                  emptyHint="Chưa nhập cha mẹ"
+                  emptyHint={t`Chưa nhập cha mẹ`}
                   onRemove={
                     canEdit ? (rel) => removeRelation("parent", rel) : undefined
                   }
@@ -588,7 +588,7 @@ export default function PersonDetail({
                   items={relationships.spouses}
                   clanId={clanId}
                   photoUrls={relationPhotoUrls}
-                  emptyHint="Chưa có vợ / chồng."
+                  emptyHint={t`Chưa có vợ / chồng.`}
                   onRemove={
                     canEdit ? (rel) => removeRelation("spouse", rel) : undefined
                   }
@@ -620,7 +620,7 @@ export default function PersonDetail({
                   items={relationships.children}
                   clanId={clanId}
                   photoUrls={relationPhotoUrls}
-                  emptyHint="Chưa có con cái."
+                  emptyHint={t`Chưa có con cái.`}
                   onRemove={
                     canEdit ? (rel) => removeRelation("child", rel) : undefined
                   }
@@ -1053,14 +1053,14 @@ function InLawLinkRow({
   // Build meta string once so the JSX stays readable.
   const metaBits: string[] = [peek.clan_name];
   if (!peek.masked) {
-    if (peek.gender) metaBits.push(peek.gender === "M" ? "Nam" : t`Nữ`);
+    if (peek.gender) metaBits.push(peek.gender === "M" ? t`Nam` : t`Nữ`);
     if (peek.generation !== null && peek.generation !== undefined) {
       metaBits.push(t`Đời ${peek.generation - (peek.generation_offset ?? 0)}`);
     }
     if (peek.birth_year && peek.death_year) {
       metaBits.push(`${peek.birth_year}–${peek.death_year}`);
     } else if (peek.birth_year) {
-      metaBits.push(`sinh ${peek.birth_year}`);
+      metaBits.push(t`sinh ${peek.birth_year}`);
     } else if (peek.death_year) {
       metaBits.push(t`mất ${peek.death_year}`);
     }
@@ -1165,19 +1165,19 @@ function MissingFieldsHint({
   const missing: string[] = [];
 
   if (!person.birth_date && !person.birth_lunar_year) {
-    missing.push("năm sinh");
+    missing.push(t`năm sinh`);
   }
   if (!person.is_living) {
     const hasDeath =
       !!person.death_date ||
       !!person.death_lunar_year ||
       !!person.death_anniv_lunar_month;
-    if (!hasDeath) missing.push("năm mất/giỗ");
+    if (!hasDeath) missing.push(t`năm mất/giỗ`);
   }
   if (!person.is_root && parentsCount === 0) {
-    missing.push("cha/mẹ");
+    missing.push(t`cha/mẹ`);
   }
-  if (!person.photo_path) missing.push("ảnh");
+  if (!person.photo_path) missing.push(t`ảnh`);
 
   if (missing.length === 0) return null;
 

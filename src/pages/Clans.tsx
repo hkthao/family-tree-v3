@@ -583,7 +583,9 @@ function ClanRow({
             {clan.name}
           </h2>
           <span className="hidden sm:inline text-xs text-muted-foreground shrink-0">
+            <Trans>
             {clan.person_count.toLocaleString("vi-VN")} thành viên
+            </Trans>
           </span>
         </div>
         {clan.description && (
@@ -593,7 +595,9 @@ function ClanRow({
         )}
         <p className="text-xs text-muted-foreground mt-1">
           <span className="sm:hidden">
+            <Trans>
             {clan.person_count.toLocaleString("vi-VN")} thành viên{" • "}
+            </Trans>
           </span>
           {clan.role ? (
             <span className="text-foreground">{roleLabel(clan.role)}</span>
@@ -683,7 +687,7 @@ function ClanCard({
 }
 
 function roleLabel(role: "admin" | "editor" | "viewer"): string {
-  return { admin: "Quản trị", editor: "Biên tập", viewer: "Xem" }[role];
+  return { admin: t`Quản trị`, editor: t`Biên tập`, viewer: t`Xem` }[role];
 }
 
 /** Dòng "Tạo … • Cập nhật …" — chỉ render phần có ngày hợp lệ. */

@@ -107,8 +107,10 @@ export function ChatThread({
             <IconSparkles className="mx-auto mb-3 h-8 w-8 text-primary" />
             <p className="mb-2 font-semibold">{t`Chào bạn 👋`}</p>
             <p className="text-muted-foreground">
+              <Trans>
               Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời thường
               ngày — ngày giỗ, cách xưng hô, ai là con ai.
+              </Trans>
             </p>
             {/* Chỉ mách cho người thật sự làm được. Mách cho người xem thì
                 họ kể xong mới biết mình không có quyền — hụt hẫng vô ích. */}

@@ -243,7 +243,7 @@ export function AddChildForm({
           }
         } else {
           if (!existingId) {
-            setFormError("Chọn người trong danh sách để gắn làm con");
+            setFormError(t`Chọn người trong danh sách để gắn làm con`);
             return;
           }
         }
@@ -279,7 +279,7 @@ export function AddChildForm({
           }}
         >
           <option value={SOLO_VALUE}>
-            Chưa rõ / đơn thân (chỉ {focal?.full_name ?? "người này"})
+            Chưa rõ / đơn thân (chỉ {focal?.full_name ?? t`người này`})
           </option>
           {rels?.spouses.map((s, i) => (
             <option key={s.id} value={s.id}>
@@ -295,7 +295,7 @@ export function AddChildForm({
           otherParent === SOLO_VALUE && (
             <Alert>
               <AlertDescription>
-                {focal?.full_name ?? "Người này"} đã có{" "}
+                {focal?.full_name ?? t`Người này`} đã có{" "}
                 {rels.spouses.length === 1
                   ? t`vợ/chồng (${rels.spouses[0].full_name})`
                   : t`${rels.spouses.length} vợ/chồng`}{" "}
@@ -346,7 +346,7 @@ export function AddChildForm({
                   onChange={() => setGender("M")}
                   className="h-4 w-4 accent-primary"
                 />
-                <span>Nam</span>
+                <span>{t`Nam`}</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -363,7 +363,7 @@ export function AddChildForm({
           <BirthOrderPicker
             value={birthOrder}
             onChange={setBirthOrder}
-            helper="App gợi ý dựa trên số con đã có. Sửa nếu cần."
+            helper={t`App gợi ý dựa trên số con đã có. Sửa nếu cần.`}
           />
 
           <CalendarDateInput
@@ -549,7 +549,7 @@ export default function AddChild() {
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
           { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
-          { label: focal?.full_name ?? "Người", to: back.split("?")[0] },
+          { label: focal?.full_name ?? t`Người`, to: back.split("?")[0] },
           { label: t`Thêm con` },
         ]}
       />

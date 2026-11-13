@@ -248,7 +248,9 @@ export default function Dashboard() {
         >
           <div>
             <p className="font-semibold">
+              <Trans>
               Chào mừng bạn đến với dòng họ {clan.name}! 🎉
+              </Trans>
             </p>
             <p className="text-sm text-muted-foreground">
               <Trans>
@@ -339,7 +341,7 @@ export default function Dashboard() {
             videoId="them-thuy-to"
             title={t`Chưa có ai trong dòng họ`}
             description={t`Bắt đầu bằng cách thêm Thuỷ tổ. Xem video 1 phút bên dưới rồi vào trang Thêm người.`}
-            ctaLabel="Thêm Thuỷ tổ"
+            ctaLabel={t`Thêm Thuỷ tổ`}
             ctaTo={`/clans/${clan.id}/people/new`}
           />
         ) : (
@@ -868,15 +870,19 @@ function CompletionTile({
           {top ? (
             <>
               <span className="text-muted-foreground">
-                {t`Còn`} <span className="tabular-nums">{top.count}</span> người{" "}
+                <Trans>
+                Còn <span className="tabular-nums">{top.count}</span> người{" "}
                 {CATEGORY_CTA[top.category]}
+                </Trans>
               </span>
               <span className="text-primary"> →</span>
             </>
           ) : (
             <span className="text-muted-foreground tabular-nums">
+              <Trans>
               {complete.toLocaleString(currentIntlTag())} /{" "}
               {total.toLocaleString(currentIntlTag())} người đã đủ thông tin.
+              </Trans>
             </span>
           )}
         </p>
