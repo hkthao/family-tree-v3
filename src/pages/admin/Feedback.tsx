@@ -46,19 +46,22 @@ import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
 import { RefreshIconButton } from "@/pages/admin/shared";
 
-const FEEDBACK_STATUS_LABEL: Record<FeedbackStatus, string> = {
-  new: "Mới",
-  seen: "Đã xem",
-  resolved: "Đã xử lý",
+import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const FEEDBACK_STATUS_LABEL: Record<FeedbackStatus, string> = lazyMessages({
+  new: msg`Mới`,
+  seen: msg`Đã xem`,
+  resolved: msg`Đã xử lý`,
   spam: "Spam",
-};
+}) as Record<FeedbackStatus, string>;
 
-const FEEDBACK_CATEGORY_LABEL: Record<FeedbackCategory, string> = {
-  bug: "Lỗi",
-  idea: "Ý kiến",
-  question: "Câu hỏi",
-  other: "Khác",
-};
+const FEEDBACK_CATEGORY_LABEL: Record<FeedbackCategory, string> = lazyMessages({
+  bug: msg`Lỗi`,
+  idea: msg`Ý kiến`,
+  question: msg`Câu hỏi`,
+  other: msg`Khác`,
+}) as Record<FeedbackCategory, string>;
 
 /** Màu chip + icon trạng thái: mới = vàng (cần xem); xử lý xong = xanh; spam = xám. */
 const STATUS_STYLE: Record<
@@ -140,7 +143,7 @@ export function FeedbackTab() {
   if (isLoading) {
     return (
       <div className="rounded-xl border bg-card p-4 shadow-sm">
-        <p className="text-muted-foreground">Đang tải…</p>
+        <p className="text-muted-foreground">{t`Đang tải…`}</p>
       </div>
     );
   }
@@ -160,13 +163,13 @@ export function FeedbackTab() {
       <CollapsibleFilters
         activeCount={statusFilter !== "new" ? 1 : 0}
         onReset={() => paging.patchAndResetPage({ status: null })}
-        title="Lọc góp ý"
+        title={t`Lọc góp ý`}
         search={(toggle) => (
           <SearchInput
-            label="Tìm trong nội dung / liên hệ / ghi chú"
+            label={t`Tìm trong nội dung / liên hệ / ghi chú`}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Tìm theo nội dung, email/SĐT, hoặc ghi chú admin…"
+            placeholder={t`Tìm theo nội dung, email/SĐT, hoặc ghi chú admin…`}
             className="pr-[4.75rem]"
             rightSlot={
               <>
@@ -181,18 +184,18 @@ export function FeedbackTab() {
           <Select
             value={statusFilter}
             onChange={(e) => paging.patchAndResetPage({ status: e.target.value })}
-            aria-label="Lọc theo trạng thái"
+            aria-label={t`Lọc theo trạng thái`}
             icon={<IconTag />}
             className="h-11 w-full text-base"
           >
             {STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s === "all" ? "Tất cả" : FEEDBACK_STATUS_LABEL[s]} ({s === "all" ? (data?.length ?? 0) : counts[s]})
+                {s === "all" ? t`Tất cả` : FEEDBACK_STATUS_LABEL[s]} ({s === "all" ? (data?.length ?? 0) : counts[s]})
               </option>
             ))}
           </Select>
           {(data?.length ?? 0) >= 500 && (
-            <p className="text-xs text-muted-foreground">Đang giới hạn 500 góp ý mới nhất.</p>
+            <p className="text-xs text-muted-foreground">{t`Đang giới hạn 500 góp ý mới nhất.`}</p>
           )}
         </div>
       </CollapsibleFilters>
@@ -201,12 +204,12 @@ export function FeedbackTab() {
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}
           title={
-            data?.length === 0 ? "Chưa có góp ý nào" : "Không có góp ý nào khớp"
+            data?.length === 0 ? t`Chưa có góp ý nào` : t`Không có góp ý nào khớp`
           }
           description={
             data?.length === 0
-              ? "Chờ người dùng gửi."
-              : "Thử đổi trạng thái hoặc bỏ bớt từ khoá."
+              ? t`Chờ người dùng gửi.`
+              : t`Thử đổi trạng thái hoặc bỏ bớt từ khoá.`
           }
         />
       )}
@@ -230,7 +233,7 @@ export function FeedbackTab() {
           totalPages={paging.totalPages}
           total={paging.total}
           pageSize={paging.pageSize}
-          unit="góp ý"
+          unit={t`góp ý`}
           onPageChange={paging.setPage}
           pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
           onPageSizeChange={paging.setPageSize}
@@ -239,7 +242,7 @@ export function FeedbackTab() {
 
       <SidePanel
         open={panel !== null}
-        title={panel?.mode === "edit" ? "Xử lý góp ý" : "Góp ý"}
+        title={panel?.mode === "edit" ? t`Xử lý góp ý` : t`Góp ý`}
         subtitle={panel ? formatTime(panel.row.created_at) : undefined}
         onClose={closePanel}
         guard={panel?.mode === "edit"}
@@ -279,8 +282,8 @@ function FeedbackRowItem({
   const StatusIcon = st.icon;
   const CatIcon = cat.icon;
   const who = row.user_id
-    ? (sender?.display_name || sender?.email || "Người dùng")
-    : "Khách (chưa đăng nhập)";
+    ? (sender?.display_name || sender?.email || t`Người dùng`)
+    : t`Khách (chưa đăng nhập)`;
   return (
     <li>
       <button
@@ -342,10 +345,10 @@ function FeedbackForm({
           : {}),
       }),
     onSuccess: () => {
-      toast.success("Đã cập nhật góp ý");
+      toast.success(t`Đã cập nhật góp ý`);
       onSaved();
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
@@ -358,34 +361,34 @@ function FeedbackForm({
     >
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-1.5">
-          <Label htmlFor="fb-msg">Nội dung</Label>
+          <Label htmlFor="fb-msg">{t`Nội dung`}</Label>
           <Textarea id="fb-msg" value={row.message} readOnly />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="fb-cat">Phân loại</Label>
+            <Label htmlFor="fb-cat">{t`Phân loại`}</Label>
             <Input id="fb-cat" icon={<IconTag />} value={FEEDBACK_CATEGORY_LABEL[row.category]} readOnly />
           </div>
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="fb-time">Thời gian</Label>
+            <Label htmlFor="fb-time">{t`Thời gian`}</Label>
             <Input id="fb-time" icon={<IconCalendar />} value={formatTime(row.created_at)} readOnly />
           </div>
         </div>
         {row.contact && (
           <div className="space-y-1.5">
-            <Label htmlFor="fb-contact">Liên lạc</Label>
+            <Label htmlFor="fb-contact">{t`Liên lạc`}</Label>
             <Input id="fb-contact" icon={<IconMail />} value={row.contact} readOnly />
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="fb-sender">Người gửi</Label>
+          <Label htmlFor="fb-sender">{t`Người gửi`}</Label>
           <Input
             id="fb-sender"
             icon={<IconUser />}
             value={
               row.user_id
-                ? [sender?.display_name, sender?.email].filter(Boolean).join(" · ") || "(đang tải…)"
-                : "Khách (chưa đăng nhập)"
+                ? [sender?.display_name, sender?.email].filter(Boolean).join(" · ") || t`(đang tải…)`
+                : t`Khách (chưa đăng nhập)`
             }
             readOnly
           />
@@ -395,16 +398,16 @@ function FeedbackForm({
               to={`/admin/nguoi-dung?q=${encodeURIComponent(sender.email)}`}
               className="inline-block text-sm text-primary hover:underline"
             >
-              Quản lý người dùng này ↗
+              {t`Quản lý người dùng này ↗`}
             </Link>
           )}
         </div>
         {row.clan_id && (
           <div className="space-y-1.5">
-            <Label htmlFor="fb-clan">Dòng họ</Label>
+            <Label htmlFor="fb-clan">{t`Dòng họ`}</Label>
             <Input id="fb-clan" value={row.clan_id} readOnly className="font-mono text-xs" />
             <Link to={`/clans/${row.clan_id}`} className="inline-block text-sm text-primary hover:underline">
-              Mở dòng họ ↗
+              {t`Mở dòng họ ↗`}
             </Link>
           </div>
         )}
@@ -418,7 +421,7 @@ function FeedbackForm({
             )}
             {row.app_version && (
               <div className="space-y-1.5">
-                <Label htmlFor="fb-ver">Phiên bản</Label>
+                <Label htmlFor="fb-ver">{t`Phiên bản`}</Label>
                 <Input id="fb-ver" value={row.app_version} readOnly className="font-mono text-xs" />
               </div>
             )}
@@ -427,7 +430,7 @@ function FeedbackForm({
         {row.user_agent && <p className="break-all text-xs text-muted-foreground/70">UA: {row.user_agent}</p>}
 
         <div className="space-y-1.5">
-          <Label htmlFor="fb-status">Trạng thái</Label>
+          <Label htmlFor="fb-status">{t`Trạng thái`}</Label>
           <Select
             id="fb-status"
             icon={<IconCheck />}
@@ -442,33 +445,33 @@ function FeedbackForm({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="fb-reply">Phản hồi cho người gửi (người gửi sẽ thấy)</Label>
+          <Label htmlFor="fb-reply">{t`Phản hồi cho người gửi (người gửi sẽ thấy)`}</Label>
           <Textarea
             id="fb-reply"
             value={reply}
             onChange={(e) => setReply(e.target.value)}
-            placeholder="Vd: Cảm ơn bạn, lỗi này đã được sửa ở bản mới nhất."
+            placeholder={t`Vd: Cảm ơn bạn, lỗi này đã được sửa ở bản mới nhất.`}
             maxLength={2000}
           />
           {!row.user_id && (
             <p className="text-xs text-muted-foreground">
-              Góp ý này gửi khi chưa đăng nhập nên người gửi không xem lại được phản hồi.
+              {t`Góp ý này gửi khi chưa đăng nhập nên người gửi không xem lại được phản hồi.`}
             </p>
           )}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="fb-note">Ghi chú nội bộ (chỉ admin xem)</Label>
+          <Label htmlFor="fb-note">{t`Ghi chú nội bộ (chỉ admin xem)`}</Label>
           <Textarea
             id="fb-note"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Ghi chú nội bộ…"
+            placeholder={t`Ghi chú nội bộ…`}
             maxLength={4000}
           />
         </div>
         {readOnly && !row.admin_note && (
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <IconScroll className="h-3.5 w-3.5" /> Chưa có ghi chú nội bộ.
+            <IconScroll className="h-3.5 w-3.5" /> {t`Chưa có ghi chú nội bộ.`}
           </p>
         )}
       </ReadOnlyFieldset>

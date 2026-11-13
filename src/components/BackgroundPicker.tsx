@@ -12,7 +12,17 @@ import {
 import { cn } from "@/lib/utils";
 import { getTheme, subscribeTheme, type Theme } from "@/lib/theme";
 
-import { t } from "@lingui/core/macro";
+import { msg, t } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+
+const BG_LABEL: Record<string, string> = lazyMessages({
+  "nui-suong": msg`Núi sương`,
+  "son-thuy": msg`Sơn thuỷ`,
+  "tung-nui": msg`Tùng và núi`,
+  truc: msg`Trúc`,
+  sen: msg`Sen`,
+  mai: msg`Mai dưới trăng`,
+}) as Record<string, string>;
 function isDark(t: Theme): boolean {
   return (
     t === "dark" ||
@@ -50,7 +60,7 @@ export function BackgroundPicker() {
             type="button"
             onClick={() => setBackground({ id: b.id })}
             aria-pressed={id === b.id}
-            title={b.label}
+            title={BG_LABEL[b.id]}
             className={cn(
               "relative aspect-video overflow-hidden rounded-lg border-2",
               id === b.id
@@ -68,7 +78,7 @@ export function BackgroundPicker() {
               {id === b.id && (
                 <IconCheck className="h-3.5 w-3.5 text-primary" />
               )}
-              {b.label}
+              {BG_LABEL[b.id]}
             </span>
           </button>
         ))}

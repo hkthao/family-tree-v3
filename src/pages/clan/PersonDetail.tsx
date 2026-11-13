@@ -1233,7 +1233,7 @@ function RelatedPostsSection({
               to={`/clans/${clanId}/board`}
               className="font-medium hover:underline block"
             >
-              {p.title ?? (p.type === "death" ? t`Cáo phó` : "Tin")}
+              {p.title ?? (p.type === "death" ? t`Cáo phó` : t`Tin`)}
             </Link>
             <p className="text-sm text-muted-foreground line-clamp-2 whitespace-pre-line">
               {p.body}

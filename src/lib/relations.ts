@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 /**
  * Tra cứu quan hệ của MỘT người (kiểu bảng Excel gia phả): tổ tiên theo dòng cha, mẹ,
  * vợ/chồng, anh chị em, bác–chú–cô–cậu–dì, và bảng con cháu theo từng đời. Hàm thuần, không
@@ -205,10 +206,21 @@ export function descendantRows(
     .map((x) => x.r);
 }
 
-const LEVEL_NAMES = ["", "con", "cháu", "chắt", "chít"];
 /** Tên bậc con cháu: con, cháu, chắt, chít, rồi "thế hệ thứ N" (N tính từ người đang xem). */
-export const levelName = (level: number): string =>
-  LEVEL_NAMES[level] ?? `thế hệ thứ ${level}`;
+export const levelName = (level: number): string => {
+  switch (level) {
+    case 1:
+      return t`con`;
+    case 2:
+      return t`cháu`;
+    case 3:
+      return t`chắt`;
+    case 4:
+      return t`chít`;
+    default:
+      return t`thế hệ thứ ${level}`;
+  }
+};
 
 /**
  * "4 con, 19 cháu, 3 chắt, 2 chít, 14 đời sau" — chỉ gọi tên đến chít, các đời xa hơn gộp
@@ -224,13 +236,24 @@ export function descendantSummary(rows: DescendantRow[]): string {
   const parts = [...counts.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([level, n]) => `${n} ${levelName(level)}`);
-  if (further > 0) parts.push(`${further} đời sau`);
+  if (further > 0) parts.push(t`${further} đời sau`);
   return parts.join(", ");
 }
 
 /** Nhãn dòng cha theo thứ bậc: cha, ông, cụ, kỵ, rồi "tiên tổ đời N". */
 export function ancestorLabel(level: number): string {
-  return ["", "Cha", "Ông", "Cụ", "Kỵ"][level] ?? `Tiên tổ (${level} đời trên)`;
+  switch (level) {
+    case 1:
+      return t`Cha`;
+    case 2:
+      return t`Ông`;
+    case 3:
+      return t`Cụ`;
+    case 4:
+      return t`Kỵ`;
+    default:
+      return t`Tiên tổ (${level} đời trên)`;
+  }
 }
 
 /** Toàn bộ nội dung "Tra cứu quan hệ" của một người — MỘT nguồn cho giao diện, CSV và PDF. */

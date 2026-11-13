@@ -92,7 +92,7 @@ export default function Videos() {
             active={activeGroup === "all"}
             onClick={() => setActiveGroup("all")}
           >
-            Tất cả ({VIDEO_TUTORIALS.length})
+            {t`Tất cả (${VIDEO_TUTORIALS.length})`}
           </FilterChip>
           {(Object.keys(VIDEO_GROUPS) as VideoGroup[]).map((g) => {
             const count = VIDEO_TUTORIALS.filter((v) => v.group === g).length;

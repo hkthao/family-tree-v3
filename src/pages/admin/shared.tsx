@@ -5,6 +5,7 @@ import {
 } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
+import { t } from "@lingui/core/macro";
 export function RefreshIconButton({
   onClick,
   busy,
@@ -21,8 +22,8 @@ export function RefreshIconButton({
       variant="outline"
       onClick={onClick}
       disabled={busy}
-      aria-label="Tải lại"
-      title={busy ? "Đang tải…" : "Tải lại dữ liệu mới nhất"}
+      aria-label={t`Tải lại`}
+      title={busy ? t`Đang tải…` : t`Tải lại dữ liệu mới nhất`}
       className={compact ? "h-8 w-8 shrink-0 border-0 bg-transparent p-0 hover:bg-muted" : "h-9 w-9 p-0 shrink-0"}
     >
       <IconRefresh className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} />
@@ -46,7 +47,7 @@ export function CollapsibleHint({ children }: { children: React.ReactNode }) {
         onClick={() => setExpanded((x) => !x)}
         className="mt-1 text-xs text-primary hover:underline sm:hidden"
       >
-        {expanded ? "Thu gọn" : "Xem thêm"}
+        {expanded ? t`Thu gọn` : t`Xem thêm`}
       </button>
     </div>
   );

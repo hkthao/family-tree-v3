@@ -7,32 +7,34 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
 export type HistoricalCategory = "royal" | "noble" | "official" | "military";
 export type Confidence = "confirmed" | "single_source" | "disputed" | "legendary";
 
-export const HISTORICAL_CATEGORY_LABEL: Record<HistoricalCategory, string> = {
-  royal: "Hoàng tộc",
-  noble: "Quý tộc",
-  official: "Quan lại – khoa bảng",
-  military: "Võ tướng",
-};
+export const HISTORICAL_CATEGORY_LABEL: Record<HistoricalCategory, string> = lazyMessages({
+  royal: msg`Hoàng tộc`,
+  noble: msg`Quý tộc`,
+  official: msg`Quan lại – khoa bảng`,
+  military: msg`Võ tướng`,
+}) as Record<HistoricalCategory, string>;
 
-export const CONFIDENCE_LABEL: Record<Confidence, string> = {
-  confirmed: "Khớp nhiều nguồn",
-  single_source: "Một nguồn",
-  disputed: "Dị bản",
-  legendary: "Truyền thuyết",
-};
+export const CONFIDENCE_LABEL: Record<Confidence, string> = lazyMessages({
+  confirmed: msg`Khớp nhiều nguồn`,
+  single_source: msg`Một nguồn`,
+  disputed: msg`Dị bản`,
+  legendary: msg`Truyền thuyết`,
+}) as Record<Confidence, string>;
 
-export const REIGN_ROLE_LABEL: Record<string, string> = {
+export const REIGN_ROLE_LABEL: Record<string, string> = lazyMessages({
   emperor: "Vua",
-  retired_emperor: "Thái thượng hoàng",
-  lord: "Chúa",
-  regent: "Nhiếp chính",
-};
+  retired_emperor: msg`Thái thượng hoàng`,
+  lord: msg`Chúa`,
+  regent: msg`Nhiếp chính`,
+}) as Record<string, string>;
 
 export interface Reign {
   id: string;

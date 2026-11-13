@@ -53,7 +53,7 @@ export function HelpVideoButton({
           className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
         >
           <IconHelp className="h-4 w-4" />
-          Xem hướng dẫn {formatDuration(tutorial.duration)}
+          {t`Xem hướng dẫn ${formatDuration(tutorial.duration)}`}
         </button>
       )}
 

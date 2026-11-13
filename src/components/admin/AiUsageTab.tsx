@@ -26,6 +26,8 @@ import {
   type AiUsageDay,
 } from "@/lib/queries/aiReports";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Báo cáo sử dụng trợ lý AI.
  *
@@ -86,53 +88,53 @@ export function AiUsageTab() {
     <div className="space-y-4">
       {/* Bộ lọc thời gian: một hàng, ngay trên số liệu. */}
       <div className="flex items-center gap-3">
-        <SegmentedControl ariaLabel="Khoảng thời gian">
+        <SegmentedControl ariaLabel={t`Khoảng thời gian`}>
           {RANGES.map((r) => (
             <SegmentedButton
               key={r}
               active={days === r}
               onClick={() => setDays(r)}
             >
-              {r} ngày
+              {t`${r} ngày`}
             </SegmentedButton>
           ))}
         </SegmentedControl>
         <p className="text-sm text-muted-foreground">
-          Tính theo giờ Việt Nam
+          {t`Tính theo giờ Việt Nam`}
         </p>
       </div>
 
       {/* Số liệu đầu bảng — cái nhìn năm giây. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
-        <Stat label="Lượt hỏi" value={o.requests.toLocaleString("vi-VN")} />
-        <Stat label="Người dùng" value={o.users.toLocaleString("vi-VN")} />
+        <Stat label={t`Lượt hỏi`} value={o.requests.toLocaleString("vi-VN")} />
+        <Stat label={t`Người dùng`} value={o.users.toLocaleString("vi-VN")} />
         <Stat
-          label="Chi phí"
+          label={t`Chi phí`}
           value={formatUsd(o.cost_usd)}
           hint={formatVnd(o.cost_usd)}
         />
         <Stat
-          label="Lượt lỗi"
+          label={t`Lượt lỗi`}
           value={o.failed.toLocaleString("vi-VN")}
           tone={o.failed > 0 && o.failed / Math.max(o.requests, 1) > 0.05 ? "bad" : undefined}
           hint={o.requests ? `${Math.round((o.failed / o.requests) * 100)}%` : undefined}
         />
         <Stat
-          label="Cache đầu vào"
+          label={t`Cache đầu vào`}
           value={`${Math.round(o.cached_ratio * 100)}%`}
           // Cache tụt là hoá đơn tăng âm thầm — cảnh báo sớm hơn là đợi
           // nhìn thấy tiền.
           tone={o.requests > 20 && o.cached_ratio < 0.3 ? "bad" : undefined}
-          hint={`${formatTokens(o.input_tokens)} token vào`}
+          hint={t`${formatTokens(o.input_tokens)} token vào`}
         />
         <Stat
-          label="Hài lòng"
+          label={t`Hài lòng`}
           value={
             o.liked_ratio === null
               ? "—"
               : `${Math.round(o.liked_ratio * 100)}%`
           }
-          hint={o.rated ? `${o.rated} lượt được chấm` : "chưa ai chấm điểm"}
+          hint={o.rated ? t`${o.rated} lượt được chấm` : t`chưa ai chấm điểm`}
           // Dưới 60% là câu trả lời đang sai nhiều — đáng đi soi
           // trước khi người dùng bỏ dùng trợ lý.
           tone={
@@ -142,7 +144,7 @@ export function AiUsageTab() {
           }
         />
         <Stat
-          label="Độ trễ TB"
+          label={t`Độ trễ TB`}
           value={`${(o.avg_latency_ms / 1000).toFixed(1)}s`}
           tone={o.avg_latency_ms > 15_000 ? "bad" : undefined}
         />
@@ -151,19 +153,19 @@ export function AiUsageTab() {
       {credits.data && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Hạn mức tháng này</CardTitle>
+            <CardTitle className="text-base">{t`Hạn mức tháng này`}</CardTitle>
             <CardDescription>
-              Số người đang hết lượt là con số để quyết định 10 lượt/tháng có
-              chật hay không — cần nó trước khi định giá.
+              <Trans>Số người đang hết lượt là con số để quyết định 10 lượt/tháng có
+              chật hay không — cần nó trước khi định giá.</Trans>
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-            <Stat label="Đã cấp" value={credits.data.granted.toLocaleString("vi-VN")} />
-            <Stat label="Đã tiêu" value={credits.data.consumed.toLocaleString("vi-VN")} />
-            <Stat label="Hoàn do lỗi" value={credits.data.refunded.toLocaleString("vi-VN")} />
-            <Stat label="Số ví" value={credits.data.wallets.toLocaleString("vi-VN")} />
+            <Stat label={t`Đã cấp`} value={credits.data.granted.toLocaleString("vi-VN")} />
+            <Stat label={t`Đã tiêu`} value={credits.data.consumed.toLocaleString("vi-VN")} />
+            <Stat label={t`Hoàn do lỗi`} value={credits.data.refunded.toLocaleString("vi-VN")} />
+            <Stat label={t`Số ví`} value={credits.data.wallets.toLocaleString("vi-VN")} />
             <Stat
-              label="Đang hết lượt"
+              label={t`Đang hết lượt`}
               value={credits.data.exhausted.toLocaleString("vi-VN")}
               tone={credits.data.exhausted > 0 ? "warn" : undefined}
             />
@@ -173,10 +175,10 @@ export function AiUsageTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Lượt hỏi theo ngày</CardTitle>
+          <CardTitle className="text-base">{t`Lượt hỏi theo ngày`}</CardTitle>
           <CardDescription>
-            Cột đỏ là lượt hỏng. Ngày vọt lên bất thường thường là vòng lặp
-            lỗi ở client chứ không phải người dùng đông.
+            <Trans>Cột đỏ là lượt hỏng. Ngày vọt lên bất thường thường là vòng lặp
+            lỗi ở client chứ không phải người dùng đông.</Trans>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -189,7 +191,7 @@ export function AiUsageTab() {
           <CardHeader>
             <CardTitle className="text-base">Theo model</CardTitle>
             <CardDescription>
-              Đổi model xong có rẻ đi thật không — và nhanh hơn hay chậm đi.
+              {t`Đổi model xong có rẻ đi thật không — và nhanh hơn hay chậm đi.`}
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
@@ -197,9 +199,9 @@ export function AiUsageTab() {
               <thead className="text-left text-muted-foreground">
                 <tr>
                   <th className="pb-2 font-medium">Model</th>
-                  <th className="pb-2 text-right font-medium">Lượt</th>
-                  <th className="pb-2 text-right font-medium">Chi phí</th>
-                  <th className="pb-2 text-right font-medium">Trễ TB</th>
+                  <th className="pb-2 text-right font-medium">{t`Lượt`}</th>
+                  <th className="pb-2 text-right font-medium">{t`Chi phí`}</th>
+                  <th className="pb-2 text-right font-medium">{t`Trễ TB`}</th>
                   <th className="pb-2 text-right font-medium">Cache</th>
                 </tr>
               </thead>
@@ -227,20 +229,20 @@ export function AiUsageTab() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Theo dòng họ</CardTitle>
+            <CardTitle className="text-base">{t`Theo dòng họ`}</CardTitle>
             <CardDescription>
-              Chỉ lượt và tiền — không có câu hỏi, vì bảng ai_usage cố ý
-              không lưu nội dung.
+              <Trans>Chỉ lượt và tiền — không có câu hỏi, vì bảng ai_usage cố ý
+              không lưu nội dung.</Trans>
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-left text-muted-foreground">
                 <tr>
-                  <th className="pb-2 font-medium">Dòng họ</th>
-                  <th className="pb-2 text-right font-medium">Lượt</th>
-                  <th className="pb-2 text-right font-medium">Người</th>
-                  <th className="pb-2 text-right font-medium">Chi phí</th>
+                  <th className="pb-2 font-medium">{t`Dòng họ`}</th>
+                  <th className="pb-2 text-right font-medium">{t`Lượt`}</th>
+                  <th className="pb-2 text-right font-medium">{t`Người`}</th>
+                  <th className="pb-2 text-right font-medium">{t`Chi phí`}</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,7 +270,7 @@ function EmptyRow({ cols }: { cols: number }) {
   return (
     <tr>
       <td colSpan={cols} className="py-6 text-center text-muted-foreground">
-        Chưa có dữ liệu trong khoảng này.
+        {t`Chưa có dữ liệu trong khoảng này.`}
       </td>
     </tr>
   );
@@ -312,7 +314,7 @@ function DailyBars({ rows }: { rows: AiUsageDay[] }) {
   if (!rows.length) {
     return (
       <p className="py-6 text-center text-sm text-muted-foreground">
-        Chưa có lượt hỏi nào trong khoảng này.
+        {t`Chưa có lượt hỏi nào trong khoảng này.`}
       </p>
     );
   }
@@ -333,7 +335,7 @@ function DailyBars({ rows }: { rows: AiUsageDay[] }) {
             </span>
             <span
               className="flex h-4 min-w-0 flex-1 items-center gap-[2px]"
-              title={`${r.requests} lượt · ${r.failed} lỗi · ${formatUsd(r.cost_usd)}`}
+              title={t`${r.requests} lượt · ${r.failed} lỗi · ${formatUsd(r.cost_usd)}`}
             >
               <span
                 className="h-full rounded-[4px] bg-primary"

@@ -323,7 +323,7 @@ export function buildSections(
   ];
   sections.push({
     id: "global",
-    label: "Chung",
+    label: t`Chung`,
     items: global,
     // Gập được (mặc định mở): nhóm dùng chung không phải thứ người ta cần hằng ngày bằng nhóm lõi
     // của dòng họ, nên cho thu gọn để menu ngắn lại. Nhóm lõi của dòng họ (Cây, Danh bạ) vẫn không gập được.

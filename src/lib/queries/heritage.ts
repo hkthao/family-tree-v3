@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { deletePersonPhoto } from "@/lib/photoUpload";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
@@ -90,20 +92,20 @@ export type HeritageCategory = "place" | "custom" | "story" | "artifact";
 export type HeritageStatus = "active" | "draft" | "archived";
 export type HeritageMediaKind = "photo" | "audio" | "video";
 
-export const HERITAGE_CATEGORY_LABEL: Record<HeritageCategory, string> = {
-  place: "Từ đường / đền / chùa",
-  custom: "Tục lệ / gia phong",
-  story: "Giai thoại / công trạng",
-  artifact: "Tư liệu / kỷ vật",
-};
+export const HERITAGE_CATEGORY_LABEL: Record<HeritageCategory, string> = lazyMessages({
+  place: msg`Từ đường / đền / chùa`,
+  custom: msg`Tục lệ / gia phong`,
+  story: msg`Giai thoại / công trạng`,
+  artifact: msg`Tư liệu / kỷ vật`,
+}) as Record<HeritageCategory, string>;
 
 /** Mô tả ngắn gọi mời nhập (đặt dưới tiêu đề ở form). */
-export const HERITAGE_CATEGORY_HINT: Record<HeritageCategory, string> = {
-  place: "Nơi thờ tự của dòng họ: từ đường, nhà thờ họ, đền, chùa gửi giỗ…",
-  custom: "Lệ giỗ, gia phong, văn khấn, hương ước, cách xưng hô trong họ…",
-  story: "Truyền thuyết, công trạng, giai thoại về tổ tiên, người có công…",
-  artifact: "Sắc phong, hoành phi, câu đối, gia phả cũ, kỷ vật quý của họ…",
-};
+export const HERITAGE_CATEGORY_HINT: Record<HeritageCategory, string> = lazyMessages({
+  place: msg`Nơi thờ tự của dòng họ: từ đường, nhà thờ họ, đền, chùa gửi giỗ…`,
+  custom: msg`Lệ giỗ, gia phong, văn khấn, hương ước, cách xưng hô trong họ…`,
+  story: msg`Truyền thuyết, công trạng, giai thoại về tổ tiên, người có công…`,
+  artifact: msg`Sắc phong, hoành phi, câu đối, gia phả cũ, kỷ vật quý của họ…`,
+}) as Record<HeritageCategory, string>;
 
 /**
  * Câu hỏi gợi ý theo từng loại — DÀNH CHO NGƯỜI LỚN TUỔI: thay vì đối mặt

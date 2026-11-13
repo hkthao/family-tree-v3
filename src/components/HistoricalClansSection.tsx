@@ -205,7 +205,7 @@ function ClanChips({
         <span
           className={`${chip} border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`}
         >
-          {clan.person_count.toLocaleString(currentIntlTag())} người
+          {t`${clan.person_count.toLocaleString(currentIntlTag())} người`}
         </span>
         <span
           className={`${chip} ${CATEGORY_CHIP[clan.historical_category ?? "royal"]}`}

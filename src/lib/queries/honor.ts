@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
@@ -23,12 +25,12 @@ export interface HonorEntry {
   created_at: string;
 }
 
-export const HONOR_CATEGORY_LABEL: Record<HonorCategory, string> = {
-  donation_money: "Công đức (tiền)",
-  donation_labor: "Đóng góp công sức",
-  academic: "Thành tích học tập",
-  other: "Khác",
-};
+export const HONOR_CATEGORY_LABEL: Record<HonorCategory, string> = lazyMessages({
+  donation_money: msg`Công đức (tiền)`,
+  donation_labor: msg`Đóng góp công sức`,
+  academic: msg`Thành tích học tập`,
+  other: msg`Khác`,
+}) as Record<HonorCategory, string>;
 
 const COLS =
   "id, clan_id, person_id, honoree_name, category, amount, note, occurred_on, created_at";

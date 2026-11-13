@@ -364,9 +364,8 @@ function Group({
               <p className="text-xs text-muted-foreground truncate">
                 {p.gender === "M" ? t`Nam` : t`Nữ`}
                 {!p.is_living &&
-                  ` · đã mất${
-                    p.death_date ? ` ${p.death_date.slice(0, 4)}` : ""
-                  }`}
+                  t` · đã mất` +
+                    (p.death_date ? ` ${p.death_date.slice(0, 4)}` : "")}
                 {p.is_living &&
                   p.birth_date &&
                   t` · sinh ${p.birth_date.slice(0, 4)}`}

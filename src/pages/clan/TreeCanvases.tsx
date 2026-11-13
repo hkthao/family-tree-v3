@@ -271,7 +271,7 @@ export default function TreeCanvases() {
                     {c.name}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    Cập nhật {formatRelative(c.updated_at) ?? "—"}
+                    {t`Cập nhật ${formatRelative(c.updated_at) ?? "—"}`}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     <Trans>

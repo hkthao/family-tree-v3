@@ -289,7 +289,7 @@ export default function Dashboard() {
         <section className="rounded-xl border bg-card shadow-sm p-4">
           <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
             <IconLink className="h-4 w-4 text-primary" />
-            Đã kết thông gia với {inlaws.length} dòng họ
+            {t`Đã kết thông gia với ${inlaws.length} dòng họ`}
           </h2>
           <div className="flex flex-wrap gap-2">
             {inlaws.map((c) => (
@@ -309,7 +309,7 @@ export default function Dashboard() {
         <section className="rounded-xl border bg-card shadow-sm p-4">
           <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold">
             <IconLink className="h-4 w-4 text-primary" />
-            Liên kết với {linked.length} dòng họ khác
+            {t`Liên kết với ${linked.length} dòng họ khác`}
           </h2>
           <div className="flex flex-wrap gap-2">
             {linked.map((c) => (

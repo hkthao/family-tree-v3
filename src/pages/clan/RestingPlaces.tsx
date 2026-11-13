@@ -306,7 +306,7 @@ export default function RestingPlaces() {
                         );
                       })()}
                       <Chip tone="success" icon={<IconUsers />}>
-                        {p.occupant_count} người an nghỉ
+                        {t`${p.occupant_count} người an nghỉ`}
                       </Chip>
                       {dir && (
                         <Chip tone="info" icon={<IconMapPin />}>

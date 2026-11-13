@@ -1,4 +1,6 @@
 import { supabase } from "../supabase";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 /**
  * Sổ cái quyền lợi — **cố tình đặt tên chung, không phải `ai*`**.
@@ -65,13 +67,13 @@ export interface CreditEntry {
 }
 
 /** Nhãn tiếng Việt cho từng loại bút toán. Người dùng không đọc enum. */
-export const CREDIT_REASON_LABEL: Record<CreditReason, string> = {
-  monthly_free: "Lượt tặng hằng tháng",
-  purchase: "Mua thêm",
-  consume: "Hỏi trợ lý",
-  refund: "Hoàn lại do lỗi",
-  admin_grant: "Quản trị cấp thêm",
-};
+export const CREDIT_REASON_LABEL: Record<CreditReason, string> = lazyMessages({
+  monthly_free: msg`Lượt tặng hằng tháng`,
+  purchase: msg`Mua thêm`,
+  consume: msg`Hỏi trợ lý`,
+  refund: msg`Hoàn lại do lỗi`,
+  admin_grant: msg`Quản trị cấp thêm`,
+}) as Record<CreditReason, string>;
 
 /**
  * Sổ của chính mình, mới nhất trước.

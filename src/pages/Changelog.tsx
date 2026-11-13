@@ -13,6 +13,8 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 /**
  * `/changelog` — public, không cần đăng nhập. Đọc các tin
  * `is_public=true`. Plan §32.9 O4: đây là single source of truth cho
@@ -21,12 +23,12 @@ import { t } from "@lingui/core/macro";
  * SEO note (plan §32.9 O10): server-side render về sau để search
  * engine index "cập nhật gia phả tháng X".
  */
-const LEVEL_LABEL: Record<AnnouncementLevel, string> = {
-  info: "Tin",
-  update: "Cập nhật",
-  warning: "Cảnh báo",
-  critical: "Quan trọng",
-};
+const LEVEL_LABEL: Record<AnnouncementLevel, string> = lazyMessages({
+  info: msg`Tin`,
+  update: msg`Cập nhật`,
+  warning: msg`Cảnh báo`,
+  critical: msg`Quan trọng`,
+}) as Record<AnnouncementLevel, string>;
 
 const LEVEL_BADGE: Record<AnnouncementLevel, string> = {
   info: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30",

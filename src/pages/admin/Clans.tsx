@@ -39,6 +39,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
 import { RefreshIconButton } from "@/pages/admin/shared";
 
+import { t } from "@lingui/core/macro";
 type VisibilityFilter = "" | "public" | "private";
 
 /** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa hạn mức một dòng họ. */
@@ -76,13 +77,13 @@ export function ClansTab() {
           setVisibility("");
           paging.patchAndResetPage({});
         }}
-        title="Lọc dòng họ"
+        title={t`Lọc dòng họ`}
         search={(toggle) => (
           <SearchInput
-            label="Tìm dòng họ theo tên"
+            label={t`Tìm dòng họ theo tên`}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Tìm dòng họ theo tên — gõ không dấu cũng được"
+            placeholder={t`Tìm dòng họ theo tên — gõ không dấu cũng được`}
             className="pr-[4.75rem]"
             rightSlot={
               <>
@@ -100,28 +101,28 @@ export function ClansTab() {
               setVisibility(e.target.value as VisibilityFilter);
               paging.patchAndResetPage({});
             }}
-            aria-label="Lọc theo chế độ hiển thị"
+            aria-label={t`Lọc theo chế độ hiển thị`}
             icon={<IconTag />}
             className="h-11 w-full text-base"
           >
-            <option value="">Mọi dòng họ</option>
-            <option value="public">Công khai</option>
-            <option value="private">Riêng tư</option>
+            <option value="">{t`Mọi dòng họ`}</option>
+            <option value="public">{t`Công khai`}</option>
+            <option value="private">{t`Riêng tư`}</option>
           </Select>
         </div>
       </CollapsibleFilters>
 
       {isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
 
       {!isLoading && filtered.length === 0 && (
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}
-          title={q || visibility ? "Không có dòng họ nào khớp" : "Chưa có dòng họ nào"}
-          description={q || visibility ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : undefined}
+          title={q || visibility ? t`Không có dòng họ nào khớp` : t`Chưa có dòng họ nào`}
+          description={q || visibility ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.` : undefined}
         />
       )}
 
@@ -139,7 +140,7 @@ export function ClansTab() {
           totalPages={paging.totalPages}
           total={paging.total}
           pageSize={paging.pageSize}
-          unit="dòng họ"
+          unit={t`dòng họ`}
           onPageChange={paging.setPage}
           pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
           onPageSizeChange={paging.setPageSize}
@@ -148,7 +149,7 @@ export function ClansTab() {
 
       <SidePanel
         open={panel !== null}
-        title={panel?.mode === "edit" ? "Sửa hạn mức dòng họ" : "Dòng họ"}
+        title={panel?.mode === "edit" ? t`Sửa hạn mức dòng họ` : t`Dòng họ`}
         subtitle={panel?.clan.name}
         onClose={closePanel}
         guard={panel?.mode === "edit"}
@@ -200,10 +201,10 @@ function ClanRow({ clan, onOpen }: { clan: AdminClanRow; onOpen: () => void }) {
           />
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
             <Chip tone={isPublic ? "info" : "neutral"} icon={isPublic ? <IconGlobe /> : <IconLock />}>
-              {isPublic ? "Công khai" : "Riêng tư"}
+              {isPublic ? t`Công khai` : t`Riêng tư`}
             </Chip>
             <Chip tone="success" icon={<IconUsers />}>
-              {clan.person_count} người
+              {t`${clan.person_count} người`}
             </Chip>
           </div>
         </div>
@@ -255,10 +256,10 @@ function ClanForm({
         ai_monthly_limit: asLimit(aiMonthly),
       }),
     onSuccess: () => {
-      toast.success("Đã cập nhật giới hạn dòng họ");
+      toast.success(t`Đã cập nhật giới hạn dòng họ`);
       onSaved();
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
@@ -271,22 +272,22 @@ function ClanForm({
     >
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-1.5">
-          <Label htmlFor="c-name">Tên dòng họ</Label>
+          <Label htmlFor="c-name">{t`Tên dòng họ`}</Label>
           <Input id="c-name" icon={<IconBuildings />} value={clan.name} readOnly />
           <Link to={`/clans/${clan.id}`} className="inline-block text-sm text-primary hover:underline">
-            Mở dòng họ →
+            {t`Mở dòng họ →`}
           </Link>
         </div>
         {clan.description && (
           <div className="space-y-1.5">
-            <Label htmlFor="c-desc">Mô tả</Label>
+            <Label htmlFor="c-desc">{t`Mô tả`}</Label>
             <Textarea id="c-desc" value={clan.description} readOnly />
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="mp">Giới hạn người</Label>
+            <Label htmlFor="mp">{t`Giới hạn người`}</Label>
             <Input
               id="mp"
               icon={<IconUsers />}
@@ -297,7 +298,7 @@ function ClanForm({
             />
           </div>
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="mu">Giới hạn tài khoản</Label>
+            <Label htmlFor="mu">{t`Giới hạn tài khoản`}</Label>
             <Input
               id="mu"
               icon={<IconUser />}
@@ -312,25 +313,25 @@ function ClanForm({
             0 = khoá hẳn. */}
         <div className="grid grid-cols-2 gap-3">
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="ad">Lượt AI / ngày</Label>
+            <Label htmlFor="ad">{t`Lượt AI / ngày`}</Label>
             <Input
               id="ad"
               icon={<IconSparkles />}
               type="number"
               min={0}
-              placeholder="mặc định"
+              placeholder={t`mặc định`}
               value={aiDaily}
               onChange={(e) => setAiDaily(e.target.value)}
             />
           </div>
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="am">Lượt AI / tháng</Label>
+            <Label htmlFor="am">{t`Lượt AI / tháng`}</Label>
             <Input
               id="am"
               icon={<IconSparkles />}
               type="number"
               min={0}
-              placeholder="mặc định"
+              placeholder={t`mặc định`}
               value={aiMonthly}
               onChange={(e) => setAiMonthly(e.target.value)}
             />

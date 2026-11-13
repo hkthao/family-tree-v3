@@ -18,6 +18,7 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 
+import { t } from "@lingui/core/macro";
 /**
  * Trang chủ khu quản trị — LƯỚI các màn, kiểu màn hình chính điện thoại.
  *
@@ -44,7 +45,7 @@ export default function AdminHub() {
     enabled: !!user?.id,
   });
 
-  usePageTitle("Quản trị nền tảng");
+  usePageTitle(t`Quản trị nền tảng`);
 
   if (legacy) return <Navigate to={legacy} replace />;
   if (loading || isLoading) {
@@ -64,8 +65,8 @@ export default function AdminHub() {
       <main className="container max-w-4xl py-6 px-4 space-y-5">
         <PageHeader
           icon={<IconShield className="h-7 w-7" />}
-          title="Quản trị nền tảng"
-          description="Chọn một mục để mở. Mỗi mục là một trang riêng."
+          title={t`Quản trị nền tảng`}
+          description={t`Chọn một mục để mở. Mỗi mục là một trang riêng.`}
         />
         {(["report", "settings"] as AdminArea[]).map((area) => (
           <section key={area} className="space-y-3">

@@ -177,7 +177,7 @@ export default function Cemeteries() {
                       </Chip>
                     )}
                     <Chip tone="violet" icon={<IconGrave />}>
-                      {c.place_count} nơi an nghỉ
+                      {t`${c.place_count} nơi an nghỉ`}
                     </Chip>
                   </div>
                 </div>
@@ -408,7 +408,7 @@ function CemeteryForm({
           className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
         >
           <IconGrave className="h-4 w-4" />
-          Xem {initial.place_count} mộ phần ở cơ sở này →
+          {t`Xem ${initial.place_count} mộ phần ở cơ sở này →`}
         </Link>
       )}
 

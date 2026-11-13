@@ -93,9 +93,9 @@ export function Pagination({
           size="sm"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          aria-label="Trang sau"
+          aria-label={t`Trang sau`}
         >
-          <span className="hidden sm:inline">Sau</span>
+          <span className="hidden sm:inline">{t`Sau`}</span>
           <IconArrowRight className="h-4 w-4 sm:ml-1" />
         </Button>
       </div>

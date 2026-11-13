@@ -3,23 +3,25 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { unaccent } from "@/lib/unaccent";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
 export type VnRegion = "bac" | "trung" | "nam";
 export type VnWardKind = "xa" | "phuong" | "dac_khu";
 
-export const VN_REGION_LABEL: Record<VnRegion, string> = {
-  bac: "Miền Bắc",
-  trung: "Miền Trung",
-  nam: "Miền Nam",
-};
+export const VN_REGION_LABEL: Record<VnRegion, string> = lazyMessages({
+  bac: msg`Miền Bắc`,
+  trung: msg`Miền Trung`,
+  nam: msg`Miền Nam`,
+}) as Record<VnRegion, string>;
 
-export const VN_WARD_KIND_LABEL: Record<VnWardKind, string> = {
-  xa: "Xã",
-  phuong: "Phường",
-  dac_khu: "Đặc khu",
-};
+export const VN_WARD_KIND_LABEL: Record<VnWardKind, string> = lazyMessages({
+  xa: msg`Xã`,
+  phuong: msg`Phường`,
+  dac_khu: msg`Đặc khu`,
+}) as Record<VnWardKind, string>;
 
 export interface VnProvince {
   code: string;

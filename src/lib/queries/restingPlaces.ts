@@ -3,6 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { deletePersonPhoto } from "@/lib/photoUpload";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
@@ -14,18 +16,18 @@ export type RestingPlaceKind =
   | "other";
 export type RestingPlaceStatus = "existing" | "relocated" | "lost";
 
-export const RESTING_PLACE_KIND_LABEL: Record<RestingPlaceKind, string> = {
-  grave: "Mộ / chôn cất",
-  ashes_temple: "Gửi tro cốt ở chùa",
-  columbarium: "Nhà lưu tro / tháp cốt",
-  scattered: "Rải tro",
-  other: "Khác",
-};
-export const RESTING_PLACE_STATUS_LABEL: Record<RestingPlaceStatus, string> = {
-  existing: "Hiện hữu",
-  relocated: "Đã cải táng",
-  lost: "Thất lạc",
-};
+export const RESTING_PLACE_KIND_LABEL: Record<RestingPlaceKind, string> = lazyMessages({
+  grave: msg`Mộ / chôn cất`,
+  ashes_temple: msg`Gửi tro cốt ở chùa`,
+  columbarium: msg`Nhà lưu tro / tháp cốt`,
+  scattered: msg`Rải tro`,
+  other: msg`Khác`,
+}) as Record<RestingPlaceKind, string>;
+export const RESTING_PLACE_STATUS_LABEL: Record<RestingPlaceStatus, string> = lazyMessages({
+  existing: msg`Hiện hữu`,
+  relocated: msg`Đã cải táng`,
+  lost: msg`Thất lạc`,
+}) as Record<RestingPlaceStatus, string>;
 
 /** Per-kind labels + placeholder examples for the two adaptive location inputs. */
 export const KIND_LOCATION_LABELS: Record<
@@ -54,7 +56,6 @@ export const KIND_LOCATION_LABELS: Record<
   other: { name: "Nơi an nghỉ", detail: "Chi tiết vị trí", namePh: "", detailPh: "" },
 };
 
-export const ADDRESS_PLACEHOLDER = "vd: xã …, huyện …, tỉnh …";
 
 export interface RestingPlace {
   id: string;

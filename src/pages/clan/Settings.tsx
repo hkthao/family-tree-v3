@@ -120,7 +120,7 @@ export default function Settings() {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Hiển thị &amp; quyền xem</CardTitle>
+            <CardTitle>{t`Hiển thị & quyền xem`}</CardTitle>
             <CardDescription>
               <Trans>
                 <Trans>
@@ -171,7 +171,7 @@ export default function Settings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Quản lý &amp; công cụ</CardTitle>
+          <CardTitle>{t`Quản lý & công cụ`}</CardTitle>
           <CardDescription>
             {t`Lối tắt tới các trang quản lý và xuất dữ liệu.`}
           </CardDescription>
@@ -284,8 +284,8 @@ export default function Settings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
-          <p>Số người tối đa trong cây: {clan.max_persons}</p>
-          <p>Số tài khoản tối đa: {clan.max_users}</p>
+          <p>{t`Số người tối đa trong cây: ${clan.max_persons}`}</p>
+          <p>{t`Số tài khoản tối đa: ${clan.max_users}`}</p>
         </CardContent>
       </Card>
     </div>

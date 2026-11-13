@@ -14,6 +14,8 @@ import {
 } from "@/lib/queries/admin";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 export function HealthTab() {
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: queryKeys.platformDbStats(),
@@ -22,7 +24,7 @@ export function HealthTab() {
   });
 
   if (isLoading) {
-    return <p className="text-muted-foreground text-sm">Đang tải…</p>;
+    return <p className="text-muted-foreground text-sm">{t`Đang tải…`}</p>;
   }
   if (error) {
     return (
@@ -37,15 +39,15 @@ export function HealthTab() {
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">
-          Cập nhật lúc {new Date(data.generated_at).toLocaleString("vi-VN")}
+          {t`Cập nhật lúc ${new Date(data.generated_at).toLocaleString("vi-VN")}`}
         </p>
         <Button
           size="sm"
           variant="outline"
           onClick={() => refetch()}
           disabled={isFetching}
-          aria-label="Làm mới"
-          title={isFetching ? "Đang tải…" : "Làm mới"}
+          aria-label={t`Làm mới`}
+          title={isFetching ? t`Đang tải…` : t`Làm mới`}
           className="h-9 w-9 p-0"
         >
           <IconRefresh
@@ -55,33 +57,33 @@ export function HealthTab() {
       </div>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Cần chú ý</h2>
+        <h2 className="text-lg font-semibold">{t`Cần chú ý`}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <StateTile
-            label="Đóng góp chờ duyệt"
+            label={t`Đóng góp chờ duyệt`}
             value={data.states.contributions_pending}
             highlight={data.states.contributions_pending > 0}
           />
           <StateTile
-            label="Liên kết dòng họ chờ"
+            label={t`Liên kết dòng họ chờ`}
             value={data.states.person_links_pending}
             highlight={data.states.person_links_pending > 0}
           />
           <StateTile
-            label="Share-link đang hoạt động"
+            label={t`Share-link đang hoạt động`}
             value={data.states.share_links_active}
           />
           <StateTile
-            label="Notify thất bại (tổng)"
+            label={t`Notify thất bại (tổng)`}
             value={data.states.notifications_failed_total}
             highlight={data.states.notifications_failed_total > 0}
           />
           <StateTile
-            label="Tài khoản tổng"
+            label={t`Tài khoản tổng`}
             value={data.states.users_total}
           />
           <StateTile
-            label="Bị khoá"
+            label={t`Bị khoá`}
             value={data.states.users_suspended}
             highlight={data.states.users_suspended > 0}
           />
@@ -89,27 +91,27 @@ export function HealthTab() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Hoạt động gần đây</h2>
+        <h2 className="text-lg font-semibold">{t`Hoạt động gần đây`}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <RateTile label="Người mới (24h)" value={data.rates.persons_24h ?? 0} />
-          <RateTile label="Người mới (7 ngày)" value={data.rates.persons_7d ?? 0} />
-          <RateTile label="Người mới (30 ngày)" value={data.rates.persons_30d ?? 0} />
-          <RateTile label="Dòng họ mới (7d)" value={data.rates.clans_7d ?? 0} />
-          <RateTile label="Dòng họ mới (30d)" value={data.rates.clans_30d ?? 0} />
-          <RateTile label="Tài khoản mới (7d)" value={data.rates.users_7d ?? 0} />
-          <RateTile label="Tài khoản mới (30d)" value={data.rates.users_30d ?? 0} />
+          <RateTile label={t`Người mới (24h)`} value={data.rates.persons_24h ?? 0} />
+          <RateTile label={t`Người mới (7 ngày)`} value={data.rates.persons_7d ?? 0} />
+          <RateTile label={t`Người mới (30 ngày)`} value={data.rates.persons_30d ?? 0} />
+          <RateTile label={t`Dòng họ mới (7d)`} value={data.rates.clans_7d ?? 0} />
+          <RateTile label={t`Dòng họ mới (30d)`} value={data.rates.clans_30d ?? 0} />
+          <RateTile label={t`Tài khoản mới (7d)`} value={data.rates.users_7d ?? 0} />
+          <RateTile label={t`Tài khoản mới (30d)`} value={data.rates.users_30d ?? 0} />
         </div>
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Số dòng + dung lượng</h2>
+        <h2 className="text-lg font-semibold">{t`Số dòng + dung lượng`}</h2>
         <div className="rounded-md border bg-background overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-xs text-muted-foreground">
               <tr>
-                <th className="text-left px-3 py-2 font-medium">Bảng</th>
-                <th className="text-right px-3 py-2 font-medium">Số dòng</th>
-                <th className="text-right px-3 py-2 font-medium">Dung lượng</th>
+                <th className="text-left px-3 py-2 font-medium">{t`Bảng`}</th>
+                <th className="text-right px-3 py-2 font-medium">{t`Số dòng`}</th>
+                <th className="text-right px-3 py-2 font-medium">{t`Dung lượng`}</th>
               </tr>
             </thead>
             <tbody>
@@ -134,10 +136,10 @@ export function HealthTab() {
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Lịch chạy nền (cron)</h2>
+        <h2 className="text-lg font-semibold">{t`Lịch chạy nền (cron)`}</h2>
         {data.cron.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            pg_cron chưa cài hoặc chưa có job nào — local dev là bình thường.
+            {t`pg_cron chưa cài hoặc chưa có job nào — local dev là bình thường.`}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -171,19 +173,19 @@ function FailedNotificationsSection({
   const clearM = useMutation({
     mutationFn: (id: string) => clearFailedNotification(id),
     onSuccess: () => {
-      toast.success("Đã xoá — lần cron tới sẽ thử lại");
+      toast.success(t`Đã xoá — lần cron tới sẽ thử lại`);
       onChanged();
     },
     onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   if (total === 0) {
     return (
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Email/SMS thất bại</h2>
+        <h2 className="text-lg font-semibold">{t`Email/SMS thất bại`}</h2>
         <p className="text-sm text-muted-foreground">
-          Không có lượt gửi nào thất bại. 👌
+          {t`Không có lượt gửi nào thất bại. 👌`}
         </p>
       </section>
     );
@@ -192,15 +194,17 @@ function FailedNotificationsSection({
   return (
     <section className="space-y-2">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold">Email/SMS thất bại</h2>
+        <h2 className="text-lg font-semibold">{t`Email/SMS thất bại`}</h2>
         <p className="text-xs text-muted-foreground">
-          10 lần gần nhất trong tổng {formatNumber(total)} lượt
+          {t`10 lần gần nhất trong tổng ${formatNumber(total)} lượt`}
         </p>
       </div>
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
+          <Trans>
           Đếm tổng có {formatNumber(total)} nhưng không lấy được context —
           có thể row đã bị cascade xoá.
+          </Trans>
         </p>
       ) : (
         <ul className="rounded-md border bg-background divide-y">
@@ -209,11 +213,11 @@ function FailedNotificationsSection({
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0 text-sm">
                   <p className="font-medium">
-                    {n.user_email ?? "(người dùng đã xoá)"}
+                    {n.user_email ?? t`(người dùng đã xoá)`}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     <span className="text-foreground">
-                      {n.clan_name ?? "(clan đã xoá)"}
+                      {n.clan_name ?? t`(clan đã xoá)`}
                     </span>{" "}
                     · {n.channel} ·{" "}
                     <span className="font-mono">{n.event_key}</span>
@@ -228,16 +232,16 @@ function FailedNotificationsSection({
                   disabled={clearM.isPending}
                   onClick={async () => {
                     const ok = await confirm({
-                      title: "Xoá log thất bại?",
+                      title: t`Xoá log thất bại?`,
                       description:
-                        "Sau khi xoá, lần cron tới (mặc định mỗi tối) sẽ thử gửi lại sự kiện này.",
-                      confirmLabel: "Xoá để thử lại",
+                        t`Sau khi xoá, lần cron tới (mặc định mỗi tối) sẽ thử gửi lại sự kiện này.`,
+                      confirmLabel: t`Xoá để thử lại`,
                     });
                     if (ok) clearM.mutate(n.id);
                   }}
                 >
                   <IconRefresh className="h-4 w-4 mr-1.5" />
-                  Xoá để thử lại
+                  {t`Xoá để thử lại`}
                 </Button>
               </div>
             </li>
@@ -304,7 +308,7 @@ function CronRow({ job }: { job: { jobname: string; schedule: string; active: bo
                 : "bg-muted text-muted-foreground")
           }
         >
-          {job.last_run ? (ok ? "Thành công" : job.last_run.status) : "Chưa chạy"}
+          {job.last_run ? (ok ? t`Thành công` : job.last_run.status) : t`Chưa chạy`}
         </span>
       </div>
       <p className="text-xs text-muted-foreground">
@@ -313,7 +317,7 @@ function CronRow({ job }: { job: { jobname: string; schedule: string; active: bo
       </p>
       {job.last_run && (
         <p className="text-xs text-muted-foreground">
-          Lần cuối: {new Date(job.last_run.start_time).toLocaleString("vi-VN")}
+          {t`Lần cuối: ${new Date(job.last_run.start_time).toLocaleString("vi-VN")}`}
         </p>
       )}
     </li>

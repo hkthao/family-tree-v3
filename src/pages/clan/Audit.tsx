@@ -278,11 +278,10 @@ function AuditItem({
               disabled={restoreM.isPending}
               onClick={async () => {
                 const ok = await confirm({
-                  title: `Khôi phục về trạng thái ${
+                  title:
                     row.action === "delete"
-                      ? t`trước khi xoá`
-                      : t`trước khi sửa`
-                  }?`,
+                      ? t`Khôi phục về trạng thái trước khi xoá?`
+                      : t`Khôi phục về trạng thái trước khi sửa?`,
                   confirmLabel: t`Khôi phục`,
                 });
                 if (ok) restoreM.mutate();
@@ -342,7 +341,7 @@ function AuditItem({
             )}
             {row.after && (
               <div>
-                <p className="font-medium mb-1 text-muted-foreground">Sau</p>
+                <p className="font-medium mb-1 text-muted-foreground">{t`Sau`}</p>
                 <pre className="bg-card rounded p-2 overflow-x-auto max-h-64 border">
                   {JSON.stringify(row.after, null, 2)}
                 </pre>

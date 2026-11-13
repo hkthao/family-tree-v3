@@ -429,7 +429,7 @@ export default function AiGenerate() {
               disabled={!aiResponse.trim() || importM.isPending}
             >
               <IconSearch className="h-4 w-4 mr-1.5" />
-              Phân tích &amp; xem trước
+              {t`Phân tích & xem trước`}
             </Button>
             {(csvPlan || gedcomText) && (
               <Button

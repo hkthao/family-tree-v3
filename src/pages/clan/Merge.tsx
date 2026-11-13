@@ -254,7 +254,7 @@ function SuggestionPanel({
         <CardFooter className="justify-end border-t pt-4">
           <Button variant="ghost" size="sm" onClick={() => setShowAll(true)}>
             <IconList className="h-4 w-4 mr-1.5" />
-            Xem thêm {candidates.length - 5} cặp
+            {t`Xem thêm ${candidates.length - 5} cặp`}
           </Button>
         </CardFooter>
       )}

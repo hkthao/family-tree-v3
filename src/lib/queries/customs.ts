@@ -4,6 +4,8 @@ import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { unaccent } from "@/lib/unaccent";
 import { CUSTOM_SYNONYMS } from "@/lib/customsSynonyms";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
@@ -25,36 +27,36 @@ export type CustomOrigin =
   | "dia_phuong";
 export type CustomStatus = "draft" | "needs_review" | "published";
 
-export const CUSTOM_CATEGORY_LABEL: Record<CustomCategory, string> = {
-  tho_cung: "Thờ cúng & tín ngưỡng",
-  vong_doi: "Nghi lễ vòng đời",
-  le_tet: "Lễ Tết theo mùa",
-  le_hoi: "Lễ hội cộng đồng",
-  sinh_hoat: "Phong tục sinh hoạt",
-  van_khan: "Văn khấn & văn tế",
-};
+export const CUSTOM_CATEGORY_LABEL: Record<CustomCategory, string> = lazyMessages({
+  tho_cung: msg`Thờ cúng & tín ngưỡng`,
+  vong_doi: msg`Nghi lễ vòng đời`,
+  le_tet: msg`Lễ Tết theo mùa`,
+  le_hoi: msg`Lễ hội cộng đồng`,
+  sinh_hoat: msg`Phong tục sinh hoạt`,
+  van_khan: msg`Văn khấn & văn tế`,
+}) as Record<CustomCategory, string>;
 
-export const CUSTOM_SCOPE_LABEL: Record<CustomScope, string> = {
-  gia_dinh: "Gia đình",
-  dong_ho: "Dòng họ",
-  lang_xa: "Làng xã",
-  ton_giao: "Tôn giáo",
-};
+export const CUSTOM_SCOPE_LABEL: Record<CustomScope, string> = lazyMessages({
+  gia_dinh: msg`Gia đình`,
+  dong_ho: msg`Dòng họ`,
+  lang_xa: msg`Làng xã`,
+  ton_giao: msg`Tôn giáo`,
+}) as Record<CustomScope, string>;
 
-export const CUSTOM_MANDATORY_LABEL: Record<CustomMandatory, string> = {
-  bat_buoc: "Bắt buộc",
-  khuyen_khich: "Khuyến khích",
-  dia_phuong: "Theo phong tục địa phương",
-};
+export const CUSTOM_MANDATORY_LABEL: Record<CustomMandatory, string> = lazyMessages({
+  bat_buoc: msg`Bắt buộc`,
+  khuyen_khich: msg`Khuyến khích`,
+  dia_phuong: msg`Theo phong tục địa phương`,
+}) as Record<CustomMandatory, string>;
 
-export const CUSTOM_ORIGIN_LABEL: Record<CustomOrigin, string> = {
-  nho_giao: "Nho giáo",
-  phat_giao: "Phật giáo",
-  dao_mau: "Đạo Mẫu",
-  dan_gian: "Tín ngưỡng dân gian",
-  trung_hoa: "Ảnh hưởng Trung Hoa",
-  dia_phuong: "Phong tục địa phương",
-};
+export const CUSTOM_ORIGIN_LABEL: Record<CustomOrigin, string> = lazyMessages({
+  nho_giao: msg`Nho giáo`,
+  phat_giao: msg`Phật giáo`,
+  dao_mau: msg`Đạo Mẫu`,
+  dan_gian: msg`Tín ngưỡng dân gian`,
+  trung_hoa: msg`Ảnh hưởng Trung Hoa`,
+  dia_phuong: msg`Phong tục địa phương`,
+}) as Record<CustomOrigin, string>;
 
 /** Vùng miền phổ biến (regions là text[] mở rộng được, đây là gợi ý sẵn). */
 export const CUSTOM_REGIONS = ["Miền Bắc", "Miền Trung", "Miền Nam"] as const;

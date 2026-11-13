@@ -1,12 +1,14 @@
+import { msg } from "@lingui/core/macro";
+import { lazyAs } from "@/lib/i18n/lazy";
 import type { GalleryPalette } from "./GalleryScene";
 
 /** Các "tông phòng" (preset) dùng chung cho tạo phòng + xem phòng. */
 export type GalleryPreset = { id: string; name: string; pal: GalleryPalette };
 
-export const GALLERY_PRESETS: GalleryPreset[] = [
+export const GALLERY_PRESETS: GalleryPreset[] = lazyAs<GalleryPreset[]>([
   {
     id: "white",
-    name: "Bảo tàng trắng",
+    name: msg`Bảo tàng trắng`,
     pal: {
       bg: "#E8E8EA",
       bgTop: "#FBFBFC",
@@ -20,7 +22,7 @@ export const GALLERY_PRESETS: GalleryPreset[] = [
   },
   {
     id: "warm",
-    name: "Ấm (kem)",
+    name: msg`Ấm (kem)`,
     pal: {
       bg: "#E7DED0",
       bgTop: "#F5EEE0",
@@ -34,7 +36,7 @@ export const GALLERY_PRESETS: GalleryPreset[] = [
   },
   {
     id: "sage",
-    name: "Xanh rêu",
+    name: msg`Xanh rêu`,
     pal: {
       bg: "#D8DED4",
       bgTop: "#E8ECE3",
@@ -48,7 +50,7 @@ export const GALLERY_PRESETS: GalleryPreset[] = [
   },
   {
     id: "dark",
-    name: "Triển lãm tối",
+    name: msg`Triển lãm tối`,
     pal: {
       bg: "#242428",
       bgTop: "#34343A",
@@ -60,7 +62,7 @@ export const GALLERY_PRESETS: GalleryPreset[] = [
       placeholder: "#43434A",
     },
   },
-];
+]);
 
 export const galleryPalette = (id: string | undefined): GalleryPalette =>
   (GALLERY_PRESETS.find((p) => p.id === id) ?? GALLERY_PRESETS[0]).pal;

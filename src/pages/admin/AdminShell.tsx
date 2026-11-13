@@ -11,6 +11,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 
+import { t } from "@lingui/core/macro";
 /**
  * Khung chung cho MỌI màn quản trị.
  *
@@ -67,7 +68,7 @@ export function AdminShell({
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <IconArrowLeft className="h-4 w-4" />
-          Quản trị nền tảng
+          {t`Quản trị nền tảng`}
         </Link>
         <PageHeader icon={icon} title={title} description={description} />
         {children}

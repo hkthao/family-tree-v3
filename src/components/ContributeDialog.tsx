@@ -464,7 +464,7 @@ export function ContributeDialog({
                               : "hover:bg-muted/50"
                           }`}
                         >
-                          Là con của {focalPerson.full_name}
+                          {t`Là con của ${focalPerson.full_name}`}
                         </button>
                         <button
                           type="button"

@@ -308,7 +308,7 @@ export function NodeInspector({
             }
             className="h-9 text-sm"
           >
-            <option value="">Theo khung chung</option>
+            <option value="">{t`Theo khung chung`}</option>
             {CARD_DESIGNS.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.label}
@@ -343,7 +343,7 @@ export function NodeInspector({
         </label>
         <label className="block space-y-1">
           <span className="text-xs text-muted-foreground">
-            Cỡ chữ ({style.size ?? 14})
+            {t`Cỡ chữ (${style.size ?? 14})`}
           </span>
           <input
             type="range"

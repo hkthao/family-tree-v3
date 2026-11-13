@@ -228,7 +228,7 @@ export default function Import() {
                 title={t`Tải toàn bộ lỗi và cảnh báo về CSV để mở trong Excel cùng file gốc và sửa hàng loạt`}
               >
                 <IconDownload className="h-4 w-4 mr-1.5" />
-                Tải file lỗi ({plan.issues.length})
+                {t`Tải file lỗi (${plan.issues.length})`}
               </Button>
             </CardFooter>
           )}
@@ -336,7 +336,7 @@ function IssueList({ issues }: { issues: ImportIssue[] }) {
       {issues.length > ISSUE_PREVIEW_CAP && (
         <li className="text-sm text-muted-foreground italic">
           <Trans>
-          (còn {issues.length - ISSUE_PREVIEW_CAP} vấn đề khác — bấm{" "}
+          (còn {issues.length - ISSUE_PREVIEW_CAP} vấn đề khác — bấm
           <strong>Tải file lỗi</strong> ở trên để xem hết)
           </Trans>
         </li>
@@ -353,7 +353,7 @@ function PreviewTable({ rows }: { rows: NormalisedRow[] }) {
           <tr className="border-b text-left">
             <th className="px-2 py-2">ID</th>
             <th className="px-2 py-2">{t`Họ tên`}</th>
-            <th className="px-2 py-2">GT</th>
+            <th className="px-2 py-2">{t`GT`}</th>
             <th className="px-2 py-2">{t`Sinh`}</th>
             <th className="px-2 py-2">{t`Mất`}</th>
             <th className="px-2 py-2">{t`Cha`}</th>

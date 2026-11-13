@@ -43,6 +43,8 @@ import {
 } from "@/lib/queries/podcast";
 import { AdminShell } from "@/pages/admin/AdminShell";
 
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /**
  * Quản trị Podcast: xem các tập đã kéo về, ẩn tập không phù hợp, sửa tiêu
  * đề, và bấm đồng bộ tay khi không muốn chờ cron.
@@ -73,7 +75,7 @@ export default function PodcastPage() {
     mutationFn: () => syncPodcastNow(),
     onSuccess: (r) => {
       toast.success(
-        `Đã đồng bộ: ${r.inserted} tập mới, ${r.updated} tập cập nhật`,
+        t`Đã đồng bộ: ${r.inserted} tập mới, ${r.updated} tập cập nhật`,
       );
       qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] });
       qc.invalidateQueries({ queryKey: ["podcast-sync-status"] });
@@ -81,7 +83,7 @@ export default function PodcastPage() {
       qc.invalidateQueries({ queryKey: ["podcast-latest"] });
     },
     onError: (e) =>
-      toast.error("Đồng bộ hỏng", { description: (e as Error).message }),
+      toast.error(t`Đồng bộ hỏng`, { description: (e as Error).message }),
   });
 
   const [search, setSearch] = useState("");
@@ -108,7 +110,7 @@ export default function PodcastPage() {
     <AdminShell
       icon={<IconMicrophone className="h-7 w-7" />}
       title="Podcast"
-      description="Các tập kéo về từ Trang Facebook. Ẩn tập không phù hợp, sửa tiêu đề, đồng bộ lại."
+      description={t`Các tập kéo về từ Trang Facebook. Ẩn tập không phù hợp, sửa tiêu đề, đồng bộ lại.`}
     >
       <div className="space-y-4">
         <FacebookConnection />
@@ -117,8 +119,8 @@ export default function PodcastPage() {
           <div className="p-3 text-sm">
             <p className="font-medium">
               {lastSync
-                ? `Đồng bộ gần nhất: ${formatRelative(status!.lastSyncAt!)}`
-                : "Chưa đồng bộ lần nào"}
+                ? t`Đồng bộ gần nhất: ${formatRelative(status!.lastSyncAt!) ?? "?"}`
+                : t`Chưa đồng bộ lần nào`}
             </p>
             {lastSync && (
               <p className="text-xs text-muted-foreground">
@@ -132,7 +134,7 @@ export default function PodcastPage() {
               <IconRefresh
                 className={`mr-1.5 h-4 w-4 ${syncM.isPending ? "animate-spin" : ""}`}
               />
-              {syncM.isPending ? "Đang đồng bộ…" : "Đồng bộ ngay"}
+              {syncM.isPending ? t`Đang đồng bộ…` : t`Đồng bộ ngay`}
             </Button>
           </div>
         </section>
@@ -140,7 +142,7 @@ export default function PodcastPage() {
         {status?.lastError && (
           <Alert variant="destructive">
             <AlertDescription>
-              Lần đồng bộ gần nhất báo lỗi: {status.lastError}
+              {t`Lần đồng bộ gần nhất báo lỗi: ${status.lastError}`}
             </AlertDescription>
           </Alert>
         )}
@@ -149,8 +151,8 @@ export default function PodcastPage() {
           <Alert variant="destructive">
             <AlertDescription>
               {lastSync
-                ? `Đã ${Math.floor(staleDays)} ngày không đồng bộ được tập nào. Token Facebook có thể đã hết hạn — kiểm tra biến FB_PAGE_TOKEN.`
-                : "Chưa chạy đồng bộ lần nào. Kiểm tra FB_PAGE_ID / FB_PAGE_TOKEN và lịch cron."}
+                ? t`Đã ${Math.floor(staleDays)} ngày không đồng bộ được tập nào. Token Facebook có thể đã hết hạn — kiểm tra biến FB_PAGE_TOKEN.`
+                : t`Chưa chạy đồng bộ lần nào. Kiểm tra FB_PAGE_ID / FB_PAGE_TOKEN và lịch cron.`}
             </AlertDescription>
           </Alert>
         )}
@@ -161,16 +163,16 @@ export default function PodcastPage() {
             setVisibility("");
             paging.patchAndResetPage({});
           }}
-          title="Lọc tập"
+          title={t`Lọc tập`}
           search={(toggle) => (
             <SearchInput
-              label="Tìm tập"
+              label={t`Tìm tập`}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 paging.patchAndResetPage({});
               }}
-              placeholder="Tìm theo tiêu đề tập…"
+              placeholder={t`Tìm theo tiêu đề tập…`}
               rightSlot={toggle}
             />
           )}
@@ -182,31 +184,31 @@ export default function PodcastPage() {
                 setVisibility(e.target.value as "" | "visible" | "hidden");
                 paging.patchAndResetPage({});
               }}
-              aria-label="Lọc theo hiển thị"
+              aria-label={t`Lọc theo hiển thị`}
               icon={<IconTag />}
               className="h-11 w-full text-base"
             >
-              <option value="">Cả hiện và ẩn</option>
-              <option value="visible">Đang hiện</option>
-              <option value="hidden">Đang ẩn</option>
+              <option value="">{t`Cả hiện và ẩn`}</option>
+              <option value="visible">{t`Đang hiện`}</option>
+              <option value="hidden">{t`Đang ẩn`}</option>
             </Select>
           </div>
         </CollapsibleFilters>
 
         {episodesQ.isLoading && (
           <div className="rounded-xl border bg-card p-4 shadow-sm">
-            <p className="text-muted-foreground">Đang tải…</p>
+            <p className="text-muted-foreground">{t`Đang tải…`}</p>
           </div>
         )}
 
         {!episodesQ.isLoading && filtered.length === 0 && (
           <EmptyState
             icon={<IconSearch className="h-10 w-10" />}
-            title={episodes.length === 0 ? "Chưa có tập nào trong kho" : "Không có tập nào khớp"}
+            title={episodes.length === 0 ? t`Chưa có tập nào trong kho` : t`Không có tập nào khớp`}
             description={
               episodes.length === 0
                 ? 'Bấm "Đồng bộ ngay" để kéo về.'
-                : "Thử bỏ bớt bộ lọc hoặc từ khoá."
+                : t`Thử bỏ bớt bộ lọc hoặc từ khoá.`
             }
           />
         )}
@@ -229,7 +231,7 @@ export default function PodcastPage() {
             totalPages={paging.totalPages}
             total={paging.total}
             pageSize={paging.pageSize}
-            unit="tập"
+            unit={t`tập`}
             onPageChange={paging.setPage}
             pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
             onPageSizeChange={paging.setPageSize}
@@ -238,7 +240,7 @@ export default function PodcastPage() {
 
         <SidePanel
           open={panel !== null}
-          title={panel?.mode === "edit" ? "Sửa tập" : "Tập podcast"}
+          title={panel?.mode === "edit" ? t`Sửa tập` : t`Tập podcast`}
           subtitle={panel?.episode.title}
           onClose={() => setPanel(null)}
           guard={panel?.mode === "edit"}
@@ -294,14 +296,14 @@ function EpisodeRowItem({ episode, onOpen }: { episode: PodcastEpisode; onOpen: 
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
             {episode.title_edited && (
               <Chip tone="warning" icon={<IconPencil />}>
-                Tiêu đề đã sửa tay
+                {t`Tiêu đề đã sửa tay`}
               </Chip>
             )}
             <Chip
               tone={episode.is_visible ? "success" : "neutral"}
               icon={episode.is_visible ? <IconCheck /> : <IconBellOff />}
             >
-              {episode.is_visible ? "Đang hiện" : "Đang ẩn"}
+              {episode.is_visible ? t`Đang hiện` : t`Đang ẩn`}
             </Chip>
           </div>
         </div>
@@ -340,10 +342,10 @@ function EpisodeForm({
       qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] });
       qc.invalidateQueries({ queryKey: ["podcast-episodes"] });
       qc.invalidateQueries({ queryKey: ["podcast-latest"] });
-      toast.success("Đã cập nhật tập");
+      toast.success(t`Đã cập nhật tập`);
       onSaved();
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
@@ -357,7 +359,7 @@ function EpisodeForm({
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-1.5">
           <Label htmlFor="ep-title" required>
-            Tiêu đề tập
+            {t`Tiêu đề tập`}
           </Label>
           <Input
             id="ep-title"
@@ -368,7 +370,7 @@ function EpisodeForm({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="ep-date">Ngày đăng</Label>
+            <Label htmlFor="ep-date">{t`Ngày đăng`}</Label>
             <Input
               id="ep-date"
               icon={<IconCalendar />}
@@ -377,7 +379,7 @@ function EpisodeForm({
             />
           </div>
           <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="ep-dur">Thời lượng</Label>
+            <Label htmlFor="ep-dur">{t`Thời lượng`}</Label>
             <Input
               id="ep-dur"
               icon={<IconClock />}
@@ -394,9 +396,9 @@ function EpisodeForm({
             className="mt-1 h-4 w-4 accent-primary"
           />
           <span>
-            <span className="font-medium">Hiện trên trang Podcast</span>
+            <span className="font-medium">{t`Hiện trên trang Podcast`}</span>
             <span className="block text-sm text-muted-foreground">
-              Bỏ chọn để ẩn tập không phù hợp (không xoá khỏi kho).
+              {t`Bỏ chọn để ẩn tập không phù hợp (không xoá khỏi kho).`}
             </span>
           </span>
         </label>
@@ -407,7 +409,7 @@ function EpisodeForm({
         rel="noreferrer"
         className="inline-block text-sm text-primary hover:underline"
       >
-        Mở trên Facebook →
+        {t`Mở trên Facebook →`}
       </a>
 
       <ViewEditActions
@@ -454,10 +456,10 @@ function FacebookConnection() {
     onSuccess: (r) => {
       if (r.needPage) {
         setPages(r.pages ?? []);
-        toast.success(`Tìm thấy ${r.pages?.length ?? 0} Trang — chọn một Trang`);
+        toast.success(t`Tìm thấy ${r.pages?.length ?? 0} Trang — chọn một Trang`);
         return;
       }
-      toast.success(`Đã nối Trang ${r.pageName}`);
+      toast.success(t`Đã nối Trang ${r.pageName ?? ""}`);
       // Xoá khỏi bộ nhớ trình duyệt ngay khi xong việc.
       setAppSecret("");
       setUserToken("");
@@ -466,17 +468,17 @@ function FacebookConnection() {
       qc.invalidateQueries({ queryKey: ["fb-credential-status"] });
     },
     onError: (e) =>
-      toast.error("Không nối được", { description: (e as Error).message }),
+      toast.error(t`Không nối được`, { description: (e as Error).message }),
   });
 
   const checkM = useMutation({
     mutationFn: () => checkFacebookConnection(),
     onSuccess: (r) => {
-      toast.success(`Token còn tốt — Trang ${r.pageName}`);
+      toast.success(t`Token còn tốt — Trang ${r.pageName}`);
       qc.invalidateQueries({ queryKey: ["fb-credential-status"] });
     },
     onError: (e) => {
-      toast.error("Token không dùng được", {
+      toast.error(t`Token không dùng được`, {
         description: (e as Error).message,
       });
       qc.invalidateQueries({ queryKey: ["fb-credential-status"] });
@@ -487,26 +489,26 @@ function FacebookConnection() {
     <section className="space-y-3 rounded-xl border bg-card shadow-sm p-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 text-sm">
-          <p className="font-medium">Kết nối Facebook</p>
+          <p className="font-medium">{t`Kết nối Facebook`}</p>
           {active ? (
             <>
               <p className="text-muted-foreground">
                 Trang <span className="text-foreground">{active.page_name}</span>{" "}
                 · token {active.hint} ·{" "}
                 {active.token_expires_at
-                  ? `hết hạn ${formatDateOnly(active.token_expires_at)}`
-                  : "không hết hạn"}
+                  ? t`hết hạn ${formatDateOnly(active.token_expires_at) ?? "?"}`
+                  : t`không hết hạn`}
               </p>
               {active.last_check_at && (
                 <p className="text-xs text-muted-foreground">
                   Kiểm tra gần nhất: {formatRelative(active.last_check_at)} —{" "}
-                  {active.last_check_ok ? "tốt" : `hỏng (${active.last_check_error})`}
+                  {active.last_check_ok ? t`tốt` : t`hỏng (${active.last_check_error ?? "?"})`}
                 </p>
               )}
             </>
           ) : (
             <p className="text-muted-foreground">
-              Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi nối.
+              {t`Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi nối.`}
             </p>
           )}
         </div>
@@ -521,13 +523,15 @@ function FacebookConnection() {
       {open && (
         <div className="space-y-3 border-t pt-3">
           <p className="text-xs text-muted-foreground">
+            <Trans>
             Lấy ở <span className="font-mono">developers.facebook.com</span>:
             App ID và App Secret trong Cài đặt › Cơ bản; token người dùng sinh
-            ở Graph API Explorer với quyền{" "}
+            {t`ở Graph API Explorer với quyền`}{" "}
             <span className="font-mono">pages_show_list</span>,{" "}
             <span className="font-mono">pages_read_engagement</span>,{" "}
             <span className="font-mono">pages_read_user_content</span>. Token
             ngắn hạn cũng được — máy chủ sẽ tự đổi sang loại dài hạn.
+            </Trans>
           </p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <label className="block space-y-1">
@@ -544,12 +548,12 @@ function FacebookConnection() {
                 type="password"
                 value={appSecret}
                 onChange={(e) => setAppSecret(e.target.value)}
-                placeholder="không được lưu lại"
+                placeholder={t`không được lưu lại`}
               />
             </label>
           </div>
           <label className="block space-y-1">
-            <span className="text-sm font-medium">Token người dùng</span>
+            <span className="text-sm font-medium">{t`Token người dùng`}</span>
             <Input
               type="password"
               value={userToken}
@@ -560,7 +564,7 @@ function FacebookConnection() {
 
           {pages.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium">Chọn Trang để lấy podcast:</p>
+              <p className="text-sm font-medium">{t`Chọn Trang để lấy podcast:`}</p>
               <ul className="space-y-1">
                 {pages.map((pg) => (
                   <li key={pg.id}>
@@ -586,7 +590,7 @@ function FacebookConnection() {
                 connectM.isPending || !appId || !appSecret || !userToken
               }
             >
-              {connectM.isPending ? "Đang nối…" : "Đọc danh sách Trang"}
+              {connectM.isPending ? t`Đang nối…` : t`Đọc danh sách Trang`}
             </Button>
           )}
         </div>
@@ -599,11 +603,11 @@ function FacebookConnection() {
             onClick={() => checkM.mutate()}
             disabled={checkM.isPending}
           >
-            {checkM.isPending ? "Đang kiểm tra…" : "Kiểm tra token"}
+            {checkM.isPending ? t`Đang kiểm tra…` : t`Kiểm tra token`}
           </Button>
         )}
         <Button size="sm" variant={active ? "outline" : "default"} onClick={() => setOpen((v) => !v)}>
-          {open ? "Đóng" : active ? "Nối lại" : "Nối Trang"}
+          {open ? t`Đóng` : active ? t`Nối lại` : t`Nối Trang`}
         </Button>
       </div>
     </section>

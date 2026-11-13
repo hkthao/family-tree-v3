@@ -652,5 +652,5 @@ function MemberForm({
 const ROLE_LABEL: Record<ClanRole, string> = lazyMessages({
   admin: msg`Quản trị`,
   editor: msg`Biên tập`,
-  viewer: "Xem",
+  viewer: msg`Xem`,
 }) as Record<ClanRole, string>;
