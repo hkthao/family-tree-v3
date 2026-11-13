@@ -296,15 +296,20 @@ export default function Todo() {
         title={t`Việc cần làm`}
         description={
           <>
-            App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung. Bấm vào một
-            người để {canEdit ? t`sửa thẳng.` : t`đề xuất bổ sung.`}
+            {t`App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung.`}{" "}
+            {canEdit
+              ? t`Bấm vào một người để sửa thẳng.`
+              : t`Bấm vào một người để đề xuất bổ sung.`}
             {summary && (
               <>
                 {" "}
-                Tổng <strong>
-                  {totalLoadBearing.toLocaleString(currentIntlTag())}
-                </strong>{" "}
-                mục cần xử lý trong họ.
+                <Trans>
+                  Tổng{" "}
+                  <strong>
+                    {totalLoadBearing.toLocaleString(currentIntlTag())}
+                  </strong>{" "}
+                  mục cần xử lý trong họ.
+                </Trans>
               </>
             )}
           </>

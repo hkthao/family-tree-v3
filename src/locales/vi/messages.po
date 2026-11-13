@@ -1267,6 +1267,10 @@ msgstr "App gợi ý dựa trên số con đã có. Sửa nếu cần."
 msgid "App hỏng, dữ liệu sai, trang trắng…"
 msgstr "App hỏng, dữ liệu sai, trang trắng…"
 
+#: src/pages/clan/Todo.tsx
+msgid "App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung."
+msgstr "App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung."
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Avatar của tôi"
 msgstr "Avatar của tôi"
@@ -1407,6 +1411,14 @@ msgstr "Bấm nút '+' để vinh danh người đóng góp đầu tiên."
 #: src/components/EnablePushPrompt.tsx
 msgid "Bấm nút Chia sẻ trong Safari → \"Thêm vào Màn hình chính\", rồi mở app từ biểu tượng để bật nhắc giỗ, sinh nhật."
 msgstr "Bấm nút Chia sẻ trong Safari → \"Thêm vào Màn hình chính\", rồi mở app từ biểu tượng để bật nhắc giỗ, sinh nhật."
+
+#: src/pages/clan/Todo.tsx
+msgid "Bấm vào một người để đề xuất bổ sung."
+msgstr "Bấm vào một người để đề xuất bổ sung."
+
+#: src/pages/clan/Todo.tsx
+msgid "Bấm vào một người để sửa thẳng."
+msgstr "Bấm vào một người để sửa thẳng."
 
 #: src/components/ClanPostCard.tsx
 #: src/pages/clan/Board.tsx
@@ -2590,6 +2602,10 @@ msgstr "Chi tiết đầy đủ nằm ở <0>supabase/functions/ai-chat/README.m
 msgid "Chi tiết sự kiện"
 msgstr "Chi tiết sự kiện"
 
+#: src/lib/queries/restingPlaces.ts
+msgid "Chi tiết vị trí"
+msgstr "Chi tiết vị trí"
+
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Chỉ xoá được khi tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ."
 msgstr "Chỉ xoá được khi tỉnh không còn xã/phường và chưa ai dùng làm địa chỉ."
@@ -3347,6 +3363,10 @@ msgstr "Cơ sở / nghĩa trang"
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Cơ sở / nghĩa trang (tuỳ chọn)"
 msgstr "Cơ sở / nghĩa trang (tuỳ chọn)"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "Cơ sở lưu tro / tháp họ"
+msgstr "Cơ sở lưu tro / tháp họ"
 
 #: src/components/admin/AiSettingsTab.tsx
 msgid "Có thay đổi chưa lưu"
@@ -5378,10 +5398,6 @@ msgstr "Đề xuất"
 #: src/pages/MyFeedback.tsx
 msgid "Đề xuất / ý kiến"
 msgstr "Đề xuất / ý kiến"
-
-#: src/pages/clan/Todo.tsx
-msgid "đề xuất bổ sung."
-msgstr "đề xuất bổ sung."
 
 #. placeholder {0}: focalPerson.full_name
 #: src/components/ContributeDialog.tsx
@@ -8637,6 +8653,10 @@ msgstr "Link mời"
 msgid "Link mời không hợp lệ"
 msgstr "Link mời không hợp lệ"
 
+#: src/lib/queries/restingPlaces.ts
+msgid "Lô – hàng – số"
+msgstr "Lô – hàng – số"
+
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/HonorBook.tsx
@@ -9955,6 +9975,10 @@ msgstr "Nếu email có trong hệ thống, chúng tôi đã gửi liên kết �
 msgid "Ngắm"
 msgstr "Ngắm"
 
+#: src/lib/queries/restingPlaces.ts
+msgid "Ngăn / kệ / số hũ"
+msgstr "Ngăn / kệ / số hũ"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ngang"
 msgstr "Ngang"
@@ -10159,6 +10183,10 @@ msgstr "Nghi lễ vòng đời"
 #: src/lib/pageTitle.ts
 msgid "Nghĩa trang"
 msgstr "Nghĩa trang"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "Nghĩa trang / khu"
+msgstr "Nghĩa trang / khu"
 
 #: src/pages/clan/Cemeteries.tsx
 msgid "Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ phần theo cơ sở."
@@ -10714,6 +10742,7 @@ msgid "nơi an nghỉ"
 msgstr "nơi an nghỉ"
 
 #: src/components/panel/PanelHost.tsx
+#: src/lib/queries/restingPlaces.ts
 #: src/pages/clan/MapStats.tsx
 msgid "Nơi an nghỉ"
 msgstr "Nơi an nghỉ"
@@ -10826,6 +10855,10 @@ msgstr "Nơi ở hiện tại"
 #: src/components/BookMetaFields.tsx
 msgid "Nơi phát tích của dòng họ"
 msgstr "Nơi phát tích của dòng họ"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "Nơi rải tro"
+msgstr "Nơi rải tro"
 
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
@@ -11835,10 +11868,6 @@ msgstr "Sửa tập"
 msgid "Sửa tên, mô tả, chi (nhánh) và soạn lời nói đầu, phả ký, ngoại phả, phụ khảo."
 msgstr "Sửa tên, mô tả, chi (nhánh) và soạn lời nói đầu, phả ký, ngoại phả, phụ khảo."
 
-#: src/pages/clan/Todo.tsx
-msgid "sửa thẳng."
-msgstr "sửa thẳng."
-
 #: src/pages/clan/Members.tsx
 msgid "Sửa thành viên"
 msgstr "Sửa thành viên"
@@ -12326,6 +12355,10 @@ msgstr "Tên cây không được để trống"
 #: src/components/BranchesSection.tsx
 msgid "Tên chi mới"
 msgstr "Tên chi mới"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "Tên chùa"
+msgstr "Tên chùa"
 
 #: src/pages/clan/Cemeteries.tsx
 msgid "Tên cơ sở"
@@ -13947,6 +13980,11 @@ msgstr "Token người dùng"
 msgid "Tôn giáo"
 msgstr "Tôn giáo"
 
+#. placeholder {0}: totalLoadBearing.toLocaleString(currentIntlTag())
+#: src/pages/clan/Todo.tsx
+msgid "Tổng <0>{0}</0> mục cần xử lý trong họ."
+msgstr "Tổng <0>{0}</0> mục cần xử lý trong họ."
+
 #: src/pages/clan/HonorBook.tsx
 msgid "Tổng công đức bằng tiền"
 msgstr "Tổng công đức bằng tiền"
@@ -14496,6 +14534,10 @@ msgstr "Vd: Chi cả"
 msgid "vd: Chi họ Cao Minh Triết"
 msgstr "vd: Chi họ Cao Minh Triết"
 
+#: src/lib/queries/restingPlaces.ts
+msgid "vd: Chùa Vĩnh Nghiêm"
+msgstr "vd: Chùa Vĩnh Nghiêm"
+
 #: src/pages/clan/InlawsNew.tsx
 msgid "Vd: Cưới năm 2010, có 2 con."
 msgstr "Vd: Cưới năm 2010, có 2 con."
@@ -14537,6 +14579,10 @@ msgstr "Vd: Họp họ rằm tháng Bảy"
 msgid "vd: hướng Đông Nam"
 msgstr "vd: hướng Đông Nam"
 
+#: src/lib/queries/restingPlaces.ts
+msgid "vd: Kệ A, số 8"
+msgstr "vd: Kệ A, số 8"
+
 #: src/pages/MyFeedback.tsx
 msgid "Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…"
 msgstr "Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…"
@@ -14549,6 +14595,10 @@ msgstr "vd: Lệ giỗ Tổ mùng 10 tháng Giêng"
 msgid "vd: Lễ nhập trạch (về nhà mới)"
 msgstr "vd: Lễ nhập trạch (về nhà mới)"
 
+#: src/lib/queries/restingPlaces.ts
+msgid "vd: Lô B, hàng 3, số 12"
+msgstr "vd: Lô B, hàng 3, số 12"
+
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "vd: Mộ cụ Tổ, Tháp họ Cao"
 msgstr "vd: Mộ cụ Tổ, Tháp họ Cao"
@@ -14556,6 +14606,10 @@ msgstr "vd: Mộ cụ Tổ, Tháp họ Cao"
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…"
 msgstr "vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "vd: Nghĩa trang Lạc Hồng / khu mộ họ"
+msgstr "vd: Nghĩa trang Lạc Hồng / khu mộ họ"
 
 #: src/pages/clan/Cemeteries.tsx
 msgid "vd: Nghĩa trang Lạc Hồng, Chùa Vĩnh Nghiêm"
@@ -14596,6 +14650,18 @@ msgstr "Vd: Phạm Thị B"
 #: src/components/PersonAddressCard.tsx
 msgid "vd: số 12, ngõ 5, thôn Đông"
 msgstr "vd: số 12, ngõ 5, thôn Đông"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "vd: Sông Hậu, đoạn…"
+msgstr "vd: Sông Hậu, đoạn…"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "vd: Tầng 2, ngăn 15"
+msgstr "vd: Tầng 2, ngăn 15"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "vd: Tháp họ Cao, Hoa viên Bình An"
+msgstr "vd: Tháp họ Cao, Hoa viên Bình An"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "vd: thôn …, xã …"
@@ -14687,6 +14753,10 @@ msgstr "Vị trí"
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Vị trí chi tiết"
 msgstr "Vị trí chi tiết"
+
+#: src/lib/queries/restingPlaces.ts
+msgid "Vị trí hũ (ngăn/tầng/số)"
+msgstr "Vị trí hũ (ngăn/tầng/số)"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Vị trí trên bản đồ (tuỳ chọn)"
