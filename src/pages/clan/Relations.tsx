@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 
@@ -14,19 +14,16 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { SectionCard } from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/Toast";
 import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { getRelationsData } from "@/lib/queries/relations";
 import {
   ancestorLabel,
   buildRelationsIndex,
-  descendantRows,
-  descendantSummary,
+  buildRelationsReport,
+  deathLabel,
   levelName,
-  parentsOf,
-  paternalLine,
-  siblingsOf,
-  spousesOf,
   yearOf,
   type RelPerson,
 } from "@/lib/relations";
@@ -165,11 +162,7 @@ export default function Relations() {
 
 /** Ô "Sinh", "Mất", "Quê quán" dùng chung cho mọi bảng người. */
 function personCells(p: RelPerson): string[] {
-  return [
-    yearOf(p.birth_date) || "—",
-    p.death_date ? yearOf(p.death_date) : p.is_living ? "—" : "đã mất",
-    p.birth_place || "—",
-  ];
+  return [yearOf(p.birth_date) || "—", deathLabel(p), p.birth_place || "—"];
 }
 
 /** Bảng cùng kiểu với bảng Con cháu: tiêu đề cột nhỏ nền nhạt, hàng ngăn bằng đường kẻ. */
@@ -226,19 +219,27 @@ function RelationsBody({
   idx: ReturnType<typeof buildRelationsIndex>;
   Person: (props: { p: RelPerson; children?: string }) => React.ReactElement;
 }) {
-  const parents = parentsOf(idx, focal.id);
-  const line = paternalLine(idx, focal.id);
-  const spouses = spousesOf(idx, focal.id);
-  const siblings = siblingsOf(idx, focal.id);
-  const fatherSiblings = parents.father
-    ? siblingsOf(idx, parents.father.id)
-    : [];
-  const motherSiblings = parents.mother
-    ? siblingsOf(idx, parents.mother.id)
-    : [];
-  const rows = useMemo(() => descendantRows(idx, focal.id), [idx, focal.id]);
-  const summary = descendantSummary(rows);
-  const gen = focal.generation !== null ? focal.generation - off : null;
+  const report = useMemo(
+    () => buildRelationsReport(idx, focal, off),
+    [idx, focal, off],
+  );
+  const { line, siblings, fatherSiblings, motherSiblings, rows, summary } =
+    report;
+  const spouses = report.spouses;
+  const gen = report.generation;
+  const { clan } = useClanContext();
+  const toast = useToast();
+  const pdfM = useMutation({
+    mutationFn: async () => {
+      // @react-pdf/renderer nặng (~1,5MB): chỉ nạp khi bấm xuất.
+      const { downloadRelationsPdf } =
+        await import("@/lib/pdf/exportRelations");
+      return downloadRelationsPdf(clan, report);
+    },
+    onSuccess: (r) => toast.success("Đã xuất PDF", { description: r.filename }),
+    onError: (e) =>
+      toast.error("Không xuất được PDF", { description: (e as Error).message }),
+  });
 
   const exportCsv = () => {
     const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
@@ -283,12 +284,24 @@ function RelationsBody({
         title={focal.full_name}
         bodyClassName="p-0"
         footer={
-          <Link
-            to={`/clans/${clanId}/people/${focal.id}`}
-            className="shrink-0 text-sm text-primary hover:underline"
-          >
-            Mở hồ sơ →
-          </Link>
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => pdfM.mutate()}
+              disabled={pdfM.isPending}
+            >
+              <IconDownload className="mr-1.5 h-4 w-4" />
+              {pdfM.isPending ? "Đang xuất…" : "Xuất PDF"}
+            </Button>
+            <Link
+              to={`/clans/${clanId}/people/${focal.id}`}
+              className="shrink-0 text-sm text-primary hover:underline"
+            >
+              Mở hồ sơ →
+            </Link>
+          </>
         }
       >
         {/* Cùng kiểu bảng với phần Con cháu: tiêu đề cột nhỏ, một hàng thông tin. */}
@@ -362,14 +375,14 @@ function RelationsBody({
                 ...personCells(a),
               ],
             })),
-            ...(parents.mother
+            ...(report.mother
               ? [
                   {
-                    key: parents.mother.id,
+                    key: report.mother.id,
                     cells: [
                       "Mẹ",
-                      <Person key="n" p={parents.mother} />,
-                      ...personCells(parents.mother),
+                      <Person key="n" p={report.mother} />,
+                      ...personCells(report.mother),
                     ],
                   },
                 ]
@@ -387,7 +400,7 @@ function RelationsBody({
         <RelTable
           head={["Họ tên", "Sinh", "Mất", "Quê quán"]}
           empty="Chưa ghi nhận vợ/chồng."
-          rows={spouses.map(({ person: sp }) => ({
+          rows={spouses.map((sp) => ({
             key: sp.id,
             cells: [<Person key="n" p={sp} />, ...personCells(sp)],
           }))}

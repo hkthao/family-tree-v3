@@ -232,3 +232,46 @@ export function descendantSummary(rows: DescendantRow[]): string {
 export function ancestorLabel(level: number): string {
   return ["", "Cha", "Ông", "Cụ", "Kỵ"][level] ?? `Tiên tổ (${level} đời trên)`;
 }
+
+/** Toàn bộ nội dung "Tra cứu quan hệ" của một người — MỘT nguồn cho giao diện, CSV và PDF. */
+export interface RelationsReport {
+  focal: RelPerson;
+  /** Đời hiển thị (đã trừ độ lệch đời của dòng họ). */
+  generation: number | null;
+  /** Dòng cha: cha, ông, cụ, kỵ… */
+  line: RelPerson[];
+  mother: RelPerson | null;
+  spouses: RelPerson[];
+  siblings: RelPerson[];
+  fatherSiblings: RelPerson[];
+  motherSiblings: RelPerson[];
+  rows: DescendantRow[];
+  /** "4 con, 19 cháu, 3 chắt…" */
+  summary: string;
+}
+
+export function buildRelationsReport(
+  idx: RelationsIndex,
+  focal: RelPerson,
+  genOffset: number,
+): RelationsReport {
+  const parents = parentsOf(idx, focal.id);
+  const rows = descendantRows(idx, focal.id);
+  return {
+    focal,
+    generation: focal.generation !== null ? focal.generation - genOffset : null,
+    line: paternalLine(idx, focal.id),
+    mother: parents.mother,
+    spouses: spousesOf(idx, focal.id).map((s) => s.person),
+    siblings: siblingsOf(idx, focal.id),
+    fatherSiblings: parents.father ? siblingsOf(idx, parents.father.id) : [],
+    motherSiblings: parents.mother ? siblingsOf(idx, parents.mother.id) : [],
+    rows,
+    summary: descendantSummary(rows),
+  };
+}
+
+/** Nhãn "Mất": năm mất, "đã mất" nếu mất mà không rõ năm, "—" nếu còn sống / chưa rõ. */
+export function deathLabel(p: RelPerson): string {
+  return p.death_date ? yearOf(p.death_date) : p.is_living ? "—" : "đã mất";
+}
