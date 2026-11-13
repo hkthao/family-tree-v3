@@ -96,7 +96,7 @@ export function SidePanel({
         title: t`Bỏ thay đổi chưa lưu?`,
         description: t`Những gì bạn vừa nhập sẽ mất.`,
         confirmLabel: t`Bỏ thay đổi`,
-        cancelLabel: "Tiếp tục nhập",
+        cancelLabel: t`Tiếp tục nhập`,
         destructive: true,
       });
       if (!ok) return;

@@ -183,11 +183,11 @@ function ChoosePersonView({
                   <div className="min-w-0 flex-1 text-left">
                     <p className="font-medium truncate">{p.full_name}</p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {p.gender === "M" ? "Nam" : t`Nữ`}
+                      {p.gender === "M" ? t`Nam` : t`Nữ`}
                       {p.generation !== null &&
                         t` · Đời ${p.generation - clan.generation_offset}`}
                       {p.is_living && p.birth_date
-                        ? ` · sinh ${p.birth_date.slice(0, 4)}`
+                        ? t` · sinh ${p.birth_date.slice(0, 4)}`
                         : !p.is_living && p.death_date
                           ? t` · đã mất ${p.death_date.slice(0, 4)}`
                           : ""}
@@ -578,9 +578,11 @@ function LineageView({
       {forks.length > 0 && (
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
           <p className="text-xs text-muted-foreground">
+            <Trans>
             Có {forks.length} điểm rẽ.{" "}
-            <span className="text-foreground">{t`Bên nội`}</span> = họ cha ·{" "}
-            <span className="text-foreground">{t`Bên ngoại`}</span> = họ mẹ.
+            <span className="text-foreground">Bên nội</span> = họ cha ·{" "}
+            <span className="text-foreground">Bên ngoại</span> = họ mẹ.
+            </Trans>
           </p>
           <div className="flex flex-wrap gap-2">
             {forks.map((f) => {

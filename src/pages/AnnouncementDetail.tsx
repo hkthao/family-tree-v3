@@ -87,7 +87,7 @@ export default function AnnouncementDetail() {
         <Breadcrumb
           items={[
             { label: t`Thông báo`, to: "/announcements" },
-            { label: row?.title ?? "Chi tiết" },
+            { label: row?.title ?? t`Chi tiết` },
           ]}
         />
 

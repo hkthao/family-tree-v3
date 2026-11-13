@@ -211,7 +211,9 @@ export default function MosaicDetail() {
       <div className="flex flex-wrap items-center gap-2">
         {!canEdit && mosaic.status === "open" && !canAddMore && (
           <span className="text-sm text-muted-foreground">
+            <Trans>
             Bạn đã góp đủ {quota} mảnh.
+            </Trans>
           </span>
         )}
         {canMoveAny && tiles.length > 0 && (
@@ -358,7 +360,7 @@ export default function MosaicDetail() {
 
       <SidePanel
         open={!!selected}
-        title={selected?.caption || "Mảnh ghép"}
+        title={selected?.caption || t`Mảnh ghép`}
         subtitle={mosaic.title}
         onClose={() => setSelected(null)}
       >
@@ -638,7 +640,7 @@ function EditMosaicForm({
   const saveM = useMutation({
     mutationFn: async () => {
       await updateMosaic(mosaic.id, {
-        title: title.trim() || "Ảnh đại gia đình",
+        title: title.trim() || t`Ảnh đại gia đình`,
         description: description.trim() || null,
         // Số ô luôn tròn hàng theo số cột (không để hàng cuối thiếu mảnh).
         slots: normalizeSlots(
@@ -696,7 +698,9 @@ function EditMosaicForm({
           onChange={(e) => setSlots(Number(e.target.value) || minSlots)}
         />
         <p className="text-xs text-muted-foreground">
+          <Trans>
           Tối thiểu {minSlots} (đang có mảnh ở ô xa nhất).
+          </Trans>
         </p>
       </div>
       <div className="space-y-1.5">

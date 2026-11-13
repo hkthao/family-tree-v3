@@ -281,7 +281,9 @@ function MosaicListItem({
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{mosaic.title}</p>
           <p className="text-sm text-muted-foreground">
+            <Trans>
             {mosaic.tileCount}/{mosaic.slots} mảnh
+            </Trans>
           </p>
           {mosaic.description && (
             <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
@@ -319,7 +321,9 @@ function MosaicGridCard({
             {mosaic.title}
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
+            <Trans>
             {mosaic.tileCount}/{mosaic.slots} mảnh
+            </Trans>
           </p>
         </div>
         <StatusChip mosaic={mosaic} />
@@ -353,7 +357,7 @@ function NewMosaicForm({
         Math.max(3, Math.round(Math.sqrt((slots * 4) / 3))),
       );
       const created = await createMosaic(clanId, {
-        title: title.trim() || "Ảnh đại gia đình",
+        title: title.trim() || t`Ảnh đại gia đình`,
         description: description.trim() || null,
         max_per_member: perMember,
         slots: normalizeSlots(slots, cols),

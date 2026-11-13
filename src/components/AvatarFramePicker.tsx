@@ -16,7 +16,7 @@ export function AvatarFramePicker({
   onChange,
   gender,
   photoUrl,
-  label = "Viền avatar",
+  label = t`Viền avatar`,
   hint,
 }: {
   value: string | null;

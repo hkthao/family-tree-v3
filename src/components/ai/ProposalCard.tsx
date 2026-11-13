@@ -61,7 +61,7 @@ export function ProposalCard({
   const nameOf = (ref: string): string => {
     const inBatch = proposal.people.find((p) => p.tempId === ref);
     if (inBatch) return inBatch.fullName;
-    return names.data?.get(ref) ?? "người trong gia phả";
+    return names.data?.get(ref) ?? t`người trong gia phả`;
   };
 
   return (

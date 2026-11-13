@@ -164,7 +164,7 @@ export default function MemoryRoom() {
       />
       <PageHeader
         icon={<IconCamera className="h-7 w-7" />}
-        title={room?.name ?? "Phòng ký ức"}
+        title={room?.name ?? t`Phòng ký ức`}
         description={t`Kéo để nhìn quanh · WASD/phím mũi tên (hoặc joystick) để đi · chạm khung để xem ảnh.`}
       />
 

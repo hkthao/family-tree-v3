@@ -15,6 +15,7 @@ import {
 } from "./docs/registry";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /**
  * In-app documentation. Two modes driven by the URL:
  *
@@ -90,7 +91,9 @@ function Index() {
 
       {filtered.length === 0 && (
         <p className="text-muted-foreground italic">
+          <Trans>
           Không có bài nào khớp "{query}". Thử từ khoá ngắn hơn.
+          </Trans>
         </p>
       )}
 

@@ -31,6 +31,7 @@ import { queryKeys } from "@/lib/queries/keys";
 
 import { t, msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
+import { Trans } from "@lingui/react/macro";
 const CATS = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
 const STATUSES: { value: CustomStatus; label: string }[] = lazyMessages([
   { value: "draft", label: msg`Nháp` },
@@ -92,9 +93,9 @@ export default function CustomsImport({
       const dupInBatch = !!key && seen.has(key);
       if (key) seen.add(key);
       let skip: string | null = null;
-      if (!p.title.trim()) skip = "Thiếu tiêu đề (dòng '# ')";
-      else if (duplicate) skip = "Đã có bài cùng tên";
-      else if (dupInBatch) skip = "Trùng tên trong danh sách dán";
+      if (!p.title.trim()) skip = t`Thiếu tiêu đề (dòng '# ')`;
+      else if (duplicate) skip = t`Đã có bài cùng tên`;
+      else if (dupInBatch) skip = t`Trùng tên trong danh sách dán`;
       return { ...p, duplicate, skip };
     });
   }, [mdText, existingTitles]);
@@ -107,7 +108,7 @@ export default function CustomsImport({
       for (const p of preview) {
         if (p.skip) {
           res.skipped.push({
-            title: p.title || "(không tiêu đề)",
+            title: p.title || t`(không tiêu đề)`,
             reason: p.skip,
           });
           continue;
@@ -185,12 +186,14 @@ export default function CustomsImport({
         </>
       )}
       <p className="text-sm text-muted-foreground">
+        <Trans>
         Dán nhiều bài, mỗi bài bắt đầu bằng <code>#</code> Tiêu đề. Trong mỗi
         bài: đoạn mở đầu là mô tả ngắn, mỗi <code>##</code> là một đoạn,
         <code> ![chú thích](https://…)</code> làm ảnh minh hoạ, đoạn
         <code> ## Câu hỏi thường gặp</code> với các <code>###</code> thành FAQ.
         Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong
         lần nhập này.
+        </Trans>
       </p>
 
       <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-primary hover:underline">
@@ -283,7 +286,9 @@ export default function CustomsImport({
       {preview.length > 0 && (
         <div className="space-y-2">
           <Label className="block">
+            <Trans>
             Xem trước — {preview.length} bài, {importable.length} sẽ được tạo
+            </Trans>
           </Label>
           <ul className="rounded-xl border bg-card shadow-sm divide-y text-sm">
             {preview.map((p, i) => (
@@ -292,13 +297,15 @@ export default function CustomsImport({
                 className="flex items-center justify-between gap-3 px-3 py-2"
               >
                 <div className="min-w-0">
+                  <Trans>
                   <span className="font-medium">
-                    {p.title || "(không tiêu đề)"}
+                    {p.title || t`(không tiêu đề)`}
                   </span>
                   <span className="text-muted-foreground">
                     {" "}
                     · {p.sections.length} đoạn · {p.faq.length} câu hỏi
                   </span>
+                  </Trans>
                 </div>
                 {p.skip ? (
                   <span className="shrink-0 text-xs text-amber-700">
@@ -316,7 +323,9 @@ export default function CustomsImport({
       {result && (
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-1 text-sm">
           <p className="font-medium text-emerald-700">
+            <Trans>
             Đã tạo {result.created.length} bài.
+            </Trans>
           </p>
           {result.skipped.length > 0 && (
             <p className="text-amber-700">
@@ -359,7 +368,7 @@ export default function CustomsImport({
           onClick={() => run.mutate()}
         >
           <IconCheck className="h-4 w-4 mr-1.5" />
-          {run.isPending ? "Đang tạo…" : t`Tạo ${importable.length} bài`}
+          {run.isPending ? t`Đang tạo…` : t`Tạo ${importable.length} bài`}
         </Button>
       </FormActions>
     </>

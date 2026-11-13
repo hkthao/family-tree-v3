@@ -39,6 +39,7 @@ import {
 } from "@/lib/queries/treeCanvas";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 const PAGE_SIZE_OPTIONS = [6, 12, 24];
 
 /**
@@ -108,7 +109,7 @@ export default function TreeCanvases() {
       toast.success(t`Đã tạo cây mới`);
       navigate(`${base}/tree-canvases/${c.id}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không tạo được");
+      toast.error(e instanceof Error ? e.message : t`Không tạo được`);
     } finally {
       setCreateBusy(false);
     }
@@ -125,7 +126,7 @@ export default function TreeCanvases() {
       setEditing(null);
       toast.success(t`Đã đổi tên`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không đổi tên được");
+      toast.error(e instanceof Error ? e.message : t`Không đổi tên được`);
     } finally {
       setBusyId(null);
     }
@@ -142,7 +143,7 @@ export default function TreeCanvases() {
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       toast.success(t`Đã nhân bản`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không nhân bản được");
+      toast.error(e instanceof Error ? e.message : t`Không nhân bản được`);
     } finally {
       setBusyId(null);
     }
@@ -162,7 +163,7 @@ export default function TreeCanvases() {
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       toast.success(t`Đã xoá`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Không xoá được");
+      toast.error(e instanceof Error ? e.message : t`Không xoá được`);
     } finally {
       setBusyId(null);
     }
@@ -189,7 +190,7 @@ export default function TreeCanvases() {
       {error && (
         <p className="text-sm text-destructive">
           {t`Không tải được danh sách:`}{" "}
-          {error instanceof Error ? error.message : "lỗi không rõ"}
+          {error instanceof Error ? error.message : t`lỗi không rõ`}
         </p>
       )}
 
@@ -237,7 +238,9 @@ export default function TreeCanvases() {
 
       {data && data.length > 0 && total === 0 && (
         <p className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
+          <Trans>
           Không có cây nào khớp "{search}".
+          </Trans>
         </p>
       )}
 
@@ -271,8 +274,10 @@ export default function TreeCanvases() {
                     Cập nhật {formatRelative(c.updated_at) ?? "—"}
                   </p>
                   <p className="text-xs text-muted-foreground">
+                    <Trans>
                     {shown} người · {c.layout.extras.length} thẻ/chữ thêm ·{" "}
                     {c.layout.links.length} đường nối
+                    </Trans>
                   </p>
                 </Link>
                 <div className="flex items-center justify-end gap-2 border-t p-2">

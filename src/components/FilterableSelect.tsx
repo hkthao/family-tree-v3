@@ -33,7 +33,7 @@ export function FilterableSelect({
   options,
   emptyLabel,
   disabled,
-  filterPlaceholder = "Gõ để tìm (không cần dấu)",
+  filterPlaceholder = t`Gõ để tìm (không cần dấu)`,
   filterLabel,
   className,
 }: {

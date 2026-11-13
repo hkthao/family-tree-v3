@@ -16,6 +16,7 @@ import {
 } from "@/lib/tree/canvasModel";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /** Mime dùng khi kéo mục từ bảng trái thả lên canvas. */
 export const PALETTE_MIME = "application/x-canvas-item";
 
@@ -393,7 +394,9 @@ export function LinkInspector({
         </label>
         <label className="block space-y-1">
           <span className="text-xs text-muted-foreground">
+            <Trans>
             Độ dày ({link.width})
+            </Trans>
           </span>
           <input
             type="range"

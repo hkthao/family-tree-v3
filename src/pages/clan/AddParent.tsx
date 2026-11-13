@@ -214,7 +214,7 @@ export function AddParentForm({
             return;
           }
         } else if (!existingId) {
-          setFormError("Chọn người trong danh sách để gắn");
+          setFormError(t`Chọn người trong danh sách để gắn`);
           return;
         }
         mutation.mutate();
@@ -394,7 +394,7 @@ export function AddParentForm({
           </ul>
           <p className="text-xs text-muted-foreground">
             {t`App chặn nếu người đã chọn là con cháu của`}{" "}
-            {focal?.full_name ?? "người này"} — tránh vòng lặp "ông nội là con
+            {focal?.full_name ?? t`người này`} — tránh vòng lặp "ông nội là con
             của cháu". Vai trò cha/mẹ được suy ra theo giới tính của người được
             chọn.
           </p>
@@ -465,7 +465,7 @@ export default function AddParent() {
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
           { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
-          { label: focal?.full_name ?? "Người", to: back.split("?")[0] },
+          { label: focal?.full_name ?? t`Người`, to: back.split("?")[0] },
           { label: t`Thêm cha / mẹ` },
         ]}
       />

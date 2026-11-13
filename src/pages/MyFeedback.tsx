@@ -49,6 +49,7 @@ import { unaccent } from "@/lib/unaccent";
 import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
+import { Trans } from "@lingui/react/macro";
 const CATEGORY_LABEL: Record<FeedbackCategory, string> = lazyMessages({
   bug: msg`Lỗi / sự cố`,
   idea: msg`Đề xuất / ý kiến`,
@@ -497,7 +498,9 @@ function FeedbackForm({
               {st.label}
             </Chip>
             <span className="text-xs text-muted-foreground">
+              <Trans>
               Gửi ngày {fmt(row.created_at)}
+              </Trans>
             </span>
           </div>
           {row.admin_reply ? (

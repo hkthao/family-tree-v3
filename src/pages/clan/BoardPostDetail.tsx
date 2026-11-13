@@ -30,6 +30,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
+import { Trans } from "@lingui/react/macro";
 const TYPE_LABEL: Record<ClanPostType, string> = lazyMessages({
   news: "Tin",
   event: msg`Sự kiện`,
@@ -84,7 +85,7 @@ export default function BoardPostDetail() {
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
           { label: t`Bảng tin`, to: `/clans/${clanId}/board` },
-          { label: post?.title ?? "Bài viết" },
+          { label: post?.title ?? t`Bài viết` },
         ]}
       />
 
@@ -159,7 +160,7 @@ export default function BoardPostDetail() {
               minute: "2-digit",
             })}
             {" · "}
-            {isAuthor ? "bạn" : post.author_id.slice(0, 8)}
+            {isAuthor ? t`bạn` : post.author_id.slice(0, 8)}
           </time>
 
           <hr className="my-5 border-border" />
@@ -170,6 +171,7 @@ export default function BoardPostDetail() {
 
           {post.event_date && (
             <p className="mt-5 text-sm">
+              <Trans>
               <span className="text-muted-foreground">Ngày diễn ra: </span>
               <strong>
                 {new Date(post.event_date).toLocaleDateString("vi-VN", {
@@ -178,6 +180,7 @@ export default function BoardPostDetail() {
                   year: "numeric",
                 })}
               </strong>
+              </Trans>
             </p>
           )}
 
@@ -407,7 +410,7 @@ function Comments({ postId, isMember }: { postId: string; isMember: boolean }) {
           >
             <p className="whitespace-pre-line">{c.body}</p>
             <p className="text-xs text-muted-foreground">
-              {c.author_id === user?.id ? "bạn" : c.author_id.slice(0, 8)}
+              {c.author_id === user?.id ? t`bạn` : c.author_id.slice(0, 8)}
               {" · "}
               {new Date(c.created_at).toLocaleString("vi-VN", {
                 hour: "2-digit",

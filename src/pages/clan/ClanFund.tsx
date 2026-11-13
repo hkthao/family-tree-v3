@@ -57,6 +57,7 @@ import {
 import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
+import { Trans } from "@lingui/react/macro";
 /** Trạng thái ngăn kéo: thêm mới, xem (chỉ đọc) hoặc sửa một giao dịch. */
 type PanelState =
   { mode: "new" } | { mode: "view" | "edit"; tx: FundTransaction } | null;
@@ -200,6 +201,7 @@ export default function ClanFund() {
           {formatVnd(summary.balance)}
         </p>
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+          <Trans>
           <span>
             <span className="text-muted-foreground">Tổng thu: </span>
             <b className="text-emerald-600 dark:text-emerald-400 tabular-nums">
@@ -212,6 +214,7 @@ export default function ClanFund() {
               {formatVnd(summary.totalOut)}
             </b>
           </span>
+          </Trans>
         </div>
         {summary.byFund.length > 1 && (
           <div className="mt-3 space-y-1 border-t pt-3 text-sm">
@@ -238,7 +241,7 @@ export default function ClanFund() {
               : t`Giao dịch`
         }
         subtitle={
-          panel?.mode === "new" ? "Khoản thu / chi của quỹ họ." : undefined
+          panel?.mode === "new" ? t`Khoản thu / chi của quỹ họ.` : undefined
         }
         onClose={closePanel}
         guard={panel?.mode !== "view"}
@@ -490,7 +493,7 @@ function FundForm({
     tx?.direction ?? "in",
   );
   const [amount, setAmount] = useState(tx ? String(tx.amount) : "");
-  const [fund, setFund] = useState(tx?.fund ?? knownFunds[0] ?? "Quỹ chung");
+  const [fund, setFund] = useState(tx?.fund ?? knownFunds[0] ?? t`Quỹ chung`);
   const [category, setCategory] = useState(tx?.category ?? "");
   const [occurredOn, setOccurredOn] = useState(tx?.occurred_on ?? "");
   const [note, setNote] = useState(tx?.note ?? "");
@@ -500,7 +503,7 @@ function FundForm({
       const input = {
         direction,
         amount: Math.round(Number(amount)),
-        fund: fund.trim() || "Quỹ chung",
+        fund: fund.trim() || t`Quỹ chung`,
         category: category.trim() || null,
         occurred_on: occurredOn || null,
         note: note.trim() || null,

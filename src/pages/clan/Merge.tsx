@@ -264,9 +264,9 @@ function SuggestionPanel({
 
 function personMeta(p: DuplicateCandidate["a"], genOffset: number): string {
   const parts: string[] = [];
-  if (p.birth_date) parts.push(`sinh ${p.birth_date.slice(0, 4)}`);
+  if (p.birth_date) parts.push(t`sinh ${p.birth_date.slice(0, 4)}`);
   if (p.generation !== null) parts.push(t`Đời ${p.generation - genOffset}`);
-  if (!p.is_living) parts.push("đã mất");
+  if (!p.is_living) parts.push(t`đã mất`);
   return parts.length > 0 ? `· ${parts.join(" · ")}` : "";
 }
 
@@ -346,9 +346,9 @@ function PersonPicker({
             <div className="min-w-0">
               <p className="font-medium truncate">{person.full_name}</p>
               <p className="text-xs text-muted-foreground">
-                {person.gender === "M" ? "Nam" : t`Nữ`}
+                {person.gender === "M" ? t`Nam` : t`Nữ`}
                 {person.birth_date
-                  ? ` · sinh ${person.birth_date.slice(0, 4)}`
+                  ? t` · sinh ${person.birth_date.slice(0, 4)}`
                   : ""}
                 {person.generation !== null
                   ? t` · Đời ${person.generation - genOffset}`
@@ -387,9 +387,9 @@ function PersonPicker({
                       >
                         <p className="font-medium truncate">{p.full_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {p.gender === "M" ? "Nam" : t`Nữ`}
+                          {p.gender === "M" ? t`Nam` : t`Nữ`}
                           {p.birth_date
-                            ? ` · sinh ${p.birth_date.slice(0, 4)}`
+                            ? t` · sinh ${p.birth_date.slice(0, 4)}`
                             : ""}
                           {p.generation !== null
                             ? t` · Đời ${p.generation - genOffset}`
@@ -426,8 +426,8 @@ function Comparison({
     { label: t`Họ và tên`, w: winner.full_name, l: loser.full_name },
     {
       label: t`Giới tính`,
-      w: winner.gender === "M" ? "Nam" : t`Nữ`,
-      l: loser.gender === "M" ? "Nam" : t`Nữ`,
+      w: winner.gender === "M" ? t`Nam` : t`Nữ`,
+      l: loser.gender === "M" ? t`Nam` : t`Nữ`,
     },
     {
       label: t`Ngày sinh`,

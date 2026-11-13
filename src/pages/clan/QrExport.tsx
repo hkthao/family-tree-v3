@@ -27,6 +27,7 @@ import {
 } from "@/lib/queries/persons";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 const MAX_PER_EXPORT = 200;
 // Shared input/select classes so all filter controls have the same
 // height + border treatment. Copied from the People page pattern so
@@ -221,17 +222,21 @@ export default function QrExport() {
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-primary/5 px-3 py-2">
         <p className="text-sm">
           <span className="font-medium">
-            {isFetching ? "Đang tải…" : t`${rows?.length ?? 0} người`}
+            {isFetching ? t`Đang tải…` : t`${rows?.length ?? 0} người`}
           </span>
           {!isFetching && (
             <span className="text-muted-foreground">
+              <Trans>
               {" · "}
               {selected.size} đã chọn
+              </Trans>
             </span>
           )}
           {(rows?.length ?? 0) >= MAX_PER_EXPORT && (
             <span className="ml-2 text-amber-600 dark:text-amber-400">
+              <Trans>
               · Giới hạn {MAX_PER_EXPORT} người mỗi lần
+              </Trans>
             </span>
           )}
         </p>
@@ -311,12 +316,12 @@ function PersonRow({
         <div className="min-w-0 flex-1">
           <p className="font-medium truncate">{p.full_name}</p>
           <p className="text-xs text-muted-foreground truncate">
-            {p.gender === "M" ? "Nam" : t`Nữ`}
+            {p.gender === "M" ? t`Nam` : t`Nữ`}
             {p.generation !== null && t` · Đời ${p.generation - genOffset}`}
             {!p.is_living
               ? t` · đã mất${deathYear ? ` ${deathYear}` : ""}`
               : birthYear
-                ? ` · sinh ${birthYear}`
+                ? t` · sinh ${birthYear}`
                 : ""}
           </p>
         </div>

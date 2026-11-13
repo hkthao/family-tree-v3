@@ -27,8 +27,8 @@ interface Props {
 export function BirthOrderPicker({
   value,
   onChange,
-  label = "Con thứ mấy",
-  helper = "Bỏ trống nếu không rõ — app xếp theo năm sinh.",
+  label = t`Con thứ mấy`,
+  helper = t`Bỏ trống nếu không rõ — app xếp theo năm sinh.`,
   inputId = "birth_order",
 }: Props) {
   const n = Number(value);
@@ -78,7 +78,7 @@ export function BirthOrderPicker({
                   : "bg-card hover:bg-muted/50"
               }`}
             >
-              {k === 1 ? "Con cả" : k}
+              {k === 1 ? t`Con cả` : k}
             </button>
           );
         })}

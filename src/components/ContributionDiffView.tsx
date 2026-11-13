@@ -144,7 +144,7 @@ function DiffCell({
   inline?: boolean;
 }) {
   const empty = !value;
-  const display = empty ? "(trống)" : value;
+  const display = empty ? t`(trống)` : value;
   const old = tone === "old";
   return (
     <span
@@ -242,7 +242,7 @@ function AddPersonDiff({ payload }: { payload: AddPersonPayload }) {
       <Row label={t`Họ và tên`} value={payload.full_name} />
       <Row
         label={t`Giới tính`}
-        value={payload.gender === "M" ? "Nam" : t`Nữ`}
+        value={payload.gender === "M" ? t`Nam` : t`Nữ`}
       />
       <Row
         label={t`Tình trạng`}

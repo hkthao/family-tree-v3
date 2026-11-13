@@ -21,6 +21,7 @@ import {
 import { listProvinces } from "@/lib/queries/vnDivisions";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 const ICON: Record<MapLayer, React.ComponentType<{ className?: string }>> = {
   people: IconUsers,
   graves: IconGrave,
@@ -114,10 +115,12 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
 
             {nothing ? (
               <p className="text-sm text-muted-foreground">
-                {t`Chưa có dữ liệu khu vực. Nhập`}{" "}
-                <strong>{t`"Nơi ở hiện tại"`}</strong> cho từng người trong Danh
+                <Trans>
+                Chưa có dữ liệu khu vực. Nhập{" "}
+                <strong>"Nơi ở hiện tại"</strong> cho từng người trong Danh
                 bạ (hoặc chọn Tỉnh / Xã cho mộ phần, di sản) để con cháu hiện
                 lên bản đồ.
+                </Trans>
               </p>
             ) : (
               <div>
@@ -135,7 +138,9 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
                         {nameOf(code)}
                       </span>
                       <span className="shrink-0 tabular-nums text-muted-foreground">
+                        <Trans>
                         {n} người
+                        </Trans>
                       </span>
                     </li>
                   ))}

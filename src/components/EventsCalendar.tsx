@@ -63,15 +63,15 @@ function kindColor(kind: UpcomingEvent["kind"]): string {
 function kindLabel(k: UpcomingEvent["kind"]): string {
   switch (k) {
     case "birthday":
-      return "Sinh nhật";
+      return t`Sinh nhật`;
     case "anniversary":
-      return "Ngày giỗ";
+      return t`Ngày giỗ`;
     case "festival":
-      return "Lễ, tết";
+      return t`Lễ, tết`;
     case "tomb_visit":
-      return "Tảo mộ / Chạp họ";
+      return t`Tảo mộ / Chạp họ`;
     case "custom":
-      return "Sự kiện";
+      return t`Sự kiện`;
   }
 }
 

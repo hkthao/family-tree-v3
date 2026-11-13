@@ -89,7 +89,7 @@ export default function JoinClan() {
                 {peek.clan_name}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Quyền: {ROLE_LABEL[peek.role ?? "viewer"] ?? "Thành viên"}
+                Quyền: {ROLE_LABEL[peek.role ?? "viewer"] ?? t`Thành viên`}
               </p>
             </div>
 

@@ -15,6 +15,7 @@ import {
 } from "@/lib/queries/person-timeline";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /** Viết hoa chữ cái đầu mỗi dòng ("định luật lệnh…" → "Định luật lệnh…"). */
 function capFirst(t: string): string {
   return t
@@ -120,7 +121,9 @@ function ReignCard({
           </p>
           {years(r.reign_start_year, r.reign_end_year) && (
             <p className="text-muted-foreground">
+              <Trans>
               Ở ngôi {years(r.reign_start_year, r.reign_end_year)}
+              </Trans>
             </p>
           )}
           {r.era_names.length > 0 && (
@@ -174,14 +177,14 @@ function ReignCard({
                     onClick={() => onPersonClick(p.person_id)}
                     className="text-primary hover:underline"
                   >
-                    {p.full_name ?? "(ẩn)"}
+                    {p.full_name ?? t`(ẩn)`}
                   </button>
                 ) : (
                   <Link
                     to={`/clans/${clanId}/people/${p.person_id}`}
                     className="text-primary hover:underline"
                   >
-                    {p.full_name ?? "(ẩn)"}
+                    {p.full_name ?? t`(ẩn)`}
                   </Link>
                 )}
               </li>

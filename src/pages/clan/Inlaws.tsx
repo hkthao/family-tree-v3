@@ -246,7 +246,9 @@ export default function Inlaws() {
       {tab === "pending" && !isLoading && pendingIncoming.length > 0 && (
         <section className="space-y-2">
           <h3 className="text-sm font-medium text-primary">
+            <Trans>
             Đề nghị đến với bạn ({pendingIncoming.length})
+            </Trans>
           </h3>
           <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {pendingIncoming.map((l) => (
@@ -280,7 +282,9 @@ export default function Inlaws() {
       {tab === "pending" && !isLoading && pendingOutgoing.length > 0 && (
         <section className="space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground">
+            <Trans>
             Đề nghị tôi đã gửi ({pendingOutgoing.length})
+            </Trans>
           </h3>
           <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {pendingOutgoing.map((l) => (
@@ -376,10 +380,10 @@ function ConfirmedRow({
         <p className="font-medium">
           {localPerson?.full_name ?? "—"}{" "}
           <span className="text-muted-foreground">↔</span>{" "}
-          {peek?.full_name ?? "(người bên kia)"}
+          {peek?.full_name ?? t`(người bên kia)`}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5">
-          {peek ? <PeekMeta peek={peek} /> : "Đang tải…"}
+          {peek ? <PeekMeta peek={peek} /> : t`Đang tải…`}
         </p>
       </div>
       {/* Actions — 50/50 split on mobile, hug content on sm+. */}
@@ -425,14 +429,14 @@ function PeekMeta({ peek }: { peek: LinkPeek }) {
     peek.birth_year && peek.death_year
       ? `${peek.birth_year}–${peek.death_year}`
       : peek.birth_year
-        ? `sinh ${peek.birth_year}`
+        ? t`sinh ${peek.birth_year}`
         : peek.death_year
           ? t`mất ${peek.death_year}`
           : "—";
   return (
     <>
       <span className="text-foreground">{peek.clan_name}</span> ·{" "}
-      {peek.gender === "M" ? "Nam" : t`Nữ`}
+      {peek.gender === "M" ? t`Nam` : t`Nữ`}
       {peek.generation !== null && peek.generation !== undefined
         ? t` · Đời ${peek.generation - (peek.generation_offset ?? 0)}`
         : ""}{" "}
@@ -483,7 +487,7 @@ function IncomingPendingRow({
     preview && preview.person_a_birth_year && preview.person_a_death_year
       ? `${preview.person_a_birth_year}–${preview.person_a_death_year}`
       : preview?.person_a_birth_year
-        ? `sinh ${preview.person_a_birth_year}`
+        ? t`sinh ${preview.person_a_birth_year}`
         : preview?.person_a_death_year
           ? t`mất ${preview.person_a_death_year}`
           : "";
@@ -505,7 +509,7 @@ function IncomingPendingRow({
           <span className="font-medium">{preview?.person_a_name ?? "…"}</span>
           {preview && (
             <span className="text-xs text-muted-foreground ml-1">
-              ({preview.person_a_gender === "M" ? "Nam" : t`Nữ`}
+              ({preview.person_a_gender === "M" ? t`Nam` : t`Nữ`}
               {lifespan ? ` · ${lifespan}` : ""})
             </span>
           )}
@@ -593,12 +597,16 @@ function PendingRow({
         <p className="font-medium">{localPerson?.full_name ?? "—"}</p>
         {link.person_b_name_hint && (
           <p className="text-xs text-muted-foreground mt-0.5">
+            <Trans>
             Gợi ý người bên kia: {link.person_b_name_hint}
+            </Trans>
           </p>
         )}
         {link.note && (
           <p className="text-xs text-muted-foreground mt-0.5">
+            <Trans>
             Ghi chú: {link.note}
+            </Trans>
           </p>
         )}
       </div>

@@ -61,7 +61,7 @@ export default function BoardPostEdit() {
           { label: clan.name, to: `/clans/${clanId}` },
           { label: t`Bảng tin`, to: `/clans/${clanId}/board` },
           {
-            label: post.title ?? "Bài viết",
+            label: post.title ?? t`Bài viết`,
             to: `/clans/${clanId}/board/${postId}`,
           },
           { label: t`Sửa` },

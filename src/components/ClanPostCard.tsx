@@ -102,7 +102,7 @@ export function ClanPostCard({
           </time>
           {(isAuthor || isAdmin) && (
             <span className="text-muted-foreground">
-              · {isAuthor ? "bạn" : post.author_id.slice(0, 8)}
+              · {isAuthor ? t`bạn` : post.author_id.slice(0, 8)}
             </span>
           )}
           {isPending && (
@@ -132,10 +132,10 @@ export function formatRelative(iso: string): string {
   const diffHr = Math.round(diffMs / 3_600_000);
   const diffDay = Math.round(diffMs / 86_400_000);
 
-  if (diffMin < 1) return "vừa xong";
+  if (diffMin < 1) return t`vừa xong`;
   if (diffMin < 60) return t`${diffMin} phút trước`;
   if (diffHr < 24) return t`${diffHr} giờ trước`;
-  if (diffDay === 1) return "Hôm qua";
+  if (diffDay === 1) return t`Hôm qua`;
   if (diffDay < 7) return t`${diffDay} ngày trước`;
   return new Date(iso).toLocaleDateString(currentIntlTag(), {
     day: "2-digit",

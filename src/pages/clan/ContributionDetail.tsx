@@ -163,7 +163,7 @@ export default function ContributionDetail() {
               {contribution.person_id && currentPerson
                 ? currentPerson.full_name
                 : ((contribution.proposed_data as { full_name?: string })
-                    .full_name ?? "Người mới")}
+                    .full_name ?? t`Người mới`)}
             </h1>
             <p className="text-sm">
               {t`Trạng thái:`}{" "}
@@ -192,7 +192,7 @@ export default function ContributionDetail() {
               <Row
                 label={t`Tên`}
                 value={
-                  contribution.submitter_name ?? "(thành viên đã đăng nhập)"
+                  contribution.submitter_name ?? t`(thành viên đã đăng nhập)`
                 }
               />
               {contribution.submitter_contact && (

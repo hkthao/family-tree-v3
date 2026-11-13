@@ -18,7 +18,7 @@ export function ViewEditActions({
   deleteDisabled,
   saving,
   canSave = true,
-  saveLabel = "Lưu",
+  saveLabel = t`Lưu`,
 }: {
   readOnly: boolean;
   canEdit?: boolean;
@@ -58,7 +58,7 @@ export function ViewEditActions({
       </Button>
       <Button type="submit" disabled={saving || !canSave}>
         <IconCheck className="mr-1.5 h-4 w-4" />
-        {saving ? "Đang lưu…" : saveLabel}
+        {saving ? t`Đang lưu…` : saveLabel}
       </Button>
     </FormActions>
   );

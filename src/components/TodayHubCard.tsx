@@ -21,6 +21,7 @@ import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
 import { t } from "@lingui/core/macro";
 
+import { Trans } from "@lingui/react/macro";
 const COLLAPSE_KEY = "today-hub-collapsed";
 
 function readCollapsed(): boolean {
@@ -175,9 +176,11 @@ export function TodayHubCard({
             </span>
             {info && (
               <span className="text-muted-foreground">
+                <Trans>
                 {" "}
                 · Âm {info.lunar.day}/{info.lunar.month}
                 {leap}
+                </Trans>
               </span>
             )}
           </span>

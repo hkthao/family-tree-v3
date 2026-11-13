@@ -99,7 +99,7 @@ export function QrScannerModal({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={title ?? "Quét mã QR"}
+      aria-label={title ?? t`Quét mã QR`}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
       onClick={onClose}
     >

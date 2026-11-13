@@ -194,7 +194,7 @@ export function AddSpouseForm({
             return;
           }
         } else if (!existingId) {
-          setFormError("Chọn người trong danh sách để gắn");
+          setFormError(t`Chọn người trong danh sách để gắn`);
           return;
         }
         mutation.mutate();
@@ -250,7 +250,7 @@ export function AddSpouseForm({
                   }}
                   className="h-4 w-4 accent-primary"
                 />
-                <span>Nam</span>
+                <span>{t`Nam`}</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -316,7 +316,7 @@ export function AddSpouseForm({
             </Trans>
           </p>
           <Label>
-            Tìm người đã có (khác giới với {focal?.full_name ?? "người gốc"})
+            Tìm người đã có (khác giới với {focal?.full_name ?? t`người gốc`})
           </Label>
           <Input
             icon={<IconSearch />}
@@ -449,7 +449,7 @@ export default function AddSpouse() {
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
           { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
-          { label: focal?.full_name ?? "Người", to: back.split("?")[0] },
+          { label: focal?.full_name ?? t`Người`, to: back.split("?")[0] },
           { label: t`Thêm vợ / chồng` },
         ]}
       />

@@ -22,7 +22,7 @@ export interface EventWhen {
 
 export interface EventWhenOptions {
   /** "ÂL" cho chỗ chật, "Âm lịch" cho chỗ rộng. */
-  lunarLabel?: "ÂL" | "Âm lịch";
+  lunarLabel?: string;
   /** Ghi thêm "· hằng năm" khi sự kiện lặp lại. */
   withYearly?: boolean;
 }
@@ -31,7 +31,7 @@ export function eventWhenText(
   event: EventWhen,
   opts: EventWhenOptions = {},
 ): string {
-  const lunarLabel = opts.lunarLabel ?? "ÂL";
+  const lunarLabel = opts.lunarLabel ?? t`ÂL`;
   let when: string;
   if (event.date_solar) {
     when = t`${formatDateOnly(event.date_solar) ?? event.date_solar} (dương lịch)`;

@@ -90,7 +90,7 @@ export function ListeningBar({ voice }: { voice: VoiceInput }) {
           {formatListenTime(voice.seconds)}
         </span>
         <span className="truncate text-base">
-          {voice.transcript || "Đang nghe…"}
+          {voice.transcript || t`Đang nghe…`}
         </span>
       </div>
       <p className="text-xs text-muted-foreground">{hint}</p>

@@ -587,7 +587,9 @@ export default function People() {
                 {maxGen
                   ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
                       <option key={g} value={g}>
+                        <Trans>
                         Đời {g - clan.generation_offset}
+                        </Trans>
                       </option>
                     ))
                   : null}
@@ -674,7 +676,9 @@ export default function People() {
           >
             <section className="space-y-2">
               <h3 className="text-sm font-semibold">
+                <Trans>
                 Đặt chi cho {selected.size} người đã chọn
+                </Trans>
               </h3>
               <Select
                 icon={<IconGrid />}
@@ -831,7 +835,7 @@ export default function People() {
                       }
                       className="h-4 w-4 accent-primary"
                     />
-                    Chọn cả trang này ({data.rows.length})
+                    {t`Chọn cả trang này (${data.rows.length})`}
                   </label>
                   {total > data.rows.length && selected.size < total && (
                     <button
@@ -915,13 +919,13 @@ function lifespan(person: PersonRow): string {
     if (by && dy) return `${by}–${dy}`;
     if (dy) return `?–${dy}`;
     if (by) return `${by}–?`;
-    return "đã mất";
+    return t`đã mất`;
   }
-  return by ? `sinh ${by}` : "";
+  return by ? t`sinh ${by}` : "";
 }
 
 function genderLabel(g: "M" | "F"): string {
-  return g === "M" ? "♂ Nam" : t`♀ Nữ`;
+  return g === "M" ? t`♂ Nam` : t`♀ Nữ`;
 }
 
 function spouseLabel(g: "M" | "F"): string {
@@ -1050,7 +1054,7 @@ function PersonListItem({
                   <p className="truncate">
                     {rel.father && (
                       <>
-                        <span className="font-medium">Cha:</span> {rel.father}
+                        <span className="font-medium">{t`Cha:`}</span> {rel.father}
                       </>
                     )}
                     {rel.father && rel.mother && (
@@ -1221,7 +1225,9 @@ function PersonGridCard({
           </p>
           {dispGen !== null && (
             <p className="text-xs text-muted-foreground truncate">
+              <Trans>
               Đời {dispGen}
+              </Trans>
             </p>
           )}
           {rel.spouses.length > 0 && (
@@ -1278,8 +1284,10 @@ function CompactCompletion({
       </div>
       {withGaps > 0 ? (
         <span className="shrink-0 text-xs text-muted-foreground">
+          <Trans>
           <span className="tabular-nums">{withGaps}</span> người còn thiếu thông
-          tin · <span className="text-primary">{t`Bổ sung →`}</span>
+          tin · <span className="text-primary">Bổ sung →</span>
+          </Trans>
         </span>
       ) : (
         <span className="shrink-0 text-xs text-emerald-600">{t`Tất cả đã đầy đủ ✓`}</span>

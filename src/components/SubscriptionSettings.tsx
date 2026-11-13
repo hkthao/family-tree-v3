@@ -345,8 +345,8 @@ function BranchSubsSection({ clanId }: { clanId: string }) {
               clanId={clanId}
               scope="branch"
               targetId={b.id}
-              labelOff="Theo dõi chi"
-              labelOn="Đang theo dõi"
+              labelOff={t`Theo dõi chi`}
+              labelOn={t`Đang theo dõi`}
             />
           </li>
         ))}

@@ -51,10 +51,10 @@ function formatRelative(iso: string): string {
   const diffMin = Math.round((now - then) / 60_000);
   const diffHr = Math.round((now - then) / 3_600_000);
   const diffDay = Math.round((now - then) / 86_400_000);
-  if (diffMin < 1) return "vừa xong";
+  if (diffMin < 1) return t`vừa xong`;
   if (diffMin < 60) return t`${diffMin} phút`;
   if (diffHr < 24) return t`${diffHr} giờ`;
-  if (diffDay === 1) return "Hôm qua";
+  if (diffDay === 1) return t`Hôm qua`;
   if (diffDay < 7) return t`${diffDay} ngày`;
   return new Date(iso).toLocaleDateString(currentIntlTag(), {
     day: "2-digit",
@@ -67,7 +67,7 @@ function entityName(r: AuditRow): string {
   const src = r.after ?? r.before ?? {};
   if (typeof src["full_name"] === "string") return src["full_name"] as string;
   if (typeof src["name"] === "string") return src["name"] as string;
-  return "(không tên)";
+  return t`(không tên)`;
 }
 
 /**

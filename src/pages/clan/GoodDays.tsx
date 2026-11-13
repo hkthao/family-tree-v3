@@ -410,7 +410,9 @@ function MonthCalendar({
         </button>
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold">
+            <Trans>
             Tháng {m + 1}/{y}
+            </Trans>
           </span>
           {!atCurrent && (
             <button
@@ -511,13 +513,14 @@ function MonthCalendar({
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 px-3 py-2 text-xs text-muted-foreground">
+        <Trans>
         <span className="flex items-center gap-1">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500/40" />
-          {t`Ngày tốt (hoàng đạo)`}
+          Ngày tốt (hoàng đạo)
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-rose-500/40" />
-          {t`Ngày xấu (hắc đạo)`}
+          Ngày xấu (hắc đạo)
         </span>
         <span className="flex items-center gap-1">
           <span className="text-rose-500">•</span> Ngày kiêng
@@ -527,8 +530,9 @@ function MonthCalendar({
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
-          {t`Có sự kiện dòng họ`}
+          Có sự kiện dòng họ
         </span>
+        </Trans>
       </div>
     </section>
   );
@@ -608,8 +612,10 @@ function DayDetail({
             </span>
           )}
           <p className="text-sm text-muted-foreground">
+            <Trans>
             Can chi: ngày {info.canChi.day} · tháng {info.canChi.month} · năm{" "}
             {info.canChi.year}
+            </Trans>
           </p>
           {meta.length > 0 && (
             <p className="text-sm text-muted-foreground">{meta.join(" · ")}</p>
@@ -888,7 +894,9 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
 
         {prefs.hoangDao && goodChi.length > 0 && (
           <p className="text-sm text-muted-foreground">
+            <Trans>
             Giờ tốt: {goodChi.join(" · ")}
+            </Trans>
           </p>
         )}
       </div>

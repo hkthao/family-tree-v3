@@ -116,7 +116,7 @@ export function TimelineFields({
                     </span>
                   )}
                   <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
-                    {d.body.split("\n")[0] || "Chưa có nội dung"}
+                    {d.body.split("\n")[0] || t`Chưa có nội dung`}
                   </span>
                   <span
                     className="shrink-0 text-muted-foreground"
@@ -134,7 +134,7 @@ export function TimelineFields({
                   variant="ghost"
                   size="sm"
                   className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-primary"
-                  aria-label={t`Chèn mốc mới bên dưới mốc năm ${d.year || "này"}`}
+                  aria-label={t`Chèn mốc mới bên dưới mốc năm ${d.year || t`này`}`}
                   title={t`Chèn mốc mới bên dưới`}
                   onClick={() => insertAfter(d.key)}
                 >
@@ -145,7 +145,7 @@ export function TimelineFields({
                   variant="ghost"
                   size="sm"
                   className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-destructive"
-                  aria-label={t`Xoá mốc năm ${d.year || "này"}`}
+                  aria-label={t`Xoá mốc năm ${d.year || t`này`}`}
                   onClick={() =>
                     onChange(drafts.filter((x) => x.key !== d.key))
                   }

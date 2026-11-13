@@ -43,6 +43,7 @@ import {
 } from "@/lib/personDates";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 type Relation = "child" | "spouse" | "parent";
 
 /**
@@ -198,11 +199,11 @@ export function QuickAddSheet({
   });
 
   const titleByRelation: Record<Relation, string> = {
-    child: "Thêm con",
-    spouse: "Thêm vợ/chồng",
-    parent: "Thêm cha/mẹ",
+    child: t`Thêm con`,
+    spouse: t`Thêm vợ/chồng`,
+    parent: t`Thêm cha/mẹ`,
   };
-  const title = relation ? titleByRelation[relation] : "Thêm người";
+  const title = relation ? titleByRelation[relation] : t`Thêm người`;
   const subtitle = focal ? `Cho ${focal.full_name}` : undefined;
 
   return (
@@ -679,7 +680,7 @@ function QuickAddChild({
 
   const otherParentNote = (() => {
     if (spouses.length === 0) return null;
-    if (otherParent === SOLO_VALUE) return "Đơn thân";
+    if (otherParent === SOLO_VALUE) return t`Đơn thân`;
     const sp = spouses.find((s) => s.id === otherParent);
     return sp ? t`Với ${sp.full_name}` : null;
   })();
@@ -794,8 +795,10 @@ function QuickAddChild({
       ) : (
         <form onSubmit={onSubmitBulk} className="space-y-3">
           <p className="text-xs text-muted-foreground">
+            <Trans>
             Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi
             thứ tự.
+            </Trans>
           </p>
           <ul className="space-y-2">
             {rows.map((r, i) => (
@@ -1177,7 +1180,7 @@ function QuickAddParent({
       <div className="space-y-5 pb-6">
         {onBack && <BackToPickerButton onBack={onBack} />}
         <p className="text-sm text-muted-foreground">
-          {focal?.full_name ?? "Người này"} đã có đủ cha và mẹ trên cây. Sửa
+          {focal?.full_name ?? t`Người này`} đã có đủ cha và mẹ trên cây. Sửa
           thông tin cha/mẹ qua icon bút chì.
         </p>
         <Button type="button" variant="outline" onClick={onDone}>

@@ -62,7 +62,7 @@ export function RefreshButton({
         variant="outline"
         size="sm"
         className={cn("h-10 w-10 p-0 shrink-0", className)}
-        title={isChecking ? "Đang kiểm tra…" : flashedStatus}
+        title={isChecking ? t`Đang kiểm tra…` : flashedStatus}
         aria-label={t`Làm mới`}
         onClick={async () => {
           const outcome = await refresh();

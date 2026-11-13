@@ -1396,7 +1396,7 @@ export default function Tree() {
         label: [
           p.full_name,
           p.generation !== null ? t`Đời ${p.generation - off}` : null,
-          p.birth_date ? `sinh ${p.birth_date.slice(0, 4)}` : null,
+          p.birth_date ? t`sinh ${p.birth_date.slice(0, 4)}` : null,
         ]
           .filter(Boolean)
           .join(" · "),

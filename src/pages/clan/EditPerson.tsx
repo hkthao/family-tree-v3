@@ -404,8 +404,10 @@ export function EditPersonForm({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">{t`Có bản nháp chưa lưu`}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
+                <Trans>
                 {formatDraftAge(existingDraft.savedAt)} · Bạn đã sửa hồ sơ này
                 nhưng chưa bấm Lưu lần trước.
+                </Trans>
               </p>
             </div>
             <Button
@@ -469,7 +471,7 @@ export function EditPersonForm({
                 onChange={() => setGender("M")}
                 className="h-4 w-4 accent-primary"
               />
-              <span>Nam</span>
+              <span>{t`Nam`}</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -512,7 +514,9 @@ export function EditPersonForm({
           <span>
             <span className="font-medium">{t`Thuỷ tổ`}</span>
             <span className="block text-sm text-muted-foreground">
+              <Trans>
               Khi bật, đời = 1; trigger tự cập nhật đời cho con cháu.
+              </Trans>
             </span>
           </span>
         </label>
@@ -654,9 +658,11 @@ export function EditPersonForm({
                   {t`Loại khỏi "Việc cần làm"`}
                 </span>
                 <span className="block text-sm text-muted-foreground">
-                  Bật khi thông tin thiếu là <em>{t`cố ý`}</em> hoặc không thể
+                  <Trans>
+                  Bật khi thông tin thiếu là <em>cố ý</em> hoặc không thể
                   bổ sung (vd. thuỷ tổ không có cha mẹ, người mất tích không rõ
                   năm sinh/mất). App sẽ không nhắc nữa.
+                  </Trans>
                 </span>
               </span>
             </label>
@@ -818,7 +824,7 @@ export default function EditPerson() {
 
 function formatDraftAge(savedAt: number): string {
   const ageMs = Date.now() - savedAt;
-  if (ageMs < 60_000) return "Vài giây trước";
+  if (ageMs < 60_000) return t`Vài giây trước`;
   const mins = Math.floor(ageMs / 60_000);
   if (mins < 60) return t`${mins} phút trước`;
   const hours = Math.floor(mins / 60);

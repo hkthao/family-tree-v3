@@ -309,7 +309,9 @@ export function ContributeDialog({
           </button>
 
           <h2 className="clan-name text-lg font-semibold text-primary pr-9">
+            <Trans>
             Đề xuất cho {focalPerson.full_name}
+            </Trans>
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
             <Trans>
@@ -329,8 +331,10 @@ export function ContributeDialog({
               </div>
               <p className="font-medium">{t`Đã gửi đề xuất.`}</p>
               <p className="text-sm text-muted-foreground">
-                {t`Admin sẽ liên hệ qua`}{" "}
-                {submitterContact || "thông tin bạn đã ghi"} nếu cần.
+                <Trans>
+                Admin sẽ liên hệ qua{" "}
+                {submitterContact || t`thông tin bạn đã ghi`} nếu cần.
+                </Trans>
               </p>
               <Button variant="outline" size="sm" onClick={onClose}>
                 {t`Đóng`}
@@ -491,7 +495,7 @@ export function ContributeDialog({
                           checked={addGender === "M"}
                           onChange={() => setAddGender("M")}
                         />
-                        <span>Nam</span>
+                        <span>{t`Nam`}</span>
                       </label>
                       <label className="inline-flex items-center gap-2 cursor-pointer">
                         <input

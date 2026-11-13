@@ -692,7 +692,7 @@ export default function Share() {
         label: [
           p.full_name,
           p.generation !== null ? t`Đời ${p.generation - off}` : null,
-          p.birth_date ? `sinh ${p.birth_date.slice(0, 4)}` : null,
+          p.birth_date ? t`sinh ${p.birth_date.slice(0, 4)}` : null,
         ]
           .filter(Boolean)
           .join(" · "),
@@ -911,7 +911,7 @@ export default function Share() {
         <div className="container flex h-[64px] max-w-6xl items-center justify-between gap-3">
           <div className="w-10 shrink-0" aria-hidden="true" />
           <h1 className="clan-name min-w-0 flex-1 truncate text-center text-lg font-semibold sm:text-xl">
-            {data?.clan_name ? t`Gia phả ${data.clan_name}` : "Cây gia phả"}
+            {data?.clan_name ? t`Gia phả ${data.clan_name}` : t`Cây gia phả`}
           </h1>
           <div className="flex shrink-0 items-center print-hide">
             <LanguageButton />

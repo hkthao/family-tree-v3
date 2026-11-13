@@ -308,7 +308,7 @@ export function NewPersonForm({
                 onChange={() => setGender("M")}
                 className="h-4 w-4 accent-primary"
               />
-              <span>Nam</span>
+              <span>{t`Nam`}</span>
             </label>
             <label className="flex items-center gap-3 cursor-pointer">
               <input

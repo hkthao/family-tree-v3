@@ -90,7 +90,7 @@ export function QrCodeModal({
   return (
     <SidePanel
       open
-      title={title ?? "Mã QR"}
+      title={title ?? t`Mã QR`}
       subtitle={description}
       onClose={onClose}
       guard={false}

@@ -230,7 +230,7 @@ export function HeritagePhotosSection({
               disabled={busy || full}
               title={t`Dán link ảnh có sẵn trên mạng — không tốn dung lượng`}
               onClick={() => {
-                const u = window.prompt("Dán link ảnh (https://…):");
+                const u = window.prompt(t`Dán link ảnh (https://…):`);
                 if (u?.trim()) linkM.mutate(u.trim());
               }}
             >

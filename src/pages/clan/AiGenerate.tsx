@@ -96,7 +96,7 @@ export default function AiGenerate() {
     setGedcomText(null);
     const text = aiResponse.trim();
     if (!text) {
-      setParseError("Dán nội dung AI trả về vào ô bên trên trước.");
+      setParseError(t`Dán nội dung AI trả về vào ô bên trên trước.`);
       return;
     }
     try {

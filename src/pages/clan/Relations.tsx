@@ -30,6 +30,7 @@ import {
 } from "@/lib/relations";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 /**
  * Tra cứu quan hệ của một người — như bảng Excel gia phả: thông tin cá nhân, vợ/chồng, tổ tiên
  * (cha, ông, cụ, kỵ), mẹ, anh chị em, bác–chú–cô–cậu–dì, và bảng con cháu theo từng đời (tải CSV được).
@@ -70,7 +71,7 @@ export default function Relations() {
           label: [
             p.full_name,
             p.generation !== null ? t`Đời ${p.generation - off}` : null,
-            born ? `sinh ${born}` : null,
+            born ? t`sinh ${born}` : null,
           ]
             .filter(Boolean)
             .join(" · "),
@@ -313,7 +314,7 @@ function RelationsBody({
                   {gen !== null ? gen : "—"}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2">
-                  {focal.gender === "M" ? "Nam" : t`Nữ`}
+                  {focal.gender === "M" ? t`Nam` : t`Nữ`}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2">
                   {yearOf(focal.birth_date) || "—"}
@@ -343,8 +344,8 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={["Quan hệ", "Họ tên", "Sinh", "Mất", "Quê quán"]}
-          empty="Chưa ghi nhận cha mẹ."
+          head={[t`Quan hệ`, t`Họ tên`, "Sinh", t`Mất`, t`Quê quán`]}
+          empty={t`Chưa ghi nhận cha mẹ.`}
           rows={[
             ...line.map((a, i) => ({
               key: a.id,
@@ -377,8 +378,8 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={["Họ tên", "Sinh", "Mất", "Quê quán"]}
-          empty="Chưa ghi nhận vợ/chồng."
+          head={[t`Họ tên`, "Sinh", t`Mất`, t`Quê quán`]}
+          empty={t`Chưa ghi nhận vợ/chồng.`}
           rows={spouses.map((sp) => ({
             key: sp.id,
             cells: [<Person key="n" p={sp} />, ...personCells(sp)],
@@ -393,13 +394,13 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={["Họ tên", "Giới tính", "Sinh", "Mất", "Quê quán"]}
-          empty="Không có anh chị em được ghi nhận."
+          head={[t`Họ tên`, t`Giới tính`, "Sinh", t`Mất`, t`Quê quán`]}
+          empty={t`Không có anh chị em được ghi nhận.`}
           rows={siblings.map((sb) => ({
             key: sb.id,
             cells: [
               <Person key="n" p={sb} />,
-              sb.gender === "M" ? "Nam" : t`Nữ`,
+              sb.gender === "M" ? t`Nam` : t`Nữ`,
               ...personCells(sb),
             ],
           }))}
@@ -413,15 +414,15 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={["Bên", "Họ tên", "Giới tính", "Sinh", "Mất", "Quê quán"]}
-          empty="Chưa ghi nhận anh chị em của cha mẹ."
+          head={[t`Bên`, t`Họ tên`, t`Giới tính`, "Sinh", t`Mất`, t`Quê quán`]}
+          empty={t`Chưa ghi nhận anh chị em của cha mẹ.`}
           rows={[
             ...fatherSiblings.map((u) => ({
               key: `f-${u.id}`,
               cells: [
                 t`Bên cha`,
                 <Person key="n" p={u} />,
-                u.gender === "M" ? "Nam" : t`Nữ`,
+                u.gender === "M" ? t`Nam` : t`Nữ`,
                 ...personCells(u),
               ],
             })),
@@ -430,7 +431,7 @@ function RelationsBody({
               cells: [
                 t`Bên mẹ`,
                 <Person key="n" p={u} />,
-                u.gender === "M" ? "Nam" : t`Nữ`,
+                u.gender === "M" ? t`Nam` : t`Nữ`,
                 ...personCells(u),
               ],
             })),
@@ -452,7 +453,9 @@ function RelationsBody({
         ) : (
           <>
             <p className="border-b px-3 py-2 text-sm text-muted-foreground sm:px-4">
+              <Trans>
               Có {summary}.
+              </Trans>
             </p>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">

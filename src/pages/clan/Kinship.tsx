@@ -131,7 +131,9 @@ export function KinshipContent({
                 />
               </div>
               <p className="text-xs text-muted-foreground italic">
+                <Trans>
                 Lý do: {result.reason}
+                </Trans>
               </p>
             </>
           )}
@@ -259,8 +261,10 @@ function RelationCard({
   return (
     <div className="rounded-md border bg-background p-3">
       <p className="text-xs text-muted-foreground">
+        <Trans>
         <span className="font-medium text-foreground">{fromName}</span> gọi{" "}
         <span className="font-medium text-foreground">{toName}</span> là
+        </Trans>
       </p>
       <p className="clan-name text-2xl font-semibold text-primary mt-1">
         {label}

@@ -658,10 +658,10 @@ export function GalleryScene({
           <div className="text-sm font-medium">{t`Màu phòng tuỳ chỉnh`}</div>
           {(
             [
-              ["wall", "Tường"],
-              ["ceiling", "Trần"],
-              ["floor", "Sàn"],
-              ["bg", "Nền"],
+              ["wall", t`Tường`],
+              ["ceiling", t`Trần`],
+              ["floor", t`Sàn`],
+              ["bg", t`Nền`],
             ] as const
           ).map(([field, label]) => (
             <label
@@ -693,11 +693,15 @@ export function GalleryScene({
         className="pointer-events-none absolute left-3 top-3 max-w-[40%] rounded-lg border bg-background/85 px-2.5 py-1.5 text-xs leading-snug text-muted-foreground shadow-sm backdrop-blur"
       >
         <span className="hidden sm:inline">
-          Kéo nhìn · WASD/<b className="text-foreground">{t`nhấp đúp sàn`}</b>{" "}
+          <Trans>
+          Kéo nhìn · WASD/<b className="text-foreground">nhấp đúp sàn</b>{" "}
           để đi · chạm khung xem
+          </Trans>
         </span>
         <span className="sm:hidden">
-          Kéo nhìn · <b className="text-foreground">{t`chạm đúp sàn`}</b> để đi
+          <Trans>
+          Kéo nhìn · <b className="text-foreground">chạm đúp sàn</b> để đi
+          </Trans>
         </span>
       </div>
 
@@ -784,7 +788,7 @@ export function GalleryScene({
             <div className="flex items-center justify-between gap-3 border-b px-4 py-2.5">
               <div className="min-w-0">
                 <div className="truncate font-semibold">
-                  {detail.title || "Ảnh kỷ niệm"}
+                  {detail.title || t`Ảnh kỷ niệm`}
                 </div>
                 {detail.subtitle && (
                   <div className="truncate text-xs text-muted-foreground">
@@ -862,7 +866,9 @@ export function GalleryScene({
           {/* Xoay */}
           <div>
             <label className="mb-1 block text-xs text-muted-foreground">
+              <Trans>
               Xoay hướng: {Math.round((editModel.rotY * 180) / Math.PI)}°
+              </Trans>
             </label>
             <input
               type="range"
@@ -1123,9 +1129,11 @@ function EditItemPanel({
         </button>
       </div>
       <p className="text-[11px] leading-snug text-muted-foreground">
-        Video nên dùng <b>{t`link .mp4 trực tiếp`}</b> (chuột phải video đang
+        <Trans>
+        Video nên dùng <b>link .mp4 trực tiếp</b> (chuột phải video đang
         phát → “Copy video address”). Link trang chia sẻ có thể không hiện trên
         tường.
+        </Trans>
       </p>
 
       {/* Hoặc chọn ảnh thành viên khác — dropdown NỔI (absolute) để không đẩy panel */}
