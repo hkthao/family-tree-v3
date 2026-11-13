@@ -110,8 +110,15 @@ export default function ResetPassword() {
             <Alert>
               <AlertDescription>
                 <Trans>
-                  Đang xác thực liên kết… Nếu bạn mở trực tiếp trang này, hãy
-                  bấm vào liên kết trong email "Đặt lại mật khẩu Dòng Họ Việt".
+                  <Trans>
+                    <Trans>
+                      <Trans>
+                        Đang xác thực liên kết… Nếu bạn mở trực tiếp trang này,
+                        hãy bấm vào liên kết trong email "Đặt lại mật khẩu Dòng
+                        Họ Việt".
+                      </Trans>
+                    </Trans>
+                  </Trans>
                 </Trans>
               </AlertDescription>
             </Alert>

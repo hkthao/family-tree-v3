@@ -5,6 +5,7 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { checkForUpdate, hasPendingUpdate } from "@/lib/pwa";
 
+import { t } from "@lingui/core/macro";
 /**
  * "Kiểm tra cập nhật" — user-initiated SW update check.
  *
@@ -26,7 +27,7 @@ export function CheckUpdateButton({
     try {
       const ok = await checkForUpdate();
       if (!ok) {
-        toast.error("Trình duyệt không hỗ trợ kiểm tra cập nhật");
+        toast.error(t`Trình duyệt không hỗ trợ kiểm tra cập nhật`);
         return;
       }
       // The SW lifecycle (install → waiting → ready) takes a moment;
@@ -35,12 +36,12 @@ export function CheckUpdateButton({
       // banner — at which point this toast becomes redundant.
       await new Promise((r) => setTimeout(r, 1200));
       if (hasPendingUpdate()) {
-        toast.success("Có bản mới — bấm Cập nhật ở banner phía dưới");
+        toast.success(t`Có bản mới — bấm Cập nhật ở banner phía dưới`);
       } else {
-        toast.success("Đang dùng phiên bản mới nhất");
+        toast.success(t`Đang dùng phiên bản mới nhất`);
       }
     } catch (e) {
-      toast.error("Không kiểm tra được", {
+      toast.error(t`Không kiểm tra được`, {
         description: (e as Error).message,
       });
     } finally {
@@ -57,15 +58,15 @@ export function CheckUpdateButton({
         type="button"
         onClick={onClick}
         disabled={busy}
-        title={busy ? "Đang kiểm tra…" : "Kiểm tra cập nhật"}
-        aria-label="Kiểm tra cập nhật"
+        title={busy ? t`Đang kiểm tra…` : t`Kiểm tra cập nhật`}
+        aria-label={t`Kiểm tra cập nhật`}
         className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted disabled:opacity-50 px-2 h-10 text-sm whitespace-nowrap"
       >
         <IconRefresh
           className={`h-4 w-4 shrink-0 ${busy ? "animate-spin" : ""}`}
         />
         <span className="sr-only">
-          {busy ? "Đang kiểm tra cập nhật" : "Kiểm tra cập nhật"}
+          {busy ? t`Đang kiểm tra cập nhật` : t`Kiểm tra cập nhật`}
         </span>
       </button>
     );
@@ -81,7 +82,7 @@ export function CheckUpdateButton({
       disabled={busy}
     >
       <IconRefresh className={`h-4 w-4 mr-1.5 ${busy ? "animate-spin" : ""}`} />
-      {busy ? "Đang kiểm tra…" : "Kiểm tra cập nhật"}
+      {busy ? t`Đang kiểm tra…` : t`Kiểm tra cập nhật`}
     </Button>
   );
 }

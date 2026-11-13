@@ -5,6 +5,7 @@ import { SidePanel } from "@/components/SidePanel";
 
 import { usePanel } from "./usePanel";
 
+import { t } from "@lingui/core/macro";
 const NewClanForm = lazy(() =>
   import("@/pages/NewClan").then((m) => ({ default: m.NewClanForm })),
 );
@@ -15,9 +16,21 @@ export function GlobalPanelHost() {
   const navigate = useNavigate();
   if (current !== "clan-new") return null;
   return (
-    <SidePanel open title="Tạo dòng họ mới" subtitle="Tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ." onClose={close}>
-      <Suspense fallback={<p className="py-6 text-sm text-muted-foreground">Đang tải…</p>}>
-        <NewClanForm onDone={(id) => navigate(`/clans/${id}`, { replace: true })} onCancel={close} />
+    <SidePanel
+      open
+      title={t`Tạo dòng họ mới`}
+      subtitle={t`Tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ.`}
+      onClose={close}
+    >
+      <Suspense
+        fallback={
+          <p className="py-6 text-sm text-muted-foreground">{t`Đang tải…`}</p>
+        }
+      >
+        <NewClanForm
+          onDone={(id) => navigate(`/clans/${id}`, { replace: true })}
+          onCancel={close}
+        />
       </Suspense>
     </SidePanel>
   );

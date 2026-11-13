@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { t } from "@lingui/core/macro";
 /**
  * Bảng "Cách xem" nổi ở góc dưới-trái biểu đồ cây 2D: cách thao tác (máy tính / điện thoại) và
  * chú thích màu. Dùng CHUNG cho trang Cây và trang Chia sẻ — sửa nội dung ở đây là cả hai trang theo.
@@ -12,13 +13,13 @@ export function TreeGuide({ defaultOpen = true }: { defaultOpen?: boolean }) {
       {showGuide ? (
         <div className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[16rem] space-y-1 rounded-lg border border-border bg-background/85 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur print-hide">
           <div className="mb-1 flex items-center justify-between gap-2">
-            <span className="font-medium text-foreground">Cách xem</span>
+            <span className="font-medium text-foreground">{t`Cách xem`}</span>
             <button
               type="button"
               onClick={() => setShowGuide(false)}
               className="pointer-events-auto -mr-1 -mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Ẩn hướng dẫn"
-              title="Ẩn hướng dẫn"
+              aria-label={t`Ẩn hướng dẫn`}
+              title={t`Ẩn hướng dẫn`}
             >
               ✕
             </button>
@@ -26,20 +27,22 @@ export function TreeGuide({ defaultOpen = true }: { defaultOpen?: boolean }) {
           {/* Máy tính */}
           <div className="hidden space-y-1 sm:block">
             <div>
-              <b className="text-foreground">Kéo</b> — di chuyển
+              <b className="text-foreground">{t`Kéo`}</b> — di chuyển
             </div>
             <div>
-              <b className="text-foreground">Lăn chuột</b> — phóng to / thu nhỏ
+              <b className="text-foreground">{t`Lăn chuột`}</b> — phóng to / thu
+              nhỏ
             </div>
             <div>
-              <b className="text-foreground">Bấm một thẻ</b> — đặt làm trung tâm
+              <b className="text-foreground">{t`Bấm một thẻ`}</b> — đặt làm
+              trung tâm
             </div>
           </div>
           {/* Điện thoại */}
           <div className="space-y-1 sm:hidden">
-            <div>Vuốt 1 ngón để di chuyển</div>
-            <div>Kéo 2 ngón để phóng to / thu nhỏ</div>
-            <div>Chạm thẻ để đặt trung tâm</div>
+            <div>{t`Vuốt 1 ngón để di chuyển`}</div>
+            <div>{t`Kéo 2 ngón để phóng to / thu nhỏ`}</div>
+            <div>{t`Chạm thẻ để đặt trung tâm`}</div>
           </div>
           {/* Chú thích màu: thẻ theo giới; dâu/rể viền đứt. */}
           <div className="mt-1.5 space-y-1 border-t border-border pt-1.5 text-foreground">
@@ -96,13 +99,13 @@ export function TreeGuide({ defaultOpen = true }: { defaultOpen?: boolean }) {
           type="button"
           onClick={() => setShowGuide(true)}
           className="pointer-events-auto absolute bottom-3 left-3 z-10 inline-flex items-center gap-1 rounded-lg border border-border bg-background/85 px-2.5 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur hover:text-foreground print-hide"
-          aria-label="Hiện hướng dẫn"
-          title="Hiện hướng dẫn"
+          aria-label={t`Hiện hướng dẫn`}
+          title={t`Hiện hướng dẫn`}
         >
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px] font-bold">
             ?
           </span>
-          Cách xem
+          {t`Cách xem`}
         </button>
       )}
     </>

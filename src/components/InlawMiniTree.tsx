@@ -7,6 +7,7 @@ import type {
   InlawRelativeCard,
 } from "@/lib/queries/person-links";
 
+import { t } from "@lingui/core/macro";
 /**
  * Small family-chart instance rendering the peer's one-hop family —
  * parents above, the focal person in the middle (oxblood border via
@@ -131,7 +132,7 @@ export function InlawMiniTree({ data }: { data: InlawPeerRelatives }) {
           "--genderless-color": "var(--tree-card-genderless)",
         } as React.CSSProperties
       }
-      aria-label={`Mini cây gia đình của ${data.peer.full_name ?? "người này"}`}
+      aria-label={t`Mini cây gia đình của ${data.peer.full_name ?? "người này"}`}
     />
   );
 }
@@ -199,17 +200,12 @@ function genderAvatar(g: "M" | "F"): string {
   return g === "M" ? "/avatars/male-royal.svg" : "/avatars/female-royal.svg";
 }
 
-function entryFor(
-  r: InlawRelativeCard,
-  rels: F3Datum["rels"],
-): F3Datum {
+function entryFor(r: InlawRelativeCard, rels: F3Datum["rels"]): F3Datum {
   return {
     id: r.id,
     data: {
       gender: r.gender,
-      "full name": r.masked
-        ? "Người còn sống"
-        : (r.full_name ?? "—"),
+      "full name": r.masked ? t`Người còn sống` : (r.full_name ?? "—"),
       lifespan: r.masked ? "—" : formatLifespan(r),
       avatar: genderAvatar(r.gender),
     },
@@ -220,7 +216,7 @@ function entryFor(
 function formatLifespan(p: InlawRelativeCard): string {
   if (p.birth_year && p.death_year) return `${p.birth_year}–${p.death_year}`;
   if (p.birth_year) return `sinh ${p.birth_year}`;
-  if (p.death_year) return `mất ${p.death_year}`;
+  if (p.death_year) return t`mất ${p.death_year}`;
   if (!p.is_living) return "đã mất";
   return "";
 }

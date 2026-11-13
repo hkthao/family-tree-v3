@@ -56,6 +56,7 @@ import {
 } from "@/lib/queries/subscriptions";
 import { supabase } from "@/lib/supabase";
 
+import { Trans } from "@lingui/react/macro";
 export default function Account() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -75,24 +76,30 @@ export default function Account() {
       <main className="container max-w-4xl py-6 px-4 space-y-3">
         <PageHeader
           icon={<IconUser className="h-7 w-7" />}
-          title="Tài khoản"
-          description="Email, mật khẩu, theme, QR đăng nhập sang máy khác."
+          title={t`Tài khoản`}
+          description={t`Email, mật khẩu, theme, QR đăng nhập sang máy khác.`}
         />
 
         {profile?.is_platform_admin && (
           <Card className="border-accent/40">
             <CardHeader>
-              <CardTitle className="text-accent">Quản trị nền tảng</CardTitle>
+              <CardTitle className="text-accent">{t`Quản trị nền tảng`}</CardTitle>
               <CardDescription>
-                Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá
-                tài khoản, gán quyền.
+                <Trans>
+                  <Trans>
+                    <Trans>
+                      Bạn có quyền platform admin: chỉnh giới hạn user/clan,
+                      khoá tài khoản, gán quyền.
+                    </Trans>
+                  </Trans>
+                </Trans>
               </CardDescription>
             </CardHeader>
             <CardFooter>
               <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link to="/admin">
                   <IconShield className="h-4 w-4 mr-1.5" />
-                  Mở trang quản trị
+                  {t`Mở trang quản trị`}
                 </Link>
               </Button>
             </CardFooter>
@@ -102,17 +109,24 @@ export default function Account() {
         {aiEnabled && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Lượt hỏi trợ lý</CardTitle>
+              <CardTitle className="text-base">{t`Lượt hỏi trợ lý`}</CardTitle>
               <CardDescription>
-                Xem đã dùng bao nhiêu lượt, còn lại bao nhiêu. Sổ này không
-                hiện nội dung câu hỏi — muốn đọc lại thì mở khung trò chuyện.
+                <Trans>
+                  <Trans>
+                    <Trans>
+                      Xem đã dùng bao nhiêu lượt, còn lại bao nhiêu. Sổ này
+                      không hiện nội dung câu hỏi — muốn đọc lại thì mở khung
+                      trò chuyện.
+                    </Trans>
+                  </Trans>
+                </Trans>
               </CardDescription>
             </CardHeader>
             <CardFooter>
               <Button asChild variant="outline" className="w-full sm:w-auto">
                 <Link to="/account/luot-dung">
                   <IconClock className="h-4 w-4 mr-1.5" />
-                  Lịch sử sử dụng
+                  {t`Lịch sử sử dụng`}
                 </Link>
               </Button>
             </CardFooter>
@@ -163,9 +177,9 @@ export default function Account() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Giao diện</CardTitle>
+            <CardTitle>{t`Giao diện`}</CardTitle>
             <CardDescription>
-              Chế độ màu cho riêng tài khoản này trên thiết bị hiện tại.
+              {t`Chế độ màu cho riêng tài khoản này trên thiết bị hiện tại.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -175,9 +189,9 @@ export default function Account() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Hình nền</CardTitle>
+            <CardTitle>{t`Hình nền`}</CardTitle>
             <CardDescription>
-              Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này.
+              {t`Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -187,11 +201,17 @@ export default function Account() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Đăng nhập trên điện thoại</CardTitle>
+            <CardTitle>{t`Đăng nhập trên điện thoại`}</CardTitle>
             <CardDescription>
-              Hiện mã QR — mở camera điện thoại, quét để đăng nhập cùng
-              tài khoản, không phải gõ mật khẩu. Mã hiệu lực ~5 phút và
-              chỉ dùng được một lần.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Hiện mã QR — mở camera điện thoại, quét để đăng nhập cùng
+                    tài khoản, không phải gõ mật khẩu. Mã hiệu lực ~5 phút và
+                    chỉ dùng được một lần.
+                  </Trans>
+                </Trans>
+              </Trans>
             </CardDescription>
           </CardHeader>
           <CardFooter>
@@ -201,9 +221,9 @@ export default function Account() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Đăng xuất</CardTitle>
+            <CardTitle>{t`Đăng xuất`}</CardTitle>
             <CardDescription>
-              Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy).
+              {t`Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy).`}
             </CardDescription>
           </CardHeader>
           <CardFooter>
@@ -213,7 +233,7 @@ export default function Account() {
               className="w-full sm:w-auto"
             >
               <IconLogOut className="h-4 w-4 mr-1.5" />
-              Đăng xuất
+              {t`Đăng xuất`}
             </Button>
           </CardFooter>
         </Card>
@@ -255,28 +275,40 @@ function FollowedClansCard({ userId }: { userId: string }) {
     mutationFn: (clanId: string) => unfollowClan(clanId, userId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["followed-clans", userId] });
-      toast.success("Đã huỷ theo dõi dòng họ này");
+      toast.success(t`Đã huỷ theo dõi dòng họ này`);
     },
     onError: (e) =>
-      toast.error("Không huỷ được", { description: (e as Error).message }),
+      toast.error(t`Không huỷ được`, { description: (e as Error).message }),
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dòng họ đang theo dõi</CardTitle>
+        <CardTitle>{t`Dòng họ đang theo dõi`}</CardTitle>
         <CardDescription>
-          Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của
-          các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận.
+          <Trans>
+            <Trans>
+              <Trans>
+                Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của
+                các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Đang tải…</p>
+          <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>
         ) : !clans || clans.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của một dòng họ
-            và bật “Theo dõi sự kiện”.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của một dòng
+                  họ và bật “Theo dõi sự kiện”.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
         ) : (
           <ul className="divide-y rounded-md border">
@@ -294,7 +326,7 @@ function FollowedClansCard({ userId }: { userId: string }) {
                   </Link>
                   <p className="text-xs text-muted-foreground">
                     Theo dõi: {c.scopes.map((s) => SCOPE_LABEL[s]).join(", ")}
-                    {!c.any_enabled ? " · đang tắt" : ""}
+                    {!c.any_enabled ? t` · đang tắt` : ""}
                   </p>
                 </div>
                 <Button
@@ -305,7 +337,7 @@ function FollowedClansCard({ userId }: { userId: string }) {
                   className="shrink-0 text-destructive hover:text-destructive"
                 >
                   <IconX className="h-4 w-4 mr-1" />
-                  Huỷ theo dõi
+                  {t`Huỷ theo dõi`}
                 </Button>
               </li>
             ))}
@@ -333,11 +365,13 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
   const m = useMutation({
     mutationFn: () => updateMyDisplayName(userId, name.trim()),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId) });
-      toast.success("Đã đổi tên hiển thị");
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.myProfile(userId),
+      });
+      toast.success(t`Đã đổi tên hiển thị`);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   const changed = name.trim() !== (current ?? "").trim();
@@ -345,9 +379,9 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tên hiển thị</CardTitle>
+        <CardTitle>{t`Tên hiển thị`}</CardTitle>
         <CardDescription>
-          Tên hiển thị trong dòng họ và các sự kiện. Không phải email.
+          {t`Tên hiển thị trong dòng họ và các sự kiện. Không phải email.`}
         </CardDescription>
       </CardHeader>
       <form
@@ -358,7 +392,7 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
       >
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="display-name">Tên hiển thị</Label>
+            <Label htmlFor="display-name">{t`Tên hiển thị`}</Label>
             <Input
               icon={<IconUser />}
               id="display-name"
@@ -374,7 +408,7 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
           )}
           {m.isSuccess && !changed && (
             <Alert>
-              <AlertDescription>Đã lưu.</AlertDescription>
+              <AlertDescription>{t`Đã lưu.`}</AlertDescription>
             </Alert>
           )}
         </CardContent>
@@ -386,11 +420,11 @@ function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) {
             className="w-full sm:w-auto"
           >
             {m.isPending ? (
-              "Đang lưu…"
+              t`Đang lưu…`
             ) : (
               <>
                 <IconCheck className="h-4 w-4 mr-1.5" />
-                Lưu
+                {t`Lưu`}
               </>
             )}
           </Button>
@@ -408,17 +442,19 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
 
   const m = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail.trim(),
+      });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
       setNewEmail("");
-      toast.success("Đã gửi email xác nhận", {
-        description: "Bấm link trong email để hoàn tất.",
+      toast.success(t`Đã gửi email xác nhận`, {
+        description: t`Bấm link trong email để hoàn tất.`,
       });
     },
     onError: (e) =>
-      toast.error("Không đổi được email", {
+      toast.error(t`Không đổi được email`, {
         description: (e as Error).message,
       }),
   });
@@ -428,9 +464,9 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
       <CardHeader>
         <CardTitle>Email</CardTitle>
         <CardDescription>
-          Email hiện tại: <span className="font-medium">{currentEmail ?? "—"}</span>.
-          Đổi email sẽ gửi liên kết xác nhận đến địa chỉ mới (kiểm tra
-          Mailpit ở local).
+          {t`Email hiện tại:`}{" "}
+          <span className="font-medium">{currentEmail ?? "—"}</span>. Đổi email
+          sẽ gửi liên kết xác nhận đến địa chỉ mới (kiểm tra Mailpit ở local).
         </CardDescription>
       </CardHeader>
       <form
@@ -441,7 +477,7 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
       >
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="new-email">Email mới</Label>
+            <Label htmlFor="new-email">{t`Email mới`}</Label>
             <Input
               icon={<IconMail />}
               id="new-email"
@@ -459,8 +495,14 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
           {m.isSuccess && (
             <Alert>
               <AlertDescription>
-                Đã gửi email xác nhận. Mở liên kết trong email để hoàn tất đổi
-                địa chỉ.
+                <Trans>
+                  <Trans>
+                    <Trans>
+                      Đã gửi email xác nhận. Mở liên kết trong email để hoàn tất
+                      đổi địa chỉ.
+                    </Trans>
+                  </Trans>
+                </Trans>
               </AlertDescription>
             </Alert>
           )}
@@ -473,11 +515,11 @@ function EmailCard({ currentEmail }: { currentEmail: string | null }) {
             className="w-full sm:w-auto"
           >
             {m.isPending ? (
-              "Đang gửi…"
+              t`Đang gửi…`
             ) : (
               <>
                 <IconCheck className="h-4 w-4 mr-1.5" />
-                Đổi email
+                {t`Đổi email`}
               </>
             )}
           </Button>
@@ -506,17 +548,17 @@ function PasswordCard() {
     onSuccess: () => {
       setPassword("");
       setConfirm("");
-      toast.success("Đã đổi mật khẩu");
+      toast.success(t`Đã đổi mật khẩu`);
     },
     onError: (e) =>
-      toast.error("Không đổi được", { description: (e as Error).message }),
+      toast.error(t`Không đổi được`, { description: (e as Error).message }),
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mật khẩu</CardTitle>
-        <CardDescription>Ít nhất 8 ký tự.</CardDescription>
+        <CardTitle>{t`Mật khẩu`}</CardTitle>
+        <CardDescription>{t`Ít nhất 8 ký tự.`}</CardDescription>
       </CardHeader>
       <form
         onSubmit={(e) => {
@@ -526,7 +568,7 @@ function PasswordCard() {
       >
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="pw">Mật khẩu mới</Label>
+            <Label htmlFor="pw">{t`Mật khẩu mới`}</Label>
             <Input
               icon={<IconLock />}
               id="pw"
@@ -536,11 +578,11 @@ function PasswordCard() {
               autoComplete="new-password"
             />
             {tooShort && (
-              <p className="text-sm text-destructive">Tối thiểu 8 ký tự.</p>
+              <p className="text-sm text-destructive">{t`Tối thiểu 8 ký tự.`}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="pw2">Xác nhận mật khẩu mới</Label>
+            <Label htmlFor="pw2">{t`Xác nhận mật khẩu mới`}</Label>
             <Input
               icon={<IconLock />}
               id="pw2"
@@ -550,7 +592,7 @@ function PasswordCard() {
               autoComplete="new-password"
             />
             {mismatch && (
-              <p className="text-sm text-destructive">Không khớp.</p>
+              <p className="text-sm text-destructive">{t`Không khớp.`}</p>
             )}
           </div>
           {m.error && (
@@ -560,7 +602,7 @@ function PasswordCard() {
           )}
           {m.isSuccess && (
             <Alert>
-              <AlertDescription>Đã đổi mật khẩu.</AlertDescription>
+              <AlertDescription>{t`Đã đổi mật khẩu.`}</AlertDescription>
             </Alert>
           )}
         </CardContent>
@@ -572,11 +614,11 @@ function PasswordCard() {
             className="w-full sm:w-auto"
           >
             {m.isPending ? (
-              "Đang đổi…"
+              t`Đang đổi…`
             ) : (
               <>
                 <IconCheck className="h-4 w-4 mr-1.5" />
-                Đổi mật khẩu
+                {t`Đổi mật khẩu`}
               </>
             )}
           </Button>
@@ -607,11 +649,11 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
   const m = useMutation({
     mutationFn: () => deleteMyAccount(),
     onSuccess: () => {
-      toast.success("Đã xoá tài khoản");
+      toast.success(t`Đã xoá tài khoản`);
       onDeleted();
     },
     onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const blockingCount = blocking ?? 0;
@@ -621,10 +663,16 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
   return (
     <Card className="border-destructive/40">
       <CardHeader>
-        <CardTitle className="text-destructive">Xoá tài khoản</CardTitle>
+        <CardTitle className="text-destructive">{t`Xoá tài khoản`}</CardTitle>
         <CardDescription>
-          Hành động này không thể hoàn tác. Nếu bạn đang sở hữu dòng họ có
-          thành viên, hãy chuyển quyền hoặc xoá dòng họ trước.
+          <Trans>
+            <Trans>
+              <Trans>
+                Hành động này không thể hoàn tác. Nếu bạn đang sở hữu dòng họ có
+                thành viên, hãy chuyển quyền hoặc xoá dòng họ trước.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -652,7 +700,9 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
             </div>
             {m.error && (
               <Alert variant="destructive">
-                <AlertDescription>{(m.error as Error).message}</AlertDescription>
+                <AlertDescription>
+                  {(m.error as Error).message}
+                </AlertDescription>
               </Alert>
             )}
           </>
@@ -666,7 +716,7 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
             className="w-full sm:w-auto"
           >
             <IconTrash className="h-4 w-4 mr-1.5 text-destructive" />
-            Tôi muốn xoá tài khoản
+            {t`Tôi muốn xoá tài khoản`}
           </Button>
         </CardFooter>
       ) : (
@@ -677,11 +727,11 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
             onClick={() => m.mutate()}
           >
             {m.isPending ? (
-              "Đang xoá…"
+              t`Đang xoá…`
             ) : (
               <>
                 <IconTrash className="h-4 w-4 mr-1.5" />
-                Xoá tài khoản vĩnh viễn
+                {t`Xoá tài khoản vĩnh viễn`}
               </>
             )}
           </Button>
@@ -693,7 +743,7 @@ function DeleteAccountCard({ userId, onDeleted }: DeleteProps) {
             }}
           >
             <IconX className="h-4 w-4 mr-1.5" />
-            Hủy
+            {t`Hủy`}
           </Button>
         </CardFooter>
       )}
@@ -724,7 +774,7 @@ function PushNotifyCard({
       });
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   async function handleEnable() {
@@ -745,15 +795,21 @@ function PushNotifyCard({
   let body: ReactNode;
   if (push.state === "loading") {
     body = (
-      <p className="text-sm text-muted-foreground">Đang kiểm tra trình duyệt…</p>
+      <p className="text-sm text-muted-foreground">{t`Đang kiểm tra trình duyệt…`}</p>
     );
   } else if (push.state === "unsupported") {
     body = (
       <Alert>
         <AlertDescription>
-          Trình duyệt này không hỗ trợ thông báo đẩy. Hãy dùng Xuất lịch
-          (.ics) ở trang Sự kiện để nhận nhắc qua lịch điện thoại quen
-          thuộc.
+          <Trans>
+            <Trans>
+              <Trans>
+                Trình duyệt này không hỗ trợ thông báo đẩy. Hãy dùng Xuất lịch
+                (.ics) ở trang Sự kiện để nhận nhắc qua lịch điện thoại quen
+                thuộc.
+              </Trans>
+            </Trans>
+          </Trans>
         </AlertDescription>
       </Alert>
     );
@@ -761,9 +817,9 @@ function PushNotifyCard({
     body = (
       <Alert>
         <AlertDescription>
-          Trên iOS, để nhận thông báo đẩy, cần <strong>Thêm app vào màn
-          hình chính</strong> rồi mở app từ icon đó (không phải Safari).
-          Sau khi cài, quay lại đây để bật.
+          {t`Trên iOS, để nhận thông báo đẩy, cần`}{" "}
+          <strong>{t`Thêm app vào màn hình chính`}</strong> rồi mở app từ icon
+          đó (không phải Safari). Sau khi cài, quay lại đây để bật.
         </AlertDescription>
       </Alert>
     );
@@ -771,9 +827,15 @@ function PushNotifyCard({
     body = (
       <Alert>
         <AlertDescription>
-          Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt
-          trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây.
-          Hoặc dùng Xuất lịch (.ics) làm thay thế.
+          <Trans>
+            <Trans>
+              <Trans>
+                Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt trình
+                duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây. Hoặc
+                dùng Xuất lịch (.ics) làm thay thế.
+              </Trans>
+            </Trans>
+          </Trans>
         </AlertDescription>
       </Alert>
     );
@@ -781,17 +843,23 @@ function PushNotifyCard({
     body = (
       <div className="space-y-3">
         <p className="text-sm">
-          Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày
-          giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả
-          khi app đang đóng. Bạn có thể tắt bất cứ lúc nào.
+          <Trans>
+            <Trans>
+              <Trans>
+                Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ
+                / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app
+                đang đóng. Bạn có thể tắt bất cứ lúc nào.
+              </Trans>
+            </Trans>
+          </Trans>
         </p>
         <div className="flex gap-2 flex-wrap">
           <Button onClick={handleEnable}>
             <IconBell className="h-4 w-4 mr-1.5" />
-            Cho phép thông báo
+            {t`Cho phép thông báo`}
           </Button>
           <Button variant="outline" onClick={() => setShowPrePrompt(false)}>
-            Không bây giờ
+            {t`Không bây giờ`}
           </Button>
         </div>
       </div>
@@ -816,12 +884,12 @@ function PushNotifyCard({
           />
           <div>
             <p className="font-medium">
-              {isOn ? "Đang bật trên thiết bị này" : "Tắt"}
+              {isOn ? t`Đang bật trên thiết bị này` : t`Tắt`}
             </p>
             <p className="text-sm text-muted-foreground">
               {isOn
-                ? "Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại."
-                : "Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt."}
+                ? t`Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại.`
+                : t`Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt.`}
             </p>
           </div>
         </label>
@@ -829,12 +897,12 @@ function PushNotifyCard({
         {isOn && <TestPushButton />}
 
         <p className="text-xs text-muted-foreground">
-          Cần trợ giúp? Xem{" "}
+          {t`Cần trợ giúp? Xem`}{" "}
           <Link
             to="/docs/web-push"
             className="underline underline-offset-2 hover:text-foreground"
           >
-            hướng dẫn thông báo đẩy
+            {t`hướng dẫn thông báo đẩy`}
           </Link>
           .
         </p>
@@ -845,10 +913,16 @@ function PushNotifyCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Thông báo đẩy (Web Push)</CardTitle>
+        <CardTitle>{t`Thông báo đẩy (Web Push)`}</CardTitle>
         <CardDescription>
-          Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt
-          + (trên iOS) đã cài app vào màn hình chính.
+          <Trans>
+            <Trans>
+              <Trans>
+                Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt +
+                (trên iOS) đã cài app vào màn hình chính.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -871,20 +945,20 @@ function TestPushButton() {
     mutationFn: sendTestPush,
     onSuccess: (res) => {
       if (res.sent > 0) {
-        toast.success("Đã gửi push test", {
-          description: `${res.sent} thiết bị nhận được${res.failed > 0 ? ` · ${res.failed} thất bại` : ""}.`,
+        toast.success(t`Đã gửi push test`, {
+          description: t`${res.sent} thiết bị nhận được${res.failed > 0 ? ` · ${res.failed} thất bại` : ""}.`,
         });
       } else {
-        toast.error("Chưa nhận được", {
+        toast.error(t`Chưa nhận được`, {
           description:
             res.message === "no-subscriptions"
-              ? "Chưa có thiết bị nào đăng ký push trên tài khoản này."
-              : "Push không gửi được — thử tắt rồi bật lại.",
+              ? t`Chưa có thiết bị nào đăng ký push trên tài khoản này.`
+              : t`Push không gửi được — thử tắt rồi bật lại.`,
         });
       }
     },
     onError: (e) =>
-      toast.error("Lỗi khi test", { description: (e as Error).message }),
+      toast.error(t`Lỗi khi test`, { description: (e as Error).message }),
   });
   return (
     <Button
@@ -895,7 +969,7 @@ function TestPushButton() {
       disabled={m.isPending}
     >
       <IconBell className="h-4 w-4 mr-1.5" />
-      {m.isPending ? "Đang gửi…" : "Gửi thông báo test"}
+      {m.isPending ? t`Đang gửi…` : t`Gửi thông báo test`}
     </Button>
   );
 }
@@ -920,16 +994,22 @@ function WeeklyDigestCard({
       });
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bản tin tuần</CardTitle>
+        <CardTitle>{t`Bản tin tuần`}</CardTitle>
         <CardDescription>
-          Mỗi tuần một email (và thông báo đẩy) gộp: sự kiện 7 ngày tới,
-          người mới thêm vào cây, và thông báo mới của dòng họ bạn.
+          <Trans>
+            <Trans>
+              <Trans>
+                Mỗi tuần một email (và thông báo đẩy) gộp: sự kiện 7 ngày tới,
+                người mới thêm vào cây, và thông báo mới của dòng họ bạn.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -943,10 +1023,10 @@ function WeeklyDigestCard({
           />
           <div>
             <p className="font-medium">
-              {enabled ? "Đang bật — nhận bản tin mỗi tuần" : "Tắt"}
+              {enabled ? t`Đang bật — nhận bản tin mỗi tuần` : t`Tắt`}
             </p>
             <p className="text-sm text-muted-foreground">
-              Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng.
+              {t`Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng.`}
             </p>
           </div>
         </label>
@@ -975,16 +1055,22 @@ function MonthlyLunarCard({
       });
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nhắc mùng 1 / rằm âm lịch</CardTitle>
+        <CardTitle>{t`Nhắc mùng 1 / rằm âm lịch`}</CardTitle>
         <CardDescription>
-          Mỗi ngày 1 và ngày 15 âm lịch, app gửi email nhắc thắp hương.
-          Áp dụng cho tài khoản này, không phụ thuộc dòng họ nào.
+          <Trans>
+            <Trans>
+              <Trans>
+                Mỗi ngày 1 và ngày 15 âm lịch, app gửi email nhắc thắp hương. Áp
+                dụng cho tài khoản này, không phụ thuộc dòng họ nào.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -998,11 +1084,12 @@ function MonthlyLunarCard({
           />
           <div>
             <p className="font-medium">
-              {enabled ? "Đang bật — nhận email mùng 1 và rằm" : "Tắt"}
+              {enabled ? t`Đang bật — nhận email mùng 1 và rằm` : t`Tắt`}
             </p>
             <p className="text-sm text-muted-foreground">
-              Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để
-              dừng.
+              <Trans>
+                {t`Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để dừng.`}
+              </Trans>
             </p>
           </div>
         </label>

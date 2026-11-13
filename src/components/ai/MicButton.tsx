@@ -2,6 +2,7 @@ import { IconMicrophone, IconX } from "@/components/icons";
 import type { VoiceInput } from "@/hooks/useVoiceInput";
 import { formatListenTime } from "@/lib/speech";
 
+import { t } from "@lingui/core/macro";
 /**
  * Nút mic + dải trạng thái lúc đang nghe.
  *
@@ -28,7 +29,7 @@ export function MicButton({
 }) {
   const big = size === "lg";
   const listening = voice.mode !== "idle";
-  const label = listening ? "Dừng nói" : "Bấm giữ để nói";
+  const label = listening ? t`Dừng nói` : t`Bấm giữ để nói`;
 
   return (
     <button
@@ -73,10 +74,10 @@ export function MicButton({
 export function ListeningBar({ voice }: { voice: VoiceInput }) {
   const hint =
     voice.mode === "locked"
-      ? "Bấm mic lần nữa để dừng"
+      ? t`Bấm mic lần nữa để dừng`
       : voice.nearCancel
-        ? "Thả ra để huỷ"
-        : "Thả để gửi · Vuốt lên để huỷ";
+        ? t`Thả ra để huỷ`
+        : t`Thả để gửi · Vuốt lên để huỷ`;
 
   return (
     <div

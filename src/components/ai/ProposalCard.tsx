@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { describeProposed, type Proposal } from "@/lib/queries/aiExtract";
 
+import { t } from "@lingui/core/macro";
 /**
  * Thẻ "Tôi hiểu là:" — chốt chặn cuối trước khi lời nói thành dữ liệu.
  *
@@ -66,7 +67,7 @@ export function ProposalCard({
   return (
     <div className="rounded-2xl border border-primary/40 bg-primary/5 p-4">
       <p className="font-semibold" style={{ fontSize }}>
-        Tôi hiểu là:
+        {t`Tôi hiểu là:`}
       </p>
       <ul className="mt-2 space-y-2" style={{ fontSize }}>
         {proposal.people.map((p) => (
@@ -77,7 +78,7 @@ export function ProposalCard({
       </ul>
 
       <p className="mt-3 text-sm text-muted-foreground">
-        Chưa có gì được ghi vào gia phả. Bạn xem lại rồi bấm nút bên dưới.
+        {t`Chưa có gì được ghi vào gia phả. Bạn xem lại rồi bấm nút bên dưới.`}
       </p>
 
       {/* Xếp dọc, không chia cột — xem chú thích đầu file. */}
@@ -88,7 +89,7 @@ export function ProposalCard({
           className="h-[52px] w-full text-base"
         >
           <IconCheck className="h-5 w-5" />
-          {applying ? "Đang thêm…" : "Đúng rồi, thêm vào"}
+          {applying ? t`Đang thêm…` : t`Đúng rồi, thêm vào`}
         </Button>
         <Button
           variant="outline"
@@ -97,7 +98,7 @@ export function ProposalCard({
           className="h-[52px] w-full text-base"
         >
           <IconPencil className="h-5 w-5" />
-          Sửa lại
+          {t`Sửa lại`}
         </Button>
         <Button
           variant="ghost"
@@ -106,7 +107,7 @@ export function ProposalCard({
           className="h-[52px] w-full text-base"
         >
           <IconX className="h-5 w-5" />
-          Bỏ qua
+          {t`Bỏ qua`}
         </Button>
       </div>
     </div>

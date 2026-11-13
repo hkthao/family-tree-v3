@@ -21,6 +21,8 @@ import {
 import { formatLunarDate, solarStringToLunar } from "@/lib/lunarDate";
 import { dateFromParts, formatPartialDate } from "@/lib/partialDate";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 interface Props {
   /** Visible legend, e.g. "Ngày sinh". */
   label: string;
@@ -84,8 +86,7 @@ export function CalendarDateInput({
   // Stores the parsed pair so the chip can offer ±60y siblings
   // without re-parsing.
   const [canChi, setCanChi] = useState<CanChi | null>(null);
-  const defaultReferenceYear =
-    referenceYear ?? new Date().getFullYear() - 30;
+  const defaultReferenceYear = referenceYear ?? new Date().getFullYear() - 30;
 
   function onCanChiBlur() {
     const text = canChiInput.trim();
@@ -149,26 +150,32 @@ export function CalendarDateInput({
           <p className="text-sm text-muted-foreground">{helperText}</p>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Không nhớ đủ thì bỏ trống ngày, hoặc cả ngày-tháng — chỉ năm
-            cũng được.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Không nhớ đủ thì bỏ trống ngày, hoặc cả ngày-tháng — chỉ năm
+                  cũng được.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
         ))}
 
       {showLunarControls ? (
-        <SegmentedControl ariaLabel="Chọn lịch">
+        <SegmentedControl ariaLabel={t`Chọn lịch`}>
           <SegmentedButton
             active={!isLunar}
             onClick={() => setMode("solar")}
             className="px-3 h-9 min-w-[72px]"
           >
-            Dương
+            {t`Dương`}
           </SegmentedButton>
           <SegmentedButton
             active={isLunar}
             onClick={() => setMode("lunar")}
             className="px-3 h-9 min-w-[72px]"
           >
-            Âm
+            {t`Âm`}
           </SegmentedButton>
         </SegmentedControl>
       ) : hideHelp ? null : (
@@ -177,7 +184,7 @@ export function CalendarDateInput({
           onClick={() => setLunarUiOpen(true)}
           className="text-sm text-primary hover:underline underline-offset-2"
         >
-          Nhập theo lịch Âm
+          {t`Nhập theo lịch Âm`}
         </button>
       )}
 
@@ -185,7 +192,7 @@ export function CalendarDateInput({
       <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2 max-w-md">
         <div className="space-y-1">
           <Label htmlFor={`${idPrefix}-day`} className="text-xs">
-            Ngày
+            {t`Ngày`}
           </Label>
           <Input
             id={`${idPrefix}-day`}
@@ -205,7 +212,7 @@ export function CalendarDateInput({
         {/* icon-audit: ok — xem ghi chú ở ô Ngày phía trên */}
         <div className="space-y-1">
           <Label htmlFor={`${idPrefix}-month`} className="text-xs">
-            Tháng
+            {t`Tháng`}
           </Label>
           <Input
             id={`${idPrefix}-month`}
@@ -225,7 +232,7 @@ export function CalendarDateInput({
         {/* icon-audit: ok — xem ghi chú ở ô Ngày phía trên */}
         <div className="space-y-1">
           <Label htmlFor={`${idPrefix}-year`} className="text-xs">
-            Năm
+            {t`Năm`}
           </Label>
           <Input
             id={`${idPrefix}-year`}
@@ -254,7 +261,7 @@ export function CalendarDateInput({
           onClick={() => setCanChiUiOpen(true)}
           className="text-sm text-primary hover:underline underline-offset-2"
         >
-          Nhập theo can-chi (Bính Thìn…)
+          {t`Nhập theo can-chi (Bính Thìn…)`}
         </button>
       ) : (
         <div className="space-y-2">
@@ -267,7 +274,7 @@ export function CalendarDateInput({
             value={canChiInput}
             onChange={(e) => setCanChiInput(e.target.value)}
             onBlur={onCanChiBlur}
-            placeholder="vd: Bính Thìn"
+            placeholder={t`vd: Bính Thìn`}
             className="max-w-[240px]"
           />
           {canChi && /^\d+$/.test(value.parts.year) && (
@@ -298,13 +305,11 @@ export function CalendarDateInput({
             onChange={(e) => onChange({ ...value, isLeap: e.target.checked })}
             className="h-5 w-5 accent-primary shrink-0"
           />
-          <span>Tháng nhuận</span>
+          <span>{t`Tháng nhuận`}</span>
         </label>
       )}
 
-      {preview && (
-        <p className="text-xs text-muted-foreground">{preview}</p>
-      )}
+      {preview && <p className="text-xs text-muted-foreground">{preview}</p>}
     </fieldset>
   );
 }
@@ -354,7 +359,7 @@ function CanChiChip({
         onClick={onDismiss}
         className="ml-auto text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
       >
-        Bỏ qua
+        {t`Bỏ qua`}
       </button>
     </div>
   );
@@ -384,5 +389,5 @@ function buildPreview(v: CalendarDateValue): string {
     date: `${conv.parts.year.padStart(4, "0")}-${conv.parts.month.padStart(2, "0")}-${conv.parts.day.padStart(2, "0")}`,
     precision: "day",
   });
-  return solarStr ? `= ${solarStr} dương lịch` : "";
+  return solarStr ? t`= ${solarStr} dương lịch` : "";
 }

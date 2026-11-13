@@ -3,6 +3,7 @@ import { useState } from "react";
 import { IconQrCode } from "@/components/icons";
 import { QrCodeModal } from "@/components/QrCodeModal";
 
+import { t } from "@lingui/core/macro";
 /**
  * Drawer-footer button: opens a QR for the app root URL so the
  * user can hand their screen to a relative and have them scan it
@@ -17,19 +18,19 @@ export function ShareAppQrButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        title="Chia sẻ app qua mã QR"
-        aria-label="Chia sẻ qua mã QR"
+        title={t`Chia sẻ app qua mã QR`}
+        aria-label={t`Chia sẻ qua mã QR`}
         className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm whitespace-nowrap"
       >
         <IconQrCode className="h-4 w-4 shrink-0" />
-        <span className="sr-only">Chia sẻ QR</span>
+        <span className="sr-only">{t`Chia sẻ QR`}</span>
       </button>
       <QrCodeModal
         open={open}
         onClose={() => setOpen(false)}
         url={url}
-        title="Mở Dòng Họ Việt trên điện thoại"
-        description="Mở camera điện thoại, hướng vào mã QR để mở app."
+        title={t`Mở Dòng Họ Việt trên điện thoại`}
+        description={t`Mở camera điện thoại, hướng vào mã QR để mở app.`}
       />
     </>
   );

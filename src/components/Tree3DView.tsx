@@ -11,7 +11,14 @@ import { createPortal } from "react-dom";
 
 import { IconMaximize, IconMinimize } from "@/components/icons";
 import type { ForceGraph3DInstance, NodeObject } from "3d-force-graph";
-import { CanvasTexture, LinearFilter, Object3D, Sprite, SpriteMaterial, SRGBColorSpace } from "three";
+import {
+  CanvasTexture,
+  LinearFilter,
+  Object3D,
+  Sprite,
+  SpriteMaterial,
+  SRGBColorSpace,
+} from "three";
 import SpriteText from "three-spritetext";
 
 import { bloodlineIds } from "@/lib/bloodline";
@@ -20,6 +27,7 @@ import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { getTreeData, type TreeData } from "@/lib/queries/tree";
 import { subscribeTheme } from "@/lib/theme";
 
+import { t } from "@lingui/core/macro";
 /** Số node tối đa dựng cùng lúc (giữ mượt trên điện thoại). Phần còn lại
  *  ẩn dưới các thẻ có badge số con — bấm để bung thêm. */
 const RENDER_CAP = 500;
@@ -90,7 +98,10 @@ const DEFAULT_AVATARS_ROYAL = {
   M: "/avatars/male-royal.svg",
   F: "/avatars/female-royal.svg",
 };
-const DEFAULT_AVATARS_CLASSIC = { M: "/avatars/male.png", F: "/avatars/female.png" };
+const DEFAULT_AVATARS_CLASSIC = {
+  M: "/avatars/male.png",
+  F: "/avatars/female.png",
+};
 
 /** Kích thước canvas (px logic) của thẻ node. */
 const CARD_W = 260;
@@ -197,8 +208,7 @@ function buildGraph(
   const included = data.persons.filter(
     (p) =>
       (!keepIds || keepIds.has(p.id)) &&
-      (isLineage(p.id) ||
-        (spouseOf.get(p.id) ?? []).some((s) => isLineage(s))),
+      (isLineage(p.id) || (spouseOf.get(p.id) ?? []).some((s) => isLineage(s))),
   );
   const ids = new Set(included.map((p) => p.id));
 
@@ -246,7 +256,7 @@ function buildGraph(
       ? f.husband_id
       : isLineage(f.wife_id)
         ? f.wife_id
-        : f.husband_id ?? f.wife_id;
+        : (f.husband_id ?? f.wife_id);
     if (parent && ids.has(parent)) {
       links.push({ source: parent, target: p.id, kind: "parent" });
       const pn = nodeById.get(parent);
@@ -280,7 +290,9 @@ export function Tree3DView({
   className,
   data: injectedData,
   photoUrls: injectedPhotoUrls,
-  avatars = readAvatarStyle() === "classic" ? DEFAULT_AVATARS_CLASSIC : DEFAULT_AVATARS_ROYAL,
+  avatars = readAvatarStyle() === "classic"
+    ? DEFAULT_AVATARS_CLASSIC
+    : DEFAULT_AVATARS_ROYAL,
 }: {
   clanId: string;
   genOffset: number;
@@ -449,7 +461,7 @@ export function Tree3DView({
         ctx.textBaseline = "alphabetic";
         ctx.font = `700 30px ${nameFam}, "Noto Serif", Georgia, serif`;
         const lines = wrapText(ctx, g.name, CARD_W - 40, 2);
-        const sub = g.years || (g.gen != null ? `Đời ${g.gen}` : "");
+        const sub = g.years || (g.gen != null ? t`Đời ${g.gen}` : "");
         const nameGap = 40;
         const subGap = 36;
         const regionMid = (cy + r + 8 + (CARD_H - 24)) / 2; // giữa vùng dưới ảnh
@@ -623,7 +635,8 @@ export function Tree3DView({
         rootSet.forEach(walk);
         for (const n of [...vN]) {
           for (const l of n.spouseLinks ?? []) {
-            const other = srcId(l) === (n.id as string) ? targetId(l) : srcId(l);
+            const other =
+              srcId(l) === (n.id as string) ? targetId(l) : srcId(l);
             const sp = nodeById.get(other);
             if (sp && !seen.has(other)) {
               seen.add(other);
@@ -657,7 +670,7 @@ export function Tree3DView({
           const g = n as GNode;
           const meta: string[] = [];
           if (g.years) meta.push(g.years);
-          if (g.gen != null) meta.push(`Đời ${g.gen}`);
+          if (g.gen != null) meta.push(t`Đời ${g.gen}`);
           const sub = meta.length
             ? `<div style="font-size:11px;opacity:.8">${meta.join(" · ")}</div>`
             : "";
@@ -696,12 +709,14 @@ export function Tree3DView({
           const link = l as GLink;
           let label: string;
           if (link.kind === "marriage") {
-            label = "vợ chồng";
+            label = t`vợ chồng`;
           } else {
-            const t = (l as { target: unknown }).target;
+            const tgt = (l as { target: unknown }).target;
             const gender =
-              t && typeof t === "object" ? (t as GNode).gender : undefined;
-            label = gender === "F" ? "con gái" : "con trai";
+              tgt && typeof tgt === "object"
+                ? (tgt as GNode).gender
+                : undefined;
+            label = gender === "F" ? t`con gái` : t`con trai`;
           }
           const s = new SpriteText(label);
           s.color = link.kind === "marriage" ? pal.marriage : pal.linkText;
@@ -736,7 +751,9 @@ export function Tree3DView({
       // nhãn cạnh (hàng trăm sprite động mỗi frame), dừng mô phỏng sớm hơn.
       graph
         .renderer()
-        .setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
+        .setPixelRatio(
+          Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2),
+        );
       if (isMobile) {
         graph.linkDirectionalParticles(0).cooldownTime(6000);
       }
@@ -754,7 +771,9 @@ export function Tree3DView({
 
       onResize = () => {
         if (!elRef.current || !graph) return;
-        graph.width(elRef.current.clientWidth).height(elRef.current.clientHeight);
+        graph
+          .width(elRef.current.clientWidth)
+          .height(elRef.current.clientHeight);
       };
       onResize();
       window.addEventListener("resize", onResize);
@@ -821,7 +840,7 @@ export function Tree3DView({
       <div ref={elRef} className="absolute inset-0" />
       {(isLoading || !photosReady) && (
         <p className="absolute inset-0 grid place-items-center text-muted-foreground">
-          Đang tải…
+          {t`Đang tải…`}
         </p>
       )}
 
@@ -834,21 +853,21 @@ export function Tree3DView({
           aria-pressed={expandable}
           title={
             expandable
-              ? "Đang bật: bấm thẻ để bung/thu nhánh (nhẹ với họ lớn)"
-              : "Bật mở rộng dần: chỉ hiện gốc, bấm để bung từng nhánh"
+              ? t`Đang bật: bấm thẻ để bung/thu nhánh (nhẹ với họ lớn)`
+              : t`Bật mở rộng dần: chỉ hiện gốc, bấm để bung từng nhánh`
           }
         >
           <span
             className={`h-2 w-2 rounded-full ${expandable ? "bg-primary" : "bg-muted-foreground/50"}`}
           />
-          Mở rộng dần
+          {t`Mở rộng dần`}
         </button>
         <button
           type="button"
           onClick={() => setFs((v) => !v)}
           className="pointer-events-auto inline-flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
-          aria-label={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-          title={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+          aria-label={fs ? t`Thoát toàn màn hình` : t`Xem toàn màn hình`}
+          title={fs ? t`Thoát toàn màn hình` : t`Xem toàn màn hình`}
         >
           {fs ? (
             <IconMinimize className="h-4 w-4" />
@@ -862,13 +881,13 @@ export function Tree3DView({
       {showGuide ? (
         <div className="pointer-events-none absolute bottom-3 left-3 z-10 max-w-[16rem] space-y-1 rounded-lg border border-border bg-background/85 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur">
           <div className="mb-1 flex items-center justify-between gap-2">
-            <span className="font-medium text-foreground">Cách xem</span>
+            <span className="font-medium text-foreground">{t`Cách xem`}</span>
             <button
               type="button"
               onClick={() => setShowGuide(false)}
               className="pointer-events-auto -mr-1 -mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Ẩn hướng dẫn"
-              title="Ẩn hướng dẫn"
+              aria-label={t`Ẩn hướng dẫn`}
+              title={t`Ẩn hướng dẫn`}
             >
               ✕
             </button>
@@ -876,60 +895,86 @@ export function Tree3DView({
           {/* Máy tính */}
           <div className="hidden space-y-1 sm:block">
             <div>
-              <b className="text-foreground">Chuột trái</b> kéo — xoay
+              <b className="text-foreground">{t`Chuột trái`}</b> kéo — xoay
             </div>
             <div>
-              <b className="text-foreground">Chuột phải</b> kéo — di chuyển
+              <b className="text-foreground">{t`Chuột phải`}</b> kéo — di chuyển
             </div>
             <div>
-              <b className="text-foreground">Lăn chuột</b> — phóng to / thu nhỏ
+              <b className="text-foreground">{t`Lăn chuột`}</b> — phóng to / thu
+              nhỏ
             </div>
             <div>
-              <b className="text-foreground">Bấm một thẻ</b> —{" "}
-              {expandable ? "bung / thu nhánh con" : "bay tới xem"}
+              <b className="text-foreground">{t`Bấm một thẻ`}</b> —{" "}
+              {expandable ? t`bung / thu nhánh con` : t`bay tới xem`}
             </div>
             {expandable && (
-              <div>Số trong vòng tròn = số con có thể bung.</div>
+              <div>{t`Số trong vòng tròn = số con có thể bung.`}</div>
             )}
             <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              Phím tắt:
-              <kbd className={kbd}>+</kbd>/<kbd className={kbd}>−</kbd> phóng to·nhỏ ·
-              <kbd className={kbd}>R</kbd> toàn cảnh
+              {t`Phím tắt:`}
+              <kbd className={kbd}>+</kbd>/<kbd className={kbd}>−</kbd> phóng
+              to·nhỏ ·<kbd className={kbd}>R</kbd> toàn cảnh
             </div>
           </div>
           {/* Điện thoại */}
           <div className="space-y-1 sm:hidden">
-            <div>Vuốt 1 ngón để xoay, di chuyển</div>
-            <div>Kéo 2 ngón để phóng to / thu nhỏ</div>
+            <div>{t`Vuốt 1 ngón để xoay, di chuyển`}</div>
+            <div>{t`Kéo 2 ngón để phóng to / thu nhỏ`}</div>
             <div>
-              Chạm thẻ để {expandable ? "bung / thu nhánh" : "bay tới xem"}
+              Chạm thẻ để {expandable ? t`bung / thu nhánh` : t`bay tới xem`}
             </div>
           </div>
           {/* Chú thích màu: thẻ theo giới, đường theo quan hệ. */}
           <div className="mt-1.5 space-y-1 border-t border-border pt-1.5 text-foreground">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.male }} /> Nam
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: pal.male }}
+                />{" "}
+                Nam
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.female }} /> Nữ
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: pal.female }}
+                />{" "}
+                Nữ
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: pal.root }} /> Thuỷ tổ
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ background: pal.root }}
+                />{" "}
+                Thuỷ tổ
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-full border border-dashed border-muted-foreground" /> Dâu/rể
+                <span className="h-2.5 w-2.5 rounded-full border border-dashed border-muted-foreground" />{" "}
+                Dâu/rể
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="inline-flex items-center gap-1">
-                <span className="h-0.5 w-4 rounded" style={{ background: pal.male }} /> Con trai
+                <span
+                  className="h-0.5 w-4 rounded"
+                  style={{ background: pal.male }}
+                />{" "}
+                Con trai
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="h-0.5 w-4 rounded" style={{ background: pal.female }} /> Con gái
+                <span
+                  className="h-0.5 w-4 rounded"
+                  style={{ background: pal.female }}
+                />{" "}
+                Con gái
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="h-0.5 w-4 rounded" style={{ background: pal.marriage }} /> Vợ chồng
+                <span
+                  className="h-0.5 w-4 rounded"
+                  style={{ background: pal.marriage }}
+                />{" "}
+                Vợ chồng
               </span>
             </div>
           </div>
@@ -939,13 +984,13 @@ export function Tree3DView({
           type="button"
           onClick={() => setShowGuide(true)}
           className="pointer-events-auto absolute bottom-3 left-3 z-10 inline-flex items-center gap-1 rounded-lg border border-border bg-background/85 px-2.5 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur hover:text-foreground"
-          aria-label="Hiện hướng dẫn"
-          title="Hiện hướng dẫn"
+          aria-label={t`Hiện hướng dẫn`}
+          title={t`Hiện hướng dẫn`}
         >
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-current text-[10px] font-bold">
             ?
           </span>
-          Cách xem
+          {t`Cách xem`}
         </button>
       )}
     </div>

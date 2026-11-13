@@ -42,6 +42,8 @@ import {
 import { updateClan } from "@/lib/queries/clan-update";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 export default function Settings() {
   const { clan } = useClanContext();
   const { user } = useAuth();
@@ -49,7 +51,9 @@ export default function Settings() {
   const toast = useToast();
   const userId = user?.id ?? "";
 
-  const [values, setValues] = useState<ClanFormValues>(() => clanFormFromClan(clan));
+  const [values, setValues] = useState<ClanFormValues>(() =>
+    clanFormFromClan(clan),
+  );
 
   useEffect(() => {
     setValues(clanFormFromClan(clan));
@@ -82,10 +86,10 @@ export default function Settings() {
           Array.isArray(q.queryKey) &&
           (q.queryKey[0] === "clans" || q.queryKey[0] === "admin-clans"),
       });
-      toast.success("Đã lưu cài đặt");
+      toast.success(t`Đã lưu cài đặt`);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   if (!isClanAdmin(clan)) {
@@ -97,13 +101,13 @@ export default function Settings() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Cài đặt dòng họ" },
+          { label: t`Cài đặt dòng họ` },
         ]}
       />
       <PageHeader
         icon={<IconSettings className="h-7 w-7" />}
-        title="Cài đặt dòng họ"
-        description="Cấu hình, share links, xuất dữ liệu, xoá dòng họ."
+        title={t`Cài đặt dòng họ`}
+        description={t`Cấu hình, share links, xuất dữ liệu, xoá dòng họ.`}
       />
 
       <FeaturesCard clan={clan} userId={userId} queryClient={queryClient} />
@@ -114,14 +118,21 @@ export default function Settings() {
           mutation.mutate();
         }}
       >
-      <Card>
-        <CardHeader>
-          <CardTitle>Hiển thị &amp; quyền xem</CardTitle>
-          <CardDescription>
-            Bật/tắt thông tin hiển thị và phần người ngoài được xem. Tên, mô
-            tả, chi và nội dung sổ gia phả sửa ở trang “Thông tin &amp; Sổ gia phả”.
-          </CardDescription>
-        </CardHeader>
+        <Card>
+          <CardHeader>
+            <CardTitle>Hiển thị &amp; quyền xem</CardTitle>
+            <CardDescription>
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Bật/tắt thông tin hiển thị và phần người ngoài được xem.
+                    Tên, mô tả, chi và nội dung sổ gia phả sửa ở trang “Thông
+                    tin &amp; Sổ gia phả”.
+                  </Trans>
+                </Trans>
+              </Trans>
+            </CardDescription>
+          </CardHeader>
           <CardContent className="space-y-5">
             <ClanDisplayFields value={values} onChange={setValues} />
 
@@ -134,66 +145,66 @@ export default function Settings() {
             )}
             {mutation.isSuccess && (
               <Alert>
-                <AlertDescription>Đã lưu.</AlertDescription>
+                <AlertDescription>{t`Đã lưu.`}</AlertDescription>
               </Alert>
             )}
-
           </CardContent>
           <CardFooter className="justify-end border-t pt-4">
-            <Button size="sm"
+            <Button
+              size="sm"
               type="submit"
               variant="outline"
               disabled={mutation.isPending}
             >
               {mutation.isPending ? (
-                "Đang lưu…"
+                t`Đang lưu…`
               ) : (
                 <>
                   <IconCheck className="h-4 w-4 mr-1.5" />
-                  Lưu thay đổi
+                  {t`Lưu thay đổi`}
                 </>
               )}
             </Button>
           </CardFooter>
-      </Card>
+        </Card>
       </form>
 
       <Card>
         <CardHeader>
           <CardTitle>Quản lý &amp; công cụ</CardTitle>
           <CardDescription>
-            Lối tắt tới các trang quản lý và xuất dữ liệu.
+            {t`Lối tắt tới các trang quản lý và xuất dữ liệu.`}
           </CardDescription>
         </CardHeader>
         <CardContent className="divide-y p-0">
           {[
             {
-              title: "Thông tin & Sổ gia phả",
-              desc: "Sửa tên, mô tả, chi (nhánh) và soạn lời nói đầu, phả ký, ngoại phả, phụ khảo.",
+              title: t`Thông tin & Sổ gia phả`,
+              desc: t`Sửa tên, mô tả, chi (nhánh) và soạn lời nói đầu, phả ký, ngoại phả, phụ khảo.`,
               to: `/clans/${clan.id}/so-gia-pha`,
               icon: <IconBook className="h-4 w-4 mr-1.5" />,
-              label: "Mở trang soạn",
+              label: t`Mở trang soạn`,
             },
             {
-              title: "Thành viên",
-              desc: `Mời thêm tài khoản hoặc đổi vai trò. Giới hạn hiện tại: ${clan.max_users} tài khoản (do quản trị nền tảng đặt).`,
+              title: t`Thành viên`,
+              desc: t`Mời thêm tài khoản hoặc đổi vai trò. Giới hạn hiện tại: ${clan.max_users} tài khoản (do quản trị nền tảng đặt).`,
               to: `/clans/${clan.id}/members`,
               icon: <IconUsers className="h-4 w-4 mr-1.5" />,
-              label: "Quản lý thành viên",
+              label: t`Quản lý thành viên`,
             },
             {
-              title: "Nhật ký chỉnh sửa",
-              desc: "Lịch sử thay đổi với người, gia đình, chi — có thể khôi phục.",
+              title: t`Nhật ký chỉnh sửa`,
+              desc: t`Lịch sử thay đổi với người, gia đình, chi — có thể khôi phục.`,
               to: `/clans/${clan.id}/audit`,
               icon: <IconList className="h-4 w-4 mr-1.5" />,
-              label: "Mở nhật ký",
+              label: t`Mở nhật ký`,
             },
             {
-              title: "Xuất QR cá nhân",
-              desc: "Tạo mã QR cho từng người để in/khắc — quét ra trang cá nhân.",
+              title: t`Xuất QR cá nhân`,
+              desc: t`Tạo mã QR cho từng người để in/khắc — quét ra trang cá nhân.`,
               to: `/clans/${clan.id}/qr-export`,
               icon: <IconQrCode className="h-4 w-4 mr-1.5" />,
-              label: "Mở xuất QR",
+              label: t`Mở xuất QR`,
             },
           ].map((r) => (
             <div
@@ -214,13 +225,16 @@ export default function Settings() {
           ))}
           <div className="flex flex-col gap-2 px-4 py-3 sm:px-5">
             <div className="min-w-0">
-              <p className="font-medium">Xuất / nhập GEDCOM</p>
+              <p className="font-medium">{t`Xuất / nhập GEDCOM`}</p>
               <p className="text-sm text-muted-foreground">
                 Chuẩn trao đổi dữ liệu phả hệ (5.5.1) — đem dữ liệu đi nơi khác
                 hoặc nạp từ phần mềm khác. Giữ được cả các trường tiếng Việt
                 (tên tự / húy / thụy, ngày âm, ngày giỗ, chi). Chưa có file?
-                Dùng{" "}
-                <Link to={`/clans/${clan.id}/ai-generate`} className="underline">
+                {t`Dùng`}{" "}
+                <Link
+                  to={`/clans/${clan.id}/ai-generate`}
+                  className="underline"
+                >
                   trang sinh prompt AI
                 </Link>{" "}
                 để tạo file GEDCOM từ mô tả tự do.
@@ -230,11 +244,17 @@ export default function Settings() {
           </div>
           <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div className="min-w-0">
-              <p className="font-medium">Xuất CSV</p>
+              <p className="font-medium">{t`Xuất CSV`}</p>
               <p className="text-sm text-muted-foreground">
-                Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng loạt
-                rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên tự, ảnh,
-                nơi sinh…) không được mang theo.
+                <Trans>
+                  <Trans>
+                    <Trans>
+                      Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng
+                      loạt rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên
+                      tự, ảnh, nơi sinh…) không được mang theo.
+                    </Trans>
+                  </Trans>
+                </Trans>
               </p>
             </div>
             <div className="shrink-0">
@@ -246,9 +266,9 @@ export default function Settings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Link chia sẻ</CardTitle>
+          <CardTitle>{t`Link chia sẻ`}</CardTitle>
           <CardDescription>
-            Link công khai cho khách xem cây (đã ẩn người sống), có hạn và thu hồi được.
+            {t`Link công khai cho khách xem cây (đã ẩn người sống), có hạn và thu hồi được.`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -258,9 +278,9 @@ export default function Settings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Giới hạn</CardTitle>
+          <CardTitle>{t`Giới hạn`}</CardTitle>
           <CardDescription>
-            Do quản trị nền tảng đặt, không sửa được ở đây.
+            {t`Do quản trị nền tảng đặt, không sửa được ở đây.`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
@@ -299,7 +319,7 @@ function FeaturesCard({
       }),
     onError: (e) => {
       setDisabled(clan.disabled_features ?? []); // hoàn tác optimistic
-      toast.error("Không lưu được", { description: friendlyError(e) });
+      toast.error(t`Không lưu được`, { description: friendlyError(e) });
     },
   });
 
@@ -314,11 +334,17 @@ function FeaturesCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tính năng hiển thị</CardTitle>
+        <CardTitle>{t`Tính năng hiển thị`}</CardTitle>
         <CardDescription>
-          Tắt bớt tính năng phụ để menu gọn hơn cho dòng họ này. Lõi (Cây,
-          Danh bạ, Sự kiện, Hôm nay) luôn bật. Tắt chỉ ẩn khỏi menu — dữ liệu
-          cũ vẫn còn, bật lại là hiện.
+          <Trans>
+            <Trans>
+              <Trans>
+                Tắt bớt tính năng phụ để menu gọn hơn cho dòng họ này. Lõi (Cây,
+                Danh bạ, Sự kiện, Hôm nay) luôn bật. Tắt chỉ ẩn khỏi menu — dữ
+                liệu cũ vẫn còn, bật lại là hiện.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -338,9 +364,7 @@ function FeaturesCard({
               />
               <div>
                 <p className="font-medium">{f.label}</p>
-                <p className="text-sm text-muted-foreground">
-                  {f.description}
-                </p>
+                <p className="text-sm text-muted-foreground">{f.description}</p>
               </div>
             </label>
           );

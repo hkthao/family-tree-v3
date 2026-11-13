@@ -58,6 +58,8 @@ import {
   titleCaseName,
 } from "@/lib/tree/tallCard";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 type DatumNode = {
   id?: string;
   data?: Record<string, unknown>;
@@ -166,9 +168,9 @@ export default function Share() {
       const slug = fileSlug(focalName);
       await exportFamilyChartPng(el, `cay-gia-pha-${slug || "share"}.png`);
       track("export", { kind: "tree_image", from: "share" });
-      toast.success("Đã xuất ảnh cây gia phả.");
+      toast.success(t`Đã xuất ảnh cây gia phả.`);
     } catch {
-      toast.error("Không xuất được ảnh. Thử lại sau.");
+      toast.error(t`Không xuất được ảnh. Thử lại sau.`);
     } finally {
       setSavingImg(false);
     }
@@ -236,9 +238,9 @@ export default function Share() {
   // Tiêu đề thật theo tên dòng họ — trang /xem/clans/:id là trang công
   // khai được Google index, tiêu đề chung chung thì không xếp hạng được.
   usePageTitle(
-    data?.clan_name ? `Gia phả ${data.clan_name}` : null,
+    data?.clan_name ? t`Gia phả ${data.clan_name}` : null,
     data?.clan_name
-      ? `Cây gia phả ${data.clan_name}: các đời, ngày giỗ và thông tin thành viên.`
+      ? t`Cây gia phả ${data.clan_name}: các đời, ngày giỗ và thông tin thành viên.`
       : null,
   );
 
@@ -527,7 +529,7 @@ export default function Share() {
                       style="font-family: var(--tree-name-font, 'Playfair Display'), Georgia, serif">
                   ${gen - (data?.generation_offset ?? 0)}
                 </text>
-                <title>Đời ${gen - (data?.generation_offset ?? 0)}</title>`;
+                <title>${t`Đời ${gen - (data?.generation_offset ?? 0)}`}</title>`;
               this.querySelector(".card-body")?.appendChild(badge);
             }
           });
@@ -689,7 +691,7 @@ export default function Share() {
         value: p.id,
         label: [
           p.full_name,
-          p.generation !== null ? `Đời ${p.generation - off}` : null,
+          p.generation !== null ? t`Đời ${p.generation - off}` : null,
           p.birth_date ? `sinh ${p.birth_date.slice(0, 4)}` : null,
         ]
           .filter(Boolean)
@@ -703,10 +705,10 @@ export default function Share() {
       <div className="min-h-dvh bg-background flex flex-col">
         <header className="border-b py-3 px-4 shrink-0">
           <h1 className="clan-name text-xl font-semibold text-center">
-            Mộ phần / tro cốt
+            {t`Mộ phần / tro cốt`}
           </h1>
           <p className="mt-1 text-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
-            Đang xem qua liên kết chia sẻ.
+            {t`Đang xem qua liên kết chia sẻ.`}
           </p>
         </header>
         <main className="flex-1 min-h-0">
@@ -727,10 +729,10 @@ export default function Share() {
       <div className="min-h-dvh bg-background flex flex-col">
         <header className="border-b py-3 px-4 shrink-0">
           <h1 className="clan-name text-xl font-semibold text-center">
-            Di sản & Văn hoá
+            {t`Di sản & Văn hoá`}
           </h1>
           <p className="text-xs text-center text-muted-foreground mt-1">
-            Đang xem qua liên kết chia sẻ.
+            {t`Đang xem qua liên kết chia sẻ.`}
           </p>
         </header>
         <main className="flex-1 min-h-0 overflow-y-auto">
@@ -764,7 +766,7 @@ export default function Share() {
                     <iframe
                       key={i}
                       src={embed}
-                      title="Video di sản"
+                      title={t`Video di sản`}
                       className="aspect-video w-full rounded-md border"
                       allow="encrypted-media; picture-in-picture; fullscreen"
                       allowFullScreen
@@ -785,7 +787,7 @@ export default function Share() {
 
             {h.audios.length > 0 && (
               <div className="space-y-2">
-                <p className="font-medium">Ghi âm kể chuyện</p>
+                <p className="font-medium">{t`Ghi âm kể chuyện`}</p>
                 {h.audios.map((a, i) => (
                   <audio
                     key={i}
@@ -821,7 +823,7 @@ export default function Share() {
                 {h.built_year && (
                   <p>
                     <span className="text-muted-foreground">
-                      Lập / xây năm:{" "}
+                      {t`Lập / xây năm:`}{" "}
                     </span>
                     {h.built_year}
                   </p>
@@ -833,7 +835,7 @@ export default function Share() {
                     rel="noopener noreferrer"
                     className="text-primary hover:underline inline-block mt-1"
                   >
-                    Chỉ đường →
+                    {t`Chỉ đường →`}
                   </a>
                 )}
               </div>
@@ -841,7 +843,7 @@ export default function Share() {
 
             {h.people.length > 0 && (
               <div>
-                <p className="font-medium mb-1">Người liên quan</p>
+                <p className="font-medium mb-1">{t`Người liên quan`}</p>
                 <ul className="text-base space-y-0.5">
                   {h.people.map((p, i) => (
                     <li key={i}>
@@ -874,10 +876,10 @@ export default function Share() {
       <div className="min-h-dvh bg-background flex flex-col">
         <header className="border-b py-3 px-4 shrink-0">
           <h1 className="clan-name text-xl font-semibold text-center">
-            Trang cá nhân
+            {t`Trang cá nhân`}
           </h1>
           <p className="text-xs text-center text-muted-foreground mt-1">
-            Đang xem qua liên kết chia sẻ.
+            {t`Đang xem qua liên kết chia sẻ.`}
           </p>
         </header>
         <main className="flex-1 min-h-0">
@@ -893,7 +895,7 @@ export default function Share() {
             />
           ) : (
             <p className="p-8 text-center text-muted-foreground">
-              Không tìm thấy thông tin người này.
+              {t`Không tìm thấy thông tin người này.`}
             </p>
           )}
         </main>
@@ -909,7 +911,7 @@ export default function Share() {
         <div className="container flex h-[64px] max-w-6xl items-center justify-between gap-3">
           <div className="w-10 shrink-0" aria-hidden="true" />
           <h1 className="clan-name min-w-0 flex-1 truncate text-center text-lg font-semibold sm:text-xl">
-            {data?.clan_name ? `Gia phả ${data.clan_name}` : "Cây gia phả"}
+            {data?.clan_name ? t`Gia phả ${data.clan_name}` : "Cây gia phả"}
           </h1>
           <div className="flex shrink-0 items-center print-hide">
             <LanguageButton />
@@ -926,18 +928,24 @@ export default function Share() {
           <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
             <IconShield className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div className="min-w-0 flex-1 text-sm">
-              <p className="font-medium">Thông tin nhạy cảm đã được ẩn</p>
+              <p className="font-medium">{t`Thông tin nhạy cảm đã được ẩn`}</p>
               <p className="text-muted-foreground">
-                Ngày tháng, nơi chốn của người còn sống không hiển thị ở bản xem
-                này.
+                <Trans>
+                  <Trans>
+                    <Trans>
+                      Ngày tháng, nơi chốn của người còn sống không hiển thị ở
+                      bản xem này.
+                    </Trans>
+                  </Trans>
+                </Trans>
               </p>
             </div>
             <button
               type="button"
               onClick={dismissNotice}
               className="shrink-0 text-muted-foreground hover:text-foreground"
-              aria-label="Đóng thông báo"
-              title="Đóng"
+              aria-label={t`Đóng thông báo`}
+              title={t`Đóng`}
             >
               <IconX className="h-4 w-4" />
             </button>
@@ -967,12 +975,12 @@ export default function Share() {
         <div className="shrink-0 border-b print-hide">
           <div
             role="tablist"
-            aria-label="Nội dung dòng họ"
+            aria-label={t`Nội dung dòng họ`}
             className="container flex max-w-6xl overflow-x-auto px-2"
             style={{ scrollbarWidth: "none" }}
           >
             <ShareTab active={tab === "tree"} onClick={() => setTab("tree")}>
-              Cây gia phả
+              {t`Cây gia phả`}
             </ShareTab>
             {(data.events?.length || hasAnniversaries(data)) && (
               <ShareTab
@@ -987,7 +995,7 @@ export default function Share() {
                 active={tab === "heritage"}
                 onClick={() => setTab("heritage")}
               >
-                Di sản
+                {t`Di sản`}
               </ShareTab>
             ) : null}
             {hasSources ? (
@@ -1004,7 +1012,7 @@ export default function Share() {
 
       <main className="flex-1 min-h-0 flex flex-col">
         {isLoading && (
-          <p className="p-8 text-center text-muted-foreground">Đang tải…</p>
+          <p className="p-8 text-center text-muted-foreground">{t`Đang tải…`}</p>
         )}
         {error && (
           <div className="p-4 max-w-md mx-auto w-full space-y-3">
@@ -1017,7 +1025,7 @@ export default function Share() {
                   to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}
                 >
                   <IconLogIn className="h-4 w-4 mr-1.5" />
-                  Đăng nhập để xem dòng họ này
+                  {t`Đăng nhập để xem dòng họ này`}
                 </Link>
               </Button>
             )}
@@ -1025,7 +1033,7 @@ export default function Share() {
         )}
         {data && data.persons.length === 0 && (
           <p className="p-8 text-center text-muted-foreground">
-            Chưa có dữ liệu trong dòng họ.
+            {t`Chưa có dữ liệu trong dòng họ.`}
           </p>
         )}
         {data && data.persons.length > 0 && (
@@ -1047,9 +1055,9 @@ export default function Share() {
                     value={focal ?? ""}
                     onChange={(v) => v && setFocal(v)}
                     options={personOptions}
-                    emptyLabel="Chọn thuỷ tổ làm trung tâm"
-                    filterPlaceholder="Gõ tên để tìm (không cần dấu)"
-                    filterLabel="Tìm người làm trung tâm"
+                    emptyLabel={t`Chọn thuỷ tổ làm trung tâm`}
+                    filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
+                    filterLabel={t`Tìm người làm trung tâm`}
                     className="h-10 text-sm"
                   />
                 </div>
@@ -1061,17 +1069,17 @@ export default function Share() {
                   onClick={() => setShowOpts(true)}
                   aria-haspopup="dialog"
                   aria-expanded={showOpts}
-                  aria-label="Tuỳ chọn cây"
+                  aria-label={t`Tuỳ chọn cây`}
                 >
                   <IconFilter className="h-4 w-4" />
-                  <span className="hidden sm:inline">Tuỳ chọn</span>
+                  <span className="hidden sm:inline">{t`Tuỳ chọn`}</span>
                 </Button>
               </div>
 
               <FilterDrawer
                 open={showOpts}
                 onClose={() => setShowOpts(false)}
-                title="Tuỳ chọn cây"
+                title={t`Tuỳ chọn cây`}
               >
                 <TreeOptionsPanel
                   prefs={prefs}
@@ -1092,7 +1100,7 @@ export default function Share() {
                     <Suspense
                       fallback={
                         <p className="p-8 text-center text-muted-foreground">
-                          Đang dựng cây 3D…
+                          {t`Đang dựng cây 3D…`}
                         </p>
                       }
                     >
@@ -1127,7 +1135,7 @@ export default function Share() {
                             "--tree-name-font": fontFamilyOf(nameFont),
                           } as React.CSSProperties
                         }
-                        aria-label="Cây gia phả tương tác (chỉ xem)"
+                        aria-label={t`Cây gia phả tương tác (chỉ xem)`}
                       />
                       {/* Cách xem: mở sẵn trên máy tính, thu gọn thành nút trên điện thoại để khỏi che cây. */}
                       <TreeGuide
@@ -1142,9 +1150,9 @@ export default function Share() {
                           onClick={exportShareImage}
                           disabled={savingImg}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
-                          aria-label="Xuất ảnh cây đang hiển thị (PNG)"
+                          aria-label={t`Xuất ảnh cây đang hiển thị (PNG)`}
                           title={
-                            savingImg ? "Đang xuất…" : "Xuất ảnh cây (PNG)"
+                            savingImg ? t`Đang xuất…` : t`Xuất ảnh cây (PNG)`
                           }
                         >
                           <IconDownload className="h-4 w-4" />
@@ -1155,13 +1163,13 @@ export default function Share() {
                           className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm"
                           aria-label={
                             isFullscreen
-                              ? "Thoát toàn màn hình"
-                              : "Xem toàn màn hình"
+                              ? t`Thoát toàn màn hình`
+                              : t`Xem toàn màn hình`
                           }
                           title={
                             isFullscreen
-                              ? "Thoát toàn màn hình"
-                              : "Xem toàn màn hình"
+                              ? t`Thoát toàn màn hình`
+                              : t`Xem toàn màn hình`
                           }
                         >
                           {isFullscreen ? (
@@ -1207,7 +1215,7 @@ export default function Share() {
                 <>Bạn đang xem một gia phả trên Dòng Họ Việt. </>
               )}
               <span className="text-muted-foreground">
-                Tạo cây gia phả cho dòng họ bạn — miễn phí, chỉ vài phút.
+                {t`Tạo cây gia phả cho dòng họ bạn — miễn phí, chỉ vài phút.`}
               </span>
             </p>
             <Button asChild size="sm" className="shrink-0">
@@ -1220,7 +1228,7 @@ export default function Share() {
                 }
               >
                 <IconPlus className="h-4 w-4 mr-1.5" />
-                Tạo gia phả miễn phí
+                {t`Tạo gia phả miễn phí`}
               </Link>
             </Button>
           </div>
@@ -1314,7 +1322,7 @@ function eventWhen(e: ShareViewEvent): string {
     return e.is_yearly ? `${d}/${m} (DL)` : `${d}/${m}/${y} (DL)`;
   }
   if (e.lunar_month) {
-    return `${e.lunar_day}/${e.lunar_month}${e.lunar_is_leap ? " nhuận" : ""} ÂL`;
+    return `${e.lunar_day}/${e.lunar_month}${e.lunar_is_leap ? t` nhuận` : ""} ÂL`;
   }
   return "";
 }
@@ -1345,7 +1353,7 @@ function EventsGioPanel({ data }: { data: ShareViewPayload }) {
       <div className="container max-w-4xl space-y-2 px-4 py-4">
         {events.length === 0 && gio.length === 0 && (
           <p className="p-8 text-center text-muted-foreground">
-            Chưa có sự kiện hay ngày giỗ.
+            {t`Chưa có sự kiện hay ngày giỗ.`}
           </p>
         )}
         {events.map((e) => (
@@ -1383,7 +1391,7 @@ function HeritagePanel({ data }: { data: ShareViewPayload }) {
       <div className="container max-w-4xl space-y-2 px-4 py-4">
         {heritage.length === 0 && (
           <p className="p-8 text-center text-muted-foreground">
-            Chưa có di sản.
+            {t`Chưa có di sản.`}
           </p>
         )}
         {heritage.map((h) => (

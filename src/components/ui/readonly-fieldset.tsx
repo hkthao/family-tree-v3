@@ -21,7 +21,8 @@ export function ReadOnlyFieldset({
       disabled={readOnly}
       className={cn(
         "m-0 min-w-0 space-y-3 border-0 p-0",
-        readOnly && "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100 [&_[data-edit-only]]:hidden",
+        readOnly &&
+          "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100 [&_[data-edit-only]]:hidden",
         className,
       )}
     >

@@ -16,6 +16,7 @@ import { ScrollManager } from "@/components/ScrollManager";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateBanner } from "@/components/UpdateBanner";
 
+import { t } from "@lingui/core/macro";
 // Mọi TRANG được tách chunk riêng (React.lazy) → bundle đầu chỉ tải khung app +
 // trang đang vào, không gánh code của cả 65 trang. Giảm mạnh thời gian tải lần
 // đầu, nhất là trên mobile (~67% người dùng) & trình duyệt trong Facebook.
@@ -30,7 +31,9 @@ const AdminTroLyAi = lazy(() => import("@/pages/admin/TroLyAiPage"));
 const AdminCauHinh = lazy(() => import("@/pages/admin/CauHinhPage"));
 const AdminCauHinhAi = lazy(() => import("@/pages/admin/CauHinhAiPage"));
 const AdminThongBao = lazy(() => import("@/pages/admin/ThongBaoPage"));
-const AdminDanhMucDiaGioi = lazy(() => import("@/pages/admin/DanhMucDiaGioiPage"));
+const AdminDanhMucDiaGioi = lazy(
+  () => import("@/pages/admin/DanhMucDiaGioiPage"),
+);
 const AdminPodcast = lazy(() => import("@/pages/admin/PodcastPage"));
 const AdminNhapGiaPha = lazy(() => import("@/pages/admin/NhapGiaPhaPage"));
 const AdminLegacyRedirect = lazy(() => import("@/pages/admin/LegacyRedirect"));
@@ -57,7 +60,9 @@ const BoardModeration = lazy(() => import("@/pages/clan/BoardModeration"));
 const BoardPostDetail = lazy(() => import("@/pages/clan/BoardPostDetail"));
 const BoardPostEdit = lazy(() => import("@/pages/clan/BoardPostEdit"));
 const BoardPostNew = lazy(() => import("@/pages/clan/BoardPostNew"));
-const ContributionDetail = lazy(() => import("@/pages/clan/ContributionDetail"));
+const ContributionDetail = lazy(
+  () => import("@/pages/clan/ContributionDetail"),
+);
 const Contributions = lazy(() => import("@/pages/clan/Contributions"));
 const Dashboard = lazy(() => import("@/pages/clan/Dashboard"));
 const EditPerson = lazy(() => import("@/pages/clan/EditPerson"));
@@ -81,7 +86,9 @@ const MosaicDetail = lazy(() => import("@/pages/clan/MosaicDetail"));
 const MapStats = lazy(() => import("@/pages/clan/MapStats"));
 const Merge = lazy(() => import("@/pages/clan/Merge"));
 const RestingPlaces = lazy(() => import("@/pages/clan/RestingPlaces"));
-const RestingPlaceDetail = lazy(() => import("@/pages/clan/RestingPlaceDetail"));
+const RestingPlaceDetail = lazy(
+  () => import("@/pages/clan/RestingPlaceDetail"),
+);
 const RestingPlaceForm = lazy(() => import("@/pages/clan/RestingPlaceForm"));
 const Cemeteries = lazy(() => import("@/pages/clan/Cemeteries"));
 const MyLineage = lazy(() => import("@/pages/clan/MyLineage"));
@@ -115,7 +122,7 @@ function PageLoader() {
     <div
       className="flex min-h-[60vh] items-center justify-center"
       role="status"
-      aria-label="Đang tải…"
+      aria-label={t`Đang tải…`}
     >
       <span className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
     </div>
@@ -133,252 +140,519 @@ export default function App() {
       <DocumentTitle />
       <AnalyticsTracker />
       <ToastProvider>
-      <ConfirmDialogProvider>
-        <CriticalBanner />
-        <Suspense fallback={<PageLoader />}>
-        <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/share/:token" element={<Share />} />
-        {/* Xem trước CÔNG KHAI dòng họ (không cần đăng nhập) — RequireAuth đưa
+        <ConfirmDialogProvider>
+          <CriticalBanner />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/share/:token" element={<Share />} />
+              {/* Xem trước CÔNG KHAI dòng họ (không cần đăng nhập) — RequireAuth đưa
             khách chưa đăng nhập từ /clans/:id sang đây. */}
-        <Route path="/xem/clans/:clanId" element={<Share />} />
-        {/* Đích của nút "Xem thử" bên landing — tự phân giải dòng họ mẫu
+              <Route path="/xem/clans/:clanId" element={<Share />} />
+              {/* Đích của nút "Xem thử" bên landing — tự phân giải dòng họ mẫu
             để trang tĩnh không phải hard-code UUID. */}
-        <Route path="/xem/demo" element={<DemoRedirect />} />
-        <Route path="/khoe/:token" element={<KhoeCard />} />
-        <Route path="/join/:token" element={<JoinClan />} />
-        <Route path="/lien-he" element={<Contact />} />
-        {/* Công khai, không cần đăng nhập: người ta phải đọc được TRƯỚC
+              <Route path="/xem/demo" element={<DemoRedirect />} />
+              <Route path="/khoe/:token" element={<KhoeCard />} />
+              <Route path="/join/:token" element={<JoinClan />} />
+              <Route path="/lien-he" element={<Contact />} />
+              {/* Công khai, không cần đăng nhập: người ta phải đọc được TRƯỚC
             khi quyết định có đăng ký hay không. */}
-        <Route path="/chinh-sach-rieng-tu" element={<PrivacyPolicy />} />
-        <Route path="/dieu-khoan-su-dung" element={<TermsOfUse />} />
-        <Route path="/changelog" element={<Changelog />} />
-        <Route path="/inlaws/confirm/:token" element={<InlawsConfirm />} />
-        {/* Sổ tay Văn hoá — route CÔNG KHAI cho link chia sẻ (không cần đăng nhập).
+              <Route path="/chinh-sach-rieng-tu" element={<PrivacyPolicy />} />
+              <Route path="/dieu-khoan-su-dung" element={<TermsOfUse />} />
+              <Route path="/changelog" element={<Changelog />} />
+              <Route
+                path="/inlaws/confirm/:token"
+                element={<InlawsConfirm />}
+              />
+              {/* Sổ tay Văn hoá — route CÔNG KHAI cho link chia sẻ (không cần đăng nhập).
             Dùng chung component với route /so-tay/:entryId (required auth). */}
-        <Route path="/xem/so-tay/:entryId" element={<CustomsDetail />} />
-        <Route
-          path="/announcements"
-          element={
-            <RequireAuth>
-              <Announcements />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/announcements/:id"
-          element={
-            <RequireAuth>
-              <AnnouncementDetail />
-            </RequireAuth>
-          }
-        />
+              <Route path="/xem/so-tay/:entryId" element={<CustomsDetail />} />
+              <Route
+                path="/announcements"
+                element={
+                  <RequireAuth>
+                    <Announcements />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/announcements/:id"
+                element={
+                  <RequireAuth>
+                    <AnnouncementDetail />
+                  </RequireAuth>
+                }
+              />
 
-        <Route
-          path="/so-tay"
-          element={
-            <RequireAuth>
-              <Customs />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/podcast"
-          element={
-            <RequireAuth>
-              <Podcast />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/so-tay/new"
-          element={
-            <RequireAuth>
-              <CustomsForm />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/so-tay/import"
-          element={
-            <RequireAuth>
-              <CustomsImport />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/so-tay/:entryId"
-          element={
-            <RequireAuth>
-              <CustomsDetail />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/so-tay/:entryId/edit"
-          element={
-            <RequireAuth>
-              <CustomsForm />
-            </RequireAuth>
-          }
-        />
+              <Route
+                path="/so-tay"
+                element={
+                  <RequireAuth>
+                    <Customs />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/podcast"
+                element={
+                  <RequireAuth>
+                    <Podcast />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/so-tay/new"
+                element={
+                  <RequireAuth>
+                    <CustomsForm />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/so-tay/import"
+                element={
+                  <RequireAuth>
+                    <CustomsImport />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/so-tay/:entryId"
+                element={
+                  <RequireAuth>
+                    <CustomsDetail />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/so-tay/:entryId/edit"
+                element={
+                  <RequireAuth>
+                    <CustomsForm />
+                  </RequireAuth>
+                }
+              />
 
-        <Route
-          path="/clans"
-          element={
-            <RequireAuth>
-              <Clans />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/gop-y"
-          element={
-            <RequireAuth>
-              <MyFeedback />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/clans/new"
-          element={
-            <RequireAuth>
-              <NewClan />
-            </RequireAuth>
-          }
-        />
+              <Route
+                path="/clans"
+                element={
+                  <RequireAuth>
+                    <Clans />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/gop-y"
+                element={
+                  <RequireAuth>
+                    <MyFeedback />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/clans/new"
+                element={
+                  <RequireAuth>
+                    <NewClan />
+                  </RequireAuth>
+                }
+              />
 
-        <Route
-          path="/clans/:clanId"
-          element={
-            <RequireAuth>
-              <ClanLayout />
-            </RequireAuth>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="people" element={<People />} />
-          <Route path="people/new" element={<NewPerson />} />
-          <Route path="people/:personId" element={<PersonDetail />} />
-          <Route path="people/:personId/edit" element={<EditPerson />} />
-          <Route path="people/:personId/add-spouse" element={<AddSpouse />} />
-          <Route path="people/:personId/add-child" element={<AddChild />} />
-          <Route path="people/:personId/add-parent" element={<AddParent />} />
-          <Route path="members" element={<Members />} />
-          <Route path="tree" element={<Tree />} />
-          <Route path="map" element={<MapStats />} />
-          <Route path="memory-room" element={<FeatureGuard feature="memory_room"><MemoryRooms /></FeatureGuard>} />
-          <Route path="memory-room/:roomId" element={<FeatureGuard feature="memory_room"><MemoryRoom /></FeatureGuard>} />
-          <Route path="mosaics" element={<FeatureGuard feature="mosaic"><Mosaics /></FeatureGuard>} />
-          <Route path="mosaics/:mosaicId" element={<FeatureGuard feature="mosaic"><MosaicDetail /></FeatureGuard>} />
-          <Route path="graves" element={<FeatureGuard feature="graves"><RestingPlaces /></FeatureGuard>} />
-          <Route path="graves/cemeteries" element={<FeatureGuard feature="graves"><Cemeteries /></FeatureGuard>} />
-          <Route path="graves/new" element={<FeatureGuard feature="graves"><RestingPlaceForm /></FeatureGuard>} />
-          <Route path="graves/:graveId" element={<FeatureGuard feature="graves"><RestingPlaceDetail /></FeatureGuard>} />
-          <Route path="graves/:graveId/edit" element={<FeatureGuard feature="graves"><RestingPlaceForm /></FeatureGuard>} />
-          <Route path="events" element={<Events />} />
-          <Route path="honor" element={<FeatureGuard feature="honor"><HonorBook /></FeatureGuard>} />
-          <Route path="fund" element={<FeatureGuard feature="fund"><ClanFund /></FeatureGuard>} />
-          <Route path="heritage" element={<FeatureGuard feature="heritage"><Heritage /></FeatureGuard>} />
-          <Route path="heritage/new" element={<FeatureGuard feature="heritage"><HeritageForm /></FeatureGuard>} />
-          <Route path="heritage/:itemId" element={<FeatureGuard feature="heritage"><HeritageDetail /></FeatureGuard>} />
-          <Route path="heritage/:itemId/edit" element={<FeatureGuard feature="heritage"><HeritageForm /></FeatureGuard>} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="so-gia-pha" element={<BookInfo />} />
-          <Route path="import" element={<Import />} />
-          <Route path="ai-generate" element={<AiGenerate />} />
-          <Route path="tro-ly" element={<FeatureGuard feature="ai_assistant"><AiChat /></FeatureGuard>} />
-          <Route path="merge" element={<Merge />} />
-          <Route path="audit" element={<Audit />} />
-          <Route path="qr-export" element={<QrExport />} />
-          <Route path="my-lineage" element={<MyLineage />} />
-          <Route path="today" element={<Today />} />
-          <Route path="xem-ngay" element={<GoodDays />} />
-          <Route path="todo" element={<Todo />} />
-          <Route path="tools" element={<Tools />} />
-          <Route path="kinship" element={<Kinship />} />
-          <Route path="relations" element={<Relations />} />
-          <Route path="contributions" element={<Contributions />} />
-          <Route path="contributions/:contribId" element={<ContributionDetail />} />
-          <Route path="inlaws" element={<FeatureGuard feature="inlaws"><Inlaws /></FeatureGuard>} />
-          <Route path="inlaws/new" element={<FeatureGuard feature="inlaws"><InlawsNew /></FeatureGuard>} />
-          <Route path="board" element={<FeatureGuard feature="board"><Board /></FeatureGuard>} />
-          <Route path="board/new" element={<FeatureGuard feature="board"><BoardPostNew /></FeatureGuard>} />
-          <Route path="board/moderation" element={<FeatureGuard feature="board"><BoardModeration /></FeatureGuard>} />
-          <Route path="board/:postId" element={<FeatureGuard feature="board"><BoardPostDetail /></FeatureGuard>} />
-          <Route path="board/:postId/edit" element={<FeatureGuard feature="board"><BoardPostEdit /></FeatureGuard>} />
-        </Route>
+              <Route
+                path="/clans/:clanId"
+                element={
+                  <RequireAuth>
+                    <ClanLayout />
+                  </RequireAuth>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="people" element={<People />} />
+                <Route path="people/new" element={<NewPerson />} />
+                <Route path="people/:personId" element={<PersonDetail />} />
+                <Route path="people/:personId/edit" element={<EditPerson />} />
+                <Route
+                  path="people/:personId/add-spouse"
+                  element={<AddSpouse />}
+                />
+                <Route
+                  path="people/:personId/add-child"
+                  element={<AddChild />}
+                />
+                <Route
+                  path="people/:personId/add-parent"
+                  element={<AddParent />}
+                />
+                <Route path="members" element={<Members />} />
+                <Route path="tree" element={<Tree />} />
+                <Route path="map" element={<MapStats />} />
+                <Route
+                  path="memory-room"
+                  element={
+                    <FeatureGuard feature="memory_room">
+                      <MemoryRooms />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="memory-room/:roomId"
+                  element={
+                    <FeatureGuard feature="memory_room">
+                      <MemoryRoom />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="mosaics"
+                  element={
+                    <FeatureGuard feature="mosaic">
+                      <Mosaics />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="mosaics/:mosaicId"
+                  element={
+                    <FeatureGuard feature="mosaic">
+                      <MosaicDetail />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="graves"
+                  element={
+                    <FeatureGuard feature="graves">
+                      <RestingPlaces />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="graves/cemeteries"
+                  element={
+                    <FeatureGuard feature="graves">
+                      <Cemeteries />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="graves/new"
+                  element={
+                    <FeatureGuard feature="graves">
+                      <RestingPlaceForm />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="graves/:graveId"
+                  element={
+                    <FeatureGuard feature="graves">
+                      <RestingPlaceDetail />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="graves/:graveId/edit"
+                  element={
+                    <FeatureGuard feature="graves">
+                      <RestingPlaceForm />
+                    </FeatureGuard>
+                  }
+                />
+                <Route path="events" element={<Events />} />
+                <Route
+                  path="honor"
+                  element={
+                    <FeatureGuard feature="honor">
+                      <HonorBook />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="fund"
+                  element={
+                    <FeatureGuard feature="fund">
+                      <ClanFund />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="heritage"
+                  element={
+                    <FeatureGuard feature="heritage">
+                      <Heritage />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="heritage/new"
+                  element={
+                    <FeatureGuard feature="heritage">
+                      <HeritageForm />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="heritage/:itemId"
+                  element={
+                    <FeatureGuard feature="heritage">
+                      <HeritageDetail />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="heritage/:itemId/edit"
+                  element={
+                    <FeatureGuard feature="heritage">
+                      <HeritageForm />
+                    </FeatureGuard>
+                  }
+                />
+                <Route path="settings" element={<Settings />} />
+                <Route path="so-gia-pha" element={<BookInfo />} />
+                <Route path="import" element={<Import />} />
+                <Route path="ai-generate" element={<AiGenerate />} />
+                <Route
+                  path="tro-ly"
+                  element={
+                    <FeatureGuard feature="ai_assistant">
+                      <AiChat />
+                    </FeatureGuard>
+                  }
+                />
+                <Route path="merge" element={<Merge />} />
+                <Route path="audit" element={<Audit />} />
+                <Route path="qr-export" element={<QrExport />} />
+                <Route path="my-lineage" element={<MyLineage />} />
+                <Route path="today" element={<Today />} />
+                <Route path="xem-ngay" element={<GoodDays />} />
+                <Route path="todo" element={<Todo />} />
+                <Route path="tools" element={<Tools />} />
+                <Route path="kinship" element={<Kinship />} />
+                <Route path="relations" element={<Relations />} />
+                <Route path="contributions" element={<Contributions />} />
+                <Route
+                  path="contributions/:contribId"
+                  element={<ContributionDetail />}
+                />
+                <Route
+                  path="inlaws"
+                  element={
+                    <FeatureGuard feature="inlaws">
+                      <Inlaws />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="inlaws/new"
+                  element={
+                    <FeatureGuard feature="inlaws">
+                      <InlawsNew />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="board"
+                  element={
+                    <FeatureGuard feature="board">
+                      <Board />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="board/new"
+                  element={
+                    <FeatureGuard feature="board">
+                      <BoardPostNew />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="board/moderation"
+                  element={
+                    <FeatureGuard feature="board">
+                      <BoardModeration />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="board/:postId"
+                  element={
+                    <FeatureGuard feature="board">
+                      <BoardPostDetail />
+                    </FeatureGuard>
+                  }
+                />
+                <Route
+                  path="board/:postId/edit"
+                  element={
+                    <FeatureGuard feature="board">
+                      <BoardPostEdit />
+                    </FeatureGuard>
+                  }
+                />
+              </Route>
 
-        <Route
-          path="/account"
-          element={
-            <RequireAuth>
-              <Account />
-            </RequireAuth>
-          }
-        />
-        {/* Sổ lượt trợ lý — KHÁC lịch sử trò chuyện (xem CreditHistory). */}
-        <Route
-          path="/account/luot-dung"
-          element={
-            <RequireAuth>
-              <CreditHistory />
-            </RequireAuth>
-          }
-        />
-        {/* Khu quản trị: MỖI MÀN MỘT TRANG (xem lib/adminScreens.tsx).
+              <Route
+                path="/account"
+                element={
+                  <RequireAuth>
+                    <Account />
+                  </RequireAuth>
+                }
+              />
+              {/* Sổ lượt trợ lý — KHÁC lịch sử trò chuyện (xem CreditHistory). */}
+              <Route
+                path="/account/luot-dung"
+                element={
+                  <RequireAuth>
+                    <CreditHistory />
+                  </RequireAuth>
+                }
+              />
+              {/* Khu quản trị: MỖI MÀN MỘT TRANG (xem lib/adminScreens.tsx).
             /admin là lưới chọn màn, kiểu màn hình chính điện thoại. */}
-        <Route path="/admin" element={<RequireAuth><AdminHub /></RequireAuth>} />
-        <Route path="/admin/he-thong" element={<RequireAuth><AdminHeThong /></RequireAuth>} />
-        <Route path="/admin/nguoi-dung" element={<RequireAuth><AdminNguoiDung /></RequireAuth>} />
-        <Route path="/admin/dong-ho" element={<RequireAuth><AdminDongHo /></RequireAuth>} />
-        <Route path="/admin/gop-y" element={<RequireAuth><AdminGopY /></RequireAuth>} />
-        <Route path="/admin/tro-ly-ai" element={<RequireAuth><AdminTroLyAi /></RequireAuth>} />
-        <Route path="/admin/cau-hinh" element={<RequireAuth><AdminCauHinh /></RequireAuth>} />
-        <Route path="/admin/cau-hinh-ai" element={<RequireAuth><AdminCauHinhAi /></RequireAuth>} />
-        <Route path="/admin/thong-bao" element={<RequireAuth><AdminThongBao /></RequireAuth>} />
-        <Route path="/admin/danh-muc-dia-gioi" element={<RequireAuth><AdminDanhMucDiaGioi /></RequireAuth>} />
-        <Route path="/admin/podcast" element={<RequireAuth><AdminPodcast /></RequireAuth>} />
-        <Route path="/admin/nhap-gia-pha" element={<RequireAuth><AdminNhapGiaPha /></RequireAuth>} />
-        {/* Link cũ (/admin?tab=… và /admin/cai-dat) đã bị dán vào chat và
+              <Route
+                path="/admin"
+                element={
+                  <RequireAuth>
+                    <AdminHub />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/he-thong"
+                element={
+                  <RequireAuth>
+                    <AdminHeThong />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/nguoi-dung"
+                element={
+                  <RequireAuth>
+                    <AdminNguoiDung />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/dong-ho"
+                element={
+                  <RequireAuth>
+                    <AdminDongHo />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/gop-y"
+                element={
+                  <RequireAuth>
+                    <AdminGopY />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/tro-ly-ai"
+                element={
+                  <RequireAuth>
+                    <AdminTroLyAi />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/cau-hinh"
+                element={
+                  <RequireAuth>
+                    <AdminCauHinh />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/cau-hinh-ai"
+                element={
+                  <RequireAuth>
+                    <AdminCauHinhAi />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/thong-bao"
+                element={
+                  <RequireAuth>
+                    <AdminThongBao />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/danh-muc-dia-gioi"
+                element={
+                  <RequireAuth>
+                    <AdminDanhMucDiaGioi />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/podcast"
+                element={
+                  <RequireAuth>
+                    <AdminPodcast />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/nhap-gia-pha"
+                element={
+                  <RequireAuth>
+                    <AdminNhapGiaPha />
+                  </RequireAuth>
+                }
+              />
+              {/* Link cũ (/admin?tab=… và /admin/cai-dat) đã bị dán vào chat và
             bookmark — chuyển hướng thay vì để người ta gặp trang trống. */}
-        <Route path="/admin/cai-dat" element={<RequireAuth><AdminLegacyRedirect /></RequireAuth>} />
-        <Route
-          path="/docs"
-          element={
-            <RequireAuth>
-              <Docs />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/docs/:slug"
-          element={
-            <RequireAuth>
-              <Docs />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/huong-dan-video"
-          element={
-            <RequireAuth>
-              <Videos />
-            </RequireAuth>
-          }
-        />
+              <Route
+                path="/admin/cai-dat"
+                element={
+                  <RequireAuth>
+                    <AdminLegacyRedirect />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/docs"
+                element={
+                  <RequireAuth>
+                    <Docs />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/docs/:slug"
+                element={
+                  <RequireAuth>
+                    <Docs />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/huong-dan-video"
+                element={
+                  <RequireAuth>
+                    <Videos />
+                  </RequireAuth>
+                }
+              />
 
-        <Route path="/" element={<Navigate to="/clans" replace />} />
-        <Route path="*" element={<Navigate to="/clans" replace />} />
-        </Routes>
-        </Suspense>
-        <OfflineIndicator />
-        <MascotTip />
-        <UpdateBanner />
-      </ConfirmDialogProvider>
+              <Route path="/" element={<Navigate to="/clans" replace />} />
+              <Route path="*" element={<Navigate to="/clans" replace />} />
+            </Routes>
+          </Suspense>
+          <OfflineIndicator />
+          <MascotTip />
+          <UpdateBanner />
+        </ConfirmDialogProvider>
       </ToastProvider>
     </BrowserRouter>
   );

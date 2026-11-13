@@ -5,6 +5,7 @@ import { IconSend } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
 
+import { t } from "@lingui/core/macro";
 /**
  * Ô nhập + mic + chip gợi ý. Dùng chung cho trang toàn màn hình và khung nổi.
  *
@@ -113,14 +114,18 @@ export function ChatComposer({
             value={draft}
             onChange={(e) => onDraftChange(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+              if (
+                e.key === "Enter" &&
+                !e.shiftKey &&
+                !e.nativeEvent.isComposing
+              ) {
                 e.preventDefault();
                 onSend(draft);
               }
             }}
             rows={1}
-            placeholder="Hỏi về gia phả…"
-            aria-label="Câu hỏi"
+            placeholder={t`Hỏi về gia phả…`}
+            aria-label={t`Câu hỏi`}
             // 18px: dưới 16px là iOS tự phóng to khi focus, mà app đang
             // chặn pinch-zoom nên người dùng không zoom lại được.
             className="max-h-32 min-h-[48px] flex-1 resize-none rounded-2xl border bg-background px-4 py-3 leading-snug outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -132,7 +137,7 @@ export function ChatComposer({
             type="submit"
             size="icon"
             disabled={!canSend || pending}
-            aria-label="Gửi"
+            aria-label={t`Gửi`}
             className="h-12 w-12 shrink-0 rounded-full"
           >
             <IconSend className="h-5 w-5" />

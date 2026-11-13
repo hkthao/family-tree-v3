@@ -30,6 +30,8 @@ import {
 } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const TYPE_OPTIONS: Array<{ value: ClanPostType; label: string }> = [
   { value: "news", label: "Tin" },
   { value: "event", label: "Sự kiện" },
@@ -105,10 +107,10 @@ export function BoardPostForm({
     onSuccess: (postId) => {
       toast.success(
         isEdit
-          ? "Đã lưu bài"
+          ? t`Đã lưu bài`
           : admin
-            ? "Đã đăng bài"
-            : "Đã gửi — chờ admin duyệt",
+            ? t`Đã đăng bài`
+            : t`Đã gửi — chờ admin duyệt`,
         { description: title.trim() || body.slice(0, 60) },
       );
       qc.invalidateQueries({ queryKey: queryKeys.clanPosts(clan.id) });
@@ -119,7 +121,7 @@ export function BoardPostForm({
       onDone(postId);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
@@ -131,19 +133,24 @@ export function BoardPostForm({
       // Trong ngăn kéo: không khung thẻ (panel đã có tiêu đề + nền); trên trang: giữ thẻ.
       className={`space-y-4 ${inPanel ? "" : "rounded-xl border bg-card p-4 shadow-sm"}`}
     >
-
       {!admin && !isEdit && !readOnly && (
         <Alert>
           <AlertDescription>
-            Bài sẽ chuyển vào hàng chờ duyệt. Admin của dòng họ sẽ kiểm tra
-            và quyết định đăng hay không.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Bài sẽ chuyển vào hàng chờ duyệt. Admin của dòng họ sẽ kiểm
+                  tra và quyết định đăng hay không.
+                </Trans>
+              </Trans>
+            </Trans>
           </AlertDescription>
         </Alert>
       )}
 
       <ReadOnlyFieldset readOnly={readOnly} className="space-y-4">
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">Loại bài</legend>
+          <legend className="text-sm font-medium">{t`Loại bài`}</legend>
           <div className="flex flex-wrap gap-2">
             {TYPE_OPTIONS.map((opt) => (
               <label
@@ -168,33 +175,33 @@ export function BoardPostForm({
         </fieldset>
 
         <div className="space-y-2">
-          <Label htmlFor="post-title">Tiêu đề (tuỳ chọn)</Label>
+          <Label htmlFor="post-title">{t`Tiêu đề (tuỳ chọn)`}</Label>
           <Input
             id="post-title"
             icon={<IconScroll />}
             maxLength={200}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Vd: Họp họ rằm tháng Bảy"
+            placeholder={t`Vd: Họp họ rằm tháng Bảy`}
           />
         </div>
 
         <Textarea
           id="post-body"
-          label="Nội dung"
+          label={t`Nội dung`}
           icon={<IconBook />}
           required
           maxLength={20000}
           rows={4}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Viết tin cho cả họ đọc…"
+          placeholder={t`Viết tin cho cả họ đọc…`}
           className="text-sm"
         />
 
         {(type === "event" || type === "notice") && (
           <div className="space-y-2">
-            <Label htmlFor="post-event-date">Ngày diễn ra (tuỳ chọn)</Label>
+            <Label htmlFor="post-event-date">{t`Ngày diễn ra (tuỳ chọn)`}</Label>
             <Input
               id="post-event-date"
               icon={<IconCalendar />}
@@ -204,7 +211,6 @@ export function BoardPostForm({
             />
           </div>
         )}
-
       </ReadOnlyFieldset>
 
       {readOnly ? (
@@ -214,13 +220,13 @@ export function BoardPostForm({
             to={`/clans/${clan.id}/board/${post?.id}`}
             className="inline-block text-sm text-primary hover:underline"
           >
-            Xem bình luận →
+            {t`Xem bình luận →`}
           </Link>
           {canEdit && onEdit && (
             <FormActions>
               <Button type="button" onClick={onEdit}>
                 <IconPencil className="h-4 w-4 mr-1.5" />
-                Sửa
+                {t`Sửa`}
               </Button>
             </FormActions>
           )}
@@ -229,17 +235,17 @@ export function BoardPostForm({
         <FormActions>
           <Button type="button" variant="outline" onClick={onCancel}>
             <IconX className="h-4 w-4 mr-1.5" />
-            Huỷ
+            {t`Huỷ`}
           </Button>
           <Button type="submit" disabled={!body.trim() || saveM.isPending}>
             <IconCheck className="h-4 w-4 mr-1.5" />
             {saveM.isPending
-              ? "Đang lưu…"
+              ? t`Đang lưu…`
               : isEdit
-                ? "Cập nhật"
+                ? t`Cập nhật`
                 : admin
-                  ? "Đăng"
-                  : "Gửi duyệt"}
+                  ? t`Đăng`
+                  : t`Gửi duyệt`}
           </Button>
         </FormActions>
       )}

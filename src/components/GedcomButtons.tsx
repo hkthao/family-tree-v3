@@ -9,6 +9,8 @@ import { track } from "@/lib/analytics";
 import { invalidateClanData } from "@/lib/cache";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 interface Props {
   clan: ClanDetail;
 }
@@ -30,12 +32,12 @@ export function GedcomButtons({ clan }: Props) {
     },
     onSuccess: (res) => {
       track("export", { kind: "gedcom" });
-      toast.success("Đã xuất GEDCOM", {
+      toast.success(t`Đã xuất GEDCOM`, {
         description: `${res.filename} (${Math.round(res.bytes / 1024)} KB)`,
       });
     },
     onError: (e) =>
-      toast.error("Không xuất được", { description: (e as Error).message }),
+      toast.error(t`Không xuất được`, { description: (e as Error).message }),
   });
 
   const importM = useMutation({
@@ -48,30 +50,31 @@ export function GedcomButtons({ clan }: Props) {
     },
     onSuccess: (res) => {
       const summary =
-        `Đã nhập ${res.personsCreated} người, ${res.familiesCreated} gia đình` +
+        t`Đã nhập ${res.personsCreated} người, ${res.familiesCreated} gia đình` +
         (res.branchesCreated ? `, ${res.branchesCreated} chi` : "") +
         (res.warnings.length
-          ? `. Có ${res.warnings.length} cảnh báo (xem console).`
+          ? t`. Có ${res.warnings.length} cảnh báo (xem console).`
           : ".");
       setImportMsg(summary);
       if (res.warnings.length) console.warn(res.warnings);
       invalidateClanData(qc, clan.id);
-      toast.success("Đã nhập GEDCOM", { description: summary });
+      toast.success(t`Đã nhập GEDCOM`, { description: summary });
     },
     onError: (e) =>
-      toast.error("Không nhập được", { description: (e as Error).message }),
+      toast.error(t`Không nhập được`, { description: (e as Error).message }),
   });
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
-        <Button size="sm"
+        <Button
+          size="sm"
           variant="outline"
           onClick={() => exportM.mutate()}
           disabled={exportM.isPending}
         >
           <IconDownload className="h-4 w-4 mr-1.5" />
-          {exportM.isPending ? "Đang xuất…" : "Xuất GEDCOM"}
+          {exportM.isPending ? t`Đang xuất…` : t`Xuất GEDCOM`}
         </Button>
         <label className="inline-block">
           <input
@@ -92,18 +95,22 @@ export function GedcomButtons({ clan }: Props) {
             aria-disabled={importM.isPending}
           >
             <IconUpload className="h-4 w-4" />
-            {importM.isPending ? "Đang nhập…" : "Nhập GEDCOM"}
+            {importM.isPending ? t`Đang nhập…` : t`Nhập GEDCOM`}
           </span>
         </label>
       </div>
       {exportM.error && (
         <Alert variant="destructive">
-          <AlertDescription>{(exportM.error as Error).message}</AlertDescription>
+          <AlertDescription>
+            {(exportM.error as Error).message}
+          </AlertDescription>
         </Alert>
       )}
       {importM.error && (
         <Alert variant="destructive">
-          <AlertDescription>{(importM.error as Error).message}</AlertDescription>
+          <AlertDescription>
+            {(importM.error as Error).message}
+          </AlertDescription>
         </Alert>
       )}
       {importMsg && (
@@ -112,8 +119,14 @@ export function GedcomButtons({ clan }: Props) {
         </Alert>
       )}
       <p className="text-xs text-muted-foreground">
-        GEDCOM 5.5.1 là chuẩn trao đổi dữ liệu phả hệ. Nhập sẽ tạo
-        người mới — không hợp nhất với dữ liệu hiện có.
+        <Trans>
+          <Trans>
+            <Trans>
+              GEDCOM 5.5.1 là chuẩn trao đổi dữ liệu phả hệ. Nhập sẽ tạo người
+              mới — không hợp nhất với dữ liệu hiện có.
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
     </div>
   );

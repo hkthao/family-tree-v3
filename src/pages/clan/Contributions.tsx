@@ -25,7 +25,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox, useUrlFilter } from "@/hooks/useClientPaging";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+  useSearchBox,
+  useUrlFilter,
+} from "@/hooks/useClientPaging";
 import {
   listContributions,
   type ContributionRow,
@@ -34,9 +39,13 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
 
+import { t } from "@lingui/core/macro";
 type Icon = React.ComponentType<{ className?: string }>;
 
-const STATUS_FILTERS: Array<{ value: ContributionStatus | "all"; label: string }> = [
+const STATUS_FILTERS: Array<{
+  value: ContributionStatus | "all";
+  label: string;
+}> = [
   { value: "pending", label: "Chờ duyệt" },
   { value: "approved", label: "Đã duyệt" },
   { value: "rejected", label: "Đã từ chối" },
@@ -57,11 +66,14 @@ const TYPE_ICON: Record<ContributionRow["contribution_type"], Icon> = {
 };
 
 /** Chờ duyệt = vàng (cần xử lý); đã duyệt = xanh; từ chối = đỏ; cần thêm = xanh dương. */
-const STATUS_STYLE: Record<ContributionStatus, { label: string; tone: ChipTone; icon: Icon }> = {
-  pending: { label: "Chờ duyệt", tone: "warning", icon: IconClock },
-  approved: { label: "Đã duyệt", tone: "success", icon: IconCheck },
-  rejected: { label: "Đã từ chối", tone: "danger", icon: IconX },
-  needs_info: { label: "Cần thêm", tone: "info", icon: IconHelp },
+const STATUS_STYLE: Record<
+  ContributionStatus,
+  { label: string; tone: ChipTone; icon: Icon }
+> = {
+  pending: { label: t`Chờ duyệt`, tone: "warning", icon: IconClock },
+  approved: { label: t`Đã duyệt`, tone: "success", icon: IconCheck },
+  rejected: { label: t`Đã từ chối`, tone: "danger", icon: IconX },
+  needs_info: { label: t`Cần thêm`, tone: "info", icon: IconHelp },
 };
 
 /**
@@ -81,10 +93,21 @@ export default function Contributions() {
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
 
-  const [status, setStatus] = useUrlFilter<ContributionStatus | "all">("tt", "pending");
+  const [status, setStatus] = useUrlFilter<ContributionStatus | "all">(
+    "tt",
+    "pending",
+  );
   // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
-  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
-  const { data: rows, isLoading, error } = useQuery({
+  const {
+    q: search,
+    text: searchText,
+    setText: setSearchText,
+  } = useSearchBox();
+  const {
+    data: rows,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: queryKeys.contributions(clan.id, userId, { status }),
     queryFn: () => listContributions(clan.id, { status }),
     enabled: !!userId && canEdit,
@@ -95,7 +118,9 @@ export default function Contributions() {
     return (rows ?? []).filter(
       (c) =>
         !q ||
-        unaccent(`${c.submitter_name ?? ""} ${c.submitter_relation ?? ""}`).toLowerCase().includes(q),
+        unaccent(`${c.submitter_name ?? ""} ${c.submitter_relation ?? ""}`)
+          .toLowerCase()
+          .includes(q),
     );
   }, [rows, search]);
   const paging = useClientPaging(filtered, 20);
@@ -109,14 +134,14 @@ export default function Contributions() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Đóng góp" },
+          { label: t`Đóng góp` },
         ]}
       />
 
       <PageHeader
         icon={<IconScroll className="h-7 w-7" />}
-        title="Đóng góp từ cộng đồng"
-        description="Người xem đề xuất sửa hoặc thêm thông tin — admin duyệt trước khi áp dụng vào gia phả."
+        title={t`Đóng góp từ cộng đồng`}
+        description={t`Người xem đề xuất sửa hoặc thêm thông tin — admin duyệt trước khi áp dụng vào gia phả.`}
       />
 
       {/* Trạng thái nằm trong ngăn kéo của phễu (mặc định "Chờ duyệt") — như Danh bạ. */}
@@ -125,15 +150,15 @@ export default function Contributions() {
         onReset={() => {
           paging.patchAndResetPage({ tt: null });
         }}
-        title="Lọc đóng góp"
+        title={t`Lọc đóng góp`}
         search={(toggle) => (
           <SearchInput
-            label="Tìm đóng góp"
+            label={t`Tìm đóng góp`}
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
             }}
-            placeholder="Tìm theo tên người gửi…"
+            placeholder={t`Tìm theo tên người gửi…`}
             rightSlot={toggle}
           />
         )}
@@ -144,7 +169,7 @@ export default function Contributions() {
             onChange={(e) => {
               setStatus(e.target.value as ContributionStatus | "all");
             }}
-            aria-label="Lọc theo trạng thái"
+            aria-label={t`Lọc theo trạng thái`}
             icon={<IconTag />}
             className="h-11 w-full text-base"
           >
@@ -165,18 +190,28 @@ export default function Contributions() {
 
       {isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
 
       {!isLoading && filtered.length === 0 && (
         <EmptyState
-          icon={search.trim() ? <IconSearch className="h-10 w-10" /> : <IconScroll className="h-10 w-10" />}
-          title={search.trim() ? "Không có đóng góp nào khớp" : "Chưa có đóng góp nào"}
+          icon={
+            search.trim() ? (
+              <IconSearch className="h-10 w-10" />
+            ) : (
+              <IconScroll className="h-10 w-10" />
+            )
+          }
+          title={
+            search.trim()
+              ? t`Không có đóng góp nào khớp`
+              : t`Chưa có đóng góp nào`
+          }
           description={
             search.trim()
-              ? "Thử bỏ bớt từ khoá hoặc đổi trạng thái."
-              : "Khi có người gửi đề xuất, danh sách sẽ xuất hiện ở đây."
+              ? t`Thử bỏ bớt từ khoá hoặc đổi trạng thái.`
+              : t`Khi có người gửi đề xuất, danh sách sẽ xuất hiện ở đây.`
           }
         />
       )}
@@ -195,7 +230,7 @@ export default function Contributions() {
           totalPages={paging.totalPages}
           total={paging.total}
           pageSize={paging.pageSize}
-          unit="đóng góp"
+          unit={t`đóng góp`}
           onPageChange={paging.setPage}
           pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
           onPageSizeChange={paging.setPageSize}
@@ -205,11 +240,18 @@ export default function Contributions() {
   );
 }
 
-function ContributionRowItem({ c, clanId }: { c: ContributionRow; clanId: string }) {
+function ContributionRowItem({
+  c,
+  clanId,
+}: {
+  c: ContributionRow;
+  clanId: string;
+}) {
   const st = STATUS_STYLE[c.status];
   const StatusIcon = st.icon;
   const TypeIcon = TYPE_ICON[c.contribution_type];
-  const submitterDisplay = c.submitter_name ?? (c.submitter_user_id ? "Thành viên" : "Khách");
+  const submitterDisplay =
+    c.submitter_name ?? (c.submitter_user_id ? t`Thành viên` : t`Khách`);
   return (
     <li>
       <Link
@@ -220,7 +262,9 @@ function ContributionRowItem({ c, clanId }: { c: ContributionRow; clanId: string
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{submitterDisplay}</p>
           {c.submitter_relation && (
-            <p className="truncate text-sm text-muted-foreground">{c.submitter_relation}</p>
+            <p className="truncate text-sm text-muted-foreground">
+              {c.submitter_relation}
+            </p>
           )}
           <p className="mt-0.5 text-xs text-muted-foreground/80">
             {new Date(c.created_at).toLocaleString("vi-VN")}

@@ -16,6 +16,7 @@ import {
   type PodcastEpisode,
 } from "@/lib/queries/podcast";
 
+import { t } from "@lingui/core/macro";
 /**
  * Khung xem một tập — dựng theo lối trình xem Reels: video đứng giữa sân
  * tối, thông tin và nút bấm nằm bên phải (máy tính) hoặc bên dưới (điện
@@ -80,7 +81,7 @@ export function PodcastViewer({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Đóng"
+          aria-label={t`Đóng`}
           className="inline-flex h-11 w-11 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white"
         >
           <IconX className="h-5 w-5" />
@@ -129,7 +130,7 @@ export function PodcastViewer({
               className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white hover:bg-white/20"
             >
               <IconFacebook className="h-4 w-4" />
-              Thích bài gốc
+              {t`Thích bài gốc`}
             </a>
             <a
               href={episode.permalink_url}
@@ -138,7 +139,7 @@ export function PodcastViewer({
               className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 text-sm font-medium text-white hover:bg-white/20"
             >
               <IconSend className="h-4 w-4" />
-              Bình luận
+              {t`Bình luận`}
             </a>
           </div>
 
@@ -151,7 +152,7 @@ export function PodcastViewer({
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm text-white/80 hover:bg-white/10 disabled:opacity-30"
               >
                 <IconArrowLeft className="h-4 w-4" />
-                Tập trước
+                {t`Tập trước`}
               </button>
               <button
                 type="button"
@@ -159,7 +160,7 @@ export function PodcastViewer({
                 disabled={!onNext}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm text-white/80 hover:bg-white/10 disabled:opacity-30"
               >
-                Tập sau
+                {t`Tập sau`}
                 <IconArrowRight className="h-4 w-4" />
               </button>
             </div>

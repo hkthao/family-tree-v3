@@ -1,10 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import {
-  IconCalendar,
-  IconCheck,
-} from "@/components/icons";
+import { IconCalendar, IconCheck } from "@/components/icons";
 import { RelationSheet } from "@/components/RelationSheet";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
@@ -15,6 +12,7 @@ import { invalidateClanData } from "@/lib/cache";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson, updatePerson } from "@/lib/queries/persons";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -75,7 +73,7 @@ export function QuickDateFixSheet({
       if (fixBirth && birthYear.trim()) {
         const y = Number(birthYear);
         if (!Number.isInteger(y) || y < 1 || y > 9999) {
-          throw new Error("Năm sinh không hợp lệ");
+          throw new Error(t`Năm sinh không hợp lệ`);
         }
         // Year-precision solar: pad to YYYY-01-01.
         patch.birth_date = `${String(y).padStart(4, "0")}-01-01`;
@@ -84,41 +82,37 @@ export function QuickDateFixSheet({
       if (fixDeath && deathYear.trim()) {
         const y = Number(deathYear);
         if (!Number.isInteger(y) || y < 1 || y > 9999) {
-          throw new Error("Năm mất không hợp lệ");
+          throw new Error(t`Năm mất không hợp lệ`);
         }
         patch.death_date = `${String(y).padStart(4, "0")}-01-01`;
         patch.death_date_precision = "year";
       }
       if (Object.keys(patch).length === 0) {
-        throw new Error("Chưa nhập năm nào");
+        throw new Error(t`Chưa nhập năm nào`);
       }
       await updatePerson(personId, patch);
     },
     onSuccess: async () => {
       await invalidateClanData(qc, clanId);
-      toast.success("Đã lưu", {
+      toast.success(t`Đã lưu`, {
         description: person?.full_name ?? undefined,
       });
       onClose();
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
     if (mutation.isPending) return;
-    if (
-      (fixBirth && !birthYear.trim()) ||
-      (fixDeath && !deathYear.trim())
-    ) {
+    if ((fixBirth && !birthYear.trim()) || (fixDeath && !deathYear.trim())) {
       // If only one side is flagged, allow saving with just that one
       // filled — the validation above only fires when both sides are
       // missing AND user left one blank. For single-side rows, fall
       // through to mutate.
-      const onlyOne =
-        (fixBirth && !fixDeath) || (fixDeath && !fixBirth);
+      const onlyOne = (fixBirth && !fixDeath) || (fixDeath && !fixBirth);
       if (!onlyOne) return;
     }
     mutation.mutate();
@@ -127,7 +121,7 @@ export function QuickDateFixSheet({
   const titleParts: string[] = [];
   if (fixBirth) titleParts.push("năm sinh");
   if (fixDeath) titleParts.push("năm mất");
-  const title = `Bổ sung ${titleParts.join(" & ")}`;
+  const title = t`Bổ sung ${titleParts.join(" & ")}`;
 
   return (
     <RelationSheet
@@ -140,7 +134,7 @@ export function QuickDateFixSheet({
         {fixBirth && (
           <div className="space-y-2">
             <Label htmlFor="quick_birth_year" required={!fixDeath}>
-              Năm sinh
+              {t`Năm sinh`}
             </Label>
             <Input
               id="quick_birth_year"
@@ -156,9 +150,9 @@ export function QuickDateFixSheet({
               autoFocus
             />
             <p className="text-xs text-muted-foreground">
-              Không nhớ chính xác cũng được — gõ năm gần đúng. Để trống nếu
-              hoàn toàn không rõ. Cần ngày/tháng âm? Bấm <em>"Sửa
-              đầy đủ"</em> bên dưới.
+              Không nhớ chính xác cũng được — gõ năm gần đúng. Để trống nếu hoàn
+              toàn không rõ. Cần ngày/tháng âm? Bấm <em>{t`"Sửa đầy đủ"`}</em>{" "}
+              bên dưới.
             </p>
           </div>
         )}
@@ -166,7 +160,7 @@ export function QuickDateFixSheet({
         {fixDeath && (
           <div className="space-y-2">
             <Label htmlFor="quick_death_year" required={!fixBirth}>
-              Năm mất
+              {t`Năm mất`}
             </Label>
             <Input
               id="quick_death_year"
@@ -189,7 +183,7 @@ export function QuickDateFixSheet({
             (!fixBirth && fixDeath && !deathYear.trim()) ||
             (fixBirth && !fixDeath && !birthYear.trim())) && (
             <p className="text-sm text-destructive">
-              Hãy nhập ít nhất một năm — hoặc đóng nếu chưa rõ.
+              {t`Hãy nhập ít nhất một năm — hoặc đóng nếu chưa rõ.`}
             </p>
           )}
 
@@ -200,7 +194,7 @@ export function QuickDateFixSheet({
             disabled={mutation.isPending}
           >
             <IconCheck className="h-4 w-4 mr-1.5" />
-            {mutation.isPending ? "Đang lưu…" : "Lưu"}
+            {mutation.isPending ? t`Đang lưu…` : t`Lưu`}
           </Button>
           <Button
             type="button"
@@ -208,17 +202,17 @@ export function QuickDateFixSheet({
             onClick={onClose}
             className="shrink-0"
           >
-            Đóng
+            {t`Đóng`}
           </Button>
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Cần sửa thêm (ngày, tháng, âm lịch)?{" "}
+          {t`Cần sửa thêm (ngày, tháng, âm lịch)?`}{" "}
           <a
             href={`/clans/${clanId}/people/${personId}/edit`}
             className="text-primary hover:underline underline-offset-2"
           >
-            Mở trang sửa đầy đủ
+            {t`Mở trang sửa đầy đủ`}
           </a>
         </p>
       </form>

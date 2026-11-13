@@ -35,6 +35,7 @@ import {
 import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 export default function CustomsDetail() {
   const { entryId } = useParams<{ entryId: string }>();
   const isNew = entryId === "new"; // phòng khớp nhầm route
@@ -77,17 +78,19 @@ export default function CustomsDetail() {
 
   const bookmarkM = useMutation({
     mutationFn: () => setBookmark(entryId!, !bookmarked),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["custom-bookmarks", userId] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["custom-bookmarks", userId] }),
   });
 
   const deleteM = useMutation({
     mutationFn: () => deleteCustomEntry(entryId!),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["customs"] });
-      toast.success("Đã xoá bài");
+      toast.success(t`Đã xoá bài`);
       navigate("/so-tay");
     },
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   // Duyệt nhanh: chuyển thẳng sang "Công khai" mà không cần mở form.
@@ -96,9 +99,10 @@ export default function CustomsDetail() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["customs"] });
       qc.invalidateQueries({ queryKey: ["custom-entry", entryId] });
-      toast.success("Đã duyệt — bài đã công khai");
+      toast.success(t`Đã duyệt — bài đã công khai`);
     },
-    onError: (e) => toast.error("Không duyệt được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không duyệt được`, { description: (e as Error).message }),
   });
 
   // Chia sẻ lên mạng xã hội: Web Share API (mobile) → fallback chép link.
@@ -119,9 +123,9 @@ export default function CustomsDetail() {
     }
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Đã chép liên kết — dán vào Zalo/Facebook để chia sẻ");
+      toast.success(t`Đã chép liên kết — dán vào Zalo/Facebook để chia sẻ`);
     } catch {
-      toast.error("Không chia sẻ được", { description: url });
+      toast.error(t`Không chia sẻ được`, { description: url });
     }
   }
 
@@ -130,24 +134,24 @@ export default function CustomsDetail() {
   if (isLoading) {
     return (
       <CustomsShell>
-        <p className="text-muted-foreground">Đang tải…</p>
+        <p className="text-muted-foreground">{t`Đang tải…`}</p>
       </CustomsShell>
     );
   }
   if (!entry) {
     return (
       <CustomsShell>
-        <p className="text-muted-foreground">Không tìm thấy bài.</p>
+        <p className="text-muted-foreground">{t`Không tìm thấy bài.`}</p>
         <Button asChild variant="outline" className="mt-3">
           {user ? (
             <Link to="/so-tay">
               <IconArrowLeft className="h-4 w-4 mr-1.5" />
-              Về Sổ tay
+              {t`Về Sổ tay`}
             </Link>
           ) : (
             <Link to="/login">
               <IconLogIn className="h-4 w-4 mr-1.5" />
-              Đăng nhập
+              {t`Đăng nhập`}
             </Link>
           )}
         </Button>
@@ -158,9 +162,9 @@ export default function CustomsDetail() {
   const metaLine = [
     entry.regions.length > 0 ? entry.regions.join(", ") : null,
     (entry.origins?.length ?? 0) > 0
-      ? `Nguồn gốc: ${(entry.origins ?? []).map((o) => CUSTOM_ORIGIN_LABEL[o]).join(", ")}`
+      ? t`Nguồn gốc: ${(entry.origins ?? []).map((o) => CUSTOM_ORIGIN_LABEL[o]).join(", ")}`
       : null,
-    entry.scope ? `Phạm vi: ${CUSTOM_SCOPE_LABEL[entry.scope]}` : null,
+    entry.scope ? t`Phạm vi: ${CUSTOM_SCOPE_LABEL[entry.scope]}` : null,
   ]
     .filter(Boolean)
     .join("  ·  ");
@@ -171,17 +175,22 @@ export default function CustomsDetail() {
       <div className="flex items-center justify-between gap-3">
         {user ? (
           <Link to="/so-tay" className="text-sm text-primary hover:underline">
-            ← Sổ tay Văn hoá
+            {t`← Sổ tay Văn hoá`}
           </Link>
         ) : (
           <Link to="/login" className="text-sm text-primary hover:underline">
-            Đăng nhập để xem thêm →
+            {t`Đăng nhập để xem thêm →`}
           </Link>
         )}
         <div className="flex shrink-0 gap-1.5">
-          <Button size="sm" variant="outline" onClick={shareEntry} title="Chia sẻ">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={shareEntry}
+            title={t`Chia sẻ`}
+          >
             <IconShare2 className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">Chia sẻ</span>
+            <span className="hidden sm:inline">{t`Chia sẻ`}</span>
           </Button>
           {/* icon-audit: ok — ★/☆ chính là icon, và trạng thái đọc được ngay từ hình */}
           {user && (
@@ -190,11 +199,11 @@ export default function CustomsDetail() {
               variant="outline"
               onClick={() => bookmarkM.mutate()}
               disabled={bookmarkM.isPending}
-              title={bookmarked ? "Bỏ lưu" : "Lưu bài"}
+              title={bookmarked ? t`Bỏ lưu` : t`Lưu bài`}
             >
               <span aria-hidden>{bookmarked ? "★" : "☆"}</span>
               <span className="hidden sm:inline sm:ml-1">
-                {bookmarked ? "Đã lưu" : "Lưu"}
+                {bookmarked ? t`Đã lưu` : t`Lưu`}
               </span>
             </Button>
           )}
@@ -203,39 +212,39 @@ export default function CustomsDetail() {
               size="sm"
               onClick={() => approveM.mutate()}
               disabled={approveM.isPending}
-              title="Duyệt & công khai"
+              title={t`Duyệt & công khai`}
             >
               <IconCheck className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Duyệt</span>
+              <span className="hidden sm:inline">{t`Duyệt`}</span>
             </Button>
           )}
           {isAdmin && (
             <>
-              <Button size="sm" variant="outline" asChild title="Sửa">
+              <Button size="sm" variant="outline" asChild title={t`Sửa`}>
                 <PanelLink
                   to={`/so-tay/${entry.id}/edit`}
                   panel="custom-edit"
                   panelParams={{ pid: entry.id }}
                 >
                   <IconPencil className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">Sửa</span>
+                  <span className="hidden sm:inline">{t`Sửa`}</span>
                 </PanelLink>
               </Button>
               <Button
                 size="sm"
                 variant="destructive-outline"
-                title="Xoá"
+                title={t`Xoá`}
                 onClick={async () => {
                   const ok = await confirm({
-                    title: "Xoá bài này?",
-                    confirmLabel: "Xoá",
+                    title: t`Xoá bài này?`,
+                    confirmLabel: t`Xoá`,
                     destructive: true,
                   });
                   if (ok) deleteM.mutate();
                 }}
               >
                 <IconTrash className="h-4 w-4 sm:mr-1" />
-                <span className="hidden sm:inline">Xoá</span>
+                <span className="hidden sm:inline">{t`Xoá`}</span>
               </Button>
             </>
           )}
@@ -248,7 +257,7 @@ export default function CustomsDetail() {
       <article className="rounded-2xl border shadow-sm px-5 py-7 sm:px-10 sm:py-10 font-serif bg-card text-card-foreground">
         {entry.status !== "published" && (
           <p className="mb-3 text-center text-xs text-accent">
-            — Bản {entry.status === "draft" ? "nháp" : "chờ duyệt"} —
+            — Bản {entry.status === "draft" ? t`nháp` : t`chờ duyệt`} —
           </p>
         )}
 
@@ -263,14 +272,22 @@ export default function CustomsDetail() {
 
         {/* Nhãn nhỏ giữa trang */}
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-          <span className="text-primary">{CUSTOM_CATEGORY_LABEL[entry.category]}</span>
-          {entry.mandatory_level && <span>· {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}</span>}
+          <span className="text-primary">
+            {CUSTOM_CATEGORY_LABEL[entry.category]}
+          </span>
+          {entry.mandatory_level && (
+            <span>· {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}</span>
+          )}
           {entry.reliability != null && (
-            <span title="Độ tin cậy" className="text-accent">· {"★".repeat(entry.reliability)}</span>
+            <span title={t`Độ tin cậy`} className="text-accent">
+              · {"★".repeat(entry.reliability)}
+            </span>
           )}
         </div>
         {metaLine && (
-          <p className="mt-1 text-center text-sm text-muted-foreground">{metaLine}</p>
+          <p className="mt-1 text-center text-sm text-muted-foreground">
+            {metaLine}
+          </p>
         )}
 
         <div className="mx-auto my-5 flex items-center justify-center gap-3 text-accent">
@@ -300,13 +317,17 @@ export default function CustomsDetail() {
             {entry.timing && (
               <p className="flex items-center gap-2">
                 <IconCalendar className="h-4 w-4 shrink-0 text-accent" />
-                <span><b>Thời điểm:</b> {entry.timing}</span>
+                <span>
+                  <b>{t`Thời điểm:`}</b> {entry.timing}
+                </span>
               </p>
             )}
             {entry.applicable_to && (
               <p className="flex items-center gap-2">
                 <IconUsers className="h-4 w-4 shrink-0 text-accent" />
-                <span><b>Áp dụng:</b> {entry.applicable_to}</span>
+                <span>
+                  <b>{t`Áp dụng:`}</b> {entry.applicable_to}
+                </span>
               </p>
             )}
           </div>
@@ -316,7 +337,7 @@ export default function CustomsDetail() {
         {entry.sections.map((s, i) => (
           <section key={i} className="mt-7">
             <h2 className="clan-name text-2xl font-semibold text-primary">
-              {s.heading || `Phần ${i + 1}`}
+              {s.heading || t`Phần ${i + 1}`}
             </h2>
             {s.image_url && (
               <figure className="mt-3">
@@ -344,12 +365,14 @@ export default function CustomsDetail() {
         {entry.faq.length > 0 && (
           <section className="mt-8">
             <h2 className="clan-name text-2xl font-semibold text-primary">
-              Câu hỏi thường gặp
+              {t`Câu hỏi thường gặp`}
             </h2>
             <dl className="mt-2 space-y-3">
               {entry.faq.map((f, i) => (
                 <div key={i}>
-                  <dt className="text-lg font-semibold text-card-foreground">{f.q}</dt>
+                  <dt className="text-lg font-semibold text-card-foreground">
+                    {f.q}
+                  </dt>
                   <dd className="mt-0.5 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-[17px] leading-8 text-card-foreground">
                     {f.a}
                   </dd>
@@ -363,7 +386,7 @@ export default function CustomsDetail() {
         {related && related.length > 0 && (
           <section className="mt-8">
             <h2 className="clan-name text-2xl font-semibold text-primary">
-              Bài liên quan
+              {t`Bài liên quan`}
             </h2>
             <ul className="mt-2 space-y-1.5">
               {related.map((r) => (
@@ -385,17 +408,16 @@ export default function CustomsDetail() {
             <p className="flex items-start gap-2">
               <IconBook className="mt-0.5 h-4 w-4 shrink-0" />
               <span className="min-w-0 break-words [overflow-wrap:anywhere]">
-                <b>Nguồn:</b> {entry.sources}
+                <b>{t`Nguồn:`}</b> {entry.sources}
               </span>
             </p>
           )}
           <p className="mt-1.5 flex items-start gap-2">
             <IconHelp className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Nội dung tham khảo; phong tục có thể khác nhau theo vùng/gia đình.</span>
+            <span>{t`Nội dung tham khảo; phong tục có thể khác nhau theo vùng/gia đình.`}</span>
           </p>
         </div>
       </article>
     </CustomsShell>
   );
 }
-

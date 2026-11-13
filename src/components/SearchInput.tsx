@@ -4,7 +4,10 @@ import { IconSearch } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-interface Props extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
+interface Props extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "type"
+> {
   /** Visible-but-screen-reader-only label. Required for accessibility. */
   label: string;
   /** Nội dung nhét BÊN TRONG ô, sát phải (vd nút làm mới) — tiết kiệm 1 hàng. */

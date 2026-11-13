@@ -4,6 +4,7 @@ import { IconDownload } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   clan: ClanDetail;
   variant?: "default" | "outline";
@@ -33,12 +34,10 @@ export function ExportPdfButton({ clan, variant = "outline", size }: Props) {
         disabled={m.isPending}
       >
         <IconDownload className="h-4 w-4 mr-1.5" />
-        {m.isPending ? "Đang xuất PDF…" : "Xuất sổ gia phả PDF"}
+        {m.isPending ? t`Đang xuất PDF…` : t`Xuất sổ gia phả PDF`}
       </Button>
       {m.error && (
-        <p className="text-xs text-destructive">
-          {(m.error as Error).message}
-        </p>
+        <p className="text-xs text-destructive">{(m.error as Error).message}</p>
       )}
     </div>
   );

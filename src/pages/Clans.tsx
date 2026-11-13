@@ -61,6 +61,8 @@ import { listHistoricalClans } from "@/lib/queries/historical";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 const PAGE_SIZE = 15;
 type Tab = "mine" | "community" | "historical";
 
@@ -80,7 +82,8 @@ export default function Clans() {
   const [sp] = useSearchParams();
   const patch = useUrlPatch();
   const rawTab = sp.get("tab");
-  const tab: Tab = rawTab === "community" || rawTab === "historical" ? rawTab : "mine";
+  const tab: Tab =
+    rawTab === "community" || rawTab === "historical" ? rawTab : "mine";
   const sizeBucket = (sp.get("size") ?? "") as ClanSizeBucket | "";
   const rawSort = sp.get("sort");
   const sort: ClanSort =
@@ -216,14 +219,19 @@ export default function Clans() {
       <main className="container max-w-4xl py-6 px-4 space-y-3">
         <PageHeader
           icon={<IconBuildings className="h-7 w-7" />}
-          title={isPlatformAdmin ? "Tất cả dòng họ" : "Dòng họ"}
+          title={isPlatformAdmin ? t`Tất cả dòng họ` : t`Dòng họ`}
           description={
             isPlatformAdmin
-              ? "Mọi dòng họ trên nền tảng."
-              : "Dòng họ bạn tham gia hoặc theo dõi."
+              ? t`Mọi dòng họ trên nền tảng.`
+              : t`Dòng họ bạn tham gia hoặc theo dõi.`
           }
         />
-        <Fab to="/clans/new" panel={{ id: "clan-new" }} label="Tạo dòng họ" testId="create-clan-link" />
+        <Fab
+          to="/clans/new"
+          panel={{ id: "clan-new" }}
+          label={t`Tạo dòng họ`}
+          testId="create-clan-link"
+        />
         <GlobalPanelHost />
 
         {/* Tab chiếm trọn một hàng (chia đều trên mobile); nút tạo dòng họ nằm ở tiêu đề trang. */}
@@ -248,8 +256,10 @@ export default function Clans() {
                 onClick={() => setTab("historical")}
                 label={
                   <>
-                    Lịch sử
-                    {tabCount(historicalQ.data.length)}
+                    <Trans>
+                      Lịch sử
+                      {tabCount(historicalQ.data.length)}
+                    </Trans>
                   </>
                 }
               />
@@ -272,10 +282,10 @@ export default function Clans() {
             search={(toggle) => (
               <div>
                 <SearchInput
-                  label="Tìm dòng họ"
+                  label={t`Tìm dòng họ`}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm dòng họ (gõ không dấu được)"
+                  placeholder={t`Tìm dòng họ (gõ không dấu được)`}
                   rightSlot={toggle}
                 />
               </div>
@@ -287,116 +297,130 @@ export default function Clans() {
                   : 0
                 : sort !== "members"
                   ? 1
-                  : 0) +
-              (tab === "community" && sizeBucket ? 1 : 0)
+                  : 0) + (tab === "community" && sizeBucket ? 1 : 0)
             }
           >
-          {/* Bề ngang các ô chọn: KHÔNG dùng `min-w-*` với `flex-none`.
+            {/* Bề ngang các ô chọn: KHÔNG dùng `min-w-*` với `flex-none`.
               Khung bọc của <Select> luôn có `w-full`, nên khi không co
               được (flex-none) mỗi ô đòi 100% bề ngang của hàng → hai ô
               cộng lại tràn khỏi khung. Từ lg mới chốt bề ngang cố định;
               hẹp hơn thì để flex-1 chia đều và co được. */}
-          <div className="flex flex-col gap-3">
-            {tab === "historical" && (
-              <SortMenu value={histSort} onChange={changeHistSort} />
-            )}
-            {tab !== "historical" && (
-              <Select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as ClanSort)}
-                aria-label="Sắp xếp"
-                icon={<IconList />}
-                className="h-11 w-full text-base"
+            <div className="flex flex-col gap-3">
+              {tab === "historical" && (
+                <SortMenu value={histSort} onChange={changeHistSort} />
+              )}
+              {tab !== "historical" && (
+                <Select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as ClanSort)}
+                  aria-label={t`Sắp xếp`}
+                  icon={<IconList />}
+                  className="h-11 w-full text-base"
+                >
+                  {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
+                    <option key={k} value={k}>
+                      {CLAN_SORT_LABEL[k]}
+                    </option>
+                  ))}
+                </Select>
+              )}
+              {tab === "community" && (
+                <Select
+                  value={sizeBucket}
+                  onChange={(e) =>
+                    setSizeBucket(e.target.value as ClanSizeBucket | "")
+                  }
+                  aria-label={t`Lọc theo quy mô`}
+                  icon={<IconUsers />}
+                  className="h-11 w-full text-base"
+                >
+                  <option value="">{t`Tất cả quy mô`}</option>
+                  {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map(
+                    (k) => (
+                      <option key={k} value={k}>
+                        {CLAN_SIZE_BUCKETS[k].label}
+                      </option>
+                    ),
+                  )}
+                </Select>
+              )}
+              <SegmentedControl
+                ariaLabel={t`Kiểu hiển thị`}
+                className="self-start"
               >
-                {(Object.keys(CLAN_SORT_LABEL) as ClanSort[]).map((k) => (
-                  <option key={k} value={k}>
-                    {CLAN_SORT_LABEL[k]}
-                  </option>
-                ))}
-              </Select>
-            )}
-            {tab === "community" && (
-              <Select
-                value={sizeBucket}
-                onChange={(e) =>
-                  setSizeBucket(e.target.value as ClanSizeBucket | "")
-                }
-                aria-label="Lọc theo quy mô"
-                icon={<IconUsers />}
-                className="h-11 w-full text-base"
-              >
-                <option value="">Tất cả quy mô</option>
-                {(Object.keys(CLAN_SIZE_BUCKETS) as ClanSizeBucket[]).map((k) => (
-                  <option key={k} value={k}>
-                    {CLAN_SIZE_BUCKETS[k].label}
-                  </option>
-                ))}
-              </Select>
-            )}
-            <SegmentedControl ariaLabel="Kiểu hiển thị" className="self-start">
-              <SegmentedButton
-                active={view === "list"}
-                onClick={() => setView("list")}
-                ariaLabel="Danh sách"
-                variant="icon-md"
-              >
-                <IconList className="h-4 w-4" />
-              </SegmentedButton>
-              <SegmentedButton
-                active={view === "grid"}
-                onClick={() => setView("grid")}
-                ariaLabel="Lưới"
-                variant="icon-md"
-              >
-                <IconGrid className="h-4 w-4" />
-              </SegmentedButton>
-            </SegmentedControl>
-          </div>
+                <SegmentedButton
+                  active={view === "list"}
+                  onClick={() => setView("list")}
+                  ariaLabel={t`Danh sách`}
+                  variant="icon-md"
+                >
+                  <IconList className="h-4 w-4" />
+                </SegmentedButton>
+                <SegmentedButton
+                  active={view === "grid"}
+                  onClick={() => setView("grid")}
+                  ariaLabel={t`Lưới`}
+                  variant="icon-md"
+                >
+                  <IconGrid className="h-4 w-4" />
+                </SegmentedButton>
+              </SegmentedControl>
+            </div>
           </CollapsibleFilters>
         </div>
 
         {tab === "community" && !isPlatformAdmin && (
           <p className="text-xs text-muted-foreground -mt-2">
-            Dòng họ công khai bạn chưa tham gia — chỉ xem cây, người còn sống được ẩn.
+            <Trans>
+              <Trans>
+                Dòng họ công khai bạn chưa tham gia — chỉ xem cây, người còn
+                sống được ẩn.
+              </Trans>
+            </Trans>
           </p>
         )}
 
-        {tab === "historical" && <HistoricalClansSection view={view} search={debounced} sort={histSort} />}
+        {tab === "historical" && (
+          <HistoricalClansSection
+            view={view}
+            search={debounced}
+            sort={histSort}
+          />
+        )}
 
         {isLoading && <LoadingState />}
 
-        {error && (
-          <ErrorState error={error} onRetry={() => active.refetch()} />
-        )}
+        {error && <ErrorState error={error} onRetry={() => active.refetch()} />}
 
-        {data && data.rows.length === 0 && (
-          debounced ? (
+        {data &&
+          data.rows.length === 0 &&
+          (debounced ? (
             <EmptyState
               icon={<IconSearch className="h-10 w-10" />}
-              title={`Không có dòng họ nào khớp "${debounced}"`}
+              title={t`Không có dòng họ nào khớp "${debounced}"`}
               description={
                 tab === "mine"
-                  ? "Thử bỏ bớt từ khoá hoặc đổi sang tab Cộng đồng."
-                  : "Thử bỏ bớt từ khoá. Dòng họ riêng tư không hiện trong tab Cộng đồng."
+                  ? t`Thử bỏ bớt từ khoá hoặc đổi sang tab Cộng đồng.`
+                  : t`Thử bỏ bớt từ khoá. Dòng họ riêng tư không hiện trong tab Cộng đồng.`
               }
               primary={{
-                label: "Xoá tìm kiếm",
+                label: t`Xoá tìm kiếm`,
                 onClick: () => setSearch(""),
               }}
             />
           ) : tab === "mine" ? (
             <EmptyState
               icon={<IconTree className="h-10 w-10" />}
-              title="Bạn chưa tham gia dòng họ nào"
-              description="Tạo dòng họ đầu tiên — bạn sẽ là quản trị, có thể mời người thân vào sau. Hoặc duyệt các dòng họ công khai ở tab Cộng đồng."
+              title={t`Bạn chưa tham gia dòng họ nào`}
+              description={t`Tạo dòng họ đầu tiên — bạn sẽ là quản trị, có thể mời người thân vào sau. Hoặc duyệt các dòng họ công khai ở tab Cộng đồng.`}
               primary={{
-                label: "Tạo dòng họ",
+                label: t`Tạo dòng họ`,
                 to: "/clans/new",
                 panel: { id: "clan-new" },
                 icon: <IconPlus className="h-4 w-4 mr-1.5" />,
               }}
               secondary={{
-                label: "Xem cộng đồng",
+                label: t`Xem cộng đồng`,
                 onClick: () => setTab("community"),
                 icon: <IconUsers className="h-4 w-4 mr-1.5" />,
               }}
@@ -404,14 +428,14 @@ export default function Clans() {
           ) : (
             <EmptyState
               icon={<IconUsers className="h-10 w-10" />}
-              title="Chưa có dòng họ công khai để duyệt"
-              description="Khi có dòng họ chuyển sang chế độ công khai, họ sẽ xuất hiện ở đây."
+              title={t`Chưa có dòng họ công khai để duyệt`}
+              description={t`Khi có dòng họ chuyển sang chế độ công khai, họ sẽ xuất hiện ở đây.`}
             />
-          )
-        )}
+          ))}
 
-        {data && data.rows.length > 0 && (
-          view === "grid" ? (
+        {data &&
+          data.rows.length > 0 &&
+          (view === "grid" ? (
             <ul className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
               {data.rows.map((c, i) => (
                 <ClanCard
@@ -437,8 +461,7 @@ export default function Clans() {
                 />
               ))}
             </ul>
-          )
-        )}
+          ))}
 
         {total > 0 && (
           <Pagination
@@ -446,7 +469,7 @@ export default function Clans() {
             totalPages={totalPages}
             total={total}
             pageSize={PAGE_SIZE}
-            unit="dòng họ"
+            unit={t`dòng họ`}
             isFetching={active.isFetching}
             onPageChange={setPage}
           />
@@ -497,10 +520,7 @@ function InlawLine({
   if (!inlaws || inlaws.length === 0) return null;
   const names = inlaws.map((c) => c.clan_name).join(", ");
   return (
-    <p
-      className={className}
-      title={`Đã kết thông gia với: ${names}`}
-    >
+    <p className={className} title={t`Đã kết thông gia với: ${names}`}>
       <IconLink className="inline h-3 w-3 mr-1 -mt-0.5" />
       Thông gia: {names}
     </p>
@@ -508,13 +528,27 @@ function InlawLine({
 }
 
 /** Dòng "Họ tổ: X · Họ hậu duệ: Y · Họ hàng: Z" — ẩn khi không có. */
-function LinkedLine({ linked, className }: { linked?: LinkedClan[]; className: string }) {
+function LinkedLine({
+  linked,
+  className,
+}: {
+  linked?: LinkedClan[];
+  className: string;
+}) {
   if (!linked || linked.length === 0) return null;
-  const order: LinkedClan["relation"][] = ["descendant_of", "ancestor_of", "related"];
+  const order: LinkedClan["relation"][] = [
+    "descendant_of",
+    "ancestor_of",
+    "related",
+  ];
   const parts = order
     .map((rel) => {
-      const names = linked.filter((l) => l.relation === rel).map((l) => l.linked_clan_name);
-      return names.length ? `${LINKED_CLAN_RELATION_LABEL[rel]}: ${names.join(", ")}` : null;
+      const names = linked
+        .filter((l) => l.relation === rel)
+        .map((l) => l.linked_clan_name);
+      return names.length
+        ? `${LINKED_CLAN_RELATION_LABEL[rel]}: ${names.join(", ")}`
+        : null;
     })
     .filter(Boolean);
   return (
@@ -564,12 +598,15 @@ function ClanRow({
           {clan.role ? (
             <span className="text-foreground">{roleLabel(clan.role)}</span>
           ) : (
-            <span>Khách</span>
+            <span>{t`Khách`}</span>
           )}
           {" • "}
-          {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
+          {clan.visibility === "public" ? t`Công khai` : t`Riêng tư`}
         </p>
-        <ClanDates clan={clan} className="hidden sm:block text-xs text-muted-foreground/80 mt-0.5" />
+        <ClanDates
+          clan={clan}
+          className="hidden sm:block text-xs text-muted-foreground/80 mt-0.5"
+        />
         <InlawLine
           inlaws={inlaws}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
@@ -620,13 +657,16 @@ function ClanCard({
             {clan.role ? (
               <span className="text-foreground">{roleLabel(clan.role)}</span>
             ) : (
-              "Khách"
+              t`Khách`
             )}
             {" • "}
-            {clan.visibility === "public" ? "Công khai" : "Riêng tư"}
+            {clan.visibility === "public" ? t`Công khai` : t`Riêng tư`}
           </span>
         </div>
-        <ClanDates clan={clan} className="hidden sm:block mt-1 text-xs text-muted-foreground/80" />
+        <ClanDates
+          clan={clan}
+          className="hidden sm:block mt-1 text-xs text-muted-foreground/80"
+        />
         <InlawLine
           inlaws={inlaws}
           className="text-xs text-muted-foreground mt-0.5 line-clamp-1"
@@ -647,7 +687,13 @@ function roleLabel(role: "admin" | "editor" | "viewer"): string {
 }
 
 /** Dòng "Tạo … • Cập nhật …" — chỉ render phần có ngày hợp lệ. */
-function ClanDates({ clan, className }: { clan: ClanSummary; className: string }) {
+function ClanDates({
+  clan,
+  className,
+}: {
+  clan: ClanSummary;
+  className: string;
+}) {
   return (
     <RecordDates
       createdAt={clan.created_at}
@@ -673,12 +719,14 @@ function SortMenu({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label="Sắp xếp"
+        aria-label={t`Sắp xếp`}
         onClick={() => setOpen((v) => !v)}
         className="flex h-11 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-base"
       >
         <IconList className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <span className="min-w-0 flex-1 truncate text-left">{current?.label}</span>
+        <span className="min-w-0 flex-1 truncate text-left">
+          {current?.label}
+        </span>
         <IconChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </button>
       {open && (
@@ -703,7 +751,9 @@ function SortMenu({
                     setOpen(false);
                   }}
                   className={`block h-11 w-full px-3 text-left text-base ${
-                    o.value === value ? "bg-primary/10 font-medium text-primary" : "hover:bg-muted"
+                    o.value === value
+                      ? "bg-primary/10 font-medium text-primary"
+                      : "hover:bg-muted"
                   }`}
                 >
                   {o.label}

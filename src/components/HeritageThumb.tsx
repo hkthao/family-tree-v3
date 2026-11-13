@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 
 import { CHIP_TONE_CLASS } from "@/components/Chip";
-import { HERITAGE_CATEGORY_ICON, HERITAGE_CATEGORY_TONE } from "@/components/heritageCategoryStyle";
+import {
+  HERITAGE_CATEGORY_ICON,
+  HERITAGE_CATEGORY_TONE,
+} from "@/components/heritageCategoryStyle";
 import { IconBook } from "@/components/icons";
 import type { HeritageCategory } from "@/lib/queries/heritage";
 

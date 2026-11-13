@@ -16,6 +16,7 @@ import { useVisualViewport } from "@/hooks/useVisualViewport";
 import { track } from "@/lib/analytics";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
 
+import { t } from "@lingui/core/macro";
 /**
  * Trang trợ lý hỏi đáp gia phả — GĐ 1, chỉ đọc.
  *
@@ -71,10 +72,8 @@ export default function AiChat() {
   const header = (
     <>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-semibold">Trợ lý dòng họ</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {clan.name}
-        </p>
+        <p className="truncate text-base font-semibold">{t`Trợ lý dòng họ`}</p>
+        <p className="truncate text-xs text-muted-foreground">{clan.name}</p>
       </div>
       <QuotaBadge quota={chat.quota} className="text-xs" />
       {/* icon-audit: ok — chữ "A" chính là ký hiệu, thêm icon nữa là thừa */}
@@ -82,8 +81,8 @@ export default function AiChat() {
         variant="ghost"
         size="icon"
         onClick={chat.cycleFont}
-        aria-label="Đổi cỡ chữ"
-        title="Đổi cỡ chữ"
+        aria-label={t`Đổi cỡ chữ`}
+        title={t`Đổi cỡ chữ`}
         className="h-11 w-11 text-base font-semibold"
       >
         A{chat.fontStep > 0 ? "+" : ""}
@@ -92,8 +91,8 @@ export default function AiChat() {
         variant="ghost"
         size="icon"
         onClick={chat.clearHistory}
-        aria-label="Xoá lịch sử trò chuyện"
-        title="Xoá lịch sử trò chuyện"
+        aria-label={t`Xoá lịch sử trò chuyện`}
+        title={t`Xoá lịch sử trò chuyện`}
         disabled={!chat.turns.length}
         className="h-11 w-11"
       >
@@ -165,7 +164,7 @@ export default function AiChat() {
           variant="ghost"
           size="icon"
           onClick={() => navigate(`/clans/${clanId}`)}
-          aria-label="Đóng trợ lý"
+          aria-label={t`Đóng trợ lý`}
           className="h-12 w-12"
         >
           <IconArrowLeft className="h-6 w-6" />

@@ -29,6 +29,7 @@ import { mergeFeed, unreadTotal } from "@/lib/notificationFeed";
 import { queryKeys } from "@/lib/queries/keys";
 import { useAuth } from "@/hooks/useAuth";
 
+import { t } from "@lingui/core/macro";
 /**
  * Chuông thông báo ở header. Click → ngăn kéo bên phải (`?panel=notifications`,
  * Back đóng được): lọc Tất cả / Chưa đọc, "đánh dấu tất cả", chấm xanh = chưa
@@ -149,7 +150,7 @@ export function NotificationBell() {
         type="button"
         onClick={() => (open ? closePanel() : openPanel("notifications"))}
         aria-label={
-          count > 0 ? `${count} thông báo chưa đọc` : "Thông báo hệ thống"
+          count > 0 ? t`${count} thông báo chưa đọc` : "Thông báo hệ thống"
         }
         aria-expanded={open}
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-muted"
@@ -164,8 +165,8 @@ export function NotificationBell() {
 
       <SidePanel
         open={open}
-        title="Thông báo"
-        subtitle={count > 0 ? `${count} chưa đọc` : "Bạn đã đọc hết"}
+        title={t`Thông báo`}
+        subtitle={count > 0 ? t`${count} chưa đọc` : "Bạn đã đọc hết"}
         onClose={closePanel}
       >
         <div className="flex flex-1 flex-col">
@@ -173,7 +174,7 @@ export function NotificationBell() {
             <div
               className="flex gap-1.5"
               role="group"
-              aria-label="Lọc thông báo"
+              aria-label={t`Lọc thông báo`}
             >
               {(
                 [
@@ -200,7 +201,7 @@ export function NotificationBell() {
 
           {(listQ.isLoading || inboxQ.isLoading) && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Đang tải…
+              {t`Đang tải…`}
             </p>
           )}
           {!listQ.isLoading && rows.length === 0 && (
@@ -208,8 +209,8 @@ export function NotificationBell() {
               <IconBell className="mx-auto h-8 w-8 text-muted-foreground/40" />
               <p className="mt-2 text-sm text-muted-foreground">
                 {filter === "unread"
-                  ? "Không còn thông báo chưa đọc."
-                  : "Chưa có thông báo nào."}
+                  ? t`Không còn thông báo chưa đọc.`
+                  : t`Chưa có thông báo nào.`}
               </p>
             </div>
           )}
@@ -281,10 +282,10 @@ export function NotificationBell() {
               disabled={count === 0 || markAllM.isPending}
             >
               <IconCheck className="h-4 w-4 mr-1.5" />
-              {markAllM.isPending ? "Đang lưu…" : "Đánh dấu đã đọc"}
+              {markAllM.isPending ? t`Đang lưu…` : t`Đánh dấu đã đọc`}
             </Button>
             <Button type="button" onClick={() => go("/announcements")}>
-              Xem tất cả
+              {t`Xem tất cả`}
             </Button>
           </PanelActionBar>
         </div>

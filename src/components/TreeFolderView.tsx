@@ -47,6 +47,8 @@ import {
   type GhostSpouseSource,
 } from "@/lib/tree/folderModel";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Cây gia phả kiểu THƯ MỤC — bung tới đâu tải tới đó.
  *
@@ -159,7 +161,7 @@ function GenderIcon({ gender }: { gender: "M" | "F" }) {
           gender === "M" ? "text-sky-500" : "text-pink-500"
         }`}
       />
-      <span className="sr-only">{gender === "M" ? " (nam)" : " (nữ)"}</span>
+      <span className="sr-only">{gender === "M" ? " (nam)" : t` (nữ)`}</span>
     </>
   );
 }
@@ -189,8 +191,8 @@ function MetaLine({
       {color && (
         // Triện đỏ như cây 2D: khối vuông đỏ rượu, viền chỉ vàng, chỉ ghi số đời.
         <span
-          title={`Đời ${generation}`}
-          aria-label={`Đời ${generation}`}
+          title={t`Đời ${generation ?? "?"}`}
+          aria-label={t`Đời ${generation ?? "?"}`}
           className="inline-flex min-w-[22px] justify-center whitespace-nowrap rounded-[3px] bg-[#7A2E2E] px-1 text-[11px] font-bold leading-[16px] text-white ring-1 ring-inset ring-[#F2D68A]/75"
           style={{ fontFamily: nameFontStack() }}
         >
@@ -230,7 +232,10 @@ function metaLine(p: {
  * một dòng họ chín nghìn người là chín nghìn lượt truy vấn.
  */
 const EXPAND_ALL_DEPTH = 6;
-const ExpandCtx = createContext<{ mode: "expand" | "collapse" | null; tick: number }>({
+const ExpandCtx = createContext<{
+  mode: "expand" | "collapse" | null;
+  tick: number;
+}>({
   mode: null,
   tick: 0,
 });
@@ -272,7 +277,10 @@ export function TreeFolderView({
     }),
     [focus],
   );
-  const [expand, setExpand] = useState<{ mode: "expand" | "collapse" | null; tick: number }>({
+  const [expand, setExpand] = useState<{
+    mode: "expand" | "collapse" | null;
+    tick: number;
+  }>({
     mode: null,
     tick: 0,
   });
@@ -303,7 +311,7 @@ export function TreeFolderView({
     return m;
   }, [ghostQ.data]);
 
-  if (rootsQ.isLoading) return <LoadingState label="Đang tải gốc cây…" />;
+  if (rootsQ.isLoading) return <LoadingState label={t`Đang tải gốc cây…`} />;
   if (rootsQ.error)
     return <ErrorState error={rootsQ.error} onRetry={() => rootsQ.refetch()} />;
 
@@ -312,112 +320,118 @@ export function TreeFolderView({
 
   return (
     <GhostSpouseContext.Provider value={ghostsByPerson}>
-    <ExpandCtx.Provider value={expand}>
-    <FocusCtx.Provider value={focusCtx}>
-    <div
-      className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3"
-      style={{ fontFamily: nameFontStack() }}
-    >
-      <div className="mb-2">
-        <SearchInput
-          label="Tìm người trong cây"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm người theo tên…"
-          className="pr-[4.75rem]"
-          rightSlot={
-            !searching && (focus || roots.some((r) => r.hasChildren)) ? (
-              <div className="flex items-center">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 px-0 text-muted-foreground"
-                  onClick={() => bump("expand")}
-                  aria-label="Mở rộng tất cả"
-                  title={`Mở rộng tất cả (tới ${EXPAND_ALL_DEPTH} đời; sâu hơn thì bấm mũi tên từng người)`}
-                >
-                  <IconChevronsDown className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 px-0 text-muted-foreground"
-                  onClick={() => bump("collapse")}
-                  aria-label="Thu gọn tất cả"
-                  title="Thu gọn tất cả"
-                >
-                  <IconChevronsUp className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : undefined
-          }
-        />
-      </div>
-      {focus && !searching && (
-        <div className="mb-2 flex items-center gap-2 px-1 text-sm text-muted-foreground">
-          <IconTree className="h-4 w-4 shrink-0 text-primary" />
-          <span className="min-w-0 flex-1 truncate">
-            Nhánh <strong className="text-foreground">{focus.name}</strong> trở xuống
-          </span>
-          <button
-            type="button"
-            onClick={() => setFocus(null)}
-            className="shrink-0 font-medium text-primary hover:underline"
+      <ExpandCtx.Provider value={expand}>
+        <FocusCtx.Provider value={focusCtx}>
+          <div
+            className="rounded-lg border border-[#B8862A]/60 bg-card p-2 sm:p-3"
+            style={{ fontFamily: nameFontStack() }}
           >
-            Xem cả cây
-          </button>
-        </div>
-      )}
-      {focus && !searching && (
-        <ul className="space-y-1">
-          <PersonNode
-            key={focus.id}
-            clanId={clanId}
-            source={source}
-            person={focus}
-            reserveArrow={focus.hasChildren}
-            defaultOpen
-          />
-        </ul>
-      )}
-      {searching && (
-        <SearchResults clanId={clanId} source={source} q={debounced.trim()} />
-      )}
+            <div className="mb-2">
+              <SearchInput
+                label={t`Tìm người trong cây`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t`Tìm người theo tên…`}
+                className="pr-[4.75rem]"
+                rightSlot={
+                  !searching && (focus || roots.some((r) => r.hasChildren)) ? (
+                    <div className="flex items-center">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 px-0 text-muted-foreground"
+                        onClick={() => bump("expand")}
+                        aria-label={t`Mở rộng tất cả`}
+                        title={t`Mở rộng tất cả (tới ${EXPAND_ALL_DEPTH} đời; sâu hơn thì bấm mũi tên từng người)`}
+                      >
+                        <IconChevronsDown className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 px-0 text-muted-foreground"
+                        onClick={() => bump("collapse")}
+                        aria-label={t`Thu gọn tất cả`}
+                        title={t`Thu gọn tất cả`}
+                      >
+                        <IconChevronsUp className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : undefined
+                }
+              />
+            </div>
+            {focus && !searching && (
+              <div className="mb-2 flex items-center gap-2 px-1 text-sm text-muted-foreground">
+                <IconTree className="h-4 w-4 shrink-0 text-primary" />
+                <span className="min-w-0 flex-1 truncate">
+                  {t`Nhánh`}{" "}
+                  <strong className="text-foreground">{focus.name}</strong> trở
+                  xuống
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setFocus(null)}
+                  className="shrink-0 font-medium text-primary hover:underline"
+                >
+                  {t`Xem cả cây`}
+                </button>
+              </div>
+            )}
+            {focus && !searching && (
+              <ul className="space-y-1">
+                <PersonNode
+                  key={focus.id}
+                  clanId={clanId}
+                  source={source}
+                  person={focus}
+                  reserveArrow={focus.hasChildren}
+                  defaultOpen
+                />
+              </ul>
+            )}
+            {searching && (
+              <SearchResults
+                clanId={clanId}
+                source={source}
+                q={debounced.trim()}
+              />
+            )}
 
-      {/* Đang tìm thì GIẤU cây chứ không gỡ ra: gỡ là mất sạch những
+            {/* Đang tìm thì GIẤU cây chứ không gỡ ra: gỡ là mất sạch những
           nhánh người dùng đã bung, xoá ô tìm xong phải mở lại từ đầu. */}
-      <div className={searching || focus ? "hidden" : undefined}>
-      {roots.length === 0 && orphanCount === 0 && (
-        <p className="p-4 text-sm text-muted-foreground">
-          Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu.
-        </p>
-      )}
-      <ul className="space-y-1">
-        {roots.map((r) => (
-          <PersonNode
-            key={r.id}
-            clanId={clanId}
-            source={source}
-            person={r}
-            reserveArrow={roots.some((x) => x.hasChildren)}
-            defaultOpen
-          />
-        ))}
-      </ul>
+            <div className={searching || focus ? "hidden" : undefined}>
+              {roots.length === 0 && orphanCount === 0 && (
+                <p className="p-4 text-sm text-muted-foreground">
+                  {t`Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu.`}
+                </p>
+              )}
+              <ul className="space-y-1">
+                {roots.map((r) => (
+                  <PersonNode
+                    key={r.id}
+                    clanId={clanId}
+                    source={source}
+                    person={r}
+                    reserveArrow={roots.some((x) => x.hasChildren)}
+                    defaultOpen
+                  />
+                ))}
+              </ul>
 
-      {orphanCount > 0 && (
-        <UnlinkedSection
-          clanId={clanId}
-          source={source}
-          count={orphanCount}
-        />
-      )}
-      </div>
-    </div>
-    </FocusCtx.Provider>
-    </ExpandCtx.Provider>
+              {orphanCount > 0 && (
+                <UnlinkedSection
+                  clanId={clanId}
+                  source={source}
+                  count={orphanCount}
+                />
+              )}
+            </div>
+          </div>
+        </FocusCtx.Provider>
+      </ExpandCtx.Provider>
     </GhostSpouseContext.Provider>
   );
 }
@@ -439,7 +453,7 @@ function SearchResults({
   });
 
   if (hitsQ.isLoading)
-    return <p className="p-2 text-xs text-muted-foreground">Đang tìm…</p>;
+    return <p className="p-2 text-xs text-muted-foreground">{t`Đang tìm…`}</p>;
   if (hitsQ.error)
     return <ErrorState error={hitsQ.error} onRetry={() => hitsQ.refetch()} />;
 
@@ -463,7 +477,7 @@ function SearchResults({
             reserveArrow={hits.some((x) => x.person.hasChildren)}
             note={
               h.parentNames.length > 0
-                ? `con của ${h.parentNames.join(" & ")}`
+                ? t`con của ${h.parentNames.join(" & ")}`
                 : undefined
             }
           />
@@ -581,7 +595,7 @@ function PersonNode({
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            aria-label={open ? `Thu gọn ${person.name}` : `Mở ${person.name}`}
+            aria-label={open ? t`Thu gọn ${person.name}` : t`Mở ${person.name}`}
             className="mt-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
           >
             <IconChevronDown
@@ -654,26 +668,27 @@ function PersonNode({
               generation={person.generation}
             />
           ))}
-
         </div>
-        {person.hasChildren && focusCtx.onFocus && focusCtx.focusId !== person.id && (
-          <button
-            type="button"
-            onClick={() => focusCtx.onFocus!(person)}
-            aria-label={`Xem riêng nhánh ${person.name}`}
-            title="Xem riêng nhánh này trở xuống"
-            className="mt-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <IconTree className="h-4 w-4" />
-          </button>
-        )}
+        {person.hasChildren &&
+          focusCtx.onFocus &&
+          focusCtx.focusId !== person.id && (
+            <button
+              type="button"
+              onClick={() => focusCtx.onFocus!(person)}
+              aria-label={t`Xem riêng nhánh ${person.name}`}
+              title={t`Xem riêng nhánh này trở xuống`}
+              className="mt-1.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <IconTree className="h-4 w-4" />
+            </button>
+          )}
       </div>
 
       {open && (nodeQ.isLoading || nodeQ.data) && (
         <div className={RAIL}>
           {nodeQ.isLoading && (
             <p className="py-1 pl-9 text-xs text-muted-foreground">
-              Đang tải…
+              {t`Đang tải…`}
             </p>
           )}
           {nodeQ.data && (
@@ -789,7 +804,7 @@ function SpouseChip({
 
   const cls = "flex min-w-0 items-center gap-2 pl-1 sm:pl-0";
   return ghost ? (
-    <span className={cls} title={`Dâu/rể bên ${ghost.peerClanName}`}>
+    <span className={cls} title={t`Dâu/rể bên ${ghost.peerClanName}`}>
       {body}
     </span>
   ) : (
@@ -839,20 +854,20 @@ function UnlinkedSection({
           }`}
         />
         <IconUsers className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <span className="font-medium">Chưa gắn vào cây</span>
+        <span className="font-medium">{t`Chưa gắn vào cây`}</span>
         <span className="text-muted-foreground">({count})</span>
       </button>
 
       {open && (
         <div className="space-y-2 pl-6">
           <SearchInput
-            label="Tìm người chưa gắn vào cây"
+            label={t`Tìm người chưa gắn vào cây`}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Tìm trong danh sách này…"
+            placeholder={t`Tìm trong danh sách này…`}
           />
           {listQ.isLoading && (
-            <p className="text-xs text-muted-foreground">Đang tải…</p>
+            <p className="text-xs text-muted-foreground">{t`Đang tải…`}</p>
           )}
           <ul className="space-y-1">
             {(listQ.data ?? []).map((p) => (
@@ -867,25 +882,30 @@ function UnlinkedSection({
           </ul>
           {listQ.data && listQ.data.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              Không tìm thấy ai khớp.
+              {t`Không tìm thấy ai khớp.`}
             </p>
           )}
           {listQ.data && listQ.data.length >= 50 && (
             <p className="text-xs text-muted-foreground">
-              Chỉ hiện 50 người đầu — gõ tên để thu hẹp.
+              {t`Chỉ hiện 50 người đầu — gõ tên để thu hẹp.`}
             </p>
           )}
           <p className="flex items-center gap-1.5 pt-1 text-xs text-muted-foreground">
             <IconUser className="h-3.5 w-3.5" />
-            Những người này chưa có cha/mẹ trong gia phả nên chưa nối được
-            vào nhánh nào.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Những người này chưa có cha/mẹ trong gia phả nên chưa nối được
+                  vào nhánh nào.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
         </div>
       )}
     </div>
   );
 }
-
 
 /** Đầu nhóm của một cuộc hôn nhân (chỉ dùng khi người đó có 2+ vợ/chồng). */
 function GroupHeader({
@@ -924,7 +944,12 @@ function GroupHeader({
           {spouse && <GenderIcon gender={spouse.gender} />}
         </span>
         <span className="block text-xs text-muted-foreground">
-          {[meta, group.children.length > 0 ? `${group.children.length} con` : "chưa có con"]
+          {[
+            meta,
+            group.children.length > 0
+              ? `${group.children.length} con`
+              : t`chưa có con`,
+          ]
             .filter(Boolean)
             .join(" · ")}
         </span>

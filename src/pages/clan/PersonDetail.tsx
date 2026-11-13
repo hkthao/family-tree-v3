@@ -1,8 +1,19 @@
 import { CollapsibleCard } from "@/components/CollapsibleCard";
 import { CollapsibleBio } from "@/components/BioText";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, useContext, useEffect, useState, type ComponentProps } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ComponentProps,
+} from "react";
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import { AddSpouseForm } from "@/pages/clan/AddSpouse";
 import { AddChildForm } from "@/pages/clan/AddChild";
@@ -88,6 +99,7 @@ import {
 
 import { PersonNavButtons } from "@/components/PersonNavButtons";
 
+import { t } from "@lingui/core/macro";
 /** Đang chạy trong ngăn kéo: bấm người thân → đổi sang chi tiết người đó (cùng panel). */
 const EmbeddedPersonContext = createContext(false);
 
@@ -97,7 +109,9 @@ export interface EmbeddedPerson {
   onClose: () => void;
 }
 
-export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson } = {}) {
+export default function PersonDetail({
+  embedded,
+}: { embedded?: EmbeddedPerson } = {}) {
   const routeParams = useParams<{ clanId: string; personId: string }>();
   const { clan } = useClanContext();
   const clanId = embedded ? clan.id : routeParams.clanId;
@@ -188,14 +202,14 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
     onSuccess: async () => {
       track("person_deleted");
       await invalidateClanData(queryClient, clanId!);
-      toast.success(`Đã xoá ${person?.full_name ?? "người này"}`, {
-        description: "Có thể khôi phục từ nhật ký.",
+      toast.success(t`Đã xoá ${person?.full_name ?? "người này"}`, {
+        description: t`Có thể khôi phục từ nhật ký.`,
       });
       if (embedded) embedded.onClose();
       else navigate(backTo);
     },
     onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const reorderSpousesMutation = useMutation({
@@ -205,45 +219,59 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
       await invalidateClanData(queryClient, clanId!);
     },
     onError: (e) =>
-      toast.error("Không đổi được thứ tự", {
+      toast.error(t`Không đổi được thứ tự`, {
         description: (e as Error).message,
       }),
   });
 
   // Gỡ liên kết quan hệ nhập nhầm (người không bị xoá khỏi dòng họ).
   const removeRelationMutation = useMutation({
-    mutationFn: async (args: { kind: "parent" | "spouse" | "child"; rel: Relationship }) => {
-      if (args.kind === "parent") return removeParentLink(personId!, args.rel.id);
+    mutationFn: async (args: {
+      kind: "parent" | "spouse" | "child";
+      rel: Relationship;
+    }) => {
+      if (args.kind === "parent")
+        return removeParentLink(personId!, args.rel.id);
       if (args.kind === "spouse") {
-        return removeSpouseLink((args.rel as SpouseRelationship).family_id, personId!);
+        return removeSpouseLink(
+          (args.rel as SpouseRelationship).family_id,
+          personId!,
+        );
       }
       return removeChildLink(args.rel.id);
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId!);
-      toast.success("Đã gỡ liên kết");
+      toast.success(t`Đã gỡ liên kết`);
     },
     onError: (e) =>
-      toast.error("Không gỡ được", { description: (e as Error).message }),
+      toast.error(t`Không gỡ được`, { description: (e as Error).message }),
   });
 
-  async function removeRelation(kind: "parent" | "spouse" | "child", rel: Relationship) {
+  async function removeRelation(
+    kind: "parent" | "spouse" | "child",
+    rel: Relationship,
+  ) {
     const name = person?.full_name ?? "người này";
     const text = {
       parent: {
-        title: `Gỡ ${rel.full_name} khỏi cha mẹ của ${name}?`,
-        description: `${rel.full_name} vẫn còn trong dòng họ, chỉ không còn là cha/mẹ của ${name} (và anh chị em cùng cha mẹ). Có thể nhập lại sau.`,
+        title: t`Gỡ ${rel.full_name} khỏi cha mẹ của ${name}?`,
+        description: t`${rel.full_name} vẫn còn trong dòng họ, chỉ không còn là cha/mẹ của ${name} (và anh chị em cùng cha mẹ). Có thể nhập lại sau.`,
       },
       spouse: {
-        title: `Gỡ liên kết vợ/chồng với ${rel.full_name}?`,
-        description: `${rel.full_name} vẫn còn trong dòng họ. Nếu hai người đã có con, các con vẫn giữ liên kết với ${name}.`,
+        title: t`Gỡ liên kết vợ/chồng với ${rel.full_name}?`,
+        description: t`${rel.full_name} vẫn còn trong dòng họ. Nếu hai người đã có con, các con vẫn giữ liên kết với ${name}.`,
       },
       child: {
-        title: `Gỡ ${rel.full_name} khỏi con cái của ${name}?`,
-        description: `${rel.full_name} vẫn còn trong dòng họ, chỉ không còn là con của ${name}. Có thể nhập lại sau.`,
+        title: t`Gỡ ${rel.full_name} khỏi con cái của ${name}?`,
+        description: t`${rel.full_name} vẫn còn trong dòng họ, chỉ không còn là con của ${name}. Có thể nhập lại sau.`,
       },
     }[kind];
-    const ok = await askConfirm({ ...text, confirmLabel: "Gỡ liên kết", destructive: true });
+    const ok = await askConfirm({
+      ...text,
+      confirmLabel: t`Gỡ liên kết`,
+      destructive: true,
+    });
     if (ok) removeRelationMutation.mutate({ kind, rel });
   }
 
@@ -261,13 +289,13 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
   const [qrOpen, setQrOpen] = useState(false);
   const [contribOpen, setContribOpen] = useState(false);
   // Which inline relation sheet is open. null = none.
-  const [addSheet, setAddSheet] = useState<"parent" | "spouse" | "child" | null>(
-    null,
-  );
+  const [addSheet, setAddSheet] = useState<
+    "parent" | "spouse" | "child" | null
+  >(null);
   const qrM = useMutation({
     mutationFn: () => getOrCreatePersonShareLink(clanId!, personId!),
     onError: (e) =>
-      toast.error("Không tạo được QR", { description: (e as Error).message }),
+      toast.error(t`Không tạo được QR`, { description: (e as Error).message }),
   });
   const qrUrl = qrM.data
     ? `${window.location.origin}/share/${qrM.data.token}`
@@ -287,25 +315,25 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
 
   return (
     <EmbeddedPersonContext.Provider value={!!embedded}>
-    <div className="space-y-3">
-      {!embedded && (
-        <Breadcrumb
-          items={[
-            { label: clan.name, to: `/clans/${clanId}` },
-            { label: "Danh bạ", to: `/clans/${clanId}/people` },
-            { label: person?.full_name ?? "Người" },
-          ]}
-        />
-      )}
-      {!embedded && clanId && personId && (
-        <PersonNavButtons clanId={clanId} personId={personId} />
-      )}
+      <div className="space-y-3">
+        {!embedded && (
+          <Breadcrumb
+            items={[
+              { label: clan.name, to: `/clans/${clanId}` },
+              { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
+              { label: person?.full_name ?? "Người" },
+            ]}
+          />
+        )}
+        {!embedded && clanId && personId && (
+          <PersonNavButtons clanId={clanId} personId={personId} />
+        )}
 
-        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+        {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
 
         {!isLoading && !person && (
           <Alert variant="destructive">
-            <AlertDescription>Không tìm thấy người này.</AlertDescription>
+            <AlertDescription>{t`Không tìm thấy người này.`}</AlertDescription>
           </Alert>
         )}
 
@@ -344,9 +372,11 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                   scope="person"
                   targetId={personId}
                   icon={<IconBell className="h-4 w-4 sm:mr-1.5" />}
-                  labelOff={<span className="hidden sm:inline">Theo dõi</span>}
+                  labelOff={
+                    <span className="hidden sm:inline">{t`Theo dõi`}</span>
+                  }
                   labelOn={
-                    <span className="hidden sm:inline">Đang theo dõi</span>
+                    <span className="hidden sm:inline">{t`Đang theo dõi`}</span>
                   }
                 />
               )}
@@ -361,136 +391,152 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
             )}
 
             <CollapsibleCard
-              title={<><IconUser className="h-5 w-5" />Thông tin cơ bản</>}
+              title={
+                <>
+                  <IconUser className="h-5 w-5" />
+                  {t`Thông tin cơ bản`}
+                </>
+              }
               titleClassName="inline-flex items-center gap-2"
               contentClassName="space-y-2 text-base"
             >
-                <DetailRow label="Giới tính" value={person.gender === "M" ? "Nam" : "Nữ"} />
-                <DetailRow label="Tên tự" value={person.courtesy_name} />
-                <DetailRow label="Tên húy" value={person.nickname} />
-                <DetailRow label="Tên thụy" value={person.posthumous_name} />
-                <DetailRow
-                  label="Ngày sinh"
-                  value={formatPartialDate({
+              <DetailRow
+                label={t`Giới tính`}
+                value={person.gender === "M" ? "Nam" : t`Nữ`}
+              />
+              <DetailRow label={t`Tên tự`} value={person.courtesy_name} />
+              <DetailRow label={t`Tên húy`} value={person.nickname} />
+              <DetailRow label={t`Tên thụy`} value={person.posthumous_name} />
+              <DetailRow
+                label={t`Ngày sinh`}
+                value={
+                  formatPartialDate({
                     date: person.birth_date,
                     precision: person.birth_date_precision,
-                  }) || null}
-                />
-                {/* Lunar birth: prefer the explicitly-stored lunar
+                  }) || null
+                }
+              />
+              {/* Lunar birth: prefer the explicitly-stored lunar
                     fields (tombstones often record only lunar). If
                     those are absent but we have a full solar day, we
                     auto-derive — it's deterministic so showing both
                     helps elderly users orient by whichever calendar
                     they know. */}
-                <LunarDetailRow
-                  historical={clan.kind === "historical"}
-                  label="Ngày sinh (âm)"
-                  lunarYear={person.birth_lunar_year}
-                  lunarMonth={person.birth_lunar_month}
-                  lunarDay={person.birth_lunar_day}
-                  fallbackSolar={
-                    person.birth_date_precision === "day"
-                      ? person.birth_date
-                      : null
-                  }
-                />
-                {!person.is_living && (
-                  <>
-                    <DetailRow
-                      label="Ngày mất"
-                      value={formatPartialDate({
+              <LunarDetailRow
+                historical={clan.kind === "historical"}
+                label={t`Ngày sinh (âm)`}
+                lunarYear={person.birth_lunar_year}
+                lunarMonth={person.birth_lunar_month}
+                lunarDay={person.birth_lunar_day}
+                fallbackSolar={
+                  person.birth_date_precision === "day"
+                    ? person.birth_date
+                    : null
+                }
+              />
+              {!person.is_living && (
+                <>
+                  <DetailRow
+                    label={t`Ngày mất`}
+                    value={
+                      formatPartialDate({
                         date: person.death_date,
                         precision: person.death_date_precision,
-                      }) || null}
-                    />
-                    <LunarDetailRow
-                      historical={clan.kind === "historical"}
-                      label="Ngày mất (âm)"
-                      lunarYear={person.death_lunar_year}
-                      lunarMonth={person.death_lunar_month}
-                      lunarDay={person.death_lunar_day}
-                      fallbackSolar={
-                        person.death_date_precision === "day"
-                          ? person.death_date
-                          : null
-                      }
-                    />
-                    <DetailRow
-                      label="Ngày giỗ"
-                      value={
-                        formatLunarAnniversary({
-                          month: person.death_anniv_lunar_month ?? undefined,
-                          day: person.death_anniv_lunar_day ?? undefined,
-                        }) || null
-                      }
-                    />
-                    {(() => {
-                      // ≥60 tuổi: "Hưởng thọ"; dưới 60: "Hưởng dương".
-                      const tho = computeLifespanYears(
-                        person.lifespan_years,
-                        person.birth_date,
-                        person.death_date,
-                      );
-                      return tho == null ? null : (
-                        <DetailRow
-                          label={lifespanLabel(tho)}
-                          value={`${tho} tuổi`}
-                        />
-                      );
-                    })()}
-                  </>
-                )}
-                <DetailRow label="Nơi sinh" value={person.birth_place} />
-                <DetailRow label="Nơi an táng" value={person.burial_place} />
-                {restingPlaces && restingPlaces.length > 0 && (
-                  <DetailRow
-                    label="Mộ phần / tro cốt"
-                    value={
-                      <span className="flex flex-col gap-0.5">
-                        {restingPlaces.map((rp) => (
-                          <Link
-                            key={rp.id}
-                            to={`/clans/${clanId}/graves/${rp.id}`}
-                            className="text-primary hover:underline"
-                          >
-                            {rp.name || rp.location_name || RESTING_PLACE_KIND_LABEL[rp.kind]}
-                            <span className="text-muted-foreground">
-                              {" "}· {RESTING_PLACE_KIND_LABEL[rp.kind]}
-                            </span>
-                          </Link>
-                        ))}
-                      </span>
+                      }) || null
                     }
                   />
-                )}
-                {heritageItems && heritageItems.length > 0 && (
-                  <DetailRow
-                    label="Di sản liên quan"
-                    value={
-                      <span className="flex flex-col gap-0.5">
-                        {heritageItems.map((h) => (
-                          <Link
-                            key={h.id}
-                            to={`/clans/${clanId}/heritage/${h.id}`}
-                            className="text-primary hover:underline"
-                          >
-                            {h.title}
-                            <span className="text-muted-foreground">
-                              {" "}· {HERITAGE_CATEGORY_LABEL[h.category]}
-                            </span>
-                          </Link>
-                        ))}
-                      </span>
+                  <LunarDetailRow
+                    historical={clan.kind === "historical"}
+                    label={t`Ngày mất (âm)`}
+                    lunarYear={person.death_lunar_year}
+                    lunarMonth={person.death_lunar_month}
+                    lunarDay={person.death_lunar_day}
+                    fallbackSolar={
+                      person.death_date_precision === "day"
+                        ? person.death_date
+                        : null
                     }
                   />
-                )}
-                {person.bio && (
-                  <div className="pt-2">
-                    <p className="text-sm text-muted-foreground mb-1">Tiểu sử</p>
-                    <CollapsibleBio text={person.bio} />
-                  </div>
-                )}
-              </CollapsibleCard>
+                  <DetailRow
+                    label={t`Ngày giỗ`}
+                    value={
+                      formatLunarAnniversary({
+                        month: person.death_anniv_lunar_month ?? undefined,
+                        day: person.death_anniv_lunar_day ?? undefined,
+                      }) || null
+                    }
+                  />
+                  {(() => {
+                    // ≥60 tuổi: "Hưởng thọ"; dưới 60: "Hưởng dương".
+                    const tho = computeLifespanYears(
+                      person.lifespan_years,
+                      person.birth_date,
+                      person.death_date,
+                    );
+                    return tho == null ? null : (
+                      <DetailRow
+                        label={lifespanLabel(tho)}
+                        value={t`${tho} tuổi`}
+                      />
+                    );
+                  })()}
+                </>
+              )}
+              <DetailRow label={t`Nơi sinh`} value={person.birth_place} />
+              <DetailRow label={t`Nơi an táng`} value={person.burial_place} />
+              {restingPlaces && restingPlaces.length > 0 && (
+                <DetailRow
+                  label={t`Mộ phần / tro cốt`}
+                  value={
+                    <span className="flex flex-col gap-0.5">
+                      {restingPlaces.map((rp) => (
+                        <Link
+                          key={rp.id}
+                          to={`/clans/${clanId}/graves/${rp.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {rp.name ||
+                            rp.location_name ||
+                            RESTING_PLACE_KIND_LABEL[rp.kind]}
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {RESTING_PLACE_KIND_LABEL[rp.kind]}
+                          </span>
+                        </Link>
+                      ))}
+                    </span>
+                  }
+                />
+              )}
+              {heritageItems && heritageItems.length > 0 && (
+                <DetailRow
+                  label={t`Di sản liên quan`}
+                  value={
+                    <span className="flex flex-col gap-0.5">
+                      {heritageItems.map((h) => (
+                        <Link
+                          key={h.id}
+                          to={`/clans/${clanId}/heritage/${h.id}`}
+                          className="text-primary hover:underline"
+                        >
+                          {h.title}
+                          <span className="text-muted-foreground">
+                            {" "}
+                            · {HERITAGE_CATEGORY_LABEL[h.category]}
+                          </span>
+                        </Link>
+                      ))}
+                    </span>
+                  }
+                />
+              )}
+              {person.bio && (
+                <div className="pt-2">
+                  <p className="text-sm text-muted-foreground mb-1">{t`Tiểu sử`}</p>
+                  <CollapsibleBio text={person.bio} />
+                </div>
+              )}
+            </CollapsibleCard>
 
             {clan.kind === "historical" && (
               <HistoricalPersonSections
@@ -503,85 +549,96 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
 
             {relationships && (
               <CollapsibleCard
-                title={<><IconUsers className="h-5 w-5" />Quan hệ</>}
+                title={
+                  <>
+                    <IconUsers className="h-5 w-5" />
+                    {t`Quan hệ`}
+                  </>
+                }
                 titleClassName="inline-flex items-center gap-2"
                 contentClassName="space-y-5"
               >
-                  <RelationshipGroup
-                    LinkComponent={PersonLink}
-                    label="Cha mẹ"
-                    items={relationships.parents}
-                    clanId={clanId}
-                    photoUrls={relationPhotoUrls}
-                    emptyHint="Chưa nhập cha mẹ"
-                    onRemove={canEdit ? (rel) => removeRelation("parent", rel) : undefined}
-                    action={
-                      canEdit && relationships.parents.length < 2 ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          data-testid="add-parent-button"
-                          onClick={() => setAddSheet("parent")}
-                        >
-                          <IconPlus className="h-4 w-4 mr-1" />
-                          Thêm
-                        </Button>
-                      ) : null
-                    }
-                  />
-                  <RelationshipGroup
-                    LinkComponent={PersonLink}
-                    label="Vợ / chồng"
-                    items={relationships.spouses}
-                    clanId={clanId}
-                    photoUrls={relationPhotoUrls}
-                    emptyHint="Chưa có vợ / chồng."
-                    onRemove={canEdit ? (rel) => removeRelation("spouse", rel) : undefined}
-                    reorder={
-                      canEdit && relationships.spouses.length > 1
-                        ? {
-                            onMove: moveSpouse,
-                            busy: reorderSpousesMutation.isPending,
-                          }
-                        : undefined
-                    }
-                    action={
-                      canEdit ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          data-testid="add-spouse-button"
-                          onClick={() => setAddSheet("spouse")}
-                        >
-                          <IconPlus className="h-4 w-4 mr-1" />
-                          Thêm
-                        </Button>
-                      ) : null
-                    }
-                  />
-                  <RelationshipGroup
-                    LinkComponent={PersonLink}
-                    label="Con cái"
-                    items={relationships.children}
-                    clanId={clanId}
-                    photoUrls={relationPhotoUrls}
-                    emptyHint="Chưa có con cái."
-                    onRemove={canEdit ? (rel) => removeRelation("child", rel) : undefined}
-                    action={
-                      canEdit ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          data-testid="add-child-button"
-                          onClick={() => setAddSheet("child")}
-                        >
-                          <IconPlus className="h-4 w-4 mr-1" />
-                          Thêm
-                        </Button>
-                      ) : null
-                    }
-                  />
-                </CollapsibleCard>
+                <RelationshipGroup
+                  LinkComponent={PersonLink}
+                  label={t`Cha mẹ`}
+                  items={relationships.parents}
+                  clanId={clanId}
+                  photoUrls={relationPhotoUrls}
+                  emptyHint="Chưa nhập cha mẹ"
+                  onRemove={
+                    canEdit ? (rel) => removeRelation("parent", rel) : undefined
+                  }
+                  action={
+                    canEdit && relationships.parents.length < 2 ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid="add-parent-button"
+                        onClick={() => setAddSheet("parent")}
+                      >
+                        <IconPlus className="h-4 w-4 mr-1" />
+                        {t`Thêm`}
+                      </Button>
+                    ) : null
+                  }
+                />
+                <RelationshipGroup
+                  LinkComponent={PersonLink}
+                  label={t`Vợ / chồng`}
+                  items={relationships.spouses}
+                  clanId={clanId}
+                  photoUrls={relationPhotoUrls}
+                  emptyHint="Chưa có vợ / chồng."
+                  onRemove={
+                    canEdit ? (rel) => removeRelation("spouse", rel) : undefined
+                  }
+                  reorder={
+                    canEdit && relationships.spouses.length > 1
+                      ? {
+                          onMove: moveSpouse,
+                          busy: reorderSpousesMutation.isPending,
+                        }
+                      : undefined
+                  }
+                  action={
+                    canEdit ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid="add-spouse-button"
+                        onClick={() => setAddSheet("spouse")}
+                      >
+                        <IconPlus className="h-4 w-4 mr-1" />
+                        {t`Thêm`}
+                      </Button>
+                    ) : null
+                  }
+                />
+                <RelationshipGroup
+                  LinkComponent={PersonLink}
+                  label={t`Con cái`}
+                  items={relationships.children}
+                  clanId={clanId}
+                  photoUrls={relationPhotoUrls}
+                  emptyHint="Chưa có con cái."
+                  onRemove={
+                    canEdit ? (rel) => removeRelation("child", rel) : undefined
+                  }
+                  action={
+                    canEdit ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid="add-child-button"
+                        onClick={() => setAddSheet("child")}
+                      >
+                        <IconPlus className="h-4 w-4 mr-1" />
+                        {t`Thêm`}
+                      </Button>
+                    ) : null
+                  }
+                />
+              </CollapsibleCard>
             )}
 
             {/* Dòng thời gian: ngay dưới thẻ Quan hệ. */}
@@ -597,7 +654,11 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
               />
             )}
 
-            <InLawLinksSection personId={personId!} userId={userId} viewingClanId={clan.id} />
+            <InLawLinksSection
+              personId={personId!}
+              userId={userId}
+              viewingClanId={clan.id}
+            />
             <RelatedPostsSection personId={personId!} clanId={clan.id} />
 
             {/* Actions row — desktop: nút rộng cố định 100px, dạt phải; mobile: các nút
@@ -609,17 +670,22 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                 không cho xuống dòng thì nút đầu bị đẩy khuất mép trái. */}
             <div className="flex flex-wrap items-center justify-end gap-2">
               {canEdit ? (
-                <Button asChild variant="outline" size="sm" className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
+                >
                   <PanelLink
                     to={`/clans/${clanId}/people/${personId}/edit${fromQs}`}
                     panel="person-edit"
                     panelParams={{ pid: personId }}
                     data-testid="edit-person-link"
-                    aria-label="Sửa thông tin"
-                    title="Sửa thông tin"
+                    aria-label={t`Sửa thông tin`}
+                    title={t`Sửa thông tin`}
                   >
                     <IconPencil className="h-4 w-4 mr-1.5" />
-                    Sửa
+                    {t`Sửa`}
                   </PanelLink>
                 </Button>
               ) : (
@@ -629,11 +695,11 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                     size="sm"
                     className="min-w-0 flex-1 px-2 sm:w-[100px] sm:flex-none"
                     onClick={() => setContribOpen(true)}
-                    aria-label="Đề xuất sửa"
-                    title="Đề xuất sửa"
+                    aria-label={t`Đề xuất sửa`}
+                    title={t`Đề xuất sửa`}
                   >
                     <IconScroll className="h-4 w-4 mr-1.5" />
-                    Đề xuất
+                    {t`Đề xuất`}
                   </Button>
                 )
               )}
@@ -662,8 +728,8 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                     setQrOpen(true);
                     if (!qrM.data) qrM.mutate();
                   }}
-                  aria-label="QR cá nhân"
-                  title="QR cá nhân"
+                  aria-label={t`QR cá nhân`}
+                  title={t`QR cá nhân`}
                 >
                   <IconQrCode className="h-4 w-4 mr-1.5" />
                   QR
@@ -677,19 +743,19 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                   className="min-w-0 flex-1 px-2 hover:bg-destructive/10 sm:w-[100px] sm:flex-none"
                   onClick={async () => {
                     const ok = await askConfirm({
-                      title: `Xoá ${person.full_name}?`,
-                      description: "Có thể khôi phục từ nhật ký.",
-                      confirmLabel: "Xoá",
+                      title: t`Xoá ${person.full_name}?`,
+                      description: t`Có thể khôi phục từ nhật ký.`,
+                      confirmLabel: t`Xoá`,
                       destructive: true,
                     });
                     if (ok) deleteMutation.mutate();
                   }}
                   disabled={deleteMutation.isPending}
-                  aria-label="Xoá người này"
-                  title="Xoá người này"
+                  aria-label={t`Xoá người này`}
+                  title={t`Xoá người này`}
                 >
                   <IconTrash className="h-4 w-4 mr-1.5" />
-                  {deleteMutation.isPending ? "Đang xoá…" : "Xoá"}
+                  {deleteMutation.isPending ? t`Đang xoá…` : t`Xoá`}
                 </Button>
               )}
             </div>
@@ -700,14 +766,13 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
               url={qrUrl}
               loading={qrM.isPending}
               title={`QR · ${person.full_name}`}
-              description="Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, sổ gia phả, danh thiếp."
+              description={t`Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, sổ gia phả, danh thiếp.`}
               onDownloadPdf={async () => {
                 try {
                   // Lazy-load @react-pdf/renderer (~1.5MB) on demand
                   // so the initial app payload doesn't carry it.
-                  const { downloadSinglePersonQrPdf } = await import(
-                    "@/lib/pdf/exportPersonQrPdf"
-                  );
+                  const { downloadSinglePersonQrPdf } =
+                    await import("@/lib/pdf/exportPersonQrPdf");
                   await downloadSinglePersonQrPdf(clan.name, {
                     clanId: clan.id,
                     personId: person.id,
@@ -723,9 +788,9 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                     deathYear: person.death_date?.slice(0, 4) ?? null,
                     isLiving: person.is_living,
                   });
-                  toast.success("Đã tải PDF danh thiếp");
+                  toast.success(t`Đã tải PDF danh thiếp`);
                 } catch (e) {
-                  toast.error("Không tạo được PDF", {
+                  toast.error(t`Không tạo được PDF`, {
                     description: (e as Error).message,
                   });
                 }
@@ -765,7 +830,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
               <>
                 <RelationSheet
                   open={addSheet === "parent"}
-                  title="Thêm cha / mẹ"
+                  title={t`Thêm cha / mẹ`}
                   subtitle={`Cho ${person.full_name}`}
                   onClose={() => setAddSheet(null)}
                 >
@@ -778,7 +843,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                 </RelationSheet>
                 <RelationSheet
                   open={addSheet === "spouse"}
-                  title="Thêm vợ / chồng"
+                  title={t`Thêm vợ / chồng`}
                   subtitle={`Cho ${person.full_name}`}
                   onClose={() => setAddSheet(null)}
                 >
@@ -791,7 +856,7 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                 </RelationSheet>
                 <RelationSheet
                   open={addSheet === "child"}
-                  title="Thêm con"
+                  title={t`Thêm con`}
                   subtitle={`Cho ${person.full_name}`}
                   onClose={() => setAddSheet(null)}
                 >
@@ -804,9 +869,9 @@ export default function PersonDetail({ embedded }: { embedded?: EmbeddedPerson }
                 </RelationSheet>
               </>
             )}
-        </>
-      )}
-    </div>
+          </>
+        )}
+      </div>
     </EmbeddedPersonContext.Provider>
   );
 }
@@ -817,7 +882,14 @@ function PersonLink({
   ...rest
 }: ComponentProps<typeof Link> & { personId: string }) {
   const embedded = useContext(EmbeddedPersonContext);
-  if (embedded) return <PanelLink {...rest} panel="person-view" panelParams={{ pid: personId }} />;
+  if (embedded)
+    return (
+      <PanelLink
+        {...rest}
+        panel="person-view"
+        panelParams={{ pid: personId }}
+      />
+    );
   return <Link {...rest} />;
 }
 
@@ -828,7 +900,12 @@ function DetailRow({
   label: string;
   value: React.ReactNode;
 }) {
-  if (value === null || value === undefined || value === "" || value === false) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === "" ||
+    value === false
+  ) {
     return null;
   }
   return (
@@ -863,9 +940,19 @@ function LunarDetailRow({
    *  riêng); can chi năm đã có trong dòng chính. */
   historical?: boolean;
 }) {
-  let lunar: { year: number; month: number; day: number; isLeap: boolean } | null = null;
+  let lunar: {
+    year: number;
+    month: number;
+    day: number;
+    isLeap: boolean;
+  } | null = null;
   if (lunarYear && lunarMonth && lunarDay) {
-    lunar = { year: lunarYear, month: lunarMonth, day: lunarDay, isLeap: false };
+    lunar = {
+      year: lunarYear,
+      month: lunarMonth,
+      day: lunarDay,
+      isLeap: false,
+    };
   } else if (fallbackSolar) {
     lunar = solarStringToLunar(fallbackSolar);
   }
@@ -873,9 +960,12 @@ function LunarDetailRow({
   if (!text) return <DetailRow label={label} value={null} />;
 
   // Resolve the matching solar date so we can compute the day Can Chi.
-  const solarForCanChi = fallbackSolar ?? (lunar ? lunarToSolarString(lunar) : null);
+  const solarForCanChi =
+    fallbackSolar ?? (lunar ? lunarToSolarString(lunar) : null);
   const canChi =
-    historical && lunar && lunar.year < 1800 ? null : getCanChiForSolarDate(solarForCanChi);
+    historical && lunar && lunar.year < 1800
+      ? null
+      : getCanChiForSolarDate(solarForCanChi);
 
   return (
     <DetailRow
@@ -919,17 +1009,25 @@ function InLawLinksSection({
   if (!links || links.length === 0) return null;
   const onlyInlaw = links.every((l) => l.link_type === "same_person");
   return (
-    <CollapsibleCard title={<><IconLink className="h-5 w-5" />
-          {onlyInlaw ? "Liên kết thông gia" : "Liên kết dòng họ"}</>} titleClassName="inline-flex items-center gap-2" contentClassName="space-y-3">
-        {links.map((l) => (
-          <InLawLinkRow
-            key={l.id}
-            link={l}
-            userId={userId}
-            viewingClanId={viewingClanId}
-          />
-        ))}
-      </CollapsibleCard>
+    <CollapsibleCard
+      title={
+        <>
+          <IconLink className="h-5 w-5" />
+          {onlyInlaw ? t`Liên kết thông gia` : t`Liên kết dòng họ`}
+        </>
+      }
+      titleClassName="inline-flex items-center gap-2"
+      contentClassName="space-y-3"
+    >
+      {links.map((l) => (
+        <InLawLinkRow
+          key={l.id}
+          link={l}
+          userId={userId}
+          viewingClanId={viewingClanId}
+        />
+      ))}
+    </CollapsibleCard>
   );
 }
 
@@ -949,22 +1047,22 @@ function InLawLinkRow({
     enabled: !!userId,
   });
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Đang tải…</p>;
+    return <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>;
   }
   if (!peek) return null;
   // Build meta string once so the JSX stays readable.
   const metaBits: string[] = [peek.clan_name];
   if (!peek.masked) {
-    if (peek.gender) metaBits.push(peek.gender === "M" ? "Nam" : "Nữ");
+    if (peek.gender) metaBits.push(peek.gender === "M" ? "Nam" : t`Nữ`);
     if (peek.generation !== null && peek.generation !== undefined) {
-      metaBits.push(`Đời ${peek.generation - (peek.generation_offset ?? 0)}`);
+      metaBits.push(t`Đời ${peek.generation - (peek.generation_offset ?? 0)}`);
     }
     if (peek.birth_year && peek.death_year) {
       metaBits.push(`${peek.birth_year}–${peek.death_year}`);
     } else if (peek.birth_year) {
       metaBits.push(`sinh ${peek.birth_year}`);
     } else if (peek.death_year) {
-      metaBits.push(`mất ${peek.death_year}`);
+      metaBits.push(t`mất ${peek.death_year}`);
     }
   }
 
@@ -975,14 +1073,15 @@ function InLawLinkRow({
         {link.link_type !== "same_person" && (
           <p className="mb-1">
             <span className="inline-flex rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
-              {linkTypeFromSide(link.link_type, link.clan_a_id === viewingClanId)}
+              {linkTypeFromSide(
+                link.link_type,
+                link.clan_a_id === viewingClanId,
+              )}
             </span>
           </p>
         )}
         <p className="font-medium text-sm truncate">
-          {peek.masked
-            ? "Người còn sống"
-            : (peek.full_name ?? "—")}
+          {peek.masked ? t`Người còn sống` : (peek.full_name ?? "—")}
         </p>
         <p className="text-xs text-muted-foreground mt-0.5 truncate">
           <span className="text-foreground">{metaBits[0]}</span>
@@ -992,7 +1091,7 @@ function InLawLinkRow({
         </p>
         {peek.masked && (
           <p className="text-xs text-muted-foreground mt-0.5">
-            Họ này chưa công khai thông tin người sống.
+            {t`Họ này chưa công khai thông tin người sống.`}
           </p>
         )}
       </div>
@@ -1024,12 +1123,12 @@ function InLawLinkRow({
           {expanded ? (
             <>
               <IconChevronUp className="h-4 w-4 mr-1.5" />
-              Thu gọn
+              {t`Thu gọn`}
             </>
           ) : (
             <>
               <IconUsers className="h-4 w-4 mr-1.5" />
-              Gia đình bên đó
+              {t`Gia đình bên đó`}
             </>
           )}
         </Button>
@@ -1089,7 +1188,7 @@ function MissingFieldsHint({
     >
       <span className="text-muted-foreground">Hồ sơ này còn thiếu: </span>
       <span>{missing.join(" · ")}</span>
-      <span className="text-primary ml-1.5">→ Sửa</span>
+      <span className="text-primary ml-1.5">{t`→ Sửa`}</span>
     </Link>
   );
 }
@@ -1116,38 +1215,43 @@ function RelatedPostsSection({
 
   return (
     <CollapsibleCard
-      title={<><IconBell className="h-5 w-5" />Tin liên quan</>}
+      title={
+        <>
+          <IconBell className="h-5 w-5" />
+          {t`Tin liên quan`}
+        </>
+      }
       titleClassName="inline-flex items-center gap-2 text-base"
     >
-        <ul className="space-y-3">
-          {data.map((p) => (
-            <li
-              key={p.id}
-              className="border-l-2 border-primary/40 pl-3 space-y-1"
+      <ul className="space-y-3">
+        {data.map((p) => (
+          <li
+            key={p.id}
+            className="border-l-2 border-primary/40 pl-3 space-y-1"
+          >
+            <Link
+              to={`/clans/${clanId}/board`}
+              className="font-medium hover:underline block"
             >
-              <Link
-                to={`/clans/${clanId}/board`}
-                className="font-medium hover:underline block"
-              >
-                {p.title ?? (p.type === "death" ? "Cáo phó" : "Tin")}
-              </Link>
-              <p className="text-sm text-muted-foreground line-clamp-2 whitespace-pre-line">
-                {p.body}
-              </p>
-              <time
-                className="text-xs text-muted-foreground tabular-nums"
-                dateTime={p.created_at}
-              >
-                {new Date(p.created_at).toLocaleDateString("vi-VN", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </time>
-            </li>
-          ))}
-        </ul>
-      </CollapsibleCard>
+              {p.title ?? (p.type === "death" ? t`Cáo phó` : "Tin")}
+            </Link>
+            <p className="text-sm text-muted-foreground line-clamp-2 whitespace-pre-line">
+              {p.body}
+            </p>
+            <time
+              className="text-xs text-muted-foreground tabular-nums"
+              dateTime={p.created_at}
+            >
+              {new Date(p.created_at).toLocaleDateString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </time>
+          </li>
+        ))}
+      </ul>
+    </CollapsibleCard>
   );
 }
 

@@ -18,6 +18,7 @@ import {
   type PodcastEpisode,
 } from "@/lib/queries/podcast";
 
+import { t } from "@lingui/core/macro";
 /**
  * Podcast — các tập do nền tảng sản xuất, đăng trên Facebook và kéo về đây.
  *
@@ -52,17 +53,17 @@ export default function Podcast() {
       <PageHeader
         icon={<IconMicrophone className="h-7 w-7" />}
         title="Podcast"
-        description="Những câu chuyện ngắn để nghe lúc rảnh — mỗi tập một câu hỏi đáng nghĩ."
+        description={t`Những câu chuyện ngắn để nghe lúc rảnh — mỗi tập một câu hỏi đáng nghĩ.`}
       />
 
-      {isLoading && <LoadingState label="Đang tải danh sách tập…" />}
+      {isLoading && <LoadingState label={t`Đang tải danh sách tập…`} />}
       {error && <ErrorState error={error} onRetry={() => refetch()} />}
 
       {data && total === 0 && (
         <EmptyState
           icon={<IconMicrophone className="h-8 w-8" />}
-          title="Chưa có tập nào"
-          description="Tập mới sẽ xuất hiện ở đây ngay sau khi đăng."
+          title={t`Chưa có tập nào`}
+          description={t`Tập mới sẽ xuất hiện ở đây ngay sau khi đăng.`}
         />
       )}
 
@@ -82,7 +83,7 @@ export default function Podcast() {
             totalPages={totalPages}
             total={total}
             pageSize={PODCAST_PAGE_SIZE}
-            unit="tập"
+            unit={t`tập`}
             isFetching={isFetching}
             onPageChange={(p) => {
               // Sang trang khác thì đóng hẳn — nếu không, tập của trang

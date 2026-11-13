@@ -5,12 +5,16 @@ import { IconChevronDown, IconChevronUp, IconX } from "@/components/icons";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import type { Relationship } from "@/lib/queries/families";
 
+import { t } from "@lingui/core/macro";
 export type PersonLinkComponent = (
   props: ComponentProps<typeof Link> & { personId: string },
 ) => JSX.Element;
 
 /** Mặc định: link route thường tới trang người đó. */
-function DefaultPersonLink({ personId: _personId, ...rest }: ComponentProps<typeof Link> & { personId: string }) {
+function DefaultPersonLink({
+  personId: _personId,
+  ...rest
+}: ComponentProps<typeof Link> & { personId: string }) {
   return <Link {...rest} />;
 }
 
@@ -52,7 +56,7 @@ export function RelationshipGroup({
       </div>
       {reorder && (
         <p className="text-xs text-muted-foreground">
-          Dùng mũi tên để xếp thứ tự (vợ cả lên trên cùng).
+          {t`Dùng mũi tên để xếp thứ tự (vợ cả lên trên cùng).`}
         </p>
       )}
       {items.length === 0 ? (
@@ -78,9 +82,9 @@ export function RelationshipGroup({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{r.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {r.gender === "M" ? "Nam" : "Nữ"}
+                    {r.gender === "M" ? "Nam" : t`Nữ`}
                     {!r.is_living &&
-                      ` · đã mất${r.death_date ? ` ${r.death_date.slice(0, 4)}` : ""}`}
+                      t` · đã mất${r.death_date ? ` ${r.death_date.slice(0, 4)}` : ""}`}
                     {r.is_living &&
                       r.birth_date &&
                       ` · sinh ${r.birth_date.slice(0, 4)}`}
@@ -99,8 +103,8 @@ export function RelationshipGroup({
                 <button
                   type="button"
                   onClick={() => onRemove(r)}
-                  aria-label={`Gỡ liên kết với ${r.full_name}`}
-                  title="Gỡ liên kết (nhập nhầm)"
+                  aria-label={t`Gỡ liên kết với ${r.full_name}`}
+                  title={t`Gỡ liên kết (nhập nhầm)`}
                   className="flex w-9 shrink-0 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-destructive hover:border-destructive"
                 >
                   <IconX className="h-4 w-4" />
@@ -112,8 +116,8 @@ export function RelationshipGroup({
                     type="button"
                     onClick={() => reorder.onMove(index, -1)}
                     disabled={index === 0 || reorder.busy}
-                    aria-label={`Đưa ${r.full_name} lên`}
-                    title="Lên"
+                    aria-label={t`Đưa ${r.full_name} lên`}
+                    title={t`Lên`}
                     className="flex h-7 w-8 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-foreground hover:border-primary disabled:opacity-30 disabled:hover:border-input"
                   >
                     <IconChevronUp className="h-4 w-4" />
@@ -122,8 +126,8 @@ export function RelationshipGroup({
                     type="button"
                     onClick={() => reorder.onMove(index, 1)}
                     disabled={index === items.length - 1 || reorder.busy}
-                    aria-label={`Đưa ${r.full_name} xuống`}
-                    title="Xuống"
+                    aria-label={t`Đưa ${r.full_name} xuống`}
+                    title={t`Xuống`}
                     className="flex h-7 w-8 items-center justify-center rounded-md border bg-card text-muted-foreground hover:text-foreground hover:border-primary disabled:opacity-30 disabled:hover:border-input"
                   >
                     <IconChevronDown className="h-4 w-4" />

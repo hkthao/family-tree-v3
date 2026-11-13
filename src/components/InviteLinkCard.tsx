@@ -19,6 +19,8 @@ import {
   type InviteRole,
 } from "@/lib/queries/clan-invites";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const ROLE_LABEL: Record<InviteRole, string> = {
   viewer: "Xem & góp ý",
   editor: "Biên tập",
@@ -53,34 +55,36 @@ export function InviteLinkCard({
     mutationFn: () => createClanInvite(clanId, role),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      toast.success("Đã tạo link mời");
+      toast.success(t`Đã tạo link mời`);
     },
     onError: (e) =>
-      toast.error("Không tạo được", { description: (e as Error).message }),
+      toast.error(t`Không tạo được`, { description: (e as Error).message }),
   });
   const revokeM = useMutation({
     mutationFn: (id: string) => revokeClanInvite(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key });
-      toast.success("Đã thu hồi link");
+      toast.success(t`Đã thu hồi link`);
     },
     onError: (e) =>
-      toast.error("Không thu hồi được", { description: (e as Error).message }),
+      toast.error(t`Không thu hồi được`, { description: (e as Error).message }),
   });
 
   const urlFor = (token: string) => `${window.location.origin}/join/${token}`;
   async function copy(token: string) {
     try {
       await navigator.clipboard.writeText(urlFor(token));
-      toast.success("Đã chép link — dán vào nhóm họ Zalo/Facebook để mời.");
+      toast.success(t`Đã chép link — dán vào nhóm họ Zalo/Facebook để mời.`);
     } catch {
-      toast.error("Không chép được link");
+      toast.error(t`Không chép được link`);
     }
   }
   async function share(token: string) {
     const url = urlFor(token);
-    const text = `Mời bạn tham gia gia phả dòng họ ${clanName}`;
-    const nav = navigator as Navigator & { share?: (d: unknown) => Promise<void> };
+    const text = t`Mời bạn tham gia gia phả dòng họ ${clanName}`;
+    const nav = navigator as Navigator & {
+      share?: (d: unknown) => Promise<void>;
+    };
     if (nav.share) {
       try {
         await nav.share({ title: clanName, text, url });
@@ -95,15 +99,22 @@ export function InviteLinkCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mời bằng link</CardTitle>
+        <CardTitle>{t`Mời bằng link`}</CardTitle>
         <CardDescription>
-          Tạo 1 link gửi vào nhóm họ (Zalo/Facebook). Người thân bấm vào, đăng
-          nhập là tham gia được — không cần biết trước hay đăng ký sẵn.
+          <Trans>
+            <Trans>
+              <Trans>
+                Tạo 1 link gửi vào nhóm họ (Zalo/Facebook). Người thân bấm vào,
+                đăng nhập là tham gia được — không cần biết trước hay đăng ký
+                sẵn.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <fieldset className="space-y-2">
-          <legend className="text-base font-medium mb-1">Quyền khi tham gia</legend>
+          <legend className="text-base font-medium mb-1">{t`Quyền khi tham gia`}</legend>
           {(["viewer", "editor"] as InviteRole[]).map((r) => (
             <label key={r} className="flex items-start gap-3 cursor-pointer">
               <input
@@ -143,8 +154,8 @@ export function InviteLinkCard({
                   variant="outline"
                   size="sm"
                   className="h-9 w-9 p-0 shrink-0"
-                  aria-label="Chép link"
-                  title="Chép link"
+                  aria-label={t`Chép link`}
+                  title={t`Chép link`}
                   onClick={() => copy(inv.token)}
                 >
                   <IconLink className="h-4 w-4" />
@@ -154,8 +165,8 @@ export function InviteLinkCard({
                   variant="outline"
                   size="sm"
                   className="h-9 w-9 p-0 shrink-0"
-                  aria-label="Chia sẻ link"
-                  title="Chia sẻ link"
+                  aria-label={t`Chia sẻ link`}
+                  title={t`Chia sẻ link`}
                   onClick={() => share(inv.token)}
                 >
                   <IconShare2 className="h-4 w-4" />
@@ -165,8 +176,8 @@ export function InviteLinkCard({
                   variant="destructive-outline"
                   size="sm"
                   className="h-9 w-9 p-0 shrink-0"
-                  aria-label="Thu hồi link"
-                  title="Thu hồi link"
+                  aria-label={t`Thu hồi link`}
+                  title={t`Thu hồi link`}
                   disabled={revokeM.isPending}
                   onClick={() => revokeM.mutate(inv.id)}
                 >
@@ -184,7 +195,7 @@ export function InviteLinkCard({
           disabled={createM.isPending}
         >
           <IconLink className="h-4 w-4 mr-1.5" />
-          {createM.isPending ? "Đang tạo…" : "Tạo link mời"}
+          {createM.isPending ? t`Đang tạo…` : t`Tạo link mời`}
         </Button>
       </CardFooter>
     </Card>

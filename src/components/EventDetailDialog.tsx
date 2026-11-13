@@ -2,12 +2,19 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 
-import { IconCalendar, IconMapPin, IconSparkles, IconUser, IconX } from "@/components/icons";
+import {
+  IconCalendar,
+  IconMapPin,
+  IconSparkles,
+  IconUser,
+  IconX,
+} from "@/components/icons";
 import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { Button } from "@/components/ui/button";
 import { eventWhenText } from "@/lib/eventWhen";
 import type { EventRow } from "@/lib/queries/events";
 
+import { t } from "@lingui/core/macro";
 const EVENT_TYPE_LABEL: Record<string, string> = {
   custom: "Sự kiện",
   reunion: "Họp họ",
@@ -61,9 +68,13 @@ export function EventDetailDialog({
         className="w-full max-w-md rounded-lg border bg-card shadow-lg overflow-hidden"
       >
         <header className="border-b px-5 py-3 flex items-center justify-between">
-          <h2 className="font-semibold">Chi tiết sự kiện</h2>
-          <button type="button" onClick={onClose} aria-label="Đóng"
-            className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground">
+          <h2 className="font-semibold">{t`Chi tiết sự kiện`}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t`Đóng`}
+            className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
+          >
             <IconX className="h-4 w-4" />
           </button>
         </header>
@@ -82,7 +93,9 @@ export function EventDetailDialog({
           </div>
 
           {event.notes && (
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">{event.notes}</p>
+            <p className="text-sm whitespace-pre-wrap leading-relaxed">
+              {event.notes}
+            </p>
           )}
 
           <div className="flex flex-col gap-1.5">
@@ -92,7 +105,7 @@ export function EventDetailDialog({
                 className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
                 onClick={onClose}
               >
-                <IconUser className="h-4 w-4" /> Người liên quan
+                <IconUser className="h-4 w-4" /> {t`Người liên quan`}
               </Link>
             )}
             {event.resting_place_id && (
@@ -101,14 +114,14 @@ export function EventDetailDialog({
                 className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
                 onClick={onClose}
               >
-                <IconMapPin className="h-4 w-4" /> Nơi an nghỉ liên quan
+                <IconMapPin className="h-4 w-4" /> {t`Nơi an nghỉ liên quan`}
               </Link>
             )}
           </div>
 
           <div className="pt-1">
             <Button className="w-full" onClick={() => setCardOpen(true)}>
-              <IconSparkles className="h-4 w-4 mr-1.5" /> Tạo thiệp chia sẻ
+              <IconSparkles className="h-4 w-4 mr-1.5" /> {t`Tạo thiệp chia sẻ`}
             </Button>
           </div>
         </div>

@@ -2,14 +2,25 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Chip } from "@/components/Chip";
-import { IconArrowRight, IconGrave, IconMapPin, IconScroll, IconUsers } from "@/components/icons";
+import {
+  IconArrowRight,
+  IconGrave,
+  IconMapPin,
+  IconScroll,
+  IconUsers,
+} from "@/components/icons";
 import { ProvinceMap } from "@/components/ProvinceMap";
 import { SectionCard } from "@/components/SectionCard";
 import { useClanContext } from "@/hooks/useClanContext";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
-import { getClanMapStats, MAP_LAYER_LABEL, type MapLayer } from "@/lib/queries/mapStats";
+import {
+  getClanMapStats,
+  MAP_LAYER_LABEL,
+  type MapLayer,
+} from "@/lib/queries/mapStats";
 import { listProvinces } from "@/lib/queries/vnDivisions";
 
+import { t } from "@lingui/core/macro";
 const ICON: Record<MapLayer, React.ComponentType<{ className?: string }>> = {
   people: IconUsers,
   graves: IconGrave,
@@ -39,29 +50,36 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
   const layers = (Object.keys(MAP_LAYER_LABEL) as MapLayer[]).filter(
     (l) =>
       (l !== "graves" || isFeatureEnabled(clan.disabled_features, "graves")) &&
-      (l !== "heritage" || isFeatureEnabled(clan.disabled_features, "heritage")),
+      (l !== "heritage" ||
+        isFeatureEnabled(clan.disabled_features, "heritage")),
   );
-  const nameOf = (code: string) => provinces.find((p) => p.code === code)?.name ?? code;
+  const nameOf = (code: string) =>
+    provinces.find((p) => p.code === code)?.name ?? code;
 
   const people = stats?.people ?? {};
   const top = Object.entries(people)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
-  const nothing = !!stats && layers.every((l) => (stats.total[l] ?? 0) - (stats.missing[l] ?? 0) <= 0);
+  const nothing =
+    !!stats &&
+    layers.every((l) => (stats.total[l] ?? 0) - (stats.missing[l] ?? 0) <= 0);
 
   return (
     <SectionCard
       id="map"
       icon={<IconMapPin />}
-      title="Bản đồ dòng họ"
+      title={t`Bản đồ dòng họ`}
       footer={
-        <Link to={full} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+        <Link
+          to={full}
+          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+        >
           Xem bản đồ đầy đủ <IconArrowRight className="h-4 w-4" />
         </Link>
       }
     >
       {!stats ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
+        <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>
       ) : (
         <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[minmax(0,15rem)_1fr]">
           {/* Bản đồ thu nhỏ: bấm là vào trang bản đồ đầy đủ. */}
@@ -70,7 +88,7 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
               counts={people}
               selected={null}
               onSelect={() => navigate(full)}
-              unit="người"
+              unit={t`người`}
               className="h-auto max-h-72 w-full"
             />
           </div>
@@ -83,7 +101,11 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
                 const total = stats.total[l] ?? 0;
                 const have = Math.max(total - (stats.missing[l] ?? 0), 0);
                 return (
-                  <Chip key={l} tone={have > 0 ? "success" : "neutral"} icon={<Ic />}>
+                  <Chip
+                    key={l}
+                    tone={have > 0 ? "success" : "neutral"}
+                    icon={<Ic />}
+                  >
                     {MAP_LAYER_LABEL[l]}: {have}/{total}
                   </Chip>
                 );
@@ -92,23 +114,34 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
 
             {nothing ? (
               <p className="text-sm text-muted-foreground">
-                Chưa có dữ liệu khu vực. Nhập <strong>"Nơi ở hiện tại"</strong> cho từng người trong Danh bạ (hoặc chọn
-                Tỉnh / Xã cho mộ phần, di sản) để con cháu hiện lên bản đồ.
+                {t`Chưa có dữ liệu khu vực. Nhập`}{" "}
+                <strong>{t`"Nơi ở hiện tại"`}</strong> cho từng người trong Danh
+                bạ (hoặc chọn Tỉnh / Xã cho mộ phần, di sản) để con cháu hiện
+                lên bản đồ.
               </p>
             ) : (
               <div>
-                <p className="mb-1.5 text-sm font-medium">Con cháu nhiều nhất ở</p>
+                <p className="mb-1.5 text-sm font-medium">{t`Con cháu nhiều nhất ở`}</p>
                 <ol className="space-y-1 text-sm">
                   {top.map(([code, n], i) => (
-                    <li key={code} className="flex items-center justify-between gap-2">
+                    <li
+                      key={code}
+                      className="flex items-center justify-between gap-2"
+                    >
                       <span className="truncate">
-                        <span className="mr-2 text-muted-foreground">{i + 1}.</span>
+                        <span className="mr-2 text-muted-foreground">
+                          {i + 1}.
+                        </span>
                         {nameOf(code)}
                       </span>
-                      <span className="shrink-0 tabular-nums text-muted-foreground">{n} người</span>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">
+                        {n} người
+                      </span>
                     </li>
                   ))}
-                  {top.length === 0 && <li className="text-muted-foreground">Chưa có.</li>}
+                  {top.length === 0 && (
+                    <li className="text-muted-foreground">{t`Chưa có.`}</li>
+                  )}
                 </ol>
               </div>
             )}

@@ -10,6 +10,7 @@ import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { listPendingPosts } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 /**
  * `/clans/:clanId/board/moderation` — hàng chờ duyệt cho admin clan.
  * Non-admin redirect về `/board`.
@@ -34,18 +35,18 @@ export default function BoardModeration() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Bảng tin", to: `/clans/${clanId}/board` },
-          { label: "Duyệt bài" },
+          { label: t`Bảng tin`, to: `/clans/${clanId}/board` },
+          { label: t`Duyệt bài` },
         ]}
       />
 
       <PageHeader
         icon={<IconCheck className="h-7 w-7" />}
-        title="Duyệt bài"
+        title={t`Duyệt bài`}
         description='Bài chờ duyệt từ thành viên. Bấm "Duyệt" để đăng, hoặc "Từ chối" để ẩn (vẫn lưu lại — có thể hiện lại sau).'
       />
 
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{(error as Error).message}</AlertDescription>
@@ -55,9 +56,9 @@ export default function BoardModeration() {
       {data?.length === 0 && !isLoading && (
         <Alert>
           <AlertDescription>
-            Không có bài nào đang chờ. Tất cả đã được xử lý.{" "}
+            {t`Không có bài nào đang chờ. Tất cả đã được xử lý.`}{" "}
             <Link to={`/clans/${clanId}/board`} className="underline">
-              Quay về bảng tin
+              {t`Quay về bảng tin`}
             </Link>
             .
           </AlertDescription>

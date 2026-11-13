@@ -5,6 +5,7 @@ import { isClanAdmin } from "@/hooks/useClanContext";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import { type ClanPost, type ClanPostType } from "@/lib/queries/clan_posts";
 
+import { t } from "@lingui/core/macro";
 const TYPE_LABEL: Record<ClanPostType, string> = {
   news: "Tin",
   event: "Sự kiện",
@@ -69,8 +70,8 @@ export function ClanPostCard({
             {post.pinned && (
               <span
                 className="text-primary mr-1.5"
-                title="Đã ghim"
-                aria-label="Đã ghim"
+                title={t`Đã ghim`}
+                aria-label={t`Đã ghim`}
               >
                 📌
               </span>
@@ -103,11 +104,11 @@ export function ClanPostCard({
           )}
           {isPending && (
             <span className="text-amber-700 dark:text-amber-300 font-medium">
-              · Chờ duyệt
+              {t`· Chờ duyệt`}
             </span>
           )}
           {isHidden && (
-            <span className="text-muted-foreground italic">· Đã ẩn</span>
+            <span className="text-muted-foreground italic">{t`· Đã ẩn`}</span>
           )}
           <span
             className={`ml-auto inline-flex items-center rounded-full border px-2 py-0.5 font-medium ${TYPE_BADGE[post.type]}`}
@@ -129,10 +130,10 @@ export function formatRelative(iso: string): string {
   const diffDay = Math.round(diffMs / 86_400_000);
 
   if (diffMin < 1) return "vừa xong";
-  if (diffMin < 60) return `${diffMin} phút trước`;
-  if (diffHr < 24) return `${diffHr} giờ trước`;
+  if (diffMin < 60) return t`${diffMin} phút trước`;
+  if (diffHr < 24) return t`${diffHr} giờ trước`;
   if (diffDay === 1) return "Hôm qua";
-  if (diffDay < 7) return `${diffDay} ngày trước`;
+  if (diffDay < 7) return t`${diffDay} ngày trước`;
   return new Date(iso).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",

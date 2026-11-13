@@ -260,7 +260,7 @@ function DrawerToggle({
       ? t`Hiện menu`
       : t`Ẩn menu`
     : hasWork
-      ? `Mở menu — có ${todoCount} việc cần làm`
+      ? t`Mở menu — có ${todoCount ?? 0} việc cần làm`
       : t`Mở menu`;
   return (
     <button

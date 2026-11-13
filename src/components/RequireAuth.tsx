@@ -7,6 +7,7 @@ import { signOutAndClearCache } from "@/lib/auth-actions";
 import { queryKeys } from "@/lib/queries/keys";
 import { getMyProfile } from "@/lib/queries/profile";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   children: React.ReactNode;
 }
@@ -44,7 +45,7 @@ export function RequireAuth({ children }: Props) {
   if (loading || (user && profileLoading)) {
     return (
       <main className="min-h-dvh flex items-center justify-center">
-        <p className="text-muted-foreground">Đang tải…</p>
+        <p className="text-muted-foreground">{t`Đang tải…`}</p>
       </main>
     );
   }

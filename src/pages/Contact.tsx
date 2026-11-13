@@ -4,11 +4,7 @@ import { Link } from "react-router-dom";
 
 import { AppHeader } from "@/components/AppHeader";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import {
-  IconCheck,
-  IconHelp,
-  IconMail,
-} from "@/components/icons";
+import { IconCheck, IconHelp, IconMail } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,11 +13,10 @@ import { FormActions } from "@/components/ui/form-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  submitFeedback,
-  type FeedbackCategory,
-} from "@/lib/queries/feedback";
+import { submitFeedback, type FeedbackCategory } from "@/lib/queries/feedback";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * /lien-he — trang liên hệ / gửi phản hồi đầy đủ.
  *
@@ -33,10 +28,26 @@ import {
  * Bám đúng RLS feedback: anon được insert, owner được đọc lại của
  * chính mình (xem queries/feedback.ts + migration §32.4).
  */
-const CATEGORIES: Array<{ value: FeedbackCategory; label: string; hint: string }> = [
-  { value: "bug", label: "Lỗi / sự cố", hint: "App hỏng, dữ liệu sai, trang trắng…" },
-  { value: "idea", label: "Đề xuất / ý kiến", hint: "Tính năng muốn có, chỗ chưa tiện…" },
-  { value: "question", label: "Câu hỏi", hint: "Hỏi cách dùng, hỏi về dữ liệu…" },
+const CATEGORIES: Array<{
+  value: FeedbackCategory;
+  label: string;
+  hint: string;
+}> = [
+  {
+    value: "bug",
+    label: "Lỗi / sự cố",
+    hint: "App hỏng, dữ liệu sai, trang trắng…",
+  },
+  {
+    value: "idea",
+    label: "Đề xuất / ý kiến",
+    hint: "Tính năng muốn có, chỗ chưa tiện…",
+  },
+  {
+    value: "question",
+    label: "Câu hỏi",
+    hint: "Hỏi cách dùng, hỏi về dữ liệu…",
+  },
   { value: "other", label: "Khác", hint: "Mọi thứ khác." },
 ];
 
@@ -53,19 +64,18 @@ export default function Contact() {
         message: message.trim(),
         category,
         contact: contact.trim() || null,
-        pageUrl:
-          typeof window === "undefined" ? null : window.location.href,
+        pageUrl: typeof window === "undefined" ? null : window.location.href,
       }),
     onSuccess: () => {
-      toast.success("Đã gửi liên hệ", {
-        description: "Cảm ơn bạn — chúng tôi sẽ xem sớm nhất.",
+      toast.success(t`Đã gửi liên hệ`, {
+        description: t`Cảm ơn bạn — chúng tôi sẽ xem sớm nhất.`,
       });
       setMessage("");
       setContact("");
       setSent(true);
     },
     onError: (e) =>
-      toast.error("Không gửi được", { description: (e as Error).message }),
+      toast.error(t`Không gửi được`, { description: (e as Error).message }),
   });
 
   function onSubmit(e: React.FormEvent) {
@@ -81,29 +91,35 @@ export default function Contact() {
       <main className="container max-w-4xl py-6 px-4 space-y-3">
         <Breadcrumb
           items={[
-            { label: "Dòng họ", to: "/clans" },
-            { label: "Liên hệ / phản hồi" },
+            { label: t`Dòng họ`, to: "/clans" },
+            { label: t`Liên hệ / phản hồi` },
           ]}
         />
 
         <PageHeader
           icon={<IconHelp className="h-7 w-7" />}
-          title="Liên hệ / phản hồi"
-          description="Mọi ý kiến đều giúp app tốt hơn. Không cần ngại — viết ngắn cũng được. Có thể gửi không cần đăng nhập."
+          title={t`Liên hệ / phản hồi`}
+          description={t`Mọi ý kiến đều giúp app tốt hơn. Không cần ngại — viết ngắn cũng được. Có thể gửi không cần đăng nhập.`}
         />
 
         {sent && (
           <Alert>
             <AlertDescription>
-              Cảm ơn bạn. Phản hồi đã ghi nhận. Nếu để lại liên lạc, chúng
-              tôi sẽ trả lời khi có cập nhật.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Cảm ơn bạn. Phản hồi đã ghi nhận. Nếu để lại liên lạc, chúng
+                    tôi sẽ trả lời khi có cập nhật.
+                  </Trans>
+                </Trans>
+              </Trans>
             </AlertDescription>
           </Alert>
         )}
 
         <form onSubmit={onSubmit} className="space-y-5">
           <fieldset className="space-y-2">
-            <legend className="text-base font-medium">Loại phản hồi</legend>
+            <legend className="text-base font-medium">{t`Loại phản hồi`}</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {CATEGORIES.map((opt) => (
                 <label
@@ -135,7 +151,7 @@ export default function Contact() {
 
           <div className="space-y-2">
             <Label htmlFor="contact-message" required>
-              Bạn muốn nói gì?
+              {t`Bạn muốn nói gì?`}
             </Label>
             <Textarea
               id="contact-message"
@@ -144,14 +160,14 @@ export default function Contact() {
               rows={6}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
+              placeholder={t`Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…`}
               className="resize-y"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="contact-handle">
-              Cách liên lạc lại (tuỳ chọn)
+              {t`Cách liên lạc lại (tuỳ chọn)`}
             </Label>
             <Input
               id="contact-handle"
@@ -159,16 +175,16 @@ export default function Contact() {
               maxLength={200}
               value={contact}
               onChange={(e) => setContact(e.target.value)}
-              placeholder="Email / số điện thoại / Zalo — để trống cũng được"
+              placeholder={t`Email / số điện thoại / Zalo — để trống cũng được`}
             />
             <p className="text-xs text-muted-foreground">
-              Chỉ ban quản trị xem; không hiện cho người khác.
+              {t`Chỉ ban quản trị xem; không hiện cho người khác.`}
             </p>
           </div>
 
           <FormActions>
             <Button asChild variant="outline">
-              <Link to="/clans">Quay lại</Link>
+              <Link to="/clans">{t`Quay lại`}</Link>
             </Button>
             <Button
               type="submit"
@@ -176,7 +192,7 @@ export default function Contact() {
               disabled={mutation.isPending || !message.trim()}
             >
               <IconCheck className="h-4 w-4 mr-1.5" />
-              {mutation.isPending ? "Đang gửi…" : "Gửi phản hồi"}
+              {mutation.isPending ? t`Đang gửi…` : t`Gửi phản hồi`}
             </Button>
           </FormActions>
         </form>

@@ -9,6 +9,7 @@ import { queryKeys } from "@/lib/queries/keys";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 
+import { t } from "@lingui/core/macro";
 /**
  * Top-banner cho tin `level='critical'` chưa đọc. Hiện tin mới nhất
  * thôi — không stack nhiều cùng lúc (gây nhiễu).
@@ -83,7 +84,7 @@ export function CriticalBanner() {
               to="/announcements"
               className="text-primary hover:underline font-medium"
             >
-              Xem tất cả thông báo
+              {t`Xem tất cả thông báo`}
             </Link>
             <button
               type="button"
@@ -91,7 +92,7 @@ export function CriticalBanner() {
               disabled={markM.isPending}
               className="text-muted-foreground hover:text-foreground"
             >
-              {markM.isPending ? "Đang lưu…" : "Đã hiểu"}
+              {markM.isPending ? t`Đang lưu…` : t`Đã hiểu`}
             </button>
           </div>
         </div>

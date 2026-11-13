@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Link } from "react-router-dom";
 
 import { IconPlay, IconSparkles } from "@/components/icons";
@@ -6,6 +12,8 @@ import { useAiProviderLabel } from "@/hooks/useAiProvider";
 import type { ChatTurn } from "@/lib/queries/aiChat";
 import { cn } from "@/lib/utils";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Luồng tin nhắn — dùng chung cho trang toàn màn hình (điện thoại) và
  * khung nổi (máy tính).
@@ -97,70 +105,79 @@ export function ChatThread({
         {!turns.length && (
           <div className="mx-auto max-w-md px-2 py-6 text-center">
             <IconSparkles className="mx-auto mb-3 h-8 w-8 text-primary" />
-            <p className="mb-2 font-semibold">Chào bạn 👋</p>
+            <p className="mb-2 font-semibold">{t`Chào bạn 👋`}</p>
             <p className="text-muted-foreground">
-              Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời
-              thường ngày — ngày giỗ, cách xưng hô, ai là con ai.
+              Tôi biết về gia phả dòng họ {clanName}. Bạn cứ hỏi bằng lời thường
+              ngày — ngày giỗ, cách xưng hô, ai là con ai.
             </p>
             {/* Chỉ mách cho người thật sự làm được. Mách cho người xem thì
                 họ kể xong mới biết mình không có quyền — hụt hẫng vô ích. */}
             {canAddPeople && (
               <p className="mt-2 text-muted-foreground">
-                Muốn thêm người thì cứ kể, ví dụ “Bố tôi là Nguyễn Văn An,
-                sinh 1940”. Tôi ghi lại để bạn xem trước rồi mới lưu.
+                <Trans>
+                  <Trans>
+                    Muốn thêm người thì cứ kể, ví dụ “Bố tôi là Nguyễn Văn An,
+                    sinh 1940”. Tôi ghi lại để bạn xem trước rồi mới lưu.
+                  </Trans>
+                </Trans>
               </p>
             )}
             {/* Nói thẳng chuyện dữ liệu rời khỏi máy chủ. Người dùng có
                 quyền biết trước khi gõ câu đầu tiên, không phải đi tìm
                 trong trang điều khoản. */}
             <p className="mt-3 text-sm text-muted-foreground">
-              Câu hỏi của bạn{provider ? ` được gửi tới ${provider}` : " được gửi tới một dịch vụ AI bên ngoài"} để
-              xử lý, kèm tên và năm sinh/mất của những người liên quan trong
+              Câu hỏi của bạn
+              {provider
+                ? t` được gửi tới ${provider}`
+                : t` được gửi tới một dịch vụ AI bên ngoài`}{" "}
+              để xử lý, kèm tên và năm sinh/mất của những người liên quan trong
               gia phả. Ảnh, tiểu sử và ghi chú riêng thì không gửi đi.
             </p>
           </div>
         )}
 
         <ul className="mx-auto flex max-w-2xl flex-col gap-3">
-          {turns.map((t, i) => (
+          {turns.map((turn, i) => (
             <li
               key={i}
-              className={t.role === "user" ? "flex justify-end" : "flex justify-start"}
+              className={
+                turn.role === "user" ? "flex justify-end" : "flex justify-start"
+              }
             >
               <div
                 className={
-                  t.role === "user"
+                  turn.role === "user"
                     ? "max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 leading-relaxed text-primary-foreground"
                     : "max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-secondary px-4 py-2.5 leading-relaxed"
                 }
               >
-                {t.content}
-                {t.role === "assistant" && (
+                {turn.content}
+                {turn.role === "assistant" && (
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => speak(t.content)}
+                      onClick={() => speak(turn.content)}
                       className="flex min-h-[44px] items-center gap-1.5 text-sm text-muted-foreground underline-offset-2 hover:underline"
                     >
                       <IconPlay className="h-4 w-4" />
-                      Đọc to
+                      {t`Đọc to`}
                     </button>
                     {/* Chấm điểm chỉ hiện ở câu vừa trả lời trong phiên
                         này (câu tải từ lịch sử không có mã lượt). Chấm
                         cho câu hỏi từ tuần trước thì cũng không ai nhớ
                         nổi nó đúng hay sai. */}
-                    {onRate && t.ref && (
+                    {onRate && turn.ref && (
                       <span className="flex items-center gap-1">
                         <RateButton
-                          active={t.rating === 1}
-                          label="Câu trả lời này hữu ích"
+                          active={turn.rating === 1}
+                          label={t`Câu trả lời này hữu ích`}
                           onClick={() => onRate(i, 1)}
                         >
                           👍
                         </RateButton>
                         <RateButton
-                          active={t.rating === -1}
-                          label="Câu trả lời này chưa đúng"
+                          active={turn.rating === -1}
+                          label={t`Câu trả lời này chưa đúng`}
                           onClick={() => onRate(i, -1)}
                         >
                           👎
@@ -182,7 +199,7 @@ export function ChatThread({
                 to={quotaFallbackHref}
                 className="inline-flex min-h-[52px] items-center rounded-2xl border border-primary/40 bg-primary/5 px-4 py-2.5 font-medium underline-offset-2 hover:underline"
               >
-                Mở trang Nhờ AI lập gia phả (miễn phí)
+                {t`Mở trang Nhờ AI lập gia phả (miễn phí)`}
               </Link>
             </li>
           )}
@@ -202,7 +219,7 @@ export function ChatThread({
                 <div className="rounded-2xl rounded-bl-sm bg-secondary px-4 py-3 text-muted-foreground">
                   <span className="inline-flex items-center gap-2">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-current" />
-                    Đang nghĩ…
+                    {t`Đang nghĩ…`}
                   </span>
                 </div>
               )}
@@ -228,13 +245,12 @@ export function ChatThread({
           onClick={() => scrollToBottom()}
           className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg"
         >
-          ↓ Tin mới
+          {t`↓ Tin mới`}
         </button>
       )}
     </div>
   );
 }
-
 
 /**
  * Nút chấm điểm — 44px cho vừa ngón tay người lớn tuổi, và trạng thái đã

@@ -17,6 +17,8 @@ import {
   type UploadProgress,
 } from "@/lib/photoUpload";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 // File-size cushion above which we warn the user that compression
 // will take a while. iPhone 13+ photos are routinely 5–8MB; anything
 // past this is usually a screenshot at full resolution or a downloaded
@@ -67,7 +69,7 @@ export function PhotoUploadField({
   const uploadM = useMutation({
     mutationFn: async (file: File) => {
       if (file.size > LARGE_FILE_THRESHOLD) {
-        toast.info("File khá lớn — đang nén, có thể mất vài giây", {
+        toast.info(t`File khá lớn — đang nén, có thể mất vài giây`, {
           description: `${Math.round(file.size / 1024 / 1024)} MB`,
         });
       }
@@ -87,13 +89,13 @@ export function PhotoUploadField({
           Array.isArray(q.queryKey) && q.queryKey[0] === "signed-photo",
       });
       onChange?.(res.path);
-      toast.success("Đã tải ảnh lên", {
-        description: `${Math.round(res.bytes / 1024)} KB sau khi nén.`,
+      toast.success(t`Đã tải ảnh lên`, {
+        description: t`${Math.round(res.bytes / 1024)} KB sau khi nén.`,
       });
     },
     onError: (e) => {
       setProgress(null);
-      toast.error("Tải ảnh thất bại", { description: (e as Error).message });
+      toast.error(t`Tải ảnh thất bại`, { description: (e as Error).message });
     },
   });
 
@@ -108,10 +110,10 @@ export function PhotoUploadField({
         queryKey: queryKeys.person(personId, userId),
       });
       onChange?.(null);
-      toast.success("Đã xoá ảnh");
+      toast.success(t`Đã xoá ảnh`);
     },
     onError: (e) =>
-      toast.error("Xoá ảnh thất bại", { description: (e as Error).message }),
+      toast.error(t`Xoá ảnh thất bại`, { description: (e as Error).message }),
   });
 
   return (
@@ -150,11 +152,11 @@ export function PhotoUploadField({
             <IconUpload className="h-4 w-4 mr-1.5" />
             {uploadM.isPending
               ? progress?.phase === "upload"
-                ? "Đang tải lên…"
-                : "Đang nén ảnh…"
+                ? t`Đang tải lên…`
+                : t`Đang nén ảnh…`
               : photoPath
-                ? "Đổi ảnh"
-                : "Tải ảnh lên"}
+                ? t`Đổi ảnh`
+                : t`Tải ảnh lên`}
           </Button>
           {photoPath && (
             <Button
@@ -162,8 +164,8 @@ export function PhotoUploadField({
               variant="destructive-outline"
               onClick={async () => {
                 const ok = await confirm({
-                  title: "Xoá ảnh của người này?",
-                  confirmLabel: "Xoá",
+                  title: t`Xoá ảnh của người này?`,
+                  confirmLabel: t`Xoá`,
                   destructive: true,
                 });
                 if (ok) deleteM.mutate();
@@ -171,7 +173,7 @@ export function PhotoUploadField({
               disabled={deleteM.isPending}
             >
               <IconTrash className="h-4 w-4 mr-1.5" />
-              {deleteM.isPending ? "Đang xoá…" : "Xoá ảnh"}
+              {deleteM.isPending ? t`Đang xoá…` : t`Xoá ảnh`}
             </Button>
           )}
         </div>
@@ -186,14 +188,20 @@ export function PhotoUploadField({
           </div>
           <p className="text-xs text-muted-foreground">
             {progress.phase === "compress"
-              ? `Đang nén ảnh… ${Math.round(progress.percent)}%`
-              : "Đang tải lên server…"}
+              ? t`Đang nén ảnh… ${Math.round(progress.percent)}%`
+              : t`Đang tải lên server…`}
           </p>
         </div>
       )}
       <p className="text-xs text-muted-foreground">
-        Ảnh sẽ được nén còn tối đa 512×512, ≈ 80 KB (JPEG). Định dạng
-        gốc: JPG, PNG, WebP, HEIC.
+        <Trans>
+          <Trans>
+            <Trans>
+              Ảnh sẽ được nén còn tối đa 512×512, ≈ 80 KB (JPEG). Định dạng gốc:
+              JPG, PNG, WebP, HEIC.
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
       {stats && (
         <p className="text-xs text-muted-foreground">
@@ -202,12 +210,16 @@ export function PhotoUploadField({
       )}
       {uploadM.error && (
         <Alert variant="destructive">
-          <AlertDescription>{(uploadM.error as Error).message}</AlertDescription>
+          <AlertDescription>
+            {(uploadM.error as Error).message}
+          </AlertDescription>
         </Alert>
       )}
       {deleteM.error && (
         <Alert variant="destructive">
-          <AlertDescription>{(deleteM.error as Error).message}</AlertDescription>
+          <AlertDescription>
+            {(deleteM.error as Error).message}
+          </AlertDescription>
         </Alert>
       )}
     </div>

@@ -2,9 +2,16 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { parseBio } from "@/lib/bio";
 
+import { t } from "@lingui/core/macro";
 export { bioToPlainText, parseBio } from "@/lib/bio";
 
-export function BioText({ text, className }: { text: string; className?: string }) {
+export function BioText({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
   if (!/^##\s/m.test(text)) {
     return <p className={`whitespace-pre-wrap ${className ?? ""}`}>{text}</p>;
   }
@@ -12,7 +19,10 @@ export function BioText({ text, className }: { text: string; className?: string 
   const nodes: ReactNode[] = blocks.map((b, i) => {
     if (b.kind === "h")
       return (
-        <h4 key={i} className="mt-4 first:mt-0 text-sm font-semibold text-foreground">
+        <h4
+          key={i}
+          className="mt-4 first:mt-0 text-sm font-semibold text-foreground"
+        >
           {b.text}
         </h4>
       );
@@ -44,7 +54,9 @@ export function CollapsibleBio({ text }: { text: string }) {
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const limit = BIO_COLLAPSED_REM * parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const limit =
+      BIO_COLLAPSED_REM *
+      parseFloat(getComputedStyle(document.documentElement).fontSize);
     setOverflows(el.scrollHeight > limit + 8);
   }, [text]);
   const clamped = overflows && !open;
@@ -70,7 +82,7 @@ export function CollapsibleBio({ text }: { text: string }) {
           aria-expanded={open}
           className="mt-2 text-sm font-medium text-primary hover:underline"
         >
-          {open ? "Thu gọn" : "Xem thêm"}
+          {open ? t`Thu gọn` : t`Xem thêm`}
         </button>
       )}
     </div>

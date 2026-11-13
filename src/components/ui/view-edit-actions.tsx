@@ -2,6 +2,7 @@ import { IconCheck, IconPencil, IconTrash } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
 
+import { t } from "@lingui/core/macro";
 /**
  * Thanh nút dính đáy của ngăn kéo xem / sửa. Thứ tự phá huỷ → phụ → chính:
  *  - xem (`readOnly`): chỉ `[ Sửa ]`, và chỉ khi có quyền;
@@ -34,7 +35,7 @@ export function ViewEditActions({
       <FormActions>
         <Button type="button" onClick={onEdit}>
           <IconPencil className="mr-1.5 h-4 w-4" />
-          Sửa
+          {t`Sửa`}
         </Button>
       </FormActions>
     ) : null;
@@ -42,13 +43,18 @@ export function ViewEditActions({
   return (
     <FormActions>
       {onDelete && (
-        <Button type="button" variant="destructive-outline" onClick={onDelete} disabled={deleteDisabled}>
+        <Button
+          type="button"
+          variant="destructive-outline"
+          onClick={onDelete}
+          disabled={deleteDisabled}
+        >
           <IconTrash className="mr-1.5 h-4 w-4" />
-          Xoá
+          {t`Xoá`}
         </Button>
       )}
       <Button type="button" variant="outline" onClick={onCancel}>
-        Hủy
+        {t`Hủy`}
       </Button>
       <Button type="submit" disabled={saving || !canSave}>
         <IconCheck className="mr-1.5 h-4 w-4" />

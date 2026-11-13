@@ -29,6 +29,8 @@ import {
   type EditPersonChanges,
 } from "@/lib/queries/contributions";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 // ─── Props ───────────────────────────────────────────────────────
 
 export interface FocalPerson {
@@ -228,20 +230,20 @@ export function ContributeDialog({
   const m = useMutation({
     mutationFn: async () => {
       const built = buildPayload();
-      if (!built) throw new Error("Chưa có gì thay đổi để đề xuất");
+      if (!built) throw new Error(t`Chưa có gì thay đổi để đề xuất`);
       const relation = submitterRelation.trim();
-      if (!relation) throw new Error("Cần ghi quan hệ của bạn với người này");
+      if (!relation) throw new Error(t`Cần ghi quan hệ của bạn với người này`);
       const note = submitterNote.trim();
 
       if (isGuest) {
         const name = submitterName.trim();
         const contact = submitterContact.trim();
-        if (!name) throw new Error("Cần tên người gửi");
+        if (!name) throw new Error(t`Cần tên người gửi`);
         if (!contact && !note) {
-          throw new Error("Cần email/sđt liên hệ hoặc ghi chú");
+          throw new Error(t`Cần email/sđt liên hệ hoặc ghi chú`);
         }
         if (!shareToken) {
-          throw new Error("Thiếu token chia sẻ");
+          throw new Error(t`Thiếu token chia sẻ`);
         }
         await submitGuestContribution({
           token: shareToken,
@@ -270,11 +272,11 @@ export function ContributeDialog({
     onSuccess: () => {
       setSubmitted(true);
       track("contribution_submitted", { kind: mode, guest: isGuest });
-      toast.success("Đã gửi đề xuất");
+      toast.success(t`Đã gửi đề xuất`);
       onSuccess?.();
     },
     onError: (e) =>
-      toast.error("Không gửi được", { description: (e as Error).message }),
+      toast.error(t`Không gửi được`, { description: (e as Error).message }),
   });
 
   if (!open || typeof document === "undefined") return null;
@@ -288,7 +290,7 @@ export function ContributeDialog({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Đề xuất sửa thông tin"
+      aria-label={t`Đề xuất sửa thông tin`}
       className="fixed inset-0 z-50 overflow-y-auto bg-black/40"
       onClick={onClose}
     >
@@ -297,312 +299,319 @@ export function ContributeDialog({
           className="relative w-full max-w-xl rounded-lg bg-card p-4 sm:p-5 shadow-xl my-4 sm:my-8"
           onClick={(e) => e.stopPropagation()}
         >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Đóng"
-          className="absolute right-3 top-3 h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
-        >
-          <IconX className="h-5 w-5" />
-        </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t`Đóng`}
+            className="absolute right-3 top-3 h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
+          >
+            <IconX className="h-5 w-5" />
+          </button>
 
-        <h2 className="clan-name text-lg font-semibold text-primary pr-9">
-          Đề xuất cho {focalPerson.full_name}
-        </h2>
-        <p className="text-xs text-muted-foreground mt-1">
-          Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự
-          động sửa cây gia phả.
-        </p>
+          <h2 className="clan-name text-lg font-semibold text-primary pr-9">
+            Đề xuất cho {focalPerson.full_name}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            <Trans>
+              <Trans>
+                <Trans>
+                  Admin sẽ xem xét trước khi áp dụng. Đề xuất của bạn không tự
+                  động sửa cây gia phả.
+                </Trans>
+              </Trans>
+            </Trans>
+          </p>
 
-        {submitted ? (
-          <div className="mt-5 py-8 text-center space-y-3">
-            <div className="mx-auto h-14 w-14 rounded-full bg-accent/15 inline-flex items-center justify-center text-accent">
-              <IconCheck className="h-8 w-8" />
+          {submitted ? (
+            <div className="mt-5 py-8 text-center space-y-3">
+              <div className="mx-auto h-14 w-14 rounded-full bg-accent/15 inline-flex items-center justify-center text-accent">
+                <IconCheck className="h-8 w-8" />
+              </div>
+              <p className="font-medium">{t`Đã gửi đề xuất.`}</p>
+              <p className="text-sm text-muted-foreground">
+                {t`Admin sẽ liên hệ qua`}{" "}
+                {submitterContact || "thông tin bạn đã ghi"} nếu cần.
+              </p>
+              <Button variant="outline" size="sm" onClick={onClose}>
+                {t`Đóng`}
+              </Button>
             </div>
-            <p className="font-medium">Đã gửi đề xuất.</p>
-            <p className="text-sm text-muted-foreground">
-              Admin sẽ liên hệ qua{" "}
-              {submitterContact || "thông tin bạn đã ghi"} nếu cần.
-            </p>
-            <Button variant="outline" size="sm" onClick={onClose}>
-              Đóng
-            </Button>
-          </div>
-        ) : (
-          <>
-            {/* Mode tabs */}
-            <div
-              className="mt-4 inline-flex flex-wrap rounded-md border bg-background overflow-hidden text-sm"
-              role="group"
-              aria-label="Loại đề xuất"
-            >
-              <ModeTab
-                active={mode === "edit_person"}
-                onClick={() => setMode("edit_person")}
-                label="Sửa thông tin"
-              />
-              <ModeTab
-                active={mode === "add_note"}
-                onClick={() => setMode("add_note")}
-                label="Bổ sung tiểu sử"
-              />
-              <ModeTab
-                active={mode === "add_person"}
-                onClick={() => setMode("add_person")}
-                label="Thêm vợ/chồng/con"
-              />
-            </div>
+          ) : (
+            <>
+              {/* Mode tabs */}
+              <div
+                className="mt-4 inline-flex flex-wrap rounded-md border bg-background overflow-hidden text-sm"
+                role="group"
+                aria-label={t`Loại đề xuất`}
+              >
+                <ModeTab
+                  active={mode === "edit_person"}
+                  onClick={() => setMode("edit_person")}
+                  label={t`Sửa thông tin`}
+                />
+                <ModeTab
+                  active={mode === "add_note"}
+                  onClick={() => setMode("add_note")}
+                  label={t`Bổ sung tiểu sử`}
+                />
+                <ModeTab
+                  active={mode === "add_person"}
+                  onClick={() => setMode("add_person")}
+                  label={t`Thêm vợ/chồng/con`}
+                />
+              </div>
 
-            {/* Mode body */}
-            <div className="mt-4 space-y-3">
-              {mode === "edit_person" && (
-                <>
-                  <Field label="Họ và tên">
-                    <Input
-                      icon={<IconUser />}
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                    />
-                  </Field>
-                  <div className="flex items-center gap-3">
-                    <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={!editIsLiving}
-                        onChange={(e) => setEditIsLiving(!e.target.checked)}
-                        className="h-4 w-4 accent-primary"
-                      />
-                      <span>Đã mất</span>
-                    </label>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Năm sinh">
+              {/* Mode body */}
+              <div className="mt-4 space-y-3">
+                {mode === "edit_person" && (
+                  <>
+                    <Field label={t`Họ và tên`}>
                       <Input
-                        icon={<IconCalendar />}
-                        type="number"
-                        inputMode="numeric"
-                        value={editBirthYear}
-                        onChange={(e) => setEditBirthYear(e.target.value)}
-                        placeholder="1920"
+                        icon={<IconUser />}
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
                       />
                     </Field>
-                    {!editIsLiving && (
-                      <Field label="Năm mất">
+                    <div className="flex items-center gap-3">
+                      <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!editIsLiving}
+                          onChange={(e) => setEditIsLiving(!e.target.checked)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <span>{t`Đã mất`}</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label={t`Năm sinh`}>
                         <Input
                           icon={<IconCalendar />}
                           type="number"
                           inputMode="numeric"
-                          value={editDeathYear}
-                          onChange={(e) => setEditDeathYear(e.target.value)}
-                          placeholder="1990"
+                          value={editBirthYear}
+                          onChange={(e) => setEditBirthYear(e.target.value)}
+                          placeholder="1920"
                         />
                       </Field>
-                    )}
-                  </div>
-                  <Field label="Nơi sinh">
-                    <Input
-                      icon={<IconMapPin />}
-                      value={editBirthPlace}
-                      onChange={(e) => setEditBirthPlace(e.target.value)}
-                    />
-                  </Field>
-                  {!editIsLiving && (
-                    <Field label="Nơi an táng">
-                      <Input
-                        icon={<IconGrave />}
-                        value={editBurialPlace}
-                        onChange={(e) => setEditBurialPlace(e.target.value)}
-                      />
-                    </Field>
-                  )}
-                  <p className="text-xs text-muted-foreground italic">
-                    Để thêm thông tin tiểu sử (cụ làm gì, sống ở đâu…),
-                    chuyển sang tab <span className="font-medium">Bổ sung tiểu sử</span>.
-                  </p>
-                </>
-              )}
-
-              {mode === "add_note" && (
-                <Field label="Nội dung bổ sung tiểu sử">
-                  <Textarea
-                    value={noteAddition}
-                    onChange={(e) => setNoteAddition(e.target.value)}
-                    rows={5}
-                    placeholder="Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
-                    className="text-sm"
-                  />
-                </Field>
-              )}
-
-              {mode === "add_person" && (
-                <>
-                  <div className="flex items-center gap-2 flex-wrap text-sm">
-                    <span className="text-muted-foreground">Quan hệ:</span>
-                    <div className="inline-flex rounded-md border bg-background overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setAddAs("child")}
-                        aria-pressed={addAs === "child"}
-                        className={`px-3 h-9 ${
-                          addAs === "child"
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted/50"
-                        }`}
-                      >
-                        Là con của {focalPerson.full_name}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAddAs("spouse")}
-                        aria-pressed={addAs === "spouse"}
-                        className={`px-3 h-9 border-l ${
-                          addAs === "spouse"
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted/50"
-                        }`}
-                      >
-                        Là vợ / chồng
-                      </button>
+                      {!editIsLiving && (
+                        <Field label={t`Năm mất`}>
+                          <Input
+                            icon={<IconCalendar />}
+                            type="number"
+                            inputMode="numeric"
+                            value={editDeathYear}
+                            onChange={(e) => setEditDeathYear(e.target.value)}
+                            placeholder="1990"
+                          />
+                        </Field>
+                      )}
                     </div>
-                  </div>
-                  <Field label="Họ và tên">
-                    <Input
-                      icon={<IconUser />}
-                      value={addName}
-                      onChange={(e) => setAddName(e.target.value)}
-                    />
-                  </Field>
-                  <div className="flex items-center gap-4 text-sm">
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="add_gender"
-                        checked={addGender === "M"}
-                        onChange={() => setAddGender("M")}
-                      />
-                      <span>Nam</span>
-                    </label>
-                    <label className="inline-flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="add_gender"
-                        checked={addGender === "F"}
-                        onChange={() => setAddGender("F")}
-                      />
-                      <span>Nữ</span>
-                    </label>
-                    <label className="inline-flex items-center gap-2 cursor-pointer ml-auto">
-                      <input
-                        type="checkbox"
-                        checked={!addIsLiving}
-                        onChange={(e) => setAddIsLiving(!e.target.checked)}
-                        className="h-4 w-4 accent-primary"
-                      />
-                      <span>Đã mất</span>
-                    </label>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Năm sinh">
+                    <Field label={t`Nơi sinh`}>
                       <Input
-                        icon={<IconCalendar />}
-                        type="number"
-                        value={addBirthYear}
-                        onChange={(e) => setAddBirthYear(e.target.value)}
-                        placeholder="1950"
+                        icon={<IconMapPin />}
+                        value={editBirthPlace}
+                        onChange={(e) => setEditBirthPlace(e.target.value)}
                       />
                     </Field>
-                    {!addIsLiving && (
-                      <Field label="Năm mất">
+                    {!editIsLiving && (
+                      <Field label={t`Nơi an táng`}>
                         <Input
-                          icon={<IconCalendar />}
-                          type="number"
-                          value={addDeathYear}
-                          onChange={(e) => setAddDeathYear(e.target.value)}
+                          icon={<IconGrave />}
+                          value={editBurialPlace}
+                          onChange={(e) => setEditBurialPlace(e.target.value)}
                         />
                       </Field>
                     )}
-                  </div>
-                  <Field label="Ghi chú">
+                    <p className="text-xs text-muted-foreground italic">
+                      <Trans>
+                        Để thêm thông tin tiểu sử (cụ làm gì, sống ở đâu…),
+                        chuyển sang tab{" "}
+                      </Trans>
+                      <span className="font-medium">{t`Bổ sung tiểu sử`}</span>.
+                    </p>
+                  </>
+                )}
+
+                {mode === "add_note" && (
+                  <Field label={t`Nội dung bổ sung tiểu sử`}>
                     <Textarea
-                      value={addBio}
-                      onChange={(e) => setAddBio(e.target.value)}
-                      rows={3}
+                      value={noteAddition}
+                      onChange={(e) => setNoteAddition(e.target.value)}
+                      rows={5}
+                      placeholder={t`Cụ từng làm hương trưởng làng X từ 1932 đến 1945…`}
                       className="text-sm"
                     />
                   </Field>
-                </>
+                )}
+
+                {mode === "add_person" && (
+                  <>
+                    <div className="flex items-center gap-2 flex-wrap text-sm">
+                      <span className="text-muted-foreground">{t`Quan hệ:`}</span>
+                      <div className="inline-flex rounded-md border bg-background overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setAddAs("child")}
+                          aria-pressed={addAs === "child"}
+                          className={`px-3 h-9 ${
+                            addAs === "child"
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-muted/50"
+                          }`}
+                        >
+                          Là con của {focalPerson.full_name}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAddAs("spouse")}
+                          aria-pressed={addAs === "spouse"}
+                          className={`px-3 h-9 border-l ${
+                            addAs === "spouse"
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-muted/50"
+                          }`}
+                        >
+                          {t`Là vợ / chồng`}
+                        </button>
+                      </div>
+                    </div>
+                    <Field label={t`Họ và tên`}>
+                      <Input
+                        icon={<IconUser />}
+                        value={addName}
+                        onChange={(e) => setAddName(e.target.value)}
+                      />
+                    </Field>
+                    <div className="flex items-center gap-4 text-sm">
+                      <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="add_gender"
+                          checked={addGender === "M"}
+                          onChange={() => setAddGender("M")}
+                        />
+                        <span>Nam</span>
+                      </label>
+                      <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="add_gender"
+                          checked={addGender === "F"}
+                          onChange={() => setAddGender("F")}
+                        />
+                        <span>{t`Nữ`}</span>
+                      </label>
+                      <label className="inline-flex items-center gap-2 cursor-pointer ml-auto">
+                        <input
+                          type="checkbox"
+                          checked={!addIsLiving}
+                          onChange={(e) => setAddIsLiving(!e.target.checked)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <span>{t`Đã mất`}</span>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label={t`Năm sinh`}>
+                        <Input
+                          icon={<IconCalendar />}
+                          type="number"
+                          value={addBirthYear}
+                          onChange={(e) => setAddBirthYear(e.target.value)}
+                          placeholder="1950"
+                        />
+                      </Field>
+                      {!addIsLiving && (
+                        <Field label={t`Năm mất`}>
+                          <Input
+                            icon={<IconCalendar />}
+                            type="number"
+                            value={addDeathYear}
+                            onChange={(e) => setAddDeathYear(e.target.value)}
+                          />
+                        </Field>
+                      )}
+                    </div>
+                    <Field label={t`Ghi chú`}>
+                      <Textarea
+                        value={addBio}
+                        onChange={(e) => setAddBio(e.target.value)}
+                        rows={3}
+                        className="text-sm"
+                      />
+                    </Field>
+                  </>
+                )}
+              </div>
+
+              {/* Submitter identity */}
+              <div className="mt-5 pt-4 border-t space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  {t`Thông tin liên hệ — admin có thể cần xác nhận với bạn.`}
+                </p>
+                {isGuest && (
+                  <>
+                    <Field label={t`Tên của bạn`}>
+                      <Input
+                        icon={<IconUser />}
+                        value={submitterName}
+                        onChange={(e) => setSubmitterName(e.target.value)}
+                        placeholder={t`Nguyễn Văn B`}
+                      />
+                    </Field>
+                    <Field label={t`Email hoặc số điện thoại`}>
+                      <Input
+                        icon={<IconMail />}
+                        value={submitterContact}
+                        onChange={(e) => setSubmitterContact(e.target.value)}
+                        placeholder="email@example.com"
+                      />
+                    </Field>
+                  </>
+                )}
+                <Field label={t`Quan hệ của bạn với ${focalPerson.full_name}`}>
+                  <Input
+                    icon={<IconUsers />}
+                    value={submitterRelation}
+                    onChange={(e) => setSubmitterRelation(e.target.value)}
+                    placeholder={t`cháu nội, em họ, khách…`}
+                  />
+                </Field>
+                <Field label={t`Ghi chú / nguồn (tuỳ chọn)`}>
+                  <Textarea
+                    value={submitterNote}
+                    onChange={(e) => setSubmitterNote(e.target.value)}
+                    rows={2}
+                    placeholder={t`Tôi có giấy chứng tử, hoặc bố tôi kể lại…`}
+                    className="text-sm"
+                  />
+                </Field>
+              </div>
+
+              {m.error && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertDescription>
+                    {(m.error as Error).message}
+                  </AlertDescription>
+                </Alert>
               )}
-            </div>
 
-            {/* Submitter identity */}
-            <div className="mt-5 pt-4 border-t space-y-3">
-              <p className="text-xs text-muted-foreground">
-                Thông tin liên hệ — admin có thể cần xác nhận với bạn.
-              </p>
-              {isGuest && (
-                <>
-                  <Field label="Tên của bạn">
-                    <Input
-                      icon={<IconUser />}
-                      value={submitterName}
-                      onChange={(e) => setSubmitterName(e.target.value)}
-                      placeholder="Nguyễn Văn B"
-                    />
-                  </Field>
-                  <Field label="Email hoặc số điện thoại">
-                    <Input
-                      icon={<IconMail />}
-                      value={submitterContact}
-                      onChange={(e) => setSubmitterContact(e.target.value)}
-                      placeholder="email@example.com"
-                    />
-                  </Field>
-                </>
-              )}
-              <Field
-                label={`Quan hệ của bạn với ${focalPerson.full_name}`}
-              >
-                <Input
-                  icon={<IconUsers />}
-                  value={submitterRelation}
-                  onChange={(e) => setSubmitterRelation(e.target.value)}
-                  placeholder="cháu nội, em họ, khách…"
-                />
-              </Field>
-              <Field label="Ghi chú / nguồn (tuỳ chọn)">
-                <Textarea
-                  value={submitterNote}
-                  onChange={(e) => setSubmitterNote(e.target.value)}
-                  rows={2}
-                  placeholder="Tôi có giấy chứng tử, hoặc bố tôi kể lại…"
-                  className="text-sm"
-                />
-              </Field>
-            </div>
-
-            {m.error && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertDescription>
-                  {(m.error as Error).message}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <FormActions className="mt-3">
-              <Button variant="outline" size="sm" onClick={onClose}>
-                Huỷ
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => m.mutate()}
-                disabled={m.isPending}
-              >
-                <IconSend className="h-4 w-4 mr-1.5" />
-                {m.isPending ? "Đang gửi…" : "Gửi đề xuất"}
-              </Button>
-            </FormActions>
-          </>
-        )}
+              <FormActions className="mt-3">
+                <Button variant="outline" size="sm" onClick={onClose}>
+                  {t`Huỷ`}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => m.mutate()}
+                  disabled={m.isPending}
+                >
+                  <IconSend className="h-4 w-4 mr-1.5" />
+                  {m.isPending ? t`Đang gửi…` : t`Gửi đề xuất`}
+                </Button>
+              </FormActions>
+            </>
+          )}
         </div>
       </div>
     </div>,
@@ -627,9 +636,7 @@ function ModeTab({
       onClick={onClick}
       aria-pressed={active}
       className={`px-3 h-9 border-l first:border-l-0 ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted/50"
+        active ? "bg-primary text-primary-foreground" : "hover:bg-muted/50"
       }`}
     >
       {label}

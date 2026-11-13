@@ -11,6 +11,7 @@ import {
   type MosaicVariant,
 } from "./jigsaw";
 
+import { t } from "@lingui/core/macro";
 type Drag = {
   id: string;
   from: number;
@@ -205,7 +206,7 @@ export function MosaicBoard({
         setHover(null);
       }}
       role="img"
-      aria-label="Bức ảnh đại gia đình ghép mảnh"
+      aria-label={t`Bức ảnh đại gia đình ghép mảnh`}
     >
       <defs>
         {/* Bo tròn nhẹ bốn góc của cả bức */}

@@ -100,9 +100,7 @@ export function SegmentedButton({
         "text-sm transition-colors",
         VARIANT_CLASS[variant],
         "[&:not(:first-child)]:border-l",
-        active
-          ? "bg-primary text-primary-foreground"
-          : "hover:bg-muted/50",
+        active ? "bg-primary text-primary-foreground" : "hover:bg-muted/50",
         disabled && "opacity-50 cursor-not-allowed",
         className,
       )}

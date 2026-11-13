@@ -51,8 +51,11 @@ import {
 } from "@/lib/queries/restingPlaces";
 import { matchesName } from "@/lib/unaccent";
 
+import { t } from "@lingui/core/macro";
 const KINDS = Object.keys(RESTING_PLACE_KIND_LABEL) as RestingPlaceKind[];
-const STATUSES = Object.keys(RESTING_PLACE_STATUS_LABEL) as RestingPlaceStatus[];
+const STATUSES = Object.keys(
+  RESTING_PLACE_STATUS_LABEL,
+) as RestingPlaceStatus[];
 
 interface StagedOccupant {
   personId: string;
@@ -61,7 +64,9 @@ interface StagedOccupant {
   occupantId: string | null; // set if already saved (edit mode)
 }
 
-export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm } = {}) {
+export default function RestingPlaceForm({
+  embedded,
+}: { embedded?: EmbeddedForm } = {}) {
   const { clan } = useClanContext();
   const readOnly = !!embedded?.readOnly;
   const canEdit = canEditClan(clan);
@@ -80,7 +85,10 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
   const [locationDetail, setLocationDetail] = useState("");
   const [address, setAddress] = useState("");
   // Tỉnh + xã/phường chọn từ danh mục — để hiện trên Bản đồ dòng họ.
-  const [area, setArea] = useState<AddressValue>({ province_code: null, ward_code: null });
+  const [area, setArea] = useState<AddressValue>({
+    province_code: null,
+    ward_code: null,
+  });
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [orientation, setOrientation] = useState("");
@@ -108,17 +116,25 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
     setLocationName(existing.location_name ?? "");
     setLocationDetail(existing.location_detail ?? "");
     setAddress(existing.address ?? "");
-    setArea({ province_code: existing.province_code, ward_code: existing.ward_code });
+    setArea({
+      province_code: existing.province_code,
+      ward_code: existing.ward_code,
+    });
     setLat(existing.latitude != null ? String(existing.latitude) : "");
     setLng(existing.longitude != null ? String(existing.longitude) : "");
     setOrientation(existing.orientation ?? "");
     setStatus(existing.status);
-    setBuiltYear(existing.built_year != null ? String(existing.built_year) : "");
+    setBuiltYear(
+      existing.built_year != null ? String(existing.built_year) : "",
+    );
     setMaterial(existing.material ?? "");
     setNotes(existing.notes ?? "");
     setCemeteryId(existing.cemetery_id ?? "");
     const occ = existing.occupants.map((o) => ({
-      personId: o.person_id, name: o.full_name, gender: o.gender, occupantId: o.occupant_id,
+      personId: o.person_id,
+      name: o.full_name,
+      gender: o.gender,
+      occupantId: o.occupant_id,
     }));
     setOccupants(occ);
     setOrigOccupants(occ);
@@ -170,9 +186,11 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
         // diff occupants
         const stagedIds = new Set(occupants.map((o) => o.personId));
         const origIds = new Set(origOccupants.map((o) => o.personId));
-        for (const o of occupants) if (!origIds.has(o.personId)) await addOccupant(id, o.personId);
+        for (const o of occupants)
+          if (!origIds.has(o.personId)) await addOccupant(id, o.personId);
         for (const o of origOccupants)
-          if (!stagedIds.has(o.personId) && o.occupantId) await removeOccupant(o.occupantId);
+          if (!stagedIds.has(o.personId) && o.occupantId)
+            await removeOccupant(o.occupantId);
       } else {
         const res = await createRestingPlace(clan.id, fields);
         id = res.id;
@@ -183,47 +201,50 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
     onSuccess: (id) => {
       qc.invalidateQueries({ queryKey: ["resting-places", clan.id] });
       qc.invalidateQueries({ queryKey: ["resting-place", id] });
-      toast.success(isEdit ? "Đã lưu" : "Đã thêm");
+      toast.success(isEdit ? t`Đã lưu` : t`Đã thêm`);
       if (embedded) embedded.onDone(id);
       else navigate(`/clans/${clan.id}/graves/${id}`);
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   function useCurrentLocation() {
     if (!navigator.geolocation) {
-      toast.error("Trình duyệt không hỗ trợ định vị");
+      toast.error(t`Trình duyệt không hỗ trợ định vị`);
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLat(pos.coords.latitude.toFixed(6));
         setLng(pos.coords.longitude.toFixed(6));
-        toast.success("Đã lấy vị trí hiện tại");
+        toast.success(t`Đã lấy vị trí hiện tại`);
       },
-      () => toast.error("Không lấy được vị trí (cần cấp quyền định vị)"),
+      () => toast.error(t`Không lấy được vị trí (cần cấp quyền định vị)`),
       { enableHighAccuracy: true, timeout: 10_000 },
     );
   }
 
-  const back = isEdit ? `/clans/${clan.id}/graves/${graveId}` : `/clans/${clan.id}/graves`;
+  const back = isEdit
+    ? `/clans/${clan.id}/graves/${graveId}`
+    : `/clans/${clan.id}/graves`;
 
   return (
     <div className="space-y-3">
       {!embedded && (
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Mộ phần & tro cốt", to: `/clans/${clan.id}/graves` },
-          { label: isEdit ? "Sửa" : "Thêm" },
-        ]}
-      />
+        <Breadcrumb
+          items={[
+            { label: clan.name, to: `/clans/${clan.id}` },
+            { label: t`Mộ phần & tro cốt`, to: `/clans/${clan.id}/graves` },
+            { label: isEdit ? t`Sửa` : t`Thêm` },
+          ]}
+        />
       )}
       {!embedded && (
-      <PageHeader
-        icon={<IconGrave className="h-7 w-7" />}
-        title={isEdit ? "Sửa nơi an nghỉ" : "Thêm nơi an nghỉ"}
-      />
+        <PageHeader
+          icon={<IconGrave className="h-7 w-7" />}
+          title={isEdit ? t`Sửa nơi an nghỉ` : t`Thêm nơi an nghỉ`}
+        />
       )}
 
       <form
@@ -242,197 +263,350 @@ export default function RestingPlaceForm({ embedded }: { embedded?: EmbeddedForm
           disabled={readOnly}
           className={`m-0 min-w-0 space-y-6 border-0 p-0 ${readOnly ? "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100 [&_[data-edit-only]]:hidden" : ""}`}
         >
-        {/* Hình thức + Trạng thái — 2 trường ngắn, ghép 1 hàng */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Hình thức + Trạng thái — 2 trường ngắn, ghép 1 hàng */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="kind">{t`Hình thức`}</Label>
+              <Select
+                id="kind"
+                icon={<IconGrave />}
+                value={kind}
+                onChange={(e) => setKind(e.target.value as RestingPlaceKind)}
+              >
+                {KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {RESTING_PLACE_KIND_LABEL[k]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">{t`Trạng thái`}</Label>
+              <Select
+                id="status"
+                icon={<IconCheck />}
+                value={status}
+                onChange={(e) =>
+                  setStatus(e.target.value as RestingPlaceStatus)
+                }
+              >
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {RESTING_PLACE_STATUS_LABEL[s]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="kind">Hình thức</Label>
-            <Select
-              id="kind"
+            <Label htmlFor="name">{t`Tên gọi (tuỳ chọn)`}</Label>
+            <Input
+              id="name"
               icon={<IconGrave />}
-              value={kind}
-              onChange={(e) => setKind(e.target.value as RestingPlaceKind)}
-            >
-              {KINDS.map((k) => (
-                <option key={k} value={k}>{RESTING_PLACE_KIND_LABEL[k]}</option>
-              ))}
-            </Select>
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t`vd: Mộ cụ Tổ, Tháp họ Cao`}
+              maxLength={200}
+            />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="status">Trạng thái</Label>
-            <Select
-              id="status"
-              icon={<IconCheck />}
-              value={status}
-              onChange={(e) => setStatus(e.target.value as RestingPlaceStatus)}
-            >
-              {STATUSES.map((s) => <option key={s} value={s}>{RESTING_PLACE_STATUS_LABEL[s]}</option>)}
-            </Select>
-          </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="name">Tên gọi (tuỳ chọn)</Label>
-          <Input id="name" icon={<IconGrave />} value={name} onChange={(e) => setName(e.target.value)}
-            placeholder="vd: Mộ cụ Tổ, Tháp họ Cao" maxLength={200} />
-        </div>
-
-        {/* Nơi + vị trí chi tiết — ghép 1 hàng khi có cả hai */}
-        <div className={labels.detail ? "grid grid-cols-1 gap-4 sm:grid-cols-2" : "space-y-2"}>
-          <div className="space-y-2">
-            <Label htmlFor="loc-name">{labels.name}</Label>
-            <Input id="loc-name" icon={<IconMapPin />} value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder={labels.namePh} />
-          </div>
-          {labels.detail && (
-            <div className="space-y-2">
-              <Label htmlFor="loc-detail">{labels.detail}</Label>
-              <Input id="loc-detail" icon={<IconMapPin />} value={locationDetail} onChange={(e) => setLocationDetail(e.target.value)} placeholder={labels.detailPh} />
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label>Khu vực (hiện trên Bản đồ)</Label>
-          <AddressPicker idPrefix="grave-area" value={area} onChange={setArea} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="address">Địa chỉ chi tiết</Label>
-          <Input id="address" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)} placeholder={ADDRESS_PLACEHOLDER} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="cemetery">Cơ sở / nghĩa trang (tuỳ chọn)</Label>
-          <Select
-            id="cemetery"
-            icon={<IconBuildings />}
-            value={cemeteryId}
-            onChange={(e) => setCemeteryId(e.target.value)}
+          {/* Nơi + vị trí chi tiết — ghép 1 hàng khi có cả hai */}
+          <div
+            className={
+              labels.detail
+                ? "grid grid-cols-1 gap-4 sm:grid-cols-2"
+                : "space-y-2"
+            }
           >
-            <option value="">— Không gắn —</option>
-            {(cemeteries ?? []).map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            Quản lý danh sách cơ sở ở{" "}
-            <Link to={`/clans/${clan.id}/graves/cemeteries`} className="text-primary hover:underline">
-              Cơ sở / nghĩa trang
-            </Link>
-            .
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Toạ độ GPS (tuỳ chọn)</Label>
-          <div className="flex flex-wrap items-center gap-2">
-            <Input className="w-32" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="vĩ độ" icon={<IconCompass />} />
-            <Input className="w-32" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="kinh độ" icon={<IconCompass />} />
-            <Button type="button" variant="outline" onClick={useCurrentLocation} data-edit-only>
-              <IconMapPin className="h-4 w-4 mr-1" /> Lấy vị trí hiện tại
-            </Button>
-          </div>
-          <p data-edit-only className="text-xs text-muted-foreground">Đứng tại nơi an nghỉ rồi bấm "Lấy vị trí hiện tại" để lưu toạ độ chỉ đường.</p>
-        </div>
-
-        {/* Các trường ngắn còn lại — ghép lưới 2 cột */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {kind === "grave" && (
             <div className="space-y-2">
-              <Label htmlFor="orientation">Hướng mộ (tuỳ chọn)</Label>
-              <Input id="orientation" icon={<IconCompass />} value={orientation} onChange={(e) => setOrientation(e.target.value)} placeholder="vd: hướng Đông Nam" />
+              <Label htmlFor="loc-name">{labels.name}</Label>
+              <Input
+                id="loc-name"
+                icon={<IconMapPin />}
+                value={locationName}
+                onChange={(e) => setLocationName(e.target.value)}
+                placeholder={labels.namePh}
+              />
             </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="year">Năm xây (tuỳ chọn)</Label>
-            <Input id="year" icon={<IconCalendar />} inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)} placeholder="vd: 1990" />
+            {labels.detail && (
+              <div className="space-y-2">
+                <Label htmlFor="loc-detail">{labels.detail}</Label>
+                <Input
+                  id="loc-detail"
+                  icon={<IconMapPin />}
+                  value={locationDetail}
+                  onChange={(e) => setLocationDetail(e.target.value)}
+                  placeholder={labels.detailPh}
+                />
+              </div>
+            )}
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="material">Vật liệu (tuỳ chọn)</Label>
-            <Input id="material" icon={<IconLayers />} value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="vd: đá granit, xi măng" />
+            <Label>{t`Khu vực (hiện trên Bản đồ)`}</Label>
+            <AddressPicker
+              idPrefix="grave-area"
+              value={area}
+              onChange={setArea}
+            />
           </div>
-        </div>
 
-        <Textarea
-          id="notes"
-          label="Ghi chú"
-          icon={<IconScroll />}
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          placeholder="vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…"
-        />
+          <div className="space-y-2">
+            <Label htmlFor="address">{t`Địa chỉ chi tiết`}</Label>
+            <Input
+              id="address"
+              icon={<IconMapPin />}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder={ADDRESS_PLACEHOLDER}
+            />
+          </div>
 
-        {/* Người an nghỉ */}
-        <div className="space-y-2">
-          <Label className="block">Người an nghỉ tại đây</Label>
-          {occupants.length > 0 && (
-            <ul className="space-y-1.5">
-              {occupants.map((o) => (
-                <li key={o.personId} className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
-                  <PersonAvatar gender={o.gender} size={28} />
-                  <span className="flex-1 truncate text-sm">{o.name}</span>
-                  <button type="button" data-edit-only aria-label="Bỏ" onClick={() => setOccupants((p) => p.filter((x) => x.personId !== o.personId))}>
-                    <IconX className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                  </button>
-                </li>
+          <div className="space-y-2">
+            <Label htmlFor="cemetery">{t`Cơ sở / nghĩa trang (tuỳ chọn)`}</Label>
+            <Select
+              id="cemetery"
+              icon={<IconBuildings />}
+              value={cemeteryId}
+              onChange={(e) => setCemeteryId(e.target.value)}
+            >
+              <option value="">{t`— Không gắn —`}</option>
+              {(cemeteries ?? []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
               ))}
-            </ul>
-          )}
-          {!pickerOpen ? (
-            <Button type="button" size="sm" variant="outline" data-edit-only onClick={() => setPickerOpen(true)}>
-              <IconUserPlus className="h-4 w-4 mr-1.5" />
-              Gắn người
-            </Button>
-          ) : (
-            <div className="space-y-2 rounded-md border p-2">
-              <Input icon={<IconSearch />} value={pickerFilter} onChange={(e) => setPickerFilter(e.target.value)} placeholder="Gõ tên để tìm (không cần dấu)" autoFocus />
-              <ul className="max-h-60 overflow-y-auto divide-y text-sm">
-                {candidates.length === 0 && <li className="px-2 py-2 text-muted-foreground italic">{clanIndex ? "Không có người khớp." : "Đang tải…"}</li>}
-                {candidates.map((p) => (
-                  <li key={p.id}>
-                    <button type="button" className="w-full text-left px-2 py-2 flex items-center gap-2 hover:bg-muted/50"
-                      onClick={() => {
-                        setOccupants((prev) => [...prev, { personId: p.id, name: p.full_name, gender: p.gender, occupantId: null }]);
-                        setPickerFilter("");
-                      }}>
-                      <PersonAvatar gender={p.gender} size={28} />
-                      <span className="truncate">{p.full_name}</span>
-                      {p.birth_year && <span className="text-xs text-muted-foreground ml-auto">{p.birth_year}</span>}
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {t`Quản lý danh sách cơ sở ở`}{" "}
+              <Link
+                to={`/clans/${clan.id}/graves/cemeteries`}
+                className="text-primary hover:underline"
+              >
+                {t`Cơ sở / nghĩa trang`}
+              </Link>
+              .
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t`Toạ độ GPS (tuỳ chọn)`}</Label>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                className="w-32"
+                inputMode="decimal"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                placeholder={t`vĩ độ`}
+                icon={<IconCompass />}
+              />
+              <Input
+                className="w-32"
+                inputMode="decimal"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                placeholder={t`kinh độ`}
+                icon={<IconCompass />}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={useCurrentLocation}
+                data-edit-only
+              >
+                <IconMapPin className="h-4 w-4 mr-1" /> {t`Lấy vị trí hiện tại`}
+              </Button>
+            </div>
+            <p
+              data-edit-only
+              className="text-xs text-muted-foreground"
+            >{t`Đứng tại nơi an nghỉ rồi bấm "Lấy vị trí hiện tại" để lưu toạ độ chỉ đường.`}</p>
+          </div>
+
+          {/* Các trường ngắn còn lại — ghép lưới 2 cột */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {kind === "grave" && (
+              <div className="space-y-2">
+                <Label htmlFor="orientation">{t`Hướng mộ (tuỳ chọn)`}</Label>
+                <Input
+                  id="orientation"
+                  icon={<IconCompass />}
+                  value={orientation}
+                  onChange={(e) => setOrientation(e.target.value)}
+                  placeholder={t`vd: hướng Đông Nam`}
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="year">{t`Năm xây (tuỳ chọn)`}</Label>
+              <Input
+                id="year"
+                icon={<IconCalendar />}
+                inputMode="numeric"
+                value={builtYear}
+                onChange={(e) => setBuiltYear(e.target.value)}
+                placeholder="vd: 1990"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="material">{t`Vật liệu (tuỳ chọn)`}</Label>
+              <Input
+                id="material"
+                icon={<IconLayers />}
+                value={material}
+                onChange={(e) => setMaterial(e.target.value)}
+                placeholder={t`vd: đá granit, xi măng`}
+              />
+            </div>
+          </div>
+
+          <Textarea
+            id="notes"
+            label={t`Ghi chú`}
+            icon={<IconScroll />}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+            placeholder={t`vd: năm cải táng, người trông coi, lối vào, ghi chú dòng tộc…`}
+          />
+
+          {/* Người an nghỉ */}
+          <div className="space-y-2">
+            <Label className="block">{t`Người an nghỉ tại đây`}</Label>
+            {occupants.length > 0 && (
+              <ul className="space-y-1.5">
+                {occupants.map((o) => (
+                  <li
+                    key={o.personId}
+                    className="flex items-center gap-2 rounded-md border bg-card px-3 py-2"
+                  >
+                    <PersonAvatar gender={o.gender} size={28} />
+                    <span className="flex-1 truncate text-sm">{o.name}</span>
+                    <button
+                      type="button"
+                      data-edit-only
+                      aria-label={t`Bỏ`}
+                      onClick={() =>
+                        setOccupants((p) =>
+                          p.filter((x) => x.personId !== o.personId),
+                        )
+                      }
+                    >
+                      <IconX className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                     </button>
                   </li>
                 ))}
               </ul>
-              <Button type="button" size="sm" variant="ghost" onClick={() => setPickerOpen(false)}>Xong</Button>
-            </div>
-          )}
-        </div>
+            )}
+            {!pickerOpen ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                data-edit-only
+                onClick={() => setPickerOpen(true)}
+              >
+                <IconUserPlus className="h-4 w-4 mr-1.5" />
+                {t`Gắn người`}
+              </Button>
+            ) : (
+              <div className="space-y-2 rounded-md border p-2">
+                <Input
+                  icon={<IconSearch />}
+                  value={pickerFilter}
+                  onChange={(e) => setPickerFilter(e.target.value)}
+                  placeholder={t`Gõ tên để tìm (không cần dấu)`}
+                  autoFocus
+                />
+                <ul className="max-h-60 overflow-y-auto divide-y text-sm">
+                  {candidates.length === 0 && (
+                    <li className="px-2 py-2 text-muted-foreground italic">
+                      {clanIndex ? t`Không có người khớp.` : t`Đang tải…`}
+                    </li>
+                  )}
+                  {candidates.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-2 py-2 flex items-center gap-2 hover:bg-muted/50"
+                        onClick={() => {
+                          setOccupants((prev) => [
+                            ...prev,
+                            {
+                              personId: p.id,
+                              name: p.full_name,
+                              gender: p.gender,
+                              occupantId: null,
+                            },
+                          ]);
+                          setPickerFilter("");
+                        }}
+                      >
+                        <PersonAvatar gender={p.gender} size={28} />
+                        <span className="truncate">{p.full_name}</span>
+                        {p.birth_year && (
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {p.birth_year}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPickerOpen(false)}
+                >
+                  Xong
+                </Button>
+              </div>
+            )}
+          </div>
 
-        {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
+          {formError && (
+            <Alert variant="destructive">
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          )}
         </fieldset>
 
         {/* Ảnh chỉ thêm được khi nơi an nghỉ đã có (đã lưu); thêm/gỡ lưu ngay, không chờ nút Lưu. */}
         {isEdit && graveId && (
-          <RestingPlacePhotosSection placeId={graveId} editable={!readOnly && canEdit} />
+          <RestingPlacePhotosSection
+            placeId={graveId}
+            editable={!readOnly && canEdit}
+          />
         )}
 
         {readOnly ? (
           canEdit && (
             <FormActions>
               <Button asChild>
-                <PanelLink to={`/clans/${clan.id}/graves/${graveId}/edit`} panel="grave-edit" panelParams={{ pid: graveId }}>
-                  <IconPencil className="h-4 w-4 mr-1.5" /> Sửa
+                <PanelLink
+                  to={`/clans/${clan.id}/graves/${graveId}/edit`}
+                  panel="grave-edit"
+                  panelParams={{ pid: graveId }}
+                >
+                  <IconPencil className="h-4 w-4 mr-1.5" /> {t`Sửa`}
                 </PanelLink>
               </Button>
             </FormActions>
           )
         ) : (
           <FormActions>
-            <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(back))}>
-              <IconX className="h-4 w-4 mr-1.5" /> Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => (embedded ? embedded.onCancel() : navigate(back))}
+            >
+              <IconX className="h-4 w-4 mr-1.5" /> {t`Hủy`}
             </Button>
             <Button type="submit" disabled={save.isPending}>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              {save.isPending ? "Đang lưu…" : "Lưu"}
+              {save.isPending ? t`Đang lưu…` : t`Lưu`}
             </Button>
           </FormActions>
         )}

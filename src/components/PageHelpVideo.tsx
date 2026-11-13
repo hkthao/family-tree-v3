@@ -13,11 +13,7 @@ import { videoIdForRoute } from "@/lib/helpVideoMap";
  *
  * Tự ẩn nếu route không có video tutorial.
  */
-export function PageHelpVideo({
-  size = "icon",
-}: {
-  size?: "icon" | "text";
-}) {
+export function PageHelpVideo({ size = "icon" }: { size?: "icon" | "text" }) {
   const { pathname } = useLocation();
   const videoId = videoIdForRoute(pathname);
   if (!videoId) return null;

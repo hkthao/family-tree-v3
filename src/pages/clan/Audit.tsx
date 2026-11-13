@@ -1,4 +1,9 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 
@@ -21,7 +26,11 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch } from "@/hooks/useUrlState";
-import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  effectiveRole,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
   isRestorableEntity,
@@ -33,6 +42,7 @@ import {
 } from "@/lib/queries/audit";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 const PAGE_SIZE = 15;
 
 const ENTITY_LABEL: Record<AuditEntity, string> = {
@@ -89,19 +99,19 @@ export default function Audit() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Nhật ký" },
+          { label: t`Nhật ký` },
         ]}
       />
 
       <PageHeader
         icon={<IconRefresh className="h-7 w-7" />}
-        title="Nhật ký"
-        description="Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
+        title={t`Nhật ký`}
+        description={t`Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục.`}
         actionsBelow
         actions={
           <>
             <Select
-              aria-label="Lọc theo đối tượng"
+              aria-label={t`Lọc theo đối tượng`}
               value={entityType}
               onChange={(e) =>
                 patch({ type: e.target.value || null, page: null })
@@ -109,14 +119,14 @@ export default function Audit() {
               icon={<IconUsers />}
               className="h-9 w-auto text-sm min-w-0"
             >
-              <option value="">Mọi đối tượng</option>
-              <option value="person">Người</option>
-              <option value="family">Gia đình</option>
+              <option value="">{t`Mọi đối tượng`}</option>
+              <option value="person">{t`Người`}</option>
+              <option value="family">{t`Gia đình`}</option>
               <option value="branch">Chi</option>
-              <option value="person_link">Liên kết dòng họ</option>
+              <option value="person_link">{t`Liên kết dòng họ`}</option>
             </Select>
             <Select
-              aria-label="Lọc theo hành động"
+              aria-label={t`Lọc theo hành động`}
               value={action}
               onChange={(e) =>
                 patch({ act: e.target.value || null, page: null })
@@ -124,22 +134,22 @@ export default function Audit() {
               icon={<IconPencil />}
               className="h-9 w-auto text-sm min-w-0"
             >
-              <option value="">Mọi hành động</option>
-              <option value="insert">Thêm mới</option>
-              <option value="update">Sửa</option>
-              <option value="delete">Xoá</option>
+              <option value="">{t`Mọi hành động`}</option>
+              <option value="insert">{t`Thêm mới`}</option>
+              <option value="update">{t`Sửa`}</option>
+              <option value="delete">{t`Xoá`}</option>
             </Select>
           </>
         }
       />
 
       {!data ? (
-        <p className="text-muted-foreground">Đang tải…</p>
+        <p className="text-muted-foreground">{t`Đang tải…`}</p>
       ) : data.rows.length === 0 ? (
         <EmptyState
           icon={<IconRefresh className="h-10 w-10" />}
-          title="Chưa có thay đổi nào"
-          description="Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm."
+          title={t`Chưa có thay đổi nào`}
+          description={t`Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm.`}
         />
       ) : (
         <ul className="rounded-xl border bg-card shadow-sm divide-y overflow-hidden">
@@ -164,7 +174,7 @@ export default function Audit() {
         totalPages={totalPages}
         total={data?.total ?? 0}
         pageSize={PAGE_SIZE}
-        unit="thay đổi"
+        unit={t`thay đổi`}
         isFetching={isFetching}
         onPageChange={setPage}
       />
@@ -189,10 +199,10 @@ function AuditItem({
     mutationFn: () => restoreAuditEntry(row.id),
     onSuccess: () => {
       onRestored();
-      toast.success("Đã khôi phục");
+      toast.success(t`Đã khôi phục`);
     },
     onError: (e) =>
-      toast.error("Không khôi phục được", {
+      toast.error(t`Không khôi phục được`, {
         description: (e as Error).message,
       }),
   });
@@ -206,8 +216,7 @@ function AuditItem({
 
   const dateFull = new Date(row.changed_at).toLocaleString("vi-VN");
   const dateShort = formatAuditRelative(row.changed_at);
-  const canRestoreEntry =
-    canRestore && isRestorableEntity(row.entity_type);
+  const canRestoreEntry = canRestore && isRestorableEntity(row.entity_type);
   const canViewDetail = row.entity_type === "person";
 
   return (
@@ -217,7 +226,7 @@ function AuditItem({
         {/* Action badge */}
         <span
           className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium shrink-0 ${ACTION_BADGE[row.action]}`}
-          title={`Hành động: ${ACTION_LABEL[row.action]}`}
+          title={t`Hành động: ${ACTION_LABEL[row.action]}`}
         >
           {ACTION_LABEL[row.action]}
         </span>
@@ -228,9 +237,7 @@ function AuditItem({
             {ENTITY_LABEL[row.entity_type]}
           </span>
           {name !== null && (
-            <span className="text-sm font-medium truncate">
-              {String(name)}
-            </span>
+            <span className="text-sm font-medium truncate">{String(name)}</span>
           )}
         </div>
 
@@ -254,8 +261,8 @@ function AuditItem({
             >
               <Link
                 to={`/clans/${row.clan_id}/people/${row.entity_id}`}
-                aria-label="Xem trang chi tiết"
-                title="Xem trang chi tiết"
+                aria-label={t`Xem trang chi tiết`}
+                title={t`Xem trang chi tiết`}
               >
                 <IconArrowRight className="h-4 w-4" />
               </Link>
@@ -270,17 +277,19 @@ function AuditItem({
               onClick={async () => {
                 const ok = await confirm({
                   title: `Khôi phục về trạng thái ${
-                    row.action === "delete" ? "trước khi xoá" : "trước khi sửa"
+                    row.action === "delete"
+                      ? t`trước khi xoá`
+                      : t`trước khi sửa`
                   }?`,
-                  confirmLabel: "Khôi phục",
+                  confirmLabel: t`Khôi phục`,
                 });
                 if (ok) restoreM.mutate();
               }}
-              aria-label="Khôi phục"
+              aria-label={t`Khôi phục`}
               title={
                 restoreM.isPending
-                  ? "Đang khôi phục…"
-                  : "Khôi phục về trạng thái trước"
+                  ? t`Đang khôi phục…`
+                  : t`Khôi phục về trạng thái trước`
               }
               className="h-8 w-8 p-0 text-primary disabled:opacity-50"
             >
@@ -291,8 +300,8 @@ function AuditItem({
             size="sm"
             variant="ghost"
             onClick={() => setExpanded((x) => !x)}
-            aria-label={expanded ? "Thu gọn" : "Xem JSON diff"}
-            title={expanded ? "Thu gọn" : "Xem JSON diff trước/sau"}
+            aria-label={expanded ? t`Thu gọn` : "Xem JSON diff"}
+            title={expanded ? t`Thu gọn` : t`Xem JSON diff trước/sau`}
             aria-expanded={expanded}
             className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
           >
@@ -306,9 +315,7 @@ function AuditItem({
       </div>
 
       {restoreM.isSuccess && (
-        <p className="px-4 pb-2 text-xs text-accent">
-          ✓ Đã khôi phục
-        </p>
+        <p className="px-4 pb-2 text-xs text-accent">{t`✓ Đã khôi phục`}</p>
       )}
       {restoreM.error && (
         <Alert variant="destructive" className="mx-3 mb-2">
@@ -324,7 +331,7 @@ function AuditItem({
             {row.before && (
               <div>
                 <p className="font-medium mb-1 text-muted-foreground">
-                  Trước
+                  {t`Trước`}
                 </p>
                 <pre className="bg-card rounded p-2 overflow-x-auto max-h-64 border">
                   {JSON.stringify(row.before, null, 2)}
@@ -333,9 +340,7 @@ function AuditItem({
             )}
             {row.after && (
               <div>
-                <p className="font-medium mb-1 text-muted-foreground">
-                  Sau
-                </p>
+                <p className="font-medium mb-1 text-muted-foreground">Sau</p>
                 <pre className="bg-card rounded p-2 overflow-x-auto max-h-64 border">
                   {JSON.stringify(row.after, null, 2)}
                 </pre>
@@ -351,9 +356,9 @@ function AuditItem({
 const ACTION_BADGE: Record<AuditAction, string> = {
   insert:
     "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
-  update: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/30",
-  delete:
-    "bg-destructive/10 text-destructive border border-destructive/30",
+  update:
+    "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/30",
+  delete: "bg-destructive/10 text-destructive border border-destructive/30",
 };
 
 /**
@@ -368,10 +373,10 @@ function formatAuditRelative(iso: string): string {
   const diffHr = Math.round(diffMs / 3_600_000);
   const diffDay = Math.round(diffMs / 86_400_000);
   if (diffMin < 1) return "vừa xong";
-  if (diffMin < 60) return `${diffMin} phút`;
-  if (diffHr < 24) return `${diffHr} giờ`;
+  if (diffMin < 60) return t`${diffMin} phút`;
+  if (diffHr < 24) return t`${diffHr} giờ`;
   if (diffDay === 1) return "Hôm qua";
-  if (diffDay < 7) return `${diffDay} ngày`;
+  if (diffDay < 7) return t`${diffDay} ngày`;
   return new Date(iso).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",

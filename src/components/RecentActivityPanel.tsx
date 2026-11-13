@@ -5,8 +5,13 @@ import { IconScroll } from "@/components/icons";
 import { SectionCard } from "@/components/SectionCard";
 import { useAuth } from "@/hooks/useAuth";
 import { queryKeys } from "@/lib/queries/keys";
-import { listAudit, type AuditAction, type AuditRow } from "@/lib/queries/audit";
+import {
+  listAudit,
+  type AuditAction,
+  type AuditRow,
+} from "@/lib/queries/audit";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   clanId: string;
   limit?: number;
@@ -34,8 +39,7 @@ const ACTION_BADGE: Record<string, string> = {
     "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
   update:
     "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/30",
-  delete:
-    "bg-destructive/10 text-destructive border border-destructive/30",
+  delete: "bg-destructive/10 text-destructive border border-destructive/30",
 };
 
 function formatRelative(iso: string): string {
@@ -45,10 +49,10 @@ function formatRelative(iso: string): string {
   const diffHr = Math.round((now - then) / 3_600_000);
   const diffDay = Math.round((now - then) / 86_400_000);
   if (diffMin < 1) return "vừa xong";
-  if (diffMin < 60) return `${diffMin} phút`;
-  if (diffHr < 24) return `${diffHr} giờ`;
+  if (diffMin < 60) return t`${diffMin} phút`;
+  if (diffHr < 24) return t`${diffHr} giờ`;
   if (diffDay === 1) return "Hôm qua";
-  if (diffDay < 7) return `${diffDay} ngày`;
+  if (diffDay < 7) return t`${diffDay} ngày`;
   return new Date(iso).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -82,7 +86,7 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
 
   if (isLoading) {
     return (
-      <p className="text-sm text-muted-foreground">Đang tải hoạt động…</p>
+      <p className="text-sm text-muted-foreground">{t`Đang tải hoạt động…`}</p>
     );
   }
   if (!data || data.rows.length === 0) {
@@ -93,14 +97,14 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
     <SectionCard
       id="activity"
       icon={<IconScroll />}
-      title="Hoạt động gần đây"
+      title={t`Hoạt động gần đây`}
       bodyClassName="p-0"
       footer={
         <Link
           to={`/clans/${clanId}/audit`}
           className="shrink-0 text-sm text-primary hover:underline"
         >
-          Xem nhật ký →
+          {t`Xem nhật ký →`}
         </Link>
       }
     >

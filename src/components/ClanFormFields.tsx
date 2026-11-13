@@ -7,6 +7,7 @@ import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { CreateClanInput } from "@/lib/queries/clans";
 import type { UpdateClanInput } from "@/lib/queries/clan-update";
 
+import { t } from "@lingui/core/macro";
 /** Giá trị form dòng họ — dùng chung cho Tạo mới và Chỉnh sửa. */
 export interface ClanFormValues {
   name: string;
@@ -56,7 +57,9 @@ export function clanFormFromClan(clan: ClanDetail): ClanFormValues {
 }
 
 /** Các cột dòng họ giống nhau giữa tạo mới và cập nhật. */
-export function clanFormToColumns(v: ClanFormValues): UpdateClanInput & CreateClanInput {
+export function clanFormToColumns(
+  v: ClanFormValues,
+): UpdateClanInput & CreateClanInput {
   return {
     name: v.name.trim(),
     description: v.description.trim() || undefined,
@@ -81,13 +84,19 @@ interface FieldsProps {
 }
 
 /** Tên, mô tả, viền avatar. */
-export function ClanBasicFields({ value, onChange, disabled, idPrefix = "clan" }: FieldsProps) {
-  const set = (patch: Partial<ClanFormValues>) => onChange({ ...value, ...patch });
+export function ClanBasicFields({
+  value,
+  onChange,
+  disabled,
+  idPrefix = "clan",
+}: FieldsProps) {
+  const set = (patch: Partial<ClanFormValues>) =>
+    onChange({ ...value, ...patch });
   return (
     <div className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor={`${idPrefix}-name`} required>
-          Tên dòng họ
+          {t`Tên dòng họ`}
         </Label>
         <Input
           id={`${idPrefix}-name`}
@@ -99,13 +108,13 @@ export function ClanBasicFields({ value, onChange, disabled, idPrefix = "clan" }
           disabled={disabled}
           value={value.name}
           onChange={(e) => set({ name: e.target.value })}
-          placeholder="Vd: Họ Nguyễn Hữu"
+          placeholder={t`Vd: Họ Nguyễn Hữu`}
         />
       </div>
       <div className="space-y-1">
         <Textarea
           id={`${idPrefix}-description`}
-          label="Mô tả (tuỳ chọn)"
+          label={t`Mô tả (tuỳ chọn)`}
           icon={<IconScroll />}
           data-testid="clan-description-input"
           maxLength={500}
@@ -113,18 +122,20 @@ export function ClanBasicFields({ value, onChange, disabled, idPrefix = "clan" }
           disabled={disabled}
           value={value.description}
           onChange={(e) => set({ description: e.target.value })}
-          placeholder="Vài dòng giới thiệu về dòng họ"
+          placeholder={t`Vài dòng giới thiệu về dòng họ`}
           className="leading-relaxed"
         />
-        <p className="text-right text-xs text-muted-foreground">{value.description.length}/500</p>
+        <p className="text-right text-xs text-muted-foreground">
+          {value.description.length}/500
+        </p>
       </div>
       {disabled ? null : (
         <AvatarFramePicker
           value={value.avatar_frame}
           onChange={(f) => set({ avatar_frame: f })}
           gender="M"
-          label="Viền avatar cả dòng họ"
-          hint="Áp cho avatar của mọi thành viên trong họ."
+          label={t`Viền avatar cả dòng họ`}
+          hint={t`Áp cho avatar của mọi thành viên trong họ.`}
         />
       )}
     </div>
@@ -132,31 +143,72 @@ export function ClanBasicFields({ value, onChange, disabled, idPrefix = "clan" }
 }
 
 const PUBLIC_OPTIONS = [
-  { key: "public_show_tree", label: "Cây gia phả & Danh bạ", desc: "Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn)." },
-  { key: "public_show_heritage", label: "Di sản dòng họ", desc: "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh." },
-  { key: "public_show_graves", label: "Mộ phần & tro cốt", desc: "Xem nơi an nghỉ, người an nghỉ và ảnh mộ." },
-  { key: "public_show_events", label: "Sự kiện", desc: "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết)." },
+  {
+    key: "public_show_tree",
+    label: "Cây gia phả & Danh bạ",
+    desc: "Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn).",
+  },
+  {
+    key: "public_show_heritage",
+    label: "Di sản dòng họ",
+    desc: "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh.",
+  },
+  {
+    key: "public_show_graves",
+    label: "Mộ phần & tro cốt",
+    desc: "Xem nơi an nghỉ, người an nghỉ và ảnh mộ.",
+  },
+  {
+    key: "public_show_events",
+    label: "Sự kiện",
+    desc: "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết).",
+  },
 ] as const;
 
 const DISPLAY_OPTIONS = [
-  { key: "root_is_gen_zero", label: "Thủy tổ là Đời 0", desc: "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc." },
-  { key: "display_death_details", label: "Người đã mất: hiện ngày giỗ và tuổi thọ", desc: "Thẻ người đã mất trên cây và trong sách PDF hiện thêm ngày giỗ (âm lịch) và tuổi thọ." },
-  { key: "display_living_full_dob", label: "Người sống: hiện đầy đủ ngày-tháng-năm sinh", desc: "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF." },
-  { key: "hide_photos_in_share", label: "Ẩn ảnh thật khi xem qua link công khai", desc: "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật." },
+  {
+    key: "root_is_gen_zero",
+    label: "Thủy tổ là Đời 0",
+    desc: "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc.",
+  },
+  {
+    key: "display_death_details",
+    label: "Người đã mất: hiện ngày giỗ và tuổi thọ",
+    desc: "Thẻ người đã mất trên cây và trong sách PDF hiện thêm ngày giỗ (âm lịch) và tuổi thọ.",
+  },
+  {
+    key: "display_living_full_dob",
+    label: "Người sống: hiện đầy đủ ngày-tháng-năm sinh",
+    desc: "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF.",
+  },
+  {
+    key: "hide_photos_in_share",
+    label: "Ẩn ảnh thật khi xem qua link công khai",
+    desc: "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật.",
+  },
 ] as const;
 
 /** Chế độ hiển thị, phần người ngoài được xem, đánh số đời, tuỳ chọn hiển thị. */
 export function ClanDisplayFields({ value, onChange, disabled }: FieldsProps) {
-  const set = (patch: Partial<ClanFormValues>) => onChange({ ...value, ...patch });
+  const set = (patch: Partial<ClanFormValues>) =>
+    onChange({ ...value, ...patch });
   const isPrivate = value.visibility === "private";
   return (
     <div className="space-y-5">
       <fieldset className="space-y-3" disabled={disabled}>
-        <legend className="text-base font-medium mb-2">Chế độ hiển thị</legend>
+        <legend className="text-base font-medium mb-2">{t`Chế độ hiển thị`}</legend>
         {(
           [
-            { v: "private", label: "Riêng tư", desc: "Chỉ thành viên được mời xem được." },
-            { v: "public", label: "Công khai", desc: "Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn thông tin nhạy cảm." },
+            {
+              v: "private",
+              label: t`Riêng tư`,
+              desc: t`Chỉ thành viên được mời xem được.`,
+            },
+            {
+              v: "public",
+              label: t`Công khai`,
+              desc: t`Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn thông tin nhạy cảm.`,
+            },
           ] as const
         ).map((o) => (
           <label key={o.v} className="flex items-start gap-3 cursor-pointer">
@@ -176,14 +228,22 @@ export function ClanDisplayFields({ value, onChange, disabled }: FieldsProps) {
       </fieldset>
 
       <fieldset className="space-y-3" disabled={disabled}>
-        <legend className="text-base font-medium mb-1">Người xem công khai được xem</legend>
+        <legend className="text-base font-medium mb-1">{t`Người xem công khai được xem`}</legend>
         <p className="text-sm text-muted-foreground">
-          Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem được.
-          {isPrivate ? " Cần chọn chế độ Công khai ở trên trước." : ""}
+          Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem
+          được.
+          {isPrivate ? t` Cần chọn chế độ Công khai ở trên trước.` : ""}
         </p>
-        <div className={isPrivate ? "space-y-3 opacity-50 pointer-events-none" : "space-y-3"}>
+        <div
+          className={
+            isPrivate ? "space-y-3 opacity-50 pointer-events-none" : "space-y-3"
+          }
+        >
           {PUBLIC_OPTIONS.map((o) => (
-            <label key={o.key} className="flex items-start gap-3 cursor-pointer">
+            <label
+              key={o.key}
+              className="flex items-start gap-3 cursor-pointer"
+            >
               <input
                 type="checkbox"
                 checked={value[o.key]}
@@ -201,7 +261,7 @@ export function ClanDisplayFields({ value, onChange, disabled }: FieldsProps) {
       </fieldset>
 
       <fieldset className="space-y-3" disabled={disabled}>
-        <legend className="text-base font-medium mb-1">Cách hiển thị</legend>
+        <legend className="text-base font-medium mb-1">{t`Cách hiển thị`}</legend>
         {DISPLAY_OPTIONS.map((o) => (
           <label key={o.key} className="flex items-start gap-3 cursor-pointer">
             <input

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { IconRefresh } from "@/components/icons";
 
+import { t } from "@lingui/core/macro";
 /**
  * Chuyển thông báo lỗi kỹ thuật (thường tiếng Anh từ Supabase/mạng)
  * thành câu tiếng Việt dễ hiểu cho người dùng cuối. Không nuốt lỗi gốc —
@@ -91,7 +92,7 @@ export function ErrorState({
       {onRetry && (
         <Button variant="outline" onClick={onRetry}>
           <IconRefresh className="h-4 w-4 mr-1.5" />
-          Thử lại
+          {t`Thử lại`}
         </Button>
       )}
     </div>

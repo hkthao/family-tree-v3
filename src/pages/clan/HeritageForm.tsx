@@ -49,6 +49,8 @@ import {
 } from "@/lib/queries/heritage";
 import { matchesName } from "@/lib/unaccent";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const CATEGORIES = Object.keys(HERITAGE_CATEGORY_LABEL) as HeritageCategory[];
 
 interface StagedPerson {
@@ -58,7 +60,9 @@ interface StagedPerson {
   linkId: string | null; // set if already saved (edit mode)
 }
 
-export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } = {}) {
+export default function HeritageForm({
+  embedded,
+}: { embedded?: EmbeddedForm } = {}) {
   const { clan } = useClanContext();
   const readOnly = !!embedded?.readOnly;
   const canEdit = canEditClan(clan);
@@ -79,7 +83,10 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
   const [locationName, setLocationName] = useState("");
   const [address, setAddress] = useState("");
   // Tỉnh + xã/phường chọn từ danh mục — để hiện trên Bản đồ dòng họ (chỉ mục kiểu nơi chốn).
-  const [area, setArea] = useState<AddressValue>({ province_code: null, ward_code: null });
+  const [area, setArea] = useState<AddressValue>({
+    province_code: null,
+    ward_code: null,
+  });
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [builtYear, setBuiltYear] = useState("");
@@ -103,12 +110,20 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
     setSections(existing.sections ?? []);
     setLocationName(existing.location_name ?? "");
     setAddress(existing.address ?? "");
-    setArea({ province_code: existing.province_code, ward_code: existing.ward_code });
+    setArea({
+      province_code: existing.province_code,
+      ward_code: existing.ward_code,
+    });
     setLat(existing.latitude != null ? String(existing.latitude) : "");
     setLng(existing.longitude != null ? String(existing.longitude) : "");
-    setBuiltYear(existing.built_year != null ? String(existing.built_year) : "");
+    setBuiltYear(
+      existing.built_year != null ? String(existing.built_year) : "",
+    );
     const ppl = existing.people.map((p) => ({
-      personId: p.person_id, name: p.full_name, gender: p.gender, linkId: p.link_id,
+      personId: p.person_id,
+      name: p.full_name,
+      gender: p.gender,
+      linkId: p.link_id,
     }));
     setPeople(ppl);
     setOrigPeople(ppl);
@@ -146,16 +161,19 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
         ward_code: isPlace ? area.ward_code : null,
         latitude: isPlace && lat.trim() ? Number(lat) : null,
         longitude: isPlace && lng.trim() ? Number(lng) : null,
-        built_year: isPlace && builtYear.trim() ? Math.floor(Number(builtYear)) : null,
+        built_year:
+          isPlace && builtYear.trim() ? Math.floor(Number(builtYear)) : null,
       };
       let id = itemId ?? "";
       if (isEdit) {
         await updateHeritageItem(id, fields);
         const stagedIds = new Set(people.map((p) => p.personId));
         const origIds = new Set(origPeople.map((p) => p.personId));
-        for (const p of people) if (!origIds.has(p.personId)) await addHeritagePerson(id, p.personId);
+        for (const p of people)
+          if (!origIds.has(p.personId)) await addHeritagePerson(id, p.personId);
         for (const p of origPeople)
-          if (!stagedIds.has(p.personId) && p.linkId) await removeHeritagePerson(p.linkId);
+          if (!stagedIds.has(p.personId) && p.linkId)
+            await removeHeritagePerson(p.linkId);
       } else {
         const res = await createHeritageItem(clan.id, fields);
         id = res.id;
@@ -166,50 +184,55 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
     onSuccess: (id) => {
       qc.invalidateQueries({ queryKey: ["heritage", clan.id] });
       qc.invalidateQueries({ queryKey: ["heritage-item", id] });
-      toast.success(isEdit ? "Đã lưu" : "Đã thêm", {
-        description: isEdit ? undefined : "Giờ bạn có thể thêm ảnh và ghi âm kể chuyện.",
+      toast.success(isEdit ? t`Đã lưu` : t`Đã thêm`, {
+        description: isEdit
+          ? undefined
+          : t`Giờ bạn có thể thêm ảnh và ghi âm kể chuyện.`,
       });
       if (embedded) embedded.onDone(id);
       else navigate(`/clans/${clan.id}/heritage/${id}`);
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   function useCurrentLocation() {
     if (!navigator.geolocation) {
-      toast.error("Trình duyệt không hỗ trợ định vị");
+      toast.error(t`Trình duyệt không hỗ trợ định vị`);
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLat(pos.coords.latitude.toFixed(6));
         setLng(pos.coords.longitude.toFixed(6));
-        toast.success("Đã lấy vị trí hiện tại");
+        toast.success(t`Đã lấy vị trí hiện tại`);
       },
-      () => toast.error("Không lấy được vị trí (cần cấp quyền định vị)"),
+      () => toast.error(t`Không lấy được vị trí (cần cấp quyền định vị)`),
       { enableHighAccuracy: true, timeout: 10_000 },
     );
   }
 
-  const back = isEdit ? `/clans/${clan.id}/heritage/${itemId}` : `/clans/${clan.id}/heritage`;
+  const back = isEdit
+    ? `/clans/${clan.id}/heritage/${itemId}`
+    : `/clans/${clan.id}/heritage`;
   const prompts = HERITAGE_CATEGORY_PROMPTS[category];
 
   return (
     <div className="space-y-3">
       {!embedded && (
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Di sản dòng họ", to: `/clans/${clan.id}/heritage` },
-          { label: isEdit ? "Sửa" : "Thêm" },
-        ]}
-      />
+        <Breadcrumb
+          items={[
+            { label: clan.name, to: `/clans/${clan.id}` },
+            { label: t`Di sản dòng họ`, to: `/clans/${clan.id}/heritage` },
+            { label: isEdit ? t`Sửa` : t`Thêm` },
+          ]}
+        />
       )}
       {!embedded && (
-      <PageHeader
-        icon={<IconScroll className="h-7 w-7" />}
-        title={isEdit ? "Sửa mục di sản" : "Thêm mục di sản"}
-      />
+        <PageHeader
+          icon={<IconScroll className="h-7 w-7" />}
+          title={isEdit ? t`Sửa mục di sản` : t`Thêm mục di sản`}
+        />
       )}
 
       <form
@@ -228,287 +251,421 @@ export default function HeritageForm({ embedded }: { embedded?: EmbeddedForm } =
           disabled={readOnly}
           className={`m-0 min-w-0 space-y-6 border-0 p-0 ${readOnly ? "[&_:disabled]:!cursor-default [&_:disabled]:!opacity-100 [&_[data-edit-only]]:hidden" : ""}`}
         >
-        {/* Loại */}
-        <div className="space-y-2">
-          <Label htmlFor="category">Loại di sản</Label>
-          <Select
-            id="category"
-            icon={<IconTag />}
-            value={category}
-            onChange={(e) => setCategory(e.target.value as HeritageCategory)}
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{HERITAGE_CATEGORY_LABEL[c]}</option>
-            ))}
-          </Select>
-          <p className="text-sm text-muted-foreground">{HERITAGE_CATEGORY_HINT[category]}</p>
-        </div>
-
-        {/* Tiêu đề */}
-        <div className="space-y-2">
-          <Label htmlFor="title" required>Tên / tiêu đề</Label>
-          <Input
-            id="title"
-            icon={<IconScroll />}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={isPlace ? "vd: Từ đường họ Nguyễn" : "vd: Lệ giỗ Tổ mùng 10 tháng Giêng"}
-            maxLength={200}
-            className="h-12 text-base"
-          />
-        </div>
-
-        {/* Nơi (chỉ place) */}
-        {isPlace && (
-          <>
-            <div className="space-y-2">
-              <Label htmlFor="loc-name">Ở đâu</Label>
-              <Input id="loc-name" icon={<IconMapPin />} value={locationName} onChange={(e) => setLocationName(e.target.value)}
-                placeholder="vd: thôn …, xã …" className="h-12 text-base" />
-            </div>
-            <div className="space-y-2">
-              <Label>Khu vực (hiện trên Bản đồ)</Label>
-              <AddressPicker idPrefix="heritage-area" value={area} onChange={setArea} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Địa chỉ chi tiết (tuỳ chọn)</Label>
-              <Input id="address" icon={<IconMapPin />} value={address} onChange={(e) => setAddress(e.target.value)}
-                placeholder="vd: xã …, huyện …, tỉnh …" className="h-12 text-base" />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="year">Lập / xây năm (tuỳ chọn)</Label>
-                <Input id="year" icon={<IconCalendar />} inputMode="numeric" value={builtYear} onChange={(e) => setBuiltYear(e.target.value)}
-                  placeholder="vd: 1920" className="h-12 text-base" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Vị trí trên bản đồ (tuỳ chọn)</Label>
-              <div className="flex flex-wrap items-center gap-2">
-                <Input className="w-32 h-12" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="vĩ độ" icon={<IconCompass />} />
-                <Input className="w-32 h-12" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="kinh độ" icon={<IconCompass />} />
-                <Button type="button" variant="outline" onClick={useCurrentLocation} data-edit-only>
-                  <IconMapPin className="h-4 w-4 mr-1" /> Lấy vị trí hiện tại
-                </Button>
-              </div>
-              <p data-edit-only className="text-sm text-muted-foreground">Đứng tại từ đường rồi bấm "Lấy vị trí hiện tại" để lưu toạ độ chỉ đường.</p>
-            </div>
-          </>
-        )}
-
-        {/* Mô tả ngắn — textarea để dòng dài đọc/sửa dễ hơn (input 1 dòng
-            bị tràn ngang, khó đọc). */}
-        <div className="space-y-1">
-          <Textarea
-            id="summary"
-            label="Mô tả ngắn (tuỳ chọn)"
-            icon={<IconScroll />}
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
-            rows={2}
-            maxLength={300}
-            placeholder="Một câu tóm tắt, hiện ở danh sách"
-            className="min-h-0 leading-relaxed resize-y"
-          />
-          <p className="text-right text-xs text-muted-foreground">
-            {summary.length}/300
-          </p>
-        </div>
-
-        {/* Nội dung + câu hỏi gợi ý (dành cho người lớn tuổi) */}
-        <div className="space-y-2">
-          <Label htmlFor="body" className="flex items-center gap-1.5">
-            <IconBook className="h-4 w-4 text-muted-foreground" />
-            Nội dung
-          </Label>
-          <div className="rounded-md border border-divider bg-muted/40 p-3">
-            <p className="text-sm font-medium mb-1">Gợi ý — bạn chỉ cần lần lượt trả lời:</p>
-            <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-0.5">
-              {prompts.map((q) => (
-                <li key={q}>{q}</li>
+          {/* Loại */}
+          <div className="space-y-2">
+            <Label htmlFor="category">{t`Loại di sản`}</Label>
+            <Select
+              id="category"
+              icon={<IconTag />}
+              value={category}
+              onChange={(e) => setCategory(e.target.value as HeritageCategory)}
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {HERITAGE_CATEGORY_LABEL[c]}
+                </option>
               ))}
-            </ul>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {HERITAGE_CATEGORY_HINT[category]}
+            </p>
           </div>
-          <Textarea
-            id="body"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={10}
-            placeholder="Kể lại bằng lời của bạn… (có thể dùng nút micro trên bàn phím điện thoại để đọc cho máy ghi)"
-            className="leading-relaxed"
-          />
-          <p className="text-sm text-muted-foreground">
-            Sau khi lưu, bạn có thể <strong>thêm ảnh</strong> và <strong>ghi âm kể chuyện</strong> ở trang chi tiết.
-          </p>
-        </div>
 
-        {/* Nội dung nhiều ĐOẠN — cho tài liệu dài (Chúc thư, gia phả…) */}
-        <div className="space-y-2">
-          <Label className="block">Các đoạn nội dung (tuỳ chọn)</Label>
-          <p className="text-sm text-muted-foreground">
-            Tài liệu dài nên chia thành từng đoạn có tiêu đề (vd "Lời nói đầu",
-            "Chúc thư", "Phụ lục"…) — người đọc sẽ thấy mục lục và gập/mở từng
-            đoạn, đỡ ngợp. Để trống nếu chỉ dùng ô Nội dung ở trên.
-          </p>
-          {sections.map((sec, i) => (
-            <div key={i} className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-6 shrink-0">
-                  {i + 1}.
-                </span>
+          {/* Tiêu đề */}
+          <div className="space-y-2">
+            <Label htmlFor="title" required>{t`Tên / tiêu đề`}</Label>
+            <Input
+              id="title"
+              icon={<IconScroll />}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={
+                isPlace
+                  ? t`vd: Từ đường họ Nguyễn`
+                  : t`vd: Lệ giỗ Tổ mùng 10 tháng Giêng`
+              }
+              maxLength={200}
+              className="h-12 text-base"
+            />
+          </div>
+
+          {/* Nơi (chỉ place) */}
+          {isPlace && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="loc-name">{t`Ở đâu`}</Label>
                 <Input
-                  icon={<IconTag />}
-                  value={sec.heading}
+                  id="loc-name"
+                  icon={<IconMapPin />}
+                  value={locationName}
+                  onChange={(e) => setLocationName(e.target.value)}
+                  placeholder={t`vd: thôn …, xã …`}
+                  className="h-12 text-base"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t`Khu vực (hiện trên Bản đồ)`}</Label>
+                <AddressPicker
+                  idPrefix="heritage-area"
+                  value={area}
+                  onChange={setArea}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">{t`Địa chỉ chi tiết (tuỳ chọn)`}</Label>
+                <Input
+                  id="address"
+                  icon={<IconMapPin />}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder={t`vd: xã …, huyện …, tỉnh …`}
+                  className="h-12 text-base"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="year">{t`Lập / xây năm (tuỳ chọn)`}</Label>
+                  <Input
+                    id="year"
+                    icon={<IconCalendar />}
+                    inputMode="numeric"
+                    value={builtYear}
+                    onChange={(e) => setBuiltYear(e.target.value)}
+                    placeholder="vd: 1920"
+                    className="h-12 text-base"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t`Vị trí trên bản đồ (tuỳ chọn)`}</Label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="w-32 h-12"
+                    inputMode="decimal"
+                    value={lat}
+                    onChange={(e) => setLat(e.target.value)}
+                    placeholder={t`vĩ độ`}
+                    icon={<IconCompass />}
+                  />
+                  <Input
+                    className="w-32 h-12"
+                    inputMode="decimal"
+                    value={lng}
+                    onChange={(e) => setLng(e.target.value)}
+                    placeholder={t`kinh độ`}
+                    icon={<IconCompass />}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={useCurrentLocation}
+                    data-edit-only
+                  >
+                    <IconMapPin className="h-4 w-4 mr-1" />{" "}
+                    {t`Lấy vị trí hiện tại`}
+                  </Button>
+                </div>
+                <p
+                  data-edit-only
+                  className="text-sm text-muted-foreground"
+                >{t`Đứng tại từ đường rồi bấm "Lấy vị trí hiện tại" để lưu toạ độ chỉ đường.`}</p>
+              </div>
+            </>
+          )}
+
+          {/* Mô tả ngắn — textarea để dòng dài đọc/sửa dễ hơn (input 1 dòng
+            bị tràn ngang, khó đọc). */}
+          <div className="space-y-1">
+            <Textarea
+              id="summary"
+              label={t`Mô tả ngắn (tuỳ chọn)`}
+              icon={<IconScroll />}
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              rows={2}
+              maxLength={300}
+              placeholder={t`Một câu tóm tắt, hiện ở danh sách`}
+              className="min-h-0 leading-relaxed resize-y"
+            />
+            <p className="text-right text-xs text-muted-foreground">
+              {summary.length}/300
+            </p>
+          </div>
+
+          {/* Nội dung + câu hỏi gợi ý (dành cho người lớn tuổi) */}
+          <div className="space-y-2">
+            <Label htmlFor="body" className="flex items-center gap-1.5">
+              <IconBook className="h-4 w-4 text-muted-foreground" />
+              {t`Nội dung`}
+            </Label>
+            <div className="rounded-md border border-divider bg-muted/40 p-3">
+              <p className="text-sm font-medium mb-1">{t`Gợi ý — bạn chỉ cần lần lượt trả lời:`}</p>
+              <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-0.5">
+                {prompts.map((q) => (
+                  <li key={q}>{q}</li>
+                ))}
+              </ul>
+            </div>
+            <Textarea
+              id="body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={10}
+              placeholder={t`Kể lại bằng lời của bạn… (có thể dùng nút micro trên bàn phím điện thoại để đọc cho máy ghi)`}
+              className="leading-relaxed"
+            />
+            <p className="text-sm text-muted-foreground">
+              Sau khi lưu, bạn có thể <strong>{t`thêm ảnh`}</strong> và{" "}
+              <strong>{t`ghi âm kể chuyện`}</strong> ở trang chi tiết.
+            </p>
+          </div>
+
+          {/* Nội dung nhiều ĐOẠN — cho tài liệu dài (Chúc thư, gia phả…) */}
+          <div className="space-y-2">
+            <Label className="block">{t`Các đoạn nội dung (tuỳ chọn)`}</Label>
+            <p className="text-sm text-muted-foreground">
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Tài liệu dài nên chia thành từng đoạn có tiêu đề (vd "Lời
+                    nói đầu", "Chúc thư", "Phụ lục"…) — người đọc sẽ thấy mục
+                    lục và gập/mở từng đoạn, đỡ ngợp. Để trống nếu chỉ dùng ô
+                    Nội dung ở trên.
+                  </Trans>
+                </Trans>
+              </Trans>
+            </p>
+            {sections.map((sec, i) => (
+              <div
+                key={i}
+                className="rounded-xl border bg-card shadow-sm p-3 space-y-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground w-6 shrink-0">
+                    {i + 1}.
+                  </span>
+                  <Input
+                    icon={<IconTag />}
+                    value={sec.heading}
+                    onChange={(e) =>
+                      setSections((prev) =>
+                        prev.map((s, j) =>
+                          j === i ? { ...s, heading: e.target.value } : s,
+                        ),
+                      )
+                    }
+                    placeholder={t`Tiêu đề đoạn (vd Lời nói đầu)`}
+                    maxLength={200}
+                    className="flex-1"
+                  />
+                  <button
+                    type="button"
+                    data-edit-only
+                    aria-label={t`Lên`}
+                    disabled={i === 0}
+                    onClick={() =>
+                      setSections((prev) => {
+                        const a = [...prev];
+                        [a[i - 1], a[i]] = [a[i], a[i - 1]];
+                        return a;
+                      })
+                    }
+                    className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    data-edit-only
+                    aria-label={t`Xuống`}
+                    disabled={i === sections.length - 1}
+                    onClick={() =>
+                      setSections((prev) => {
+                        const a = [...prev];
+                        [a[i + 1], a[i]] = [a[i], a[i + 1]];
+                        return a;
+                      })
+                    }
+                    className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                  >
+                    ▼
+                  </button>
+                  <button
+                    type="button"
+                    data-edit-only
+                    aria-label={t`Xoá đoạn`}
+                    onClick={() =>
+                      setSections((prev) => prev.filter((_, j) => j !== i))
+                    }
+                    className="px-1.5 text-muted-foreground hover:text-destructive"
+                  >
+                    <IconX className="h-4 w-4" />
+                  </button>
+                </div>
+                <Textarea
+                  value={sec.body}
                   onChange={(e) =>
                     setSections((prev) =>
                       prev.map((s, j) =>
-                        j === i ? { ...s, heading: e.target.value } : s,
+                        j === i ? { ...s, body: e.target.value } : s,
                       ),
                     )
                   }
-                  placeholder="Tiêu đề đoạn (vd Lời nói đầu)"
-                  maxLength={200}
-                  className="flex-1"
+                  rows={6}
+                  placeholder={t`Nội dung đoạn này…`}
+                  className="leading-relaxed"
                 />
-                <button
-                  type="button" data-edit-only
-                  aria-label="Lên"
-                  disabled={i === 0}
-                  onClick={() =>
-                    setSections((prev) => {
-                      const a = [...prev];
-                      [a[i - 1], a[i]] = [a[i], a[i - 1]];
-                      return a;
-                    })
-                  }
-                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                >
-                  ▲
-                </button>
-                <button
-                  type="button" data-edit-only
-                  aria-label="Xuống"
-                  disabled={i === sections.length - 1}
-                  onClick={() =>
-                    setSections((prev) => {
-                      const a = [...prev];
-                      [a[i + 1], a[i]] = [a[i], a[i + 1]];
-                      return a;
-                    })
-                  }
-                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                >
-                  ▼
-                </button>
-                <button
-                  type="button" data-edit-only
-                  aria-label="Xoá đoạn"
-                  onClick={() =>
-                    setSections((prev) => prev.filter((_, j) => j !== i))
-                  }
-                  className="px-1.5 text-muted-foreground hover:text-destructive"
-                >
-                  <IconX className="h-4 w-4" />
-                </button>
               </div>
-              <Textarea
-                value={sec.body}
-                onChange={(e) =>
-                  setSections((prev) =>
-                    prev.map((s, j) =>
-                      j === i ? { ...s, body: e.target.value } : s,
-                    ),
-                  )
-                }
-                rows={6}
-                placeholder="Nội dung đoạn này…"
-                className="leading-relaxed"
-              />
-            </div>
-          ))}
-          <Button
-            type="button" data-edit-only
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setSections((prev) => [...prev, { heading: "", body: "" }])
-            }
-          >
-            <IconPlus className="h-4 w-4 mr-1" /> Thêm đoạn
-          </Button>
-        </div>
-
-        {/* Người liên quan */}
-        <div className="space-y-2">
-          <Label className="block">Người liên quan trong họ (tuỳ chọn)</Label>
-          {people.length > 0 && (
-            <ul className="space-y-1.5">
-              {people.map((p) => (
-                <li key={p.personId} className="flex items-center gap-2 rounded-md border bg-card px-3 py-2">
-                  <PersonAvatar gender={p.gender} size={28} />
-                  <span className="flex-1 truncate text-base">{p.name}</span>
-                  <button type="button" data-edit-only aria-label="Bỏ" onClick={() => setPeople((prev) => prev.filter((x) => x.personId !== p.personId))}>
-                    <IconX className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {!pickerOpen ? (
-            <Button type="button" size="sm" variant="outline" data-edit-only onClick={() => setPickerOpen(true)}>
-              <IconUserPlus className="h-4 w-4 mr-1.5" />
-              Gắn người
+            ))}
+            <Button
+              type="button"
+              data-edit-only
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setSections((prev) => [...prev, { heading: "", body: "" }])
+              }
+            >
+              <IconPlus className="h-4 w-4 mr-1" /> {t`Thêm đoạn`}
             </Button>
-          ) : (
-            <div className="space-y-2 rounded-md border p-2">
-              <Input icon={<IconSearch />} value={pickerFilter} onChange={(e) => setPickerFilter(e.target.value)} placeholder="Gõ tên để tìm (không cần dấu)" autoFocus />
-              <ul className="max-h-60 overflow-y-auto divide-y text-sm">
-                {candidates.length === 0 && <li className="px-2 py-2 text-muted-foreground italic">{clanIndex ? "Không có người khớp." : "Đang tải…"}</li>}
-                {candidates.map((p) => (
-                  <li key={p.id}>
-                    <button type="button" className="w-full text-left px-2 py-2 flex items-center gap-2 hover:bg-muted/50"
-                      onClick={() => {
-                        setPeople((prev) => [...prev, { personId: p.id, name: p.full_name, gender: p.gender, linkId: null }]);
-                        setPickerFilter("");
-                      }}>
-                      <PersonAvatar gender={p.gender} size={28} />
-                      <span className="truncate">{p.full_name}</span>
-                      {p.birth_year && <span className="text-xs text-muted-foreground ml-auto">{p.birth_year}</span>}
+          </div>
+
+          {/* Người liên quan */}
+          <div className="space-y-2">
+            <Label className="block">{t`Người liên quan trong họ (tuỳ chọn)`}</Label>
+            {people.length > 0 && (
+              <ul className="space-y-1.5">
+                {people.map((p) => (
+                  <li
+                    key={p.personId}
+                    className="flex items-center gap-2 rounded-md border bg-card px-3 py-2"
+                  >
+                    <PersonAvatar gender={p.gender} size={28} />
+                    <span className="flex-1 truncate text-base">{p.name}</span>
+                    <button
+                      type="button"
+                      data-edit-only
+                      aria-label={t`Bỏ`}
+                      onClick={() =>
+                        setPeople((prev) =>
+                          prev.filter((x) => x.personId !== p.personId),
+                        )
+                      }
+                    >
+                      <IconX className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                     </button>
                   </li>
                 ))}
               </ul>
-              <Button type="button" size="sm" variant="ghost" onClick={() => setPickerOpen(false)}>Xong</Button>
-            </div>
-          )}
-        </div>
+            )}
+            {!pickerOpen ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                data-edit-only
+                onClick={() => setPickerOpen(true)}
+              >
+                <IconUserPlus className="h-4 w-4 mr-1.5" />
+                {t`Gắn người`}
+              </Button>
+            ) : (
+              <div className="space-y-2 rounded-md border p-2">
+                <Input
+                  icon={<IconSearch />}
+                  value={pickerFilter}
+                  onChange={(e) => setPickerFilter(e.target.value)}
+                  placeholder={t`Gõ tên để tìm (không cần dấu)`}
+                  autoFocus
+                />
+                <ul className="max-h-60 overflow-y-auto divide-y text-sm">
+                  {candidates.length === 0 && (
+                    <li className="px-2 py-2 text-muted-foreground italic">
+                      {clanIndex ? t`Không có người khớp.` : t`Đang tải…`}
+                    </li>
+                  )}
+                  {candidates.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-2 py-2 flex items-center gap-2 hover:bg-muted/50"
+                        onClick={() => {
+                          setPeople((prev) => [
+                            ...prev,
+                            {
+                              personId: p.id,
+                              name: p.full_name,
+                              gender: p.gender,
+                              linkId: null,
+                            },
+                          ]);
+                          setPickerFilter("");
+                        }}
+                      >
+                        <PersonAvatar gender={p.gender} size={28} />
+                        <span className="truncate">{p.full_name}</span>
+                        {p.birth_year && (
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {p.birth_year}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPickerOpen(false)}
+                >
+                  Xong
+                </Button>
+              </div>
+            )}
+          </div>
 
-        {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
+          {formError && (
+            <Alert variant="destructive">
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          )}
         </fieldset>
 
         {/* Ảnh chỉ thêm được khi mục đã có (đã lưu); thêm/gỡ lưu ngay, không chờ nút Lưu. */}
         {isEdit && itemId && (
-          <HeritagePhotosSection itemId={itemId} editable={!readOnly && canEdit} />
+          <HeritagePhotosSection
+            itemId={itemId}
+            editable={!readOnly && canEdit}
+          />
         )}
 
         {readOnly ? (
           canEdit && (
             <FormActions>
               <Button asChild>
-                <PanelLink to={`/clans/${clan.id}/heritage/${itemId}/edit`} panel="heritage-edit" panelParams={{ pid: itemId }}>
-                  <IconPencil className="h-4 w-4 mr-1.5" /> Sửa
+                <PanelLink
+                  to={`/clans/${clan.id}/heritage/${itemId}/edit`}
+                  panel="heritage-edit"
+                  panelParams={{ pid: itemId }}
+                >
+                  <IconPencil className="h-4 w-4 mr-1.5" /> {t`Sửa`}
                 </PanelLink>
               </Button>
             </FormActions>
           )
         ) : (
           <FormActions>
-            <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(back))}>
-              <IconX className="h-4 w-4 mr-1.5" /> Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => (embedded ? embedded.onCancel() : navigate(back))}
+            >
+              <IconX className="h-4 w-4 mr-1.5" /> {t`Hủy`}
             </Button>
             <Button type="submit" disabled={save.isPending}>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              {save.isPending ? "Đang lưu…" : "Lưu"}
+              {save.isPending ? t`Đang lưu…` : t`Lưu`}
             </Button>
           </FormActions>
         )}

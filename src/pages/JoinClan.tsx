@@ -2,12 +2,19 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { IconHome, IconLogIn, IconUserPlus, IconUsers } from "@/components/icons";
+import {
+  IconHome,
+  IconLogIn,
+  IconUserPlus,
+  IconUsers,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { peekClanInvite, redeemClanInvite } from "@/lib/queries/clan-invites";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const ROLE_LABEL: Record<string, string> = {
   viewer: "Xem & góp ý",
   editor: "Biên tập",
@@ -47,20 +54,26 @@ export default function JoinClan() {
         </span>
 
         {peekQ.isLoading && (
-          <p className="text-muted-foreground">Đang kiểm tra link mời…</p>
+          <p className="text-muted-foreground">{t`Đang kiểm tra link mời…`}</p>
         )}
 
         {!peekQ.isLoading && (!peek || !peek.valid) && (
           <div className="space-y-3">
-            <h1 className="text-xl font-semibold">Link mời không hợp lệ</h1>
+            <h1 className="text-xl font-semibold">{t`Link mời không hợp lệ`}</h1>
             <p className="text-muted-foreground">
-              Link có thể đã hết hạn hoặc bị thu hồi. Hãy xin người trong họ
-              gửi lại link mới.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Link có thể đã hết hạn hoặc bị thu hồi. Hãy xin người trong
+                    họ gửi lại link mới.
+                  </Trans>
+                </Trans>
+              </Trans>
             </p>
             <Button asChild variant="outline" className="w-full">
               <Link to="/">
                 <IconHome className="h-4 w-4 mr-1.5" />
-                Về trang chủ
+                {t`Về trang chủ`}
               </Link>
             </Button>
           </div>
@@ -69,7 +82,7 @@ export default function JoinClan() {
         {peek && peek.valid && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Lời mời tham gia</p>
+              <p className="text-sm text-muted-foreground">{t`Lời mời tham gia`}</p>
               <h1 className="text-2xl font-semibold clan-name">
                 {peek.clan_name}
               </h1>
@@ -94,23 +107,23 @@ export default function JoinClan() {
                 }}
               >
                 <IconUserPlus className="h-4 w-4 mr-1.5" />
-                {joinM.isPending ? "Đang tham gia…" : "Tham gia dòng họ"}
+                {joinM.isPending ? t`Đang tham gia…` : t`Tham gia dòng họ`}
               </Button>
             ) : (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Đăng nhập hoặc tạo tài khoản để tham gia.
+                  {t`Đăng nhập hoặc tạo tài khoản để tham gia.`}
                 </p>
                 <Button asChild className="w-full">
                   <Link to={`/signup?next=${encodeURIComponent(next)}`}>
                     <IconUserPlus className="h-4 w-4 mr-1.5" />
-                    Tạo tài khoản
+                    {t`Tạo tài khoản`}
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full">
                   <Link to={`/login?next=${encodeURIComponent(next)}`}>
                     <IconLogIn className="h-4 w-4 mr-1.5" />
-                    Tôi đã có tài khoản
+                    {t`Tôi đã có tài khoản`}
                   </Link>
                 </Button>
               </div>

@@ -46,6 +46,8 @@ import {
 } from "@/lib/queries/mosaics";
 import { unaccent } from "@/lib/unaccent";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const VIEW_KEY = "family-tree:mosaics-view-mode";
 type ViewMode = "list" | "grid";
 
@@ -64,7 +66,11 @@ export default function Mosaics() {
   const canEdit = canEditClan(clan);
   const [creating, setCreating] = useState(false);
   // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
-  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
+  const {
+    q: search,
+    text: searchText,
+    setText: setSearchText,
+  } = useSearchBox();
   const [viewMode, setViewMode] = useState<ViewMode>(() => readViewMode());
   useEffect(() => {
     try {
@@ -99,17 +105,17 @@ export default function Mosaics() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Ảnh ghép" },
+          { label: t`Ảnh ghép` },
         ]}
       />
       <PageHeader
         icon={<IconCamera className="h-7 w-7" />}
-        title="Ảnh ghép"
-        description="Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ."
+        title={t`Ảnh ghép`}
+        description={t`Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ.`}
         actionsBelow
         actions={
           canEdit ? (
-            <Fab onClick={() => setCreating(true)} label="Tạo bức ghép" />
+            <Fab onClick={() => setCreating(true)} label={t`Tạo bức ghép`} />
           ) : undefined
         }
       />
@@ -117,20 +123,20 @@ export default function Mosaics() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="min-w-0 sm:flex-1">
           <SearchInput
-            label="Tìm bức ảnh"
+            label={t`Tìm bức ảnh`}
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
             }}
-            placeholder="Tìm theo tên, mô tả…"
+            placeholder={t`Tìm theo tên, mô tả…`}
           />
         </div>
-        <SegmentedControl ariaLabel="Chế độ hiển thị">
+        <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
           <SegmentedButton
             active={viewMode === "list"}
             onClick={() => setViewMode("list")}
-            title="Danh sách"
-            ariaLabel="Danh sách"
+            title={t`Danh sách`}
+            ariaLabel={t`Danh sách`}
             variant="icon-md"
           >
             <IconList className="h-4 w-4" />
@@ -138,8 +144,8 @@ export default function Mosaics() {
           <SegmentedButton
             active={viewMode === "grid"}
             onClick={() => setViewMode("grid")}
-            title="Thẻ"
-            ariaLabel="Thẻ"
+            title={t`Thẻ`}
+            ariaLabel={t`Thẻ`}
             variant="icon-md"
           >
             <IconGrid className="h-4 w-4" />
@@ -149,7 +155,7 @@ export default function Mosaics() {
 
       {isLoading ? (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -161,14 +167,16 @@ export default function Mosaics() {
             )
           }
           title={
-            search.trim() ? "Không có bức nào khớp" : "Chưa có bức ảnh ghép nào"
+            search.trim()
+              ? t`Không có bức nào khớp`
+              : t`Chưa có bức ảnh ghép nào`
           }
           description={
             search.trim()
-              ? "Thử bỏ bớt từ khoá."
+              ? t`Thử bỏ bớt từ khoá.`
               : canEdit
-                ? "Bấm nút '+' để tạo bức đầu tiên, rồi mời cả nhà góp ảnh."
-                : "Quản trị/biên tập viên sẽ tạo bức ảnh ghép để cả nhà góp ảnh."
+                ? t`Bấm nút '+' để tạo bức đầu tiên, rồi mời cả nhà góp ảnh.`
+                : t`Quản trị/biên tập viên sẽ tạo bức ảnh ghép để cả nhà góp ảnh.`
           }
         />
       ) : viewMode === "list" ? (
@@ -191,7 +199,7 @@ export default function Mosaics() {
           totalPages={paging.totalPages}
           total={paging.total}
           pageSize={paging.pageSize}
-          unit="bức"
+          unit={t`bức`}
           onPageChange={paging.setPage}
           pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
           onPageSizeChange={paging.setPageSize}
@@ -200,8 +208,8 @@ export default function Mosaics() {
 
       <SidePanel
         open={creating}
-        title="Tạo bức ảnh ghép"
-        subtitle="Mỗi dòng họ tạo được nhiều bức."
+        title={t`Tạo bức ảnh ghép`}
+        subtitle={t`Mỗi dòng họ tạo được nhiều bức.`}
         onClose={() => setCreating(false)}
         guard
       >
@@ -251,7 +259,7 @@ function Preview({
 function StatusChip({ mosaic }: { mosaic: MosaicSummary }) {
   return (
     <Chip tone={mosaic.status === "open" ? "success" : "neutral"}>
-      {mosaic.status === "open" ? "Đang nhận mảnh" : "Đã đóng"}
+      {mosaic.status === "open" ? t`Đang nhận mảnh` : t`Đã đóng`}
     </Chip>
   );
 }
@@ -372,7 +380,7 @@ function NewMosaicForm({
       navigate(`/clans/${clanId}/mosaics/${m.id}`);
     },
     onError: (e) =>
-      toast.error("Không tạo được bức ảnh", {
+      toast.error(t`Không tạo được bức ảnh`, {
         description: (e as Error).message,
       }),
   });
@@ -386,29 +394,29 @@ function NewMosaicForm({
       }}
     >
       <div className="space-y-1.5">
-        <Label htmlFor="mosaic-title">Tên bức ảnh</Label>
+        <Label htmlFor="mosaic-title">{t`Tên bức ảnh`}</Label>
         <Input
           id="mosaic-title"
           icon={<IconCamera />}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="VD: Đại gia đình Tết 2027"
+          placeholder={t`VD: Đại gia đình Tết 2027`}
         />
       </div>
       <IconTextarea
         id="mosaic-desc"
         icon={<IconScroll />}
-        label="Mô tả (tuỳ chọn)"
-        placeholder="Vài dòng giới thiệu bức ảnh (tuỳ chọn)…"
+        label={t`Mô tả (tuỳ chọn)`}
+        placeholder={t`Vài dòng giới thiệu bức ảnh (tuỳ chọn)…`}
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
       <div className="space-y-1.5">
-        <Label htmlFor="mosaic-slots">Số mảnh của bức (số ô ghép)</Label>
+        <Label htmlFor="mosaic-slots">{t`Số mảnh của bức (số ô ghép)`}</Label>
         <Input
           id="mosaic-slots"
           icon={<IconGrid />}
-          placeholder="VD: 24 (tối đa 150)"
+          placeholder={t`VD: 24 (tối đa 150)`}
           type="number"
           min={4}
           max={MAX_SLOTS}
@@ -421,7 +429,7 @@ function NewMosaicForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="mosaic-per">Số mảnh mỗi người được góp</Label>
+        <Label htmlFor="mosaic-per">{t`Số mảnh mỗi người được góp`}</Label>
         <Input
           id="mosaic-per"
           icon={<IconUsers />}
@@ -443,9 +451,9 @@ function NewMosaicForm({
           className="mt-1 h-4 w-4 shrink-0 accent-primary"
         />
         <span>
-          <span className="font-medium">Hiển thị ở màn Tổng quan</span>
+          <span className="font-medium">{t`Hiển thị ở màn Tổng quan`}</span>
           <span className="block text-sm text-muted-foreground">
-            Không chọn bức nào thì Tổng quan lấy bức đầu tiên trong danh sách.
+            {t`Không chọn bức nào thì Tổng quan lấy bức đầu tiên trong danh sách.`}
           </span>
         </span>
       </label>
@@ -457,19 +465,25 @@ function NewMosaicForm({
           className="mt-1 h-4 w-4 shrink-0 accent-primary"
         />
         <span>
-          <span className="font-medium">Nạp sẵn avatar thành viên</span>
+          <span className="font-medium">{t`Nạp sẵn avatar thành viên`}</span>
           <span className="block text-sm text-muted-foreground">
-            Mỗi người có ảnh đại diện trên cây thành một mảnh; đổi avatar thì
-            mảnh tự đổi theo.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Mỗi người có ảnh đại diện trên cây thành một mảnh; đổi avatar
+                  thì mảnh tự đổi theo.
+                </Trans>
+              </Trans>
+            </Trans>
           </span>
         </span>
       </label>
       <FormActions>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Huỷ
+          {t`Huỷ`}
         </Button>
         <Button type="submit" disabled={createM.isPending}>
-          Tạo bức ảnh
+          {t`Tạo bức ảnh`}
         </Button>
       </FormActions>
     </form>

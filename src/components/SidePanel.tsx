@@ -1,10 +1,18 @@
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { IconX } from "@/components/icons";
 import { InSidePanelContext } from "@/components/panel/context";
 
+import { t } from "@lingui/core/macro";
 /** Các SidePanel đang mở (cái cuối là trên cùng) — Esc chỉ đóng cái trên cùng. */
 const openStack: string[] = [];
 /** Thời gian hiệu ứng đóng (khớp duration-200 của lớp animate-out). */
@@ -59,7 +67,9 @@ export function SidePanel({
 
   const animateClose = useCallback(() => {
     if (closeTimer.current !== undefined) return;
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduce = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (reduce) {
       onCloseRef.current();
       return;
@@ -73,7 +83,8 @@ export function SidePanel({
 
   useEffect(
     () => () => {
-      if (closeTimer.current !== undefined) window.clearTimeout(closeTimer.current);
+      if (closeTimer.current !== undefined)
+        window.clearTimeout(closeTimer.current);
     },
     [],
   );
@@ -82,9 +93,9 @@ export function SidePanel({
     if (closeTimer.current !== undefined) return; // đang đóng
     if (guard && dirty.current) {
       const ok = await confirm({
-        title: "Bỏ thay đổi chưa lưu?",
-        description: "Những gì bạn vừa nhập sẽ mất.",
-        confirmLabel: "Bỏ thay đổi",
+        title: t`Bỏ thay đổi chưa lưu?`,
+        description: t`Những gì bạn vừa nhập sẽ mất.`,
+        confirmLabel: t`Bỏ thay đổi`,
         cancelLabel: "Tiếp tục nhập",
         destructive: true,
       });
@@ -130,13 +141,15 @@ export function SidePanel({
   return createPortal(
     <div
       className={`print-hide fixed inset-0 z-50 flex justify-end bg-black/40 ${
-        closing ? "animate-out fade-out duration-200 fill-mode-forwards" : "animate-in fade-in"
+        closing
+          ? "animate-out fade-out duration-200 fill-mode-forwards"
+          : "animate-in fade-in"
       }`}
     >
       <button
         type="button"
         tabIndex={-1}
-        aria-label="Đóng"
+        aria-label={t`Đóng`}
         onClick={() => void requestClose()}
         className="absolute inset-0 cursor-default"
       />
@@ -151,7 +164,9 @@ export function SidePanel({
             ? "animate-out slide-out-to-right fill-mode-forwards"
             : "animate-in slide-in-from-right"
         } ${
-          size === "lg" ? "sm:w-[40rem] lg:w-[max(40rem,45vw)]" : "lg:w-[max(32rem,45vw)]"
+          size === "lg"
+            ? "sm:w-[40rem] lg:w-[max(40rem,45vw)]"
+            : "lg:w-[max(32rem,45vw)]"
         }`}
         style={{
           paddingTop: "env(safe-area-inset-top)",
@@ -161,12 +176,14 @@ export function SidePanel({
         <header className="flex shrink-0 items-start gap-3 border-b px-4 pb-3 pt-4 sm:px-5">
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold leading-tight">{title}</h2>
-            {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
+            {subtitle && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
+            )}
           </div>
           <button
             type="button"
             onClick={() => void requestClose()}
-            aria-label="Đóng"
+            aria-label={t`Đóng`}
             className="-mr-2 -mt-1 inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <IconX className="h-5 w-5" />

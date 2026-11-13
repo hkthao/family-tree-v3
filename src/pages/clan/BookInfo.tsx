@@ -27,7 +27,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  isClanAdmin,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import {
   EMPTY_BOOK_TEXTS,
   cleanBookTexts,
@@ -38,6 +42,8 @@ import {
 import { updateClan } from "@/lib/queries/clan-update";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Trang "Thông tin & Sổ gia phả": sửa thông tin dòng họ (tên, mô tả, viền
  * avatar), các chi, và các phần văn bản của sổ gia phả PDF. Công tắc bật/tắt
@@ -50,7 +56,9 @@ export default function BookInfo() {
   const toast = useToast();
   const userId = user?.id ?? "";
 
-  const [values, setValues] = useState<ClanFormValues>(() => clanFormFromClan(clan));
+  const [values, setValues] = useState<ClanFormValues>(() =>
+    clanFormFromClan(clan),
+  );
   const [meta, setMeta] = useState<ClanBookTexts>(EMPTY_BOOK_TEXTS);
   const { data: savedMeta } = useQuery({
     queryKey: ["clan-book-texts", clan.id],
@@ -71,7 +79,10 @@ export default function BookInfo() {
       // Cột dòng họ chỉ quản trị ghi được (RLS); người biên tập chỉ lưu phần sổ.
       if (admin) {
         const { description, ...cols } = clanFormToColumns(values);
-        await updateClan(clan.id, { ...cols, description: description ?? null });
+        await updateClan(clan.id, {
+          ...cols,
+          description: description ?? null,
+        });
       }
       await saveClanBookTexts(
         clan.id,
@@ -88,17 +99,22 @@ export default function BookInfo() {
       );
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.clan(clan.id, userId) });
-      await queryClient.invalidateQueries({ queryKey: ["clan-book-texts", clan.id] });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.clan(clan.id, userId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["clan-book-texts", clan.id],
+      });
       // Đổi tên/mô tả phải làm mới mọi danh sách dòng họ (Của tôi, Cộng đồng, Quản trị).
       await queryClient.invalidateQueries({
         predicate: (q) =>
           Array.isArray(q.queryKey) &&
           (q.queryKey[0] === "clans" || q.queryKey[0] === "admin-clans"),
       });
-      toast.success("Đã lưu thông tin dòng họ");
+      toast.success(t`Đã lưu thông tin dòng họ`);
     },
-    onError: (e) => toast.error("Không lưu được", { description: friendlyError(e) }),
+    onError: (e) =>
+      toast.error(t`Không lưu được`, { description: friendlyError(e) }),
   });
 
   if (!canEditClan(clan)) {
@@ -109,22 +125,22 @@ export default function BookInfo() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Thông tin & Sổ gia phả" },
+          { label: t`Thông tin & Sổ gia phả` },
         ]}
       />
       <PageHeader
         icon={<IconBook className="h-7 w-7" />}
-        title="Thông tin & Sổ gia phả"
-        description="Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF."
+        title={t`Thông tin & Sổ gia phả`}
+        description={t`Sửa thông tin dòng họ và soạn nội dung cho sổ gia phả PDF.`}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Thông tin dòng họ</CardTitle>
+          <CardTitle>{t`Thông tin dòng họ`}</CardTitle>
           <CardDescription>
             {admin
-              ? "Cùng bộ ô với lúc tạo dòng họ."
-              : "Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ."}
+              ? t`Cùng bộ ô với lúc tạo dòng họ.`
+              : t`Chỉ quản trị dòng họ sửa được tên, mô tả và tuỳ chọn hiển thị; bạn sửa được thông tin cho sổ.`}
           </CardDescription>
         </CardHeader>
         <form
@@ -134,21 +150,34 @@ export default function BookInfo() {
           }}
         >
           <CardContent className="space-y-5">
-            <ClanBasicFields value={values} onChange={setValues} disabled={!admin} idPrefix="edit" />
+            <ClanBasicFields
+              value={values}
+              onChange={setValues}
+              disabled={!admin}
+              idPrefix="edit"
+            />
             <fieldset className="space-y-3">
-              <legend className="text-base font-medium mb-1">Thông tin cho sổ gia phả</legend>
+              <legend className="text-base font-medium mb-1">{t`Thông tin cho sổ gia phả`}</legend>
               <BookMetaFields value={meta} onChange={setMeta} idPrefix="edit" />
             </fieldset>
-            <ClanDisplayFields value={values} onChange={setValues} disabled={!admin} />
+            <ClanDisplayFields
+              value={values}
+              onChange={setValues}
+              disabled={!admin}
+            />
           </CardContent>
           <CardFooter className="justify-end border-t pt-4">
-            <Button type="submit" variant="outline" disabled={mutation.isPending || (admin && !values.name.trim())}>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={mutation.isPending || (admin && !values.name.trim())}
+            >
               {mutation.isPending ? (
-                "Đang lưu…"
+                t`Đang lưu…`
               ) : (
                 <>
                   <IconCheck className="h-4 w-4 mr-1.5" />
-                  Lưu thay đổi
+                  {t`Lưu thay đổi`}
                 </>
               )}
             </Button>
@@ -158,8 +187,8 @@ export default function BookInfo() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Chi (nhánh)</CardTitle>
-          <CardDescription>Các chi/nhánh của dòng họ. Mỗi người có thể thuộc một chi.</CardDescription>
+          <CardTitle>{t`Chi (nhánh)`}</CardTitle>
+          <CardDescription>{t`Các chi/nhánh của dòng họ. Mỗi người có thể thuộc một chi.`}</CardDescription>
         </CardHeader>
         <CardContent>
           <BranchesSection clanId={clan.id} canEdit={admin} />
@@ -168,14 +197,25 @@ export default function BookInfo() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Nội dung Sổ gia phả</CardTitle>
+          <CardTitle>{t`Nội dung Sổ gia phả`}</CardTitle>
           <CardDescription>
-            Lời nói đầu, phả ký, ngoại phả, phụ khảo trong sổ gia phả PDF. Phần để trống sẽ không in.
-            Phả hệ, phả đồ, ngày giỗ, cưới gả tự dựng từ dữ liệu.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Lời nói đầu, phả ký, ngoại phả, phụ khảo trong sổ gia phả PDF.
+                  Phần để trống sẽ không in. Phả hệ, phả đồ, ngày giỗ, cưới gả
+                  tự dựng từ dữ liệu.
+                </Trans>
+              </Trans>
+            </Trans>
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <BookTextsSection clanId={clan.id} clanName={clan.name} canEdit={canEditClan(clan)} />
+          <BookTextsSection
+            clanId={clan.id}
+            clanName={clan.name}
+            canEdit={canEditClan(clan)}
+          />
         </CardContent>
       </Card>
     </div>

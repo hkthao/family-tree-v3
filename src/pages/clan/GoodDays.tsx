@@ -43,6 +43,8 @@ import {
 } from "@/lib/almanac";
 import { festivalsOn, hasFestival } from "@/lib/festivals";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /** Icon outline cho từng loại việc (thay emoji) — dùng bộ icon của app. */
 const ACTIVITY_ICON: Record<
   ActivityKey | "all",
@@ -60,10 +62,22 @@ const ACTIVITY_ICON: Record<
 };
 
 const WEEKDAYS_SHORT = [
-  "CN", "T.Hai", "T.Ba", "T.Tư", "T.Năm", "T.Sáu", "T.Bảy",
+  "CN",
+  "T.Hai",
+  "T.Ba",
+  "T.Tư",
+  "T.Năm",
+  "T.Sáu",
+  "T.Bảy",
 ];
 const WEEKDAYS_FULL = [
-  "Chủ nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy",
+  "Chủ nhật",
+  "Thứ Hai",
+  "Thứ Ba",
+  "Thứ Tư",
+  "Thứ Năm",
+  "Thứ Sáu",
+  "Thứ Bảy",
 ];
 
 function pad(n: number) {
@@ -114,7 +128,10 @@ export default function GoodDays() {
     enabled: !!userId,
   });
   const { data: anniversaries } = useQuery({
-    queryKey: [...queryKeys.anniversaries(clan.id, userId), treeSource] as const,
+    queryKey: [
+      ...queryKeys.anniversaries(clan.id, userId),
+      treeSource,
+    ] as const,
     queryFn: () => listAnniversaryCandidates(clan.id, undefined, treeSource),
     enabled: !!userId,
   });
@@ -174,25 +191,21 @@ export default function GoodDays() {
 
   const results = useMemo(
     () =>
-      findGoodDays(
-        startIso,
-        endIso,
-        activity === "all" ? undefined : activity,
-      ),
+      findGoodDays(startIso, endIso, activity === "all" ? undefined : activity),
     [startIso, endIso, activity],
   );
 
   const activityLabel =
     activity === "all"
-      ? "ngày tốt chung"
+      ? t`ngày tốt chung`
       : ACTIVITIES.find((a) => a.key === activity)?.label.toLowerCase();
 
   return (
     <div className="space-y-5">
       <PageHeader
         icon={<IconCalendar className="h-7 w-7" />}
-        title="Lịch âm dương & xem ngày"
-        description="Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn."
+        title={t`Lịch âm dương & xem ngày`}
+        description={t`Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn.`}
       />
 
       {/* Tuỳ chọn hiển thị — bật/tắt từng loại thông tin cho gọn. */}
@@ -231,23 +244,23 @@ export default function GoodDays() {
 
       {/* ─── Công cụ tìm ngày đẹp cho một việc ─────────────────── */}
       <div className="border-t pt-4">
-        <h2 className="mb-1 text-lg font-semibold">Tìm ngày đẹp cho việc lớn</h2>
+        <h2 className="mb-1 text-lg font-semibold">{t`Tìm ngày đẹp cho việc lớn`}</h2>
         <p className="text-sm text-muted-foreground">
-          Chọn việc và khoảng thời gian, hệ thống liệt kê sẵn những ngày đẹp.
+          {t`Chọn việc và khoảng thời gian, hệ thống liệt kê sẵn những ngày đẹp.`}
         </p>
       </div>
 
       {/* BƯỚC 1 — Chọn việc. Nút to, có emoji, dễ bấm. */}
       <section className="space-y-2">
         <p className="text-sm font-semibold text-muted-foreground">
-          1. Bạn muốn xem ngày cho việc gì?
+          {t`1. Bạn muốn xem ngày cho việc gì?`}
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           <ActivityButton
             active={activity === "all"}
             onClick={() => setActivity("all")}
             Icon={ACTIVITY_ICON.all}
-            label="Tất cả ngày tốt"
+            label={t`Tất cả ngày tốt`}
           />
           {ACTIVITIES.map((a) => (
             <ActivityButton
@@ -264,7 +277,7 @@ export default function GoodDays() {
       {/* BƯỚC 2 — Chọn khoảng thời gian. */}
       <section className="space-y-2">
         <p className="text-sm font-semibold text-muted-foreground">
-          2. Trong khoảng thời gian nào?
+          {t`2. Trong khoảng thời gian nào?`}
         </p>
         <div className="grid grid-cols-4 gap-2">
           {RANGE_OPTIONS.map((r) => (
@@ -286,7 +299,7 @@ export default function GoodDays() {
 
         {range === "custom" && (
           <div className="flex items-center gap-2 rounded-lg border bg-muted/20 p-3 text-sm">
-            <span className="shrink-0 text-muted-foreground">Từ</span>
+            <span className="shrink-0 text-muted-foreground">{t`Từ`}</span>
             <input
               type="date"
               value={customFrom}
@@ -294,7 +307,7 @@ export default function GoodDays() {
               onChange={(e) => setCustomFrom(e.target.value)}
               className="min-w-0 flex-1 rounded-md border bg-card px-2 py-1.5"
             />
-            <span className="shrink-0 text-muted-foreground">đến</span>
+            <span className="shrink-0 text-muted-foreground">{t`đến`}</span>
             <input
               type="date"
               value={customTo}
@@ -315,15 +328,21 @@ export default function GoodDays() {
               đẹp cho <strong>{activityLabel}</strong>.
             </>
           ) : (
-            <>Không tìm thấy ngày đẹp phù hợp trong khoảng này.</>
+            <>{t`Không tìm thấy ngày đẹp phù hợp trong khoảng này.`}</>
           )}
         </p>
 
         {results.length === 0 ? (
           <Alert>
             <AlertDescription>
-              Thử mở rộng khoảng thời gian hoặc chọn việc khác. Những ngày còn
-              lại là ngày bình thường hoặc nên tránh cho việc này.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Thử mở rộng khoảng thời gian hoặc chọn việc khác. Những ngày
+                    còn lại là ngày bình thường hoặc nên tránh cho việc này.
+                  </Trans>
+                </Trans>
+              </Trans>
             </AlertDescription>
           </Alert>
         ) : (
@@ -336,9 +355,16 @@ export default function GoodDays() {
       </section>
 
       <p className="rounded-md border bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
-        Ngày tốt tính theo lịch cổ truyền (12 trực chỉ việc nên/kiêng, kết hợp
-        ngày hoàng đạo). Đây là thông tin tham khảo theo phong tục, không phải
-        lời khuyên bắt buộc — nên cân nhắc thêm tuổi của gia chủ khi làm việc lớn.
+        <Trans>
+          <Trans>
+            <Trans>
+              Ngày tốt tính theo lịch cổ truyền (12 trực chỉ việc nên/kiêng, kết
+              hợp ngày hoàng đạo). Đây là thông tin tham khảo theo phong tục,
+              không phải lời khuyên bắt buộc — nên cân nhắc thêm tuổi của gia
+              chủ khi làm việc lớn.
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
     </div>
   );
@@ -392,7 +418,7 @@ function MonthCalendar({
         <button
           type="button"
           onClick={() => goMonth(-1)}
-          aria-label="Tháng trước"
+          aria-label={t`Tháng trước`}
           className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
         >
           <IconArrowLeft className="h-5 w-5" />
@@ -407,14 +433,14 @@ function MonthCalendar({
               onClick={() => setCursor({ y: ty, m: tm })}
               className="rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10"
             >
-              Về tháng này
+              {t`Về tháng này`}
             </button>
           )}
         </div>
         <button
           type="button"
           onClick={() => goMonth(1)}
-          aria-label="Tháng sau"
+          aria-label={t`Tháng sau`}
           className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
         >
           <IconArrowRight className="h-5 w-5" />
@@ -470,7 +496,7 @@ function MonthCalendar({
               {c.info && c.info.warnings.length > 0 && (
                 <span
                   className="absolute right-1 top-1 text-rose-500"
-                  title="Ngày kiêng dân gian"
+                  title={t`Ngày kiêng dân gian`}
                 >
                   •
                 </span>
@@ -481,7 +507,9 @@ function MonthCalendar({
                 // không được trông giống nhau.
                 <span
                   className="absolute left-1 top-1 text-[9px] leading-none"
-                  title={festivalsOn(c.iso).map((f) => f.name).join(" · ")}
+                  title={festivalsOn(c.iso)
+                    .map((f) => f.name)
+                    .join(" · ")}
                 >
                   🏮
                 </span>
@@ -489,7 +517,7 @@ function MonthCalendar({
               {eventsByDay.has(c.iso) && (
                 <span
                   className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-amber-500"
-                  title="Có giỗ / sinh nhật / sự kiện dòng họ"
+                  title={t`Có giỗ / sinh nhật / sự kiện dòng họ`}
                 />
               )}
             </button>
@@ -500,11 +528,11 @@ function MonthCalendar({
       <div className="flex flex-wrap gap-x-4 gap-y-1 px-3 py-2 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500/40" />
-          Ngày tốt (hoàng đạo)
+          {t`Ngày tốt (hoàng đạo)`}
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-rose-500/40" />
-          Ngày xấu (hắc đạo)
+          {t`Ngày xấu (hắc đạo)`}
         </span>
         <span className="flex items-center gap-1">
           <span className="text-rose-500">•</span> Ngày kiêng
@@ -514,7 +542,7 @@ function MonthCalendar({
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
-          Có sự kiện dòng họ
+          {t`Có sự kiện dòng họ`}
         </span>
       </div>
     </section>
@@ -548,10 +576,10 @@ function DayDetail({
   const badChi = info.aus.badHours.map((h) => h.split(" (")[0]);
   const dayFestivals = festivalsOn(iso);
   const meta = [
-    prefs.truc ? `Trực ${info.truc.name}` : null,
+    prefs.truc ? t`Trực ${info.truc.name}` : null,
     prefs.tu ? `Sao ${info.tu.short}` : null,
-    prefs.tietKhi && info.tietKhi ? `Tiết ${info.tietKhi}` : null,
-    `Ngũ hành ${info.napAm}`,
+    prefs.tietKhi && info.tietKhi ? t`Tiết ${info.tietKhi}` : null,
+    t`Ngũ hành ${info.napAm}`,
   ].filter(Boolean);
 
   return (
@@ -571,14 +599,14 @@ function DayDetail({
         </div>
         <div className="text-center">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Âm lịch
+            {t`Âm lịch`}
           </p>
           <p className="text-4xl font-bold leading-none tabular-nums text-emerald-600 dark:text-emerald-400">
             {info.lunar.day}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             Th{info.lunar.month}
-            {info.lunar.leap ? " nhuận" : ""} · {info.canChi.year}
+            {info.lunar.leap ? t` nhuận` : ""} · {info.canChi.year}
           </p>
         </div>
 
@@ -591,7 +619,7 @@ function DayDetail({
                   : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
               }`}
             >
-              {info.aus.good ? "Ngày tốt (Hoàng đạo)" : "Ngày xấu (Hắc đạo)"}
+              {info.aus.good ? t`Ngày tốt (Hoàng đạo)` : t`Ngày xấu (Hắc đạo)`}
             </span>
           )}
           <p className="text-sm text-muted-foreground">
@@ -610,7 +638,7 @@ function DayDetail({
       {dayFestivals.length > 0 && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
           <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
-            Lễ, tết ngày này
+            {t`Lễ, tết ngày này`}
           </p>
           <ul className="space-y-1.5">
             {dayFestivals.map((f) => (
@@ -619,7 +647,7 @@ function DayDetail({
                   {f.name}
                   {f.publicHoliday && (
                     <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                      Nghỉ lễ
+                      {t`Nghỉ lễ`}
                     </span>
                   )}
                 </p>
@@ -634,7 +662,7 @@ function DayDetail({
       {dayEvents.length > 0 && (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
           <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">
-            Sự kiện dòng họ ngày này
+            {t`Sự kiện dòng họ ngày này`}
           </p>
           <ul className="space-y-1">
             {dayEvents.map((e) => {
@@ -707,13 +735,13 @@ function DayDetail({
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div>
             <p className="mb-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              Giờ hoàng đạo (tốt)
+              {t`Giờ hoàng đạo (tốt)`}
             </p>
             <p className="text-sm text-foreground/80">{goodChi.join(" · ")}</p>
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
-              Giờ hắc đạo (tránh)
+              {t`Giờ hắc đạo (tránh)`}
             </p>
             <p className="text-sm text-foreground/80">{badChi.join(" · ")}</p>
           </div>
@@ -726,7 +754,7 @@ function DayDetail({
           {info.nen.length > 0 && (
             <div>
               <p className="mb-0.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                ✓ Nên làm
+                {t`✓ Nên làm`}
               </p>
               <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
                 {info.nen.join(" · ")}
@@ -736,7 +764,7 @@ function DayDetail({
           {info.kieng.length > 0 && (
             <div>
               <p className="mb-0.5 text-sm font-bold text-rose-600 dark:text-rose-400">
-                ✕ Nên tránh
+                {t`✕ Nên tránh`}
               </p>
               <p className="text-sm font-medium text-rose-700 dark:text-rose-300">
                 {info.kieng.join(" · ")}
@@ -752,7 +780,7 @@ function DayDetail({
           <span className="font-medium text-foreground/80">
             Sao {info.tu.name}
           </span>{" "}
-          ({info.tu.good ? "cát tinh" : "hung tinh"}) — {info.tu.note}
+          ({info.tu.good ? t`cát tinh` : "hung tinh"}) — {info.tu.note}
         </p>
       )}
     </section>
@@ -798,11 +826,11 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
 
   // Dòng thông tin phụ ghép theo tuỳ chọn hiển thị.
   const meta = [
-    `Âm lịch ${day.lunar.day}/${day.lunar.month}${day.lunar.leap ? " (nhuận)" : ""}`,
-    prefs.truc ? `Trực ${day.truc.name}` : null,
+    t`Âm lịch ${day.lunar.day}/${day.lunar.month}${day.lunar.leap ? t` (nhuận)` : ""}`,
+    prefs.truc ? t`Trực ${day.truc.name}` : null,
     prefs.tu ? `Sao ${day.tu.short}` : null,
-    prefs.tietKhi && day.tietKhi ? `Tiết ${day.tietKhi}` : null,
-    `Năm ${day.canChi.year}`,
+    prefs.tietKhi && day.tietKhi ? t`Tiết ${day.tietKhi}` : null,
+    t`Năm ${day.canChi.year}`,
   ].filter(Boolean);
 
   return (
@@ -827,7 +855,7 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
             {WEEKDAYS_FULL[day.weekday]}, {day.solar.day}/{day.solar.month}
           </span>
           <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-            Ngày tốt
+            {t`Ngày tốt`}
           </span>
 
           {/* Nút (?) — bấm để xem lý do vì sao là ngày tốt (tooltip). */}
@@ -835,7 +863,7 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
             <button
               type="button"
               onClick={() => setShowWhy((v) => !v)}
-              aria-label="Vì sao là ngày tốt?"
+              aria-label={t`Vì sao là ngày tốt?`}
               aria-expanded={showWhy}
               className="inline-flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-primary"
             >
@@ -856,13 +884,13 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
                   className="absolute left-0 top-7 z-20 w-64 rounded-xl border bg-card p-3 text-sm leading-relaxed shadow-lg"
                 >
                   <span className="mb-0.5 block font-semibold text-primary">
-                    Vì sao đẹp?
+                    {t`Vì sao đẹp?`}
                   </span>
                   {day.reason}
                   {prefs.tu && (
                     <span className="mt-1.5 block text-muted-foreground">
                       Sao {day.tu.name} (
-                      {day.tu.good ? "cát tinh" : "hung tinh"}) — {day.tu.note}
+                      {day.tu.good ? t`cát tinh` : "hung tinh"}) — {day.tu.note}
                     </span>
                   )}
                 </div>

@@ -1,10 +1,20 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 
 import { IconCheck, IconChevronDown, IconSearch } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { unaccent } from "@/lib/unaccent";
 
+import { t } from "@lingui/core/macro";
 export interface FilterableOption {
   value: string;
   label: string;
@@ -43,14 +53,22 @@ export function FilterableSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
-  const [rect, setRect] = useState<{ left: number; top: number; width: number; up: boolean } | null>(null);
+  const [rect, setRect] = useState<{
+    left: number;
+    top: number;
+    width: number;
+    up: boolean;
+  } | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listId = useId();
 
-  const all = useMemo<FilterableOption[]>(() => [{ value: "", label: emptyLabel }, ...options], [options, emptyLabel]);
+  const all = useMemo<FilterableOption[]>(
+    () => [{ value: "", label: emptyLabel }, ...options],
+    [options, emptyLabel],
+  );
   const shown = useMemo(() => {
     const q = unaccent(query);
     if (!q) return all;
@@ -90,7 +108,8 @@ export function FilterableSelect({
     if (!open) return;
     const onDown = (e: MouseEvent | TouchEvent) => {
       const t = e.target as Node;
-      if (popRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
+      if (popRef.current?.contains(t) || triggerRef.current?.contains(t))
+        return;
       setOpen(false);
     };
     document.addEventListener("mousedown", onDown);
@@ -104,7 +123,16 @@ export function FilterableSelect({
   // Mở lên: bắt đầu từ mục đang chọn; gõ chữ: nhảy về kết quả đầu.
   useEffect(() => {
     if (!open) return;
-    setActive(query ? (shown.length > 1 ? 1 : 0) : Math.max(0, shown.findIndex((o) => o.value === value)));
+    setActive(
+      query
+        ? shown.length > 1
+          ? 1
+          : 0
+        : Math.max(
+            0,
+            shown.findIndex((o) => o.value === value),
+          ),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, query]);
 
@@ -142,7 +170,9 @@ export function FilterableSelect({
           className,
         )}
       >
-        <span className={cn("truncate", !current && "text-muted-foreground")}>{current?.label ?? emptyLabel}</span>
+        <span className={cn("truncate", !current && "text-muted-foreground")}>
+          {current?.label ?? emptyLabel}
+        </span>
       </button>
       {icon && (
         <span
@@ -171,7 +201,9 @@ export function FilterableSelect({
               position: "fixed",
               left: rect.left,
               width: rect.width,
-              ...(rect.up ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.top + 4 }),
+              ...(rect.up
+                ? { bottom: window.innerHeight - rect.top + 4 }
+                : { top: rect.top + 4 }),
             }}
             className="z-[100] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg"
           >
@@ -207,8 +239,15 @@ export function FilterableSelect({
                 className="h-11 w-full bg-transparent pl-9 pr-3 text-base outline-none placeholder:text-muted-foreground"
               />
             </div>
-            <ul ref={listRef} id={listId} role="listbox" className="max-h-64 overflow-y-auto py-1">
-              {shown.length === 0 && <li className="px-3 py-3 text-sm text-muted-foreground">Không có kết quả</li>}
+            <ul
+              ref={listRef}
+              id={listId}
+              role="listbox"
+              className="max-h-64 overflow-y-auto py-1"
+            >
+              {shown.length === 0 && (
+                <li className="px-3 py-3 text-sm text-muted-foreground">{t`Không có kết quả`}</li>
+              )}
               {shown.map((o, i) => {
                 const selected = o.value === value;
                 return (
@@ -225,7 +264,9 @@ export function FilterableSelect({
                     )}
                   >
                     <span className="min-w-0 flex-1">{o.label}</span>
-                    {selected && o.value !== "" && <IconCheck className="h-4 w-4 shrink-0 text-primary" />}
+                    {selected && o.value !== "" && (
+                      <IconCheck className="h-4 w-4 shrink-0 text-primary" />
+                    )}
                   </li>
                 );
               })}

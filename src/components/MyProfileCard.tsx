@@ -9,6 +9,8 @@ import { queryKeys } from "@/lib/queries/keys";
 import { listClanMembers } from "@/lib/queries/members";
 import type { PersonForTree } from "@/lib/queries/tree";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Thẻ "Hồ sơ của tôi" ở Tổng quan — lối vào để người trẻ "nhận" vị trí của mình
  * trên cây rồi tự cập nhật hồ sơ (qua luồng Đóng góp, quản trị duyệt).
@@ -42,16 +44,20 @@ export function MyProfileCard({
       <SectionCard
         id="my-profile"
         icon={<IconUser />}
-        title="Hồ sơ của tôi"
+        title={t`Hồ sơ của tôi`}
         footer={
-          <Link to={lineageTo} className="shrink-0 text-sm text-primary hover:underline">
-            Chọn vị trí của tôi trên cây →
+          <Link
+            to={lineageTo}
+            className="shrink-0 text-sm text-primary hover:underline"
+          >
+            {t`Chọn vị trí của tôi trên cây →`}
           </Link>
         }
       >
         <p className="text-sm">
-          <strong>Bạn là ai trong dòng họ?</strong> Chọn vị trí của mình trên cây để xem đường
-          trực hệ từ thuỷ tổ xuống bạn và tự cập nhật ảnh, ngày sinh, tiểu sử của mình.
+          <strong>{t`Bạn là ai trong dòng họ?`}</strong> Chọn vị trí của mình
+          trên cây để xem đường trực hệ từ thuỷ tổ xuống bạn và tự cập nhật ảnh,
+          ngày sinh, tiểu sử của mình.
         </p>
       </SectionCard>
     );
@@ -66,38 +72,47 @@ export function MyProfileCard({
     <SectionCard
       id="my-profile"
       icon={<IconUser />}
-      title="Hồ sơ của tôi"
+      title={t`Hồ sơ của tôi`}
       action={
         mine.self_person_verified ? (
-          <Chip tone="success">Đã xác nhận</Chip>
+          <Chip tone="success">{t`Đã xác nhận`}</Chip>
         ) : (
-          <Chip tone="warning">Chờ quản trị xác nhận</Chip>
+          <Chip tone="warning">{t`Chờ quản trị xác nhận`}</Chip>
         )
       }
       footer={
         <div className="flex flex-wrap justify-end gap-2">
           <Button asChild size="sm" variant="outline">
-            <Link to={lineageTo}>Đường trực hệ của tôi</Link>
+            <Link to={lineageTo}>{t`Đường trực hệ của tôi`}</Link>
           </Button>
           <Button asChild size="sm">
-            <Link to={`/clans/${clanId}/people/${mine.self_person_id}`}>Cập nhật hồ sơ của tôi</Link>
+            <Link
+              to={`/clans/${clanId}/people/${mine.self_person_id}`}
+            >{t`Cập nhật hồ sơ của tôi`}</Link>
           </Button>
         </div>
       }
     >
       <p className="text-sm">
-        Bạn là <strong>{me?.full_name ?? mine.self_person_full_name ?? "—"}</strong>
+        {t`Bạn là`}{" "}
+        <strong>{me?.full_name ?? mine.self_person_full_name ?? "—"}</strong>
         {me?.generation ? <> · đời {me.generation}</> : null}.
       </p>
       {missing.length > 0 ? (
         <p className="mt-1 text-sm text-muted-foreground">
-          Hồ sơ của bạn còn thiếu {missing.join(", ")}. Bổ sung để người thân dễ nhận ra bạn;
-          thông tin sẽ được quản trị duyệt trước khi hiện lên cây.
+          Hồ sơ của bạn còn thiếu {missing.join(", ")}. Bổ sung để người thân dễ
+          nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên cây.
         </p>
       ) : (
         <p className="mt-1 text-sm text-muted-foreground">
-          Hồ sơ của bạn đã đủ ảnh và ngày sinh. Có gì thay đổi (em bé mới chào đời, đổi nơi ở…)
-          bạn cứ cập nhật, quản trị sẽ duyệt.
+          <Trans>
+            <Trans>
+              <Trans>
+                Hồ sơ của bạn đã đủ ảnh và ngày sinh. Có gì thay đổi (em bé mới
+                chào đời, đổi nơi ở…) bạn cứ cập nhật, quản trị sẽ duyệt.
+              </Trans>
+            </Trans>
+          </Trans>
         </p>
       )}
     </SectionCard>

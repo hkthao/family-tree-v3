@@ -1,10 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import {
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
@@ -42,9 +38,17 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { track } from "@/lib/analytics";
 import { createPerson, getPerson } from "@/lib/queries/persons";
-import { PersonAddressCard, EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
-import { savePersonAddress, type PersonAddressInput } from "@/lib/queries/personAddresses";
+import {
+  PersonAddressCard,
+  EMPTY_PERSON_ADDRESS,
+} from "@/components/PersonAddressCard";
+import {
+  savePersonAddress,
+  type PersonAddressInput,
+} from "@/lib/queries/personAddresses";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 interface NewPersonFormProps {
   clanId: string;
   /** Sao chép từ người này (?from=). */
@@ -58,7 +62,12 @@ interface NewPersonFormProps {
  * Form thêm / sao chép người — dùng cho trang /people/new VÀ ngăn kéo bên phải
  * (xem components/panel/PanelHost).
  */
-export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPersonFormProps) {
+export function NewPersonForm({
+  clanId,
+  fromId = null,
+  onDone,
+  onCancel,
+}: NewPersonFormProps) {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { user } = useAuth();
@@ -103,7 +112,8 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
   // mất, nơi sinh/an táng, tiểu sử) are hidden by default to keep the
   // form short for the common case of "just add a name + birth year".
   const [showOptional, setShowOptional] = useState(false);
-  const [address, setAddress] = useState<PersonAddressInput>(EMPTY_PERSON_ADDRESS);
+  const [address, setAddress] =
+    useState<PersonAddressInput>(EMPTY_PERSON_ADDRESS);
 
   useEffect(() => {
     if (!source || prefilled) return;
@@ -197,7 +207,9 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
       try {
         await savePersonAddress(created.id, address);
       } catch (e) {
-        toast.error("Đã thêm người nhưng chưa lưu được nơi ở", { description: (e as Error).message });
+        toast.error(t`Đã thêm người nhưng chưa lưu được nơi ở`, {
+          description: (e as Error).message,
+        });
       }
       return created;
     },
@@ -223,18 +235,18 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
         setBio("");
         setAddress(EMPTY_PERSON_ADDRESS);
         setFormError(null);
-        toast.success("Đã thêm. Tiếp tục…", { description: savedName });
+        toast.success(t`Đã thêm. Tiếp tục…`, { description: savedName });
         // Refocus the name input so the user can type immediately.
         document.getElementById("full_name")?.focus();
         return;
       }
-      toast.success(isCopy ? "Đã tạo bản sao" : "Đã thêm người", {
+      toast.success(isCopy ? t`Đã tạo bản sao` : t`Đã thêm người`, {
         description: savedName,
       });
       onDone();
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   if (!user) return null;
@@ -260,9 +272,8 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
       {isCopy && source && (
         <Alert>
           <AlertDescription>
-            Đang sao chép từ <strong>{source.full_name}</strong>. Quan hệ
-            cha mẹ / vợ chồng / con không được sao chép — bạn nối lại sau
-            khi lưu.
+            Đang sao chép từ <strong>{source.full_name}</strong>. Quan hệ cha mẹ
+            / vợ chồng / con không được sao chép — bạn nối lại sau khi lưu.
           </AlertDescription>
         </Alert>
       )}
@@ -270,10 +281,10 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="full_name" required>
-            Họ và tên
+            {t`Họ và tên`}
           </Label>
           <Input
-              icon={<IconUser />}
+            icon={<IconUser />}
             id="full_name"
             data-testid="person-name-input"
             required
@@ -281,12 +292,12 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
             maxLength={200}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="Vd: Nguyễn Văn A"
+            placeholder={t`Vd: Nguyễn Văn A`}
           />
         </div>
 
         <fieldset className="space-y-3">
-          <legend className="text-base font-medium mb-2">Giới tính</legend>
+          <legend className="text-base font-medium mb-2">{t`Giới tính`}</legend>
           <div className="flex gap-6">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
@@ -308,17 +319,17 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
                 onChange={() => setGender("F")}
                 className="h-4 w-4 accent-primary"
               />
-              <span>Nữ</span>
+              <span>{t`Nữ`}</span>
             </label>
           </div>
         </fieldset>
 
         <CalendarDateInput
-          label="Ngày sinh"
+          label={t`Ngày sinh`}
           idPrefix="birth"
           value={birth}
           onChange={setBirth}
-          helperText="Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
+          helperText={t`Chỉ nhớ năm cũng được — bỏ trống ngày, tháng. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
         />
 
         <label className="flex items-center gap-3 cursor-pointer">
@@ -328,7 +339,7 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
             onChange={(e) => setIsLiving(!e.target.checked)}
             className="h-5 w-5 accent-primary shrink-0"
           />
-          <span>Đã mất</span>
+          <span>{t`Đã mất`}</span>
         </label>
 
         <label className="flex items-start gap-3 cursor-pointer">
@@ -340,10 +351,16 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
             className="mt-1 h-5 w-5 accent-primary shrink-0"
           />
           <span>
-            <span className="font-medium">Thuỷ tổ</span>
+            <span className="font-medium">{t`Thuỷ tổ`}</span>
             <span className="block text-sm text-muted-foreground">
-              Đánh dấu khi đây là gốc của dòng họ (đời 1). Có thể có nhiều
-              Thuỷ tổ nếu nhiều chi tách lập.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Đánh dấu khi đây là gốc của dòng họ (đời 1). Có thể có nhiều
+                    Thuỷ tổ nếu nhiều chi tách lập.
+                  </Trans>
+                </Trans>
+              </Trans>
             </span>
           </span>
         </label>
@@ -359,13 +376,18 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
               <IconPlus className="h-5 w-5 mt-0.5 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="font-medium text-foreground">
-                  Thêm chi tiết khác
+                  {t`Thêm chi tiết khác`}
                 </div>
                 <div className="text-sm text-muted-foreground mt-0.5">
-                  Bấm để nhập các thông tin tuỳ chọn nếu bạn có:
-                  tên tự, tên húy, tên thụy, ngày mất, nơi sinh,
-                  nơi an táng, tiểu sử. Bỏ qua nếu chưa cần — vẫn
-                  lưu được người mới.
+                  <Trans>
+                    <Trans>
+                      <Trans>
+                        Bấm để nhập các thông tin tuỳ chọn nếu bạn có: tên tự,
+                        tên húy, tên thụy, ngày mất, nơi sinh, nơi an táng, tiểu
+                        sử. Bỏ qua nếu chưa cần — vẫn lưu được người mới.
+                      </Trans>
+                    </Trans>
+                  </Trans>
                 </div>
               </div>
             </div>
@@ -374,7 +396,7 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
           <div className="space-y-3">
             <div className="flex items-center justify-between border-b pb-2">
               <span className="text-sm font-medium text-muted-foreground">
-                Chi tiết bổ sung
+                {t`Chi tiết bổ sung`}
               </span>
               <button
                 type="button"
@@ -382,48 +404,48 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 <IconChevronUp className="h-3.5 w-3.5" />
-                Thu gọn
+                {t`Thu gọn`}
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="courtesy_name">Tên tự</Label>
+                <Label htmlFor="courtesy_name">{t`Tên tự`}</Label>
                 <Input
-              icon={<IconScroll />}
+                  icon={<IconScroll />}
                   id="courtesy_name"
                   maxLength={100}
                   value={courtesyName}
                   onChange={(e) => setCourtesyName(e.target.value)}
-                  placeholder="(tuỳ chọn)"
+                  placeholder={t`(tuỳ chọn)`}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="nickname">Tên húy / biệt hiệu</Label>
+                <Label htmlFor="nickname">{t`Tên húy / biệt hiệu`}</Label>
                 <Input
-              icon={<IconScroll />}
+                  icon={<IconScroll />}
                   id="nickname"
                   maxLength={100}
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  placeholder="(tuỳ chọn)"
+                  placeholder={t`(tuỳ chọn)`}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="posthumous_name">Tên thụy</Label>
+                <Label htmlFor="posthumous_name">{t`Tên thụy`}</Label>
                 <Input
-              icon={<IconScroll />}
+                  icon={<IconScroll />}
                   id="posthumous_name"
                   maxLength={100}
                   value={posthumousName}
                   onChange={(e) => setPosthumousName(e.target.value)}
-                  placeholder="(tuỳ chọn)"
+                  placeholder={t`(tuỳ chọn)`}
                 />
               </div>
             </div>
 
             <CalendarDateInput
-              label="Ngày mất (nếu đã mất)"
+              label={t`Ngày mất (nếu đã mất)`}
               idPrefix="death"
               value={death}
               onChange={(next) => {
@@ -431,38 +453,38 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
                 if (next.parts.year || next.parts.month || next.parts.day)
                   setIsLiving(false);
               }}
-              helperText="Để trống nếu còn sống. Ưu tiên ghi ngày âm — chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+              helperText={t`Để trống nếu còn sống. Ưu tiên ghi ngày âm — chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
             />
 
             <div className="space-y-2">
-              <Label htmlFor="birth_place">Nơi sinh</Label>
+              <Label htmlFor="birth_place">{t`Nơi sinh`}</Label>
               <Input
-              icon={<IconMapPin />}
+                icon={<IconMapPin />}
                 id="birth_place"
                 maxLength={200}
                 value={birthPlace}
                 onChange={(e) => setBirthPlace(e.target.value)}
-                placeholder="(tuỳ chọn)"
+                placeholder={t`(tuỳ chọn)`}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="burial_place">Nơi an táng</Label>
+              <Label htmlFor="burial_place">{t`Nơi an táng`}</Label>
               <Input
-              icon={<IconGrave />}
+                icon={<IconGrave />}
                 id="burial_place"
                 maxLength={200}
                 value={burialPlace}
                 onChange={(e) => setBurialPlace(e.target.value)}
-                placeholder="(tuỳ chọn)"
+                placeholder={t`(tuỳ chọn)`}
               />
             </div>
 
             {!isLiving && (
               <div className="space-y-2">
-                <Label htmlFor="lifespan_years">Tuổi thọ</Label>
+                <Label htmlFor="lifespan_years">{t`Tuổi thọ`}</Label>
                 <Input
-              icon={<IconCalendar />}
+                  icon={<IconCalendar />}
                   id="lifespan_years"
                   type="number"
                   inputMode="numeric"
@@ -474,21 +496,27 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
                   className="max-w-[10rem]"
                 />
                 <p className="text-sm text-muted-foreground">
-                  Để trống thì hệ thống tự tính từ năm sinh – năm mất.
-                  Từ 60 tuổi hiển thị "hưởng thọ", dưới 60 là "hưởng dương".
+                  <Trans>
+                    <Trans>
+                      <Trans>
+                        Để trống thì hệ thống tự tính từ năm sinh – năm mất. Từ
+                        60 tuổi hiển thị "hưởng thọ", dưới 60 là "hưởng dương".
+                      </Trans>
+                    </Trans>
+                  </Trans>
                 </p>
               </div>
             )}
 
             <Textarea
               id="bio"
-              label="Tiểu sử"
+              label={t`Tiểu sử`}
               icon={<IconScroll />}
               rows={4}
               maxLength={5000}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="(tuỳ chọn)"
+              placeholder={t`(tuỳ chọn)`}
               className="text-sm"
             />
           </div>
@@ -507,7 +535,7 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
         <FormActions>
           <Button type="button" variant="outline" onClick={onCancel}>
             <IconX className="h-4 w-4 mr-1.5" />
-            Hủy
+            {t`Hủy`}
           </Button>
           {!isCopy && (
             <Button
@@ -515,14 +543,14 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
               variant="outline"
               disabled={mutation.isPending || !fullName.trim()}
               onClick={(e) => handleSubmit(e, true)}
-              title="Lưu rồi tiếp tục thêm người khác (giữ giới tính)"
+              title={t`Lưu rồi tiếp tục thêm người khác (giữ giới tính)`}
             >
               {mutation.isPending && andContinueRef.current ? (
-                "Đang lưu…"
+                t`Đang lưu…`
               ) : (
                 <>
                   <IconPlus className="h-4 w-4 mr-1.5" />
-                  Lưu & thêm nữa
+                  {t`Lưu & thêm nữa`}
                 </>
               )}
             </Button>
@@ -534,11 +562,11 @@ export function NewPersonForm({ clanId, fromId = null, onDone, onCancel }: NewPe
             disabled={mutation.isPending || !fullName.trim()}
           >
             {mutation.isPending && !andContinueRef.current ? (
-              "Đang lưu…"
+              t`Đang lưu…`
             ) : (
               <>
                 <IconCheck className="h-4 w-4 mr-1.5" />
-                Lưu
+                {t`Lưu`}
               </>
             )}
           </Button>
@@ -563,21 +591,32 @@ export default function NewPerson() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Danh bạ", to: `/clans/${clanId}/people` },
-          { label: isCopy ? "Sao chép người" : "Thêm người" },
+          { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
+          { label: isCopy ? t`Sao chép người` : t`Thêm người` },
         ]}
       />
 
       <PageHeader
-        icon={isCopy ? <IconCopy className="h-7 w-7" /> : <IconPlus className="h-7 w-7" />}
-        title={isCopy ? "Sao chép người" : "Thêm người"}
+        icon={
+          isCopy ? (
+            <IconCopy className="h-7 w-7" />
+          ) : (
+            <IconPlus className="h-7 w-7" />
+          )
+        }
+        title={isCopy ? t`Sao chép người` : t`Thêm người`}
         description={
           isCopy
-            ? "Tạo bản sao thông tin — không sao chép quan hệ."
-            : "Thêm 1 người vào dòng họ. Có thể đánh dấu Thuỷ tổ."
+            ? t`Tạo bản sao thông tin — không sao chép quan hệ.`
+            : t`Thêm 1 người vào dòng họ. Có thể đánh dấu Thuỷ tổ.`
         }
       />
-      <NewPersonForm clanId={clanId} fromId={fromId} onDone={back} onCancel={back} />
+      <NewPersonForm
+        clanId={clanId}
+        fromId={fromId}
+        onDone={back}
+        onCancel={back}
+      />
     </div>
   );
 }

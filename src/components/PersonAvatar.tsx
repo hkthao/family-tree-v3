@@ -69,7 +69,13 @@ interface Props {
  * `photoUrl` is provided, otherwise the gendered illustration from
  * /public/avatars.
  */
-export function PersonAvatar({ gender, photoUrl, size = 40, frame: frameProp, className }: Props) {
+export function PersonAvatar({
+  gender,
+  photoUrl,
+  size = 40,
+  frame: frameProp,
+  className,
+}: Props) {
   const clanFrame = useContext(ClanAvatarFrameContext);
   const frame = frameProp !== undefined ? frameProp : clanFrame;
   const fallback =
@@ -96,7 +102,13 @@ export function PersonAvatar({ gender, photoUrl, size = 40, frame: frameProp, cl
       // object-cover cắt ảnh vừa khung tròn. shrink-0: không bị ép hẹp trong flex.
       style={
         framed
-          ? { width: inner, height: inner, position: "absolute", left: (size - inner) / 2, top: (size - inner) / 2 }
+          ? {
+              width: inner,
+              height: inner,
+              position: "absolute",
+              left: (size - inner) / 2,
+              top: (size - inner) / 2,
+            }
           : { width: size, height: size }
       }
       className={`shrink-0 rounded-full object-cover object-top bg-muted ${framed ? "" : (className ?? "")}`}
@@ -112,7 +124,12 @@ export function PersonAvatar({ gender, photoUrl, size = 40, frame: frameProp, cl
       aria-hidden="true"
     >
       {img}
-      <svg viewBox="0 0 100 100" width={size} height={size} className="pointer-events-none absolute inset-0 overflow-visible">
+      <svg
+        viewBox="0 0 100 100"
+        width={size}
+        height={size}
+        className="pointer-events-none absolute inset-0 overflow-visible"
+      >
         <FrameArt frame={frame} />
       </svg>
     </span>
@@ -139,7 +156,15 @@ export function avatarFrameSvg(frame: string | null | undefined): string {
 // nhô lên. Hệ toạ độ 100×100, overflow hiển thị được.
 const RING_R = 46;
 
-function Gradient({ id, stops, vertical }: { id: string; stops: string[]; vertical?: boolean }) {
+function Gradient({
+  id,
+  stops,
+  vertical,
+}: {
+  id: string;
+  stops: string[];
+  vertical?: boolean;
+}) {
   return (
     <linearGradient id={id} x1="0" y1="0" x2={vertical ? "0" : "1"} y2="1">
       {stops.map((c, i) => (
@@ -149,13 +174,28 @@ function Gradient({ id, stops, vertical }: { id: string; stops: string[]; vertic
   );
 }
 
-function Ring({ id, stops, width = 4.5 }: { id: string; stops: string[]; width?: number }) {
+function Ring({
+  id,
+  stops,
+  width = 4.5,
+}: {
+  id: string;
+  stops: string[];
+  width?: number;
+}) {
   return (
     <>
       <defs>
         <Gradient id={id} stops={stops} />
       </defs>
-      <circle cx="50" cy="50" r={RING_R} fill="none" stroke={`url(#${id})`} strokeWidth={width} />
+      <circle
+        cx="50"
+        cy="50"
+        r={RING_R}
+        fill="none"
+        stroke={`url(#${id})`}
+        strokeWidth={width}
+      />
     </>
   );
 }
@@ -167,7 +207,14 @@ const SILVER = ["#FFFFFF", "#C9CED6", "#7B828C", "#E6E9EE", "#9AA1AB"];
 function Badge({ id, children }: { id: string; children: ReactElement }) {
   return (
     <g>
-      <circle cx="50" cy="93" r="9.5" fill={`url(#${id})`} stroke="#fff" strokeWidth="2" />
+      <circle
+        cx="50"
+        cy="93"
+        r="9.5"
+        fill={`url(#${id})`}
+        stroke="#fff"
+        strokeWidth="2"
+      />
       {children}
     </g>
   );
@@ -204,7 +251,8 @@ function Laurel(): ReactElement {
   const a0 = Math.PI / 2 + 0.3;
   const a1 = Math.PI / 2 + 0.42 + (N - 1) * 0.27 + 0.1;
   const arc = (side: number) => {
-    const p = (a: number) => `${50 + RING_R * Math.cos(Math.PI / 2 + side * (a - Math.PI / 2))} ${50 + RING_R * Math.sin(Math.PI / 2 + side * (a - Math.PI / 2))}`;
+    const p = (a: number) =>
+      `${50 + RING_R * Math.cos(Math.PI / 2 + side * (a - Math.PI / 2))} ${50 + RING_R * Math.sin(Math.PI / 2 + side * (a - Math.PI / 2))}`;
     return `M ${p(a0)} A ${RING_R} ${RING_R} 0 0 ${side === 1 ? 1 : 0} ${p(a1)}`;
   };
   return (
@@ -213,8 +261,20 @@ function Laurel(): ReactElement {
         <Gradient id="af-laurel-a" stops={["#A8D26B", "#5E9B35"]} />
         <Gradient id="af-laurel-b" stops={["#7FB04A", "#3E7A25"]} />
       </defs>
-      <path d={arc(-1)} fill="none" stroke="#4F8A2B" strokeWidth="1.1" strokeLinecap="round" />
-      <path d={arc(1)} fill="none" stroke="#4F8A2B" strokeWidth="1.1" strokeLinecap="round" />
+      <path
+        d={arc(-1)}
+        fill="none"
+        stroke="#4F8A2B"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
+      <path
+        d={arc(1)}
+        fill="none"
+        stroke="#4F8A2B"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
       {leaves}
     </>
   );
@@ -237,21 +297,47 @@ function FrameArt({ frame }: { frame: AvatarFrame }): ReactElement {
           </defs>
           <Badge id="af-royal-b">
             {/* Vương miện nhỏ trong huy hiệu */}
-            <path d="M44 96.5 L43.5 89.5 L47 92.5 L50 88.5 L53 92.5 L56.5 89.5 L56 96.5 Z" fill="#7A4B00" />
+            <path
+              d="M44 96.5 L43.5 89.5 L47 92.5 L50 88.5 L53 92.5 L56.5 89.5 L56 96.5 Z"
+              fill="#7A4B00"
+            />
           </Badge>
         </>
       );
     case "lotus":
-      return <Ring id="af-lotus" stops={["#FFB3C7", "#FF6B9A", "#C13584", "#FF9966", "#FFB3C7"]} />;
+      return (
+        <Ring
+          id="af-lotus"
+          stops={["#FFB3C7", "#FF6B9A", "#C13584", "#FF9966", "#FFB3C7"]}
+        />
+      );
     case "cinnabar":
       return (
         <>
-          <Ring id="af-cinnabar" stops={["#C8362B", "#8E1A14", "#B3261E"]} width={5.5} />
+          <Ring
+            id="af-cinnabar"
+            stops={["#C8362B", "#8E1A14", "#B3261E"]}
+            width={5.5}
+          />
           <defs>
             <Gradient id="af-cinnabar-g" stops={GOLD} />
           </defs>
-          <circle cx="50" cy="50" r="49" fill="none" stroke="url(#af-cinnabar-g)" strokeWidth="1.2" />
-          <circle cx="50" cy="50" r="43.2" fill="none" stroke="url(#af-cinnabar-g)" strokeWidth="1" />
+          <circle
+            cx="50"
+            cy="50"
+            r="49"
+            fill="none"
+            stroke="url(#af-cinnabar-g)"
+            strokeWidth="1.2"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="43.2"
+            fill="none"
+            stroke="url(#af-cinnabar-g)"
+            strokeWidth="1"
+          />
         </>
       );
     case "imperial": {
@@ -272,7 +358,14 @@ function FrameArt({ frame }: { frame: AvatarFrame }): ReactElement {
       return (
         <>
           <Ring id="af-imperial" stops={GOLD} width={4} />
-          <circle cx="50" cy="50" r="42.6" fill="none" stroke="#9A6A07" strokeWidth="0.8" />
+          <circle
+            cx="50"
+            cy="50"
+            r="42.6"
+            fill="none"
+            stroke="#9A6A07"
+            strokeWidth="0.8"
+          />
           {gems}
         </>
       );
@@ -280,19 +373,42 @@ function FrameArt({ frame }: { frame: AvatarFrame }): ReactElement {
     case "jade":
       return (
         <>
-          <Ring id="af-jade" stops={["#CDEFD9", "#4FB487", "#1F7A58", "#7FD1AE", "#2E8B6A"]} width={5} />
-          <circle cx="50" cy="50" r="42.4" fill="none" stroke="#F2D68A" strokeWidth="1" />
+          <Ring
+            id="af-jade"
+            stops={["#CDEFD9", "#4FB487", "#1F7A58", "#7FD1AE", "#2E8B6A"]}
+            width={5}
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="42.4"
+            fill="none"
+            stroke="#F2D68A"
+            strokeWidth="1"
+          />
         </>
       );
     case "bronze": {
       // Vòng đồng sẫm có chấm tròn đều như viền mặt trống đồng.
       const dots = Array.from({ length: 24 }, (_, i) => {
         const a = (i / 24) * Math.PI * 2;
-        return <circle key={i} cx={50 + RING_R * Math.cos(a)} cy={50 + RING_R * Math.sin(a)} r="1.5" fill="#F3D9A0" />;
+        return (
+          <circle
+            key={i}
+            cx={50 + RING_R * Math.cos(a)}
+            cy={50 + RING_R * Math.sin(a)}
+            r="1.5"
+            fill="#F3D9A0"
+          />
+        );
       });
       return (
         <>
-          <Ring id="af-bronze" stops={["#C99A5B", "#8A5A24", "#6B4219", "#B9854A"]} width={5.5} />
+          <Ring
+            id="af-bronze"
+            stops={["#C99A5B", "#8A5A24", "#6B4219", "#B9854A"]}
+            width={5.5}
+          />
           {dots}
         </>
       );
@@ -300,8 +416,19 @@ function FrameArt({ frame }: { frame: AvatarFrame }): ReactElement {
     case "fortune":
       return (
         <>
-          <Ring id="af-fortune" stops={["#E0463A", "#B3261E", "#8E1A14", "#D8372C"]} width={5} />
-          <circle cx="50" cy="50" r="42.4" fill="none" stroke="#F2C94C" strokeWidth="1" />
+          <Ring
+            id="af-fortune"
+            stops={["#E0463A", "#B3261E", "#8E1A14", "#D8372C"]}
+            width={5}
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="42.4"
+            fill="none"
+            stroke="#F2C94C"
+            strokeWidth="1"
+          />
         </>
       );
   }

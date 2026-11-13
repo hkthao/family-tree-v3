@@ -28,9 +28,7 @@ import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
 import { TreeGuide } from "@/components/tree/TreeGuide";
 import { TreeOptionsPanel } from "@/components/tree/TreeOptionsPanel";
 import { useTreeViewPrefs } from "@/lib/tree/viewPrefs";
-import {
-  nameFontFamily as fontFamilyOf,
-} from "@/lib/tree/nameFonts";
+import { nameFontFamily as fontFamilyOf } from "@/lib/tree/nameFonts";
 import { MemoryRoomCtaButton } from "@/components/MemoryRoomCta";
 import { RefreshButton } from "@/components/RefreshButton";
 import { useToast } from "@/components/Toast";
@@ -59,7 +57,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  effectiveRole,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import {
   addInlawGhosts,
   pickDefaultFocal,
@@ -85,6 +87,8 @@ import { getTreeData } from "@/lib/queries/tree";
 
 import "family-chart/styles/family-chart.css";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 interface F3Chart {
   setCardYSpacing: (n: number) => F3Chart;
   setCardXSpacing: (n: number) => F3Chart;
@@ -95,10 +99,7 @@ interface F3Chart {
   setProgenyDepth?: (n: number) => F3Chart;
   setAncestryDepth?: (n: number) => F3Chart;
   setTransitionTime: (n: number) => F3Chart;
-  setSingleParentEmptyCard: (
-    b: boolean,
-    opts?: { label?: string },
-  ) => F3Chart;
+  setSingleParentEmptyCard: (b: boolean, opts?: { label?: string }) => F3Chart;
   updateTree: (opts: {
     initial?: boolean;
     tree_position?: "fit" | "main_to_middle" | "inherit";
@@ -117,7 +118,16 @@ interface F3Chart {
 
 interface F3Card {
   setCardDisplay: (lines: (CardDisplayFn | string | string[])[]) => F3Card;
-  setCardDim: (dim: { w?: number; h?: number; img_w?: number; img_h?: number; img_x?: number; img_y?: number; text_x?: number; text_y?: number }) => F3Card;
+  setCardDim: (dim: {
+    w?: number;
+    h?: number;
+    img_w?: number;
+    img_h?: number;
+    img_x?: number;
+    img_y?: number;
+    text_x?: number;
+    text_y?: number;
+  }) => F3Card;
   setCardImageField?: (field: string) => F3Card;
   setOnCardUpdate: (fn: OnCardUpdateFn) => F3Card;
 }
@@ -153,7 +163,10 @@ function titleCaseName(name: string): string {
     .trim()
     .replace(/\s+/g, " ")
     .toLocaleLowerCase("vi")
-    .replace(/(^|[\s(\-])(\p{L})/gu, (_m, pre: string, ch: string) => pre + ch.toLocaleUpperCase("vi"));
+    .replace(
+      /(^|[\s(\-])(\p{L})/gu,
+      (_m, pre: string, ch: string) => pre + ch.toLocaleUpperCase("vi"),
+    );
 }
 
 function readOrientation(): Orientation {
@@ -289,13 +302,15 @@ export default function Tree() {
 
   // Tuỳ chọn hiển thị (nền, khung, kiểu thẻ, ảnh, font, avatar) dùng CHUNG với trang Chia sẻ.
   const prefs = useTreeViewPrefs();
-  const { backdrop, cardFrame, cardLayout, cardAvatar, nameFont, avatarStyle } = prefs;
+  const { backdrop, cardFrame, cardLayout, cardAvatar, nameFont, avatarStyle } =
+    prefs;
   const nameFontFamily = fontFamilyOf(nameFont);
 
   // Số đời quanh người trung tâm: nằm trên URL (?depth=) để quay lại từ trang khác vẫn giữ nguyên.
   const depthParam = searchParams.get("depth");
   const depth: TreeDepth =
-    depthParam !== null && (DEPTH_OPTIONS as readonly number[]).includes(Number(depthParam))
+    depthParam !== null &&
+    (DEPTH_OPTIONS as readonly number[]).includes(Number(depthParam))
       ? (Number(depthParam) as TreeDepth)
       : DEFAULT_DEPTH;
   const setDepth = (d: TreeDepth) =>
@@ -411,7 +426,8 @@ export default function Tree() {
     const svg = root.querySelector("svg.main_svg") as SVGSVGElement | null;
     if (!svg) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zoomObj = (svg as any).__zoomObj || (svg.parentElement as any | null)?.__zoomObj;
+    const zoomObj =
+      (svg as any).__zoomObj || (svg.parentElement as any | null)?.__zoomObj;
     if (!zoomObj) return;
     const { select } = await import("d3-selection");
     await import("d3-transition");
@@ -457,7 +473,9 @@ export default function Tree() {
   // (hoặc id không còn trong họ) thì dùng Thuỷ tổ mặc định.
   const focalParam = searchParams.get("p");
   const focal: string | null =
-    focalParam && data?.persons.some((p) => p.id === focalParam) ? focalParam : defaultFocal;
+    focalParam && data?.persons.some((p) => p.id === focalParam)
+      ? focalParam
+      : defaultFocal;
   const setFocal = (id: string) =>
     setSearchParams(
       (prev) => {
@@ -485,15 +503,14 @@ export default function Tree() {
     if (!el || savingImg) return;
     setSavingImg(true);
     try {
-      const { exportFamilyChartPng, fileSlug } = await import(
-        "@/lib/tree/exportTreePng"
-      );
+      const { exportFamilyChartPng, fileSlug } =
+        await import("@/lib/tree/exportTreePng");
       const slug = fileSlug(`${clan.name}${focalName ? "-" + focalName : ""}`);
       await exportFamilyChartPng(el, `cay-gia-pha-${slug || "clan"}.png`);
       track("export", { kind: "tree_image", from: "tree" });
-      toast.success("Đã xuất ảnh cây gia phả.");
+      toast.success(t`Đã xuất ảnh cây gia phả.`);
     } catch {
-      toast.error("Không xuất được ảnh. Thử lại hoặc dùng chức năng In.");
+      toast.error(t`Không xuất được ảnh. Thử lại hoặc dùng chức năng In.`);
     } finally {
       setSavingImg(false);
     }
@@ -506,15 +523,14 @@ export default function Tree() {
     if (!el || savingSvg) return;
     setSavingSvg(true);
     try {
-      const { exportFamilyChartSvg, fileSlug } = await import(
-        "@/lib/tree/exportTreePng"
-      );
+      const { exportFamilyChartSvg, fileSlug } =
+        await import("@/lib/tree/exportTreePng");
       const slug = fileSlug(`${clan.name}${focalName ? "-" + focalName : ""}`);
       await exportFamilyChartSvg(el, `cay-gia-pha-${slug || "clan"}.svg`);
       track("export", { kind: "tree_svg", from: "tree" });
-      toast.success("Đã xuất cây gia phả (SVG).");
+      toast.success(t`Đã xuất cây gia phả (SVG).`);
     } catch {
-      toast.error("Không xuất được SVG. Thử lại hoặc dùng chức năng In.");
+      toast.error(t`Không xuất được SVG. Thử lại hoặc dùng chức năng In.`);
     } finally {
       setSavingSvg(false);
     }
@@ -531,7 +547,9 @@ export default function Tree() {
 
     // Tập huyết thống (thuỷ tổ + hậu duệ) để đánh dấu dâu/rể chính xác — kể cả
     // khi dâu/rể có cha/mẹ được ghi.
-    const blood = data ? bloodlineIds(data.persons, data.families) : new Set<string>();
+    const blood = data
+      ? bloodlineIds(data.persons, data.families)
+      : new Set<string>();
 
     let disposed = false;
     const node = containerRef.current;
@@ -545,7 +563,10 @@ export default function Tree() {
       if (disposed) return;
       // Tải trước font tên (đúng subset tiếng Việt) để đo độ dài tên chính xác.
       try {
-        await document.fonts?.load(`600 13px ${nameFontFamily}`, "Đỗ Việt Nguyễn");
+        await document.fonts?.load(
+          `600 13px ${nameFontFamily}`,
+          t`Đỗ Việt Nguyễn`,
+        );
       } catch {
         /* bỏ qua */
       }
@@ -577,9 +598,11 @@ export default function Tree() {
         // ({id, data, rels}); fields live under `.data`. String
         // entries also work — the library wraps them as
         // d1 => d1.data[key] internally.
-        const card = (built as F3Chart & {
-          setCardSvg?: () => F3Card;
-        }).setCardSvg?.();
+        const card = (
+          built as F3Chart & {
+            setCardSvg?: () => F3Card;
+          }
+        ).setCardSvg?.();
 
         // Display: name on line 1 (left-aligned by default); lifespan
         // "YYYY - YYYY" on line 2 (centered via the onCardUpdate hook
@@ -608,12 +631,13 @@ export default function Tree() {
           const tho = (f["lifespan_text"] as string) || "";
           if (tho) parts.push(tho);
           const anniv = (f["death_anniv"] as string) || "";
-          if (anniv) parts.push(`Giỗ ${anniv}`);
+          if (anniv) parts.push(t`Giỗ ${anniv}`);
           return parts.join(" · ");
         };
 
         const displayLines: CardDisplayFn[] = [
-          (d) => titleCaseName(String((d as DatumNode).data?.["full name"] ?? "")),
+          (d) =>
+            titleCaseName(String((d as DatumNode).data?.["full name"] ?? "")),
           (d) => dateLine(d as DatumNode),
         ];
         if (showDeceasedDetails) {
@@ -636,7 +660,10 @@ export default function Tree() {
               Math.max(
                 2,
                 ...(f3Data as { data?: Record<string, unknown> }[]).map(
-                  (n) => String(n.data?.["full name"] ?? "").trim().split(/\s+/).length,
+                  (n) =>
+                    String(n.data?.["full name"] ?? "")
+                      .trim()
+                      .split(/\s+/).length,
                 ),
               ),
             )
@@ -645,16 +672,18 @@ export default function Tree() {
         // (không đè lên dòng năm sinh – mất).
         const tallActionRow = tall && canEdit ? 26 : 0;
         const tallContentH =
-          nameTop + 24 + (nameLines - 1) * NAME_LINE + 30 + (showDeceasedDetails ? 20 : 0) + 8 + tallActionRow;
+          nameTop +
+          24 +
+          (nameLines - 1) * NAME_LINE +
+          30 +
+          (showDeceasedDetails ? 20 : 0) +
+          8 +
+          tallActionRow;
         // Thẻ dọc luôn là hình chữ nhật đứng cân đối (cao ≥ ~1,55 × rộng);
         // phần dôi ra chia đều quanh khối tên, năm vẫn nằm đáy thẻ.
         const tallH = Math.max(tallContentH, Math.round(cardW * 1.55));
         const tallSlack = tallH - tallContentH;
-        const cardH = tall
-          ? tallH
-          : showDeceasedDetails
-            ? 74
-            : 64;
+        const cardH = tall ? tallH : showDeceasedDetails ? 74 : 64;
         const imgX = tall ? (cardW - 50) / 2 : 8;
         const imgY = tall ? 8 : showDeceasedDetails ? 12 : 7;
         const textX = tall ? cardW / 2 : 64;
@@ -694,7 +723,10 @@ export default function Tree() {
             cardEl?.querySelector(":scope > .clan-frame")?.remove();
             if (noAvatar) cardEl?.querySelector(".card_image")?.remove();
             if (frameSvgRef.current && cardEl && !noAvatar) {
-              const fg = document.createElementNS("http://www.w3.org/2000/svg", "g");
+              const fg = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g",
+              );
               fg.setAttribute("class", "clan-frame");
               fg.setAttribute(
                 "transform",
@@ -717,14 +749,17 @@ export default function Tree() {
               nameTspan.parentNode
                 ?.querySelectorAll(".name-extra")
                 .forEach((n) => n.remove());
-              const words = titleCaseName(String(fields["full name"] ?? "")).split(" ");
+              const words = titleCaseName(
+                String(fields["full name"] ?? ""),
+              ).split(" ");
               const lines = [
                 ...words.slice(0, nameLines - 1),
                 words.slice(nameLines - 1).join(" "),
               ].filter(Boolean);
               nameTspan.textContent = lines[0] ?? "";
               // Căn khối tên giữa vùng chữ: nửa phần dôi + nửa số dòng còn thiếu.
-              const padTop = tallSlack / 2 + ((nameLines - lines.length) * NAME_LINE) / 2;
+              const padTop =
+                tallSlack / 2 + ((nameLines - lines.length) * NAME_LINE) / 2;
               nameTspan.setAttribute("dy", String(24 + padTop));
               nameTspan.style.fontSize = "17px";
               nameTspan.style.fontWeight = "700";
@@ -744,7 +779,10 @@ export default function Tree() {
                 anchor.after(t);
                 anchor = t;
               }
-            } else if (nameTspan && typeof nameTspan.getComputedTextLength === "function") {
+            } else if (
+              nameTspan &&
+              typeof nameTspan.getComputedTextLength === "function"
+            ) {
               const genVal = fields["generation"];
               const hasGen = typeof genVal === "number" && genVal > 0;
               const hasInlaw = !!(
@@ -755,10 +793,10 @@ export default function Tree() {
               const badgeLeft = tall
                 ? cardW - 6
                 : hasInlaw
-                ? cardW - 64
-                : hasGen
-                  ? cardW - 46
-                  : cardW - 8;
+                  ? cardW - 64
+                  : hasGen
+                    ? cardW - 46
+                    : cardW - 8;
               const avail = tall ? cardW - 12 : badgeLeft - 64 - 4; // text_x=64, chừa 4px
               nameTspan.removeAttribute("font-size"); // reset trước khi đo
               const len = nameTspan.getComputedTextLength();
@@ -773,7 +811,8 @@ export default function Tree() {
                 nameTspan.setAttribute("font-size", String(next));
               }
             }
-            if (tall && nameTspan) nameTspan.setAttribute("text-anchor", "middle");
+            if (tall && nameTspan)
+              nameTspan.setAttribute("text-anchor", "middle");
             const meta = tspans[1];
             if (meta) {
               meta.setAttribute("text-anchor", tall ? "middle" : "start");
@@ -789,7 +828,9 @@ export default function Tree() {
                 "dy",
                 String(
                   tall
-                    ? 28 + tallSlack / 2 + ((nameLines - nameLinesUsed) * NAME_LINE) / 2
+                    ? 28 +
+                        tallSlack / 2 +
+                        ((nameLines - nameLinesUsed) * NAME_LINE) / 2
                     : 18,
                 ),
               );
@@ -826,7 +867,8 @@ export default function Tree() {
                 .replace(/\s*\([^)]*\)\s*$/, "")
                 .trim();
               // Thẻ dọc: nhãn nằm góc trên-trái, ngắn lại để không đè ảnh.
-              if (tall && clanName.length > 5) clanName = `${clanName.slice(0, 4)}…`;
+              if (tall && clanName.length > 5)
+                clanName = `${clanName.slice(0, 4)}…`;
               if (clanName) {
                 const ns = "http://www.w3.org/2000/svg";
                 const tag = document.createElementNS(ns, "g");
@@ -842,7 +884,8 @@ export default function Tree() {
                   const lenG = nameTspan.getComputedTextLength();
                   if (lenG > availG && availG > 0) {
                     const curG =
-                      parseFloat(getComputedStyle(nameTspan).fontSize || "") || 15;
+                      parseFloat(getComputedStyle(nameTspan).fontSize || "") ||
+                      15;
                     nameTspan.setAttribute(
                       "font-size",
                       String(Math.max(9, Math.floor((curG * availG) / lenG))),
@@ -877,8 +920,7 @@ export default function Tree() {
               // peer family card). Remove the old overlay first to
               // avoid handler accumulation across re-renders.
               const localId = fields["ghost_local_person_id"] as
-                | string
-                | undefined;
+                string | undefined;
               this.querySelector(".ghost-click-overlay")?.remove();
               if (localId) {
                 const ns = "http://www.w3.org/2000/svg";
@@ -919,53 +961,53 @@ export default function Tree() {
                     rect.setAttribute("stroke-width", "1.5");
                   }
                 } else {
-                rect.setAttribute("rx", "4");
-                rect.setAttribute("ry", "4");
-                rect.setAttribute("stroke", "#B8862A");
-                rect.setAttribute("stroke-width", isInLaw ? "1.5" : "1.2");
-                if (isInLaw) rect.setAttribute("stroke-dasharray", "4 3");
-                const line = document.createElementNS(
-                  "http://www.w3.org/2000/svg",
-                  "rect",
-                );
-                line.setAttribute("class", "card-inner-line");
-                line.setAttribute("x", "3");
-                line.setAttribute("y", "3");
-                line.setAttribute("width", String(cardW - 6));
-                line.setAttribute("height", String(cardH - 6));
-                line.setAttribute("rx", "2");
-                line.setAttribute("fill", "none");
-                line.setAttribute("stroke", "#D4A94A");
-                line.setAttribute("stroke-width", "0.6");
-                line.setAttribute("opacity", "0.4");
-                line.setAttribute("pointer-events", "none");
-                rect.parentNode?.insertBefore(line, rect.nextSibling);
+                  rect.setAttribute("rx", "4");
+                  rect.setAttribute("ry", "4");
+                  rect.setAttribute("stroke", "#B8862A");
+                  rect.setAttribute("stroke-width", isInLaw ? "1.5" : "1.2");
+                  if (isInLaw) rect.setAttribute("stroke-dasharray", "4 3");
+                  const line = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "rect",
+                  );
+                  line.setAttribute("class", "card-inner-line");
+                  line.setAttribute("x", "3");
+                  line.setAttribute("y", "3");
+                  line.setAttribute("width", String(cardW - 6));
+                  line.setAttribute("height", String(cardH - 6));
+                  line.setAttribute("rx", "2");
+                  line.setAttribute("fill", "none");
+                  line.setAttribute("stroke", "#D4A94A");
+                  line.setAttribute("stroke-width", "0.6");
+                  line.setAttribute("opacity", "0.4");
+                  line.setAttribute("pointer-events", "none");
+                  rect.parentNode?.insertBefore(line, rect.nextSibling);
 
-                // Hoa văn chạm khắc 4 góc: góc vuông chữ L vàng + chấm tròn nhỏ.
-                const L = 7; // badge "Đời"/thông gia lùi vào trong để chừa góc trên-phải
-                const o = 3;
-                const w = cardW;
-                const h = cardH;
-                const corners = document.createElementNS(
-                  "http://www.w3.org/2000/svg",
-                  "path",
-                );
-                corners.setAttribute("class", "card-corners");
-                corners.setAttribute(
-                  "d",
-                  [
-                    `M${o} ${o + L}V${o}H${o + L}`,
-                    `M${o} ${h - o - L}V${h - o}H${o + L}`,
-                    `M${w - o - L} ${o}H${w - o}V${o + L}`,
-                    `M${w - o - L} ${h - o}H${w - o}V${h - o - L}`,
-                  ].join(""),
-                );
-                corners.setAttribute("fill", "none");
-                corners.setAttribute("stroke", "#D4A94A");
-                corners.setAttribute("stroke-width", "1.4");
-                corners.setAttribute("stroke-linecap", "round");
-                corners.setAttribute("pointer-events", "none");
-                line.parentNode?.insertBefore(corners, line.nextSibling);
+                  // Hoa văn chạm khắc 4 góc: góc vuông chữ L vàng + chấm tròn nhỏ.
+                  const L = 7; // badge "Đời"/thông gia lùi vào trong để chừa góc trên-phải
+                  const o = 3;
+                  const w = cardW;
+                  const h = cardH;
+                  const corners = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "path",
+                  );
+                  corners.setAttribute("class", "card-corners");
+                  corners.setAttribute(
+                    "d",
+                    [
+                      `M${o} ${o + L}V${o}H${o + L}`,
+                      `M${o} ${h - o - L}V${h - o}H${o + L}`,
+                      `M${w - o - L} ${o}H${w - o}V${o + L}`,
+                      `M${w - o - L} ${h - o}H${w - o}V${h - o - L}`,
+                    ].join(""),
+                  );
+                  corners.setAttribute("fill", "none");
+                  corners.setAttribute("stroke", "#D4A94A");
+                  corners.setAttribute("stroke-width", "1.4");
+                  corners.setAttribute("stroke-linecap", "round");
+                  corners.setAttribute("pointer-events", "none");
+                  line.parentNode?.insertBefore(corners, line.nextSibling);
                 }
               }
             }
@@ -996,7 +1038,7 @@ export default function Tree() {
                       style="font-family: var(--tree-name-font, 'Playfair Display'), Georgia, serif">
                   ${gen - clan.generation_offset}
                 </text>
-                <title>Đời ${gen - clan.generation_offset}</title>`;
+                <title>${t`Đời ${gen - clan.generation_offset}`}</title>`;
               this.querySelector(".card-body")?.appendChild(badge);
             }
 
@@ -1019,7 +1061,7 @@ export default function Tree() {
                         stroke="#FBF7F0" stroke-width="1" />
                 <text x="${ix}" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="12" font-weight="700">↔</text>
-                <title>Liên kết thông gia — bấm để xem</title>`;
+                <title>${t`Liên kết thông gia — bấm để xem`}</title>`;
               inlaw.style.cursor = "pointer";
               inlaw.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -1137,7 +1179,11 @@ export default function Tree() {
             .forEach((p) => {
               const d = (
                 p as unknown as {
-                  __data__?: { spouse?: boolean; source?: unknown; target?: unknown };
+                  __data__?: {
+                    spouse?: boolean;
+                    source?: unknown;
+                    target?: unknown;
+                  };
                 }
               ).__data__;
               if (!d) return;
@@ -1186,10 +1232,11 @@ export default function Tree() {
         // giữa khung (kéo/lăn chuột để xem phần còn lại).
         const currentK = async (): Promise<number> => {
           const svgEl = node.querySelector("svg.main_svg") as
-            | (SVGSVGElement & { __zoomObj?: unknown })
-            | null;
+            (SVGSVGElement & { __zoomObj?: unknown }) | null;
           if (!svgEl) return 1;
-          const listener = (svgEl.__zoomObj ? svgEl : svgEl.parentElement) as Element;
+          const listener = (
+            svgEl.__zoomObj ? svgEl : svgEl.parentElement
+          ) as Element;
           const { zoomTransform } = await import("d3-zoom");
           return zoomTransform(listener).k;
         };
@@ -1293,7 +1340,10 @@ export default function Tree() {
     if (typeof window === "undefined") return;
     // 96 dpi assumption — Chrome/Firefox use 96 css px per inch
     // for printable layout regardless of the physical printer.
-    const PRINT_PX = { w: Math.round((40 / 2.54) * 96), h: Math.round((27 / 2.54) * 96) };
+    const PRINT_PX = {
+      w: Math.round((40 / 2.54) * 96),
+      h: Math.round((27 / 2.54) * 96),
+    };
 
     let savedWidth = "";
     let savedHeight = "";
@@ -1343,7 +1393,7 @@ export default function Tree() {
         value: p.id,
         label: [
           p.full_name,
-          p.generation !== null ? `Đời ${p.generation - off}` : null,
+          p.generation !== null ? t`Đời ${p.generation - off}` : null,
           p.birth_date ? `sinh ${p.birth_date.slice(0, 4)}` : null,
         ]
           .filter(Boolean)
@@ -1378,9 +1428,9 @@ export default function Tree() {
                 value={focal ?? ""}
                 onChange={(v) => v && setFocal(v)}
                 options={personOptions}
-                emptyLabel="Chọn thuỷ tổ làm trung tâm"
-                filterPlaceholder="Gõ tên để tìm (không cần dấu)"
-                filterLabel="Tìm người làm trung tâm"
+                emptyLabel={t`Chọn thuỷ tổ làm trung tâm`}
+                filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
+                filterLabel={t`Tìm người làm trung tâm`}
                 className="h-10 text-sm"
               />
             </div>
@@ -1392,11 +1442,11 @@ export default function Tree() {
               className={`shrink-0 px-0 sm:px-3 w-10 sm:w-auto ${showOpts ? "border-primary text-primary" : ""}`}
               onClick={() => setShowOpts((v) => !v)}
               aria-expanded={showOpts}
-              aria-label="Tuỳ chọn"
-              title="Tuỳ chọn"
+              aria-label={t`Tuỳ chọn`}
+              title={t`Tuỳ chọn`}
             >
               <IconFilter className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Tuỳ chọn</span>
+              <span className="hidden sm:inline">{t`Tuỳ chọn`}</span>
             </Button>
             <RefreshButton
               clanId={clan.id}
@@ -1407,27 +1457,27 @@ export default function Tree() {
           </div>
           {/* Mobile: hàng riêng dưới ô tìm kiếm cho ô tìm kiếm đủ rộng để gõ. */}
           <div className="flex items-center justify-end gap-2">
-          {defaultFocal && focal !== defaultFocal && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-10 shrink-0 w-10 sm:w-auto px-0 sm:px-3"
-              onClick={() => {
-                setFocal(defaultFocal);
-              }}
-              aria-label="Về Thuỷ tổ"
-              title={
-                focalName
-                  ? `Đang chính giữa là ${focalName}. Bấm để về Thuỷ tổ.`
-                  : "Về Thuỷ tổ"
-              }
-            >
-              <IconHome className="h-4 w-4 sm:mr-1.5 shrink-0" />
-              <span className="hidden sm:inline">Về Thuỷ tổ</span>
-            </Button>
-          )}
-          {actionButtons}
+            {defaultFocal && focal !== defaultFocal && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-10 shrink-0 w-10 sm:w-auto px-0 sm:px-3"
+                onClick={() => {
+                  setFocal(defaultFocal);
+                }}
+                aria-label={t`Về Thuỷ tổ`}
+                title={
+                  focalName
+                    ? t`Đang chính giữa là ${focalName}. Bấm để về Thuỷ tổ.`
+                    : t`Về Thuỷ tổ`
+                }
+              >
+                <IconHome className="h-4 w-4 sm:mr-1.5 shrink-0" />
+                <span className="hidden sm:inline">{t`Về Thuỷ tổ`}</span>
+              </Button>
+            )}
+            {actionButtons}
           </div>
         </div>
       </div>
@@ -1439,7 +1489,9 @@ export default function Tree() {
       {/* Print-only title strip — shows "Họ Nguyễn — Cây gia phả · 2026-06-01"
           at the top of the printed page. The on-screen flow ignores it. */}
       <div className="print-only" aria-hidden="true">
-        <h1 style={{ fontSize: "18pt", fontWeight: 600, marginBottom: "0.4cm" }}>
+        <h1
+          style={{ fontSize: "18pt", fontWeight: 600, marginBottom: "0.4cm" }}
+        >
           {clan.name} — Cây gia phả
         </h1>
         <p style={{ fontSize: "10pt", color: "#555", marginBottom: "0.6cm" }}>
@@ -1450,33 +1502,33 @@ export default function Tree() {
       <div className="print-hide">
         <PageHeader
           icon={<IconTree className="h-7 w-7" />}
-          title="Cây gia phả"
+          title={t`Cây gia phả`}
           description={
             // Ẩn dòng mô tả trên mobile để tiết kiệm chỗ (hint, không thiết yếu).
             <span className="hidden sm:inline">
               {view === "lineage"
-                ? "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời."
-                : "Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."}
+                ? t`Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời.`
+                : t`Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng.`}
             </span>
           }
         />
-      <FilterDrawer
-        open={showOpts}
-        onClose={() => setShowOpts(false)}
-        title="Tuỳ chọn cây"
-      >
-              <TreeOptionsPanel
-                prefs={prefs}
-                mode={mode}
-                onModeChange={setMode}
-                depth={depth}
-                onDepthChange={(d) => setDepth(d as TreeDepth)}
-                view={view}
-                onViewChange={isMember ? setView : undefined}
-                orientation={orientation}
-                onOrientationChange={setOrientation}
-              />
-      </FilterDrawer>
+        <FilterDrawer
+          open={showOpts}
+          onClose={() => setShowOpts(false)}
+          title={t`Tuỳ chọn cây`}
+        >
+          <TreeOptionsPanel
+            prefs={prefs}
+            mode={mode}
+            onModeChange={setMode}
+            depth={depth}
+            onDepthChange={(d) => setDepth(d as TreeDepth)}
+            view={view}
+            onViewChange={isMember ? setView : undefined}
+            orientation={orientation}
+            onOrientationChange={setOrientation}
+          />
+        </FilterDrawer>
       </div>
 
       {/* Báo mặc định chỉ hiện một số đời để người dùng biết còn nữa — xem thêm ở Tuỳ chọn. */}
@@ -1484,17 +1536,18 @@ export default function Tree() {
         <p className="print-hide flex flex-wrap items-center gap-x-1 text-sm text-muted-foreground">
           <IconLayers className="h-4 w-4 shrink-0" aria-hidden="true" />
           {depth === 0
-            ? "Đang hiển thị tất cả các đời."
-            : `Đang hiển thị ${depth} đời quanh người làm tâm.`}
+            ? t`Đang hiển thị tất cả các đời.`
+            : t`Đang hiển thị ${depth} đời quanh người làm tâm.`}
           {depth !== 0 && (
             <>
-              {" "}Muốn xem thêm, mở{" "}
+              {" "}
+              {t`Muốn xem thêm, mở`}{" "}
               <button
                 type="button"
                 onClick={() => setShowOpts(true)}
                 className="font-medium text-primary underline-offset-2 hover:underline"
               >
-                Tuỳ chọn
+                {t`Tuỳ chọn`}
               </button>
               .
             </>
@@ -1509,325 +1562,338 @@ export default function Tree() {
         // Cây thụt sâu nhiều đời: đặt bề ngang tối thiểu rồi cho cuộn ngang trên
         // điện thoại, thay vì ép tên người thành cột hẹp xuống nhiều dòng.
         <>
-        <div className="flex items-center justify-end gap-2 print-hide">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-10 gap-1.5 px-3"
-            onClick={() => setShowOpts(true)}
-            aria-haspopup="dialog"
-            aria-label="Tuỳ chọn"
-          >
-            <IconFilter className="h-4 w-4" /> Tuỳ chọn
-          </Button>
-          {actionButtons}
-        </div>
-        <div className="space-y-2 overflow-x-auto">
-          <div className="min-w-[640px] sm:min-w-0">
-            <Suspense
-              fallback={
-                <p className="p-4 text-sm text-muted-foreground">
-                  Đang tải danh sách…
-                </p>
-              }
+          <div className="flex items-center justify-end gap-2 print-hide">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-10 gap-1.5 px-3"
+              onClick={() => setShowOpts(true)}
+              aria-haspopup="dialog"
+              aria-label={t`Tuỳ chọn`}
             >
-              <TreeFolderView
-                key={`${nameFont}-${avatarStyle}`}
-                clanId={clan.id}
-                source={treeSource}
-              />
-            </Suspense>
+              <IconFilter className="h-4 w-4" /> {t`Tuỳ chọn`}
+            </Button>
+            {actionButtons}
           </div>
-        </div>
+          <div className="space-y-2 overflow-x-auto">
+            <div className="min-w-[640px] sm:min-w-0">
+              <Suspense
+                fallback={
+                  <p className="p-4 text-sm text-muted-foreground">
+                    {t`Đang tải danh sách…`}
+                  </p>
+                }
+              >
+                <TreeFolderView
+                  key={`${nameFont}-${avatarStyle}`}
+                  clanId={clan.id}
+                  source={treeSource}
+                />
+              </Suspense>
+            </div>
+          </div>
         </>
       ) : mode === "3d" ? (
         <>
           {focalSearch}
           <div className="space-y-2">
-          <Suspense
-            fallback={
-              <div className="grid h-[calc(100dvh-260px)] min-h-[440px] place-items-center rounded-xl border text-muted-foreground">
-                Đang tải khung 3D…
-              </div>
-            }
-          >
-            <Tree3DView
-              key={`${nameFont}-${avatarStyle}`}
-              clanId={clan.id}
-              genOffset={clan.generation_offset}
-              focal={focal}
-              depth={depth}
-              className="h-[calc(100dvh-260px)] min-h-[440px] rounded-xl border"
-            />
-          </Suspense>
+            <Suspense
+              fallback={
+                <div className="grid h-[calc(100dvh-260px)] min-h-[440px] place-items-center rounded-xl border text-muted-foreground">
+                  {t`Đang tải khung 3D…`}
+                </div>
+              }
+            >
+              <Tree3DView
+                key={`${nameFont}-${avatarStyle}`}
+                clanId={clan.id}
+                genOffset={clan.generation_offset}
+                focal={focal}
+                depth={depth}
+                className="h-[calc(100dvh-260px)] min-h-[440px] rounded-xl border"
+              />
+            </Suspense>
           </div>
         </>
       ) : view === "lineage" ? (
         <LineageContent clanId={clanId} userId={userId} />
       ) : (
-      <>
-      {isLoading && (
-        <p className="text-muted-foreground">Đang tải cây…</p>
-      )}
-
-      {!isLoading && data && data.persons.length === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Chưa có dữ liệu</CardTitle>
-            <CardDescription>
-              {canEdit
-                ? "Bắt đầu bằng cách thêm Thuỷ tổ (đời 1), hoặc nhập sẵn từ Excel."
-                : "Quản trị/biên tập viên sẽ thêm thành viên trước."}
-            </CardDescription>
-          </CardHeader>
-          {canEdit && (
-            <CardFooter className="flex-wrap gap-3">
-              <Button asChild variant="outline">
-                <Link to={`/clans/${clanId}/import`}>
-                  <IconUpload className="h-4 w-4 mr-1.5" />
-                  Nhập từ Excel
-                </Link>
-              </Button>
-              <Button asChild>
-                <PanelLink to={`/clans/${clanId}/people/new`} panel="person-new">
-                  <IconPlus className="h-4 w-4 mr-1.5" />
-                  Thêm người
-                </PanelLink>
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
-      )}
-
-      {data && data.persons.length > 0 && (
         <>
-          {focalSearch}
+          {isLoading && (
+            <p className="text-muted-foreground">{t`Đang tải cây…`}</p>
+          )}
 
-          {renderTreeWrap(
-          <div
-            ref={treeWrapRef}
-            className={
-              isFullscreen
-                ? "fixed inset-0 z-[60] bg-background p-2"
-                : "relative"
-            }
-          >
-            {/* Nền phượng / rồng (chọn ở Tuỳ chọn): lớp trang trí sau biểu đồ, rất mờ
+          {!isLoading && data && data.persons.length === 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t`Chưa có dữ liệu`}</CardTitle>
+                <CardDescription>
+                  {canEdit
+                    ? t`Bắt đầu bằng cách thêm Thuỷ tổ (đời 1), hoặc nhập sẵn từ Excel.`
+                    : t`Quản trị/biên tập viên sẽ thêm thành viên trước.`}
+                </CardDescription>
+              </CardHeader>
+              {canEdit && (
+                <CardFooter className="flex-wrap gap-3">
+                  <Button asChild variant="outline">
+                    <Link to={`/clans/${clanId}/import`}>
+                      <IconUpload className="h-4 w-4 mr-1.5" />
+                      {t`Nhập từ Excel`}
+                    </Link>
+                  </Button>
+                  <Button asChild>
+                    <PanelLink
+                      to={`/clans/${clanId}/people/new`}
+                      panel="person-new"
+                    >
+                      <IconPlus className="h-4 w-4 mr-1.5" />
+                      {t`Thêm người`}
+                    </PanelLink>
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+          )}
+
+          {data && data.persons.length > 0 && (
+            <>
+              {focalSearch}
+
+              {renderTreeWrap(
+                <div
+                  ref={treeWrapRef}
+                  className={
+                    isFullscreen
+                      ? "fixed inset-0 z-[60] bg-background p-2"
+                      : "relative"
+                  }
+                >
+                  {/* Nền phượng / rồng (chọn ở Tuỳ chọn): lớp trang trí sau biểu đồ, rất mờ
                 để không át chữ trong thẻ; PNG đen trong suốt nên đảo màu ở giao diện tối. */}
-            <div className={isFullscreen ? "relative h-full" : "relative"}>
-            <TreeBackdrop backdrop={backdrop} />
-            <div
-              ref={containerRef}
-              // The `f3` class is required — family-chart's stylesheet scopes
-              // `svg.main_svg { width:100%; height:100% }` under it. Without
-              // the class, the SVG (and the f3Canvas it lives in) renders at
-              // intrinsic size and the cards clump in the corner.
-              //
-              // CSS-var overrides shift the default saturated blue/pink card
-              // fills toward the paper/oxblood palette from plan §10:
-              // male = cool muted, female = warm muted, text in ink colour.
-              className={`f3 relative border bg-transparent overflow-hidden text-foreground ${
-                isFullscreen
-                  ? "h-full max-h-none min-h-0 rounded-lg"
-                  : "rounded-lg h-[70vh] min-h-[480px] max-h-[820px]"
-              }`}
-              style={
-                {
-                  "--male-color": "var(--tree-card-male)",
-                  "--female-color": "var(--tree-card-female)",
-                  "--genderless-color": "var(--tree-card-genderless)",
-                  "--tree-name-font": nameFontFamily,
-                  // Only opt out of native scroll when the chart is
-                  // "active" — otherwise we let the page scroll
-                  // through, important on phones where the chart
-                  // takes up the entire viewport.
-                  touchAction: chartActive ? "none" : "auto",
-                } as React.CSSProperties
-              }
-              aria-label="Cây gia phả tương tác"
-            />
-            </div>
-            {!chartActive && (
-              <button
-                type="button"
-                data-testid="tree-activate-overlay"
-                onClick={() => setChartActive(true)}
-                className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-card/40 backdrop-blur-[1px] print-hide"
-                style={{ touchAction: "pan-y" }}
-                aria-label="Mở chế độ di chuyển cây"
-              >
-                <span className="px-4 py-2 rounded-full bg-card border shadow text-sm font-medium">
-                  Chạm để di chuyển / phóng to cây
-                </span>
-              </button>
-            )}
-            {chartActive && (
-              <div
-                className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1 print-hide"
-                aria-label="Phóng to / thu nhỏ cây"
-              >
-                <div className="relative mb-1">
-                  <button
-                    type="button"
-                    onClick={() => setExportMenuOpen((v) => !v)}
-                    disabled={savingImg || savingSvg}
-                    aria-haspopup="menu"
-                    aria-expanded={exportMenuOpen}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
-                    aria-label="Xuất ảnh cây gia phả"
-                    title={
-                      savingImg || savingSvg
-                        ? "Đang xuất…"
-                        : "Xuất ảnh cây (PNG / SVG)"
-                    }
+                  <div
+                    className={isFullscreen ? "relative h-full" : "relative"}
                   >
-                    <IconDownload className="h-4 w-4" />
-                  </button>
-                  {exportMenuOpen && (
-                    <>
-                      {/* Nền bắt click ra ngoài để đóng popup. */}
+                    <TreeBackdrop backdrop={backdrop} />
+                    <div
+                      ref={containerRef}
+                      // The `f3` class is required — family-chart's stylesheet scopes
+                      // `svg.main_svg { width:100%; height:100% }` under it. Without
+                      // the class, the SVG (and the f3Canvas it lives in) renders at
+                      // intrinsic size and the cards clump in the corner.
+                      //
+                      // CSS-var overrides shift the default saturated blue/pink card
+                      // fills toward the paper/oxblood palette from plan §10:
+                      // male = cool muted, female = warm muted, text in ink colour.
+                      className={`f3 relative border bg-transparent overflow-hidden text-foreground ${
+                        isFullscreen
+                          ? "h-full max-h-none min-h-0 rounded-lg"
+                          : "rounded-lg h-[70vh] min-h-[480px] max-h-[820px]"
+                      }`}
+                      style={
+                        {
+                          "--male-color": "var(--tree-card-male)",
+                          "--female-color": "var(--tree-card-female)",
+                          "--genderless-color": "var(--tree-card-genderless)",
+                          "--tree-name-font": nameFontFamily,
+                          // Only opt out of native scroll when the chart is
+                          // "active" — otherwise we let the page scroll
+                          // through, important on phones where the chart
+                          // takes up the entire viewport.
+                          touchAction: chartActive ? "none" : "auto",
+                        } as React.CSSProperties
+                      }
+                      aria-label={t`Cây gia phả tương tác`}
+                    />
+                  </div>
+                  {!chartActive && (
+                    <button
+                      type="button"
+                      data-testid="tree-activate-overlay"
+                      onClick={() => setChartActive(true)}
+                      className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-card/40 backdrop-blur-[1px] print-hide"
+                      style={{ touchAction: "pan-y" }}
+                      aria-label={t`Mở chế độ di chuyển cây`}
+                    >
+                      <span className="px-4 py-2 rounded-full bg-card border shadow text-sm font-medium">
+                        {t`Chạm để di chuyển / phóng to cây`}
+                      </span>
+                    </button>
+                  )}
+                  {chartActive && (
+                    <div
+                      className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1 print-hide"
+                      aria-label={t`Phóng to / thu nhỏ cây`}
+                    >
+                      <div className="relative mb-1">
+                        <button
+                          type="button"
+                          onClick={() => setExportMenuOpen((v) => !v)}
+                          disabled={savingImg || savingSvg}
+                          aria-haspopup="menu"
+                          aria-expanded={exportMenuOpen}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm disabled:opacity-60"
+                          aria-label={t`Xuất ảnh cây gia phả`}
+                          title={
+                            savingImg || savingSvg
+                              ? t`Đang xuất…`
+                              : t`Xuất ảnh cây (PNG / SVG)`
+                          }
+                        >
+                          <IconDownload className="h-4 w-4" />
+                        </button>
+                        {exportMenuOpen && (
+                          <>
+                            {/* Nền bắt click ra ngoài để đóng popup. */}
+                            <button
+                              type="button"
+                              aria-hidden="true"
+                              tabIndex={-1}
+                              onClick={() => setExportMenuOpen(false)}
+                              className="fixed inset-0 z-10 cursor-default"
+                            />
+                            <div
+                              role="menu"
+                              className="absolute right-full top-0 z-20 mr-2 w-56 overflow-hidden rounded-lg border bg-card shadow-lg"
+                            >
+                              <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => {
+                                  setExportMenuOpen(false);
+                                  exportTreeImage();
+                                }}
+                                className="flex w-full items-start gap-2 px-3 py-2.5 text-left hover:bg-muted"
+                              >
+                                <IconDownload className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                <span className="min-w-0">
+                                  <span className="block text-sm font-medium">
+                                    {t`Ảnh PNG`}
+                                  </span>
+                                  <span className="block text-xs text-muted-foreground">
+                                    {t`Ảnh thường — phần đang xem`}
+                                  </span>
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => {
+                                  setExportMenuOpen(false);
+                                  exportTreeSvg();
+                                }}
+                                className="flex w-full items-start gap-2 border-t px-3 py-2.5 text-left hover:bg-muted"
+                              >
+                                <IconDownload className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                <span className="min-w-0">
+                                  <span className="block text-sm font-medium">
+                                    {t`Ảnh vector (SVG)`}
+                                  </span>
+                                  <span className="block text-xs text-muted-foreground">
+                                    {t`Cả cây — in khổ lớn, phóng to không vỡ`}
+                                  </span>
+                                </span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <button
                         type="button"
-                        aria-hidden="true"
-                        tabIndex={-1}
-                        onClick={() => setExportMenuOpen(false)}
-                        className="fixed inset-0 z-10 cursor-default"
-                      />
-                      <div
-                        role="menu"
-                        className="absolute right-full top-0 z-20 mr-2 w-56 overflow-hidden rounded-lg border bg-card shadow-lg"
+                        data-testid="tree-fullscreen"
+                        onClick={toggleFullscreen}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm mb-1"
+                        aria-label={
+                          isFullscreen
+                            ? t`Thoát toàn màn hình`
+                            : t`Xem toàn màn hình`
+                        }
+                        title={
+                          isFullscreen
+                            ? t`Thoát toàn màn hình`
+                            : t`Xem toàn màn hình`
+                        }
                       >
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setExportMenuOpen(false);
-                            exportTreeImage();
-                          }}
-                          className="flex w-full items-start gap-2 px-3 py-2.5 text-left hover:bg-muted"
-                        >
-                          <IconDownload className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="min-w-0">
-                            <span className="block text-sm font-medium">
-                              Ảnh PNG
-                            </span>
-                            <span className="block text-xs text-muted-foreground">
-                              Ảnh thường — phần đang xem
-                            </span>
-                          </span>
-                        </button>
-                        <button
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            setExportMenuOpen(false);
-                            exportTreeSvg();
-                          }}
-                          className="flex w-full items-start gap-2 border-t px-3 py-2.5 text-left hover:bg-muted"
-                        >
-                          <IconDownload className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                          <span className="min-w-0">
-                            <span className="block text-sm font-medium">
-                              Ảnh vector (SVG)
-                            </span>
-                            <span className="block text-xs text-muted-foreground">
-                              Cả cây — in khổ lớn, phóng to không vỡ
-                            </span>
-                          </span>
-                        </button>
-                      </div>
-                    </>
+                        {isFullscreen ? (
+                          <IconMinimize className="h-4 w-4" />
+                        ) : (
+                          <IconMaximize className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="tree-zoom-in"
+                        onClick={() => zoomBy(1.3)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
+                        aria-label={t`Phóng to`}
+                        title={t`Phóng to`}
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="tree-zoom-out"
+                        onClick={() => zoomBy(1 / 1.3)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
+                        aria-label={t`Thu nhỏ`}
+                        title={t`Thu nhỏ`}
+                      >
+                        −
+                      </button>
+                    </div>
                   )}
-                </div>
-                <button
-                  type="button"
-                  data-testid="tree-fullscreen"
-                  onClick={toggleFullscreen}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm mb-1"
-                  aria-label={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-                  title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-                >
-                  {isFullscreen ? (
-                    <IconMinimize className="h-4 w-4" />
-                  ) : (
-                    <IconMaximize className="h-4 w-4" />
+                  {chartActive && (
+                    <button
+                      type="button"
+                      onClick={() => setChartActive(false)}
+                      className="hidden [@media(hover:none)]:inline-flex absolute top-2 right-2 z-10 items-center gap-1 px-2.5 py-1.5 rounded-md bg-card/90 border shadow text-xs font-medium backdrop-blur-sm print-hide"
+                      style={{ touchAction: "pan-y" }}
+                      title={t`Tắt chế độ di chuyển cây để cuộn trang`}
+                    >
+                      {t`Khoá để cuộn trang`}
+                    </button>
                   )}
-                </button>
-                <button
-                  type="button"
-                  data-testid="tree-zoom-in"
-                  onClick={() => zoomBy(1.3)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
-                  aria-label="Phóng to"
-                  title="Phóng to"
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  data-testid="tree-zoom-out"
-                  onClick={() => zoomBy(1 / 1.3)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/90 border shadow-sm text-foreground hover:bg-card hover:border-primary backdrop-blur-sm text-lg font-medium"
-                  aria-label="Thu nhỏ"
-                  title="Thu nhỏ"
-                >
-                  −
-                </button>
-              </div>
-            )}
-            {chartActive && (
-              <button
-                type="button"
-                onClick={() => setChartActive(false)}
-                className="hidden [@media(hover:none)]:inline-flex absolute top-2 right-2 z-10 items-center gap-1 px-2.5 py-1.5 rounded-md bg-card/90 border shadow text-xs font-medium backdrop-blur-sm print-hide"
-                style={{ touchAction: "pan-y" }}
-                title="Tắt chế độ di chuyển cây để cuộn trang"
-              >
-                Khoá để cuộn trang
-              </button>
-            )}
-            {/* Cách xem — hướng dẫn + chú thích: component dùng chung với trang Chia sẻ. */}
-            <TreeGuide />
-          </div>,
+                  {/* Cách xem — hướng dẫn + chú thích: component dùng chung với trang Chia sẻ. */}
+                  <TreeGuide />
+                </div>,
+              )}
+              <p className="text-xs text-muted-foreground print-hide">
+                {chartActive
+                  ? t`Vuốt để di chuyển, kéo 2 ngón để phóng to/thu nhỏ. Chạm vào thẻ người để mở rộng nhánh.`
+                  : t`Khoá để cuộn trang. Chạm vào ảnh cây để mở chế độ di chuyển.`}
+              </p>
+            </>
           )}
-          <p className="text-xs text-muted-foreground print-hide">
-            {chartActive
-              ? 'Vuốt để di chuyển, kéo 2 ngón để phóng to/thu nhỏ. Chạm vào thẻ người để mở rộng nhánh.'
-              : 'Khoá để cuộn trang. Chạm vào ảnh cây để mở chế độ di chuyển.'}
-          </p>
-        </>
-      )}
 
-      <InlawBadgeDialog
-        personId={badgePersonId}
-        userId={userId}
-        viewingClanId={clan.id}
-        onClose={() => setBadgePersonId(null)}
-      />
-
-      <RelationSheet
-        open={editPersonId !== null}
-        title="Sửa thông tin"
-        onClose={() => setEditPersonId(null)}
-      >
-        {editPersonId && (
-          <EditPersonForm
-            clanId={clan.id}
-            personId={editPersonId}
-            onSaved={() => setEditPersonId(null)}
-            onCancel={() => setEditPersonId(null)}
+          <InlawBadgeDialog
+            personId={badgePersonId}
+            userId={userId}
+            viewingClanId={clan.id}
+            onClose={() => setBadgePersonId(null)}
           />
-        )}
-      </RelationSheet>
 
-      <QuickAddSheet
-        open={quickAddPersonId !== null}
-        onClose={() => setQuickAddPersonId(null)}
-        clanId={clan.id}
-        personId={quickAddPersonId ?? ""}
-      />
-      </>
+          <RelationSheet
+            open={editPersonId !== null}
+            title={t`Sửa thông tin`}
+            onClose={() => setEditPersonId(null)}
+          >
+            {editPersonId && (
+              <EditPersonForm
+                clanId={clan.id}
+                personId={editPersonId}
+                onSaved={() => setEditPersonId(null)}
+                onCancel={() => setEditPersonId(null)}
+              />
+            )}
+          </RelationSheet>
+
+          <QuickAddSheet
+            open={quickAddPersonId !== null}
+            onClose={() => setQuickAddPersonId(null)}
+            clanId={clan.id}
+            personId={quickAddPersonId ?? ""}
+          />
+        </>
       )}
     </div>
   );
@@ -1884,12 +1950,12 @@ function InlawBadgeDialog({
         <header className="border-b px-5 py-3 flex items-center justify-between">
           <h2 className="font-semibold inline-flex items-center gap-2">
             <span aria-hidden="true">↔</span>
-            Liên kết thông gia
+            {t`Liên kết thông gia`}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t`Đóng`}
             className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground"
           >
             ✕
@@ -1927,10 +1993,10 @@ function InlawBadgeBody({
     enabled: !!userId,
   });
   if (isLoading)
-    return <p className="text-sm text-muted-foreground">Đang tải…</p>;
+    return <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>;
   if (!links || links.length === 0)
     return (
-      <p className="text-sm text-muted-foreground">Không còn liên kết nào.</p>
+      <p className="text-sm text-muted-foreground">{t`Không còn liên kết nào.`}</p>
     );
   return (
     <div className="space-y-5">
@@ -1979,9 +2045,9 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         watermark: watermark || null,
       });
       track("export", { kind: "clan_book_pdf", from: "tree" });
-      toast.success("Đã tải sổ PDF");
+      toast.success(t`Đã tải sổ PDF`);
     } catch (e) {
-      toast.error("Không xuất được", { description: (e as Error).message });
+      toast.error(t`Không xuất được`, { description: (e as Error).message });
     } finally {
       setBusy(false);
     }
@@ -1996,102 +2062,112 @@ function ExportBookButton({ clan }: { clan: ClanDetail }) {
         className="h-10 px-2.5 sm:px-3"
         onClick={() => setOpen(true)}
         disabled={busy}
-        aria-label="Xuất sổ PDF"
-        title="Xuất toàn bộ thông tin dòng họ thành sổ PDF"
+        aria-label={t`Xuất sổ PDF`}
+        title={t`Xuất toàn bộ thông tin dòng họ thành sổ PDF`}
       >
         <IconDownload className="h-4 w-4 sm:mr-1.5" />
         <span className="hidden sm:inline">
-          {busy ? "Đang xuất…" : "Xuất sổ"}
+          {busy ? t`Đang xuất…` : t`Xuất sổ`}
         </span>
       </Button>
       <SidePanel
         open={open}
-        title="Xuất sổ PDF"
-        subtitle="Toàn bộ thông tin dòng họ thành một cuốn sổ PDF."
+        title={t`Xuất sổ PDF`}
+        subtitle={t`Toàn bộ thông tin dòng họ thành một cuốn sổ PDF.`}
         onClose={() => setOpen(false)}
         guard={false}
       >
         <div className="flex flex-1 flex-col space-y-3">
-            <p className="text-sm font-medium">Trang sơ đồ cây</p>
-            <Select
-              value={singlePage ? "single" : "paged"}
-              onChange={(e) => setSinglePage(e.target.value === "single")}
-              icon={<IconGrid />}
-              aria-label="Cách trình bày sơ đồ cây"
-              className="h-9 text-sm"
-            >
-              <option value="single">Một trang lớn chứa cả cây (mặc định)</option>
-              <option value="paged">Tách nhiều trang A4 theo đời</option>
-            </Select>
-            {singlePage && (
-              <p className="text-[11px] leading-relaxed text-muted-foreground">
-                Cả sơ đồ liền trên một trang, khổ giấy tự tính theo cây (họ
-                lớn thì trang rất rộng) — hợp để xem trên máy hoặc in khổ lớn.
-              </p>
-            )}
-            {!singlePage && (
-              <>
-            <p className="text-sm font-medium">Số người mỗi trang sơ đồ</p>
+          <p className="text-sm font-medium">{t`Trang sơ đồ cây`}</p>
+          <Select
+            value={singlePage ? "single" : "paged"}
+            onChange={(e) => setSinglePage(e.target.value === "single")}
+            icon={<IconGrid />}
+            aria-label={t`Cách trình bày sơ đồ cây`}
+            className="h-9 text-sm"
+          >
+            <option value="single">{t`Một trang lớn chứa cả cây (mặc định)`}</option>
+            <option value="paged">{t`Tách nhiều trang A4 theo đời`}</option>
+          </Select>
+          {singlePage && (
             <p className="text-[11px] leading-relaxed text-muted-foreground">
-              Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để thẻ to, nhiều đời
-              vẫn đẹp trên một trang. Họ đông chọn mức cao để gói nhiều
-              người/trang.
+              <Trans>
+                Cả sơ đồ liền trên một trang, khổ giấy tự tính theo cây (họ lớn
+                thì trang rất rộng) — hợp để xem trên máy hoặc in khổ lớn.
+              </Trans>
             </p>
-            <Select
-              value={perPage}
-              onChange={(e) => setPerPage(Number(e.target.value))}
-              icon={<IconGrid />}
-              aria-label="Số người mỗi trang sơ đồ"
-              className="h-9 text-sm"
-            >
-              {EXPORT_DENSITY.map((o) => (
-                <option key={o.v} value={o.v}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
-              </>
-            )}
-            <label className="flex items-start gap-2 pt-1 text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 accent-primary"
-                checked={folderTree}
-                onChange={(e) => setFolderTree(e.target.checked)}
-              />
-              <span>
-                Kèm trang “Sơ đồ cây gia phả” (dạng thư mục)
-                <span className="block text-[11px] leading-relaxed text-muted-foreground">
-                  Cả dòng họ liền một cột trên một trang; trang dài ra theo
-                  số người (họ lớn thì dài hơn A4).
-                </span>
+          )}
+          {!singlePage && (
+            <>
+              <p className="text-sm font-medium">{t`Số người mỗi trang sơ đồ`}</p>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">
+                <Trans>
+                  Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để thẻ to, nhiều đời
+                  vẫn đẹp trên một trang. Họ đông chọn mức cao để gói nhiều
+                  người/trang.
+                </Trans>
+              </p>
+              <Select
+                value={perPage}
+                onChange={(e) => setPerPage(Number(e.target.value))}
+                icon={<IconGrid />}
+                aria-label={t`Số người mỗi trang sơ đồ`}
+                className="h-9 text-sm"
+              >
+                {EXPORT_DENSITY.map((o) => (
+                  <option key={o.v} value={o.v}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+            </>
+          )}
+          <label className="flex items-start gap-2 pt-1 text-sm">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 accent-primary"
+              checked={folderTree}
+              onChange={(e) => setFolderTree(e.target.checked)}
+            />
+            <span>
+              {t`Kèm trang “Sơ đồ cây gia phả” (dạng thư mục)`}
+              <span className="block text-[11px] leading-relaxed text-muted-foreground">
+                <Trans>
+                  Cả dòng họ liền một cột trên một trang; trang dài ra theo số
+                  người (họ lớn thì dài hơn A4).
+                </Trans>
               </span>
-            </label>
-            <p className="pt-1 text-sm font-medium">Hình nền mờ</p>
-            <Select
-              value={watermark}
-              onChange={(e) =>
-                setWatermark(e.target.value as BookWatermarkId | "")
-              }
-              icon={<IconGrid />}
-              aria-label="Hình nền mờ của sổ"
-              className="h-9 text-sm"
-            >
-              <option value="">Không có</option>
-              {Object.entries(BOOK_WATERMARKS).map(([id, w]) => (
-                <option key={id} value={id}>
-                  {w.label}
-                </option>
-              ))}
-            </Select>
+            </span>
+          </label>
+          <p className="pt-1 text-sm font-medium">{t`Hình nền mờ`}</p>
+          <Select
+            value={watermark}
+            onChange={(e) =>
+              setWatermark(e.target.value as BookWatermarkId | "")
+            }
+            icon={<IconGrid />}
+            aria-label={t`Hình nền mờ của sổ`}
+            className="h-9 text-sm"
+          >
+            <option value="">{t`Không có`}</option>
+            {Object.entries(BOOK_WATERMARKS).map(([id, w]) => (
+              <option key={id} value={id}>
+                {w.label}
+              </option>
+            ))}
+          </Select>
           <PanelActionBar>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               <IconX className="h-4 w-4 mr-1.5" />
-              Đóng
+              {t`Đóng`}
             </Button>
             <Button type="button" onClick={doExport} disabled={busy}>
               <IconDownload className="h-4 w-4 mr-1.5" />
-              Tải PDF
+              {t`Tải PDF`}
             </Button>
           </PanelActionBar>
         </div>

@@ -8,7 +8,13 @@ import { Chip, type ChipTone } from "@/components/Chip";
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { EmptyState } from "@/components/EmptyState";
 import { IconTile } from "@/components/IconTile";
-import { IconBell, IconCheck, IconGlobe, IconSearch, IconTag } from "@/components/icons";
+import {
+  IconBell,
+  IconCheck,
+  IconGlobe,
+  IconSearch,
+  IconTag,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
@@ -16,7 +22,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+} from "@/hooks/useClientPaging";
 import {
   announcementsMarkAllRead,
   listAnnouncements,
@@ -29,6 +38,7 @@ import { LEVEL_LABEL, formatRelative } from "@/lib/announcementFormat";
 import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
 
+import { t } from "@lingui/core/macro";
 const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
   info: "info",
   update: "primary",
@@ -101,15 +111,15 @@ export default function Announcements() {
       <main className="container max-w-4xl py-6 px-4 space-y-3">
         <Breadcrumb
           items={[
-            { label: "Dòng họ", to: "/clans" },
-            { label: "Thông báo hệ thống" },
+            { label: t`Dòng họ`, to: "/clans" },
+            { label: t`Thông báo hệ thống` },
           ]}
         />
 
         <PageHeader
           icon={<IconBell className="h-7 w-7" />}
-          title="Thông báo hệ thống"
-          description="Tính năng mới, bảo trì, sửa lỗi quan trọng."
+          title={t`Thông báo hệ thống`}
+          description={t`Tính năng mới, bảo trì, sửa lỗi quan trọng.`}
           actions={
             user && unreadCount > 0 ? (
               <Button
@@ -121,8 +131,8 @@ export default function Announcements() {
               >
                 <IconCheck className="h-4 w-4 mr-1.5" />
                 {markAllM.isPending
-                  ? "Đang lưu…"
-                  : `Đánh dấu tất cả (${unreadCount})`}
+                  ? t`Đang lưu…`
+                  : t`Đánh dấu tất cả (${unreadCount})`}
               </Button>
             ) : undefined
           }
@@ -136,16 +146,16 @@ export default function Announcements() {
             setUnreadOnly(false);
             paging.patchAndResetPage({});
           }}
-          title="Lọc thông báo"
+          title={t`Lọc thông báo`}
           search={(toggle) => (
             <SearchInput
-              label="Tìm thông báo"
+              label={t`Tìm thông báo`}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 paging.patchAndResetPage({});
               }}
-              placeholder="Tìm theo tiêu đề / nội dung…"
+              placeholder={t`Tìm theo tiêu đề / nội dung…`}
               rightSlot={toggle}
             />
           )}
@@ -157,11 +167,11 @@ export default function Announcements() {
                 setLevelFilter(e.target.value as AnnouncementLevel | "");
                 paging.patchAndResetPage({});
               }}
-              aria-label="Lọc theo mức độ"
+              aria-label={t`Lọc theo mức độ`}
               icon={<IconTag />}
               className="h-11 w-full text-base"
             >
-              <option value="">Mọi mức độ</option>
+              <option value="">{t`Mọi mức độ`}</option>
               {LEVELS.map((l) => (
                 <option key={l} value={l}>
                   {LEVEL_LABEL[l]}
@@ -180,8 +190,8 @@ export default function Announcements() {
                   className="mt-1 h-4 w-4 shrink-0 accent-primary"
                 />
                 <span>
-                  <span className="font-medium">Chỉ chưa đọc</span>
-                  <span className="block text-sm text-muted-foreground">Ẩn các thông báo bạn đã đọc.</span>
+                  <span className="font-medium">{t`Chỉ chưa đọc`}</span>
+                  <span className="block text-sm text-muted-foreground">{t`Ẩn các thông báo bạn đã đọc.`}</span>
                 </span>
               </label>
             )}
@@ -190,7 +200,7 @@ export default function Announcements() {
 
         {listQ.isLoading && (
           <div className="rounded-xl border bg-card p-4 shadow-sm">
-            <p className="text-muted-foreground">Đang tải…</p>
+            <p className="text-muted-foreground">{t`Đang tải…`}</p>
           </div>
         )}
         {listQ.error && (
@@ -202,16 +212,32 @@ export default function Announcements() {
         )}
         {!listQ.isLoading && filtered.length === 0 && (
           <EmptyState
-            icon={filtering ? <IconSearch className="h-10 w-10" /> : <IconBell className="h-10 w-10" />}
-            title={filtering ? "Không có thông báo nào khớp" : "Chưa có thông báo nào"}
-            description={filtering ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : undefined}
+            icon={
+              filtering ? (
+                <IconSearch className="h-10 w-10" />
+              ) : (
+                <IconBell className="h-10 w-10" />
+              )
+            }
+            title={
+              filtering
+                ? t`Không có thông báo nào khớp`
+                : t`Chưa có thông báo nào`
+            }
+            description={
+              filtering ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : undefined
+            }
           />
         )}
 
         {filtered.length > 0 && (
           <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {paging.paged.map((row) => (
-              <AnnouncementRow key={row.id} row={row} isRead={reads.has(row.id)} />
+              <AnnouncementRow
+                key={row.id}
+                row={row}
+                isRead={reads.has(row.id)}
+              />
             ))}
           </ul>
         )}
@@ -222,7 +248,7 @@ export default function Announcements() {
             totalPages={paging.totalPages}
             total={paging.total}
             pageSize={paging.pageSize}
-            unit="thông báo"
+            unit={t`thông báo`}
             onPageChange={paging.setPage}
             pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
             onPageSizeChange={paging.setPageSize}
@@ -234,7 +260,13 @@ export default function Announcements() {
 }
 
 /** Bấm một dòng: đánh dấu đã đọc (nếu chưa) rồi mở trang chi tiết đầy đủ. */
-function AnnouncementRow({ row, isRead }: { row: Announcement; isRead: boolean }) {
+function AnnouncementRow({
+  row,
+  isRead,
+}: {
+  row: Announcement;
+  isRead: boolean;
+}) {
   const qc = useQueryClient();
   const markM = useMutation({
     mutationFn: () => markAnnouncementRead(row.id),
@@ -255,8 +287,14 @@ function AnnouncementRow({ row, isRead }: { row: Announcement; isRead: boolean }
       >
         <IconTile icon={IconBell} tone={tone} />
         <div className="min-w-0 flex-1">
-          <p className={`truncate ${isRead ? "font-medium text-foreground/80" : "font-semibold"}`}>{row.title}</p>
-          <p className="mt-0.5 line-clamp-2 whitespace-pre-line text-sm text-muted-foreground">{row.body}</p>
+          <p
+            className={`truncate ${isRead ? "font-medium text-foreground/80" : "font-semibold"}`}
+          >
+            {row.title}
+          </p>
+          <p className="mt-0.5 line-clamp-2 whitespace-pre-line text-sm text-muted-foreground">
+            {row.body}
+          </p>
           {row.published_at && (
             <time
               className="mt-0.5 block text-xs tabular-nums text-muted-foreground/80"
@@ -273,7 +311,7 @@ function AnnouncementRow({ row, isRead }: { row: Announcement; isRead: boolean }
               </Chip>
             )}
             <Chip tone={isRead ? "neutral" : "warning"} icon={<IconCheck />}>
-              {isRead ? "Đã đọc" : "Chưa đọc"}
+              {isRead ? t`Đã đọc` : t`Chưa đọc`}
             </Chip>
             <Chip tone={tone} icon={<IconBell />}>
               {LEVEL_LABEL[row.level]}

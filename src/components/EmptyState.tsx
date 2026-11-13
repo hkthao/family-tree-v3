@@ -47,7 +47,14 @@ interface Props {
  * pages. Pure presentation — caller passes title / description / icon
  * / actions; no internal state.
  */
-export function EmptyState({ icon, title, description, primary, secondary, tertiary }: Props) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  primary,
+  secondary,
+  tertiary,
+}: Props) {
   return (
     <div className="rounded-xl border bg-card shadow-sm text-center py-10 sm:py-14 px-6 space-y-4">
       {icon && (
@@ -59,7 +66,9 @@ export function EmptyState({ icon, title, description, primary, secondary, terti
         </div>
       )}
       <div className="space-y-1.5">
-        <h3 className="clan-name text-xl font-semibold text-primary">{title}</h3>
+        <h3 className="clan-name text-xl font-semibold text-primary">
+          {title}
+        </h3>
         {description && (
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             {description}

@@ -29,6 +29,7 @@ import {
   type RelPerson,
 } from "@/lib/relations";
 
+import { t } from "@lingui/core/macro";
 /**
  * Tra cứu quan hệ của một người — như bảng Excel gia phả: thông tin cá nhân, vợ/chồng, tổ tiên
  * (cha, ông, cụ, kỵ), mẹ, anh chị em, bác–chú–cô–cậu–dì, và bảng con cháu theo từng đời (tải CSV được).
@@ -68,7 +69,7 @@ export default function Relations() {
           value: p.id,
           label: [
             p.full_name,
-            p.generation !== null ? `Đời ${p.generation - off}` : null,
+            p.generation !== null ? t`Đời ${p.generation - off}` : null,
             born ? `sinh ${born}` : null,
           ]
             .filter(Boolean)
@@ -96,15 +97,18 @@ export default function Relations() {
   const toast = useToast();
   const pdfM = useMutation({
     mutationFn: async () => {
-      if (!report) throw new Error("Chưa có dữ liệu để xuất");
+      if (!report) throw new Error(t`Chưa có dữ liệu để xuất`);
       // @react-pdf/renderer nặng (~1,5MB): chỉ nạp khi bấm xuất.
       const { downloadRelationsPdf } =
         await import("@/lib/pdf/exportRelations");
       return downloadRelationsPdf(clan, report);
     },
-    onSuccess: (r) => toast.success("Đã xuất PDF", { description: r.filename }),
+    onSuccess: (r) =>
+      toast.success(t`Đã xuất PDF`, { description: r.filename }),
     onError: (e) =>
-      toast.error("Không xuất được PDF", { description: (e as Error).message }),
+      toast.error(t`Không xuất được PDF`, {
+        description: (e as Error).message,
+      }),
   });
 
   if (!isMember) return <Navigate to={`/clans/${clan.id}`} replace />;
@@ -131,25 +135,25 @@ export default function Relations() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Tra cứu quan hệ" },
+          { label: t`Tra cứu quan hệ` },
         ]}
       />
       <PageHeader
         icon={<IconTree className="h-7 w-7" />}
-        title="Tra cứu quan hệ"
-        description="Chọn một người để xem tổ tiên, vợ/chồng, anh chị em và toàn bộ con cháu."
+        title={t`Tra cứu quan hệ`}
+        description={t`Chọn một người để xem tổ tiên, vợ/chồng, anh chị em và toàn bộ con cháu.`}
       />
 
       {error && (
         <p className="text-sm text-destructive">{(error as Error).message}</p>
       )}
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
 
       {data && data.persons.length === 0 && (
         <EmptyState
           icon={<IconUsers className="h-10 w-10" />}
-          title="Chưa có ai trong dòng họ"
-          description="Thêm người vào cây gia phả rồi quay lại đây tra cứu."
+          title={t`Chưa có ai trong dòng họ`}
+          description={t`Thêm người vào cây gia phả rồi quay lại đây tra cứu.`}
         />
       )}
 
@@ -164,9 +168,9 @@ export default function Relations() {
                 value={focal.id}
                 onChange={(v) => v && select(v)}
                 options={options}
-                emptyLabel="Chọn người cần xem"
-                filterPlaceholder="Gõ tên để tìm (không cần dấu)"
-                filterLabel="Tìm người cần xem quan hệ"
+                emptyLabel={t`Chọn người cần xem`}
+                filterPlaceholder={t`Gõ tên để tìm (không cần dấu)`}
+                filterLabel={t`Tìm người cần xem quan hệ`}
                 className="h-10 text-sm"
               />
             </div>
@@ -177,12 +181,12 @@ export default function Relations() {
               className="shrink-0"
               onClick={() => pdfM.mutate()}
               disabled={pdfM.isPending || !report}
-              aria-label="Xuất PDF"
-              title="Xuất PDF"
+              aria-label={t`Xuất PDF`}
+              title={t`Xuất PDF`}
             >
               <IconDownload className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">
-                {pdfM.isPending ? "Đang xuất…" : "Xuất PDF"}
+                {pdfM.isPending ? t`Đang xuất…` : t`Xuất PDF`}
               </span>
             </Button>
           </div>
@@ -275,7 +279,7 @@ function RelationsBody({
             to={`/clans/${clanId}/people/${focal.id}`}
             className="shrink-0 text-sm text-primary hover:underline"
           >
-            Mở hồ sơ →
+            {t`Mở hồ sơ →`}
           </Link>
         }
       >
@@ -284,22 +288,22 @@ function RelationsBody({
           <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Đời</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">{t`Đời`}</th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">
-                  Giới tính
+                  {t`Giới tính`}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">
                   Sinh
                 </th>
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Mất</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">{t`Mất`}</th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">
-                  Hưởng thọ
+                  {t`Hưởng thọ`}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">
-                  Quê quán
+                  {t`Quê quán`}
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">
-                  Nơi an táng
+                  {t`Nơi an táng`}
                 </th>
               </tr>
             </thead>
@@ -309,7 +313,7 @@ function RelationsBody({
                   {gen !== null ? gen : "—"}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2">
-                  {focal.gender === "M" ? "Nam" : "Nữ"}
+                  {focal.gender === "M" ? "Nam" : t`Nữ`}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2">
                   {yearOf(focal.birth_date) || "—"}
@@ -319,10 +323,10 @@ function RelationsBody({
                     ? yearOf(focal.death_date)
                     : focal.is_living
                       ? "—"
-                      : "đã mất"}
+                      : t`đã mất`}
                 </td>
                 <td className="whitespace-nowrap px-3 py-2">
-                  {focal.lifespan_years ? `${focal.lifespan_years} tuổi` : "—"}
+                  {focal.lifespan_years ? t`${focal.lifespan_years} tuổi` : "—"}
                 </td>
                 <td className="px-3 py-2">{focal.birth_place || "—"}</td>
                 <td className="px-3 py-2">{focal.burial_place || "—"}</td>
@@ -335,7 +339,7 @@ function RelationsBody({
       <SectionCard
         id="rel-ancestors"
         icon={<IconTree />}
-        title="Tổ tiên (dòng cha)"
+        title={t`Tổ tiên (dòng cha)`}
         bodyClassName="p-0"
       >
         <RelTable
@@ -355,7 +359,7 @@ function RelationsBody({
                   {
                     key: report.mother.id,
                     cells: [
-                      "Mẹ",
+                      t`Mẹ`,
                       <Person key="n" p={report.mother} />,
                       ...personCells(report.mother),
                     ],
@@ -369,7 +373,7 @@ function RelationsBody({
       <SectionCard
         id="rel-spouses"
         icon={<IconUsers />}
-        title={`Vợ / chồng (${spouses.length})`}
+        title={t`Vợ / chồng (${spouses.length})`}
         bodyClassName="p-0"
       >
         <RelTable
@@ -385,7 +389,7 @@ function RelationsBody({
       <SectionCard
         id="rel-siblings"
         icon={<IconUsers />}
-        title={`Anh chị em (${siblings.length})`}
+        title={t`Anh chị em (${siblings.length})`}
         bodyClassName="p-0"
       >
         <RelTable
@@ -395,7 +399,7 @@ function RelationsBody({
             key: sb.id,
             cells: [
               <Person key="n" p={sb} />,
-              sb.gender === "M" ? "Nam" : "Nữ",
+              sb.gender === "M" ? "Nam" : t`Nữ`,
               ...personCells(sb),
             ],
           }))}
@@ -405,7 +409,7 @@ function RelationsBody({
       <SectionCard
         id="rel-uncles"
         icon={<IconUsers />}
-        title={`Bác, chú, cô, cậu, dì (${fatherSiblings.length + motherSiblings.length})`}
+        title={t`Bác, chú, cô, cậu, dì (${fatherSiblings.length + motherSiblings.length})`}
         bodyClassName="p-0"
       >
         <RelTable
@@ -415,18 +419,18 @@ function RelationsBody({
             ...fatherSiblings.map((u) => ({
               key: `f-${u.id}`,
               cells: [
-                "Bên cha",
+                t`Bên cha`,
                 <Person key="n" p={u} />,
-                u.gender === "M" ? "Nam" : "Nữ",
+                u.gender === "M" ? "Nam" : t`Nữ`,
                 ...personCells(u),
               ],
             })),
             ...motherSiblings.map((u) => ({
               key: `m-${u.id}`,
               cells: [
-                "Bên mẹ",
+                t`Bên mẹ`,
                 <Person key="n" p={u} />,
-                u.gender === "M" ? "Nam" : "Nữ",
+                u.gender === "M" ? "Nam" : t`Nữ`,
                 ...personCells(u),
               ],
             })),
@@ -437,13 +441,13 @@ function RelationsBody({
       <SectionCard
         id="rel-descendants"
         icon={<IconTree />}
-        title="Con cháu"
-        action={rows.length > 0 ? `${rows.length} người` : undefined}
+        title={t`Con cháu`}
+        action={rows.length > 0 ? t`${rows.length} người` : undefined}
         bodyClassName="p-0"
       >
         {rows.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">
-            Chưa ghi nhận con cháu.
+            {t`Chưa ghi nhận con cháu.`}
           </p>
         ) : (
           <>
@@ -455,22 +459,22 @@ function RelationsBody({
                 <thead>
                   <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
                     <th className="whitespace-nowrap px-3 py-2 font-medium">
-                      Đời
+                      {t`Đời`}
                     </th>
                     <th className="whitespace-nowrap px-3 py-2 font-medium">
-                      Họ tên
+                      {t`Họ tên`}
                     </th>
                     <th className="whitespace-nowrap px-3 py-2 font-medium">
-                      Năm sinh
+                      {t`Năm sinh`}
                     </th>
                     <th className="whitespace-nowrap px-3 py-2 font-medium">
-                      Vợ / chồng
+                      {t`Vợ / chồng`}
                     </th>
                     <th className="whitespace-nowrap px-3 py-2 font-medium">
-                      Quê quán
+                      {t`Quê quán`}
                     </th>
                     <th className="whitespace-nowrap px-3 py-2 font-medium">
-                      Bố / Mẹ
+                      {t`Bố / Mẹ`}
                     </th>
                   </tr>
                 </thead>

@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { IconChevronDown, IconChevronUp } from "@/components/icons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { t } from "@lingui/core/macro";
 /**
  * Thẻ có tiêu đề bấm được để thu gọn / mở rộng nội dung (mũi tên bên phải).
  * Dùng cho các khối dài ở màn chi tiết để người xem điện thoại cuộn ít hơn.
@@ -36,15 +37,21 @@ export function CollapsibleCard({
           <CardTitle className={titleClassName}>{title}</CardTitle>
           <span
             className="shrink-0 text-muted-foreground"
-            title={open ? "Thu gọn" : "Mở rộng"}
+            title={open ? t`Thu gọn` : t`Mở rộng`}
             aria-hidden="true"
           >
-            {open ? <IconChevronUp className="h-5 w-5" /> : <IconChevronDown className="h-5 w-5" />}
+            {open ? (
+              <IconChevronUp className="h-5 w-5" />
+            ) : (
+              <IconChevronDown className="h-5 w-5" />
+            )}
           </span>
         </button>
         {header}
       </CardHeader>
-      {open && <CardContent className={contentClassName}>{children}</CardContent>}
+      {open && (
+        <CardContent className={contentClassName}>{children}</CardContent>
+      )}
     </Card>
   );
 }

@@ -29,7 +29,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { ViewEditActions } from "@/components/ui/view-edit-actions";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging, useSearchBox } from "@/hooks/useClientPaging";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+  useSearchBox,
+} from "@/hooks/useClientPaging";
 import {
   createCemetery,
   deleteCemetery,
@@ -39,11 +43,10 @@ import {
 } from "@/lib/queries/cemeteries";
 import { unaccent } from "@/lib/unaccent";
 
+import { t } from "@lingui/core/macro";
 /** Trạng thái ngăn kéo: thêm mới, xem (chỉ đọc) hoặc sửa một cơ sở. */
 type PanelState =
-  | { mode: "new" }
-  | { mode: "view" | "edit"; item: CemeteryListItem }
-  | null;
+  { mode: "new" } | { mode: "view" | "edit"; item: CemeteryListItem } | null;
 
 export default function Cemeteries() {
   const { clan } = useClanContext();
@@ -62,15 +65,22 @@ export default function Cemeteries() {
 
   const [panel, setPanel] = useState<PanelState>(null);
   const closePanel = () => setPanel(null);
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["cemeteries", clan.id] });
+  const invalidate = () =>
+    qc.invalidateQueries({ queryKey: ["cemeteries", clan.id] });
 
   // Từ khoá tìm nằm trên URL (?q=) nên bấm Back vẫn giữ nguyên.
-  const { q: search, text: searchText, setText: setSearchText } = useSearchBox();
+  const {
+    q: search,
+    text: searchText,
+    setText: setSearchText,
+  } = useSearchBox();
   const filtered = useMemo(() => {
     const q = unaccent(search.trim()).toLowerCase();
     if (!q) return cemeteries ?? [];
     return (cemeteries ?? []).filter((c) =>
-      unaccent(`${c.name} ${c.address ?? ""}`).toLowerCase().includes(q),
+      unaccent(`${c.name} ${c.address ?? ""}`)
+        .toLowerCase()
+        .includes(q),
     );
   }, [cemeteries, search]);
   const paging = useClientPaging(filtered, 20);
@@ -80,9 +90,10 @@ export default function Cemeteries() {
     onSuccess: () => {
       invalidate();
       closePanel();
-      toast.success("Đã xoá cơ sở");
+      toast.success(t`Đã xoá cơ sở`);
     },
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   return (
@@ -90,41 +101,50 @@ export default function Cemeteries() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Mộ phần & tro cốt", to: `/clans/${clan.id}/graves` },
-          { label: "Cơ sở / nghĩa trang" },
+          { label: t`Mộ phần & tro cốt`, to: `/clans/${clan.id}/graves` },
+          { label: t`Cơ sở / nghĩa trang` },
         ]}
       />
       <PageHeader
         icon={<IconMapPin className="h-7 w-7" />}
-        title="Cơ sở / nghĩa trang"
-        description="Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ phần theo cơ sở."
+        title={t`Cơ sở / nghĩa trang`}
+        description={t`Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ phần theo cơ sở.`}
         actionsBelow
-        actions={canEdit ? <Fab onClick={() => setPanel({ mode: "new" })} label="Thêm cơ sở" /> : undefined}
+        actions={
+          canEdit ? (
+            <Fab
+              onClick={() => setPanel({ mode: "new" })}
+              label={t`Thêm cơ sở`}
+            />
+          ) : undefined
+        }
       />
 
       <SearchInput
-        label="Tìm cơ sở"
+        label={t`Tìm cơ sở`}
         value={searchText}
         onChange={(e) => {
           setSearchText(e.target.value);
         }}
-        placeholder="Tìm theo tên / địa chỉ…"
+        placeholder={t`Tìm theo tên / địa chỉ…`}
       />
 
       {!cemeteries ? (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}
-          title={search.trim() ? "Không có cơ sở nào khớp" : "Chưa có cơ sở nào"}
+          title={
+            search.trim() ? t`Không có cơ sở nào khớp` : t`Chưa có cơ sở nào`
+          }
           description={
             search.trim()
-              ? "Thử bỏ bớt từ khoá."
+              ? t`Thử bỏ bớt từ khoá.`
               : canEdit
-                ? "Bấm nút '+' để tạo cơ sở đầu tiên."
-                : "Chưa có dữ liệu."
+                ? t`Bấm nút '+' để tạo cơ sở đầu tiên.`
+                : t`Chưa có dữ liệu.`
           }
         />
       ) : (
@@ -153,7 +173,7 @@ export default function Cemeteries() {
                   <div className="mt-2 flex flex-wrap justify-end gap-1.5">
                     {c.latitude != null && c.longitude != null && (
                       <Chip tone="info" icon={<IconMapPin />}>
-                        Có vị trí
+                        {t`Có vị trí`}
                       </Chip>
                     )}
                     <Chip tone="violet" icon={<IconGrave />}>
@@ -173,7 +193,7 @@ export default function Cemeteries() {
           totalPages={paging.totalPages}
           total={paging.total}
           pageSize={paging.pageSize}
-          unit="cơ sở"
+          unit={t`cơ sở`}
           onPageChange={paging.setPage}
           pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
           onPageSizeChange={paging.setPageSize}
@@ -181,27 +201,47 @@ export default function Cemeteries() {
       )}
 
       <p className="pt-2 text-xs text-muted-foreground">
-        <Link to={`/clans/${clan.id}/graves`} className="inline-flex items-center gap-1 text-primary hover:underline">
-          <IconGrave className="h-3.5 w-3.5" /> Về danh sách mộ phần
+        <Link
+          to={`/clans/${clan.id}/graves`}
+          className="inline-flex items-center gap-1 text-primary hover:underline"
+        >
+          <IconGrave className="h-3.5 w-3.5" /> {t`Về danh sách mộ phần`}
         </Link>
       </p>
 
       <SidePanel
         open={panel !== null}
-        title={panel?.mode === "new" ? "Thêm cơ sở" : panel?.mode === "edit" ? "Sửa cơ sở" : "Cơ sở / nghĩa trang"}
+        title={
+          panel?.mode === "new"
+            ? t`Thêm cơ sở`
+            : panel?.mode === "edit"
+              ? t`Sửa cơ sở`
+              : t`Cơ sở / nghĩa trang`
+        }
         subtitle={panel && panel.mode !== "new" ? panel.item.name : undefined}
         onClose={closePanel}
         guard={panel?.mode !== "view"}
       >
         {panel && (
           <CemeteryForm
-            key={panel.mode === "new" ? "new" : `${panel.mode}-${panel.item.id}`}
+            key={
+              panel.mode === "new" ? "new" : `${panel.mode}-${panel.item.id}`
+            }
             clanId={clan.id}
             initial={panel.mode === "new" ? null : panel.item}
             readOnly={panel.mode === "view"}
             canEdit={canEdit}
-            onEdit={() => panel.mode === "view" && setPanel({ mode: "edit", item: panel.item })}
-            onCancel={() => setPanel(panel.mode === "edit" ? { mode: "view", item: panel.item } : null)}
+            onEdit={() =>
+              panel.mode === "view" &&
+              setPanel({ mode: "edit", item: panel.item })
+            }
+            onCancel={() =>
+              setPanel(
+                panel.mode === "edit"
+                  ? { mode: "view", item: panel.item }
+                  : null,
+              )
+            }
             onSaved={() => {
               closePanel();
               invalidate();
@@ -210,9 +250,9 @@ export default function Cemeteries() {
               panel.mode === "edit"
                 ? async () => {
                     const ok = await askConfirm({
-                      title: `Xoá cơ sở "${panel.item.name}"?`,
-                      description: "Các mộ đang gắn cơ sở này sẽ bị gỡ liên kết (không xoá mộ).",
-                      confirmLabel: "Xoá",
+                      title: t`Xoá cơ sở "${panel.item.name}"?`,
+                      description: t`Các mộ đang gắn cơ sở này sẽ bị gỡ liên kết (không xoá mộ).`,
+                      confirmLabel: t`Xoá`,
                       destructive: true,
                     });
                     if (ok) deleteM.mutate(panel.item.id);
@@ -249,8 +289,12 @@ function CemeteryForm({
   const toast = useToast();
   const [name, setName] = useState(initial?.name ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
-  const [lat, setLat] = useState(initial?.latitude != null ? String(initial.latitude) : "");
-  const [lng, setLng] = useState(initial?.longitude != null ? String(initial.longitude) : "");
+  const [lat, setLat] = useState(
+    initial?.latitude != null ? String(initial.latitude) : "",
+  );
+  const [lng, setLng] = useState(
+    initial?.longitude != null ? String(initial.longitude) : "",
+  );
   const [notes, setNotes] = useState(initial?.notes ?? "");
 
   const m = useMutation({
@@ -267,20 +311,22 @@ function CemeteryForm({
         : createCemetery(clanId, fields);
     },
     onSuccess: () => {
-      toast.success(initial ? "Đã lưu" : "Đã thêm cơ sở");
+      toast.success(initial ? t`Đã lưu` : t`Đã thêm cơ sở`);
       onSaved();
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   function useCurrentLocation() {
-    if (!navigator.geolocation) return toast.error("Trình duyệt không hỗ trợ định vị");
+    if (!navigator.geolocation)
+      return toast.error(t`Trình duyệt không hỗ trợ định vị`);
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setLat(p.coords.latitude.toFixed(6));
         setLng(p.coords.longitude.toFixed(6));
       },
-      () => toast.error("Không lấy được vị trí (cần cấp quyền)"),
+      () => toast.error(t`Không lấy được vị trí (cần cấp quyền)`),
       { enableHighAccuracy: true, timeout: 10_000 },
     );
   }
@@ -296,29 +342,29 @@ function CemeteryForm({
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-2">
           <Label htmlFor="cem-name" required>
-            Tên cơ sở
+            {t`Tên cơ sở`}
           </Label>
           <Input
             id="cem-name"
             icon={<IconBuildings />}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="vd: Nghĩa trang Lạc Hồng, Chùa Vĩnh Nghiêm"
+            placeholder={t`vd: Nghĩa trang Lạc Hồng, Chùa Vĩnh Nghiêm`}
             maxLength={200}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cem-addr">Địa chỉ</Label>
+          <Label htmlFor="cem-addr">{t`Địa chỉ`}</Label>
           <Input
             id="cem-addr"
             icon={<IconMapPin />}
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="vd: xã …, huyện …, tỉnh …"
+            placeholder={t`vd: xã …, huyện …, tỉnh …`}
           />
         </div>
         <div className="space-y-2">
-          <Label>Toạ độ GPS (tuỳ chọn)</Label>
+          <Label>{t`Toạ độ GPS (tuỳ chọn)`}</Label>
           <div className="flex flex-wrap items-center gap-2">
             <Input
               className="w-32"
@@ -326,7 +372,7 @@ function CemeteryForm({
               inputMode="decimal"
               value={lat}
               onChange={(e) => setLat(e.target.value)}
-              placeholder="vĩ độ"
+              placeholder={t`vĩ độ`}
             />
             <Input
               className="w-32"
@@ -334,16 +380,25 @@ function CemeteryForm({
               inputMode="decimal"
               value={lng}
               onChange={(e) => setLng(e.target.value)}
-              placeholder="kinh độ"
+              placeholder={t`kinh độ`}
             />
-            <Button type="button" variant="outline" data-edit-only onClick={useCurrentLocation}>
-              <IconMapPin className="mr-1 h-4 w-4" /> Lấy vị trí hiện tại
+            <Button
+              type="button"
+              variant="outline"
+              data-edit-only
+              onClick={useCurrentLocation}
+            >
+              <IconMapPin className="mr-1 h-4 w-4" /> {t`Lấy vị trí hiện tại`}
             </Button>
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cem-notes">Ghi chú</Label>
-          <Textarea id="cem-notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <Label htmlFor="cem-notes">{t`Ghi chú`}</Label>
+          <Textarea
+            id="cem-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
         </div>
       </ReadOnlyFieldset>
 
@@ -365,7 +420,7 @@ function CemeteryForm({
         onDelete={onDelete}
         saving={m.isPending}
         canSave={!!name.trim()}
-        saveLabel={initial ? "Lưu" : "Thêm"}
+        saveLabel={initial ? t`Lưu` : t`Thêm`}
       />
     </form>
   );

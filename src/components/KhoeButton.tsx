@@ -6,6 +6,7 @@ import { ShareCardDialog } from "@/components/ShareCardDialog";
 import { Button } from "@/components/ui/button";
 import { getSignedPhotoUrl } from "@/lib/photoUpload";
 
+import { t } from "@lingui/core/macro";
 export interface KhoePerson {
   id: string;
   full_name: string;
@@ -57,7 +58,7 @@ export function KhoeButton({
 
   const genLabel =
     person.generation !== null
-      ? `Đời thứ ${person.generation - genOffset}`
+      ? t`Đời thứ ${person.generation - genOffset}`
       : null;
 
   return (
@@ -71,11 +72,11 @@ export function KhoeButton({
           e.stopPropagation();
           setOpen(true);
         }}
-        aria-label="Khoe — tạo thẻ cá nhân chia sẻ"
-        title="Tạo thẻ cá nhân để khoe lên Zalo/Facebook"
+        aria-label={t`Khoe — tạo thẻ cá nhân chia sẻ`}
+        title={t`Tạo thẻ cá nhân để khoe lên Zalo/Facebook`}
       >
         <IconSparkles className={iconOnly ? "h-4 w-4" : "h-4 w-4 mr-1.5"} />
-        {iconOnly ? null : children ?? "Khoe"}
+        {iconOnly ? null : (children ?? "Khoe")}
       </Button>
 
       <ShareCardDialog

@@ -58,13 +58,21 @@ export function ScrollManager() {
   useLayoutEffect(() => {
     restoring.current = false;
     if (navType === "PUSH") {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "instant" as ScrollBehavior,
+      });
       return;
     }
     if (navType !== "POP") return; // REPLACE: keep the current scroll position.
 
     const target = positions.current.get(location.key) ?? 0;
-    window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
+    window.scrollTo({
+      top: target,
+      left: 0,
+      behavior: "instant" as ScrollBehavior,
+    });
     if (target <= 0) return;
 
     // Trang chưa đủ cao (đang tải): thử lại mỗi khung hình tới khi cuộn được tới đích.
@@ -82,7 +90,11 @@ export function ScrollManager() {
     const tick = () => {
       const maxY = document.documentElement.scrollHeight - window.innerHeight;
       if (maxY >= target) {
-        window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
+        window.scrollTo({
+          top: target,
+          left: 0,
+          behavior: "instant" as ScrollBehavior,
+        });
         // Cho khung hình sau ổn định rồi mới coi là xong (nội dung có thể còn nở thêm).
         raf = requestAnimationFrame(() => {
           positions.current.set(location.key, window.scrollY);
@@ -92,7 +104,11 @@ export function ScrollManager() {
       }
       if (performance.now() - started > 3000) {
         // Hết kiên nhẫn: cuộn xuống cuối trang hiện có, giữ lại đích cũ cho lần quay lại sau.
-        window.scrollTo({ top: maxY, left: 0, behavior: "instant" as ScrollBehavior });
+        window.scrollTo({
+          top: maxY,
+          left: 0,
+          behavior: "instant" as ScrollBehavior,
+        });
         stop();
         return;
       }

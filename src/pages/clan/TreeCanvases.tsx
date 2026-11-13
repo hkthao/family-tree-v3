@@ -6,12 +6,21 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
-import { IconArrowRight, IconCopy, IconPencil, IconTrash, IconTree } from "@/components/icons";
+import {
+  IconArrowRight,
+  IconCopy,
+  IconPencil,
+  IconTrash,
+  IconTree,
+} from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { Pagination } from "@/components/Pagination";
 import { SearchInput } from "@/components/SearchInput";
 import { SidePanel } from "@/components/SidePanel";
-import { NewCanvasPanel, type NewCanvasKind } from "@/components/treeCanvas/NewCanvasPanel";
+import {
+  NewCanvasPanel,
+  type NewCanvasKind,
+} from "@/components/treeCanvas/NewCanvasPanel";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/ui/form-actions";
@@ -29,6 +38,7 @@ import {
   type TreeCanvas,
 } from "@/lib/queries/treeCanvas";
 
+import { t } from "@lingui/core/macro";
 const PAGE_SIZE_OPTIONS = [6, 12, 24];
 
 /**
@@ -60,7 +70,9 @@ export default function TreeCanvases() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = (data ?? []).filter((c) => !q || c.name.toLowerCase().includes(q));
+    const list = (data ?? []).filter(
+      (c) => !q || c.name.toLowerCase().includes(q),
+    );
     return [...list].sort((a, b) =>
       sort === "name"
         ? a.name.localeCompare(b.name, "vi")
@@ -70,22 +82,30 @@ export default function TreeCanvases() {
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const curPage = Math.min(page, totalPages);
-  const pageItems = filtered.slice((curPage - 1) * pageSize, curPage * pageSize);
+  const pageItems = filtered.slice(
+    (curPage - 1) * pageSize,
+    curPage * pageSize,
+  );
 
   async function createNew(rawName: string, kind: NewCanvasKind) {
     const name = rawName.trim();
-    if (!name) return toast.error("Hãy đặt tên cho cây mới");
+    if (!name) return toast.error(t`Hãy đặt tên cho cây mới`);
     setCreateBusy(true);
     try {
       let nodeStyles: Record<string, { hidden: boolean }> = {};
       if (kind === "blank") {
         const tree = await getTreeData(clan.id);
-        nodeStyles = Object.fromEntries(tree.persons.map((p) => [p.id, { hidden: true }]));
+        nodeStyles = Object.fromEntries(
+          tree.persons.map((p) => [p.id, { hidden: true }]),
+        );
       }
-      const c = await createTreeCanvas(clan.id, name, { ...DEFAULT_LAYOUT, nodeStyles });
+      const c = await createTreeCanvas(clan.id, name, {
+        ...DEFAULT_LAYOUT,
+        nodeStyles,
+      });
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       setCreating(false);
-      toast.success("Đã tạo cây mới");
+      toast.success(t`Đã tạo cây mới`);
       navigate(`${base}/tree-canvases/${c.id}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Không tạo được");
@@ -97,13 +117,13 @@ export default function TreeCanvases() {
   async function rename() {
     if (!editing) return;
     const name = editName.trim();
-    if (!name) return toast.error("Tên cây không được để trống");
+    if (!name) return toast.error(t`Tên cây không được để trống`);
     setBusyId(editing.id);
     try {
       await updateTreeCanvas(editing.id, { name });
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
       setEditing(null);
-      toast.success("Đã đổi tên");
+      toast.success(t`Đã đổi tên`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Không đổi tên được");
     } finally {
@@ -114,9 +134,13 @@ export default function TreeCanvases() {
   async function duplicate(c: TreeCanvas) {
     setBusyId(c.id);
     try {
-      await createTreeCanvas(clan.id, `${c.name} (bản sao)`.slice(0, 80), c.layout);
+      await createTreeCanvas(
+        clan.id,
+        t`${c.name} (bản sao)`.slice(0, 80),
+        c.layout,
+      );
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
-      toast.success("Đã nhân bản");
+      toast.success(t`Đã nhân bản`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Không nhân bản được");
     } finally {
@@ -126,9 +150,9 @@ export default function TreeCanvases() {
 
   async function remove(c: TreeCanvas) {
     const ok = await confirm({
-      title: `Xoá "${c.name}"?`,
-      description: "Bố cục đã lưu sẽ bị xoá vĩnh viễn.",
-      confirmLabel: "Xoá",
+      title: t`Xoá "${c.name}"?`,
+      description: t`Bố cục đã lưu sẽ bị xoá vĩnh viễn.`,
+      confirmLabel: t`Xoá`,
       destructive: true,
     });
     if (!ok) return;
@@ -136,7 +160,7 @@ export default function TreeCanvases() {
     try {
       await deleteTreeCanvas(c.id);
       await qc.invalidateQueries({ queryKey: ["tree-canvases", clan.id] });
-      toast.success("Đã xoá");
+      toast.success(t`Đã xoá`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Không xoá được");
     } finally {
@@ -148,31 +172,41 @@ export default function TreeCanvases() {
     <div className="space-y-4">
       <Breadcrumb
         items={[
-          { label: "Dòng họ", to: "/clans" },
+          { label: t`Dòng họ`, to: "/clans" },
           { label: clan.name, to: base },
-          { label: "Canvas phả đồ" },
+          { label: t`Canvas phả đồ` },
         ]}
       />
       <PageHeader
         icon={<IconTree className="h-6 w-6" />}
-        title="Canvas phả đồ"
-        description="Các cây tự thiết kế của dòng họ: kéo thả thẻ, nối đường, chọn nền rồi xuất PDF."
+        title={t`Canvas phả đồ`}
+        description={t`Các cây tự thiết kế của dòng họ: kéo thả thẻ, nối đường, chọn nền rồi xuất PDF.`}
       />
 
-      {isLoading && <p className="text-sm text-muted-foreground">Đang tải…</p>}
+      {isLoading && (
+        <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>
+      )}
       {error && (
         <p className="text-sm text-destructive">
-          Không tải được danh sách: {error instanceof Error ? error.message : "lỗi không rõ"}
+          {t`Không tải được danh sách:`}{" "}
+          {error instanceof Error ? error.message : "lỗi không rõ"}
         </p>
       )}
 
       {data && data.length === 0 && (
         <EmptyState
           icon={<IconTree className="h-10 w-10" />}
-          title="Chưa có cây nào"
-          description="Tạo cây đầu tiên để tự sắp xếp phả đồ theo ý, hoặc mở cây tự xếp để xem thử."
-          primary={canEdit ? { label: "Tạo cây mới", onClick: () => setCreating(true) } : null}
-          secondary={{ label: "Xem cây tự xếp", to: `${base}/tree-canvases/auto` }}
+          title={t`Chưa có cây nào`}
+          description={t`Tạo cây đầu tiên để tự sắp xếp phả đồ theo ý, hoặc mở cây tự xếp để xem thử.`}
+          primary={
+            canEdit
+              ? { label: t`Tạo cây mới`, onClick: () => setCreating(true) }
+              : null
+          }
+          secondary={{
+            label: t`Xem cây tự xếp`,
+            to: `${base}/tree-canvases/auto`,
+          }}
         />
       )}
 
@@ -180,20 +214,23 @@ export default function TreeCanvases() {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="min-w-0 sm:flex-1">
             <SearchInput
-              label="Tìm cây"
+              label={t`Tìm cây`}
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Tìm theo tên cây…"
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder={t`Tìm theo tên cây…`}
             />
           </div>
           <Select
-            aria-label="Sắp xếp"
+            aria-label={t`Sắp xếp`}
             value={sort}
             onChange={(e) => setSort(e.target.value as "recent" | "name")}
             className="h-10 w-auto text-sm"
           >
-            <option value="recent">Mới cập nhật</option>
-            <option value="name">Tên A → Z</option>
+            <option value="recent">{t`Mới cập nhật`}</option>
+            <option value="name">{t`Tên A → Z`}</option>
           </Select>
         </div>
       )}
@@ -205,30 +242,51 @@ export default function TreeCanvases() {
       )}
 
       {data && data.length > 0 && total > 0 && (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-testid="canvas-list">
+        <ul
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+          data-testid="canvas-list"
+        >
           {pageItems.map((c) => {
-            const people = Object.keys(c.layout.positions).length - c.layout.extras.length;
+            const people =
+              Object.keys(c.layout.positions).length - c.layout.extras.length;
             const shown = Math.max(
               0,
-              people - Object.values(c.layout.nodeStyles).filter((s) => s.hidden).length,
+              people -
+                Object.values(c.layout.nodeStyles).filter((s) => s.hidden)
+                  .length,
             );
             return (
-              <li key={c.id} className="flex flex-col rounded-xl border bg-card shadow-sm">
+              <li
+                key={c.id}
+                className="flex flex-col rounded-xl border bg-card shadow-sm"
+              >
                 <Link
                   to={`${base}/tree-canvases/${c.id}`}
                   className="flex-1 space-y-1 rounded-t-xl p-4 hover:bg-secondary/40"
                 >
-                  <h2 className="line-clamp-2 text-base font-semibold">{c.name}</h2>
+                  <h2 className="line-clamp-2 text-base font-semibold">
+                    {c.name}
+                  </h2>
                   <p className="text-xs text-muted-foreground">
                     Cập nhật {formatRelative(c.updated_at) ?? "—"}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {shown} người · {c.layout.extras.length} thẻ/chữ thêm · {c.layout.links.length} đường nối
+                    {shown} người · {c.layout.extras.length} thẻ/chữ thêm ·{" "}
+                    {c.layout.links.length} đường nối
                   </p>
                 </Link>
                 <div className="flex items-center justify-end gap-2 border-t p-2">
-                  <Button asChild size="sm" variant="outline" className="w-10 px-0">
-                    <Link to={`${base}/tree-canvases/${c.id}`} title="Mở" aria-label={`Mở ${c.name}`}>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="w-10 px-0"
+                  >
+                    <Link
+                      to={`${base}/tree-canvases/${c.id}`}
+                      title={t`Mở`}
+                      aria-label={t`Mở ${c.name}`}
+                    >
                       <IconArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -238,10 +296,13 @@ export default function TreeCanvases() {
                         size="sm"
                         variant="outline"
                         className="w-10 px-0"
-                        title="Đổi tên"
-                        aria-label={`Đổi tên ${c.name}`}
+                        title={t`Đổi tên`}
+                        aria-label={t`Đổi tên ${c.name}`}
                         disabled={busyId === c.id}
-                        onClick={() => { setEditing(c); setEditName(c.name); }}
+                        onClick={() => {
+                          setEditing(c);
+                          setEditName(c.name);
+                        }}
                       >
                         <IconPencil className="h-4 w-4" />
                       </Button>
@@ -249,8 +310,8 @@ export default function TreeCanvases() {
                         size="sm"
                         variant="outline"
                         className="w-10 px-0"
-                        title="Nhân bản"
-                        aria-label={`Nhân bản ${c.name}`}
+                        title={t`Nhân bản`}
+                        aria-label={t`Nhân bản ${c.name}`}
                         disabled={busyId === c.id}
                         onClick={() => duplicate(c)}
                       >
@@ -260,8 +321,8 @@ export default function TreeCanvases() {
                         size="sm"
                         variant="destructive-outline"
                         className="w-10 px-0"
-                        title="Xoá"
-                        aria-label={`Xoá ${c.name}`}
+                        title={t`Xoá`}
+                        aria-label={t`Xoá ${c.name}`}
                         disabled={busyId === c.id}
                         onClick={() => remove(c)}
                       >
@@ -282,27 +343,41 @@ export default function TreeCanvases() {
           totalPages={totalPages}
           total={total}
           pageSize={pageSize}
-          unit="cây"
+          unit={t`cây`}
           onPageChange={setPage}
           pageSizeOptions={PAGE_SIZE_OPTIONS}
-          onPageSizeChange={(n) => { setPageSize(n); setPage(1); }}
+          onPageSizeChange={(n) => {
+            setPageSize(n);
+            setPage(1);
+          }}
         />
       )}
 
       <SidePanel
         open={!!editing}
-        title="Đổi tên cây"
+        title={t`Đổi tên cây`}
         onClose={() => setEditing(null)}
         guard={false}
       >
         <div className="flex flex-1 flex-col space-y-3">
           <label className="block space-y-1 text-sm">
-            <span className="font-medium">Tên cây</span>
-            <Input value={editName} maxLength={80} autoFocus onChange={(e) => setEditName(e.target.value)} />
+            <span className="font-medium">{t`Tên cây`}</span>
+            <Input
+              value={editName}
+              maxLength={80}
+              autoFocus
+              onChange={(e) => setEditName(e.target.value)}
+            />
           </label>
           <FormActions>
-            <Button variant="outline" onClick={() => setEditing(null)}>Huỷ</Button>
-            <Button onClick={rename} disabled={busyId === editing?.id}>Lưu</Button>
+            <Button
+              variant="outline"
+              onClick={() => setEditing(null)}
+            >{t`Huỷ`}</Button>
+            <Button
+              onClick={rename}
+              disabled={busyId === editing?.id}
+            >{t`Lưu`}</Button>
           </FormActions>
         </div>
       </SidePanel>
@@ -314,7 +389,9 @@ export default function TreeCanvases() {
         onCreate={createNew}
       />
 
-      {canEdit && <Fab onClick={() => setCreating(true)} label="Tạo cây mới" />}
+      {canEdit && (
+        <Fab onClick={() => setCreating(true)} label={t`Tạo cây mới`} />
+      )}
     </div>
   );
 }

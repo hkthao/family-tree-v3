@@ -14,6 +14,7 @@ import {
   type DocArticle,
 } from "./docs/registry";
 
+import { t } from "@lingui/core/macro";
 /**
  * In-app documentation. Two modes driven by the URL:
  *
@@ -33,11 +34,7 @@ export default function Docs() {
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-3">
-        {article ? (
-          <ArticleView article={article} />
-        ) : (
-          <Index />
-        )}
+        {article ? <ArticleView article={article} /> : <Index />}
       </main>
     </div>
   );
@@ -64,15 +61,18 @@ function Index() {
     <div className="space-y-4">
       <PageHeader
         icon={<IconBook className="h-7 w-7" />}
-        title="Trợ giúp"
-        description="Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được)."
+        title={t`Trợ giúp`}
+        description={t`Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được).`}
       />
 
       <div className="flex gap-2">
         <span className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm text-primary-foreground">
-          Bài viết
+          {t`Bài viết`}
         </span>
-        <Link to="/huong-dan-video" className="rounded-full border bg-card px-4 py-1.5 text-sm hover:border-primary">
+        <Link
+          to="/huong-dan-video"
+          className="rounded-full border bg-card px-4 py-1.5 text-sm hover:border-primary"
+        >
           Video
         </Link>
       </div>
@@ -83,7 +83,7 @@ function Index() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tìm theo từ khoá…"
+          placeholder={t`Tìm theo từ khoá…`}
           className="w-full h-12 pl-10 pr-3 rounded-md border border-input bg-background text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
@@ -139,7 +139,7 @@ function ArticleView({ article }: { article: DocArticle }) {
       <div className="space-y-4">
         <Breadcrumb
           items={[
-            { label: "Hướng dẫn", to: "/docs" },
+            { label: t`Hướng dẫn`, to: "/docs" },
             { label: article.title },
           ]}
         />
@@ -161,7 +161,7 @@ function ArticleView({ article }: { article: DocArticle }) {
                 to={`/docs/${prev.slug}`}
                 className="rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors"
               >
-                <p className="text-xs text-muted-foreground">← Trước</p>
+                <p className="text-xs text-muted-foreground">{t`← Trước`}</p>
                 <p className="text-sm font-medium truncate">{prev.title}</p>
               </Link>
             ) : (
@@ -172,7 +172,7 @@ function ArticleView({ article }: { article: DocArticle }) {
                 to={`/docs/${next.slug}`}
                 className="rounded-md border bg-card px-3 py-2 hover:border-primary transition-colors text-right"
               >
-                <p className="text-xs text-muted-foreground">Tiếp →</p>
+                <p className="text-xs text-muted-foreground">{t`Tiếp →`}</p>
                 <p className="text-sm font-medium truncate">{next.title}</p>
               </Link>
             ) : (
@@ -187,12 +187,12 @@ function ArticleView({ article }: { article: DocArticle }) {
 
 function SidebarNav({ currentSlug }: { currentSlug: string }) {
   return (
-    <nav aria-label="Mục lục">
+    <nav aria-label={t`Mục lục`}>
       <Link
         to="/docs"
         className="block text-sm font-semibold mb-3 hover:underline"
       >
-        ← Mục lục
+        {t`← Mục lục`}
       </Link>
       {DOCS_SECTIONS.map((section) => (
         <div key={section.label} className="mb-4">

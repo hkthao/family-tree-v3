@@ -14,6 +14,7 @@ import {
 } from "@/lib/queries/historical";
 import { unaccent } from "@/lib/unaccent";
 
+import { t } from "@lingui/core/macro";
 const PAGE_SIZE = 12;
 
 export type HistoricalSort =
@@ -104,12 +105,12 @@ export function HistoricalClansSection({
   const paged = rows.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
   return (
-    <section aria-label="Lịch sử" className="space-y-3">
+    <section aria-label={t`Lịch sử`} className="space-y-3">
       {present.length > 1 ? (
         <div
           className="flex flex-wrap gap-1.5"
           role="group"
-          aria-label="Lọc theo nhóm"
+          aria-label={t`Lọc theo nhóm`}
         >
           {[null, ...present].map((c) => (
             <button
@@ -134,10 +135,10 @@ export function HistoricalClansSection({
           icon={<IconSearch className="h-10 w-10" />}
           title={
             search
-              ? `Không có mục lịch sử nào khớp "${search}"`
-              : "Chưa có mục lịch sử"
+              ? t`Không có mục lịch sử nào khớp "${search}"`
+              : t`Chưa có mục lịch sử`
           }
-          description="Thử bỏ bớt từ khoá hoặc chọn nhóm khác."
+          description={t`Thử bỏ bớt từ khoá hoặc chọn nhóm khác.`}
         />
       ) : view === "grid" ? (
         <ul className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
@@ -158,7 +159,7 @@ export function HistoricalClansSection({
           totalPages={totalPages}
           total={rows.length}
           pageSize={PAGE_SIZE}
-          unit="mục"
+          unit={t`mục`}
           onPageChange={setPage}
         />
       )}
@@ -169,7 +170,7 @@ export function HistoricalClansSection({
 function meta(clan: HistoricalClanSummary): string {
   return clan.historical_category
     ? HISTORICAL_CATEGORY_LABEL[clan.historical_category]
-    : "Lịch sử";
+    : t`Lịch sử`;
 }
 
 const CATEGORY_CHIP: Record<HistoricalCategory, string> = {

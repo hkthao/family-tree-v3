@@ -27,6 +27,8 @@ import {
   type SubEventType,
 } from "@/lib/queries/subscriptions";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const LEAD_OPTIONS = [
   { value: 14, label: "14 ngày trước" },
   { value: 7, label: "7 ngày trước" },
@@ -64,9 +66,7 @@ export function SubscriptionSettings({ clanId }: Props) {
     enabled: !!userId,
   });
 
-  const current = subs?.find(
-    (s) => s.scope === "clan" && s.target_id === null,
-  );
+  const current = subs?.find((s) => s.scope === "clan" && s.target_id === null);
 
   const [channels, setChannels] = useState<SubChannel[]>(DEFAULT_CHANNELS);
   const [types, setTypes] = useState<SubEventType[]>(DEFAULT_EVENT_TYPES);
@@ -103,10 +103,10 @@ export function SubscriptionSettings({ clanId }: Props) {
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
       });
-      toast.success("Đã lưu cài đặt theo dõi");
+      toast.success(t`Đã lưu cài đặt theo dõi`);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   const toggleM = useMutation({
@@ -118,10 +118,10 @@ export function SubscriptionSettings({ clanId }: Props) {
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
       });
-      toast.success(enabled ? "Đã bật theo dõi" : "Đã tạm tắt theo dõi");
+      toast.success(enabled ? t`Đã bật theo dõi` : t`Đã tạm tắt theo dõi`);
     },
     onError: (e) =>
-      toast.error("Không cập nhật được", {
+      toast.error(t`Không cập nhật được`, {
         description: (e as Error).message,
       }),
   });
@@ -135,10 +135,10 @@ export function SubscriptionSettings({ clanId }: Props) {
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
       });
-      toast.success("Đã huỷ theo dõi");
+      toast.success(t`Đã huỷ theo dõi`);
     },
     onError: (e) =>
-      toast.error("Không huỷ được", { description: (e as Error).message }),
+      toast.error(t`Không huỷ được`, { description: (e as Error).message }),
   });
 
   if (!userId) return null;
@@ -156,8 +156,8 @@ export function SubscriptionSettings({ clanId }: Props) {
             }`}
           >
             {current.is_enabled
-              ? "Đang theo dõi sự kiện dòng họ"
-              : "Đã tạm tắt theo dõi"}
+              ? t`Đang theo dõi sự kiện dòng họ`
+              : t`Đã tạm tắt theo dõi`}
           </span>
           <Button
             size="sm"
@@ -168,12 +168,12 @@ export function SubscriptionSettings({ clanId }: Props) {
             {current.is_enabled ? (
               <>
                 <IconBellOff className="h-4 w-4 mr-1.5" />
-                Tạm tắt
+                {t`Tạm tắt`}
               </>
             ) : (
               <>
                 <IconBell className="h-4 w-4 mr-1.5" />
-                Bật lại
+                {t`Bật lại`}
               </>
             )}
           </Button>
@@ -183,22 +183,22 @@ export function SubscriptionSettings({ clanId }: Props) {
             disabled={deleteM.isPending}
             onClick={async () => {
               const ok = await confirm({
-                title: "Huỷ theo dõi sự kiện dòng họ này?",
-                description: "Bạn sẽ không nhận email nhắc nữa.",
-                confirmLabel: "Huỷ theo dõi",
+                title: t`Huỷ theo dõi sự kiện dòng họ này?`,
+                description: t`Bạn sẽ không nhận email nhắc nữa.`,
+                confirmLabel: t`Huỷ theo dõi`,
                 destructive: true,
               });
               if (ok) deleteM.mutate();
             }}
           >
             <IconTrash className="h-4 w-4 mr-1" />
-            Huỷ theo dõi
+            {t`Huỷ theo dõi`}
           </Button>
         </div>
       )}
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Loại sự kiện</legend>
+        <legend className="text-sm font-medium">{t`Loại sự kiện`}</legend>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {TYPE_OPTIONS.map((opt) => (
             <label
@@ -224,7 +224,7 @@ export function SubscriptionSettings({ clanId }: Props) {
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Báo trước</legend>
+        <legend className="text-sm font-medium">{t`Báo trước`}</legend>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           {LEAD_OPTIONS.map((opt) => (
             <label
@@ -250,7 +250,7 @@ export function SubscriptionSettings({ clanId }: Props) {
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium">Kênh nhận</legend>
+        <legend className="text-sm font-medium">{t`Kênh nhận`}</legend>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <label className="flex items-center gap-2 cursor-pointer text-sm">
             <input
@@ -269,7 +269,7 @@ export function SubscriptionSettings({ clanId }: Props) {
           </label>
           <label
             className="flex items-center gap-2 cursor-not-allowed text-sm text-muted-foreground"
-            title="SMS sẽ thêm sau"
+            title={t`SMS sẽ thêm sau`}
           >
             <input
               type="checkbox"
@@ -277,7 +277,7 @@ export function SubscriptionSettings({ clanId }: Props) {
               checked={false}
               className="h-5 w-5 shrink-0"
             />
-            SMS (sắp có)
+            {t`SMS (sắp có)`}
           </label>
         </div>
       </fieldset>
@@ -296,11 +296,11 @@ export function SubscriptionSettings({ clanId }: Props) {
         <IconCheck className="h-4 w-4 mr-1.5" />
         {current
           ? saveM.isPending
-            ? "Đang lưu…"
-            : "Lưu thay đổi"
+            ? t`Đang lưu…`
+            : t`Lưu thay đổi`
           : saveM.isPending
-            ? "Đang bật…"
-            : "Bật theo dõi"}
+            ? t`Đang bật…`
+            : t`Bật theo dõi`}
       </Button>
 
       <BranchSubsSection clanId={clanId} />
@@ -322,10 +322,16 @@ function BranchSubsSection({ clanId }: { clanId: string }) {
 
   return (
     <fieldset className="space-y-2 pt-2 border-t">
-      <legend className="text-sm font-medium">Theo dõi riêng theo chi</legend>
+      <legend className="text-sm font-medium">{t`Theo dõi riêng theo chi`}</legend>
       <p className="text-xs text-muted-foreground">
-        Bật để chỉ nhận thông báo sự kiện của một chi cụ thể. Dùng kèm hoặc
-        thay cho cài đặt toàn dòng họ ở trên.
+        <Trans>
+          <Trans>
+            <Trans>
+              Bật để chỉ nhận thông báo sự kiện của một chi cụ thể. Dùng kèm
+              hoặc thay cho cài đặt toàn dòng họ ở trên.
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
       <ul className="divide-y rounded-md border">
         {branches.map((b) => (

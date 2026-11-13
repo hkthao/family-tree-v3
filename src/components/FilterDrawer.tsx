@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from "react";
 import { IconX } from "@/components/icons";
 import { ActionArea, Button } from "@/components/ui/button";
 
+import { t } from "@lingui/core/macro";
 /**
  * Ngăn kéo bên phải chứa bộ lọc / tuỳ chọn của một màn hình. Mở bằng icon phễu
  * (xem CollapsibleFilters), nên danh sách/cây phía sau không bị các ô chọn
@@ -37,7 +38,7 @@ export function FilterDrawer({
       <button
         type="button"
         tabIndex={-1}
-        aria-label="Đóng"
+        aria-label={t`Đóng`}
         onClick={onClose}
         className={`absolute inset-0 bg-black/40 transition-opacity ${open ? "opacity-100" : "opacity-0"}`}
       />
@@ -54,24 +55,31 @@ export function FilterDrawer({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t`Đóng`}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
           >
             <IconX className="h-5 w-5" />
           </button>
         </header>
         <ActionArea>
-          <div className="flex-1 space-y-3 overflow-y-auto p-4">{open ? children : null}</div>
-        <footer className="flex gap-2 border-t p-3 shrink-0">
-          {onReset && (
-            <Button type="button" variant="outline" className="flex-1" onClick={onReset}>
-              Đặt lại
+          <div className="flex-1 space-y-3 overflow-y-auto p-4">
+            {open ? children : null}
+          </div>
+          <footer className="flex gap-2 border-t p-3 shrink-0">
+            {onReset && (
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={onReset}
+              >
+                {t`Đặt lại`}
+              </Button>
+            )}
+            <Button type="button" className="flex-1" onClick={onClose}>
+              Xong
             </Button>
-          )}
-          <Button type="button" className="flex-1" onClick={onClose}>
-            Xong
-          </Button>
-        </footer>
+          </footer>
         </ActionArea>
       </aside>
     </div>

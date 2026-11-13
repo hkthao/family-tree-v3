@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
 /**
  * Chip góc màn báo "đang offline — đọc từ cache".
  *
@@ -91,7 +92,7 @@ export function OfflineIndicator() {
     >
       <span aria-hidden="true">●</span>{" "}
       <span className="text-muted-foreground">
-        Đang offline — đọc từ cache
+        {t`Đang offline — đọc từ cache`}
       </span>
     </div>
   );

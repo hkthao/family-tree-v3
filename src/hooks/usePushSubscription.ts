@@ -5,6 +5,7 @@ import {
   upsertMyPushSubscription,
 } from "@/lib/queries/push";
 
+import { t } from "@lingui/core/macro";
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? "";
 
 type PermissionState = NotificationPermission | "unsupported";
@@ -87,7 +88,7 @@ export function usePushSubscription(): UsePushSubscriptionResult {
   const enable = useCallback(async () => {
     setError(null);
     if (!VAPID_PUBLIC_KEY) {
-      setError("VITE_VAPID_PUBLIC_KEY chưa cấu hình");
+      setError(t`VITE_VAPID_PUBLIC_KEY chưa cấu hình`);
       return;
     }
     try {
@@ -118,7 +119,7 @@ export function usePushSubscription(): UsePushSubscriptionResult {
       const p256dh = json.keys?.p256dh ?? "";
       const auth = json.keys?.auth ?? "";
       if (!p256dh || !auth) {
-        throw new Error("Subscription thiếu key — thử lại");
+        throw new Error(t`Subscription thiếu key — thử lại`);
       }
       await upsertMyPushSubscription({
         endpoint: sub.endpoint,
@@ -154,10 +155,7 @@ export function usePushSubscription(): UsePushSubscriptionResult {
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
-function detectSupport():
-  | "supported"
-  | "unsupported"
-  | "ios-not-standalone" {
+function detectSupport(): "supported" | "unsupported" | "ios-not-standalone" {
   if (typeof window === "undefined") return "unsupported";
   if (!("serviceWorker" in navigator)) return "unsupported";
   if (!("PushManager" in window)) return "unsupported";
@@ -168,8 +166,7 @@ function detectSupport():
   // Detection uses standalone matchMedia + Safari-specific
   // navigator.standalone — no UA sniff.
   const isIOS =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-    !("MSStream" in window);
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
   if (isIOS) {
     const isStandalone =
       ("standalone" in navigator &&

@@ -33,6 +33,7 @@ import {
 import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 const CATEGORIES = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
 
 export default function Customs() {
@@ -50,10 +51,12 @@ export default function Customs() {
   const [debounced, setDebounced] = useUrlState("q", "");
   const [catRaw, setCat] = useUrlState("loai", "");
   const [regionRaw, setRegion] = useUrlState("vung", "");
-  const category = (CATEGORIES.includes(catRaw as CustomCategory) ? catRaw : "") as
-    | CustomCategory
-    | "";
-  const region = CUSTOM_REGIONS.includes(regionRaw as (typeof CUSTOM_REGIONS)[number])
+  const category = (
+    CATEGORIES.includes(catRaw as CustomCategory) ? catRaw : ""
+  ) as CustomCategory | "";
+  const region = CUSTOM_REGIONS.includes(
+    regionRaw as (typeof CUSTOM_REGIONS)[number],
+  )
     ? regionRaw
     : "";
 
@@ -89,113 +92,123 @@ export default function Customs() {
 
   return (
     <CustomsShell>
-        <PageHeader
-          icon={<IconBook className="h-7 w-7" />}
-          title="Sổ tay Văn hoá"
-          description="Tra cứu phong tục, nghi lễ, tín ngưỡng các vùng miền Việt Nam."
+      <PageHeader
+        icon={<IconBook className="h-7 w-7" />}
+        title={t`Sổ tay Văn hoá`}
+        description={t`Tra cứu phong tục, nghi lễ, tín ngưỡng các vùng miền Việt Nam.`}
+      />
+      {isAdmin && (
+        <FabGroup
+          label={t`Thêm`}
+          actions={[
+            {
+              label: t`Thêm bài`,
+              icon: <IconPlus />,
+              to: "/so-tay/new",
+              panel: { id: "custom-new" },
+            },
+            {
+              label: t`Nhập Markdown`,
+              icon: <IconUpload />,
+              to: "/so-tay/import",
+              panel: { id: "custom-import" },
+            },
+          ]}
         />
-        {isAdmin && (
-          <FabGroup
-            label="Thêm"
-            actions={[
-              { label: "Thêm bài", icon: <IconPlus />, to: "/so-tay/new", panel: { id: "custom-new" } },
-              { label: "Nhập Markdown", icon: <IconUpload />, to: "/so-tay/import", panel: { id: "custom-import" } },
-            ]}
-          />
-        )}
+      )}
 
-        {/* Chủ đề + vùng nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm). */}
-        <div className="space-y-2">
-          <CollapsibleFilters
-            activeCount={(category ? 1 : 0) + (region ? 1 : 0)}
-            onReset={() => {
-              setCat("");
-              setRegion("");
-            }}
-            search={(toggle) => (
-              <SearchInput
-                label="Tìm phong tục"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder='Gõ tình huống cũng được — vd "nhà mới", "có em bé"…'
-                rightSlot={toggle}
-              />
-            )}
-          >
-            <div className="flex flex-col gap-3">
-              <Select
-                value={category}
-                onChange={(e) => setCat(e.target.value)}
-                aria-label="Lọc theo chủ đề"
-                icon={<IconTag />}
-                className="h-11 w-full text-base"
-              >
-                <option value="">Mọi chủ đề</option>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {CUSTOM_CATEGORY_LABEL[c]}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                value={region}
-                onChange={(e) => setRegion(e.target.value)}
-                aria-label="Lọc theo vùng"
-                icon={<IconMapPin />}
-                className="h-11 w-full text-base"
-              >
-                <option value="">Mọi vùng</option>
-                {CUSTOM_REGIONS.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </CollapsibleFilters>
-        </div>
+      {/* Chủ đề + vùng nằm trong ngăn kéo bên phải (phễu trong ô tìm kiếm). */}
+      <div className="space-y-2">
+        <CollapsibleFilters
+          activeCount={(category ? 1 : 0) + (region ? 1 : 0)}
+          onReset={() => {
+            setCat("");
+            setRegion("");
+          }}
+          search={(toggle) => (
+            <SearchInput
+              label={t`Tìm phong tục`}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder='Gõ tình huống cũng được — vd "nhà mới", "có em bé"…'
+              rightSlot={toggle}
+            />
+          )}
+        >
+          <div className="flex flex-col gap-3">
+            <Select
+              value={category}
+              onChange={(e) => setCat(e.target.value)}
+              aria-label={t`Lọc theo chủ đề`}
+              icon={<IconTag />}
+              className="h-11 w-full text-base"
+            >
+              <option value="">{t`Mọi chủ đề`}</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {CUSTOM_CATEGORY_LABEL[c]}
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              aria-label={t`Lọc theo vùng`}
+              icon={<IconMapPin />}
+              className="h-11 w-full text-base"
+            >
+              <option value="">{t`Mọi vùng`}</option>
+              {CUSTOM_REGIONS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </CollapsibleFilters>
+      </div>
 
-        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
 
-        {entries && entries.length === 0 && (
-          <EmptyState
-            icon={<IconSearch className="h-10 w-10" />}
-            title={
-              debounced || category || region
-                ? "Không có bài nào khớp"
-                : "Chưa có nội dung"
-            }
-            description={
-              debounced || category || region
-                ? "Thử bỏ bớt bộ lọc hoặc từ khoá."
-                : "Sổ tay đang được biên soạn."
-            }
-          />
-        )}
+      {entries && entries.length === 0 && (
+        <EmptyState
+          icon={<IconSearch className="h-10 w-10" />}
+          title={
+            debounced || category || region
+              ? t`Không có bài nào khớp`
+              : t`Chưa có nội dung`
+          }
+          description={
+            debounced || category || region
+              ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.`
+              : t`Sổ tay đang được biên soạn.`
+          }
+        />
+      )}
 
-        {all.length > 0 && (
-          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {paged.map((e) => (
-              <CustomCard key={e.id} entry={e} />
-            ))}
-          </ul>
-        )}
+      {all.length > 0 && (
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {paged.map((e) => (
+            <CustomCard key={e.id} entry={e} />
+          ))}
+        </ul>
+      )}
 
-        {all.length > PAGE_SIZE && (
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={all.length}
-            pageSize={PAGE_SIZE}
-            unit="bài"
-            onPageChange={(p) => setPage(p <= 1 ? "" : String(p))}
-          />
-        )}
+      {all.length > PAGE_SIZE && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={all.length}
+          pageSize={PAGE_SIZE}
+          unit={t`bài`}
+          onPageChange={(p) => setPage(p <= 1 ? "" : String(p))}
+        />
+      )}
 
-        <p className="flex items-center gap-1.5 pt-2 text-xs text-muted-foreground">
-          <IconHelp className="h-3.5 w-3.5 shrink-0" />
-          Nội dung mang tính tham khảo; phong tục có thể khác nhau theo vùng.
-        </p>
+      <p className="flex items-center gap-1.5 pt-2 text-xs text-muted-foreground">
+        <IconHelp className="h-3.5 w-3.5 shrink-0" />
+        {t`Nội dung mang tính tham khảo; phong tục có thể khác nhau theo vùng.`}
+      </p>
     </CustomsShell>
   );
 }
@@ -232,7 +245,7 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
               </h2>
               {entry.status !== "published" && (
                 <span className="mt-0.5 shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">
-                  {entry.status === "draft" ? "Nháp" : "Chờ duyệt"}
+                  {entry.status === "draft" ? t`Nháp` : t`Chờ duyệt`}
                 </span>
               )}
             </div>
@@ -254,7 +267,10 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
         {/* Chân card: độ tin cậy · mức bắt buộc · ngày tạo */}
         <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-2.5 text-[11px] text-muted-foreground">
           {entry.reliability != null && (
-            <span className="inline-flex items-center gap-1" title="Độ tin cậy">
+            <span
+              className="inline-flex items-center gap-1"
+              title={t`Độ tin cậy`}
+            >
               <span className="text-accent" aria-hidden>
                 {"★".repeat(entry.reliability)}
               </span>
@@ -272,7 +288,10 @@ export function CustomCard({ entry }: { entry: CustomEntry }) {
               {CUSTOM_MANDATORY_LABEL[entry.mandatory_level]}
             </span>
           )}
-          <span className="ml-auto inline-flex shrink-0 items-center gap-1" title="Ngày tạo">
+          <span
+            className="ml-auto inline-flex shrink-0 items-center gap-1"
+            title={t`Ngày tạo`}
+          >
             <IconCalendar className="h-3.5 w-3.5" />
             {created}
           </span>

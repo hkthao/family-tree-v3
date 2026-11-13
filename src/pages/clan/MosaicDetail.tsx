@@ -53,6 +53,8 @@ import {
   type MosaicTile,
 } from "@/lib/queries/mosaics";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 export default function MosaicDetail() {
   const { mosaicId = "" } = useParams();
   const { clan } = useClanContext();
@@ -139,7 +141,7 @@ export default function MosaicDetail() {
     },
     onError: (e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(tilesKey, ctx.prev);
-      toast.error("Không di chuyển được mảnh", {
+      toast.error(t`Không di chuyển được mảnh`, {
         description: (e as Error).message,
       });
     },
@@ -159,10 +161,10 @@ export default function MosaicDetail() {
     onSuccess: () => {
       setSelected(null);
       refresh();
-      toast.success("Đã xoá mảnh");
+      toast.success(t`Đã xoá mảnh`);
     },
     onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const hideTileM = useMutation({
@@ -176,12 +178,12 @@ export default function MosaicDetail() {
     },
   });
 
-  if (isLoading) return <p className="text-muted-foreground">Đang tải…</p>;
+  if (isLoading) return <p className="text-muted-foreground">{t`Đang tải…`}</p>;
   if (!mosaic) {
     return (
       <EmptyState
         icon={<IconCamera className="h-10 w-10" />}
-        title="Không tìm thấy bức ảnh"
+        title={t`Không tìm thấy bức ảnh`}
       />
     );
   }
@@ -191,7 +193,7 @@ export default function MosaicDetail() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Ảnh ghép", to: `/clans/${clan.id}/mosaics` },
+          { label: t`Ảnh ghép`, to: `/clans/${clan.id}/mosaics` },
           { label: mosaic.title },
         ]}
       />
@@ -201,7 +203,7 @@ export default function MosaicDetail() {
         description={
           mosaic.description ||
           `${tiles.length}/${mosaic.slots} mảnh · mỗi người góp tối đa ${mosaic.max_per_member}${
-            mosaic.status === "closed" ? " · đã đóng" : ""
+            mosaic.status === "closed" ? t` · đã đóng` : ""
           }`
         }
       />
@@ -223,15 +225,15 @@ export default function MosaicDetail() {
             ) : (
               <IconGrid className="mr-1.5 h-4 w-4" />
             )}
-            {arrange ? "Xong" : "Sắp xếp"}
+            {arrange ? "Xong" : t`Sắp xếp`}
           </Button>
         )}
-        <SegmentedControl ariaLabel="Kiểu hiển thị">
+        <SegmentedControl ariaLabel={t`Kiểu hiển thị`}>
           <SegmentedButton
             active={variant === "grid"}
             onClick={() => pickVariant("grid")}
           >
-            Lưới
+            {t`Lưới`}
           </SegmentedButton>
           <SegmentedButton
             active={variant === "puzzle"}
@@ -248,7 +250,7 @@ export default function MosaicDetail() {
               onClick={() => setEditing(true)}
             >
               <IconPencil className="mr-1.5 h-4 w-4" />
-              Sửa
+              {t`Sửa`}
             </Button>
             <Button
               size="sm"
@@ -260,16 +262,16 @@ export default function MosaicDetail() {
               ) : (
                 <IconUnlock className="mr-1.5 h-4 w-4" />
               )}
-              {mosaic.status === "open" ? "Hoàn tất" : "Mở lại"}
+              {mosaic.status === "open" ? t`Hoàn tất` : t`Mở lại`}
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={async () => {
                 const ok = await confirm({
-                  title: `Xoá bức "${mosaic.title}"?`,
-                  description: "Toàn bộ mảnh trong bức sẽ bị xoá.",
-                  confirmLabel: "Xoá",
+                  title: t`Xoá bức "${mosaic.title}"?`,
+                  description: t`Toàn bộ mảnh trong bức sẽ bị xoá.`,
+                  confirmLabel: t`Xoá`,
                   destructive: true,
                 });
                 if (!ok) return;
@@ -279,7 +281,7 @@ export default function MosaicDetail() {
               }}
             >
               <IconTrash className="mr-1.5 h-4 w-4" />
-              Xoá
+              {t`Xoá`}
             </Button>
           </>
         )}
@@ -289,8 +291,8 @@ export default function MosaicDetail() {
         <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
           Kéo một mảnh thả vào ô khác để di chuyển
           {canEdit
-            ? " (thả lên mảnh khác sẽ đổi chỗ)"
-            : " (chỉ kéo được mảnh của bạn vào ô trống)"}
+            ? t` (thả lên mảnh khác sẽ đổi chỗ)`
+            : t` (chỉ kéo được mảnh của bạn vào ô trống)`}
           .
         </p>
       )}
@@ -313,7 +315,7 @@ export default function MosaicDetail() {
 
       <SidePanel
         open={editing}
-        title="Sửa bức ảnh"
+        title={t`Sửa bức ảnh`}
         subtitle={mosaic.title}
         onClose={() => setEditing(false)}
         guard
@@ -327,7 +329,7 @@ export default function MosaicDetail() {
               setEditing(false);
               qc.invalidateQueries({ queryKey: mosaicKey });
               qc.invalidateQueries({ queryKey: ["mosaics", clan.id] });
-              toast.success("Đã lưu bức ảnh");
+              toast.success(t`Đã lưu bức ảnh`);
             }}
           />
         )}
@@ -335,7 +337,7 @@ export default function MosaicDetail() {
 
       <SidePanel
         open={adding}
-        title="Thêm mảnh của tôi"
+        title={t`Thêm mảnh của tôi`}
         subtitle={mosaic.title}
         onClose={() => setAdding(false)}
         guard
@@ -371,7 +373,7 @@ export default function MosaicDetail() {
             )}
             {selected.status === "hidden" && (
               <p className="text-sm text-muted-foreground">
-                Mảnh này đang bị ẩn với người khác.
+                {t`Mảnh này đang bị ẩn với người khác.`}
               </p>
             )}
             <FormActions>
@@ -381,7 +383,7 @@ export default function MosaicDetail() {
                   variant="outline"
                   onClick={() => hideTileM.mutate(selected)}
                 >
-                  {selected.status === "hidden" ? "Hiện mảnh" : "Ẩn mảnh"}
+                  {selected.status === "hidden" ? t`Hiện mảnh` : t`Ẩn mảnh`}
                 </Button>
               )}
               {canMove(selected) && (
@@ -390,15 +392,15 @@ export default function MosaicDetail() {
                   variant="outline"
                   onClick={async () => {
                     const ok = await confirm({
-                      title: "Xoá mảnh này?",
-                      confirmLabel: "Xoá",
+                      title: t`Xoá mảnh này?`,
+                      confirmLabel: t`Xoá`,
                       destructive: true,
                     });
                     if (ok) deleteTileM.mutate(selected);
                   }}
                 >
                   <IconTrash className="mr-1.5 h-4 w-4" />
-                  Xoá
+                  {t`Xoá`}
                 </Button>
               )}
             </FormActions>
@@ -452,16 +454,16 @@ function AddTileForm({
       let path: string;
       let personId: string | null = null;
       if (mode === "avatar") {
-        if (!avatar) throw new Error("Bạn chưa có ảnh avatar");
+        if (!avatar) throw new Error(t`Bạn chưa có ảnh avatar`);
         path = avatar.path;
         personId = avatar.personId;
       } else if (mode === "url") {
         const u = url.trim();
         if (!/^https:\/\/\S+$/i.test(u))
-          throw new Error("Link ảnh phải bắt đầu bằng https://");
+          throw new Error(t`Link ảnh phải bắt đầu bằng https://`);
         path = u;
       } else {
-        if (!file) throw new Error("Chọn một ảnh");
+        if (!file) throw new Error(t`Chọn một ảnh`);
         path = (await uploadMosaicPhoto(clanId, userId, file)).path;
       }
       await addMosaicTile(mosaicId, {
@@ -472,7 +474,7 @@ function AddTileForm({
       });
     },
     onSuccess: () => {
-      toast.success("Đã thêm mảnh vào bức ảnh");
+      toast.success(t`Đã thêm mảnh vào bức ảnh`);
       onDone();
     },
     onError: (e) => setErr((e as Error).message),
@@ -487,7 +489,11 @@ function AddTileForm({
         saveM.mutate();
       }}
     >
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Nguồn ảnh">
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label={t`Nguồn ảnh`}
+      >
         {avatar && (
           <Button
             type="button"
@@ -495,7 +501,7 @@ function AddTileForm({
             variant={mode === "avatar" ? "default" : "outline"}
             onClick={() => setMode("avatar")}
           >
-            Avatar của tôi
+            {t`Avatar của tôi`}
           </Button>
         )}
         <Button
@@ -504,7 +510,7 @@ function AddTileForm({
           variant={mode === "file" ? "default" : "outline"}
           onClick={() => setMode("file")}
         >
-          Tải ảnh lên
+          {t`Tải ảnh lên`}
         </Button>
         <Button
           type="button"
@@ -512,7 +518,7 @@ function AddTileForm({
           variant={mode === "url" ? "default" : "outline"}
           onClick={() => setMode("url")}
         >
-          Dán link ảnh
+          {t`Dán link ảnh`}
         </Button>
       </div>
 
@@ -525,11 +531,17 @@ function AddTileForm({
         <div className="space-y-1.5">
           {!avatar && (
             <p className="text-xs text-muted-foreground">
-              Chọn vị trí của bạn trên cây và có ảnh avatar để dùng nó làm mảnh
-              mặc định.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Chọn vị trí của bạn trên cây và có ảnh avatar để dùng nó làm
+                    mảnh mặc định.
+                  </Trans>
+                </Trans>
+              </Trans>
             </p>
           )}
-          <Label htmlFor="tile-file">Ảnh</Label>
+          <Label htmlFor="tile-file">{t`Ảnh`}</Label>
           <input
             id="tile-file"
             type="file"
@@ -538,13 +550,19 @@ function AddTileForm({
             className="block w-full text-sm"
           />
           <p className="text-xs text-muted-foreground">
-            Ảnh được tự cắt vuông và nén nhỏ (≈360 px, dưới 40 KB) để tiết kiệm
-            dung lượng.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Ảnh được tự cắt vuông và nén nhỏ (≈360 px, dưới 40 KB) để tiết
+                  kiệm dung lượng.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
         </div>
       ) : (
         <div className="space-y-1.5">
-          <Label htmlFor="tile-url">Link ảnh (https://…)</Label>
+          <Label htmlFor="tile-url">{t`Link ảnh (https://…)`}</Label>
           <Input
             id="tile-url"
             icon={<IconLink />}
@@ -553,7 +571,7 @@ function AddTileForm({
             placeholder="https://…/anh.jpg"
           />
           <p className="text-xs text-muted-foreground">
-            Ảnh giữ ở nơi khác; nếu chủ link xoá ảnh thì mảnh sẽ trống.
+            {t`Ảnh giữ ở nơi khác; nếu chủ link xoá ảnh thì mảnh sẽ trống.`}
           </p>
         </div>
       )}
@@ -567,14 +585,14 @@ function AddTileForm({
       )}
 
       <div className="space-y-1.5">
-        <Label htmlFor="tile-caption">Chú thích (tuỳ chọn)</Label>
+        <Label htmlFor="tile-caption">{t`Chú thích (tuỳ chọn)`}</Label>
         <Input
           id="tile-caption"
           icon={<IconPencil />}
           placeholder={
             mode === "avatar" && avatar
-              ? `Bỏ trống sẽ dùng tên: ${avatar.name}`
-              : "VD: Cả nhà ngày Tết 2026"
+              ? t`Bỏ trống sẽ dùng tên: ${avatar.name}`
+              : t`VD: Cả nhà ngày Tết 2026`
           }
           value={caption}
           maxLength={200}
@@ -585,10 +603,10 @@ function AddTileForm({
       {err && <p className="text-sm text-destructive">{err}</p>}
       <FormActions>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Huỷ
+          {t`Huỷ`}
         </Button>
         <Button type="submit" disabled={saveM.isPending}>
-          {saveM.isPending ? "Đang xử lý…" : "Thêm"}
+          {saveM.isPending ? t`Đang xử lý…` : t`Thêm`}
         </Button>
       </FormActions>
     </form>
@@ -636,7 +654,7 @@ function EditMosaicForm({
     },
     onSuccess: onSaved,
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
@@ -648,11 +666,11 @@ function EditMosaicForm({
       }}
     >
       <div className="space-y-1.5">
-        <Label htmlFor="edit-title">Tên bức ảnh</Label>
+        <Label htmlFor="edit-title">{t`Tên bức ảnh`}</Label>
         <Input
           id="edit-title"
           icon={<IconCamera />}
-          placeholder="VD: Đại gia đình Tết 2027"
+          placeholder={t`VD: Đại gia đình Tết 2027`}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -660,17 +678,17 @@ function EditMosaicForm({
       <IconTextarea
         id="edit-desc"
         icon={<IconScroll />}
-        label="Mô tả (tuỳ chọn)"
-        placeholder="Vài dòng giới thiệu bức ảnh…"
+        label={t`Mô tả (tuỳ chọn)`}
+        placeholder={t`Vài dòng giới thiệu bức ảnh…`}
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
       <div className="space-y-1.5">
-        <Label htmlFor="edit-slots">Số mảnh của bức (số ô ghép)</Label>
+        <Label htmlFor="edit-slots">{t`Số mảnh của bức (số ô ghép)`}</Label>
         <Input
           id="edit-slots"
           icon={<IconGrid />}
-          placeholder="VD: 24 (tối đa 150)"
+          placeholder={t`VD: 24 (tối đa 150)`}
           type="number"
           min={minSlots}
           max={MAX_SLOTS}
@@ -682,11 +700,11 @@ function EditMosaicForm({
         </p>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="edit-cols">Số cột</Label>
+        <Label htmlFor="edit-cols">{t`Số cột`}</Label>
         <Input
           id="edit-cols"
           icon={<IconGrid />}
-          placeholder="VD: 6 (từ 3 đến 12)"
+          placeholder={t`VD: 6 (từ 3 đến 12)`}
           type="number"
           min={3}
           max={12}
@@ -695,7 +713,7 @@ function EditMosaicForm({
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="edit-per">Số mảnh mỗi người được góp</Label>
+        <Label htmlFor="edit-per">{t`Số mảnh mỗi người được góp`}</Label>
         <Input
           id="edit-per"
           icon={<IconUsers />}
@@ -715,18 +733,18 @@ function EditMosaicForm({
           className="mt-1 h-4 w-4 shrink-0 accent-primary"
         />
         <span>
-          <span className="font-medium">Hiển thị ở màn Tổng quan</span>
+          <span className="font-medium">{t`Hiển thị ở màn Tổng quan`}</span>
           <span className="block text-sm text-muted-foreground">
-            Không chọn bức nào thì Tổng quan lấy bức đầu tiên trong danh sách.
+            {t`Không chọn bức nào thì Tổng quan lấy bức đầu tiên trong danh sách.`}
           </span>
         </span>
       </label>
       <FormActions>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Huỷ
+          {t`Huỷ`}
         </Button>
         <Button type="submit" disabled={saveM.isPending}>
-          Lưu
+          {t`Lưu`}
         </Button>
       </FormActions>
     </form>

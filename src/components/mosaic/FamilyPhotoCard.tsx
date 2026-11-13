@@ -8,6 +8,8 @@ import { MosaicBoard } from "@/components/mosaic/MosaicBoard";
 import { MosaicFrame } from "@/components/mosaic/MosaicFrame";
 import { listMosaicSummaries, listMosaicTiles } from "@/lib/queries/mosaics";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Thẻ "Ảnh gia đình" ở màn Tổng quan: bức ghép được chọn hiển thị (hoặc bức đầu danh sách) (dải ảnh xem trước + số
  * mảnh). Chưa có bức nào thì chỉ admin/biên tập thấy lời mời tạo; thành viên thường không
@@ -51,14 +53,14 @@ export function FamilyPhotoCard({
     <SectionCard
       id="family-photo"
       icon={<IconCamera />}
-      title="Ảnh gia đình"
-      action={latest ? `${data.length} bức` : undefined}
+      title={t`Ảnh gia đình`}
+      action={latest ? t`${data.length} bức` : undefined}
       footer={
         <Link
           to={latest ? `${base}/${latest.id}` : base}
           className="shrink-0 text-sm text-primary hover:underline"
         >
-          {latest ? "Xem bức ảnh →" : "Tạo bức ảnh →"}
+          {latest ? t`Xem bức ảnh →` : t`Tạo bức ảnh →`}
         </Link>
       }
     >
@@ -84,14 +86,20 @@ export function FamilyPhotoCard({
             <span className="text-muted-foreground">
               {" "}
               · {latest.tileCount}/{latest.slots} mảnh
-              {latest.status === "open" ? " · đang nhận ảnh" : ""}
+              {latest.status === "open" ? t` · đang nhận ảnh` : ""}
             </span>
           </p>
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Mỗi thành viên góp một tấm ảnh, ghép thành bức tranh chung của dòng
-          họ. Tạo bức đầu tiên để cả nhà cùng góp.
+          <Trans>
+            <Trans>
+              <Trans>
+                Mỗi thành viên góp một tấm ảnh, ghép thành bức tranh chung của
+                dòng họ. Tạo bức đầu tiên để cả nhà cùng góp.
+              </Trans>
+            </Trans>
+          </Trans>
         </p>
       )}
     </SectionCard>

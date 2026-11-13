@@ -47,6 +47,8 @@ import { getKinshipIndex } from "@/lib/queries/kinship";
 import { getPerson } from "@/lib/queries/persons";
 import { matchesName } from "@/lib/unaccent";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const PICKER_CAP = 1000;
 const SOLO_VALUE = "__solo__";
 
@@ -66,8 +68,8 @@ const SPOUSE_ORDINALS = [
 ];
 
 function spouseRankLabel(spouseGender: "M" | "F", index: number): string {
-  const noun = spouseGender === "F" ? "vợ" : "chồng";
-  const ord = SPOUSE_ORDINALS[index] ?? `thứ ${index + 1}`;
+  const noun = spouseGender === "F" ? t`vợ` : t`chồng`;
+  const ord = SPOUSE_ORDINALS[index] ?? t`thứ ${index + 1}`;
   return `${noun} ${ord}`;
 }
 
@@ -152,12 +154,15 @@ export function AddChildForm({
     const matched = clanIndex.ordered
       .filter((p) => !excluded.has(p.id))
       .filter((p) => matchesName(p.full_name, existingFilter));
-    return { candidates: matched.slice(0, PICKER_CAP), totalMatched: matched.length };
+    return {
+      candidates: matched.slice(0, PICKER_CAP),
+      totalMatched: matched.length,
+    };
   }, [clanIndex, focal, rels, existingFilter]);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!focal) throw new Error("Thiếu thông tin");
+      if (!focal) throw new Error(t`Thiếu thông tin`);
 
       let partnerB: { id: string; gender: "M" | "F" } | null = null;
       if (otherParent !== SOLO_VALUE) {
@@ -172,7 +177,7 @@ export function AddChildForm({
       });
 
       if (mode === "existing") {
-        if (!existingId) throw new Error("Chưa chọn người để gắn");
+        if (!existingId) throw new Error(t`Chưa chọn người để gắn`);
         await assignPersonToFamily(existingId, family.id);
         return { id: existingId };
       }
@@ -210,16 +215,16 @@ export function AddChildForm({
       await invalidateClanData(queryClient, clanId);
       const label =
         mode === "existing"
-          ? clanIndex?.byId.get(existingId ?? "")?.full_name ?? "người đã chọn"
+          ? (clanIndex?.byId.get(existingId ?? "")?.full_name ??
+            "người đã chọn")
           : fullName.trim();
-      toast.success(
-        mode === "existing" ? "Đã gắn làm con" : "Đã thêm con",
-        { description: label },
-      );
+      toast.success(mode === "existing" ? t`Đã gắn làm con` : t`Đã thêm con`, {
+        description: label,
+      });
       onSaved();
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   return (
@@ -246,24 +251,24 @@ export function AddChildForm({
       }}
       className="space-y-6"
     >
-      <SegmentedControl ariaLabel="Chế độ thêm con" className="w-full">
+      <SegmentedControl ariaLabel={t`Chế độ thêm con`} className="w-full">
         <SegmentedButton
           className="flex-1 px-3"
           active={mode === "new"}
           onClick={() => setMode("new")}
         >
-          Người mới
+          {t`Người mới`}
         </SegmentedButton>
         <SegmentedButton
           className="flex-1 px-3"
           active={mode === "existing"}
           onClick={() => setMode("existing")}
         >
-          Chọn người đã có
+          {t`Chọn người đã có`}
         </SegmentedButton>
       </SegmentedControl>
       <div className="space-y-2">
-        <Label htmlFor="other_parent">Con chung với ai?</Label>
+        <Label htmlFor="other_parent">{t`Con chung với ai?`}</Label>
         <Select
           id="other_parent"
           icon={<IconUsers />}
@@ -285,24 +290,30 @@ export function AddChildForm({
             </option>
           ))}
         </Select>
-        {rels?.spouses && rels.spouses.length > 0 &&
+        {rels?.spouses &&
+          rels.spouses.length > 0 &&
           otherParent === SOLO_VALUE && (
             <Alert>
               <AlertDescription>
                 {focal?.full_name ?? "Người này"} đã có{" "}
                 {rels.spouses.length === 1
-                  ? `vợ/chồng (${rels.spouses[0].full_name})`
-                  : `${rels.spouses.length} vợ/chồng`}
-                {" "}— chọn để con được gắn đúng. Chỉ giữ "đơn thân" nếu
-                người con này thực sự không cùng cha mẹ với những anh
-                chị em hiện có.
+                  ? t`vợ/chồng (${rels.spouses[0].full_name})`
+                  : t`${rels.spouses.length} vợ/chồng`}{" "}
+                — chọn để con được gắn đúng. Chỉ giữ "đơn thân" nếu người con
+                này thực sự không cùng cha mẹ với những anh chị em hiện có.
               </AlertDescription>
             </Alert>
           )}
         <p className="text-sm text-muted-foreground">
-          Ví dụ: người chồng có 2 đời vợ — muốn nhập con của vợ hai thì
-          chọn đúng vợ hai ở trên. Nếu vợ/chồng đó chưa có trong cây,
-          hãy thêm bằng "Thêm vợ/chồng" trước.
+          <Trans>
+            <Trans>
+              <Trans>
+                Ví dụ: người chồng có 2 đời vợ — muốn nhập con của vợ hai thì
+                chọn đúng vợ hai ở trên. Nếu vợ/chồng đó chưa có trong cây, hãy
+                thêm bằng "Thêm vợ/chồng" trước.
+              </Trans>
+            </Trans>
+          </Trans>
         </p>
       </div>
 
@@ -310,7 +321,7 @@ export function AddChildForm({
         <>
           <div className="space-y-2">
             <Label htmlFor="full_name" required>
-              Tên con
+              {t`Tên con`}
             </Label>
             <Input
               id="full_name"
@@ -321,12 +332,12 @@ export function AddChildForm({
               maxLength={200}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Vd: Nguyễn Văn C"
+              placeholder={t`Vd: Nguyễn Văn C`}
             />
           </div>
 
           <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">Giới tính</legend>
+            <legend className="text-base font-medium mb-2">{t`Giới tính`}</legend>
             <div className="flex gap-6">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -344,7 +355,7 @@ export function AddChildForm({
                   onChange={() => setGender("F")}
                   className="h-4 w-4 accent-primary"
                 />
-                <span>Nữ</span>
+                <span>{t`Nữ`}</span>
               </label>
             </div>
           </fieldset>
@@ -356,9 +367,9 @@ export function AddChildForm({
           />
 
           <CalendarDateInput
-            label="Ngày sinh (tuỳ chọn)"
+            label={t`Ngày sinh (tuỳ chọn)`}
             idPrefix="birth"
-            helperText="Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
+            helperText={t`Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
             value={birth}
             onChange={setBirth}
           />
@@ -375,12 +386,12 @@ export function AddChildForm({
               }}
               className="h-5 w-5 accent-primary shrink-0"
             />
-            <span>Đã mất</span>
+            <span>{t`Đã mất`}</span>
           </label>
 
           {!isLiving && (
             <CalendarDateInput
-              label="Ngày mất (nếu đã mất)"
+              label={t`Ngày mất (nếu đã mất)`}
               idPrefix="death"
               value={death}
               onChange={(next) => {
@@ -388,34 +399,40 @@ export function AddChildForm({
                 if (next.parts.year || next.parts.month || next.parts.day)
                   setIsLiving(false);
               }}
-              helperText="Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+              helperText={t`Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
             />
           )}
         </>
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            Nối một người đã có sẵn trong cây làm con của người này (thay vì
-            tạo mới) — tránh trùng người.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Nối một người đã có sẵn trong cây làm con của người này (thay
+                  vì tạo mới) — tránh trùng người.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
-          <Label>Tìm người đã có trong dòng họ</Label>
+          <Label>{t`Tìm người đã có trong dòng họ`}</Label>
           <Input
             icon={<IconSearch />}
             value={existingFilter}
             onChange={(e) => setExistingFilter(e.target.value)}
-            placeholder="Gõ tên để lọc (không cần dấu)"
+            placeholder={t`Gõ tên để lọc (không cần dấu)`}
           />
           {clanIndex && totalMatched > 0 && (
             <p className="text-xs text-muted-foreground">
               {totalMatched > PICKER_CAP
-                ? `Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
-                : `Hiện ${totalMatched} kết quả.`}
+                ? t`Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
+                : t`Hiện ${totalMatched} kết quả.`}
             </p>
           )}
           <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
             {candidates.length === 0 && (
               <li className="px-3 py-2 text-muted-foreground italic">
-                {clanIndex ? "Không có người nào khớp." : "Đang tải…"}
+                {clanIndex ? t`Không có người nào khớp.` : t`Đang tải…`}
               </li>
             )}
             {candidates.map((p) => {
@@ -446,7 +463,7 @@ export function AddChildForm({
                       </div>
                       {hasOtherFamily && (
                         <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                          Đang có bố/mẹ khác — sẽ ghi đè khi gắn.
+                          {t`Đang có bố/mẹ khác — sẽ ghi đè khi gắn.`}
                         </p>
                       )}
                     </div>
@@ -459,11 +476,11 @@ export function AddChildForm({
             })}
           </ul>
           <p className="text-xs text-muted-foreground">
-            Người đã chọn sẽ trở thành con của family hiện tại
-            ({focal?.full_name}
+            Người đã chọn sẽ trở thành con của family hiện tại (
+            {focal?.full_name}
             {otherParent !== SOLO_VALUE
               ? ` + ${rels?.spouses.find((s) => s.id === otherParent)?.full_name ?? ""}`
-              : " — đơn thân"}
+              : t` — đơn thân`}
             ). Nếu trước đó họ đã có bố/mẹ, dữ liệu cũ sẽ bị thay thế.
           </p>
         </div>
@@ -478,13 +495,9 @@ export function AddChildForm({
       )}
 
       <FormActions>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           <IconX className="h-4 w-4 mr-1.5" />
-          Hủy
+          {t`Hủy`}
         </Button>
         <Button
           type="submit"
@@ -496,11 +509,11 @@ export function AddChildForm({
           }
         >
           {mutation.isPending ? (
-            "Đang lưu…"
+            t`Đang lưu…`
           ) : (
             <>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu
+              {t`Lưu`}
             </>
           )}
         </Button>
@@ -535,15 +548,15 @@ export default function AddChild() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
           { label: focal?.full_name ?? "Người", to: back.split("?")[0] },
-          { label: "Thêm con" },
+          { label: t`Thêm con` },
         ]}
       />
 
       <PageHeader
         icon={<IconUserPlus className="h-7 w-7" />}
-        title="Thêm con"
+        title={t`Thêm con`}
         description={focal ? `Cho ${focal.full_name}` : undefined}
       />
 

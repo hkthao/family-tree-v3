@@ -9,6 +9,7 @@ import { canEditClan } from "@/hooks/useClanContext";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { ReactNode } from "react";
 
+import { t } from "@lingui/core/macro";
 /**
  * Phần ruột của khung trò chuyện, dùng chung cho khung dock bên phải (máy
  * tính) và ngăn kéo toàn màn hình (điện thoại). Phiên chat nằm trong hook
@@ -36,8 +37,8 @@ export function AiChatView({
         variant="ghost"
         size="icon"
         onClick={chat.cycleFont}
-        aria-label="Đổi cỡ chữ"
-        title="Đổi cỡ chữ"
+        aria-label={t`Đổi cỡ chữ`}
+        title={t`Đổi cỡ chữ`}
         className="h-9 w-9 text-sm font-semibold"
       >
         A{chat.fontStep > 0 ? "+" : ""}
@@ -46,8 +47,8 @@ export function AiChatView({
         variant="ghost"
         size="icon"
         onClick={chat.clearHistory}
-        aria-label="Xoá lịch sử trò chuyện"
-        title="Xoá lịch sử trò chuyện"
+        aria-label={t`Xoá lịch sử trò chuyện`}
+        title={t`Xoá lịch sử trò chuyện`}
         disabled={!chat.turns.length}
         className="h-9 w-9"
       >
@@ -70,7 +71,7 @@ export function AiChatView({
           <IconSparkles className="h-5 w-5 shrink-0 text-primary" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-base font-semibold leading-tight">
-              Trợ lý dòng họ
+              {t`Trợ lý dòng họ`}
             </p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="truncate">{clan.name}</span>

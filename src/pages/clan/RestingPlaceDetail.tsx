@@ -33,10 +33,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  isClanAdmin,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import { createEvent } from "@/lib/queries/events";
 import { getOrCreateRestingPlaceShareLink } from "@/lib/queries/share-links";
-import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS, uploadRestingPlacePhoto } from "@/lib/photoUpload";
+import {
+  getSignedPhotoUrlMap,
+  PHOTO_URL_STALE_MS,
+  uploadRestingPlacePhoto,
+} from "@/lib/photoUpload";
 import {
   addPhoto,
   addRelocation,
@@ -49,6 +57,8 @@ import {
   RESTING_PLACE_STATUS_LABEL,
 } from "@/lib/queries/restingPlaces";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 // Giới hạn ảnh / nơi an nghỉ — chặn phình dung lượng storage Supabase.
 const MAX_GRAVE_PHOTOS = 12;
 
@@ -71,8 +81,13 @@ export default function RestingPlaceDetail() {
   });
 
   const { data: photoUrls } = useQuery({
-    queryKey: ["resting-place-photos", graveId, (place?.photos ?? []).map((p) => p.path).join(",")],
-    queryFn: () => getSignedPhotoUrlMap((place?.photos ?? []).map((p) => p.path)),
+    queryKey: [
+      "resting-place-photos",
+      graveId,
+      (place?.photos ?? []).map((p) => p.path).join(","),
+    ],
+    queryFn: () =>
+      getSignedPhotoUrlMap((place?.photos ?? []).map((p) => p.path)),
     enabled: !!place && place.photos.length > 0,
     staleTime: PHOTO_URL_STALE_MS,
   });
@@ -83,31 +98,38 @@ export default function RestingPlaceDetail() {
   const uploadM = useMutation({
     mutationFn: async (file: File) => {
       const sort = place?.photos.length ?? 0;
-      if (sort >= MAX_GRAVE_PHOTOS) throw new Error(`Tối đa ${MAX_GRAVE_PHOTOS} ảnh mỗi nơi an nghỉ.`);
+      if (sort >= MAX_GRAVE_PHOTOS)
+        throw new Error(t`Tối đa ${MAX_GRAVE_PHOTOS} ảnh mỗi nơi an nghỉ.`);
       const { path } = await uploadRestingPlacePhoto(clan.id, graveId!, file);
       await addPhoto(graveId!, path, null, sort);
     },
     onSuccess: () => {
       invalidate();
-      toast.success("Đã thêm ảnh");
+      toast.success(t`Đã thêm ảnh`);
     },
-    onError: (e) => toast.error("Không thêm được ảnh", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không thêm được ảnh`, {
+        description: (e as Error).message,
+      }),
   });
 
   const removePhotoM = useMutation({
-    mutationFn: ({ id, path }: { id: string; path: string }) => removePhoto(id, path),
+    mutationFn: ({ id, path }: { id: string; path: string }) =>
+      removePhoto(id, path),
     onSuccess: invalidate,
-    onError: (e) => toast.error("Không xoá được ảnh", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được ảnh`, { description: (e as Error).message }),
   });
 
   const deleteM = useMutation({
     mutationFn: () => deleteRestingPlace(graveId!),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["resting-places", clan.id] });
-      toast.success("Đã xoá");
+      toast.success(t`Đã xoá`);
       navigate(`/clans/${clan.id}/graves`);
     },
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   // Đặt nhắc tảo mộ / chạp họ — tạo 1 sự kiện âm-lịch lặp hằng năm gắn
@@ -128,20 +150,23 @@ export default function RestingPlaceDetail() {
         is_yearly: true,
       }),
     onSuccess: () => {
-      toast.success("Đã đặt nhắc tảo mộ / chạp họ", {
-        description: "Cả họ theo dõi sẽ được nhắc trước (xem ở Sự kiện).",
+      toast.success(t`Đã đặt nhắc tảo mộ / chạp họ`, {
+        description: t`Cả họ theo dõi sẽ được nhắc trước (xem ở Sự kiện).`,
       });
       setReminderOpen(false);
       setRTitle("");
       setRMonth("");
       setRDay("");
     },
-    onError: (e) => toast.error("Không đặt được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không đặt được`, { description: (e as Error).message }),
   });
   const canRemind =
     rTitle.trim() &&
-    Number(rMonth) >= 1 && Number(rMonth) <= 12 &&
-    Number(rDay) >= 1 && Number(rDay) <= 30;
+    Number(rMonth) >= 1 &&
+    Number(rMonth) <= 12 &&
+    Number(rDay) >= 1 &&
+    Number(rDay) <= 30;
 
   // Lịch sử cải táng
   const [relOpen, setRelOpen] = useState(false);
@@ -157,18 +182,20 @@ export default function RestingPlaceDetail() {
       }),
     onSuccess: () => {
       invalidate();
-      toast.success("Đã thêm lần cải táng");
+      toast.success(t`Đã thêm lần cải táng`);
       setRelOpen(false);
       setRelFrom("");
       setRelDate("");
       setRelNote("");
     },
-    onError: (e) => toast.error("Không thêm được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
   const removeRelM = useMutation({
     mutationFn: (id: string) => removeRelocation(id),
     onSuccess: invalidate,
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   // QR tại mộ (clan admin) — public share link of this resting place.
@@ -176,22 +203,27 @@ export default function RestingPlaceDetail() {
   const [qrOpen, setQrOpen] = useState(false);
   const qrM = useMutation({
     mutationFn: () => getOrCreateRestingPlaceShareLink(clan.id, graveId!),
-    onError: (e) => toast.error("Không tạo được QR", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không tạo được QR`, { description: (e as Error).message }),
   });
-  const qrUrl = qrM.data ? `${window.location.origin}/share/${qrM.data.token}` : "";
+  const qrUrl = qrM.data
+    ? `${window.location.origin}/share/${qrM.data.token}`
+    : "";
 
-  if (isLoading) return <p className="text-muted-foreground">Đang tải…</p>;
-  if (!place) return <p className="text-muted-foreground">Không tìm thấy.</p>;
+  if (isLoading) return <p className="text-muted-foreground">{t`Đang tải…`}</p>;
+  if (!place)
+    return <p className="text-muted-foreground">{t`Không tìm thấy.`}</p>;
 
   const dir = directionsUrl(place.latitude, place.longitude);
-  const title = place.name || place.location_name || RESTING_PLACE_KIND_LABEL[place.kind];
+  const title =
+    place.name || place.location_name || RESTING_PLACE_KIND_LABEL[place.kind];
 
   return (
     <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Mộ phần & tro cốt", to: `/clans/${clan.id}/graves` },
+          { label: t`Mộ phần & tro cốt`, to: `/clans/${clan.id}/graves` },
           { label: title },
         ]}
       />
@@ -221,7 +253,7 @@ export default function RestingPlaceDetail() {
                   panel="grave-edit"
                   panelParams={{ pid: place.id }}
                 >
-                  <IconPencil className="h-4 w-4 mr-1" /> Sửa
+                  <IconPencil className="h-4 w-4 mr-1" /> {t`Sửa`}
                 </PanelLink>
               </Button>
               <Button
@@ -229,14 +261,14 @@ export default function RestingPlaceDetail() {
                 variant="destructive-outline"
                 onClick={() =>
                   askConfirm({
-                    title: "Xoá nơi an nghỉ này?",
-                    description: "Xoá bản ghi mộ phần / tro cốt (không xoá hồ sơ người).",
-                    confirmLabel: "Xoá",
+                    title: t`Xoá nơi an nghỉ này?`,
+                    description: t`Xoá bản ghi mộ phần / tro cốt (không xoá hồ sơ người).`,
+                    confirmLabel: t`Xoá`,
                     destructive: true,
                   }).then((ok) => ok && deleteM.mutate())
                 }
               >
-                <IconTrash className="h-4 w-4 mr-1" /> Xoá
+                <IconTrash className="h-4 w-4 mr-1" /> {t`Xoá`}
               </Button>
             </div>
           ) : undefined
@@ -246,17 +278,31 @@ export default function RestingPlaceDetail() {
       {/* Photos */}
       <Card>
         <CardHeader>
-          <CardTitle>Hình ảnh{place.photos.length > 0 ? ` (${place.photos.length}/${MAX_GRAVE_PHOTOS})` : ""}</CardTitle>
+          <CardTitle>
+            Hình ảnh
+            {place.photos.length > 0
+              ? ` (${place.photos.length}/${MAX_GRAVE_PHOTOS})`
+              : ""}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {place.photos.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Chưa có ảnh.</p>
+            <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {place.photos.map((ph) => (
-                <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md bg-muted">
+                <div
+                  key={ph.id}
+                  className="relative aspect-square overflow-hidden rounded-md bg-muted"
+                >
                   {photoUrls?.get(ph.path) ? (
-                    <img src={photoUrls.get(ph.path)} alt={ph.caption ?? ""} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                    <img
+                      src={photoUrls.get(ph.path)}
+                      alt={ph.caption ?? ""}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <div className="h-full w-full grid place-items-center">
                       <IconGrave className="h-5 w-5 text-muted-foreground" />
@@ -265,9 +311,11 @@ export default function RestingPlaceDetail() {
                   {canEdit && (
                     <button
                       type="button"
-                      onClick={() => removePhotoM.mutate({ id: ph.id, path: ph.path })}
+                      onClick={() =>
+                        removePhotoM.mutate({ id: ph.id, path: ph.path })
+                      }
                       className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-background"
-                      aria-label="Xoá ảnh"
+                      aria-label={t`Xoá ảnh`}
                     >
                       <IconX className="h-3.5 w-3.5" />
                     </button>
@@ -293,12 +341,18 @@ export default function RestingPlaceDetail() {
             <Button
               size="sm"
               variant="outline"
-              disabled={uploadM.isPending || place.photos.length >= MAX_GRAVE_PHOTOS}
+              disabled={
+                uploadM.isPending || place.photos.length >= MAX_GRAVE_PHOTOS
+              }
               onClick={() => fileRef.current?.click()}
-              title={place.photos.length >= MAX_GRAVE_PHOTOS ? `Tối đa ${MAX_GRAVE_PHOTOS} ảnh` : undefined}
+              title={
+                place.photos.length >= MAX_GRAVE_PHOTOS
+                  ? t`Tối đa ${MAX_GRAVE_PHOTOS} ảnh`
+                  : undefined
+              }
             >
               <IconPlus className="h-4 w-4 mr-1" />
-              {uploadM.isPending ? "Đang tải…" : "Thêm ảnh"}
+              {uploadM.isPending ? t`Đang tải…` : t`Thêm ảnh`}
             </Button>
           </CardFooter>
         )}
@@ -307,13 +361,16 @@ export default function RestingPlaceDetail() {
       {/* Thông tin */}
       <Card>
         <CardHeader>
-          <CardTitle>Thông tin</CardTitle>
+          <CardTitle>{t`Thông tin`}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <Row label="Hình thức" value={RESTING_PLACE_KIND_LABEL[place.kind]} />
+          <Row
+            label={t`Hình thức`}
+            value={RESTING_PLACE_KIND_LABEL[place.kind]}
+          />
           {place.cemetery_name && (
             <div className="flex gap-3">
-              <span className="w-32 shrink-0 text-muted-foreground">Cơ sở</span>
+              <span className="w-32 shrink-0 text-muted-foreground">{t`Cơ sở`}</span>
               <Link
                 to={`/clans/${clan.id}/graves?cemetery=${place.cemetery_id}`}
                 className="min-w-0 flex-1 break-words text-primary hover:underline"
@@ -322,20 +379,27 @@ export default function RestingPlaceDetail() {
               </Link>
             </div>
           )}
-          <Row label="Nơi" value={place.location_name} />
-          <Row label="Vị trí chi tiết" value={place.location_detail} />
-          <Row label="Địa chỉ" value={place.address} />
-          {place.orientation && <Row label="Hướng" value={place.orientation} />}
-          <Row label="Trạng thái" value={RESTING_PLACE_STATUS_LABEL[place.status]} />
-          {place.built_year && <Row label="Năm xây" value={String(place.built_year)} />}
-          {place.material && <Row label="Vật liệu" value={place.material} />}
-          {place.notes && <Row label="Ghi chú" value={place.notes} />}
+          <Row label={t`Nơi`} value={place.location_name} />
+          <Row label={t`Vị trí chi tiết`} value={place.location_detail} />
+          <Row label={t`Địa chỉ`} value={place.address} />
+          {place.orientation && (
+            <Row label={t`Hướng`} value={place.orientation} />
+          )}
+          <Row
+            label={t`Trạng thái`}
+            value={RESTING_PLACE_STATUS_LABEL[place.status]}
+          />
+          {place.built_year && (
+            <Row label={t`Năm xây`} value={String(place.built_year)} />
+          )}
+          {place.material && <Row label={t`Vật liệu`} value={place.material} />}
+          {place.notes && <Row label={t`Ghi chú`} value={place.notes} />}
         </CardContent>
         {dir && (
           <CardFooter className="border-t pt-4">
             <Button size="sm" variant="outline" asChild>
               <a href={dir} target="_blank" rel="noopener noreferrer">
-                <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
+                <IconMapPin className="h-4 w-4 mr-1" /> {t`Chỉ đường`}
               </a>
             </Button>
           </CardFooter>
@@ -349,7 +413,9 @@ export default function RestingPlaceDetail() {
         </CardHeader>
         <CardContent>
           {place.occupants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Chưa gắn người nào. Bấm Sửa để thêm.</p>
+            <p className="text-sm text-muted-foreground">
+              {t`Chưa gắn người nào. Bấm Sửa để thêm.`}
+            </p>
           ) : (
             <ul className="space-y-1.5">
               {place.occupants.map((o) => (
@@ -361,7 +427,11 @@ export default function RestingPlaceDetail() {
                     <PersonAvatar gender={o.gender} photoUrl={null} size={36} />
                     <div className="min-w-0 flex-1">
                       <p className="font-medium truncate">{o.full_name}</p>
-                      {o.note && <p className="text-xs text-muted-foreground truncate">{o.note}</p>}
+                      {o.note && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {o.note}
+                        </p>
+                      )}
                     </div>
                   </Link>
                 </li>
@@ -375,12 +445,12 @@ export default function RestingPlaceDetail() {
       {(place.relocations.length > 0 || canEdit) && (
         <Card>
           <CardHeader>
-            <CardTitle>Lịch sử cải táng</CardTitle>
+            <CardTitle>{t`Lịch sử cải táng`}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {place.relocations.length === 0 && !relOpen && (
               <p className="text-sm text-muted-foreground">
-                Chưa ghi lần cải táng nào (bốc mộ / sang cát).
+                {t`Chưa ghi lần cải táng nào (bốc mộ / sang cát).`}
               </p>
             )}
             {place.relocations.length > 0 && (
@@ -399,13 +469,15 @@ export default function RestingPlaceDetail() {
                           )}
                         </p>
                         {r.note && (
-                          <p className="text-xs text-muted-foreground">{r.note}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {r.note}
+                          </p>
                         )}
                       </div>
                       {canEdit && (
                         <button
                           type="button"
-                          aria-label="Xoá"
+                          aria-label={t`Xoá`}
                           onClick={() => removeRelM.mutate(r.id)}
                           className="shrink-0 text-muted-foreground hover:text-foreground"
                         >
@@ -420,41 +492,74 @@ export default function RestingPlaceDetail() {
             {relOpen && (
               <div className="space-y-3 border-t pt-3">
                 <div className="space-y-2">
-                  <Label htmlFor="rel-from">Nơi cũ (trước khi dời về đây)</Label>
-                  <Input id="rel-from" icon={<IconMapPin />} value={relFrom} onChange={(e) => setRelFrom(e.target.value)} placeholder="vd: Nghĩa trang X, lô 3" />
+                  <Label htmlFor="rel-from">
+                    {t`Nơi cũ (trước khi dời về đây)`}
+                  </Label>
+                  <Input
+                    id="rel-from"
+                    icon={<IconMapPin />}
+                    value={relFrom}
+                    onChange={(e) => setRelFrom(e.target.value)}
+                    placeholder={t`vd: Nghĩa trang X, lô 3`}
+                  />
                 </div>
                 <div className="space-y-2 max-w-[200px]">
-                  <Label htmlFor="rel-date">Ngày cải táng (tuỳ chọn)</Label>
-                  <Input id="rel-date" icon={<IconCalendar />} type="date" value={relDate} onChange={(e) => setRelDate(e.target.value)} />
+                  <Label htmlFor="rel-date">{t`Ngày cải táng (tuỳ chọn)`}</Label>
+                  <Input
+                    id="rel-date"
+                    icon={<IconCalendar />}
+                    type="date"
+                    value={relDate}
+                    onChange={(e) => setRelDate(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="rel-note">Ghi chú</Label>
-                  <Input id="rel-note" icon={<IconScroll />} value={relNote} onChange={(e) => setRelNote(e.target.value)} placeholder="vd: bốc mộ sang cát, người chủ trì…" />
+                  <Label htmlFor="rel-note">{t`Ghi chú`}</Label>
+                  <Input
+                    id="rel-note"
+                    icon={<IconScroll />}
+                    value={relNote}
+                    onChange={(e) => setRelNote(e.target.value)}
+                    placeholder={t`vd: bốc mộ sang cát, người chủ trì…`}
+                  />
                 </div>
               </div>
             )}
           </CardContent>
           {canEdit && !relOpen && (
             <CardFooter className="justify-end gap-2 border-t pt-4">
-              <Button type="button" size="sm" variant="outline" onClick={() => setRelOpen(true)}>
-                <IconPlus className="h-4 w-4 mr-1" /> Thêm lần cải táng
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setRelOpen(true)}
+              >
+                <IconPlus className="h-4 w-4 mr-1" /> {t`Thêm lần cải táng`}
               </Button>
             </CardFooter>
           )}
           {relOpen && (
             <CardFooter className="justify-end gap-2 border-t pt-4">
-              <Button type="button" size="sm" variant="ghost" onClick={() => setRelOpen(false)}>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setRelOpen(false)}
+              >
                 <IconX className="h-4 w-4 mr-1.5" />
-                Huỷ
+                {t`Huỷ`}
               </Button>
               <Button
                 type="button"
                 size="sm"
-                disabled={addRelM.isPending || (!relFrom.trim() && !relDate && !relNote.trim())}
+                disabled={
+                  addRelM.isPending ||
+                  (!relFrom.trim() && !relDate && !relNote.trim())
+                }
                 onClick={() => addRelM.mutate()}
               >
                 <IconCheck className="h-4 w-4 mr-1.5" />
-                {addRelM.isPending ? "Đang lưu…" : "Lưu"}
+                {addRelM.isPending ? t`Đang lưu…` : t`Lưu`}
               </Button>
             </CardFooter>
           )}
@@ -466,29 +571,53 @@ export default function RestingPlaceDetail() {
         <Card>
           <CardHeader>
             <CardTitle className="inline-flex items-center gap-2">
-              <IconBell className="h-5 w-5" /> Nhắc tảo mộ / chạp họ
+              <IconBell className="h-5 w-5" /> {t`Nhắc tảo mộ / chạp họ`}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {!reminderOpen ? (
               <p className="text-sm text-muted-foreground">
-                Đặt ngày âm lịch (vd mùng 10 tháng Chạp) — cả họ theo dõi sẽ
-                được nhắc trước qua email/thông báo hằng năm.
+                <Trans>
+                  <Trans>
+                    Đặt ngày âm lịch (vd mùng 10 tháng Chạp) — cả họ theo dõi sẽ
+                    được nhắc trước qua email/thông báo hằng năm.
+                  </Trans>
+                </Trans>
               </p>
             ) : (
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="r-title">Tên dịp</Label>
-                  <Input id="r-title" icon={<IconBell />} value={rTitle} onChange={(e) => setRTitle(e.target.value)} maxLength={150} />
+                  <Label htmlFor="r-title">{t`Tên dịp`}</Label>
+                  <Input
+                    id="r-title"
+                    icon={<IconBell />}
+                    value={rTitle}
+                    onChange={(e) => setRTitle(e.target.value)}
+                    maxLength={150}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-3 max-w-xs">
                   <div className="space-y-2">
-                    <Label htmlFor="r-day">Ngày âm</Label>
-                    <Input id="r-day" icon={<IconCalendar />} inputMode="numeric" value={rDay} onChange={(e) => setRDay(e.target.value)} placeholder="1–30" />
+                    <Label htmlFor="r-day">{t`Ngày âm`}</Label>
+                    <Input
+                      id="r-day"
+                      icon={<IconCalendar />}
+                      inputMode="numeric"
+                      value={rDay}
+                      onChange={(e) => setRDay(e.target.value)}
+                      placeholder="1–30"
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="r-month">Tháng âm</Label>
-                    <Input id="r-month" icon={<IconCalendar />} inputMode="numeric" value={rMonth} onChange={(e) => setRMonth(e.target.value)} placeholder="1–12" />
+                    <Label htmlFor="r-month">{t`Tháng âm`}</Label>
+                    <Input
+                      id="r-month"
+                      icon={<IconCalendar />}
+                      inputMode="numeric"
+                      value={rMonth}
+                      onChange={(e) => setRMonth(e.target.value)}
+                      placeholder="1–12"
+                    />
                   </div>
                 </div>
               </div>
@@ -501,19 +630,24 @@ export default function RestingPlaceDetail() {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  setRTitle(`Tảo mộ ${title}`);
+                  setRTitle(t`Tảo mộ ${title}`);
                   setReminderOpen(true);
                 }}
               >
-                <IconPlus className="h-4 w-4 mr-1" /> Đặt nhắc
+                <IconPlus className="h-4 w-4 mr-1" /> {t`Đặt nhắc`}
               </Button>
             </CardFooter>
           )}
           {reminderOpen && (
             <CardFooter className="justify-end gap-2 border-t pt-4">
-              <Button type="button" size="sm" variant="ghost" onClick={() => setReminderOpen(false)}>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setReminderOpen(false)}
+              >
                 <IconX className="h-4 w-4 mr-1.5" />
-                Huỷ
+                {t`Huỷ`}
               </Button>
               <Button
                 type="button"
@@ -522,7 +656,7 @@ export default function RestingPlaceDetail() {
                 onClick={() => reminderM.mutate()}
               >
                 <IconCheck className="h-4 w-4 mr-1.5" />
-                {reminderM.isPending ? "Đang lưu…" : "Lưu nhắc"}
+                {reminderM.isPending ? t`Đang lưu…` : t`Lưu nhắc`}
               </Button>
             </CardFooter>
           )}
@@ -535,7 +669,7 @@ export default function RestingPlaceDetail() {
         url={qrUrl}
         loading={qrM.isPending}
         title={title}
-        description="Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ."
+        description={t`Dán hoặc khắc QR này tại mộ / tháp — quét để xem thông tin nơi an nghỉ.`}
       />
     </div>
   );

@@ -5,6 +5,7 @@ import { IconPlus, IconX } from "@/components/icons";
 import { PanelLink } from "@/components/panel/PanelLink";
 import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 
+import { t } from "@lingui/core/macro";
 /** Vị trí chung của Fab / FabGroup (góc dưới phải, xem chú thích bên dưới). */
 /** Mép phải của cột nút nổi trên desktop: thẳng với khung nội dung, né khung chat gắn phải. */
 export const FAB_RIGHT_LG =
@@ -44,17 +45,35 @@ export function Fab({
   panel?: { id: PanelId; params?: PanelParams };
 }) {
   const cls = `${FAB_POSITION} inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`;
-  const content = active ? <IconX className="h-6 w-6" /> : (icon ?? <IconPlus className="h-6 w-6" />);
+  const content = active ? (
+    <IconX className="h-6 w-6" />
+  ) : (
+    (icon ?? <IconPlus className="h-6 w-6" />)
+  );
   if (to && panel && !active) {
     return (
-      <PanelLink to={to} panel={panel.id} panelParams={panel.params} aria-label={label} title={label} data-testid={testId} className={cls}>
+      <PanelLink
+        to={to}
+        panel={panel.id}
+        panelParams={panel.params}
+        aria-label={label}
+        title={label}
+        data-testid={testId}
+        className={cls}
+      >
         {content}
       </PanelLink>
     );
   }
   if (to && !active) {
     return (
-      <Link to={to} aria-label={label} title={label} data-testid={testId} className={cls}>
+      <Link
+        to={to}
+        aria-label={label}
+        title={label}
+        data-testid={testId}
+        className={cls}
+      >
         {content}
       </Link>
     );
@@ -63,7 +82,7 @@ export function Fab({
     <button
       type="button"
       onClick={onClick}
-      aria-label={active ? `Đóng: ${label}` : label}
+      aria-label={active ? t`Đóng: ${label}` : label}
       title={label}
       data-testid={testId}
       className={cls}

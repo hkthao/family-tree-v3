@@ -42,6 +42,8 @@ import { getKinshipIndex } from "@/lib/queries/kinship";
 import { createPerson, getPerson } from "@/lib/queries/persons";
 import { matchesName } from "@/lib/unaccent";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const PICKER_CAP = 1000;
 
 interface AddSpouseFormProps {
@@ -113,15 +115,18 @@ export function AddSpouseForm({
     const matched = clanIndex.ordered
       .filter((p) => p.id !== focal.id && p.gender === oppositeGender)
       .filter((p) => matchesName(p.full_name, existingFilter));
-    return { candidates: matched.slice(0, PICKER_CAP), totalMatched: matched.length };
+    return {
+      candidates: matched.slice(0, PICKER_CAP),
+      totalMatched: matched.length,
+    };
   }, [clanIndex, focal, existingFilter]);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!focal) throw new Error("Thiếu thông tin");
+      if (!focal) throw new Error(t`Thiếu thông tin`);
 
       if (mode === "existing") {
-        if (!existingId) throw new Error("Chưa chọn người để gắn");
+        if (!existingId) throw new Error(t`Chưa chọn người để gắn`);
         await assignExistingSpouse(focal.id, existingId);
         return { id: existingId };
       }
@@ -161,16 +166,17 @@ export function AddSpouseForm({
       await invalidateClanData(queryClient, clanId);
       const label =
         mode === "existing"
-          ? clanIndex?.byId.get(existingId ?? "")?.full_name ?? "người đã chọn"
+          ? (clanIndex?.byId.get(existingId ?? "")?.full_name ??
+            "người đã chọn")
           : fullName.trim();
       toast.success(
-        mode === "existing" ? "Đã gắn vợ/chồng" : "Đã thêm vợ/chồng",
+        mode === "existing" ? t`Đã gắn vợ/chồng` : t`Đã thêm vợ/chồng`,
         { description: label },
       );
       onSaved();
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   return (
@@ -195,20 +201,20 @@ export function AddSpouseForm({
       }}
       className="space-y-6"
     >
-      <SegmentedControl ariaLabel="Chế độ thêm vợ/chồng" className="w-full">
+      <SegmentedControl ariaLabel={t`Chế độ thêm vợ/chồng`} className="w-full">
         <SegmentedButton
           className="flex-1 px-3"
           active={mode === "new"}
           onClick={() => setMode("new")}
         >
-          Người mới
+          {t`Người mới`}
         </SegmentedButton>
         <SegmentedButton
           className="flex-1 px-3"
           active={mode === "existing"}
           onClick={() => setMode("existing")}
         >
-          Chọn người đã có
+          {t`Chọn người đã có`}
         </SegmentedButton>
       </SegmentedControl>
 
@@ -216,7 +222,7 @@ export function AddSpouseForm({
         <>
           <div className="space-y-2">
             <Label htmlFor="full_name" required>
-              Họ và tên
+              {t`Họ và tên`}
             </Label>
             <Input
               id="full_name"
@@ -227,12 +233,12 @@ export function AddSpouseForm({
               maxLength={200}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Vd: Nguyễn Thị B"
+              placeholder={t`Vd: Nguyễn Thị B`}
             />
           </div>
 
           <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">Giới tính</legend>
+            <legend className="text-base font-medium mb-2">{t`Giới tính`}</legend>
             <div className="flex gap-6">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -256,17 +262,17 @@ export function AddSpouseForm({
                   }}
                   className="h-4 w-4 accent-primary"
                 />
-                <span>Nữ</span>
+                <span>{t`Nữ`}</span>
               </label>
             </div>
           </fieldset>
 
           <CalendarDateInput
-            label="Ngày sinh (tuỳ chọn)"
+            label={t`Ngày sinh (tuỳ chọn)`}
             idPrefix="birth"
             value={birth}
             onChange={setBirth}
-            helperText="Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
+            helperText={t`Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
           />
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -280,12 +286,12 @@ export function AddSpouseForm({
               }}
               className="h-5 w-5 accent-primary shrink-0"
             />
-            <span>Đã mất</span>
+            <span>{t`Đã mất`}</span>
           </label>
 
           {!isLiving && (
             <CalendarDateInput
-              label="Ngày mất (nếu đã mất)"
+              label={t`Ngày mất (nếu đã mất)`}
               idPrefix="death"
               value={death}
               onChange={(next) => {
@@ -293,15 +299,21 @@ export function AddSpouseForm({
                 if (next.parts.year || next.parts.month || next.parts.day)
                   setIsLiving(false);
               }}
-              helperText="Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+              helperText={t`Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
             />
           )}
         </>
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            Nối một người đã có sẵn trong cây làm vợ/chồng (thay vì tạo mới) —
-            tránh trùng người.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Nối một người đã có sẵn trong cây làm vợ/chồng (thay vì tạo
+                  mới) — tránh trùng người.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
           <Label>
             Tìm người đã có (khác giới với {focal?.full_name ?? "người gốc"})
@@ -310,21 +322,21 @@ export function AddSpouseForm({
             icon={<IconSearch />}
             value={existingFilter}
             onChange={(e) => setExistingFilter(e.target.value)}
-            placeholder="Gõ tên để lọc (không cần dấu)"
+            placeholder={t`Gõ tên để lọc (không cần dấu)`}
           />
           {clanIndex && totalMatched > 0 && (
             <p className="text-xs text-muted-foreground">
               {totalMatched > PICKER_CAP
-                ? `Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
-                : `Hiện ${totalMatched} kết quả.`}
+                ? t`Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
+                : t`Hiện ${totalMatched} kết quả.`}
             </p>
           )}
           <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
             {candidates.length === 0 && (
               <li className="px-3 py-2 text-muted-foreground italic">
                 {clanIndex
-                  ? "Không có người khớp giới tính + tên."
-                  : "Đang tải…"}
+                  ? t`Không có người khớp giới tính + tên.`
+                  : t`Đang tải…`}
               </li>
             )}
             {candidates.map((p) => {
@@ -362,8 +374,14 @@ export function AddSpouseForm({
             })}
           </ul>
           <p className="text-xs text-muted-foreground">
-            Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người
-            đã chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Không được chọn tổ tiên hoặc con cháu (app sẽ chặn). Người đã
+                  chọn sẽ tạo family mới hoặc tái dùng nếu cặp đã ghép.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
         </div>
       )}
@@ -377,13 +395,9 @@ export function AddSpouseForm({
       )}
 
       <FormActions>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           <IconX className="h-4 w-4 mr-1.5" />
-          Hủy
+          {t`Hủy`}
         </Button>
         <Button
           type="submit"
@@ -395,11 +409,11 @@ export function AddSpouseForm({
           }
         >
           {mutation.isPending ? (
-            "Đang lưu…"
+            t`Đang lưu…`
           ) : (
             <>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu
+              {t`Lưu`}
             </>
           )}
         </Button>
@@ -434,15 +448,15 @@ export default function AddSpouse() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
           { label: focal?.full_name ?? "Người", to: back.split("?")[0] },
-          { label: "Thêm vợ / chồng" },
+          { label: t`Thêm vợ / chồng` },
         ]}
       />
 
       <PageHeader
         icon={<IconUserPlus className="h-7 w-7" />}
-        title="Thêm vợ / chồng"
+        title={t`Thêm vợ / chồng`}
         description={focal ? `Cho ${focal.full_name}` : undefined}
       />
 

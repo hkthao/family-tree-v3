@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -31,6 +27,7 @@ import {
 } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 const TYPE_LABEL: Record<ClanPostType, string> = {
   news: "Tin",
   event: "Sự kiện",
@@ -64,7 +61,11 @@ export default function BoardPostDetail() {
   const { clan } = useClanContext();
   const isAdmin = isClanAdmin(clan);
 
-  const { data: post, isLoading, error } = useQuery({
+  const {
+    data: post,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: queryKeys.clanPost(postId!),
     queryFn: () => getClanPost(postId!),
     enabled: !!postId,
@@ -80,12 +81,12 @@ export default function BoardPostDetail() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Bảng tin", to: `/clans/${clanId}/board` },
+          { label: t`Bảng tin`, to: `/clans/${clanId}/board` },
           { label: post?.title ?? "Bài viết" },
         ]}
       />
 
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{(error as Error).message}</AlertDescription>
@@ -94,7 +95,7 @@ export default function BoardPostDetail() {
       {!isLoading && !post && (
         <Alert>
           <AlertDescription>
-            Không thấy bài. Có thể đã bị ẩn hoặc bạn không có quyền xem.
+            {t`Không thấy bài. Có thể đã bị ẩn hoặc bạn không có quyền xem.`}
           </AlertDescription>
         </Alert>
       )}
@@ -109,15 +110,15 @@ export default function BoardPostDetail() {
                 {TYPE_LABEL[post.type]}
               </span>
               {post.pinned && (
-                <span className="text-primary normal-case">📌 Đã ghim</span>
+                <span className="text-primary normal-case">{t`📌 Đã ghim`}</span>
               )}
               {isPending && (
                 <span className="text-amber-700 dark:text-amber-300 normal-case">
-                  Chờ duyệt
+                  {t`Chờ duyệt`}
                 </span>
               )}
               {isHidden && (
-                <span className="italic normal-case">Đã ẩn</span>
+                <span className="italic normal-case">{t`Đã ẩn`}</span>
               )}
             </div>
 
@@ -184,7 +185,7 @@ export default function BoardPostDetail() {
                 to={`/clans/${clanId}/people/${post.person_id}`}
                 className="text-primary hover:underline"
               >
-                Xem trang người liên quan →
+                {t`Xem trang người liên quan →`}
               </Link>
             </p>
           )}
@@ -264,12 +265,12 @@ function PostActionsMenu({
       qc.invalidateQueries({
         queryKey: queryKeys.clanPostsPending(clanId),
       });
-      toast.success("Đã cập nhật");
+      toast.success(t`Đã cập nhật`);
       setOpen(false);
       onAfter(action);
     },
     onError: (e) =>
-      toast.error("Không cập nhật được", {
+      toast.error(t`Không cập nhật được`, {
         description: (e as Error).message,
       }),
   });
@@ -278,7 +279,7 @@ function PostActionsMenu({
   if (canEdit) {
     items.push({
       key: "edit",
-      label: "Sửa",
+      label: t`Sửa`,
       icon: <IconPencil className="h-4 w-4" />,
       onClick: () => {
         setOpen(false);
@@ -290,13 +291,13 @@ function PostActionsMenu({
     if (status === "pending") {
       items.push({
         key: "publish",
-        label: "Duyệt đăng",
+        label: t`Duyệt đăng`,
         icon: <IconCheck className="h-4 w-4" />,
         onClick: () => moderateM.mutate("publish"),
       });
       items.push({
         key: "reject",
-        label: "Từ chối",
+        label: t`Từ chối`,
         icon: <IconX className="h-4 w-4" />,
         onClick: () => moderateM.mutate("reject"),
         destructive: true,
@@ -305,13 +306,13 @@ function PostActionsMenu({
     if (status === "published") {
       items.push({
         key: pinned ? "unpin" : "pin",
-        label: pinned ? "Bỏ ghim" : "Ghim lên đầu",
+        label: pinned ? t`Bỏ ghim` : t`Ghim lên đầu`,
         icon: <span aria-hidden="true">📌</span>,
         onClick: () => moderateM.mutate(pinned ? "unpin" : "pin"),
       });
       items.push({
         key: "hide",
-        label: "Ẩn bài",
+        label: t`Ẩn bài`,
         icon: <IconLock className="h-4 w-4" />,
         onClick: () => moderateM.mutate("hide"),
         destructive: true,
@@ -320,7 +321,7 @@ function PostActionsMenu({
     if (status === "hidden") {
       items.push({
         key: "unhide",
-        label: "Hiện lại",
+        label: t`Hiện lại`,
         icon: <IconUnlock className="h-4 w-4" />,
         onClick: () => moderateM.mutate("unhide"),
       });
@@ -334,8 +335,8 @@ function PostActionsMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Hành động"
-        title="Hành động"
+        aria-label={t`Hành động`}
+        title={t`Hành động`}
         aria-expanded={open}
         aria-haspopup="menu"
         className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -371,13 +372,7 @@ function PostActionsMenu({
 
 // ─── Comments ──────────────────────────────────────────────────────
 
-function Comments({
-  postId,
-  isMember,
-}: {
-  postId: string;
-  isMember: boolean;
-}) {
+function Comments({ postId, isMember }: { postId: string; isMember: boolean }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [body, setBody] = useState("");
@@ -419,14 +414,14 @@ function Comments({
                 month: "2-digit",
               })}
               {c.status === "hidden" && (
-                <span className="ml-2 italic">đã ẩn</span>
+                <span className="ml-2 italic">{t`đã ẩn`}</span>
               )}
             </p>
           </li>
         ))}
         {(commentsQ.data ?? []).length === 0 && !commentsQ.isLoading && (
           <li className="text-sm text-muted-foreground italic">
-            Chưa có bình luận.
+            {t`Chưa có bình luận.`}
           </li>
         )}
       </ul>
@@ -443,15 +438,15 @@ function Comments({
             type="text"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Viết bình luận…"
+            placeholder={t`Viết bình luận…`}
             maxLength={4000}
             className="w-full h-10 rounded-md border border-input bg-background pl-3 pr-11 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <button
             type="submit"
             disabled={!body.trim() || createM.isPending}
-            aria-label="Gửi bình luận"
-            title="Gửi"
+            aria-label={t`Gửi bình luận`}
+            title={t`Gửi`}
             className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <IconSend className="h-4 w-4" />

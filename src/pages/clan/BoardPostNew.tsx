@@ -6,6 +6,7 @@ import { IconPlus } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useClanContext } from "@/hooks/useClanContext";
 
+import { t } from "@lingui/core/macro";
 /**
  * `/clans/:clanId/board/new` — trang đăng bài mới.
  */
@@ -19,14 +20,14 @@ export default function BoardPostNew() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Bảng tin", to: `/clans/${clanId}/board` },
-          { label: "Đăng bài mới" },
+          { label: t`Bảng tin`, to: `/clans/${clanId}/board` },
+          { label: t`Đăng bài mới` },
         ]}
       />
 
       <PageHeader
         icon={<IconPlus className="h-7 w-7" />}
-        title="Đăng bài mới"
+        title={t`Đăng bài mới`}
       />
 
       <BoardPostForm

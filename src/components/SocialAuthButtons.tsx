@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
 type OAuthProvider = "google" | "facebook";
 
 // Tạm ẩn nút Facebook: app Facebook chưa trả email về GoTrue
@@ -69,7 +70,7 @@ export function SocialAuthButtons({ redirectTo }: Props) {
         </div>
         <div className="relative flex justify-center">
           <span className="bg-background px-3 text-xs text-muted-foreground uppercase tracking-wider">
-            hoặc tiếp tục với
+            {t`hoặc tiếp tục với`}
           </span>
         </div>
       </div>
@@ -80,7 +81,11 @@ export function SocialAuthButtons({ redirectTo }: Props) {
         </Alert>
       )}
 
-      <div className={SHOW_FACEBOOK ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-2"}>
+      <div
+        className={
+          SHOW_FACEBOOK ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-2"
+        }
+      >
         <ProviderButton
           label="Google"
           onClick={() => signIn("google")}
@@ -123,8 +128,8 @@ function ProviderButton({
       variant="outline"
       onClick={onClick}
       disabled={disabled}
-      aria-label={`Tiếp tục với ${label}`}
-      title={`Tiếp tục với ${label}`}
+      aria-label={t`Tiếp tục với ${label}`}
+      title={t`Tiếp tục với ${label}`}
       className="w-full"
     >
       {busy ? (
@@ -177,4 +182,3 @@ function FacebookGlyph() {
     </svg>
   );
 }
-

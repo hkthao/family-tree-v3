@@ -34,6 +34,7 @@ import {
   type TodoSummaryRow,
 } from "@/lib/queries/todo";
 
+import { t } from "@lingui/core/macro";
 const PAGE_SIZE = 15;
 
 const CATEGORY_META: Record<
@@ -41,24 +42,20 @@ const CATEGORY_META: Record<
   { label: string; description: string }
 > = {
   missing_parents: {
-    label: "Thiếu cha/mẹ",
-    description:
-      "Người chưa có bố/mẹ trong cây — bổ sung để gắn vào đúng đời và nhánh.",
+    label: t`Thiếu cha/mẹ`,
+    description: t`Người chưa có bố/mẹ trong cây — bổ sung để gắn vào đúng đời và nhánh.`,
   },
   missing_dates: {
-    label: "Thiếu năm sinh/mất",
-    description:
-      "Không có cả dương lẫn âm lịch năm sinh, hoặc đã mất mà chưa biết năm mất/giỗ.",
+    label: t`Thiếu năm sinh/mất`,
+    description: t`Không có cả dương lẫn âm lịch năm sinh, hoặc đã mất mà chưa biết năm mất/giỗ.`,
   },
   dead_end: {
-    label: "Nhánh nghi sót",
-    description:
-      "Đã có vợ/chồng và đủ tuổi (30+) nhưng chưa ghi con — nhiều khả năng còn thiếu.",
+    label: t`Nhánh nghi sót`,
+    description: t`Đã có vợ/chồng và đủ tuổi (30+) nhưng chưa ghi con — nhiều khả năng còn thiếu.`,
   },
   missing_media: {
-    label: "Thiếu ảnh / âm lịch",
-    description:
-      "Người chưa có ảnh, hoặc đã có ngày dương nhưng chưa quy đổi âm lịch.",
+    label: t`Thiếu ảnh / âm lịch`,
+    description: t`Người chưa có ảnh, hoặc đã có ngày dương nhưng chưa quy đổi âm lịch.`,
   },
 };
 
@@ -141,10 +138,10 @@ export default function Todo() {
     mutationFn: (personId: string) => setPersonTodoExcluded(personId, true),
     onSuccess: async () => {
       await invalidateTodoQueries();
-      toast.success("Đã loại khỏi danh sách");
+      toast.success(t`Đã loại khỏi danh sách`);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   // Sequential rather than Promise.all — Supabase rate-limits the RPC
@@ -161,20 +158,19 @@ export default function Todo() {
     onSuccess: async (count) => {
       setSelected(new Set());
       await invalidateTodoQueries();
-      toast.success(`Đã loại ${count} người khỏi danh sách`);
+      toast.success(t`Đã loại ${count} người khỏi danh sách`);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   async function onBulkExclude() {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     const ok = await confirm({
-      title: `Loại ${ids.length} người khỏi danh sách?`,
-      description:
-        "Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa.",
-      confirmLabel: "Loại",
+      title: t`Loại ${ids.length} người khỏi danh sách?`,
+      description: t`Họ sẽ không hiện trong Việc cần làm nữa và không tính vào % hoàn thành. Có thể đổi lại từng người ở trang sửa.`,
+      confirmLabel: t`Loại`,
       destructive: true,
     });
     if (ok) bulkExcludeMutation.mutate(ids);
@@ -287,17 +283,17 @@ export default function Todo() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Việc cần làm" },
+          { label: t`Việc cần làm` },
         ]}
       />
 
       <PageHeader
         icon={<IconScroll className="h-7 w-7" />}
-        title="Việc cần làm"
+        title={t`Việc cần làm`}
         description={
           <>
             App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung. Bấm vào một
-            người để {canEdit ? "sửa thẳng." : "đề xuất bổ sung."}
+            người để {canEdit ? t`sửa thẳng.` : t`đề xuất bổ sung.`}
             {summary && (
               <>
                 {" "}
@@ -326,7 +322,7 @@ export default function Todo() {
       <div
         className="flex flex-wrap gap-2"
         role="tablist"
-        aria-label="Nhóm việc cần làm"
+        aria-label={t`Nhóm việc cần làm`}
       >
         {TODO_CATEGORIES.map((cat) => {
           const count = countByCategory.get(cat) ?? 0;
@@ -371,13 +367,13 @@ export default function Todo() {
         </Alert>
       )}
 
-      {itemsLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {itemsLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
 
       {rows && rows.length === 0 && !itemsLoading && (
         <EmptyState
           icon={<IconCheck className="h-10 w-10" />}
-          title="Sạch sẽ ở nhóm này"
-          description="Không còn mục nào thiếu thuộc nhóm đã chọn."
+          title={t`Sạch sẽ ở nhóm này`}
+          description={t`Không còn mục nào thiếu thuộc nhóm đã chọn.`}
         />
       )}
 
@@ -398,7 +394,7 @@ export default function Todo() {
             className="h-9"
           >
             <IconX className="h-4 w-4 mr-1.5" />
-            Bỏ chọn
+            {t`Bỏ chọn`}
           </Button>
           <Button
             type="button"
@@ -426,8 +422,8 @@ export default function Todo() {
                   className="shrink-0 pl-3 py-2.5 cursor-pointer inline-flex items-center"
                   title={
                     selected.has(row.person_id)
-                      ? "Bỏ chọn"
-                      : "Chọn để xử lý hàng loạt"
+                      ? t`Bỏ chọn`
+                      : t`Chọn để xử lý hàng loạt`
                   }
                 >
                   <input
@@ -435,7 +431,7 @@ export default function Todo() {
                     checked={selected.has(row.person_id)}
                     onChange={() => toggleSelected(row.person_id)}
                     className="h-5 w-5 accent-primary"
-                    aria-label={`Chọn ${row.full_name}`}
+                    aria-label={t`Chọn ${row.full_name}`}
                   />
                 </label>
               )}
@@ -460,7 +456,7 @@ export default function Todo() {
                     {row.birth_year && <span>Sinh {row.birth_year}</span>}
                     {row.death_year && <span>Mất {row.death_year}</span>}
                     {!row.is_living && !row.death_year && !row.birth_year && (
-                      <span>Đã mất, chưa rõ năm</span>
+                      <span>{t`Đã mất, chưa rõ năm`}</span>
                     )}
                     {row.missing.map((m) => (
                       <span
@@ -482,10 +478,10 @@ export default function Todo() {
                   onClick={() => excludeMutation.mutate(row.person_id)}
                   disabled={excludeMutation.isPending}
                   className="shrink-0 mr-2 inline-flex items-center gap-1 px-2 py-1.5 text-xs text-muted-foreground rounded-md hover:bg-background hover:text-foreground"
-                  title="Loại khỏi danh sách (không hiện ở đây nữa)"
+                  title={t`Loại khỏi danh sách (không hiện ở đây nữa)`}
                 >
                   <IconX className="h-3.5 w-3.5" />
-                  Bỏ qua
+                  {t`Bỏ qua`}
                 </button>
               )}
             </li>
@@ -499,7 +495,7 @@ export default function Todo() {
           totalPages={totalPages}
           total={totalForCategory}
           pageSize={PAGE_SIZE}
-          unit="mục"
+          unit={t`mục`}
           isFetching={itemsFetching && !itemsLoading}
           onPageChange={setPage}
         />
@@ -541,11 +537,11 @@ function CompletionProgress({
         : "bg-amber-500";
   return (
     <section
-      aria-label="Tiến độ hoàn thiện gia phả"
+      aria-label={t`Tiến độ hoàn thiện gia phả`}
       className="rounded-xl border bg-card shadow-sm p-4 sm:p-5 space-y-3"
     >
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
-        <h2 className="font-medium">Họ ta đã hoàn thành</h2>
+        <h2 className="font-medium">{t`Họ ta đã hoàn thành`}</h2>
         <span className="text-2xl sm:text-3xl font-semibold tabular-nums">
           {percent}%
         </span>

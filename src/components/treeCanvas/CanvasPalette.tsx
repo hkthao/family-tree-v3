@@ -15,6 +15,7 @@ import {
   type NodeStyle,
 } from "@/lib/tree/canvasModel";
 
+import { t } from "@lingui/core/macro";
 /** Mime dùng khi kéo mục từ bảng trái thả lên canvas. */
 export const PALETTE_MIME = "application/x-canvas-item";
 
@@ -37,7 +38,15 @@ function PresetPreview({ preset }: { preset: LinkPreset }) {
   return (
     <svg viewBox="0 0 64 28" className="h-7 w-full" aria-hidden="true">
       <defs>
-        <marker id={mid} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <marker
+          id={mid}
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="5"
+          markerHeight="5"
+          orient="auto-start-reverse"
+        >
           <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
         </marker>
       </defs>
@@ -65,7 +74,11 @@ export function LinkPresetGallery({
   onPick: (p: LinkPreset) => void;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2" role="listbox" aria-label="Kiểu đường nối">
+    <div
+      className="grid grid-cols-3 gap-2"
+      role="listbox"
+      aria-label={t`Kiểu đường nối`}
+    >
       {LINK_PRESETS.map((p) => (
         <button
           key={p.id}
@@ -127,25 +140,31 @@ export function CanvasPalette({
   const [q, setQ] = useState("");
   const list = useMemo(() => {
     const s = q.trim().toLowerCase();
-    return members.filter((m) => !s || m.name.toLowerCase().includes(s)).slice(0, 80);
+    return members
+      .filter((m) => !s || m.name.toLowerCase().includes(s))
+      .slice(0, 80);
   }, [members, q]);
 
   return (
     <div className="space-y-4 text-sm">
       <section className="space-y-2">
-        <h3 className="font-semibold">Thẻ thiết kế sẵn</h3>
-        <p className="text-xs text-muted-foreground">Kéo thả vào canvas (hoặc nhấp để thêm).</p>
+        <h3 className="font-semibold">{t`Thẻ thiết kế sẵn`}</h3>
+        <p className="text-xs text-muted-foreground">{t`Kéo thả vào canvas (hoặc nhấp để thêm).`}</p>
         <div className="grid grid-cols-3 gap-2">
           {CARD_DESIGNS.map((d) => (
             <button
               key={d.id}
               type="button"
               draggable
-              onDragStart={(e) => dragStart(e, { t: "design", design: d.id, gender: "M" })}
+              onDragStart={(e) =>
+                dragStart(e, { t: "design", design: d.id, gender: "M" })
+              }
               onClick={() => onAdd({ t: "design", design: d.id, gender: "M" })}
               className="flex flex-col items-center gap-1 rounded-lg border bg-card p-2 text-xs hover:bg-secondary"
             >
-              <span className={`flex h-12 w-10 items-center justify-center rounded-md border-2 ${DESIGN_SWATCH[d.id]}`}>
+              <span
+                className={`flex h-12 w-10 items-center justify-center rounded-md border-2 ${DESIGN_SWATCH[d.id]}`}
+              >
                 <span className="h-4 w-4 rounded-full bg-black/20" />
               </span>
               {d.label}
@@ -158,16 +177,18 @@ export function CanvasPalette({
             onClick={() => onAdd({ t: "text" })}
             className="flex flex-col items-center gap-1 rounded-lg border bg-card p-2 text-xs hover:bg-secondary"
           >
-            <span className="flex h-12 w-10 items-center justify-center text-lg font-bold">Aa</span>
-            Ô chữ
+            <span className="flex h-12 w-10 items-center justify-center text-lg font-bold">
+              Aa
+            </span>
+            {t`Ô chữ`}
           </button>
         </div>
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-semibold">Đường nối tuỳ chỉnh</h3>
+        <h3 className="font-semibold">{t`Đường nối tuỳ chỉnh`}</h3>
         <p className="text-xs text-muted-foreground">
-          Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó.
+          {t`Chọn kiểu rồi rê chuột vào thẻ/đường, kéo chấm xanh sang nơi cần nối. Chọn sẵn một đường để đổi kiểu của nó.`}
         </p>
         <LinkPresetGallery value={linkPreset} onPick={onPickPreset} />
         <div className="flex items-center gap-2">
@@ -176,19 +197,30 @@ export function CanvasPalette({
             variant={linkMode ? "default" : "outline"}
             className="h-10 w-10 shrink-0 px-0"
             onClick={onToggleLink}
-            title={linkMode ? "Tắt chế độ nối (Esc)" : "Bật chế độ nối: nhấp lần lượt hai thẻ"}
-            aria-label="Chế độ nối đường"
+            title={
+              linkMode
+                ? t`Tắt chế độ nối (Esc)`
+                : t`Bật chế độ nối: nhấp lần lượt hai thẻ`
+            }
+            aria-label={t`Chế độ nối đường`}
             aria-pressed={linkMode}
           >
             <IconLink className="h-4 w-4" />
           </Button>
-          {linkMode && <span className="text-xs text-muted-foreground">Đang nối: nhấp 2 thẻ (Esc để thoát)</span>}
+          {linkMode && (
+            <span className="text-xs text-muted-foreground">{t`Đang nối: nhấp 2 thẻ (Esc để thoát)`}</span>
+          )}
         </div>
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-semibold">Thành viên</h3>
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tên…" className="h-9" />
+        <h3 className="font-semibold">{t`Thành viên`}</h3>
+        <Input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={t`Tìm tên…`}
+          className="h-9"
+        />
         <ul className="max-h-48 space-y-1 overflow-y-auto pr-1">
           {list.map((m) => (
             <li key={m.id}>
@@ -198,10 +230,16 @@ export function CanvasPalette({
                 onDragStart={(e) => dragStart(e, { t: "person", id: m.id })}
                 onClick={() => onAdd({ t: "person", id: m.id })}
                 className="flex w-full items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-left hover:bg-secondary"
-                title={m.onCanvas ? "Đã có trên canvas — thả để dời tới chỗ mới" : "Thả vào canvas"}
+                title={
+                  m.onCanvas
+                    ? t`Đã có trên canvas — thả để dời tới chỗ mới`
+                    : t`Thả vào canvas`
+                }
               >
                 <span className="truncate">{m.name}</span>
-                {!m.onCanvas && <span className="shrink-0 text-xs text-muted-foreground">đã ẩn</span>}
+                {!m.onCanvas && (
+                  <span className="shrink-0 text-xs text-muted-foreground">{t`đã ẩn`}</span>
+                )}
               </button>
             </li>
           ))}
@@ -238,41 +276,92 @@ export function NodeInspector({
     <section className="space-y-2 rounded-lg border bg-muted/40 p-3">
       <h3 className="font-semibold">{title}</h3>
       <label className="block space-y-1">
-        <span className="text-xs text-muted-foreground">{kind === "text" ? "Nội dung" : "Tên hiển thị"}</span>
-        <Input value={style.name ?? defaults.name} onChange={(e) => onChange({ name: e.target.value })} className="h-9" />
+        <span className="text-xs text-muted-foreground">
+          {kind === "text" ? t`Nội dung` : t`Tên hiển thị`}
+        </span>
+        <Input
+          value={style.name ?? defaults.name}
+          onChange={(e) => onChange({ name: e.target.value })}
+          className="h-9"
+        />
       </label>
       {kind !== "text" && (
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Dòng phụ (năm sinh–mất…)</span>
-          <Input value={style.sub ?? defaults.sub} onChange={(e) => onChange({ sub: e.target.value })} className="h-9" />
+          <span className="text-xs text-muted-foreground">{t`Dòng phụ (năm sinh–mất…)`}</span>
+          <Input
+            value={style.sub ?? defaults.sub}
+            onChange={(e) => onChange({ sub: e.target.value })}
+            className="h-9"
+          />
         </label>
       )}
       {kind !== "text" && (
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Kiểu thẻ</span>
-          <Select value={style.design ?? ""} onChange={(e) => onChange({ design: (e.target.value || undefined) as CardDesign | undefined })} className="h-9 text-sm">
+          <span className="text-xs text-muted-foreground">{t`Kiểu thẻ`}</span>
+          <Select
+            value={style.design ?? ""}
+            onChange={(e) =>
+              onChange({
+                design: (e.target.value || undefined) as CardDesign | undefined,
+              })
+            }
+            className="h-9 text-sm"
+          >
             <option value="">Theo khung chung</option>
-            {CARD_DESIGNS.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
+            {CARD_DESIGNS.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.label}
+              </option>
+            ))}
           </Select>
         </label>
       )}
       <label className="block space-y-1">
-        <span className="text-xs text-muted-foreground">Font chữ</span>
-        <Select value={style.font ?? "be"} onChange={(e) => onChange({ font: e.target.value })} className="h-9 text-sm">
-          {CANVAS_FONTS.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
+        <span className="text-xs text-muted-foreground">{t`Font chữ`}</span>
+        <Select
+          value={style.font ?? "be"}
+          onChange={(e) => onChange({ font: e.target.value })}
+          className="h-9 text-sm"
+        >
+          {CANVAS_FONTS.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}
+            </option>
+          ))}
         </Select>
       </label>
       <div className="grid grid-cols-2 gap-2">
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Màu chữ</span>
-          <input type="color" className={colorInput} value={style.color ?? "#2a211b"} onChange={(e) => onChange({ color: e.target.value })} />
+          <span className="text-xs text-muted-foreground">{t`Màu chữ`}</span>
+          <input
+            type="color"
+            className={colorInput}
+            value={style.color ?? "#2a211b"}
+            onChange={(e) => onChange({ color: e.target.value })}
+          />
         </label>
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Cỡ chữ ({style.size ?? 14})</span>
-          <input type="range" min={10} max={36} value={style.size ?? 14} onChange={(e) => onChange({ size: Number(e.target.value) })} className="h-9 w-full" />
+          <span className="text-xs text-muted-foreground">
+            Cỡ chữ ({style.size ?? 14})
+          </span>
+          <input
+            type="range"
+            min={10}
+            max={36}
+            value={style.size ?? 14}
+            onChange={(e) => onChange({ size: Number(e.target.value) })}
+            className="h-9 w-full"
+          />
         </label>
       </div>
-      <Button size="sm" variant="destructive-outline" className="h-10 w-10 px-0" onClick={onRemove} title={removeLabel} aria-label={removeLabel}>
+      <Button
+        size="sm"
+        variant="destructive-outline"
+        className="h-10 w-10 px-0"
+        onClick={onRemove}
+        title={removeLabel}
+        aria-label={removeLabel}
+      >
         <IconTrash className="h-4 w-4" />
       </Button>
     </section>
@@ -291,46 +380,88 @@ export function LinkInspector({
 }) {
   return (
     <section className="space-y-2 rounded-lg border bg-muted/40 p-3">
-      <h3 className="font-semibold">Đường nối</h3>
+      <h3 className="font-semibold">{t`Đường nối`}</h3>
       <div className="grid grid-cols-2 gap-2">
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Màu</span>
-          <input type="color" className={colorInput} value={link.color} onChange={(e) => onChange({ color: e.target.value })} />
+          <span className="text-xs text-muted-foreground">{t`Màu`}</span>
+          <input
+            type="color"
+            className={colorInput}
+            value={link.color}
+            onChange={(e) => onChange({ color: e.target.value })}
+          />
         </label>
         <label className="block space-y-1">
-          <span className="text-xs text-muted-foreground">Độ dày ({link.width})</span>
-          <input type="range" min={1} max={12} value={link.width} onChange={(e) => onChange({ width: Number(e.target.value) })} className="h-9 w-full" />
+          <span className="text-xs text-muted-foreground">
+            Độ dày ({link.width})
+          </span>
+          <input
+            type="range"
+            min={1}
+            max={12}
+            value={link.width}
+            onChange={(e) => onChange({ width: Number(e.target.value) })}
+            className="h-9 w-full"
+          />
         </label>
       </div>
       <label className="block space-y-1">
-        <span className="text-xs text-muted-foreground">Kiểu</span>
-        <Select value={link.style} onChange={(e) => onChange({ style: e.target.value as EdgeStyle })} className="h-9 text-sm">
-          <option value="bezier">Đường cong</option>
-          <option value="step">Vuông góc</option>
-          <option value="straight">Thẳng / gấp khúc</option>
+        <span className="text-xs text-muted-foreground">{t`Kiểu`}</span>
+        <Select
+          value={link.style}
+          onChange={(e) => onChange({ style: e.target.value as EdgeStyle })}
+          className="h-9 text-sm"
+        >
+          <option value="bezier">{t`Đường cong`}</option>
+          <option value="step">{t`Vuông góc`}</option>
+          <option value="straight">{t`Thẳng / gấp khúc`}</option>
         </Select>
       </label>
       <p className="rounded-md bg-background/60 p-2 text-xs text-muted-foreground">
-        Kéo chấm xanh ở hai đầu để nối sang thẻ khác hoặc thả ra khoảng trống/lên một đường. Nhấp chấm nhỏ giữa đoạn để thêm điểm uốn, kéo ô vuông để uốn theo ý, nhấp đúp ô vuông để bỏ.
+        {t`Kéo chấm xanh ở hai đầu để nối sang thẻ khác hoặc thả ra khoảng trống/lên một đường. Nhấp chấm nhỏ giữa đoạn để thêm điểm uốn, kéo ô vuông để uốn theo ý, nhấp đúp ô vuông để bỏ.`}
       </p>
       {(link.points?.length ?? 0) > 0 && (
-        <Button size="sm" variant="outline" className="h-10 w-10 px-0" onClick={() => onChange({ points: [] })} title={`Bỏ ${link.points?.length} điểm uốn`} aria-label="Bỏ điểm uốn">
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-10 w-10 px-0"
+          onClick={() => onChange({ points: [] })}
+          title={t`Bỏ ${link.points?.length ?? 0} điểm uốn`}
+          aria-label={t`Bỏ điểm uốn`}
+        >
           <IconX className="h-4 w-4" />
         </Button>
       )}
       <label className="block space-y-1">
-        <span className="text-xs text-muted-foreground">Mũi tên</span>
-        <Select value={link.arrow ?? "none"} onChange={(e) => onChange({ arrow: e.target.value as CustomLink["arrow"] })} className="h-9 text-sm">
-          <option value="none">Không</option>
-          <option value="end">Ở cuối</option>
-          <option value="both">Hai đầu</option>
+        <span className="text-xs text-muted-foreground">{t`Mũi tên`}</span>
+        <Select
+          value={link.arrow ?? "none"}
+          onChange={(e) =>
+            onChange({ arrow: e.target.value as CustomLink["arrow"] })
+          }
+          className="h-9 text-sm"
+        >
+          <option value="none">{t`Không`}</option>
+          <option value="end">{t`Ở cuối`}</option>
+          <option value="both">{t`Hai đầu`}</option>
         </Select>
       </label>
       <label className="flex items-center gap-2">
-        <input type="checkbox" checked={link.dash} onChange={(e) => onChange({ dash: e.target.checked })} />
-        Nét đứt
+        <input
+          type="checkbox"
+          checked={link.dash}
+          onChange={(e) => onChange({ dash: e.target.checked })}
+        />
+        {t`Nét đứt`}
       </label>
-      <Button size="sm" variant="destructive-outline" className="h-10 w-10 px-0" onClick={onRemove} title="Xoá đường nối" aria-label="Xoá đường nối">
+      <Button
+        size="sm"
+        variant="destructive-outline"
+        className="h-10 w-10 px-0"
+        onClick={onRemove}
+        title={t`Xoá đường nối`}
+        aria-label={t`Xoá đường nối`}
+      >
         <IconTrash className="h-4 w-4" />
       </Button>
     </section>

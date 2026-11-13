@@ -5,6 +5,7 @@ import { SidePanel } from "@/components/SidePanel";
 import { Button } from "@/components/ui/button";
 import { PanelActionBar } from "@/components/ui/form-actions";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   url: string;
   title?: string;
@@ -102,14 +103,14 @@ export function QrCodeModal({
                 className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"
                 aria-hidden="true"
               />
-              <p className="text-sm">Đang tạo mã QR…</p>
+              <p className="text-sm">{t`Đang tạo mã QR…`}</p>
             </div>
           ) : (
             <canvas
               ref={canvasRef}
               width={320}
               height={320}
-              aria-label="Mã QR"
+              aria-label={t`Mã QR`}
             />
           )}
         </div>
@@ -142,13 +143,13 @@ export function QrCodeModal({
                 }}
               >
                 <IconDownload className="mr-1.5 h-4 w-4" />
-                {pdfBusy ? "Đang tạo PDF…" : "Tải PDF danh thiếp"}
+                {pdfBusy ? t`Đang tạo PDF…` : t`Tải PDF danh thiếp`}
               </Button>
             )}
             <Button asChild>
               <a href={dataUrl} download="qr-gia-pha.png">
                 <IconDownload className="mr-1.5 h-4 w-4" />
-                Lưu ảnh QR
+                {t`Lưu ảnh QR`}
               </a>
             </Button>
           </PanelActionBar>

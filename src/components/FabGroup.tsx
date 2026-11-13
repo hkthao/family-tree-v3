@@ -6,6 +6,7 @@ import { IconPlus, IconX } from "@/components/icons";
 import { PanelLink } from "@/components/panel/PanelLink";
 import type { PanelId, PanelParams } from "@/components/panel/usePanel";
 
+import { t } from "@lingui/core/macro";
 export interface FabAction {
   label: string;
   icon: ReactNode;
@@ -21,7 +22,13 @@ export interface FabAction {
  * có nhãn; bấm ra ngoài, Esc hoặc chọn một hành động thì thu lại. Hành động đầu
  * tiên là hành động chính (hiện đầu tiên, sát nút +).
  */
-export function FabGroup({ actions, label = "Thêm" }: { actions: FabAction[]; label?: string }) {
+export function FabGroup({
+  actions,
+  label = "Thêm",
+}: {
+  actions: FabAction[];
+  label?: string;
+}) {
   const [open, setOpen] = useState(false);
   const single = actions.length === 1 ? actions[0] : null;
 
@@ -34,7 +41,14 @@ export function FabGroup({ actions, label = "Thêm" }: { actions: FabAction[]; l
 
   if (single) {
     return (
-      <Fab to={single.to} onClick={single.onClick} panel={single.panel} label={single.label} icon={single.icon} testId={single.testId} />
+      <Fab
+        to={single.to}
+        onClick={single.onClick}
+        panel={single.panel}
+        label={single.label}
+        icon={single.icon}
+        testId={single.testId}
+      />
     );
   }
 
@@ -47,18 +61,25 @@ export function FabGroup({ actions, label = "Thêm" }: { actions: FabAction[]; l
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Đóng"
+          aria-label={t`Đóng`}
           onClick={() => setOpen(false)}
           className="print-hide fixed inset-0 z-30 cursor-default bg-black/30 animate-in fade-in"
         />
       )}
       <div className={`${FAB_POSITION} flex flex-col items-end gap-2`}>
         {open && (
-          <ul className="flex flex-col-reverse items-end gap-2 animate-in fade-in slide-in-from-bottom-2" role="menu" aria-label={label}>
+          <ul
+            className="flex flex-col-reverse items-end gap-2 animate-in fade-in slide-in-from-bottom-2"
+            role="menu"
+            aria-label={label}
+          >
             {actions.map((a) => {
               const content = (
                 <>
-                  <span className="text-primary [&>svg]:h-5 [&>svg]:w-5" aria-hidden="true">
+                  <span
+                    className="text-primary [&>svg]:h-5 [&>svg]:w-5"
+                    aria-hidden="true"
+                  >
                     {a.icon}
                   </span>
                   {a.label}
@@ -80,7 +101,13 @@ export function FabGroup({ actions, label = "Thêm" }: { actions: FabAction[]; l
                       {content}
                     </PanelLink>
                   ) : a.to ? (
-                    <Link to={a.to} role="menuitem" data-testid={a.testId} className={itemCls} onClick={close}>
+                    <Link
+                      to={a.to}
+                      role="menuitem"
+                      data-testid={a.testId}
+                      className={itemCls}
+                      onClick={close}
+                    >
                       {content}
                     </Link>
                   ) : (
@@ -111,7 +138,11 @@ export function FabGroup({ actions, label = "Thêm" }: { actions: FabAction[]; l
           title={label}
           className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          {open ? <IconX className="h-6 w-6" /> : <IconPlus className="h-6 w-6" />}
+          {open ? (
+            <IconX className="h-6 w-6" />
+          ) : (
+            <IconPlus className="h-6 w-6" />
+          )}
         </button>
       </div>
     </>

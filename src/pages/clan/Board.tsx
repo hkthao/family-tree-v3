@@ -38,6 +38,8 @@ import {
 } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const DEFAULT_PAGE_SIZE = 20;
 
 const TYPE_LABEL: Record<ClanPostType, string> = {
@@ -76,14 +78,17 @@ export default function Board() {
   const patch = useUrlPatch();
   const { q, text, setText } = useSearchBox();
   const [typeRaw] = useUrlState("loai", "");
-  const type = (TYPES as string[]).includes(typeRaw) ? (typeRaw as ClanPostType) : "";
+  const type = (TYPES as string[]).includes(typeRaw)
+    ? (typeRaw as ClanPostType)
+    : "";
   const [pageRaw] = useUrlState("trang", "");
   const page = Math.max(1, Number(pageRaw) || 1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const postsQ = useQuery({
     queryKey: [...queryKeys.clanPosts(clanId!), page, pageSize, type, q],
-    queryFn: () => listClanPosts(clanId!, { page, pageSize, type: type || null, search: q }),
+    queryFn: () =>
+      listClanPosts(clanId!, { page, pageSize, type: type || null, search: q }),
     enabled: !!clanId,
     staleTime: 30_000,
   });
@@ -111,8 +116,8 @@ export default function Board() {
     <div className="space-y-3">
       <PageHeader
         icon={<IconScroll className="h-7 w-7" />}
-        title="Bảng tin"
-        description="Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc."
+        title={t`Bảng tin`}
+        description={t`Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc.`}
         actionsBelow
         actions={
           <>
@@ -125,7 +130,11 @@ export default function Board() {
               </Link>
             )}
             {isMember && user && (
-              <Fab to={`/clans/${clanId}/board/new`} panel={{ id: "board-new" }} label="Đăng bài mới" />
+              <Fab
+                to={`/clans/${clanId}/board/new`}
+                panel={{ id: "board-new" }}
+                label={t`Đăng bài mới`}
+              />
             )}
           </>
         }
@@ -134,8 +143,14 @@ export default function Board() {
       {!isMember && (
         <Alert>
           <AlertDescription>
-            Bạn đang xem dưới dạng khách. Tham gia dòng họ để đăng bài và
-            bình luận.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Bạn đang xem dưới dạng khách. Tham gia dòng họ để đăng bài và
+                  bình luận.
+                </Trans>
+              </Trans>
+            </Trans>
           </AlertDescription>
         </Alert>
       )}
@@ -144,13 +159,13 @@ export default function Board() {
       <CollapsibleFilters
         activeCount={type ? 1 : 0}
         onReset={() => patch({ loai: null, trang: null })}
-        title="Lọc bài viết"
+        title={t`Lọc bài viết`}
         search={(toggle) => (
           <SearchInput
-            label="Tìm bài viết"
+            label={t`Tìm bài viết`}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Tìm theo tiêu đề / nội dung…"
+            placeholder={t`Tìm theo tiêu đề / nội dung…`}
             rightSlot={toggle}
           />
         )}
@@ -158,12 +173,14 @@ export default function Board() {
         <div className="flex flex-col gap-3">
           <Select
             value={type}
-            onChange={(e) => patch({ loai: e.target.value || null, trang: null })}
-            aria-label="Lọc theo loại bài"
+            onChange={(e) =>
+              patch({ loai: e.target.value || null, trang: null })
+            }
+            aria-label={t`Lọc theo loại bài`}
             icon={<IconTag />}
             className="h-11 w-full text-base"
           >
-            <option value="">Mọi loại</option>
+            <option value="">{t`Mọi loại`}</option>
             {TYPES.map((t) => (
               <option key={t} value={t}>
                 {TYPE_LABEL[t]}
@@ -175,7 +192,7 @@ export default function Board() {
 
       {postsQ.isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
       {postsQ.error && (
@@ -186,14 +203,20 @@ export default function Board() {
 
       {total === 0 && !postsQ.isLoading && !postsQ.error && (
         <EmptyState
-          icon={filtering ? <IconSearch className="h-10 w-10" /> : <IconScroll className="h-10 w-10" />}
-          title={filtering ? "Không có bài nào khớp" : "Chưa có bài viết nào"}
+          icon={
+            filtering ? (
+              <IconSearch className="h-10 w-10" />
+            ) : (
+              <IconScroll className="h-10 w-10" />
+            )
+          }
+          title={filtering ? t`Không có bài nào khớp` : t`Chưa có bài viết nào`}
           description={
             filtering
-              ? "Thử bỏ bớt bộ lọc hoặc từ khoá."
+              ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.`
               : isMember
-                ? "Hãy là người đầu tiên đăng tin cho cả họ — bấm nút '+'."
-                : "Chưa có bài viết nào trong bảng tin."
+                ? t`Hãy là người đầu tiên đăng tin cho cả họ — bấm nút '+'.`
+                : t`Chưa có bài viết nào trong bảng tin.`
           }
         />
       )}
@@ -217,7 +240,7 @@ export default function Board() {
         totalPages={totalPages}
         total={total}
         pageSize={pageSize}
-        unit="bài"
+        unit={t`bài`}
         isFetching={postsQ.isFetching}
         onPageChange={goToPage}
         pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
@@ -257,26 +280,29 @@ function PostRow({
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{post.title || post.body}</p>
           {post.title && (
-            <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{post.body}</p>
+            <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
+              {post.body}
+            </p>
           )}
           <p className="mt-0.5 text-xs text-muted-foreground/80">
             {formatRelative(post.created_at)}
-            {(isAuthor || admin) && ` · ${isAuthor ? "bạn" : post.author_id.slice(0, 8)}`}
+            {(isAuthor || admin) &&
+              t` · ${isAuthor ? "bạn" : post.author_id.slice(0, 8)}`}
           </p>
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
             {post.pinned && (
               <Chip tone="primary" icon={<IconAward />}>
-                Đã ghim
+                {t`Đã ghim`}
               </Chip>
             )}
             {isPending && (
               <Chip tone="warning" icon={<IconClock />}>
-                Chờ duyệt
+                {t`Chờ duyệt`}
               </Chip>
             )}
             {isHidden && (
               <Chip tone="neutral" icon={<IconBellOff />}>
-                Đã ẩn
+                {t`Đã ẩn`}
               </Chip>
             )}
             <Chip tone={style.tone} icon={<TypeIcon />}>

@@ -31,7 +31,10 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ViewEditActions } from "@/components/ui/view-edit-actions";
 import { useAuth } from "@/hooks/useAuth";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+} from "@/hooks/useClientPaging";
 import {
   deleteMyFeedback,
   listMyFeedback,
@@ -43,6 +46,7 @@ import {
 } from "@/lib/queries/feedback";
 import { unaccent } from "@/lib/unaccent";
 
+import { t } from "@lingui/core/macro";
 const CATEGORY_LABEL: Record<FeedbackCategory, string> = {
   bug: "Lỗi / sự cố",
   idea: "Đề xuất / ý kiến",
@@ -71,7 +75,10 @@ const STATUS_VIEW: Record<FeedbackStatus, { label: string; tone: ChipTone }> = {
   resolved: { label: "Đã xử lý", tone: "success" },
   spam: { label: "Đã xem", tone: "neutral" },
 };
-const STATUS_FILTERS: Array<{ value: "" | "new" | "seen" | "resolved"; label: string }> = [
+const STATUS_FILTERS: Array<{
+  value: "" | "new" | "seen" | "resolved";
+  label: string;
+}> = [
   { value: "", label: "Mọi trạng thái" },
   { value: "new", label: "Chờ xem" },
   { value: "seen", label: "Đã xem" },
@@ -83,9 +90,7 @@ const fmt = (iso: string) => new Date(iso).toLocaleDateString("vi-VN");
 const isEditable = (r: MyFeedbackRow) => r.status === "new";
 
 type PanelState =
-  | null
-  | { mode: "new" }
-  | { mode: "view" | "edit"; row: MyFeedbackRow };
+  null | { mode: "new" } | { mode: "view" | "edit"; row: MyFeedbackRow };
 
 /**
  * /gop-y — danh sách góp ý của chính mình (đủ thêm / xem / sửa / xoá), bố cục
@@ -101,7 +106,12 @@ export default function MyFeedback() {
   const [panel, setPanel] = useState<PanelState>(null);
   const closePanel = () => setPanel(null);
 
-  const { data = [], isLoading, error, refetch } = useQuery({
+  const {
+    data = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["my-feedback"],
     queryFn: () => listMyFeedback(),
     enabled: !!user?.id,
@@ -118,7 +128,10 @@ export default function MyFeedback() {
       return (
         (!status || view === status) &&
         (!category || r.category === category) &&
-        (!q || unaccent(`${r.message} ${r.admin_reply ?? ""}`).toLowerCase().includes(q))
+        (!q ||
+          unaccent(`${r.message} ${r.admin_reply ?? ""}`)
+            .toLowerCase()
+            .includes(q))
       );
     });
   }, [data, search, status, category]);
@@ -131,9 +144,10 @@ export default function MyFeedback() {
     onSuccess: () => {
       void invalidate();
       closePanel();
-      toast.success("Đã xoá góp ý");
+      toast.success(t`Đã xoá góp ý`);
     },
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   return (
@@ -142,24 +156,29 @@ export default function MyFeedback() {
       <main className="container max-w-4xl space-y-4 px-4 py-6">
         <PageHeader
           icon={<IconMail className="h-7 w-7" />}
-          title="Góp ý của tôi"
-          description="Các góp ý bạn đã gửi, trạng thái xử lý và phản hồi của quản trị."
+          title={t`Góp ý của tôi`}
+          description={t`Các góp ý bạn đã gửi, trạng thái xử lý và phản hồi của quản trị.`}
           actionsBelow
-          actions={<Fab onClick={() => setPanel({ mode: "new" })} label="Gửi góp ý" />}
+          actions={
+            <Fab
+              onClick={() => setPanel({ mode: "new" })}
+              label={t`Gửi góp ý`}
+            />
+          }
         />
 
         <SidePanel
           open={panel !== null}
           title={
             panel?.mode === "new"
-              ? "Gửi góp ý"
+              ? t`Gửi góp ý`
               : panel?.mode === "edit"
-                ? "Sửa góp ý"
-                : "Góp ý của tôi"
+                ? t`Sửa góp ý`
+                : t`Góp ý của tôi`
           }
           subtitle={
             panel?.mode === "new"
-              ? "Mọi phản hồi đều giúp app tốt hơn. Viết ngắn cũng được."
+              ? t`Mọi phản hồi đều giúp app tốt hơn. Viết ngắn cũng được.`
               : undefined
           }
           onClose={closePanel}
@@ -167,7 +186,9 @@ export default function MyFeedback() {
         >
           {panel && (
             <FeedbackForm
-              key={panel.mode === "new" ? "new" : `${panel.mode}-${panel.row.id}`}
+              key={
+                panel.mode === "new" ? "new" : `${panel.mode}-${panel.row.id}`
+              }
               row={panel.mode === "new" ? null : panel.row}
               readOnly={panel.mode === "view"}
               onSaved={() => {
@@ -175,16 +196,23 @@ export default function MyFeedback() {
                 void invalidate();
               }}
               onCancel={() =>
-                setPanel(panel.mode === "edit" ? { mode: "view", row: panel.row } : null)
+                setPanel(
+                  panel.mode === "edit"
+                    ? { mode: "view", row: panel.row }
+                    : null,
+                )
               }
-              onEdit={() => panel.mode === "view" && setPanel({ mode: "edit", row: panel.row })}
+              onEdit={() =>
+                panel.mode === "view" &&
+                setPanel({ mode: "edit", row: panel.row })
+              }
               onDelete={
                 panel.mode === "edit"
                   ? async () => {
                       const ok = await confirm({
-                        title: "Xoá góp ý này?",
-                        description: "Quản trị sẽ không còn thấy nó.",
-                        confirmLabel: "Xoá",
+                        title: t`Xoá góp ý này?`,
+                        description: t`Quản trị sẽ không còn thấy nó.`,
+                        confirmLabel: t`Xoá`,
                         destructive: true,
                       });
                       if (ok) delM.mutate(panel.row.id);
@@ -203,16 +231,16 @@ export default function MyFeedback() {
             setCategory("");
             paging.patchAndResetPage({});
           }}
-          title="Lọc góp ý"
+          title={t`Lọc góp ý`}
           search={(toggle) => (
             <SearchInput
-              label="Tìm góp ý"
+              label={t`Tìm góp ý`}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 paging.patchAndResetPage({});
               }}
-              placeholder="Tìm trong nội dung góp ý và phản hồi…"
+              placeholder={t`Tìm trong nội dung góp ý và phản hồi…`}
               rightSlot={toggle}
             />
           )}
@@ -224,7 +252,7 @@ export default function MyFeedback() {
                 setStatus(e.target.value as typeof status);
                 paging.patchAndResetPage({});
               }}
-              aria-label="Lọc theo trạng thái"
+              aria-label={t`Lọc theo trạng thái`}
               icon={<IconCheck />}
               className="h-11 w-full text-base"
             >
@@ -240,11 +268,11 @@ export default function MyFeedback() {
                 setCategory(e.target.value as FeedbackCategory | "");
                 paging.patchAndResetPage({});
               }}
-              aria-label="Lọc theo loại"
+              aria-label={t`Lọc theo loại`}
               icon={<IconTag />}
               className="h-11 w-full text-base"
             >
-              <option value="">Mọi loại</option>
+              <option value="">{t`Mọi loại`}</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {CATEGORY_LABEL[c]}
@@ -256,7 +284,7 @@ export default function MyFeedback() {
 
         {isLoading && (
           <div className="rounded-xl border bg-card p-4 shadow-sm">
-            <p className="text-muted-foreground">Đang tải…</p>
+            <p className="text-muted-foreground">{t`Đang tải…`}</p>
           </div>
         )}
         {error && <ErrorState error={error} onRetry={() => void refetch()} />}
@@ -264,22 +292,26 @@ export default function MyFeedback() {
         {!isLoading && !error && data.length === 0 && (
           <EmptyState
             icon={<IconScroll className="h-10 w-10" />}
-            title="Bạn chưa gửi góp ý nào"
-            description="Bấm nút '+' để gửi góp ý hoặc báo lỗi. Trạng thái xử lý và phản hồi của quản trị sẽ hiện ở đây."
+            title={t`Bạn chưa gửi góp ý nào`}
+            description={t`Bấm nút '+' để gửi góp ý hoặc báo lỗi. Trạng thái xử lý và phản hồi của quản trị sẽ hiện ở đây.`}
           />
         )}
         {!isLoading && data.length > 0 && filtered.length === 0 && (
           <EmptyState
             icon={<IconSearch className="h-10 w-10" />}
-            title="Không có góp ý nào khớp"
-            description="Thử bỏ bớt bộ lọc hoặc từ khoá."
+            title={t`Không có góp ý nào khớp`}
+            description={t`Thử bỏ bớt bộ lọc hoặc từ khoá.`}
           />
         )}
 
         {filtered.length > 0 && (
           <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
             {paging.paged.map((r) => (
-              <FeedbackRowItem key={r.id} row={r} onOpen={() => setPanel({ mode: "view", row: r })} />
+              <FeedbackRowItem
+                key={r.id}
+                row={r}
+                onOpen={() => setPanel({ mode: "view", row: r })}
+              />
             ))}
           </ul>
         )}
@@ -289,7 +321,7 @@ export default function MyFeedback() {
             totalPages={paging.totalPages}
             total={paging.total}
             pageSize={paging.pageSize}
-            unit="góp ý"
+            unit={t`góp ý`}
             onPageChange={paging.setPage}
             pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
             onPageSizeChange={paging.setPageSize}
@@ -300,7 +332,13 @@ export default function MyFeedback() {
   );
 }
 
-function FeedbackRowItem({ row, onOpen }: { row: MyFeedbackRow; onOpen: () => void }) {
+function FeedbackRowItem({
+  row,
+  onOpen,
+}: {
+  row: MyFeedbackRow;
+  onOpen: () => void;
+}) {
   const cat = CATEGORY_STYLE[row.category];
   const st = STATUS_VIEW[row.status];
   return (
@@ -312,18 +350,25 @@ function FeedbackRowItem({ row, onOpen }: { row: MyFeedbackRow; onOpen: () => vo
       >
         <IconTile icon={cat.icon} tone={cat.tone} />
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 whitespace-pre-wrap break-words font-semibold">{row.message}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{fmt(row.created_at)}</p>
+          <p className="line-clamp-2 whitespace-pre-wrap break-words font-semibold">
+            {row.message}
+          </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {fmt(row.created_at)}
+          </p>
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
             <Chip tone={cat.tone} icon={<cat.icon />}>
               {CATEGORY_LABEL[row.category]}
             </Chip>
             {row.admin_reply && (
               <Chip tone="primary" icon={<IconMail />}>
-                Có phản hồi
+                {t`Có phản hồi`}
               </Chip>
             )}
-            <Chip tone={st.tone} icon={row.status === "new" ? <IconBell /> : <IconCheck />}>
+            <Chip
+              tone={st.tone}
+              icon={row.status === "new" ? <IconBell /> : <IconCheck />}
+            >
               {st.label}
             </Chip>
           </div>
@@ -353,7 +398,9 @@ function FeedbackForm({
 }) {
   const toast = useToast();
   const [message, setMessage] = useState(row?.message ?? "");
-  const [category, setCategory] = useState<FeedbackCategory>(row?.category ?? "idea");
+  const [category, setCategory] = useState<FeedbackCategory>(
+    row?.category ?? "idea",
+  );
   const [contact, setContact] = useState(row?.contact ?? "");
 
   const save = useMutation({
@@ -367,16 +414,20 @@ function FeedbackForm({
         ? updateMyFeedback(row.id, payload)
         : submitFeedback({
             ...payload,
-            pageUrl: typeof window === "undefined" ? null : window.location.href,
+            pageUrl:
+              typeof window === "undefined" ? null : window.location.href,
           });
     },
     onSuccess: () => {
-      toast.success(row ? "Đã cập nhật góp ý" : "Đã gửi góp ý", {
-        description: row ? undefined : "Cảm ơn bạn — chúng tôi sẽ xem sớm nhất.",
+      toast.success(row ? t`Đã cập nhật góp ý` : t`Đã gửi góp ý`, {
+        description: row
+          ? undefined
+          : t`Cảm ơn bạn — chúng tôi sẽ xem sớm nhất.`,
       });
       onSaved();
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   const st = row ? STATUS_VIEW[row.status] : null;
@@ -391,7 +442,7 @@ function FeedbackForm({
     >
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-1.5">
-          <Label htmlFor="fb-category">Loại phản hồi</Label>
+          <Label htmlFor="fb-category">{t`Loại phản hồi`}</Label>
           <Select
             id="fb-category"
             icon={<IconTag />}
@@ -408,17 +459,17 @@ function FeedbackForm({
         </div>
         <Textarea
           id="fb-message"
-          label="Nội dung"
+          label={t`Nội dung`}
           icon={<IconScroll />}
           required
           maxLength={5000}
           rows={4}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…"
+          placeholder={t`Vd: Khi bấm 'Lưu' thì hiện trang trắng, hoặc app thiếu chỗ ghi 'tên thường gọi'…`}
         />
         <div className="space-y-1.5">
-          <Label htmlFor="fb-contact">Cách liên lạc lại (tuỳ chọn)</Label>
+          <Label htmlFor="fb-contact">{t`Cách liên lạc lại (tuỳ chọn)`}</Label>
           <Input
             id="fb-contact"
             icon={<IconMail />}
@@ -426,10 +477,10 @@ function FeedbackForm({
             maxLength={200}
             value={contact}
             onChange={(e) => setContact(e.target.value)}
-            placeholder="Email / số điện thoại / Zalo — để trống cũng được"
+            placeholder={t`Email / số điện thoại / Zalo — để trống cũng được`}
           />
           <p className="text-xs text-muted-foreground">
-            Chỉ quản trị xem được; không hiện cho người khác trong họ.
+            {t`Chỉ quản trị xem được; không hiện cho người khác trong họ.`}
           </p>
         </div>
       </ReadOnlyFieldset>
@@ -437,29 +488,38 @@ function FeedbackForm({
       {row && st && (
         <div className="space-y-2 rounded-xl border bg-muted/30 p-3">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Chip tone={st.tone} icon={row.status === "new" ? <IconBell /> : <IconCheck />}>
+            <Chip
+              tone={st.tone}
+              icon={row.status === "new" ? <IconBell /> : <IconCheck />}
+            >
               {st.label}
             </Chip>
-            <span className="text-xs text-muted-foreground">Gửi ngày {fmt(row.created_at)}</span>
+            <span className="text-xs text-muted-foreground">
+              Gửi ngày {fmt(row.created_at)}
+            </span>
           </div>
           {row.admin_reply ? (
             <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-2.5">
               <p className="text-xs font-medium text-primary">
-                Phản hồi từ quản trị{row.replied_at ? ` · ${fmt(row.replied_at)}` : ""}
+                Phản hồi từ quản trị
+                {row.replied_at ? ` · ${fmt(row.replied_at)}` : ""}
               </p>
-              <p className="whitespace-pre-wrap break-words text-sm">{row.admin_reply}</p>
+              <p className="whitespace-pre-wrap break-words text-sm">
+                {row.admin_reply}
+              </p>
             </div>
           ) : row.status === "resolved" ? (
             <p className="text-xs text-muted-foreground">
-              Quản trị đã xử lý{row.resolved_at ? ` ngày ${fmt(row.resolved_at)}` : ""}.
+              Quản trị đã xử lý
+              {row.resolved_at ? t` ngày ${fmt(row.resolved_at)}` : ""}.
             </p>
           ) : row.status === "new" ? (
             <p className="text-xs text-muted-foreground">
-              Quản trị chưa xem. Bạn vẫn sửa hoặc xoá được góp ý này.
+              {t`Quản trị chưa xem. Bạn vẫn sửa hoặc xoá được góp ý này.`}
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Quản trị đã xem nên góp ý này không sửa hoặc xoá được nữa.
+              {t`Quản trị đã xem nên góp ý này không sửa hoặc xoá được nữa.`}
             </p>
           )}
         </div>
@@ -474,7 +534,7 @@ function FeedbackForm({
         deleteDisabled={deleting}
         saving={save.isPending}
         canSave={message.trim().length > 0}
-        saveLabel={row ? "Lưu" : "Gửi"}
+        saveLabel={row ? t`Lưu` : t`Gửi`}
       />
     </form>
   );

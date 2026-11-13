@@ -11,6 +11,7 @@ import {
   type SubScope,
 } from "@/lib/queries/subscriptions";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   clanId: string;
   scope: SubScope;
@@ -79,10 +80,10 @@ export function SubscribeToggle({
       qc.invalidateQueries({
         queryKey: queryKeys.subscriptions(clanId, userId),
       });
-      toast.success(existing ? "Đã huỷ theo dõi" : "Đã bật theo dõi");
+      toast.success(existing ? t`Đã huỷ theo dõi` : t`Đã bật theo dõi`);
     },
     onError: (e) =>
-      toast.error("Không cập nhật được", {
+      toast.error(t`Không cập nhật được`, {
         description: (e as Error).message,
       }),
   });

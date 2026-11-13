@@ -2,10 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 
-import {
-  IconSearch,
-  IconUser,
-} from "@/components/icons";
+import { IconSearch, IconUser } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
@@ -14,6 +11,8 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
 import { matchesName } from "@/lib/unaccent";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const PICKER_CAP = 1000;
 
 /**
@@ -56,13 +55,13 @@ export function KinshipContent({
     return computeKinship(aId, bId, data.byId);
   }, [data, aId, bId]);
 
-  const personA = aId ? data?.byId.get(aId) ?? null : null;
-  const personB = bId ? data?.byId.get(bId) ?? null : null;
+  const personA = aId ? (data?.byId.get(aId) ?? null) : null;
+  const personB = bId ? (data?.byId.get(bId) ?? null) : null;
 
   if (!isMember) {
     return (
       <p className="text-sm text-muted-foreground">
-        Bạn cần là thành viên dòng họ để tra cứu xưng hô.
+        {t`Bạn cần là thành viên dòng họ để tra cứu xưng hô.`}
       </p>
     );
   }
@@ -70,8 +69,14 @@ export function KinshipContent({
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền thống Việt —
-        anh/em, chú/bác/cô/cậu/dì, anh em họ…
+        <Trans>
+          <Trans>
+            <Trans>
+              Chọn hai người trong họ, app sẽ tính cách xưng hô theo truyền
+              thống Việt — anh/em, chú/bác/cô/cậu/dì, anh em họ…
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
 
       {error && (
@@ -80,18 +85,20 @@ export function KinshipContent({
         </Alert>
       )}
 
-      {isLoading && <p className="text-muted-foreground">Đang tải danh bạ…</p>}
+      {isLoading && (
+        <p className="text-muted-foreground">{t`Đang tải danh bạ…`}</p>
+      )}
 
       {data && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <PersonPicker
-            label="Người A"
+            label={t`Người A`}
             persons={data.ordered}
             value={aId}
             onChange={(id) => setPick("a", id)}
           />
           <PersonPicker
-            label="Người B"
+            label={t`Người B`}
             persons={data.ordered}
             value={bId}
             onChange={(id) => setPick("b", id)}
@@ -101,10 +108,10 @@ export function KinshipContent({
 
       {result && personA && personB && (
         <section className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
-          <h2 className="text-lg font-semibold">Kết quả</h2>
+          <h2 className="text-lg font-semibold">{t`Kết quả`}</h2>
 
           {result.kind === "same" ? (
-            <p className="text-muted-foreground">Cùng một người.</p>
+            <p className="text-muted-foreground">{t`Cùng một người.`}</p>
           ) : result.kind === "unrelated" ? (
             <Alert>
               <AlertDescription>{result.reason}</AlertDescription>
@@ -133,7 +140,7 @@ export function KinshipContent({
 
       {data && (!aId || !bId) && (
         <p className="text-sm text-muted-foreground">
-          Chọn đủ hai người để xem kết quả.
+          {t`Chọn đủ hai người để xem kết quả.`}
         </p>
       )}
     </div>
@@ -164,9 +171,12 @@ function PersonPicker({
     const matched = filter.trim()
       ? persons.filter((p) => matchesName(p.full_name, filter))
       : persons;
-    return { filtered: matched.slice(0, PICKER_CAP), totalMatched: matched.length };
+    return {
+      filtered: matched.slice(0, PICKER_CAP),
+      totalMatched: matched.length,
+    };
   }, [filter, persons]);
-  const selected = value ? persons.find((p) => p.id === value) ?? null : null;
+  const selected = value ? (persons.find((p) => p.id === value) ?? null) : null;
 
   return (
     <div className="rounded-md border bg-background p-3 space-y-2">
@@ -187,28 +197,28 @@ function PersonPicker({
             onClick={() => onChange("")}
             className="ml-auto text-xs text-muted-foreground hover:text-foreground"
           >
-            Bỏ chọn
+            {t`Bỏ chọn`}
           </button>
         </div>
       )}
       <Input
         icon={<IconSearch />}
-        data-testid={`kinship-picker-${label === "Người A" ? "a" : "b"}-input`}
+        data-testid={t`kinship-picker-${label === "Người A" ? "a" : "b"}-input`}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        placeholder={selected ? "Đổi người…" : "Tìm theo tên (không cần dấu)"}
+        placeholder={selected ? t`Đổi người…` : t`Tìm theo tên (không cần dấu)`}
       />
       {totalMatched > 0 && (
         <p className="text-xs text-muted-foreground">
           {totalMatched > PICKER_CAP
-            ? `Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
-            : `Hiện ${totalMatched} kết quả.`}
+            ? t`Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
+            : t`Hiện ${totalMatched} kết quả.`}
         </p>
       )}
       <ul className="max-h-64 overflow-y-auto border rounded-md divide-y text-sm">
         {filtered.length === 0 && (
           <li className="px-2 py-2 text-muted-foreground italic">
-            Không có kết quả.
+            {t`Không có kết quả.`}
           </li>
         )}
         {filtered.map((p) => {
