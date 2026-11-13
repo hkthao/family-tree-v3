@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface Props {
@@ -27,7 +28,8 @@ interface Props {
  * stack; otherwise use the explicit fallback so deep links / refresh
  * still land somewhere sensible.
  */
-export function BackLink({ fallback, label = "Quay lại", className }: Props) {
+export function BackLink({ fallback, label, className }: Props) {
+  label = label ?? t`Quay lại`;
   const navigate = useNavigate();
   const location = useLocation();
 

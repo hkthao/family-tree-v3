@@ -95,12 +95,12 @@ function addDays(iso: string, n: number): string {
 
 type RangeMode = "7" | "30" | "90" | "custom";
 
-const RANGE_OPTIONS: { key: RangeMode; label: string }[] = [
-  { key: "7", label: "7 ngày" },
-  { key: "30", label: "30 ngày" },
-  { key: "90", label: "3 tháng" },
-  { key: "custom", label: "Tùy chọn" },
-];
+const RANGE_OPTIONS: { key: RangeMode; label: string }[] = lazyMessages([
+  { key: "7", label: msg`7 ngày` },
+  { key: "30", label: msg`30 ngày` },
+  { key: "90", label: msg`3 tháng` },
+  { key: "custom", label: msg`Tùy chọn` },
+]) as unknown as { key: RangeMode; label: string }[];
 
 /**
  * Trang "Xem ngày tốt" — liệt kê các NGÀY ĐẸP cho một việc lớn (cưới hỏi,

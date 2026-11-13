@@ -29,12 +29,14 @@ import {
 import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 const CATS = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
-const STATUSES: { value: CustomStatus; label: string }[] = [
-  { value: "draft", label: "Nháp" },
-  { value: "needs_review", label: "Chờ duyệt" },
-  { value: "published", label: "Công khai" },
-];
+const STATUSES: { value: CustomStatus; label: string }[] = lazyMessages([
+  { value: "draft", label: msg`Nháp` },
+  { value: "needs_review", label: msg`Chờ duyệt` },
+  { value: "published", label: msg`Công khai` },
+]) as unknown as { value: CustomStatus; label: string }[];
 
 interface PreviewItem extends ParsedCustomEntry {
   duplicate: boolean;
@@ -48,7 +50,9 @@ interface ImportResult {
   failed: { title: string; error: string }[];
 }
 
-export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } = {}) {
+export default function CustomsImport({
+  embedded,
+}: { embedded?: EmbeddedForm } = {}) {
   const { user, loading: authLoading } = useAuth();
   const userId = user?.id ?? "";
   const navigate = useNavigate();
@@ -102,7 +106,10 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
       const res: ImportResult = { created: [], skipped: [], failed: [] };
       for (const p of preview) {
         if (p.skip) {
-          res.skipped.push({ title: p.title || "(không tiêu đề)", reason: p.skip });
+          res.skipped.push({
+            title: p.title || "(không tiêu đề)",
+            reason: p.skip,
+          });
           continue;
         }
         try {
@@ -133,7 +140,10 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
           });
           res.created.push({ title: p.title.trim(), id });
         } catch (e) {
-          res.failed.push({ title: p.title.trim(), error: (e as Error).message });
+          res.failed.push({
+            title: p.title.trim(),
+            error: (e as Error).message,
+          });
         }
       }
       return res;
@@ -142,43 +152,50 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
       setResult(res);
       qc.invalidateQueries({ queryKey: ["customs"] });
       qc.invalidateQueries({ queryKey: ["customs-lite"] });
-      toast.success(`Đã tạo ${res.created.length} bài.`);
+      toast.success(t`Đã tạo ${res.created.length} bài.`);
     },
     onError: (e) => toast.error((e as Error).message),
   });
 
   if (authLoading || (!!userId && profile === undefined)) {
-    const loading = <p className="text-muted-foreground">Đang tải…</p>;
+    const loading = <p className="text-muted-foreground">{t`Đang tải…`}</p>;
     return embedded ? loading : <Shell>{loading}</Shell>;
   }
   if (!profile?.is_platform_admin) {
-    if (embedded) return <p className="text-sm text-muted-foreground">Chỉ quản trị nền tảng được nhập Sổ tay.</p>;
+    if (embedded)
+      return (
+        <p className="text-sm text-muted-foreground">{t`Chỉ quản trị nền tảng được nhập Sổ tay.`}</p>
+      );
     return <Navigate to="/so-tay" replace />;
   }
 
   const toggleRegion = (r: string) =>
-    setRegions((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]));
+    setRegions((prev) =>
+      prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r],
+    );
 
   const content = (
     <>
       {!embedded && (
         <>
           <Link to="/so-tay" className="text-sm text-primary hover:underline">
-            ← Sổ tay Văn hoá
+            {t`← Sổ tay Văn hoá`}
           </Link>
-          <h1 className="clan-name text-2xl font-semibold">Nhập hàng loạt từ Markdown</h1>
+          <h1 className="clan-name text-2xl font-semibold">{t`Nhập hàng loạt từ Markdown`}</h1>
         </>
       )}
       <p className="text-sm text-muted-foreground">
-        Dán nhiều bài, mỗi bài bắt đầu bằng <code>#</code> Tiêu đề. Trong mỗi bài:
-        đoạn mở đầu là mô tả ngắn, mỗi <code>##</code> là một đoạn,
+        Dán nhiều bài, mỗi bài bắt đầu bằng <code>#</code> Tiêu đề. Trong mỗi
+        bài: đoạn mở đầu là mô tả ngắn, mỗi <code>##</code> là một đoạn,
         <code> ![chú thích](https://…)</code> làm ảnh minh hoạ, đoạn
         <code> ## Câu hỏi thường gặp</code> với các <code>###</code> thành FAQ.
-        Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong lần nhập này.
+        Chủ đề / vùng miền / trạng thái bên dưới áp dụng cho tất cả bài trong
+        lần nhập này.
       </p>
 
       <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-primary hover:underline">
-        <IconUpload className="h-4 w-4" /> Chọn file .md (có thể chọn nhiều)…
+        <IconUpload className="h-4 w-4" />{" "}
+        {t`Chọn file .md (có thể chọn nhiều)…`}
         <input
           type="file"
           accept=".md,.markdown,text/markdown,text/plain"
@@ -188,7 +205,9 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
             const files = Array.from(e.target.files ?? []);
             if (files.length) {
               const texts = await Promise.all(files.map((f) => f.text()));
-              setMdText((prev) => [prev, ...texts].filter((t) => t.trim()).join("\n\n"));
+              setMdText((prev) =>
+                [prev, ...texts].filter((t) => t.trim()).join("\n\n"),
+              );
               setResult(null);
             }
             e.target.value = "";
@@ -202,13 +221,15 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
           setResult(null);
         }}
         rows={14}
-        placeholder={"# Bài thứ nhất\n\nMô tả ngắn…\n\n## Ý nghĩa\n…\n\n# Bài thứ hai\n\n## Ý nghĩa\n…"}
+        placeholder={
+          "# Bài thứ nhất\n\nMô tả ngắn…\n\n## Ý nghĩa\n…\n\n# Bài thứ hai\n\n## Ý nghĩa\n…"
+        }
         className="font-mono text-sm leading-relaxed resize-y"
       />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="i-cat">Chủ đề (áp dụng cho tất cả)</Label>
+          <Label htmlFor="i-cat">{t`Chủ đề (áp dụng cho tất cả)`}</Label>
           <Select
             id="i-cat"
             icon={<IconTag />}
@@ -223,7 +244,7 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="i-status">Trạng thái</Label>
+          <Label htmlFor="i-status">{t`Trạng thái`}</Label>
           <Select
             id="i-status"
             icon={<IconCheck />}
@@ -240,7 +261,7 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
       </div>
 
       <div className="space-y-2">
-        <Label>Vùng miền (áp dụng cho tất cả)</Label>
+        <Label>{t`Vùng miền (áp dụng cho tất cả)`}</Label>
         <div className="flex flex-wrap gap-2">
           {CUSTOM_REGIONS.map((r) => (
             <button
@@ -266,18 +287,25 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
           </Label>
           <ul className="rounded-xl border bg-card shadow-sm divide-y text-sm">
             {preview.map((p, i) => (
-              <li key={i} className="flex items-center justify-between gap-3 px-3 py-2">
+              <li
+                key={i}
+                className="flex items-center justify-between gap-3 px-3 py-2"
+              >
                 <div className="min-w-0">
-                  <span className="font-medium">{p.title || "(không tiêu đề)"}</span>
+                  <span className="font-medium">
+                    {p.title || "(không tiêu đề)"}
+                  </span>
                   <span className="text-muted-foreground">
                     {" "}
                     · {p.sections.length} đoạn · {p.faq.length} câu hỏi
                   </span>
                 </div>
                 {p.skip ? (
-                  <span className="shrink-0 text-xs text-amber-700">↷ {p.skip}</span>
+                  <span className="shrink-0 text-xs text-amber-700">
+                    ↷ {p.skip}
+                  </span>
                 ) : (
-                  <span className="shrink-0 text-xs text-emerald-700">✓ sẽ tạo</span>
+                  <span className="shrink-0 text-xs text-emerald-700">{t`✓ sẽ tạo`}</span>
                 )}
               </li>
             ))}
@@ -287,29 +315,43 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
 
       {result && (
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-1 text-sm">
-          <p className="font-medium text-emerald-700">Đã tạo {result.created.length} bài.</p>
+          <p className="font-medium text-emerald-700">
+            Đã tạo {result.created.length} bài.
+          </p>
           {result.skipped.length > 0 && (
             <p className="text-amber-700">
-              Bỏ qua {result.skipped.length}: {result.skipped.map((s) => `${s.title} (${s.reason})`).join("; ")}
+              Bỏ qua {result.skipped.length}:{" "}
+              {result.skipped.map((s) => `${s.title} (${s.reason})`).join("; ")}
             </p>
           )}
           {result.failed.length > 0 && (
             <p className="text-destructive">
-              Lỗi {result.failed.length}: {result.failed.map((f) => `${f.title} (${f.error})`).join("; ")}
+              Lỗi {result.failed.length}:{" "}
+              {result.failed.map((f) => `${f.title} (${f.error})`).join("; ")}
             </p>
           )}
           <div className="pt-1">
-            <Button size="sm" variant="outline" onClick={() => (embedded ? embedded.onDone() : navigate("/so-tay"))}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() =>
+                embedded ? embedded.onDone() : navigate("/so-tay")
+              }
+            >
               <IconList className="h-4 w-4 mr-1.5" />
-              Về danh sách
+              {t`Về danh sách`}
             </Button>
           </div>
         </div>
       )}
 
       <FormActions>
-        <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate("/so-tay"))}>
-          Hủy
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => (embedded ? embedded.onCancel() : navigate("/so-tay"))}
+        >
+          {t`Hủy`}
         </Button>
         <Button
           type="button"
@@ -317,19 +359,25 @@ export default function CustomsImport({ embedded }: { embedded?: EmbeddedForm } 
           onClick={() => run.mutate()}
         >
           <IconCheck className="h-4 w-4 mr-1.5" />
-          {run.isPending ? "Đang tạo…" : `Tạo ${importable.length} bài`}
+          {run.isPending ? "Đang tạo…" : t`Tạo ${importable.length} bài`}
         </Button>
       </FormActions>
     </>
   );
-  return embedded ? <div className="space-y-3">{content}</div> : <Shell>{content}</Shell>;
+  return embedded ? (
+    <div className="space-y-3">{content}</div>
+  ) : (
+    <Shell>{content}</Shell>
+  );
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-3">{children}</main>
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
+        {children}
+      </main>
     </div>
   );
 }

@@ -89,12 +89,13 @@ import {
 } from "@/lib/upcomingEvents";
 
 import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
-const LOOKAHEAD_OPTIONS = [
-  { label: "30 ngày", value: 30 },
-  { label: "90 ngày", value: 90 },
-  { label: "Cả năm", value: 365 },
-];
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const LOOKAHEAD_OPTIONS = lazyMessages([
+  { label: msg`30 ngày`, value: 30 },
+  { label: msg`90 ngày`, value: 90 },
+  { label: msg`Cả năm`, value: 365 },
+]);
 
 export default function Events() {
   const { clan } = useClanContext();
