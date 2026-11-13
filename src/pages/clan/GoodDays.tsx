@@ -200,7 +200,7 @@ export default function GoodDays() {
           onClick={() => setShowOpts((v) => !v)}
           className="text-sm text-primary hover:underline"
         >
-          ⚙ Tuỳ chọn hiển thị {showOpts ? "▲" : "▼"}
+          ⚙ {t`Tuỳ chọn hiển thị`} {showOpts ? "▲" : "▼"}
         </button>
         {showOpts && (
           <div className="mt-2 rounded-lg border bg-muted/20 p-3">

@@ -403,6 +403,10 @@ msgstr "{diffMin} minutes"
 msgid "{diffMin} phút trước"
 msgstr "{diffMin} minutes ago"
 
+#: src/components/ClanBadges.tsx
+msgid "{doi} đời"
+msgstr "{doi} generations"
+
 #: src/pages/clan/EditPerson.tsx
 msgid "{hours} giờ trước"
 msgstr "{hours} hours ago"
@@ -489,6 +493,10 @@ msgstr "+ Expand"
 #: src/components/ContributionDiffView.tsx
 msgid "+ Thêm mới"
 msgstr "+ Add new"
+
+#: src/components/ClanBadges.tsx
+msgid "+{grow} tháng này"
+msgstr "+{grow} this month"
 
 #: src/pages/clan/People.tsx
 msgid "<0>Dòng họ chưa có Thuỷ tổ.</0> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ đúng."
@@ -1325,8 +1333,13 @@ msgid "Bỏ liên kết"
 msgstr "Remove link"
 
 #: src/components/CollapsibleFilters.tsx
+#: src/components/CollapsibleFilters.tsx
 msgid "Bộ lọc"
 msgstr "Filters"
+
+#: src/components/FilterDrawer.tsx
+msgid "Bộ lọc & tuỳ chọn"
+msgstr "Filters & options"
 
 #: src/pages/CustomsDetail.tsx
 msgid "Bỏ lưu"
@@ -1627,6 +1640,10 @@ msgstr "Updated {updated}"
 #: src/components/RecordDates.tsx
 msgid "Cập nhật {updatedFull}"
 msgstr "Updated {updatedFull}"
+
+#: src/lib/queries/clans.ts
+msgid "Cập nhật gần đây"
+msgstr "Recently updated"
 
 #: src/components/MyProfileCard.tsx
 msgid "Cập nhật hồ sơ của tôi"
@@ -2640,6 +2657,10 @@ msgstr "Tools & Admin"
 msgid "Công cụ thiết kế"
 msgstr "Design tools"
 
+#: src/pages/Clans.tsx
+msgid "Cộng đồng"
+msgstr "Community"
+
 #: src/lib/navModel.tsx
 msgid "Cộng đồng & Di sản"
 msgstr "Community & Heritage"
@@ -2668,6 +2689,10 @@ msgstr "CSV is imported via \"Import from Excel\" (the same 9 columns as the tem
 #: src/components/ContributeDialog.tsx
 msgid "Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
 msgstr "He served as village head of X from 1932 to 1945…"
+
+#: src/pages/Clans.tsx
+msgid "Của tôi"
+msgstr "Mine"
 
 #: src/pages/clan/Settings.tsx
 msgid "Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng loạt rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên tự, ảnh, nơi sinh…) không được mang theo."
@@ -4064,6 +4089,10 @@ msgstr "Give it a name and a few basic details — once created the clan is empt
 msgid "Dâu/rể bên {0}"
 msgstr "In-laws on the {0} side"
 
+#: src/components/ClanBadges.tsx
+msgid "Đầy đủ {pctBirth}%"
+msgstr "{pctBirth}% complete"
+
 #: src/pages/clan/Inlaws.tsx
 msgid "Đề nghị gửi thẳng tới dòng họ công khai — chờ admin bên kia xác nhận trong /inlaws của họ."
 msgstr "Request sent straight to a public clan — waiting for the admin on the other side to confirm in their /inlaws."
@@ -5398,6 +5427,7 @@ msgstr "Ask about the family tree…"
 
 #: src/components/ClanLayout.tsx
 #: src/components/EventsCalendar.tsx
+#: src/components/TodayHubCard.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
@@ -5414,6 +5444,10 @@ msgstr "Today — {label}"
 #: src/components/TodayHubCard.tsx
 msgid "Hôm nay trong dòng họ"
 msgstr "Today in the clan"
+
+#: src/components/TodayHubCard.tsx
+msgid "Hôm qua"
+msgstr "Yesterday"
 
 #: src/components/TodayHubCard.tsx
 msgid "Hôm sau"
@@ -6802,6 +6836,10 @@ msgstr "Shortcuts to the management and data-export pages."
 msgid "Lời trích / mô tả"
 msgstr "Quote / description"
 
+#: src/lib/queries/clans.ts
+msgid "Lớn (≥50)"
+msgstr "Large (≥50)"
+
 #: src/pages/clan/MapStats.tsx
 msgid "Lớp bản đồ"
 msgstr "Map layer"
@@ -7285,6 +7323,10 @@ msgstr "All actions"
 msgid "Mọi hình thức"
 msgstr "All types"
 
+#: src/lib/queries/clans.ts
+msgid "Mới khởi tạo (<5)"
+msgstr "Just started (<5)"
+
 #: src/pages/clan/Audit.tsx
 msgid "Mỗi lần thêm / sửa / xoá người, gia đình hay chi sẽ xuất hiện ở đây. Editor có thể khôi phục bằng một nút bấm."
 msgstr "Every time a person, family or branch is added / edited / deleted it appears here. An editor can restore it with one tap."
@@ -7335,6 +7377,10 @@ msgstr "All funds"
 #: src/components/ClanFormFields.tsx
 msgid "Mọi tài khoản đăng nhập xem được; người còn sống bị ẩn thông tin nhạy cảm."
 msgstr "Any signed-in account can view it; sensitive information about living people is hidden."
+
+#: src/lib/queries/clans.ts
+msgid "Mới tạo"
+msgstr "Newest"
 
 #: src/pages/clan/Mosaics.tsx
 msgid "Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ."
@@ -7463,6 +7509,8 @@ msgid "Năm"
 msgstr "Year"
 
 #. placeholder {0}: day.canChi.year
+#. placeholder {0}: info.canChi.year
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "Năm {0}"
 msgstr "Year {0}"
@@ -7562,7 +7610,10 @@ msgid "Ngày (tuỳ chọn)"
 msgstr "Date (optional)"
 
 #. placeholder {0}: d.getDate()
+#. placeholder {0}: info.lunar.day
 #. placeholder {1}: d.getMonth() + 1
+#. placeholder {1}: info.lunar.month
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Events.tsx
 msgid "Ngày {0} tháng {1}"
 msgstr "Day {0} month {1}"
@@ -7612,10 +7663,15 @@ msgstr "Death anniversary"
 msgid "Ngày giỗ, sinh nhật và sự kiện của dòng họ vào Google / Apple Calendar"
 msgstr "Your clan's death anniversaries, birthdays and events in Google / Apple Calendar"
 
+#: src/components/TodayHubCard.tsx
+msgid "Ngày kia"
+msgstr "The day after tomorrow"
+
 #: src/pages/clan/GoodDays.tsx
 msgid "Ngày kiêng dân gian"
 msgstr "Folk taboo day"
 
+#: src/components/TodayHubCard.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Ngày mai"
@@ -8075,6 +8131,10 @@ msgstr "Most people"
 #: src/components/gallery/GalleryScene.tsx
 msgid "Nhiều tầng"
 msgstr "Tiered"
+
+#: src/lib/queries/clans.ts
+msgid "Nhỏ (5–19)"
+msgstr "Small (5–19)"
 
 #: src/components/BookTextsSection.tsx
 msgid "Nhờ AI soạn: mô tả vài ý (nguồn gốc, quê quán, nghề nghiệp, truyền thống…)"
@@ -8800,6 +8860,10 @@ msgstr "The handbook is being compiled."
 msgid "Sổ tay Văn hoá"
 msgstr "Culture handbook"
 
+#: src/lib/queries/clans.ts
+msgid "Số thành viên (nhiều → ít)"
+msgstr "Number of members (most → fewest)"
+
 #: src/pages/clan/ClanFund.tsx
 msgid "Sổ thu/chi minh bạch — mọi thành viên đều xem được."
 msgstr "A transparent income / expense ledger — every member can see it."
@@ -9313,6 +9377,10 @@ msgstr "Year-end · New Year's Eve (Giao thừa)"
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Tên"
 msgstr "Name"
+
+#: src/lib/queries/clans.ts
+msgid "Tên (A → Z)"
+msgstr "Name (A → Z)"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Tên / tiêu đề"
@@ -10970,6 +11038,11 @@ msgstr "Canvas options"
 msgid "Tuỳ chọn cây"
 msgstr "Tree options"
 
+#: src/components/TodayHubCard.tsx
+#: src/pages/clan/GoodDays.tsx
+msgid "Tuỳ chọn hiển thị"
+msgstr "Display options"
+
 #: src/pages/NewClan.tsx
 msgid "Tuỳ chọn, in ở bìa và trang giới thiệu của sổ; điền sau cũng được."
 msgstr "Optional; printed on the cover and introduction page of the book. You can fill it in later."
@@ -11398,6 +11471,10 @@ msgstr "Gold ring"
 #: src/lib/festivals.ts
 msgid "Vu Lan · Rằm tháng Bảy"
 msgstr "Vu Lan · Full moon of the 7th lunar month (Ullambana)"
+
+#: src/lib/queries/clans.ts
+msgid "Vừa (20–49)"
+msgstr "Medium (20–49)"
 
 #: src/pages/clan/Tree.tsx
 msgid "Vừa (mặc định)"
@@ -11860,6 +11937,10 @@ msgstr "Clear search"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Xoá video"
 msgstr "Delete video"
+
+#: src/components/FilterDrawer.tsx
+msgid "Xong"
+msgstr "Done"
 
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Xử lý"

@@ -152,7 +152,7 @@ export function ClanBadges({
           title={t`Cây sâu ${doi} đời`}
           className="bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30"
         >
-          <IconTree className={ICON_CLS} /> {doi} đời
+          <IconTree className={ICON_CLS} /> {t`${doi} đời`}
         </Chip>
       )}
       {showComplete && (
@@ -160,7 +160,7 @@ export function ClanBadges({
           title={t`${pctBirth}% thành viên đã có năm sinh`}
           className="bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30"
         >
-          <IconCheck className={ICON_CLS} /> Đầy đủ {pctBirth}%
+          <IconCheck className={ICON_CLS} /> {t`Đầy đủ ${pctBirth}%`}
         </Chip>
       )}
       {showGrow && (
@@ -168,7 +168,7 @@ export function ClanBadges({
           title={t`Thêm ${grow} người trong 30 ngày qua`}
           className="bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30"
         >
-          <IconUserPlus className={ICON_CLS} /> +{grow} tháng này
+          <IconUserPlus className={ICON_CLS} /> {t`+${grow} tháng này`}
         </Chip>
       )}
       {isActive && (

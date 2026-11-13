@@ -41,10 +41,10 @@ function isoOf(d: Date) {
 
 /** Nhãn tương đối cho ngày đang xem, dễ hiểu cho người lớn tuổi. */
 function relativeLabel(offset: number): string {
-  if (offset === 0) return "Hôm nay";
-  if (offset === 1) return "Ngày mai";
-  if (offset === 2) return "Ngày kia";
-  if (offset === -1) return "Hôm qua";
+  if (offset === 0) return t`Hôm nay`;
+  if (offset === 1) return t`Ngày mai`;
+  if (offset === 2) return t`Ngày kia`;
+  if (offset === -1) return t`Hôm qua`;
   if (offset > 0) return t`${offset} ngày nữa`;
   return t`${-offset} ngày trước`;
 }
@@ -209,13 +209,13 @@ export function TodayHubCard({
                 </p>
                 {info && (
                   <p className="text-lg font-bold leading-snug sm:text-2xl">
-                    Ngày {info.lunar.day} tháng {info.lunar.month}
+                    {t`Ngày ${info.lunar.day} tháng ${info.lunar.month}`}
                     {leap}
                   </p>
                 )}
                 {info && (
                   <p className="text-sm text-muted-foreground">
-                    Năm {info.canChi.year}
+                    {t`Năm ${info.canChi.year}`}
                   </p>
                 )}
               </div>
@@ -433,7 +433,7 @@ export function TodayHubCard({
               onClick={() => setShowOpts((v) => !v)}
               className="w-full px-4 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
             >
-              ⚙ Tuỳ chọn hiển thị {showOpts ? "▲" : "▼"}
+              ⚙ {t`Tuỳ chọn hiển thị`} {showOpts ? "▲" : "▼"}
             </button>
             {showOpts && (
               <div className="px-4 pb-3">

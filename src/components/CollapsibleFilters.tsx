@@ -46,7 +46,7 @@ export function CollapsibleFilters({
       }`}
     >
       <IconFilter className="h-4 w-4" />
-      {!search && "Bộ lọc"}
+      {!search && t`Bộ lọc`}
       {activeCount > 0 && (
         <span
           className={`rounded-full bg-primary px-1.5 text-xs text-primary-foreground ${
