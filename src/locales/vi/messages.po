@@ -471,6 +471,10 @@ msgstr "+ Mở rộng"
 msgid "+ Thêm mới"
 msgstr "+ Thêm mới"
 
+#: src/pages/clan/People.tsx
+msgid "<0>Dòng họ chưa có Thuỷ tổ.</0> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ đúng."
+msgstr "<0>Dòng họ chưa có Thuỷ tổ.</0> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ đúng."
+
 #: src/components/CalendarDateInput.tsx
 msgid "= {solarStr} dương lịch"
 msgstr "= {solarStr} dương lịch"
@@ -2496,10 +2500,6 @@ msgstr "Cùng bộ ô với lúc tạo dòng họ."
 msgid "Cùng một người."
 msgstr "Cùng một người."
 
-#: src/pages/clan/People.tsx
-msgid "cùng một nơi ở"
-msgstr "cùng một nơi ở"
-
 #: src/components/QuickAddSheet.tsx
 msgid "Cùng với"
 msgstr "Cùng với"
@@ -2599,10 +2599,6 @@ msgstr "Đã chép prompt"
 #: src/pages/clan/MyLineage.tsx
 msgid "Đã chọn — chờ admin xác nhận"
 msgstr "Đã chọn — chờ admin xác nhận"
-
-#: src/pages/clan/People.tsx
-msgid "đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì"
-msgstr "đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì"
 
 #. placeholder {0}: ids.length
 #: src/pages/clan/People.tsx
@@ -3806,6 +3802,11 @@ msgstr "Danh sách dòng họ"
 msgid "Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
 msgstr "Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
 
+#. placeholder {0}: selected.size
+#: src/pages/clan/People.tsx
+msgid "Đặt <0>cùng một nơi ở</0> cho {0} người đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì <1>xoá</1> nơi ở của họ."
+msgstr "Đặt <0>cùng một nơi ở</0> cho {0} người đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì <1>xoá</1> nơi ở của họ."
+
 #: src/components/FilterDrawer.tsx
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đặt lại"
@@ -4236,10 +4237,6 @@ msgstr "Dòng họ bạn tham gia hoặc theo dõi."
 msgid "Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu."
 msgstr "Dòng họ chưa có ai. Thêm Thuỷ tổ để bắt đầu."
 
-#: src/pages/clan/People.tsx
-msgid "Dòng họ chưa có Thuỷ tổ."
-msgstr "Dòng họ chưa có Thuỷ tổ."
-
 #: src/pages/Clans.tsx
 msgid "Dòng họ công khai bạn chưa tham gia — chỉ xem cây, người còn sống được ẩn."
 msgstr "Dòng họ công khai bạn chưa tham gia — chỉ xem cây, người còn sống được ẩn."
@@ -4374,10 +4371,6 @@ msgstr "Đụng vào vài lần lúc mới lập gia phả — và đụng nhầ
 #: src/pages/clan/AiGenerate.tsx
 msgid "Dùng ví dụ mẫu"
 msgstr "Dùng ví dụ mẫu"
-
-#: src/pages/clan/People.tsx
-msgid "đúng."
-msgstr "đúng."
 
 #: src/components/CalendarDateInput.tsx
 msgid "Dương"
@@ -10745,10 +10738,6 @@ msgstr "Xem trang người đã được cập nhật →"
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Xem trang người liên quan →"
 msgstr "Xem trang người liên quan →"
-
-#: src/pages/clan/People.tsx
-msgid "xoá"
-msgstr "xoá"
 
 #: src/components/BranchesSection.tsx
 #: src/components/BranchesSection.tsx
