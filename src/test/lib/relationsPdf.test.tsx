@@ -14,7 +14,11 @@ import {
   type RelPerson,
 } from "@/lib/relations";
 
-const pub = (p: string) => join(process.cwd(), "public", p);
+// RELATIONS_PDF_BASE_URL: nạp phông / hình qua địa chỉ web (giống trình duyệt) thay vì đọc tệp.
+const pub = (p: string) =>
+  process.env.RELATIONS_PDF_BASE_URL
+    ? `${process.env.RELATIONS_PDF_BASE_URL}/${p}`
+    : join(process.cwd(), "public", p);
 
 const person = (
   id: string,
@@ -56,6 +60,7 @@ describe("PDF Tra cứu quan hệ", () => {
           pub("fonts/name-playfair-700.ttf"),
         ],
       },
+      logo: pub("icons/app-icon-192.png"),
       watermarks: { phoenix: pub("watermarks/phoenix.png") },
     });
 
