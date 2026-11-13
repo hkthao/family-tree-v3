@@ -38,7 +38,7 @@ export function AvatarFramePicker({
       >
         {options.map((f) => {
           const selected = (value ?? null) === f;
-          const label = f ? AVATAR_FRAME_LABEL[f] : "Không viền";
+          const label = f ? AVATAR_FRAME_LABEL[f] : t`Không viền`;
           return (
             <button
               key={f ?? "none"}

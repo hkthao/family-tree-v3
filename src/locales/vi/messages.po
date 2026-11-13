@@ -736,6 +736,10 @@ msgstr "Âm thanh"
 msgid "Ẩn"
 msgstr "Ẩn"
 
+#: src/components/ClanFormFields.tsx
+msgid "Ẩn ảnh thật khi xem qua link công khai"
+msgstr "Ẩn ảnh thật khi xem qua link công khai"
+
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Ẩn bài"
 msgstr "Ẩn bài"
@@ -1013,6 +1017,10 @@ msgstr "Bấm nút Chia sẻ trong Safari → \"Thêm vào Màn hình chính\", 
 #: src/pages/clan/Members.tsx
 msgid "Bạn"
 msgstr "Bạn"
+
+#: src/components/BookMetaFields.tsx
+msgid "Ban biên soạn"
+msgstr "Ban biên soạn"
 
 #: src/pages/InlawsConfirm.tsx
 msgid "Bạn cần đăng nhập (với tài khoản admin của dòng họ bên này) để xác nhận liên kết."
@@ -1464,6 +1472,10 @@ msgstr "Các đoạn nội dung (tuỳ chọn)"
 msgid "Các góp ý bạn đã gửi, trạng thái xử lý và phản hồi của quản trị."
 msgstr "Các góp ý bạn đã gửi, trạng thái xử lý và phản hồi của quản trị."
 
+#: src/components/BookTextsSection.tsx
+msgid "Các lễ cúng chính và văn khấn; nhà thờ họ, hội đồng gia tộc; ruộng hương hỏa, kỵ điền. Ngày giỗ, quan hệ cưới gả, mộ phần được sổ tự lập từ dữ liệu."
+msgstr "Các lễ cúng chính và văn khấn; nhà thờ họ, hội đồng gia tộc; ruộng hương hỏa, kỵ điền. Ngày giỗ, quan hệ cưới gả, mộ phần được sổ tự lập từ dữ liệu."
+
 #: src/pages/clan/Cemeteries.tsx
 msgid "Các mộ đang gắn cơ sở này sẽ bị gỡ liên kết (không xoá mộ)."
 msgstr "Các mộ đang gắn cơ sở này sẽ bị gỡ liên kết (không xoá mộ)."
@@ -1724,6 +1736,10 @@ msgstr "Cây gia phả"
 #: src/pages/Share.tsx
 msgid "Cây gia phả {0}: các đời, ngày giỗ và thông tin thành viên."
 msgstr "Cây gia phả {0}: các đời, ngày giỗ và thông tin thành viên."
+
+#: src/components/ClanFormFields.tsx
+msgid "Cây gia phả & Danh bạ"
+msgstr "Cây gia phả & Danh bạ"
 
 #: src/lib/pageTitle.ts
 msgid "Cây gia phả được chia sẻ"
@@ -2146,6 +2162,10 @@ msgstr "Chọn người đã có"
 msgid "Chọn người trong dòng họ này"
 msgstr "Chọn người trong dòng họ này"
 
+#: src/components/ClanFormFields.tsx
+msgid "Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem được."
+msgstr "Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem được."
+
 #: src/components/QuickAddSheet.tsx
 msgid "Chọn quan hệ với người này:"
 msgstr "Chọn quan hệ với người này:"
@@ -2511,6 +2531,10 @@ msgstr "Có cập nhật trong 7 ngày qua"
 #: src/lib/pageTitle.ts
 msgid "Có gì mới"
 msgstr "Có gì mới"
+
+#: src/lib/bookTemplates.ts
+msgid "Có gia phả cổ (dịch từ chữ Hán)"
+msgstr "Có gia phả cổ (dịch từ chữ Hán)"
 
 #: src/pages/clan/GoodDays.tsx
 msgid "Có giỗ / sinh nhật / sự kiện dòng họ"
@@ -4191,6 +4215,7 @@ msgstr "Di sản"
 msgid "Di sản & Văn hoá"
 msgstr "Di sản & Văn hoá"
 
+#: src/components/ClanFormFields.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
@@ -4223,6 +4248,18 @@ msgstr "Địa chỉ chi tiết"
 #: src/pages/clan/HeritageForm.tsx
 msgid "Địa chỉ chi tiết (tuỳ chọn)"
 msgstr "Địa chỉ chi tiết (tuỳ chọn)"
+
+#: src/components/BookTextsSection.tsx
+msgid "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…"
+msgstr "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…"
+
+#: src/components/BookTextsSection.tsx
+msgid "Địa chí xóm ấp từ xưa đến nay, đình làng, chợ, bến đò, nghề truyền thống. Di sản đã nhập ở mục Di sản sẽ tự in kèm."
+msgstr "Địa chí xóm ấp từ xưa đến nay, đình làng, chợ, bến đò, nghề truyền thống. Di sản đã nhập ở mục Di sản sẽ tự in kèm."
+
+#: src/components/BookMetaFields.tsx
+msgid "Địa danh dưới tựa sách"
+msgstr "Địa danh dưới tựa sách"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Điện thoại:"
@@ -4541,6 +4578,14 @@ msgstr "Dòng họ đã dùng hết {0}. Hãy xoá bớt ảnh/ghi âm cũ."
 msgid "Dòng họ đang theo dõi"
 msgstr "Dòng họ đang theo dõi"
 
+#: src/lib/bookTemplates.ts
+msgid "Dòng họ khoa bảng, hiếu học"
+msgstr "Dòng họ khoa bảng, hiếu học"
+
+#: src/lib/bookTemplates.ts
+msgid "Dòng họ làng nghề / nghề truyền thống"
+msgstr "Dòng họ làng nghề / nghề truyền thống"
+
 #: src/pages/clan/Tree.tsx
 msgid "Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để thẻ to, nhiều đời vẫn đẹp trên một trang. Họ đông chọn mức cao để gói nhiều người/trang."
 msgstr "Dòng họ nhỏ (ít người mỗi đời) chọn “Gọn” để thẻ to, nhiều đời vẫn đẹp trên một trang. Họ đông chọn mức cao để gói nhiều người/trang."
@@ -4851,6 +4896,10 @@ msgstr "Ghi lại"
 msgid "ghi nhận"
 msgstr "ghi nhận"
 
+#: src/components/BookMetaFields.tsx
+msgid "Ghi từ thôn/xã/huyện đến tỉnh theo địa danh hành chính đương thời để người tìm không nhầm lẫn."
+msgstr "Ghi từ thôn/xã/huyện đến tỉnh theo địa danh hành chính đương thời để người tìm không nhầm lẫn."
+
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Ghim lên đầu"
 msgstr "Ghim lên đầu"
@@ -4860,6 +4909,10 @@ msgstr "Ghim lên đầu"
 #: src/pages/clan/Audit.tsx
 msgid "Gia đình"
 msgstr "Gia đình"
+
+#: src/lib/bookTemplates.ts
+msgid "Gia đình / chi họ nhỏ – giản dị"
+msgstr "Gia đình / chi họ nhỏ – giản dị"
 
 #: src/pages/clan/PersonDetail.tsx
 msgid "Gia đình bên đó"
@@ -5319,6 +5372,10 @@ msgstr "Hình nền mờ của sổ"
 msgid "Hình thức"
 msgstr "Hình thức"
 
+#: src/lib/bookTemplates.ts
+msgid "Họ lớn, nhiều chi – trang trọng"
+msgstr "Họ lớn, nhiều chi – trang trọng"
+
 #: src/pages/clan/PersonDetail.tsx
 msgid "Họ này chưa công khai thông tin người sống."
 msgstr "Họ này chưa công khai thông tin người sống."
@@ -5357,11 +5414,16 @@ msgstr "Họ ta đã hoàn thành"
 msgid "Họ ta giờ đã hoàn thành"
 msgstr "Họ ta giờ đã hoàn thành"
 
+#: src/components/BookMetaFields.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/Relations.tsx
 msgid "Họ tên"
 msgstr "Họ tên"
+
+#: src/components/BookMetaFields.tsx
+msgid "Họ tên những người biên soạn"
+msgstr "Họ tên những người biên soạn"
 
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
@@ -6254,6 +6316,10 @@ msgstr "Không từ chối được"
 msgid "Không tự đổi vai trò của chính mình."
 msgstr "Không tự đổi vai trò của chính mình."
 
+#: src/components/AvatarFramePicker.tsx
+msgid "Không viền"
+msgstr "Không viền"
+
 #: src/pages/clan/Inlaws.tsx
 #: src/pages/InlawsConfirm.tsx
 msgid "Không xác nhận được"
@@ -6429,6 +6495,10 @@ msgstr "Lập / xây năm:"
 msgid "Lặp lại hằng năm"
 msgstr "Lặp lại hằng năm"
 
+#: src/lib/bookTemplates.ts
+msgid "Lập phả lần đầu (từ ký ức, điền dã)"
+msgstr "Lập phả lần đầu (từ ký ức, điền dã)"
+
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Lấy ảnh từ danh sách thành viên (chỉ người có ảnh)."
 msgstr "Lấy ảnh từ danh sách thành viên (chỉ người có ảnh)."
@@ -6489,6 +6559,10 @@ msgstr "Lịch sử"
 msgid "Lịch sử cải táng"
 msgstr "Lịch sử cải táng"
 
+#: src/components/BookTextsSection.tsx
+msgid "Lịch sử dòng họ: phát tích, vị tổ khai cơ và tiểu sử; tổ quán (địa lý, lịch sử xóm ấp, đình miếu); truyền thống lao động, văn hoá, yêu nước; đặc điểm dòng họ và phương hướng xây dựng dòng họ văn hoá. Số liệu nam/nữ, số đời, từng chi được sổ tự thêm từ dữ liệu. Xuống dòng để tách đoạn."
+msgstr "Lịch sử dòng họ: phát tích, vị tổ khai cơ và tiểu sử; tổ quán (địa lý, lịch sử xóm ấp, đình miếu); truyền thống lao động, văn hoá, yêu nước; đặc điểm dòng họ và phương hướng xây dựng dòng họ văn hoá. Số liệu nam/nữ, số đời, từng chi được sổ tự thêm từ dữ liệu. Xuống dòng để tách đoạn."
+
 #: src/pages/clan/Audit.tsx
 msgid "Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
 msgstr "Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
@@ -6519,6 +6593,7 @@ msgstr "Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng 
 msgid "Lịch vạn niên"
 msgstr "Lịch vạn niên"
 
+#: src/components/BookMetaFields.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/Changelog.tsx
 #: src/pages/clan/ContributionDetail.tsx
@@ -6824,6 +6899,10 @@ msgstr "Lời mời tham gia"
 msgid "Lời mời vào dòng họ"
 msgstr "Lời mời vào dòng họ"
 
+#: src/components/BookTextsSection.tsx
+msgid "Lời nói đầu"
+msgstr "Lời nói đầu"
+
 #: src/pages/clan/BookInfo.tsx
 msgid "Lời nói đầu, phả ký, ngoại phả, phụ khảo trong sổ gia phả PDF. Phần để trống sẽ không in. Phả hệ, phả đồ, ngày giỗ, cưới gả tự dựng từ dữ liệu."
 msgstr "Lời nói đầu, phả ký, ngoại phả, phụ khảo trong sổ gia phả PDF. Phần để trống sẽ không in. Phả hệ, phả đồ, ngày giỗ, cưới gả tự dựng từ dữ liệu."
@@ -6971,9 +7050,17 @@ msgstr "Mã QR không hợp lệ."
 msgid "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 msgstr "Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản."
 
+#: src/components/ClanFormFields.tsx
+msgid "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF."
+msgstr "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF."
+
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 msgid "Mặc định có thành viên"
 msgstr "Mặc định có thành viên"
+
+#: src/components/ClanFormFields.tsx
+msgid "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc."
+msgstr "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc."
 
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Mảnh này đang bị ẩn với người khác."
@@ -7040,6 +7127,11 @@ msgstr "Màu phòng tuỳ chỉnh"
 #: src/components/gallery/GalleryScene.tsx
 msgid "Màu trơn"
 msgstr "Màu trơn"
+
+#. placeholder {0}: tpl.name
+#: src/components/BookTextsSection.tsx
+msgid "Mẫu: {0}"
+msgstr "Mẫu: {0}"
 
 #: src/components/ShareCardDialog.tsx
 msgid "Máy tính:"
@@ -7154,6 +7246,7 @@ msgstr "Mộ phần"
 msgid "Mộ phần / tro cốt"
 msgstr "Mộ phần / tro cốt"
 
+#: src/components/ClanFormFields.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Cemeteries.tsx
@@ -7462,6 +7555,10 @@ msgstr "Mục di sản"
 msgid "Mục đích (tuỳ chọn)"
 msgstr "Mục đích (tuỳ chọn)"
 
+#: src/components/BookTextsSection.tsx
+msgid "Mục đích, lý do làm phả; ai làm, làm thế nào; ưu khuyết và lời kêu gọi hậu duệ bổ sung; lời cảm ơn, ngày viết, người chủ trì. Nên ngắn gọn, súc tích."
+msgstr "Mục đích, lý do làm phả; ai làm, làm thế nào; ưu khuyết và lời kêu gọi hậu duệ bổ sung; lời cảm ơn, ngày viết, người chủ trì. Nên ngắn gọn, súc tích."
+
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/Docs.tsx
 msgid "Mục lục"
@@ -7514,6 +7611,10 @@ msgstr "Năm"
 #: src/pages/clan/GoodDays.tsx
 msgid "Năm {0}"
 msgstr "Năm {0}"
+
+#: src/components/BookMetaFields.tsx
+msgid "Năm biên soạn"
+msgstr "Năm biên soạn"
 
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
@@ -7659,6 +7760,10 @@ msgstr "Ngày Giải phóng miền Nam"
 msgid "Ngày giỗ"
 msgstr "Ngày giỗ"
 
+#: src/components/BookMetaFields.tsx
+msgid "Ngày giỗ tổ"
+msgstr "Ngày giỗ tổ"
+
 #: src/components/CalendarFeedPanel.tsx
 msgid "Ngày giỗ, sinh nhật và sự kiện của dòng họ vào Google / Apple Calendar"
 msgstr "Ngày giỗ, sinh nhật và sự kiện của dòng họ vào Google / Apple Calendar"
@@ -7786,6 +7891,10 @@ msgstr "Nghĩa trang"
 msgid "Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ phần theo cơ sở."
 msgstr "Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ phần theo cơ sở."
 
+#: src/components/BookTextsSection.tsx
+msgid "Ngoại phả"
+msgstr "Ngoại phả"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Ngọc"
 msgstr "Ngọc"
@@ -7859,6 +7968,10 @@ msgstr "Người chưa có bố/mẹ trong cây — bổ sung để gắn vào �
 msgid "Người còn sống"
 msgstr "Người còn sống"
 
+#: src/components/ClanFormFields.tsx
+msgid "Người đã mất: hiện ngày giỗ và tuổi thọ"
+msgstr "Người đã mất: hiện ngày giỗ và tuổi thọ"
+
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Người đóng góp"
 msgstr "Người đóng góp"
@@ -7915,6 +8028,14 @@ msgid "Người sau →"
 msgstr "Người sau →"
 
 #: src/components/ClanFormFields.tsx
+msgid "Người sống: hiện đầy đủ ngày-tháng-năm sinh"
+msgstr "Người sống: hiện đầy đủ ngày-tháng-năm sinh"
+
+#: src/components/ClanFormFields.tsx
+msgid "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
+msgstr "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật."
+
+#: src/components/ClanFormFields.tsx
 msgid "Người xem công khai được xem"
 msgstr "Người xem công khai được xem"
 
@@ -7947,6 +8068,10 @@ msgstr "Nguồn tham khảo"
 msgid "Nguồn:"
 msgstr "Nguồn:"
 
+#: src/components/BookMetaFields.tsx
+msgid "Nguyên quán / tổ quán"
+msgstr "Nguyên quán / tổ quán"
+
 #: src/pages/Signup.tsx
 msgid "Nguyễn Văn A"
 msgstr "Nguyễn Văn A"
@@ -7963,6 +8088,14 @@ msgstr "Nhà lưu tro / tháp cốt"
 #: src/pages/CustomsForm.tsx
 msgid "nhà mới, chuyển nhà, tân gia"
 msgstr "nhà mới, chuyển nhà, tân gia"
+
+#: src/components/BookMetaFields.tsx
+msgid "Nhà thờ họ"
+msgstr "Nhà thờ họ"
+
+#: src/components/BookTextsSection.tsx
+msgid "Nhà thờ họ, hội đồng gia tộc; các lễ cúng chính và văn khấn; ruộng hương hỏa, quỹ họ; mộ phần…"
+msgstr "Nhà thờ họ, hội đồng gia tộc; các lễ cúng chính và văn khấn; ruộng hương hỏa, quỹ họ; mộ phần…"
 
 #: src/pages/Account.tsx
 msgid "Nhắc mùng 1 / rằm âm lịch"
@@ -8280,6 +8413,10 @@ msgstr "Nơi ở cho {0} người"
 msgid "Nơi ở hiện tại"
 msgstr "Nơi ở hiện tại"
 
+#: src/components/BookMetaFields.tsx
+msgid "Nơi phát tích của dòng họ"
+msgstr "Nơi phát tích của dòng họ"
+
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
@@ -8356,6 +8493,10 @@ msgstr "Ông Công Ông Táo"
 #: src/pages/clan/Dashboard.tsx
 msgid "Phả hệ"
 msgstr "Phả hệ"
+
+#: src/components/BookTextsSection.tsx
+msgid "Phả ký"
+msgstr "Phả ký"
 
 #: src/pages/CustomsForm.tsx
 msgid "Phạm vi"
@@ -8438,6 +8579,10 @@ msgstr "Phong tục, nghi lễ và tín ngưỡng Việt Nam: giỗ chạp, tang
 #: src/lib/pageTitle.ts
 msgid "Phòng tưởng niệm"
 msgstr "Phòng tưởng niệm"
+
+#: src/components/BookTextsSection.tsx
+msgid "Phụ khảo"
+msgstr "Phụ khảo"
 
 #: src/components/PersonAvatar.tsx
 msgid "Phúc lộc"
@@ -8780,6 +8925,10 @@ msgstr "SMS sẽ thêm sau"
 msgid "Số cột"
 msgstr "Số cột"
 
+#: src/components/BookMetaFields.tsx
+msgid "Số điện thoại / email người giữ phả"
+msgstr "Số điện thoại / email người giữ phả"
+
 #: src/pages/clan/Tree.tsx
 msgid "Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."
 msgstr "Sơ đồ phả hệ — zoom/pan, đặt người làm tâm, đổi hướng."
@@ -8886,6 +9035,7 @@ msgid "sự kiện"
 msgstr "sự kiện"
 
 #: src/components/BoardPostForm.tsx
+#: src/components/ClanFormFields.tsx
 #: src/components/ClanLayout.tsx
 #: src/components/ClanPostCard.tsx
 #: src/components/EventDetailDialog.tsx
@@ -9528,6 +9678,10 @@ msgstr "Tên tự"
 msgid "Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần."
 msgstr "Tên tự, tên húy, tên thụy, ngày mất, con thứ mấy, nơi sinh, nơi an táng, tiểu sử. Bỏ qua nếu chưa cần."
 
+#: src/components/BookMetaFields.tsx
+msgid "Tên và địa chỉ nhà thờ họ (từ đường)"
+msgstr "Tên và địa chỉ nhà thờ họ (từ đường)"
+
 #: src/components/QuickAddSheet.tsx
 msgid "Tên vợ / chồng"
 msgstr "Tên vợ / chồng"
@@ -9700,6 +9854,10 @@ msgstr "Thay nội dung đang có bằng mẫu?"
 #: src/pages/clan/People.tsx
 msgid "Thẻ"
 msgstr "Thẻ"
+
+#: src/components/ClanFormFields.tsx
+msgid "Thẻ người đã mất trên cây và trong sách PDF hiện thêm ngày giỗ (âm lịch) và tuổi thọ."
+msgstr "Thẻ người đã mất trên cây và trong sách PDF hiện thêm ngày giỗ (âm lịch) và tuổi thọ."
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Thẻ thành viên"
@@ -10097,6 +10255,10 @@ msgstr "Thời kỳ: cũ → mới"
 msgid "Thời kỳ: mới → cũ"
 msgstr "Thời kỳ: mới → cũ"
 
+#: src/components/BookMetaFields.tsx
+msgid "Thôn La Cầu, xã Mỹ Thọ, huyện Bình Lục, tỉnh Hà Nam"
+msgstr "Thôn La Cầu, xã Mỹ Thọ, huyện Bình Lục, tỉnh Hà Nam"
+
 #: src/pages/Announcements.tsx
 msgid "thông báo"
 msgstr "thông báo"
@@ -10312,6 +10474,14 @@ msgstr "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
 #: src/pages/clan/People.tsx
 msgid "Thuỷ tổ"
 msgstr "Thuỷ tổ"
+
+#: src/components/ClanFormFields.tsx
+msgid "Thủy tổ là Đời 0"
+msgstr "Thủy tổ là Đời 0"
+
+#: src/components/BookTextsSection.tsx
+msgid "Thuỷ tổ và tổ quán; các chi, các đời; truyền thống lao động, văn hoá, học tập, yêu nước; đặc điểm và phương hướng của dòng họ…"
+msgstr "Thuỷ tổ và tổ quán; các chi, các đời; truyền thống lao động, văn hoá, học tập, yêu nước; đặc điểm và phương hướng của dòng họ…"
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Tiến độ hoàn thiện"
@@ -10928,6 +11098,10 @@ msgstr "trước khi xoá"
 msgid "Trường"
 msgstr "Trường"
 
+#: src/components/BookMetaFields.tsx
+msgid "Trưởng họ / người chủ trì"
+msgstr "Trưởng họ / người chủ trì"
+
 #: src/pages/clan/HonorBook.tsx
 msgid "Trưởng họ sẽ cập nhật khi có đóng góp."
 msgstr "Trưởng họ sẽ cập nhật khi có đóng góp."
@@ -11121,6 +11295,10 @@ msgstr "Vật liệu"
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Vật liệu (tuỳ chọn)"
 msgstr "Vật liệu (tuỳ chọn)"
+
+#: src/components/BookMetaFields.tsx
+msgid "Vd: 10 tháng 3 âm lịch"
+msgstr "Vd: 10 tháng 3 âm lịch"
 
 #: src/pages/CustomsForm.tsx
 msgid "vd: 23 tháng Chạp"
@@ -11337,6 +11515,10 @@ msgstr "Vì sao đẹp?"
 #: src/pages/clan/GoodDays.tsx
 msgid "Vì sao là ngày tốt?"
 msgstr "Vì sao là ngày tốt?"
+
+#: src/components/BookTextsSection.tsx
+msgid "Vì sao làm phả, ai làm, làm thế nào; lời kêu gọi con cháu bổ sung; lời cảm ơn, ngày viết, người chủ trì…"
+msgstr "Vì sao làm phả, ai làm, làm thế nào; lời kêu gọi con cháu bổ sung; lời cảm ơn, ngày viết, người chủ trì…"
 
 #: src/components/SharedRestingPlaceCard.tsx
 msgid "Vị trí"
@@ -11583,6 +11765,10 @@ msgstr "Xem cây gia phả công khai của dòng họ: các đời, ngày giỗ
 msgid "Xem cây gia phả và cùng vun đắp dòng họ của bạn."
 msgstr "Xem cây gia phả và cùng vun đắp dòng họ của bạn."
 
+#: src/components/ClanFormFields.tsx
+msgid "Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn)."
+msgstr "Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn)."
+
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Xem cây tự xếp"
 msgstr "Xem cây tự xếp"
@@ -11615,6 +11801,10 @@ msgstr "Xem JSON diff trước/sau"
 msgid "Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn."
 msgstr "Xem lịch âm–dương từng tháng, chi tiết ngày tốt/xấu, và tìm ngày đẹp cho việc lớn."
 
+#: src/components/ClanFormFields.tsx
+msgid "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết)."
+msgstr "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết)."
+
 #: src/components/UpcomingEventRow.tsx
 #: src/components/UpcomingEventRow.tsx
 msgid "Xem ngày →"
@@ -11641,6 +11831,10 @@ msgstr "Xem ngày tốt/xấu, giờ hoàng đạo của ngày này"
 #: src/components/RecentActivityPanel.tsx
 msgid "Xem nhật ký →"
 msgstr "Xem nhật ký →"
+
+#: src/components/ClanFormFields.tsx
+msgid "Xem nơi an nghỉ, người an nghỉ và ảnh mộ."
+msgstr "Xem nơi an nghỉ, người an nghỉ và ảnh mộ."
 
 #. placeholder {0}: person.name
 #: src/components/TreeFolderView.tsx
@@ -11704,6 +11898,10 @@ msgstr "Xem trang người đã được cập nhật →"
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Xem trang người liên quan →"
 msgstr "Xem trang người liên quan →"
+
+#: src/components/ClanFormFields.tsx
+msgid "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
+msgstr "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
 
 #: src/components/BranchesSection.tsx
 #: src/components/BranchesSection.tsx

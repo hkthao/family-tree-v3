@@ -1,3 +1,5 @@
+import { msg } from "@lingui/core/macro";
+import { lazyAs } from "@/lib/i18n/lazy";
 /**
  * Mẫu văn bản cho Sổ gia phả, theo bố cục bộ gia phả hoàn chỉnh:
  * tựa (địa danh) → lời nói đầu → phả ký → ngoại phả → phụ khảo.
@@ -18,11 +20,11 @@ export interface BookTemplate {
   phu_khao: string;
 }
 
-export const BOOK_TEMPLATES: BookTemplate[] = [
+export const BOOK_TEMPLATES: BookTemplate[] = lazyAs<BookTemplate[]>([
   // ─── 1. Họ lớn, nhiều chi ───────────────────────────────────────
   {
     id: "trang-trong",
-    name: "Họ lớn, nhiều chi – trang trọng",
+    name: msg`Họ lớn, nhiều chi – trang trọng`,
     hint: "Dòng họ đông người, chia nhiều chi phái, có nhà thờ họ.",
     place_line: "Thôn […], xã […], huyện […], tỉnh […]",
     preface: `Người xưa nói: "Nước có sử, nhà có phả". Sử chép việc nước thì phả ghi việc nhà; có phả thì con cháu biết mình từ đâu mà đến, biết ai là tổ, ai là tông, ai là bậc trên, ai là hàng dưới, để giữ lễ, giữ nghĩa, giữ tình ruột thịt qua muôn đời.
@@ -125,7 +127,7 @@ Bản đồ xóm ấp (vẽ tay hoặc lấy từ bản đồ trực tuyến), b
   // ─── 2. Gia đình / chi họ nhỏ ───────────────────────────────────
   {
     id: "gian-di",
-    name: "Gia đình / chi họ nhỏ – giản dị",
+    name: msg`Gia đình / chi họ nhỏ – giản dị`,
     hint: "Phả của một chi hoặc một gia đình, vài ba đời.",
     place_line: "[Xã/phường], [huyện/quận], [tỉnh/thành phố]",
     preface: `Cuốn gia phả này ra đời từ một ý nghĩ rất giản dị: con cháu họ {họ} chúng ta rồi sẽ đi xa, sẽ lớn lên ở những nơi khác nhau, và nếu không ghi lại thì vài chục năm nữa sẽ chẳng còn ai nhớ ông bà mình tên gì, quê ở đâu, đã sống và đã vất vả ra sao.
@@ -160,7 +162,7 @@ Những món ăn quen thuộc của nhà: […]. Những câu chuyện hay đư�
   // ─── 3. Khoa bảng ──────────────────────────────────────────────
   {
     id: "khoa-bang",
-    name: "Dòng họ khoa bảng, hiếu học",
+    name: msg`Dòng họ khoa bảng, hiếu học`,
     hint: "Họ có nhiều người đỗ đạt, làm quan hoặc theo nghiệp giáo dục.",
     place_line: "Thôn […], xã […], huyện […], tỉnh […]",
     preface: `Họ {họ} xưa nay lấy việc học làm gốc, coi chữ nghĩa là của để lại cho con cháu quý hơn ruộng vườn. Ông cha ta có câu: "Nhất sĩ nhì nông", "Phi thi bất thành nhân"; những lời ấy đã trở thành nếp nhà, thúc giục nhiều thế hệ dùi mài kinh sử, lấy học vấn làm đường tiến thân, lấy đạo lý làm gốc sống ở đời.
@@ -220,7 +222,7 @@ Các dòng họ khoa bảng cùng địa phương gồm: […]. Nhiều gia đì
   // ─── 4. Làng nghề ──────────────────────────────────────────────
   {
     id: "lang-nghe",
-    name: "Dòng họ làng nghề / nghề truyền thống",
+    name: msg`Dòng họ làng nghề / nghề truyền thống`,
     hint: "Họ gắn với một nghề gia truyền (gốm, dệt, rèn, đúc…).",
     place_line: "Làng […], xã […], huyện […], tỉnh […]",
     preface: `Họ {họ} sống bằng nghề […] từ nhiều đời nay. Cha truyền con nối, tay nghề được trao lại từ đôi tay già nua sang đôi tay trẻ, như một dòng chảy không đứt đoạn. Nghề không chỉ nuôi sống con cháu mà còn là niềm tự hào, là linh hồn của dòng họ và của cả làng.
@@ -285,7 +287,7 @@ Làng […] nằm ở […], xưa thuộc […], có sông […] chảy qua thu�
   // ─── 5. Có gia phả cổ ──────────────────────────────────────────
   {
     id: "dich-pha-co",
-    name: "Có gia phả cổ (dịch từ chữ Hán)",
+    name: msg`Có gia phả cổ (dịch từ chữ Hán)`,
     hint: "Họ còn gia phả gốc chữ Hán/Nôm, cần dịch và nối tiếp các đời sau.",
     place_line: "Thôn […], xã […], huyện […], tỉnh […]",
     preface: `Họ {họ} may mắn còn giữ được bản gia phả cổ viết bằng chữ Hán, soạn từ năm […] dưới triều […]. Bản phả ấy là di sản vô giá của dòng họ, ghi lại cội nguồn, thế thứ và công đức của các bậc tiền nhân. Tuy nhiên, nay phần lớn con cháu không còn đọc được chữ Hán, nên việc phiên âm và dịch sang quốc ngữ là điều không thể trì hoãn.
@@ -347,7 +349,7 @@ Dân làng chủ yếu làm nông, kết hợp nghề phụ […]. Phong tục c
   // ─── 6. Lập phả lần đầu ────────────────────────────────────────
   {
     id: "lap-lan-dau",
-    name: "Lập phả lần đầu (từ ký ức, điền dã)",
+    name: msg`Lập phả lần đầu (từ ký ức, điền dã)`,
     hint: "Chưa có gia phả cổ; dựng từ lời kể, mồ mả, giấy tờ.",
     place_line: "[Thôn/xã], [huyện], [tỉnh]",
     preface: `Dòng họ {họ} chưa từng có gia phả. Qua chiến tranh, đói kém và những lần dời chuyển, giấy tờ của các cụ đã thất lạc gần hết, chỉ còn lại ký ức và lời kể truyền miệng. Nhiều đời nay, việc nhớ tổ tiên, nhớ ngày giỗ, nhớ ai là anh em họ hàng đều dựa vào trí nhớ của các cụ và lời kể truyền miệng. Năm tháng trôi qua, các cụ lần lượt ra đi, nhiều điều theo đó mà mai một. Chúng tôi nhận ra rằng nếu không ghi lại ngay bây giờ thì thế hệ sau sẽ không còn biết mình thuộc về đâu.
@@ -415,7 +417,7 @@ Các dòng họ cùng cư trú và nghề truyền thống
 
 Cùng sinh sống ở đây còn có các họ […]. Dân làng có nghề […], là nguồn thu nhập thêm của nhiều gia đình trong họ.`,
   },
-];
+]);
 
 export function fillTemplate(t: BookTemplate, clanName: string) {
   const ho = clanName.replace(/\s*\([^)]*\)\s*$/, "").trim() || clanName;
