@@ -57,6 +57,8 @@ import {
 import { supabase } from "@/lib/supabase";
 
 import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 export default function Account() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -252,11 +254,11 @@ export default function Account() {
 
 // ---------------------------------------------------------------------------
 
-const SCOPE_LABEL: Record<SubScope, string> = {
-  clan: "cả dòng họ",
+const SCOPE_LABEL: Record<SubScope, string> = lazyMessages({
+  clan: msg`cả dòng họ`,
   branch: "theo chi",
-  person: "theo người",
-};
+  person: msg`theo người`,
+}) as Record<SubScope, string>;
 
 /**
  * "Dòng họ đang theo dõi" — liệt kê các dòng họ user đăng ký nhận nhắc

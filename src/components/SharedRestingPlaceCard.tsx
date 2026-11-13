@@ -11,18 +11,22 @@ import { IconMapPin } from "@/components/icons";
 import type { ShareViewRestingPlaceFull } from "@/lib/queries/share-view";
 
 import { t } from "@lingui/core/macro";
-const KIND_LABEL: Record<ShareViewRestingPlaceFull["kind"], string> = {
-  grave: "Mộ / chôn cất",
-  ashes_temple: "Gửi tro cốt ở chùa",
-  columbarium: "Nhà lưu tro / tháp cốt",
-  scattered: "Rải tro",
-  other: "Khác",
-};
-const STATUS_LABEL: Record<ShareViewRestingPlaceFull["status"], string> = {
-  existing: "Hiện hữu",
-  relocated: "Đã cải táng",
-  lost: "Thất lạc",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const KIND_LABEL: Record<ShareViewRestingPlaceFull["kind"], string> =
+  lazyMessages({
+    grave: msg`Mộ / chôn cất`,
+    ashes_temple: msg`Gửi tro cốt ở chùa`,
+    columbarium: msg`Nhà lưu tro / tháp cốt`,
+    scattered: msg`Rải tro`,
+    other: msg`Khác`,
+  }) as Record<ShareViewRestingPlaceFull["kind"], string>;
+const STATUS_LABEL: Record<ShareViewRestingPlaceFull["status"], string> =
+  lazyMessages({
+    existing: msg`Hiện hữu`,
+    relocated: msg`Đã cải táng`,
+    lost: msg`Thất lạc`,
+  }) as Record<ShareViewRestingPlaceFull["status"], string>;
 
 /** Public read-only card for /share/:token when scope='resting_place' (QR tại mộ). */
 export function SharedRestingPlaceCard({

@@ -40,15 +40,17 @@ import { queryKeys } from "@/lib/queries/keys";
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 const DEFAULT_PAGE_SIZE = 20;
 
-const TYPE_LABEL: Record<ClanPostType, string> = {
+const TYPE_LABEL: Record<ClanPostType, string> = lazyMessages({
   news: "Tin",
-  event: "Sự kiện",
+  event: msg`Sự kiện`,
   birth: "Sinh",
-  death: "Cáo phó",
-  notice: "Thông báo",
-};
+  death: msg`Cáo phó`,
+  notice: msg`Thông báo`,
+}) as Record<ClanPostType, string>;
 
 /** Icon + màu theo loại bài — dùng chung cho ô icon và chip của dòng. */
 const TYPE_STYLE: Record<

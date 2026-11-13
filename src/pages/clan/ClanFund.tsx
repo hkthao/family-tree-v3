@@ -55,15 +55,18 @@ import {
 } from "@/lib/queries/clanFund";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 /** Trạng thái ngăn kéo: thêm mới, xem (chỉ đọc) hoặc sửa một giao dịch. */
 type PanelState =
   { mode: "new" } | { mode: "view" | "edit"; tx: FundTransaction } | null;
 
-const AUDIT_ACTION_LABEL: Record<"insert" | "update" | "delete", string> = {
-  insert: "Thêm",
-  update: "Sửa",
-  delete: "Xoá",
-};
+const AUDIT_ACTION_LABEL: Record<"insert" | "update" | "delete", string> =
+  lazyMessages({
+    insert: msg`Thêm`,
+    update: msg`Sửa`,
+    delete: msg`Xoá`,
+  }) as Record<"insert" | "update" | "delete", string>;
 
 function formatVnd(n: number): string {
   return new Intl.NumberFormat("vi-VN").format(n) + " đ";

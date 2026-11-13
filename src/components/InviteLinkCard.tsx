@@ -21,14 +21,16 @@ import {
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
-const ROLE_LABEL: Record<InviteRole, string> = {
-  viewer: "Xem & góp ý",
-  editor: "Biên tập",
-};
-const ROLE_DESC: Record<InviteRole, string> = {
-  viewer: "Xem cây + đề xuất bổ sung (bạn duyệt mới vào cây). An toàn nhất.",
-  editor: "Sửa cây trực tiếp. Dùng cho người thân tin cậy.",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const ROLE_LABEL: Record<InviteRole, string> = lazyMessages({
+  viewer: msg`Xem & góp ý`,
+  editor: msg`Biên tập`,
+}) as Record<InviteRole, string>;
+const ROLE_DESC: Record<InviteRole, string> = lazyMessages({
+  viewer: msg`Xem cây + đề xuất bổ sung (bạn duyệt mới vào cây). An toàn nhất.`,
+  editor: msg`Sửa cây trực tiếp. Dùng cho người thân tin cậy.`,
+}) as Record<InviteRole, string>;
 
 /**
  * Mời bằng LINK — admin tạo 1 link dùng nhiều lần (chọn quyền), gửi vào

@@ -47,12 +47,14 @@ import {
 import { unaccent } from "@/lib/unaccent";
 
 import { t } from "@lingui/core/macro";
-const CATEGORY_LABEL: Record<FeedbackCategory, string> = {
-  bug: "Lỗi / sự cố",
-  idea: "Đề xuất / ý kiến",
-  question: "Câu hỏi",
-  other: "Khác",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const CATEGORY_LABEL: Record<FeedbackCategory, string> = lazyMessages({
+  bug: msg`Lỗi / sự cố`,
+  idea: msg`Đề xuất / ý kiến`,
+  question: msg`Câu hỏi`,
+  other: msg`Khác`,
+}) as Record<FeedbackCategory, string>;
 const CATEGORIES = Object.keys(CATEGORY_LABEL) as FeedbackCategory[];
 
 const CATEGORY_STYLE: Record<

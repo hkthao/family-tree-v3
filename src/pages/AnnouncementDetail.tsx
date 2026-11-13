@@ -14,17 +14,19 @@ import { queryKeys } from "@/lib/queries/keys";
 import { supabase } from "@/lib/supabase";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 /**
  * `/announcements/:id` — trang chi tiết 1 thông báo. Tự đánh dấu
  * "đã đọc" khi mở. Không có gì ngoài tiêu đề + nội dung + meta —
  * announcements ngắn, không cần thêm comments hay action.
  */
-const LEVEL_LABEL: Record<AnnouncementLevel, string> = {
+const LEVEL_LABEL: Record<AnnouncementLevel, string> = lazyMessages({
   info: "Tin",
-  update: "Cập nhật",
-  warning: "Cảnh báo",
-  critical: "Quan trọng",
-};
+  update: msg`Cập nhật`,
+  warning: msg`Cảnh báo`,
+  critical: msg`Quan trọng`,
+}) as Record<AnnouncementLevel, string>;
 
 const LEVEL_BADGE: Record<AnnouncementLevel, string> = {
   info: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30",

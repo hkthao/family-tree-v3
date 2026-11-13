@@ -28,13 +28,15 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
-const TYPE_LABEL: Record<ClanPostType, string> = {
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const TYPE_LABEL: Record<ClanPostType, string> = lazyMessages({
   news: "Tin",
-  event: "Sự kiện",
+  event: msg`Sự kiện`,
   birth: "Sinh",
-  death: "Cáo phó",
-  notice: "Thông báo",
-};
+  death: msg`Cáo phó`,
+  notice: msg`Thông báo`,
+}) as Record<ClanPostType, string>;
 
 const TYPE_BADGE: Record<ClanPostType, string> = {
   news: "bg-muted text-foreground border-border",

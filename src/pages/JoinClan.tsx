@@ -15,10 +15,12 @@ import { peekClanInvite, redeemClanInvite } from "@/lib/queries/clan-invites";
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
-const ROLE_LABEL: Record<string, string> = {
-  viewer: "Xem & góp ý",
-  editor: "Biên tập",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const ROLE_LABEL: Record<string, string> = lazyMessages({
+  viewer: msg`Xem & góp ý`,
+  editor: msg`Biên tập`,
+}) as Record<string, string>;
 
 /**
  * `/join/:token` — trang tham gia dòng họ bằng link mời. Người chưa đăng

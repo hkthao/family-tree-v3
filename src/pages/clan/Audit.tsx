@@ -43,20 +43,22 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 const PAGE_SIZE = 15;
 
-const ENTITY_LABEL: Record<AuditEntity, string> = {
-  person: "Người",
-  family: "Gia đình",
+const ENTITY_LABEL: Record<AuditEntity, string> = lazyMessages({
+  person: msg`Người`,
+  family: msg`Gia đình`,
   branch: "Chi",
-  person_link: "Liên kết dòng họ",
-};
+  person_link: msg`Liên kết dòng họ`,
+}) as Record<AuditEntity, string>;
 
-const ACTION_LABEL: Record<AuditAction, string> = {
-  insert: "Thêm mới",
-  update: "Sửa",
-  delete: "Xoá",
-};
+const ACTION_LABEL: Record<AuditAction, string> = lazyMessages({
+  insert: msg`Thêm mới`,
+  update: msg`Sửa`,
+  delete: msg`Xoá`,
+}) as Record<AuditAction, string>;
 
 export default function Audit() {
   const { clan } = useClanContext();
