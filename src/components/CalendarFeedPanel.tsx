@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -156,7 +157,7 @@ export function CalendarFeedPanel({
               bạn rời dòng họ; nghi bị lộ thì bấm “Tạo link mới” để link cũ
               ngừng hoạt động.
               {feed.last_fetched_at
-                ? t` Lịch được lấy gần nhất lúc ${new Date(feed.last_fetched_at).toLocaleString("vi-VN")}.`
+                ? t` Lịch được lấy gần nhất lúc ${new Date(feed.last_fetched_at).toLocaleString(currentIntlTag())}.`
                 : ""}
             </p>
             <PanelActionBar>

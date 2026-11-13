@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import {
   keepPreviousData,
   useMutation,
@@ -285,7 +286,7 @@ function ShareLinkItem({
         <span className="text-muted-foreground">·</span>
         <span className="font-medium text-foreground">{scopeLabel}</span>
         <span className="text-muted-foreground">
-          · hết hạn {new Date(link.expires_at).toLocaleDateString("vi-VN")}
+          · hết hạn {new Date(link.expires_at).toLocaleDateString(currentIntlTag())}
         </span>
       </div>
 

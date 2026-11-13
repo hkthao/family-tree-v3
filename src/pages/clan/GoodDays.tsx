@@ -1,3 +1,4 @@
+import { weekdayName } from "@/lib/formatDate";
 import { useQuery } from "@tanstack/react-query";
 import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
@@ -63,24 +64,6 @@ const ACTIVITY_ICON: Record<
   "ky-ket": IconScroll,
 };
 
-const WEEKDAYS_SHORT = [
-  "CN",
-  "T.Hai",
-  "T.Ba",
-  "T.Tư",
-  "T.Năm",
-  "T.Sáu",
-  "T.Bảy",
-];
-const WEEKDAYS_FULL = [
-  "Chủ nhật",
-  "Thứ Hai",
-  "Thứ Ba",
-  "Thứ Tư",
-  "Thứ Năm",
-  "Thứ Sáu",
-  "Thứ Bảy",
-];
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -374,7 +357,7 @@ export default function GoodDays() {
 
 // ─── Lịch tháng âm–dương ──────────────────────────────────────────
 
-const CAL_WEEKDAYS = ["T.Hai", "T.Ba", "T.Tư", "T.Năm", "T.Sáu", "T.Bảy", "CN"];
+const CAL_WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 function MonthCalendar({
   cursor,
@@ -450,7 +433,7 @@ function MonthCalendar({
       </div>
 
       <div className="grid grid-cols-7 border-b text-center text-xs font-semibold text-muted-foreground">
-        {CAL_WEEKDAYS.map((w) => (
+        {CAL_WEEKDAY_ORDER.map((d) => weekdayName(d, "short")).map((w) => (
           <div key={w} className="py-1.5">
             {w}
           </div>
@@ -590,7 +573,7 @@ function DayDetail({
       <div className="flex flex-wrap items-start gap-4">
         <div className="text-center">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {WEEKDAYS_FULL[info.weekday]}
+            {weekdayName(info.weekday)}
           </p>
           <p className="text-4xl font-bold leading-none tabular-nums text-primary">
             {info.solar.day}
@@ -840,7 +823,7 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
       {/* Tờ lịch dương — gọn */}
       <div className="flex w-14 shrink-0 flex-col items-center justify-center rounded-md bg-primary/5 py-1 text-primary">
         <span className="text-[11px] font-semibold uppercase tracking-wide">
-          {WEEKDAYS_SHORT[day.weekday]}
+          {weekdayName(day.weekday, "short")}
         </span>
         <span className="text-2xl font-bold leading-none tabular-nums">
           {day.solar.day}
@@ -854,7 +837,7 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
       <div className="min-w-0 flex-1 space-y-0.5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold">
-            {WEEKDAYS_FULL[day.weekday]}, {day.solar.day}/{day.solar.month}
+            {weekdayName(day.weekday)}, {day.solar.day}/{day.solar.month}
           </span>
           <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
             {t`Ngày tốt`}

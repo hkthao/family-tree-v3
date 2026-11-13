@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { formatDateOnly } from "@/lib/formatDate";
 
 /**
@@ -33,13 +34,13 @@ export function eventWhenText(
   const lunarLabel = opts.lunarLabel ?? "ÂL";
   let when: string;
   if (event.date_solar) {
-    when = `${formatDateOnly(event.date_solar) ?? event.date_solar} (dương lịch)`;
+    when = t`${formatDateOnly(event.date_solar) ?? event.date_solar} (dương lịch)`;
   } else if (event.lunar_month) {
-    when = `Ngày ${event.lunar_day} tháng ${event.lunar_month}${
-      event.lunar_is_leap ? " nhuận" : ""
+    when = t`Ngày ${event.lunar_day ?? "?"} tháng ${event.lunar_month}${
+      event.lunar_is_leap ? t` nhuận` : ""
     } (${lunarLabel})`;
   } else {
     when = "—";
   }
-  return opts.withYearly && event.is_yearly ? `${when} · hằng năm` : when;
+  return opts.withYearly && event.is_yearly ? t`${when} · hằng năm` : when;
 }

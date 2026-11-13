@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
@@ -95,7 +96,7 @@ export function ClanPostCard({
           <time
             className="text-muted-foreground tabular-nums"
             dateTime={post.created_at}
-            title={new Date(post.created_at).toLocaleString("vi-VN")}
+            title={new Date(post.created_at).toLocaleString(currentIntlTag())}
           >
             {formatRelative(post.created_at)}
           </time>
@@ -136,7 +137,7 @@ export function formatRelative(iso: string): string {
   if (diffHr < 24) return t`${diffHr} giờ trước`;
   if (diffDay === 1) return "Hôm qua";
   if (diffDay < 7) return t`${diffDay} ngày trước`;
-  return new Date(iso).toLocaleDateString("vi-VN", {
+  return new Date(iso).toLocaleDateString(currentIntlTag(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

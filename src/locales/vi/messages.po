@@ -119,7 +119,7 @@ msgstr " được gửi tới {provider}"
 msgid " được gửi tới một dịch vụ AI bên ngoài"
 msgstr " được gửi tới một dịch vụ AI bên ngoài"
 
-#. placeholder {0}: new Date(feed.last_fetched_at).toLocaleString("vi-VN")
+#. placeholder {0}: new Date(feed.last_fetched_at).toLocaleString(currentIntlTag())
 #: src/components/CalendarFeedPanel.tsx
 msgid " Lịch được lấy gần nhất lúc {0}."
 msgstr " Lịch được lấy gần nhất lúc {0}."
@@ -130,6 +130,7 @@ msgid " ngày {0}"
 msgstr " ngày {0}"
 
 #: src/components/TodayHubCard.tsx
+#: src/lib/eventWhen.ts
 #: src/pages/clan/GoodDays.tsx
 #: src/pages/Share.tsx
 msgid " nhuận"
@@ -245,6 +246,11 @@ msgstr "{0}"
 #: src/pages/clan/TreeCanvases.tsx
 msgid "{0} (bản sao)"
 msgstr "{0} (bản sao)"
+
+#. placeholder {0}: formatDateOnly(event.date_solar) ?? event.date_solar
+#: src/lib/eventWhen.ts
+msgid "{0} (dương lịch)"
+msgstr "{0} (dương lịch)"
 
 #. placeholder {0}: data.length
 #: src/components/mosaic/FamilyPhotoCard.tsx
@@ -424,6 +430,10 @@ msgstr "{relation} của người đang xem"
 #: src/pages/clan/PersonDetail.tsx
 msgid "{tho} tuổi"
 msgstr "{tho} tuổi"
+
+#: src/lib/eventWhen.ts
+msgid "{when} · hằng năm"
+msgstr "{when} · hằng năm"
 
 #: src/pages/CustomsForm.tsx
 msgid "## Câu hỏi thường gặp"
@@ -7557,6 +7567,13 @@ msgstr "Ngày (tuỳ chọn)"
 msgid "Ngày {0} tháng {1}"
 msgstr "Ngày {0} tháng {1}"
 
+#. placeholder {0}: event.lunar_day ?? "?"
+#. placeholder {1}: event.lunar_month
+#. placeholder {2}: event.lunar_is_leap ? t` nhuận` : ""
+#: src/lib/eventWhen.ts
+msgid "Ngày {0} tháng {1}{2} ({lunarLabel})"
+msgstr "Ngày {0} tháng {1}{2} ({lunarLabel})"
+
 #: src/components/AlmanacDisplayToggles.tsx
 msgid "Ngày & giờ hoàng đạo"
 msgstr "Ngày & giờ hoàng đạo"
@@ -11389,6 +11406,11 @@ msgstr "Vừa (mặc định)"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Vừa khung"
 msgstr "Vừa khung"
+
+#: src/lib/formatDate.ts
+#: src/lib/formatDate.ts
+msgid "vừa xong"
+msgstr "vừa xong"
 
 #: src/pages/CustomsForm.tsx
 msgid "Vùng miền"

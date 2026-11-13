@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+import { currentIntlTag } from "@/lib/i18n";
 /**
  * Ngày LỊCH (yyyy-mm-dd, không giờ) → dd/mm/yyyy.
  *
@@ -28,7 +30,7 @@ export function formatDate(iso: string | null | undefined): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("vi-VN", {
+  return d.toLocaleDateString(currentIntlTag(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -40,10 +42,11 @@ export function formatDateTime(iso: string | null | undefined): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleString("vi-VN");
+  return d.toLocaleString(currentIntlTag());
 }
 
-const RELATIVE = new Intl.RelativeTimeFormat("vi", { numeric: "auto" });
+const relativeFmt = () =>
+  new Intl.RelativeTimeFormat(currentIntlTag().slice(0, 2), { numeric: "auto" });
 
 /** Thang đo tương đối: [đơn vị, số giây/đơn vị]. Lớn → nhỏ. */
 const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
@@ -65,11 +68,20 @@ export function formatRelative(iso: string | null | undefined): string | null {
   if (Number.isNaN(d.getTime())) return null;
   const diffSec = Math.round((d.getTime() - Date.now()) / 1000);
   const abs = Math.abs(diffSec);
-  if (abs < 60) return "vừa xong";
+  if (abs < 60) return t`vừa xong`;
   for (const [unit, secs] of RELATIVE_UNITS) {
     if (abs >= secs) {
-      return RELATIVE.format(Math.round(diffSec / secs), unit);
+      return relativeFmt().format(Math.round(diffSec / secs), unit);
     }
   }
-  return "vừa xong";
+  return t`vừa xong`;
+}
+
+/** Tên thứ trong tuần theo ngôn ngữ đang dùng (0 = Chủ nhật). */
+export function weekdayName(day: number, width: "long" | "short" = "long"): string {
+  // 2023-01-01 là Chủ nhật.
+  return new Date(2023, 0, 1 + (((day % 7) + 7) % 7)).toLocaleDateString(
+    currentIntlTag(),
+    { weekday: width },
+  );
 }

@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -874,8 +875,8 @@ function CompletionTile({
             </>
           ) : (
             <span className="text-muted-foreground tabular-nums">
-              {complete.toLocaleString("vi-VN")} /{" "}
-              {total.toLocaleString("vi-VN")} người đã đủ thông tin.
+              {complete.toLocaleString(currentIntlTag())} /{" "}
+              {total.toLocaleString(currentIntlTag())} người đã đủ thông tin.
             </span>
           )}
         </p>

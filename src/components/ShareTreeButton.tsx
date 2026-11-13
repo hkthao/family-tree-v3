@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -202,7 +203,7 @@ export function ShareTreeButton({ clanId, clanName, compact }: Props) {
 
               {expiresAt && (
                 <p className="text-xs text-muted-foreground">
-                  Link hết hạn ngày {expiresAt.toLocaleDateString("vi-VN")}.
+                  Link hết hạn ngày {expiresAt.toLocaleDateString(currentIntlTag())}.
                   {t`Quản lý / thu hồi sớm trong`}{" "}
                   <a href={`/clans/${clanId}/settings`} className="underline">
                     {t`Cài đặt`}
