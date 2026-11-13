@@ -2,6 +2,10 @@
 
 > Trạng thái: **nháp để chốt** (2026-11-13). Chưa viết dòng code nào. Số liệu bên dưới đo
 > trực tiếp từ repo, không phải ước đoán.
+>
+> **Đã chốt (2026-11-13):** tiếng Việt là ngôn ngữ **mặc định**; **chưa có người bản ngữ duyệt**
+> nên thuật ngữ được **đối chiếu với từ điển và nguồn của FamilySearch** — xem
+> [`glossary-i18n.md`](glossary-i18n.md) (quy trình, nguồn và bản glossary khởi đầu).
 
 ## 1. Mục tiêu
 
@@ -38,7 +42,7 @@ báo lỗi/nhãn trả về từ lớp truy vấn), `pages/admin` (22).
 |---|---|---|
 | **A. Chuỗi giao diện** | nút, nhãn, toast, placeholder, thông báo lỗi | Catalog i18n, bọc tại chỗ |
 | **B. Định dạng** | ngày, số, tiền `đ`, sắp xếp, "x ngày trước" | `Intl` theo locale đang chọn; một bộ helper dùng chung |
-| **C. Thuật ngữ gia phả đặc thù Việt** | xưng hô (chú, bác, cô, cậu, dì, thím, mợ…), Đời, Chi, Thuỷ tổ, giỗ, âm lịch, Can Chi, họ–đệm–tên | **Không dịch máy.** Quy tắc "giữ từ gốc + chú giải": `Chú (father's younger brother)`. Có glossary được duyệt |
+| **C. Thuật ngữ gia phả đặc thù Việt** | xưng hô (chú, bác, cô, cậu, dì, thím, mợ…), Đời, Chi, Thuỷ tổ, giỗ, âm lịch, Can Chi, họ–đệm–tên | **Không tự đặt từ tương đương.** Chỉ dùng bản dịch đã **đối chiếu ≥ 2 nguồn** (FamilySearch, giáo trình, từ điển); còn lại giữ từ gốc + chú giải: `Chú — father's younger brother`. Xem `glossary-i18n.md` |
 | **D. Văn bản dài** | Hướng dẫn, Chính sách, Điều khoản, Changelog | Tệp theo ngôn ngữ; pháp lý cần người có chuyên môn duyệt bản EN |
 | **E. Dữ liệu người dùng nhập** | tên, tiểu sử, mô tả họ, ghi chú | **Không dịch** (chỉ nhãn trường được dịch) |
 | **F. Ngoài trình duyệt** | email, push, PDF, ảnh thiệp, OG của link chia sẻ | Theo ngôn ngữ của **người nhận / người xuất** (xem §5) |
@@ -84,8 +88,13 @@ theo locale; **tìm kiếm không dấu (`unaccent`) giữ nguyên cho mọi ng�
 gõ không dấu để tìm tên Việt rất thường gặp.
 
 ### 4.5 Thuật ngữ và tên người
-- **Glossary** (`docs/glossary-i18n.md`): mỗi thuật ngữ gia phả có bản gốc, cách giữ/dịch trong EN,
-  và ví dụ. Mọi bản dịch phải theo glossary; có kiểm tra tự động cho các từ khoá chính.
+- **Glossary** (`docs/glossary-i18n.md`): mỗi thuật ngữ có bản gốc, cách giữ/dịch trong EN, **nguồn
+  và mức tin cậy** (✅ ≥ 2 nguồn khớp · 🟡 một nguồn · 🔴 chưa có nguồn → giữ nguyên tiếng Việt).
+  Vì chưa có người duyệt, quy trình là **đối chiếu nguồn**, ưu tiên: giao diện tiếng Việt và Research
+  Wiki của FamilySearch → giáo trình (MSU, Wikibooks, Omniglot) → từ điển song ngữ → Wikipedia.
+  Mọi bản dịch phải theo glossary; có kiểm tra tự động cho các từ khoá chính.
+  *Đã kiểm tra:* FamilySearch **không có** trang "Vietnamese Genealogical Word List" riêng (404), nên
+  từ vựng phả hệ lấy từ giao diện tiếng Việt của họ và trang *Vietnam Naming Customs*.
 - **Thứ tự tên**: tuỳ chọn hiển thị "Họ Đệm Tên" (Việt, mặc định) hoặc "Tên Họ" (phương Tây); chỉ đổi
   cách hiển thị, không đổi dữ liệu lưu.
 - **Xưng hô** (`kinship`): trả về `{ term: "chu", side: "paternal", ... }`; EN hiển thị
@@ -116,8 +125,10 @@ gõ không dấu để tìm tên Việt rất thường gặp.
    thư mục đã chuyển xong.
 2. **Codemod bán tự động** cho các mẫu lặp: văn bản JSX, `placeholder=`, `aria-label=`, `title=`,
    `toast.success("…")`. Phần còn lại (chuỗi ghép, `${}`, số nhiều) làm tay.
-3. **Dịch**: máy dịch nháp theo glossary → người bản ngữ trong họ duyệt phần thuật ngữ (nhóm C) →
-   khoá bản dịch. Phần nhãn thông thường duyệt lướt.
+3. **Dịch**: máy dịch nháp **bắt buộc theo glossary** → với nhóm C chỉ giữ bản dịch có nguồn
+   (✅/🟡), mục 🔴 để nguyên tiếng Việt → kiểm tự động mọi chuỗi chứa từ khoá glossary. Phần nhãn
+   thông thường (Lưu, Huỷ, Tìm kiếm…) đối chiếu với giao diện tiếng Việt/tiếng Anh của FamilySearch
+   để chọn cách nói quen thuộc. Khi có người bản ngữ về sau, họ chỉ cần rà các mục 🟡/🔴.
 4. **Theo thư mục, mỗi PR một cụm** (xem §6) — luôn chạy được, vì thiếu bản dịch là fallback VI.
 5. **Chuỗi nằm trong lớp truy vấn** (`lib/queries`, thông báo lỗi): chuyển sang trả mã lỗi + tham số,
    giao diện dịch; tránh dịch trong tầng dữ liệu.
@@ -128,7 +139,7 @@ gõ không dấu để tìm tên Việt rất thường gặp.
 
 | Giai đoạn | Việc | Ước tính (1 dev) |
 |---|---|---|
-| **P0 Chốt** | Chọn ngôn ngữ, thư viện, người duyệt dịch; viết glossary | 1–2 ngày |
+| **P0 Chốt** | Chọn ngôn ngữ, thư viện; hoàn thiện glossary theo quy trình đối chiếu nguồn (bản khởi đầu đã có) | 1–2 ngày |
 | **P1 Hạ tầng** | Lingui + plugin Vite, provider, catalog lười, `profiles.locale` (migration áp tay), bộ chọn ngôn ngữ, `format.ts`, cổng CI, pseudo-locale | 3–4 ngày |
 | **P2 Lõi** | Đăng nhập/đăng ký, thanh đầu + menu + thanh tab, Tổng quan, Cây, Danh bạ, Chi tiết người, Tài khoản, Tra cứu quan hệ — ship EN "một phần, có fallback" | 5–7 ngày |
 | **P3 Module còn lại** | Sự kiện, Quỹ họ, Bảng vàng, Mộ phần, Di sản, Ảnh ghép, Phòng ký ức, Bảng tin, Thành viên, Cài đặt, Công cụ/Nhập | 6–9 ngày |
@@ -144,7 +155,8 @@ chi phí dịch + duyệt, không phải chi phí mã.
 
 | Rủi ro | Giảm thiểu |
 |---|---|
-| Dịch sai thuật ngữ gia phả / xưng hô | Glossary + người bản ngữ duyệt nhóm C; không dịch máy phần này |
+| Dịch sai thuật ngữ gia phả / xưng hô | Đối chiếu ≥ 2 nguồn; mục thiếu nguồn giữ nguyên tiếng Việt + chú giải; xưng hô luôn hiện **từ gốc + gloss**, không thay bằng "uncle/aunt". Cho phép dịch sai nhẹ nhưng không cho phép **bịa** từ tương đương |
+| Xưng hô khác nhau theo vùng miền (vd. "bác" bên mẹ chủ yếu ở miền Bắc) | Nguồn đã ghi chênh lệch; để **cài đặt dòng họ** quyết định, mặc định theo `lib/kinship.ts` |
 | Giao diện lẫn hai thứ tiếng trong lúc chuyển | Chấp nhận có chủ đích: ưu tiên chuyển **trọn từng màn**, không chuyển nửa màn |
 | Bundle phình / vượt trần precache PWA 2MB | Catalog nạp lười, đo kích thước ở CI |
 | Mã tạo chuỗi dùng macro lỗi trong Vite | Thử P1 trên 2–3 tệp trước khi mở rộng |
@@ -155,9 +167,13 @@ chi phí dịch + duyệt, không phải chi phí mã.
 
 ## 8. Cần chốt trước khi bắt tay làm
 
-1. **Ngôn ngữ nào, theo thứ tự nào?** (đề xuất: EN trước).
+**Đã chốt:** tiếng Việt là mặc định · không có người duyệt → đối chiếu từ điển / FamilySearch.
+
+**Còn mở:**
+1. **Ngôn ngữ thứ hai là gì?** (đề xuất: EN trước; chọn thêm ngôn ngữ nào sau đó?)
 2. **Chọn Lingui** hay i18next? (đề xuất: Lingui — lý do ở §4.1).
-3. **Ai duyệt bản dịch** thuật ngữ gia phả và pháp lý?
-4. Có cho phép **"một phần EN"** ở giai đoạn đầu (fallback VI), hay chỉ công bố khi đủ cả nhóm màn lõi?
-5. **Email/push** có gửi theo ngôn ngữ người nhận ngay từ đầu, hay để P5?
-6. Có làm **thứ tự tên Tên–Họ** tuỳ chọn không?
+3. Có cho phép **"một phần EN"** ở giai đoạn đầu (phần chưa dịch hiện tiếng Việt) không?
+4. **Email/push** gửi theo ngôn ngữ người nhận ngay từ đầu, hay để P5?
+5. Có làm tuỳ chọn **thứ tự tên "Tên Họ"** kiểu phương Tây không? (FamilySearch dùng "Họ Đệm Tên" khi ghi hồ sơ.)
+6. **Bản EN của Chính sách / Điều khoản**: không có ai duyệt pháp lý → đề xuất **chưa công bố bản EN**, chỉ
+   hiện bản tiếng Việt kèm ghi chú; có đồng ý không?
