@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -300,7 +301,7 @@ export default function Todo() {
               <>
                 {" "}
                 Tổng <strong>
-                  {totalLoadBearing.toLocaleString("vi-VN")}
+                  {totalLoadBearing.toLocaleString(currentIntlTag())}
                 </strong>{" "}
                 mục cần xử lý trong họ.
               </>
@@ -352,7 +353,7 @@ export default function Todo() {
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                {summaryLoading ? "…" : count.toLocaleString("vi-VN")}
+                {summaryLoading ? "…" : count.toLocaleString(currentIntlTag())}
               </span>
             </button>
           );
@@ -561,8 +562,8 @@ function CompletionProgress({
         />
       </div>
       <p className="text-sm text-muted-foreground">
-        <span className="tabular-nums">{complete.toLocaleString("vi-VN")}</span>{" "}
-        / {total.toLocaleString("vi-VN")} người có đủ năm sinh và quan hệ
+        <span className="tabular-nums">{complete.toLocaleString(currentIntlTag())}</span>{" "}
+        / {total.toLocaleString(currentIntlTag())} người có đủ năm sinh và quan hệ
         cha/mẹ. Cùng nhau bổ sung để kéo lên 100%.
       </p>
     </section>

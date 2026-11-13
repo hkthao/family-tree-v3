@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
@@ -212,7 +213,7 @@ function Section({
 function formatTodayHeader(): string {
   const now = new Date();
   const solarIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const solar = now.toLocaleDateString("vi-VN", {
+  const solar = now.toLocaleDateString(currentIntlTag(), {
     weekday: "long",
     day: "numeric",
     month: "long",

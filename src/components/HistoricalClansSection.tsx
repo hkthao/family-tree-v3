@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -204,7 +205,7 @@ function ClanChips({
         <span
           className={`${chip} border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300`}
         >
-          {clan.person_count.toLocaleString("vi-VN")} người
+          {clan.person_count.toLocaleString(currentIntlTag())} người
         </span>
         <span
           className={`${chip} ${CATEGORY_CHIP[clan.historical_category ?? "royal"]}`}

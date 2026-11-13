@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import type { AnnouncementLevel } from "@/lib/queries/announcements";
 
 /** Nhãn + màu badge/accent theo mức độ tin — dùng chung cho trang
@@ -43,7 +44,7 @@ export function formatRelative(iso: string): string {
   if (diffHr < 24) return `${diffHr} giờ trước`;
   if (diffDay === 1) return "Hôm qua";
   if (diffDay < 7) return `${diffDay} ngày trước`;
-  return new Date(iso).toLocaleDateString("vi-VN", {
+  return new Date(iso).toLocaleDateString(currentIntlTag(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

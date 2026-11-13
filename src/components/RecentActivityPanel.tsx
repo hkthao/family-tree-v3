@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
@@ -55,7 +56,7 @@ function formatRelative(iso: string): string {
   if (diffHr < 24) return t`${diffHr} giờ`;
   if (diffDay === 1) return "Hôm qua";
   if (diffDay < 7) return t`${diffDay} ngày`;
-  return new Date(iso).toLocaleDateString("vi-VN", {
+  return new Date(iso).toLocaleDateString(currentIntlTag(), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -141,7 +142,7 @@ export function RecentActivityPanel({ clanId, limit = 8 }: Props) {
                 <time
                   className="text-xs text-muted-foreground tabular-nums shrink-0"
                   dateTime={r.changed_at}
-                  title={new Date(r.changed_at).toLocaleString("vi-VN")}
+                  title={new Date(r.changed_at).toLocaleString(currentIntlTag())}
                 >
                   {formatRelative(r.changed_at)}
                 </time>
