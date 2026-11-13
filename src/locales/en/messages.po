@@ -145,10 +145,23 @@ msgstr " No. {0}"
 msgid "— Chọn —"
 msgstr "— Choose —"
 
+#: src/components/tree/TreeGuide.tsx
+msgid "— đặt làm trung tâm"
+msgstr "— set as center"
+
+#: src/components/tree/TreeGuide.tsx
+msgid "— di chuyển"
+msgstr "— pan"
+
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "— Không gắn —"
 msgstr "— None —"
+
+#: src/components/tree/TreeGuide.tsx
+#: src/components/Tree3DView.tsx
+msgid "— phóng to / thu nhỏ"
+msgstr "— zoom in / out"
 
 #: src/pages/CustomsForm.tsx
 msgid ", {metaCount} thông tin"
@@ -1230,7 +1243,6 @@ msgid "Bật/tắt thông tin hiển thị và phần người ngoài được x
 msgstr "Turn on or off the information shown and what outsiders may see. The name, description, branches and family book text are edited on the “Details & Family book” page."
 
 #: src/components/Tree3DView.tsx
-#: src/components/Tree3DView.tsx
 msgid "bay tới xem"
 msgstr "fly to it"
 
@@ -1403,10 +1415,6 @@ msgstr "Next picture"
 #: src/components/gallery/GalleryScene.tsx
 msgid "Bức trước"
 msgstr "Previous picture"
-
-#: src/components/Tree3DView.tsx
-msgid "bung / thu nhánh"
-msgstr "expand / collapse a branch"
 
 #: src/components/Tree3DView.tsx
 msgid "bung / thu nhánh con"
@@ -1728,6 +1736,7 @@ msgstr "3D tree"
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Tree.tsx
+#: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
 msgid "Cây gia phả"
 msgstr "Family tree"
@@ -1791,6 +1800,14 @@ msgstr "double-tap the floor"
 #: src/components/gallery/GalleryScene.tsx
 msgid "Chạm sàn để đặt…"
 msgstr "Tap the floor to place…"
+
+#: src/components/Tree3DView.tsx
+msgid "Chạm thẻ để bay tới xem"
+msgstr "Tap a card to fly to it"
+
+#: src/components/Tree3DView.tsx
+msgid "Chạm thẻ để bung / thu nhánh"
+msgstr "Tap a card to expand / collapse its branch"
 
 #: src/components/tree/TreeGuide.tsx
 msgid "Chạm thẻ để đặt trung tâm"
@@ -1930,6 +1947,10 @@ msgstr "Directions →"
 #: src/pages/Account.tsx
 msgid "Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng."
 msgstr "Sent only when that week has content. Untick to stop."
+
+#: src/components/TreeFolderView.tsx
+msgid "Chỉ hiện {LIMIT} người đầu — gõ thêm chữ để thu hẹp."
+msgstr "Showing the first {LIMIT} people — type more letters to narrow down."
 
 #: src/components/TreeFolderView.tsx
 msgid "Chỉ hiện 50 người đầu — gõ tên để thu hẹp."
@@ -2655,6 +2676,11 @@ msgstr "children of {0}"
 msgid "con gái"
 msgstr "daughter"
 
+#: src/components/tree/TreeGuide.tsx
+#: src/components/Tree3DView.tsx
+msgid "Con gái"
+msgstr "Daughter"
+
 #: src/components/ClanStatsPanel.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
@@ -2664,6 +2690,11 @@ msgstr "Living"
 #: src/components/Tree3DView.tsx
 msgid "con trai"
 msgstr "son"
+
+#: src/components/tree/TreeGuide.tsx
+#: src/components/Tree3DView.tsx
+msgid "Con trai"
+msgstr "Son"
 
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
@@ -4107,6 +4138,11 @@ msgstr "Set residence"
 #: src/pages/NewClan.tsx
 msgid "Đặt tên và vài thông tin cơ bản — tạo xong là dòng họ rỗng, sẵn sàng thêm Thuỷ tổ."
 msgstr "Give it a name and a few basic details — once created the clan is empty, ready for you to add the founding ancestor."
+
+#: src/components/tree/TreeGuide.tsx
+#: src/components/Tree3DView.tsx
+msgid "Dâu/rể"
+msgstr "In-law (married in)"
 
 #. placeholder {0}: ghost.peerClanName
 #: src/components/TreeFolderView.tsx
@@ -5669,6 +5705,11 @@ msgstr "Spouse ID"
 msgid "Import gia phả lớn từ file .xlsx hoặc .csv."
 msgstr "Import a large family tree from an .xlsx or .csv file."
 
+#. placeholder {0}: new Date().toLocaleDateString(currentIntlTag())
+#: src/pages/clan/Tree.tsx
+msgid "In ngày {0}"
+msgstr "Printed on {0}"
+
 #: src/components/HistoricalClansSection.tsx
 msgid "Ít người nhất"
 msgstr "Fewest people"
@@ -5692,6 +5733,14 @@ msgstr "Delivery channel"
 #: src/components/tree/TreeGuide.tsx
 msgid "Kéo"
 msgstr "Drag"
+
+#: src/components/Tree3DView.tsx
+msgid "kéo — di chuyển"
+msgstr "drag — pan"
+
+#: src/components/Tree3DView.tsx
+msgid "kéo — xoay"
+msgstr "drag — rotate"
 
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
@@ -6257,6 +6306,10 @@ msgstr "No one matches that name. Try a shorter keyword."
 #: src/pages/clan/Merge.tsx
 msgid "Không tìm thấy ai khớp."
 msgstr "No one matches."
+
+#: src/components/TreeFolderView.tsx
+msgid "Không tìm thấy ai tên “{q}”."
+msgstr "No one named “{q}” was found."
 
 #: src/components/panel/PanelHost.tsx
 #: src/components/panel/PanelHost.tsx
@@ -7600,6 +7653,11 @@ msgstr "To add someone, just tell me, for example “My father is Nguyễn Văn 
 msgid "Muốn xem thêm, mở"
 msgstr "To see more, open"
 
+#: src/components/tree/TreeGuide.tsx
+#: src/components/Tree3DView.tsx
+msgid "Nam"
+msgstr "Male"
+
 #: src/components/CalendarDateInput.tsx
 #: src/components/TimelineFields.tsx
 msgid "Năm"
@@ -8444,6 +8502,8 @@ msgstr "Connect to another clan through a member — an admin on the other side 
 #: src/components/RelationshipGroup.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/SharedPersonCard.tsx
+#: src/components/tree/TreeGuide.tsx
+#: src/components/Tree3DView.tsx
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddSpouse.tsx
 #: src/pages/clan/EditPerson.tsx
@@ -8557,6 +8617,10 @@ msgstr "Zoom in"
 #: src/pages/clan/Tree.tsx
 msgid "Phóng to / thu nhỏ cây"
 msgstr "Zoom the tree in / out"
+
+#: src/components/Tree3DView.tsx
+msgid "phóng to·nhỏ"
+msgstr "zoom in / out"
 
 #: src/pages/clan/MemoryRooms.tsx
 msgid "Phòng trưng bày ảnh 3D của dòng họ."
@@ -10466,6 +10530,7 @@ msgstr "Minimize the chat window"
 msgid "Thủ quỹ/trưởng họ sẽ cập nhật thu chi tại đây."
 msgstr "The treasurer / clan head will update income and expenses here."
 
+#: src/components/Tree3DView.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/Import.tsx
@@ -10832,6 +10897,10 @@ msgstr "All pieces in the mosaic will be deleted."
 msgid "Toàn bộ thông tin dòng họ thành một cuốn sổ PDF."
 msgstr "All of the clan's information in one PDF book."
 
+#: src/components/Tree3DView.tsx
+msgid "toàn cảnh"
+msgstr "reset view"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Toàn màn hình"
 msgstr "Full screen"
@@ -11048,6 +11117,10 @@ msgstr "Assistant"
 #: src/pages/clan/AiChat.tsx
 msgid "Trợ lý dòng họ"
 msgstr "Clan assistant"
+
+#: src/components/TreeFolderView.tsx
+msgid "trở xuống"
+msgstr "and below"
 
 #: src/pages/clan/Events.tsx
 msgid "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
@@ -11623,6 +11696,11 @@ msgstr "Spouses ({0})"
 #: src/components/Tree3DView.tsx
 msgid "vợ chồng"
 msgstr "spouses"
+
+#: src/components/tree/TreeGuide.tsx
+#: src/components/Tree3DView.tsx
+msgid "Vợ chồng"
+msgstr "Spouses"
 
 #: src/pages/clan/Import.tsx
 msgid "Vợ/Chồng"

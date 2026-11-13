@@ -27,15 +27,13 @@ export function TreeGuide({ defaultOpen = true }: { defaultOpen?: boolean }) {
           {/* Máy tính */}
           <div className="hidden space-y-1 sm:block">
             <div>
-              <b className="text-foreground">{t`Kéo`}</b> — di chuyển
+              <b className="text-foreground">{t`Kéo`}</b> {t`— di chuyển`}
             </div>
             <div>
-              <b className="text-foreground">{t`Lăn chuột`}</b> — phóng to / thu
-              nhỏ
+              <b className="text-foreground">{t`Lăn chuột`}</b> {t`— phóng to / thu nhỏ`}
             </div>
             <div>
-              <b className="text-foreground">{t`Bấm một thẻ`}</b> — đặt làm
-              trung tâm
+              <b className="text-foreground">{t`Bấm một thẻ`}</b> {t`— đặt làm trung tâm`}
             </div>
           </div>
           {/* Điện thoại */}
@@ -52,21 +50,21 @@ export function TreeGuide({ defaultOpen = true }: { defaultOpen?: boolean }) {
                   className="h-2.5 w-2.5 rounded-full border border-border"
                   style={{ background: "var(--tree-card-male)" }}
                 />{" "}
-                Nam
+                {t`Nam`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-2.5 w-2.5 rounded-full border border-border"
                   style={{ background: "var(--tree-card-female)" }}
                 />{" "}
-                Nữ
+                {t`Nữ`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-2.5 w-2.5 rounded-full border border-dashed"
                   style={{ borderColor: "#B8862A" }}
                 />{" "}
-                Dâu/rể
+                {t`Dâu/rể`}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -75,21 +73,21 @@ export function TreeGuide({ defaultOpen = true }: { defaultOpen?: boolean }) {
                   className="h-0.5 w-4 rounded"
                   style={{ background: "#B8862A" }}
                 />{" "}
-                Con trai
+                {t`Con trai`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-0.5 w-4 rounded"
                   style={{ background: "#C27B6A" }}
                 />{" "}
-                Con gái
+                {t`Con gái`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-0.5 w-4 rounded"
                   style={{ background: "#9B3535" }}
                 />{" "}
-                Vợ chồng
+                {t`Vợ chồng`}
               </span>
             </div>
           </div>

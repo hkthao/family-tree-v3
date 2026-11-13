@@ -1,3 +1,4 @@
+import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -1493,10 +1494,10 @@ export default function Tree() {
         <h1
           style={{ fontSize: "18pt", fontWeight: 600, marginBottom: "0.4cm" }}
         >
-          {clan.name} — Cây gia phả
+          {clan.name} — {t`Cây gia phả`}
         </h1>
         <p style={{ fontSize: "10pt", color: "#555", marginBottom: "0.6cm" }}>
-          In ngày {new Date().toLocaleDateString("vi-VN")}
+          {t`In ngày ${new Date().toLocaleDateString(currentIntlTag())}`}
         </p>
       </div>
 
