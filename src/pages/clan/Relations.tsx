@@ -25,6 +25,7 @@ import {
   deathLabel,
   levelName,
   yearOf,
+  type RelationsReport,
   type RelPerson,
 } from "@/lib/relations";
 
@@ -76,8 +77,6 @@ export default function Relations() {
       });
   }, [data, off]);
 
-  if (!isMember) return <Navigate to={`/clans/${clan.id}`} replace />;
-
   const wanted = params.get("p");
   const focal: RelPerson | null =
     (wanted && idx?.byId.get(wanted)) ||
@@ -89,6 +88,26 @@ export default function Relations() {
     ) ||
     data?.persons[0] ||
     null;
+
+  const report = useMemo(
+    () => (idx && focal ? buildRelationsReport(idx, focal, off) : null),
+    [idx, focal, off],
+  );
+  const toast = useToast();
+  const pdfM = useMutation({
+    mutationFn: async () => {
+      if (!report) throw new Error("Chưa có dữ liệu để xuất");
+      // @react-pdf/renderer nặng (~1,5MB): chỉ nạp khi bấm xuất.
+      const { downloadRelationsPdf } =
+        await import("@/lib/pdf/exportRelations");
+      return downloadRelationsPdf(clan, report);
+    },
+    onSuccess: (r) => toast.success("Đã xuất PDF", { description: r.filename }),
+    onError: (e) =>
+      toast.error("Không xuất được PDF", { description: (e as Error).message }),
+  });
+
+  if (!isMember) return <Navigate to={`/clans/${clan.id}`} replace />;
 
   const select = (id: string) => {
     const next = new URLSearchParams(params);
@@ -136,22 +155,42 @@ export default function Relations() {
 
       {idx && focal && (
         <>
-          <FilterableSelect
-            id="relations-person"
-            icon={<IconUser />}
-            value={focal.id}
-            onChange={(v) => v && select(v)}
-            options={options}
-            emptyLabel="Chọn người cần xem"
-            filterPlaceholder="Gõ tên để tìm (không cần dấu)"
-            filterLabel="Tìm người cần xem quan hệ"
-            className="h-10 text-sm"
-          />
+          {/* Chọn người + xuất PDF cùng một hàng. */}
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <FilterableSelect
+                id="relations-person"
+                icon={<IconUser />}
+                value={focal.id}
+                onChange={(v) => v && select(v)}
+                options={options}
+                emptyLabel="Chọn người cần xem"
+                filterPlaceholder="Gõ tên để tìm (không cần dấu)"
+                filterLabel="Tìm người cần xem quan hệ"
+                className="h-10 text-sm"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() => pdfM.mutate()}
+              disabled={pdfM.isPending || !report}
+              aria-label="Xuất PDF"
+              title="Xuất PDF"
+            >
+              <IconDownload className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">
+                {pdfM.isPending ? "Đang xuất…" : "Xuất PDF"}
+              </span>
+            </Button>
+          </div>
           <RelationsBody
             clanId={clan.id}
             off={off}
             focal={focal}
-            idx={idx}
+            report={report!}
             Person={Person}
           />
         </>
@@ -210,71 +249,19 @@ function RelationsBody({
   clanId,
   off,
   focal,
-  idx,
+  report,
   Person,
 }: {
   clanId: string;
   off: number;
   focal: RelPerson;
-  idx: ReturnType<typeof buildRelationsIndex>;
+  report: RelationsReport;
   Person: (props: { p: RelPerson; children?: string }) => React.ReactElement;
 }) {
-  const report = useMemo(
-    () => buildRelationsReport(idx, focal, off),
-    [idx, focal, off],
-  );
   const { line, siblings, fatherSiblings, motherSiblings, rows, summary } =
     report;
   const spouses = report.spouses;
   const gen = report.generation;
-  const { clan } = useClanContext();
-  const toast = useToast();
-  const pdfM = useMutation({
-    mutationFn: async () => {
-      // @react-pdf/renderer nặng (~1,5MB): chỉ nạp khi bấm xuất.
-      const { downloadRelationsPdf } =
-        await import("@/lib/pdf/exportRelations");
-      return downloadRelationsPdf(clan, report);
-    },
-    onSuccess: (r) => toast.success("Đã xuất PDF", { description: r.filename }),
-    onError: (e) =>
-      toast.error("Không xuất được PDF", { description: (e as Error).message }),
-  });
-
-  const exportCsv = () => {
-    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const head = [
-      "Đời",
-      "Họ tên",
-      "Năm sinh",
-      "Vợ/chồng",
-      "Năm sinh vợ/chồng",
-      "Quê quán",
-      "Bố",
-      "Mẹ",
-    ];
-    const lines = rows.map((r) => [
-      r.person.generation !== null ? String(r.person.generation - off) : "",
-      r.person.full_name,
-      yearOf(r.person.birth_date),
-      r.spouses.map((s) => s.full_name).join("; "),
-      r.spouses.map((s) => yearOf(s.birth_date)).join("; "),
-      r.person.birth_place ??
-        r.spouses.map((s) => s.birth_place).find(Boolean) ??
-        "",
-      r.father?.full_name ?? "",
-      r.mother?.full_name ?? "",
-    ]);
-    const csv = [head, ...lines].map((l) => l.map(esc).join(",")).join("\r\n");
-    const url = URL.createObjectURL(
-      new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }),
-    );
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `quan-he-${focal.full_name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "-").toLowerCase()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <div className="space-y-3">
@@ -284,24 +271,12 @@ function RelationsBody({
         title={focal.full_name}
         bodyClassName="p-0"
         footer={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => pdfM.mutate()}
-              disabled={pdfM.isPending}
-            >
-              <IconDownload className="mr-1.5 h-4 w-4" />
-              {pdfM.isPending ? "Đang xuất…" : "Xuất PDF"}
-            </Button>
-            <Link
-              to={`/clans/${clanId}/people/${focal.id}`}
-              className="shrink-0 text-sm text-primary hover:underline"
-            >
-              Mở hồ sơ →
-            </Link>
-          </>
+          <Link
+            to={`/clans/${clanId}/people/${focal.id}`}
+            className="shrink-0 text-sm text-primary hover:underline"
+          >
+            Mở hồ sơ →
+          </Link>
         }
       >
         {/* Cùng kiểu bảng với phần Con cháu: tiêu đề cột nhỏ, một hàng thông tin. */}
@@ -465,19 +440,6 @@ function RelationsBody({
         title="Con cháu"
         action={rows.length > 0 ? `${rows.length} người` : undefined}
         bodyClassName="p-0"
-        footer={
-          rows.length > 0 ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={exportCsv}
-            >
-              <IconDownload className="mr-1.5 h-4 w-4" />
-              Tải bảng (CSV)
-            </Button>
-          ) : undefined
-        }
       >
         {rows.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">
