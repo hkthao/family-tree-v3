@@ -13,7 +13,7 @@ import { t } from "@lingui/core/macro";
 export function FilterDrawer({
   open,
   onClose,
-  title = "Bộ lọc & tuỳ chọn",
+  title,
   onReset,
   children,
 }: {
@@ -23,6 +23,7 @@ export function FilterDrawer({
   onReset?: () => void;
   children: ReactNode;
 }) {
+  const heading = title ?? t`Bộ lọc & tuỳ chọn`;
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -45,13 +46,13 @@ export function FilterDrawer({
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={heading}
         className={`absolute right-0 top-0 flex h-full w-[min(22rem,90vw)] flex-col border-l bg-background shadow-xl transition-transform duration-200 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <header className="flex items-center justify-between gap-2 border-b px-4 h-14 shrink-0">
-          <h2 className="text-base font-semibold">{title}</h2>
+          <h2 className="text-base font-semibold">{heading}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -77,7 +78,7 @@ export function FilterDrawer({
               </Button>
             )}
             <Button type="button" className="flex-1" onClick={onClose}>
-              Xong
+              {t`Xong`}
             </Button>
           </footer>
         </ActionArea>

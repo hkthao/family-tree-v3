@@ -1,3 +1,5 @@
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase as defaultClient } from "@/lib/supabase";
@@ -34,21 +36,24 @@ export type ClanSizeBucket = "tiny" | "small" | "medium" | "large";
 export const CLAN_SIZE_BUCKETS: Record<
   ClanSizeBucket,
   { label: string; min: number; max: number | null }
-> = {
-  tiny: { label: "Mới khởi tạo (<5)", min: 0, max: 4 },
-  small: { label: "Nhỏ (5–19)", min: 5, max: 19 },
-  medium: { label: "Vừa (20–49)", min: 20, max: 49 },
-  large: { label: "Lớn (≥50)", min: 50, max: null },
-};
+> = lazyMessages({
+  tiny: { label: msg`Mới khởi tạo (<5)`, min: 0, max: 4 },
+  small: { label: msg`Nhỏ (5–19)`, min: 5, max: 19 },
+  medium: { label: msg`Vừa (20–49)`, min: 20, max: 49 },
+  large: { label: msg`Lớn (≥50)`, min: 50, max: null },
+}) as unknown as Record<
+  ClanSizeBucket,
+  { label: string; min: number; max: number | null }
+>;
 
 export type ClanSort = "members" | "name" | "newest" | "updated";
 
-export const CLAN_SORT_LABEL: Record<ClanSort, string> = {
-  members: "Số thành viên (nhiều → ít)",
-  name: "Tên (A → Z)",
-  newest: "Mới tạo",
-  updated: "Cập nhật gần đây",
-};
+export const CLAN_SORT_LABEL: Record<ClanSort, string> = lazyMessages({
+  members: msg`Số thành viên (nhiều → ít)`,
+  name: msg`Tên (A → Z)`,
+  newest: msg`Mới tạo`,
+  updated: msg`Cập nhật gần đây`,
+}) as unknown as Record<ClanSort, string>;
 
 export interface ListClansParams {
   page: number; // 1-based

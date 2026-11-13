@@ -243,12 +243,12 @@ export default function Clans() {
             <TabButton
               active={tab === "mine"}
               onClick={() => setTab("mine")}
-              label={<>Của tôi{tabCount(mineCount.data?.total)}</>}
+              label={<>{t`Của tôi`}{tabCount(mineCount.data?.total)}</>}
             />
             <TabButton
               active={tab === "community"}
               onClick={() => setTab("community")}
-              label={<>Cộng đồng{tabCount(communityCount.data?.total)}</>}
+              label={<>{t`Cộng đồng`}{tabCount(communityCount.data?.total)}</>}
             />
             {historicalQ.data && historicalQ.data.length > 0 && (
               <TabButton
