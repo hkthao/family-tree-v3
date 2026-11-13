@@ -472,7 +472,7 @@ msgstr "← Back to sign in"
 
 #: src/pages/clan/People.tsx
 msgid "← Về danh bạ"
-msgstr "← Back to the directory"
+msgstr "← Back to the People list"
 
 #: src/pages/clan/Merge.tsx
 msgid "→ sẽ lấp"
@@ -1567,7 +1567,7 @@ msgstr "Thank you. Your feedback has been recorded. If you left contact details,
 
 #: src/components/TimelineFields.tsx
 msgid "Can chi (tự tính theo năm)"
-msgstr "Stem–Branch (calculated from the year)"
+msgstr "Can Chi — Stem–Branch (calculated from the year)"
 
 #. placeholder {0}: info.canChi.day
 #: src/components/TodayHubCard.tsx
@@ -3801,7 +3801,7 @@ msgstr "Loading the tree…"
 
 #: src/pages/clan/Kinship.tsx
 msgid "Đang tải danh bạ…"
-msgstr "Loading the directory…"
+msgstr "Loading the People list…"
 
 #: src/pages/Podcast.tsx
 msgid "Đang tải danh sách tập…"
@@ -4765,7 +4765,7 @@ msgstr "Approve and publish"
 
 #: src/components/PersonNavButtons.tsx
 msgid "Duyệt danh bạ"
-msgstr "Browse the directory"
+msgstr "Browse the People list"
 
 #: src/pages/clan/ContributionDetail.tsx
 msgid "Duyệt đóng góp?"
@@ -9951,7 +9951,7 @@ msgstr "Add branch"
 
 #: src/components/BranchesSection.tsx
 msgid "Thêm chi đầu tiên ở form bên dưới — chi giúp lọc danh bạ và đăng ký thông báo riêng."
-msgstr "Add the first branch in the form below — branches help filter the directory and set up separate notifications."
+msgstr "Add the first branch in the form below — branches help filter the People list and set up separate notifications."
 
 #: src/pages/clan/NewPerson.tsx
 msgid "Thêm chi tiết khác"
@@ -11787,7 +11787,7 @@ msgstr "See how many requests you've used and how many remain. This log does not
 
 #: src/pages/clan/Import.tsx
 msgid "Xem danh bạ"
-msgstr "View the directory"
+msgstr "View the People list"
 
 #: src/components/ShareTreeButton.tsx
 msgid "Xem gia phả họ {clanName} (link chỉ-đọc):"
