@@ -895,14 +895,13 @@ export function Tree3DView({
           {/* Máy tính */}
           <div className="hidden space-y-1 sm:block">
             <div>
-              <b className="text-foreground">{t`Chuột trái`}</b> kéo — xoay
+              <b className="text-foreground">{t`Chuột trái`}</b> {t`kéo — xoay`}
             </div>
             <div>
-              <b className="text-foreground">{t`Chuột phải`}</b> kéo — di chuyển
+              <b className="text-foreground">{t`Chuột phải`}</b> {t`kéo — di chuyển`}
             </div>
             <div>
-              <b className="text-foreground">{t`Lăn chuột`}</b> — phóng to / thu
-              nhỏ
+              <b className="text-foreground">{t`Lăn chuột`}</b> {t`— phóng to / thu nhỏ`}
             </div>
             <div>
               <b className="text-foreground">{t`Bấm một thẻ`}</b> —{" "}
@@ -913,8 +912,7 @@ export function Tree3DView({
             )}
             <div className="flex flex-wrap items-center gap-1 pt-0.5">
               {t`Phím tắt:`}
-              <kbd className={kbd}>+</kbd>/<kbd className={kbd}>−</kbd> phóng
-              to·nhỏ ·<kbd className={kbd}>R</kbd> toàn cảnh
+              <kbd className={kbd}>+</kbd>/<kbd className={kbd}>−</kbd> {t`phóng to·nhỏ`} ·<kbd className={kbd}>R</kbd> {t`toàn cảnh`}
             </div>
           </div>
           {/* Điện thoại */}
@@ -922,7 +920,7 @@ export function Tree3DView({
             <div>{t`Vuốt 1 ngón để xoay, di chuyển`}</div>
             <div>{t`Kéo 2 ngón để phóng to / thu nhỏ`}</div>
             <div>
-              Chạm thẻ để {expandable ? t`bung / thu nhánh` : t`bay tới xem`}
+              {expandable ? t`Chạm thẻ để bung / thu nhánh` : t`Chạm thẻ để bay tới xem`}
             </div>
           </div>
           {/* Chú thích màu: thẻ theo giới, đường theo quan hệ. */}
@@ -933,25 +931,25 @@ export function Tree3DView({
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ background: pal.male }}
                 />{" "}
-                Nam
+                {t`Nam`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ background: pal.female }}
                 />{" "}
-                Nữ
+                {t`Nữ`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ background: pal.root }}
                 />{" "}
-                Thuỷ tổ
+                {t`Thuỷ tổ`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span className="h-2.5 w-2.5 rounded-full border border-dashed border-muted-foreground" />{" "}
-                Dâu/rể
+                {t`Dâu/rể`}
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -960,21 +958,21 @@ export function Tree3DView({
                   className="h-0.5 w-4 rounded"
                   style={{ background: pal.male }}
                 />{" "}
-                Con trai
+                {t`Con trai`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-0.5 w-4 rounded"
                   style={{ background: pal.female }}
                 />{" "}
-                Con gái
+                {t`Con gái`}
               </span>
               <span className="inline-flex items-center gap-1">
                 <span
                   className="h-0.5 w-4 rounded"
                   style={{ background: pal.marriage }}
                 />{" "}
-                Vợ chồng
+                {t`Vợ chồng`}
               </span>
             </div>
           </div>

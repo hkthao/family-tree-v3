@@ -368,8 +368,8 @@ export function TreeFolderView({
                 <IconTree className="h-4 w-4 shrink-0 text-primary" />
                 <span className="min-w-0 flex-1 truncate">
                   {t`Nhánh`}{" "}
-                  <strong className="text-foreground">{focus.name}</strong> trở
-                  xuống
+                  <strong className="text-foreground">{focus.name}</strong>{" "}
+                  {t`trở xuống`}
                 </span>
                 <button
                   type="button"
@@ -461,7 +461,7 @@ function SearchResults({
   if (hits.length === 0) {
     return (
       <p className="p-2 text-sm text-muted-foreground">
-        Không tìm thấy ai tên “{q}”.
+        {t`Không tìm thấy ai tên “${q}”.`}
       </p>
     );
   }
@@ -485,7 +485,7 @@ function SearchResults({
       </ul>
       {hits.length >= LIMIT && (
         <p className="p-2 text-xs text-muted-foreground">
-          Chỉ hiện {LIMIT} người đầu — gõ thêm chữ để thu hẹp.
+          {t`Chỉ hiện ${LIMIT} người đầu — gõ thêm chữ để thu hẹp.`}
         </p>
       )}
     </>
