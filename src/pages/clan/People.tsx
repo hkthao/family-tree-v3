@@ -85,6 +85,7 @@ import { KinshipContent } from "@/pages/clan/Kinship";
 import { KhoeButton } from "@/components/KhoeButton";
 
 import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 const PAGE_SIZE_OPTIONS = [15, 30, 50, 100];
 const VIEW_KEY = "family-tree:people-view-mode";
 type ViewMode = "list" | "grid";
@@ -431,9 +432,10 @@ export default function People() {
       {isMember && view === "people" && missingRoot && (
         <Alert>
           <AlertDescription>
-            <strong>{t`Dòng họ chưa có Thuỷ tổ.`}</strong> Cần nhập Thuỷ tổ (đời
-            đầu tiên) thì cây gia phả mới vẽ
-            {t`đúng.`}{" "}
+            <Trans>
+              <strong>Dòng họ chưa có Thuỷ tổ.</strong> Cần nhập Thuỷ tổ (đời
+              đầu tiên) thì cây gia phả mới vẽ đúng.
+            </Trans>{" "}
             {canEdit
               ? t`Thêm người mới và đánh dấu là Thuỷ tổ, hoặc sửa một người đã có.`
               : t`Nhờ quản trị viên hoặc người biên tập của dòng họ bổ sung.`}
@@ -711,9 +713,11 @@ export default function People() {
             onReset={() => setBulkAddr(EMPTY_PERSON_ADDRESS)}
           >
             <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-              Đặt <strong>{t`cùng một nơi ở`}</strong> cho {selected.size} người
-              {t`đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì`}{" "}
-              <strong>{t`xoá`}</strong> nơi ở của họ.
+              <Trans>
+                Đặt <strong>cùng một nơi ở</strong> cho {selected.size} người
+                đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì{" "}
+                <strong>xoá</strong> nơi ở của họ.
+              </Trans>
             </p>
             <AddressPicker
               idPrefix="bulk-addr"
