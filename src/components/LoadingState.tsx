@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { cn } from "@/lib/utils";
 
 interface LoadingProps {
@@ -12,11 +13,8 @@ interface LoadingProps {
  * Trạng thái tải dùng chung — thay cho các đoạn "Đang tải…" thô rải rác,
  * để nhịp chờ nhất quán khắp app. Cùng họ với [[EmptyState]] / [[ErrorState]].
  */
-export function LoadingState({
-  label = "Đang tải…",
-  fullscreen,
-  className,
-}: LoadingProps) {
+export function LoadingState({ label, fullscreen, className }: LoadingProps) {
+  label = label ?? t`Đang tải…`;
   return (
     <div
       role="status"

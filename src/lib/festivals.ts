@@ -1,3 +1,6 @@
+import { msg } from "@lingui/core/macro";
+
+import { lazyMessages } from "@/lib/i18n/lazy";
 import { solarStringToLunar, type LunarYMD } from "@/lib/lunarDate";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
@@ -35,12 +38,12 @@ export interface Festival {
   publicHoliday?: boolean;
 }
 
-export const FESTIVALS: Festival[] = [
+export const FESTIVALS: Festival[] = lazyMessages([
   // ─── Âm lịch ───────────────────────────────────────────────────
   {
     key: "giao-thua",
-    name: "Tất niên · Giao thừa",
-    note: "Cúng tất niên, đón giao thừa.",
+    name: msg`Tất niên · Giao thừa`,
+    note: msg`Cúng tất niên, đón giao thừa.`,
     kind: "lunar",
     month: 12,
     day: "last",
@@ -48,8 +51,8 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "tet-mung-1",
-    name: "Mùng 1 Tết",
-    note: "Tết Nguyên Đán — cúng gia tiên, mừng tuổi.",
+    name: msg`Mùng 1 Tết`,
+    note: msg`Tết Nguyên Đán — cúng gia tiên, mừng tuổi.`,
     kind: "lunar",
     month: 1,
     day: 1,
@@ -57,8 +60,8 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "tet-mung-2",
-    name: "Mùng 2 Tết",
-    note: "Tết Nguyên Đán.",
+    name: msg`Mùng 2 Tết`,
+    note: msg`Tết Nguyên Đán.`,
     kind: "lunar",
     month: 1,
     day: 2,
@@ -66,8 +69,8 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "tet-mung-3",
-    name: "Mùng 3 Tết",
-    note: "Tết Nguyên Đán — hoá vàng, tiễn ông bà.",
+    name: msg`Mùng 3 Tết`,
+    note: msg`Tết Nguyên Đán — hoá vàng, tiễn ông bà.`,
     kind: "lunar",
     month: 1,
     day: 3,
@@ -75,24 +78,24 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "nguyen-tieu",
-    name: "Rằm tháng Giêng · Tết Nguyên Tiêu",
-    note: "“Cúng quanh năm không bằng rằm tháng Giêng.”",
+    name: msg`Rằm tháng Giêng · Tết Nguyên Tiêu`,
+    note: msg`“Cúng quanh năm không bằng rằm tháng Giêng.”`,
     kind: "lunar",
     month: 1,
     day: 15,
   },
   {
     key: "han-thuc",
-    name: "Tết Hàn thực",
-    note: "Bánh trôi bánh chay, nhớ về tổ tiên.",
+    name: msg`Tết Hàn thực`,
+    note: msg`Bánh trôi bánh chay, nhớ về tổ tiên.`,
     kind: "lunar",
     month: 3,
     day: 3,
   },
   {
     key: "gio-to-hung-vuong",
-    name: "Giỗ Tổ Hùng Vương",
-    note: "“Dù ai đi ngược về xuôi…” — ngày nghỉ lễ.",
+    name: msg`Giỗ Tổ Hùng Vương`,
+    note: msg`“Dù ai đi ngược về xuôi…” — ngày nghỉ lễ.`,
     kind: "lunar",
     month: 3,
     day: 10,
@@ -100,56 +103,56 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "phat-dan",
-    name: "Lễ Phật Đản",
-    note: "Rằm tháng Tư — ngày Đức Phật đản sinh.",
+    name: msg`Lễ Phật Đản`,
+    note: msg`Rằm tháng Tư — ngày Đức Phật đản sinh.`,
     kind: "lunar",
     month: 4,
     day: 15,
   },
   {
     key: "doan-ngo",
-    name: "Tết Đoan Ngọ",
-    note: "Mùng 5 tháng Năm — giết sâu bọ.",
+    name: msg`Tết Đoan Ngọ`,
+    note: msg`Mùng 5 tháng Năm — giết sâu bọ.`,
     kind: "lunar",
     month: 5,
     day: 5,
   },
   {
     key: "vu-lan",
-    name: "Vu Lan · Rằm tháng Bảy",
-    note: "Báo hiếu cha mẹ, xá tội vong nhân.",
+    name: msg`Vu Lan · Rằm tháng Bảy`,
+    note: msg`Báo hiếu cha mẹ, xá tội vong nhân.`,
     kind: "lunar",
     month: 7,
     day: 15,
   },
   {
     key: "trung-thu",
-    name: "Tết Trung Thu",
-    note: "Rằm tháng Tám — Tết đoàn viên, phá cỗ trông trăng.",
+    name: msg`Tết Trung Thu`,
+    note: msg`Rằm tháng Tám — Tết đoàn viên, phá cỗ trông trăng.`,
     kind: "lunar",
     month: 8,
     day: 15,
   },
   {
     key: "trung-cuu",
-    name: "Tết Trùng Cửu",
-    note: "Mùng 9 tháng Chín — lên cao, mừng thọ người già.",
+    name: msg`Tết Trùng Cửu`,
+    note: msg`Mùng 9 tháng Chín — lên cao, mừng thọ người già.`,
     kind: "lunar",
     month: 9,
     day: 9,
   },
   {
     key: "trung-thap",
-    name: "Tết Trùng Thập · Tết cơm mới",
-    note: "Mùng 10 tháng Mười — mừng mùa màng.",
+    name: msg`Tết Trùng Thập · Tết cơm mới`,
+    note: msg`Mùng 10 tháng Mười — mừng mùa màng.`,
     kind: "lunar",
     month: 10,
     day: 10,
   },
   {
     key: "ong-cong-ong-tao",
-    name: "Ông Công Ông Táo",
-    note: "23 tháng Chạp — tiễn Táo quân về trời.",
+    name: msg`Ông Công Ông Táo`,
+    note: msg`23 tháng Chạp — tiễn Táo quân về trời.`,
     kind: "lunar",
     month: 12,
     day: 23,
@@ -158,8 +161,8 @@ export const FESTIVALS: Festival[] = [
   // ─── Dương lịch ────────────────────────────────────────────────
   {
     key: "tet-duong-lich",
-    name: "Tết Dương lịch",
-    note: "Ngày nghỉ lễ.",
+    name: msg`Tết Dương lịch`,
+    note: msg`Ngày nghỉ lễ.`,
     kind: "solar",
     month: 1,
     day: 1,
@@ -167,8 +170,8 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "giai-phong",
-    name: "Ngày Giải phóng miền Nam",
-    note: "30/4 — ngày nghỉ lễ.",
+    name: msg`Ngày Giải phóng miền Nam`,
+    note: msg`30/4 — ngày nghỉ lễ.`,
     kind: "solar",
     month: 4,
     day: 30,
@@ -176,8 +179,8 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "quoc-te-lao-dong",
-    name: "Quốc tế Lao động",
-    note: "1/5 — ngày nghỉ lễ.",
+    name: msg`Quốc tế Lao động`,
+    note: msg`1/5 — ngày nghỉ lễ.`,
     kind: "solar",
     month: 5,
     day: 1,
@@ -185,14 +188,14 @@ export const FESTIVALS: Festival[] = [
   },
   {
     key: "quoc-khanh",
-    name: "Quốc khánh",
-    note: "2/9 — ngày nghỉ lễ.",
+    name: msg`Quốc khánh`,
+    note: msg`2/9 — ngày nghỉ lễ.`,
     kind: "solar",
     month: 9,
     day: 2,
     publicHoliday: true,
   },
-];
+]) as Festival[];
 
 /**
  * Ngày âm này có phải ngày cuối tháng không.
@@ -234,7 +237,6 @@ export function festivalsOn(solarIso: string): Festival[] {
 /** Có lễ nào trong ngày không — dùng để chấm dấu trên lịch, rẻ hơn lấy cả mảng. */
 export const hasFestival = (solarIso: string): boolean =>
   festivalsOn(solarIso).length > 0;
-
 
 /**
  * Lễ tết trong `daysAhead` ngày tới, dưới dạng sự kiện để ghép vào danh

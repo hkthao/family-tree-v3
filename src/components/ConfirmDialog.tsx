@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import {
   createContext,
   useCallback,
@@ -127,7 +128,7 @@ export function ConfirmDialogProvider({
             {/* icon-audit: ok — nhãn do nơi gọi truyền vào, mặc định là "Huỷ"/"Xác nhận" */}
             <div className="flex justify-end gap-2 px-5 py-4 bg-muted/30 border-t">
               <Button size="sm" variant="outline" onClick={() => close(false)}>
-                {pending.opts.cancelLabel ?? "Huỷ"}
+                {pending.opts.cancelLabel ?? t`Huỷ`}
               </Button>
               <Button
                 size="sm"
@@ -136,7 +137,7 @@ export function ConfirmDialogProvider({
                 onClick={() => close(true)}
                 autoFocus
               >
-                {pending.opts.confirmLabel ?? "Đồng ý"}
+                {pending.opts.confirmLabel ?? t`Đồng ý`}
               </Button>
             </div>
           </div>

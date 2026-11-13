@@ -14,7 +14,8 @@ import { EYE, placePhotos, type RoomLayout } from "./placement";
 import { Room } from "./Room";
 
 import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 export type GalleryPalette = {
   bg: string; // màu sương mù (fog)
   bgTop: string; // nền gradient — trên
@@ -39,12 +40,12 @@ type ModelTransform = {
   pos?: [number, number]; // [x, z] vị trí đặt tuỳ ý; null = tự xếp
   pedestalStyle?: string; // box | low | tall | podium
 };
-const PEDESTAL_STYLES: { id: string; name: string }[] = [
-  { id: "box", name: "Hộp" },
-  { id: "low", name: "Thấp" },
+const PEDESTAL_STYLES: { id: string; name: string }[] = lazyMessages([
+  { id: "box", name: msg`Hộp` },
+  { id: "low", name: msg`Thấp` },
   { id: "tall", name: "Cao" },
-  { id: "podium", name: "Nhiều tầng" },
-];
+  { id: "podium", name: msg`Nhiều tầng` },
+]) as unknown as { id: string; name: string }[];
 // Hoạ tiết bục lấy từ manifest tự sinh (PATTERN_TEXTURES) — xem import ở đầu file.
 type SceneModel = {
   itemId: string;
@@ -53,13 +54,14 @@ type SceneModel = {
   transform?: unknown;
 };
 /** Bảng màu/chất liệu bục cho người dùng chọn. */
-const PEDESTAL_OPTS: { name: string; color: string; metal: boolean }[] = [
-  { name: "Trắng", color: "#ECECEE", metal: false },
-  { name: "Đá xám", color: "#9A9A9E", metal: false },
-  { name: "Gỗ", color: "#6E4B2C", metal: false },
-  { name: "Đen", color: "#2B2B2E", metal: false },
-  { name: "Vàng đồng", color: "#B8862A", metal: false },
-];
+const PEDESTAL_OPTS: { name: string; color: string; metal: boolean }[] =
+  lazyMessages([
+    { name: msg`Trắng`, color: "#ECECEE", metal: false },
+    { name: msg`Đá xám`, color: "#9A9A9E", metal: false },
+    { name: msg`Gỗ`, color: "#6E4B2C", metal: false },
+    { name: msg`Đen`, color: "#2B2B2E", metal: false },
+    { name: msg`Vàng đồng`, color: "#B8862A", metal: false },
+  ]) as unknown as { name: string; color: string; metal: boolean }[];
 type SaveItem = (
   itemId: string,
   patch: { person_id?: string | null; image_url?: string | null },

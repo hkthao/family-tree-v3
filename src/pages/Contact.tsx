@@ -16,7 +16,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { submitFeedback, type FeedbackCategory } from "@/lib/queries/feedback";
 
 import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
+import { msg, t } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 /**
  * /lien-he — trang liên hệ / gửi phản hồi đầy đủ.
  *
@@ -32,24 +33,24 @@ const CATEGORIES: Array<{
   value: FeedbackCategory;
   label: string;
   hint: string;
-}> = [
+}> = lazyMessages([
   {
     value: "bug",
-    label: "Lỗi / sự cố",
-    hint: "App hỏng, dữ liệu sai, trang trắng…",
+    label: msg`Lỗi / sự cố`,
+    hint: msg`App hỏng, dữ liệu sai, trang trắng…`,
   },
   {
     value: "idea",
-    label: "Đề xuất / ý kiến",
-    hint: "Tính năng muốn có, chỗ chưa tiện…",
+    label: msg`Đề xuất / ý kiến`,
+    hint: msg`Tính năng muốn có, chỗ chưa tiện…`,
   },
   {
     value: "question",
-    label: "Câu hỏi",
-    hint: "Hỏi cách dùng, hỏi về dữ liệu…",
+    label: msg`Câu hỏi`,
+    hint: msg`Hỏi cách dùng, hỏi về dữ liệu…`,
   },
-  { value: "other", label: "Khác", hint: "Mọi thứ khác." },
-];
+  { value: "other", label: msg`Khác`, hint: msg`Mọi thứ khác.` },
+]) as unknown as Array<{ value: FeedbackCategory; label: string; hint: string }>;
 
 export default function Contact() {
   const toast = useToast();

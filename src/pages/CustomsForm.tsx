@@ -56,16 +56,17 @@ import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
 import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 const CATS = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
 const SCOPES = Object.keys(CUSTOM_SCOPE_LABEL) as CustomScope[];
 const MANDATORIES = Object.keys(CUSTOM_MANDATORY_LABEL) as CustomMandatory[];
 const ORIGINS = Object.keys(CUSTOM_ORIGIN_LABEL) as CustomOrigin[];
-const STATUSES: { value: CustomStatus; label: string }[] = [
-  { value: "draft", label: "Nháp" },
-  { value: "needs_review", label: "Chờ duyệt" },
-  { value: "published", label: "Công khai" },
-];
+const STATUSES: { value: CustomStatus; label: string }[] = lazyMessages([
+  { value: "draft", label: msg`Nháp` },
+  { value: "needs_review", label: msg`Chờ duyệt` },
+  { value: "published", label: msg`Công khai` },
+]) as unknown as { value: CustomStatus; label: string }[];
 
 export default function CustomsForm({
   embedded,

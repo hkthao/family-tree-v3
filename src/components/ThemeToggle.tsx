@@ -2,24 +2,26 @@ import { useEffect, useState } from "react";
 
 import { getTheme, setTheme, subscribeTheme, type Theme } from "@/lib/theme";
 
-import { t } from "@lingui/core/macro";
-const OPTIONS: { value: Theme; label: string; description: string }[] = [
-  {
-    value: "system",
-    label: "Hệ thống",
-    description: "Theo cài đặt thiết bị / trình duyệt.",
-  },
-  {
-    value: "light",
-    label: "Sáng",
-    description: "Nền giấy ấm, mực đậm.",
-  },
-  {
-    value: "dark",
-    label: "Tối",
-    description: "Nền mực, tiết kiệm mắt trong điều kiện thiếu sáng.",
-  },
-];
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const OPTIONS: { value: Theme; label: string; description: string }[] =
+  lazyMessages([
+    {
+      value: "system",
+      label: msg`Hệ thống`,
+      description: msg`Theo cài đặt thiết bị / trình duyệt.`,
+    },
+    {
+      value: "light",
+      label: msg`Sáng`,
+      description: msg`Nền giấy ấm, mực đậm.`,
+    },
+    {
+      value: "dark",
+      label: msg`Tối`,
+      description: msg`Nền mực, tiết kiệm mắt trong điều kiện thiếu sáng.`,
+    },
+  ]) as unknown as { value: Theme; label: string; description: string }[];
 
 /**
  * Radio group for the colour theme: hệ thống / sáng / tối. Used in

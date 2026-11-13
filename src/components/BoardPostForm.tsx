@@ -31,14 +31,16 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 
 import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
-const TYPE_OPTIONS: Array<{ value: ClanPostType; label: string }> = [
-  { value: "news", label: "Tin" },
-  { value: "event", label: "Sự kiện" },
-  { value: "birth", label: "Sinh" },
-  { value: "death", label: "Cáo phó" },
-  { value: "notice", label: "Thông báo" },
-];
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const TYPE_OPTIONS: Array<{ value: ClanPostType; label: string }> =
+  lazyMessages([
+    { value: "news", label: "Tin" },
+    { value: "event", label: msg`Sự kiện` },
+    { value: "birth", label: "Sinh" },
+    { value: "death", label: msg`Cáo phó` },
+    { value: "notice", label: msg`Thông báo` },
+  ]) as unknown as Array<{ value: ClanPostType; label: string }>;
 
 /**
  * Form chung cho cả "Đăng bài mới" và "Sửa bài". Khi `post` truyền

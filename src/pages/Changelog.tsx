@@ -12,6 +12,7 @@ import {
 } from "@/lib/queries/announcements";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 /**
  * `/changelog` — public, không cần đăng nhập. Đọc các tin
  * `is_public=true`. Plan §32.9 O4: đây là single source of truth cho
@@ -54,14 +55,14 @@ export default function Changelog() {
             className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
           >
             <AppLogo size={28} className="rounded" />
-            Dòng Họ Việt
+            {t`Dòng Họ Việt`}
           </Link>
           <nav className="flex items-center gap-3 text-sm">
             <Link to="/login" className="hover:underline">
-              Đăng nhập
+              {t`Đăng nhập`}
             </Link>
             <Link to="/lien-he" className="hover:underline">
-              Liên hệ
+              {t`Liên hệ`}
             </Link>
           </nav>
         </div>
@@ -70,11 +71,11 @@ export default function Changelog() {
       <main className="container max-w-4xl py-6 px-4 space-y-3">
         <PageHeader
           icon={<IconSparkles className="h-7 w-7" />}
-          title="Cập nhật mới"
-          description="Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app."
+          title={t`Cập nhật mới`}
+          description={t`Tổng hợp tính năng, sửa lỗi, thông báo bảo trì của app.`}
         />
 
-        {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+        {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{(error as Error).message}</AlertDescription>
@@ -82,7 +83,7 @@ export default function Changelog() {
         )}
         {!isLoading && rows.length === 0 && (
           <p className="text-muted-foreground italic">
-            Chưa có cập nhật nào được công bố. Quay lại sau.
+            {t`Chưa có cập nhật nào được công bố. Quay lại sau.`}
           </p>
         )}
 

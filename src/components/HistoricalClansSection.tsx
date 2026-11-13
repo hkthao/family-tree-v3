@@ -14,7 +14,8 @@ import {
 } from "@/lib/queries/historical";
 import { unaccent } from "@/lib/unaccent";
 
-import { t } from "@lingui/core/macro";
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 const PAGE_SIZE = 12;
 
 export type HistoricalSort =
@@ -37,14 +38,15 @@ function startYear(name: string): number {
 }
 
 export const HISTORICAL_SORT_KEY = "family-tree:historical-sort";
-export const HISTORICAL_SORTS: { value: HistoricalSort; label: string }[] = [
-  { value: "era_asc", label: "Thời kỳ: cũ → mới" },
-  { value: "era_desc", label: "Thời kỳ: mới → cũ" },
-  { value: "name", label: "Tên A → Z" },
-  { value: "name_desc", label: "Tên Z → A" },
-  { value: "people_desc", label: "Nhiều người nhất" },
-  { value: "people_asc", label: "Ít người nhất" },
-];
+export const HISTORICAL_SORTS: { value: HistoricalSort; label: string }[] =
+  lazyMessages([
+    { value: "era_asc", label: msg`Thời kỳ: cũ → mới` },
+    { value: "era_desc", label: msg`Thời kỳ: mới → cũ` },
+    { value: "name", label: msg`Tên A → Z` },
+    { value: "name_desc", label: msg`Tên Z → A` },
+    { value: "people_desc", label: msg`Nhiều người nhất` },
+    { value: "people_asc", label: msg`Ít người nhất` },
+  ]) as unknown as { value: HistoricalSort; label: string }[];
 
 /**
  * Tab "Gia phả lịch sử" ở trang Dòng họ: dòng họ lịch sử (hoàng tộc, quý tộc,

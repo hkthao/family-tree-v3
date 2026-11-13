@@ -88,7 +88,8 @@ import { getTreeData } from "@/lib/queries/tree";
 import "family-chart/styles/family-chart.css";
 
 import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 interface F3Chart {
   setCardYSpacing: (n: number) => F3Chart;
   setCardXSpacing: (n: number) => F3Chart;
@@ -2014,12 +2015,12 @@ function InlawBadgeBody({
 // Lazy-imports the PDF renderer (react-pdf bundle is heavy) so the
 // Tree page still loads quickly when the user never clicks export.
 
-const EXPORT_DENSITY: { v: number; label: string }[] = [
-  { v: 12, label: "Gọn — thẻ to, dễ đọc" },
-  { v: 24, label: "Vừa (mặc định)" },
-  { v: 45, label: "Nhiều người mỗi trang" },
-  { v: 80, label: "Tối đa — thẻ nhỏ, ít trang" },
-];
+const EXPORT_DENSITY: { v: number; label: string }[] = lazyMessages([
+  { v: 12, label: msg`Gọn — thẻ to, dễ đọc` },
+  { v: 24, label: msg`Vừa (mặc định)` },
+  { v: 45, label: msg`Nhiều người mỗi trang` },
+  { v: 80, label: msg`Tối đa — thẻ nhỏ, ít trang` },
+]) as unknown as { v: number; label: string }[];
 
 function ExportBookButton({ clan }: { clan: ClanDetail }) {
   const toast = useToast();

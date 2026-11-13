@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 export type AlmanacPrefKey = "hoangDao" | "truc" | "tu" | "tietKhi" | "kieng";
 
@@ -12,13 +14,14 @@ const DEFAULT_PREFS: AlmanacPrefs = {
   kieng: true,
 };
 
-export const ALMANAC_PREF_ITEMS: { key: AlmanacPrefKey; label: string }[] = [
-  { key: "hoangDao", label: "Ngày & giờ hoàng đạo" },
-  { key: "truc", label: "Trực & việc nên/kiêng" },
-  { key: "tu", label: "Nhị thập bát tú (28 sao)" },
-  { key: "tietKhi", label: "Tiết khí" },
-  { key: "kieng", label: "Cảnh báo ngày kiêng" },
-];
+export const ALMANAC_PREF_ITEMS: { key: AlmanacPrefKey; label: string }[] =
+  lazyMessages([
+    { key: "hoangDao", label: msg`Ngày & giờ hoàng đạo` },
+    { key: "truc", label: msg`Trực & việc nên/kiêng` },
+    { key: "tu", label: msg`Nhị thập bát tú (28 sao)` },
+    { key: "tietKhi", label: msg`Tiết khí` },
+    { key: "kieng", label: msg`Cảnh báo ngày kiêng` },
+  ]) as unknown as { key: AlmanacPrefKey; label: string }[];
 
 const STORAGE_KEY = "almanac-display-prefs";
 

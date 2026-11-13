@@ -28,21 +28,22 @@ import {
 } from "@/lib/queries/subscriptions";
 
 import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
-const LEAD_OPTIONS = [
-  { value: 14, label: "14 ngày trước" },
-  { value: 7, label: "7 ngày trước" },
-  { value: 3, label: "3 ngày trước" },
-  { value: 1, label: "1 ngày trước" },
-  { value: 0, label: "Đúng ngày" },
-];
+import { t, msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const LEAD_OPTIONS = lazyMessages([
+  { value: 14, label: msg`14 ngày trước` },
+  { value: 7, label: msg`7 ngày trước` },
+  { value: 3, label: msg`3 ngày trước` },
+  { value: 1, label: msg`1 ngày trước` },
+  { value: 0, label: msg`Đúng ngày` },
+]);
 
-const TYPE_OPTIONS: { value: SubEventType; label: string }[] = [
-  { value: "birthday", label: "Sinh nhật" },
-  { value: "death_anniversary", label: "Ngày giỗ" },
-  { value: "tomb_visit", label: "Tảo mộ / Chạp họ" },
-  { value: "custom", label: "Sự kiện tuỳ chỉnh" },
-];
+const TYPE_OPTIONS: { value: SubEventType; label: string }[] = lazyMessages([
+  { value: "birthday", label: msg`Sinh nhật` },
+  { value: "death_anniversary", label: msg`Ngày giỗ` },
+  { value: "tomb_visit", label: msg`Tảo mộ / Chạp họ` },
+  { value: "custom", label: msg`Sự kiện tuỳ chỉnh` },
+]) as unknown as { value: SubEventType; label: string }[];
 
 interface Props {
   clanId: string;
