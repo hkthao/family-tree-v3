@@ -1,7 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ClanAvatarFrameProvider } from "@/components/PersonAvatar";
-import { Link, Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  Outlet,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import { AiChatDock } from "@/components/ai/AiChatDock";
 import { HeaderActions } from "@/components/HeaderActions";
@@ -29,6 +35,7 @@ import { HISTORICAL_CATEGORY_LABEL } from "@/lib/queries/historical";
 import { queryKeys } from "@/lib/queries/keys";
 import { countClanTodo } from "@/lib/queries/todo";
 
+import { t } from "@lingui/core/macro";
 interface OutletContext {
   clan: ClanDetail;
 }
@@ -45,7 +52,14 @@ export function ClanLayout() {
   // silently bouncing the user back to /clans when the cached value is
   // out of date or from a previous schema. staleTime: 0 because the
   // global default (4 hours) would otherwise short-circuit the refetch.
-  const { data: clan, isLoading, isFetching, isError, error, refetch } = useQuery({
+  const {
+    data: clan,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: queryKeys.clan(clanId ?? "", userId ?? ""),
     queryFn: () => getClanDetail(clanId!, userId!),
     enabled: !!clanId && !!userId,
@@ -79,7 +93,7 @@ export function ClanLayout() {
         <Button asChild variant="outline">
           <Link to="/clans">
             <IconArrowLeft className="h-4 w-4 mr-1.5" />
-            Quay lại danh sách dòng họ
+            {t`Quay lại danh sách dòng họ`}
           </Link>
         </Button>
       </main>
@@ -90,12 +104,12 @@ export function ClanLayout() {
     return (
       <main className="min-h-dvh flex flex-col items-center justify-center gap-4 px-4 text-center">
         <p className="text-muted-foreground">
-          Không tìm thấy dòng họ này hoặc bạn không có quyền xem.
+          {t`Không tìm thấy dòng họ này hoặc bạn không có quyền xem.`}
         </p>
         <Button asChild variant="outline">
           <Link to="/clans">
             <IconArrowLeft className="h-4 w-4 mr-1.5" />
-            Danh sách dòng họ
+            {t`Danh sách dòng họ`}
           </Link>
         </Button>
       </main>
@@ -109,28 +123,28 @@ export function ClanLayout() {
   const tabs = [
     {
       to: `/clans/${clanId}`,
-      label: "Tổng quan",
+      label: t`Tổng quan`,
       icon: <IconHome className="h-5 w-5" />,
       end: true,
     },
     {
       to: `/clans/${clanId}/tree`,
-      label: "Cây",
+      label: t`Cây`,
       icon: <IconTree className="h-5 w-5" />,
     },
     {
       to: `/clans/${clanId}/people`,
-      label: "Danh bạ",
+      label: t`Danh bạ`,
       icon: <IconUsers className="h-5 w-5" />,
     },
     {
       to: `/clans/${clanId}/events`,
-      label: "Sự kiện",
+      label: t`Sự kiện`,
       icon: <IconCalendar className="h-5 w-5" />,
     },
     {
       to: `/clans/${clanId}/today`,
-      label: "Hôm nay",
+      label: t`Hôm nay`,
       icon: <IconSun className="h-5 w-5" />,
     },
   ];
@@ -149,8 +163,8 @@ export function ClanLayout() {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              aria-label="Quay lại"
-              title="Quay lại"
+              aria-label={t`Quay lại`}
+              title={t`Quay lại`}
               className="h-10 w-10 hidden lg:inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
             >
               <IconArrowLeft className="h-5 w-5" />
@@ -169,7 +183,9 @@ export function ClanLayout() {
             {clan.kind === "historical" && (
               <p className="text-xs text-muted-foreground truncate">
                 Lịch sử
-                {clan.historical_category ? ` · ${HISTORICAL_CATEGORY_LABEL[clan.historical_category]}` : ""}
+                {clan.historical_category
+                  ? ` · ${HISTORICAL_CATEGORY_LABEL[clan.historical_category]}`
+                  : ""}
               </p>
             )}
           </div>
@@ -195,7 +211,9 @@ export function ClanLayout() {
       {/* Ngăn kéo bên phải điều khiển bằng ?panel= (thêm / sửa người…). */}
       <PanelHost clan={clan} />
       {/* Khung chat nổi — tự ẩn trên điện thoại và khi trợ lý tắt. */}
-      {(clan.myRole !== null || clan.isPlatformAdmin) && <AiChatDock clan={clan} />}
+      {(clan.myRole !== null || clan.isPlatformAdmin) && (
+        <AiChatDock clan={clan} />
+      )}
     </div>
   );
 }
@@ -239,11 +257,11 @@ function DrawerToggle({
   const [sidebarHidden, toggleSidebar] = useSidebarHidden();
   const label = isDesktop
     ? sidebarHidden
-      ? "Hiện menu"
-      : "Ẩn menu"
+      ? t`Hiện menu`
+      : t`Ẩn menu`
     : hasWork
       ? `Mở menu — có ${todoCount} việc cần làm`
-      : "Mở menu";
+      : t`Mở menu`;
   return (
     <button
       type="button"

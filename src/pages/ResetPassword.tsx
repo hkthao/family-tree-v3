@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -37,11 +39,11 @@ export default function ResetPassword() {
     e.preventDefault();
     setError(null);
     if (password.length < 8) {
-      setError("Mật khẩu tối thiểu 8 ký tự.");
+      setError(t`Mật khẩu tối thiểu 8 ký tự.`);
       return;
     }
     if (password !== confirm) {
-      setError("Mật khẩu nhập lại không khớp.");
+      setError(t`Mật khẩu nhập lại không khớp.`);
       return;
     }
     setBusy(true);
@@ -55,24 +57,27 @@ export default function ResetPassword() {
   }
 
   return (
-    <AuthLayout title="Đặt lại mật khẩu" subtitle="Nhập mật khẩu mới cho tài khoản">
+    <AuthLayout
+      title={t`Đặt lại mật khẩu`}
+      subtitle={t`Nhập mật khẩu mới cho tài khoản`}
+    >
       {done ? (
         <div className="space-y-5">
           <Alert>
             <AlertDescription>
-              Đã đổi mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.
+              {t`Đã đổi mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.`}
             </AlertDescription>
           </Alert>
           <Button className="w-full" onClick={() => navigate("/")}>
             <IconLogIn className="h-4 w-4 mr-1.5" />
-            Vào ứng dụng
+            {t`Vào ứng dụng`}
           </Button>
         </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="password" required>
-              Mật khẩu mới
+              {t`Mật khẩu mới`}
             </Label>
             <Input
               id="password"
@@ -87,7 +92,7 @@ export default function ResetPassword() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm" required>
-              Nhập lại mật khẩu
+              {t`Nhập lại mật khẩu`}
             </Label>
             <Input
               id="confirm"
@@ -104,8 +109,10 @@ export default function ResetPassword() {
           {!ready && (
             <Alert>
               <AlertDescription>
-                Đang xác thực liên kết… Nếu bạn mở trực tiếp trang này, hãy bấm
-                vào liên kết trong email "Đặt lại mật khẩu Dòng Họ Việt".
+                <Trans>
+                  Đang xác thực liên kết… Nếu bạn mở trực tiếp trang này, hãy
+                  bấm vào liên kết trong email "Đặt lại mật khẩu Dòng Họ Việt".
+                </Trans>
               </AlertDescription>
             </Alert>
           )}
@@ -117,14 +124,14 @@ export default function ResetPassword() {
 
           <Button type="submit" className="w-full" disabled={busy || !ready}>
             <IconCheck className="h-4 w-4 mr-1.5" />
-            {busy ? "Đang lưu…" : "Đổi mật khẩu"}
+            {busy ? t`Đang lưu…` : t`Đổi mật khẩu`}
           </Button>
 
           <Link
             to="/login"
             className="block text-center text-base text-primary hover:underline"
           >
-            ← Về đăng nhập
+            {t`← Về đăng nhập`}
           </Link>
         </form>
       )}

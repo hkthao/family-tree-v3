@@ -74,9 +74,9 @@ tiếng Việt trực tiếp. Phải đổi sang "trả về khoá + tham số",
 ### 4.3 Chọn và lưu ngôn ngữ
 1. Cột `profiles.locale` (`vi` | `en`…) — người dùng đã đăng nhập, **đồng bộ mọi thiết bị**, và để
    edge function biết gửi email/push bằng ngôn ngữ nào.
-2. `localStorage` + `navigator.language` cho khách chưa đăng nhập.
+2. `localStorage` cho khách chưa đăng nhập. **Không đoán theo `navigator.language`**: nhiều người Việt cài máy bằng tiếng Anh, đoán sẽ tự chuyển họ sang EN ngoài ý muốn — tiếng Anh chỉ bật khi người dùng chủ động chọn (hoặc link có `?lang=en`).
 3. Trang công khai (`/share/:token`, `/khoe/:token`, `/join`, `/lien-he`…): tham số `?lang=` thắng,
-   rồi tới lựa chọn đã lưu, rồi tới trình duyệt.
+   rồi tới lựa chọn đã lưu, rồi tới tiếng Việt.
 4. **Không đổi đường dẫn** (không `/en/...`): giữ nguyên mọi link đã chia sẻ. Cập nhật
    `<html lang>` theo ngôn ngữ đang dùng.
 5. Chỗ chọn: trang Tài khoản + mục trong menu ba chấm trên thanh đầu + chân trang công khai.

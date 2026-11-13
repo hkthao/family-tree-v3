@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
 function safeNext(raw: string | null): string | null {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
   return raw;
@@ -47,17 +48,17 @@ export default function Signup() {
   }
 
   return (
-    <AuthLayout title="Tạo tài khoản" subtitle="Bắt đầu xây dựng dòng họ">
+    <AuthLayout title={t`Tạo tài khoản`} subtitle={t`Bắt đầu xây dựng dòng họ`}>
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="display_name">Tên hiển thị</Label>
+          <Label htmlFor="display_name">{t`Tên hiển thị`}</Label>
           <Input
             icon={<IconUser />}
             id="display_name"
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Nguyễn Văn A"
+            placeholder={t`Nguyễn Văn A`}
             autoComplete="name"
           />
         </div>
@@ -79,7 +80,7 @@ export default function Signup() {
 
         <div className="space-y-2">
           <Label htmlFor="password" required>
-            Mật khẩu
+            {t`Mật khẩu`}
           </Label>
           <Input
             icon={<IconLock />}
@@ -91,7 +92,7 @@ export default function Signup() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <p className="text-sm text-muted-foreground">Tối thiểu 8 ký tự.</p>
+          <p className="text-sm text-muted-foreground">{t`Tối thiểu 8 ký tự.`}</p>
         </div>
 
         {error && (
@@ -102,19 +103,19 @@ export default function Signup() {
 
         <Button type="submit" className="w-full" disabled={busy}>
           {busy ? (
-            "Đang tạo…"
+            t`Đang tạo…`
           ) : (
             <>
               <IconUserPlus className="h-4 w-4 mr-1.5" />
-              Tạo tài khoản
+              {t`Tạo tài khoản`}
             </>
           )}
         </Button>
 
         <p className="text-center text-base text-muted-foreground">
-          Đã có tài khoản?{" "}
+          {t`Đã có tài khoản?`}{" "}
           <Link to={loginHref} className="text-primary hover:underline">
-            Đăng nhập
+            {t`Đăng nhập`}
           </Link>
         </p>
 

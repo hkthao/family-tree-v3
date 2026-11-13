@@ -47,3 +47,7 @@ docs/security-hardening-*.md
 # Dữ liệu gia phả lịch sử nằm ở repo riêng ../family-tree-data (symlink)
 /data/historical
 build-bg/
+
+# Catalog đã biên dịch (sinh bởi `lingui compile`; plugin Vite tự biên dịch .po lúc build)
+src/locales/**/*.js
+src/locales/**/*.ts

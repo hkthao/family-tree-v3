@@ -1,10 +1,23 @@
+import { t } from "@lingui/core/macro";
 import { useEffect, useRef, useState } from "react";
 
 import { GlobalSearch } from "@/components/GlobalSearch";
-import { IconMoon, IconMore, IconSearch, IconSun } from "@/components/icons";
+import {
+  IconGlobe,
+  IconMoon,
+  IconMore,
+  IconSearch,
+  IconSun,
+} from "@/components/icons";
+import { LanguageButton } from "@/components/LanguageSwitcher";
 import { NotificationBell } from "@/components/NotificationBell";
-import { ThemeQuickToggle, useThemeToggle } from "@/components/ThemeQuickToggle";
+import {
+  ThemeQuickToggle,
+  useThemeToggle,
+} from "@/components/ThemeQuickToggle";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { LOCALES, currentLocale } from "@/lib/i18n";
+import { useChangeLocale } from "@/lib/i18n/useLocale";
 
 /**
  * Cụm nút bên phải thanh đầu app.
@@ -19,6 +32,7 @@ export function HeaderActions() {
       <div className="flex items-center gap-1">
         <GlobalSearch />
         <NotificationBell />
+        <LanguageButton />
         <ThemeQuickToggle />
       </div>
     );
@@ -30,14 +44,16 @@ function MobileActions() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const { dark, label, toggle } = useThemeToggle();
+  const { dark, toggle } = useThemeToggle();
+  const changeLocale = useChangeLocale();
 
   useEffect(() => {
     if (!menuOpen) return;
     const onDown = (e: PointerEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) setMenuOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    const onKey = (e: KeyboardEvent) =>
+      e.key === "Escape" && setMenuOpen(false);
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
     return () => {
@@ -56,10 +72,10 @@ function MobileActions() {
         <button
           type="button"
           onClick={() => setMenuOpen((o) => !o)}
-          aria-label="Tuỳ chọn"
+          aria-label={t`Tuỳ chọn`}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
-          title="Tuỳ chọn"
+          title={t`Tuỳ chọn`}
           className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <IconMore className="h-5 w-5" />
@@ -79,8 +95,23 @@ function MobileActions() {
               }}
             >
               <IconSearch className="h-4 w-4 text-muted-foreground" />
-              Tìm kiếm
+              {t`Tìm kiếm`}
             </button>
+            {LOCALES.filter((l) => l.id !== currentLocale()).map((l) => (
+              <button
+                key={l.id}
+                type="button"
+                role="menuitem"
+                className={item}
+                onClick={() => {
+                  setMenuOpen(false);
+                  void changeLocale(l.id);
+                }}
+              >
+                <IconGlobe className="h-4 w-4 text-muted-foreground" />
+                {l.label}
+              </button>
+            ))}
             <button
               type="button"
               role="menuitem"
@@ -95,13 +126,17 @@ function MobileActions() {
               ) : (
                 <IconMoon className="h-4 w-4 text-muted-foreground" />
               )}
-              {label.replace("Chuyển sang giao diện", "Giao diện")}
+              {dark ? t`Giao diện sáng` : t`Giao diện tối`}
             </button>
           </div>
         )}
       </div>
       {/* Ô tìm kiếm điều khiển từ menu; không vẽ thêm nút kính lúp. */}
-      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} hideTrigger />
+      <GlobalSearch
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        hideTrigger
+      />
     </div>
   );
 }

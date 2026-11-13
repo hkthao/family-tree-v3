@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { useEffect, useState } from "react";
 
 import { IconMoon, IconSun } from "@/components/icons";
@@ -23,7 +24,7 @@ export function useThemeToggle() {
 
   const dark = effectiveDark(theme);
   const next: Theme = dark ? "light" : "dark";
-  const label = dark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối";
+  const label = dark ? t`Chuyển sang giao diện sáng` : t`Chuyển sang giao diện tối`;
   return { dark, label, toggle: () => setTheme(next) };
 }
 

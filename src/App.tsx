@@ -11,6 +11,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { AppBackground } from "@/components/AppBackground";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { DocumentTitle } from "@/components/DocumentTitle";
+import { LocaleSync } from "@/lib/i18n/LocaleSync";
 import { ScrollManager } from "@/components/ScrollManager";
 import { ToastProvider } from "@/components/Toast";
 import { UpdateBanner } from "@/components/UpdateBanner";
@@ -126,6 +127,7 @@ export default function App() {
     <BrowserRouter>
       <AppBackground />
       <ScrollManager />
+      <LocaleSync />
       {/* Thứ tự quan trọng: DocumentTitle đặt tiêu đề route trước, rồi
           AnalyticsTracker mới gửi pageview kèm tiêu đề đó. */}
       <DocumentTitle />

@@ -1,4 +1,10 @@
-import { cloneElement, useCallback, useState, type ReactElement, type ReactNode } from "react";
+import {
+  cloneElement,
+  useCallback,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 
 import {
   IconAward,
@@ -30,6 +36,7 @@ import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { MyProfile } from "@/lib/queries/profile";
 
+import { t } from "@lingui/core/macro";
 /**
  * MÔ HÌNH MENU — tách khỏi AppDrawer để test được.
  *
@@ -119,7 +126,7 @@ export function useCollapsedSections(pathname: string) {
   const isOpenById = useCallback(
     (section: DrawerSection) => {
       const saved = state[section.id];
-      return saved === undefined ? section.defaultOpen ?? true : saved;
+      return saved === undefined ? (section.defaultOpen ?? true) : saved;
     },
     [state],
   );
@@ -127,7 +134,11 @@ export function useCollapsedSections(pathname: string) {
   const isOpen = useCallback(
     (section: DrawerSection) => {
       if (section.collapsible === false) return true;
-      if (sectionHasPath(section, pathname) && forcedClosed[section.id] !== pathname) return true;
+      if (
+        sectionHasPath(section, pathname) &&
+        forcedClosed[section.id] !== pathname
+      )
+        return true;
       return isOpenById(section);
     },
     [isOpenById, pathname, forcedClosed],
@@ -147,7 +158,8 @@ export function useCollapsedSections(pathname: string) {
       });
       setForcedClosed((prev) => {
         const next = { ...prev };
-        if (closing && sectionHasPath(section, pathname)) next[section.id] = pathname;
+        if (closing && sectionHasPath(section, pathname))
+          next[section.id] = pathname;
         else delete next[section.id];
         return next;
       });
@@ -272,7 +284,9 @@ export function buildSections(
   const global: DrawerItem[] = [
     {
       to: "/clans",
-      label: profile?.is_platform_admin ? "Tất cả dòng họ" : "Dòng họ của tôi",
+      label: profile?.is_platform_admin
+        ? t`Tất cả dòng họ`
+        : t`Dòng họ của tôi`,
       icon: <IconBuildings className={ic} />,
       end: true,
     },
@@ -280,17 +294,17 @@ export function buildSections(
     // lại, mà trước nay chỉ vào được qua cái chuông ở header.
     {
       to: "/announcements",
-      label: "Thông báo",
+      label: t`Thông báo`,
       icon: <IconBell className={ic} />,
     },
     {
       to: "/docs",
-      label: "Trợ giúp",
+      label: t`Trợ giúp`,
       icon: <IconBook className={ic} />,
     },
     {
       to: "/so-tay",
-      label: "Sổ tay Văn hoá",
+      label: t`Sổ tay Văn hoá`,
       icon: <IconGlobe className={ic} />,
     },
     {
@@ -303,7 +317,7 @@ export function buildSections(
     // nhìn khi đã đi tìm. Muốn nghe góp ý thì phải để chỗ dễ thấy.
     {
       to: "/gop-y",
-      label: "Góp ý / báo lỗi",
+      label: t`Góp ý / báo lỗi`,
       icon: <IconMail className={ic} />,
     },
   ];
@@ -332,7 +346,7 @@ export function buildSections(
     const topItems: DrawerItem[] = [
       {
         to: `/clans/${clanId}`,
-        label: "Tổng quan",
+        label: t`Tổng quan`,
         icon: <IconHome className={ic} />,
         end: true,
       },
@@ -341,12 +355,12 @@ export function buildSections(
       topItems.push(
         {
           to: `/clans/${clanId}/tree`,
-          label: "Cây gia phả",
+          label: t`Cây gia phả`,
           icon: <IconTree className={ic} />,
         },
         {
           to: `/clans/${clanId}/people`,
-          label: "Danh bạ",
+          label: t`Danh bạ`,
           icon: <IconUsers className={ic} />,
         },
       );
@@ -354,7 +368,7 @@ export function buildSections(
       if (isMember) {
         topItems.push({
           to: `/clans/${clanId}/relations`,
-          label: "Tra cứu quan hệ",
+          label: t`Tra cứu quan hệ`,
           icon: <IconTree className={ic} />,
         });
       }
@@ -362,14 +376,14 @@ export function buildSections(
     if (canEvents) {
       topItems.push({
         to: `/clans/${clanId}/events`,
-        label: "Sự kiện",
+        label: t`Sự kiện`,
         icon: <IconCalendar className={ic} />,
       });
     }
     if (canTree) {
       topItems.push({
         to: `/clans/${clanId}/today`,
-        label: "Hôm nay",
+        label: t`Hôm nay`,
         icon: <IconSun className={ic} />,
       });
     }
@@ -391,63 +405,63 @@ export function buildSections(
     if (isMember && feat("board")) {
       communityItems.push({
         to: `/clans/${clanId}/board`,
-        label: "Bảng tin",
+        label: t`Bảng tin`,
         icon: <IconSparkles className={ic} />,
       });
     }
     if (isMember) {
       communityItems.push({
         to: `/clans/${clanId}/map`,
-        label: "Bản đồ",
+        label: t`Bản đồ`,
         icon: <IconMapPin className={ic} />,
       });
     }
     if (isMember && feat("memory_room")) {
       communityItems.push({
         to: `/clans/${clanId}/memory-room`,
-        label: "Phòng ký ức",
+        label: t`Phòng ký ức`,
         icon: <IconCamera className={ic} />,
       });
     }
     if (isMember && feat("mosaic")) {
       communityItems.push({
         to: `/clans/${clanId}/mosaics`,
-        label: "Ảnh ghép",
+        label: t`Ảnh ghép`,
         icon: <IconCamera className={ic} />,
       });
     }
     if (canHeritage && feat("heritage")) {
       communityItems.push({
         to: `/clans/${clanId}/heritage`,
-        label: "Di sản dòng họ",
+        label: t`Di sản dòng họ`,
         icon: <IconScroll className={ic} />,
       });
     }
     if (canGraves && feat("graves")) {
       communityItems.push({
         to: `/clans/${clanId}/graves`,
-        label: "Mộ phần & tro cốt",
+        label: t`Mộ phần & tro cốt`,
         icon: <IconGrave className={ic} />,
       });
     }
     if (isMember && feat("fund")) {
       communityItems.push({
         to: `/clans/${clanId}/fund`,
-        label: "Quỹ họ",
+        label: t`Quỹ họ`,
         icon: <IconWallet className={ic} />,
       });
     }
     if (isMember && feat("honor")) {
       communityItems.push({
         to: `/clans/${clanId}/honor`,
-        label: "Bảng vàng công đức",
+        label: t`Bảng vàng công đức`,
         icon: <IconAward className={ic} />,
       });
     }
     if (communityItems.length) {
       sections.push({
         id: "clan-community",
-        label: "Cộng đồng & Di sản",
+        label: t`Cộng đồng & Di sản`,
         items: communityItems,
         defaultOpen: true,
       });
@@ -457,41 +471,41 @@ export function buildSections(
     if (isMember) {
       workItems.push({
         to: `/clans/${clanId}/todo`,
-        label: "Việc cần làm",
+        label: t`Việc cần làm`,
         icon: <IconList className={ic} />,
         badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
       });
       // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
       workItems.push({
         to: `/clans/${clanId}/tools`,
-        label: "Công cụ",
+        label: t`Công cụ`,
         icon: <IconSettings className={ic} />,
       });
     }
     if (isAdmin) {
       workItems.push({
         to: `/clans/${clanId}/members`,
-        label: "Thành viên",
+        label: t`Thành viên`,
         icon: <IconUserPlus className={ic} />,
       });
       if (feat("inlaws")) {
         workItems.push({
           to: `/clans/${clanId}/inlaws`,
-          label: "Liên kết dòng họ",
+          label: t`Liên kết dòng họ`,
           icon: <IconLink className={ic} />,
           badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
         });
       }
       workItems.push({
         to: `/clans/${clanId}/settings`,
-        label: "Cài đặt dòng họ",
+        label: t`Cài đặt dòng họ`,
         icon: <IconSettings className={ic} />,
       });
     }
     if (workItems.length) {
       sections.push({
         id: "clan-work",
-        label: "Công cụ & Quản trị",
+        label: t`Công cụ & Quản trị`,
         items: workItems,
         // Có việc / liên kết đang chờ thì badge phải thấy; còn không, Cài đặt dòng họ vẫn là mục hay
         // tìm (xem nhiều thứ tư trong một dòng họ) — nên mặc định mở.
@@ -508,7 +522,7 @@ export function buildSections(
     const adminGroup: DrawerItem[] = [
       {
         to: "/admin",
-        label: "Tổng quan quản trị",
+        label: t`Tổng quan quản trị`,
         icon: <IconShield className={ic} />,
         end: true,
       },
@@ -517,13 +531,15 @@ export function buildSections(
           to: adminPath(sc.slug),
           label: sc.label,
           // Icon của lưới quản trị cỡ h-6; menu dùng h-5 như mọi mục khác.
-          icon: cloneElement(sc.icon as ReactElement<{ className?: string }>, { className: ic }),
+          icon: cloneElement(sc.icon as ReactElement<{ className?: string }>, {
+            className: ic,
+          }),
         })),
       ),
     ];
     sections.push({
       id: "platform-admin",
-      label: "Quản trị hệ thống",
+      label: t`Quản trị hệ thống`,
       items: adminGroup,
       defaultOpen: false,
     });
