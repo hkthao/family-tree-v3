@@ -41,3 +41,8 @@ export function lazyMessages<T>(value: T): Localized<T> {
   }
   return value as Localized<T>;
 }
+
+/** Như `lazyMessages`, nhưng gán kiểu tường minh (dùng với biến đã khai báo kiểu). */
+export function lazyAs<T>(value: unknown): T {
+  return lazyMessages(value) as unknown as T;
+}

@@ -1,3 +1,4 @@
+import { lazyMessages } from "@/lib/i18n/lazy";
 import { AvatarFramePicker } from "@/components/AvatarFramePicker";
 import { IconBuildings, IconScroll } from "@/components/icons";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { CreateClanInput } from "@/lib/queries/clans";
 import type { UpdateClanInput } from "@/lib/queries/clan-update";
 
-import { t } from "@lingui/core/macro";
+import { t, msg } from "@lingui/core/macro";
 /** Giá trị form dòng họ — dùng chung cho Tạo mới và Chỉnh sửa. */
 export interface ClanFormValues {
   name: string;
@@ -142,51 +143,51 @@ export function ClanBasicFields({
   );
 }
 
-const PUBLIC_OPTIONS = [
+const PUBLIC_OPTIONS = lazyMessages([
   {
-    key: "public_show_tree",
-    label: "Cây gia phả & Danh bạ",
-    desc: "Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn).",
+    key: "public_show_tree" as const,
+    label: msg`Cây gia phả & Danh bạ`,
+    desc: msg`Xem cây gia phả và danh sách thành viên (thông tin nhạy cảm của người sống vẫn được ẩn).`,
   },
   {
-    key: "public_show_heritage",
-    label: "Di sản dòng họ",
-    desc: "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh.",
+    key: "public_show_heritage" as const,
+    label: msg`Di sản dòng họ`,
+    desc: msg`Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh.`,
   },
   {
-    key: "public_show_graves",
-    label: "Mộ phần & tro cốt",
-    desc: "Xem nơi an nghỉ, người an nghỉ và ảnh mộ.",
+    key: "public_show_graves" as const,
+    label: msg`Mộ phần & tro cốt`,
+    desc: msg`Xem nơi an nghỉ, người an nghỉ và ảnh mộ.`,
   },
   {
-    key: "public_show_events",
-    label: "Sự kiện",
-    desc: "Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết).",
+    key: "public_show_events" as const,
+    label: msg`Sự kiện`,
+    desc: msg`Xem lịch sự kiện dòng họ (giỗ, họp họ, lễ tiết).`,
   },
-] as const;
+]);
 
-const DISPLAY_OPTIONS = [
+const DISPLAY_OPTIONS = lazyMessages([
   {
-    key: "root_is_gen_zero",
-    label: "Thủy tổ là Đời 0",
-    desc: "Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc.",
+    key: "root_is_gen_zero" as const,
+    label: msg`Thủy tổ là Đời 0`,
+    desc: msg`Mặc định Thủy tổ là Đời 1, con cháu là Đời 2, 3, 4… Bật nếu dòng họ quen tính Thủy tổ là Đời 0. Chỉ đổi cách hiển thị, không động vào dữ liệu gốc.`,
   },
   {
-    key: "display_death_details",
-    label: "Người đã mất: hiện ngày giỗ và tuổi thọ",
-    desc: "Thẻ người đã mất trên cây và trong sách PDF hiện thêm ngày giỗ (âm lịch) và tuổi thọ.",
+    key: "display_death_details" as const,
+    label: msg`Người đã mất: hiện ngày giỗ và tuổi thọ`,
+    desc: msg`Thẻ người đã mất trên cây và trong sách PDF hiện thêm ngày giỗ (âm lịch) và tuổi thọ.`,
   },
   {
-    key: "display_living_full_dob",
-    label: "Người sống: hiện đầy đủ ngày-tháng-năm sinh",
-    desc: "Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF.",
+    key: "display_living_full_dob" as const,
+    label: msg`Người sống: hiện đầy đủ ngày-tháng-năm sinh`,
+    desc: msg`Mặc định chỉ hiện năm sinh. Bật để hiện đủ ngày/tháng/năm trên cây và trong sách PDF.`,
   },
   {
-    key: "hide_photos_in_share",
-    label: "Ẩn ảnh thật khi xem qua link công khai",
-    desc: "Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật.",
+    key: "hide_photos_in_share" as const,
+    label: msg`Ẩn ảnh thật khi xem qua link công khai`,
+    desc: msg`Người vào bằng link chỉ thấy ảnh đại diện mặc định (nam/nữ). Thành viên đăng nhập vẫn thấy ảnh thật.`,
   },
-] as const;
+]);
 
 /** Chế độ hiển thị, phần người ngoài được xem, đánh số đời, tuỳ chọn hiển thị. */
 export function ClanDisplayFields({ value, onChange, disabled }: FieldsProps) {
@@ -230,8 +231,7 @@ export function ClanDisplayFields({ value, onChange, disabled }: FieldsProps) {
       <fieldset className="space-y-3" disabled={disabled}>
         <legend className="text-base font-medium mb-1">{t`Người xem công khai được xem`}</legend>
         <p className="text-sm text-muted-foreground">
-          Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem
-          được.
+          {t`Chọn phần nào người ngoài (đã đăng nhập, không phải thành viên) xem được.`}
           {isPrivate ? t` Cần chọn chế độ Công khai ở trên trước.` : ""}
         </p>
         <div

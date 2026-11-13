@@ -1,3 +1,4 @@
+import { lazyAs } from "@/lib/i18n/lazy";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -19,7 +20,7 @@ import {
   type ClanBookTexts,
 } from "@/lib/queries/clan-book";
 
-import { t } from "@lingui/core/macro";
+import { t, msg } from "@lingui/core/macro";
 const EMPTY = EMPTY_BOOK_TEXTS;
 
 type TextKey = "preface" | "phaky" | "ngoai_pha" | "phu_khao";
@@ -30,40 +31,46 @@ const FIELDS: {
   hint: string;
   placeholder: string;
   rows: number;
-}[] = [
+}[] = lazyAs<{
+  key: TextKey;
+  label: string;
+  hint: string;
+  placeholder: string;
+  rows: number;
+}[]>([
   {
     key: "preface",
     placeholder:
-      "Vì sao làm phả, ai làm, làm thế nào; lời kêu gọi con cháu bổ sung; lời cảm ơn, ngày viết, người chủ trì…",
-    label: "Lời nói đầu",
-    hint: "Mục đích, lý do làm phả; ai làm, làm thế nào; ưu khuyết và lời kêu gọi hậu duệ bổ sung; lời cảm ơn, ngày viết, người chủ trì. Nên ngắn gọn, súc tích.",
+      msg`Vì sao làm phả, ai làm, làm thế nào; lời kêu gọi con cháu bổ sung; lời cảm ơn, ngày viết, người chủ trì…`,
+    label: msg`Lời nói đầu`,
+    hint: msg`Mục đích, lý do làm phả; ai làm, làm thế nào; ưu khuyết và lời kêu gọi hậu duệ bổ sung; lời cảm ơn, ngày viết, người chủ trì. Nên ngắn gọn, súc tích.`,
     rows: 7,
   },
   {
     key: "phaky",
     placeholder:
-      "Thuỷ tổ và tổ quán; các chi, các đời; truyền thống lao động, văn hoá, học tập, yêu nước; đặc điểm và phương hướng của dòng họ…",
-    label: "Phả ký",
-    hint: "Lịch sử dòng họ: phát tích, vị tổ khai cơ và tiểu sử; tổ quán (địa lý, lịch sử xóm ấp, đình miếu); truyền thống lao động, văn hoá, yêu nước; đặc điểm dòng họ và phương hướng xây dựng dòng họ văn hoá. Số liệu nam/nữ, số đời, từng chi được sổ tự thêm từ dữ liệu. Xuống dòng để tách đoạn.",
+      msg`Thuỷ tổ và tổ quán; các chi, các đời; truyền thống lao động, văn hoá, học tập, yêu nước; đặc điểm và phương hướng của dòng họ…`,
+    label: msg`Phả ký`,
+    hint: msg`Lịch sử dòng họ: phát tích, vị tổ khai cơ và tiểu sử; tổ quán (địa lý, lịch sử xóm ấp, đình miếu); truyền thống lao động, văn hoá, yêu nước; đặc điểm dòng họ và phương hướng xây dựng dòng họ văn hoá. Số liệu nam/nữ, số đời, từng chi được sổ tự thêm từ dữ liệu. Xuống dòng để tách đoạn.`,
     rows: 14,
   },
   {
     key: "ngoai_pha",
     placeholder:
-      "Nhà thờ họ, hội đồng gia tộc; các lễ cúng chính và văn khấn; ruộng hương hỏa, quỹ họ; mộ phần…",
-    label: "Ngoại phả",
-    hint: "Các lễ cúng chính và văn khấn; nhà thờ họ, hội đồng gia tộc; ruộng hương hỏa, kỵ điền. Ngày giỗ, quan hệ cưới gả, mộ phần được sổ tự lập từ dữ liệu.",
+      msg`Nhà thờ họ, hội đồng gia tộc; các lễ cúng chính và văn khấn; ruộng hương hỏa, quỹ họ; mộ phần…`,
+    label: msg`Ngoại phả`,
+    hint: msg`Các lễ cúng chính và văn khấn; nhà thờ họ, hội đồng gia tộc; ruộng hương hỏa, kỵ điền. Ngày giỗ, quan hệ cưới gả, mộ phần được sổ tự lập từ dữ liệu.`,
     rows: 8,
   },
   {
     key: "phu_khao",
     placeholder:
-      "Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…",
-    label: "Phụ khảo",
-    hint: "Địa chí xóm ấp từ xưa đến nay, đình làng, chợ, bến đò, nghề truyền thống. Di sản đã nhập ở mục Di sản sẽ tự in kèm.",
+      msg`Địa chí quê hương; đình, chùa, miếu mạo; chợ, bến đò; nghề truyền thống…`,
+    label: msg`Phụ khảo`,
+    hint: msg`Địa chí xóm ấp từ xưa đến nay, đình làng, chợ, bến đò, nghề truyền thống. Di sản đã nhập ở mục Di sản sẽ tự in kèm.`,
     rows: 8,
   },
-];
+]);
 
 /** Soạn các phần văn bản của Sổ gia phả (lời nói đầu, phả ký, ngoại phả, phụ khảo). */
 export function BookTextsSection({
@@ -151,9 +158,9 @@ export function BookTextsSection({
           value={tplPick[field] ?? BOOK_TEMPLATES[0].id}
           onChange={(e) => setTplPick({ ...tplPick, [field]: e.target.value })}
         >
-          {BOOK_TEMPLATES.map((t) => (
-            <option key={t.id} value={t.id}>
-              Mẫu: {t.name}
+          {BOOK_TEMPLATES.map((tpl) => (
+            <option key={tpl.id} value={tpl.id}>
+              {t`Mẫu: ${tpl.name}`}
             </option>
           ))}
         </Select>
