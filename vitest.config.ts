@@ -1,9 +1,9 @@
 import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+import { reactWithLingui } from "./vite.i18n";
 import path from "node:path";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [...reactWithLingui()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

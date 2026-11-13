@@ -42,13 +42,26 @@ Thứ tự ưu tiên nguồn:
 | Nghĩa trang | Nghĩa trang | Cemetery | ✅ |
 | Nguồn (tư liệu) | Nguồn Thông Tin Gia Phả | Sources | 🟡 |
 | Hồ sơ | Hồ Sơ | Records | 🟡 |
-| Họ (dòng họ) | — | Clan / Family line | 🔴 chọn khi có thêm nguồn |
+| Họ / Dòng họ | — | **Clan** (dùng nhất quán trong giao diện EN: "My clan", "Clan settings"…) | 🟡 một nguồn: bài tổng quan gia phả Việt gọi gia phả là "family or clan book"; cần nguồn thứ hai |
 | Chi / Nhánh | — | Branch | 🔴 |
 | Đời | — | Generation | 🔴 (tính từ Thuỷ tổ — cần chú giải) |
 | Thuỷ tổ | — | Founding ancestor | 🔴 |
 | Phả ký, Phàm lệ, Ngoại phả, Phụ khảo | — | giữ nguyên + chú giải | 🔴 |
 | Giỗ / Ngày giỗ | — | Death anniversary (giỗ) | 🔴 giữ "giỗ" |
 | Âm lịch / Can Chi | — | Lunar calendar / Heavenly Stems–Earthly Branches | 🔴 |
+
+### Nhãn giao diện đã dùng ở bản EN đầu tiên
+
+| Tiếng Việt | EN | Lý do / nguồn |
+|---|---|---|
+| Danh bạ | People | FamilySearch: "Danh Sách Mọi Người" = list of people |
+| Cây gia phả | Family tree | FamilySearch: "Cây Gia Phả" |
+| Tra cứu quan hệ | Relationship lookup | mô tả chức năng |
+| Mộ phần & tro cốt | Graves & ashes | mô tả; "resting places" dùng trong mã |
+| Bảng vàng công đức | Honor roll | mô tả chức năng; giữ ý "ghi công" |
+| Quỹ họ | Clan fund | theo "Clan" ở trên |
+| Sổ tay Văn hoá | Culture handbook | mô tả chức năng |
+| Dòng Họ Việt | Dòng Họ Việt | tên thương hiệu, không dịch |
 
 ## 2. Tên người — nguồn: FamilySearch Wiki *Vietnam Naming Customs*
 

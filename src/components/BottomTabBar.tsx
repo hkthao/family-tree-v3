@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 interface Tab {
   to: string;
   label: string;
@@ -38,9 +39,14 @@ export function BottomTabBar({ tabs }: Props) {
       // Hidden on lg+: at that width the left drawer is already pinned
       // and serves the navigation role.
       className="fixed bottom-0 left-0 right-0 z-20 border-t border-gold/30 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
-      aria-label="Điều hướng chính"
+      aria-label={t`Điều hướng chính`}
     >
-      <ul className={cn("grid max-w-xl mx-auto", GRID_COLS[tabs.length] ?? "grid-cols-4")}>
+      <ul
+        className={cn(
+          "grid max-w-xl mx-auto",
+          GRID_COLS[tabs.length] ?? "grid-cols-4",
+        )}
+      >
         {tabs.map((tab) => (
           <li key={tab.to}>
             <NavLink

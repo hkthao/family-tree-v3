@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
+import { LanguageButton } from "@/components/LanguageSwitcher";
 
 interface Props {
   title: string;
@@ -11,7 +12,11 @@ interface Props {
 
 export function AuthLayout({ title, subtitle, children }: Props) {
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-center p-4">
+    <main className="relative min-h-dvh flex flex-col items-center justify-center p-4">
+      {/* Khách chưa đăng nhập chưa có thanh đầu: đặt nút đổi ngôn ngữ ở góc trên-phải. */}
+      <div className="absolute right-3 top-3">
+        <LanguageButton />
+      </div>
       <div className="w-full max-w-md space-y-8">
         <header className="text-center space-y-3">
           <AppLogo size={72} className="rounded-2xl mx-auto shadow-sm" />

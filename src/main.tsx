@@ -4,6 +4,8 @@ import { createRoot } from "react-dom/client";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 
 import App from "./App";
+import { activateLocale, detectLocale } from "./lib/i18n";
+import { I18nRoot } from "./lib/i18n/I18nRoot";
 import { initAnalytics } from "./lib/analytics";
 import { initPwa } from "./lib/pwa";
 import { persister, queryClient } from "./lib/queryClient";
@@ -30,89 +32,102 @@ if (typeof window !== "undefined") {
   window.addEventListener("gestureend", block);
 }
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <Sentry.ErrorBoundary
-      fallback={
-        <div
-          role="alert"
-          style={{
-            minHeight: "100dvh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "24px",
-            fontFamily: "Be Vietnam Pro, system-ui, sans-serif",
-            background: "#FBF7F0",
-            color: "#2A2320",
-            textAlign: "center",
+function render() {
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <Sentry.ErrorBoundary
+        fallback={
+          <div
+            role="alert"
+            style={{
+              minHeight: "100dvh",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "24px",
+              fontFamily: "Be Vietnam Pro, system-ui, sans-serif",
+              background: "#FBF7F0",
+              color: "#2A2320",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ maxWidth: 420 }}>
+              <h1
+                style={{
+                  fontFamily: "Noto Serif, Georgia, serif",
+                  color: "#7A2E2E",
+                }}
+              >
+                Có lỗi xảy ra
+              </h1>
+              <p style={{ color: "#7A6F66" }}>
+                Tải lại trang để tiếp tục. Nếu lỗi lặp lại, báo cho quản trị.
+              </p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                style={{
+                  marginTop: 16,
+                  padding: "10px 24px",
+                  background: "#7A2E2E",
+                  color: "#FBF7F0",
+                  border: 0,
+                  borderRadius: 6,
+                  cursor: "pointer",
+                }}
+              >
+                Tải lại trang
+              </button>
+            </div>
+          </div>
+        }
+      >
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{
+            persister,
+            // 24h — past this, the persisted blob is dropped on hydrate.
+            maxAge: 1000 * 60 * 60 * 24,
+            // Bump when query key shapes change to invalidate old caches.
+            // v2: clan-detail now includes data_version (cache freshness);
+            //     dashboard + clan-stats added.
+            // v3: tree-data query path now branches on member vs non-member
+            //     (persons_public_safe view). Pre-fix browsers cached the
+            //     blocked-by-RLS empty result for public-clan visitors; this
+            //     bust forces a clean refetch through the new code path.
+            // v4: clan_posts query shape thay đổi từ ClanPost[] sang
+            //     {rows, total} cho pagination; persisted cache cũ dạng
+            //     array khiến postsQ.data.total undefined → "no posts".
+            // v5: announcements list cũ cached empty (trước khi seed prod);
+            //     bell count refresh từ RPC nhưng list query dính cache
+            //     → "Chưa có thông báo" dù badge hiện 1.
+            // v6: URL ký ảnh đổi TTL 1h → 7 ngày + staleTime 6 ngày. Cache cũ
+            //     giữ URL ký 1h (đã hết hạn) nhưng staleTime dài chặn refetch
+            //     → ảnh lỗi InvalidJWT. Bust để bỏ URL cũ, ký lại 7 ngày.
+            // v7: Sổ tay v2 đổi shape custom_entries (origin → origins[], thêm
+            //     related_ids). Bản ghi cache cũ thiếu field mới → đọc
+            //     origins.length trên undefined gây crash. Bust để bỏ shape cũ.
+            // v8: cây thư mục thêm field `spouses` cho mỗi người. Cache cũ
+            //     không có field đó → đọc spouses.map trên undefined làm
+            //     trắng cả trang cây. Đúng vết xe của v4 và v7: thêm field
+            //     vào một shape ĐANG nằm trong cache của người dùng thì
+            //     phải bust, chứ deploy xong mới biết là người dùng chịu.
+            // v9: Podcast lên sóng lúc chưa đồng bộ tập nào, nên trình duyệt
+            //     của người đã mở trang lưu lại DANH SÁCH RỖNG. Đồng bộ xong
+            //     vẫn thấy "Chưa có tập nào" — đúng vết xe của v5 (danh sách
+            //     thông báo cached rỗng trước khi seed prod).
+            buster: "v9",
           }}
         >
-          <div style={{ maxWidth: 420 }}>
-            <h1 style={{ fontFamily: "Noto Serif, Georgia, serif", color: "#7A2E2E" }}>
-              Có lỗi xảy ra
-            </h1>
-            <p style={{ color: "#7A6F66" }}>
-              Tải lại trang để tiếp tục. Nếu lỗi lặp lại, báo cho quản trị.
-            </p>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              style={{
-                marginTop: 16,
-                padding: "10px 24px",
-                background: "#7A2E2E",
-                color: "#FBF7F0",
-                border: 0,
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
-            >
-              Tải lại trang
-            </button>
-          </div>
-        </div>
-      }
-    >
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{
-          persister,
-          // 24h — past this, the persisted blob is dropped on hydrate.
-          maxAge: 1000 * 60 * 60 * 24,
-          // Bump when query key shapes change to invalidate old caches.
-          // v2: clan-detail now includes data_version (cache freshness);
-          //     dashboard + clan-stats added.
-          // v3: tree-data query path now branches on member vs non-member
-          //     (persons_public_safe view). Pre-fix browsers cached the
-          //     blocked-by-RLS empty result for public-clan visitors; this
-          //     bust forces a clean refetch through the new code path.
-          // v4: clan_posts query shape thay đổi từ ClanPost[] sang
-          //     {rows, total} cho pagination; persisted cache cũ dạng
-          //     array khiến postsQ.data.total undefined → "no posts".
-          // v5: announcements list cũ cached empty (trước khi seed prod);
-          //     bell count refresh từ RPC nhưng list query dính cache
-          //     → "Chưa có thông báo" dù badge hiện 1.
-          // v6: URL ký ảnh đổi TTL 1h → 7 ngày + staleTime 6 ngày. Cache cũ
-          //     giữ URL ký 1h (đã hết hạn) nhưng staleTime dài chặn refetch
-          //     → ảnh lỗi InvalidJWT. Bust để bỏ URL cũ, ký lại 7 ngày.
-          // v7: Sổ tay v2 đổi shape custom_entries (origin → origins[], thêm
-          //     related_ids). Bản ghi cache cũ thiếu field mới → đọc
-          //     origins.length trên undefined gây crash. Bust để bỏ shape cũ.
-          // v8: cây thư mục thêm field `spouses` cho mỗi người. Cache cũ
-          //     không có field đó → đọc spouses.map trên undefined làm
-          //     trắng cả trang cây. Đúng vết xe của v4 và v7: thêm field
-          //     vào một shape ĐANG nằm trong cache của người dùng thì
-          //     phải bust, chứ deploy xong mới biết là người dùng chịu.
-          // v9: Podcast lên sóng lúc chưa đồng bộ tập nào, nên trình duyệt
-          //     của người đã mở trang lưu lại DANH SÁCH RỖNG. Đồng bộ xong
-          //     vẫn thấy "Chưa có tập nào" — đúng vết xe của v5 (danh sách
-          //     thông báo cached rỗng trước khi seed prod).
-          buster: "v9",
-        }}
-      >
-        <App />
-      </PersistQueryClientProvider>
-    </Sentry.ErrorBoundary>
-  </StrictMode>,
-);
+          <I18nRoot>
+            <App />
+          </I18nRoot>
+        </PersistQueryClientProvider>
+      </Sentry.ErrorBoundary>
+    </StrictMode>,
+  );
+}
+
+// Nạp catalog của ngôn ngữ đang dùng TRƯỚC khi vẽ lần đầu (tránh nháy tiếng Việt rồi mới đổi).
+// Khởi động KHÔNG ghi lựa chọn (chỉ khi người dùng chủ động đổi trong Tài khoản mới lưu).
+activateLocale(detectLocale(), false).then(render, render);

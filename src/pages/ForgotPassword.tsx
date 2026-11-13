@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,23 +34,25 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout
-      title="Quên mật khẩu"
-      subtitle="Nhập email để nhận liên kết đặt lại mật khẩu"
+      title={t`Quên mật khẩu`}
+      subtitle={t`Nhập email để nhận liên kết đặt lại mật khẩu`}
     >
       {sent ? (
         <div className="space-y-5">
           <Alert>
             <AlertDescription>
-              Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt lại
-              mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm vào liên kết
-              để đặt mật khẩu mới.
+              <Trans>
+                Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt lại
+                mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm vào liên kết
+                để đặt mật khẩu mới.
+              </Trans>
             </AlertDescription>
           </Alert>
           <Link
             to="/login"
             className="block text-center text-base text-primary hover:underline"
           >
-            ← Về đăng nhập
+            {t`← Về đăng nhập`}
           </Link>
         </div>
       ) : (
@@ -77,13 +81,13 @@ export default function ForgotPassword() {
 
           <Button type="submit" className="w-full" disabled={busy}>
             <IconMail className="h-4 w-4 mr-1.5" />
-            {busy ? "Đang gửi…" : "Gửi liên kết đặt lại"}
+            {busy ? t`Đang gửi…` : t`Gửi liên kết đặt lại`}
           </Button>
 
           <p className="text-center text-base text-muted-foreground">
-            Nhớ ra rồi?{" "}
+            {t`Nhớ ra rồi?`}{" "}
             <Link to="/login" className="text-primary hover:underline">
-              Về đăng nhập
+              {t`Về đăng nhập`}
             </Link>
           </p>
         </form>

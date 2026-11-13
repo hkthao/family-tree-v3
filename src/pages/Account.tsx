@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -5,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { QrSignInButton } from "@/components/QrSignInButton";
 import { BackgroundPicker } from "@/components/BackgroundPicker";
+import { LanguageSelect } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/components/Toast";
 import {
@@ -146,6 +148,18 @@ export default function Account() {
         <EmailCard currentEmail={user?.email ?? null} />
 
         <PasswordCard />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t`Ngôn ngữ`}</CardTitle>
+            <CardDescription>
+              {t`Ngôn ngữ của giao diện. Phần chưa có bản dịch sẽ hiện bằng tiếng Việt.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LanguageSelect />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

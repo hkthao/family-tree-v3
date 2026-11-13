@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import { reactWithLingui } from "./vite.i18n";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import { VitePWA } from "vite-plugin-pwa";
 import { execSync } from "node:child_process";
@@ -37,7 +37,8 @@ export default defineConfig({
     __APP_BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),
   },
   plugins: [
-    react(),
+    // React + macro đa ngôn ngữ (Lingui) — dùng chung với vitest.config.ts qua vite.i18n.ts.
+    ...reactWithLingui(),
     // @react-pdf/renderer's image pipeline uses Node's Buffer to decode
     // PNG/JPG bytes. Polyfill Buffer + a couple of related globals so
     // <Image src="..." /> works in the browser bundle.

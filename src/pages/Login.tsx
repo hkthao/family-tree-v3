@@ -14,6 +14,7 @@ import { track } from "@/lib/analytics";
 import { getDemoClanIds } from "@/lib/queries/platformSettings";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
 type Mode = "password" | "magic-link";
 
 /** Chỉ nhận đường dẫn nội bộ (bắt đầu "/" nhưng không "//") để chống open-redirect. */
@@ -26,7 +27,9 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const next = safeNext(searchParams.get("next"));
-  const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : "/signup";
+  const signupHref = next
+    ? `/signup?next=${encodeURIComponent(next)}`
+    : "/signup";
   const [mode, setMode] = useState<Mode>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,14 +81,16 @@ export default function Login() {
     try {
       const url = new URL(text, window.location.origin);
       if (url.origin !== window.location.origin) {
-        setError("Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản.");
+        setError(
+          t`Mã QR không thuộc Dòng Họ Việt. Bỏ qua để bảo vệ tài khoản.`,
+        );
         return;
       }
       // Hard-navigate so Supabase JS picks up the hash/code on
       // the fresh load.
       window.location.href = url.toString();
     } catch {
-      setError("Mã QR không hợp lệ.");
+      setError(t`Mã QR không hợp lệ.`);
     }
   }
 
@@ -96,7 +101,10 @@ export default function Login() {
     setBusy(true);
     try {
       if (mode === "password") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
         if (error) setError(error.message);
         else {
           track("signed_in", { method: "password" });
@@ -112,7 +120,7 @@ export default function Login() {
         if (error) setError(error.message);
         else {
           track("login_link_sent");
-          setInfo("Đã gửi liên kết đăng nhập. Kiểm tra email của bạn.");
+          setInfo(t`Đã gửi liên kết đăng nhập. Kiểm tra email của bạn.`);
         }
       }
     } finally {
@@ -122,8 +130,8 @@ export default function Login() {
 
   return (
     <AuthLayout
-      title="Đăng nhập"
-      subtitle="Xem cây gia phả và cùng vun đắp dòng họ của bạn."
+      title={t`Đăng nhập`}
+      subtitle={t`Xem cây gia phả và cùng vun đắp dòng họ của bạn.`}
     >
       <div className="space-y-5">
         {/* Google — kênh chính, nút to, 1 chạm, không cần nhớ mật khẩu. */}
@@ -136,18 +144,18 @@ export default function Login() {
             className="w-full h-12 text-base"
           >
             {oauthBusy ? (
-              "Đang chuyển tới Google…"
+              t`Đang chuyển tới Google…`
             ) : (
               <span className="inline-flex items-center gap-2">
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-white">
                   <GoogleGlyph />
                 </span>
-                Tiếp tục với Google
+                {t`Tiếp tục với Google`}
               </span>
             )}
           </Button>
           <p className="text-center text-sm text-muted-foreground">
-            Nhanh &amp; an toàn — không cần nhớ mật khẩu.
+            {t`Nhanh & an toàn — không cần nhớ mật khẩu.`}
           </p>
           {oauthError && (
             <Alert variant="destructive">
@@ -164,7 +172,7 @@ export default function Login() {
             onClick={() => track("demo_view_click")}
             className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/5 text-base font-medium text-primary hover:bg-primary/10"
           >
-            👀 Xem thử gia phả mẫu — không cần đăng nhập
+            {t`👀 Xem thử gia phả mẫu — không cần đăng nhập`}
           </Link>
         )}
 
@@ -175,10 +183,13 @@ export default function Login() {
             onClick={() => setShowEmail(true)}
             className="block w-full text-center text-base text-primary hover:underline"
           >
-            Đăng nhập bằng email &amp; mật khẩu
+            {t`Đăng nhập bằng email & mật khẩu`}
           </button>
         ) : (
-          <form onSubmit={onSubmit} className="space-y-5 border-t border-divider pt-5">
+          <form
+            onSubmit={onSubmit}
+            className="space-y-5 border-t border-divider pt-5"
+          >
             <div className="space-y-2">
               <Label htmlFor="email" required>
                 Email
@@ -198,7 +209,7 @@ export default function Login() {
             {mode === "password" && (
               <div className="space-y-2">
                 <Label htmlFor="password" required>
-                  Mật khẩu
+                  {t`Mật khẩu`}
                 </Label>
                 <Input
                   icon={<IconLock />}
@@ -215,7 +226,7 @@ export default function Login() {
                     to="/forgot-password"
                     className="text-sm text-primary hover:underline"
                   >
-                    Quên mật khẩu?
+                    {t`Quên mật khẩu?`}
                   </Link>
                 </div>
               </div>
@@ -234,11 +245,13 @@ export default function Login() {
 
             <Button type="submit" className="w-full" disabled={busy}>
               {busy ? (
-                "Đang xử lý…"
+                t`Đang xử lý…`
               ) : (
                 <>
                   <IconLogIn className="h-4 w-4 mr-1.5" />
-                  {mode === "password" ? "Đăng nhập" : "Gửi liên kết qua email"}
+                  {mode === "password"
+                    ? t`Đăng nhập`
+                    : t`Gửi liên kết qua email`}
                 </>
               )}
             </Button>
@@ -251,7 +264,7 @@ export default function Login() {
                 onClick={() => setScannerOpen(true)}
               >
                 <IconQrCode className="h-4 w-4 mr-1.5" />
-                Đăng nhập nhanh (quét mã QR)
+                {t`Đăng nhập nhanh (quét mã QR)`}
               </Button>
             )}
 
@@ -265,16 +278,16 @@ export default function Login() {
               className="block w-full text-center text-base text-primary hover:underline"
             >
               {mode === "password"
-                ? "Đăng nhập bằng liên kết qua email"
-                : "Dùng mật khẩu"}
+                ? t`Đăng nhập bằng liên kết qua email`
+                : t`Dùng mật khẩu`}
             </button>
           </form>
         )}
 
         <p className="text-center text-base text-muted-foreground">
-          Chưa có tài khoản?{" "}
+          {t`Chưa có tài khoản?`}{" "}
           <Link to={signupHref} className="text-primary hover:underline">
-            Đăng ký
+            {t`Đăng ký`}
           </Link>
         </p>
       </div>
@@ -283,8 +296,8 @@ export default function Login() {
         open={scannerOpen}
         onClose={() => setScannerOpen(false)}
         onDecode={onScan}
-        title="Quét mã QR"
-        description="Hướng camera vào mã QR hiển thị trên thiết bị đã đăng nhập (Tài khoản → Đăng nhập trên điện thoại)."
+        title={t`Quét mã QR`}
+        description={t`Hướng camera vào mã QR hiển thị trên thiết bị đã đăng nhập (Tài khoản → Đăng nhập trên điện thoại).`}
       />
     </AuthLayout>
   );

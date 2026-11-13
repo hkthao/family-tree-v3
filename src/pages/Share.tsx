@@ -30,6 +30,7 @@ const Tree3DView = lazy(() =>
 );
 import { FilterDrawer } from "@/components/FilterDrawer";
 import { FilterableSelect } from "@/components/FilterableSelect";
+import { LanguageButton } from "@/components/LanguageSwitcher";
 import { ThemeQuickToggle } from "@/components/ThemeQuickToggle";
 import { TreeBackdrop } from "@/components/tree/TreeBackdrop";
 import { TreeGuide } from "@/components/tree/TreeGuide";
@@ -911,6 +912,7 @@ export default function Share() {
             {data?.clan_name ? `Gia phả ${data.clan_name}` : "Cây gia phả"}
           </h1>
           <div className="flex shrink-0 items-center print-hide">
+            <LanguageButton />
             <ThemeQuickToggle />
           </div>
         </div>

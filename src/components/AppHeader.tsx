@@ -7,6 +7,7 @@ import { AppLogo } from "@/components/AppLogo";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
 import { useSidebarHidden } from "@/lib/sidebarHidden";
 
+import { t } from "@lingui/core/macro";
 export function AppHeader() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -26,8 +27,8 @@ export function AppHeader() {
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                aria-label="Quay lại"
-                title="Quay lại"
+                aria-label={t`Quay lại`}
+                title={t`Quay lại`}
                 className="h-10 w-10 hidden lg:inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
               >
                 <svg
@@ -55,16 +56,16 @@ export function AppHeader() {
               aria-label={
                 isDesktop
                   ? sidebarHidden
-                    ? "Hiện menu"
-                    : "Ẩn menu"
-                  : "Mở menu"
+                    ? t`Hiện menu`
+                    : t`Ẩn menu`
+                  : t`Mở menu`
               }
               aria-expanded={isDesktop ? !sidebarHidden : drawerOpen}
               title={
                 isDesktop
                   ? sidebarHidden
-                    ? "Hiện menu"
-                    : "Ẩn menu"
+                    ? t`Hiện menu`
+                    : t`Ẩn menu`
                   : undefined
               }
               className="lg:-order-1 h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-muted"
@@ -82,7 +83,7 @@ export function AppHeader() {
             className={`clan-name shrink-0 whitespace-nowrap text-xl sm:text-2xl font-semibold text-primary inline-flex items-center gap-1.5 sm:gap-2 ${sidebarHidden ? "" : "lg:hidden"}`}
           >
             <AppLogo size={28} className="rounded" />
-            Dòng Họ Việt
+            {t`Dòng Họ Việt`}
           </Link>
           <div className="hidden lg:block flex-1" aria-hidden="true" />
           <HeaderActions />

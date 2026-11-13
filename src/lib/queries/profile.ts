@@ -91,3 +91,33 @@ export async function deleteMyAccount(
   const { error } = await client.rpc("delete_my_account");
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Ngôn ngữ giao diện đã lưu của người dùng (`profiles.locale`). Tách khỏi `getMyProfile` có chủ đích:
+ * nếu cột chưa có trên DB (chưa áp migration) thì CHỈ truy vấn này lỗi — không kéo theo cả hồ sơ.
+ */
+export async function getMyLocale(
+  userId: string,
+  client: Client = defaultClient,
+): Promise<string | null> {
+  // Cột mới chưa có trong database.types.ts (sẽ regen) → dùng client không kiểu.
+  const { data, error } = await (client as unknown as SupabaseClient)
+    .from("profiles")
+    .select("locale")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) return null;
+  return (data as { locale: string | null } | null)?.locale ?? null;
+}
+
+export async function updateMyLocale(
+  userId: string,
+  locale: string,
+  client: Client = defaultClient,
+): Promise<void> {
+  const { error } = await (client as unknown as SupabaseClient)
+    .from("profiles")
+    .update({ locale })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+}
