@@ -45,9 +45,9 @@ import { lazyMessages } from "@/lib/i18n/lazy";
 const DEFAULT_PAGE_SIZE = 20;
 
 const TYPE_LABEL: Record<ClanPostType, string> = lazyMessages({
-  news: "Tin",
+  news: msg`Tin`,
   event: msg`Sự kiện`,
-  birth: "Sinh",
+  birth: msg`Sinh`,
   death: msg`Cáo phó`,
   notice: msg`Thông báo`,
 }) as Record<ClanPostType, string>;
@@ -128,7 +128,7 @@ export default function Board() {
                 to={`/clans/${clanId}/board/moderation`}
                 className="h-10 inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-500/20"
               >
-                ⏳ {pendingQ.data!.length} chờ duyệt
+                {t`⏳ ${pendingQ.data!.length} chờ duyệt`}
               </Link>
             )}
             {isMember && user && (

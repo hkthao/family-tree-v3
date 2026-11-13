@@ -964,7 +964,7 @@ export default function Share() {
           >
             <Link to={`/login?next=${encodeURIComponent(`/clans/${clanId}`)}`}>
               <IconLogIn className="mr-1.5 h-4 w-4" />
-              Đăng nhập để xem đầy đủ &amp; cùng vun đắp
+              {t`Đăng nhập để xem đầy đủ & cùng vun đắp`}
             </Link>
           </Button>
         </div>
@@ -987,7 +987,7 @@ export default function Share() {
                 active={tab === "events"}
                 onClick={() => setTab("events")}
               >
-                Sự kiện &amp; giỗ
+                {t`Sự kiện & giỗ`}
               </ShareTab>
             )}
             {data.heritage?.length ? (
@@ -1003,7 +1003,7 @@ export default function Share() {
                 active={tab === "details"}
                 onClick={() => setTab("details")}
               >
-                Chi tiết &amp; nguồn
+                {t`Chi tiết & nguồn`}
               </ShareTab>
             ) : null}
           </div>

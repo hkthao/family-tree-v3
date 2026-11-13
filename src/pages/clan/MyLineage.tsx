@@ -446,7 +446,7 @@ function LineageView({
                       fill="#7A2E2E" />
                 <text x="193" y="19" text-anchor="middle"
                       fill="#FFFFFF" font-size="10" font-weight="700">
-                  Đời ${gen - clan.generation_offset}
+                  ${t`Đời ${gen - clan.generation_offset}`}
                 </text>`;
               this.querySelector(".card-body")?.appendChild(badge);
             }
@@ -579,7 +579,7 @@ function LineageView({
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
           <p className="text-xs text-muted-foreground">
             <Trans>
-            Có {forks.length} điểm rẽ.{" "}
+            Có {forks.length} điểm rẽ.
             <span className="text-foreground">Bên nội</span> = họ cha ·{" "}
             <span className="text-foreground">Bên ngoại</span> = họ mẹ.
             </Trans>

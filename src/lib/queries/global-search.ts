@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = typeof supabase;
 
@@ -24,17 +26,17 @@ export interface SearchHit {
 }
 
 /** Nhãn nhóm hiển thị trong hộp tìm kiếm, theo thứ tự ưu tiên. */
-export const SEARCH_KIND_ORDER: { kind: SearchKind; label: string }[] = [
-  { kind: "person", label: "Người" },
-  { kind: "clan", label: "Dòng họ" },
-  { kind: "grave", label: "Mộ phần" },
-  { kind: "heritage", label: "Di sản" },
-  { kind: "event", label: "Sự kiện" },
-  { kind: "post", label: "Bảng tin" },
-  { kind: "contribution", label: "Đóng góp" },
-  { kind: "inlaw", label: "Thông gia" },
-  { kind: "custom", label: "Sổ tay văn hoá" },
-];
+export const SEARCH_KIND_ORDER: { kind: SearchKind; label: string }[] = lazyMessages([
+  { kind: "person", label: msg`Người` },
+  { kind: "clan", label: msg`Dòng họ` },
+  { kind: "grave", label: msg`Mộ phần` },
+  { kind: "heritage", label: msg`Di sản` },
+  { kind: "event", label: msg`Sự kiện` },
+  { kind: "post", label: msg`Bảng tin` },
+  { kind: "contribution", label: msg`Đóng góp` },
+  { kind: "inlaw", label: msg`Thông gia` },
+  { kind: "custom", label: msg`Sổ tay văn hoá` },
+]) as unknown as { kind: SearchKind; label: string }[];
 
 /** Đường dẫn trong app tới một kết quả. */
 export function hitPath(h: SearchHit): string {

@@ -45,7 +45,7 @@ export function PersonAddressCard({
       </div>
       <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
         <Trans>
-        Không bắt buộc. Nếu bạn nhập thông tin ở đây,{" "}
+        Không bắt buộc. Nếu bạn nhập thông tin ở đây,
         <strong>tỉnh/thành sẽ được hiển thị trên Bản đồ</strong> của dòng
         họ (chỉ thành viên dòng họ xem được). Không nhập thì người này sẽ không
         xuất hiện trên bản đồ.

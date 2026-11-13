@@ -32,9 +32,9 @@ import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
 import { Trans } from "@lingui/react/macro";
 const TYPE_LABEL: Record<ClanPostType, string> = lazyMessages({
-  news: "Tin",
+  news: msg`Tin`,
   event: msg`Sự kiện`,
-  birth: "Sinh",
+  birth: msg`Sinh`,
   death: msg`Cáo phó`,
   notice: msg`Thông báo`,
 }) as Record<ClanPostType, string>;
@@ -399,7 +399,7 @@ function Comments({ postId, isMember }: { postId: string; isMember: boolean }) {
   return (
     <section className="mt-8 pt-6 border-t space-y-3">
       <h2 className="text-lg font-semibold">
-        Bình luận ({commentsQ.data?.length ?? 0})
+        {t`Bình luận (${commentsQ.data?.length ?? 0})`}
       </h2>
 
       <ul className="space-y-2">

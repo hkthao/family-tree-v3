@@ -2358,7 +2358,7 @@ export default function TreeCanvas() {
             {t`Hiện đường nối cha–con, vợ–chồng tự động`}
           </label>
           <FormActions>
-            <Button onClick={() => setTab("idle")}>Xong</Button>
+            <Button onClick={() => setTab("idle")}>{t`Xong`}</Button>
           </FormActions>
         </div>
       </SidePanel>
@@ -2414,7 +2414,7 @@ export default function TreeCanvas() {
                 onChange={(e) => setOrient(e.target.value as typeof orient)}
               >
                 <option value="auto">{t`Tự chọn theo hình dạng cây`}</option>
-                <option value="landscape">Ngang</option>
+                <option value="landscape">{t`Ngang`}</option>
                 <option value="portrait">{t`Dọc`}</option>
               </Select>
             </label>

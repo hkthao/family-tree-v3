@@ -1,14 +1,16 @@
 import { currentIntlTag } from "@/lib/i18n";
 import type { AnnouncementLevel } from "@/lib/queries/announcements";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 /** Nhãn + màu badge/accent theo mức độ tin — dùng chung cho trang
  *  /announcements và popover chuông thông báo. */
-export const LEVEL_LABEL: Record<AnnouncementLevel, string> = {
-  info: "Tin",
-  update: "Cập nhật",
-  warning: "Cảnh báo",
-  critical: "Quan trọng",
-};
+export const LEVEL_LABEL: Record<AnnouncementLevel, string> = lazyMessages({
+  info: msg`Tin`,
+  update: msg`Cập nhật`,
+  warning: msg`Cảnh báo`,
+  critical: msg`Quan trọng`,
+}) as Record<AnnouncementLevel, string>;
 
 export const LEVEL_BADGE: Record<AnnouncementLevel, string> = {
   info: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30",

@@ -307,7 +307,7 @@ function RelationPicker({ onPick }: { onPick: (r: Relation) => void }) {
         {t`Chọn quan hệ với người này:`}
       </p>
       <RelationCard
-        label="Con"
+        label={t`Con`}
         hint={t`Thêm một hoặc nhiều con`}
         icon={<IconUsers className="h-5 w-5" />}
         onClick={() => onPick("child")}

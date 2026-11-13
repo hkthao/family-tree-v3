@@ -131,7 +131,7 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
       )}
       {data.children.length > 0 && (
         <RelativeGroup
-          label="Con"
+          label={t`Con`}
           rows={data.children}
           peerClanId={data.peer_clan_id}
           genOffset={genOffset}

@@ -952,7 +952,7 @@ function TestPushButton() {
     onSuccess: (res) => {
       if (res.sent > 0) {
         toast.success(t`Đã gửi push test`, {
-          description: t`${res.sent} thiết bị nhận được${res.failed > 0 ? ` · ${res.failed} thất bại` : ""}.`,
+          description: t`${res.sent} thiết bị nhận được${res.failed > 0 ? t` · ${res.failed} thất bại` : ""}.`,
         });
       } else {
         toast.error(t`Chưa nhận được`, {

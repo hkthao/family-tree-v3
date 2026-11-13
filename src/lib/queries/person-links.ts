@@ -9,6 +9,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/database.types";
 import { supabase as defaultClient } from "@/lib/supabase";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
@@ -23,12 +25,12 @@ export type PersonLinkStatus = "pending" | "confirmed" | "revoked";
  */
 export type PersonLinkType = "same_person" | "ancestor_of" | "descendant_of" | "related";
 
-export const LINK_TYPE_LABEL: Record<PersonLinkType, string> = {
-  same_person: "Thông gia",
-  ancestor_of: "Tổ tiên – hậu duệ",
-  descendant_of: "Hậu duệ – tổ tiên",
-  related: "Họ hàng / cùng nguồn gốc",
-};
+export const LINK_TYPE_LABEL: Record<PersonLinkType, string> = lazyMessages({
+  same_person: msg`Thông gia`,
+  ancestor_of: msg`Tổ tiên – hậu duệ`,
+  descendant_of: msg`Hậu duệ – tổ tiên`,
+  related: msg`Họ hàng / cùng nguồn gốc`,
+}) as Record<PersonLinkType, string>;
 
 /**
  * Nhãn theo góc nhìn của dòng họ đang xem. `ancestor_of`: phía A có TỔ TIÊN
@@ -47,20 +49,20 @@ export function linkTypeFromSide(type: PersonLinkType, viewingIsA: boolean): str
   }
 }
 
-export const LINK_TYPE_HELP: Record<PersonLinkType, string> = {
-  same_person: "Một người vừa thuộc dòng họ này vừa thuộc dòng họ kia (vd con gái họ này làm dâu họ kia).",
-  ancestor_of: "Người bạn chọn là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ họ này là cha của một người họ kia).",
-  descendant_of: "Người bạn chọn là HẬU DUỆ của một người ở dòng họ kia (vd họ này là chi nhánh của dòng họ kia).",
-  related: "Họ hàng hoặc cùng nguồn gốc khác — ghi rõ quan hệ ở phần ghi chú.",
-};
+export const LINK_TYPE_HELP: Record<PersonLinkType, string> = lazyMessages({
+  same_person: msg`Một người vừa thuộc dòng họ này vừa thuộc dòng họ kia (vd con gái họ này làm dâu họ kia).`,
+  ancestor_of: msg`Người bạn chọn là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ họ này là cha của một người họ kia).`,
+  descendant_of: msg`Người bạn chọn là HẬU DUỆ của một người ở dòng họ kia (vd họ này là chi nhánh của dòng họ kia).`,
+  related: msg`Họ hàng hoặc cùng nguồn gốc khác — ghi rõ quan hệ ở phần ghi chú.`,
+}) as Record<PersonLinkType, string>;
 
 /** Mô tả cho bên NHẬN đề nghị (góc nhìn của dòng họ B). */
-export const LINK_TYPE_INCOMING_HELP: Record<PersonLinkType, string> = {
-  same_person: "Người bên kia cũng chính là một người trong dòng họ của bạn (vd dâu/rể).",
-  ancestor_of: "Người bên kia là TỔ TIÊN của một người trong dòng họ của bạn.",
-  descendant_of: "Người bên kia là HẬU DUỆ của một người trong dòng họ của bạn.",
-  related: "Hai dòng họ là họ hàng / cùng nguồn gốc — xem ghi chú của bên gửi.",
-};
+export const LINK_TYPE_INCOMING_HELP: Record<PersonLinkType, string> = lazyMessages({
+  same_person: msg`Người bên kia cũng chính là một người trong dòng họ của bạn (vd dâu/rể).`,
+  ancestor_of: msg`Người bên kia là TỔ TIÊN của một người trong dòng họ của bạn.`,
+  descendant_of: msg`Người bên kia là HẬU DUỆ của một người trong dòng họ của bạn.`,
+  related: msg`Hai dòng họ là họ hàng / cùng nguồn gốc — xem ghi chú của bên gửi.`,
+}) as Record<PersonLinkType, string>;
 
 export interface PersonLink {
   id: string;
@@ -650,11 +652,11 @@ export interface LinkedClan {
   relation: "ancestor_of" | "descendant_of" | "related";
 }
 
-export const LINKED_CLAN_RELATION_LABEL: Record<LinkedClan["relation"], string> = {
-  ancestor_of: "Họ hậu duệ",
-  descendant_of: "Họ tổ",
-  related: "Họ hàng",
-};
+export const LINKED_CLAN_RELATION_LABEL: Record<LinkedClan["relation"], string> = lazyMessages({
+  ancestor_of: msg`Họ hậu duệ`,
+  descendant_of: msg`Họ tổ`,
+  related: msg`Họ hàng`,
+}) as Record<LinkedClan["relation"], string>;
 
 export async function getClansLinkedClans(
   clanIds: string[],

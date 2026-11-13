@@ -647,7 +647,7 @@ export default function HeritageDetail() {
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
               <Trans>
-              Dán link ảnh / video / âm thanh đã đăng ở nơi khác.{" "}
+              Dán link ảnh / video / âm thanh đã đăng ở nơi khác.
               <strong>Không tính vào dung lượng</strong> của họ — dùng khi
               đã đầy, hoặc muốn nhúng video YouTube.
               </Trans>
@@ -890,7 +890,7 @@ export default function HeritageDetail() {
         <Card>
           <CardHeader>
             <SectionTitle icon={<IconUser className="h-4 w-4" />}>
-              Người liên quan ({item.people.length})
+              {t`Người liên quan (${item.people.length})`}
             </SectionTitle>
           </CardHeader>
           <CardContent>
@@ -1049,7 +1049,7 @@ function AudioRecorder({
           onClick={rec.stop}
         >
           <IconPlay className="h-4 w-4 mr-1.5" />
-          Dừng &amp; nghe lại
+          {t`Dừng & nghe lại`}
         </Button>
       </div>
     );

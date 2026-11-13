@@ -10,9 +10,9 @@ import { t } from "@lingui/core/macro";
 import { msg } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
 const TYPE_LABEL: Record<ClanPostType, string> = lazyMessages({
-  news: "Tin",
+  news: msg`Tin`,
   event: msg`Sự kiện`,
-  birth: "Sinh",
+  birth: msg`Sinh`,
   death: msg`Cáo phó`,
   notice: msg`Thông báo`,
 }) as Record<ClanPostType, string>;

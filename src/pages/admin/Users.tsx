@@ -41,6 +41,8 @@ import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
 import { RefreshIconButton } from "@/pages/admin/shared";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 type StatusFilter = "" | "admin" | "suspended";
 
 /** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa một tài khoản. */
@@ -85,9 +87,9 @@ export function UsersTab({ callerId }: { callerId: string }) {
     onSuccess: () => {
       invalidate();
       closePanel();
-      toast.success("Đã xoá tài khoản");
+      toast.success(t`Đã xoá tài khoản`);
     },
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   return (
@@ -99,13 +101,13 @@ export function UsersTab({ callerId }: { callerId: string }) {
           setStatus("");
           paging.patchAndResetPage({});
         }}
-        title="Lọc người dùng"
+        title={t`Lọc người dùng`}
         search={(toggle) => (
           <SearchInput
-            label="Tìm người dùng theo tên hoặc email"
+            label={t`Tìm người dùng theo tên hoặc email`}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Tìm theo tên hoặc email"
+            placeholder={t`Tìm theo tên hoặc email`}
             className="pr-[4.75rem]"
             rightSlot={
               <>
@@ -123,28 +125,28 @@ export function UsersTab({ callerId }: { callerId: string }) {
               setStatus(e.target.value as StatusFilter);
               paging.patchAndResetPage({});
             }}
-            aria-label="Lọc theo trạng thái"
+            aria-label={t`Lọc theo trạng thái`}
             icon={<IconTag />}
             className="h-11 w-full text-base"
           >
-            <option value="">Mọi tài khoản</option>
+            <option value="">{t`Mọi tài khoản`}</option>
             <option value="admin">Platform admin</option>
-            <option value="suspended">Đã khoá</option>
+            <option value="suspended">{t`Đã khoá`}</option>
           </Select>
         </div>
       </CollapsibleFilters>
 
       {isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
 
       {!isLoading && filtered.length === 0 && (
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}
-          title={q || status ? "Không có tài khoản nào khớp" : "Chưa có tài khoản nào"}
-          description={q || status ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : undefined}
+          title={q || status ? t`Không có tài khoản nào khớp` : t`Chưa có tài khoản nào`}
+          description={q || status ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.` : undefined}
         />
       )}
 
@@ -167,7 +169,7 @@ export function UsersTab({ callerId }: { callerId: string }) {
           totalPages={paging.totalPages}
           total={paging.total}
           pageSize={paging.pageSize}
-          unit="tài khoản"
+          unit={t`tài khoản`}
           onPageChange={paging.setPage}
           pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
           onPageSizeChange={paging.setPageSize}
@@ -176,7 +178,7 @@ export function UsersTab({ callerId }: { callerId: string }) {
 
       <SidePanel
         open={panel !== null}
-        title={panel?.mode === "edit" ? "Sửa người dùng" : "Người dùng"}
+        title={panel?.mode === "edit" ? t`Sửa người dùng` : t`Người dùng`}
         subtitle={panel?.profile.display_name ?? panel?.profile.email ?? undefined}
         onClose={closePanel}
         guard={panel?.mode === "edit"}
@@ -197,9 +199,9 @@ export function UsersTab({ callerId }: { callerId: string }) {
             }}
             onDelete={async () => {
               const ok = await confirm({
-                title: `Xoá vĩnh viễn ${panel.profile.display_name ?? panel.profile.email ?? "user này"}?`,
-                description: "Mọi clan họ sở hữu sẽ thành owner_id = null. Không khôi phục được.",
-                confirmLabel: "Xoá tài khoản",
+                title: t`Xoá vĩnh viễn ${panel.profile.display_name ?? panel.profile.email ?? t`user này`}?`,
+                description: t`Mọi clan họ sở hữu sẽ thành owner_id = null. Không khôi phục được.`,
+                confirmLabel: t`Xoá tài khoản`,
                 destructive: true,
               });
               if (ok) deleteM.mutate(panel.profile.id);
@@ -242,7 +244,7 @@ function UserRow({
               className="mt-0.5 text-xs text-muted-foreground/80"
               title={formatDateTime(profile.created_at) ?? undefined}
             >
-              Đăng ký {registered}
+              {t`Đăng ký ${registered}`}
             </p>
           )}
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
@@ -253,16 +255,16 @@ function UserRow({
             )}
             {profile.is_suspended && (
               <Chip tone="danger" icon={<IconLock />}>
-                Đã khoá
+                {t`Đã khoá`}
               </Chip>
             )}
             {isSelf && (
               <Chip tone="neutral" icon={<IconUser />}>
-                Bạn
+                {t`Bạn`}
               </Chip>
             )}
             <Chip tone="teal" icon={<IconBuildings />}>
-              Tối đa {profile.max_clans} dòng họ
+              {t`Tối đa ${profile.max_clans} dòng họ`}
             </Chip>
           </div>
         </div>
@@ -324,10 +326,10 @@ function UserForm({
       }
     },
     onSuccess: () => {
-      toast.success("Đã cập nhật tài khoản");
+      toast.success(t`Đã cập nhật tài khoản`);
       onSaved();
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
@@ -340,7 +342,7 @@ function UserForm({
     >
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-1.5">
-          <Label htmlFor="u-name">Tên hiển thị</Label>
+          <Label htmlFor="u-name">{t`Tên hiển thị`}</Label>
           <Input id="u-name" icon={<IconUser />} value={profile.display_name ?? ""} readOnly />
         </div>
         <div className="space-y-1.5">
@@ -348,7 +350,7 @@ function UserForm({
           <Input id="u-email" icon={<IconMail />} value={profile.email ?? ""} readOnly />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="u-created">Ngày đăng ký</Label>
+          <Label htmlFor="u-created">{t`Ngày đăng ký`}</Label>
           <Input
             id="u-created"
             icon={<IconCalendar />}
@@ -358,7 +360,7 @@ function UserForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="u-max">Giới hạn số dòng họ</Label>
+          <Label htmlFor="u-max">{t`Giới hạn số dòng họ`}</Label>
           <Input
             id="u-max"
             icon={<IconBuildings />}
@@ -381,8 +383,8 @@ function UserForm({
           <span>
             <span className="font-medium">Platform admin</span>
             <span className="block text-sm text-muted-foreground">
-              Toàn quyền quản trị nền tảng.
-              {isSelf && " Không tự đổi quyền của chính mình."}
+              <Trans>Toàn quyền quản trị nền tảng.
+              {isSelf && " Không tự đổi quyền của chính mình."}</Trans>
             </span>
           </span>
         </label>
@@ -395,10 +397,10 @@ function UserForm({
             className="mt-1 h-4 w-4 accent-primary"
           />
           <span>
-            <span className="font-medium">Khoá tài khoản</span>
+            <span className="font-medium">{t`Khoá tài khoản`}</span>
             <span className="block text-sm text-muted-foreground">
-              Tài khoản bị khoá không đăng nhập được.
-              {isSelf && " Không tự khoá chính mình."}
+              <Trans>Tài khoản bị khoá không đăng nhập được.
+              {isSelf && " Không tự khoá chính mình."}</Trans>
             </span>
           </span>
         </label>
@@ -407,12 +409,12 @@ function UserForm({
       <div className="space-y-1">
         <p className="flex items-center gap-1.5 text-sm font-medium">
           <IconUsers className="h-4 w-4 text-muted-foreground" />
-          Thuộc dòng họ
+          {t`Thuộc dòng họ`}
         </p>
         {clans === undefined ? (
-          <p className="text-sm text-muted-foreground">Đang tải…</p>
+          <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>
         ) : clans.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Không thuộc dòng họ nào.</p>
+          <p className="text-sm text-muted-foreground">{t`Không thuộc dòng họ nào.`}</p>
         ) : (
           <ul className="space-y-0.5 text-sm">
             {clans.map((c) => (

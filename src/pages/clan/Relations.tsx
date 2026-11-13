@@ -344,7 +344,7 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={[t`Quan hệ`, t`Họ tên`, "Sinh", t`Mất`, t`Quê quán`]}
+          head={[t`Quan hệ`, t`Họ tên`, t`Sinh`, t`Mất`, t`Quê quán`]}
           empty={t`Chưa ghi nhận cha mẹ.`}
           rows={[
             ...line.map((a, i) => ({
@@ -378,7 +378,7 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={[t`Họ tên`, "Sinh", t`Mất`, t`Quê quán`]}
+          head={[t`Họ tên`, t`Sinh`, t`Mất`, t`Quê quán`]}
           empty={t`Chưa ghi nhận vợ/chồng.`}
           rows={spouses.map((sp) => ({
             key: sp.id,
@@ -394,7 +394,7 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={[t`Họ tên`, t`Giới tính`, "Sinh", t`Mất`, t`Quê quán`]}
+          head={[t`Họ tên`, t`Giới tính`, t`Sinh`, t`Mất`, t`Quê quán`]}
           empty={t`Không có anh chị em được ghi nhận.`}
           rows={siblings.map((sb) => ({
             key: sb.id,
@@ -414,7 +414,7 @@ function RelationsBody({
         bodyClassName="p-0"
       >
         <RelTable
-          head={[t`Bên`, t`Họ tên`, t`Giới tính`, "Sinh", t`Mất`, t`Quê quán`]}
+          head={[t`Bên`, t`Họ tên`, t`Giới tính`, t`Sinh`, t`Mất`, t`Quê quán`]}
           empty={t`Chưa ghi nhận anh chị em của cha mẹ.`}
           rows={[
             ...fatherSiblings.map((u) => ({

@@ -41,12 +41,16 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
 
-const ANNOUNCEMENT_LEVELS: Array<{ value: AnnouncementLevel; label: string }> = [
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const ANNOUNCEMENT_LEVELS: Array<{ value: AnnouncementLevel; label: string }> = lazyMessages([
   { value: "info", label: "Tin" },
-  { value: "update", label: "Cập nhật" },
-  { value: "warning", label: "Cảnh báo" },
-  { value: "critical", label: "Quan trọng" },
-];
+  { value: "update", label: msg`Cập nhật` },
+  { value: "warning", label: msg`Cảnh báo` },
+  { value: "critical", label: msg`Quan trọng` },
+]) as unknown as Array<{ value: AnnouncementLevel; label: string }>;
 
 const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
   info: "info",
@@ -57,12 +61,12 @@ const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
 
 type StatusKey = "draft" | "expired" | "scheduled" | "live";
 
-const STATUS_LABEL: Record<StatusKey, string> = {
-  draft: "Nháp",
-  expired: "Hết hạn",
-  scheduled: "Lên lịch",
-  live: "Đang đăng",
-};
+const STATUS_LABEL: Record<StatusKey, string> = lazyMessages({
+  draft: msg`Nháp`,
+  expired: msg`Hết hạn`,
+  scheduled: msg`Lên lịch`,
+  live: msg`Đang đăng`,
+}) as Record<StatusKey, string>;
 
 /** Nháp = xám; hết hạn = xám; lên lịch = vàng; đang đăng = xanh. */
 const STATUS_TONE: Record<StatusKey, ChipTone> = {
@@ -125,14 +129,14 @@ export function AnnouncementsAdminTab() {
     onSuccess: () => {
       invalidate();
       closePanel();
-      toast.success("Đã xoá tin");
+      toast.success(t`Đã xoá tin`);
     },
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   return (
     <div className="space-y-3">
-      <Fab onClick={() => setPanel({ mode: "new" })} label="Tin mới" />
+      <Fab onClick={() => setPanel({ mode: "new" })} label={t`Tin mới`} />
 
       <CollapsibleFilters
         activeCount={statusFilter ? 1 : 0}
@@ -140,16 +144,16 @@ export function AnnouncementsAdminTab() {
           setStatusFilter("");
           paging.patchAndResetPage({});
         }}
-        title="Lọc thông báo"
+        title={t`Lọc thông báo`}
         search={(toggle) => (
           <SearchInput
-            label="Tìm thông báo"
+            label={t`Tìm thông báo`}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
               paging.patchAndResetPage({});
             }}
-            placeholder="Tìm theo tiêu đề / nội dung…"
+            placeholder={t`Tìm theo tiêu đề / nội dung…`}
             rightSlot={toggle}
           />
         )}
@@ -161,11 +165,11 @@ export function AnnouncementsAdminTab() {
               setStatusFilter(e.target.value as StatusKey | "");
               paging.patchAndResetPage({});
             }}
-            aria-label="Lọc theo trạng thái"
+            aria-label={t`Lọc theo trạng thái`}
             icon={<IconTag />}
             className="h-11 w-full text-base"
           >
-            <option value="">Mọi trạng thái</option>
+            <option value="">{t`Mọi trạng thái`}</option>
             {(Object.keys(STATUS_LABEL) as StatusKey[]).map((s) => (
               <option key={s} value={s}>
                 {STATUS_LABEL[s]}
@@ -177,7 +181,7 @@ export function AnnouncementsAdminTab() {
 
       {listQ.isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
       {listQ.error && (
@@ -190,10 +194,10 @@ export function AnnouncementsAdminTab() {
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}
           title={
-            listQ.data?.length ? "Không có thông báo nào khớp" : "Chưa có thông báo nào"
+            listQ.data?.length ? t`Không có thông báo nào khớp` : t`Chưa có thông báo nào`
           }
           description={
-            listQ.data?.length ? "Thử bỏ bớt bộ lọc hoặc từ khoá." : "Bấm nút '+' để viết tin đầu tiên."
+            listQ.data?.length ? t`Thử bỏ bớt bộ lọc hoặc từ khoá.` : t`Bấm nút '+' để viết tin đầu tiên.`
           }
         />
       )}
@@ -226,7 +230,7 @@ export function AnnouncementsAdminTab() {
       <SidePanel
         open={panel !== null}
         title={
-          panel?.mode === "new" ? "Tin mới" : panel?.mode === "edit" ? "Sửa tin" : "Thông báo"
+          panel?.mode === "new" ? t`Tin mới` : panel?.mode === "edit" ? t`Sửa tin` : t`Thông báo`
         }
         subtitle={panel && panel.mode !== "new" ? panel.row.title : undefined}
         onClose={closePanel}
@@ -250,9 +254,9 @@ export function AnnouncementsAdminTab() {
               panel.mode === "edit"
                 ? async () => {
                     const ok = await confirm({
-                      title: `Xoá "${panel.row.title}"?`,
-                      description: "Hành động này không thể hoàn tác.",
-                      confirmLabel: "Xoá",
+                      title: t`Xoá "${panel.row.title}"?`,
+                      description: t`Hành động này không thể hoàn tác.`,
+                      confirmLabel: t`Xoá`,
                       destructive: true,
                     });
                     if (ok) deleteM.mutate(panel.row.id);
@@ -284,9 +288,9 @@ function AnnouncementRow({ row, onOpen }: { row: Announcement; onOpen: () => voi
           </p>
           {(row.published_at || row.expires_at) && (
             <p className="mt-0.5 text-xs text-muted-foreground/80">
-              {row.published_at && `Đăng ${fmt(row.published_at)}`}
+              {row.published_at && t`Đăng ${fmt(row.published_at)}`}
               {row.published_at && row.expires_at && " · "}
-              {row.expires_at && `Hết hạn ${fmt(row.expires_at)}`}
+              {row.expires_at && t`Hết hạn ${fmt(row.expires_at)}`}
             </p>
           )}
           <div className="mt-2 flex flex-wrap justify-end gap-1.5">
@@ -370,10 +374,10 @@ function AnnouncementForm({
       }
     },
     onSuccess: () => {
-      toast.success(row ? "Đã cập nhật tin" : "Đã tạo tin");
+      toast.success(row ? t`Đã cập nhật tin` : t`Đã tạo tin`);
       onSaved();
     },
-    onError: (e) => toast.error("Không lưu được", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   return (
@@ -387,7 +391,7 @@ function AnnouncementForm({
       <ReadOnlyFieldset readOnly={readOnly}>
         <div className="space-y-2">
           <Label htmlFor="ann-title" required>
-            Tiêu đề
+            {t`Tiêu đề`}
           </Label>
           <Input
             id="ann-title"
@@ -401,7 +405,7 @@ function AnnouncementForm({
 
         <div className="space-y-2">
           <Label htmlFor="ann-body" required>
-            Nội dung
+            {t`Nội dung`}
           </Label>
           <Textarea
             id="ann-body"
@@ -415,7 +419,7 @@ function AnnouncementForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="ann-level">Mức độ</Label>
+          <Label htmlFor="ann-level">{t`Mức độ`}</Label>
           <Select
             id="ann-level"
             icon={<IconBell />}
@@ -438,15 +442,15 @@ function AnnouncementForm({
             className="mt-1 h-4 w-4 shrink-0 accent-primary"
           />
           <span>
-            <span className="font-medium">Public — hiện ở /changelog</span>
+            <span className="font-medium">{t`Public — hiện ở /changelog`}</span>
             <span className="block text-sm text-muted-foreground">
-              Anon đọc được. Bật khi đây là cập nhật muốn quảng bá ra ngoài.
+              {t`Anon đọc được. Bật khi đây là cập nhật muốn quảng bá ra ngoài.`}
             </span>
           </span>
         </label>
 
         <div className="space-y-2">
-          <Label htmlFor="ann-published">Lịch đăng</Label>
+          <Label htmlFor="ann-published">{t`Lịch đăng`}</Label>
           <Input
             id="ann-published"
             icon={<IconCalendar />}
@@ -466,15 +470,17 @@ function AnnouncementForm({
               className="mt-1 h-4 w-4 shrink-0 accent-primary"
             />
             <span>
-              <span className="font-medium">Đăng ngay</span>
+              <span className="font-medium">{t`Đăng ngay`}</span>
               <span className="block text-sm text-muted-foreground">
+                <Trans>
                 Đăng khi bấm Lưu. Để trống lịch đăng và bỏ chọn = lưu nháp.
+                </Trans>
               </span>
             </span>
           </label>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="ann-expires">Hết hạn (tuỳ chọn)</Label>
+          <Label htmlFor="ann-expires">{t`Hết hạn (tuỳ chọn)`}</Label>
           <Input
             id="ann-expires"
             icon={<IconClock />}
@@ -492,7 +498,7 @@ function AnnouncementForm({
         onDelete={onDelete}
         saving={saveM.isPending}
         canSave={!!title.trim() && !!body.trim()}
-        saveLabel={row ? "Lưu" : "Tạo"}
+        saveLabel={row ? t`Lưu` : t`Tạo`}
       />
     </form>
   );

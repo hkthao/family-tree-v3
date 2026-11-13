@@ -37,7 +37,6 @@ import { queryKeys } from "@/lib/queries/keys";
 import { getKinshipIndex } from "@/lib/queries/kinship";
 import { listCemeteries } from "@/lib/queries/cemeteries";
 import {
-  ADDRESS_PLACEHOLDER,
   addOccupant,
   createRestingPlace,
   getRestingPlace,
@@ -359,7 +358,7 @@ export default function RestingPlaceForm({
               icon={<IconMapPin />}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder={ADDRESS_PLACEHOLDER}
+              placeholder={t`vd: xã …, huyện …, tỉnh …`}
             />
           </div>
 

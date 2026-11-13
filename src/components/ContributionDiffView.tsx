@@ -234,7 +234,7 @@ function AddPersonDiff({ payload }: { payload: AddPersonPayload }) {
   const relation = payload.relation
     ? payload.relation.as === "spouse"
       ? t`Vợ / chồng`
-      : "Con"
+      : t`Con`
     : null;
   return (
     <div className="rounded-md border border-primary/40 bg-primary/5 p-4 space-y-2 text-sm">

@@ -26,6 +26,8 @@ import {
 } from "@/lib/queries/admin";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 export function GiaPhaImportTab() {
   const qc = useQueryClient();
   const toast = useToast();
@@ -65,16 +67,16 @@ export function GiaPhaImportTab() {
       let scraped = prog?.scraped ?? 0;
       while (status === "scraping") {
         if (cancelRef.current) {
-          toast.info("Đã tạm dừng — có thể tiếp tục sau.");
+          toast.info(t`Đã tạm dừng — có thể tiếp tục sau.`);
           setRunning(false);
           return;
         }
         const r = await giaPhaImportStep(jobId);
         status = r.status;
         scraped = r.scraped;
-        setProg({ scraped, total: r.total, phase: "Đang tải dữ liệu" });
+        setProg({ scraped, total: r.total, phase: t`Đang tải dữ liệu` });
       }
-      setProg({ scraped, total, phase: "Đang ghi vào dòng họ" });
+      setProg({ scraped, total, phase: t`Đang ghi vào dòng họ` });
       const res = await giaPhaImportFinalize(jobId);
       setResult(res);
       setResultClanName(clanName);
@@ -82,11 +84,11 @@ export function GiaPhaImportTab() {
       setResumeJob(null);
       setProg(null);
       qc.invalidateQueries({ queryKey: queryKeys.adminClans() });
-      toast.success("Đã nhập gia phả", {
-        description: `${res.counts.persons} người · ${res.counts.families} gia đình`,
+      toast.success(t`Đã nhập gia phả`, {
+        description: t`${res.counts.persons} người · ${res.counts.families} gia đình`,
       });
     } catch (e) {
-      toast.error("Nhập thất bại", { description: (e as Error).message });
+      toast.error(t`Nhập thất bại`, { description: (e as Error).message });
     } finally {
       setRunning(false);
     }
@@ -105,10 +107,10 @@ export function GiaPhaImportTab() {
       });
       const ls = { jobId: job.jobId, total: job.total, clanName: job.clanName };
       localStorage.setItem(LS_KEY, JSON.stringify(ls));
-      setProg({ scraped: 0, total: job.total, phase: "Đang tải dữ liệu" });
+      setProg({ scraped: 0, total: job.total, phase: t`Đang tải dữ liệu` });
       await runJob(job.jobId, job.total, job.clanName);
     } catch (e) {
-      toast.error("Không bắt đầu được", { description: (e as Error).message });
+      toast.error(t`Không bắt đầu được`, { description: (e as Error).message });
       setRunning(false);
     }
   }
@@ -127,23 +129,25 @@ export function GiaPhaImportTab() {
     mutationFn: () => wipeClanDirectory(wipeClanId),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: queryKeys.adminClans() });
-      toast.success("Đã xoá toàn bộ danh bạ", {
-        description: `${r.deleted_persons} người · ${r.deleted_families} gia đình`,
+      toast.success(t`Đã xoá toàn bộ danh bạ`, {
+        description: t`${r.deleted_persons} người · ${r.deleted_families} gia đình`,
       });
       setConfirmText("");
     },
-    onError: (e) => toast.error("Xoá thất bại", { description: (e as Error).message }),
+    onError: (e) => toast.error(t`Xoá thất bại`, { description: (e as Error).message }),
   });
 
   return (
     <section className="space-y-4">
       {/* ── Import ── */}
       <div className="space-y-3 rounded-lg border p-4">
-        <h2 className="text-lg font-semibold">Nhập từ vietnamgiapha.com</h2>
+        <h2 className="text-lg font-semibold">{t`Nhập từ vietnamgiapha.com`}</h2>
         <p className="text-sm text-muted-foreground">
+          <Trans>
           Dán link gia phả (vd <code>https://vietnamgiapha.com/XemGiaPha/1691/giapha.html</code>)
           rồi bấm Tạo. Hệ thống tự tải, bóc tách và tạo danh bạ. Quá trình
           có thể mất 30–60 giây.
+          </Trans>
         </p>
 
         <div className="flex flex-wrap gap-1.5">
@@ -154,13 +158,13 @@ export function GiaPhaImportTab() {
               onClick={() => setMode(m)}
               className={`px-3 h-9 rounded-md border text-sm ${mode === m ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted/40"}`}
             >
-              {m === "new" ? "Tạo dòng họ mới" : "Nhập vào dòng họ có sẵn"}
+              {m === "new" ? t`Tạo dòng họ mới` : t`Nhập vào dòng họ có sẵn`}
             </button>
           ))}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="src-url">Link gia phả</Label>
+          <Label htmlFor="src-url">{t`Link gia phả`}</Label>
           <Input
             id="src-url"
             icon={<IconLink />}
@@ -172,29 +176,29 @@ export function GiaPhaImportTab() {
 
         {mode === "new" ? (
           <div className="space-y-1.5">
-            <Label htmlFor="new-name">Tên dòng họ (bỏ trống = tự lấy từ nguồn)</Label>
+            <Label htmlFor="new-name">{t`Tên dòng họ (bỏ trống = tự lấy từ nguồn)`}</Label>
             <Input
               id="new-name"
               icon={<IconBuildings />}
               value={newClanName}
               onChange={(e) => setNewClanName(e.target.value)}
-              placeholder="vd: Chi họ Cao Minh Triết"
+              placeholder={t`vd: Chi họ Cao Minh Triết`}
             />
           </div>
         ) : (
           <div className="space-y-2">
             <div className="space-y-1.5">
-              <Label htmlFor="target-clan">Dòng họ đích</Label>
+              <Label htmlFor="target-clan">{t`Dòng họ đích`}</Label>
               <Select
                 id="target-clan"
                 icon={<IconBuildings />}
                 value={targetClanId}
                 onChange={(e) => setTargetClanId(e.target.value)}
               >
-                <option value="">— Chọn dòng họ —</option>
+                <option value="">{t`— Chọn dòng họ —`}</option>
                 {clans.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({c.person_count} người)
+                    {t`${c.name} (${c.person_count} người)`}
                   </option>
                 ))}
               </Select>
@@ -207,7 +211,7 @@ export function GiaPhaImportTab() {
                 className="mt-1 h-4 w-4 accent-primary"
               />
               <span>
-                Xoá toàn bộ danh bạ hiện tại của dòng họ này <strong>trước khi</strong> nhập
+                Xoá toàn bộ danh bạ hiện tại của dòng họ này <strong>{t`trước khi`}</strong> nhập
                 (tránh trùng lặp khi nhập lại).
               </span>
             </label>
@@ -227,10 +231,10 @@ export function GiaPhaImportTab() {
                 onClick={() => runJob(resumeJob.jobId, resumeJob.total, resumeJob.clanName)}
               >
                 <IconPlay className="h-4 w-4 mr-1.5" />
-                Tiếp tục nhập
+                {t`Tiếp tục nhập`}
               </Button>
               <Button size="sm" variant="ghost" onClick={dismissResume}>
-                Bỏ qua
+                {t`Bỏ qua`}
               </Button>
             </AlertDescription>
           </Alert>
@@ -243,14 +247,14 @@ export function GiaPhaImportTab() {
             onClick={startImport}
           >
             <IconDownload className="h-4 w-4 mr-1.5" />
-            Tạo
+            {t`Tạo`}
           </Button>
         ) : (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                {prog?.phase ?? "Đang xử lý"}
-                {prog ? ` — ${prog.scraped}/${prog.total} người` : "…"}
+                {prog?.phase ?? t`Đang xử lý`}
+                {prog ? t` — ${prog.scraped}/${prog.total} người` : "…"}
               </span>
               <Button
                 size="sm"
@@ -260,7 +264,7 @@ export function GiaPhaImportTab() {
                 }}
               >
                 <IconX className="h-4 w-4 mr-1.5" />
-                Tạm dừng
+                {t`Tạm dừng`}
               </Button>
             </div>
             {prog && prog.total > 0 && (
@@ -272,8 +276,8 @@ export function GiaPhaImportTab() {
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau —
-              tiến độ được lưu trên máy chủ.
+              <Trans>Gia phả lớn có thể mất vài phút. Có thể tạm dừng rồi tiếp tục sau —
+              tiến độ được lưu trên máy chủ.</Trans>
             </p>
           </div>
         )}
@@ -284,14 +288,14 @@ export function GiaPhaImportTab() {
               ✓ Đã nhập <strong>{result.counts.persons}</strong> người ·{" "}
               <strong>{result.counts.families}</strong> gia đình vào{" "}
               <Link to={`/clans/${result.clanId}`} className="text-primary underline">
-                {resultClanName ?? "dòng họ"}
+                {resultClanName ?? t`dòng họ`}
               </Link>
               .
               {(result.warnings.ambiguousMothers > 0 || result.warnings.missingGender > 0) && (
                 <span className="block mt-1 text-muted-foreground">
                   Cần rà lại: {result.warnings.ambiguousMothers} con mẹ chưa chắc
                   (mặc định vợ cả)
-                  {result.warnings.missingGender > 0 && `, ${result.warnings.missingGender} thiếu giới tính`}
+                  {result.warnings.missingGender > 0 && t`, ${result.warnings.missingGender} thiếu giới tính`}
                   . {result.warnings.note}
                 </span>
               )}
@@ -303,19 +307,21 @@ export function GiaPhaImportTab() {
       {/* ── Danger: wipe directory ── */}
       <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
         <h2 className="text-lg font-semibold text-destructive">
-          Xoá toàn bộ danh bạ (nguy hiểm)
+          {t`Xoá toàn bộ danh bạ (nguy hiểm)`}
         </h2>
         <Alert variant="destructive">
+          <Trans>
           <AlertDescription>
-            <strong>Hành động không thể hoàn tác.</strong> Xoá vĩnh viễn{" "}
-            <strong>tất cả người và quan hệ gia đình</strong> trong dòng họ đã
+            <strong>{t`Hành động không thể hoàn tác.`}</strong> Xoá vĩnh viễn{" "}
+            <strong>{t`tất cả người và quan hệ gia đình`}</strong> trong dòng họ đã
             chọn — KHÔNG khôi phục được từ nhật ký. Dòng họ, thành viên và cài
             đặt vẫn giữ nguyên. Chỉ dùng khi muốn nhập lại từ đầu.
           </AlertDescription>
+          </Trans>
         </Alert>
 
         <div className="space-y-1.5">
-          <Label htmlFor="wipe-clan">Dòng họ cần xoá danh bạ</Label>
+          <Label htmlFor="wipe-clan">{t`Dòng họ cần xoá danh bạ`}</Label>
           <Select
             id="wipe-clan"
             icon={<IconBuildings />}
@@ -325,10 +331,10 @@ export function GiaPhaImportTab() {
               setConfirmText("");
             }}
           >
-            <option value="">— Chọn dòng họ —</option>
+            <option value="">{t`— Chọn dòng họ —`}</option>
             {clans.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.name} ({c.person_count} người)
+                {t`${c.name} (${c.person_count} người)`}
               </option>
             ))}
           </Select>
@@ -337,8 +343,10 @@ export function GiaPhaImportTab() {
         {wipeClan && (
           <div className="space-y-1.5">
             <Label htmlFor="wipe-confirm">
+              <Trans>
               Gõ đúng tên dòng họ <strong>“{wipeClan.name}”</strong> để xác nhận
               xoá {wipeClan.person_count} người:
+              </Trans>
             </Label>
             <Input
               id="wipe-confirm"
@@ -357,7 +365,7 @@ export function GiaPhaImportTab() {
           onClick={() => wipeM.mutate()}
         >
           <IconTrash className="h-4 w-4 mr-1.5" />
-          {wipeM.isPending ? "Đang xoá…" : "Xoá toàn bộ danh bạ"}
+          {wipeM.isPending ? t`Đang xoá…` : t`Xoá toàn bộ danh bạ`}
         </Button>
       </div>
     </section>

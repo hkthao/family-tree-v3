@@ -12,6 +12,8 @@ import {
   IconSparkles,
   IconUsers,
 } from "@/components/icons";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 /**
  * SỔ ĐĂNG KÝ các màn quản trị — một nguồn sự thật duy nhất.
@@ -40,71 +42,71 @@ export interface AdminScreen {
   legacyTab: string;
 }
 
-export const ADMIN_AREA_LABEL: Record<AdminArea, string> = {
-  report: "Báo cáo & theo dõi",
-  settings: "Cài đặt & nội dung",
-};
+export const ADMIN_AREA_LABEL: Record<AdminArea, string> = lazyMessages({
+  report: msg`Báo cáo & theo dõi`,
+  settings: msg`Cài đặt & nội dung`,
+}) as Record<AdminArea, string>;
 
-export const ADMIN_AREA_HINT: Record<AdminArea, string> = {
-  report: "Mở ra xem, hầu như chỉ đọc.",
-  settings: "Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng thật.",
-};
+export const ADMIN_AREA_HINT: Record<AdminArea, string> = lazyMessages({
+  report: msg`Mở ra xem, hầu như chỉ đọc.`,
+  settings: msg`Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng thật.`,
+}) as Record<AdminArea, string>;
 
 const ic = "h-6 w-6";
 
-export const ADMIN_SCREENS: AdminScreen[] = [
+export const ADMIN_SCREENS: AdminScreen[] = lazyMessages([
   {
     slug: "he-thong",
-    label: "Hệ thống",
-    description: "Sức khoẻ database, cron, thông báo gửi hỏng.",
+    label: msg`Hệ thống`,
+    description: msg`Sức khoẻ database, cron, thông báo gửi hỏng.`,
     icon: <IconShield className={ic} />,
     area: "report",
     legacyTab: "health",
   },
   {
     slug: "nguoi-dung",
-    label: "Người dùng",
-    description: "Tìm người, xem dòng họ của họ, chỉnh giới hạn.",
+    label: msg`Người dùng`,
+    description: msg`Tìm người, xem dòng họ của họ, chỉnh giới hạn.`,
     icon: <IconUsers className={ic} />,
     area: "report",
     legacyTab: "users",
   },
   {
     slug: "dong-ho",
-    label: "Dòng họ",
-    description: "Giới hạn người, tài khoản và lượt trợ lý theo dòng họ.",
+    label: msg`Dòng họ`,
+    description: msg`Giới hạn người, tài khoản và lượt trợ lý theo dòng họ.`,
     icon: <IconBuildings className={ic} />,
     area: "report",
     legacyTab: "clans",
   },
   {
     slug: "gop-y",
-    label: "Góp ý",
-    description: "Góp ý và báo lỗi người dùng gửi lên.",
+    label: msg`Góp ý`,
+    description: msg`Góp ý và báo lỗi người dùng gửi lên.`,
     icon: <IconMail className={ic} />,
     area: "report",
     legacyTab: "feedback",
   },
   {
     slug: "tro-ly-ai",
-    label: "Trợ lý AI",
-    description: "Lượt hỏi, chi phí, độ trễ, hạn mức đang dùng.",
+    label: msg`Trợ lý AI`,
+    description: msg`Lượt hỏi, chi phí, độ trễ, hạn mức đang dùng.`,
     icon: <IconSparkles className={ic} />,
     area: "report",
     legacyTab: "ai_usage",
   },
   {
     slug: "cau-hinh",
-    label: "Cấu hình nền tảng",
-    description: "Linh vật, dòng họ demo.",
+    label: msg`Cấu hình nền tảng`,
+    description: msg`Linh vật, dòng họ demo.`,
     icon: <IconSettings className={ic} />,
     area: "settings",
     legacyTab: "config",
   },
   {
     slug: "cau-hinh-ai",
-    label: "Cấu hình trợ lý AI",
-    description: "Bật/tắt, chọn model, khoá API, hạn mức và trần chi phí.",
+    label: msg`Cấu hình trợ lý AI`,
+    description: msg`Bật/tắt, chọn model, khoá API, hạn mức và trần chi phí.`,
     icon: <IconSparkles className={ic} />,
     area: "settings",
     legacyTab: "ai",
@@ -112,36 +114,36 @@ export const ADMIN_SCREENS: AdminScreen[] = [
   {
     slug: "podcast",
     label: "Podcast",
-    description: "Các tập kéo từ Facebook: ẩn/hiện, sửa tiêu đề, đồng bộ.",
+    description: msg`Các tập kéo từ Facebook: ẩn/hiện, sửa tiêu đề, đồng bộ.`,
     icon: <IconMicrophone className={ic} />,
     area: "settings",
     legacyTab: "podcast",
   },
   {
     slug: "thong-bao",
-    label: "Thông báo",
-    description: "Viết thông báo hiện cho toàn bộ người dùng.",
+    label: msg`Thông báo`,
+    description: msg`Viết thông báo hiện cho toàn bộ người dùng.`,
     icon: <IconBell className={ic} />,
     area: "settings",
     legacyTab: "announcements",
   },
   {
     slug: "danh-muc-dia-gioi",
-    label: "Danh mục địa giới",
-    description: "Tỉnh/thành và xã/phường dùng cho ô chọn địa chỉ.",
+    label: msg`Danh mục địa giới`,
+    description: msg`Tỉnh/thành và xã/phường dùng cho ô chọn địa chỉ.`,
     icon: <IconMapPin className={ic} />,
     area: "settings",
     legacyTab: "divisions",
   },
   {
     slug: "nhap-gia-pha",
-    label: "Nhập gia phả",
-    description: "Nhập dữ liệu từ nguồn ngoài vào một dòng họ.",
+    label: msg`Nhập gia phả`,
+    description: msg`Nhập dữ liệu từ nguồn ngoài vào một dòng họ.`,
     icon: <IconScroll className={ic} />,
     area: "settings",
     legacyTab: "giapha",
   },
-];
+]) as unknown as AdminScreen[];
 
 export const adminPath = (slug: string) => `/admin/${slug}`;
 

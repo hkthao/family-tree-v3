@@ -22,7 +22,7 @@ import { lazyMessages } from "@/lib/i18n/lazy";
  * announcements ngắn, không cần thêm comments hay action.
  */
 const LEVEL_LABEL: Record<AnnouncementLevel, string> = lazyMessages({
-  info: "Tin",
+  info: msg`Tin`,
   update: msg`Cập nhật`,
   warning: msg`Cảnh báo`,
   critical: msg`Quan trọng`,

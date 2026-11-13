@@ -1,3 +1,4 @@
+import { lazyAs } from "@/lib/i18n/lazy";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
@@ -64,13 +65,13 @@ const LAYER_ICON: Record<
   graves: IconGrave,
   heritage: IconScroll,
 };
-const MISSING_HINT: Record<MapLayer, string> = {
-  people: 'Mở Danh bạ → chọn người → "Sửa" và nhập thẻ "Nơi ở hiện tại".',
+const MISSING_HINT: Record<MapLayer, string> = lazyAs<Record<MapLayer, string>>({
+  people: msg`Mở Danh bạ → chọn người → "Sửa" và nhập thẻ "Nơi ở hiện tại".`,
   graves:
-    "Mở Mộ phần & tro cốt → sửa từng nơi và chọn Tỉnh / Xã ở mục Khu vực.",
+    msg`Mở Mộ phần & tro cốt → sửa từng nơi và chọn Tỉnh / Xã ở mục Khu vực.`,
   heritage:
-    "Mở Di sản dòng họ → sửa mục kiểu nơi chốn và chọn Tỉnh / Xã ở mục Khu vực.",
-};
+    msg`Mở Di sản dòng họ → sửa mục kiểu nơi chốn và chọn Tỉnh / Xã ở mục Khu vực.`,
+});
 
 /**
  * Bản đồ dòng họ: số người / mộ phần / di sản theo tỉnh. Chỉ thành viên dòng họ xem được (hàm
@@ -466,13 +467,13 @@ export default function MapStats() {
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 <Chip tone="success" icon={<IconMapPin />}>
-                  Có khu vực: {have}
+                  {t`Có khu vực: ${have}`}
                 </Chip>
                 <Chip
                   tone={missing > 0 ? "warning" : "neutral"}
                   icon={<IconMapPin />}
                 >
-                  Thiếu khu vực: {missing}
+                  {t`Thiếu khu vực: ${missing}`}
                 </Chip>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -551,7 +552,7 @@ export default function MapStats() {
                   variant="outline"
                   onClick={() => setShown((n) => n + 30)}
                 >
-                  Hiện thêm ({listItems.length - shown})
+                  {t`Hiện thêm (${listItems.length - shown})`}
                 </Button>
               </div>
             )}

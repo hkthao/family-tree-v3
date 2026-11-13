@@ -73,7 +73,7 @@ export default function KhoeCard() {
             <div className="rounded-xl border bg-card p-4 text-center space-y-3">
               <p className="text-sm text-muted-foreground">
                 <Trans>
-                Trang này được tạo từ{" "}
+                Trang này được tạo từ
                 <span className="font-medium text-foreground">Dòng Họ Việt</span>{" "}
                 — nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của
                 dòng họ.

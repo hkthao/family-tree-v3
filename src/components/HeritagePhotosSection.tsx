@@ -149,7 +149,7 @@ export function HeritagePhotosSection({
     <section className="space-y-2">
       <h3 className="inline-flex items-center gap-2 text-base font-semibold">
         <IconCamera className="h-5 w-5" />
-        Hình ảnh{photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}
+        {t`Hình ảnh`}{photos.length > 0 ? ` (${photos.length}/${MAX_PHOTOS})` : ""}
       </h3>
 
       {photos.length === 0 ? (

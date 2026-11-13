@@ -522,7 +522,7 @@ function InlawLine({
   return (
     <p className={className} title={t`Đã kết thông gia với: ${names}`}>
       <IconLink className="inline h-3 w-3 mr-1 -mt-0.5" />
-      Thông gia: {names}
+      {t`Thông gia: ${names}`}
     </p>
   );
 }

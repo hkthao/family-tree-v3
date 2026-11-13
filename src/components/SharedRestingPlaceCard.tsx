@@ -84,7 +84,7 @@ export function SharedRestingPlaceCard({
       {rp.occupants.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Người an nghỉ ({rp.occupants.length})</CardTitle>
+            <CardTitle>{t`Người an nghỉ (${rp.occupants.length})`}</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-1.5">

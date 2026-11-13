@@ -358,12 +358,12 @@ export default function Heritage() {
                           )}
                           {i.photo_count > 0 && (
                             <Chip tone="rose" icon={<IconCamera />}>
-                              {i.photo_count} ảnh
+                              {t`${i.photo_count} ảnh`}
                             </Chip>
                           )}
                           {i.audio_count > 0 && (
                             <Chip tone="orange" icon={<IconMicrophone />}>
-                              {i.audio_count} ghi âm
+                              {t`${i.audio_count} ghi âm`}
                             </Chip>
                           )}
                           {i.video_count > 0 && (
@@ -373,7 +373,7 @@ export default function Heritage() {
                           )}
                           {i.people_count > 0 && (
                             <Chip tone="success" icon={<IconUsers />}>
-                              {i.people_count} người
+                              {t`${i.people_count} người`}
                             </Chip>
                           )}
                         </div>

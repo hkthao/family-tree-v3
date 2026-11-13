@@ -116,7 +116,7 @@ export function MapOverviewCard({ clanId }: { clanId: string }) {
             {nothing ? (
               <p className="text-sm text-muted-foreground">
                 <Trans>
-                Chưa có dữ liệu khu vực. Nhập{" "}
+                Chưa có dữ liệu khu vực. Nhập
                 <strong>"Nơi ở hiện tại"</strong> cho từng người trong Danh
                 bạ (hoặc chọn Tỉnh / Xã cho mộ phần, di sản) để con cháu hiện
                 lên bản đồ.

@@ -1,4 +1,6 @@
 import type { FamilyForTree, PersonForTree } from "@/lib/queries/tree";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 /** Kích thước một thẻ người trên canvas (đơn vị canvas, chưa zoom). */
 export const NODE_W = 150;
@@ -13,12 +15,12 @@ export type NodeFrame = "gold" | "wine" | "jade" | "none";
 
 export type CardDesign = "classic" | "royal" | "minimal" | "plaque";
 
-export const CARD_DESIGNS: Array<{ id: CardDesign; label: string }> = [
-  { id: "classic", label: "Cổ điển" },
-  { id: "royal", label: "Hoàng gia" },
-  { id: "minimal", label: "Tối giản" },
-  { id: "plaque", label: "Bài vị" },
-];
+export const CARD_DESIGNS: Array<{ id: CardDesign; label: string }> = lazyMessages([
+  { id: "classic", label: msg`Cổ điển` },
+  { id: "royal", label: msg`Hoàng gia` },
+  { id: "minimal", label: msg`Tối giản` },
+  { id: "plaque", label: msg`Bài vị` },
+]) as unknown as Array<{ id: CardDesign; label: string }>;
 
 export const CANVAS_FONTS: Array<{ id: string; label: string; family: string }> = [
   { id: "be", label: "Be Vietnam Pro", family: '"Be Vietnam Pro", system-ui, sans-serif' },
@@ -650,17 +652,17 @@ export interface LinkPreset {
   zigzag?: boolean;
 }
 
-export const LINK_PRESETS: LinkPreset[] = [
-  { id: "straight", label: "Thẳng", style: "straight", dash: false, arrow: "none" },
-  { id: "straight-arrow", label: "Thẳng có mũi tên", style: "straight", dash: false, arrow: "end" },
-  { id: "step", label: "Vuông góc", style: "step", dash: false, arrow: "none" },
-  { id: "step-arrow", label: "Vuông góc có mũi tên", style: "step", dash: false, arrow: "end" },
+export const LINK_PRESETS: LinkPreset[] = lazyMessages([
+  { id: "straight", label: msg`Thẳng`, style: "straight", dash: false, arrow: "none" },
+  { id: "straight-arrow", label: msg`Thẳng có mũi tên`, style: "straight", dash: false, arrow: "end" },
+  { id: "step", label: msg`Vuông góc`, style: "step", dash: false, arrow: "none" },
+  { id: "step-arrow", label: msg`Vuông góc có mũi tên`, style: "step", dash: false, arrow: "end" },
   { id: "curve", label: "Cong", style: "bezier", dash: false, arrow: "none" },
-  { id: "curve-arrow", label: "Cong có mũi tên", style: "bezier", dash: false, arrow: "end" },
-  { id: "zigzag", label: "Gấp khúc", style: "straight", dash: false, arrow: "none", zigzag: true },
-  { id: "dashed", label: "Nét đứt", style: "straight", dash: true, arrow: "none" },
-  { id: "dashed-curve", label: "Cong nét đứt", style: "bezier", dash: true, arrow: "both" },
-];
+  { id: "curve-arrow", label: msg`Cong có mũi tên`, style: "bezier", dash: false, arrow: "end" },
+  { id: "zigzag", label: msg`Gấp khúc`, style: "straight", dash: false, arrow: "none", zigzag: true },
+  { id: "dashed", label: msg`Nét đứt`, style: "straight", dash: true, arrow: "none" },
+  { id: "dashed-curve", label: msg`Cong nét đứt`, style: "bezier", dash: true, arrow: "both" },
+]) as unknown as LinkPreset[];
 
 /** Các điểm uốn so le (±amp, vuông góc với đoạn a→b) chia đoạn thành `segments` phần. */
 export function zigzagPoints(a: Pt, b: Pt, amp = 22, segments = 4): Pt[] {

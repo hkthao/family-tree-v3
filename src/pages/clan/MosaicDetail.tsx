@@ -202,9 +202,8 @@ export default function MosaicDetail() {
         title={mosaic.title}
         description={
           mosaic.description ||
-          `${tiles.length}/${mosaic.slots} mảnh · mỗi người góp tối đa ${mosaic.max_per_member}${
-            mosaic.status === "closed" ? t` · đã đóng` : ""
-          }`
+          t`${tiles.length}/${mosaic.slots} mảnh · mỗi người góp tối đa ${mosaic.max_per_member}` +
+            (mosaic.status === "closed" ? t` · đã đóng` : "")
         }
       />
 
@@ -227,7 +226,7 @@ export default function MosaicDetail() {
             ) : (
               <IconGrid className="mr-1.5 h-4 w-4" />
             )}
-            {arrange ? "Xong" : t`Sắp xếp`}
+            {arrange ? t`Xong` : t`Sắp xếp`}
           </Button>
         )}
         <SegmentedControl ariaLabel={t`Kiểu hiển thị`}>

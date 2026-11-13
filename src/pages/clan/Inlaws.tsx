@@ -182,13 +182,13 @@ export default function Inlaws() {
           active={tab === "confirmed"}
           onClick={() => setTab("confirmed")}
         >
-          Đã liên kết ({confirmed.length})
+          {t`Đã liên kết (${confirmed.length})`}
         </SegmentedButton>
         <SegmentedButton
           active={tab === "pending"}
           onClick={() => setTab("pending")}
         >
-          Đang chờ ({pendingTotal})
+          {t`Đang chờ (${pendingTotal})`}
         </SegmentedButton>
       </SegmentedControl>
 

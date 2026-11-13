@@ -43,6 +43,8 @@ import {
   type KeyStatus,
 } from "@/lib/queries/aiAdmin";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Quản trị › Trợ lý AI — cắm khoá nhà cung cấp và kiểm tra kết nối.
  *
@@ -66,13 +68,13 @@ export function AiSettingsTab() {
   const saveLimits = useMutation({
     mutationFn: (next: AiLimits) => setAiLimits(next),
     onSuccess: () => {
-      toast.success("Đã lưu hạn mức");
+      toast.success(t`Đã lưu hạn mức`);
       setLimits(null);
       qc.invalidateQueries({ queryKey: ["ai-limits"] });
       qc.invalidateQueries({ queryKey: ["ai-spend-today"] });
     },
     onError: (e: Error) =>
-      toast.error("Không lưu được", { description: e.message }),
+      toast.error(t`Không lưu được`, { description: e.message }),
   });
   const current = limits ?? limitsQ.data ?? null;
   // Chi phí hôm nay — để ngắt mạch không phải là hộp đen.
@@ -88,18 +90,18 @@ export function AiSettingsTab() {
     onSuccess: (_, on) => {
       qc.invalidateQueries({ queryKey: ["ai-config"] });
       qc.invalidateQueries({ queryKey: ["ai-enabled"] });
-      toast.success(on ? "Đã bật trợ lý" : "Đã tắt trợ lý");
+      toast.success(on ? t`Đã bật trợ lý` : t`Đã tắt trợ lý`);
     },
-    onError: (e: Error) => toast.error("Không đổi được", { description: e.message }),
+    onError: (e: Error) => toast.error(t`Không đổi được`, { description: e.message }),
   });
 
   const changeModel = useMutation({
     mutationFn: setQaModel,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["ai-config"] });
-      toast.success("Đã đổi model");
+      toast.success(t`Đã đổi model`);
     },
-    onError: (e: Error) => toast.error("Không đổi được", { description: e.message }),
+    onError: (e: Error) => toast.error(t`Không đổi được`, { description: e.message }),
   });
 
   const statusQ = useQuery({
@@ -124,16 +126,16 @@ export function AiSettingsTab() {
       setDrafts((d) => ({ ...d, [p]: "" }));
       invalidate();
       if (res.test.ok) {
-        toast.success("Đã lưu và kết nối được", {
-          description: `Nhà cung cấp trả lời sau ${res.test.ms}ms.`,
+        toast.success(t`Đã lưu và kết nối được`, {
+          description: t`Nhà cung cấp trả lời sau ${res.test.ms}ms.`,
         });
       } else {
-        toast.error("Đã lưu nhưng kết nối thất bại", {
-          description: res.test.error ?? "Kiểm tra lại khoá.",
+        toast.error(t`Đã lưu nhưng kết nối thất bại`, {
+          description: res.test.error ?? t`Kiểm tra lại khoá.`,
         });
       }
     },
-    onError: (e: Error) => toast.error("Không lưu được", { description: e.message }),
+    onError: (e: Error) => toast.error(t`Không lưu được`, { description: e.message }),
   });
 
   const test = useMutation({
@@ -141,28 +143,28 @@ export function AiSettingsTab() {
     onSuccess: (res) => {
       invalidate();
       if (res.test.ok) {
-        toast.success("Kết nối tốt", {
+        toast.success(t`Kết nối tốt`, {
           description: `${res.test.model} · ${res.test.ms}ms`,
         });
       } else {
-        toast.error("Không kết nối được", {
-          description: res.test.error ?? "Không rõ nguyên nhân.",
+        toast.error(t`Không kết nối được`, {
+          description: res.test.error ?? t`Không rõ nguyên nhân.`,
         });
       }
     },
-    onError: (e: Error) => toast.error("Lỗi kiểm tra", { description: e.message }),
+    onError: (e: Error) => toast.error(t`Lỗi kiểm tra`, { description: e.message }),
   });
 
   const remove = useMutation({
     mutationFn: (p: AiProvider) => deleteProviderKey(p),
     onSuccess: () => {
       invalidate();
-      toast.success("Đã xoá khoá");
+      toast.success(t`Đã xoá khoá`);
     },
-    onError: (e: Error) => toast.error("Không xoá được", { description: e.message }),
+    onError: (e: Error) => toast.error(t`Không xoá được`, { description: e.message }),
   });
 
-  if (statusQ.isLoading) return <LoadingState label="Đang tải cấu hình…" />;
+  if (statusQ.isLoading) return <LoadingState label={t`Đang tải cấu hình…`} />;
 
   // Frontend có thể lên trước database: prod là Supabase tự host, migration
   // áp bằng tay. Hiện hướng dẫn thay vì quăng lỗi PostgREST thô.
@@ -171,7 +173,7 @@ export function AiSettingsTab() {
   if (statusQ.error) {
     return (
       <ErrorState
-        title="Không tải được cấu hình"
+        title={t`Không tải được cấu hình`}
         error={statusQ.error}
         onRetry={() => statusQ.refetch()}
       />
@@ -181,16 +183,20 @@ export function AiSettingsTab() {
   return (
     <div className="flex flex-col gap-5">
       <div className="rounded-lg border bg-secondary/40 p-4 text-sm">
-        <p className="mb-1 font-semibold">Khoá được mã hoá trước khi lưu</p>
+        <p className="mb-1 font-semibold">{t`Khoá được mã hoá trước khi lưu`}</p>
         <p className="text-muted-foreground">
+          <Trans>
           Khoá mã hoá bằng AES-256-GCM ngay tại máy chủ hàm, khoá giải mã nằm ở biến
           môi trường <code>AI_KEY_ENCRYPTION_KEY</code> — cơ sở dữ liệu không bao giờ
           thấy khoá gốc. Cách này chặn được rò rỉ qua bản sao lưu hay truy vấn nhầm;
-          nó <b>không</b> chặn được người đã vào được máy chủ.
+          nó <b>{t`không`}</b> chặn được người đã vào được máy chủ.
+          </Trans>
         </p>
         <p className="mt-2 text-muted-foreground">
+          <Trans>
           Đổi <code>AI_KEY_ENCRYPTION_KEY</code> sẽ làm mọi khoá đã lưu không giải mã
           được nữa — phải nhập lại ở đây.
+          </Trans>
         </p>
       </div>
 
@@ -198,17 +204,17 @@ export function AiSettingsTab() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <IconSparkles className="h-5 w-5 text-primary" />
-            Công tắc tổng
+            {t`Công tắc tổng`}
           </CardTitle>
           <CardDescription>
-            Tắt thì trợ lý ẩn hoàn toàn với mọi dòng họ, kể cả dòng họ đã bật
-            tính năng. Mặc định tắt.
+            <Trans>Tắt thì trợ lý ẩn hoàn toàn với mọi dòng họ, kể cả dòng họ đã bật
+            tính năng. Mặc định tắt.</Trans>
           </CardDescription>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-2">
           <label htmlFor="qa-model" className="text-sm font-medium">
-            Model cho hỏi đáp
+            {t`Model cho hỏi đáp`}
           </label>
           <Select
             icon={<IconSparkles />}
@@ -225,14 +231,14 @@ export function AiSettingsTab() {
             ))}
           </Select>
           <p className="text-xs text-muted-foreground">
-            Phải có khoá của nhà cung cấp tương ứng ở dưới thì model mới chạy.
+            {t`Phải có khoá của nhà cung cấp tương ứng ở dưới thì model mới chạy.`}
           </p>
         </CardContent>
 
         {/* Hành động nằm ở footer — xem docs/design-language.md. */}
         <CardFooter className="justify-between gap-3 border-t pt-4">
           <span className="text-sm text-muted-foreground">
-            {configQ.data?.enabled ? "Trợ lý đang bật" : "Trợ lý đang tắt"}
+            {configQ.data?.enabled ? t`Trợ lý đang bật` : t`Trợ lý đang tắt`}
             {spendQ.data && spendQ.data.capUsd > 0 && (
               <>
                 {" · hôm nay "}
@@ -242,7 +248,7 @@ export function AiSettingsTab() {
                       ? "font-medium text-destructive"
                       : "tabular-nums"
                   }
-                  title="Chạm trần thì trợ lý tự nghỉ tới hết ngày (giờ VN), không cần bật lại tay."
+                  title={t`Chạm trần thì trợ lý tự nghỉ tới hết ngày (giờ VN), không cần bật lại tay.`}
                 >
                   ${spendQ.data.spentUsd.toFixed(2)}/${spendQ.data.capUsd}
                 </span>
@@ -255,7 +261,7 @@ export function AiSettingsTab() {
             onClick={() => toggleEnabled.mutate(!configQ.data?.enabled)}
           >
             <IconSparkles className="h-4 w-4" />
-            {configQ.data?.enabled ? "Tắt trợ lý" : "Bật trợ lý"}
+            {configQ.data?.enabled ? t`Tắt trợ lý` : t`Bật trợ lý`}
           </Button>
         </CardFooter>
       </Card>
@@ -264,15 +270,15 @@ export function AiSettingsTab() {
         <CardHeader>
           <CardTitle className="text-base">Hạn mức &amp; chi phí</CardTitle>
           <CardDescription>
-            Ba con số này trước đây chỉ đổi được bằng SQL trên máy chủ. Đổi ở
-            đây có hiệu lực ngay, không cần deploy lại.
+            <Trans>Ba con số này trước đây chỉ đổi được bằng SQL trên máy chủ. Đổi ở
+            đây có hiệu lực ngay, không cần deploy lại.</Trans>
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <NumberSetting
             id="ai-free"
-            label="Lượt miễn phí / tháng"
-            hint="Mỗi tài khoản. Đặt 0 để tắt hẳn phần miễn phí."
+            label={t`Lượt miễn phí / tháng`}
+            hint={t`Mỗi tài khoản. Đặt 0 để tắt hẳn phần miễn phí.`}
             value={current?.freePerMonth}
             range={AI_LIMIT_RANGE.freePerMonth}
             onChange={(v) =>
@@ -281,16 +287,16 @@ export function AiSettingsTab() {
           />
           <NumberSetting
             id="ai-cap"
-            label="Trần chi phí / ngày (USD)"
-            hint="Chạm trần thì trợ lý nghỉ tới hết ngày rồi tự mở lại. Đặt 0 để tắt ngắt mạch."
+            label={t`Trần chi phí / ngày (USD)`}
+            hint={t`Chạm trần thì trợ lý nghỉ tới hết ngày rồi tự mở lại. Đặt 0 để tắt ngắt mạch.`}
             value={current?.dailyCapUsd}
             range={AI_LIMIT_RANGE.dailyCapUsd}
             onChange={(v) => current && setLimits({ ...current, dailyCapUsd: v })}
           />
           <NumberSetting
             id="ai-retention"
-            label="Giữ lịch sử chat (ngày)"
-            hint="Cron mỗi đêm xoá tin cũ hơn mốc này."
+            label={t`Giữ lịch sử chat (ngày)`}
+            hint={t`Cron mỗi đêm xoá tin cũ hơn mốc này.`}
             value={current?.retentionDays}
             range={AI_LIMIT_RANGE.retentionDays}
             onChange={(v) =>
@@ -299,8 +305,8 @@ export function AiSettingsTab() {
           />
           <NumberSetting
             id="ai-clan-daily"
-            label="Lượt / ngày cho mỗi dòng họ"
-            hint="Mức chung. Đặt riêng cho một dòng họ ở Báo cáo › Dòng họ. 0 = không giới hạn."
+            label={t`Lượt / ngày cho mỗi dòng họ`}
+            hint={t`Mức chung. Đặt riêng cho một dòng họ ở Báo cáo › Dòng họ. 0 = không giới hạn.`}
             value={current?.clanDailyLimit}
             range={AI_LIMIT_RANGE.clanDailyLimit}
             onChange={(v) =>
@@ -309,8 +315,8 @@ export function AiSettingsTab() {
           />
           <NumberSetting
             id="ai-clan-monthly"
-            label="Lượt / tháng cho mỗi dòng họ"
-            hint="Mức chung, tính theo tháng dương giờ Việt Nam. 0 = không giới hạn."
+            label={t`Lượt / tháng cho mỗi dòng họ`}
+            hint={t`Mức chung, tính theo tháng dương giờ Việt Nam. 0 = không giới hạn.`}
             value={current?.clanMonthlyLimit}
             range={AI_LIMIT_RANGE.clanMonthlyLimit}
             onChange={(v) =>
@@ -320,14 +326,14 @@ export function AiSettingsTab() {
         </CardContent>
         <CardFooter className="justify-between gap-3 border-t pt-4">
           <span className="text-sm text-muted-foreground">
-            {limits ? "Có thay đổi chưa lưu" : "Đang khớp với máy chủ"}
+            {limits ? t`Có thay đổi chưa lưu` : t`Đang khớp với máy chủ`}
           </span>
           <Button size="sm"
             disabled={!limits || saveLimits.isPending}
             onClick={() => limits && saveLimits.mutate(limits)}
           >
             <IconCheck className="h-4 w-4" />
-            Lưu hạn mức
+            {t`Lưu hạn mức`}
           </Button>
         </CardFooter>
       </Card>
@@ -352,18 +358,18 @@ export function AiSettingsTab() {
                   </span>
                 ) : (
                   <span className="rounded-full border border-dashed px-2 py-0.5 text-xs text-muted-foreground">
-                    chưa cắm khoá
+                    {t`chưa cắm khoá`}
                   </span>
                 )}
                 {st?.last_test_ok === true && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-700 dark:text-emerald-400">
                     <IconCheck className="h-3 w-3" />
-                    kết nối tốt · {st.last_test_ms}ms
+                    {t`kết nối tốt · ${st.last_test_ms ?? 0}ms`}
                   </span>
                 )}
                 {st?.last_test_ok === false && (
                   <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs text-destructive">
-                    lỗi kết nối
+                    {t`lỗi kết nối`}
                   </span>
                 )}
               </div>
@@ -376,7 +382,7 @@ export function AiSettingsTab() {
 
             <CardContent>
               <label htmlFor={`key-${p.id}`} className="sr-only">
-                Khoá API {p.label}
+                {t`Khoá API ${p.label}`}
               </label>
               <Input
                 icon={<IconKey />}
@@ -384,7 +390,7 @@ export function AiSettingsTab() {
                 type="password"
                 autoComplete="off"
                 value={draft}
-                placeholder={st ? "Nhập khoá mới để thay" : p.hint}
+                placeholder={st ? t`Nhập khoá mới để thay` : p.hint}
                 onChange={(e) =>
                   setDrafts((d) => ({ ...d, [p.id]: e.target.value }))
                 }
@@ -397,8 +403,8 @@ export function AiSettingsTab() {
             <CardFooter className="flex-wrap justify-between gap-3 border-t pt-4">
               <span className="text-xs text-muted-foreground">
                 {st
-                  ? `Cập nhật ${new Date(st.updated_at).toLocaleString("vi-VN")}`
-                  : "Chưa có khoá nào được lưu"}
+                  ? t`Cập nhật ${new Date(st.updated_at).toLocaleString("vi-VN")}`
+                  : t`Chưa có khoá nào được lưu`}
               </span>
               <div className="flex flex-wrap gap-2">
                 {st && (
@@ -408,17 +414,17 @@ export function AiSettingsTab() {
                       disabled={busy}
                       onClick={async () => {
                         const ok = await confirm({
-                          title: `Xoá khoá ${p.label}?`,
+                          title: t`Xoá khoá ${p.label}?`,
                           description:
-                            "Trợ lý sẽ ngừng dùng được nhà cung cấp này cho tới khi cắm khoá mới.",
-                          confirmLabel: "Xoá",
+                            t`Trợ lý sẽ ngừng dùng được nhà cung cấp này cho tới khi cắm khoá mới.`,
+                          confirmLabel: t`Xoá`,
                           destructive: true,
                         });
                         if (ok) remove.mutate(p.id);
                       }}
                     >
                       <IconTrash className="h-4 w-4" />
-                      Xoá
+                      {t`Xoá`}
                     </Button>
                     <Button size="sm"
                       variant="outline"
@@ -426,7 +432,7 @@ export function AiSettingsTab() {
                       disabled={busy}
                     >
                       <IconRefresh className="h-4 w-4" />
-                      Kiểm tra
+                      {t`Kiểm tra`}
                     </Button>
                   </>
                 )}
@@ -435,7 +441,7 @@ export function AiSettingsTab() {
                   disabled={!draft.trim() || busy}
                 >
                   <IconCheck className="h-4 w-4" />
-                  Lưu &amp; kiểm tra
+                  {t`Lưu & kiểm tra`}
                 </Button>
               </div>
             </CardFooter>
@@ -455,18 +461,18 @@ function SetupGuide() {
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-dashed p-5">
         <h3 className="mb-1 text-base font-semibold">
-          Phần trợ lý AI chưa được cài trên máy chủ này
+          {t`Phần trợ lý AI chưa được cài trên máy chủ này`}
         </h3>
         <p className="text-sm text-muted-foreground">
-          Giao diện đã lên nhưng cơ sở dữ liệu và hàm phía máy chủ thì chưa. Đây là
+          <Trans>Giao diện đã lên nhưng cơ sở dữ liệu và hàm phía máy chủ thì chưa. Đây là
           bình thường: bản tự host áp migration bằng tay, nên frontend có thể lên
-          trước. Làm ba bước dưới đây rồi tải lại trang.
+          trước. Làm ba bước dưới đây rồi tải lại trang.</Trans>
         </p>
       </div>
 
       <ol className="flex flex-col gap-4">
         <li className="rounded-lg border p-4">
-          <p className="mb-2 text-sm font-semibold">1. Áp ba migration</p>
+          <p className="mb-2 text-sm font-semibold">{t`1. Áp ba migration`}</p>
           <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
 {`# trên máy chủ database
 for f in 20260823120000_ai_usage \\
@@ -480,7 +486,7 @@ done
 
         <li className="rounded-lg border p-4">
           <p className="mb-2 text-sm font-semibold">
-            2. Đẩy Edge Function và khởi động lại
+            {t`2. Đẩy Edge Function và khởi động lại`}
           </p>
           <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
 {`# thay <host> bằng máy chủ Supabase của bạn
@@ -496,7 +502,9 @@ ssh <host> 'cd <supabase-dir> &&
 
         <li className="rounded-lg border p-4">
           <p className="mb-2 text-sm font-semibold">
+            <Trans>
             3. Đặt khoá mã hoá cho dịch vụ <code>functions</code>
+            </Trans>
           </p>
           <pre className="overflow-x-auto rounded bg-secondary/60 p-3 text-xs">
 {`services:
@@ -505,14 +513,16 @@ ssh <host> 'cd <supabase-dir> &&
       AI_KEY_ENCRYPTION_KEY: <openssl rand -base64 32>`}
           </pre>
           <p className="mt-2 text-xs text-muted-foreground">
-            Cất giá trị này cẩn thận: đổi nó là mọi khoá API đã lưu không giải mã
-            được nữa và phải nhập lại.
+            <Trans>Cất giá trị này cẩn thận: đổi nó là mọi khoá API đã lưu không giải mã
+            được nữa và phải nhập lại.</Trans>
           </p>
         </li>
       </ol>
 
       <p className="text-sm text-muted-foreground">
+        <Trans>
         Chi tiết đầy đủ nằm ở <code>supabase/functions/ai-chat/README.md</code>.
+        </Trans>
       </p>
     </div>
   );

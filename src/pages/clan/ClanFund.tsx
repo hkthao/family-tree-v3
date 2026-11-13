@@ -392,7 +392,7 @@ export default function ClanFund() {
           onClick={() => setShowAudit((v) => !v)}
           className="text-sm text-primary hover:underline"
         >
-          {showAudit ? t`Ẩn` : "Xem"} nhật ký thay đổi
+          {showAudit ? t`Ẩn nhật ký thay đổi` : t`Xem nhật ký thay đổi`}
         </button>
         {showAudit && (
           <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
