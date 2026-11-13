@@ -45,6 +45,8 @@ import { festivalsOn, hasFestival } from "@/lib/festivals";
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 /** Icon outline cho từng loại việc (thay emoji) — dùng bộ icon của app. */
 const ACTIVITY_ICON: Record<
   ActivityKey | "all",
@@ -551,13 +553,13 @@ function MonthCalendar({
 
 // ─── Chi tiết một ngày (tốt/xấu, giờ, ngũ hành, sao, sự kiện…) ──────
 
-const EVENT_KIND_LABEL: Record<UpcomingEvent["kind"], string> = {
-  birthday: "🎂 Sinh nhật",
-  anniversary: "🕯️ Ngày giỗ",
-  tomb_visit: "⚱️ Tảo mộ / Chạp họ",
-  custom: "📌 Sự kiện",
-  festival: "🏮 Lễ, tết",
-};
+const EVENT_KIND_LABEL: Record<UpcomingEvent["kind"], string> = lazyMessages({
+  birthday: msg`🎂 Sinh nhật`,
+  anniversary: msg`🕯️ Ngày giỗ`,
+  tomb_visit: msg`⚱️ Tảo mộ / Chạp họ`,
+  custom: msg`📌 Sự kiện`,
+  festival: msg`🏮 Lễ, tết`,
+}) as Record<UpcomingEvent["kind"], string>;
 
 function DayDetail({
   iso,

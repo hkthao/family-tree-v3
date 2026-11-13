@@ -36,18 +36,20 @@ import { getPerson } from "@/lib/queries/persons";
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
-const TYPE_LABEL = {
-  edit_person: "Sửa thông tin",
-  add_note: "Bổ sung tiểu sử",
-  add_person: "Thêm người mới",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const TYPE_LABEL = lazyMessages({
+  edit_person: msg`Sửa thông tin`,
+  add_note: msg`Bổ sung tiểu sử`,
+  add_person: msg`Thêm người mới`,
+});
 
-const STATUS_LABEL: Record<ContributionStatus, string> = {
-  pending: "Chờ duyệt",
-  approved: "Đã duyệt",
-  rejected: "Đã từ chối",
-  needs_info: "Cần thêm thông tin",
-};
+const STATUS_LABEL: Record<ContributionStatus, string> = lazyMessages({
+  pending: msg`Chờ duyệt`,
+  approved: msg`Đã duyệt`,
+  rejected: msg`Đã từ chối`,
+  needs_info: msg`Cần thêm thông tin`,
+}) as Record<ContributionStatus, string>;
 
 /**
  * /clans/:id/contributions/:contribId — full review of one

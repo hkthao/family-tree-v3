@@ -77,6 +77,8 @@ import {
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 export default function Dashboard() {
   const { clan } = useClanContext();
   const { user } = useAuth();
@@ -794,12 +796,12 @@ function ClanDescription({ text }: { text: string }) {
 // năm sinh →". Phrasing is intentionally inclusive ("còn") not
 // accusatory ("bạn còn thiếu"). Picks the single biggest gap; the
 // /todo page handles the rest.
-const CATEGORY_CTA: Record<TodoCategory, string> = {
-  missing_parents: "thiếu cha/mẹ",
-  missing_dates: "thiếu năm sinh/mất",
-  dead_end: "có thể còn thiếu con",
-  missing_media: "thiếu ảnh / âm lịch",
-};
+const CATEGORY_CTA: Record<TodoCategory, string> = lazyMessages({
+  missing_parents: msg`thiếu cha/mẹ`,
+  missing_dates: msg`thiếu năm sinh/mất`,
+  dead_end: msg`có thể còn thiếu con`,
+  missing_media: msg`thiếu ảnh / âm lịch`,
+}) as Record<TodoCategory, string>;
 
 function CompletionTile({
   clanId,

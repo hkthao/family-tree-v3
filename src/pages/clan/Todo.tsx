@@ -35,6 +35,8 @@ import {
 } from "@/lib/queries/todo";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 const PAGE_SIZE = 15;
 
 const CATEGORY_META: Record<
@@ -59,15 +61,15 @@ const CATEGORY_META: Record<
   },
 };
 
-const MISSING_LABEL: Record<string, string> = {
-  parents: "thiếu cha/mẹ",
-  birth_year: "thiếu năm sinh",
-  death_year: "thiếu năm mất",
-  dead_end: "chưa ghi con",
-  photo: "thiếu ảnh",
-  birth_lunar: "thiếu âm lịch ngày sinh",
-  death_lunar: "thiếu âm lịch ngày mất",
-};
+const MISSING_LABEL: Record<string, string> = lazyMessages({
+  parents: msg`thiếu cha/mẹ`,
+  birth_year: msg`thiếu năm sinh`,
+  death_year: msg`thiếu năm mất`,
+  dead_end: msg`chưa ghi con`,
+  photo: msg`thiếu ảnh`,
+  birth_lunar: msg`thiếu âm lịch ngày sinh`,
+  death_lunar: msg`thiếu âm lịch ngày mất`,
+}) as Record<string, string>;
 
 /**
  * /clans/:id/todo — gap-detection board.

@@ -12,23 +12,25 @@ import {
 } from "@/lib/queries/audit";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 interface Props {
   clanId: string;
   limit?: number;
 }
 
-const ENTITY_LABEL: Record<string, string> = {
-  person: "Người",
-  family: "Gia đình",
+const ENTITY_LABEL: Record<string, string> = lazyMessages({
+  person: msg`Người`,
+  family: msg`Gia đình`,
   branch: "Chi",
-  person_link: "Thông gia",
-};
+  person_link: msg`Thông gia`,
+}) as Record<string, string>;
 
-const ACTION_LABEL: Record<string, string> = {
-  insert: "Thêm mới",
-  update: "Sửa",
-  delete: "Xoá",
-};
+const ACTION_LABEL: Record<string, string> = lazyMessages({
+  insert: msg`Thêm mới`,
+  update: msg`Sửa`,
+  delete: msg`Xoá`,
+}) as Record<string, string>;
 
 /**
  * Badge color theo action — khớp `/audit` để 2 panel cùng visual:

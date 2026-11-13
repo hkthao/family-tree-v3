@@ -15,12 +15,14 @@ import { eventWhenText } from "@/lib/eventWhen";
 import type { EventRow } from "@/lib/queries/events";
 
 import { t } from "@lingui/core/macro";
-const EVENT_TYPE_LABEL: Record<string, string> = {
-  custom: "Sự kiện",
-  reunion: "Họp họ",
-  memorial: "Giỗ chung",
-  tomb_visit: "Tảo mộ / Chạp họ",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const EVENT_TYPE_LABEL: Record<string, string> = lazyMessages({
+  custom: msg`Sự kiện`,
+  reunion: msg`Họp họ`,
+  memorial: msg`Giỗ chung`,
+  tomb_visit: msg`Tảo mộ / Chạp họ`,
+}) as Record<string, string>;
 
 export function EventDetailDialog({
   open,

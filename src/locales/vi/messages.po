@@ -226,7 +226,7 @@ msgstr "(tuỳ chọn)"
 msgid "). Dán vào đây."
 msgstr "). Dán vào đây."
 
-#. placeholder {0}: import { t } from "@lingui/core/macro"; import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEffect, useState, type ReactNode } from "react"; import { Link, useNavigate } from "react-router-dom"; import { AppHeader } from "@/components/AppHeader"; import { QrSignInButton } from "@/components/QrSignInButton"; import { BackgroundPicker } from "@/components/BackgroundPicker"; import { LanguageSelect } from "@/components/LanguageSwitcher"; import { ThemeToggle } from "@/components/ThemeToggle"; import { useToast } from "@/components/Toast"; import { IconBell, IconCheck, IconClock, IconLock, IconLogOut, IconMail, IconShield, IconTrash, IconUser, IconX, } from "@/components/icons"; import { PageHeader } from "@/components/PageHeader"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from "@/components/ui/card"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { useAiEnabled } from "@/hooks/useAiEnabled"; import { useAuth } from "@/hooks/useAuth"; import { usePushSubscription } from "@/hooks/usePushSubscription"; import { clearAllCache } from "@/lib/queryClient"; import { signOutAndClearCache } from "@/lib/auth-actions"; import { queryKeys } from "@/lib/queries/keys"; import { countMyBlockingClans, deleteMyAccount, getMyProfile, updateMyDisplayName, updateMyMonthlyLunarPref, updateMyWeeklyDigestPref, } from "@/lib/queries/profile"; import { sendTestPush, updateMyNotifyViaPush } from "@/lib/queries/push"; import { listMyFollowedClans, unfollowClan, type SubScope, } from "@/lib/queries/subscriptions"; import { supabase } from "@/lib/supabase"; import { Trans } from "@lingui/react/macro"; export default function Account() { const { user } = useAuth(); const userId = user?.id ?? ""; const aiEnabled = useAiEnabled(); const queryClient = useQueryClient(); const navigate = useNavigate(); const { data: profile } = useQuery({ queryKey: queryKeys.myProfile(userId), queryFn: () => getMyProfile(userId), enabled: !!userId, }); return ( <div className="min-h-dvh bg-background lg:pl-72"> <AppHeader /> <main className="container max-w-4xl py-6 px-4 space-y-3"> <PageHeader icon={<IconUser className="h-7 w-7" />} title={t`Tài khoản`} description={t`Email, mật khẩu, theme, QR đăng nhập sang máy khác.`} /> {profile?.is_platform_admin && ( <Card className="border-accent/40"> <CardHeader> <CardTitle className="text-accent">{t`Quản trị nền tảng`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá tài khoản, gán quyền. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <Button asChild variant="outline" className="w-full sm:w-auto"> <Link to="/admin"> <IconShield className="h-4 w-4 mr-1.5" /> {t`Mở trang quản trị`} </Link> </Button> </CardFooter> </Card> )} {aiEnabled && ( <Card> <CardHeader> <CardTitle className="text-base">{t`Lượt hỏi trợ lý`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Xem đã dùng bao nhiêu lượt, còn lại bao nhiêu. Sổ này không hiện nội dung câu hỏi — muốn đọc lại thì mở khung trò chuyện. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <Button asChild variant="outline" className="w-full sm:w-auto"> <Link to="/account/luot-dung"> <IconClock className="h-4 w-4 mr-1.5" /> {t`Lịch sử sử dụng`} </Link> </Button> </CardFooter> </Card> )} <DisplayNameCard userId={userId} current={profile?.display_name ?? null} queryClient={queryClient} /> <WeeklyDigestCard userId={userId} enabled={profile?.notify_weekly_digest ?? true} queryClient={queryClient} /> <MonthlyLunarCard userId={userId} enabled={profile?.notify_monthly_lunar ?? false} queryClient={queryClient} /> <PushNotifyCard userId={userId} enabled={profile?.notify_via_push ?? false} queryClient={queryClient} /> <FollowedClansCard userId={userId} /> <EmailCard currentEmail={user?.email ?? null} /> <PasswordCard /> <Card> <CardHeader> <CardTitle>{t`Ngôn ngữ`}</CardTitle> <CardDescription> {t`Ngôn ngữ của giao diện. Phần chưa có bản dịch sẽ hiện bằng tiếng Việt.`} </CardDescription> </CardHeader> <CardContent> <LanguageSelect /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Giao diện`}</CardTitle> <CardDescription> {t`Chế độ màu cho riêng tài khoản này trên thiết bị hiện tại.`} </CardDescription> </CardHeader> <CardContent> <ThemeToggle /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Hình nền`}</CardTitle> <CardDescription> {t`Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này.`} </CardDescription> </CardHeader> <CardContent> <BackgroundPicker /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Đăng nhập trên điện thoại`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Hiện mã QR — mở camera điện thoại, quét để đăng nhập cùng tài khoản, không phải gõ mật khẩu. Mã hiệu lực ~5 phút và chỉ dùng được một lần. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <QrSignInButton /> </CardFooter> </Card> <Card> <CardHeader> <CardTitle>{t`Đăng xuất`}</CardTitle> <CardDescription> {t`Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy).`} </CardDescription> </CardHeader> <CardFooter> <Button variant="outline" onClick={signOutAndClearCache} className="w-full sm:w-auto" > <IconLogOut className="h-4 w-4 mr-1.5" /> {t`Đăng xuất`} </Button> </CardFooter> </Card> <DeleteAccountCard userId={userId} onDeleted={async () => { await clearAllCache(); navigate("/login", { replace: true }); }} /> </main> </div> ); } // --------------------------------------------------------------------------- const SCOPE_LABEL: Record<SubScope, string> = { clan: "cả dòng họ", branch: "theo chi", person: "theo người", }; /** * "Dòng họ đang theo dõi" — liệt kê các dòng họ user đăng ký nhận nhắc * sự kiện (sinh nhật / ngày giỗ / sự kiện), cho phép huỷ theo dõi từng họ. */ function FollowedClansCard({ userId }: { userId: string }) { const qc = useQueryClient(); const toast = useToast(); const { data: clans, isLoading } = useQuery({ queryKey: ["followed-clans", userId], queryFn: () => listMyFollowedClans(userId), enabled: !!userId, }); const unfollowM = useMutation({ mutationFn: (clanId: string) => unfollowClan(clanId, userId), onSuccess: () => { qc.invalidateQueries({ queryKey: ["followed-clans", userId] }); toast.success(t`Đã huỷ theo dõi dòng họ này`); }, onError: (e) => toast.error(t`Không huỷ được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Dòng họ đang theo dõi`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> {isLoading ? ( <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p> ) : !clans || clans.length === 0 ? ( <p className="text-sm text-muted-foreground"> <Trans> <Trans> <Trans> Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của một dòng họ và bật “Theo dõi sự kiện”. </Trans> </Trans> </Trans> </p> ) : ( <ul className="divide-y rounded-md border"> {clans.map((c) => ( <li key={c.clan_id} className="flex items-center justify-between gap-3 p-3" > <div className="min-w-0"> <Link to={`/clans/${c.clan_id}`} className="font-medium hover:underline truncate block" > {c.clan_name} </Link> <p className="text-xs text-muted-foreground"> Theo dõi: {c.scopes.map((s) => SCOPE_LABEL[s]).join(", ")} {!c.any_enabled ? t` · đang tắt` : ""} </p> </div> <Button size="sm" variant="outline" disabled={unfollowM.isPending} onClick={() => unfollowM.mutate(c.clan_id)} className="shrink-0 text-destructive hover:text-destructive" > <IconX className="h-4 w-4 mr-1" /> {t`Huỷ theo dõi`} </Button> </li> ))} </ul> )} </CardContent> </Card> ); } interface DisplayNameProps { userId: string; current: string | null; queryClient: ReturnType<typeof useQueryClient>; } function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) { const [name, setName] = useState(current ?? ""); useEffect(() => { setName(current ?? ""); }, [current]); const toast = useToast(); const m = useMutation({ mutationFn: () => updateMyDisplayName(userId, name.trim()), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); toast.success(t`Đã đổi tên hiển thị`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); const changed = name.trim() !== (current ?? "").trim(); return ( <Card> <CardHeader> <CardTitle>{t`Tên hiển thị`}</CardTitle> <CardDescription> {t`Tên hiển thị trong dòng họ và các sự kiện. Không phải email.`} </CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (changed && name.trim()) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="display-name">{t`Tên hiển thị`}</Label> <Input icon={<IconUser />} id="display-name" value={name} maxLength={100} onChange={(e) => setName(e.target.value)} /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && !changed && ( <Alert> <AlertDescription>{t`Đã lưu.`}</AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!changed || !name.trim() || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang lưu…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Lưu`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- function EmailCard({ currentEmail }: { currentEmail: string | null }) { const toast = useToast(); const [newEmail, setNewEmail] = useState(""); const m = useMutation({ mutationFn: async () => { const { error } = await supabase.auth.updateUser({ email: newEmail.trim(), }); if (error) throw new Error(error.message); }, onSuccess: () => { setNewEmail(""); toast.success(t`Đã gửi email xác nhận`, { description: t`Bấm link trong email để hoàn tất.`, }); }, onError: (e) => toast.error(t`Không đổi được email`, { description: (e as Error).message, }), }); return ( <Card> <CardHeader> <CardTitle>Email</CardTitle> <CardDescription> {t`Email hiện tại:`}{" "} <span className="font-medium">{currentEmail ?? "—"}</span>. Đổi email sẽ gửi liên kết xác nhận đến địa chỉ mới (kiểm tra Mailpit ở local). </CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (newEmail.trim()) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="new-email">{t`Email mới`}</Label> <Input icon={<IconMail />} id="new-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="ten@vidu.com" /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Đã gửi email xác nhận. Mở liên kết trong email để hoàn tất đổi địa chỉ. </Trans> </Trans> </Trans> </AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!newEmail.trim() || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang gửi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Đổi email`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- function PasswordCard() { const toast = useToast(); const [password, setPassword] = useState(""); const [confirm, setConfirm] = useState(""); const tooShort = password.length > 0 && password.length < 8; const mismatch = confirm.length > 0 && password !== confirm; const canSubmit = password.length >= 8 && password === confirm; const m = useMutation({ mutationFn: async () => { const { error } = await supabase.auth.updateUser({ password }); if (error) throw new Error(error.message); }, onSuccess: () => { setPassword(""); setConfirm(""); toast.success(t`Đã đổi mật khẩu`); }, onError: (e) => toast.error(t`Không đổi được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Mật khẩu`}</CardTitle> <CardDescription>{t`Ít nhất 8 ký tự.`}</CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (canSubmit) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="pw">{t`Mật khẩu mới`}</Label> <Input icon={<IconLock />} id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /> {tooShort && ( <p className="text-sm text-destructive">{t`Tối thiểu 8 ký tự.`}</p> )} </div> <div className="space-y-2"> <Label htmlFor="pw2">{t`Xác nhận mật khẩu mới`}</Label> <Input icon={<IconLock />} id="pw2" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" /> {mismatch && ( <p className="text-sm text-destructive">{t`Không khớp.`}</p> )} </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && ( <Alert> <AlertDescription>{t`Đã đổi mật khẩu.`}</AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!canSubmit || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang đổi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Đổi mật khẩu`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- interface DeleteProps { userId: string; onDeleted: () => Promise<void> | void; } function DeleteAccountCard({ userId, onDeleted }: DeleteProps) { const toast = useToast(); const [confirmText, setConfirmText] = useState(""); const [expanded, setExpanded] = useState(false); const { data: blocking } = useQuery({ queryKey: queryKeys.myBlockingClans(userId), queryFn: () => countMyBlockingClans(), enabled: !!userId && expanded, }); const m = useMutation({ mutationFn: () => deleteMyAccount(), onSuccess: () => { toast.success(t`Đã xoá tài khoản`); onDeleted(); }, onError: (e) => toast.error(t`Không xoá được`, { description: (e as Error).message }), }); const blockingCount = blocking ?? 0; const blocked = blockingCount > 0; const canSubmit = !blocked && confirmText === "XOA"; return ( <Card className="border-destructive/40"> <CardHeader> <CardTitle className="text-destructive">{t`Xoá tài khoản`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Hành động này không thể hoàn tác. Nếu bạn đang sở hữu dòng họ có thành viên, hãy chuyển quyền hoặc xoá dòng họ trước. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent className="space-y-4"> {expanded && ( <> {blocked && ( <Alert variant="destructive"> <AlertDescription> Bạn còn sở hữu {blockingCount} dòng họ có thành viên. Phải chuyển quyền hoặc xoá dòng họ trước khi xoá tài khoản. </AlertDescription> </Alert> )} <div className="space-y-2"> <Label htmlFor="confirm"> Gõ <code className="font-bold">XOA</code> để xác nhận </Label> <Input icon={<IconLock />} id="confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} disabled={blocked} /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription> {(m.error as Error).message} </AlertDescription> </Alert> )} </> )} </CardContent> {!expanded ? ( <CardFooter> <Button variant="outline" onClick={() => setExpanded(true)} className="w-full sm:w-auto" > <IconTrash className="h-4 w-4 mr-1.5 text-destructive" /> {t`Tôi muốn xoá tài khoản`} </Button> </CardFooter> ) : ( <CardFooter className="flex-wrap justify-end gap-3 border-t pt-4"> <Button variant="destructive" disabled={!canSubmit || m.isPending} onClick={() => m.mutate()} > {m.isPending ? ( t`Đang xoá…` ) : ( <> <IconTrash className="h-4 w-4 mr-1.5" /> {t`Xoá tài khoản vĩnh viễn`} </> )} </Button> <Button variant="outline" onClick={() => { setExpanded(false); setConfirmText(""); }} > <IconX className="h-4 w-4 mr-1.5" /> {t`Hủy`} </Button> </CardFooter> )} </Card> ); } // ─── Web Push toggle ────────────────────────────────────────────── function PushNotifyCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const push = usePushSubscription(); const [showPrePrompt, setShowPrePrompt] = useState(false); const updatePref = useMutation({ mutationFn: (next: boolean) => updateMyNotifyViaPush(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); async function handleEnable() { setShowPrePrompt(false); await push.enable(); if (push.error) return; // Only flip the DB toggle if browser-level subscribe succeeded — // otherwise the cron has no endpoint to push to. updatePref.mutate(true); } async function handleDisable() { await push.disable(); updatePref.mutate(false); } // ─── Render: branch by capability state ──────────────────────── let body: ReactNode; if (push.state === "loading") { body = ( <p className="text-sm text-muted-foreground">{t`Đang kiểm tra trình duyệt…`}</p> ); } else if (push.state === "unsupported") { body = ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Trình duyệt này không hỗ trợ thông báo đẩy. Hãy dùng Xuất lịch (.ics) ở trang Sự kiện để nhận nhắc qua lịch điện thoại quen thuộc. </Trans> </Trans> </Trans> </AlertDescription> </Alert> ); } else if (push.state === "ios-not-standalone") { body = ( <Alert> <AlertDescription> {t`Trên iOS, để nhận thông báo đẩy, cần`}{" "} <strong>{t`Thêm app vào màn hình chính`}</strong> rồi mở app từ icon đó (không phải Safari). Sau khi cài, quay lại đây để bật. </AlertDescription> </Alert> ); } else if (push.state === "denied") { body = ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây. Hoặc dùng Xuất lịch (.ics) làm thay thế. </Trans> </Trans> </Trans> </AlertDescription> </Alert> ); } else if (showPrePrompt && !enabled) { body = ( <div className="space-y-3"> <p className="text-sm"> <Trans> <Trans> <Trans> Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào. </Trans> </Trans> </Trans> </p> <div className="flex gap-2 flex-wrap"> <Button onClick={handleEnable}> <IconBell className="h-4 w-4 mr-1.5" /> {t`Cho phép thông báo`} </Button> <Button variant="outline" onClick={() => setShowPrePrompt(false)}> {t`Không bây giờ`} </Button> </div> </div> ); } else { const isOn = enabled && push.state === "subscribed"; body = ( <div className="space-y-3"> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={isOn} onChange={(e) => { if (e.target.checked) { setShowPrePrompt(true); } else { void handleDisable(); } }} disabled={updatePref.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {isOn ? t`Đang bật trên thiết bị này` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> {isOn ? t`Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại.` : t`Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt.`} </p> </div> </label> {isOn && <TestPushButton />} <p className="text-xs text-muted-foreground"> {t`Cần trợ giúp? Xem`}{" "} <Link to="/docs/web-push" className="underline underline-offset-2 hover:text-foreground" > {t`hướng dẫn thông báo đẩy`} </Link> . </p> </div> ); } return ( <Card> <CardHeader> <CardTitle>{t`Thông báo đẩy (Web Push)`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt + (trên iOS) đã cài app vào màn hình chính. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> {push.error && ( <Alert variant="destructive" className="mb-3"> <AlertDescription>{push.error}</AlertDescription> </Alert> )} {body} </CardContent> </Card> ); } // ─── Test push button — fires a one-shot notification to verify ─── function TestPushButton() { const toast = useToast(); const m = useMutation({ mutationFn: sendTestPush, onSuccess: (res) => { if (res.sent > 0) { toast.success(t`Đã gửi push test`, { description: t`${res.sent} thiết bị nhận được${res.failed > 0 ? ` · ${res.failed} thất bại` : ""}.`, }); } else { toast.error(t`Chưa nhận được`, { description: res.message === "no-subscriptions" ? t`Chưa có thiết bị nào đăng ký push trên tài khoản này.` : t`Push không gửi được — thử tắt rồi bật lại.`, }); } }, onError: (e) => toast.error(t`Lỗi khi test`, { description: (e as Error).message }), }); return ( <Button type="button" variant="outline" size="sm" onClick={() => m.mutate()} disabled={m.isPending} > <IconBell className="h-4 w-4 mr-1.5" /> {m.isPending ? t`Đang gửi…` : t`Gửi thông báo test`} </Button> ); } // ─── Bản tin tuần toggle ────────────────────────────────────────── function WeeklyDigestCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const m = useMutation({ mutationFn: (next: boolean) => updateMyWeeklyDigestPref(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Bản tin tuần`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Mỗi tuần một email (và thông báo đẩy) gộp: sự kiện 7 ngày tới, người mới thêm vào cây, và thông báo mới của dòng họ bạn. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={enabled} onChange={(e) => m.mutate(e.target.checked)} disabled={m.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {enabled ? t`Đang bật — nhận bản tin mỗi tuần` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> {t`Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng.`} </p> </div> </label> </CardContent> </Card> ); } // ─── Mùng 1 / Rằm reminder toggle ───────────────────────────────── function MonthlyLunarCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const m = useMutation({ mutationFn: (next: boolean) => updateMyMonthlyLunarPref(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Nhắc mùng 1 / rằm âm lịch`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Mỗi ngày 1 và ngày 15 âm lịch, app gửi email nhắc thắp hương. Áp dụng cho tài khoản này, không phụ thuộc dòng họ nào. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={enabled} onChange={(e) => m.mutate(e.target.checked)} disabled={m.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {enabled ? t`Đang bật — nhận email mùng 1 và rằm` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> <Trans> {t`Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để dừng.`} </Trans> </p> </div> </label> </CardContent> </Card> ); } 
+#. placeholder {0}: import { t } from "@lingui/core/macro"; import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useEffect, useState, type ReactNode } from "react"; import { Link, useNavigate } from "react-router-dom"; import { AppHeader } from "@/components/AppHeader"; import { QrSignInButton } from "@/components/QrSignInButton"; import { BackgroundPicker } from "@/components/BackgroundPicker"; import { LanguageSelect } from "@/components/LanguageSwitcher"; import { ThemeToggle } from "@/components/ThemeToggle"; import { useToast } from "@/components/Toast"; import { IconBell, IconCheck, IconClock, IconLock, IconLogOut, IconMail, IconShield, IconTrash, IconUser, IconX, } from "@/components/icons"; import { PageHeader } from "@/components/PageHeader"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from "@/components/ui/card"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { useAiEnabled } from "@/hooks/useAiEnabled"; import { useAuth } from "@/hooks/useAuth"; import { usePushSubscription } from "@/hooks/usePushSubscription"; import { clearAllCache } from "@/lib/queryClient"; import { signOutAndClearCache } from "@/lib/auth-actions"; import { queryKeys } from "@/lib/queries/keys"; import { countMyBlockingClans, deleteMyAccount, getMyProfile, updateMyDisplayName, updateMyMonthlyLunarPref, updateMyWeeklyDigestPref, } from "@/lib/queries/profile"; import { sendTestPush, updateMyNotifyViaPush } from "@/lib/queries/push"; import { listMyFollowedClans, unfollowClan, type SubScope, } from "@/lib/queries/subscriptions"; import { supabase } from "@/lib/supabase"; import { Trans } from "@lingui/react/macro"; import { msg } from "@lingui/core/macro"; import { lazyMessages } from "@/lib/i18n/lazy"; export default function Account() { const { user } = useAuth(); const userId = user?.id ?? ""; const aiEnabled = useAiEnabled(); const queryClient = useQueryClient(); const navigate = useNavigate(); const { data: profile } = useQuery({ queryKey: queryKeys.myProfile(userId), queryFn: () => getMyProfile(userId), enabled: !!userId, }); return ( <div className="min-h-dvh bg-background lg:pl-72"> <AppHeader /> <main className="container max-w-4xl py-6 px-4 space-y-3"> <PageHeader icon={<IconUser className="h-7 w-7" />} title={t`Tài khoản`} description={t`Email, mật khẩu, theme, QR đăng nhập sang máy khác.`} /> {profile?.is_platform_admin && ( <Card className="border-accent/40"> <CardHeader> <CardTitle className="text-accent">{t`Quản trị nền tảng`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá tài khoản, gán quyền. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <Button asChild variant="outline" className="w-full sm:w-auto"> <Link to="/admin"> <IconShield className="h-4 w-4 mr-1.5" /> {t`Mở trang quản trị`} </Link> </Button> </CardFooter> </Card> )} {aiEnabled && ( <Card> <CardHeader> <CardTitle className="text-base">{t`Lượt hỏi trợ lý`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Xem đã dùng bao nhiêu lượt, còn lại bao nhiêu. Sổ này không hiện nội dung câu hỏi — muốn đọc lại thì mở khung trò chuyện. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <Button asChild variant="outline" className="w-full sm:w-auto"> <Link to="/account/luot-dung"> <IconClock className="h-4 w-4 mr-1.5" /> {t`Lịch sử sử dụng`} </Link> </Button> </CardFooter> </Card> )} <DisplayNameCard userId={userId} current={profile?.display_name ?? null} queryClient={queryClient} /> <WeeklyDigestCard userId={userId} enabled={profile?.notify_weekly_digest ?? true} queryClient={queryClient} /> <MonthlyLunarCard userId={userId} enabled={profile?.notify_monthly_lunar ?? false} queryClient={queryClient} /> <PushNotifyCard userId={userId} enabled={profile?.notify_via_push ?? false} queryClient={queryClient} /> <FollowedClansCard userId={userId} /> <EmailCard currentEmail={user?.email ?? null} /> <PasswordCard /> <Card> <CardHeader> <CardTitle>{t`Ngôn ngữ`}</CardTitle> <CardDescription> {t`Ngôn ngữ của giao diện. Phần chưa có bản dịch sẽ hiện bằng tiếng Việt.`} </CardDescription> </CardHeader> <CardContent> <LanguageSelect /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Giao diện`}</CardTitle> <CardDescription> {t`Chế độ màu cho riêng tài khoản này trên thiết bị hiện tại.`} </CardDescription> </CardHeader> <CardContent> <ThemeToggle /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Hình nền`}</CardTitle> <CardDescription> {t`Tranh thuỷ mặc làm nền cho app, riêng trên thiết bị này.`} </CardDescription> </CardHeader> <CardContent> <BackgroundPicker /> </CardContent> </Card> <Card> <CardHeader> <CardTitle>{t`Đăng nhập trên điện thoại`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Hiện mã QR — mở camera điện thoại, quét để đăng nhập cùng tài khoản, không phải gõ mật khẩu. Mã hiệu lực ~5 phút và chỉ dùng được một lần. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardFooter> <QrSignInButton /> </CardFooter> </Card> <Card> <CardHeader> <CardTitle>{t`Đăng xuất`}</CardTitle> <CardDescription> {t`Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy).`} </CardDescription> </CardHeader> <CardFooter> <Button variant="outline" onClick={signOutAndClearCache} className="w-full sm:w-auto" > <IconLogOut className="h-4 w-4 mr-1.5" /> {t`Đăng xuất`} </Button> </CardFooter> </Card> <DeleteAccountCard userId={userId} onDeleted={async () => { await clearAllCache(); navigate("/login", { replace: true }); }} /> </main> </div> ); } // --------------------------------------------------------------------------- const SCOPE_LABEL: Record<SubScope, string> = lazyMessages({ clan: msg`cả dòng họ`, branch: "theo chi", person: msg`theo người`, }) as Record<SubScope, string>; /** * "Dòng họ đang theo dõi" — liệt kê các dòng họ user đăng ký nhận nhắc * sự kiện (sinh nhật / ngày giỗ / sự kiện), cho phép huỷ theo dõi từng họ. */ function FollowedClansCard({ userId }: { userId: string }) { const qc = useQueryClient(); const toast = useToast(); const { data: clans, isLoading } = useQuery({ queryKey: ["followed-clans", userId], queryFn: () => listMyFollowedClans(userId), enabled: !!userId, }); const unfollowM = useMutation({ mutationFn: (clanId: string) => unfollowClan(clanId, userId), onSuccess: () => { qc.invalidateQueries({ queryKey: ["followed-clans", userId] }); toast.success(t`Đã huỷ theo dõi dòng họ này`); }, onError: (e) => toast.error(t`Không huỷ được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Dòng họ đang theo dõi`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Bạn nhận email/thông báo nhắc sinh nhật, ngày giỗ và sự kiện của các dòng họ dưới đây. Huỷ theo dõi để ngừng nhận. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> {isLoading ? ( <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p> ) : !clans || clans.length === 0 ? ( <p className="text-sm text-muted-foreground"> <Trans> <Trans> <Trans> Bạn chưa theo dõi dòng họ nào. Vào trang Sự kiện của một dòng họ và bật “Theo dõi sự kiện”. </Trans> </Trans> </Trans> </p> ) : ( <ul className="divide-y rounded-md border"> {clans.map((c) => ( <li key={c.clan_id} className="flex items-center justify-between gap-3 p-3" > <div className="min-w-0"> <Link to={`/clans/${c.clan_id}`} className="font-medium hover:underline truncate block" > {c.clan_name} </Link> <p className="text-xs text-muted-foreground"> Theo dõi: {c.scopes.map((s) => SCOPE_LABEL[s]).join(", ")} {!c.any_enabled ? t` · đang tắt` : ""} </p> </div> <Button size="sm" variant="outline" disabled={unfollowM.isPending} onClick={() => unfollowM.mutate(c.clan_id)} className="shrink-0 text-destructive hover:text-destructive" > <IconX className="h-4 w-4 mr-1" /> {t`Huỷ theo dõi`} </Button> </li> ))} </ul> )} </CardContent> </Card> ); } interface DisplayNameProps { userId: string; current: string | null; queryClient: ReturnType<typeof useQueryClient>; } function DisplayNameCard({ userId, current, queryClient }: DisplayNameProps) { const [name, setName] = useState(current ?? ""); useEffect(() => { setName(current ?? ""); }, [current]); const toast = useToast(); const m = useMutation({ mutationFn: () => updateMyDisplayName(userId, name.trim()), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); toast.success(t`Đã đổi tên hiển thị`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); const changed = name.trim() !== (current ?? "").trim(); return ( <Card> <CardHeader> <CardTitle>{t`Tên hiển thị`}</CardTitle> <CardDescription> {t`Tên hiển thị trong dòng họ và các sự kiện. Không phải email.`} </CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (changed && name.trim()) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="display-name">{t`Tên hiển thị`}</Label> <Input icon={<IconUser />} id="display-name" value={name} maxLength={100} onChange={(e) => setName(e.target.value)} /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && !changed && ( <Alert> <AlertDescription>{t`Đã lưu.`}</AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!changed || !name.trim() || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang lưu…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Lưu`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- function EmailCard({ currentEmail }: { currentEmail: string | null }) { const toast = useToast(); const [newEmail, setNewEmail] = useState(""); const m = useMutation({ mutationFn: async () => { const { error } = await supabase.auth.updateUser({ email: newEmail.trim(), }); if (error) throw new Error(error.message); }, onSuccess: () => { setNewEmail(""); toast.success(t`Đã gửi email xác nhận`, { description: t`Bấm link trong email để hoàn tất.`, }); }, onError: (e) => toast.error(t`Không đổi được email`, { description: (e as Error).message, }), }); return ( <Card> <CardHeader> <CardTitle>Email</CardTitle> <CardDescription> {t`Email hiện tại:`}{" "} <span className="font-medium">{currentEmail ?? "—"}</span>. Đổi email sẽ gửi liên kết xác nhận đến địa chỉ mới (kiểm tra Mailpit ở local). </CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (newEmail.trim()) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="new-email">{t`Email mới`}</Label> <Input icon={<IconMail />} id="new-email" type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="ten@vidu.com" /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Đã gửi email xác nhận. Mở liên kết trong email để hoàn tất đổi địa chỉ. </Trans> </Trans> </Trans> </AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!newEmail.trim() || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang gửi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Đổi email`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- function PasswordCard() { const toast = useToast(); const [password, setPassword] = useState(""); const [confirm, setConfirm] = useState(""); const tooShort = password.length > 0 && password.length < 8; const mismatch = confirm.length > 0 && password !== confirm; const canSubmit = password.length >= 8 && password === confirm; const m = useMutation({ mutationFn: async () => { const { error } = await supabase.auth.updateUser({ password }); if (error) throw new Error(error.message); }, onSuccess: () => { setPassword(""); setConfirm(""); toast.success(t`Đã đổi mật khẩu`); }, onError: (e) => toast.error(t`Không đổi được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Mật khẩu`}</CardTitle> <CardDescription>{t`Ít nhất 8 ký tự.`}</CardDescription> </CardHeader> <form onSubmit={(e) => { e.preventDefault(); if (canSubmit) m.mutate(); }} > <CardContent className="space-y-4"> <div className="space-y-2"> <Label htmlFor="pw">{t`Mật khẩu mới`}</Label> <Input icon={<IconLock />} id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" /> {tooShort && ( <p className="text-sm text-destructive">{t`Tối thiểu 8 ký tự.`}</p> )} </div> <div className="space-y-2"> <Label htmlFor="pw2">{t`Xác nhận mật khẩu mới`}</Label> <Input icon={<IconLock />} id="pw2" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" /> {mismatch && ( <p className="text-sm text-destructive">{t`Không khớp.`}</p> )} </div> {m.error && ( <Alert variant="destructive"> <AlertDescription>{(m.error as Error).message}</AlertDescription> </Alert> )} {m.isSuccess && ( <Alert> <AlertDescription>{t`Đã đổi mật khẩu.`}</AlertDescription> </Alert> )} </CardContent> <CardFooter className="justify-end border-t pt-4"> <Button type="submit" variant="outline" disabled={!canSubmit || m.isPending} className="w-full sm:w-auto" > {m.isPending ? ( t`Đang đổi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Đổi mật khẩu`} </> )} </Button> </CardFooter> </form> </Card> ); } // --------------------------------------------------------------------------- interface DeleteProps { userId: string; onDeleted: () => Promise<void> | void; } function DeleteAccountCard({ userId, onDeleted }: DeleteProps) { const toast = useToast(); const [confirmText, setConfirmText] = useState(""); const [expanded, setExpanded] = useState(false); const { data: blocking } = useQuery({ queryKey: queryKeys.myBlockingClans(userId), queryFn: () => countMyBlockingClans(), enabled: !!userId && expanded, }); const m = useMutation({ mutationFn: () => deleteMyAccount(), onSuccess: () => { toast.success(t`Đã xoá tài khoản`); onDeleted(); }, onError: (e) => toast.error(t`Không xoá được`, { description: (e as Error).message }), }); const blockingCount = blocking ?? 0; const blocked = blockingCount > 0; const canSubmit = !blocked && confirmText === "XOA"; return ( <Card className="border-destructive/40"> <CardHeader> <CardTitle className="text-destructive">{t`Xoá tài khoản`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Hành động này không thể hoàn tác. Nếu bạn đang sở hữu dòng họ có thành viên, hãy chuyển quyền hoặc xoá dòng họ trước. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent className="space-y-4"> {expanded && ( <> {blocked && ( <Alert variant="destructive"> <AlertDescription> Bạn còn sở hữu {blockingCount} dòng họ có thành viên. Phải chuyển quyền hoặc xoá dòng họ trước khi xoá tài khoản. </AlertDescription> </Alert> )} <div className="space-y-2"> <Label htmlFor="confirm"> Gõ <code className="font-bold">XOA</code> để xác nhận </Label> <Input icon={<IconLock />} id="confirm" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} disabled={blocked} /> </div> {m.error && ( <Alert variant="destructive"> <AlertDescription> {(m.error as Error).message} </AlertDescription> </Alert> )} </> )} </CardContent> {!expanded ? ( <CardFooter> <Button variant="outline" onClick={() => setExpanded(true)} className="w-full sm:w-auto" > <IconTrash className="h-4 w-4 mr-1.5 text-destructive" /> {t`Tôi muốn xoá tài khoản`} </Button> </CardFooter> ) : ( <CardFooter className="flex-wrap justify-end gap-3 border-t pt-4"> <Button variant="destructive" disabled={!canSubmit || m.isPending} onClick={() => m.mutate()} > {m.isPending ? ( t`Đang xoá…` ) : ( <> <IconTrash className="h-4 w-4 mr-1.5" /> {t`Xoá tài khoản vĩnh viễn`} </> )} </Button> <Button variant="outline" onClick={() => { setExpanded(false); setConfirmText(""); }} > <IconX className="h-4 w-4 mr-1.5" /> {t`Hủy`} </Button> </CardFooter> )} </Card> ); } // ─── Web Push toggle ────────────────────────────────────────────── function PushNotifyCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const push = usePushSubscription(); const [showPrePrompt, setShowPrePrompt] = useState(false); const updatePref = useMutation({ mutationFn: (next: boolean) => updateMyNotifyViaPush(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); async function handleEnable() { setShowPrePrompt(false); await push.enable(); if (push.error) return; // Only flip the DB toggle if browser-level subscribe succeeded — // otherwise the cron has no endpoint to push to. updatePref.mutate(true); } async function handleDisable() { await push.disable(); updatePref.mutate(false); } // ─── Render: branch by capability state ──────────────────────── let body: ReactNode; if (push.state === "loading") { body = ( <p className="text-sm text-muted-foreground">{t`Đang kiểm tra trình duyệt…`}</p> ); } else if (push.state === "unsupported") { body = ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Trình duyệt này không hỗ trợ thông báo đẩy. Hãy dùng Xuất lịch (.ics) ở trang Sự kiện để nhận nhắc qua lịch điện thoại quen thuộc. </Trans> </Trans> </Trans> </AlertDescription> </Alert> ); } else if (push.state === "ios-not-standalone") { body = ( <Alert> <AlertDescription> {t`Trên iOS, để nhận thông báo đẩy, cần`}{" "} <strong>{t`Thêm app vào màn hình chính`}</strong> rồi mở app từ icon đó (không phải Safari). Sau khi cài, quay lại đây để bật. </AlertDescription> </Alert> ); } else if (push.state === "denied") { body = ( <Alert> <AlertDescription> <Trans> <Trans> <Trans> Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây. Hoặc dùng Xuất lịch (.ics) làm thay thế. </Trans> </Trans> </Trans> </AlertDescription> </Alert> ); } else if (showPrePrompt && !enabled) { body = ( <div className="space-y-3"> <p className="text-sm"> <Trans> <Trans> <Trans> Khi bật, app sẽ hỏi quyền hiện thông báo. Mỗi sáng đúng ngày giỗ / sinh nhật sẽ có nhắc xuất hiện trên điện thoại — kể cả khi app đang đóng. Bạn có thể tắt bất cứ lúc nào. </Trans> </Trans> </Trans> </p> <div className="flex gap-2 flex-wrap"> <Button onClick={handleEnable}> <IconBell className="h-4 w-4 mr-1.5" /> {t`Cho phép thông báo`} </Button> <Button variant="outline" onClick={() => setShowPrePrompt(false)}> {t`Không bây giờ`} </Button> </div> </div> ); } else { const isOn = enabled && push.state === "subscribed"; body = ( <div className="space-y-3"> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={isOn} onChange={(e) => { if (e.target.checked) { setShowPrePrompt(true); } else { void handleDisable(); } }} disabled={updatePref.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {isOn ? t`Đang bật trên thiết bị này` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> {isOn ? t`Nhận thông báo giỗ/sinh nhật đẩy thẳng vào điện thoại.` : t`Bật để nhận thông báo đẩy. App vẫn nhắc qua email và trang Hôm nay nếu để tắt.`} </p> </div> </label> {isOn && <TestPushButton />} <p className="text-xs text-muted-foreground"> {t`Cần trợ giúp? Xem`}{" "} <Link to="/docs/web-push" className="underline underline-offset-2 hover:text-foreground" > {t`hướng dẫn thông báo đẩy`} </Link> . </p> </div> ); } return ( <Card> <CardHeader> <CardTitle>{t`Thông báo đẩy (Web Push)`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt + (trên iOS) đã cài app vào màn hình chính. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> {push.error && ( <Alert variant="destructive" className="mb-3"> <AlertDescription>{push.error}</AlertDescription> </Alert> )} {body} </CardContent> </Card> ); } // ─── Test push button — fires a one-shot notification to verify ─── function TestPushButton() { const toast = useToast(); const m = useMutation({ mutationFn: sendTestPush, onSuccess: (res) => { if (res.sent > 0) { toast.success(t`Đã gửi push test`, { description: t`${res.sent} thiết bị nhận được${res.failed > 0 ? ` · ${res.failed} thất bại` : ""}.`, }); } else { toast.error(t`Chưa nhận được`, { description: res.message === "no-subscriptions" ? t`Chưa có thiết bị nào đăng ký push trên tài khoản này.` : t`Push không gửi được — thử tắt rồi bật lại.`, }); } }, onError: (e) => toast.error(t`Lỗi khi test`, { description: (e as Error).message }), }); return ( <Button type="button" variant="outline" size="sm" onClick={() => m.mutate()} disabled={m.isPending} > <IconBell className="h-4 w-4 mr-1.5" /> {m.isPending ? t`Đang gửi…` : t`Gửi thông báo test`} </Button> ); } // ─── Bản tin tuần toggle ────────────────────────────────────────── function WeeklyDigestCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const m = useMutation({ mutationFn: (next: boolean) => updateMyWeeklyDigestPref(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Bản tin tuần`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Mỗi tuần một email (và thông báo đẩy) gộp: sự kiện 7 ngày tới, người mới thêm vào cây, và thông báo mới của dòng họ bạn. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={enabled} onChange={(e) => m.mutate(e.target.checked)} disabled={m.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {enabled ? t`Đang bật — nhận bản tin mỗi tuần` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> {t`Chỉ gửi khi tuần đó có nội dung. Bỏ tích để dừng.`} </p> </div> </label> </CardContent> </Card> ); } // ─── Mùng 1 / Rằm reminder toggle ───────────────────────────────── function MonthlyLunarCard({ userId, enabled, queryClient, }: { userId: string; enabled: boolean; queryClient: ReturnType<typeof useQueryClient>; }) { const toast = useToast(); const m = useMutation({ mutationFn: (next: boolean) => updateMyMonthlyLunarPref(userId, next), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: queryKeys.myProfile(userId), }); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <Card> <CardHeader> <CardTitle>{t`Nhắc mùng 1 / rằm âm lịch`}</CardTitle> <CardDescription> <Trans> <Trans> <Trans> Mỗi ngày 1 và ngày 15 âm lịch, app gửi email nhắc thắp hương. Áp dụng cho tài khoản này, không phụ thuộc dòng họ nào. </Trans> </Trans> </Trans> </CardDescription> </CardHeader> <CardContent> <label className="flex items-start gap-3 cursor-pointer"> <input type="checkbox" checked={enabled} onChange={(e) => m.mutate(e.target.checked)} disabled={m.isPending} className="mt-1 h-5 w-5 accent-primary shrink-0" /> <div> <p className="font-medium"> {enabled ? t`Đang bật — nhận email mùng 1 và rằm` : t`Tắt`} </p> <p className="text-sm text-muted-foreground"> <Trans> {t`Email gửi vào sáng sớm (cron chạy 1 lần/ngày). Bỏ tích để dừng.`} </Trans> </p> </div> </label> </CardContent> </Card> ); } 
 #. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { Navigate, useNavigate } from "react-router-dom"; import type { EmbeddedForm } from "@/components/panel/embedded"; import { Breadcrumb } from "@/components/Breadcrumb"; import { PageHeader } from "@/components/PageHeader"; import { IconArrowLeft, IconBuildings, IconCheck, IconCopy, IconLink, IconPlus, IconRefresh, IconScroll, IconSearch, IconUser, IconX, } from "@/components/icons"; import { PersonAvatar } from "@/components/PersonAvatar"; import { SearchInput } from "@/components/SearchInput"; import { useToast } from "@/components/Toast"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { FormActions } from "@/components/ui/form-actions"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { Textarea } from "@/components/ui/textarea"; import { useAuth } from "@/hooks/useAuth"; import { isClanAdmin, useClanContext } from "@/hooks/useClanContext"; import { listCommunityClans, type ClanSummary } from "@/lib/queries/clans"; import { SegmentedButton, SegmentedControl, } from "@/components/ui/segmented-control"; import { track } from "@/lib/analytics"; import { listPersons, type PersonRow } from "@/lib/queries/persons"; import { LINK_TYPE_HELP, LINK_TYPE_LABEL, notifyInlaw, proposeLink, proposeLinkDirect, isInlawCacheKey, type PersonLink, type PersonLinkType, } from "@/lib/queries/person-links"; import { Trans } from "@lingui/react/macro"; import { t } from "@lingui/core/macro"; /** * Propose-link page. Two modes: * * 1. Token — admin A creates a pending row with an invite_token, * shares the URL out-of-band with admin B. Works for * private clans (B is who A talks to). * 2. Direct — admin A searches the community of public clans, picks * clan B + person B directly. The row has both sides * filled, no token, and notify-inlaw emails admin B * about the new pending invite. Works only for public * clans. * * Step 1 (pick local person) is shared. Step 2 forks by mode. */ type Mode = "token" | "direct"; export default function InlawsNew({ embedded, }: { embedded?: EmbeddedForm } = {}) { const { clan } = useClanContext(); const { user } = useAuth(); const userId = user?.id ?? ""; const navigate = useNavigate(); const qc = useQueryClient(); const toast = useToast(); if (!isClanAdmin(clan)) { return <Navigate to={`/clans/${clan.id}`} replace />; } const [linkType, setLinkType] = useState<PersonLinkType>("same_person"); const [picked, setPicked] = useState<PersonRow | null>(null); const [mode, setMode] = useState<Mode>("token"); // Token-mode inputs const [hint, setHint] = useState(""); const [note, setNote] = useState(""); // Direct-mode picks const [peerClan, setPeerClan] = useState<ClanSummary | null>(null); const [peerPerson, setPeerPerson] = useState<PersonRow | null>(null); const [createdLink, setCreatedLink] = useState<PersonLink | null>(null); const tokenM = useMutation({ mutationFn: () => proposeLink({ linkType, clanAId: clan.id, personAId: picked!.id, personBNameHint: hint, note, createdBy: userId, }), onSuccess: (link) => { setCreatedLink(link); qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) }); track("inlaw_proposed", { mode: "token", type: linkType }); toast.success(t`Đã tạo mã mời`); }, onError: (e) => toast.error(t`Không tạo được`, { description: (e as Error).message }), }); const directM = useMutation({ mutationFn: () => proposeLinkDirect({ linkType, clanAId: clan.id, personAId: picked!.id, clanBId: peerClan!.id, personBId: peerPerson!.id, note, createdBy: userId, }), onSuccess: (link) => { qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) }); track("inlaw_proposed", { mode: "direct", type: linkType }); toast.success(t`Đã gửi đề nghị tới ` + (peerClan?.name ?? ""), { description: t`Bên kia sẽ nhận email và xem trong /inlaws.`, }); notifyInlaw(link.id); if (embedded) embedded.onDone(); else navigate(`/clans/${clan.id}/inlaws`); }, onError: (e) => toast.error(t`Không gửi được`, { description: (e as Error).message }), }); return ( <div className="space-y-3"> {!embedded && ( <> <Breadcrumb items={[ { label: clan.name, to: `/clans/${clan.id}` }, { label: t`Liên kết dòng họ`, to: `/clans/${clan.id}/inlaws` }, { label: t`Đề nghị mới` }, ]} /> <PageHeader icon={<IconLink className="h-7 w-7" />} title={t`Đề nghị liên kết dòng họ`} description={t`Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, hoặc họ hàng. Admin bên kia phải xác nhận.`} /> </> )} {!createdLink && !picked && ( <LinkTypeStep value={linkType} onChange={setLinkType} /> )} {createdLink ? ( <CreatedTokenView link={createdLink} onBack={() => embedded ? embedded.onDone() : navigate(`/clans/${clan.id}/inlaws`) } onAnother={() => { // Tạo thêm: về bước đầu với biểu mẫu trống. setCreatedLink(null); setPicked(null); setHint(""); setNote(""); setPeerClan(null); setPeerPerson(null); }} /> ) : !picked ? ( <PickLocalPersonStep clanId={clan.id} genOffset={clan.generation_offset} linkType={linkType} onPick={setPicked} /> ) : ( <ModeStep mode={mode} setMode={setMode} local={picked} localGenOffset={clan.generation_offset} onBackToPick={() => setPicked(null)} // token mode hint={hint} setHint={setHint} note={note} setNote={setNote} submitToken={() => tokenM.mutate()} submittingToken={tokenM.isPending} tokenError={tokenM.error as Error | null} // direct mode ownClanId={clan.id} peerClan={peerClan} setPeerClan={setPeerClan} peerPerson={peerPerson} setPeerPerson={setPeerPerson} submitDirect={() => directM.mutate()} submittingDirect={directM.isPending} directError={directM.error as Error | null} /> )} </div> ); } // ─── Step 1: pick a person from this clan ──────────────────────────── /** Bước đầu: chọn loại liên kết (thông gia / tổ tiên – hậu duệ / họ hàng). */ function LinkTypeStep({ value, onChange, }: { value: PersonLinkType; onChange: (t: PersonLinkType) => void; }) { const types: PersonLinkType[] = [ "same_person", "ancestor_of", "descendant_of", "related", ]; return ( <div className="space-y-3"> <StepHeader number={1} title={t`Loại liên kết`} /> <div role="radiogroup" aria-label={t`Loại liên kết`} className="grid grid-cols-1 gap-2 sm:grid-cols-2" > {types.map((t) => ( <button key={t} type="button" role="radio" aria-checked={value === t} onClick={() => onChange(t)} className={`rounded-lg border p-3 text-left transition-colors ${ value === t ? "border-primary bg-primary/5" : "bg-card hover:border-primary/60" }`} > <span className="block font-medium">{LINK_TYPE_LABEL[t]}</span> <span className="mt-0.5 block text-sm text-muted-foreground"> {LINK_TYPE_HELP[t]} </span> </button> ))} </div> </div> ); } const PICK_DESCRIPTION: Record<PersonLinkType, string> = { same_person: "Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của bên kia.", ancestor_of: "Chọn người trong dòng họ này là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ).", descendant_of: "Chọn người trong dòng họ này là HẬU DUỆ của một người ở dòng họ kia.", related: "Chọn người trong dòng họ này làm đầu mối liên kết; nêu rõ quan hệ ở phần ghi chú.", }; function PickLocalPersonStep({ clanId, genOffset, linkType, onPick, }: { clanId: string; genOffset: number; linkType: PersonLinkType; onPick: (p: PersonRow) => void; }) { const [search, setSearch] = useState(""); const { data, isFetching } = useQuery({ queryKey: ["inlaws-people-search", clanId, search], queryFn: () => listPersons(clanId, { page: 1, pageSize: 15, search: search.trim(), branchId: null, generation: null, sort: "name", source: "persons", }), enabled: search.trim().length > 0, staleTime: 30_000, }); const rows = data?.rows ?? []; return ( <div className="space-y-4"> <div className="space-y-3"> <StepHeader number={2} title={t`Chọn người trong dòng họ này`} description={PICK_DESCRIPTION[linkType]} /> <SearchInput label={t`Tìm theo tên`} value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t`Gõ tên đầy đủ hoặc một phần…`} /> </div> {isFetching && ( <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p> )} {search.trim() && !isFetching && rows.length === 0 && ( <div className="rounded-md border bg-card px-4 py-3 text-sm text-muted-foreground inline-flex items-start gap-2"> <IconSearch className="h-4 w-4 mt-0.5 shrink-0" /> <p>{t`Không tìm thấy ai khớp tên. Thử từ khoá ngắn hơn.`}</p> </div> )} {rows.length > 0 && ( <ul className="divide-y rounded-md border bg-background"> {rows.map((p) => ( <li key={p.id}> <button type="button" onClick={() => onPick(p)} className="w-full text-left flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40" > <PersonAvatar gender={p.gender} photoUrl={null} size={40} /> <div className="min-w-0 flex-1"> <p className="font-medium truncate">{p.full_name}</p> <p className="text-xs text-muted-foreground truncate"> {p.gender === "M" ? "Nam" : t`Nữ`} {p.generation !== null ? t` · Đời ${p.generation - genOffset}` : ""} {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""} </p> </div> </button> </li> ))} </ul> )} </div> ); } // ─── Step 2: mode + per-mode body ──────────────────────────────────── interface ModeStepProps { mode: Mode; setMode: (m: Mode) => void; local: PersonRow; localGenOffset: number; onBackToPick: () => void; // token mode hint: string; setHint: (s: string) => void; note: string; setNote: (s: string) => void; submitToken: () => void; submittingToken: boolean; tokenError: Error | null; // direct mode ownClanId: string; peerClan: ClanSummary | null; setPeerClan: (c: ClanSummary | null) => void; peerPerson: PersonRow | null; setPeerPerson: (p: PersonRow | null) => void; submitDirect: () => void; submittingDirect: boolean; directError: Error | null; } function ModeStep(props: ModeStepProps) { const { mode, setMode, local, localGenOffset, onBackToPick } = props; return ( <div className="space-y-5"> {/* Local-person summary card */} <div className="rounded-xl border bg-card shadow-sm p-3 flex items-center gap-3"> <PersonAvatar gender={local.gender} photoUrl={null} size={48} /> <div className="min-w-0 flex-1"> <p className="font-medium">{local.full_name}</p> <p className="text-xs text-muted-foreground"> {local.gender === "M" ? "Nam" : t`Nữ`} {local.generation !== null ? t` · Đời ${local.generation - localGenOffset}` : ""} {local.birth_date ? ` · sinh ${local.birth_date.slice(0, 4)}` : ""} </p> </div> <Button variant="outline" size="sm" onClick={onBackToPick}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi`} </Button> </div> {/* Step 2 header — rendered as a block heading so the inline-flex SegmentedControl below doesn't sit on the same row as the label (previous issue). */} <div className="space-y-3"> <StepHeader number={3} title={t`Cách đề nghị`} /> <SegmentedControl ariaLabel={t`Cách đề nghị`} className="w-full sm:w-auto" > <SegmentedButton active={mode === "token"} onClick={() => setMode("token")} className="flex-1 sm:flex-none" > {t`Gửi mã mời`} </SegmentedButton> <SegmentedButton active={mode === "direct"} onClick={() => setMode("direct")} className="flex-1 sm:flex-none" > {t`Tìm dòng họ công khai`} </SegmentedButton> </SegmentedControl> <p className="text-xs text-muted-foreground"> {mode === "token" ? t`Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư.` : t`Chỉ áp dụng cho clan bên kia đặt công khai. App tự email admin bên đó.`} </p> </div> {mode === "token" ? <TokenBody {...props} /> : <DirectBody {...props} />} </div> ); } // ─── Mode A: token ─────────────────────────────────────────────────── function TokenBody(props: ModeStepProps) { return ( <div className="space-y-5"> <div className="space-y-2"> <Label htmlFor="hint">{t`Người bên kia là ai (gợi ý)`}</Label> <Input id="hint" icon={<IconUser />} maxLength={200} value={props.hint} onChange={(e) => props.setHint(e.target.value)} placeholder={t`Vd: Đỗ Thị B, sinh 1975, quê Hà Nội`} /> <p className="text-xs text-muted-foreground"> {t`Tuỳ chọn. Admin bên kia thấy khi nhập mã mời.`} </p> </div> <Textarea id="note" label={t`Ghi chú`} icon={<IconScroll />} rows={3} maxLength={500} value={props.note} onChange={(e) => props.setNote(e.target.value)} placeholder={t`Tuỳ chọn. Ghi chú thêm về quan hệ.`} /> {props.tokenError && ( <Alert variant="destructive"> <AlertDescription>{props.tokenError.message}</AlertDescription> </Alert> )} <FormActions> <Button variant="outline" onClick={props.onBackToPick} disabled={props.submittingToken} > <IconX className="h-4 w-4 mr-1.5" /> {t`Huỷ`} </Button> <Button onClick={props.submitToken} disabled={props.submittingToken}> {props.submittingToken ? ( t`Đang tạo…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Tạo mã mời`} </> )} </Button> </FormActions> </div> ); } // ─── Mode B: public-discovery ──────────────────────────────────────── function DirectBody(props: ModeStepProps) { const { ownClanId, peerClan, setPeerClan, peerPerson, setPeerPerson } = props; return ( <div className="space-y-5"> {!peerClan ? ( <PickPeerClanStep ownClanId={ownClanId} onPick={setPeerClan} /> ) : !peerPerson ? ( <PickPeerPersonStep peerClan={peerClan} onPick={setPeerPerson} onBack={() => setPeerClan(null)} /> ) : ( <PeerConfirmStep peerClan={peerClan} peerPerson={peerPerson} note={props.note} setNote={props.setNote} onChangePerson={() => setPeerPerson(null)} onChangeClan={() => { setPeerPerson(null); setPeerClan(null); }} onSubmit={props.submitDirect} submitting={props.submittingDirect} error={props.directError} /> )} </div> ); } function PickPeerClanStep({ ownClanId, onPick, }: { ownClanId: string; onPick: (c: ClanSummary) => void; }) { const { user } = useAuth(); const userId = user?.id ?? ""; const [q, setQ] = useState(""); const { data, isFetching } = useQuery({ queryKey: ["inlaws-peer-clans", userId, q], queryFn: () => listCommunityClans(userId, { page: 1, pageSize: 15, search: q.trim() || undefined, }), enabled: !!userId, staleTime: 60_000, }); const rows = (data?.rows ?? []).filter((c) => c.id !== ownClanId); return ( <div className="space-y-3"> <Label>{t`Tìm dòng họ công khai`}</Label> <SearchInput label={t`Tìm theo tên dòng họ`} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t`Tên dòng họ bên kia…`} /> {isFetching && ( <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p> )} {rows.length > 0 && ( <ul className="divide-y rounded-md border bg-background"> {rows.map((c) => ( <li key={c.id}> <button type="button" onClick={() => onPick(c)} className="w-full text-left flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40" > <IconBuildings className="h-5 w-5 text-primary shrink-0" /> <div className="min-w-0 flex-1"> <p className="font-medium truncate">{c.name}</p> <p className="text-xs text-muted-foreground truncate"> {c.person_count} người {c.description ? ` · ${c.description}` : ""} </p> </div> </button> </li> ))} </ul> )} {!isFetching && rows.length === 0 && ( <p className="text-sm text-muted-foreground"> <Trans> <Trans> <Trans> Không có dòng họ công khai nào khớp. Nếu dòng họ bên kia đang đặt riêng tư, dùng tab "Gửi mã mời". </Trans> </Trans> </Trans> </p> )} </div> ); } function PickPeerPersonStep({ peerClan, onPick, onBack, }: { peerClan: ClanSummary; onPick: (p: PersonRow) => void; onBack: () => void; }) { const [q, setQ] = useState(""); const { data, isFetching } = useQuery({ queryKey: ["inlaws-peer-persons", peerClan.id, q], queryFn: () => // Non-members read through the masked view; the persons table // itself rejects them. Switch source so search works even when // the caller is just browsing a public clan. listPersons(peerClan.id, { page: 1, pageSize: 15, search: q.trim(), branchId: null, generation: null, sort: "name", source: "persons_public_safe", }), enabled: q.trim().length > 0, staleTime: 30_000, }); const rows = data?.rows ?? []; return ( <div className="space-y-3"> <div className="flex items-center justify-between"> <Label>Chọn người trong {peerClan.name}</Label> <Button variant="outline" size="sm" onClick={onBack}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi dòng họ`} </Button> </div> <SearchInput label={t`Tìm theo tên`} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t`Gõ tên đầy đủ hoặc một phần…`} /> {isFetching && ( <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p> )} {rows.length > 0 && ( <ul className="divide-y rounded-md border bg-background"> {rows.map((p) => ( <li key={p.id}> <button type="button" onClick={() => onPick(p)} className="w-full text-left flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40" > <PersonAvatar gender={p.gender} photoUrl={null} size={40} /> <div className="min-w-0 flex-1"> <p className="font-medium truncate">{p.full_name}</p> <p className="text-xs text-muted-foreground truncate"> {p.gender === "M" ? "Nam" : t`Nữ`} {p.generation !== null ? t` · Đời ${p.generation - peerClan.generation_offset}` : ""} {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""} </p> </div> </button> </li> ))} </ul> )} {q.trim() && !isFetching && rows.length === 0 && ( <p className="text-sm text-muted-foreground"> <Trans> <Trans> <Trans> Không tìm thấy ai khớp tên (lưu ý: clan công khai có thể ẩn người còn sống — chỉ liệt kê người đã mất nếu bạn không phải thành viên). </Trans> </Trans> </Trans> </p> )} </div> ); } function PeerConfirmStep({ peerClan, peerPerson, note, setNote, onChangePerson, onChangeClan, onSubmit, submitting, error, }: { peerClan: ClanSummary; peerPerson: PersonRow; note: string; setNote: (s: string) => void; onChangePerson: () => void; onChangeClan: () => void; onSubmit: () => void; submitting: boolean; error: Error | null; }) { return ( <div className="space-y-4"> <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2"> <div className="flex items-center justify-between gap-3"> <div className="inline-flex items-center gap-2 text-sm"> <IconBuildings className="h-4 w-4 text-primary" /> <span className="font-medium">{peerClan.name}</span> </div> <Button variant="outline" size="sm" onClick={onChangeClan}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi`} </Button> </div> <div className="flex items-center justify-between gap-3 pt-2 border-t"> <div className="flex items-center gap-3 min-w-0"> <PersonAvatar gender={peerPerson.gender} photoUrl={null} size={40} /> <div className="min-w-0"> <p className="font-medium">{peerPerson.full_name}</p> <p className="text-xs text-muted-foreground"> {peerPerson.gender === "M" ? "Nam" : t`Nữ`} {peerPerson.generation !== null ? t` · Đời ${peerPerson.generation - peerClan.generation_offset}` : ""} {peerPerson.birth_date ? ` · sinh ${peerPerson.birth_date.slice(0, 4)}` : ""} </p> </div> </div> <Button variant="outline" size="sm" onClick={onChangePerson}> <IconRefresh className="h-4 w-4 mr-1.5" /> {t`Đổi`} </Button> </div> </div> <Textarea id="note" label={t`Ghi chú (tuỳ chọn)`} icon={<IconScroll />} rows={3} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t`Vd: Cưới năm 2010, có 2 con.`} /> <Alert> <AlertDescription> Đề nghị sẽ ở trạng thái <strong>{t`Đang chờ`}</strong> cho tới khi admin bên kia mở <code>/clans/&lt;id&gt;/inlaws</code> → tab "Đang chờ" → Xác nhận hoặc Từ chối. </AlertDescription> </Alert> {error && ( <Alert variant="destructive"> <AlertDescription>{error.message}</AlertDescription> </Alert> )} <FormActions> <Button onClick={onSubmit} disabled={submitting}> {submitting ? ( t`Đang gửi…` ) : ( <> <IconCheck className="h-4 w-4 mr-1.5" /> {t`Gửi đề nghị`} </> )} </Button> </FormActions> </div> ); } // ─── Token created — show URL ──────────────────────────────────────── function CreatedTokenView({ link, onBack, onAnother, }: { link: PersonLink; onBack: () => void; onAnother: () => void; }) { const toast = useToast(); const [copied, setCopied] = useState(false); const confirmUrl = useMemo( () => `${window.location.origin}/inlaws/confirm/${link.invite_token}`, [link.invite_token], ); async function copy() { try { await navigator.clipboard.writeText(confirmUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); toast.success(t`Đã chép link mời`); } catch { toast.error(t`Không chép được — chọn và copy thủ công`); } } return ( <div className="space-y-4"> <Alert> <AlertDescription> <strong>{t`Đã tạo mã mời.`}</strong> Gửi link dưới cho admin của dòng họ bên kia (qua Zalo, email, tin nhắn…). Họ mở link → chọn người → liên kết được xác nhận. </AlertDescription> </Alert> <div className="space-y-2"> <Label>{t`Link mời`}</Label> <Input readOnly icon={<IconLink />} value={confirmUrl} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} action={ <Button type="button" size="icon" variant="ghost" onClick={copy} aria-label={copied ? t`Đã chép` : t`Chép link`} title={copied ? t`Đã chép` : t`Chép link`} className="h-10 w-10" > {copied ? ( <IconCheck className="h-4 w-4" /> ) : ( <IconCopy className="h-4 w-4" /> )} </Button> } /> <p className="text-xs text-muted-foreground"> <Trans> {t`Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự huỷ.`} </Trans> </p> </div> <FormActions> <Button type="button" variant="outline" onClick={onAnother}> <IconPlus className="h-4 w-4 mr-1.5" /> {t`Tạo thêm`} </Button> <Button type="button" onClick={onBack}> <IconArrowLeft className="h-4 w-4 mr-1.5" /> {t`Về danh sách liên kết`} </Button> </FormActions> </div> ); } // ─── StepHeader ───────────────────────────────────────────────────── // Block-level step heading used by Bước 1 + Bước 2. A small numeric // pill on the left + bold title; optional one-line description below. // Replaces the previous bare `<Label>Bước N: …</Label>` which rendered // inline (since radix Label is a `<label>` element) and collided with // any sibling inline-flex control on the same row. function StepHeader({ number, title, description, }: { number: number; title: string; description?: string; }) { return ( <div> <div className="flex items-baseline gap-2.5"> <span aria-hidden="true" className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold shrink-0" > {number} </span> <h3 className="text-base font-semibold">{title}</h3> </div> {description && ( <p className="text-sm text-muted-foreground mt-1.5 ml-8"> {description} </p> )} </div> ); } 
 #: src/pages/Account.tsx
 #: src/pages/clan/InlawsNew.tsx
@@ -487,6 +487,10 @@ msgstr "≠ xung đột"
 msgid "♀ Nữ"
 msgstr "♀ Nữ"
 
+#: src/pages/clan/GoodDays.tsx
+msgid "⚱️ Tảo mộ / Chạp họ"
+msgstr "⚱️ Tảo mộ / Chạp họ"
+
 #: src/pages/clan/Audit.tsx
 msgid "✓ Đã khôi phục"
 msgstr "✓ Đã khôi phục"
@@ -502,8 +506,13 @@ msgid "✕ Nên tránh"
 msgstr "✕ Nên tránh"
 
 #: src/components/TodayHubCard.tsx
+#: src/pages/clan/GoodDays.tsx
 msgid "🎂 Sinh nhật"
 msgstr "🎂 Sinh nhật"
+
+#: src/pages/clan/GoodDays.tsx
+msgid "🏮 Lễ, tết"
+msgstr "🏮 Lễ, tết"
 
 #: src/pages/Login.tsx
 msgid "👀 Xem thử gia phả mẫu — không cần đăng nhập"
@@ -514,6 +523,7 @@ msgid "📌 Đã ghim"
 msgstr "📌 Đã ghim"
 
 #: src/components/TodayHubCard.tsx
+#: src/pages/clan/GoodDays.tsx
 msgid "📌 Sự kiện"
 msgstr "📌 Sự kiện"
 
@@ -522,6 +532,7 @@ msgid "🔊 Âm thanh"
 msgstr "🔊 Âm thanh"
 
 #: src/components/TodayHubCard.tsx
+#: src/pages/clan/GoodDays.tsx
 msgid "🕯️ Ngày giỗ"
 msgstr "🕯️ Ngày giỗ"
 
@@ -1150,7 +1161,10 @@ msgstr "Bên ngoại"
 msgid "Bên nội"
 msgstr "Bên nội"
 
+#: src/components/InviteLinkCard.tsx
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Members.tsx
+#: src/pages/JoinClan.tsx
 msgid "Biên tập"
 msgstr "Biên tập"
 
@@ -1244,6 +1258,8 @@ msgstr "Bổ sung →"
 
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
+#: src/pages/clan/ContributionDetail.tsx
+#: src/pages/clan/Contributions.tsx
 msgid "Bổ sung tiểu sử"
 msgstr "Bổ sung tiểu sử"
 
@@ -1291,6 +1307,10 @@ msgstr "Cả cây"
 #: src/pages/clan/Tree.tsx
 msgid "Cả cây — in khổ lớn, phóng to không vỡ"
 msgstr "Cả cây — in khổ lớn, phóng to không vỡ"
+
+#: src/pages/Account.tsx
+msgid "cả dòng họ"
+msgstr "cả dòng họ"
 
 #: src/pages/clan/Tree.tsx
 msgid "Cả dòng họ liền một cột trên một trang; trang dài ra theo số người (họ lớn thì dài hơn A4)."
@@ -1454,6 +1474,7 @@ msgid "Cần thêm"
 msgstr "Cần thêm"
 
 #: src/pages/clan/ContributionDetail.tsx
+#: src/pages/clan/ContributionDetail.tsx
 msgid "Cần thêm thông tin"
 msgstr "Cần thêm thông tin"
 
@@ -1461,6 +1482,7 @@ msgstr "Cần thêm thông tin"
 msgid "Cần trợ giúp? Xem"
 msgstr "Cần trợ giúp? Xem"
 
+#: src/pages/AnnouncementDetail.tsx
 #: src/pages/clan/Import.tsx
 msgid "Cảnh báo"
 msgstr "Cảnh báo"
@@ -1476,12 +1498,16 @@ msgstr "Canvas phả đồ"
 msgid "Cao hơn → tranh mờ hơn, chữ dễ đọc hơn. Chỉ áp dụng trong app, không áp dụng cho trang chia sẻ công khai."
 msgstr "Cao hơn → tranh mờ hơn, chữ dễ đọc hơn. Chỉ áp dụng trong app, không áp dụng cho trang chia sẻ công khai."
 
+#: src/components/ClanPostCard.tsx
+#: src/pages/clan/Board.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Cáo phó"
 msgstr "Cáo phó"
 
 #: src/components/BoardPostForm.tsx
 #: src/components/UpdateBanner.tsx
+#: src/pages/AnnouncementDetail.tsx
 msgid "Cập nhật"
 msgstr "Cập nhật"
 
@@ -1514,6 +1540,7 @@ msgstr "Cấu hình, share links, xuất dữ liệu, xoá dòng họ."
 
 #: src/components/ai/ChatComposer.tsx
 #: src/pages/CustomsForm.tsx
+#: src/pages/MyFeedback.tsx
 msgid "Câu hỏi"
 msgstr "Câu hỏi"
 
@@ -1872,6 +1899,7 @@ msgstr "chờ duyệt"
 
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
 #: src/pages/Customs.tsx
 msgid "Chờ duyệt"
@@ -2257,6 +2285,10 @@ msgstr "Chưa gắn người nào. Bấm Sửa để thêm."
 msgid "Chưa gắn vào cây"
 msgstr "Chưa gắn vào cây"
 
+#: src/pages/clan/Todo.tsx
+msgid "chưa ghi con"
+msgstr "chưa ghi con"
+
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Chưa ghi lần cải táng nào (bốc mộ / sang cát)."
 msgstr "Chưa ghi lần cải táng nào (bốc mộ / sang cát)."
@@ -2373,6 +2405,10 @@ msgstr "Cơ sở / nghĩa trang (tuỳ chọn)"
 msgid "Có sự kiện dòng họ"
 msgstr "Có sự kiện dòng họ"
 
+#: src/pages/clan/Dashboard.tsx
+msgid "có thể còn thiếu con"
+msgstr "có thể còn thiếu con"
+
 #: src/pages/clan/People.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -2438,6 +2474,7 @@ msgid "con gái"
 msgstr "con gái"
 
 #: src/components/ClanStatsPanel.tsx
+#: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 msgid "Còn sống"
 msgstr "Còn sống"
@@ -2526,6 +2563,10 @@ msgstr "Đã bật thông báo — bạn sẽ nhận nhắc giỗ, sinh nhật, 
 #: src/pages/clan/MyLineage.tsx
 msgid "Đã bỏ chọn người đại diện"
 msgstr "Đã bỏ chọn người đại diện"
+
+#: src/components/SharedRestingPlaceCard.tsx
+msgid "Đã cải táng"
+msgstr "Đã cải táng"
 
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Đã cập nhật"
@@ -2687,6 +2728,7 @@ msgstr "Đã dùng {0} lượt trong tháng này — xem chi tiết"
 msgid "Đã được xử lý lúc"
 msgstr "Đã được xử lý lúc"
 
+#: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
 msgid "Đã duyệt"
 msgstr "Đã duyệt"
@@ -3112,6 +3154,7 @@ msgstr "Đã thu hồi link"
 msgid "Đã thu hồi link lịch"
 msgstr "Đã thu hồi link lịch"
 
+#: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/Contributions.tsx
 msgid "Đã từ chối"
 msgstr "Đã từ chối"
@@ -3884,6 +3927,10 @@ msgstr "Để trống thì hệ thống tự tính từ năm sinh – năm mất
 msgid "Đề xuất"
 msgstr "Đề xuất"
 
+#: src/pages/MyFeedback.tsx
+msgid "Đề xuất / ý kiến"
+msgstr "Đề xuất / ý kiến"
+
 #: src/pages/clan/Todo.tsx
 msgid "đề xuất bổ sung."
 msgstr "đề xuất bổ sung."
@@ -3989,6 +4036,14 @@ msgstr "Điều khoản"
 msgid "Định dạng .xlsx hoặc .csv. Các cột:"
 msgstr "Định dạng .xlsx hoặc .csv. Các cột:"
 
+#: src/components/ContributionDiffView.tsx
+msgid "Độ chính xác ngày mất"
+msgstr "Độ chính xác ngày mất"
+
+#: src/components/ContributionDiffView.tsx
+msgid "Độ chính xác ngày sinh"
+msgstr "Độ chính xác ngày sinh"
+
 #: src/components/BackgroundPicker.tsx
 msgid "Độ mờ lớp phủ"
 msgstr "Độ mờ lớp phủ"
@@ -4000,6 +4055,10 @@ msgstr "Do quản trị nền tảng đặt, không sửa được ở đây."
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Đỏ rượu"
 msgstr "Đỏ rượu"
+
+#: src/components/PersonAvatar.tsx
+msgid "Đỏ son viền vàng"
+msgstr "Đỏ son viền vàng"
 
 #: src/pages/Customs.tsx
 #: src/pages/CustomsDetail.tsx
@@ -4564,6 +4623,8 @@ msgstr "ghi nhận"
 msgid "Ghim lên đầu"
 msgstr "Ghim lên đầu"
 
+#: src/components/RecentActivityPanel.tsx
+#: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 msgid "Gia đình"
 msgstr "Gia đình"
@@ -4619,6 +4680,7 @@ msgstr "Giỗ {anniv}"
 msgid "Giờ bạn có thể thêm ảnh và ghi âm kể chuyện."
 msgstr "Giờ bạn có thể thêm ảnh và ghi âm kể chuyện."
 
+#: src/components/EventDetailDialog.tsx
 #: src/pages/clan/Events.tsx
 msgid "Giỗ chung"
 msgstr "Giỗ chung"
@@ -4644,6 +4706,7 @@ msgid "Giới hạn"
 msgstr "Giới hạn"
 
 #: src/components/ClanStatsPanel.tsx
+#: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/components/QuickAddSheet.tsx
@@ -4854,6 +4917,11 @@ msgstr "Gửi phản hồi"
 msgid "Gửi thông báo test"
 msgstr "Gửi thông báo test"
 
+#: src/components/SharedPersonCard.tsx
+#: src/components/SharedRestingPlaceCard.tsx
+msgid "Gửi tro cốt ở chùa"
+msgstr "Gửi tro cốt ở chùa"
+
 #: src/pages/clan/Dashboard.tsx
 msgid "Hai bước để cùng vun đắp gia phả: cho biết bạn là ai trong cây, rồi bổ sung người thân của mình."
 msgstr "Hai bước để cùng vun đắp gia phả: cho biết bạn là ai trong cây, rồi bổ sung người thân của mình."
@@ -4928,6 +4996,10 @@ msgstr "Hiện đường nối cha–con, vợ–chồng tự động"
 #: src/components/Tree3DView.tsx
 msgid "Hiện hướng dẫn"
 msgstr "Hiện hướng dẫn"
+
+#: src/components/SharedRestingPlaceCard.tsx
+msgid "Hiện hữu"
+msgstr "Hiện hữu"
 
 #: src/pages/clan/BoardPostDetail.tsx
 msgid "Hiện lại"
@@ -5034,6 +5106,7 @@ msgstr "Họ tên"
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributeDialog.tsx
 #: src/components/ContributionDiffView.tsx
+#: src/components/ContributionDiffView.tsx
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/AddSpouse.tsx
 #: src/pages/clan/EditPerson.tsx
@@ -5071,6 +5144,10 @@ msgstr "Hoàn tác (Ctrl+Z)"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Hoàn tất"
 msgstr "Hoàn tất"
+
+#: src/components/PersonAvatar.tsx
+msgid "Hoàng gia"
+msgstr "Hoàng gia"
 
 #: src/components/ShareLinksSection.tsx
 msgid "Hoạt động"
@@ -5110,6 +5187,7 @@ msgstr "Hôm sau"
 msgid "Hôm trước"
 msgstr "Hôm trước"
 
+#: src/components/EventDetailDialog.tsx
 #: src/pages/clan/Events.tsx
 msgid "Họp họ"
 msgstr "Họp họ"
@@ -5291,6 +5369,12 @@ msgstr "Kéo thả vào canvas (hoặc nhấp để thêm)."
 #: src/pages/clan/Kinship.tsx
 msgid "Kết quả"
 msgstr "Kết quả"
+
+#: src/components/SharedPersonCard.tsx
+#: src/components/SharedRestingPlaceCard.tsx
+#: src/pages/MyFeedback.tsx
+msgid "Khác"
+msgstr "Khác"
 
 #: src/components/BirthOrderPicker.tsx
 msgid "Khác…"
@@ -6147,6 +6231,7 @@ msgstr "Liên hệ / phản hồi"
 
 #: src/lib/navModel.tsx
 #: src/pages/clan/Audit.tsx
+#: src/pages/clan/Audit.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Inlaws.tsx
@@ -6420,6 +6505,10 @@ msgstr "Lọc xã / phường"
 msgid "Lỗi"
 msgstr "Lỗi"
 
+#: src/pages/MyFeedback.tsx
+msgid "Lỗi / sự cố"
+msgstr "Lỗi / sự cố"
+
 #: src/pages/Account.tsx
 msgid "Lỗi khi test"
 msgstr "Lỗi khi test"
@@ -6687,6 +6776,11 @@ msgstr "Mở"
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Mở {0}"
 msgstr "Mở {0}"
+
+#: src/components/SharedPersonCard.tsx
+#: src/components/SharedRestingPlaceCard.tsx
+msgid "Mộ / chôn cất"
+msgstr "Mộ / chôn cất"
 
 #: src/components/ShareAppQrButton.tsx
 msgid "Mở camera điện thoại, hướng vào mã QR để mở app."
@@ -7031,6 +7125,10 @@ msgstr "mục"
 msgid "Mức bắt buộc"
 msgstr "Mức bắt buộc"
 
+#: src/pages/clan/MapStats.tsx
+msgid "mục di sản"
+msgstr "mục di sản"
+
 #: src/components/panel/PanelHost.tsx
 msgid "Mục di sản"
 msgstr "Mục di sản"
@@ -7074,6 +7172,10 @@ msgstr "Năm {0}"
 msgid "Năm mất"
 msgstr "Năm mất"
 
+#: src/components/ContributionDiffView.tsx
+msgid "Năm mất (âm)"
+msgstr "Năm mất (âm)"
+
 #: src/components/QuickDateFixSheet.tsx
 msgid "Năm mất không hợp lệ"
 msgstr "Năm mất không hợp lệ"
@@ -7086,6 +7188,10 @@ msgstr "Năm mất không hợp lệ"
 #: src/pages/clan/Relations.tsx
 msgid "Năm sinh"
 msgstr "Năm sinh"
+
+#: src/components/ContributionDiffView.tsx
+msgid "Năm sinh (âm)"
+msgstr "Năm sinh (âm)"
 
 #: src/components/QuickDateFixSheet.tsx
 msgid "Năm sinh không hợp lệ"
@@ -7167,6 +7273,7 @@ msgstr "Ngày diễn ra (tuỳ chọn)"
 msgid "Ngày dương lịch"
 msgstr "Ngày dương lịch"
 
+#: src/components/ContributionDiffView.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Dashboard.tsx
@@ -7188,12 +7295,14 @@ msgid "Ngày mai"
 msgstr "Ngày mai"
 
 #: src/components/ContributionDiffView.tsx
+#: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Ngày mất"
 msgstr "Ngày mất"
 
+#: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Ngày mất (âm)"
@@ -7209,6 +7318,7 @@ msgid "Ngày mất (nếu đã mất)"
 msgstr "Ngày mất (nếu đã mất)"
 
 #: src/components/ContributionDiffView.tsx
+#: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
@@ -7217,6 +7327,7 @@ msgstr "Ngày mất (nếu đã mất)"
 msgid "Ngày sinh"
 msgstr "Ngày sinh"
 
+#: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Ngày sinh (âm)"
@@ -7288,6 +7399,10 @@ msgstr "Nghĩa trang, chùa, hoa viên, tháp lưu tro… để gom các mộ ph
 msgid "Ngọc"
 msgstr "Ngọc"
 
+#: src/components/PersonAvatar.tsx
+msgid "Ngọc bích"
+msgstr "Ngọc bích"
+
 #: src/pages/Account.tsx
 msgid "Ngôn ngữ"
 msgstr "Ngôn ngữ"
@@ -7308,10 +7423,13 @@ msgid "Ngũ hành {0}"
 msgstr "Ngũ hành {0}"
 
 #: src/components/MapOverviewCard.tsx
+#: src/pages/clan/MapStats.tsx
 #: src/pages/clan/People.tsx
 msgid "người"
 msgstr "người"
 
+#: src/components/RecentActivityPanel.tsx
+#: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/EditPerson.tsx
 msgid "Người"
@@ -7445,6 +7563,11 @@ msgstr "Nguyễn Văn A"
 #: src/components/ContributeDialog.tsx
 msgid "Nguyễn Văn B"
 msgstr "Nguyễn Văn B"
+
+#: src/components/SharedPersonCard.tsx
+#: src/components/SharedRestingPlaceCard.tsx
+msgid "Nhà lưu tro / tháp cốt"
+msgstr "Nhà lưu tro / tháp cốt"
 
 #: src/pages/CustomsForm.tsx
 msgid "nhà mới, chuyển nhà, tân gia"
@@ -7624,6 +7747,10 @@ msgstr "Niên hiệu"
 msgid "Nơi"
 msgstr "Nơi"
 
+#: src/pages/clan/MapStats.tsx
+msgid "nơi an nghỉ"
+msgstr "nơi an nghỉ"
+
 #: src/components/panel/PanelHost.tsx
 msgid "Nơi an nghỉ"
 msgstr "Nơi an nghỉ"
@@ -7637,6 +7764,7 @@ msgid "Nơi an nghỉ liên quan"
 msgstr "Nơi an nghỉ liên quan"
 
 #: src/components/ContributeDialog.tsx
+#: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
@@ -7727,6 +7855,7 @@ msgid "Nơi ở hiện tại"
 msgstr "Nơi ở hiện tại"
 
 #: src/components/ContributeDialog.tsx
+#: src/components/ContributionDiffView.tsx
 #: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
@@ -7866,6 +7995,10 @@ msgstr "Phòng trưng bày ảnh 3D của dòng họ."
 msgid "Phong tục hôm nay"
 msgstr "Phong tục hôm nay"
 
+#: src/components/PersonAvatar.tsx
+msgid "Phúc lộc"
+msgstr "Phúc lộc"
+
 #: src/pages/Account.tsx
 msgid "Push không gửi được — thử tắt rồi bật lại."
 msgstr "Push không gửi được — thử tắt rồi bật lại."
@@ -7927,6 +8060,7 @@ msgid "Quản lý thành viên"
 msgstr "Quản lý thành viên"
 
 #: src/pages/clan/Members.tsx
+#: src/pages/clan/Members.tsx
 msgid "Quản trị"
 msgstr "Quản trị"
 
@@ -7966,6 +8100,10 @@ msgstr "Quản trị/biên tập viên sẽ tạo phòng trưng bày ảnh."
 #: src/pages/clan/Tree.tsx
 msgid "Quản trị/biên tập viên sẽ thêm thành viên trước."
 msgstr "Quản trị/biên tập viên sẽ thêm thành viên trước."
+
+#: src/pages/AnnouncementDetail.tsx
+msgid "Quan trọng"
+msgstr "Quan trọng"
 
 #: src/components/AppHeader.tsx
 #: src/components/AppHeader.tsx
@@ -8040,6 +8178,11 @@ msgstr "Quỹ họ"
 msgid "Quyền khi tham gia"
 msgstr "Quyền khi tham gia"
 
+#: src/components/SharedPersonCard.tsx
+#: src/components/SharedRestingPlaceCard.tsx
+msgid "Rải tro"
+msgstr "Rải tro"
+
 #: src/components/AppDrawer.tsx
 #: src/components/ClanFormFields.tsx
 #: src/pages/Clans.tsx
@@ -8113,6 +8256,10 @@ msgstr "Sau khi xoá không khôi phục lại được."
 #: src/pages/Account.tsx
 msgid "Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy)."
 msgstr "Sẽ xoá cache cục bộ trên máy này (an toàn khi dùng chung máy)."
+
+#: src/components/PersonAvatar.tsx
+msgid "Sen hồng"
+msgstr "Sen hồng"
 
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
@@ -8253,8 +8400,12 @@ msgid "sự kiện"
 msgstr "sự kiện"
 
 #: src/components/ClanLayout.tsx
+#: src/components/ClanPostCard.tsx
+#: src/components/EventDetailDialog.tsx
 #: src/components/TimelineFields.tsx
 #: src/lib/navModel.tsx
+#: src/pages/clan/Board.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
@@ -8276,11 +8427,15 @@ msgstr "Sự kiện tuỳ chỉnh"
 
 #: src/components/BoardPostForm.tsx
 #: src/components/BranchesSection.tsx
+#: src/components/RecentActivityPanel.tsx
 #: src/components/ui/view-edit-actions.tsx
+#: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/BoardPostEdit.tsx
 #: src/pages/clan/ClanFund.tsx
+#: src/pages/clan/ClanFund.tsx
+#: src/pages/clan/Contributions.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/HeritageDetail.tsx
@@ -8311,6 +8466,10 @@ msgstr "Sửa bài phong tục"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Sửa bức ảnh"
 msgstr "Sửa bức ảnh"
+
+#: src/components/InviteLinkCard.tsx
+msgid "Sửa cây trực tiếp. Dùng cho người thân tin cậy."
+msgstr "Sửa cây trực tiếp. Dùng cho người thân tin cậy."
 
 #: src/pages/clan/EditPerson.tsx
 msgid "Sửa chi tiết khác"
@@ -8368,6 +8527,7 @@ msgstr "Sửa thành viên"
 
 #: src/components/ContributeDialog.tsx
 #: src/components/panel/PanelHost.tsx
+#: src/pages/clan/ContributionDetail.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/PersonDetail.tsx
 #: src/pages/clan/PersonDetail.tsx
@@ -8580,6 +8740,7 @@ msgstr "Tạo mã QR cho từng người để in/khắc — quét ra trang cá 
 msgid "Tảo mộ {title}"
 msgstr "Tảo mộ {title}"
 
+#: src/components/EventDetailDialog.tsx
 #: src/pages/clan/Events.tsx
 msgid "Tảo mộ / Chạp họ"
 msgstr "Tảo mộ / Chạp họ"
@@ -8781,6 +8942,7 @@ msgstr "Tên hiển thị"
 msgid "Tên hiển thị trong dòng họ và các sự kiện. Không phải email."
 msgstr "Tên hiển thị trong dòng họ và các sự kiện. Không phải email."
 
+#: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
@@ -8812,6 +8974,10 @@ msgstr "Tên phòng"
 msgid "Tên sự kiện"
 msgstr "Tên sự kiện"
 
+#: src/components/ContributionDiffView.tsx
+msgid "Tên thuỵ"
+msgstr "Tên thuỵ"
+
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
@@ -8820,6 +8986,7 @@ msgstr "Tên sự kiện"
 msgid "Tên thụy"
 msgstr "Tên thụy"
 
+#: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
@@ -8877,6 +9044,14 @@ msgstr "Tháng âm"
 msgid "Tháng âm lịch (1–12)"
 msgstr "Tháng âm lịch (1–12)"
 
+#: src/components/ContributionDiffView.tsx
+msgid "Tháng giỗ"
+msgstr "Tháng giỗ"
+
+#: src/components/ContributionDiffView.tsx
+msgid "Tháng mất (âm)"
+msgstr "Tháng mất (âm)"
+
 #: src/components/CalendarDateInput.tsx
 msgid "Tháng nhuận"
 msgstr "Tháng nhuận"
@@ -8885,6 +9060,10 @@ msgstr "Tháng nhuận"
 #: src/pages/clan/GoodDays.tsx
 msgid "Tháng sau"
 msgstr "Tháng sau"
+
+#: src/components/ContributionDiffView.tsx
+msgid "Tháng sinh (âm)"
+msgstr "Tháng sinh (âm)"
 
 #: src/components/EventsCalendar.tsx
 #: src/pages/clan/GoodDays.tsx
@@ -8913,6 +9092,10 @@ msgstr "Thành viên (lấy ảnh làm nền)"
 #: src/pages/clan/Dashboard.tsx
 msgid "Thao tác nhanh"
 msgstr "Thao tác nhanh"
+
+#: src/components/SharedRestingPlaceCard.tsx
+msgid "Thất lạc"
+msgstr "Thất lạc"
 
 #: src/components/BookTextsSection.tsx
 msgid "Thay \"{label}\" đang có bằng bản AI soạn?"
@@ -8963,6 +9146,7 @@ msgstr "Thẻ: Ngang"
 
 #: src/components/gallery/GalleryScene.tsx
 #: src/pages/clan/Cemeteries.tsx
+#: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Heritage.tsx
 #: src/pages/clan/HeritageForm.tsx
@@ -9095,6 +9279,8 @@ msgstr "Thêm mộ phần"
 msgid "Thêm mốc"
 msgstr "Thêm mốc"
 
+#: src/components/RecentActivityPanel.tsx
+#: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 msgid "Thêm mới"
 msgstr "Thêm mới"
@@ -9109,6 +9295,7 @@ msgid "Thêm mục di sản"
 msgstr "Thêm mục di sản"
 
 #: src/components/panel/PanelHost.tsx
+#: src/pages/clan/Contributions.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/NewPerson.tsx
@@ -9117,6 +9304,10 @@ msgstr "Thêm mục di sản"
 #: src/pages/clan/Tree.tsx
 msgid "Thêm người"
 msgstr "Thêm người"
+
+#: src/pages/clan/ContributionDetail.tsx
+msgid "Thêm người mới"
+msgstr "Thêm người mới"
 
 #: src/pages/clan/People.tsx
 msgid "Thêm người mới và đánh dấu là Thuỷ tổ, hoặc sửa một người đã có."
@@ -9182,6 +9373,10 @@ msgstr "Theo dõi riêng theo chi"
 msgid "Theo dõi sự kiện"
 msgstr "Theo dõi sự kiện"
 
+#: src/pages/Account.tsx
+msgid "theo người"
+msgstr "theo người"
+
 #: src/pages/clan/MapStats.tsx
 msgid "Theo vùng miền"
 msgstr "Theo vùng miền"
@@ -9205,8 +9400,29 @@ msgid "Thiết bị/trình duyệt này không hỗ trợ ghi âm."
 msgstr "Thiết bị/trình duyệt này không hỗ trợ ghi âm."
 
 #: src/pages/clan/Todo.tsx
+msgid "thiếu âm lịch ngày mất"
+msgstr "thiếu âm lịch ngày mất"
+
+#: src/pages/clan/Todo.tsx
+msgid "thiếu âm lịch ngày sinh"
+msgstr "thiếu âm lịch ngày sinh"
+
+#: src/pages/clan/Todo.tsx
+msgid "thiếu ảnh"
+msgstr "thiếu ảnh"
+
+#: src/pages/clan/Dashboard.tsx
+msgid "thiếu ảnh / âm lịch"
+msgstr "thiếu ảnh / âm lịch"
+
+#: src/pages/clan/Todo.tsx
 msgid "Thiếu ảnh / âm lịch"
 msgstr "Thiếu ảnh / âm lịch"
+
+#: src/pages/clan/Dashboard.tsx
+#: src/pages/clan/Todo.tsx
+msgid "thiếu cha/mẹ"
+msgstr "thiếu cha/mẹ"
 
 #: src/pages/clan/Todo.tsx
 msgid "Thiếu cha/mẹ"
@@ -9215,6 +9431,18 @@ msgstr "Thiếu cha/mẹ"
 #: src/pages/clan/AiGenerate.tsx
 msgid "Thiếu clan id"
 msgstr "Thiếu clan id"
+
+#: src/pages/clan/Todo.tsx
+msgid "thiếu năm mất"
+msgstr "thiếu năm mất"
+
+#: src/pages/clan/Todo.tsx
+msgid "thiếu năm sinh"
+msgstr "thiếu năm sinh"
+
+#: src/pages/clan/Dashboard.tsx
+msgid "thiếu năm sinh/mất"
+msgstr "thiếu năm sinh/mất"
 
 #: src/pages/clan/Todo.tsx
 msgid "Thiếu năm sinh/mất"
@@ -9264,9 +9492,12 @@ msgstr "Thời điểm:"
 msgid "thông báo"
 msgstr "thông báo"
 
+#: src/components/ClanPostCard.tsx
 #: src/components/NotificationBell.tsx
 #: src/lib/navModel.tsx
 #: src/pages/AnnouncementDetail.tsx
+#: src/pages/clan/Board.tsx
+#: src/pages/clan/BoardPostDetail.tsx
 msgid "Thông báo"
 msgstr "Thông báo"
 
@@ -9282,6 +9513,10 @@ msgstr "Thông báo hệ thống"
 #: src/pages/AnnouncementDetail.tsx
 msgid "Thông báo này sẽ hết hạn vào"
 msgstr "Thông báo này sẽ hết hạn vào"
+
+#: src/components/RecentActivityPanel.tsx
+msgid "Thông gia"
+msgstr "Thông gia"
 
 #: src/pages/clan/HeritageDetail.tsx
 #: src/pages/clan/RestingPlaceDetail.tsx
@@ -9516,6 +9751,7 @@ msgstr "Tiêu đề đoạn (vd Lời nói đầu)"
 msgid "Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằng nội dung Markdown."
 msgstr "Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằng nội dung Markdown."
 
+#: src/components/ContributionDiffView.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/Merge.tsx
@@ -9968,6 +10204,10 @@ msgstr "Trên iOS, để nhận thông báo đẩy, cần"
 msgid "Trị vì & tước hiệu"
 msgstr "Trị vì & tước hiệu"
 
+#: src/components/PersonAvatar.tsx
+msgid "Triều đình"
+msgstr "Triều đình"
+
 #: src/pages/Account.tsx
 msgid "Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây. Hoặc dùng Xuất lịch (.ics) làm thay thế."
 msgstr "Trình duyệt đang chặn thông báo cho app này. Vào Cài đặt trình duyệt → Quyền → Thông báo → cho phép, rồi quay lại đây. Hoặc dùng Xuất lịch (.ics) làm thay thế."
@@ -10006,6 +10246,10 @@ msgstr "Trợ lý dòng họ"
 #: src/pages/clan/Events.tsx
 msgid "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
 msgstr "Trong {daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới."
+
+#: src/components/PersonAvatar.tsx
+msgid "Trống đồng"
+msgstr "Trống đồng"
 
 #. placeholder {0}: day.truc.name
 #. placeholder {0}: info.truc.name
@@ -10542,6 +10786,18 @@ msgstr "vợ/chồng ({0})"
 msgid "Với {0}"
 msgstr "Với {0}"
 
+#: src/components/PersonAvatar.tsx
+msgid "Vòng bạc"
+msgstr "Vòng bạc"
+
+#: src/components/PersonAvatar.tsx
+msgid "Vòng nguyệt quế"
+msgstr "Vòng nguyệt quế"
+
+#: src/components/PersonAvatar.tsx
+msgid "Vòng vàng"
+msgstr "Vòng vàng"
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Vừa khung"
 msgstr "Vừa khung"
@@ -10596,6 +10852,11 @@ msgstr "Xác nhận liên kết này?"
 msgid "Xác nhận mật khẩu mới"
 msgstr "Xác nhận mật khẩu mới"
 
+#: src/components/InviteLinkCard.tsx
+#: src/pages/JoinClan.tsx
+msgid "Xem & góp ý"
+msgstr "Xem & góp ý"
+
 #: src/components/gallery/GalleryScene.tsx
 msgid "Xem ảnh"
 msgstr "Xem ảnh"
@@ -10617,6 +10878,10 @@ msgstr "Xem bức ảnh →"
 #: src/components/TreeFolderView.tsx
 msgid "Xem cả cây"
 msgstr "Xem cả cây"
+
+#: src/components/InviteLinkCard.tsx
+msgid "Xem cây + đề xuất bổ sung (bạn duyệt mới vào cây). An toàn nhất."
+msgstr "Xem cây + đề xuất bổ sung (bạn duyệt mới vào cây). An toàn nhất."
 
 #: src/pages/Login.tsx
 msgid "Xem cây gia phả và cùng vun đắp dòng họ của bạn."
@@ -10744,11 +11009,14 @@ msgstr "Xem trang người liên quan →"
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/gallery/GalleryScene.tsx
 #: src/components/PhotoUploadField.tsx
+#: src/components/RecentActivityPanel.tsx
 #: src/components/ShareLinksSection.tsx
 #: src/components/ui/view-edit-actions.tsx
 #: src/hooks/useAiChatSession.ts
 #: src/pages/clan/Audit.tsx
+#: src/pages/clan/Audit.tsx
 #: src/pages/clan/Cemeteries.tsx
+#: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/Events.tsx

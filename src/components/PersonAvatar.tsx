@@ -2,6 +2,8 @@ import { createContext, useContext, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { readAvatarStyle } from "@/lib/familyChartAdapter";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 
 /**
  * Viền avatar do dòng họ chọn (lưu ở clans.avatar_frame). Khung vẽ
@@ -22,18 +24,18 @@ export const AVATAR_FRAMES = [
 ] as const;
 export type AvatarFrame = (typeof AVATAR_FRAMES)[number];
 
-export const AVATAR_FRAME_LABEL: Record<AvatarFrame, string> = {
-  laurel: "Vòng nguyệt quế",
-  gold: "Vòng vàng",
-  silver: "Vòng bạc",
-  royal: "Hoàng gia",
-  lotus: "Sen hồng",
-  fortune: "Phúc lộc",
-  cinnabar: "Đỏ son viền vàng",
-  imperial: "Triều đình",
-  jade: "Ngọc bích",
-  bronze: "Trống đồng",
-};
+export const AVATAR_FRAME_LABEL: Record<AvatarFrame, string> = lazyMessages({
+  laurel: msg`Vòng nguyệt quế`,
+  gold: msg`Vòng vàng`,
+  silver: msg`Vòng bạc`,
+  royal: msg`Hoàng gia`,
+  lotus: msg`Sen hồng`,
+  fortune: msg`Phúc lộc`,
+  cinnabar: msg`Đỏ son viền vàng`,
+  imperial: msg`Triều đình`,
+  jade: msg`Ngọc bích`,
+  bronze: msg`Trống đồng`,
+}) as Record<AvatarFrame, string>;
 
 export function isAvatarFrame(v: string | null | undefined): v is AvatarFrame {
   return !!v && (AVATAR_FRAMES as readonly string[]).includes(v);

@@ -48,11 +48,13 @@ import {
 } from "@/lib/queries/vnDivisions";
 
 import { t } from "@lingui/core/macro";
-const LAYER_UNIT: Record<MapLayer, string> = {
-  people: "người",
-  graves: "nơi an nghỉ",
-  heritage: "mục di sản",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const LAYER_UNIT: Record<MapLayer, string> = lazyMessages({
+  people: msg`người`,
+  graves: msg`nơi an nghỉ`,
+  heritage: msg`mục di sản`,
+}) as Record<MapLayer, string>;
 const LAYER_ICON: Record<
   MapLayer,
   React.ComponentType<{ className?: string }>

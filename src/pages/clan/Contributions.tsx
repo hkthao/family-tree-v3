@@ -40,6 +40,8 @@ import { queryKeys } from "@/lib/queries/keys";
 import { unaccent } from "@/lib/unaccent";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 type Icon = React.ComponentType<{ className?: string }>;
 
 const STATUS_FILTERS: Array<{
@@ -53,11 +55,12 @@ const STATUS_FILTERS: Array<{
   { value: "all", label: "Tất cả" },
 ];
 
-const TYPE_LABEL: Record<ContributionRow["contribution_type"], string> = {
-  edit_person: "Sửa",
-  add_note: "Bổ sung tiểu sử",
-  add_person: "Thêm người",
-};
+const TYPE_LABEL: Record<ContributionRow["contribution_type"], string> =
+  lazyMessages({
+    edit_person: msg`Sửa`,
+    add_note: msg`Bổ sung tiểu sử`,
+    add_person: msg`Thêm người`,
+  }) as Record<ContributionRow["contribution_type"], string>;
 
 const TYPE_ICON: Record<ContributionRow["contribution_type"], Icon> = {
   edit_person: IconPencil,

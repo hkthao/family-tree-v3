@@ -65,6 +65,8 @@ import {
 
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 export default function Members() {
   const { clanId } = useParams<{ clanId: string }>();
   const { user } = useAuth();
@@ -647,8 +649,8 @@ function MemberForm({
   );
 }
 
-const ROLE_LABEL: Record<ClanRole, string> = {
-  admin: "Quản trị",
-  editor: "Biên tập",
+const ROLE_LABEL: Record<ClanRole, string> = lazyMessages({
+  admin: msg`Quản trị`,
+  editor: msg`Biên tập`,
   viewer: "Xem",
-};
+}) as Record<ClanRole, string>;

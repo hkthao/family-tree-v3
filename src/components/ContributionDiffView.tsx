@@ -8,6 +8,8 @@ import { formatDateOnly } from "@/lib/formatDate";
 import type { PersonDetail } from "@/lib/queries/persons";
 
 import { t } from "@lingui/core/macro";
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
 interface Props {
   contribution: ContributionRow;
   /** Current state of the target person (when contribution is on an
@@ -51,29 +53,29 @@ export function ContributionDiffView({ contribution, currentPerson }: Props) {
 
 // ─── edit_person ─────────────────────────────────────────────────
 
-const EDIT_LABELS: Record<keyof EditPersonChanges, string> = {
-  full_name: "Họ và tên",
-  courtesy_name: "Tên tự",
-  posthumous_name: "Tên thuỵ",
-  nickname: "Tên húy",
-  gender: "Giới tính",
-  is_living: "Còn sống",
-  birth_date: "Ngày sinh",
-  birth_date_precision: "Độ chính xác ngày sinh",
-  death_date: "Ngày mất",
-  death_date_precision: "Độ chính xác ngày mất",
-  birth_lunar_year: "Năm sinh (âm)",
-  birth_lunar_month: "Tháng sinh (âm)",
-  birth_lunar_day: "Ngày sinh (âm)",
-  death_lunar_year: "Năm mất (âm)",
-  death_lunar_month: "Tháng mất (âm)",
-  death_lunar_day: "Ngày mất (âm)",
-  death_anniv_lunar_month: "Tháng giỗ",
-  death_anniv_lunar_day: "Ngày giỗ",
-  birth_place: "Nơi sinh",
-  burial_place: "Nơi an táng",
-  bio: "Tiểu sử",
-};
+const EDIT_LABELS: Record<keyof EditPersonChanges, string> = lazyMessages({
+  full_name: msg`Họ và tên`,
+  courtesy_name: msg`Tên tự`,
+  posthumous_name: msg`Tên thuỵ`,
+  nickname: msg`Tên húy`,
+  gender: msg`Giới tính`,
+  is_living: msg`Còn sống`,
+  birth_date: msg`Ngày sinh`,
+  birth_date_precision: msg`Độ chính xác ngày sinh`,
+  death_date: msg`Ngày mất`,
+  death_date_precision: msg`Độ chính xác ngày mất`,
+  birth_lunar_year: msg`Năm sinh (âm)`,
+  birth_lunar_month: msg`Tháng sinh (âm)`,
+  birth_lunar_day: msg`Ngày sinh (âm)`,
+  death_lunar_year: msg`Năm mất (âm)`,
+  death_lunar_month: msg`Tháng mất (âm)`,
+  death_lunar_day: msg`Ngày mất (âm)`,
+  death_anniv_lunar_month: msg`Tháng giỗ`,
+  death_anniv_lunar_day: msg`Ngày giỗ`,
+  birth_place: msg`Nơi sinh`,
+  burial_place: msg`Nơi an táng`,
+  bio: msg`Tiểu sử`,
+}) as Record<keyof EditPersonChanges, string>;
 
 /**
  * One row per changed field: label on top, current value with

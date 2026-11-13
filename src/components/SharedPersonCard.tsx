@@ -15,13 +15,16 @@ import type {
 } from "@/lib/queries/share-view";
 
 import { t } from "@lingui/core/macro";
-const RP_KIND_LABEL: Record<ShareViewRestingPlace["kind"], string> = {
-  grave: "Mộ / chôn cất",
-  ashes_temple: "Gửi tro cốt ở chùa",
-  columbarium: "Nhà lưu tro / tháp cốt",
-  scattered: "Rải tro",
-  other: "Khác",
-};
+import { msg } from "@lingui/core/macro";
+import { lazyMessages } from "@/lib/i18n/lazy";
+const RP_KIND_LABEL: Record<ShareViewRestingPlace["kind"], string> =
+  lazyMessages({
+    grave: msg`Mộ / chôn cất`,
+    ashes_temple: msg`Gửi tro cốt ở chùa`,
+    columbarium: msg`Nhà lưu tro / tháp cốt`,
+    scattered: msg`Rải tro`,
+    other: msg`Khác`,
+  }) as Record<ShareViewRestingPlace["kind"], string>;
 
 interface Props {
   focal: ShareViewPerson;
