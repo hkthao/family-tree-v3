@@ -342,7 +342,7 @@ export function hasClanIntro(t: ClanBookTexts | null | undefined): boolean {
 
 // ─── Bảng dùng chung ───────────────────────────────────────────────
 
-interface Col {
+export interface Col {
   label: string;
   width?: number;
   /** Cột co giãn lấp chỗ trống (mặc định nếu không có width). */
@@ -355,7 +355,7 @@ interface Col {
  * tiêu đề tô nền, kẻ ngang giữa các hàng và kẻ dọc giữa các cột, hàng
  * "Tổng" ở cuối nếu có. Đặt `wrap={false}` để một bảng không bị cắt giữa trang.
  */
-function DataTable({
+export function DataTable({
   cols,
   rows,
   total,
@@ -417,7 +417,7 @@ function DataTable({
 }
 
 /** Bảng dài chia thành các khối (mỗi khối một khung đủ tiêu đề) để khung không bị cắt giữa trang. */
-function ChunkedTable({
+export function ChunkedTable({
   cols,
   rows,
   chunk = 24,
@@ -949,3 +949,6 @@ export function hasMarriages(
 ): boolean {
   return bloodline.some((p) => (spousesByPerson.get(p.id) ?? []).some((id) => personById.has(id)));
 }
+
+/** Kiểu chữ chung của các trang sổ (tiêu đề, gạch chân, đoạn, tiêu đề phụ…) cho PDF khác dùng lại. */
+export { S as sectionStyles };
