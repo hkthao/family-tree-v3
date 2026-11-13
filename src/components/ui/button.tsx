@@ -47,7 +47,8 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
@@ -62,7 +63,11 @@ const ButtonSizeContext = React.createContext<ButtonProps["size"]>(undefined);
 
 /** Bọc một vùng hành động để mọi nút trong đó cùng cỡ `sm` (h-10). */
 function ActionArea({ children }: { children: React.ReactNode }) {
-  return <ButtonSizeContext.Provider value="sm">{children}</ButtonSizeContext.Provider>;
+  return (
+    <ButtonSizeContext.Provider value="sm">
+      {children}
+    </ButtonSizeContext.Provider>
+  );
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -71,7 +76,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size: size ?? areaSize, className }))}
+        className={cn(
+          buttonVariants({ variant, size: size ?? areaSize, className }),
+        )}
         ref={ref}
         {...props}
       />

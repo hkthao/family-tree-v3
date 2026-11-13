@@ -88,6 +88,8 @@ import {
   type UpcomingEvent,
 } from "@/lib/upcomingEvents";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const LOOKAHEAD_OPTIONS = [
   { label: "30 ngày", value: 30 },
   { label: "90 ngày", value: 90 },
@@ -228,7 +230,7 @@ export default function Events() {
       })),
     });
     track("export", { kind: "ics" });
-    toast.success("Đã tải file lịch", { description: filename });
+    toast.success(t`Đã tải file lịch`, { description: filename });
   }
 
   return (
@@ -236,7 +238,7 @@ export default function Events() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Sự kiện" },
+          { label: t`Sự kiện` },
         ]}
       />
       {/* Header: actions xuống hàng riêng do số lượng action (segmented
@@ -244,38 +246,38 @@ export default function Events() {
           ép description wrap nhiều dòng. */}
       <PageHeader
         icon={<IconCalendar className="h-7 w-7" />}
-        title="Sự kiện"
-        description="Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar."
+        title={t`Sự kiện`}
+        description={t`Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar.`}
         actionsBelow
         actions={
           <>
-            <SegmentedControl ariaLabel="Chế độ hiển thị">
+            <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
               <SegmentedButton
                 active={view === "list"}
                 onClick={() => setView("list")}
-                ariaLabel="Danh sách"
+                ariaLabel={t`Danh sách`}
                 className="inline-flex items-center gap-1.5 px-3"
               >
                 <IconList className="h-4 w-4" />
-                <span className="hidden sm:inline">Danh sách</span>
+                <span className="hidden sm:inline">{t`Danh sách`}</span>
               </SegmentedButton>
               <SegmentedButton
                 active={view === "grid"}
                 onClick={() => setView("grid")}
-                ariaLabel="Lưới"
+                ariaLabel={t`Lưới`}
                 className="inline-flex items-center gap-1.5 px-3"
               >
                 <IconGrid className="h-4 w-4" />
-                <span className="hidden sm:inline">Lưới</span>
+                <span className="hidden sm:inline">{t`Lưới`}</span>
               </SegmentedButton>
               <SegmentedButton
                 active={view === "calendar"}
                 onClick={() => setView("calendar")}
-                ariaLabel="Lịch"
+                ariaLabel={t`Lịch`}
                 className="inline-flex items-center gap-1.5 px-3"
               >
                 <IconCalendar className="h-4 w-4" />
-                <span className="hidden sm:inline">Lịch</span>
+                <span className="hidden sm:inline">{t`Lịch`}</span>
               </SegmentedButton>
             </SegmentedControl>
             {effectiveRole(clan) !== null && (
@@ -284,10 +286,10 @@ export default function Events() {
                 size="sm"
                 className="h-10"
                 onClick={() => setFeedOpen(true)}
-                title="Đăng ký lịch — Google / Apple Calendar tự cập nhật"
+                title={t`Đăng ký lịch — Google / Apple Calendar tự cập nhật`}
               >
                 <IconCalendar className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">Đăng ký lịch</span>
+                <span className="hidden sm:inline">{t`Đăng ký lịch`}</span>
               </Button>
             )}
             {effectiveRole(clan) !== null && (
@@ -297,10 +299,10 @@ export default function Events() {
                 className="h-10"
                 onClick={handleExportIcs}
                 disabled={!tree || !events || !anniversaries}
-                title="Tải file .ics — import vào Google / Apple Calendar"
+                title={t`Tải file .ics — import vào Google / Apple Calendar`}
               >
                 <IconDownload className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">Xuất lịch</span>
+                <span className="hidden sm:inline">{t`Xuất lịch`}</span>
               </Button>
             )}
             <RefreshButton
@@ -316,13 +318,13 @@ export default function Events() {
       <CollapsibleFilters
         activeCount={view !== "calendar" && daysAhead !== 90 ? 1 : 0}
         onReset={() => setDaysAhead(90)}
-        title="Lọc sự kiện"
+        title={t`Lọc sự kiện`}
         search={(toggle) => (
           <SearchInput
-            label="Tìm sự kiện"
+            label={t`Tìm sự kiện`}
             value={queryText}
             onChange={(e) => setQueryText(e.target.value)}
-            placeholder="Tìm theo tên người, ngày giỗ, sự kiện…"
+            placeholder={t`Tìm theo tên người, ngày giỗ, sự kiện…`}
             rightSlot={toggle}
           />
         )}
@@ -330,13 +332,22 @@ export default function Events() {
         <div className="flex flex-col gap-3">
           {view === "calendar" ? (
             <p className="text-sm text-muted-foreground">
-              Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc Lưới
-              để chọn khoảng thời gian.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc
+                    Lưới để chọn khoảng thời gian.
+                  </Trans>
+                </Trans>
+              </Trans>
             </p>
           ) : (
             <>
-              <p className="text-base font-medium">Khoảng thời gian</p>
-              <SegmentedControl ariaLabel="Khoảng thời gian" className="flex">
+              <p className="text-base font-medium">{t`Khoảng thời gian`}</p>
+              <SegmentedControl
+                ariaLabel={t`Khoảng thời gian`}
+                className="flex"
+              >
                 {LOOKAHEAD_OPTIONS.map((opt) => (
                   <SegmentedButton
                     key={opt.value}
@@ -356,7 +367,7 @@ export default function Events() {
       {/* Upcoming list / calendar */}
       {!tree || !events || !anniversaries ? (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       ) : view === "calendar" ? (
         <EventsCalendar
@@ -369,13 +380,13 @@ export default function Events() {
           icon={<IconBellOff className="h-10 w-10" />}
           title={
             query.trim()
-              ? "Không có sự kiện nào khớp"
-              : "Không có sự kiện sắp tới"
+              ? t`Không có sự kiện nào khớp`
+              : t`Không có sự kiện sắp tới`
           }
           description={
             query.trim()
-              ? "Thử bỏ bớt từ khoá hoặc mở rộng khoảng thời gian."
-              : `Trong ${daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới.`
+              ? t`Thử bỏ bớt từ khoá hoặc mở rộng khoảng thời gian.`
+              : t`Trong ${daysAhead} ngày tới chưa có sinh nhật, ngày giỗ hay sự kiện tuỳ chỉnh nào. Thêm ngày sinh / ngày giỗ cho thành viên hoặc tạo sự kiện tuỳ chỉnh ở dưới.`
           }
         />
       ) : (
@@ -404,7 +415,7 @@ export default function Events() {
             totalPages={paging.totalPages}
             total={paging.total}
             pageSize={paging.pageSize}
-            unit="sự kiện"
+            unit={t`sự kiện`}
             onPageChange={paging.setPage}
             pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
             onPageSizeChange={paging.setPageSize}
@@ -415,9 +426,9 @@ export default function Events() {
       {/* Custom events management */}
       <Card>
         <CardHeader>
-          <CardTitle>Sự kiện tuỳ chỉnh</CardTitle>
+          <CardTitle>{t`Sự kiện tuỳ chỉnh`}</CardTitle>
           <CardDescription>
-            Họp họ, ngày kỷ niệm dòng họ — thêm theo dương lịch hoặc âm lịch.
+            {t`Họp họ, ngày kỷ niệm dòng họ — thêm theo dương lịch hoặc âm lịch.`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -450,7 +461,7 @@ export default function Events() {
             </ul>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Chưa có sự kiện tuỳ chỉnh nào.
+              {t`Chưa có sự kiện tuỳ chỉnh nào.`}
             </p>
           )}
         </CardContent>
@@ -462,11 +473,17 @@ export default function Events() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <IconBell className="h-5 w-5" />
-              Theo dõi sự kiện
+              {t`Theo dõi sự kiện`}
             </CardTitle>
             <CardDescription>
-              Nhận thông báo qua email khi có sinh nhật, ngày giỗ hoặc sự kiện
-              sắp đến. Chỉ áp dụng cho riêng bạn.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Nhận thông báo qua email khi có sinh nhật, ngày giỗ hoặc sự
+                    kiện sắp đến. Chỉ áp dụng cho riêng bạn.
+                  </Trans>
+                </Trans>
+              </Trans>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -524,7 +541,7 @@ function upcomingGenre(kind: UpcomingEvent["kind"]): CardGenre {
 }
 function upcomingDateText(ev: UpcomingEvent): string {
   const d = new Date(ev.date + "T00:00:00");
-  return `Ngày ${d.getDate()} tháng ${d.getMonth() + 1}`;
+  return t`Ngày ${d.getDate()} tháng ${d.getMonth() + 1}`;
 }
 
 // ─── Items ──────────────────────────────────────────────────────────
@@ -555,10 +572,10 @@ function CustomEventItem({
     mutationFn: () => deleteEvent(event.id),
     onSuccess: () => {
       onDeleted();
-      toast.success(`Đã xoá sự kiện "${event.title}"`);
+      toast.success(t`Đã xoá sự kiện "${event.title}"`);
     },
     onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const when = eventWhenText(event);
@@ -579,7 +596,7 @@ function CustomEventItem({
           <p className="font-semibold line-clamp-2 text-base">{event.title}</p>
           <p className="text-sm text-muted-foreground mt-0.5">
             {when}
-            {event.is_yearly ? " • lặp hằng năm" : ""}
+            {event.is_yearly ? t` • lặp hằng năm` : ""}
           </p>
           <RecordDates
             createdAt={event.created_at}
@@ -597,7 +614,7 @@ function CustomEventItem({
             onClick={() => setCardOpen(true)}
           >
             <IconSparkles className="h-4 w-4 mr-1" />
-            Thiệp
+            {t`Thiệp`}
           </Button>
           {canDelete && (
             <Button
@@ -607,15 +624,15 @@ function CustomEventItem({
               disabled={delM.isPending}
               onClick={async () => {
                 const ok = await confirm({
-                  title: `Xoá sự kiện "${event.title}"?`,
-                  confirmLabel: "Xoá",
+                  title: t`Xoá sự kiện "${event.title}"?`,
+                  confirmLabel: t`Xoá`,
                   destructive: true,
                 });
                 if (ok) delM.mutate();
               }}
             >
               <IconTrash className="h-4 w-4 mr-1" />
-              Xoá
+              {t`Xoá`}
             </Button>
           )}
         </div>
@@ -668,11 +685,11 @@ function LunarFestivalsQuickAdd({
         is_yearly: true,
       }),
     onSuccess: (_d, f) => {
-      toast.success("Đã thêm lễ tiết", { description: f.title });
+      toast.success(t`Đã thêm lễ tiết`, { description: f.title });
       onCreated();
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   const has = (f: Festival) =>
@@ -682,10 +699,16 @@ function LunarFestivalsQuickAdd({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">Thêm nhanh lễ tiết truyền thống</p>
+      <p className="text-sm font-medium">{t`Thêm nhanh lễ tiết truyền thống`}</p>
       <p className="text-xs text-muted-foreground">
-        Tạo sự kiện âm lịch lặp hằng năm — cả họ được nhắc trước. Giỗ Tổ / Chạp
-        họ / Tảo mộ có ngày riêng, dùng "Thêm sự kiện" bên dưới.
+        <Trans>
+          <Trans>
+            <Trans>
+              Tạo sự kiện âm lịch lặp hằng năm — cả họ được nhắc trước. Giỗ Tổ /
+              Chạp họ / Tảo mộ có ngày riêng, dùng "Thêm sự kiện" bên dưới.
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
       <div className="flex flex-wrap gap-2">
         {LUNAR_FESTIVALS.map((f) => {
@@ -701,7 +724,7 @@ function LunarFestivalsQuickAdd({
                   ? "opacity-50 cursor-default"
                   : "bg-card hover:border-primary"
               }`}
-              title={`${f.lunar_day}/${f.lunar_month} âm lịch`}
+              title={t`${f.lunar_day}/${f.lunar_month} âm lịch`}
             >
               {added ? "✓ " : "+ "}
               {f.title}
@@ -759,7 +782,7 @@ function AddEventForm({
       });
     },
     onSuccess: () => {
-      toast.success("Đã thêm sự kiện", { description: title.trim() });
+      toast.success(t`Đã thêm sự kiện`, { description: title.trim() });
       setTitle("");
       setDateSolar("");
       setLunarMonth("");
@@ -768,7 +791,7 @@ function AddEventForm({
       onCreated();
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   const canSubmit =
@@ -782,11 +805,11 @@ function AddEventForm({
 
   return (
     <>
-      <Fab onClick={() => setOpen(true)} label="Thêm sự kiện" />
+      <Fab onClick={() => setOpen(true)} label={t`Thêm sự kiện`} />
       <SidePanel
         open={open}
-        title="Thêm sự kiện"
-        subtitle="Sinh nhật, giỗ, lễ tết hoặc sự kiện riêng của dòng họ."
+        title={t`Thêm sự kiện`}
+        subtitle={t`Sinh nhật, giỗ, lễ tết hoặc sự kiện riêng của dòng họ.`}
         onClose={() => setOpen(false)}
       >
         <form
@@ -797,42 +820,42 @@ function AddEventForm({
           className="space-y-3"
         >
           <div className="space-y-2">
-            <Label htmlFor="evt-title">Tên sự kiện</Label>
+            <Label htmlFor="evt-title">{t`Tên sự kiện`}</Label>
             <Input
               id="evt-title"
               icon={<IconCalendar />}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Họp họ, tảo mộ, chạp họ, kỷ niệm…"
+              placeholder={t`Họp họ, tảo mộ, chạp họ, kỷ niệm…`}
               maxLength={150}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="evt-type">Loại</Label>
+            <Label htmlFor="evt-type">{t`Loại`}</Label>
             <Select
               id="evt-type"
               icon={<IconTag />}
               value={eventType}
               onChange={(e) => setEventType(e.target.value as EventType)}
             >
-              <option value="custom">Tuỳ chỉnh</option>
-              <option value="reunion">Họp họ</option>
-              <option value="memorial">Giỗ chung</option>
-              <option value="tomb_visit">Tảo mộ / Chạp họ</option>
+              <option value="custom">{t`Tuỳ chỉnh`}</option>
+              <option value="reunion">{t`Họp họ`}</option>
+              <option value="memorial">{t`Giỗ chung`}</option>
+              <option value="tomb_visit">{t`Tảo mộ / Chạp họ`}</option>
             </Select>
           </div>
 
           {eventType === "tomb_visit" && (
             <div className="space-y-2">
-              <Label htmlFor="evt-grave">Gắn nơi an nghỉ (tuỳ chọn)</Label>
+              <Label htmlFor="evt-grave">{t`Gắn nơi an nghỉ (tuỳ chọn)`}</Label>
               <Select
                 id="evt-grave"
                 icon={<IconGrave />}
                 value={restingPlaceId}
                 onChange={(e) => setRestingPlaceId(e.target.value)}
               >
-                <option value="">— Không gắn —</option>
+                <option value="">{t`— Không gắn —`}</option>
                 {(places ?? []).map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name ||
@@ -852,7 +875,7 @@ function AddEventForm({
                 onChange={() => setCalendar("solar")}
                 className="accent-primary"
               />
-              Dương lịch
+              {t`Dương lịch`}
             </label>
             <label className="flex items-center gap-2 cursor-pointer text-sm">
               <input
@@ -861,13 +884,13 @@ function AddEventForm({
                 onChange={() => setCalendar("lunar")}
                 className="accent-primary"
               />
-              Âm lịch
+              {t`Âm lịch`}
             </label>
           </fieldset>
 
           {calendar === "solar" ? (
             <div className="space-y-2">
-              <Label htmlFor="evt-solar">Ngày dương lịch</Label>
+              <Label htmlFor="evt-solar">{t`Ngày dương lịch`}</Label>
               <Input
                 id="evt-solar"
                 icon={<IconCalendar />}
@@ -879,7 +902,7 @@ function AddEventForm({
           ) : (
             <div className="grid grid-cols-2 gap-3 max-w-xs">
               <div className="space-y-2">
-                <Label htmlFor="evt-lunar-day">Ngày âm</Label>
+                <Label htmlFor="evt-lunar-day">{t`Ngày âm`}</Label>
                 <Input
                   id="evt-lunar-day"
                   icon={<IconMoon />}
@@ -891,7 +914,7 @@ function AddEventForm({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="evt-lunar-month">Tháng âm</Label>
+                <Label htmlFor="evt-lunar-month">{t`Tháng âm`}</Label>
                 <Input
                   id="evt-lunar-month"
                   icon={<IconMoon />}
@@ -912,7 +935,7 @@ function AddEventForm({
               onChange={(e) => setIsYearly(e.target.checked)}
               className="h-5 w-5 accent-primary shrink-0"
             />
-            <span>Lặp lại hằng năm</span>
+            <span>{t`Lặp lại hằng năm`}</span>
           </label>
 
           {m.error && (
@@ -928,11 +951,11 @@ function AddEventForm({
               onClick={() => setOpen(false)}
             >
               <IconX className="h-4 w-4 mr-1.5" />
-              Hủy
+              {t`Hủy`}
             </Button>
             <Button type="submit" disabled={!canSubmit || m.isPending}>
               <IconPlus className="h-4 w-4 mr-1.5" />
-              {m.isPending ? "Đang thêm…" : "Thêm"}
+              {m.isPending ? t`Đang thêm…` : t`Thêm`}
             </Button>
           </FormActions>
         </form>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { IconPhoneDownload } from "@/components/icons";
 
+import { t } from "@lingui/core/macro";
 /**
  * BeforeInstallPromptEvent isn't in lib.dom.d.ts yet — it's a
  * Chrome-only extension. Type just what we use.
@@ -84,10 +85,10 @@ export function InstallAppButton() {
     }
     // iOS Safari — show the manual recipe.
     await confirm({
-      title: "Thêm Dòng Họ Việt vào màn hình chính",
+      title: t`Thêm Dòng Họ Việt vào màn hình chính`,
       description:
         'Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn "Thêm vào Màn hình Chính". App sẽ mở như ứng dụng riêng, không có thanh URL.',
-      confirmLabel: "Đã hiểu",
+      confirmLabel: t`Đã hiểu`,
     });
   };
 
@@ -95,12 +96,12 @@ export function InstallAppButton() {
     <button
       type="button"
       onClick={click}
-      title="Cài app lên màn hình chính"
-      aria-label="Cài app"
+      title={t`Cài app lên màn hình chính`}
+      aria-label={t`Cài app`}
       className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background hover:bg-muted px-2 h-10 text-sm whitespace-nowrap"
     >
       <IconPhoneDownload className="h-4 w-4 shrink-0" />
-      <span className="sr-only">Cài app</span>
+      <span className="sr-only">{t`Cài app`}</span>
     </button>
   );
 }

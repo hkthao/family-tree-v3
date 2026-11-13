@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 const labelVariants = cva(
   "text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
 );
@@ -33,7 +34,7 @@ const Label = React.forwardRef<
       <span
         aria-hidden="true"
         className="ml-1 text-destructive"
-        title="Bắt buộc"
+        title={t`Bắt buộc`}
       >
         (*)
       </span>

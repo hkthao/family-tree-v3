@@ -1,5 +1,6 @@
 import { formatDate, formatDateTime, formatRelative } from "@/lib/formatDate";
 
+import { t } from "@lingui/core/macro";
 /**
  * Dòng "Tạo {ngày tuyệt đối} • Cập nhật {tương đối}" dùng chung cho mọi
  * danh sách (dòng họ, danh bạ, mộ phần, di sản…).
@@ -28,13 +29,13 @@ export function RecordDates({
     <p
       className={className}
       title={[
-        createdFull && `Tạo ${createdFull}`,
-        updatedFull && `Cập nhật ${updatedFull}`,
+        createdFull && t`Tạo ${createdFull}`,
+        updatedFull && t`Cập nhật ${updatedFull}`,
       ]
         .filter(Boolean)
         .join(" · ")}
     >
-      {[created && `Tạo ${created}`, updated && `Cập nhật ${updated}`]
+      {[created && t`Tạo ${created}`, updated && t`Cập nhật ${updated}`]
         .filter(Boolean)
         .join(" • ")}
     </p>

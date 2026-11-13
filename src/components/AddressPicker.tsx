@@ -9,6 +9,7 @@ import {
   VN_WARD_KIND_LABEL,
 } from "@/lib/queries/vnDivisions";
 
+import { t } from "@lingui/core/macro";
 export interface AddressValue {
   province_code: string | null;
   ward_code: string | null;
@@ -43,31 +44,43 @@ export function AddressPicker({
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-province`}>Tỉnh / Thành phố</Label>
+        <Label htmlFor={`${idPrefix}-province`}>{t`Tỉnh / Thành phố`}</Label>
         <FilterableSelect
           id={`${idPrefix}-province`}
           icon={<IconMapPin />}
           value={value.province_code ?? ""}
-          onChange={(code) => onChange({ province_code: code || null, ward_code: null })}
+          onChange={(code) =>
+            onChange({ province_code: code || null, ward_code: null })
+          }
           options={provinces.map((p) => ({ value: p.code, label: p.name }))}
-          emptyLabel="Chưa chọn"
-          filterLabel="Lọc tỉnh / thành phố"
-          filterPlaceholder="Gõ để lọc tỉnh / thành (không cần dấu)"
+          emptyLabel={t`Chưa chọn`}
+          filterLabel={t`Lọc tỉnh / thành phố`}
+          filterPlaceholder={t`Gõ để lọc tỉnh / thành (không cần dấu)`}
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-ward`}>Xã / Phường</Label>
+        <Label htmlFor={`${idPrefix}-ward`}>{t`Xã / Phường`}</Label>
         <FilterableSelect
           id={`${idPrefix}-ward`}
           icon={<IconHome />}
           value={value.ward_code ?? ""}
           disabled={!value.province_code}
-          onChange={(code) => onChange({ province_code: value.province_code, ward_code: code || null })}
-          options={wards.map((w) => ({ value: w.code, label: `${VN_WARD_KIND_LABEL[w.kind]} ${w.name}` }))}
-          emptyLabel={value.province_code ? "Chưa chọn" : "Chọn tỉnh / thành trước"}
-          filterLabel="Lọc xã / phường"
-          filterPlaceholder="Gõ để lọc xã / phường (không cần dấu)"
+          onChange={(code) =>
+            onChange({
+              province_code: value.province_code,
+              ward_code: code || null,
+            })
+          }
+          options={wards.map((w) => ({
+            value: w.code,
+            label: `${VN_WARD_KIND_LABEL[w.kind]} ${w.name}`,
+          }))}
+          emptyLabel={
+            value.province_code ? t`Chưa chọn` : t`Chọn tỉnh / thành trước`
+          }
+          filterLabel={t`Lọc xã / phường`}
+          filterPlaceholder={t`Gõ để lọc xã / phường (không cần dấu)`}
         />
       </div>
     </div>

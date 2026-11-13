@@ -8,6 +8,7 @@ import {
 } from "@/components/icons";
 import type { ClanLeaderboardStat, ClanSummary } from "@/lib/queries/clans";
 
+import { t } from "@lingui/core/macro";
 /**
  * Huy hiệu "ganh đua" cho danh sách dòng họ — biến số liệu khô thành
  * hạng/nhãn nổi bật để các họ có động lực bổ sung dữ liệu, mời thêm
@@ -24,31 +25,31 @@ interface Tier {
 export function memberTier(count: number): Tier | null {
   if (count >= 5000)
     return {
-      label: "Kim cương",
+      label: t`Kim cương`,
       className:
         "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30",
     };
   if (count >= 1000)
     return {
-      label: "Bạch kim",
+      label: t`Bạch kim`,
       className:
         "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
     };
   if (count >= 500)
     return {
-      label: "Vàng",
+      label: t`Vàng`,
       className:
         "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
     };
   if (count >= 200)
     return {
-      label: "Bạc",
+      label: t`Bạc`,
       className:
         "bg-zinc-400/15 text-zinc-600 dark:text-zinc-300 border-zinc-400/30",
     };
   if (count >= 50)
     return {
-      label: "Đồng",
+      label: t`Đồng`,
       className:
         "bg-orange-700/15 text-orange-800 dark:text-orange-300 border-orange-700/30",
     };
@@ -117,7 +118,10 @@ export function ClanBadges({
       ? Math.round((stat.persons_with_birth / stat.persons_total) * 100)
       : null;
   const showComplete =
-    stat != null && stat.persons_total >= 10 && pctBirth != null && pctBirth >= 80;
+    stat != null &&
+    stat.persons_total >= 10 &&
+    pctBirth != null &&
+    pctBirth >= 80;
   const grow = stat?.persons_30d ?? 0;
   const showGrow = grow >= 1;
 
@@ -129,20 +133,23 @@ export function ClanBadges({
     <div className="mt-1.5 flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 [&>*]:whitespace-nowrap sm:flex-wrap sm:justify-end sm:overflow-visible">
       {showTop && (
         <Chip
-          title={`Hạng ${rank} theo số thành viên`}
+          title={t`Hạng ${rank} theo số thành viên`}
           className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
         >
           <IconShield className={ICON_CLS} /> Top {rank}
         </Chip>
       )}
       {tier && (
-        <Chip title={`${clan.person_count} thành viên`} className={tier.className}>
+        <Chip
+          title={t`${clan.person_count} thành viên`}
+          className={tier.className}
+        >
           <IconSparkles className={ICON_CLS} /> {tier.label}
         </Chip>
       )}
       {showDoi && (
         <Chip
-          title={`Cây sâu ${doi} đời`}
+          title={t`Cây sâu ${doi} đời`}
           className="bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30"
         >
           <IconTree className={ICON_CLS} /> {doi} đời
@@ -150,7 +157,7 @@ export function ClanBadges({
       )}
       {showComplete && (
         <Chip
-          title={`${pctBirth}% thành viên đã có năm sinh`}
+          title={t`${pctBirth}% thành viên đã có năm sinh`}
           className="bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30"
         >
           <IconCheck className={ICON_CLS} /> Đầy đủ {pctBirth}%
@@ -158,7 +165,7 @@ export function ClanBadges({
       )}
       {showGrow && (
         <Chip
-          title={`Thêm ${grow} người trong 30 ngày qua`}
+          title={t`Thêm ${grow} người trong 30 ngày qua`}
           className="bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30"
         >
           <IconUserPlus className={ICON_CLS} /> +{grow} tháng này
@@ -166,10 +173,10 @@ export function ClanBadges({
       )}
       {isActive && (
         <Chip
-          title="Có cập nhật trong 7 ngày qua"
+          title={t`Có cập nhật trong 7 ngày qua`}
           className="bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30"
         >
-          <IconBell className={ICON_CLS} /> Đang sôi nổi
+          <IconBell className={ICON_CLS} /> {t`Đang sôi nổi`}
         </Chip>
       )}
     </div>

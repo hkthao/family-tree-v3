@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import { IconX } from "@/components/icons";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -24,9 +25,17 @@ interface Props {
  * Stops the camera + frees resources when the modal closes
  * (or the component unmounts mid-scan).
  */
-export function QrScannerModal({ open, onClose, onDecode, title, description }: Props) {
+export function QrScannerModal({
+  open,
+  onClose,
+  onDecode,
+  title,
+  description,
+}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const scannerRef = useRef<{ stop: () => void; destroy: () => void } | null>(null);
+  const scannerRef = useRef<{ stop: () => void; destroy: () => void } | null>(
+    null,
+  );
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -58,7 +67,7 @@ export function QrScannerModal({ open, onClose, onDecode, title, description }: 
       } catch (e) {
         if (!cancelled) {
           setErr(
-            "Không mở được camera. Cho phép quyền camera trong trình duyệt rồi thử lại.",
+            t`Không mở được camera. Cho phép quyền camera trong trình duyệt rồi thử lại.`,
           );
           // Surface the underlying error to console for debug.
           // eslint-disable-next-line no-console
@@ -101,7 +110,7 @@ export function QrScannerModal({ open, onClose, onDecode, title, description }: 
         <button
           type="button"
           onClick={onClose}
-          aria-label="Đóng"
+          aria-label={t`Đóng`}
           className="absolute right-3 top-3 z-10 h-9 w-9 inline-flex items-center justify-center rounded-md bg-black/40 text-white hover:bg-black/60"
         >
           <IconX className="h-5 w-5" />

@@ -32,7 +32,8 @@ export function FormActions({
   className?: string;
 }) {
   const inPanel = React.useContext(InSidePanelContext);
-  if (inPanel) return <PanelActionBar className={className}>{children}</PanelActionBar>;
+  if (inPanel)
+    return <PanelActionBar className={className}>{children}</PanelActionBar>;
   return (
     <ActionArea>
       <div

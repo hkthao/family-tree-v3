@@ -26,8 +26,8 @@ VN_RE = re.compile(f"[{VN}{VN.upper()}]")
 # Từ tiếng Việt không dấu thường gặp trong nhãn ngắn.
 PLAIN_WORDS = {"ten", "ho", "email", "xem", "luu", "huy", "xoa", "sua", "them", "tim", "nam", "nu"}
 
-ATTRS = r"(?:placeholder|title|aria-label|alt|label|helperText|description|subtitle|emptyLabel|filterPlaceholder|filterLabel|hint)"
-OBJ_KEYS = r"(?:label|title|subtitle|description|placeholder|hint|helperText|emptyLabel|tooltip|ariaLabel|confirmLabel|text)"
+ATTRS = r"(?:placeholder|title|aria-label|ariaLabel|alt|label|helperText|description|subtitle|emptyLabel|filterPlaceholder|filterLabel|hint|unit|tip)"
+OBJ_KEYS = r"(?:label|title|subtitle|description|desc|placeholder|hint|helperText|emptyLabel|tooltip|ariaLabel|confirmLabel|text|unit|tip)"
 
 
 def is_vi(s: str) -> bool:
@@ -67,6 +67,10 @@ def module_level_ranges(lines):
                         depth -= 1
                 if started and depth <= 0:
                     break
+                # Câu lệnh không có ngoặc (`const KEY = "x";`) kết thúc ngay ở dấu ; — nếu không,
+                # vòng lặp chạy tới hết tệp và coi cả phần còn lại là "mức module".
+                if not started and lines[j].rstrip().endswith(";"):
+                    break
                 j += 1
             is_fn = bool(re.search(r"=>|function\b|\buse[A-Z]|forwardRef|memo\(|lazy\(|createContext|StyleSheet", head)) or any(
                 "=>" in lines[k] for k in range(i, min(i + 3, n))
@@ -79,7 +83,8 @@ def module_level_ranges(lines):
     return ranges
 
 
-TEXT_ONLY = re.compile(r"[^<>{}=\n`\\]+")
+# Dòng văn bản: chữ + (tuỳ chọn) biểu thức `{x}` / `{" "}` không lồng nhau; không có thẻ, `=`, `` ` ``.
+TEXT_ONLY = re.compile(r"(?:[^<>{}=\n`\\]|\{[^{}<>\n`]*\})+")
 
 
 def group_paragraphs(lines, in_mod):
@@ -161,6 +166,18 @@ def process(path: str, dry: bool):
         cand = re.sub(r'(?<=:\s)"([^"\n]*)"(?=\s*[,;)]|\s*$)', lambda m: sub_str(m) if re.search(r'\?\s*(t`|")', cand) else m.group(0), cand)
         # `{cond ? t`…` : "…"}` — nhánh sau dấu : kết thúc bằng }.
         cand = re.sub(r'(?<=:\s)"([^"\n]*)"(?=\s*\})', sub_str, cand) if re.search(r"\?\s*(t`|\")", cand) else cand
+        # Template literal một dòng có biến: `Đã thêm ${x} …` → t`Đã thêm ${x} …` (Lingui hiểu ${…}).
+        def sub_tpl(m):
+            body = m.group(1)
+            if not (is_vi(body) and "${" in body) or "<" in body or "\\" in body:
+                return m.group(0)
+            return f"t`{body}`"
+
+        cand = re.sub(r"(?<![\w`$.])`([^`\n]*)`", sub_tpl, cand)
+        # Icon tự đóng + chữ ở cuối dòng:  <Icon /> Chữ
+        mi = re.fullmatch(r"(\s*<[A-Za-z][^<>]*/>)\s+([^<>{}=\n`\\]+)", cand)
+        if mi and ok_text(mi.group(2).strip()):
+            cand = f"{mi.group(1)} {{t`{mi.group(2).strip()}`}}"
         # Đối số chuỗi của hàm báo lỗi / thông báo: setError("…"), toast.error("…"), new Error("…").
         cand = re.sub(
             r'\b(set(?:Error|Info|Message|Notice|Err|Success|Msg|Warning)|toast\.(?:success|error|info|warning|message)|new Error|alert|confirm)\(\s*"([^"\n]*)"',

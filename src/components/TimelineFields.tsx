@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-import { IconChevronDown, IconChevronUp, IconPlus, IconTrash } from "@/components/icons";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconPlus,
+  IconTrash,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { yearToCanChi } from "@/lib/canChi";
 import type { TimelineRow } from "@/lib/queries/person-timeline";
 
+import { t } from "@lingui/core/macro";
 /** Một dòng đang soạn trong form (năm để chuỗi cho tới khi lưu). */
 export interface TimelineDraft {
   key: number;
@@ -41,9 +47,10 @@ export function draftsToRows(drafts: TimelineDraft[]): TimelineRow[] {
     if (!d.year.trim() && !d.body.trim()) continue;
     const year = Number(d.year);
     if (!Number.isInteger(year) || year < -3000 || year > 3000) {
-      throw new Error(`Dòng thời gian: năm “${d.year}” chưa hợp lệ.`);
+      throw new Error(t`Dòng thời gian: năm “${d.year}” chưa hợp lệ.`);
     }
-    if (!d.body.trim()) throw new Error(`Dòng thời gian: năm ${year} chưa có nội dung.`);
+    if (!d.body.trim())
+      throw new Error(t`Dòng thời gian: năm ${year} chưa có nội dung.`);
     rows.push({ year, era: d.era.trim() || null, body: d.body.trim() });
   }
   return rows.sort((a, b) => a.year - b.year);
@@ -70,7 +77,13 @@ export function TimelineFields({
   const nextKey = drafts.reduce((m, d) => Math.max(m, d.key + 1), 0);
   /** Chèn một mốc trống ngay sau mốc `afterKey` (null = đầu danh sách). */
   const insertAfter = (afterKey: number | null) => {
-    const blank: TimelineDraft = { key: nextKey, year: "", era: "", eraAuto: true, body: "" };
+    const blank: TimelineDraft = {
+      key: nextKey,
+      year: "",
+      era: "",
+      eraAuto: true,
+      body: "",
+    };
     setOpen((prev) => new Set(prev).add(blank.key));
     if (afterKey === null) return onChange([blank, ...drafts]);
     const i = drafts.findIndex((d) => d.key === afterKey);
@@ -80,7 +93,7 @@ export function TimelineFields({
   return (
     <div className="space-y-3">
       {drafts.length === 0 && (
-        <p className="text-sm text-muted-foreground">Chưa có mốc nào.</p>
+        <p className="text-sm text-muted-foreground">{t`Chưa có mốc nào.`}</p>
       )}
       <ul className="space-y-2">
         {drafts.map((d) => {
@@ -97,12 +110,23 @@ export function TimelineFields({
                   <span className="shrink-0 text-base font-semibold text-primary">
                     {d.year || "—"}
                   </span>
-                  {d.era && <span className="shrink-0 text-xs text-muted-foreground">{d.era}</span>}
+                  {d.era && (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {d.era}
+                    </span>
+                  )}
                   <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
                     {d.body.split("\n")[0] || "Chưa có nội dung"}
                   </span>
-                  <span className="shrink-0 text-muted-foreground" aria-hidden="true">
-                    {isOpen ? <IconChevronUp className="h-5 w-5" /> : <IconChevronDown className="h-5 w-5" />}
+                  <span
+                    className="shrink-0 text-muted-foreground"
+                    aria-hidden="true"
+                  >
+                    {isOpen ? (
+                      <IconChevronUp className="h-5 w-5" />
+                    ) : (
+                      <IconChevronDown className="h-5 w-5" />
+                    )}
                   </span>
                 </button>
                 <Button
@@ -110,8 +134,8 @@ export function TimelineFields({
                   variant="ghost"
                   size="sm"
                   className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-primary"
-                  aria-label={`Chèn mốc mới bên dưới mốc năm ${d.year || "này"}`}
-                  title="Chèn mốc mới bên dưới"
+                  aria-label={t`Chèn mốc mới bên dưới mốc năm ${d.year || "này"}`}
+                  title={t`Chèn mốc mới bên dưới`}
                   onClick={() => insertAfter(d.key)}
                 >
                   <IconPlus className="h-4 w-4" />
@@ -121,8 +145,10 @@ export function TimelineFields({
                   variant="ghost"
                   size="sm"
                   className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-destructive"
-                  aria-label={`Xoá mốc năm ${d.year || "này"}`}
-                  onClick={() => onChange(drafts.filter((x) => x.key !== d.key))}
+                  aria-label={t`Xoá mốc năm ${d.year || "này"}`}
+                  onClick={() =>
+                    onChange(drafts.filter((x) => x.key !== d.key))
+                  }
                 >
                   <IconTrash className="h-4 w-4" />
                 </Button>
@@ -131,7 +157,10 @@ export function TimelineFields({
                 <div className="space-y-3 border-t p-3">
                   <div className="flex items-end gap-2">
                     <div className="w-24 shrink-0">
-                      <Label htmlFor={`tl-year-${d.key}`} className="text-xs">Năm</Label>
+                      <Label
+                        htmlFor={`tl-year-${d.key}`}
+                        className="text-xs"
+                      >{t`Năm`}</Label>
                       <Input
                         id={`tl-year-${d.key}`}
                         inputMode="numeric"
@@ -139,31 +168,41 @@ export function TimelineFields({
                         onChange={(e) =>
                           update(d.key, {
                             year: e.target.value,
-                            ...(d.eraAuto ? { era: autoEra(e.target.value) } : {}),
+                            ...(d.eraAuto
+                              ? { era: autoEra(e.target.value) }
+                              : {}),
                           })
                         }
                         placeholder="1226"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <Label htmlFor={`tl-era-${d.key}`} className="text-xs">Can chi (tự tính theo năm)</Label>
+                      <Label
+                        htmlFor={`tl-era-${d.key}`}
+                        className="text-xs"
+                      >{t`Can chi (tự tính theo năm)`}</Label>
                       <Input
                         id={`tl-era-${d.key}`}
                         value={d.era}
-                        onChange={(e) => update(d.key, { era: e.target.value, eraAuto: false })}
-                        placeholder="Bính Tuất"
+                        onChange={(e) =>
+                          update(d.key, { era: e.target.value, eraAuto: false })
+                        }
+                        placeholder={t`Bính Tuất`}
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor={`tl-body-${d.key}`} className="text-xs">Sự kiện</Label>
+                    <Label
+                      htmlFor={`tl-body-${d.key}`}
+                      className="text-xs"
+                    >{t`Sự kiện`}</Label>
                     <Textarea
                       id={`tl-body-${d.key}`}
                       rows={3}
                       maxLength={1000}
                       value={d.body}
                       onChange={(e) => update(d.key, { body: e.target.value })}
-                      placeholder="Việc xảy ra trong năm này"
+                      placeholder={t`Việc xảy ra trong năm này`}
                     />
                   </div>
                 </div>
@@ -176,10 +215,12 @@ export function TimelineFields({
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => insertAfter(drafts.length ? drafts[drafts.length - 1].key : null)}
+        onClick={() =>
+          insertAfter(drafts.length ? drafts[drafts.length - 1].key : null)
+        }
       >
         <IconPlus className="mr-1.5 h-4 w-4" />
-        Thêm mốc
+        {t`Thêm mốc`}
       </Button>
     </div>
   );

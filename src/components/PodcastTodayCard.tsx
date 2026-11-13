@@ -5,6 +5,7 @@ import { IconArrowRight, IconMicrophone, IconPlay } from "@/components/icons";
 import { formatDateOnly } from "@/lib/formatDate";
 import { formatDuration, listPodcastEpisodes } from "@/lib/queries/podcast";
 
+import { t } from "@lingui/core/macro";
 /**
  * Tập podcast mới nhất, đặt ở trang "Hôm nay".
  *
@@ -28,7 +29,7 @@ export function PodcastTodayCard() {
 
   return (
     <section aria-label="Podcast" className="space-y-2">
-      <h2 className="text-lg font-semibold">Nghe gì hôm nay</h2>
+      <h2 className="text-lg font-semibold">{t`Nghe gì hôm nay`}</h2>
       <Link
         to="/podcast"
         className="flex items-center gap-3 rounded-xl border bg-card shadow-sm p-3 transition-colors hover:border-primary"

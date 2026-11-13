@@ -13,6 +13,8 @@ import { PhotoFrame } from "./PhotoFrame";
 import { EYE, placePhotos, type RoomLayout } from "./placement";
 import { Room } from "./Room";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 export type GalleryPalette = {
   bg: string; // màu sương mù (fog)
   bgTop: string; // nền gradient — trên
@@ -282,7 +284,16 @@ export function GalleryScene({
   // Phím WASD / mũi tên để đi.
   useEffect(() => {
     const keys = new Set<string>();
-    const MOVE = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"];
+    const MOVE = [
+      "w",
+      "a",
+      "s",
+      "d",
+      "arrowup",
+      "arrowdown",
+      "arrowleft",
+      "arrowright",
+    ];
     const apply = () => {
       const f =
         (keys.has("w") || keys.has("arrowup") ? 1 : 0) -
@@ -467,7 +478,9 @@ export function GalleryScene({
             ? editModel.pedestalTexture
             : (t.pedestalTexture ?? null);
           const pos = editing ? editModel.pos : (t.pos ?? null);
-          const pedStyle = editing ? editModel.pedStyle : (t.pedestalStyle ?? "box");
+          const pedStyle = editing
+            ? editModel.pedStyle
+            : (t.pedestalStyle ?? "box");
           const position: [number, number, number] = pos
             ? [pos[0], 0, pos[1]]
             : [
@@ -518,16 +531,20 @@ export function GalleryScene({
           data-ui
           className="absolute left-1/2 top-14 z-20 w-[min(22rem,80%)] -translate-x-1/2 space-y-2 rounded-xl border bg-card p-3 text-card-foreground shadow-xl"
         >
-          <div className="text-sm font-medium">Thêm hiện vật 3D (GLB/GLTF)</div>
+          <div className="text-sm font-medium">{t`Thêm hiện vật 3D (GLB/GLTF)`}</div>
           <input
             value={addModelUrl}
             onChange={(e) => setAddModelUrl(e.target.value)}
-            placeholder="Dán URL file .glb / .gltf (https://…)"
+            placeholder={t`Dán URL file .glb / .gltf (https://…)`}
             className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus:border-primary"
           />
           <p className="text-[11px] leading-snug text-muted-foreground">
-            File phải cho phép CORS (Poly Haven, Sketchfab CC0…). Không nhận link
-            trang, chỉ link file .glb/.gltf trực tiếp.
+            <Trans>
+              <Trans>
+                File phải cho phép CORS (Poly Haven, Sketchfab CC0…). Không nhận
+                link trang, chỉ link file .glb/.gltf trực tiếp.
+              </Trans>
+            </Trans>
           </p>
           <div className="flex gap-2">
             <button
@@ -548,36 +565,39 @@ export function GalleryScene({
               }}
               className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm text-primary-foreground disabled:opacity-50"
             >
-              Thêm
+              {t`Thêm`}
             </button>
             <button
               type="button"
               onClick={() => setAddModelUrl(null)}
               className="inline-flex h-8 items-center rounded-md border px-3 text-sm"
             >
-              Huỷ
+              {t`Huỷ`}
             </button>
           </div>
         </div>
       )}
 
       {/* Góc trên phải: chọn tông phòng + toàn màn hình */}
-      <div data-ui className="absolute right-3 top-3 z-10 flex items-center gap-2">
+      <div
+        data-ui
+        className="absolute right-3 top-3 z-10 flex items-center gap-2"
+      >
         {canEdit && onExpand && (
           <button
             type="button"
             onClick={() => onExpand()}
-            title="Mở rộng phòng — thêm khung trống ở cuối"
+            title={t`Mở rộng phòng — thêm khung trống ở cuối`}
             className="inline-flex h-8 items-center gap-1 rounded-md border bg-card/90 px-2.5 text-xs text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
           >
-            + Mở rộng
+            {t`+ Mở rộng`}
           </button>
         )}
         {canEdit && onAddModel && (
           <button
             type="button"
             onClick={() => setAddModelUrl((v) => (v === null ? "" : null))}
-            title="Thêm hiện vật 3D"
+            title={t`Thêm hiện vật 3D`}
             className="inline-flex h-8 items-center gap-1 rounded-md border bg-card/90 px-2.5 text-xs text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
           >
             + 3D
@@ -591,7 +611,7 @@ export function GalleryScene({
                 type="button"
                 onClick={() => onPreset?.(p.id)}
                 title={p.name}
-                aria-label={`Tông phòng: ${p.name}`}
+                aria-label={t`Tông phòng: ${p.name}`}
                 className={`h-4 w-4 rounded-full border transition ${
                   p.id === presetId
                     ? "ring-2 ring-primary ring-offset-1 ring-offset-card"
@@ -606,20 +626,24 @@ export function GalleryScene({
           <button
             type="button"
             onClick={() => setShowRoomColors((v) => !v)}
-            title="Màu phòng tuỳ chỉnh"
+            title={t`Màu phòng tuỳ chỉnh`}
             className="inline-flex h-8 items-center rounded-md border bg-card/90 px-2.5 text-xs text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
           >
-            Màu
+            {t`Màu`}
           </button>
         )}
         <button
           type="button"
           onClick={() => setFs((v) => !v)}
           className="inline-flex h-8 w-8 items-center justify-center rounded-md border bg-card/90 text-foreground shadow-sm backdrop-blur hover:border-primary hover:bg-card"
-          aria-label={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
-          title={fs ? "Thoát toàn màn hình" : "Xem toàn màn hình"}
+          aria-label={fs ? t`Thoát toàn màn hình` : t`Xem toàn màn hình`}
+          title={fs ? t`Thoát toàn màn hình` : t`Xem toàn màn hình`}
         >
-          {fs ? <IconMinimize className="h-4 w-4" /> : <IconMaximize className="h-4 w-4" />}
+          {fs ? (
+            <IconMinimize className="h-4 w-4" />
+          ) : (
+            <IconMaximize className="h-4 w-4" />
+          )}
         </button>
       </div>
 
@@ -629,7 +653,7 @@ export function GalleryScene({
           data-ui
           className="absolute right-3 top-14 z-20 w-52 space-y-2 rounded-xl border bg-card p-3 text-card-foreground shadow-xl"
         >
-          <div className="text-sm font-medium">Màu phòng tuỳ chỉnh</div>
+          <div className="text-sm font-medium">{t`Màu phòng tuỳ chỉnh`}</div>
           {(
             [
               ["wall", "Tường"],
@@ -638,7 +662,10 @@ export function GalleryScene({
               ["bg", "Nền"],
             ] as const
           ).map(([field, label]) => (
-            <label key={field} className="flex items-center justify-between gap-2 text-sm">
+            <label
+              key={field}
+              className="flex items-center justify-between gap-2 text-sm"
+            >
               <span className="text-muted-foreground">{label}</span>
               <input
                 type="color"
@@ -650,7 +677,7 @@ export function GalleryScene({
             </label>
           ))}
           <p className="text-[11px] leading-snug text-muted-foreground">
-            Kéo chọn màu bất kỳ; hoặc dùng các "tông phòng" có sẵn ở trên.
+            {t`Kéo chọn màu bất kỳ; hoặc dùng các "tông phòng" có sẵn ở trên.`}
           </p>
         </div>
       )}
@@ -664,10 +691,11 @@ export function GalleryScene({
         className="pointer-events-none absolute left-3 top-3 max-w-[40%] rounded-lg border bg-background/85 px-2.5 py-1.5 text-xs leading-snug text-muted-foreground shadow-sm backdrop-blur"
       >
         <span className="hidden sm:inline">
-          Kéo nhìn · WASD/<b className="text-foreground">nhấp đúp sàn</b> để đi · chạm khung xem
+          Kéo nhìn · WASD/<b className="text-foreground">{t`nhấp đúp sàn`}</b>{" "}
+          để đi · chạm khung xem
         </span>
         <span className="sm:hidden">
-          Kéo nhìn · <b className="text-foreground">chạm đúp sàn</b> để đi
+          Kéo nhìn · <b className="text-foreground">{t`chạm đúp sàn`}</b> để đi
         </span>
       </div>
 
@@ -678,13 +706,22 @@ export function GalleryScene({
             data-ui
             className="pointer-events-auto max-w-full truncate rounded-lg border bg-background/85 px-3 py-1 text-center text-xs shadow-sm backdrop-blur"
           >
-            <span className="font-medium text-foreground">{frame.photo.title}</span>
+            <span className="font-medium text-foreground">
+              {frame.photo.title}
+            </span>
             {frame.photo.subtitle && (
-              <span className="ml-2 text-muted-foreground">{frame.photo.subtitle}</span>
+              <span className="ml-2 text-muted-foreground">
+                {frame.photo.subtitle}
+              </span>
             )}
           </div>
           <div data-ui className="pointer-events-auto flex items-center gap-2">
-            <button type="button" className={btn} onClick={() => go(-1)} aria-label="Bức trước">
+            <button
+              type="button"
+              className={btn}
+              onClick={() => go(-1)}
+              aria-label={t`Bức trước`}
+            >
               ◀
             </button>
             <span className="rounded-md bg-background/80 px-2 py-1 text-xs tabular-nums text-muted-foreground backdrop-blur">
@@ -694,8 +731,8 @@ export function GalleryScene({
               type="button"
               className={btn}
               onClick={() => walkTo(near)}
-              title="Đến vị trí ngắm đẹp bức này"
-              aria-label="Đến vị trí ngắm đẹp"
+              title={t`Đến vị trí ngắm đẹp bức này`}
+              aria-label={t`Đến vị trí ngắm đẹp`}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -709,12 +746,21 @@ export function GalleryScene({
                 <circle cx="12" cy="12" r="8" />
                 <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
               </svg>
-              Ngắm
+              {t`Ngắm`}
             </button>
-            <button type="button" className={btn} onClick={() => setDetail(frame.photo)}>
-              Xem ảnh
+            <button
+              type="button"
+              className={btn}
+              onClick={() => setDetail(frame.photo)}
+            >
+              {t`Xem ảnh`}
             </button>
-            <button type="button" className={btn} onClick={() => go(1)} aria-label="Bức sau">
+            <button
+              type="button"
+              className={btn}
+              onClick={() => go(1)}
+              aria-label={t`Bức sau`}
+            >
               ▶
             </button>
           </div>
@@ -747,7 +793,7 @@ export function GalleryScene({
               <button
                 type="button"
                 onClick={() => setDetail(null)}
-                aria-label="Đóng"
+                aria-label={t`Đóng`}
                 className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 ✕
@@ -800,12 +846,12 @@ export function GalleryScene({
           className="absolute bottom-3 left-1/2 z-20 w-[min(24rem,90%)] -translate-x-1/2 space-y-3 rounded-xl border bg-card p-3 text-card-foreground shadow-2xl"
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Chỉnh hiện vật 3D</span>
+            <span className="text-sm font-medium">{t`Chỉnh hiện vật 3D`}</span>
             <button
               type="button"
               onClick={() => setEditModel(null)}
               className="inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-              aria-label="Đóng"
+              aria-label={t`Đóng`}
             >
               ✕
             </button>
@@ -823,7 +869,9 @@ export function GalleryScene({
               value={Math.round((editModel.rotY * 180) / Math.PI)}
               onChange={(e) =>
                 setEditModel((s) =>
-                  s ? { ...s, rotY: (Number(e.target.value) * Math.PI) / 180 } : s,
+                  s
+                    ? { ...s, rotY: (Number(e.target.value) * Math.PI) / 180 }
+                    : s,
                 )
               }
               className="w-full"
@@ -832,7 +880,7 @@ export function GalleryScene({
 
           {/* Kiểu bục */}
           <div>
-            <div className="mb-1 text-xs text-muted-foreground">Kiểu bục</div>
+            <div className="mb-1 text-xs text-muted-foreground">{t`Kiểu bục`}</div>
             <div className="flex flex-wrap gap-1.5">
               {PEDESTAL_STYLES.map((s) => (
                 <button
@@ -855,7 +903,7 @@ export function GalleryScene({
 
           {/* Màu / chất liệu bục */}
           <div>
-            <div className="mb-1 text-xs text-muted-foreground">Màu bục</div>
+            <div className="mb-1 text-xs text-muted-foreground">{t`Màu bục`}</div>
             <div className="flex flex-wrap items-center gap-2">
               {PEDESTAL_OPTS.map((o) => (
                 <button
@@ -884,7 +932,7 @@ export function GalleryScene({
                     s ? { ...s, pedestalColor: e.target.value } : s,
                   )
                 }
-                title="Chọn màu bất kỳ"
+                title={t`Chọn màu bất kỳ`}
                 className="h-6 w-8 cursor-pointer rounded border bg-transparent"
               />
             </div>
@@ -905,7 +953,7 @@ export function GalleryScene({
                     : ""
                 }`}
               >
-                Màu trơn
+                {t`Màu trơn`}
               </button>
             </div>
             <div className="grid max-h-28 grid-cols-6 gap-1.5 overflow-y-auto rounded-md border p-1.5">
@@ -944,7 +992,7 @@ export function GalleryScene({
                 placing ? "border-primary text-primary" : ""
               }`}
             >
-              {placing ? "Chạm sàn để đặt…" : "Di chuyển"}
+              {placing ? t`Chạm sàn để đặt…` : t`Di chuyển`}
             </button>
             <button
               type="button"
@@ -961,14 +1009,14 @@ export function GalleryScene({
               }}
               className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm text-primary-foreground"
             >
-              Lưu
+              {t`Lưu`}
             </button>
             <button
               type="button"
               onClick={async () => {
                 const ok = await confirm({
-                  title: "Xoá hiện vật 3D này?",
-                  confirmLabel: "Xoá",
+                  title: t`Xoá hiện vật 3D này?`,
+                  confirmLabel: t`Xoá`,
                   destructive: true,
                 });
                 if (ok) {
@@ -978,14 +1026,14 @@ export function GalleryScene({
               }}
               className="inline-flex h-8 items-center rounded-md border px-3 text-sm text-destructive hover:bg-destructive/10"
             >
-              Xoá
+              {t`Xoá`}
             </button>
             <button
               type="button"
               onClick={() => setEditModel(null)}
               className="inline-flex h-8 items-center rounded-md border px-3 text-sm"
             >
-              Đóng
+              {t`Đóng`}
             </button>
           </div>
         </div>
@@ -1036,7 +1084,7 @@ function EditItemPanel({
   return (
     <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
       <div className="text-sm font-medium text-foreground">
-        Thay ảnh / video cho khung này
+        {t`Thay ảnh / video cho khung này`}
       </div>
 
       {/* Dán URL ảnh ngoài — nút Áp dụng là icon outline nằm TRONG ô input */}
@@ -1044,15 +1092,15 @@ function EditItemPanel({
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="Dán URL ảnh hoặc video (https://…)"
+          placeholder={t`Dán URL ảnh hoặc video (https://…)`}
           className="h-9 w-full rounded-md border border-input bg-background pl-2.5 pr-9 text-sm outline-none focus:border-primary"
         />
         <button
           type="button"
           disabled={!urlOk || busy}
           onClick={() => run({ image_url: url.trim(), person_id: null })}
-          title={urlOk ? "Áp dụng URL này" : "Dán URL ảnh hợp lệ (https://…)"}
-          aria-label="Áp dụng URL này"
+          title={urlOk ? t`Áp dụng URL này` : t`Dán URL ảnh hợp lệ (https://…)`}
+          aria-label={t`Áp dụng URL này`}
           className={`absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded transition-colors ${
             urlOk
               ? "text-red-600 hover:bg-red-500/15 dark:text-red-500"
@@ -1073,8 +1121,9 @@ function EditItemPanel({
         </button>
       </div>
       <p className="text-[11px] leading-snug text-muted-foreground">
-        Video nên dùng <b>link .mp4 trực tiếp</b> (chuột phải video đang phát →
-        “Copy video address”). Link trang chia sẻ có thể không hiện trên tường.
+        Video nên dùng <b>{t`link .mp4 trực tiếp`}</b> (chuột phải video đang
+        phát → “Copy video address”). Link trang chia sẻ có thể không hiện trên
+        tường.
       </p>
 
       {/* Hoặc chọn ảnh thành viên khác — dropdown NỔI (absolute) để không đẩy panel */}
@@ -1082,7 +1131,7 @@ function EditItemPanel({
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Hoặc tìm thành viên (có ảnh) để thay…"
+          placeholder={t`Hoặc tìm thành viên (có ảnh) để thay…`}
           className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm outline-none focus:border-primary"
         />
         {matches.length > 0 && (

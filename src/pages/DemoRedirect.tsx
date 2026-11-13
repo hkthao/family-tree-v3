@@ -5,6 +5,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { track } from "@/lib/analytics";
 import { getDemoClanIds } from "@/lib/queries/platformSettings";
 
+import { t } from "@lingui/core/macro";
 /**
  * `/xem/demo` → chuyển tới dòng họ mẫu đang được cấu hình.
  *
@@ -25,7 +26,8 @@ export default function DemoRedirect() {
     retry: false,
   });
 
-  if (isLoading) return <LoadingState fullscreen label="Đang mở gia phả mẫu…" />;
+  if (isLoading)
+    return <LoadingState fullscreen label={t`Đang mở gia phả mẫu…`} />;
 
   const demoClanId = data?.[0];
   if (!demoClanId) return <Navigate to="/signup" replace />;

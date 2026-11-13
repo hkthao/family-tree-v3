@@ -43,6 +43,8 @@ import { getKinshipIndex } from "@/lib/queries/kinship";
 import { createPerson, getPerson, updatePerson } from "@/lib/queries/persons";
 import { matchesName } from "@/lib/unaccent";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const PICKER_CAP = 1000;
 
 interface AddParentFormProps {
@@ -128,15 +130,18 @@ export function AddParentForm({
     const matched = clanIndex.ordered
       .filter((p) => !excluded.has(p.id))
       .filter((p) => matchesName(p.full_name, existingFilter));
-    return { candidates: matched.slice(0, PICKER_CAP), totalMatched: matched.length };
+    return {
+      candidates: matched.slice(0, PICKER_CAP),
+      totalMatched: matched.length,
+    };
   }, [clanIndex, focal, rels, existingFilter]);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!focal) throw new Error("Thiếu thông tin");
+      if (!focal) throw new Error(t`Thiếu thông tin`);
 
       if (mode === "existing") {
-        if (!existingId) throw new Error("Chưa chọn người để gắn");
+        if (!existingId) throw new Error(t`Chưa chọn người để gắn`);
         await assignExistingParent(focal.id, existingId);
         return;
       }
@@ -181,16 +186,17 @@ export function AddParentForm({
       await invalidateClanData(queryClient, clanId);
       const label =
         mode === "existing"
-          ? clanIndex?.byId.get(existingId ?? "")?.full_name ?? "người đã chọn"
+          ? (clanIndex?.byId.get(existingId ?? "")?.full_name ??
+            "người đã chọn")
           : fullName.trim();
       toast.success(
-        mode === "existing" ? "Đã gắn cha/mẹ" : "Đã thêm cha/mẹ",
+        mode === "existing" ? t`Đã gắn cha/mẹ` : t`Đã thêm cha/mẹ`,
         { description: label },
       );
       onSaved();
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   return (
@@ -215,27 +221,27 @@ export function AddParentForm({
       }}
       className="space-y-6"
     >
-      <SegmentedControl ariaLabel="Chế độ thêm cha/mẹ" className="w-full">
+      <SegmentedControl ariaLabel={t`Chế độ thêm cha/mẹ`} className="w-full">
         <SegmentedButton
           className="flex-1 px-3"
           active={mode === "new"}
           onClick={() => setMode("new")}
         >
-          Người mới
+          {t`Người mới`}
         </SegmentedButton>
         <SegmentedButton
           className="flex-1 px-3"
           active={mode === "existing"}
           onClick={() => setMode("existing")}
         >
-          Chọn người đã có
+          {t`Chọn người đã có`}
         </SegmentedButton>
       </SegmentedControl>
 
       {mode === "new" ? (
         <>
           <fieldset className="space-y-3">
-            <legend className="text-base font-medium mb-2">Vai trò</legend>
+            <legend className="text-base font-medium mb-2">{t`Vai trò`}</legend>
             <div className="flex gap-6">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -248,9 +254,7 @@ export function AddParentForm({
                   disabled={hasFather}
                   className="h-4 w-4 accent-primary"
                 />
-                <span>
-                  Cha {hasFather && "(đã có)"}
-                </span>
+                <span>Cha {hasFather && "(đã có)"}</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
@@ -263,16 +267,14 @@ export function AddParentForm({
                   disabled={hasMother}
                   className="h-4 w-4 accent-primary"
                 />
-                <span>
-                  Mẹ {hasMother && "(đã có)"}
-                </span>
+                <span>Mẹ {hasMother && "(đã có)"}</span>
               </label>
             </div>
           </fieldset>
 
           <div className="space-y-2">
             <Label htmlFor="full_name" required>
-              Họ và tên
+              {t`Họ và tên`}
             </Label>
             <Input
               id="full_name"
@@ -282,16 +284,18 @@ export function AddParentForm({
               maxLength={200}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder={role === "M" ? "Vd: Nguyễn Văn A" : "Vd: Phạm Thị B"}
+              placeholder={
+                role === "M" ? t`Vd: Nguyễn Văn A` : t`Vd: Phạm Thị B`
+              }
             />
           </div>
 
           <CalendarDateInput
-            label="Ngày sinh (tuỳ chọn)"
+            label={t`Ngày sinh (tuỳ chọn)`}
             idPrefix="birth"
             value={birth}
             onChange={setBirth}
-            helperText="Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
+            helperText={t`Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
           />
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -305,12 +309,12 @@ export function AddParentForm({
               }}
               className="h-5 w-5 accent-primary shrink-0"
             />
-            <span>Đã mất</span>
+            <span>{t`Đã mất`}</span>
           </label>
 
           {!isLiving && (
             <CalendarDateInput
-              label="Ngày mất (nếu đã mất)"
+              label={t`Ngày mất (nếu đã mất)`}
               idPrefix="death"
               value={death}
               onChange={(next) => {
@@ -318,34 +322,40 @@ export function AddParentForm({
                 if (next.parts.year || next.parts.month || next.parts.day)
                   setIsLiving(false);
               }}
-              helperText="Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+              helperText={t`Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
             />
           )}
         </>
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            Nối một người đã có sẵn trong cây làm cha/mẹ của người này (thay vì
-            tạo mới) — tránh trùng người.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Nối một người đã có sẵn trong cây làm cha/mẹ của người này
+                  (thay vì tạo mới) — tránh trùng người.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
-          <Label>Tìm người đã có trong dòng họ</Label>
+          <Label>{t`Tìm người đã có trong dòng họ`}</Label>
           <Input
             icon={<IconSearch />}
             value={existingFilter}
             onChange={(e) => setExistingFilter(e.target.value)}
-            placeholder="Gõ tên để lọc (không cần dấu)"
+            placeholder={t`Gõ tên để lọc (không cần dấu)`}
           />
           {clanIndex && totalMatched > 0 && (
             <p className="text-xs text-muted-foreground">
               {totalMatched > PICKER_CAP
-                ? `Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
-                : `Hiện ${totalMatched} kết quả.`}
+                ? t`Hiện ${PICKER_CAP} / ${totalMatched} kết quả — gõ thêm để thu hẹp.`
+                : t`Hiện ${totalMatched} kết quả.`}
             </p>
           )}
           <ul className="max-h-80 overflow-y-auto border rounded-md divide-y text-sm bg-card">
             {candidates.length === 0 && (
               <li className="px-3 py-2 text-muted-foreground italic">
-                {clanIndex ? "Không có người nào khớp." : "Đang tải…"}
+                {clanIndex ? t`Không có người nào khớp.` : t`Đang tải…`}
               </li>
             )}
             {candidates.map((p) => {
@@ -383,9 +393,10 @@ export function AddParentForm({
             })}
           </ul>
           <p className="text-xs text-muted-foreground">
-            App chặn nếu người đã chọn là con cháu của {focal?.full_name ?? "người này"} —
-            tránh vòng lặp "ông nội là con của cháu". Vai trò cha/mẹ
-            được suy ra theo giới tính của người được chọn.
+            {t`App chặn nếu người đã chọn là con cháu của`}{" "}
+            {focal?.full_name ?? "người này"} — tránh vòng lặp "ông nội là con
+            của cháu". Vai trò cha/mẹ được suy ra theo giới tính của người được
+            chọn.
           </p>
         </div>
       )}
@@ -399,13 +410,9 @@ export function AddParentForm({
       )}
 
       <FormActions>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-        >
+        <Button type="button" variant="outline" onClick={onCancel}>
           <IconX className="h-4 w-4 mr-1.5" />
-          Hủy
+          {t`Hủy`}
         </Button>
         <Button
           type="submit"
@@ -418,11 +425,11 @@ export function AddParentForm({
           }
         >
           {mutation.isPending ? (
-            "Đang lưu…"
+            t`Đang lưu…`
           ) : (
             <>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu
+              {t`Lưu`}
             </>
           )}
         </Button>
@@ -457,15 +464,15 @@ export default function AddParent() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Danh bạ", to: `/clans/${clanId}/people` },
+          { label: t`Danh bạ`, to: `/clans/${clanId}/people` },
           { label: focal?.full_name ?? "Người", to: back.split("?")[0] },
-          { label: "Thêm cha / mẹ" },
+          { label: t`Thêm cha / mẹ` },
         ]}
       />
 
       <PageHeader
         icon={<IconUserPlus className="h-7 w-7" />}
-        title="Thêm cha / mẹ"
+        title={t`Thêm cha / mẹ`}
         description={focal ? `Cho ${focal.full_name}` : undefined}
       />
 

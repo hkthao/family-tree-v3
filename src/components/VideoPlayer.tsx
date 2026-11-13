@@ -8,6 +8,7 @@ import {
   type Viewport,
 } from "@/lib/videoTutorials";
 
+import { t } from "@lingui/core/macro";
 /**
  * Player video hướng dẫn — autopicks mobile/desktop variant theo
  * viewport client. Render native <video> với poster + controls.
@@ -56,7 +57,7 @@ export function VideoPlayer({
         className="max-h-[min(70vh,640px)] max-w-full w-auto h-auto"
       >
         Trình duyệt của bạn không hỗ trợ video. Cập nhật trình duyệt
-        hoặc xem trang{" "}
+        {t`hoặc xem trang`}{" "}
         <a href={src} className="underline">
           /static/videos
         </a>

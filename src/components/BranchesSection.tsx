@@ -26,6 +26,7 @@ import {
 } from "@/lib/queries/branches";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   clanId: string;
   /** When false, render read-only (viewer role). */
@@ -52,34 +53,40 @@ export function BranchesSection({ clanId, canEdit }: Props) {
   const [newName, setNewName] = useState("");
 
   const addM = useMutation({
-    mutationFn: () =>
-      createBranch({ clan_id: clanId, name: newName.trim() }),
+    mutationFn: () => createBranch({ clan_id: clanId, name: newName.trim() }),
     onSuccess: async () => {
       await invalidateClanData(qc, clanId);
-      toast.success("Đã thêm chi", { description: newName.trim() });
+      toast.success(t`Đã thêm chi`, { description: newName.trim() });
       setNewName("");
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   return (
     <div className="space-y-4">
-      {isLoading && <p className="text-muted-foreground text-sm">Đang tải…</p>}
+      {isLoading && (
+        <p className="text-muted-foreground text-sm">{t`Đang tải…`}</p>
+      )}
 
       {branches && branches.length === 0 && (
         <p className="text-muted-foreground text-sm">
-          Chưa có chi nào.{" "}
+          {t`Chưa có chi nào.`}{" "}
           {canEdit
-            ? "Thêm chi đầu tiên ở form bên dưới — chi giúp lọc danh bạ và đăng ký thông báo riêng."
-            : "Quản trị sẽ thêm sau."}
+            ? t`Thêm chi đầu tiên ở form bên dưới — chi giúp lọc danh bạ và đăng ký thông báo riêng.`
+            : t`Quản trị sẽ thêm sau.`}
         </p>
       )}
 
       {branches && branches.length > 0 && (
         <ul className="divide-y border rounded-md">
           {branches.map((b) => (
-            <BranchItem key={b.id} branch={b} clanId={clanId} canEdit={canEdit} />
+            <BranchItem
+              key={b.id}
+              branch={b}
+              clanId={clanId}
+              canEdit={canEdit}
+            />
           ))}
         </ul>
       )}
@@ -93,27 +100,32 @@ export function BranchesSection({ clanId, canEdit }: Props) {
           className="space-y-3"
         >
           <div className="space-y-2">
-            <Label htmlFor="new-branch">Tên chi mới</Label>
-            <Input className="h-10"
+            <Label htmlFor="new-branch">{t`Tên chi mới`}</Label>
+            <Input
+              className="h-10"
               id="new-branch"
               icon={<IconTree />}
               value={newName}
               maxLength={100}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Vd: Chi cả"
+              placeholder={t`Vd: Chi cả`}
             />
           </div>
           {/* Hành động xuống hàng riêng, căn phải — xem
               docs/design-language.md §Đặt hành động ở đâu. Đứng cạnh ô
               nhập thì trên màn hẹp nó bóp ô còn vài ký tự. */}
           <div className="flex justify-end border-t pt-3">
-            <Button size="sm" type="submit" disabled={!newName.trim() || addM.isPending}>
+            <Button
+              size="sm"
+              type="submit"
+              disabled={!newName.trim() || addM.isPending}
+            >
               {addM.isPending ? (
-                "Đang thêm…"
+                t`Đang thêm…`
               ) : (
                 <>
                   <IconPlus className="h-4 w-4 mr-1.5" />
-                  Thêm chi
+                  {t`Thêm chi`}
                 </>
               )}
             </Button>
@@ -149,21 +161,21 @@ function BranchItem({
     mutationFn: () => updateBranch(branch.id, { name }),
     onSuccess: async () => {
       await invalidateClanData(qc, clanId);
-      toast.success("Đã đổi tên chi");
+      toast.success(t`Đã đổi tên chi`);
       setEditing(false);
     },
     onError: (e) =>
-      toast.error("Không đổi được", { description: (e as Error).message }),
+      toast.error(t`Không đổi được`, { description: (e as Error).message }),
   });
 
   const delM = useMutation({
     mutationFn: () => deleteBranch(branch.id),
     onSuccess: () => {
       invalidateClanData(qc, clanId);
-      toast.success(`Đã xoá chi "${branch.name}"`);
+      toast.success(t`Đã xoá chi "${branch.name}"`);
     },
     onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   if (!canEdit) {
@@ -178,7 +190,8 @@ function BranchItem({
     <li className="px-3 py-2.5">
       {editing ? (
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-          <Input className="h-10"
+          <Input
+            className="h-10"
             icon={<IconTree />}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -188,11 +201,13 @@ function BranchItem({
           <div className="flex gap-2">
             <Button
               size="sm"
-              disabled={!name.trim() || renameM.isPending || name === branch.name}
+              disabled={
+                !name.trim() || renameM.isPending || name === branch.name
+              }
               onClick={() => renameM.mutate()}
             >
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu
+              {t`Lưu`}
             </Button>
             <Button
               size="sm"
@@ -203,7 +218,7 @@ function BranchItem({
               }}
             >
               <IconX className="h-4 w-4 mr-1.5" />
-              Hủy
+              {t`Hủy`}
             </Button>
           </div>
         </div>
@@ -211,9 +226,13 @@ function BranchItem({
         <div className="flex items-center justify-between gap-3">
           <span className="flex-1 min-w-0 truncate">{branch.name}</span>
           <div className="flex gap-2 shrink-0">
-            <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setEditing(true)}
+            >
               <IconPencil className="h-4 w-4 mr-1" />
-              Sửa
+              {t`Sửa`}
             </Button>
             <Button
               size="sm"
@@ -221,21 +240,20 @@ function BranchItem({
               disabled={delM.isPending}
               onClick={async () => {
                 const ok = await confirm({
-                  title: `Xoá chi "${branch.name}"?`,
-                  description:
-                    "Các người đang thuộc chi này sẽ không còn chi.",
-                  confirmLabel: "Xoá",
+                  title: t`Xoá chi "${branch.name}"?`,
+                  description: t`Các người đang thuộc chi này sẽ không còn chi.`,
+                  confirmLabel: t`Xoá`,
                   destructive: true,
                 });
                 if (ok) delM.mutate();
               }}
             >
               {delM.isPending ? (
-                "Đang xoá…"
+                t`Đang xoá…`
               ) : (
                 <>
                   <IconTrash className="h-4 w-4 mr-1" />
-                  Xoá
+                  {t`Xoá`}
                 </>
               )}
             </Button>

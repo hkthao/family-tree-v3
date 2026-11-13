@@ -3,8 +3,7 @@ import * as React from "react";
 import { splitFieldClasses } from "@/components/ui/field-layout";
 import { cn } from "@/lib/utils";
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   /**
    * Icon hiện trong ô, sát mép trái.
    *

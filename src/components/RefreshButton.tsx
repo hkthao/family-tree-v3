@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useClanFreshness } from "@/hooks/useClanFreshness";
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   clanId: string;
   /** data_version from the cached clan detail query. */
@@ -26,7 +27,12 @@ function formatTime(d: Date): string {
   return `${hh}:${mm}`;
 }
 
-export function RefreshButton({ clanId, cachedVersion, compact, className }: Props) {
+export function RefreshButton({
+  clanId,
+  cachedVersion,
+  compact,
+  className,
+}: Props) {
   const { lastSyncedAt, isChecking, refresh } = useClanFreshness(
     clanId,
     cachedVersion,
@@ -40,14 +46,14 @@ export function RefreshButton({ clanId, cachedVersion, compact, className }: Pro
   }, [flash]);
 
   const status = lastSyncedAt
-    ? `Cập nhật lúc ${formatTime(lastSyncedAt)}`
-    : "Chưa đồng bộ";
+    ? t`Cập nhật lúc ${formatTime(lastSyncedAt)}`
+    : t`Chưa đồng bộ`;
 
   const flashedStatus =
     flash === "updated"
-      ? "Đã có dữ liệu mới"
+      ? t`Đã có dữ liệu mới`
       : flash === "fresh"
-        ? "Đã là mới nhất"
+        ? t`Đã là mới nhất`
         : status;
 
   if (compact) {
@@ -57,14 +63,16 @@ export function RefreshButton({ clanId, cachedVersion, compact, className }: Pro
         size="sm"
         className={cn("h-10 w-10 p-0 shrink-0", className)}
         title={isChecking ? "Đang kiểm tra…" : flashedStatus}
-        aria-label="Làm mới"
+        aria-label={t`Làm mới`}
         onClick={async () => {
           const outcome = await refresh();
           setFlash(outcome);
         }}
         disabled={isChecking}
       >
-        <IconRefresh className={`h-4 w-4 ${isChecking ? "animate-spin" : ""}`} />
+        <IconRefresh
+          className={`h-4 w-4 ${isChecking ? "animate-spin" : ""}`}
+        />
       </Button>
     );
   }
@@ -83,8 +91,10 @@ export function RefreshButton({ clanId, cachedVersion, compact, className }: Pro
         }}
         disabled={isChecking}
       >
-        <IconRefresh className={`h-4 w-4 mr-1.5 ${isChecking ? "animate-spin" : ""}`} />
-        {isChecking ? "Đang kiểm tra…" : "Làm mới"}
+        <IconRefresh
+          className={`h-4 w-4 mr-1.5 ${isChecking ? "animate-spin" : ""}`}
+        />
+        {isChecking ? t`Đang kiểm tra…` : t`Làm mới`}
       </Button>
     </div>
   );

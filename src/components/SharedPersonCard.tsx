@@ -5,12 +5,7 @@ import { ContributeDialog } from "@/components/ContributeDialog";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { IconScroll } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLunarAnniversary, formatLunarDate } from "@/lib/lunarDate";
 import { formatPartialDate } from "@/lib/partialDate";
 import type {
@@ -19,6 +14,7 @@ import type {
   ShareViewRestingPlace,
 } from "@/lib/queries/share-view";
 
+import { t } from "@lingui/core/macro";
 const RP_KIND_LABEL: Record<ShareViewRestingPlace["kind"], string> = {
   grave: "Mộ / chôn cất",
   ashes_temple: "Gửi tro cốt ở chùa",
@@ -74,10 +70,14 @@ export function SharedPersonCard({
 
   // Parents — via focal.birth_family_id. Either may be null in the data.
   const birthFamily = focal.birth_family_id
-    ? families.find((f) => f.id === focal.birth_family_id) ?? null
+    ? (families.find((f) => f.id === focal.birth_family_id) ?? null)
     : null;
-  const father = birthFamily?.husband_id ? byId.get(birthFamily.husband_id) ?? null : null;
-  const mother = birthFamily?.wife_id ? byId.get(birthFamily.wife_id) ?? null : null;
+  const father = birthFamily?.husband_id
+    ? (byId.get(birthFamily.husband_id) ?? null)
+    : null;
+  const mother = birthFamily?.wife_id
+    ? (byId.get(birthFamily.wife_id) ?? null)
+    : null;
 
   // Marriages — focal participates as either spouse.
   const marriages = families.filter(
@@ -86,7 +86,7 @@ export function SharedPersonCard({
   const spouses = marriages
     .map((f) => {
       const otherId = f.husband_id === focal.id ? f.wife_id : f.husband_id;
-      return otherId ? byId.get(otherId) ?? null : null;
+      return otherId ? (byId.get(otherId) ?? null) : null;
     })
     .filter((p): p is ShareViewPerson => p !== null);
 
@@ -153,22 +153,25 @@ export function SharedPersonCard({
             className="shrink-0"
           >
             <IconScroll className="h-4 w-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Đề xuất sửa</span>
+            <span className="hidden sm:inline">{t`Đề xuất sửa`}</span>
           </Button>
         )}
       </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Thông tin cơ bản</CardTitle>
+          <CardTitle>{t`Thông tin cơ bản`}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-base">
-          <Row label="Giới tính" value={focal.gender === "M" ? "Nam" : "Nữ"} />
-          <Row label="Tên tự" value={focal.courtesy_name ?? null} />
-          <Row label="Tên húy" value={focal.nickname ?? null} />
-          <Row label="Tên thụy" value={focal.posthumous_name ?? null} />
           <Row
-            label="Ngày sinh"
+            label={t`Giới tính`}
+            value={focal.gender === "M" ? "Nam" : t`Nữ`}
+          />
+          <Row label={t`Tên tự`} value={focal.courtesy_name ?? null} />
+          <Row label={t`Tên húy`} value={focal.nickname ?? null} />
+          <Row label={t`Tên thụy`} value={focal.posthumous_name ?? null} />
+          <Row
+            label={t`Ngày sinh`}
             value={
               formatPartialDate({
                 date: focal.birth_date,
@@ -176,11 +179,11 @@ export function SharedPersonCard({
               }) || null
             }
           />
-          <Row label="Ngày sinh (âm)" value={birthLunar} />
+          <Row label={t`Ngày sinh (âm)`} value={birthLunar} />
           {!focal.is_living && (
             <>
               <Row
-                label="Ngày mất"
+                label={t`Ngày mất`}
                 value={
                   formatPartialDate({
                     date: focal.death_date,
@@ -188,16 +191,16 @@ export function SharedPersonCard({
                   }) || null
                 }
               />
-              <Row label="Ngày mất (âm)" value={deathLunar} />
-              <Row label="Ngày giỗ" value={anniv || null} />
+              <Row label={t`Ngày mất (âm)`} value={deathLunar} />
+              <Row label={t`Ngày giỗ`} value={anniv || null} />
             </>
           )}
-          <Row label="Nơi sinh" value={focal.birth_place ?? null} />
-          <Row label="Nơi an táng" value={focal.burial_place ?? null} />
+          <Row label={t`Nơi sinh`} value={focal.birth_place ?? null} />
+          <Row label={t`Nơi an táng`} value={focal.burial_place ?? null} />
           {myPlaces.map((rp) => (
             <div key={rp.id} className="pt-2">
               <p className="text-sm text-muted-foreground mb-1">
-                Mộ phần / tro cốt
+                {t`Mộ phần / tro cốt`}
               </p>
               <p className="font-medium">
                 {rp.name || rp.location_name || RP_KIND_LABEL[rp.kind]}
@@ -215,7 +218,7 @@ export function SharedPersonCard({
                   rel="noopener noreferrer"
                   className="text-sm text-primary hover:underline"
                 >
-                  Chỉ đường
+                  {t`Chỉ đường`}
                 </a>
               )}
               {rp.photo_urls.length > 0 && (
@@ -234,7 +237,7 @@ export function SharedPersonCard({
           ))}
           {focal.bio && (
             <div className="pt-2">
-              <p className="text-sm text-muted-foreground mb-1">Tiểu sử</p>
+              <p className="text-sm text-muted-foreground mb-1">{t`Tiểu sử`}</p>
               <BioText text={focal.bio} />
             </div>
           )}
@@ -244,14 +247,30 @@ export function SharedPersonCard({
       {(father || mother || spouses.length > 0 || children.length > 0) && (
         <Card>
           <CardHeader>
-            <CardTitle>Quan hệ</CardTitle>
+            <CardTitle>{t`Quan hệ`}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             {(father || mother) && (
-              <Group label="Cha mẹ" items={[father, mother].filter(Boolean) as ShareViewPerson[]} onPersonClick={onPersonClick} />
+              <Group
+                label={t`Cha mẹ`}
+                items={[father, mother].filter(Boolean) as ShareViewPerson[]}
+                onPersonClick={onPersonClick}
+              />
             )}
-            {spouses.length > 0 && <Group label="Vợ / chồng" items={spouses} onPersonClick={onPersonClick} />}
-            {children.length > 0 && <Group label="Con cái" items={children} onPersonClick={onPersonClick} />}
+            {spouses.length > 0 && (
+              <Group
+                label={t`Vợ / chồng`}
+                items={spouses}
+                onPersonClick={onPersonClick}
+              />
+            )}
+            {children.length > 0 && (
+              <Group
+                label={t`Con cái`}
+                items={children}
+                onPersonClick={onPersonClick}
+              />
+            )}
           </CardContent>
         </Card>
       )}
@@ -283,7 +302,12 @@ export function SharedPersonCard({
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  if (value === null || value === undefined || value === "" || value === false) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === "" ||
+    value === false
+  ) {
     return null;
   }
   return (
@@ -335,7 +359,7 @@ function Group({
             <div className="min-w-0 flex-1">
               <p className="font-medium truncate">{p.full_name}</p>
               <p className="text-xs text-muted-foreground truncate">
-                {p.gender === "M" ? "Nam" : "Nữ"}
+                {p.gender === "M" ? "Nam" : t`Nữ`}
                 {!p.is_living &&
                   ` · đã mất${
                     p.death_date ? ` ${p.death_date.slice(0, 4)}` : ""

@@ -1,9 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import {
-  IconBell,
-} from "@/components/icons";
+import { IconBell } from "@/components/icons";
 import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +9,8 @@ import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { queryKeys } from "@/lib/queries/keys";
 import { updateMyNotifyViaPush } from "@/lib/queries/push";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const DISMISS_KEY = "push-prompt-dismissed-v1";
 
 /**
@@ -51,11 +51,13 @@ export function EnablePushPrompt() {
   async function enable() {
     await push.enable();
     if (push.error) {
-      toast.error("Không bật được thông báo", { description: push.error });
+      toast.error(t`Không bật được thông báo`, { description: push.error });
       return;
     }
     setPref.mutate(true);
-    toast.success("Đã bật thông báo — bạn sẽ nhận nhắc giỗ, sinh nhật, sự kiện.");
+    toast.success(
+      t`Đã bật thông báo — bạn sẽ nhận nhắc giỗ, sinh nhật, sự kiện.`,
+    );
   }
 
   if (dismissed) return null;
@@ -66,17 +68,23 @@ export function EnablePushPrompt() {
       <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
         <IconBell className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="min-w-0 flex-1 text-sm">
-          <p className="font-medium">Bật thông báo trên iPhone/iPad</p>
+          <p className="font-medium">{t`Bật thông báo trên iPhone/iPad`}</p>
           <p className="text-muted-foreground">
-            Bấm nút Chia sẻ trong Safari → "Thêm vào Màn hình chính", rồi mở app
-            từ biểu tượng để bật nhắc giỗ, sinh nhật.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Bấm nút Chia sẻ trong Safari → "Thêm vào Màn hình chính", rồi
+                  mở app từ biểu tượng để bật nhắc giỗ, sinh nhật.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
         </div>
         <button
           type="button"
           onClick={dismiss}
           className="shrink-0 text-muted-foreground hover:text-foreground"
-          aria-label="Ẩn"
+          aria-label={t`Ẩn`}
         >
           ✕
         </button>
@@ -91,20 +99,21 @@ export function EnablePushPrompt() {
     <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
       <IconBell className="h-5 w-5 shrink-0 text-primary" />
       <div className="min-w-0 flex-1 text-sm">
-        <p className="font-medium">Bật thông báo để không bỏ lỡ</p>
+        <p className="font-medium">{t`Bật thông báo để không bỏ lỡ`}</p>
         <p className="text-muted-foreground">
-          Nhận nhắc <b>giỗ</b>, <b>sinh nhật</b> và sự kiện dòng họ ngay trên máy.
+          Nhận nhắc <b>{t`giỗ`}</b>, <b>{t`sinh nhật`}</b> và sự kiện dòng họ
+          ngay trên máy.
         </p>
       </div>
       <Button size="sm" onClick={enable} disabled={setPref.isPending}>
         <IconBell className="h-4 w-4 mr-1.5" />
-            Bật ngay
+        {t`Bật ngay`}
       </Button>
       <button
         type="button"
         onClick={dismiss}
         className="shrink-0 text-muted-foreground hover:text-foreground"
-        aria-label="Ẩn"
+        aria-label={t`Ẩn`}
       >
         ✕
       </button>

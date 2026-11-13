@@ -1,10 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
-
 import {
-  IconCheck,
-  IconX,
-} from "@/components/icons";
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
+import { IconCheck, IconX } from "@/components/icons";
+
+import { t } from "@lingui/core/macro";
 type ToastKind = "success" | "error" | "info";
 
 interface ToastEntry {
@@ -47,7 +51,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const push = useCallback(
     (kind: ToastKind, title: string, opts?: ToastOptions) => {
       const id = Date.now() + Math.random();
-      setToasts((prev) => [...prev, { id, kind, title, description: opts?.description }]);
+      setToasts((prev) => [
+        ...prev,
+        { id, kind, title, description: opts?.description },
+      ]);
       const duration = opts?.durationMs ?? DEFAULT_DURATION;
       if (duration > 0) {
         window.setTimeout(() => dismiss(id), duration);
@@ -127,7 +134,7 @@ function ToastCard({
       <button
         type="button"
         onClick={onClose}
-        aria-label="Đóng"
+        aria-label={t`Đóng`}
         className="shrink-0 -mr-1 -mt-1 h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:bg-muted"
       >
         <IconX className="h-3.5 w-3.5" />

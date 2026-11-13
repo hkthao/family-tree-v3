@@ -55,6 +55,8 @@ import { isSafeHttpsUrl } from "@/lib/queries/heritage";
 import { getMyProfile } from "@/lib/queries/profile";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const CATS = Object.keys(CUSTOM_CATEGORY_LABEL) as CustomCategory[];
 const SCOPES = Object.keys(CUSTOM_SCOPE_LABEL) as CustomScope[];
 const MANDATORIES = Object.keys(CUSTOM_MANDATORY_LABEL) as CustomMandatory[];
@@ -65,7 +67,9 @@ const STATUSES: { value: CustomStatus; label: string }[] = [
   { value: "published", label: "Công khai" },
 ];
 
-export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = {}) {
+export default function CustomsForm({
+  embedded,
+}: { embedded?: EmbeddedForm } = {}) {
   const routeParams = useParams<{ entryId?: string }>();
   const entryId = embedded ? embedded.id : routeParams.entryId;
   const isEdit = !!entryId;
@@ -109,17 +113,21 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
   const applyMarkdown = async () => {
     const parsed = parseCustomMarkdown(mdText);
     if (!parsed.title && parsed.sections.length === 0) {
-      toast.error("Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'.");
+      toast.error(
+        t`Chưa nhận ra nội dung — cần có '# Tiêu đề' và các '## Đoạn'.`,
+      );
       return;
     }
     const hasContent =
-      !!title.trim() || !!shortDesc.trim() || sections.length > 0 || faq.length > 0;
+      !!title.trim() ||
+      !!shortDesc.trim() ||
+      sections.length > 0 ||
+      faq.length > 0;
     if (hasContent) {
       const ok = await confirm({
-        title: "Ghi đè nội dung hiện tại?",
-        description:
-          "Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằng nội dung Markdown.",
-        confirmLabel: "Ghi đè",
+        title: t`Ghi đè nội dung hiện tại?`,
+        description: t`Tiêu đề, mô tả, các đoạn và FAQ đang có sẽ bị thay bằng nội dung Markdown.`,
+        confirmLabel: t`Ghi đè`,
         destructive: true,
       });
       if (!ok) return;
@@ -156,9 +164,9 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
     setMdText("");
     const metaCount = Object.keys(m).length;
     toast.success(
-      `Đã nhập ${secs.length} đoạn, ${parsed.faq.length} câu hỏi` +
-        (metaCount ? `, ${metaCount} thông tin` : "") +
-        " — xem lại rồi Lưu.",
+      t`Đã nhập ${secs.length} đoạn, ${parsed.faq.length} câu hỏi` +
+        (metaCount ? t`, ${metaCount} thông tin` : "") +
+        t` — xem lại rồi Lưu.`,
     );
   };
 
@@ -181,12 +189,16 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
     setShortDesc(existing.short_description ?? "");
     setCategory(existing.category);
     setRegions(existing.regions);
-    setLunarMonth(existing.lunar_month != null ? String(existing.lunar_month) : "");
+    setLunarMonth(
+      existing.lunar_month != null ? String(existing.lunar_month) : "",
+    );
     setTiming(existing.timing ?? "");
     setScope(existing.scope ?? "");
     setMandatory(existing.mandatory_level ?? "");
     setOrigins(existing.origins ?? []);
-    setReliability(existing.reliability != null ? String(existing.reliability) : "");
+    setReliability(
+      existing.reliability != null ? String(existing.reliability) : "",
+    );
     setApplicableTo(existing.applicable_to ?? "");
     setSources(existing.sources ?? "");
     setCoverUrl(existing.cover_image_url ?? "");
@@ -198,12 +210,16 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!title.trim()) throw new Error("Thiếu tiêu đề.");
+      if (!title.trim()) throw new Error(t`Thiếu tiêu đề.`);
       if (coverUrl.trim() && !isSafeHttpsUrl(coverUrl.trim())) {
-        throw new Error("Link ảnh bìa phải là https://…");
+        throw new Error(t`Link ảnh bìa phải là https://…`);
       }
-      if (sections.some((s) => s.image_url?.trim() && !isSafeHttpsUrl(s.image_url.trim()))) {
-        throw new Error("Ảnh minh hoạ trong đoạn phải là https://…");
+      if (
+        sections.some(
+          (s) => s.image_url?.trim() && !isSafeHttpsUrl(s.image_url.trim()),
+        )
+      ) {
+        throw new Error(t`Ảnh minh hoạ trong đoạn phải là https://…`);
       }
       const fields = {
         title: title.trim(),
@@ -227,9 +243,13 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
         status,
         sections: sections
           .map((s) => {
-            const out: CustomSection = { heading: s.heading.trim(), body: s.body.trim() };
+            const out: CustomSection = {
+              heading: s.heading.trim(),
+              body: s.body.trim(),
+            };
             if (s.image_url?.trim()) out.image_url = s.image_url.trim();
-            if (s.image_caption?.trim()) out.image_caption = s.image_caption.trim();
+            if (s.image_caption?.trim())
+              out.image_caption = s.image_caption.trim();
             return out;
           })
           .filter((s) => s.heading || s.body || s.image_url),
@@ -246,7 +266,7 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["customs"] });
       qc.invalidateQueries({ queryKey: ["custom-entry", res.id] });
-      toast.success(isEdit ? "Đã lưu" : "Đã tạo bài");
+      toast.success(isEdit ? t`Đã lưu` : t`Đã tạo bài`);
       if (embedded) embedded.onDone(res.id);
       else navigate(`/so-tay/${res.id}`);
     },
@@ -256,11 +276,14 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
   // Gate: chỉ platform admin. Chờ auth + profile load xong mới quyết định
   // (tránh redirect sớm khi userId/profile chưa kịp có → đá nhầm về list).
   if (authLoading || (!!userId && profile === undefined)) {
-    const loading = <p className="text-muted-foreground">Đang tải…</p>;
+    const loading = <p className="text-muted-foreground">{t`Đang tải…`}</p>;
     return embedded ? loading : <Shell>{loading}</Shell>;
   }
   if (!profile?.is_platform_admin) {
-    if (embedded) return <p className="text-sm text-muted-foreground">Chỉ quản trị nền tảng được sửa Sổ tay.</p>;
+    if (embedded)
+      return (
+        <p className="text-sm text-muted-foreground">{t`Chỉ quản trị nền tảng được sửa Sổ tay.`}</p>
+      );
     return <Navigate to="/so-tay" replace />;
   }
 
@@ -275,14 +298,18 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
 
   // Phần dẫn xuất cho picker "bài liên quan" (allLite/relatedQ là hook, khai
   // báo ở đầu component để tôn trọng Rules of Hooks).
-  const relatedPool: CustomEntryLite[] = (allLite ?? []).filter((e) => e.id !== entryId);
+  const relatedPool: CustomEntryLite[] = (allLite ?? []).filter(
+    (e) => e.id !== entryId,
+  );
   const relatedChosen = relatedIds
     .map((id) => relatedPool.find((e) => e.id === id))
     .filter((x): x is CustomEntryLite => !!x);
   const relatedMatches = relatedQ.trim()
     ? relatedPool
         .filter((e) => !relatedIds.includes(e.id))
-        .filter((e) => e.title.toLowerCase().includes(relatedQ.trim().toLowerCase()))
+        .filter((e) =>
+          e.title.toLowerCase().includes(relatedQ.trim().toLowerCase()),
+        )
         .slice(0, 6)
     : [];
 
@@ -290,30 +317,36 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
     <>
       {!embedded && (
         <Link to="/so-tay" className="text-sm text-primary hover:underline">
-          ← Sổ tay Văn hoá
+          {t`← Sổ tay Văn hoá`}
         </Link>
       )}
       <div className="flex flex-wrap items-center justify-between gap-2">
         {!embedded && (
           <h1 className="clan-name text-2xl font-semibold">
-            {isEdit ? "Sửa bài" : "Thêm bài phong tục"}
+            {isEdit ? t`Sửa bài` : t`Thêm bài phong tục`}
           </h1>
         )}
-        <Button type="button" variant="outline" size="sm" onClick={() => setMdOpen((v) => !v)}>
-          <IconUpload className="h-4 w-4 mr-1" /> Nhập từ Markdown
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setMdOpen((v) => !v)}
+        >
+          <IconUpload className="h-4 w-4 mr-1" /> {t`Nhập từ Markdown`}
         </Button>
       </div>
 
       {mdOpen && (
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
           <p className="text-sm text-muted-foreground">
-            Dán <strong>thân Markdown</strong>: <code>#</code> Tiêu đề · đoạn mở đầu là mô tả ngắn ·
-            mỗi <code>##</code> là một đoạn · <code>![chú thích](https://…)</code> làm ảnh minh hoạ ·
-            đoạn <code>## Câu hỏi thường gặp</code> với các <code>###</code> thành FAQ. Chủ đề / vùng
-            miền / nguồn gốc chọn ở form bên dưới.
+            Dán <strong>{t`thân Markdown`}</strong>: <code>#</code> Tiêu đề ·
+            đoạn mở đầu là mô tả ngắn · mỗi <code>##</code> là một đoạn ·{" "}
+            <code>{t`![chú thích](https://…)`}</code> làm ảnh minh hoạ · đoạn{" "}
+            <code>{t`## Câu hỏi thường gặp`}</code> với các <code>###</code>{" "}
+            thành FAQ. Chủ đề / vùng miền / nguồn gốc chọn ở form bên dưới.
           </p>
           <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-primary hover:underline">
-            <IconUpload className="h-4 w-4" /> Chọn file .md…
+            <IconUpload className="h-4 w-4" /> {t`Chọn file .md…`}
             <input
               type="file"
               accept=".md,.markdown,text/markdown,text/plain"
@@ -329,15 +362,30 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
             value={mdText}
             onChange={(e) => setMdText(e.target.value)}
             rows={10}
-            placeholder={"# Lễ nhập trạch (về nhà mới)\n\nNghi lễ báo cáo tổ tiên khi về nhà mới.\n\n## Ý nghĩa\n…\n\n## Chuẩn bị / lễ vật\n![Mâm cúng](https://…)\n…"}
+            placeholder={
+              "# Lễ nhập trạch (về nhà mới)\n\nNghi lễ báo cáo tổ tiên khi về nhà mới.\n\n## Ý nghĩa\n…\n\n## Chuẩn bị / lễ vật\n![Mâm cúng](https://…)\n…"
+            }
             className="font-mono text-sm leading-relaxed resize-y"
           />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => { setMdOpen(false); setMdText(""); }}>
-              Đóng
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setMdOpen(false);
+                setMdText("");
+              }}
+            >
+              {t`Đóng`}
             </Button>
-            <Button type="button" size="sm" disabled={!mdText.trim()} onClick={applyMarkdown}>
-              <IconCheck className="h-4 w-4 mr-1" /> Điền vào form
+            <Button
+              type="button"
+              size="sm"
+              disabled={!mdText.trim()}
+              onClick={applyMarkdown}
+            >
+              <IconCheck className="h-4 w-4 mr-1" /> {t`Điền vào form`}
             </Button>
           </div>
         </div>
@@ -351,42 +399,64 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
         className="space-y-4"
       >
         <div className="space-y-2">
-          <Label htmlFor="c-title" required>Tiêu đề</Label>
-          <Input id="c-title" icon={<IconScroll />} value={title} onChange={(e) => setTitle(e.target.value)}
-            maxLength={200} placeholder="vd: Lễ nhập trạch (về nhà mới)" />
+          <Label htmlFor="c-title" required>{t`Tiêu đề`}</Label>
+          <Input
+            id="c-title"
+            icon={<IconScroll />}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={200}
+            placeholder={t`vd: Lễ nhập trạch (về nhà mới)`}
+          />
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="c-cat">Chủ đề</Label>
-            <Select id="c-cat" icon={<IconTag />} value={category}
-              onChange={(e) => setCategory(e.target.value as CustomCategory)}>
+            <Label htmlFor="c-cat">{t`Chủ đề`}</Label>
+            <Select
+              id="c-cat"
+              icon={<IconTag />}
+              value={category}
+              onChange={(e) => setCategory(e.target.value as CustomCategory)}
+            >
               {CATS.map((c) => (
-                <option key={c} value={c}>{CUSTOM_CATEGORY_LABEL[c]}</option>
+                <option key={c} value={c}>
+                  {CUSTOM_CATEGORY_LABEL[c]}
+                </option>
               ))}
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="c-status">Trạng thái</Label>
-            <Select id="c-status" icon={<IconCheck />} value={status}
-              onChange={(e) => setStatus(e.target.value as CustomStatus)}>
+            <Label htmlFor="c-status">{t`Trạng thái`}</Label>
+            <Select
+              id="c-status"
+              icon={<IconCheck />}
+              value={status}
+              onChange={(e) => setStatus(e.target.value as CustomStatus)}
+            >
               {STATUSES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
               ))}
             </Select>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label>Vùng miền</Label>
+          <Label>{t`Vùng miền`}</Label>
           <div className="flex flex-wrap gap-2">
             {CUSTOM_REGIONS.map((r) => (
-              <button key={r} type="button" onClick={() => toggleRegion(r)}
+              <button
+                key={r}
+                type="button"
+                onClick={() => toggleRegion(r)}
                 className={`rounded-full border px-3 py-1.5 text-sm ${
                   regions.includes(r)
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card hover:border-primary"
-                }`}>
+                }`}
+              >
                 {r}
               </button>
             ))}
@@ -394,26 +464,41 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="c-aliases">Tên gọi khác (cách nhau bởi dấu phẩy)</Label>
-          <Input id="c-aliases" icon={<IconTag />} value={aliases} onChange={(e) => setAliases(e.target.value)}
-            placeholder="nhà mới, chuyển nhà, tân gia" />
+          <Label htmlFor="c-aliases">{t`Tên gọi khác (cách nhau bởi dấu phẩy)`}</Label>
+          <Input
+            id="c-aliases"
+            icon={<IconTag />}
+            value={aliases}
+            onChange={(e) => setAliases(e.target.value)}
+            placeholder={t`nhà mới, chuyển nhà, tân gia`}
+          />
         </div>
 
-        <Textarea id="c-short" label="Mô tả ngắn" icon={<IconScroll />}
-          value={shortDesc} onChange={(e) => setShortDesc(e.target.value)}
-          rows={2} maxLength={300}
-          className="min-h-0 leading-relaxed resize-y" />
+        <Textarea
+          id="c-short"
+          label={t`Mô tả ngắn`}
+          icon={<IconScroll />}
+          value={shortDesc}
+          onChange={(e) => setShortDesc(e.target.value)}
+          rows={2}
+          maxLength={300}
+          className="min-h-0 leading-relaxed resize-y"
+        />
 
         <div className="space-y-2">
-          <Label>Nguồn gốc (chọn nhiều)</Label>
+          <Label>{t`Nguồn gốc (chọn nhiều)`}</Label>
           <div className="flex flex-wrap gap-2">
             {ORIGINS.map((o) => (
-              <button key={o} type="button" onClick={() => toggleOrigin(o)}
+              <button
+                key={o}
+                type="button"
+                onClick={() => toggleOrigin(o)}
                 className={`rounded-full border px-3 py-1.5 text-sm ${
                   origins.includes(o)
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-card hover:border-primary"
-                }`}>
+                }`}
+              >
                 {CUSTOM_ORIGIN_LABEL[o]}
               </button>
             ))}
@@ -422,22 +507,36 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="c-mand">Mức bắt buộc</Label>
-            <Select id="c-mand" icon={<IconShield />} value={mandatory}
-              onChange={(e) => setMandatory(e.target.value as CustomMandatory | "")}>
+            <Label htmlFor="c-mand">{t`Mức bắt buộc`}</Label>
+            <Select
+              id="c-mand"
+              icon={<IconShield />}
+              value={mandatory}
+              onChange={(e) =>
+                setMandatory(e.target.value as CustomMandatory | "")
+              }
+            >
               <option value="">—</option>
               {MANDATORIES.map((m) => (
-                <option key={m} value={m}>{CUSTOM_MANDATORY_LABEL[m]}</option>
+                <option key={m} value={m}>
+                  {CUSTOM_MANDATORY_LABEL[m]}
+                </option>
               ))}
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="c-scope">Phạm vi</Label>
-            <Select id="c-scope" icon={<IconGlobe />} value={scope}
-              onChange={(e) => setScope(e.target.value as CustomScope | "")}>
+            <Label htmlFor="c-scope">{t`Phạm vi`}</Label>
+            <Select
+              id="c-scope"
+              icon={<IconGlobe />}
+              value={scope}
+              onChange={(e) => setScope(e.target.value as CustomScope | "")}
+            >
               <option value="">—</option>
               {SCOPES.map((s) => (
-                <option key={s} value={s}>{CUSTOM_SCOPE_LABEL[s]}</option>
+                <option key={s} value={s}>
+                  {CUSTOM_SCOPE_LABEL[s]}
+                </option>
               ))}
             </Select>
           </div>
@@ -445,153 +544,303 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label htmlFor="c-rel">Độ tin cậy (1–5)</Label>
-            <Input id="c-rel" icon={<IconShield />} type="number" min={1} max={5} value={reliability}
-              onChange={(e) => setReliability(e.target.value)} />
+            <Label htmlFor="c-rel">{t`Độ tin cậy (1–5)`}</Label>
+            <Input
+              id="c-rel"
+              icon={<IconShield />}
+              type="number"
+              min={1}
+              max={5}
+              value={reliability}
+              onChange={(e) => setReliability(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="c-lunar">Tháng âm lịch (1–12)</Label>
-            <Input id="c-lunar" icon={<IconCalendar />} type="number" min={1} max={12} value={lunarMonth}
-              onChange={(e) => setLunarMonth(e.target.value)} />
+            <Label htmlFor="c-lunar">{t`Tháng âm lịch (1–12)`}</Label>
+            <Input
+              id="c-lunar"
+              icon={<IconCalendar />}
+              type="number"
+              min={1}
+              max={12}
+              value={lunarMonth}
+              onChange={(e) => setLunarMonth(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="c-timing">Thời điểm (mô tả)</Label>
-            <Input id="c-timing" icon={<IconClock />} value={timing} onChange={(e) => setTiming(e.target.value)}
-              placeholder="vd: 23 tháng Chạp" />
+            <Label htmlFor="c-timing">{t`Thời điểm (mô tả)`}</Label>
+            <Input
+              id="c-timing"
+              icon={<IconClock />}
+              value={timing}
+              onChange={(e) => setTiming(e.target.value)}
+              placeholder={t`vd: 23 tháng Chạp`}
+            />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="c-applic">Đối tượng áp dụng</Label>
-          <Input id="c-applic" icon={<IconUsers />} value={applicableTo} onChange={(e) => setApplicableTo(e.target.value)}
-            placeholder="vd: gia đình chuyển đến nhà mới" />
+          <Label htmlFor="c-applic">{t`Đối tượng áp dụng`}</Label>
+          <Input
+            id="c-applic"
+            icon={<IconUsers />}
+            value={applicableTo}
+            onChange={(e) => setApplicableTo(e.target.value)}
+            placeholder={t`vd: gia đình chuyển đến nhà mới`}
+          />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="c-cover">Link ảnh bìa (https)</Label>
-          <Input id="c-cover" icon={<IconCamera />} value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)}
-            placeholder="https://…" />
+          <Label htmlFor="c-cover">{t`Link ảnh bìa (https)`}</Label>
+          <Input
+            id="c-cover"
+            icon={<IconCamera />}
+            value={coverUrl}
+            onChange={(e) => setCoverUrl(e.target.value)}
+            placeholder="https://…"
+          />
         </div>
 
         {/* Các đoạn nội dung */}
         <div className="space-y-2">
           <Label className="flex items-center gap-1.5">
             <IconBook className="h-4 w-4 text-muted-foreground" />
-            Nội dung (chia đoạn có tiêu đề)
+            {t`Nội dung (chia đoạn có tiêu đề)`}
           </Label>
           <p className="text-sm text-muted-foreground">
-            Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực hiện ·
-            Nên / kiêng kỵ · Biến thể vùng miền.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực
+                  hiện · Nên / kiêng kỵ · Biến thể vùng miền.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
           {sections.map((sec, i) => (
-            <div key={i} className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
+            <div
+              key={i}
+              className="rounded-xl border bg-card shadow-sm p-3 space-y-2"
+            >
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-6 shrink-0">{i + 1}.</span>
-                <Input icon={<IconTag />} value={sec.heading}
+                <span className="text-xs text-muted-foreground w-6 shrink-0">
+                  {i + 1}.
+                </span>
+                <Input
+                  icon={<IconTag />}
+                  value={sec.heading}
                   onChange={(e) =>
-                    setSections((p) => p.map((s, j) => (j === i ? { ...s, heading: e.target.value } : s)))
+                    setSections((p) =>
+                      p.map((s, j) =>
+                        j === i ? { ...s, heading: e.target.value } : s,
+                      ),
+                    )
                   }
-                  placeholder="Tiêu đề đoạn" maxLength={200} className="flex-1" />
-                <button type="button" aria-label="Lên" disabled={i === 0}
-                  onClick={() => setSections((p) => { const a = [...p]; [a[i - 1], a[i]] = [a[i], a[i - 1]]; return a; })}
-                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30">▲</button>
-                <button type="button" aria-label="Xuống" disabled={i === sections.length - 1}
-                  onClick={() => setSections((p) => { const a = [...p]; [a[i + 1], a[i]] = [a[i], a[i + 1]]; return a; })}
-                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30">▼</button>
-                <button type="button" aria-label="Xoá đoạn"
-                  onClick={() => setSections((p) => p.filter((_, j) => j !== i))}
-                  className="px-1.5 text-muted-foreground hover:text-destructive">
+                  placeholder={t`Tiêu đề đoạn`}
+                  maxLength={200}
+                  className="flex-1"
+                />
+                <button
+                  type="button"
+                  aria-label={t`Lên`}
+                  disabled={i === 0}
+                  onClick={() =>
+                    setSections((p) => {
+                      const a = [...p];
+                      [a[i - 1], a[i]] = [a[i], a[i - 1]];
+                      return a;
+                    })
+                  }
+                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                >
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  aria-label={t`Xuống`}
+                  disabled={i === sections.length - 1}
+                  onClick={() =>
+                    setSections((p) => {
+                      const a = [...p];
+                      [a[i + 1], a[i]] = [a[i], a[i + 1]];
+                      return a;
+                    })
+                  }
+                  className="px-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                >
+                  ▼
+                </button>
+                <button
+                  type="button"
+                  aria-label={t`Xoá đoạn`}
+                  onClick={() =>
+                    setSections((p) => p.filter((_, j) => j !== i))
+                  }
+                  className="px-1.5 text-muted-foreground hover:text-destructive"
+                >
                   <IconX className="h-4 w-4" />
                 </button>
               </div>
-              <Textarea value={sec.body}
+              <Textarea
+                value={sec.body}
                 onChange={(e) =>
-                  setSections((p) => p.map((s, j) => (j === i ? { ...s, body: e.target.value } : s)))
+                  setSections((p) =>
+                    p.map((s, j) =>
+                      j === i ? { ...s, body: e.target.value } : s,
+                    ),
+                  )
                 }
-                rows={5} placeholder="Nội dung đoạn này…"
-                className="leading-relaxed" />
+                rows={5}
+                placeholder={t`Nội dung đoạn này…`}
+                className="leading-relaxed"
+              />
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <Input icon={<IconCamera />} value={sec.image_url ?? ""}
+                <Input
+                  icon={<IconCamera />}
+                  value={sec.image_url ?? ""}
                   onChange={(e) =>
-                    setSections((p) => p.map((s, j) => (j === i ? { ...s, image_url: e.target.value } : s)))
+                    setSections((p) =>
+                      p.map((s, j) =>
+                        j === i ? { ...s, image_url: e.target.value } : s,
+                      ),
+                    )
                   }
-                  placeholder="Ảnh minh hoạ (https://…, tuỳ chọn)" />
-                <Input icon={<IconScroll />} value={sec.image_caption ?? ""}
+                  placeholder={t`Ảnh minh hoạ (https://…, tuỳ chọn)`}
+                />
+                <Input
+                  icon={<IconScroll />}
+                  value={sec.image_caption ?? ""}
                   onChange={(e) =>
-                    setSections((p) => p.map((s, j) => (j === i ? { ...s, image_caption: e.target.value } : s)))
+                    setSections((p) =>
+                      p.map((s, j) =>
+                        j === i ? { ...s, image_caption: e.target.value } : s,
+                      ),
+                    )
                   }
-                  placeholder="Chú thích ảnh (tuỳ chọn)" maxLength={200} />
+                  placeholder={t`Chú thích ảnh (tuỳ chọn)`}
+                  maxLength={200}
+                />
               </div>
             </div>
           ))}
-          <Button type="button" variant="outline" size="sm"
-            onClick={() => setSections((p) => [...p, { heading: "", body: "" }])}>
-            <IconPlus className="h-4 w-4 mr-1" /> Thêm đoạn
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setSections((p) => [...p, { heading: "", body: "" }])
+            }
+          >
+            <IconPlus className="h-4 w-4 mr-1" /> {t`Thêm đoạn`}
           </Button>
         </div>
 
         {/* Câu hỏi thường gặp (tuỳ chọn) */}
         <div className="space-y-2">
-          <Label className="block">Câu hỏi thường gặp (tuỳ chọn)</Label>
+          <Label className="block">{t`Câu hỏi thường gặp (tuỳ chọn)`}</Label>
           <p className="text-sm text-muted-foreground">
-            Mỗi mục gồm 1 câu hỏi và câu trả lời ngắn gọn.
+            {t`Mỗi mục gồm 1 câu hỏi và câu trả lời ngắn gọn.`}
           </p>
           {faq.map((item, i) => (
-            <div key={i} className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
+            <div
+              key={i}
+              className="rounded-xl border bg-card shadow-sm p-3 space-y-2"
+            >
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-6 shrink-0">{i + 1}.</span>
-                <Input icon={<IconHelp />} value={item.q}
+                <span className="text-xs text-muted-foreground w-6 shrink-0">
+                  {i + 1}.
+                </span>
+                <Input
+                  icon={<IconHelp />}
+                  value={item.q}
                   onChange={(e) =>
-                    setFaq((p) => p.map((f, j) => (j === i ? { ...f, q: e.target.value } : f)))
+                    setFaq((p) =>
+                      p.map((f, j) =>
+                        j === i ? { ...f, q: e.target.value } : f,
+                      ),
+                    )
                   }
-                  placeholder="Câu hỏi" maxLength={300} className="flex-1" />
-                <button type="button" aria-label="Xoá câu hỏi"
+                  placeholder={t`Câu hỏi`}
+                  maxLength={300}
+                  className="flex-1"
+                />
+                <button
+                  type="button"
+                  aria-label={t`Xoá câu hỏi`}
                   onClick={() => setFaq((p) => p.filter((_, j) => j !== i))}
-                  className="px-1.5 text-muted-foreground hover:text-destructive">
+                  className="px-1.5 text-muted-foreground hover:text-destructive"
+                >
                   <IconX className="h-4 w-4" />
                 </button>
               </div>
-              <Textarea value={item.a}
+              <Textarea
+                value={item.a}
                 onChange={(e) =>
-                  setFaq((p) => p.map((f, j) => (j === i ? { ...f, a: e.target.value } : f)))
+                  setFaq((p) =>
+                    p.map((f, j) =>
+                      j === i ? { ...f, a: e.target.value } : f,
+                    ),
+                  )
                 }
-                rows={3} placeholder="Câu trả lời…"
-                className="leading-relaxed" />
+                rows={3}
+                placeholder={t`Câu trả lời…`}
+                className="leading-relaxed"
+              />
             </div>
           ))}
-          <Button type="button" variant="outline" size="sm"
-            onClick={() => setFaq((p) => [...p, { q: "", a: "" }])}>
-            <IconPlus className="h-4 w-4 mr-1" /> Thêm câu hỏi
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setFaq((p) => [...p, { q: "", a: "" }])}
+          >
+            <IconPlus className="h-4 w-4 mr-1" /> {t`Thêm câu hỏi`}
           </Button>
         </div>
 
         {/* Bài liên quan */}
         <div className="space-y-2">
-          <Label className="block">Bài liên quan (tuỳ chọn)</Label>
+          <Label className="block">{t`Bài liên quan (tuỳ chọn)`}</Label>
           {relatedChosen.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {relatedChosen.map((r) => (
-                <span key={r.id}
-                  className="inline-flex items-center gap-1 rounded-full border bg-card px-3 py-1 text-sm">
+                <span
+                  key={r.id}
+                  className="inline-flex items-center gap-1 rounded-full border bg-card px-3 py-1 text-sm"
+                >
                   {r.title}
-                  <button type="button" aria-label="Bỏ liên kết"
-                    onClick={() => setRelatedIds((p) => p.filter((x) => x !== r.id))}
-                    className="text-muted-foreground hover:text-destructive">
+                  <button
+                    type="button"
+                    aria-label={t`Bỏ liên kết`}
+                    onClick={() =>
+                      setRelatedIds((p) => p.filter((x) => x !== r.id))
+                    }
+                    className="text-muted-foreground hover:text-destructive"
+                  >
                     <IconX className="h-3.5 w-3.5" />
                   </button>
                 </span>
               ))}
             </div>
           )}
-          <Input icon={<IconSearch />} value={relatedQ} onChange={(e) => setRelatedQ(e.target.value)}
-            placeholder="Gõ tên bài để tìm & thêm liên kết…" />
+          <Input
+            icon={<IconSearch />}
+            value={relatedQ}
+            onChange={(e) => setRelatedQ(e.target.value)}
+            placeholder={t`Gõ tên bài để tìm & thêm liên kết…`}
+          />
           {relatedMatches.length > 0 && (
             <ul className="rounded-xl border bg-card shadow-sm divide-y">
               {relatedMatches.map((r) => (
                 <li key={r.id}>
-                  <button type="button"
-                    onClick={() => { setRelatedIds((p) => [...p, r.id]); setRelatedQ(""); }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent/10">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRelatedIds((p) => [...p, r.id]);
+                      setRelatedQ("");
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent/10"
+                  >
                     <IconPlus className="h-4 w-4 shrink-0 text-muted-foreground" />
                     {r.title}
                   </button>
@@ -602,30 +851,45 @@ export default function CustomsForm({ embedded }: { embedded?: EmbeddedForm } = 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="c-sources">Nguồn tham khảo</Label>
-          <Input id="c-sources" icon={<IconLink />} value={sources} onChange={(e) => setSources(e.target.value)} />
+          <Label htmlFor="c-sources">{t`Nguồn tham khảo`}</Label>
+          <Input
+            id="c-sources"
+            icon={<IconLink />}
+            value={sources}
+            onChange={(e) => setSources(e.target.value)}
+          />
         </div>
 
         {err && <p className="text-sm text-destructive">{err}</p>}
 
         <FormActions>
-          <Button type="button" variant="outline" onClick={() => (embedded ? embedded.onCancel() : navigate(-1))}>Hủy</Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => (embedded ? embedded.onCancel() : navigate(-1))}
+          >{t`Hủy`}</Button>
           <Button type="submit" disabled={save.isPending || !title.trim()}>
             <IconCheck className="h-4 w-4 mr-1.5" />
-            {save.isPending ? "Đang lưu…" : "Lưu"}
+            {save.isPending ? t`Đang lưu…` : t`Lưu`}
           </Button>
         </FormActions>
       </form>
     </>
   );
-  return embedded ? <div className="space-y-3">{content}</div> : <Shell>{content}</Shell>;
+  return embedded ? (
+    <div className="space-y-3">{content}</div>
+  ) : (
+    <Shell>{content}</Shell>
+  );
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
       <AppHeader />
-      <main className="container max-w-4xl py-6 px-4 space-y-3">{children}</main>
+      <main className="container max-w-4xl py-6 px-4 space-y-3">
+        {children}
+      </main>
     </div>
   );
 }

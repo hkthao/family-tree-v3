@@ -36,6 +36,7 @@ import {
 } from "@/lib/queries/share-links";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   clanId: string;
 }
@@ -77,7 +78,11 @@ export function ShareLinksSection({ clanId }: Props) {
     [links],
   );
   const { data: personNames } = useQuery({
-    queryKey: ["share-link-person-names", clanId, personIds.slice().sort().join(",")],
+    queryKey: [
+      "share-link-person-names",
+      clanId,
+      personIds.slice().sort().join(","),
+    ],
     queryFn: async () => {
       if (personIds.length === 0) return new Map<string, string>();
       const { data, error } = await supabase
@@ -85,7 +90,9 @@ export function ShareLinksSection({ clanId }: Props) {
         .select("id, full_name")
         .in("id", personIds);
       if (error) throw new Error(error.message);
-      return new Map((data ?? []).map((p) => [p.id as string, p.full_name as string]));
+      return new Map(
+        (data ?? []).map((p) => [p.id as string, p.full_name as string]),
+      );
     },
     enabled: personIds.length > 0,
   });
@@ -110,17 +117,17 @@ export function ShareLinksSection({ clanId }: Props) {
     onSuccess: () => {
       setPage(1);
       invalidateAllPages();
-      toast.success("Đã tạo link chia sẻ");
+      toast.success(t`Đã tạo link chia sẻ`);
     },
     onError: (e) =>
-      toast.error("Không tạo được", { description: (e as Error).message }),
+      toast.error(t`Không tạo được`, { description: (e as Error).message }),
   });
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1.5">
-          <Label htmlFor="ttl">Hiệu lực (ngày)</Label>
+          <Label htmlFor="ttl">{t`Hiệu lực (ngày)`}</Label>
           <Input
             id="ttl"
             icon={<IconClock />}
@@ -132,16 +139,17 @@ export function ShareLinksSection({ clanId }: Props) {
             className="h-10 w-[120px]"
           />
         </div>
-        <Button size="sm"
+        <Button
+          size="sm"
           onClick={() => createM.mutate()}
           disabled={createM.isPending || !ttl}
         >
           {createM.isPending ? (
-            "Đang tạo…"
+            t`Đang tạo…`
           ) : (
             <>
               <IconPlus className="h-4 w-4 mr-1.5" />
-              Tạo link mới
+              {t`Tạo link mới`}
             </>
           )}
         </Button>
@@ -149,17 +157,19 @@ export function ShareLinksSection({ clanId }: Props) {
 
       {createM.error && (
         <Alert variant="destructive">
-          <AlertDescription>{(createM.error as Error).message}</AlertDescription>
+          <AlertDescription>
+            {(createM.error as Error).message}
+          </AlertDescription>
         </Alert>
       )}
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Đang tải…</p>
+        <p className="text-sm text-muted-foreground">{t`Đang tải…`}</p>
       ) : links && links.length === 0 ? (
         <EmptyState
           icon={<IconLink className="h-10 w-10" />}
-          title="Chưa có link chia sẻ"
-          description="Bấm “Tạo link mới” để tạo link công khai cho cây gia phả."
+          title={t`Chưa có link chia sẻ`}
+          description={t`Bấm “Tạo link mới” để tạo link công khai cho cây gia phả.`}
         />
       ) : links && links.length > 0 ? (
         <ul className="divide-y border-t">
@@ -170,7 +180,9 @@ export function ShareLinksSection({ clanId }: Props) {
               clanId={clanId}
               onChanged={invalidateAllPages}
               personName={
-                l.root_person_id ? personNames?.get(l.root_person_id) ?? null : null
+                l.root_person_id
+                  ? (personNames?.get(l.root_person_id) ?? null)
+                  : null
               }
             />
           ))}
@@ -216,27 +228,27 @@ function ShareLinkItem({
     mutationFn: () => revokeShareLink(link.id),
     onSuccess: () => {
       onChanged();
-      toast.success("Đã thu hồi link");
+      toast.success(t`Đã thu hồi link`);
     },
     onError: (e) =>
-      toast.error("Không thu hồi được", { description: (e as Error).message }),
+      toast.error(t`Không thu hồi được`, { description: (e as Error).message }),
   });
   const deleteM = useMutation({
     mutationFn: () => deleteShareLink(link.id),
     onSuccess: () => {
       onChanged();
-      toast.success("Đã xoá link");
+      toast.success(t`Đã xoá link`);
     },
     onError: (e) =>
-      toast.error("Không xoá được", { description: (e as Error).message }),
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const expired = new Date(link.expires_at) < new Date();
   const status = link.is_revoked
-    ? { label: "Đã thu hồi", tone: "destructive" as const }
+    ? { label: t`Đã thu hồi`, tone: "destructive" as const }
     : expired
-      ? { label: "Đã hết hạn", tone: "muted" as const }
-      : { label: "Hoạt động", tone: "accent" as const };
+      ? { label: t`Đã hết hạn`, tone: "muted" as const }
+      : { label: t`Hoạt động`, tone: "accent" as const };
 
   const shareUrl = `${window.location.origin}/share/${link.token}`;
 
@@ -252,8 +264,8 @@ function ShareLinkItem({
 
   const isPersonScope = link.scope === "single_person";
   const scopeLabel = isPersonScope
-    ? `QR cá nhân · ${personName ?? "—"}`
-    : "Link cây gia phả";
+    ? t`QR cá nhân · ${personName ?? "—"}`
+    : t`Link cây gia phả`;
 
   const active = !link.is_revoked && !expired;
   return (
@@ -290,8 +302,8 @@ function ShareLinkItem({
               size="icon"
               variant="ghost"
               onClick={copyToClipboard}
-              aria-label={copied ? "Đã chép" : "Chép link"}
-              title={copied ? "Đã chép" : "Chép link"}
+              aria-label={copied ? t`Đã chép` : t`Chép link`}
+              title={copied ? t`Đã chép` : t`Chép link`}
               className="h-10 w-10"
             >
               {copied ? (
@@ -309,8 +321,8 @@ function ShareLinkItem({
               size="icon"
               variant="outline"
               onClick={() => setQrOpen(true)}
-              aria-label="Hiện mã QR"
-              title="Hiện mã QR"
+              aria-label={t`Hiện mã QR`}
+              title={t`Hiện mã QR`}
               className="h-10 w-10 shrink-0"
             >
               <IconQrCode className="h-4 w-4" />
@@ -321,8 +333,8 @@ function ShareLinkItem({
               variant="outline"
               onClick={() => revokeM.mutate()}
               disabled={revokeM.isPending}
-              aria-label="Thu hồi link"
-              title="Thu hồi link"
+              aria-label={t`Thu hồi link`}
+              title={t`Thu hồi link`}
               className="h-10 w-10 shrink-0"
             >
               <IconUndo className="h-4 w-4" />
@@ -333,14 +345,14 @@ function ShareLinkItem({
           type="button"
           size="icon"
           variant="destructive-outline"
-          aria-label="Xoá link"
-          title="Xoá link"
+          aria-label={t`Xoá link`}
+          title={t`Xoá link`}
           className="h-10 w-10 shrink-0"
           onClick={async () => {
             const ok = await confirm({
-              title: "Xoá link này vĩnh viễn?",
-              description: "Sau khi xoá không khôi phục lại được.",
-              confirmLabel: "Xoá",
+              title: t`Xoá link này vĩnh viễn?`,
+              description: t`Sau khi xoá không khôi phục lại được.`,
+              confirmLabel: t`Xoá`,
               destructive: true,
             });
             if (ok) deleteM.mutate();
@@ -356,13 +368,13 @@ function ShareLinkItem({
         url={shareUrl}
         title={
           isPersonScope
-            ? `QR · ${personName ?? "Trang cá nhân"}`
-            : "Quét để xem cây gia phả"
+            ? t`QR · ${personName ?? "Trang cá nhân"}`
+            : t`Quét để xem cây gia phả`
         }
         description={
           isPersonScope
-            ? "Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, sổ gia phả, danh thiếp."
-            : "Mở camera điện thoại, hướng vào mã QR. Link sẽ mở trang xem chỉ-đọc."
+            ? t`Quét để mở trang cá nhân (chỉ-đọc). Có thể in lên bia, sổ gia phả, danh thiếp.`
+            : t`Mở camera điện thoại, hướng vào mã QR. Link sẽ mở trang xem chỉ-đọc.`
         }
       />
     </li>

@@ -45,6 +45,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useUrlState } from "@/hooks/useUrlState";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Cross-clan in-law links manager. Two tabs:
  *   - Đã liên kết (confirmed): show both sides with a peek of the
@@ -108,23 +110,23 @@ export default function Inlaws() {
     onSuccess: (_void, id) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       track("inlaw_revoked");
-      toast.success("Đã thu hồi liên kết");
+      toast.success(t`Đã thu hồi liên kết`);
       // Fire-and-forget — both sides get an email so the side that
       // didn't revoke learns the link is gone.
       notifyInlaw(id);
     },
     onError: (e) =>
-      toast.error("Không thu hồi được", { description: (e as Error).message }),
+      toast.error(t`Không thu hồi được`, { description: (e as Error).message }),
   });
 
   const cancelM = useMutation({
     mutationFn: (id: string) => deletePendingLink(id),
     onSuccess: () => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
-      toast.success("Đã huỷ đề nghị");
+      toast.success(t`Đã huỷ đề nghị`);
     },
     onError: (e) =>
-      toast.error("Không huỷ được", { description: (e as Error).message }),
+      toast.error(t`Không huỷ được`, { description: (e as Error).message }),
   });
 
   // Incoming-pending actions
@@ -133,21 +135,23 @@ export default function Inlaws() {
     onSuccess: (_void, id) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       track("inlaw_confirmed");
-      toast.success("Đã xác nhận liên kết");
+      toast.success(t`Đã xác nhận liên kết`);
       notifyInlaw(id);
     },
     onError: (e) =>
-      toast.error("Không xác nhận được", { description: (e as Error).message }),
+      toast.error(t`Không xác nhận được`, {
+        description: (e as Error).message,
+      }),
   });
   const rejectM = useMutation({
     mutationFn: (id: string) => revokeLink(id),
     onSuccess: (_void, id) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
-      toast.success("Đã từ chối đề nghị");
+      toast.success(t`Đã từ chối đề nghị`);
       notifyInlaw(id);
     },
     onError: (e) =>
-      toast.error("Không từ chối được", { description: (e as Error).message }),
+      toast.error(t`Không từ chối được`, { description: (e as Error).message }),
   });
 
   return (
@@ -155,21 +159,25 @@ export default function Inlaws() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Liên kết dòng họ" },
+          { label: t`Liên kết dòng họ` },
         ]}
       />
 
       <PageHeader
         icon={<IconLink className="h-7 w-7" />}
-        title="Liên kết dòng họ"
-        description="Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, họ hàng. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi."
+        title={t`Liên kết dòng họ`}
+        description={t`Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, họ hàng. Quyền sở hữu mỗi bên không đổi — link chỉ là chú thích, có thể thu hồi.`}
         actionsBelow
         actions={
-          <Fab to={`/clans/${clan.id}/inlaws/new`} panel={{ id: "inlaw-new" }} label="Đề nghị mới" />
+          <Fab
+            to={`/clans/${clan.id}/inlaws/new`}
+            panel={{ id: "inlaw-new" }}
+            label={t`Đề nghị mới`}
+          />
         }
       />
 
-      <SegmentedControl ariaLabel="Tab trạng thái">
+      <SegmentedControl ariaLabel={t`Tab trạng thái`}>
         <SegmentedButton
           active={tab === "confirmed"}
           onClick={() => setTab("confirmed")}
@@ -186,7 +194,7 @@ export default function Inlaws() {
 
       {isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
 
@@ -195,8 +203,8 @@ export default function Inlaws() {
         (confirmed.length === 0 ? (
           <EmptyState
             icon={<IconLink className="h-10 w-10" />}
-            title="Chưa có liên kết nào"
-            description="Nối với dòng họ khác (thông gia, cùng tổ tiên, họ hàng) để tra cứu 2 chiều."
+            title={t`Chưa có liên kết nào`}
+            description={t`Nối với dòng họ khác (thông gia, cùng tổ tiên, họ hàng) để tra cứu 2 chiều.`}
           />
         ) : (
           <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -208,10 +216,9 @@ export default function Inlaws() {
                 userId={userId}
                 onRevoke={async () => {
                   const ok = await confirm({
-                    title: "Thu hồi liên kết?",
-                    description:
-                      "Sau khi thu hồi, không bên nào còn thấy link này. Có thể tạo lại sau.",
-                    confirmLabel: "Thu hồi",
+                    title: t`Thu hồi liên kết?`,
+                    description: t`Sau khi thu hồi, không bên nào còn thấy link này. Có thể tạo lại sau.`,
+                    confirmLabel: t`Thu hồi`,
                     destructive: true,
                   });
                   if (ok) revokeM.mutate(l.id);
@@ -225,10 +232,10 @@ export default function Inlaws() {
       {tab === "pending" && !isLoading && pendingTotal === 0 && (
         <EmptyState
           icon={<IconLink className="h-10 w-10" />}
-          title="Không có đề nghị nào đang chờ"
-          description="Bấm “Đề nghị mới” để gửi mã mời hoặc đề nghị thẳng tới một dòng họ công khai."
+          title={t`Không có đề nghị nào đang chờ`}
+          description={t`Bấm “Đề nghị mới” để gửi mã mời hoặc đề nghị thẳng tới một dòng họ công khai.`}
           primary={{
-            label: "Đề nghị mới",
+            label: t`Đề nghị mới`,
             to: `/clans/${clan.id}/inlaws/new`,
             panel: { id: "inlaw-new" },
             icon: <IconPlus className="h-4 w-4 mr-1.5" />,
@@ -248,19 +255,17 @@ export default function Inlaws() {
                 link={l}
                 onAccept={async () => {
                   const ok = await confirm({
-                    title: "Xác nhận liên kết này?",
-                    description:
-                      "Cả hai bên sẽ thấy liên kết trên card người. Có thể thu hồi sau.",
-                    confirmLabel: "Xác nhận",
+                    title: t`Xác nhận liên kết này?`,
+                    description: t`Cả hai bên sẽ thấy liên kết trên card người. Có thể thu hồi sau.`,
+                    confirmLabel: t`Xác nhận`,
                   });
                   if (ok) acceptM.mutate(l.id);
                 }}
                 onReject={async () => {
                   const ok = await confirm({
-                    title: "Từ chối đề nghị này?",
-                    description:
-                      "Bên đề nghị sẽ thấy đề nghị đã bị thu hồi. Họ có thể đề nghị lại nếu cần.",
-                    confirmLabel: "Từ chối",
+                    title: t`Từ chối đề nghị này?`,
+                    description: t`Bên đề nghị sẽ thấy đề nghị đã bị thu hồi. Họ có thể đề nghị lại nếu cần.`,
+                    confirmLabel: t`Từ chối`,
                     destructive: true,
                   });
                   if (ok) rejectM.mutate(l.id);
@@ -285,10 +290,9 @@ export default function Inlaws() {
                 clanId={clan.id}
                 onCancel={async () => {
                   const ok = await confirm({
-                    title: "Huỷ đề nghị này?",
-                    description:
-                      "Mã mời sẽ không dùng được nữa. Có thể tạo mã mới.",
-                    confirmLabel: "Huỷ đề nghị",
+                    title: t`Huỷ đề nghị này?`,
+                    description: t`Mã mời sẽ không dùng được nữa. Có thể tạo mã mới.`,
+                    confirmLabel: t`Huỷ đề nghị`,
                     destructive: true,
                   });
                   if (ok) cancelM.mutate(l.id);
@@ -303,12 +307,14 @@ export default function Inlaws() {
       {(revokeM.error || cancelM.error || acceptM.error || rejectM.error) && (
         <Alert variant="destructive">
           <AlertDescription>
-            {(
-              (revokeM.error ??
-                cancelM.error ??
-                acceptM.error ??
-                rejectM.error) as Error
-            ).message}
+            {
+              (
+                (revokeM.error ??
+                  cancelM.error ??
+                  acceptM.error ??
+                  rejectM.error) as Error
+              ).message
+            }
           </AlertDescription>
         </Alert>
       )}
@@ -399,7 +405,7 @@ function ConfirmedRow({
           disabled={revoking}
         >
           <IconUndo className="h-4 w-4 mr-1.5" />
-          Thu hồi
+          {t`Thu hồi`}
         </Button>
       </div>
     </li>
@@ -410,8 +416,8 @@ function PeekMeta({ peek }: { peek: LinkPeek }) {
   if (peek.masked) {
     return (
       <>
-        <span className="text-foreground">{peek.clan_name}</span> · Người
-        còn sống, dòng họ này chưa công khai
+        <span className="text-foreground">{peek.clan_name}</span> · Người còn
+        sống, dòng họ này chưa công khai
       </>
     );
   }
@@ -421,14 +427,14 @@ function PeekMeta({ peek }: { peek: LinkPeek }) {
       : peek.birth_year
         ? `sinh ${peek.birth_year}`
         : peek.death_year
-          ? `mất ${peek.death_year}`
+          ? t`mất ${peek.death_year}`
           : "—";
   return (
     <>
       <span className="text-foreground">{peek.clan_name}</span> ·{" "}
-      {peek.gender === "M" ? "Nam" : "Nữ"}
+      {peek.gender === "M" ? "Nam" : t`Nữ`}
       {peek.generation !== null && peek.generation !== undefined
-        ? ` · Đời ${peek.generation - (peek.generation_offset ?? 0)}`
+        ? t` · Đời ${peek.generation - (peek.generation_offset ?? 0)}`
         : ""}{" "}
       · {lifespan}
     </>
@@ -479,7 +485,7 @@ function IncomingPendingRow({
       : preview?.person_a_birth_year
         ? `sinh ${preview.person_a_birth_year}`
         : preview?.person_a_death_year
-          ? `mất ${preview.person_a_death_year}`
+          ? t`mất ${preview.person_a_death_year}`
           : "";
 
   return (
@@ -487,9 +493,7 @@ function IncomingPendingRow({
       <div className="text-sm space-y-1">
         <p>
           <span className="text-muted-foreground">Từ </span>
-          <span className="font-semibold">
-            {preview?.clan_a_name ?? "…"}
-          </span>
+          <span className="font-semibold">{preview?.clan_a_name ?? "…"}</span>
           {link.link_type !== "same_person" && (
             <span className="ml-2 inline-flex rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
               {linkTypeFromSide(link.link_type, false)}
@@ -498,21 +502,17 @@ function IncomingPendingRow({
         </p>
         <p>
           <span className="text-muted-foreground">Người bên họ: </span>
-          <span className="font-medium">
-            {preview?.person_a_name ?? "…"}
-          </span>
+          <span className="font-medium">{preview?.person_a_name ?? "…"}</span>
           {preview && (
             <span className="text-xs text-muted-foreground ml-1">
-              ({preview.person_a_gender === "M" ? "Nam" : "Nữ"}
+              ({preview.person_a_gender === "M" ? "Nam" : t`Nữ`}
               {lifespan ? ` · ${lifespan}` : ""})
             </span>
           )}
         </p>
         <p>
           <span className="text-muted-foreground">Đề nghị nối với: </span>
-          <span className="font-medium">
-            {localPerson?.full_name ?? "…"}
-          </span>
+          <span className="font-medium">{localPerson?.full_name ?? "…"}</span>
         </p>
         {preview?.note && (
           <p className="text-xs text-muted-foreground italic">
@@ -529,7 +529,7 @@ function IncomingPendingRow({
           className="flex-1 sm:flex-none"
         >
           <IconCheck className="h-4 w-4 mr-1.5" />
-          Xác nhận
+          {t`Xác nhận`}
         </Button>
         <Button
           size="sm"
@@ -539,7 +539,7 @@ function IncomingPendingRow({
           disabled={busy}
         >
           <IconUndo className="h-4 w-4 mr-1.5" />
-          Từ chối
+          {t`Từ chối`}
         </Button>
       </div>
     </li>
@@ -581,9 +581,9 @@ function PendingRow({
       await navigator.clipboard.writeText(confirmUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast.success("Đã chép link mời");
+      toast.success(t`Đã chép link mời`);
     } catch {
-      toast.error("Không chép được — hãy chọn và copy thủ công");
+      toast.error(t`Không chép được — hãy chọn và copy thủ công`);
     }
   }
 
@@ -616,8 +616,8 @@ function PendingRow({
               size="icon"
               variant="ghost"
               onClick={copy}
-              aria-label={copied ? "Đã chép" : "Chép link"}
-              title={copied ? "Đã chép" : "Chép link"}
+              aria-label={copied ? t`Đã chép` : t`Chép link`}
+              title={copied ? t`Đã chép` : t`Chép link`}
               className="h-10 w-10"
             >
               {copied ? (
@@ -630,8 +630,14 @@ function PendingRow({
         />
       ) : (
         <p className="text-xs text-muted-foreground">
-          Đề nghị gửi thẳng tới dòng họ công khai — chờ admin bên kia
-          xác nhận trong /inlaws của họ.
+          <Trans>
+            <Trans>
+              <Trans>
+                Đề nghị gửi thẳng tới dòng họ công khai — chờ admin bên kia xác
+                nhận trong /inlaws của họ.
+              </Trans>
+            </Trans>
+          </Trans>
         </p>
       )}
 
@@ -644,7 +650,7 @@ function PendingRow({
           disabled={canceling}
         >
           <IconTrash className="h-4 w-4 mr-1.5" />
-          Huỷ đề nghị
+          {t`Huỷ đề nghị`}
         </Button>
       </div>
     </li>

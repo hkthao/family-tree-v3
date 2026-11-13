@@ -17,6 +17,7 @@ import {
 } from "@/lib/queries/person-links";
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 /**
  * Renders a peer person + their parents / spouses / children as a
  * compact "mini family" view, fetched via get_inlaw_peer_relatives.
@@ -45,7 +46,7 @@ export function InlawFamilyCard({
   });
   if (isLoading)
     return (
-      <p className="text-sm text-muted-foreground">Đang tải gia đình bên đó…</p>
+      <p className="text-sm text-muted-foreground">{t`Đang tải gia đình bên đó…`}</p>
     );
   if (error)
     return (
@@ -65,12 +66,12 @@ function FamilyView({ data }: { data: InlawPeerRelatives }) {
         <p className="text-xs text-muted-foreground uppercase tracking-wider">
           {data.peer_clan_name}
         </p>
-        <SegmentedControl ariaLabel="Chế độ hiển thị">
+        <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
           <SegmentedButton
             active={view === "list"}
             onClick={() => setView("list")}
-            title="Danh sách"
-            ariaLabel="Danh sách"
+            title={t`Danh sách`}
+            ariaLabel={t`Danh sách`}
             variant="icon-sm"
           >
             <IconList className="h-4 w-4" />
@@ -78,8 +79,8 @@ function FamilyView({ data }: { data: InlawPeerRelatives }) {
           <SegmentedButton
             active={view === "tree"}
             onClick={() => setView("tree")}
-            title="Cây gia phả"
-            ariaLabel="Cây gia phả"
+            title={t`Cây gia phả`}
+            ariaLabel={t`Cây gia phả`}
             variant="icon-sm"
           >
             <IconGrid className="h-4 w-4" />
@@ -102,7 +103,7 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
     <div className="space-y-4">
       {data.parents.length > 0 && (
         <RelativeGroup
-          label="Cha mẹ"
+          label={t`Cha mẹ`}
           rows={data.parents}
           peerClanId={data.peer_clan_id}
           genOffset={genOffset}
@@ -118,7 +119,7 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
 
       {data.spouses.length > 0 && (
         <RelativeGroup
-          label="Vợ / chồng"
+          label={t`Vợ / chồng`}
           rows={data.spouses}
           peerClanId={data.peer_clan_id}
           genOffset={genOffset}
@@ -139,7 +140,7 @@ function FamilyListView({ data }: { data: InlawPeerRelatives }) {
         data.spouses.length === 0 &&
         data.children.length === 0 && (
           <p className="text-xs text-muted-foreground italic">
-            Bên kia chưa nhập cha mẹ, vợ/chồng, hoặc con cho người này.
+            {t`Bên kia chưa nhập cha mẹ, vợ/chồng, hoặc con cho người này.`}
           </p>
         )}
     </div>
@@ -229,7 +230,9 @@ function RelativeRow({
     <div
       className={cn(
         "flex items-center gap-2 rounded-md border bg-background px-2 py-1.5",
-        callerIsMember && !row.masked && "hover:border-primary transition-colors",
+        callerIsMember &&
+          !row.masked &&
+          "hover:border-primary transition-colors",
       )}
     >
       <PersonAvatar gender={row.gender} photoUrl={null} size={28} />
@@ -255,16 +258,16 @@ function RelativeRow({
 
 function metaLine(p: InlawRelativeCard, genOffset: number): string {
   const bits: string[] = [];
-  bits.push(p.gender === "M" ? "Nam" : "Nữ");
+  bits.push(p.gender === "M" ? "Nam" : t`Nữ`);
   if (p.generation !== null && p.generation !== undefined) {
-    bits.push(`Đời ${p.generation - genOffset}`);
+    bits.push(t`Đời ${p.generation - genOffset}`);
   }
   if (p.birth_year && p.death_year) {
     bits.push(`${p.birth_year}–${p.death_year}`);
   } else if (p.birth_year) {
     bits.push(`sinh ${p.birth_year}`);
   } else if (p.death_year) {
-    bits.push(`mất ${p.death_year}`);
+    bits.push(t`mất ${p.death_year}`);
   } else if (!p.is_living) {
     bits.push("đã mất");
   }

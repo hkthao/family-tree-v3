@@ -6,7 +6,14 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
-import { IconArrowRight, IconCheck, IconCopy, IconList, IconSearch, IconX } from "@/components/icons";
+import {
+  IconArrowRight,
+  IconCheck,
+  IconCopy,
+  IconList,
+  IconSearch,
+  IconX,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,9 +34,15 @@ import {
 } from "@/lib/duplicateFinder";
 import { queryKeys } from "@/lib/queries/keys";
 import { mergePersons } from "@/lib/queries/merge";
-import { getPerson, listPersons, type PersonDetail } from "@/lib/queries/persons";
+import {
+  getPerson,
+  listPersons,
+  type PersonDetail,
+} from "@/lib/queries/persons";
 import { getTreeData } from "@/lib/queries/tree";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 export default function Merge() {
   const { clan } = useClanContext();
   const { user } = useAuth();
@@ -76,13 +89,13 @@ export default function Merge() {
     mutationFn: () => mergePersons(winnerId!, loserId!),
     onSuccess: async (res) => {
       await invalidateClanData(qc, clan.id);
-      toast.success("Đã gộp xong", {
-        description: `Đã cập nhật ${res.familiesUpdated} gia đình, ${res.subsUpdated} đăng ký, ${res.eventsUpdated} sự kiện.`,
+      toast.success(t`Đã gộp xong`, {
+        description: t`Đã cập nhật ${res.familiesUpdated} gia đình, ${res.subsUpdated} đăng ký, ${res.eventsUpdated} sự kiện.`,
       });
       navigate(`/clans/${clan.id}/people/${winnerId}`);
     },
     onError: (e) =>
-      toast.error("Không gộp được", { description: (e as Error).message }),
+      toast.error(t`Không gộp được`, { description: (e as Error).message }),
   });
 
   if (!canEditClan(clan)) {
@@ -94,17 +107,17 @@ export default function Merge() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Gộp người trùng" },
+          { label: t`Gộp người trùng` },
         ]}
       />
       <PageHeader
         icon={<IconCopy className="h-7 w-7" />}
-        title="Gộp người trùng"
+        title={t`Gộp người trùng`}
         description={
           <>
-            Chọn người <strong>giữ lại</strong> bên trái và{" "}
-            <strong>gộp vào</strong> bên phải. Mọi quan hệ trỏ về người
-            giữ lại; người còn lại xoá mềm (khôi phục từ nhật ký).
+            Chọn người <strong>{t`giữ lại`}</strong> bên trái và{" "}
+            <strong>{t`gộp vào`}</strong> bên phải. Mọi quan hệ trỏ về người giữ
+            lại; người còn lại xoá mềm (khôi phục từ nhật ký).
           </>
         }
       />
@@ -124,7 +137,7 @@ export default function Merge() {
         <PersonPicker
           clanId={clan.id}
           genOffset={clan.generation_offset}
-          title="Giữ lại"
+          title={t`Giữ lại`}
           person={winner ?? null}
           selectedId={winnerId}
           onSelect={setWinnerId}
@@ -134,7 +147,7 @@ export default function Merge() {
         <PersonPicker
           clanId={clan.id}
           genOffset={clan.generation_offset}
-          title="Gộp vào"
+          title={t`Gộp vào`}
           person={loser ?? null}
           selectedId={loserId}
           onSelect={setLoserId}
@@ -157,16 +170,15 @@ export default function Merge() {
           disabled={!winnerId || !loserId || m.isPending}
           onClick={async () => {
             const ok = await confirm({
-              title: `Gộp "${loser?.full_name}" vào "${winner?.full_name}"?`,
-              description:
-                "Quan hệ và trường còn trống của người giữ lại sẽ lấy từ người gộp vào. Người gộp vào sẽ bị xoá mềm — có thể khôi phục từ nhật ký.",
-              confirmLabel: "Gộp",
+              title: t`Gộp "${loser?.full_name ?? ""}" vào "${winner?.full_name ?? ""}"?`,
+              description: t`Quan hệ và trường còn trống của người giữ lại sẽ lấy từ người gộp vào. Người gộp vào sẽ bị xoá mềm — có thể khôi phục từ nhật ký.`,
+              confirmLabel: t`Gộp`,
             });
             if (ok) m.mutate();
           }}
         >
           <IconCheck className="h-4 w-4 mr-1.5" />
-          {m.isPending ? "Đang gộp…" : "Gộp"}
+          {m.isPending ? t`Đang gộp…` : t`Gộp`}
         </Button>
       </div>
     </div>
@@ -190,11 +202,10 @@ function SuggestionPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Đề xuất gộp</CardTitle>
+        <CardTitle>{t`Đề xuất gộp`}</CardTitle>
         <CardDescription>
-          Tìm thấy {candidates.length} cặp có thể trùng (theo tên + giới
-          tính + năm sinh). Chọn người sống / có nhiều dữ liệu hơn làm
-          "giữ lại".
+          Tìm thấy {candidates.length} cặp có thể trùng (theo tên + giới tính +
+          năm sinh). Chọn người sống / có nhiều dữ liệu hơn làm "giữ lại".
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -202,20 +213,17 @@ function SuggestionPanel({
           const kindMeta =
             c.kind === "exact"
               ? {
-                  label: "Trùng tên + năm sinh",
+                  label: t`Trùng tên + năm sinh`,
                   classes: "bg-primary/15 text-primary",
                 }
               : c.kind === "name"
-                ? { label: "Trùng tên", classes: "bg-accent/20 text-accent" }
+                ? { label: t`Trùng tên`, classes: "bg-accent/20 text-accent" }
                 : {
-                    label: "Tên gần giống",
+                    label: t`Tên gần giống`,
                     classes: "bg-muted text-muted-foreground",
                   };
           return (
-            <div
-              key={i}
-              className="rounded-lg bg-muted/30 p-3 space-y-3"
-            >
+            <div key={i} className="rounded-lg bg-muted/30 p-3 space-y-3">
               <span
                 className={`inline-block text-[11px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full ${kindMeta.classes}`}
               >
@@ -235,7 +243,7 @@ function SuggestionPanel({
                   className="w-full sm:w-auto"
                 >
                   <IconArrowRight className="h-4 w-4 mr-1.5" />
-                  Dùng cặp này
+                  {t`Dùng cặp này`}
                 </Button>
               </div>
             </div>
@@ -254,14 +262,10 @@ function SuggestionPanel({
   );
 }
 
-function personMeta(
-  p: DuplicateCandidate["a"],
-  genOffset: number,
-): string {
+function personMeta(p: DuplicateCandidate["a"], genOffset: number): string {
   const parts: string[] = [];
   if (p.birth_date) parts.push(`sinh ${p.birth_date.slice(0, 4)}`);
-  if (p.generation !== null)
-    parts.push(`Đời ${p.generation - genOffset}`);
+  if (p.generation !== null) parts.push(t`Đời ${p.generation - genOffset}`);
   if (!p.is_living) parts.push("đã mất");
   return parts.length > 0 ? `· ${parts.join(" · ")}` : "";
 }
@@ -278,9 +282,7 @@ function PersonChip({
     <div className="rounded-md bg-card border px-3 py-2 min-w-0">
       <p className="font-medium truncate">{person.full_name}</p>
       {meta && (
-        <p className="text-xs text-muted-foreground truncate mt-0.5">
-          {meta}
-        </p>
+        <p className="text-xs text-muted-foreground truncate mt-0.5">{meta}</p>
       )}
     </div>
   );
@@ -334,8 +336,8 @@ function PersonPicker({
         <CardTitle>{title}</CardTitle>
         <CardDescription>
           {person
-            ? "Bấm × để chọn lại."
-            : "Gõ ít nhất 2 ký tự để tìm theo tên."}
+            ? t`Bấm × để chọn lại.`
+            : t`Gõ ít nhất 2 ký tự để tìm theo tên.`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -344,26 +346,33 @@ function PersonPicker({
             <div className="min-w-0">
               <p className="font-medium truncate">{person.full_name}</p>
               <p className="text-xs text-muted-foreground">
-                {person.gender === "M" ? "Nam" : "Nữ"}
-                {person.birth_date ? ` · sinh ${person.birth_date.slice(0, 4)}` : ""}
-                {person.generation !== null
-                  ? ` · Đời ${person.generation - genOffset}`
+                {person.gender === "M" ? "Nam" : t`Nữ`}
+                {person.birth_date
+                  ? ` · sinh ${person.birth_date.slice(0, 4)}`
                   : ""}
-                {!person.is_living ? " · đã mất" : ""}
+                {person.generation !== null
+                  ? t` · Đời ${person.generation - genOffset}`
+                  : ""}
+                {!person.is_living ? t` · đã mất` : ""}
               </p>
             </div>
-            <Button size="sm" variant="outline" onClick={onClear} aria-label="Chọn lại">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onClear}
+              aria-label={t`Chọn lại`}
+            >
               <IconX className="h-4 w-4" />
             </Button>
           </div>
         ) : (
           <>
             <Input
-              data-testid={`merge-picker-${title === "Giữ lại" ? "winner" : "loser"}-input`}
+              data-testid={t`merge-picker-${title === "Giữ lại" ? "winner" : "loser"}-input`}
               icon={<IconSearch />}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tên người…"
+              placeholder={t`Tên người…`}
             />
             {data && data.rows.length > 0 && (
               <ul className="divide-y rounded-md border bg-card max-h-72 overflow-y-auto">
@@ -378,12 +387,14 @@ function PersonPicker({
                       >
                         <p className="font-medium truncate">{p.full_name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {p.gender === "M" ? "Nam" : "Nữ"}
-                          {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
-                          {p.generation !== null
-                            ? ` · Đời ${p.generation - genOffset}`
+                          {p.gender === "M" ? "Nam" : t`Nữ`}
+                          {p.birth_date
+                            ? ` · sinh ${p.birth_date.slice(0, 4)}`
                             : ""}
-                          {!p.is_living ? " · đã mất" : ""}
+                          {p.generation !== null
+                            ? t` · Đời ${p.generation - genOffset}`
+                            : ""}
+                          {!p.is_living ? t` · đã mất` : ""}
                         </p>
                       </button>
                     </li>
@@ -392,7 +403,7 @@ function PersonPicker({
             )}
             {debounced.length >= 2 && data && data.rows.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Không tìm thấy ai khớp.
+                {t`Không tìm thấy ai khớp.`}
               </p>
             )}
           </>
@@ -412,38 +423,44 @@ function Comparison({
   loser: PersonDetail;
 }) {
   const rows: { label: string; w: string | null; l: string | null }[] = [
-    { label: "Họ và tên", w: winner.full_name, l: loser.full_name },
+    { label: t`Họ và tên`, w: winner.full_name, l: loser.full_name },
     {
-      label: "Giới tính",
-      w: winner.gender === "M" ? "Nam" : "Nữ",
-      l: loser.gender === "M" ? "Nam" : "Nữ",
+      label: t`Giới tính`,
+      w: winner.gender === "M" ? "Nam" : t`Nữ`,
+      l: loser.gender === "M" ? "Nam" : t`Nữ`,
     },
     {
-      label: "Ngày sinh",
+      label: t`Ngày sinh`,
       w: winner.birth_date,
       l: loser.birth_date,
     },
     {
-      label: "Ngày mất",
+      label: t`Ngày mất`,
       w: winner.death_date,
       l: loser.death_date,
     },
-    { label: "Tên tự", w: winner.courtesy_name, l: loser.courtesy_name },
-    { label: "Tên húy", w: winner.nickname, l: loser.nickname },
-    { label: "Tên thụy", w: winner.posthumous_name, l: loser.posthumous_name },
-    { label: "Nơi sinh", w: winner.birth_place, l: loser.birth_place },
-    { label: "Nơi an táng", w: winner.burial_place, l: loser.burial_place },
-    { label: "Tiểu sử", w: winner.bio, l: loser.bio },
+    { label: t`Tên tự`, w: winner.courtesy_name, l: loser.courtesy_name },
+    { label: t`Tên húy`, w: winner.nickname, l: loser.nickname },
+    { label: t`Tên thụy`, w: winner.posthumous_name, l: loser.posthumous_name },
+    { label: t`Nơi sinh`, w: winner.birth_place, l: loser.birth_place },
+    { label: t`Nơi an táng`, w: winner.burial_place, l: loser.burial_place },
+    { label: t`Tiểu sử`, w: winner.bio, l: loser.bio },
   ];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>So sánh dữ liệu</CardTitle>
+        <CardTitle>{t`So sánh dữ liệu`}</CardTitle>
         <CardDescription>
-          Mỗi trường còn trống bên trái sẽ được lấp từ bên phải. Trường có
-          giá trị ở cả hai bên thì giữ giá trị bên trái — chỉnh sửa sau khi
-          gộp nếu cần.
+          <Trans>
+            <Trans>
+              <Trans>
+                Mỗi trường còn trống bên trái sẽ được lấp từ bên phải. Trường có
+                giá trị ở cả hai bên thì giữ giá trị bên trái — chỉnh sửa sau
+                khi gộp nếu cần.
+              </Trans>
+            </Trans>
+          </Trans>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -452,10 +469,10 @@ function Comparison({
             <thead>
               <tr className="border-b text-left">
                 <th className="py-2 pr-3 font-medium text-muted-foreground">
-                  Trường
+                  {t`Trường`}
                 </th>
-                <th className="py-2 pr-3 font-medium">Giữ lại</th>
-                <th className="py-2 font-medium">Gộp vào</th>
+                <th className="py-2 pr-3 font-medium">{t`Giữ lại`}</th>
+                <th className="py-2 font-medium">{t`Gộp vào`}</th>
               </tr>
             </thead>
             <tbody>
@@ -471,7 +488,7 @@ function Comparison({
                     <td className="py-2 pr-3">
                       {r.w || (
                         <span className="text-muted-foreground italic">
-                          (trống)
+                          {t`(trống)`}
                         </span>
                       )}
                     </td>
@@ -486,17 +503,17 @@ function Comparison({
                     >
                       {r.l || (
                         <span className="text-muted-foreground italic">
-                          (trống)
+                          {t`(trống)`}
                         </span>
                       )}
                       {willFill && (
                         <span className="ml-2 text-xs text-primary">
-                          → sẽ lấp
+                          {t`→ sẽ lấp`}
                         </span>
                       )}
                       {conflict && (
                         <span className="ml-2 text-xs text-destructive">
-                          ≠ xung đột
+                          {t`≠ xung đột`}
                         </span>
                       )}
                     </td>

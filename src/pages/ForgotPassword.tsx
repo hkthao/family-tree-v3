@@ -42,9 +42,15 @@ export default function ForgotPassword() {
           <Alert>
             <AlertDescription>
               <Trans>
-                Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt lại
-                mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm vào liên kết
-                để đặt mật khẩu mới.
+                <Trans>
+                  <Trans>
+                    <Trans>
+                      Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt
+                      lại mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm
+                      vào liên kết để đặt mật khẩu mới.
+                    </Trans>
+                  </Trans>
+                </Trans>
               </Trans>
             </AlertDescription>
           </Alert>

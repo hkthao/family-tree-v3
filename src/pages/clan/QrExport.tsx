@@ -6,7 +6,13 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
-import { IconCheck, IconDownload, IconQrCode, IconTree, IconUsers } from "@/components/icons";
+import {
+  IconCheck,
+  IconDownload,
+  IconQrCode,
+  IconTree,
+  IconUsers,
+} from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +26,7 @@ import {
   type QrExportRow,
 } from "@/lib/queries/persons";
 
+import { t } from "@lingui/core/macro";
 const MAX_PER_EXPORT = 200;
 // Shared input/select classes so all filter controls have the same
 // height + border treatment. Copied from the People page pattern so
@@ -52,12 +59,8 @@ export default function QrExport() {
   const filters = useMemo(
     () => ({
       branchId: branchId || null,
-      generationMin: genMin
-        ? Number(genMin) + clan.generation_offset
-        : null,
-      generationMax: genMax
-        ? Number(genMax) + clan.generation_offset
-        : null,
+      generationMin: genMin ? Number(genMin) + clan.generation_offset : null,
+      generationMax: genMax ? Number(genMax) + clan.generation_offset : null,
       deceasedOnly,
       limit: MAX_PER_EXPORT,
     }),
@@ -69,7 +72,11 @@ export default function QrExport() {
     queryFn: () => listBranches(clan.id),
   });
 
-  const { data: rows, isFetching, error } = useQuery({
+  const {
+    data: rows,
+    isFetching,
+    error,
+  } = useQuery({
     queryKey: ["qr-export-people", clan.id, userId, filters],
     queryFn: () => listPersonsForQrExport(clan.id, filters),
   });
@@ -101,16 +108,17 @@ export default function QrExport() {
         }));
       // Lazy-load @react-pdf/renderer (~1.5MB) on click so it stays
       // out of the initial app bundle and the PWA precache.
-      const { downloadBulkPersonQrPdf } = await import(
-        "@/lib/pdf/exportPersonQrPdf"
-      );
+      const { downloadBulkPersonQrPdf } =
+        await import("@/lib/pdf/exportPersonQrPdf");
       return downloadBulkPersonQrPdf(clan.name, inputs);
     },
     onSuccess: (r) => {
-      if (r && "count" in r) toast.success(`Đã xuất ${r.count} thẻ QR`);
+      if (r && "count" in r) toast.success(t`Đã xuất ${r.count} thẻ QR`);
     },
     onError: (e) =>
-      toast.error("Không xuất được PDF", { description: (e as Error).message }),
+      toast.error(t`Không xuất được PDF`, {
+        description: (e as Error).message,
+      }),
   });
 
   function toggleAll() {
@@ -140,14 +148,14 @@ export default function QrExport() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Xuất QR cá nhân" },
+          { label: t`Xuất QR cá nhân` },
         ]}
       />
 
       <PageHeader
         icon={<IconQrCode className="h-7 w-7" />}
-        title="Xuất QR cá nhân hàng loạt"
-        description="Mỗi người 1 thẻ A6 — 4 thẻ / trang A4. In ra cắt theo đường viền."
+        title={t`Xuất QR cá nhân hàng loạt`}
+        description={t`Mỗi người 1 thẻ A6 — 4 thẻ / trang A4. In ra cắt theo đường viền.`}
       />
 
       {/* Filter row — single flex-wrap line, matching the People page
@@ -156,11 +164,11 @@ export default function QrExport() {
         <Select
           value={branchId}
           onChange={(e) => setBranchId(e.target.value)}
-          aria-label="Lọc theo chi"
+          aria-label={t`Lọc theo chi`}
           icon={<IconTree />}
           className={`${CTRL} flex-1 min-w-[160px]`}
         >
-          <option value="">Tất cả chi</option>
+          <option value="">{t`Tất cả chi`}</option>
           {branches?.map((b) => (
             <option key={b.id} value={b.id}>
               {b.name}
@@ -173,8 +181,8 @@ export default function QrExport() {
           min={1}
           value={genMin}
           onChange={(e) => setGenMin(e.target.value)}
-          placeholder="Đời từ"
-          aria-label="Đời từ"
+          placeholder={t`Đời từ`}
+          aria-label={t`Đời từ`}
           className="h-10 w-[110px]"
         />
         <Input
@@ -183,8 +191,8 @@ export default function QrExport() {
           min={1}
           value={genMax}
           onChange={(e) => setGenMax(e.target.value)}
-          placeholder="Đời đến"
-          aria-label="Đời đến"
+          placeholder={t`Đời đến`}
+          aria-label={t`Đời đến`}
           className="h-10 w-[110px]"
         />
         <button
@@ -213,7 +221,7 @@ export default function QrExport() {
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-primary/5 px-3 py-2">
         <p className="text-sm">
           <span className="font-medium">
-            {isFetching ? "Đang tải…" : `${rows?.length ?? 0} người`}
+            {isFetching ? "Đang tải…" : t`${rows?.length ?? 0} người`}
           </span>
           {!isFetching && (
             <span className="text-muted-foreground">
@@ -235,7 +243,7 @@ export default function QrExport() {
             disabled={!rows?.length}
           >
             <IconCheck className="h-4 w-4 mr-1.5" />
-            {allSelectedOnPage ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+            {allSelectedOnPage ? t`Bỏ chọn tất cả` : t`Chọn tất cả`}
           </Button>
           <Button
             size="sm"
@@ -243,15 +251,17 @@ export default function QrExport() {
             disabled={selected.size === 0 || exportM.isPending}
           >
             <IconDownload className="h-4 w-4 mr-1.5" />
-            {exportM.isPending ? "Đang tạo PDF…" : `Xuất PDF (${selected.size})`}
+            {exportM.isPending
+              ? t`Đang tạo PDF…`
+              : t`Xuất PDF (${selected.size})`}
           </Button>
         </div>
       </div>
 
       {rows && rows.length === 0 && !isFetching && (
         <EmptyState
-          title="Không có ai khớp bộ lọc"
-          description="Đổi điều kiện ở trên."
+          title={t`Không có ai khớp bộ lọc`}
+          description={t`Đổi điều kiện ở trên.`}
         />
       )}
 
@@ -301,11 +311,10 @@ function PersonRow({
         <div className="min-w-0 flex-1">
           <p className="font-medium truncate">{p.full_name}</p>
           <p className="text-xs text-muted-foreground truncate">
-            {p.gender === "M" ? "Nam" : "Nữ"}
-            {p.generation !== null &&
-              ` · Đời ${p.generation - genOffset}`}
+            {p.gender === "M" ? "Nam" : t`Nữ`}
+            {p.generation !== null && t` · Đời ${p.generation - genOffset}`}
             {!p.is_living
-              ? ` · đã mất${deathYear ? ` ${deathYear}` : ""}`
+              ? t` · đã mất${deathYear ? ` ${deathYear}` : ""}`
               : birthYear
                 ? ` · sinh ${birthYear}`
                 : ""}

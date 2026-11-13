@@ -8,6 +8,7 @@ import {
   type VideoTutorial,
 } from "@/lib/videoTutorials";
 
+import { t } from "@lingui/core/macro";
 /**
  * "?" button nhỏ — click mở modal player video hướng dẫn cho feature
  * cụ thể. Đặt cạnh tiêu đề trang / cạnh nút action chính của trang.
@@ -56,7 +57,9 @@ export function HelpVideoButton({
         </button>
       )}
 
-      {open && <VideoModal tutorial={tutorial} onClose={() => setOpen(false)} />}
+      {open && (
+        <VideoModal tutorial={tutorial} onClose={() => setOpen(false)} />
+      )}
     </>
   );
 }
@@ -109,7 +112,7 @@ export function VideoModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Đóng"
+            aria-label={t`Đóng`}
             className="shrink-0 h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted"
           >
             <IconX className="h-5 w-5" />

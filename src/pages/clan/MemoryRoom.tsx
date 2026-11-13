@@ -22,8 +22,12 @@ import {
 const FRAME_EMPTY = "/textures/frame-empty.svg";
 import { track } from "@/lib/analytics";
 import { hasWebGL } from "@/lib/webglSupport";
-import { GALLERY_PRESETS as PRESETS, galleryPalette } from "@/components/gallery/palettes";
+import {
+  GALLERY_PRESETS as PRESETS,
+  galleryPalette,
+} from "@/components/gallery/palettes";
 
+import { t } from "@lingui/core/macro";
 const GalleryScene = lazy(() =>
   import("@/components/gallery/GalleryScene").then((m) => ({
     default: m.GalleryScene,
@@ -128,7 +132,8 @@ export default function MemoryRoom() {
   const presetId = themeRaw.startsWith("{") ? "" : themeRaw;
 
   const persistTheme = (raw: string) => {
-    if (canEdit && roomId) updateMemoryRoom(roomId, { theme: raw }).catch(() => {});
+    if (canEdit && roomId)
+      updateMemoryRoom(roomId, { theme: raw }).catch(() => {});
   };
   const selectPreset = (id: string) => {
     setThemeRaw(id);
@@ -153,17 +158,17 @@ export default function MemoryRoom() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Phòng ký ức", to: `/clans/${clan.id}/memory-room` },
+          { label: t`Phòng ký ức`, to: `/clans/${clan.id}/memory-room` },
           { label: room?.name ?? "…" },
         ]}
       />
       <PageHeader
         icon={<IconCamera className="h-7 w-7" />}
         title={room?.name ?? "Phòng ký ức"}
-        description="Kéo để nhìn quanh · WASD/phím mũi tên (hoặc joystick) để đi · chạm khung để xem ảnh."
+        description={t`Kéo để nhìn quanh · WASD/phím mũi tên (hoặc joystick) để đi · chạm khung để xem ảnh.`}
       />
 
-      {isLoading && <p className="text-muted-foreground">Đang tải ảnh…</p>}
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải ảnh…`}</p>}
 
       {!isLoading && (
         <>
@@ -172,14 +177,18 @@ export default function MemoryRoom() {
               <Suspense
                 fallback={
                   <div className="grid h-full place-items-center text-muted-foreground">
-                    Đang dựng phòng 3D…
+                    {t`Đang dựng phòng 3D…`}
                   </div>
                 }
               >
                 <GalleryScene
                   photos={scenePhotos}
                   pal={pal}
-                  presets={PRESETS.map((p) => ({ id: p.id, name: p.name, swatch: p.pal.wall }))}
+                  presets={PRESETS.map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    swatch: p.pal.wall,
+                  }))}
                   presetId={presetId}
                   onPreset={selectPreset}
                   canEdit={canEdit}
@@ -198,12 +207,22 @@ export default function MemoryRoom() {
           ) : photos.length > 0 ? (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {photos.map((p) => (
-                <li key={p.id} className="overflow-hidden rounded-xl border bg-card shadow-sm">
-                  <img src={p.url} alt={p.title} loading="lazy" className="aspect-square w-full object-cover" />
+                <li
+                  key={p.id}
+                  className="overflow-hidden rounded-xl border bg-card shadow-sm"
+                >
+                  <img
+                    src={p.url}
+                    alt={p.title}
+                    loading="lazy"
+                    className="aspect-square w-full object-cover"
+                  />
                   <div className="p-2">
                     <p className="truncate text-sm font-medium">{p.title}</p>
                     {p.subtitle && (
-                      <p className="truncate text-xs text-muted-foreground">{p.subtitle}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {p.subtitle}
+                      </p>
                     )}
                   </div>
                 </li>
@@ -212,8 +231,8 @@ export default function MemoryRoom() {
           ) : (
             <EmptyState
               icon={<IconCamera className="h-10 w-10" />}
-              title="Phòng chưa có ảnh"
-              description="Thiết bị không hỗ trợ 3D. Thêm ảnh cho phòng để xem ở dạng danh sách."
+              title={t`Phòng chưa có ảnh`}
+              description={t`Thiết bị không hỗ trợ 3D. Thêm ảnh cho phòng để xem ở dạng danh sách.`}
             />
           )}
         </>

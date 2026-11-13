@@ -18,6 +18,7 @@ import {
   type VideoTutorial,
 } from "@/lib/videoTutorials";
 
+import { t } from "@lingui/core/macro";
 const PAGE_SIZE = 15;
 
 /**
@@ -55,21 +56,21 @@ export default function Videos() {
       <AppHeader />
       <main className="container max-w-4xl py-6 px-4 space-y-4">
         <Breadcrumb
-          items={[
-            { label: "Hướng dẫn", to: "/docs" },
-            { label: "Video" },
-          ]}
+          items={[{ label: t`Hướng dẫn`, to: "/docs" }, { label: "Video" }]}
         />
 
         <PageHeader
           icon={<IconPlay className="h-7 w-7" />}
-          title="Trợ giúp"
-          description={`${VIDEO_TUTORIALS.length} video ngắn (~30-70 giây). Bấm card để xem.`}
+          title={t`Trợ giúp`}
+          description={t`${VIDEO_TUTORIALS.length} video ngắn (~30-70 giây). Bấm card để xem.`}
         />
 
         <div className="flex gap-2">
-          <Link to="/docs" className="rounded-full border bg-card px-4 py-1.5 text-sm hover:border-primary">
-            Bài viết
+          <Link
+            to="/docs"
+            className="rounded-full border bg-card px-4 py-1.5 text-sm hover:border-primary"
+          >
+            {t`Bài viết`}
           </Link>
           <span className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm text-primary-foreground">
             Video
@@ -81,7 +82,7 @@ export default function Videos() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tìm theo từ khoá…"
+          placeholder={t`Tìm theo từ khoá…`}
           className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
         />
 
@@ -112,7 +113,7 @@ export default function Videos() {
             ở dưới cùng pinned khi description ngắn. */}
         {filtered.length === 0 ? (
           <p className="text-muted-foreground italic py-8 text-center">
-            Không có video nào khớp.
+            {t`Không có video nào khớp.`}
           </p>
         ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 auto-rows-fr">

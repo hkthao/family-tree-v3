@@ -4,6 +4,7 @@ import { IconRefresh, IconX } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { applyPendingUpdate, subscribeUpdateAvailable } from "@/lib/pwa";
 
+import { t } from "@lingui/core/macro";
 /**
  * Sticky bottom-of-screen banner that shows when the service worker
  * has fetched a new build in the background. Clicking "Cập nhật"
@@ -27,16 +28,16 @@ export function UpdateBanner() {
     >
       <div className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 shadow-lg">
         <p className="flex-1 text-sm">
-          Đã có phiên bản mới. Cập nhật để dùng tính năng mới nhất.
+          {t`Đã có phiên bản mới. Cập nhật để dùng tính năng mới nhất.`}
         </p>
         <Button size="sm" onClick={() => applyPendingUpdate()}>
           <IconRefresh className="h-4 w-4 mr-1.5" />
-          Cập nhật
+          {t`Cập nhật`}
         </Button>
         <Button
           size="sm"
           variant="ghost"
-          aria-label="Để sau"
+          aria-label={t`Để sau`}
           onClick={() => setDismissed(true)}
         >
           <IconX className="h-4 w-4" />

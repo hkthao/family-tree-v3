@@ -7,9 +7,18 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
-import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS, uploadRestingPlacePhoto } from "@/lib/photoUpload";
-import { addPhoto, getRestingPlace, removePhoto } from "@/lib/queries/restingPlaces";
+import {
+  getSignedPhotoUrlMap,
+  PHOTO_URL_STALE_MS,
+  uploadRestingPlacePhoto,
+} from "@/lib/photoUpload";
+import {
+  addPhoto,
+  getRestingPlace,
+  removePhoto,
+} from "@/lib/queries/restingPlaces";
 
+import { t } from "@lingui/core/macro";
 /** Giới hạn ảnh mỗi nơi an nghỉ (cùng giá trị ở trang chi tiết). */
 const MAX_GRAVE_PHOTOS = 12;
 
@@ -18,7 +27,13 @@ const MAX_GRAVE_PHOTOS = 12;
  * hiện ảnh và phóng to; `editable` thêm nút Thêm ảnh và dấu X gỡ ảnh. Thêm hoặc gỡ ảnh được lưu
  * NGAY (không chờ nút Lưu của form), như ở trang chi tiết.
  */
-export function RestingPlacePhotosSection({ placeId, editable }: { placeId: string; editable: boolean }) {
+export function RestingPlacePhotosSection({
+  placeId,
+  editable,
+}: {
+  placeId: string;
+  editable: boolean;
+}) {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -34,7 +49,11 @@ export function RestingPlacePhotosSection({ placeId, editable }: { placeId: stri
   const photos = place?.photos ?? [];
 
   const { data: photoUrls } = useQuery({
-    queryKey: ["resting-place-photos", placeId, photos.map((p) => p.path).join(",")],
+    queryKey: [
+      "resting-place-photos",
+      placeId,
+      photos.map((p) => p.path).join(","),
+    ],
     queryFn: () => getSignedPhotoUrlMap(photos.map((p) => p.path)),
     enabled: photos.length > 0,
     staleTime: PHOTO_URL_STALE_MS,
@@ -53,45 +72,55 @@ export function RestingPlacePhotosSection({ placeId, editable }: { placeId: stri
 
   const uploadM = useMutation({
     mutationFn: async (file: File) => {
-      if (full) throw new Error(`Tối đa ${MAX_GRAVE_PHOTOS} ảnh mỗi nơi an nghỉ.`);
+      if (full)
+        throw new Error(t`Tối đa ${MAX_GRAVE_PHOTOS} ảnh mỗi nơi an nghỉ.`);
       const { path } = await uploadRestingPlacePhoto(clan.id, placeId, file);
       await addPhoto(placeId, path, null, photos.length);
     },
     onSuccess: () => {
       invalidate();
-      toast.success("Đã thêm ảnh");
+      toast.success(t`Đã thêm ảnh`);
     },
-    onError: (e) => toast.error("Không thêm được ảnh", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không thêm được ảnh`, {
+        description: (e as Error).message,
+      }),
   });
 
   const removeM = useMutation({
-    mutationFn: ({ id, path }: { id: string; path: string }) => removePhoto(id, path),
+    mutationFn: ({ id, path }: { id: string; path: string }) =>
+      removePhoto(id, path),
     onSuccess: invalidate,
-    onError: (e) => toast.error("Không xoá được ảnh", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được ảnh`, { description: (e as Error).message }),
   });
 
   return (
     <section className="space-y-2">
       <h3 className="inline-flex items-center gap-2 text-base font-semibold">
         <IconCamera className="h-5 w-5" />
-        Hình ảnh{photos.length > 0 ? ` (${photos.length}/${MAX_GRAVE_PHOTOS})` : ""}
+        Hình ảnh
+        {photos.length > 0 ? ` (${photos.length}/${MAX_GRAVE_PHOTOS})` : ""}
       </h3>
 
       {photos.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có ảnh.</p>
+        <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {photos.map((ph) => {
             const src = photoUrls?.get(ph.path);
             const idx = src ? images.findIndex((im) => im.src === src) : -1;
             return (
-              <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md border bg-muted">
+              <div
+                key={ph.id}
+                className="relative aspect-square overflow-hidden rounded-md border bg-muted"
+              >
                 {src ? (
                   <button
                     type="button"
                     onClick={() => setLightboxIdx(idx)}
                     className="h-full w-full cursor-zoom-in"
-                    aria-label="Xem ảnh lớn"
+                    aria-label={t`Xem ảnh lớn`}
                   >
                     <img
                       src={src}
@@ -111,7 +140,7 @@ export function RestingPlacePhotosSection({ placeId, editable }: { placeId: stri
                     type="button"
                     onClick={() => removeM.mutate({ id: ph.id, path: ph.path })}
                     className="absolute right-1 top-1 rounded-full bg-background/80 p-1 hover:bg-background"
-                    aria-label="Xoá ảnh"
+                    aria-label={t`Xoá ảnh`}
                   >
                     <IconX className="h-3.5 w-3.5" />
                   </button>
@@ -142,11 +171,11 @@ export function RestingPlacePhotosSection({ placeId, editable }: { placeId: stri
               type="button"
               size="sm"
               disabled={uploadM.isPending || full}
-              title={full ? `Tối đa ${MAX_GRAVE_PHOTOS} ảnh` : undefined}
+              title={full ? t`Tối đa ${MAX_GRAVE_PHOTOS} ảnh` : undefined}
               onClick={() => fileRef.current?.click()}
             >
               <IconPlus className="mr-1 h-4 w-4" />
-              {uploadM.isPending ? "Đang tải…" : "Thêm ảnh"}
+              {uploadM.isPending ? t`Đang tải…` : t`Thêm ảnh`}
             </Button>
           </div>
         </>

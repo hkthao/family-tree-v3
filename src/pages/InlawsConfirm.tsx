@@ -34,6 +34,8 @@ import {
 } from "@/lib/queries/person-links";
 import { listPersons, type PersonRow } from "@/lib/queries/persons";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * /inlaws/confirm/:token — landing page for admin B after admin A
  * sent them an invite link.
@@ -55,7 +57,11 @@ export default function InlawsConfirm() {
   const userId = user?.id ?? "";
 
   // Resolve the token regardless of auth state (RPC is anon-callable).
-  const { data: preview, isLoading, error } = useQuery({
+  const {
+    data: preview,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: queryKeys.personLinkTokenPreview(token ?? ""),
     queryFn: () => resolveTokenPreview(token!),
     enabled: !!token,
@@ -69,20 +75,28 @@ export default function InlawsConfirm() {
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold inline-flex items-center gap-2">
             <IconLink className="h-6 w-6 text-primary" />
-            Xác nhận liên kết dòng họ
+            {t`Xác nhận liên kết dòng họ`}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Có một dòng họ đề nghị nối với người trong dòng họ của bạn.
-            Xem trước, rồi chọn đúng người.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Có một dòng họ đề nghị nối với người trong dòng họ của bạn.
+                  Xem trước, rồi chọn đúng người.
+                </Trans>
+              </Trans>
+            </Trans>
           </p>
         </header>
 
-        {isLoading && <p className="text-muted-foreground">Đang kiểm tra mã…</p>}
+        {isLoading && (
+          <p className="text-muted-foreground">{t`Đang kiểm tra mã…`}</p>
+        )}
 
         {error && (
           <Alert variant="destructive">
             <AlertDescription>
-              Mã mời không hợp lệ hoặc đã được dùng. Hãy hỏi lại bên gửi.
+              {t`Mã mời không hợp lệ hoặc đã được dùng. Hãy hỏi lại bên gửi.`}
             </AlertDescription>
           </Alert>
         )}
@@ -111,12 +125,12 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
       : preview.person_a_birth_year
         ? `sinh ${preview.person_a_birth_year}`
         : preview.person_a_death_year
-          ? `mất ${preview.person_a_death_year}`
+          ? t`mất ${preview.person_a_death_year}`
           : "";
 
   return (
     <div className="rounded-xl border bg-card shadow-sm p-4 space-y-2">
-      <p className="text-sm text-muted-foreground">Từ dòng họ:</p>
+      <p className="text-sm text-muted-foreground">{t`Từ dòng họ:`}</p>
       <p className="text-lg font-semibold">{preview.clan_a_name}</p>
       <p>
         <span className="inline-flex rounded-full border border-primary/30 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary">
@@ -128,11 +142,11 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
       </p>
 
       <div className="border-t pt-3 space-y-1">
-        <p className="text-sm text-muted-foreground">Người được đề nghị nối:</p>
+        <p className="text-sm text-muted-foreground">{t`Người được đề nghị nối:`}</p>
         <p className="font-medium">
           {preview.person_a_name}
           <span className="ml-2 text-sm text-muted-foreground">
-            ({preview.person_a_gender === "M" ? "Nam" : "Nữ"}
+            ({preview.person_a_gender === "M" ? "Nam" : t`Nữ`}
             {lifespan ? ` · ${lifespan}` : ""})
           </span>
         </p>
@@ -141,7 +155,7 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
       {preview.person_b_name_hint && (
         <div className="border-t pt-3">
           <p className="text-sm text-muted-foreground">
-            Gợi ý: ai trong dòng họ của bạn?
+            {t`Gợi ý: ai trong dòng họ của bạn?`}
           </p>
           <p className="font-medium">{preview.person_b_name_hint}</p>
         </div>
@@ -149,7 +163,7 @@ function PreviewCard({ preview }: { preview: LinkTokenPreview }) {
 
       {preview.note && (
         <div className="border-t pt-3">
-          <p className="text-sm text-muted-foreground">Ghi chú:</p>
+          <p className="text-sm text-muted-foreground">{t`Ghi chú:`}</p>
           <p className="whitespace-pre-wrap text-sm">{preview.note}</p>
         </div>
       )}
@@ -165,13 +179,19 @@ function LoginPrompt({ token }: { token: string }) {
   return (
     <div className="rounded-md border bg-primary/5 p-4 space-y-3">
       <p className="text-sm">
-        Bạn cần đăng nhập (với tài khoản admin của dòng họ bên này) để
-        xác nhận liên kết.
+        <Trans>
+          <Trans>
+            <Trans>
+              Bạn cần đăng nhập (với tài khoản admin của dòng họ bên này) để xác
+              nhận liên kết.
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
       <Button asChild>
         <Link to={`/login?redirect=${encodeURIComponent(redirect)}`}>
           <IconLogIn className="h-4 w-4 mr-1.5" />
-          Đăng nhập để xác nhận
+          {t`Đăng nhập để xác nhận`}
         </Link>
       </Button>
     </div>
@@ -180,13 +200,7 @@ function LoginPrompt({ token }: { token: string }) {
 
 // ─── Confirm form (logged-in) ────────────────────────────────────────
 
-function ConfirmForm({
-  token,
-  userId,
-}: {
-  token: string;
-  userId: string;
-}) {
+function ConfirmForm({ token, userId }: { token: string; userId: string }) {
   const qc = useQueryClient();
   const toast = useToast();
   const navigate = useNavigate();
@@ -238,14 +252,16 @@ function ConfirmForm({
       }),
     onSuccess: (linkId) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
-      toast.success("Đã xác nhận liên kết");
+      toast.success(t`Đã xác nhận liên kết`);
       // Fire-and-forget — proposer (clan A) gets an email about the
       // confirmation. Don't block navigation on it.
       notifyInlaw(linkId);
       navigate(`/clans/${clanBId}/inlaws`);
     },
     onError: (e) =>
-      toast.error("Không xác nhận được", { description: (e as Error).message }),
+      toast.error(t`Không xác nhận được`, {
+        description: (e as Error).message,
+      }),
   });
 
   if (adminClans.length === 0) {
@@ -253,8 +269,8 @@ function ConfirmForm({
       <Alert variant="destructive">
         <AlertDescription>
           {isPA
-            ? "Hệ thống chưa có dòng họ nào để gắn liên kết."
-            : "Tài khoản này không phải admin của dòng họ nào. Để xác nhận liên kết, đăng nhập bằng tài khoản admin của dòng họ bên nhận."}
+            ? t`Hệ thống chưa có dòng họ nào để gắn liên kết.`
+            : t`Tài khoản này không phải admin của dòng họ nào. Để xác nhận liên kết, đăng nhập bằng tài khoản admin của dòng họ bên nhận.`}
         </AlertDescription>
       </Alert>
     );
@@ -263,7 +279,7 @@ function ConfirmForm({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="clan-b">Dòng họ của bạn</Label>
+        <Label htmlFor="clan-b">{t`Dòng họ của bạn`}</Label>
         <Select
           id="clan-b"
           icon={<IconBuildings />}
@@ -273,7 +289,7 @@ function ConfirmForm({
             setPicked(null);
           }}
         >
-          <option value="">— Chọn —</option>
+          <option value="">{t`— Chọn —`}</option>
           {adminClans.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -295,7 +311,9 @@ function ConfirmForm({
 
       {confirmM.error && (
         <Alert variant="destructive">
-          <AlertDescription>{(confirmM.error as Error).message}</AlertDescription>
+          <AlertDescription>
+            {(confirmM.error as Error).message}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -305,18 +323,18 @@ function ConfirmForm({
           disabled={!clanBId || !picked || confirmM.isPending}
         >
           {confirmM.isPending ? (
-            "Đang xác nhận…"
+            t`Đang xác nhận…`
           ) : (
             <>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Xác nhận liên kết
+              {t`Xác nhận liên kết`}
             </>
           )}
         </Button>
         <Button asChild variant="outline">
           <Link to="/clans">
             <IconX className="h-4 w-4 mr-1.5" />
-            Để sau
+            {t`Để sau`}
           </Link>
         </Button>
       </div>
@@ -360,9 +378,9 @@ function PickPerson({
         <div className="min-w-0 flex-1">
           <p className="font-medium">{picked.full_name}</p>
           <p className="text-xs text-muted-foreground">
-            {picked.gender === "M" ? "Nam" : "Nữ"}
+            {picked.gender === "M" ? "Nam" : t`Nữ`}
             {picked.generation !== null
-              ? ` · Đời ${picked.generation - genOffset}`
+              ? t` · Đời ${picked.generation - genOffset}`
               : ""}
             {picked.birth_date
               ? ` · sinh ${picked.birth_date.slice(0, 4)}`
@@ -371,7 +389,7 @@ function PickPerson({
         </div>
         <Button variant="outline" size="sm" onClick={() => onPick(null)}>
           <IconRefresh className="h-4 w-4 mr-1.5" />
-          Đổi
+          {t`Đổi`}
         </Button>
       </div>
     );
@@ -379,20 +397,20 @@ function PickPerson({
 
   return (
     <div className="space-y-2">
-      <Label>Chọn người trong dòng họ này</Label>
+      <Label>{t`Chọn người trong dòng họ này`}</Label>
       <SearchInput
-        label="Tìm theo tên"
+        label={t`Tìm theo tên`}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Gõ tên đầy đủ hoặc một phần…"
+        placeholder={t`Gõ tên đầy đủ hoặc một phần…`}
       />
       {isFetching && (
-        <p className="text-sm text-muted-foreground">Đang tìm…</p>
+        <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p>
       )}
       {search.trim() && !isFetching && rows.length === 0 && (
         <div className="rounded-md border bg-card px-4 py-3 text-sm text-muted-foreground inline-flex items-start gap-2">
           <IconSearch className="h-4 w-4 mt-0.5 shrink-0" />
-          <p>Không tìm thấy ai khớp tên.</p>
+          <p>{t`Không tìm thấy ai khớp tên.`}</p>
         </div>
       )}
       {rows.length > 0 && (
@@ -408,13 +426,11 @@ function PickPerson({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {p.gender === "M" ? "Nam" : "Nữ"}
+                    {p.gender === "M" ? "Nam" : t`Nữ`}
                     {p.generation !== null
-                      ? ` · Đời ${p.generation - genOffset}`
+                      ? t` · Đời ${p.generation - genOffset}`
                       : ""}
-                    {p.birth_date
-                      ? ` · sinh ${p.birth_date.slice(0, 4)}`
-                      : ""}
+                    {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
                   </p>
                 </div>
               </button>

@@ -3,6 +3,7 @@ import * as React from "react";
 import { ActionArea } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 interface CardCtx {
   collapsible: boolean;
   open: boolean;
@@ -91,7 +92,7 @@ const CardHeader = React.forwardRef<
           type="button"
           onClick={ctx!.toggle}
           aria-expanded={ctx!.open}
-          aria-label={ctx!.open ? "Thu gọn" : "Mở rộng"}
+          aria-label={ctx!.open ? t`Thu gọn` : t`Mở rộng`}
           className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
         >
           <svg

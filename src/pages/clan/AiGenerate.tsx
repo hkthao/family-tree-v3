@@ -31,12 +31,11 @@ import { invalidateClanData } from "@/lib/cache";
 import { parseCsvText } from "@/lib/excel";
 import { parseGedcom } from "@/lib/gedcom/parse";
 import { importGedcomIntoClan } from "@/lib/gedcom/import";
-import {
-  planImport,
-  type ImportPlan,
-} from "@/lib/importPersons";
+import { planImport, type ImportPlan } from "@/lib/importPersons";
 import { bulkImportPersons } from "@/lib/queries/import";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const EXAMPLE_NARRATIVE = `Họ Nguyễn ở Hà Nam. Thuỷ tổ là cụ Nguyễn Văn An, sinh 1900, mất 1970, vợ là cụ Trần Thị Bình (1905-1980). Hai cụ sinh được 3 người con:
 - Nguyễn Văn Cường, sinh 1930, làm nông, lấy bà Lê Thị Dung (sinh 1932). Anh Cường có 2 con: Nguyễn Văn Dũng (1960) và Nguyễn Thị Em (1962).
 - Nguyễn Thị Hoa, sinh 1932, lấy chồng họ Trần.
@@ -68,8 +67,8 @@ export default function AiGenerate() {
 
   function generate() {
     if (!narrative.trim()) {
-      toast.error("Cần mô tả gia đình trước", {
-        description: "Gõ vào ô bên trên ai có quan hệ gì, sinh năm nào…",
+      toast.error(t`Cần mô tả gia đình trước`, {
+        description: t`Gõ vào ô bên trên ai có quan hệ gì, sinh năm nào…`,
       });
       return;
     }
@@ -82,12 +81,12 @@ export default function AiGenerate() {
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
-      toast.success("Đã chép prompt", {
-        description: "Mở ChatGPT / Gemini / Claude và paste vào.",
+      toast.success(t`Đã chép prompt`, {
+        description: t`Mở ChatGPT / Gemini / Claude và paste vào.`,
       });
       setTimeout(() => setCopied(false), 2500);
     } catch (e) {
-      toast.error("Không chép được", { description: (e as Error).message });
+      toast.error(t`Không chép được`, { description: (e as Error).message });
     }
   }
 
@@ -105,14 +104,16 @@ export default function AiGenerate() {
         const rows = parseCsvText(text);
         if (rows.length === 0) {
           setParseError(
-            "Không đọc được dòng nào. Kiểm tra lại có đúng định dạng CSV không.",
+            t`Không đọc được dòng nào. Kiểm tra lại có đúng định dạng CSV không.`,
           );
           return;
         }
         setCsvPlan(planImport(rows));
       } else {
         // Strip markdown fence if present so the parser sees pure GEDCOM.
-        const fence = text.match(/^```(?:gedcom|ged|txt)?\s*\n([\s\S]*?)\n?```\s*$/i);
+        const fence = text.match(
+          /^```(?:gedcom|ged|txt)?\s*\n([\s\S]*?)\n?```\s*$/i,
+        );
         const cleaned = fence ? fence[1] : text;
         // Quick sanity check — every GEDCOM starts with "0 HEAD" line.
         if (!/^0\s+HEAD/m.test(cleaned)) {
@@ -132,12 +133,12 @@ export default function AiGenerate() {
 
   const importM = useMutation({
     mutationFn: async () => {
-      if (!clanId) throw new Error("Thiếu clan id");
+      if (!clanId) throw new Error(t`Thiếu clan id`);
       if (format === "csv") {
-        if (!csvPlan?.payload) throw new Error("Chưa có payload để nhập.");
+        if (!csvPlan?.payload) throw new Error(t`Chưa có payload để nhập.`);
         return bulkImportPersons(clanId, csvPlan.payload);
       }
-      if (!gedcomText) throw new Error("Chưa có GEDCOM để nhập.");
+      if (!gedcomText) throw new Error(t`Chưa có GEDCOM để nhập.`);
       const parsed = parseGedcom(gedcomText);
       const res = await importGedcomIntoClan(clanId, parsed);
       return {
@@ -148,13 +149,13 @@ export default function AiGenerate() {
     },
     onSuccess: async (res) => {
       await invalidateClanData(qc, clanId!);
-      toast.success(`Đã tạo ${res.imported_persons} người`, {
-        description: `${res.imported_families} gia đình, ${res.imported_branches} chi.`,
+      toast.success(t`Đã tạo ${res.imported_persons} người`, {
+        description: t`${res.imported_families} gia đình, ${res.imported_branches} chi.`,
       });
       navigate(`/clans/${clanId}/people`);
     },
     onError: (e) =>
-      toast.error("Không tạo được", { description: (e as Error).message }),
+      toast.error(t`Không tạo được`, { description: (e as Error).message }),
   });
 
   const csvErrorCount =
@@ -162,29 +163,26 @@ export default function AiGenerate() {
   const csvWarningCount =
     csvPlan?.issues.filter((i) => i.severity === "warning").length ?? 0;
   const canImport =
-    format === "csv"
-      ? !!csvPlan?.payload && csvErrorCount === 0
-      : !!gedcomText;
+    format === "csv" ? !!csvPlan?.payload && csvErrorCount === 0 : !!gedcomText;
 
   return (
     <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Nhập từ Excel", to: `/clans/${clanId}/import` },
-          { label: "Sinh dữ liệu bằng AI" },
+          { label: t`Nhập từ Excel`, to: `/clans/${clanId}/import` },
+          { label: t`Sinh dữ liệu bằng AI` },
         ]}
       />
       <PageHeader
         icon={<IconSparkles className="h-7 w-7" />}
-        title="Sinh dữ liệu bằng AI"
+        title={t`Sinh dữ liệu bằng AI`}
         description={
           <>
             Mô tả gia đình bằng lời, ta sinh prompt mẫu — paste vào
-            ChatGPT/Gemini/Claude, AI trả file CSV/GEDCOM, sau đó nhập
-            qua trang{" "}
+            {t`ChatGPT/Gemini/Claude, AI trả file CSV/GEDCOM, sau đó nhập qua trang`}{" "}
             <Link to={`/clans/${clanId}/import`} className="underline">
-              Nhập từ Excel
+              {t`Nhập từ Excel`}
             </Link>
             .
           </>
@@ -193,11 +191,17 @@ export default function AiGenerate() {
 
       <Card>
         <CardHeader>
-          <CardTitle>1. Định dạng đầu ra</CardTitle>
+          <CardTitle>{t`1. Định dạng đầu ra`}</CardTitle>
           <CardDescription>
-            CSV nhập qua "Nhập từ Excel" (cùng 9 cột với mẫu). GEDCOM
-            nhập qua "Nhập GEDCOM" trong Cài đặt — giữ thêm chi, ngày
-            âm lịch, tên tự / húy nếu AI điền.
+            <Trans>
+              <Trans>
+                <Trans>
+                  CSV nhập qua "Nhập từ Excel" (cùng 9 cột với mẫu). GEDCOM nhập
+                  qua "Nhập GEDCOM" trong Cài đặt — giữ thêm chi, ngày âm lịch,
+                  tên tự / húy nếu AI điền.
+                </Trans>
+              </Trans>
+            </Trans>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -209,7 +213,7 @@ export default function AiGenerate() {
                 onChange={() => setFormat("csv")}
                 className="h-4 w-4 accent-primary"
               />
-              <span>CSV (9 cột — đơn giản, đủ dùng)</span>
+              <span>{t`CSV (9 cột — đơn giản, đủ dùng)`}</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -218,7 +222,7 @@ export default function AiGenerate() {
                 onChange={() => setFormat("gedcom")}
                 className="h-4 w-4 accent-primary"
               />
-              <span>GEDCOM 5.5.1 (chuẩn phả hệ, giữ nhiều trường hơn)</span>
+              <span>{t`GEDCOM 5.5.1 (chuẩn phả hệ, giữ nhiều trường hơn)`}</span>
             </label>
           </div>
         </CardContent>
@@ -226,11 +230,17 @@ export default function AiGenerate() {
 
       <Card>
         <CardHeader>
-          <CardTitle>2. Mô tả gia đình</CardTitle>
+          <CardTitle>{t`2. Mô tả gia đình`}</CardTitle>
           <CardDescription>
-            Viết tự do — ai là thuỷ tổ, sinh năm nào, vợ/chồng là ai,
-            có bao nhiêu con và tên gì. AI sẽ tự đánh số ID + kết nối
-            quan hệ cha/mẹ.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Viết tự do — ai là thuỷ tổ, sinh năm nào, vợ/chồng là ai, có
+                  bao nhiêu con và tên gì. AI sẽ tự đánh số ID + kết nối quan hệ
+                  cha/mẹ.
+                </Trans>
+              </Trans>
+            </Trans>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -250,7 +260,7 @@ export default function AiGenerate() {
               onClick={() => setNarrative(EXAMPLE_NARRATIVE)}
             >
               <IconScroll className="h-4 w-4 mr-1.5" />
-              Dùng ví dụ mẫu
+              {t`Dùng ví dụ mẫu`}
             </Button>
           )}
           <Button onClick={generate} disabled={!narrative.trim()}>
@@ -263,11 +273,11 @@ export default function AiGenerate() {
       {prompt && (
         <Card>
           <CardHeader>
-            <CardTitle>3. Copy prompt + paste vào AI</CardTitle>
+            <CardTitle>{t`3. Copy prompt + paste vào AI`}</CardTitle>
             <CardDescription>
-              Mở ChatGPT (chat.openai.com), Gemini (gemini.google.com)
-              hoặc Claude (claude.ai), paste prompt → AI trả về nội
-              dung file → save thành <code>.{format}</code> → nhập vào hệ thống.
+              Mở ChatGPT (chat.openai.com), Gemini (gemini.google.com) hoặc
+              Claude (claude.ai), paste prompt → AI trả về nội dung file → save
+              thành <code>.{format}</code> → nhập vào hệ thống.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -282,21 +292,15 @@ export default function AiGenerate() {
             <Alert>
               <AlertDescription className="text-sm">
                 Copy toàn bộ nội dung AI trả về rồi dán vào ô ở mục 4
-                bên dưới — không cần tạo file. (Hoặc lưu thành file{" "}
+                {t`bên dưới — không cần tạo file. (Hoặc lưu thành file`}{" "}
                 <code>.{format}</code> rồi nhập qua{" "}
                 {format === "csv" ? (
-                  <Link
-                    to={`/clans/${clanId}/import`}
-                    className="underline"
-                  >
-                    Nhập từ Excel
+                  <Link to={`/clans/${clanId}/import`} className="underline">
+                    {t`Nhập từ Excel`}
                   </Link>
                 ) : (
-                  <Link
-                    to={`/clans/${clanId}/settings`}
-                    className="underline"
-                  >
-                    Cài đặt → GEDCOM
+                  <Link to={`/clans/${clanId}/settings`} className="underline">
+                    {t`Cài đặt → GEDCOM`}
                   </Link>
                 )}{" "}
                 nếu bạn muốn.)
@@ -308,12 +312,12 @@ export default function AiGenerate() {
               {copied ? (
                 <>
                   <IconCheck className="h-4 w-4 mr-1.5" />
-                  Đã chép
+                  {t`Đã chép`}
                 </>
               ) : (
                 <>
                   <IconCopy className="h-4 w-4 mr-1.5" />
-                  Chép prompt
+                  {t`Chép prompt`}
                 </>
               )}
             </Button>
@@ -324,11 +328,11 @@ export default function AiGenerate() {
       {prompt && (
         <Card>
           <CardHeader>
-            <CardTitle>4. Dán kết quả AI vào đây</CardTitle>
+            <CardTitle>{t`4. Dán kết quả AI vào đây`}</CardTitle>
             <CardDescription>
-              Copy toàn bộ phản hồi của ChatGPT/Gemini/Claude và dán
-              thẳng vào ô này — bao gồm cả markdown ``` cũng được, app
-              tự bỏ. Không cần lưu thành file.
+              Copy toàn bộ phản hồi của ChatGPT/Gemini/Claude và dán thẳng vào ô
+              này — bao gồm cả markdown ``` cũng được, app tự bỏ. Không cần lưu
+              thành file.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -346,8 +350,8 @@ export default function AiGenerate() {
               }}
               placeholder={
                 format === "csv"
-                  ? "Dán nội dung CSV ở đây — ID,Họ tên,Giới tính,…"
-                  : "Dán nội dung GEDCOM ở đây — bắt đầu bằng 0 HEAD…"
+                  ? t`Dán nội dung CSV ở đây — ID,Họ tên,Giới tính,…`
+                  : t`Dán nội dung GEDCOM ở đây — bắt đầu bằng 0 HEAD…`
               }
               rows={10}
               className="font-mono text-sm resize-y"
@@ -379,7 +383,7 @@ export default function AiGenerate() {
                         to={`/clans/${clanId}/import`}
                         className="underline"
                       >
-                        Sửa qua trang Nhập từ Excel
+                        {t`Sửa qua trang Nhập từ Excel`}
                       </Link>{" "}
                       để xem chi tiết lỗi.
                     </>
@@ -391,7 +395,7 @@ export default function AiGenerate() {
             {format === "gedcom" && gedcomText && (
               <Alert>
                 <AlertDescription>
-                  GEDCOM hợp lệ. Bấm "Tạo thành viên từ GEDCOM" để nhập.
+                  {t`GEDCOM hợp lệ. Bấm "Tạo thành viên từ GEDCOM" để nhập.`}
                 </AlertDescription>
               </Alert>
             )}
@@ -406,13 +410,13 @@ export default function AiGenerate() {
 
             <p className="text-xs text-muted-foreground">
               Hoặc nếu muốn nhập theo cách truyền thống, lưu file rồi
-              mở{" "}
+              {t`mở`}{" "}
               <Link
                 to={`/clans/${clanId}/import`}
                 className="underline inline-flex items-center gap-1"
               >
                 <IconList className="h-3.5 w-3.5" />
-                Nhập từ Excel
+                {t`Nhập từ Excel`}
               </Link>
               .
             </p>
@@ -435,10 +439,10 @@ export default function AiGenerate() {
               >
                 <IconUpload className="h-4 w-4 mr-1.5" />
                 {importM.isPending
-                  ? "Đang tạo…"
+                  ? t`Đang tạo…`
                   : format === "csv"
-                    ? `Tạo ${csvPlan?.payload?.persons.length ?? 0} người`
-                    : "Tạo thành viên từ GEDCOM"}
+                    ? t`Tạo ${csvPlan?.payload?.persons.length ?? 0} người`
+                    : t`Tạo thành viên từ GEDCOM`}
               </Button>
             )}
           </CardFooter>

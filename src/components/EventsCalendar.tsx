@@ -5,6 +5,7 @@ import { IconArrowLeft, IconArrowRight } from "@/components/icons";
 import { formatCanChiShort, getCanChiForSolarDate } from "@/lib/lunarDate";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   events: UpcomingEvent[];
   clanId: string;
@@ -13,8 +14,18 @@ interface Props {
 }
 
 const VN_MONTHS = [
-  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-  "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
 ];
 const VN_WEEKDAYS = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
 
@@ -93,7 +104,11 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
     const offset = vnWeekday(firstOfMonth); // 0..6 leading days to fill from prev month
     const start = new Date(year, month, 1 - offset);
     return Array.from({ length: 42 }, (_, i) => {
-      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const d = new Date(
+        start.getFullYear(),
+        start.getMonth(),
+        start.getDate() + i,
+      );
       return d;
     });
   }, [view]);
@@ -114,7 +129,7 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
               setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))
             }
             className="h-9 px-3 text-sm hover:bg-muted/50 inline-flex items-center gap-1"
-            aria-label="Tháng trước"
+            aria-label={t`Tháng trước`}
           >
             <IconArrowLeft className="h-4 w-4" />
           </button>
@@ -128,7 +143,7 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
             }}
             className="h-9 px-3 text-sm border-l hover:bg-muted/50"
           >
-            Hôm nay
+            {t`Hôm nay`}
           </button>
           <button
             type="button"
@@ -136,7 +151,7 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
               setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))
             }
             className="h-9 px-3 text-sm border-l hover:bg-muted/50 inline-flex items-center gap-1"
-            aria-label="Tháng sau"
+            aria-label={t`Tháng sau`}
           >
             <IconArrowRight className="h-4 w-4" />
           </button>
@@ -206,15 +221,15 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
       <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-accent" />
-          Sinh nhật
+          {t`Sinh nhật`}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-primary" />
-          Ngày giỗ
+          {t`Ngày giỗ`}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-foreground" />
-          Sự kiện tuỳ chỉnh
+          {t`Sự kiện tuỳ chỉnh`}
         </span>
       </div>
 
@@ -226,7 +241,7 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
           </h4>
           {dayEvents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Không có sự kiện ngày này.
+              {t`Không có sự kiện ngày này.`}
             </p>
           ) : (
             <ul className="space-y-1.5">
@@ -280,6 +295,6 @@ export function EventsCalendar({ events, clanId, onOpenEvent }: Props) {
 function formatDateHeader(iso: string, todayIso: string): string {
   const d = new Date(iso + "T00:00:00");
   const label = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-  if (iso === todayIso) return `Hôm nay — ${label}`;
+  if (iso === todayIso) return t`Hôm nay — ${label}`;
   return label;
 }

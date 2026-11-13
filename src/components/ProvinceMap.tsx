@@ -1,5 +1,6 @@
 import { VN_MAP_PROVINCES, VN_MAP_VIEWBOX } from "@/lib/vnMapPaths";
 
+import { t } from "@lingui/core/macro";
 export interface MapMarker {
   id: string;
   /** Toạ độ trong viewBox của bản đồ (xem lonLatToXY / tâm tỉnh). */
@@ -16,8 +17,10 @@ export interface MapMarker {
 
 /** Ghim giọt nước kiểu Google Maps; mũi nhọn nằm đúng ở gốc (0,0), thân nằm phía trên. */
 function Pin({ m }: { m: MapMarker }) {
-  const fill = m.tone === "muted" ? "hsl(var(--muted-foreground))" : "hsl(var(--primary))";
-  const text = m.count != null ? (m.count > 99 ? "99+" : String(m.count)) : null;
+  const fill =
+    m.tone === "muted" ? "hsl(var(--muted-foreground))" : "hsl(var(--primary))";
+  const text =
+    m.count != null ? (m.count > 99 ? "99+" : String(m.count)) : null;
   return (
     <g
       transform={`translate(${m.x} ${m.y}) scale(0.85)`}
@@ -34,12 +37,27 @@ function Pin({ m }: { m: MapMarker }) {
           m.onClick?.();
         }
       }}
-      style={{ cursor: m.onClick ? "pointer" : "default", filter: "drop-shadow(0 1px 1.2px rgb(0 0 0 / 0.4))" }}
+      style={{
+        cursor: m.onClick ? "pointer" : "default",
+        filter: "drop-shadow(0 1px 1.2px rgb(0 0 0 / 0.4))",
+      }}
     >
-      <path d="M0 0C-3.5-6.5-10-11.5-10-19A10 10 0 1 1 10-19C10-11.5 3.5-6.5 0 0Z" fill={fill} stroke="#fff" strokeWidth="1.4" />
+      <path
+        d="M0 0C-3.5-6.5-10-11.5-10-19A10 10 0 1 1 10-19C10-11.5 3.5-6.5 0 0Z"
+        fill={fill}
+        stroke="#fff"
+        strokeWidth="1.4"
+      />
       <circle cx="0" cy="-19" r="6.2" fill="#fff" />
       {text ? (
-        <text x="0" y="-16.4" textAnchor="middle" fontSize={text.length > 2 ? 6 : 7.5} fontWeight="700" fill={fill}>
+        <text
+          x="0"
+          y="-16.4"
+          textAnchor="middle"
+          fontSize={text.length > 2 ? 6 : 7.5}
+          fontWeight="700"
+          fill={fill}
+        >
           {text}
         </text>
       ) : (
@@ -78,7 +96,7 @@ export function ProvinceMap({
     <svg
       viewBox={VN_MAP_VIEWBOX}
       role="img"
-      aria-label="Bản đồ Việt Nam theo tỉnh"
+      aria-label={t`Bản đồ Việt Nam theo tỉnh`}
       className={className}
       onClick={() => onSelect(null)}
     >

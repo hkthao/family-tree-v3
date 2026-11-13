@@ -18,6 +18,7 @@ import {
   type CreditEntry,
 } from "@/lib/queries/credits";
 
+import { t } from "@lingui/core/macro";
 /**
  * Lịch sử sử dụng — sổ đối soát lượt trợ lý của chính mình.
  *
@@ -58,8 +59,8 @@ export default function CreditHistory() {
       <main className="container max-w-3xl py-6 px-4 space-y-3">
         <PageHeader
           icon={<IconClock className="h-7 w-7" />}
-          title="Lịch sử sử dụng"
-          description="Lượt hỏi trợ lý đã dùng và còn lại. Trang này không hiện nội dung câu hỏi."
+          title={t`Lịch sử sử dụng`}
+          description={t`Lượt hỏi trợ lý đã dùng và còn lại. Trang này không hiện nội dung câu hỏi.`}
         />
 
         {quota.data && (
@@ -74,9 +75,9 @@ export default function CreditHistory() {
               </p>
               <p className="w-full text-sm text-muted-foreground">
                 Mỗi tháng bạn được tặng {quota.data.freeThisMonth} lượt; lượt
-                tặng chưa dùng hết sẽ không cộng dồn sang tháng sau.{" "}
+                {t`tặng chưa dùng hết sẽ không cộng dồn sang tháng sau.`}{" "}
                 <Link to="/clans" className="underline">
-                  Mở trợ lý
+                  {t`Mở trợ lý`}
                 </Link>
               </p>
             </CardContent>
@@ -91,8 +92,8 @@ export default function CreditHistory() {
         {!ledger.isLoading && !ledger.error && entries.length === 0 && (
           <EmptyState
             icon={<IconSparkles className="h-12 w-12" />}
-            title="Chưa có lượt nào được dùng"
-            description="Khi bạn hỏi trợ lý dòng họ, mỗi câu hỏi sẽ được ghi lại ở đây."
+            title={t`Chưa có lượt nào được dùng`}
+            description={t`Khi bạn hỏi trợ lý dòng họ, mỗi câu hỏi sẽ được ghi lại ở đây.`}
           />
         )}
 
@@ -129,9 +130,7 @@ function LedgerRow({
           title={formatDateTime(entry.at) ?? undefined}
         >
           {formatDate(entry.at)}
-          {entry.expires_at && (
-            <> · hết hạn {formatDate(entry.expires_at)}</>
-          )}
+          {entry.expires_at && <> · hết hạn {formatDate(entry.expires_at)}</>}
         </p>
       </div>
       <p

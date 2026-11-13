@@ -15,6 +15,7 @@ import {
 import { loadMyQuota, type CreditQuota } from "@/lib/queries/credits";
 import { applyProposal, type Proposal } from "@/lib/queries/aiExtract";
 
+import { t } from "@lingui/core/macro";
 /**
  * Toàn bộ trạng thái một phiên trò chuyện với trợ lý.
  *
@@ -72,9 +73,10 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
   const [quotaExhausted, setQuotaExhausted] = useState(false);
   // Mã lượt + câu nói gốc của đề xuất đang chờ. Giữ lại để "Sửa lại"
   // gửi lại đúng ref đó — cùng ref thì không bị trừ lượt lần hai.
-  const [pending, setPending] = useState<{ ref?: string; question: string } | null>(
-    null,
-  );
+  const [pending, setPending] = useState<{
+    ref?: string;
+    question: string;
+  } | null>(null);
   const [fontStep, setFontStep] = useState(() => {
     const v = Number(localStorage.getItem(FONT_KEY));
     return Number.isInteger(v) && v >= 0 && v < FONT_STEPS.length ? v : 0;
@@ -135,8 +137,8 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       // cũng sinh chữ ("để tôi tra cứu…") nên bản ghép không phải câu
       // trả lời cuối.
       setStreamingText("");
-      setTurns((t) => [
-        ...t,
+      setTurns((prev) => [
+        ...prev,
         { role: "assistant", content: res.answer, ref: res.ref },
       ]);
       // Hết lượt KHÔNG phải lỗi — máy chủ trả 200 kèm câu nhắn nhẹ và
@@ -171,7 +173,7 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       if (!q || !clanId || ask.isPending) return;
       setError(null);
       setDraft("");
-      setTurns((t) => [...t, { role: "user", content: q }]);
+      setTurns((prev) => [...prev, { role: "user", content: q }]);
       setStreamingText("");
       setQuotaExhausted(false);
       track("ai_message_sent");
@@ -188,11 +190,11 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
       track("ai_extract_confirmed");
       setProposal(null);
       setPending(null);
-      setTurns((t) => [
-        ...t,
+      setTurns((prev) => [
+        ...prev,
         {
           role: "assistant",
-          content: `Đã thêm ${res.added} người vào gia phả. Bạn mở Danh bạ hoặc Cây để xem nhé.`,
+          content: t`Đã thêm ${res.added} người vào gia phả. Bạn mở Danh bạ hoặc Cây để xem nhé.`,
         },
       ]);
       // Cây, danh bạ, thống kê đang giữ bản cũ trong cache — không dọn
@@ -222,8 +224,8 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     track("ai_extract_rejected");
     setProposal(null);
     setPending(null);
-    setTurns((t) => [
-      ...t,
+    setTurns((prev) => [
+      ...prev,
       { role: "assistant", content: "Vâng, tôi chưa thêm ai cả." },
     ]);
   }, []);
@@ -239,29 +241,25 @@ export function useAiChatSession(clanId: string | undefined): AiChatSession {
     setPending(null);
   }, [pending]);
 
-  const rateTurn = useCallback(
-    (index: number, rating: 1 | -1) => {
-      setTurns((prev) => {
-        const turn = prev[index];
-        if (!turn?.ref) return prev;
-        // Bấm lại đúng nút đang chọn = đổi ý, gỡ điểm.
-        const next: AnswerRating = turn.rating === rating ? 0 : rating;
-        void rateAnswer(turn.ref, next);
-        track("ai_answer_rated", { rating: next });
-        const copy = [...prev];
-        copy[index] = { ...turn, rating: next === 0 ? undefined : next };
-        return copy;
-      });
-    },
-    [],
-  );
+  const rateTurn = useCallback((index: number, rating: 1 | -1) => {
+    setTurns((prev) => {
+      const turn = prev[index];
+      if (!turn?.ref) return prev;
+      // Bấm lại đúng nút đang chọn = đổi ý, gỡ điểm.
+      const next: AnswerRating = turn.rating === rating ? 0 : rating;
+      void rateAnswer(turn.ref, next);
+      track("ai_answer_rated", { rating: next });
+      const copy = [...prev];
+      copy[index] = { ...turn, rating: next === 0 ? undefined : next };
+      return copy;
+    });
+  }, []);
 
   const clearHistory = useCallback(async () => {
     const ok = await confirm({
-      title: "Xoá lịch sử trò chuyện?",
-      description:
-        "Các câu đã hỏi sẽ bị xoá. Gia phả của bạn không bị ảnh hưởng.",
-      confirmLabel: "Xoá",
+      title: t`Xoá lịch sử trò chuyện?`,
+      description: t`Các câu đã hỏi sẽ bị xoá. Gia phả của bạn không bị ảnh hưởng.`,
+      confirmLabel: t`Xoá`,
       destructive: true,
     });
     if (!ok || !clanId) return;

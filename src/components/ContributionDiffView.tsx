@@ -7,6 +7,7 @@ import type {
 import { formatDateOnly } from "@/lib/formatDate";
 import type { PersonDetail } from "@/lib/queries/persons";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   contribution: ContributionRow;
   /** Current state of the target person (when contribution is on an
@@ -35,15 +36,16 @@ export function ContributionDiffView({ contribution, currentPerson }: Props) {
   if (contribution.contribution_type === "add_note") {
     return (
       <AddNoteDiff
-        note={(contribution.proposed_data as { note_addition: string }).note_addition}
+        note={
+          (contribution.proposed_data as { note_addition: string })
+            .note_addition
+        }
         currentBio={currentPerson?.bio ?? null}
       />
     );
   }
   return (
-    <AddPersonDiff
-      payload={contribution.proposed_data as AddPersonPayload}
-    />
+    <AddPersonDiff payload={contribution.proposed_data as AddPersonPayload} />
   );
 }
 
@@ -91,7 +93,7 @@ function EditPersonDiff({
   if (keys.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Không có thay đổi nào trong đề xuất này.
+        {t`Không có thay đổi nào trong đề xuất này.`}
       </p>
     );
   }
@@ -102,7 +104,8 @@ function EditPersonDiff({
           currentPerson?.[k as keyof PersonDetail] ?? null,
         );
         const proposedVal = formatVal(changes[k] ?? null);
-        const longField = k === "bio" || currentVal.length > 50 || proposedVal.length > 50;
+        const longField =
+          k === "bio" || currentVal.length > 50 || proposedVal.length > 50;
         return (
           <li key={k} className="px-3 py-3">
             <p className="text-xs text-muted-foreground mb-1.5">
@@ -169,7 +172,7 @@ function DiffCell({
             old ? "text-muted-foreground" : "text-primary"
           }`}
         >
-          {old ? "Hiện tại" : "Đề xuất"}
+          {old ? t`Hiện tại` : t`Đề xuất`}
         </span>
       )}
       {display}
@@ -179,7 +182,7 @@ function DiffCell({
 
 function formatVal(v: unknown): string {
   if (v === null || v === undefined || v === "") return "";
-  if (typeof v === "boolean") return v ? "Có" : "Không";
+  if (typeof v === "boolean") return v ? t`Có` : t`Không`;
   return String(v);
 }
 
@@ -200,7 +203,7 @@ function AddNoteDiff({
   return (
     <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
       <div className="px-3 py-1.5 bg-muted/40 text-xs text-muted-foreground border-b">
-        Tiểu sử sau khi duyệt
+        {t`Tiểu sử sau khi duyệt`}
       </div>
       <div className="p-3 space-y-3">
         {currentBio ? (
@@ -209,12 +212,12 @@ function AddNoteDiff({
           </p>
         ) : (
           <p className="text-sm text-muted-foreground italic">
-            (tiểu sử hiện tại đang trống)
+            {t`(tiểu sử hiện tại đang trống)`}
           </p>
         )}
         <div className="border-l-4 border-primary bg-primary/10 pl-3 py-2 rounded-r">
           <p className="text-[10px] uppercase tracking-wider text-primary mb-0.5">
-            + Thêm mới
+            {t`+ Thêm mới`}
           </p>
           <p className="text-sm whitespace-pre-wrap">{note}</p>
         </div>
@@ -228,39 +231,42 @@ function AddNoteDiff({
 function AddPersonDiff({ payload }: { payload: AddPersonPayload }) {
   const relation = payload.relation
     ? payload.relation.as === "spouse"
-      ? "Vợ / chồng"
+      ? t`Vợ / chồng`
       : "Con"
     : null;
   return (
     <div className="rounded-md border border-primary/40 bg-primary/5 p-4 space-y-2 text-sm">
-      <p className="text-xs text-primary font-medium">Người mới đề xuất</p>
-      <Row label="Họ và tên" value={payload.full_name} />
-      <Row label="Giới tính" value={payload.gender === "M" ? "Nam" : "Nữ"} />
+      <p className="text-xs text-primary font-medium">{t`Người mới đề xuất`}</p>
+      <Row label={t`Họ và tên`} value={payload.full_name} />
       <Row
-        label="Tình trạng"
-        value={payload.is_living === false ? "Đã mất" : "Còn sống"}
+        label={t`Giới tính`}
+        value={payload.gender === "M" ? "Nam" : t`Nữ`}
+      />
+      <Row
+        label={t`Tình trạng`}
+        value={payload.is_living === false ? t`Đã mất` : t`Còn sống`}
       />
       {payload.birth_date && (
         <Row
-          label="Ngày sinh"
+          label={t`Ngày sinh`}
           value={formatDateOnly(payload.birth_date) ?? payload.birth_date}
         />
       )}
       {payload.death_date && (
         <Row
-          label="Ngày mất"
+          label={t`Ngày mất`}
           value={formatDateOnly(payload.death_date) ?? payload.death_date}
         />
       )}
       {payload.birth_place && (
-        <Row label="Nơi sinh" value={payload.birth_place} />
+        <Row label={t`Nơi sinh`} value={payload.birth_place} />
       )}
       {payload.burial_place && (
-        <Row label="Nơi an táng" value={payload.burial_place} />
+        <Row label={t`Nơi an táng`} value={payload.burial_place} />
       )}
-      {payload.bio && <Row label="Ghi chú" value={payload.bio} />}
+      {payload.bio && <Row label={t`Ghi chú`} value={payload.bio} />}
       {relation && (
-        <Row label="Quan hệ" value={`${relation} của người đang xem`} />
+        <Row label={t`Quan hệ`} value={t`${relation} của người đang xem`} />
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { helpSlugFor } from "@/lib/helpMap";
 import { DOCS_BY_SLUG } from "@/pages/docs/registry";
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 /**
  * Always-visible "?" in the header. Click → slides a side panel in
  * from the right with the doc article that matches the current route
@@ -58,8 +59,8 @@ export function HelpButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Hướng dẫn cho trang này"
-        title="Hướng dẫn"
+        aria-label={t`Hướng dẫn cho trang này`}
+        title={t`Hướng dẫn`}
         className="h-10 w-10 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
       >
         <IconHelp className="h-5 w-5" />
@@ -81,7 +82,7 @@ export function HelpButton() {
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label={`Hướng dẫn: ${article.title}`}
+        aria-label={t`Hướng dẫn: ${article.title}`}
         className={cn(
           "fixed top-0 right-0 bottom-0 z-[51] w-full sm:w-[480px] max-w-full",
           "bg-background border-l shadow-xl flex flex-col",
@@ -92,12 +93,12 @@ export function HelpButton() {
         <header className="border-b px-4 flex items-center justify-between gap-3 h-[56px] shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <IconBook className="h-5 w-5 text-primary shrink-0" />
-            <p className="font-semibold truncate">Hướng dẫn</p>
+            <p className="font-semibold truncate">{t`Hướng dẫn`}</p>
           </div>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label="Đóng"
+            aria-label={t`Đóng`}
             className="h-9 w-9 inline-flex items-center justify-center rounded-md hover:bg-muted shrink-0"
           >
             <IconX className="h-5 w-5" />
@@ -120,7 +121,7 @@ export function HelpButton() {
             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
           >
             <IconBook className="h-4 w-4" />
-            Mở trong trang Hướng dẫn đầy đủ →
+            {t`Mở trong trang Hướng dẫn đầy đủ →`}
           </Link>
         </footer>
       </aside>

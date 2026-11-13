@@ -3,8 +3,7 @@ import * as React from "react";
 import { splitFieldClasses } from "@/components/ui/field-layout";
 import { cn } from "@/lib/utils";
 
-export interface SelectProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   /** Icon trong ô, sát mép trái. Xem docs/design-language.md. */
   icon?: React.ReactNode;
 }
@@ -52,7 +51,16 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="m6 9 6 6 6-6" />
           </svg>
         </span>

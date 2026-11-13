@@ -4,7 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { Chip } from "@/components/Chip";
 import { EmptyState } from "@/components/EmptyState";
-import { IconGrave, IconMapPin, IconScroll, IconUsers } from "@/components/icons";
+import {
+  IconGrave,
+  IconMapPin,
+  IconScroll,
+  IconUsers,
+} from "@/components/icons";
 import { IconTile } from "@/components/IconTile";
 import { usePanel } from "@/components/panel/usePanel";
 import { SidePanel } from "@/components/SidePanel";
@@ -13,28 +18,55 @@ import { PageHeader } from "@/components/PageHeader";
 import { ProvinceMap, type MapMarker } from "@/components/ProvinceMap";
 import { SectionCard } from "@/components/SectionCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { SegmentedButton, SegmentedControl } from "@/components/ui/segmented-control";
+import {
+  SegmentedButton,
+  SegmentedControl,
+} from "@/components/ui/segmented-control";
 import { useClanContext } from "@/hooks/useClanContext";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
 import { lonLatToXY } from "@/lib/vnMapProject";
 import { VN_MAP_PROVINCES } from "@/lib/vnMapPaths";
-import { HERITAGE_CATEGORY_LABEL, listHeritageItems } from "@/lib/queries/heritage";
+import {
+  HERITAGE_CATEGORY_LABEL,
+  listHeritageItems,
+} from "@/lib/queries/heritage";
 import { listPeopleInProvince } from "@/lib/queries/personAddresses";
-import { listRestingPlaces, RESTING_PLACE_KIND_LABEL } from "@/lib/queries/restingPlaces";
+import {
+  listRestingPlaces,
+  RESTING_PLACE_KIND_LABEL,
+} from "@/lib/queries/restingPlaces";
 import { VN_WARD_KIND_LABEL, type VnWardKind } from "@/lib/queries/vnDivisions";
-import { getClanMapStats, MAP_LAYER_LABEL, type MapLayer } from "@/lib/queries/mapStats";
-import { listProvinces, VN_REGION_LABEL, type VnRegion } from "@/lib/queries/vnDivisions";
+import {
+  getClanMapStats,
+  MAP_LAYER_LABEL,
+  type MapLayer,
+} from "@/lib/queries/mapStats";
+import {
+  listProvinces,
+  VN_REGION_LABEL,
+  type VnRegion,
+} from "@/lib/queries/vnDivisions";
 
-const LAYER_UNIT: Record<MapLayer, string> = { people: "người", graves: "nơi an nghỉ", heritage: "mục di sản" };
-const LAYER_ICON: Record<MapLayer, React.ComponentType<{ className?: string }>> = {
+import { t } from "@lingui/core/macro";
+const LAYER_UNIT: Record<MapLayer, string> = {
+  people: "người",
+  graves: "nơi an nghỉ",
+  heritage: "mục di sản",
+};
+const LAYER_ICON: Record<
+  MapLayer,
+  React.ComponentType<{ className?: string }>
+> = {
   people: IconUsers,
   graves: IconGrave,
   heritage: IconScroll,
 };
 const MISSING_HINT: Record<MapLayer, string> = {
   people: 'Mở Danh bạ → chọn người → "Sửa" và nhập thẻ "Nơi ở hiện tại".',
-  graves: "Mở Mộ phần & tro cốt → sửa từng nơi và chọn Tỉnh / Xã ở mục Khu vực.",
-  heritage: "Mở Di sản dòng họ → sửa mục kiểu nơi chốn và chọn Tỉnh / Xã ở mục Khu vực.",
+  graves:
+    "Mở Mộ phần & tro cốt → sửa từng nơi và chọn Tỉnh / Xã ở mục Khu vực.",
+  heritage:
+    "Mở Di sản dòng họ → sửa mục kiểu nơi chốn và chọn Tỉnh / Xã ở mục Khu vực.",
 };
 
 /**
@@ -50,7 +82,8 @@ export default function MapStats() {
   const layers = (Object.keys(MAP_LAYER_LABEL) as MapLayer[]).filter(
     (l) =>
       (l !== "graves" || isFeatureEnabled(clan.disabled_features, "graves")) &&
-      (l !== "heritage" || isFeatureEnabled(clan.disabled_features, "heritage")),
+      (l !== "heritage" ||
+        isFeatureEnabled(clan.disabled_features, "heritage")),
   );
 
   const statsQ = useQuery({
@@ -90,7 +123,8 @@ export default function MapStats() {
   const total = statsQ.data?.total[layer] ?? 0;
   const missing = statsQ.data?.missing[layer] ?? 0;
   const have = Math.max(total - missing, 0);
-  const nameOf = (code: string) => provinces.find((p) => p.code === code)?.name ?? code;
+  const nameOf = (code: string) =>
+    provinces.find((p) => p.code === code)?.name ?? code;
 
   const top = useMemo(
     () =>
@@ -108,7 +142,8 @@ export default function MapStats() {
     }
     return acc;
   }, [counts, provinces]);
-  const centroid = (code: string) => VN_MAP_PROVINCES.find((p) => p.code === code);
+  const centroid = (code: string) =>
+    VN_MAP_PROVINCES.find((p) => p.code === code);
 
   /** Mục trong tỉnh đang chọn — bấm một mục mở ngăn kéo xem chi tiết (chỉ đọc). */
   interface ListItem {
@@ -124,7 +159,9 @@ export default function MapStats() {
           id: p.person_id,
           title: p.full_name,
           subtitle: [
-            p.ward_name ? `${VN_WARD_KIND_LABEL[(p.ward_kind as VnWardKind) ?? "xa"] ?? ""} ${p.ward_name}`.trim() : null,
+            p.ward_name
+              ? `${VN_WARD_KIND_LABEL[(p.ward_kind as VnWardKind) ?? "xa"] ?? ""} ${p.ward_name}`.trim()
+              : null,
             p.is_living ? null : "đã mất",
           ]
             .filter(Boolean)
@@ -136,8 +173,13 @@ export default function MapStats() {
             .filter((g) => g.province_code === selected)
             .map((g) => ({
               id: g.id,
-              title: g.name || g.location_name || RESTING_PLACE_KIND_LABEL[g.kind],
-              subtitle: [RESTING_PLACE_KIND_LABEL[g.kind], g.cemetery_name ?? g.location_name, `${g.occupant_count} người an nghỉ`]
+              title:
+                g.name || g.location_name || RESTING_PLACE_KIND_LABEL[g.kind],
+              subtitle: [
+                RESTING_PLACE_KIND_LABEL[g.kind],
+                g.cemetery_name ?? g.location_name,
+                t`${g.occupant_count} người an nghỉ`,
+              ]
                 .filter(Boolean)
                 .join(" · "),
               open: () => openPanel("grave-view", { pid: g.id }),
@@ -147,10 +189,17 @@ export default function MapStats() {
             .map((h) => ({
               id: h.id,
               title: h.title,
-              subtitle: [HERITAGE_CATEGORY_LABEL[h.category], h.location_name].filter(Boolean).join(" · "),
+              subtitle: [HERITAGE_CATEGORY_LABEL[h.category], h.location_name]
+                .filter(Boolean)
+                .join(" · "),
               open: () => openPanel("heritage-view", { pid: h.id }),
             }));
-  const listLoading = layer === "people" ? peopleInQ.isLoading : layer === "graves" ? gravesQ.isLoading : heritageQ.isLoading;
+  const listLoading =
+    layer === "people"
+      ? peopleInQ.isLoading
+      : layer === "graves"
+        ? gravesQ.isLoading
+        : heritageQ.isLoading;
   const [shown, setShown] = useState(30);
   useEffect(() => setShown(30), [selected, layer]);
 
@@ -166,14 +215,20 @@ export default function MapStats() {
               id: `p-${code}`,
               x: c.cx,
               y: c.cy,
-              label: `${nameOf(code)}: ${n} người`,
+              label: t`${nameOf(code)}: ${n} người`,
               count: n,
               onClick: () => setSelected(code),
             } satisfies MapMarker,
           ];
         });
     }
-    const items: { id: string; name: string; lat: number | null; lng: number | null; province: string | null }[] =
+    const items: {
+      id: string;
+      name: string;
+      lat: number | null;
+      lng: number | null;
+      province: string | null;
+    }[] =
       layer === "graves"
         ? (gravesQ.data ?? []).map((g) => ({
             id: g.id,
@@ -192,9 +247,18 @@ export default function MapStats() {
     const exact: MapMarker[] = [];
     const approx: Record<string, number> = {};
     for (const it of items) {
-      const xy = it.lat != null && it.lng != null ? lonLatToXY(it.lng, it.lat) : null;
-      if (xy) exact.push({ id: it.id, x: xy.x, y: xy.y, label: it.name, onClick: it.province ? () => setSelected(it.province) : undefined });
-      else if (it.province) approx[it.province] = (approx[it.province] ?? 0) + 1;
+      const xy =
+        it.lat != null && it.lng != null ? lonLatToXY(it.lng, it.lat) : null;
+      if (xy)
+        exact.push({
+          id: it.id,
+          x: xy.x,
+          y: xy.y,
+          label: it.name,
+          onClick: it.province ? () => setSelected(it.province) : undefined,
+        });
+      else if (it.province)
+        approx[it.province] = (approx[it.province] ?? 0) + 1;
     }
     const approxPins = Object.entries(approx).flatMap(([code, n]) => {
       const c = centroid(code);
@@ -204,7 +268,7 @@ export default function MapStats() {
               id: `a-${code}`,
               x: c.cx,
               y: c.cy,
-              label: `${nameOf(code)}: ${n} ${LAYER_UNIT[layer]} (chưa có GPS)`,
+              label: t`${nameOf(code)}: ${n} ${LAYER_UNIT[layer]} (chưa có GPS)`,
               count: n,
               tone: "muted",
               onClick: () => setSelected(code),
@@ -222,15 +286,20 @@ export default function MapStats() {
 
   return (
     <div className="space-y-3">
-      <Breadcrumb items={[{ label: clan.name, to: `/clans/${clan.id}` }, { label: "Bản đồ" }]} />
+      <Breadcrumb
+        items={[
+          { label: clan.name, to: `/clans/${clan.id}` },
+          { label: t`Bản đồ` },
+        ]}
+      />
       <PageHeader
         icon={<IconMapPin className="h-7 w-7" />}
-        title="Bản đồ dòng họ"
-        description="Con cháu, mộ phần và di sản phân bố theo tỉnh/thành. Chỉ thành viên dòng họ xem được."
+        title={t`Bản đồ dòng họ`}
+        description={t`Con cháu, mộ phần và di sản phân bố theo tỉnh/thành. Chỉ thành viên dòng họ xem được.`}
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <SegmentedControl ariaLabel="Lớp bản đồ">
+        <SegmentedControl ariaLabel={t`Lớp bản đồ`}>
           {layers.map((l) => {
             const Ic = LAYER_ICON[l];
             return (
@@ -257,7 +326,7 @@ export default function MapStats() {
               onChange={(e) => setIncludeDeceased(!e.target.checked)}
               className="h-4 w-4 accent-primary"
             />
-            Loại trừ người đã khuất
+            {t`Loại trừ người đã khuất`}
           </label>
         )}
       </div>
@@ -269,7 +338,7 @@ export default function MapStats() {
       )}
       {statsQ.isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
 
@@ -278,49 +347,73 @@ export default function MapStats() {
           {have === 0 && (
             <EmptyState
               icon={<LayerIcon className="h-10 w-10" />}
-              title={`Chưa có ${unit} nào có khu vực`}
+              title={t`Chưa có ${unit} nào có khu vực`}
               description={MISSING_HINT[layer]}
             />
           )}
 
-          <SectionCard id={`map-${layer}`} icon={<IconMapPin />} title={`Phân bố ${unit} theo tỉnh`} bodyClassName="p-2 sm:p-4">
-            <ProvinceMap counts={counts} selected={selected} onSelect={setSelected} unit={unit} markers={markers} />
+          <SectionCard
+            id={`map-${layer}`}
+            icon={<IconMapPin />}
+            title={t`Phân bố ${unit} theo tỉnh`}
+            bodyClassName="p-2 sm:p-4"
+          >
+            <ProvinceMap
+              counts={counts}
+              selected={selected}
+              onSelect={setSelected}
+              unit={unit}
+              markers={markers}
+            />
             <p className="mt-2 text-center text-sm text-muted-foreground">
               {selected ? (
                 <>
-                  <strong className="text-foreground">{nameOf(selected)}</strong>: {counts[selected] ?? 0} {unit}
+                  <strong className="text-foreground">
+                    {nameOf(selected)}
+                  </strong>
+                  : {counts[selected] ?? 0} {unit}
                 </>
               ) : (
-                "Bấm một tỉnh hoặc ghim để xem số lượng."
+                t`Bấm một tỉnh hoặc ghim để xem số lượng.`
               )}
             </p>
             {layer !== "people" && (
               <p className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" /> Ghim đỏ: vị trí GPS
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />{" "}
+                  Ghim đỏ: vị trí GPS
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-muted-foreground" /> Ghim xám: chỉ biết tỉnh
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-muted-foreground" />{" "}
+                  Ghim xám: chỉ biết tỉnh
                 </span>
               </p>
             )}
           </SectionCard>
 
-          <SectionCard id={`map-top-${layer}`} icon={<LayerIcon />} title="Tỉnh có nhiều nhất">
+          <SectionCard
+            id={`map-top-${layer}`}
+            icon={<LayerIcon />}
+            title={t`Tỉnh có nhiều nhất`}
+          >
             {top.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Chưa có dữ liệu.</p>
+              <p className="text-sm text-muted-foreground">{t`Chưa có dữ liệu.`}</p>
             ) : (
               <ol className="space-y-2">
                 {top.map((t, i) => (
                   <li key={t.code}>
                     <button
                       type="button"
-                      onClick={() => setSelected(selected === t.code ? null : t.code)}
+                      onClick={() =>
+                        setSelected(selected === t.code ? null : t.code)
+                      }
                       className="w-full text-left"
                     >
                       <div className="flex items-center justify-between gap-2 text-sm">
                         <span className="truncate">
-                          <span className="mr-2 text-muted-foreground">{i + 1}.</span>
+                          <span className="mr-2 text-muted-foreground">
+                            {i + 1}.
+                          </span>
                           {nameOf(t.code)}
                         </span>
                         <span className="shrink-0 tabular-nums">
@@ -328,7 +421,10 @@ export default function MapStats() {
                         </span>
                       </div>
                       <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${(t.n / maxTop) * 100}%` }} />
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${(t.n / maxTop) * 100}%` }}
+                        />
                       </div>
                     </button>
                   </li>
@@ -337,23 +433,40 @@ export default function MapStats() {
             )}
           </SectionCard>
 
-          <SectionCard id={`map-region-${layer}`} icon={<IconMapPin />} title="Theo vùng miền">
+          <SectionCard
+            id={`map-region-${layer}`}
+            icon={<IconMapPin />}
+            title={t`Theo vùng miền`}
+          >
             <div className="flex flex-wrap gap-2">
               {(Object.keys(VN_REGION_LABEL) as VnRegion[]).map((r) => (
-                <Chip key={r} tone={r === "bac" ? "info" : r === "trung" ? "warning" : "success"} icon={<IconMapPin />}>
+                <Chip
+                  key={r}
+                  tone={
+                    r === "bac" ? "info" : r === "trung" ? "warning" : "success"
+                  }
+                  icon={<IconMapPin />}
+                >
                   {VN_REGION_LABEL[r]}: {byRegion[r]}
                 </Chip>
               ))}
             </div>
           </SectionCard>
 
-          <SectionCard id={`map-data-${layer}`} icon={<LayerIcon />} title="Trạng thái dữ liệu">
+          <SectionCard
+            id={`map-data-${layer}`}
+            icon={<LayerIcon />}
+            title={t`Trạng thái dữ liệu`}
+          >
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 <Chip tone="success" icon={<IconMapPin />}>
                   Có khu vực: {have}
                 </Chip>
-                <Chip tone={missing > 0 ? "warning" : "neutral"} icon={<IconMapPin />}>
+                <Chip
+                  tone={missing > 0 ? "warning" : "neutral"}
+                  icon={<IconMapPin />}
+                >
                   Thiếu khu vực: {missing}
                 </Chip>
               </div>
@@ -363,10 +476,14 @@ export default function MapStats() {
                   style={{ width: `${total > 0 ? (have / total) * 100 : 0}%` }}
                 />
               </div>
-              {missing > 0 && <p className="text-sm text-muted-foreground">{MISSING_HINT[layer]}</p>}
+              {missing > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {MISSING_HINT[layer]}
+                </p>
+              )}
               {layer === "people" && (
                 <p className="text-xs text-muted-foreground">
-                  Người ở nước ngoài không được tính vào bản đồ tỉnh.
+                  {t`Người ở nước ngoài không được tính vào bản đồ tỉnh.`}
                 </p>
               )}
             </div>
@@ -383,9 +500,11 @@ export default function MapStats() {
         guard={false}
       >
         {listLoading ? (
-          <p className="py-4 text-sm text-muted-foreground">Đang tải…</p>
+          <p className="py-4 text-sm text-muted-foreground">{t`Đang tải…`}</p>
         ) : listItems.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">Chưa có {unit} nào ở tỉnh này.</p>
+          <p className="py-4 text-sm text-muted-foreground">
+            Chưa có {unit} nào ở tỉnh này.
+          </p>
         ) : (
           <div className="space-y-3 pb-4">
             <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -396,10 +515,23 @@ export default function MapStats() {
                     onClick={it.open}
                     className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
                   >
-                    <IconTile icon={LayerIcon} tone={layer === "people" ? "primary" : layer === "graves" ? "violet" : "warning"} />
+                    <IconTile
+                      icon={LayerIcon}
+                      tone={
+                        layer === "people"
+                          ? "primary"
+                          : layer === "graves"
+                            ? "violet"
+                            : "warning"
+                      }
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{it.title}</p>
-                      {it.subtitle && <p className="truncate text-sm text-muted-foreground">{it.subtitle}</p>}
+                      {it.subtitle && (
+                        <p className="truncate text-sm text-muted-foreground">
+                          {it.subtitle}
+                        </p>
+                      )}
                     </div>
                   </button>
                 </li>
@@ -407,7 +539,11 @@ export default function MapStats() {
             </ul>
             {listItems.length > shown && (
               <div className="text-center">
-                <Button type="button" variant="outline" onClick={() => setShown((n) => n + 30)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShown((n) => n + 30)}
+                >
                   Hiện thêm ({listItems.length - shown})
                 </Button>
               </div>

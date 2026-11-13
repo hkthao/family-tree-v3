@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,9 +19,9 @@ export interface ConfirmOptions {
 
 type Resolver = (ok: boolean) => void;
 
-const Ctx = createContext<
-  ((opts: ConfirmOptions) => Promise<boolean>) | null
->(null);
+const Ctx = createContext<((opts: ConfirmOptions) => Promise<boolean>) | null>(
+  null,
+);
 
 interface Pending {
   opts: ConfirmOptions;
@@ -119,11 +126,7 @@ export function ConfirmDialogProvider({
             </div>
             {/* icon-audit: ok — nhãn do nơi gọi truyền vào, mặc định là "Huỷ"/"Xác nhận" */}
             <div className="flex justify-end gap-2 px-5 py-4 bg-muted/30 border-t">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => close(false)}
-              >
+              <Button size="sm" variant="outline" onClick={() => close(false)}>
                 {pending.opts.cancelLabel ?? "Huỷ"}
               </Button>
               <Button

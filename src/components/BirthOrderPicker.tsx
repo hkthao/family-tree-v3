@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 
-import {
-  IconList,
-  IconX,
-} from "@/components/icons";
+import { IconList, IconX } from "@/components/icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { t } from "@lingui/core/macro";
 // Chips for 1–6 ("Con cả", 2, 3, 4, 5, 6) + "Khác…" → number input
 // for ≥7. Tappable one-handed on mobile; no keyboard for the 95%
 // case. Empty string = "chưa rõ"; a clear pill on the right resets
@@ -58,7 +56,7 @@ export function BirthOrderPicker({
             className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
           >
             <IconX className="h-3 w-3" />
-            Bỏ chọn
+            {t`Bỏ chọn`}
           </button>
         )}
       </div>
@@ -99,7 +97,7 @@ export function BirthOrderPicker({
               : "bg-card hover:bg-muted/50"
           }`}
         >
-          Khác…
+          {t`Khác…`}
         </button>
       </div>
       {(otherOpen || isOther) && (
@@ -112,13 +110,11 @@ export function BirthOrderPicker({
           max={50}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Nhập số (≥ 7)"
+          placeholder={t`Nhập số (≥ 7)`}
           className="max-w-[180px] h-10"
         />
       )}
-      {helper && (
-        <p className="text-sm text-muted-foreground">{helper}</p>
-      )}
+      {helper && <p className="text-sm text-muted-foreground">{helper}</p>}
     </div>
   );
 }

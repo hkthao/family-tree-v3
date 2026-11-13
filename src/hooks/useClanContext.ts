@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
+import { t } from "@lingui/core/macro";
 export interface ClanOutletContext {
   clan: ClanDetail;
 }
@@ -23,7 +24,10 @@ export function useClanContext(): ClanOutletContext {
   const fromProvider = useContext(ClanCtx);
   const fromOutlet = useOutletContext<ClanOutletContext | undefined>();
   const ctx = fromProvider ?? fromOutlet;
-  if (!ctx) throw new Error("useClanContext cần nằm trong ClanLayout (Outlet hoặc PanelHost)");
+  if (!ctx)
+    throw new Error(
+      t`useClanContext cần nằm trong ClanLayout (Outlet hoặc PanelHost)`,
+    );
   return ctx;
 }
 

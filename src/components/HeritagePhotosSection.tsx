@@ -7,7 +7,11 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useClanContext } from "@/hooks/useClanContext";
-import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS, uploadHeritagePhoto } from "@/lib/photoUpload";
+import {
+  getSignedPhotoUrlMap,
+  PHOTO_URL_STALE_MS,
+  uploadHeritagePhoto,
+} from "@/lib/photoUpload";
 import {
   addMedia,
   clanHeritageStorageBytes,
@@ -20,6 +24,7 @@ import {
   type HeritageMedia,
 } from "@/lib/queries/heritage";
 
+import { t } from "@lingui/core/macro";
 /** Giới hạn để chặn phình dung lượng storage VPS (cùng giá trị ở trang chi tiết). */
 const MAX_PHOTOS = 12;
 
@@ -28,7 +33,13 @@ const MAX_PHOTOS = 12;
  * hiện ảnh và phóng to; `editable` thêm nút Chụp / Tải ảnh / Liên kết ngoài và dấu X gỡ ảnh.
  * Thêm hoặc gỡ ảnh được lưu NGAY (không chờ nút Lưu của form), như ở trang chi tiết.
  */
-export function HeritagePhotosSection({ itemId, editable }: { itemId: string; editable: boolean }) {
+export function HeritagePhotosSection({
+  itemId,
+  editable,
+}: {
+  itemId: string;
+  editable: boolean;
+}) {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -45,7 +56,9 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
   const photos = (item?.media ?? []).filter((m) => m.kind === "photo");
 
   // Chỉ ký URL cho file trong bucket; link ngoài dùng trực tiếp.
-  const bucketPaths = (item?.media ?? []).map((m) => m.path).filter((p): p is string => !!p);
+  const bucketPaths = (item?.media ?? [])
+    .map((m) => m.path)
+    .filter((p): p is string => !!p);
   const { data: mediaUrls } = useQuery({
     queryKey: ["heritage-media-urls", itemId, bucketPaths.join(",")],
     queryFn: () => getSignedPhotoUrlMap(bucketPaths),
@@ -59,7 +72,8 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
     const src = srcOf(ph);
     return src ? [{ src, caption: ph.caption }] : [];
   });
-  const lightboxIndexOf = (ph: HeritageMedia) => photoImages.findIndex((im) => im.src === srcOf(ph));
+  const lightboxIndexOf = (ph: HeritageMedia) =>
+    photoImages.findIndex((im) => im.src === srcOf(ph));
 
   const { data: storageBytes } = useQuery({
     queryKey: ["heritage-storage", clan.id, userId],
@@ -77,38 +91,56 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
 
   const uploadM = useMutation({
     mutationFn: async (file: File) => {
-      if (full) throw new Error(`Tối đa ${MAX_PHOTOS} ảnh mỗi mục.`);
+      if (full) throw new Error(t`Tối đa ${MAX_PHOTOS} ảnh mỗi mục.`);
       if (overQuota)
-        throw new Error(`Dòng họ đã dùng hết ${formatBytes(HERITAGE_CLAN_QUOTA_BYTES)}. Hãy xoá bớt ảnh/ghi âm cũ.`);
+        throw new Error(
+          t`Dòng họ đã dùng hết ${formatBytes(HERITAGE_CLAN_QUOTA_BYTES)}. Hãy xoá bớt ảnh/ghi âm cũ.`,
+        );
       const { path, bytes } = await uploadHeritagePhoto(clan.id, itemId, file);
-      const { id } = await addMedia(itemId, { kind: "photo", path, bytes, sort: photos.length });
+      const { id } = await addMedia(itemId, {
+        kind: "photo",
+        path,
+        bytes,
+        sort: photos.length,
+      });
       // ảnh đầu tiên → đặt làm ảnh đại diện
-      if (!item?.cover_media_id && photos.length === 0) await setCoverMedia(itemId, id);
+      if (!item?.cover_media_id && photos.length === 0)
+        await setCoverMedia(itemId, id);
     },
     onSuccess: () => {
       invalidate();
-      toast.success("Đã thêm ảnh");
+      toast.success(t`Đã thêm ảnh`);
     },
-    onError: (e) => toast.error("Không thêm được ảnh", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không thêm được ảnh`, {
+        description: (e as Error).message,
+      }),
   });
 
   const linkM = useMutation({
     mutationFn: async (url: string) => {
       const check = validateExternalMedia("photo", url);
       if (!check.ok) throw new Error(check.error);
-      await addMedia(itemId, { kind: "photo", external_url: url.trim(), sort: photos.length });
+      await addMedia(itemId, {
+        kind: "photo",
+        external_url: url.trim(),
+        sort: photos.length,
+      });
     },
     onSuccess: () => {
       invalidate();
-      toast.success("Đã thêm ảnh từ liên kết");
+      toast.success(t`Đã thêm ảnh từ liên kết`);
     },
-    onError: (e) => toast.error("Không thêm được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   const removeM = useMutation({
-    mutationFn: ({ id, path }: { id: string; path: string | null }) => removeMedia(id, path),
+    mutationFn: ({ id, path }: { id: string; path: string | null }) =>
+      removeMedia(id, path),
     onSuccess: invalidate,
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   const busy = uploadM.isPending || linkM.isPending;
@@ -121,17 +153,20 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
       </h3>
 
       {photos.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có ảnh.</p>
+        <p className="text-sm text-muted-foreground">{t`Chưa có ảnh.`}</p>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {photos.map((ph) => (
-            <div key={ph.id} className="relative aspect-square overflow-hidden rounded-md border bg-muted">
+            <div
+              key={ph.id}
+              className="relative aspect-square overflow-hidden rounded-md border bg-muted"
+            >
               {srcOf(ph) ? (
                 <button
                   type="button"
                   onClick={() => setLightboxIdx(lightboxIndexOf(ph))}
                   className="h-full w-full cursor-zoom-in"
-                  aria-label="Xem ảnh lớn"
+                  aria-label={t`Xem ảnh lớn`}
                 >
                   <img
                     src={srcOf(ph)}
@@ -147,7 +182,7 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
                   type="button"
                   onClick={() => removeM.mutate({ id: ph.id, path: ph.path })}
                   className="absolute right-1 top-1 rounded-full bg-background/80 p-1 hover:bg-background"
-                  aria-label="Xoá ảnh"
+                  aria-label={t`Xoá ảnh`}
                 >
                   <IconX className="h-3.5 w-3.5" />
                 </button>
@@ -193,13 +228,13 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
               size="sm"
               variant="outline"
               disabled={busy || full}
-              title="Dán link ảnh có sẵn trên mạng — không tốn dung lượng"
+              title={t`Dán link ảnh có sẵn trên mạng — không tốn dung lượng`}
               onClick={() => {
                 const u = window.prompt("Dán link ảnh (https://…):");
                 if (u?.trim()) linkM.mutate(u.trim());
               }}
             >
-              <IconLink className="mr-1 h-4 w-4" /> Liên kết ngoài
+              <IconLink className="mr-1 h-4 w-4" /> {t`Liên kết ngoài`}
             </Button>
             <Button
               type="button"
@@ -208,7 +243,8 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
               disabled={busy || full || overQuota}
               onClick={() => fileRef.current?.click()}
             >
-              <IconPlus className="mr-1 h-4 w-4" /> {uploadM.isPending ? "Đang tải…" : "Tải ảnh"}
+              <IconPlus className="mr-1 h-4 w-4" />{" "}
+              {uploadM.isPending ? t`Đang tải…` : t`Tải ảnh`}
             </Button>
             <Button
               type="button"
@@ -216,7 +252,7 @@ export function HeritagePhotosSection({ itemId, editable }: { itemId: string; ed
               disabled={busy || full || overQuota}
               onClick={() => cameraRef.current?.click()}
             >
-              <IconCamera className="mr-1 h-4 w-4" /> Chụp ảnh
+              <IconCamera className="mr-1 h-4 w-4" /> {t`Chụp ảnh`}
             </Button>
           </div>
         </>

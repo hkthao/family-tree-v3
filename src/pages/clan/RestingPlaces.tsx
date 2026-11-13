@@ -16,14 +16,20 @@ import {
 import { CollapsibleFilters } from "@/components/CollapsibleFilters";
 import { PageHeader } from "@/components/PageHeader";
 import { PanelLink } from "@/components/panel/PanelLink";
-import { RESTING_PLACE_KIND_STYLE as KIND_STYLE, RESTING_PLACE_STATUS_STYLE as STATUS_STYLE } from "@/components/restingPlaceStyle";
+import {
+  RESTING_PLACE_KIND_STYLE as KIND_STYLE,
+  RESTING_PLACE_STATUS_STYLE as STATUS_STYLE,
+} from "@/components/restingPlaceStyle";
 import { Pagination } from "@/components/Pagination";
 import { RecordDates } from "@/components/RecordDates";
 import { SearchInput } from "@/components/SearchInput";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
-import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging";
+import {
+  LIST_PAGE_SIZE_OPTIONS,
+  useClientPaging,
+} from "@/hooks/useClientPaging";
 import { useUrlState } from "@/hooks/useUrlState";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { listCemeteries } from "@/lib/queries/cemeteries";
@@ -35,6 +41,7 @@ import {
   type RestingPlaceKind,
 } from "@/lib/queries/restingPlaces";
 
+import { t } from "@lingui/core/macro";
 const KINDS = Object.keys(RESTING_PLACE_KIND_LABEL) as RestingPlaceKind[];
 
 export default function RestingPlaces() {
@@ -47,8 +54,7 @@ export default function RestingPlaces() {
   const [debounced] = useUrlState("q", "");
   const [kindRaw] = useUrlState("kind", "");
   const kind = (KINDS.includes(kindRaw as RestingPlaceKind) ? kindRaw : "") as
-    | RestingPlaceKind
-    | "";
+    RestingPlaceKind | "";
   const [cemeteryId] = useUrlState("cemetery", "");
 
   const { data: cemeteries } = useQuery({
@@ -78,45 +84,62 @@ export default function RestingPlaces() {
   });
 
   const { data: photoUrls } = useQuery({
-    queryKey: ["resting-place-thumbs", (places ?? []).map((p) => p.first_photo_path).join(",")],
+    queryKey: [
+      "resting-place-thumbs",
+      (places ?? []).map((p) => p.first_photo_path).join(","),
+    ],
     queryFn: () =>
       getSignedPhotoUrlMap(
-        (places ?? []).map((p) => p.first_photo_path).filter((p): p is string => !!p),
+        (places ?? [])
+          .map((p) => p.first_photo_path)
+          .filter((p): p is string => !!p),
       ),
     enabled: !!places && places.some((p) => p.first_photo_path),
     staleTime: PHOTO_URL_STALE_MS,
   });
 
-  const { page, totalPages, pageSize, total, paged, setPage, setPageSize, patchAndResetPage } =
-    useClientPaging(places ?? [], 20);
+  const {
+    page,
+    totalPages,
+    pageSize,
+    total,
+    paged,
+    setPage,
+    setPageSize,
+    patchAndResetPage,
+  } = useClientPaging(places ?? [], 20);
 
   return (
     <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Mộ phần & tro cốt" },
+          { label: t`Mộ phần & tro cốt` },
         ]}
       />
       <PageHeader
         icon={<IconGrave className="h-7 w-7" />}
-        title="Mộ phần & tro cốt"
-        description="Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ."
+        title={t`Mộ phần & tro cốt`}
+        description={t`Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ.`}
       />
       <FabGroup
-        label="Thêm"
+        label={t`Thêm`}
         actions={[
           ...(canEdit
             ? [
                 {
-                  label: "Thêm mộ phần",
+                  label: t`Thêm mộ phần`,
                   icon: <IconPlus />,
                   to: `/clans/${clan.id}/graves/new`,
                   panel: { id: "grave-new" as const },
                 },
               ]
             : []),
-          { label: "Quản lý cơ sở", icon: <IconMapPin />, to: `/clans/${clan.id}/graves/cemeteries` },
+          {
+            label: t`Quản lý cơ sở`,
+            icon: <IconMapPin />,
+            to: `/clans/${clan.id}/graves/cemeteries`,
+          },
         ]}
       />
 
@@ -126,10 +149,10 @@ export default function RestingPlaces() {
           onReset={() => patchAndResetPage({ kind: null, cemetery: null })}
           search={(toggle) => (
             <SearchInput
-              label="Tìm mộ phần"
+              label={t`Tìm mộ phần`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo tên / nghĩa trang / chùa…"
+              placeholder={t`Tìm theo tên / nghĩa trang / chùa…`}
               rightSlot={toggle}
             />
           )}
@@ -138,11 +161,11 @@ export default function RestingPlaces() {
             <Select
               value={kind}
               onChange={(e) => patchAndResetPage({ kind: e.target.value })}
-              aria-label="Lọc theo hình thức"
+              aria-label={t`Lọc theo hình thức`}
               icon={<IconGrave />}
               className="h-11 w-full text-base"
             >
-              <option value="">Mọi hình thức</option>
+              <option value="">{t`Mọi hình thức`}</option>
               {KINDS.map((k) => (
                 <option key={k} value={k}>
                   {RESTING_PLACE_KIND_LABEL[k]}
@@ -152,12 +175,14 @@ export default function RestingPlaces() {
             {(cemeteries ?? []).length > 0 && (
               <Select
                 value={cemeteryId}
-                onChange={(e) => patchAndResetPage({ cemetery: e.target.value })}
-                aria-label="Lọc theo cơ sở"
+                onChange={(e) =>
+                  patchAndResetPage({ cemetery: e.target.value })
+                }
+                aria-label={t`Lọc theo cơ sở`}
                 icon={<IconBuildings />}
                 className="h-11 w-full text-base"
               >
-                <option value="">Mọi cơ sở</option>
+                <option value="">{t`Mọi cơ sở`}</option>
                 {(cemeteries ?? []).map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -171,24 +196,33 @@ export default function RestingPlaces() {
 
       {isLoading && (
         <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         </div>
       )}
 
       {places && places.length === 0 && (
         <EmptyState
           icon={<IconSearch className="h-10 w-10" />}
-          title={debounced || kind ? "Không có mục nào khớp" : "Chưa có mộ phần / tro cốt"}
+          title={
+            debounced || kind
+              ? t`Không có mục nào khớp`
+              : t`Chưa có mộ phần / tro cốt`
+          }
           description={
             debounced || kind
-              ? "Thử bỏ bớt bộ lọc."
+              ? t`Thử bỏ bớt bộ lọc.`
               : canEdit
-                ? "Bấm 'Thêm' để ghi nơi an nghỉ đầu tiên."
-                : "Chưa có dữ liệu."
+                ? t`Bấm 'Thêm' để ghi nơi an nghỉ đầu tiên.`
+                : t`Chưa có dữ liệu.`
           }
           primary={
             canEdit && !debounced && !kind
-              ? { label: "Thêm", to: `/clans/${clan.id}/graves/new`, panel: { id: "grave-new" as const }, icon: <IconPlus className="h-4 w-4 mr-1.5" /> }
+              ? {
+                  label: t`Thêm`,
+                  to: `/clans/${clan.id}/graves/new`,
+                  panel: { id: "grave-new" as const },
+                  icon: <IconPlus className="h-4 w-4 mr-1.5" />,
+                }
               : undefined
           }
         />
@@ -197,7 +231,9 @@ export default function RestingPlaces() {
       {places && places.length > 0 && (
         <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
           {paged.map((p) => {
-            const thumb = p.first_photo_path ? photoUrls?.get(p.first_photo_path) : null;
+            const thumb = p.first_photo_path
+              ? photoUrls?.get(p.first_photo_path)
+              : null;
             const dir = directionsUrl(p.latitude, p.longitude);
             return (
               <li key={p.id}>
@@ -209,11 +245,19 @@ export default function RestingPlaces() {
                 >
                   <div
                     className={`min-h-14 w-14 shrink-0 self-stretch overflow-hidden rounded-lg border grid place-items-center ${
-                      thumb ? "bg-muted" : CHIP_TONE_CLASS[KIND_STYLE[p.kind].tone]
+                      thumb
+                        ? "bg-muted"
+                        : CHIP_TONE_CLASS[KIND_STYLE[p.kind].tone]
                     }`}
                   >
                     {thumb ? (
-                      <img src={thumb} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      <img
+                        src={thumb}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       (() => {
                         const KindIcon = KIND_STYLE[p.kind].icon;
@@ -223,12 +267,16 @@ export default function RestingPlaces() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">
-                      {p.name || p.location_name || RESTING_PLACE_KIND_LABEL[p.kind]}
+                      {p.name ||
+                        p.location_name ||
+                        RESTING_PLACE_KIND_LABEL[p.kind]}
                     </p>
                     {(p.cemetery_name || p.location_name) && (
                       <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
                         <IconBuildings className="h-3.5 w-3.5 shrink-0" />
-                        <span className="line-clamp-2 min-w-0">{p.cemetery_name ?? p.location_name}</span>
+                        <span className="line-clamp-2 min-w-0">
+                          {p.cemetery_name ?? p.location_name}
+                        </span>
                       </p>
                     )}
                     <RecordDates
@@ -242,10 +290,16 @@ export default function RestingPlaces() {
                         const StatusIcon = STATUS_STYLE[p.status].icon;
                         return (
                           <>
-                            <Chip tone={KIND_STYLE[p.kind].tone} icon={<KindIcon />}>
+                            <Chip
+                              tone={KIND_STYLE[p.kind].tone}
+                              icon={<KindIcon />}
+                            >
                               {RESTING_PLACE_KIND_LABEL[p.kind]}
                             </Chip>
-                            <Chip tone={STATUS_STYLE[p.status].tone} icon={<StatusIcon />}>
+                            <Chip
+                              tone={STATUS_STYLE[p.status].tone}
+                              icon={<StatusIcon />}
+                            >
                               {RESTING_PLACE_STATUS_LABEL[p.status]}
                             </Chip>
                           </>
@@ -256,7 +310,7 @@ export default function RestingPlaces() {
                       </Chip>
                       {dir && (
                         <Chip tone="info" icon={<IconMapPin />}>
-                          Có vị trí
+                          {t`Có vị trí`}
                         </Chip>
                       )}
                     </div>
@@ -274,7 +328,7 @@ export default function RestingPlaces() {
           totalPages={totalPages}
           total={total}
           pageSize={pageSize}
-          unit="mục"
+          unit={t`mục`}
           onPageChange={setPage}
           pageSizeOptions={LIST_PAGE_SIZE_OPTIONS}
           onPageSizeChange={setPageSize}

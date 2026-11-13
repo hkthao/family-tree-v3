@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { IconChevronDown, IconChevronUp } from "@/components/icons";
 import { ActionArea } from "@/components/ui/button";
 
+import { t } from "@lingui/core/macro";
 const KEY_PREFIX = "family-tree:section-open:";
 
 function readOpen(id: string, def: boolean): boolean {
@@ -79,7 +80,7 @@ export function SectionCard({
         <button
           type="button"
           onClick={toggle}
-          aria-label={open ? `Thu gọn ${title}` : `Mở rộng ${title}`}
+          aria-label={open ? t`Thu gọn ${title}` : t`Mở rộng ${title}`}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
         >
           {open ? (

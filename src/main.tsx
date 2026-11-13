@@ -14,6 +14,7 @@ import { initBackground } from "./lib/background";
 import { initTheme } from "./lib/theme";
 import "./index.css";
 
+import { t } from "@lingui/core/macro";
 // Sentry first — captures any error in subsequent boot steps too.
 initSentry();
 initTheme();
@@ -58,10 +59,10 @@ function render() {
                   color: "#7A2E2E",
                 }}
               >
-                Có lỗi xảy ra
+                {t`Có lỗi xảy ra`}
               </h1>
               <p style={{ color: "#7A6F66" }}>
-                Tải lại trang để tiếp tục. Nếu lỗi lặp lại, báo cho quản trị.
+                {t`Tải lại trang để tiếp tục. Nếu lỗi lặp lại, báo cho quản trị.`}
               </p>
               <button
                 type="button"
@@ -76,7 +77,7 @@ function render() {
                   cursor: "pointer",
                 }}
               >
-                Tải lại trang
+                {t`Tải lại trang`}
               </button>
             </div>
           </div>

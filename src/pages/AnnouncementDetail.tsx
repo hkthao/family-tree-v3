@@ -13,6 +13,7 @@ import {
 import { queryKeys } from "@/lib/queries/keys";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
 /**
  * `/announcements/:id` — trang chi tiết 1 thông báo. Tự đánh dấu
  * "đã đọc" khi mở. Không có gì ngoài tiêu đề + nội dung + meta —
@@ -83,13 +84,13 @@ export default function AnnouncementDetail() {
       <main className="container max-w-4xl py-6 px-4 space-y-3">
         <Breadcrumb
           items={[
-            { label: "Thông báo", to: "/announcements" },
+            { label: t`Thông báo`, to: "/announcements" },
             { label: row?.title ?? "Chi tiết" },
           ]}
         />
 
         {listQ.isLoading && (
-          <p className="text-muted-foreground">Đang tải…</p>
+          <p className="text-muted-foreground">{t`Đang tải…`}</p>
         )}
         {listQ.error && (
           <Alert variant="destructive">
@@ -102,7 +103,7 @@ export default function AnnouncementDetail() {
         {!listQ.isLoading && !row && (
           <Alert>
             <AlertDescription>
-              Không tìm thấy thông báo này. Có thể đã hết hạn hoặc bị xoá.
+              {t`Không tìm thấy thông báo này. Có thể đã hết hạn hoặc bị xoá.`}
             </AlertDescription>
           </Alert>
         )}
@@ -148,7 +149,7 @@ export default function AnnouncementDetail() {
 
             {row.expires_at && (
               <p className="text-xs text-muted-foreground mt-8 pt-4 border-t italic">
-                Thông báo này sẽ hết hạn vào{" "}
+                {t`Thông báo này sẽ hết hạn vào`}{" "}
                 <strong className="not-italic">
                   {new Date(row.expires_at).toLocaleString("vi-VN")}
                 </strong>

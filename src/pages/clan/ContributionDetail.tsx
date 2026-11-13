@@ -18,7 +18,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { canEditClan, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  isClanAdmin,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import { invalidateClanData } from "@/lib/cache";
 import {
   approveContribution,
@@ -30,6 +34,8 @@ import { track } from "@/lib/analytics";
 import { queryKeys } from "@/lib/queries/keys";
 import { getPerson } from "@/lib/queries/persons";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 const TYPE_LABEL = {
   edit_person: "Sửa thông tin",
   add_note: "Bổ sung tiểu sử",
@@ -66,7 +72,11 @@ export default function ContributionDetail() {
     return <Navigate to={`/clans/${clan.id}`} replace />;
   }
 
-  const { data: contribution, isLoading, error } = useQuery({
+  const {
+    data: contribution,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: queryKeys.contribution(contribId ?? "", userId),
     queryFn: () => getContribution(contribId!),
     enabled: !!contribId,
@@ -93,10 +103,10 @@ export default function ContributionDetail() {
         queryKey: queryKeys.pendingContributionsCount(clan.id, userId),
       });
       track("contribution_approved");
-      toast.success("Đã duyệt — cây gia phả đã cập nhật");
+      toast.success(t`Đã duyệt — cây gia phả đã cập nhật`);
     },
     onError: (e) =>
-      toast.error("Không duyệt được", { description: (e as Error).message }),
+      toast.error(t`Không duyệt được`, { description: (e as Error).message }),
   });
 
   const rejectM = useMutation({
@@ -111,10 +121,10 @@ export default function ContributionDetail() {
       qc.invalidateQueries({
         queryKey: queryKeys.pendingContributionsCount(clan.id, userId),
       });
-      toast.success("Đã ghi nhận");
+      toast.success(t`Đã ghi nhận`);
     },
     onError: (e) =>
-      toast.error("Không xử lý được", { description: (e as Error).message }),
+      toast.error(t`Không xử lý được`, { description: (e as Error).message }),
   });
 
   const [rejectNote, setRejectNote] = useState("");
@@ -124,12 +134,12 @@ export default function ContributionDetail() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Đóng góp", to: `/clans/${clan.id}/contributions` },
-          { label: "Chi tiết" },
+          { label: t`Đóng góp`, to: `/clans/${clan.id}/contributions` },
+          { label: t`Chi tiết` },
         ]}
       />
 
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{(error as Error).message}</AlertDescription>
@@ -137,7 +147,7 @@ export default function ContributionDetail() {
       )}
       {!isLoading && !contribution && (
         <Alert variant="destructive">
-          <AlertDescription>Không tìm thấy đóng góp này.</AlertDescription>
+          <AlertDescription>{t`Không tìm thấy đóng góp này.`}</AlertDescription>
         </Alert>
       )}
 
@@ -150,11 +160,11 @@ export default function ContributionDetail() {
             <h1 className="clan-name text-xl sm:text-2xl font-semibold">
               {contribution.person_id && currentPerson
                 ? currentPerson.full_name
-                : (contribution.proposed_data as { full_name?: string })
-                    .full_name ?? "Người mới"}
+                : ((contribution.proposed_data as { full_name?: string })
+                    .full_name ?? "Người mới")}
             </h1>
             <p className="text-sm">
-              Trạng thái:{" "}
+              {t`Trạng thái:`}{" "}
               <span
                 className={
                   contribution.status === "approved"
@@ -174,29 +184,39 @@ export default function ContributionDetail() {
           {/* Submitter info */}
           <Card>
             <CardHeader>
-              <CardTitle>Người đóng góp</CardTitle>
+              <CardTitle>{t`Người đóng góp`}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
               <Row
-                label="Tên"
-                value={contribution.submitter_name ?? "(thành viên đã đăng nhập)"}
+                label={t`Tên`}
+                value={
+                  contribution.submitter_name ?? "(thành viên đã đăng nhập)"
+                }
               />
               {contribution.submitter_contact && (
-                <Row label="Liên hệ" value={contribution.submitter_contact} />
+                <Row
+                  label={t`Liên hệ`}
+                  value={contribution.submitter_contact}
+                />
               )}
               {contribution.submitter_relation && (
-                <Row label="Quan hệ" value={contribution.submitter_relation} />
+                <Row
+                  label={t`Quan hệ`}
+                  value={contribution.submitter_relation}
+                />
               )}
               {contribution.submitter_note && (
-                <Row label="Ghi chú" value={contribution.submitter_note} />
+                <Row label={t`Ghi chú`} value={contribution.submitter_note} />
               )}
               <Row
-                label="Gửi lúc"
-                value={new Date(contribution.created_at).toLocaleString("vi-VN")}
+                label={t`Gửi lúc`}
+                value={new Date(contribution.created_at).toLocaleString(
+                  "vi-VN",
+                )}
               />
               {contribution.submitter_user_id === null && (
                 <p className="text-xs text-muted-foreground italic">
-                  Đề xuất gửi qua link chia sẻ (khách).
+                  {t`Đề xuất gửi qua link chia sẻ (khách).`}
                 </p>
               )}
             </CardContent>
@@ -204,7 +224,7 @@ export default function ContributionDetail() {
 
           {/* Diff */}
           <section className="space-y-2">
-            <h2 className="text-lg font-semibold">So sánh</h2>
+            <h2 className="text-lg font-semibold">{t`So sánh`}</h2>
             <ContributionDiffView
               contribution={contribution}
               currentPerson={currentPerson ?? null}
@@ -215,7 +235,7 @@ export default function ContributionDetail() {
           {contribution.status !== "pending" && (
             <Alert>
               <AlertDescription>
-                Đã được xử lý lúc{" "}
+                {t`Đã được xử lý lúc`}{" "}
                 {contribution.reviewed_at
                   ? new Date(contribution.reviewed_at).toLocaleString("vi-VN")
                   : "—"}
@@ -227,17 +247,18 @@ export default function ContributionDetail() {
                     </span>
                   </>
                 )}
-                {contribution.status === "approved" && contribution.person_id && (
-                  <>
-                    {" · "}
-                    <Link
-                      to={`/clans/${clan.id}/people/${contribution.person_id}`}
-                      className="text-primary hover:underline"
-                    >
-                      Xem trang người đã được cập nhật →
-                    </Link>
-                  </>
-                )}
+                {contribution.status === "approved" &&
+                  contribution.person_id && (
+                    <>
+                      {" · "}
+                      <Link
+                        to={`/clans/${clan.id}/people/${contribution.person_id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {t`Xem trang người đã được cập nhật →`}
+                      </Link>
+                    </>
+                  )}
               </AlertDescription>
             </Alert>
           )}
@@ -246,15 +267,15 @@ export default function ContributionDetail() {
           {contribution.status === "pending" && canAct && (
             <Card>
               <CardHeader>
-                <CardTitle>Xử lý</CardTitle>
+                <CardTitle>{t`Xử lý`}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Textarea
-                  label="Lý do (nếu từ chối hoặc cần thêm thông tin)"
+                  label={t`Lý do (nếu từ chối hoặc cần thêm thông tin)`}
                   icon={<IconScroll />}
                   value={rejectNote}
                   onChange={(e) => setRejectNote(e.target.value)}
-                  placeholder="VD: Cần ảnh giấy chứng tử để xác nhận ngày mất"
+                  placeholder={t`VD: Cần ảnh giấy chứng tử để xác nhận ngày mất`}
                   rows={2}
                   className="text-sm"
                 />
@@ -267,10 +288,9 @@ export default function ContributionDetail() {
                   disabled={approveM.isPending || rejectM.isPending}
                   onClick={async () => {
                     const ok = await askConfirm({
-                      title: "Từ chối đóng góp?",
-                      description:
-                        "Đóng góp sẽ bị đánh dấu rejected. Người gửi vẫn thấy nó.",
-                      confirmLabel: "Từ chối",
+                      title: t`Từ chối đóng góp?`,
+                      description: t`Đóng góp sẽ bị đánh dấu rejected. Người gửi vẫn thấy nó.`,
+                      confirmLabel: t`Từ chối`,
                       destructive: true,
                     });
                     if (ok)
@@ -281,7 +301,7 @@ export default function ContributionDetail() {
                   }}
                 >
                   <IconX className="h-4 w-4 mr-1.5" />
-                  Từ chối
+                  {t`Từ chối`}
                 </Button>
                 <Button
                   variant="outline"
@@ -295,27 +315,27 @@ export default function ContributionDetail() {
                   }
                 >
                   <IconHelp className="h-4 w-4 mr-1.5" />
-                  Cần thêm thông tin
+                  {t`Cần thêm thông tin`}
                 </Button>
                 <Button
                   size="sm"
                   disabled={approveM.isPending || rejectM.isPending}
                   onClick={async () => {
                     const ok = await askConfirm({
-                      title: "Duyệt đóng góp?",
+                      title: t`Duyệt đóng góp?`,
                       description:
                         contribution.contribution_type === "edit_person"
-                          ? "Các trường đã đổi sẽ ghi đè dữ liệu hiện tại. Tiếp tục?"
+                          ? t`Các trường đã đổi sẽ ghi đè dữ liệu hiện tại. Tiếp tục?`
                           : contribution.contribution_type === "add_person"
-                            ? "Người mới sẽ được thêm vào cây gia phả. Tiếp tục?"
-                            : "Nội dung sẽ được nối vào tiểu sử hiện tại. Tiếp tục?",
-                      confirmLabel: "Duyệt",
+                            ? t`Người mới sẽ được thêm vào cây gia phả. Tiếp tục?`
+                            : t`Nội dung sẽ được nối vào tiểu sử hiện tại. Tiếp tục?`,
+                      confirmLabel: t`Duyệt`,
                     });
                     if (ok) approveM.mutate();
                   }}
                 >
                   <IconCheck className="h-4 w-4 mr-1.5" />
-                  {approveM.isPending ? "Đang duyệt…" : "Duyệt + áp dụng"}
+                  {approveM.isPending ? t`Đang duyệt…` : t`Duyệt + áp dụng`}
                 </Button>
               </CardFooter>
             </Card>
@@ -324,8 +344,14 @@ export default function ContributionDetail() {
           {contribution.status === "pending" && !canAct && (
             <Alert>
               <AlertDescription>
-                Chỉ admin của dòng họ mới duyệt/từ chối được. Bạn đang xem
-                ở chế độ editor — có thể đọc nhưng không tác động.
+                <Trans>
+                  <Trans>
+                    <Trans>
+                      Chỉ admin của dòng họ mới duyệt/từ chối được. Bạn đang xem
+                      ở chế độ editor — có thể đọc nhưng không tác động.
+                    </Trans>
+                  </Trans>
+                </Trans>
               </AlertDescription>
             </Alert>
           )}

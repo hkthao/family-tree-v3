@@ -86,7 +86,9 @@ export function BookMetaFields({
             value={value[f.key] ?? ""}
             onChange={(e) => onChange({ ...value, [f.key]: e.target.value })}
           />
-          {f.hint ? <p className="text-xs text-muted-foreground">{f.hint}</p> : null}
+          {f.hint ? (
+            <p className="text-xs text-muted-foreground">{f.hint}</p>
+          ) : null}
         </div>
       ))}
     </div>

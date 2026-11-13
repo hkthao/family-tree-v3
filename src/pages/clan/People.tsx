@@ -23,7 +23,10 @@ import { AddressPicker } from "@/components/AddressPicker";
 import { EMPTY_PERSON_ADDRESS } from "@/components/PersonAddressCard";
 import { FilterDrawer } from "@/components/FilterDrawer";
 import { Input } from "@/components/ui/input";
-import { savePersonAddressesBulk, type PersonAddressInput } from "@/lib/queries/personAddresses";
+import {
+  savePersonAddressesBulk,
+  type PersonAddressInput,
+} from "@/lib/queries/personAddresses";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -58,14 +61,22 @@ import {
 } from "@/components/ui/segmented-control";
 import { useAuth } from "@/hooks/useAuth";
 import { useUrlPatch } from "@/hooks/useUrlState";
-import { canEditClan, effectiveRole, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  effectiveRole,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import { listBranches } from "@/lib/queries/branches";
 import { getClanStats } from "@/lib/queries/clan-stats";
 import { queryKeys } from "@/lib/queries/keys";
 import { savePersonNav } from "@/lib/personNav";
 import { getClanCompletion, type ClanCompletion } from "@/lib/queries/todo";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
-import { clanHasRoot, listPersons, type PersonRow } from "@/lib/queries/persons";
+import {
+  clanHasRoot,
+  listPersons,
+  type PersonRow,
+} from "@/lib/queries/persons";
 import {
   getRelativesIndex,
   type RelativesIndex,
@@ -73,6 +84,7 @@ import {
 import { KinshipContent } from "@/pages/clan/Kinship";
 import { KhoeButton } from "@/components/KhoeButton";
 
+import { t } from "@lingui/core/macro";
 const PAGE_SIZE_OPTIONS = [15, 30, 50, 100];
 const VIEW_KEY = "family-tree:people-view-mode";
 type ViewMode = "list" | "grid";
@@ -172,15 +184,16 @@ export default function People() {
       await invalidateClanData(qc, clan.id);
       const branchName =
         bulkBranch === ""
-          ? "không có chi"
+          ? t`không có chi`
           : (branches?.find((b) => b.id === bulkBranch)?.name ?? "");
-      toast.success(`Đã đổi chi cho ${res.updated} người`, {
-        description: `Mới: ${branchName}`,
+      toast.success(t`Đã đổi chi cho ${res.updated} người`, {
+        description: t`Mới: ${branchName}`,
       });
       setSelected(new Set());
       setBranchOpen(false);
     },
-    onError: (e) => toast.error("Không đổi được chi", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không đổi được chi`, { description: (e as Error).message }),
   });
   // Pull every id matching the current filter (across pages) so the
   // user can bulk-select past the current visible window. Lazy: only
@@ -195,42 +208,47 @@ export default function People() {
       }),
     onSuccess: (ids) => {
       setSelected(new Set(ids));
-      toast.success(`Đã chọn ${ids.length} người khớp bộ lọc`);
+      toast.success(t`Đã chọn ${ids.length} người khớp bộ lọc`);
     },
     onError: (e) =>
-      toast.error("Không chọn được", { description: (e as Error).message }),
+      toast.error(t`Không chọn được`, { description: (e as Error).message }),
   });
 
   // Đặt cùng một nơi ở cho nhiều người (cả nhà ở chung) → hiện trên Bản đồ.
   const [addrOpen, setAddrOpen] = useState(false);
-  const [bulkAddr, setBulkAddr] = useState<PersonAddressInput>(EMPTY_PERSON_ADDRESS);
+  const [bulkAddr, setBulkAddr] =
+    useState<PersonAddressInput>(EMPTY_PERSON_ADDRESS);
   const bulkAddressM = useMutation({
     mutationFn: () => savePersonAddressesBulk([...selected], bulkAddr),
     onSuccess: async (n) => {
       await invalidateClanData(qc, clan.id);
       toast.success(
         bulkAddr.province_code || bulkAddr.ward_code || bulkAddr.street_detail
-          ? `Đã đặt nơi ở cho ${n} người`
-          : `Đã xoá nơi ở của ${n} người`,
-        { description: "Bản đồ sẽ cập nhật ngay." },
+          ? t`Đã đặt nơi ở cho ${n} người`
+          : t`Đã xoá nơi ở của ${n} người`,
+        { description: t`Bản đồ sẽ cập nhật ngay.` },
       );
       setAddrOpen(false);
       setBulkAddr(EMPTY_PERSON_ADDRESS);
       setSelected(new Set());
     },
-    onError: (e) => toast.error("Không lưu được nơi ở", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không lưu được nơi ở`, {
+        description: (e as Error).message,
+      }),
   });
 
   const bulkDeleteM = useMutation({
     mutationFn: () => deletePersonsBulk([...selected]),
     onSuccess: async (res) => {
       await invalidateClanData(qc, clan.id);
-      toast.success(`Đã xoá ${res.deleted} người`, {
-        description: "Có thể khôi phục từ nhật ký.",
+      toast.success(t`Đã xoá ${res.deleted} người`, {
+        description: t`Có thể khôi phục từ nhật ký.`,
       });
       setSelected(new Set());
     },
-    onError: (e) => toast.error("Không xoá được", { description: (e as Error).message }),
+    onError: (e) =>
+      toast.error(t`Không xoá được`, { description: (e as Error).message }),
   });
 
   function toggleSelected(id: string) {
@@ -361,17 +379,25 @@ export default function People() {
       {isMember && <MemoryRoomCtaButton clanId={clan.id} />}
       {canEdit && (
         <FabGroup
-          label="Thêm"
+          label={t`Thêm`}
           actions={[
             {
-              label: "Thêm người",
+              label: t`Thêm người`,
               icon: <IconPlus />,
               to: `/clans/${clan.id}/people/new`,
               panel: { id: "person-new" },
               testId: "add-person-link",
             },
-            { label: "Nhập từ Excel", icon: <IconUpload />, to: `/clans/${clan.id}/import` },
-            { label: "Sinh bằng AI", icon: <IconSparkles />, to: `/clans/${clan.id}/ai-generate` },
+            {
+              label: t`Nhập từ Excel`,
+              icon: <IconUpload />,
+              to: `/clans/${clan.id}/import`,
+            },
+            {
+              label: t`Sinh bằng AI`,
+              icon: <IconSparkles />,
+              to: `/clans/${clan.id}/ai-generate`,
+            },
           ]}
         />
       )}
@@ -385,11 +411,11 @@ export default function People() {
           one row. h-10 across so they line up. */}
       <PageHeader
         icon={<IconUsers className="h-7 w-7" />}
-        title="Danh bạ"
+        title={t`Danh bạ`}
         description={
           view === "kinship"
-            ? "Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt."
-            : "Danh sách thành viên với lọc, tìm kiếm và import hàng loạt."
+            ? t`Chọn hai người trong họ để xem cách xưng hô theo truyền thống Việt.`
+            : t`Danh sách thành viên với lọc, tìm kiếm và import hàng loạt.`
         }
       />
 
@@ -405,11 +431,12 @@ export default function People() {
       {isMember && view === "people" && missingRoot && (
         <Alert>
           <AlertDescription>
-            <strong>Dòng họ chưa có Thuỷ tổ.</strong> Cần nhập Thuỷ tổ (đời đầu tiên) thì cây gia phả mới vẽ
-            đúng.{" "}
+            <strong>{t`Dòng họ chưa có Thuỷ tổ.`}</strong> Cần nhập Thuỷ tổ (đời
+            đầu tiên) thì cây gia phả mới vẽ
+            {t`đúng.`}{" "}
             {canEdit
-              ? "Thêm người mới và đánh dấu là Thuỷ tổ, hoặc sửa một người đã có."
-              : "Nhờ quản trị viên hoặc người biên tập của dòng họ bổ sung."}
+              ? t`Thêm người mới và đánh dấu là Thuỷ tổ, hoặc sửa một người đã có.`
+              : t`Nhờ quản trị viên hoặc người biên tập của dòng họ bổ sung.`}
             {canEdit && (
               <>
                 {" "}
@@ -418,7 +445,7 @@ export default function People() {
                   panel="person-new"
                   className="font-medium text-primary hover:underline"
                 >
-                  Thêm Thuỷ tổ
+                  {t`Thêm Thuỷ tổ`}
                 </PanelLink>
               </>
             )}
@@ -435,409 +462,441 @@ export default function People() {
             className="-ml-2 h-9"
             onClick={() => patch({ view: null })}
           >
-            ← Về danh bạ
+            {t`← Về danh bạ`}
           </Button>
           <KinshipContent clanId={clan.id} userId={userId} />
         </>
       ) : (
-      <>
-      {/* Hàng tìm kiếm + toggle Danh sách/Thẻ — LUÔN hiện (không giấu sau
+        <>
+          {/* Hàng tìm kiếm + toggle Danh sách/Thẻ — LUÔN hiện (không giấu sau
           "Bộ lọc"), vì đổi kiểu xem là thao tác thường dùng. */}
-      <CollapsibleFilters
-        onReset={() => {
-          setBranchId("");
-          setGeneration("");
-          setSort("generation");
-        }}
-search={(toggle) => (
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <div className="min-w-0 sm:flex-1">
-          <SearchInput
-            label="Tìm theo tên"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên, biệt danh, nơi sinh, tiểu sử…"
-            className="pr-[4.75rem]"
-            rightSlot={
-              <>{toggle}<RefreshButton
-                clanId={clan.id}
-                cachedVersion={clan.data_version}
-                compact
-                className="h-8 w-8 border-0 bg-transparent hover:bg-muted"
-              /></>
-            }
-          />
-        </div>
-        {/* Mobile: hàng riêng dưới ô tìm kiếm (kiểu xem trái, thao tác phải) để ô
+          <CollapsibleFilters
+            onReset={() => {
+              setBranchId("");
+              setGeneration("");
+              setSort("generation");
+            }}
+            search={(toggle) => (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="min-w-0 sm:flex-1">
+                  <SearchInput
+                    label={t`Tìm theo tên`}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder={t`Tìm theo tên, biệt danh, nơi sinh, tiểu sử…`}
+                    className="pr-[4.75rem]"
+                    rightSlot={
+                      <>
+                        {toggle}
+                        <RefreshButton
+                          clanId={clan.id}
+                          cachedVersion={clan.data_version}
+                          compact
+                          className="h-8 w-8 border-0 bg-transparent hover:bg-muted"
+                        />
+                      </>
+                    }
+                  />
+                </div>
+                {/* Mobile: hàng riêng dưới ô tìm kiếm (kiểu xem trái, thao tác phải) để ô
             tìm kiếm đủ rộng để gõ; sm+: cùng một hàng. */}
-        <div className="flex items-center justify-between gap-2 sm:justify-start">
-        <SegmentedControl ariaLabel="Chế độ hiển thị">
-          <SegmentedButton
-            active={viewMode === "list"}
-            onClick={() => setViewMode("list")}
-            title="Danh sách"
-            ariaLabel="Danh sách"
-            variant="icon-md"
+                <div className="flex items-center justify-between gap-2 sm:justify-start">
+                  <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
+                    <SegmentedButton
+                      active={viewMode === "list"}
+                      onClick={() => setViewMode("list")}
+                      title={t`Danh sách`}
+                      ariaLabel={t`Danh sách`}
+                      variant="icon-md"
+                    >
+                      <IconList className="h-4 w-4" />
+                    </SegmentedButton>
+                    <SegmentedButton
+                      active={viewMode === "grid"}
+                      onClick={() => setViewMode("grid")}
+                      title={t`Thẻ`}
+                      ariaLabel={t`Thẻ`}
+                      variant="icon-md"
+                    >
+                      <IconGrid className="h-4 w-4" />
+                    </SegmentedButton>
+                  </SegmentedControl>
+                  {view === "people" && (isMember || canEdit) && (
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {actionButtons}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            activeCount={
+              (branchId ? 1 : 0) +
+              (generation ? 1 : 0) +
+              (sort !== "generation" ? 1 : 0)
+            }
           >
-            <IconList className="h-4 w-4" />
-          </SegmentedButton>
-          <SegmentedButton
-            active={viewMode === "grid"}
-            onClick={() => setViewMode("grid")}
-            title="Thẻ"
-            ariaLabel="Thẻ"
-            variant="icon-md"
-          >
-            <IconGrid className="h-4 w-4" />
-          </SegmentedButton>
-        </SegmentedControl>
-        {view === "people" && (isMember || canEdit) && (
-          <div className="flex shrink-0 items-center gap-1.5">{actionButtons}</div>
-        )}
-        </div>
-      </div>
-      )}
-        activeCount={
-          (branchId ? 1 : 0) + (generation ? 1 : 0) + (sort !== "generation" ? 1 : 0)
-        }
-      >
-      {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
+            {/* sm:mt-3 — desktop CollapsibleFilters là `sm:contents` nên space-y của
           parent bị bỏ qua; đặt margin trực tiếp để search không dính hàng lọc. */}
-      <div className="flex flex-col gap-3">
-        {isMember && (
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 w-full justify-start"
-            onClick={() => patch({ view: "kinship" })}
-          >
-            <IconUsers className="mr-2 h-4 w-4" /> Tra cứu xưng hô
-          </Button>
-        )}
-        {isMember && (
-          <Button asChild variant="outline" className="h-11 w-full justify-start">
-            <Link to={`/clans/${clan.id}/relations`}>
-              <IconTree className="mr-2 h-4 w-4" /> Tra cứu quan hệ
-            </Link>
-          </Button>
-        )}
-        <Select
-          icon={<IconGrid />}
-          value={branchId}
-          onChange={(e) => setBranchId(e.target.value)}
-          aria-label="Lọc theo chi"
-          className="w-full"
-        >
-          <option value="">Tất cả chi</option>
-          {branches?.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          icon={<IconUsers />}
-          value={generation}
-          onChange={(e) => setGeneration(e.target.value)}
-          aria-label="Lọc theo đời"
-          className="w-full disabled:opacity-50"
-          disabled={!maxGen}
-        >
-          <option value="">Tất cả đời</option>
-          {maxGen
-            ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
-                <option key={g} value={g}>
-                  Đời {g - clan.generation_offset}
-                </option>
-              ))
-            : null}
-        </Select>
-        <Select
-          icon={<IconList />}
-          value={sort}
-          onChange={(e) => setSort(e.target.value as typeof sort)}
-          aria-label="Sắp xếp"
-          className="w-full"
-        >
-          <option value="generation">Sắp: Đời</option>
-          <option value="name">Sắp: Tên</option>
-          <option value="birth">Sắp: Năm sinh</option>
-        </Select>
-      </div>
-      </CollapsibleFilters>
+            <div className="flex flex-col gap-3">
+              {isMember && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 w-full justify-start"
+                  onClick={() => patch({ view: "kinship" })}
+                >
+                  <IconUsers className="mr-2 h-4 w-4" /> {t`Tra cứu xưng hô`}
+                </Button>
+              )}
+              {isMember && (
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 w-full justify-start"
+                >
+                  <Link to={`/clans/${clan.id}/relations`}>
+                    <IconTree className="mr-2 h-4 w-4" /> {t`Tra cứu quan hệ`}
+                  </Link>
+                </Button>
+              )}
+              <Select
+                icon={<IconGrid />}
+                value={branchId}
+                onChange={(e) => setBranchId(e.target.value)}
+                aria-label={t`Lọc theo chi`}
+                className="w-full"
+              >
+                <option value="">{t`Tất cả chi`}</option>
+                {branches?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                icon={<IconUsers />}
+                value={generation}
+                onChange={(e) => setGeneration(e.target.value)}
+                aria-label={t`Lọc theo đời`}
+                className="w-full disabled:opacity-50"
+                disabled={!maxGen}
+              >
+                <option value="">{t`Tất cả đời`}</option>
+                {maxGen
+                  ? Array.from({ length: maxGen }, (_, i) => i + 1).map((g) => (
+                      <option key={g} value={g}>
+                        Đời {g - clan.generation_offset}
+                      </option>
+                    ))
+                  : null}
+              </Select>
+              <Select
+                icon={<IconList />}
+                value={sort}
+                onChange={(e) => setSort(e.target.value as typeof sort)}
+                aria-label={t`Sắp xếp`}
+                className="w-full"
+              >
+                <option value="generation">{t`Sắp: Đời`}</option>
+                <option value="name">{t`Sắp: Tên`}</option>
+                <option value="birth">{t`Sắp: Năm sinh`}</option>
+              </Select>
+            </div>
+          </CollapsibleFilters>
 
-      {/* Results — guard against the (rare but real) state where the
+          {/* Results — guard against the (rare but real) state where the
           query is briefly disabled (e.g. while a sibling useAuth() is
           still settling), so `data` is undefined and `isLoading` is
           false at the same time. */}
-      {/* Bulk-action toolbar — shows when ≥ 1 person is selected. */}
-      {canEdit && selected.size > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-primary/5 px-3 py-2 text-sm">
-          <span className="font-medium">
-            Đã chọn {selected.size}
-            {total > 0 ? ` / ${total}` : ""} người
-          </span>
-          {/* Chỉ icon cho gọn — nhãn nằm ở title / aria-label. */}
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              className="h-10 w-10 px-0"
-              onClick={() => setBranchOpen(true)}
-              aria-label="Đổi chi / quản lý chi"
-              title="Đổi chi / quản lý chi"
-            >
-              <IconGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-10 w-10 px-0"
-              onClick={() => setAddrOpen(true)}
-              aria-label="Đặt nơi ở"
-              title="Đặt nơi ở"
-            >
-              <IconMapPin className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="destructive-outline"
-              className="h-10 w-10 px-0"
-              disabled={bulkDeleteM.isPending}
-              aria-label="Xoá"
-              title="Xoá"
-              onClick={async () => {
-                const ok = await confirm({
-                  title: `Xoá ${selected.size} người?`,
-                  description:
-                    "Mỗi người được xoá mềm và có thể khôi phục từ nhật ký.",
-                  confirmLabel: "Xoá",
-                  destructive: true,
-                });
-                if (ok) bulkDeleteM.mutate();
-              }}
-            >
-              <IconTrash className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              className="h-10 w-10 px-0"
-              onClick={() => setSelected(new Set())}
-              aria-label="Bỏ chọn"
-              title="Bỏ chọn"
-            >
-              <IconX className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-      <FilterDrawer
-        open={branchOpen}
-        onClose={() => setBranchOpen(false)}
-        title="Chi họ"
-      >
-        <section className="space-y-2">
-          <h3 className="text-sm font-semibold">Đặt chi cho {selected.size} người đã chọn</h3>
-          <Select
-            icon={<IconGrid />}
-            value={bulkBranch}
-            onChange={(e) => setBulkBranch(e.target.value)}
-            aria-label="Chi áp cho lựa chọn"
-          >
-            <option value="">(không có chi)</option>
-            {branches?.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </Select>
-          <Button
-            type="button"
-            className="w-full"
-            onClick={() => bulkChangeBranchM.mutate()}
-            disabled={bulkChangeBranchM.isPending || selected.size === 0}
-          >
-            <IconTree className="h-4 w-4 mr-1.5" />
-            {bulkChangeBranchM.isPending ? "Đang đổi…" : `Đổi chi cho ${selected.size} người`}
-          </Button>
-        </section>
-        <section className="space-y-2 border-t pt-4">
-          <h3 className="text-sm font-semibold">Quản lý chi</h3>
-          <BranchesSection clanId={clan.id} canEdit={canEdit} />
-        </section>
-      </FilterDrawer>
-      <FilterDrawer
-        open={addrOpen}
-        onClose={() => setAddrOpen(false)}
-        title={`Nơi ở cho ${selected.size} người`}
-        onReset={() => setBulkAddr(EMPTY_PERSON_ADDRESS)}
-      >
-        <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-          Đặt <strong>cùng một nơi ở</strong> cho {selected.size} người đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ.
-          Để trống rồi lưu thì <strong>xoá</strong> nơi ở của họ.
-        </p>
-        <AddressPicker
-          idPrefix="bulk-addr"
-          value={{ province_code: bulkAddr.province_code, ward_code: bulkAddr.ward_code }}
-          onChange={(a) => setBulkAddr({ ...bulkAddr, ...a })}
-        />
-        <Input
-          icon={<IconMapPin />}
-          maxLength={300}
-          value={bulkAddr.street_detail ?? ""}
-          onChange={(e) => setBulkAddr({ ...bulkAddr, street_detail: e.target.value || null })}
-          placeholder="Số nhà, thôn / xóm (tuỳ chọn)"
-          aria-label="Số nhà, thôn / xóm"
-        />
-        <Button
-          type="button"
-          className="w-full"
-          disabled={bulkAddressM.isPending || selected.size === 0}
-          onClick={() => bulkAddressM.mutate()}
-        >
-          {bulkAddressM.isPending ? "Đang lưu…" : `Lưu cho ${selected.size} người`}
-        </Button>
-      </FilterDrawer>
-      {(bulkChangeBranchM.error || bulkDeleteM.error) && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            {((bulkChangeBranchM.error ?? bulkDeleteM.error) as Error).message}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {!data ? (
-        <div className="rounded-xl border bg-card shadow-sm p-4">
-          <p className="text-muted-foreground">Đang tải…</p>
-        </div>
-      ) : data.rows.length === 0 ? (
-        debounced || branchId || generation ? (
-          <EmptyState
-            icon={<IconSearch className="h-10 w-10" />}
-            title="Không tìm thấy ai khớp bộ lọc"
-            description="Thử bỏ bớt từ khoá, đổi chi hoặc đời để mở rộng kết quả."
-            primary={{
-              label: "Xoá bộ lọc",
-              onClick: () => {
-                setSearch("");
-                patch({ q: null, branch: null, gen: null, page: null });
-              },
-            }}
-          />
-        ) : (
-          <EmptyState
-            icon={<IconUsers className="h-10 w-10" />}
-            title="Chưa có ai trong dòng họ"
-            description="Thêm thuỷ tổ trước, các thế hệ con cháu nối vào dễ hơn. Nếu đã có dữ liệu sẵn ở file Excel, dùng nhập hàng loạt."
-            primary={
-              canEdit
-                ? {
-                    label: "Thêm người",
-                    to: `/clans/${clan.id}/people/new`,
-                    panel: { id: "person-new" as const },
-                    icon: <IconPlus className="h-4 w-4 mr-1.5" />,
-                  }
-                : null
-            }
-            secondary={
-              canEdit
-                ? {
-                    label: "Nhập từ Excel",
-                    to: `/clans/${clan.id}/import`,
-                    icon: <IconUpload className="h-4 w-4 mr-1.5" />,
-                  }
-                : null
-            }
-            tertiary={
-              canEdit
-                ? {
-                    label: "Sinh bằng AI",
-                    to: `/clans/${clan.id}/ai-generate`,
-                    icon: <IconSparkles className="h-4 w-4 mr-1.5" />,
-                  }
-                : null
-            }
-          />
-        )
-      ) : viewMode === "list" ? (
-        <ul className="divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
-          {canEdit && (
-            <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 bg-muted/30">
-              <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={
-                    data.rows.length > 0 &&
-                    data.rows.every((r) => selected.has(r.id))
-                  }
-                  onChange={(e) =>
-                    toggleAllOnPage(data.rows, e.target.checked)
-                  }
-                  className="h-4 w-4 accent-primary"
-                />
-                Chọn cả trang này ({data.rows.length})
-              </label>
-              {total > data.rows.length && selected.size < total && (
-                <button
-                  type="button"
-                  onClick={() => selectAllMatchingM.mutate()}
-                  disabled={selectAllMatchingM.isPending}
-                  className="text-sm text-primary hover:underline underline-offset-2"
+          {/* Bulk-action toolbar — shows when ≥ 1 person is selected. */}
+          {canEdit && selected.size > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-primary/5 px-3 py-2 text-sm">
+              <span className="font-medium">
+                Đã chọn {selected.size}
+                {total > 0 ? ` / ${total}` : ""} người
+              </span>
+              {/* Chỉ icon cho gọn — nhãn nằm ở title / aria-label. */}
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="outline"
+                  className="h-10 w-10 px-0"
+                  onClick={() => setBranchOpen(true)}
+                  aria-label={t`Đổi chi / quản lý chi`}
+                  title={t`Đổi chi / quản lý chi`}
                 >
-                  {selectAllMatchingM.isPending
-                    ? "Đang chọn…"
-                    : `Chọn tất cả ${total} kết quả khớp bộ lọc`}
-                </button>
-              )}
-            </li>
+                  <IconGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-10 w-10 px-0"
+                  onClick={() => setAddrOpen(true)}
+                  aria-label={t`Đặt nơi ở`}
+                  title={t`Đặt nơi ở`}
+                >
+                  <IconMapPin className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="destructive-outline"
+                  className="h-10 w-10 px-0"
+                  disabled={bulkDeleteM.isPending}
+                  aria-label={t`Xoá`}
+                  title={t`Xoá`}
+                  onClick={async () => {
+                    const ok = await confirm({
+                      title: t`Xoá ${selected.size} người?`,
+                      description: t`Mỗi người được xoá mềm và có thể khôi phục từ nhật ký.`,
+                      confirmLabel: t`Xoá`,
+                      destructive: true,
+                    });
+                    if (ok) bulkDeleteM.mutate();
+                  }}
+                >
+                  <IconTrash className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="h-10 w-10 px-0"
+                  onClick={() => setSelected(new Set())}
+                  aria-label={t`Bỏ chọn`}
+                  title={t`Bỏ chọn`}
+                >
+                  <IconX className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
-          {data.rows.map((p) => (
-            <PersonListItem
-              key={p.id}
-              person={p}
-              clanId={clan.id}
-              clanName={clan.name}
-              genOffset={clan.generation_offset}
-              canCreateQr={effectiveRole(clan) !== null}
-              showKhoe={isMember}
-              relatives={relatives}
-              photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
-              selectable={canEdit}
-              selected={selected.has(p.id)}
-              onToggleSelect={() => toggleSelected(p.id)}
-              canCopy={canEdit}
+          <FilterDrawer
+            open={branchOpen}
+            onClose={() => setBranchOpen(false)}
+            title={t`Chi họ`}
+          >
+            <section className="space-y-2">
+              <h3 className="text-sm font-semibold">
+                Đặt chi cho {selected.size} người đã chọn
+              </h3>
+              <Select
+                icon={<IconGrid />}
+                value={bulkBranch}
+                onChange={(e) => setBulkBranch(e.target.value)}
+                aria-label={t`Chi áp cho lựa chọn`}
+              >
+                <option value="">{t`(không có chi)`}</option>
+                {branches?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </Select>
+              <Button
+                type="button"
+                className="w-full"
+                onClick={() => bulkChangeBranchM.mutate()}
+                disabled={bulkChangeBranchM.isPending || selected.size === 0}
+              >
+                <IconTree className="h-4 w-4 mr-1.5" />
+                {bulkChangeBranchM.isPending
+                  ? t`Đang đổi…`
+                  : t`Đổi chi cho ${selected.size} người`}
+              </Button>
+            </section>
+            <section className="space-y-2 border-t pt-4">
+              <h3 className="text-sm font-semibold">{t`Quản lý chi`}</h3>
+              <BranchesSection clanId={clan.id} canEdit={canEdit} />
+            </section>
+          </FilterDrawer>
+          <FilterDrawer
+            open={addrOpen}
+            onClose={() => setAddrOpen(false)}
+            title={t`Nơi ở cho ${selected.size} người`}
+            onReset={() => setBulkAddr(EMPTY_PERSON_ADDRESS)}
+          >
+            <p className="rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+              Đặt <strong>{t`cùng một nơi ở`}</strong> cho {selected.size} người
+              {t`đã chọn (ví dụ cả nhà), ghi đè địa chỉ cũ. Để trống rồi lưu thì`}{" "}
+              <strong>{t`xoá`}</strong> nơi ở của họ.
+            </p>
+            <AddressPicker
+              idPrefix="bulk-addr"
+              value={{
+                province_code: bulkAddr.province_code,
+                ward_code: bulkAddr.ward_code,
+              }}
+              onChange={(a) => setBulkAddr({ ...bulkAddr, ...a })}
             />
-          ))}
-        </ul>
-      ) : (
-        <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {data.rows.map((p) => (
-            <PersonGridCard
-              key={p.id}
-              person={p}
-              clanId={clan.id}
-              genOffset={clan.generation_offset}
-              relatives={relatives}
-              photoUrl={p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null}
-              selectable={canEdit}
-              selected={selected.has(p.id)}
-              onToggleSelect={() => toggleSelected(p.id)}
-              canCopy={canEdit}
-              canRelate={isMember}
+            <Input
+              icon={<IconMapPin />}
+              maxLength={300}
+              value={bulkAddr.street_detail ?? ""}
+              onChange={(e) =>
+                setBulkAddr({
+                  ...bulkAddr,
+                  street_detail: e.target.value || null,
+                })
+              }
+              placeholder={t`Số nhà, thôn / xóm (tuỳ chọn)`}
+              aria-label={t`Số nhà, thôn / xóm`}
             />
-          ))}
-        </ul>
-      )}
+            <Button
+              type="button"
+              className="w-full"
+              disabled={bulkAddressM.isPending || selected.size === 0}
+              onClick={() => bulkAddressM.mutate()}
+            >
+              {bulkAddressM.isPending
+                ? t`Đang lưu…`
+                : t`Lưu cho ${selected.size} người`}
+            </Button>
+          </FilterDrawer>
+          {(bulkChangeBranchM.error || bulkDeleteM.error) && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {
+                  ((bulkChangeBranchM.error ?? bulkDeleteM.error) as Error)
+                    .message
+                }
+              </AlertDescription>
+            </Alert>
+          )}
 
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        total={total}
-        pageSize={pageSize}
-        unit="người"
-        isFetching={isFetching}
-        onPageChange={setPage}
-        pageSizeOptions={PAGE_SIZE_OPTIONS}
-        onPageSizeChange={setPageSize}
-      />
-      </>
+          {!data ? (
+            <div className="rounded-xl border bg-card shadow-sm p-4">
+              <p className="text-muted-foreground">{t`Đang tải…`}</p>
+            </div>
+          ) : data.rows.length === 0 ? (
+            debounced || branchId || generation ? (
+              <EmptyState
+                icon={<IconSearch className="h-10 w-10" />}
+                title={t`Không tìm thấy ai khớp bộ lọc`}
+                description={t`Thử bỏ bớt từ khoá, đổi chi hoặc đời để mở rộng kết quả.`}
+                primary={{
+                  label: t`Xoá bộ lọc`,
+                  onClick: () => {
+                    setSearch("");
+                    patch({ q: null, branch: null, gen: null, page: null });
+                  },
+                }}
+              />
+            ) : (
+              <EmptyState
+                icon={<IconUsers className="h-10 w-10" />}
+                title={t`Chưa có ai trong dòng họ`}
+                description={t`Thêm thuỷ tổ trước, các thế hệ con cháu nối vào dễ hơn. Nếu đã có dữ liệu sẵn ở file Excel, dùng nhập hàng loạt.`}
+                primary={
+                  canEdit
+                    ? {
+                        label: t`Thêm người`,
+                        to: `/clans/${clan.id}/people/new`,
+                        panel: { id: "person-new" as const },
+                        icon: <IconPlus className="h-4 w-4 mr-1.5" />,
+                      }
+                    : null
+                }
+                secondary={
+                  canEdit
+                    ? {
+                        label: t`Nhập từ Excel`,
+                        to: `/clans/${clan.id}/import`,
+                        icon: <IconUpload className="h-4 w-4 mr-1.5" />,
+                      }
+                    : null
+                }
+                tertiary={
+                  canEdit
+                    ? {
+                        label: t`Sinh bằng AI`,
+                        to: `/clans/${clan.id}/ai-generate`,
+                        icon: <IconSparkles className="h-4 w-4 mr-1.5" />,
+                      }
+                    : null
+                }
+              />
+            )
+          ) : viewMode === "list" ? (
+            <ul className="divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
+              {canEdit && (
+                <li className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 bg-muted/30">
+                  <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={
+                        data.rows.length > 0 &&
+                        data.rows.every((r) => selected.has(r.id))
+                      }
+                      onChange={(e) =>
+                        toggleAllOnPage(data.rows, e.target.checked)
+                      }
+                      className="h-4 w-4 accent-primary"
+                    />
+                    Chọn cả trang này ({data.rows.length})
+                  </label>
+                  {total > data.rows.length && selected.size < total && (
+                    <button
+                      type="button"
+                      onClick={() => selectAllMatchingM.mutate()}
+                      disabled={selectAllMatchingM.isPending}
+                      className="text-sm text-primary hover:underline underline-offset-2"
+                    >
+                      {selectAllMatchingM.isPending
+                        ? t`Đang chọn…`
+                        : t`Chọn tất cả ${total} kết quả khớp bộ lọc`}
+                    </button>
+                  )}
+                </li>
+              )}
+              {data.rows.map((p) => (
+                <PersonListItem
+                  key={p.id}
+                  person={p}
+                  clanId={clan.id}
+                  clanName={clan.name}
+                  genOffset={clan.generation_offset}
+                  canCreateQr={effectiveRole(clan) !== null}
+                  showKhoe={isMember}
+                  relatives={relatives}
+                  photoUrl={
+                    p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null
+                  }
+                  selectable={canEdit}
+                  selected={selected.has(p.id)}
+                  onToggleSelect={() => toggleSelected(p.id)}
+                  canCopy={canEdit}
+                />
+              ))}
+            </ul>
+          ) : (
+            <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {data.rows.map((p) => (
+                <PersonGridCard
+                  key={p.id}
+                  person={p}
+                  clanId={clan.id}
+                  genOffset={clan.generation_offset}
+                  relatives={relatives}
+                  photoUrl={
+                    p.photo_path ? (photoUrls?.get(p.photo_path) ?? null) : null
+                  }
+                  selectable={canEdit}
+                  selected={selected.has(p.id)}
+                  onToggleSelect={() => toggleSelected(p.id)}
+                  canCopy={canEdit}
+                  canRelate={isMember}
+                />
+              ))}
+            </ul>
+          )}
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+            pageSize={pageSize}
+            unit={t`người`}
+            isFetching={isFetching}
+            onPageChange={setPage}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
+            onPageSizeChange={setPageSize}
+          />
+        </>
       )}
     </div>
   );
@@ -858,11 +917,11 @@ function lifespan(person: PersonRow): string {
 }
 
 function genderLabel(g: "M" | "F"): string {
-  return g === "M" ? "♂ Nam" : "♀ Nữ";
+  return g === "M" ? "♂ Nam" : t`♀ Nữ`;
 }
 
 function spouseLabel(g: "M" | "F"): string {
-  return g === "M" ? "Vợ" : "Chồng";
+  return g === "M" ? t`Vợ` : t`Chồng`;
 }
 
 interface RelativeNames {
@@ -938,84 +997,85 @@ function PersonListItem({
   const metaBits = [genderLabel(person.gender)];
   if (life) metaBits.push(life);
   const dispGen = displayGen(person.generation, genOffset);
-  if (dispGen !== null) metaBits.push(`Đời ${dispGen}`);
+  if (dispGen !== null) metaBits.push(t`Đời ${dispGen}`);
 
   return (
     <li className="relative transition-colors hover:bg-muted/40 sm:flex sm:items-center">
       <div className="flex items-start gap-2 sm:min-w-0 sm:flex-1">
-      {selectable && (
-        <label className="pl-3 pt-4 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={!!selected}
-            onChange={onToggleSelect}
-            className="h-4 w-4 accent-primary"
-            aria-label={`Chọn ${person.full_name}`}
+        {selectable && (
+          <label className="pl-3 pt-4 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!selected}
+              onChange={onToggleSelect}
+              className="h-4 w-4 accent-primary"
+              aria-label={t`Chọn ${person.full_name}`}
+            />
+          </label>
+        )}
+        <PanelLink
+          to={`/clans/${clanId}/people/${person.id}`}
+          panel="person-view"
+          panelParams={{ pid: person.id }}
+          className="flex flex-1 min-w-0 items-start gap-3 p-3"
+        >
+          <PersonAvatar
+            gender={person.gender}
+            photoUrl={photoUrl}
+            size={44}
+            className={person.is_living ? "" : "opacity-80"}
           />
-        </label>
-      )}
-      <PanelLink
-        to={`/clans/${clanId}/people/${person.id}`}
-        panel="person-view"
-        panelParams={{ pid: person.id }}
-        className="flex flex-1 min-w-0 items-start gap-3 p-3"
-      >
-        <PersonAvatar
-          gender={person.gender}
-          photoUrl={photoUrl}
-          size={44}
-          className={person.is_living ? "" : "opacity-80"}
-        />
-        <div className="min-w-0 flex-1">
-          {/* Name line: các nút hành động nằm ở hàng riêng dưới đáy, không đè lên tên.
+          <div className="min-w-0 flex-1">
+            {/* Name line: các nút hành động nằm ở hàng riêng dưới đáy, không đè lên tên.
               Các dòng meta + cha/mẹ/vợ phía dưới full width → hiển thị
               được nhiều hơn vì copy button ko còn chiếm 1 cột bên phải. */}
-          <p className="font-medium truncate">
-            {person.full_name}
-            {person.is_root && (
-              <span className="ml-2 text-xs text-accent font-medium">
-                Thuỷ tổ
-              </span>
+            <p className="font-medium truncate">
+              {person.full_name}
+              {person.is_root && (
+                <span className="ml-2 text-xs text-accent font-medium">
+                  {t`Thuỷ tổ`}
+                </span>
+              )}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {metaBits.join(" · ")}
+            </p>
+            {(rel.father || rel.mother || rel.spouses.length > 0) && (
+              <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                {(rel.father || rel.mother) && (
+                  <p className="truncate">
+                    {rel.father && (
+                      <>
+                        <span className="font-medium">Cha:</span> {rel.father}
+                      </>
+                    )}
+                    {rel.father && rel.mother && (
+                      <span className="mx-1.5 text-muted-foreground/60">·</span>
+                    )}
+                    {rel.mother && (
+                      <>
+                        <span className="font-medium">{t`Mẹ:`}</span>{" "}
+                        {rel.mother}
+                      </>
+                    )}
+                  </p>
+                )}
+                {rel.spouses.length > 0 && (
+                  <p className="truncate">
+                    <span className="font-medium">
+                      {spouseLabel(person.gender)}:
+                    </span>{" "}
+                    {rel.spouses.join(", ")}
+                  </p>
+                )}
+              </div>
             )}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {metaBits.join(" · ")}
-          </p>
-          {(rel.father || rel.mother || rel.spouses.length > 0) && (
-            <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-              {(rel.father || rel.mother) && (
-                <p className="truncate">
-                  {rel.father && (
-                    <>
-                      <span className="font-medium">Cha:</span> {rel.father}
-                    </>
-                  )}
-                  {rel.father && rel.mother && (
-                    <span className="mx-1.5 text-muted-foreground/60">·</span>
-                  )}
-                  {rel.mother && (
-                    <>
-                      <span className="font-medium">Mẹ:</span> {rel.mother}
-                    </>
-                  )}
-                </p>
-              )}
-              {rel.spouses.length > 0 && (
-                <p className="truncate">
-                  <span className="font-medium">
-                    {spouseLabel(person.gender)}:
-                  </span>{" "}
-                  {rel.spouses.join(", ")}
-                </p>
-              )}
-            </div>
-          )}
-          <PersonDates
-            person={person}
-            className="text-xs text-muted-foreground/80 mt-1 truncate"
-          />
-        </div>
-      </PanelLink>
+            <PersonDates
+              person={person}
+              className="text-xs text-muted-foreground/80 mt-1 truncate"
+            />
+          </div>
+        </PanelLink>
       </div>
       {/* Hành động của người: MỘT hàng ngang (quan hệ · khoe · sao chép). Điện thoại: ở đáy hàng, căn phải;
           từ sm: nằm bên phải, giữa chiều cao mục — khỏi tốn thêm một dòng. */}
@@ -1024,8 +1084,8 @@ function PersonListItem({
           {showKhoe && (
             <Link
               to={`/clans/${clanId}/relations?p=${person.id}`}
-              aria-label={`Tra cứu quan hệ của ${person.full_name}`}
-              title="Tra cứu quan hệ"
+              aria-label={t`Tra cứu quan hệ của ${person.full_name}`}
+              title={t`Tra cứu quan hệ`}
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary"
             >
               <IconTree className="h-4 w-4" />
@@ -1053,8 +1113,8 @@ function PersonListItem({
               to={`/clans/${clanId}/people/new?from=${person.id}`}
               panel="person-new"
               panelParams={{ pfrom: person.id }}
-              aria-label={`Sao chép ${person.full_name}`}
-              title="Sao chép thành người mới"
+              aria-label={t`Sao chép ${person.full_name}`}
+              title={t`Sao chép thành người mới`}
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary"
             >
               <IconCopy className="h-4 w-4" />
@@ -1102,7 +1162,7 @@ function PersonGridCard({
             checked={!!selected}
             onChange={onToggleSelect}
             className="h-4 w-4 accent-primary block"
-            aria-label={`Chọn ${person.full_name}`}
+            aria-label={t`Chọn ${person.full_name}`}
           />
         </label>
       )}
@@ -1111,8 +1171,8 @@ function PersonGridCard({
           to={`/clans/${clanId}/people/new?from=${person.id}`}
           panel="person-new"
           panelParams={{ pfrom: person.id }}
-          aria-label={`Sao chép ${person.full_name}`}
-          title="Sao chép thành người mới"
+          aria-label={t`Sao chép ${person.full_name}`}
+          title={t`Sao chép thành người mới`}
           className="absolute top-2 right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/80 text-muted-foreground hover:text-primary backdrop-blur"
         >
           <IconCopy className="h-4 w-4" />
@@ -1121,8 +1181,8 @@ function PersonGridCard({
       {canRelate && (
         <Link
           to={`/clans/${clanId}/relations?p=${person.id}`}
-          aria-label={`Tra cứu quan hệ của ${person.full_name}`}
-          title="Tra cứu quan hệ"
+          aria-label={t`Tra cứu quan hệ của ${person.full_name}`}
+          title={t`Tra cứu quan hệ`}
           className={`absolute right-2 z-10 inline-flex h-9 w-9 items-center justify-center rounded-md bg-card/80 text-muted-foreground backdrop-blur hover:text-primary ${
             canCopy ? "top-12" : "top-2"
           }`}
@@ -1149,7 +1209,7 @@ function PersonGridCard({
             {person.full_name}
           </p>
           {person.is_root && (
-            <p className="text-xs text-accent font-medium mt-0.5">Thuỷ tổ</p>
+            <p className="text-xs text-accent font-medium mt-0.5">{t`Thuỷ tổ`}</p>
           )}
           <p className="text-xs text-muted-foreground mt-1 truncate">
             {genderLabel(person.gender)}
@@ -1162,9 +1222,7 @@ function PersonGridCard({
           )}
           {rel.spouses.length > 0 && (
             <p className="text-xs text-muted-foreground mt-1 truncate">
-              <span className="font-medium">
-                {spouseLabel(person.gender)}:
-              </span>{" "}
+              <span className="font-medium">{spouseLabel(person.gender)}:</span>{" "}
               {rel.spouses[0]}
               {rel.spouses.length > 1 ? ` +${rel.spouses.length - 1}` : ""}
             </p>
@@ -1201,11 +1259,12 @@ function CompactCompletion({
   return (
     <Link
       to={`/clans/${clanId}/todo`}
-      aria-label={`Hồ sơ đầy đủ ${percent}%, ${withGaps} người còn thiếu thông tin. Mở việc cần làm`}
+      aria-label={t`Hồ sơ đầy đủ ${percent}%, ${withGaps} người còn thiếu thông tin. Mở việc cần làm`}
       className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border bg-card px-3 py-2 text-sm hover:border-primary transition-colors"
     >
       <span className="shrink-0">
-        Hồ sơ đầy đủ <span className="tabular-nums font-semibold">{percent}%</span>
+        {t`Hồ sơ đầy đủ`}{" "}
+        <span className="tabular-nums font-semibold">{percent}%</span>
       </span>
       <div className="h-1.5 min-w-[80px] flex-1 overflow-hidden rounded-full bg-muted">
         <div
@@ -1215,11 +1274,11 @@ function CompactCompletion({
       </div>
       {withGaps > 0 ? (
         <span className="shrink-0 text-xs text-muted-foreground">
-          <span className="tabular-nums">{withGaps}</span> người còn thiếu thông tin ·{" "}
-          <span className="text-primary">Bổ sung →</span>
+          <span className="tabular-nums">{withGaps}</span> người còn thiếu thông
+          tin · <span className="text-primary">{t`Bổ sung →`}</span>
         </span>
       ) : (
-        <span className="shrink-0 text-xs text-emerald-600">Tất cả đã đầy đủ ✓</span>
+        <span className="shrink-0 text-xs text-emerald-600">{t`Tất cả đã đầy đủ ✓`}</span>
       )}
     </Link>
   );

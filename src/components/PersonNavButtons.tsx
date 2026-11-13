@@ -8,6 +8,7 @@ import {
   type PersonNavCtx,
 } from "@/lib/personNav";
 
+import { t } from "@lingui/core/macro";
 /**
  * "Người trước / Người sau" theo thứ tự Danh bạ — chỉ hiện khi người đang xem
  * nằm trong danh sách vừa duyệt (mở từ Danh bạ). Sang người kế không cần quay lại.
@@ -61,7 +62,7 @@ export function PersonNavButtons({
   return (
     <div
       className="flex items-center justify-between gap-2 print-hide"
-      aria-label="Duyệt danh bạ"
+      aria-label={t`Duyệt danh bạ`}
     >
       <Button
         type="button"
@@ -70,7 +71,7 @@ export function PersonNavButtons({
         disabled={!hasPrev || busy}
         onClick={() => void go(-1)}
       >
-        ← Người trước
+        {t`← Người trước`}
       </Button>
       <span className="text-xs text-muted-foreground tabular-nums">
         {position} / {ctx.total}
@@ -82,7 +83,7 @@ export function PersonNavButtons({
         disabled={!hasNext || busy}
         onClick={() => void go(1)}
       >
-        Người sau →
+        {t`Người sau →`}
       </Button>
     </div>
   );

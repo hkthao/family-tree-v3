@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { IconMapPin } from "@/components/icons";
 import type { ShareViewRestingPlaceFull } from "@/lib/queries/share-view";
 
+import { t } from "@lingui/core/macro";
 const KIND_LABEL: Record<ShareViewRestingPlaceFull["kind"], string> = {
   grave: "Mộ / chôn cất",
   ashes_temple: "Gửi tro cốt ở chùa",
@@ -59,17 +60,17 @@ export function SharedRestingPlaceCard({
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <Row label="Hình thức" value={KIND_LABEL[rp.kind]} />
-          <Row label="Nơi" value={rp.location_name} />
-          <Row label="Vị trí" value={rp.location_detail} />
-          <Row label="Địa chỉ" value={rp.address} />
-          <Row label="Trạng thái" value={STATUS_LABEL[rp.status]} />
+          <Row label={t`Hình thức`} value={KIND_LABEL[rp.kind]} />
+          <Row label={t`Nơi`} value={rp.location_name} />
+          <Row label={t`Vị trí`} value={rp.location_detail} />
+          <Row label={t`Địa chỉ`} value={rp.address} />
+          <Row label={t`Trạng thái`} value={STATUS_LABEL[rp.status]} />
         </CardContent>
         {dir && (
           <CardFooter className="border-t pt-4">
             <Button size="sm" variant="outline" asChild>
               <a href={dir} target="_blank" rel="noopener noreferrer">
-                <IconMapPin className="h-4 w-4 mr-1" /> Chỉ đường
+                <IconMapPin className="h-4 w-4 mr-1" /> {t`Chỉ đường`}
               </a>
             </Button>
           </CardFooter>
@@ -92,7 +93,9 @@ export function SharedRestingPlaceCard({
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">{o.full_name}</p>
                     {o.note && (
-                      <p className="text-xs text-muted-foreground truncate">{o.note}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {o.note}
+                      </p>
                     )}
                   </div>
                 </li>

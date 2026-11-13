@@ -11,6 +11,7 @@ import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
 import { getClanPost } from "@/lib/queries/clan_posts";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 /**
  * `/clans/:clanId/board/:postId/edit` — sửa bài. Chỉ author hoặc
  * admin clan (RLS sẽ chặn, kiểm tra ở UI để báo lỗi sớm).
@@ -24,14 +25,18 @@ export default function BoardPostEdit() {
   const { user } = useAuth();
   const { clan } = useClanContext();
 
-  const { data: post, isLoading, error } = useQuery({
+  const {
+    data: post,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: queryKeys.clanPost(postId!),
     queryFn: () => getClanPost(postId!),
     enabled: !!postId,
   });
 
   if (isLoading) {
-    return <p className="text-muted-foreground">Đang tải…</p>;
+    return <p className="text-muted-foreground">{t`Đang tải…`}</p>;
   }
   if (error) {
     return (
@@ -44,8 +49,7 @@ export default function BoardPostEdit() {
     return <Navigate to={`/clans/${clanId}/board`} replace />;
   }
 
-  const canEdit =
-    post.author_id === user?.id || isClanAdmin(clan);
+  const canEdit = post.author_id === user?.id || isClanAdmin(clan);
   if (!canEdit) {
     return <Navigate to={`/clans/${clanId}/board/${postId}`} replace />;
   }
@@ -55,18 +59,18 @@ export default function BoardPostEdit() {
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Bảng tin", to: `/clans/${clanId}/board` },
+          { label: t`Bảng tin`, to: `/clans/${clanId}/board` },
           {
             label: post.title ?? "Bài viết",
             to: `/clans/${clanId}/board/${postId}`,
           },
-          { label: "Sửa" },
+          { label: t`Sửa` },
         ]}
       />
 
       <PageHeader
         icon={<IconPencil className="h-7 w-7" />}
-        title="Sửa bài"
+        title={t`Sửa bài`}
       />
 
       <BoardPostForm

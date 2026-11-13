@@ -9,6 +9,7 @@ import { useMascotTip } from "@/hooks/useMascotTip";
 import type { Tip, TipContext } from "@/lib/tipCatalogue";
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 const AUTO_HIDE_MS = 5000;
 
 /**
@@ -19,7 +20,9 @@ const HIDE_ON_ROUTES = ["/login", "/signup", "/lien-he", "/changelog"];
 
 function isHiddenRoute(pathname: string): boolean {
   return (
-    HIDE_ON_ROUTES.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
+    HIDE_ON_ROUTES.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    ) ||
     pathname.startsWith("/share/") ||
     pathname.startsWith("/inlaws/confirm/")
   );
@@ -284,8 +287,8 @@ export function MascotTip() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        aria-label={hasTip ? "Có gợi ý mới — bấm để xem" : "Linh vật"}
-        title={hasTip ? "Có gợi ý mới" : "Linh vật (kéo để di chuyển)"}
+        aria-label={hasTip ? t`Có gợi ý mới — bấm để xem` : t`Linh vật`}
+        title={hasTip ? t`Có gợi ý mới` : t`Linh vật (kéo để di chuyển)`}
         style={buttonStyle}
         className={cn(
           "mascot-icon",
@@ -334,7 +337,7 @@ export function MascotTip() {
             <button
               type="button"
               onClick={onCloseBubble}
-              aria-label="Đóng"
+              aria-label={t`Đóng`}
               className="shrink-0 -mt-1 -mr-1 h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <IconX className="h-4 w-4" />
@@ -347,13 +350,7 @@ export function MascotTip() {
   );
 }
 
-function TipActions({
-  tip,
-  onClose,
-}: {
-  tip: Tip;
-  onClose: () => void;
-}) {
+function TipActions({ tip, onClose }: { tip: Tip; onClose: () => void }) {
   const ctx: TipContext = {
     route: window.location.pathname,
     appVersion: typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "",
@@ -381,7 +378,7 @@ function TipActions({
           onClick={onClose}
           className="text-sm font-medium text-primary hover:underline"
         >
-          Đã hiểu
+          {t`Đã hiểu`}
         </button>
       )}
     </div>

@@ -3,7 +3,6 @@ import { useSidebarHidden } from "@/lib/sidebarHidden";
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useParams } from "react-router-dom";
 
-
 import { usePanel } from "@/components/panel/usePanel";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { AppLogo } from "@/components/AppLogo";
@@ -38,6 +37,7 @@ import { countClanTodo } from "@/lib/queries/todo";
 import { unaccent } from "@/lib/unaccent";
 import { cn } from "@/lib/utils";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -112,7 +112,10 @@ export function AppDrawer({ open, onClose }: Props) {
   // drawer is part of the layout and never modal, so skip the lock.
   useEffect(() => {
     if (!open) return;
-    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches
+    ) {
       return;
     }
     const prev = document.body.style.overflow;
@@ -161,7 +164,10 @@ export function AppDrawer({ open, onClose }: Props) {
   const needle = unaccent(menuQuery.trim());
   const visibleSections = needle
     ? sections
-        .map((sec) => ({ ...sec, items: sec.items.filter((it) => unaccent(it.label).includes(needle)) }))
+        .map((sec) => ({
+          ...sec,
+          items: sec.items.filter((it) => unaccent(it.label).includes(needle)),
+        }))
         .filter((sec) => sec.items.length > 0)
     : sections;
 
@@ -181,7 +187,7 @@ export function AppDrawer({ open, onClose }: Props) {
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Điều hướng"
+        aria-label={t`Điều hướng`}
         className={cn(
           "fixed top-0 left-0 bottom-0 z-40 w-72 max-w-[85vw]",
           "bg-background border-r shadow-lg lg:shadow-none",
@@ -201,34 +207,36 @@ export function AppDrawer({ open, onClose }: Props) {
             className="clan-name text-2xl font-semibold text-primary inline-flex items-center gap-2"
           >
             <AppLogo size={28} className="rounded" />
-            Dòng Họ Việt
+            {t`Dòng Họ Việt`}
           </Link>
           <button
             type="button"
             onClick={onClose}
             className="h-11 w-11 inline-flex items-center justify-center rounded-md hover:bg-muted lg:hidden"
-            aria-label="Đóng menu"
+            aria-label={t`Đóng menu`}
           >
-            <span className="text-lg" aria-hidden="true">✕</span>
+            <span className="text-lg" aria-hidden="true">
+              ✕
+            </span>
           </button>
         </header>
 
         <div className="px-3 py-2">
           <label className="relative block">
-            <span className="sr-only">Tìm trong menu</span>
+            <span className="sr-only">{t`Tìm trong menu`}</span>
             <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="search"
               value={menuQuery}
               onChange={(e) => setMenuQuery(e.target.value)}
-              placeholder="Tìm trong menu…"
+              placeholder={t`Tìm trong menu…`}
               className="h-10 w-full rounded-md border-0 bg-muted/60 pl-8 pr-8 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             {menuQuery && (
               <button
                 type="button"
                 onClick={() => setMenuQuery("")}
-                aria-label="Xoá từ khoá"
+                aria-label={t`Xoá từ khoá`}
                 className="absolute right-1.5 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded text-muted-foreground hover:bg-muted"
               >
                 <IconX className="h-4 w-4" />
@@ -239,7 +247,9 @@ export function AppDrawer({ open, onClose }: Props) {
 
         <nav className="flex-1 overflow-y-auto py-2">
           {needle && visibleSections.length === 0 && (
-            <p className="px-4 py-3 text-sm text-muted-foreground">Không có mục nào khớp "{menuQuery}".</p>
+            <p className="px-4 py-3 text-sm text-muted-foreground">
+              Không có mục nào khớp "{menuQuery}".
+            </p>
           )}
           {visibleSections.map((section) => {
             const open = needle ? true : isOpen(section);
@@ -284,7 +294,13 @@ export function AppDrawer({ open, onClose }: Props) {
                           to={item.to}
                           end={item.end ?? false}
                           onClick={(e) => {
-                            if (item.panel && e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+                            if (
+                              item.panel &&
+                              e.button === 0 &&
+                              !e.metaKey &&
+                              !e.ctrlKey &&
+                              !e.shiftKey
+                            ) {
                               e.preventDefault();
                               openPanel(item.panel);
                             }
@@ -341,7 +357,7 @@ export function AppDrawer({ open, onClose }: Props) {
                 to="/account"
                 onClick={onClose}
                 className="flex items-center gap-3 min-w-0 flex-1 rounded-md -m-1 p-1 hover:bg-muted/60"
-                title="Xem tài khoản"
+                title={t`Xem tài khoản`}
               >
                 <div
                   className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium shrink-0"
@@ -373,8 +389,8 @@ export function AppDrawer({ open, onClose }: Props) {
                   void signOutAndClearCache();
                 }}
                 className="h-11 w-11 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground shrink-0"
-                aria-label="Đăng xuất"
-                title="Đăng xuất"
+                aria-label={t`Đăng xuất`}
+                title={t`Đăng xuất`}
               >
                 <LogoutIcon />
               </button>
@@ -389,7 +405,7 @@ export function AppDrawer({ open, onClose }: Props) {
               }}
             >
               <IconLogOut className="h-4 w-4 mr-1.5" />
-              Đăng xuất
+              {t`Đăng xuất`}
             </Button>
           )}
           {/* Website + liên hệ hỗ trợ — meta links cuối sidebar */}
@@ -403,14 +419,14 @@ export function AppDrawer({ open, onClose }: Props) {
               className="inline-flex items-center gap-1 hover:text-primary"
             >
               <IconLock className="h-3.5 w-3.5" />
-              Riêng tư
+              {t`Riêng tư`}
             </Link>
             <Link
               to="/dieu-khoan-su-dung"
               onClick={pick}
               className="inline-flex items-center gap-1 hover:text-primary"
             >
-              Điều khoản
+              {t`Điều khoản`}
             </Link>
             <a
               href="https://donghoviet.thaohk.com"
@@ -469,6 +485,3 @@ function LogoutIcon() {
     </svg>
   );
 }
-
-
-

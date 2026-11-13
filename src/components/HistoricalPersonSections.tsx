@@ -9,8 +9,12 @@ import {
   type PersonHistorical,
 } from "@/lib/queries/historical";
 import { bioTimelineRows, yearOf } from "@/lib/personTimeline";
-import { getPersonTimeline, type TimelineRow } from "@/lib/queries/person-timeline";
+import {
+  getPersonTimeline,
+  type TimelineRow,
+} from "@/lib/queries/person-timeline";
 
+import { t } from "@lingui/core/macro";
 /** Viết hoa chữ cái đầu mỗi dòng ("định luật lệnh…" → "Định luật lệnh…"). */
 function capFirst(t: string): string {
   return t
@@ -19,10 +23,13 @@ function capFirst(t: string): string {
     .join("\n");
 }
 
-function years(from: number | null | undefined, to: number | null | undefined): string {
+function years(
+  from: number | null | undefined,
+  to: number | null | undefined,
+): string {
   if (from != null && to != null) return `${from}–${to}`;
-  if (from != null) return `từ ${from}`;
-  if (to != null) return `đến ${to}`;
+  if (from != null) return t`từ ${from}`;
+  if (to != null) return t`đến ${to}`;
   return "";
 }
 
@@ -62,7 +69,9 @@ export function HistoricalPersonSections({
   if (!data) return null;
   return (
     <>
-      {only !== "timeline" && <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />}
+      {only !== "timeline" && (
+        <ReignCard data={data} clanId={clanId} onPersonClick={onPersonClick} />
+      )}
       {only !== "reign" && (
         <TimelineCard
           personId={personId}
@@ -85,69 +94,102 @@ function ReignCard({
   onPersonClick?: (personId: string) => void;
 }) {
   const { reigns, titles, adoptiveParents } = data;
-  if (reigns.length === 0 && titles.length === 0 && adoptiveParents.length === 0) return null;
+  if (
+    reigns.length === 0 &&
+    titles.length === 0 &&
+    adoptiveParents.length === 0
+  )
+    return null;
   return (
-    <CollapsibleCard title={<><IconScroll className="h-5 w-5" />
-          {reigns.length > 0 ? "Trị vì & tước hiệu" : "Tước hiệu"}</>} titleClassName="inline-flex items-center gap-2" contentClassName="space-y-4 text-base">
-        {reigns.map((r) => (
-          <div key={r.id} className="space-y-1">
-            <p className="font-medium">
-              {REIGN_ROLE_LABEL[r.role] ?? r.role}
-              {r.ordinal != null ? ` thứ ${r.ordinal}` : ""} nhà {r.dynasty}
-              {r.temple_name ? ` · miếu hiệu ${r.temple_name}` : ""}
+    <CollapsibleCard
+      title={
+        <>
+          <IconScroll className="h-5 w-5" />
+          {reigns.length > 0 ? t`Trị vì & tước hiệu` : t`Tước hiệu`}
+        </>
+      }
+      titleClassName="inline-flex items-center gap-2"
+      contentClassName="space-y-4 text-base"
+    >
+      {reigns.map((r) => (
+        <div key={r.id} className="space-y-1">
+          <p className="font-medium">
+            {REIGN_ROLE_LABEL[r.role] ?? r.role}
+            {r.ordinal != null ? t` thứ ${r.ordinal}` : ""} nhà {r.dynasty}
+            {r.temple_name ? t` · miếu hiệu ${r.temple_name}` : ""}
+          </p>
+          {years(r.reign_start_year, r.reign_end_year) && (
+            <p className="text-muted-foreground">
+              Ở ngôi {years(r.reign_start_year, r.reign_end_year)}
             </p>
-            {years(r.reign_start_year, r.reign_end_year) && (
-              <p className="text-muted-foreground">Ở ngôi {years(r.reign_start_year, r.reign_end_year)}</p>
-            )}
-            {r.era_names.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1" aria-label="Niên hiệu">
-                {r.era_names.map((e) => (
-                  <span key={e.name} className="rounded-full border bg-card px-2.5 py-0.5 text-sm">
-                    {e.name}
-                    {e.from_year != null ? ` (${e.from_year})` : ""}
+          )}
+          {r.era_names.length > 0 && (
+            <div
+              className="flex flex-wrap gap-1.5 pt-1"
+              aria-label={t`Niên hiệu`}
+            >
+              {r.era_names.map((e) => (
+                <span
+                  key={e.name}
+                  className="rounded-full border bg-card px-2.5 py-0.5 text-sm"
+                >
+                  {e.name}
+                  {e.from_year != null ? ` (${e.from_year})` : ""}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+      {titles.length > 0 && (
+        <div>
+          <p className="text-sm text-muted-foreground mb-1">{t`Tước hiệu, chức vị`}</p>
+          <ul className="space-y-0.5">
+            {titles.map((t) => (
+              <li key={t.id}>
+                {t.title}
+                {years(t.from_year, t.to_year) && (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    · {years(t.from_year, t.to_year)}
                   </span>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-        {titles.length > 0 && (
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Tước hiệu, chức vị</p>
-            <ul className="space-y-0.5">
-              {titles.map((t) => (
-                <li key={t.id}>
-                  {t.title}
-                  {years(t.from_year, t.to_year) && (
-                    <span className="text-muted-foreground"> · {years(t.from_year, t.to_year)}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {adoptiveParents.length > 0 && (
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Cha mẹ nuôi / thừa tự</p>
-            <ul className="space-y-0.5">
-              {adoptiveParents.map((p) => (
-                <li key={p.person_id}>
-                  <span className="text-muted-foreground">{p.role === "father" ? "Cha nuôi: " : "Mẹ nuôi: "}</span>
-                  {onPersonClick ? (
-                    <button type="button" onClick={() => onPersonClick(p.person_id)} className="text-primary hover:underline">
-                      {p.full_name ?? "(ẩn)"}
-                    </button>
-                  ) : (
-                    <Link to={`/clans/${clanId}/people/${p.person_id}`} className="text-primary hover:underline">
-                      {p.full_name ?? "(ẩn)"}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </CollapsibleCard>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {adoptiveParents.length > 0 && (
+        <div>
+          <p className="text-sm text-muted-foreground mb-1">{t`Cha mẹ nuôi / thừa tự`}</p>
+          <ul className="space-y-0.5">
+            {adoptiveParents.map((p) => (
+              <li key={p.person_id}>
+                <span className="text-muted-foreground">
+                  {p.role === "father" ? t`Cha nuôi: ` : t`Mẹ nuôi: `}
+                </span>
+                {onPersonClick ? (
+                  <button
+                    type="button"
+                    onClick={() => onPersonClick(p.person_id)}
+                    className="text-primary hover:underline"
+                  >
+                    {p.full_name ?? "(ẩn)"}
+                  </button>
+                ) : (
+                  <Link
+                    to={`/clans/${clanId}/people/${p.person_id}`}
+                    className="text-primary hover:underline"
+                  >
+                    {p.full_name ?? "(ẩn)"}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </CollapsibleCard>
   );
 }
 
@@ -159,7 +201,11 @@ interface TimelineEntry {
 }
 
 /** Gộp các mốc cùng năm, thêm mốc Sinh / Mất từ hồ sơ nếu chưa có mốc cùng năm. */
-function buildTimeline(rows: TimelineRow[], birthYear: number | null, deathYear: number | null): TimelineEntry[] {
+function buildTimeline(
+  rows: TimelineRow[],
+  birthYear: number | null,
+  deathYear: number | null,
+): TimelineEntry[] {
   const entries = new Map<number, TimelineEntry>();
   for (const r of rows) {
     const prev = entries.get(r.year);
@@ -172,8 +218,8 @@ function buildTimeline(rows: TimelineRow[], birthYear: number | null, deathYear:
     entries.set(birthYear, { year: birthYear, era: null, text: "Sinh." });
   }
   if (deathYear != null && !entries.has(deathYear)) {
-    const age = birthYear != null ? `, thọ ${deathYear - birthYear} tuổi` : "";
-    entries.set(deathYear, { year: deathYear, era: null, text: `Mất${age}.` });
+    const age = birthYear != null ? t`, thọ ${deathYear - birthYear} tuổi` : "";
+    entries.set(deathYear, { year: deathYear, era: null, text: t`Mất${age}.` });
   }
   return [...entries.values()].sort((a, b) => a.year - b.year);
 }
@@ -195,7 +241,10 @@ function TimelineCard({
     enabled: !!personId,
   });
   // Đã có mốc lưu trong DB (sửa ở form "Sửa thông tin") thì dùng; chưa có thì dựng tạm từ tiểu sử.
-  const rows = saved && saved.length > 0 ? saved : bioTimelineRows(bio, birthYear, deathYear);
+  const rows =
+    saved && saved.length > 0
+      ? saved
+      : bioTimelineRows(bio, birthYear, deathYear);
   // Chỉ có mốc Sinh / Mất tự thêm thì chưa thành "dòng thời gian".
   if (rows.length === 0) return null;
   const entries = buildTimeline(rows, birthYear, deathYear);
@@ -204,7 +253,7 @@ function TimelineCard({
       title={
         <>
           <IconClock className="h-5 w-5" />
-          Dòng thời gian
+          {t`Dòng thời gian`}
         </>
       }
       titleClassName="inline-flex items-center gap-2"
@@ -214,19 +263,28 @@ function TimelineCard({
         {entries.map((e, i) => {
           const last = i === entries.length - 1;
           return (
-            <li key={e.year} className="grid grid-cols-[4.75rem_1.5rem_1fr] gap-x-3">
+            <li
+              key={e.year}
+              className="grid grid-cols-[4.75rem_1.5rem_1fr] gap-x-3"
+            >
               <div className="pt-px text-right">
                 <p className="text-xl font-bold leading-none text-primary">
                   {e.year}
                 </p>
-                {e.era && <p className="mt-1 whitespace-nowrap text-xs font-medium text-muted-foreground">{e.era}</p>}
+                {e.era && (
+                  <p className="mt-1 whitespace-nowrap text-xs font-medium text-muted-foreground">
+                    {e.era}
+                  </p>
+                )}
               </div>
               <div className="relative">
                 {/* Đoạn trục nối mốc này với mốc kế */}
                 <span
                   aria-hidden
                   className={`absolute left-1/2 top-2 w-[3px] -translate-x-1/2 rounded-full ${
-                    last ? "bottom-[-0.25rem] bg-primary" : "bottom-[-0.5rem] bg-gradient-to-b from-primary to-primary/30"
+                    last
+                      ? "bottom-[-0.25rem] bg-primary"
+                      : "bottom-[-0.5rem] bg-gradient-to-b from-primary to-primary/30"
                   }`}
                 />
                 <span
@@ -241,7 +299,9 @@ function TimelineCard({
                 )}
               </div>
               <div className={`min-w-0 ${last ? "pb-3" : "pb-7"}`}>
-                <p className="whitespace-pre-line leading-relaxed">{capFirst(e.text)}</p>
+                <p className="whitespace-pre-line leading-relaxed">
+                  {capFirst(e.text)}
+                </p>
               </div>
             </li>
           );

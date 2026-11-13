@@ -29,10 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { isClanAdmin, useClanContext } from "@/hooks/useClanContext";
-import {
-  listCommunityClans,
-  type ClanSummary,
-} from "@/lib/queries/clans";
+import { listCommunityClans, type ClanSummary } from "@/lib/queries/clans";
 import {
   SegmentedButton,
   SegmentedControl,
@@ -50,6 +47,8 @@ import {
   type PersonLinkType,
 } from "@/lib/queries/person-links";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Propose-link page. Two modes:
  *
@@ -66,7 +65,9 @@ import {
  */
 type Mode = "token" | "direct";
 
-export default function InlawsNew({ embedded }: { embedded?: EmbeddedForm } = {}) {
+export default function InlawsNew({
+  embedded,
+}: { embedded?: EmbeddedForm } = {}) {
   const { clan } = useClanContext();
   const { user } = useAuth();
   const userId = user?.id ?? "";
@@ -104,10 +105,10 @@ export default function InlawsNew({ embedded }: { embedded?: EmbeddedForm } = {}
       setCreatedLink(link);
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       track("inlaw_proposed", { mode: "token", type: linkType });
-      toast.success("Đã tạo mã mời");
+      toast.success(t`Đã tạo mã mời`);
     },
     onError: (e) =>
-      toast.error("Không tạo được", { description: (e as Error).message }),
+      toast.error(t`Không tạo được`, { description: (e as Error).message }),
   });
 
   const directM = useMutation({
@@ -124,34 +125,34 @@ export default function InlawsNew({ embedded }: { embedded?: EmbeddedForm } = {}
     onSuccess: (link) => {
       qc.invalidateQueries({ predicate: (q) => isInlawCacheKey(q.queryKey) });
       track("inlaw_proposed", { mode: "direct", type: linkType });
-      toast.success("Đã gửi đề nghị tới " + (peerClan?.name ?? ""), {
-        description: "Bên kia sẽ nhận email và xem trong /inlaws.",
+      toast.success(t`Đã gửi đề nghị tới ` + (peerClan?.name ?? ""), {
+        description: t`Bên kia sẽ nhận email và xem trong /inlaws.`,
       });
       notifyInlaw(link.id);
       if (embedded) embedded.onDone();
       else navigate(`/clans/${clan.id}/inlaws`);
     },
     onError: (e) =>
-      toast.error("Không gửi được", { description: (e as Error).message }),
+      toast.error(t`Không gửi được`, { description: (e as Error).message }),
   });
 
   return (
     <div className="space-y-3">
       {!embedded && (
         <>
-      <Breadcrumb
-        items={[
-          { label: clan.name, to: `/clans/${clan.id}` },
-          { label: "Liên kết dòng họ", to: `/clans/${clan.id}/inlaws` },
-          { label: "Đề nghị mới" },
-        ]}
-      />
+          <Breadcrumb
+            items={[
+              { label: clan.name, to: `/clans/${clan.id}` },
+              { label: t`Liên kết dòng họ`, to: `/clans/${clan.id}/inlaws` },
+              { label: t`Đề nghị mới` },
+            ]}
+          />
 
-      <PageHeader
-        icon={<IconLink className="h-7 w-7" />}
-        title="Đề nghị liên kết dòng họ"
-        description="Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, hoặc họ hàng. Admin bên kia phải xác nhận."
-      />
+          <PageHeader
+            icon={<IconLink className="h-7 w-7" />}
+            title={t`Đề nghị liên kết dòng họ`}
+            description={t`Nối dòng họ này với dòng họ khác qua một thành viên: thông gia, tổ tiên – hậu duệ, hoặc họ hàng. Admin bên kia phải xác nhận.`}
+          />
         </>
       )}
 
@@ -162,7 +163,9 @@ export default function InlawsNew({ embedded }: { embedded?: EmbeddedForm } = {}
       {createdLink ? (
         <CreatedTokenView
           link={createdLink}
-          onBack={() => (embedded ? embedded.onDone() : navigate(`/clans/${clan.id}/inlaws`))}
+          onBack={() =>
+            embedded ? embedded.onDone() : navigate(`/clans/${clan.id}/inlaws`)
+          }
           onAnother={() => {
             // Tạo thêm: về bước đầu với biểu mẫu trống.
             setCreatedLink(null);
@@ -220,11 +223,20 @@ function LinkTypeStep({
   value: PersonLinkType;
   onChange: (t: PersonLinkType) => void;
 }) {
-  const types: PersonLinkType[] = ["same_person", "ancestor_of", "descendant_of", "related"];
+  const types: PersonLinkType[] = [
+    "same_person",
+    "ancestor_of",
+    "descendant_of",
+    "related",
+  ];
   return (
     <div className="space-y-3">
-      <StepHeader number={1} title="Loại liên kết" />
-      <div role="radiogroup" aria-label="Loại liên kết" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <StepHeader number={1} title={t`Loại liên kết`} />
+      <div
+        role="radiogroup"
+        aria-label={t`Loại liên kết`}
+        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+      >
         {types.map((t) => (
           <button
             key={t}
@@ -233,11 +245,15 @@ function LinkTypeStep({
             aria-checked={value === t}
             onClick={() => onChange(t)}
             className={`rounded-lg border p-3 text-left transition-colors ${
-              value === t ? "border-primary bg-primary/5" : "bg-card hover:border-primary/60"
+              value === t
+                ? "border-primary bg-primary/5"
+                : "bg-card hover:border-primary/60"
             }`}
           >
             <span className="block font-medium">{LINK_TYPE_LABEL[t]}</span>
-            <span className="mt-0.5 block text-sm text-muted-foreground">{LINK_TYPE_HELP[t]}</span>
+            <span className="mt-0.5 block text-sm text-muted-foreground">
+              {LINK_TYPE_HELP[t]}
+            </span>
           </button>
         ))}
       </div>
@@ -246,10 +262,14 @@ function LinkTypeStep({
 }
 
 const PICK_DESCRIPTION: Record<PersonLinkType, string> = {
-  same_person: "Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của bên kia.",
-  ancestor_of: "Chọn người trong dòng họ này là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ).",
-  descendant_of: "Chọn người trong dòng họ này là HẬU DUỆ của một người ở dòng họ kia.",
-  related: "Chọn người trong dòng họ này làm đầu mối liên kết; nêu rõ quan hệ ở phần ghi chú.",
+  same_person:
+    "Đây là người đi lấy chồng/vợ vào dòng họ khác — dâu/rể của bên kia.",
+  ancestor_of:
+    "Chọn người trong dòng họ này là TỔ TIÊN của một người ở dòng họ kia (vd thuỷ tổ).",
+  descendant_of:
+    "Chọn người trong dòng họ này là HẬU DUỆ của một người ở dòng họ kia.",
+  related:
+    "Chọn người trong dòng họ này làm đầu mối liên kết; nêu rõ quan hệ ở phần ghi chú.",
 };
 
 function PickLocalPersonStep({
@@ -288,25 +308,25 @@ function PickLocalPersonStep({
       <div className="space-y-3">
         <StepHeader
           number={2}
-          title="Chọn người trong dòng họ này"
+          title={t`Chọn người trong dòng họ này`}
           description={PICK_DESCRIPTION[linkType]}
         />
         <SearchInput
-          label="Tìm theo tên"
+          label={t`Tìm theo tên`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Gõ tên đầy đủ hoặc một phần…"
+          placeholder={t`Gõ tên đầy đủ hoặc một phần…`}
         />
       </div>
 
       {isFetching && (
-        <p className="text-sm text-muted-foreground">Đang tìm…</p>
+        <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p>
       )}
 
       {search.trim() && !isFetching && rows.length === 0 && (
         <div className="rounded-md border bg-card px-4 py-3 text-sm text-muted-foreground inline-flex items-start gap-2">
           <IconSearch className="h-4 w-4 mt-0.5 shrink-0" />
-          <p>Không tìm thấy ai khớp tên. Thử từ khoá ngắn hơn.</p>
+          <p>{t`Không tìm thấy ai khớp tên. Thử từ khoá ngắn hơn.`}</p>
         </div>
       )}
 
@@ -319,21 +339,15 @@ function PickLocalPersonStep({
                 onClick={() => onPick(p)}
                 className="w-full text-left flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40"
               >
-                <PersonAvatar
-                  gender={p.gender}
-                  photoUrl={null}
-                  size={40}
-                />
+                <PersonAvatar gender={p.gender} photoUrl={null} size={40} />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {p.gender === "M" ? "Nam" : "Nữ"}
+                    {p.gender === "M" ? "Nam" : t`Nữ`}
                     {p.generation !== null
-                      ? ` · Đời ${p.generation - genOffset}`
+                      ? t` · Đời ${p.generation - genOffset}`
                       : ""}
-                    {p.birth_date
-                      ? ` · sinh ${p.birth_date.slice(0, 4)}`
-                      : ""}
+                    {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
                   </p>
                 </div>
               </button>
@@ -383,18 +397,16 @@ function ModeStep(props: ModeStepProps) {
         <div className="min-w-0 flex-1">
           <p className="font-medium">{local.full_name}</p>
           <p className="text-xs text-muted-foreground">
-            {local.gender === "M" ? "Nam" : "Nữ"}
+            {local.gender === "M" ? "Nam" : t`Nữ`}
             {local.generation !== null
-              ? ` · Đời ${local.generation - localGenOffset}`
+              ? t` · Đời ${local.generation - localGenOffset}`
               : ""}
-            {local.birth_date
-              ? ` · sinh ${local.birth_date.slice(0, 4)}`
-              : ""}
+            {local.birth_date ? ` · sinh ${local.birth_date.slice(0, 4)}` : ""}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onBackToPick}>
           <IconRefresh className="h-4 w-4 mr-1.5" />
-          Đổi
+          {t`Đổi`}
         </Button>
       </div>
 
@@ -402,9 +414,9 @@ function ModeStep(props: ModeStepProps) {
           SegmentedControl below doesn't sit on the same row as the
           label (previous issue). */}
       <div className="space-y-3">
-        <StepHeader number={3} title="Cách đề nghị" />
+        <StepHeader number={3} title={t`Cách đề nghị`} />
         <SegmentedControl
-          ariaLabel="Cách đề nghị"
+          ariaLabel={t`Cách đề nghị`}
           className="w-full sm:w-auto"
         >
           <SegmentedButton
@@ -412,20 +424,20 @@ function ModeStep(props: ModeStepProps) {
             onClick={() => setMode("token")}
             className="flex-1 sm:flex-none"
           >
-            Gửi mã mời
+            {t`Gửi mã mời`}
           </SegmentedButton>
           <SegmentedButton
             active={mode === "direct"}
             onClick={() => setMode("direct")}
             className="flex-1 sm:flex-none"
           >
-            Tìm dòng họ công khai
+            {t`Tìm dòng họ công khai`}
           </SegmentedButton>
         </SegmentedControl>
         <p className="text-xs text-muted-foreground">
           {mode === "token"
-            ? "Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư."
-            : "Chỉ áp dụng cho clan bên kia đặt công khai. App tự email admin bên đó."}
+            ? t`Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt động kể cả khi clan bên kia đặt riêng tư.`
+            : t`Chỉ áp dụng cho clan bên kia đặt công khai. App tự email admin bên đó.`}
         </p>
       </div>
 
@@ -440,29 +452,29 @@ function TokenBody(props: ModeStepProps) {
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="hint">Người bên kia là ai (gợi ý)</Label>
+        <Label htmlFor="hint">{t`Người bên kia là ai (gợi ý)`}</Label>
         <Input
           id="hint"
           icon={<IconUser />}
           maxLength={200}
           value={props.hint}
           onChange={(e) => props.setHint(e.target.value)}
-          placeholder="Vd: Đỗ Thị B, sinh 1975, quê Hà Nội"
+          placeholder={t`Vd: Đỗ Thị B, sinh 1975, quê Hà Nội`}
         />
         <p className="text-xs text-muted-foreground">
-          Tuỳ chọn. Admin bên kia thấy khi nhập mã mời.
+          {t`Tuỳ chọn. Admin bên kia thấy khi nhập mã mời.`}
         </p>
       </div>
 
       <Textarea
         id="note"
-        label="Ghi chú"
+        label={t`Ghi chú`}
         icon={<IconScroll />}
         rows={3}
         maxLength={500}
         value={props.note}
         onChange={(e) => props.setNote(e.target.value)}
-        placeholder="Tuỳ chọn. Ghi chú thêm về quan hệ."
+        placeholder={t`Tuỳ chọn. Ghi chú thêm về quan hệ.`}
       />
 
       {props.tokenError && (
@@ -478,15 +490,15 @@ function TokenBody(props: ModeStepProps) {
           disabled={props.submittingToken}
         >
           <IconX className="h-4 w-4 mr-1.5" />
-          Huỷ
+          {t`Huỷ`}
         </Button>
         <Button onClick={props.submitToken} disabled={props.submittingToken}>
           {props.submittingToken ? (
-            "Đang tạo…"
+            t`Đang tạo…`
           ) : (
             <>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Tạo mã mời
+              {t`Tạo mã mời`}
             </>
           )}
         </Button>
@@ -555,15 +567,15 @@ function PickPeerClanStep({
 
   return (
     <div className="space-y-3">
-      <Label>Tìm dòng họ công khai</Label>
+      <Label>{t`Tìm dòng họ công khai`}</Label>
       <SearchInput
-        label="Tìm theo tên dòng họ"
+        label={t`Tìm theo tên dòng họ`}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Tên dòng họ bên kia…"
+        placeholder={t`Tên dòng họ bên kia…`}
       />
       {isFetching && (
-        <p className="text-sm text-muted-foreground">Đang tìm…</p>
+        <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p>
       )}
       {rows.length > 0 && (
         <ul className="divide-y rounded-md border bg-background">
@@ -589,8 +601,14 @@ function PickPeerClanStep({
       )}
       {!isFetching && rows.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          Không có dòng họ công khai nào khớp. Nếu dòng họ bên kia
-          đang đặt riêng tư, dùng tab "Gửi mã mời".
+          <Trans>
+            <Trans>
+              <Trans>
+                Không có dòng họ công khai nào khớp. Nếu dòng họ bên kia đang
+                đặt riêng tư, dùng tab "Gửi mã mời".
+              </Trans>
+            </Trans>
+          </Trans>
         </p>
       )}
     </div>
@@ -633,17 +651,17 @@ function PickPeerPersonStep({
         <Label>Chọn người trong {peerClan.name}</Label>
         <Button variant="outline" size="sm" onClick={onBack}>
           <IconRefresh className="h-4 w-4 mr-1.5" />
-          Đổi dòng họ
+          {t`Đổi dòng họ`}
         </Button>
       </div>
       <SearchInput
-        label="Tìm theo tên"
+        label={t`Tìm theo tên`}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Gõ tên đầy đủ hoặc một phần…"
+        placeholder={t`Gõ tên đầy đủ hoặc một phần…`}
       />
       {isFetching && (
-        <p className="text-sm text-muted-foreground">Đang tìm…</p>
+        <p className="text-sm text-muted-foreground">{t`Đang tìm…`}</p>
       )}
       {rows.length > 0 && (
         <ul className="divide-y rounded-md border bg-background">
@@ -658,13 +676,11 @@ function PickPeerPersonStep({
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{p.full_name}</p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {p.gender === "M" ? "Nam" : "Nữ"}
+                    {p.gender === "M" ? "Nam" : t`Nữ`}
                     {p.generation !== null
-                      ? ` · Đời ${p.generation - peerClan.generation_offset}`
+                      ? t` · Đời ${p.generation - peerClan.generation_offset}`
                       : ""}
-                    {p.birth_date
-                      ? ` · sinh ${p.birth_date.slice(0, 4)}`
-                      : ""}
+                    {p.birth_date ? ` · sinh ${p.birth_date.slice(0, 4)}` : ""}
                   </p>
                 </div>
               </button>
@@ -674,9 +690,15 @@ function PickPeerPersonStep({
       )}
       {q.trim() && !isFetching && rows.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          Không tìm thấy ai khớp tên (lưu ý: clan công khai có thể ẩn
-          người còn sống — chỉ liệt kê người đã mất nếu bạn không phải
-          thành viên).
+          <Trans>
+            <Trans>
+              <Trans>
+                Không tìm thấy ai khớp tên (lưu ý: clan công khai có thể ẩn
+                người còn sống — chỉ liệt kê người đã mất nếu bạn không phải
+                thành viên).
+              </Trans>
+            </Trans>
+          </Trans>
         </p>
       )}
     </div>
@@ -714,7 +736,7 @@ function PeerConfirmStep({
           </div>
           <Button variant="outline" size="sm" onClick={onChangeClan}>
             <IconRefresh className="h-4 w-4 mr-1.5" />
-            Đổi
+            {t`Đổi`}
           </Button>
         </div>
         <div className="flex items-center justify-between gap-3 pt-2 border-t">
@@ -727,9 +749,9 @@ function PeerConfirmStep({
             <div className="min-w-0">
               <p className="font-medium">{peerPerson.full_name}</p>
               <p className="text-xs text-muted-foreground">
-                {peerPerson.gender === "M" ? "Nam" : "Nữ"}
+                {peerPerson.gender === "M" ? "Nam" : t`Nữ`}
                 {peerPerson.generation !== null
-                  ? ` · Đời ${peerPerson.generation - peerClan.generation_offset}`
+                  ? t` · Đời ${peerPerson.generation - peerClan.generation_offset}`
                   : ""}
                 {peerPerson.birth_date
                   ? ` · sinh ${peerPerson.birth_date.slice(0, 4)}`
@@ -739,27 +761,27 @@ function PeerConfirmStep({
           </div>
           <Button variant="outline" size="sm" onClick={onChangePerson}>
             <IconRefresh className="h-4 w-4 mr-1.5" />
-            Đổi
+            {t`Đổi`}
           </Button>
         </div>
       </div>
 
       <Textarea
         id="note"
-        label="Ghi chú (tuỳ chọn)"
+        label={t`Ghi chú (tuỳ chọn)`}
         icon={<IconScroll />}
         rows={3}
         maxLength={500}
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Vd: Cưới năm 2010, có 2 con."
+        placeholder={t`Vd: Cưới năm 2010, có 2 con.`}
       />
 
       <Alert>
         <AlertDescription>
-          Đề nghị sẽ ở trạng thái <strong>Đang chờ</strong> cho tới khi
-          admin bên kia mở <code>/clans/&lt;id&gt;/inlaws</code> → tab
-          "Đang chờ" → Xác nhận hoặc Từ chối.
+          Đề nghị sẽ ở trạng thái <strong>{t`Đang chờ`}</strong> cho tới khi
+          admin bên kia mở <code>/clans/&lt;id&gt;/inlaws</code> → tab "Đang
+          chờ" → Xác nhận hoặc Từ chối.
         </AlertDescription>
       </Alert>
 
@@ -772,11 +794,11 @@ function PeerConfirmStep({
       <FormActions>
         <Button onClick={onSubmit} disabled={submitting}>
           {submitting ? (
-            "Đang gửi…"
+            t`Đang gửi…`
           ) : (
             <>
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Gửi đề nghị
+              {t`Gửi đề nghị`}
             </>
           )}
         </Button>
@@ -808,9 +830,9 @@ function CreatedTokenView({
       await navigator.clipboard.writeText(confirmUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast.success("Đã chép link mời");
+      toast.success(t`Đã chép link mời`);
     } catch {
-      toast.error("Không chép được — chọn và copy thủ công");
+      toast.error(t`Không chép được — chọn và copy thủ công`);
     }
   }
 
@@ -818,14 +840,14 @@ function CreatedTokenView({
     <div className="space-y-4">
       <Alert>
         <AlertDescription>
-          <strong>Đã tạo mã mời.</strong> Gửi link dưới cho admin của
-          dòng họ bên kia (qua Zalo, email, tin nhắn…). Họ mở link →
-          chọn người → liên kết được xác nhận.
+          <strong>{t`Đã tạo mã mời.`}</strong> Gửi link dưới cho admin của dòng
+          họ bên kia (qua Zalo, email, tin nhắn…). Họ mở link → chọn người →
+          liên kết được xác nhận.
         </AlertDescription>
       </Alert>
 
       <div className="space-y-2">
-        <Label>Link mời</Label>
+        <Label>{t`Link mời`}</Label>
         <Input
           readOnly
           icon={<IconLink />}
@@ -838,8 +860,8 @@ function CreatedTokenView({
               size="icon"
               variant="ghost"
               onClick={copy}
-              aria-label={copied ? "Đã chép" : "Chép link"}
-              title={copied ? "Đã chép" : "Chép link"}
+              aria-label={copied ? t`Đã chép` : t`Chép link`}
+              title={copied ? t`Đã chép` : t`Chép link`}
               className="h-10 w-10"
             >
               {copied ? (
@@ -851,19 +873,20 @@ function CreatedTokenView({
           }
         />
         <p className="text-xs text-muted-foreground">
-          Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự
-          huỷ.
+          <Trans>
+            {t`Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự huỷ.`}
+          </Trans>
         </p>
       </div>
 
       <FormActions>
         <Button type="button" variant="outline" onClick={onAnother}>
           <IconPlus className="h-4 w-4 mr-1.5" />
-          Tạo thêm
+          {t`Tạo thêm`}
         </Button>
         <Button type="button" onClick={onBack}>
           <IconArrowLeft className="h-4 w-4 mr-1.5" />
-          Về danh sách liên kết
+          {t`Về danh sách liên kết`}
         </Button>
       </FormActions>
     </div>

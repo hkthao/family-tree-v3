@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 
 import { IconX } from "@/components/icons";
 
+import { t } from "@lingui/core/macro";
 export interface LightboxImage {
   src: string;
   caption?: string | null;
@@ -29,7 +30,9 @@ export function ImageLightbox({
 }) {
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(
+    null,
+  );
   const pinch = useRef<{ dist: number; scale: number } | null>(null);
 
   const cur = images[index];
@@ -90,7 +93,8 @@ export function ImageLightbox({
   const dist = (t: React.TouchList) =>
     Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
   const onTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) pinch.current = { dist: dist(e.touches), scale };
+    if (e.touches.length === 2)
+      pinch.current = { dist: dist(e.touches), scale };
     else if (e.touches.length === 1 && scale > 1)
       drag.current = {
         x: e.touches[0].clientX,
@@ -133,20 +137,28 @@ export function ImageLightbox({
           {many ? `${index + 1}/${images.length}` : ""}
         </span>
         <div className="flex items-center gap-2">
-          <button className={btn} aria-label="Thu nhỏ" onClick={() => zoomTo(scale - 0.5)}>
+          <button
+            className={btn}
+            aria-label={t`Thu nhỏ`}
+            onClick={() => zoomTo(scale - 0.5)}
+          >
             −
           </button>
-          <button className={btn} aria-label="Phóng to" onClick={() => zoomTo(scale + 0.5)}>
+          <button
+            className={btn}
+            aria-label={t`Phóng to`}
+            onClick={() => zoomTo(scale + 0.5)}
+          >
             ＋
           </button>
           <button
             className={`${btn} text-sm`}
-            aria-label="Cỡ gốc"
+            aria-label={t`Cỡ gốc`}
             onClick={reset}
           >
             1:1
           </button>
-          <button className={btn} aria-label="Đóng" onClick={onClose}>
+          <button className={btn} aria-label={t`Đóng`} onClick={onClose}>
             <IconX className="h-5 w-5" />
           </button>
         </div>
@@ -177,7 +189,8 @@ export function ImageLightbox({
             maxHeight: "100%",
             objectFit: "contain",
             transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-            transition: drag.current || pinch.current ? "none" : "transform 0.12s",
+            transition:
+              drag.current || pinch.current ? "none" : "transform 0.12s",
           }}
         />
 
@@ -185,7 +198,7 @@ export function ImageLightbox({
           <>
             <button
               className={`${btn} absolute left-3 top-1/2 -translate-y-1/2`}
-              aria-label="Ảnh trước"
+              aria-label={t`Ảnh trước`}
               onClick={(e) => {
                 e.stopPropagation();
                 go(index - 1);
@@ -195,7 +208,7 @@ export function ImageLightbox({
             </button>
             <button
               className={`${btn} absolute right-3 top-1/2 -translate-y-1/2`}
-              aria-label="Ảnh sau"
+              aria-label={t`Ảnh sau`}
               onClick={(e) => {
                 e.stopPropagation();
                 go(index + 1);

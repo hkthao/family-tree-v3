@@ -12,6 +12,7 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
 
+import { t } from "@lingui/core/macro";
 /**
  * "Công cụ" — lưới chọn mục, cùng kiểu với trang Quản trị nền tảng.
  *
@@ -41,8 +42,8 @@ export default function Tools() {
 
   const allGroups: Array<{ title: string; hint: string; tools: Tool[] }> = [
     {
-      title: "Tra cứu",
-      hint: "Mở ra xem, không sửa gì.",
+      title: t`Tra cứu`,
+      hint: t`Mở ra xem, không sửa gì.`,
       tools: [
         // Tạm ẩn "Canvas phả đồ" tới khi bảng tree_canvases có trên prod.
         {
@@ -50,40 +51,40 @@ export default function Tools() {
           // quan — ai không để ý dòng chữ đó thì coi như app không có
           // lịch. Đưa vào đây là chỗ người ta sẽ đi tìm.
           to: `${base}/xem-ngay`,
-          label: "Lịch âm dương",
-          desc: "Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày.",
+          label: t`Lịch âm dương`,
+          desc: t`Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày.`,
           icon: <IconCalendar className={ic} />,
         },
         {
           to: `${base}/audit`,
-          label: "Nhật ký",
-          desc: "Lịch sử thay đổi dữ liệu của dòng họ.",
+          label: t`Nhật ký`,
+          desc: t`Lịch sử thay đổi dữ liệu của dòng họ.`,
           icon: <IconScroll className={ic} />,
         },
       ],
     },
     {
-      title: "Nhập & dọn dữ liệu",
-      hint: "Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa.",
+      title: t`Nhập & dọn dữ liệu`,
+      hint: t`Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa.`,
       tools: [
         {
           to: `${base}/import`,
-          label: "Nhập từ Excel",
-          desc: "Thêm nhiều người cùng lúc từ file Excel.",
+          label: t`Nhập từ Excel`,
+          desc: t`Thêm nhiều người cùng lúc từ file Excel.`,
           icon: <IconUpload className={ic} />,
           editorOnly: true,
         },
         {
           to: `${base}/ai-generate`,
-          label: "Sinh bằng AI",
-          desc: "Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt.",
+          label: t`Sinh bằng AI`,
+          desc: t`Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt.`,
           icon: <IconSparkles className={ic} />,
           editorOnly: true,
         },
         {
           to: `${base}/merge`,
-          label: "Gộp người trùng",
-          desc: "Tìm và gộp các bản ghi trùng một người.",
+          label: t`Gộp người trùng`,
+          desc: t`Tìm và gộp các bản ghi trùng một người.`,
           icon: <IconCopy className={ic} />,
           editorOnly: true,
         },
@@ -102,11 +103,13 @@ export default function Tools() {
 
   return (
     <div className="space-y-5">
-      <Breadcrumb items={[{ label: clan.name, to: base }, { label: "Công cụ" }]} />
+      <Breadcrumb
+        items={[{ label: clan.name, to: base }, { label: t`Công cụ` }]}
+      />
       <PageHeader
         icon={<IconSettings className="h-7 w-7" />}
-        title="Công cụ"
-        description="Chọn một mục để mở."
+        title={t`Công cụ`}
+        description={t`Chọn một mục để mở.`}
       />
 
       {groups.map((g) => (

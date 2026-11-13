@@ -42,6 +42,7 @@ import {
   type CalendarDateValue,
 } from "@/lib/personDates";
 
+import { t } from "@lingui/core/macro";
 type Relation = "child" | "spouse" | "parent";
 
 /**
@@ -116,9 +117,9 @@ function DateFields({
   return (
     <>
       <CalendarDateInput
-        label="Ngày sinh (tuỳ chọn)"
+        label={t`Ngày sinh (tuỳ chọn)`}
         idPrefix={`${idPrefix}-birth`}
-        helperText="Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm."
+        helperText={t`Chỉ nhớ năm cũng được. Bấm 'Nhập theo lịch Âm' nếu tài liệu ghi ngày âm.`}
         value={birth}
         onChange={onBirth}
       />
@@ -133,11 +134,11 @@ function DateFields({
           }}
           className="h-5 w-5 accent-primary shrink-0"
         />
-        <span>Đã mất</span>
+        <span>{t`Đã mất`}</span>
       </label>
       {!isLiving && (
         <CalendarDateInput
-          label="Ngày mất (nếu đã mất)"
+          label={t`Ngày mất (nếu đã mất)`}
           idPrefix={`${idPrefix}-death`}
           value={death}
           onChange={(next) => {
@@ -145,7 +146,7 @@ function DateFields({
             if (next.parts.year || next.parts.month || next.parts.day)
               onLiving(false);
           }}
-          helperText="Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được."
+          helperText={t`Ưu tiên ghi ngày âm. Chỉ cần ngày giỗ (tháng/ngày), bỏ trống năm cũng được.`}
         />
       )}
     </>
@@ -298,31 +299,27 @@ function focusAtEnd(el: HTMLInputElement | null) {
 
 // ─── Phase A: relation picker ─────────────────────────────────────
 
-function RelationPicker({
-  onPick,
-}: {
-  onPick: (r: Relation) => void;
-}) {
+function RelationPicker({ onPick }: { onPick: (r: Relation) => void }) {
   return (
     <div className="space-y-3 pb-6">
       <p className="text-sm text-muted-foreground">
-        Chọn quan hệ với người này:
+        {t`Chọn quan hệ với người này:`}
       </p>
       <RelationCard
         label="Con"
-        hint="Thêm một hoặc nhiều con"
+        hint={t`Thêm một hoặc nhiều con`}
         icon={<IconUsers className="h-5 w-5" />}
         onClick={() => onPick("child")}
       />
       <RelationCard
-        label="Vợ / chồng"
-        hint="Gắn bạn đời cho người này"
+        label={t`Vợ / chồng`}
+        hint={t`Gắn bạn đời cho người này`}
         icon={<IconUserPlus className="h-5 w-5" />}
         onClick={() => onPick("spouse")}
       />
       <RelationCard
-        label="Cha / mẹ"
-        hint="Thêm đời trên"
+        label={t`Cha / mẹ`}
+        hint={t`Thêm đời trên`}
         icon={<IconPlus className="h-5 w-5" />}
         onClick={() => onPick("parent")}
       />
@@ -368,12 +365,12 @@ function GenderToggle({
   onChange: (g: "M" | "F") => void;
 }) {
   return (
-    <SegmentedControl ariaLabel="Giới tính">
+    <SegmentedControl ariaLabel={t`Giới tính`}>
       <SegmentedButton active={value === "M"} onClick={() => onChange("M")}>
         Nam
       </SegmentedButton>
       <SegmentedButton active={value === "F"} onClick={() => onChange("F")}>
-        Nữ
+        {t`Nữ`}
       </SegmentedButton>
     </SegmentedControl>
   );
@@ -386,7 +383,7 @@ function BackToPickerButton({ onBack }: { onBack: () => void }) {
       onClick={onBack}
       className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
     >
-      ← Đổi quan hệ
+      {t`← Đổi quan hệ`}
     </button>
   );
 }
@@ -539,7 +536,7 @@ function QuickAddChild({
   }, [focal, rels]);
 
   function resolveFamilyInputs() {
-    if (!focal) throw new Error("Thiếu thông tin");
+    if (!focal) throw new Error(t`Thiếu thông tin`);
     let partnerB: { id: string; gender: "M" | "F" } | null = null;
     if (otherParent !== SOLO_VALUE) {
       const sp = spouses.find((s) => s.id === otherParent);
@@ -568,7 +565,7 @@ function QuickAddChild({
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId);
-      toast.success("Đã thêm con", { description: name.trim() });
+      toast.success(t`Đã thêm con`, { description: name.trim() });
       // Reset to the prefix so the user can type the next given name
       // immediately — the genealogy use-case is a row of siblings
       // sharing họ + đệm.
@@ -584,13 +581,13 @@ function QuickAddChild({
       setTimeout(() => focusAtEnd(nameRef.current), 0);
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   const bulkMutation = useMutation({
     mutationFn: async () => {
       const valid = rows.filter((r) => r.name.trim().length > 0);
-      if (valid.length === 0) throw new Error("Chưa có tên nào");
+      if (valid.length === 0) throw new Error(t`Chưa có tên nào`);
       const family = await findOrCreateFamily(resolveFamilyInputs());
       // 1 insert nhiều dòng thay vì lặp N round-trip — atomic, ít dính
       // timeout/504 khi mạng yếu.
@@ -615,13 +612,13 @@ function QuickAddChild({
     },
     onSuccess: async (n) => {
       await invalidateClanData(queryClient, clanId);
-      toast.success(`Đã thêm ${n} người con`);
+      toast.success(t`Đã thêm ${n} người con`);
       const p = deriveNamePrefix(focal, children, "M");
       setRows([mkRow(p), mkRow(p), mkRow(p)]);
       setTimeout(() => focusAtEnd(bulkInputRefs.current[0]), 0);
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   function onSubmitSingle(e: React.FormEvent) {
@@ -684,34 +681,34 @@ function QuickAddChild({
     if (spouses.length === 0) return null;
     if (otherParent === SOLO_VALUE) return "Đơn thân";
     const sp = spouses.find((s) => s.id === otherParent);
-    return sp ? `Với ${sp.full_name}` : null;
+    return sp ? t`Với ${sp.full_name}` : null;
   })();
 
   return (
     <div className="space-y-5 pb-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {onBack && <BackToPickerButton onBack={onBack} />}
-        <SegmentedControl ariaLabel="Chế độ thêm con" className="w-full">
+        <SegmentedControl ariaLabel={t`Chế độ thêm con`} className="w-full">
           <SegmentedButton
             className="flex-1 px-3"
             active={!bulkMode}
             onClick={() => setBulkMode(false)}
           >
-            1 người
+            {t`1 người`}
           </SegmentedButton>
           <SegmentedButton
             className="flex-1 px-3"
             active={bulkMode}
             onClick={() => setBulkMode(true)}
           >
-            Nhiều người
+            {t`Nhiều người`}
           </SegmentedButton>
         </SegmentedControl>
       </div>
 
       {spouses.length >= 2 && (
         <div className="space-y-2">
-          <Label htmlFor="other_parent">Cùng với</Label>
+          <Label htmlFor="other_parent">{t`Cùng với`}</Label>
           <Select
             id="other_parent"
             icon={<IconUsers />}
@@ -721,7 +718,7 @@ function QuickAddChild({
               setOtherParentTouched(true);
             }}
           >
-            <option value={SOLO_VALUE}>Đơn thân</option>
+            <option value={SOLO_VALUE}>{t`Đơn thân`}</option>
             {spouses.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.full_name}
@@ -738,7 +735,7 @@ function QuickAddChild({
         <form onSubmit={onSubmitSingle} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="quick_name" required>
-              Tên con
+              {t`Tên con`}
             </Label>
             <Input
               id="quick_name"
@@ -749,12 +746,12 @@ function QuickAddChild({
               maxLength={200}
               value={name}
               onChange={(e) => onSingleNameChange(e.target.value)}
-              placeholder="Vd: Nguyễn Văn C"
+              placeholder={t`Vd: Nguyễn Văn C`}
             />
           </div>
 
           <div className="flex flex-col items-start gap-2">
-            <Label>Giới tính</Label>
+            <Label>{t`Giới tính`}</Label>
             <GenderToggle
               value={gender}
               onChange={(g) => {
@@ -782,11 +779,7 @@ function QuickAddChild({
           />
 
           <PanelActionBar>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onDone}
-            >
+            <Button type="button" variant="outline" onClick={onDone}>
               Xong
             </Button>
             <Button
@@ -794,15 +787,15 @@ function QuickAddChild({
               disabled={singleMutation.isPending || !name.trim()}
             >
               <IconCheck className="h-4 w-4 mr-1.5" />
-              Lưu & thêm người nữa
+              {t`Lưu & thêm người nữa`}
             </Button>
           </PanelActionBar>
         </form>
       ) : (
         <form onSubmit={onSubmitBulk} className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới.
-            Dùng ↑ ↓ để đổi thứ tự.
+            Thứ tự nhập = thứ tự sinh. Enter để thêm dòng mới. Dùng ↑ ↓ để đổi
+            thứ tự.
           </p>
           <ul className="space-y-2">
             {rows.map((r, i) => (
@@ -829,14 +822,14 @@ function QuickAddChild({
                         else focusAtEnd(bulkInputRefs.current[i + 1]);
                       }
                     }}
-                    placeholder="Họ tên"
+                    placeholder={t`Họ tên`}
                     maxLength={200}
                     className="flex-1 min-w-0"
                   />
                   <IconButton
                     onClick={() => removeRow(i)}
                     disabled={rows.length === 1}
-                    label="Xoá dòng"
+                    label={t`Xoá dòng`}
                   >
                     <IconX className="h-4 w-4" />
                   </IconButton>
@@ -854,12 +847,14 @@ function QuickAddChild({
                     value={r.birthYear}
                     onChange={(e) =>
                       updateRow(i, {
-                        birthYear: e.target.value.replace(/\D/g, "").slice(0, 4),
+                        birthYear: e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 4),
                       })
                     }
                     inputMode="numeric"
-                    placeholder="Năm sinh"
-                    aria-label="Năm sinh"
+                    placeholder={t`Năm sinh`}
+                    aria-label={t`Năm sinh`}
                     className="flex-1 min-w-0"
                   />
                   {/* icon-audit: ok — cùng lý do: ô năm chỉ ~90px */}
@@ -867,25 +862,27 @@ function QuickAddChild({
                     value={r.deathYear}
                     onChange={(e) =>
                       updateRow(i, {
-                        deathYear: e.target.value.replace(/\D/g, "").slice(0, 4),
+                        deathYear: e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 4),
                       })
                     }
                     inputMode="numeric"
-                    placeholder="Năm mất"
-                    aria-label="Năm mất"
+                    placeholder={t`Năm mất`}
+                    aria-label={t`Năm mất`}
                     className="flex-1 min-w-0"
                   />
                   <IconButton
                     onClick={() => moveRow(i, -1)}
                     disabled={i === 0}
-                    label="Lên"
+                    label={t`Lên`}
                   >
                     <IconChevronUp className="h-4 w-4" />
                   </IconButton>
                   <IconButton
                     onClick={() => moveRow(i, 1)}
                     disabled={i === rows.length - 1}
-                    label="Xuống"
+                    label={t`Xuống`}
                   >
                     <IconChevronUp className="h-4 w-4 rotate-180" />
                   </IconButton>
@@ -899,28 +896,23 @@ function QuickAddChild({
             className="text-sm text-primary hover:underline inline-flex items-center gap-1"
           >
             <IconPlus className="h-4 w-4" />
-            Thêm dòng
+            {t`Thêm dòng`}
           </button>
 
           <PanelActionBar>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onDone}
-            >
+            <Button type="button" variant="outline" onClick={onDone}>
               Xong
             </Button>
             <Button
               type="submit"
               disabled={
-                bulkMutation.isPending ||
-                rows.every((r) => !r.name.trim())
+                bulkMutation.isPending || rows.every((r) => !r.name.trim())
               }
             >
               <IconCheck className="h-4 w-4 mr-1.5" />
               {bulkMutation.isPending
-                ? "Đang lưu…"
-                : `Lưu ${rows.filter((r) => r.name.trim()).length} người`}
+                ? t`Đang lưu…`
+                : t`Lưu ${rows.filter((r) => r.name.trim()).length} người`}
             </Button>
           </PanelActionBar>
         </form>
@@ -970,7 +962,7 @@ function QuickAddSpouse({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!focal) throw new Error("Thiếu thông tin");
+      if (!focal) throw new Error(t`Thiếu thông tin`);
       const spouse = await createPerson({
         clan_id: clanId,
         full_name: name.trim(),
@@ -986,7 +978,7 @@ function QuickAddSpouse({
     },
     onSuccess: async () => {
       await invalidateClanData(queryClient, clanId);
-      toast.success("Đã thêm vợ/chồng", { description: name.trim() });
+      toast.success(t`Đã thêm vợ/chồng`, { description: name.trim() });
       setName("");
       setBirth(EMPTY_CALENDAR_DATE);
       setDeath(EMPTY_LUNAR_CALENDAR_DATE);
@@ -994,7 +986,7 @@ function QuickAddSpouse({
       nameRef.current?.focus();
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   return (
@@ -1010,7 +1002,7 @@ function QuickAddSpouse({
 
       <div className="space-y-2">
         <Label htmlFor="quick_spouse_name" required>
-          Tên vợ / chồng
+          {t`Tên vợ / chồng`}
         </Label>
         <Input
           id="quick_spouse_name"
@@ -1021,12 +1013,12 @@ function QuickAddSpouse({
           maxLength={200}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Vd: Trần Thị B"
+          placeholder={t`Vd: Trần Thị B`}
         />
       </div>
 
       <div className="flex flex-col items-start gap-2">
-        <Label>Giới tính</Label>
+        <Label>{t`Giới tính`}</Label>
         <GenderToggle
           value={gender}
           onChange={(g) => {
@@ -1047,19 +1039,12 @@ function QuickAddSpouse({
       />
 
       <PanelActionBar>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onDone}
-        >
+        <Button type="button" variant="outline" onClick={onDone}>
           Xong
         </Button>
-        <Button
-          type="submit"
-          disabled={mutation.isPending || !name.trim()}
-        >
+        <Button type="submit" disabled={mutation.isPending || !name.trim()}>
           <IconCheck className="h-4 w-4 mr-1.5" />
-          Lưu & thêm người nữa
+          {t`Lưu & thêm người nữa`}
         </Button>
       </PanelActionBar>
     </form>
@@ -1115,7 +1100,7 @@ function QuickAddParent({
 
   // Parent commonly shares surname with focal. Prefill on first load.
   const focalSurname = focal
-    ? focal.full_name.trim().split(/\s+/)[0] ?? ""
+    ? (focal.full_name.trim().split(/\s+/)[0] ?? "")
     : "";
   const parentPrefix = focalSurname ? focalSurname + " " : "";
   const parentInitRef = useRef(false);
@@ -1146,7 +1131,7 @@ function QuickAddParent({
 
   const mutation = useMutation({
     mutationFn: async () => {
-      if (!focal) throw new Error("Thiếu thông tin");
+      if (!focal) throw new Error(t`Thiếu thông tin`);
       const parent = await createPerson({
         clan_id: clanId,
         full_name: name.trim(),
@@ -1166,10 +1151,9 @@ function QuickAddParent({
     },
     onSuccess: async ({ roleAdded }) => {
       await invalidateClanData(queryClient, clanId);
-      toast.success(
-        roleAdded === "M" ? "Đã thêm cha" : "Đã thêm mẹ",
-        { description: name.trim() },
-      );
+      toast.success(roleAdded === "M" ? t`Đã thêm cha` : t`Đã thêm mẹ`, {
+        description: name.trim(),
+      });
       const willBeBoth =
         (roleAdded === "M" && hasMother) || (roleAdded === "F" && hasFather);
       if (willBeBoth) {
@@ -1185,7 +1169,7 @@ function QuickAddParent({
       }
     },
     onError: (e) =>
-      toast.error("Không thêm được", { description: (e as Error).message }),
+      toast.error(t`Không thêm được`, { description: (e as Error).message }),
   });
 
   if (bothFilled) {
@@ -1193,11 +1177,11 @@ function QuickAddParent({
       <div className="space-y-5 pb-6">
         {onBack && <BackToPickerButton onBack={onBack} />}
         <p className="text-sm text-muted-foreground">
-          {focal?.full_name ?? "Người này"} đã có đủ cha và mẹ trên cây.
-          Sửa thông tin cha/mẹ qua icon bút chì.
+          {focal?.full_name ?? "Người này"} đã có đủ cha và mẹ trên cây. Sửa
+          thông tin cha/mẹ qua icon bút chì.
         </p>
         <Button type="button" variant="outline" onClick={onDone}>
-          Đóng
+          {t`Đóng`}
         </Button>
       </div>
     );
@@ -1216,7 +1200,7 @@ function QuickAddParent({
 
       <div className="space-y-2">
         <Label htmlFor="quick_parent_name" required>
-          Tên {role === "M" ? "cha" : "mẹ"}
+          Tên {role === "M" ? "cha" : t`mẹ`}
         </Label>
         <Input
           id="quick_parent_name"
@@ -1227,13 +1211,13 @@ function QuickAddParent({
           maxLength={200}
           value={name}
           onChange={(e) => onParentNameChange(e.target.value)}
-          placeholder={role === "M" ? "Vd: Nguyễn Văn A" : "Vd: Trần Thị B"}
+          placeholder={role === "M" ? t`Vd: Nguyễn Văn A` : t`Vd: Trần Thị B`}
         />
       </div>
 
       <div className="flex flex-col items-start gap-2">
-        <Label>Vai trò</Label>
-        <SegmentedControl ariaLabel="Vai trò cha mẹ" className="w-full">
+        <Label>{t`Vai trò`}</Label>
+        <SegmentedControl ariaLabel={t`Vai trò cha mẹ`} className="w-full">
           <SegmentedButton
             className="flex-1 px-3"
             active={role === "M"}
@@ -1254,7 +1238,7 @@ function QuickAddParent({
             }}
             disabled={hasMother}
           >
-            Mẹ
+            {t`Mẹ`}
           </SegmentedButton>
         </SegmentedControl>
       </div>
@@ -1270,19 +1254,12 @@ function QuickAddParent({
       />
 
       <PanelActionBar>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onDone}
-        >
-          Hủy
+        <Button type="button" variant="outline" onClick={onDone}>
+          {t`Hủy`}
         </Button>
-        <Button
-          type="submit"
-          disabled={mutation.isPending || !name.trim()}
-        >
+        <Button type="submit" disabled={mutation.isPending || !name.trim()}>
           <IconCheck className="h-4 w-4 mr-1.5" />
-          Lưu
+          {t`Lưu`}
         </Button>
       </PanelActionBar>
     </form>

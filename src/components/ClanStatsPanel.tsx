@@ -4,6 +4,7 @@ import { IconChart } from "@/components/icons";
 import { SectionCard } from "@/components/SectionCard";
 import type { PersonForTree } from "@/lib/queries/tree";
 
+import { t } from "@lingui/core/macro";
 export interface ClanCounts {
   total: number;
   maxGen: number | null;
@@ -117,15 +118,15 @@ export function ClanStatsPanel({
   );
 
   return (
-    <SectionCard id="stats" icon={<IconChart />} title="Số liệu dòng họ">
+    <SectionCard id="stats" icon={<IconChart />} title={t`Số liệu dòng họ`}>
       <div className="space-y-5">
         <div className="grid grid-cols-3 gap-4">
-          <Kpi value={counts.total} label="Thành viên" />
-          <Kpi value={counts.maxGen ?? "—"} label="Số đời" />
+          <Kpi value={counts.total} label={t`Thành viên`} />
+          <Kpi value={counts.maxGen ?? "—"} label={t`Số đời`} />
           <Kpi
             value={biggest ? biggest[1] : "—"}
-            label="Đời đông nhất"
-            hint={biggest ? `Đời thứ ${biggest[0]}` : undefined}
+            label={t`Đời đông nhất`}
+            hint={biggest ? t`Đời thứ ${biggest[0]}` : undefined}
           />
         </div>
 
@@ -133,26 +134,26 @@ export function ClanStatsPanel({
           <>
             <div className="grid grid-cols-1 gap-5 border-t pt-4 sm:grid-cols-2">
               <SplitBar
-                title="Giới tính"
+                title={t`Giới tính`}
                 segments={[
                   {
                     label: "Nam",
                     value: counts.males,
                     className: "bg-primary",
                   },
-                  { label: "Nữ", value: counts.females, className: "bg-gold" },
+                  { label: t`Nữ`, value: counts.females, className: "bg-gold" },
                 ]}
               />
               <SplitBar
-                title="Tình trạng"
+                title={t`Tình trạng`}
                 segments={[
                   {
-                    label: "Còn sống",
+                    label: t`Còn sống`,
                     value: counts.living,
                     className: "bg-primary",
                   },
                   {
-                    label: "Đã mất",
+                    label: t`Đã mất`,
                     value: counts.deceased,
                     className: "bg-muted-foreground/40",
                   },
@@ -162,13 +163,13 @@ export function ClanStatsPanel({
 
             {byGen.length > 1 && (
               <div className="border-t pt-4">
-                <p className="mb-2 text-sm font-medium">Số người theo đời</p>
+                <p className="mb-2 text-sm font-medium">{t`Số người theo đời`}</p>
                 <ul className="space-y-1.5">
                   {byGen.map(([gen, n]) => (
                     <li
                       key={gen}
                       className="grid grid-cols-[3.25rem_1fr_2rem] items-center gap-2 text-sm"
-                      title={`Đời thứ ${gen}: ${n} người (${pct(n, counts.total)})`}
+                      title={t`Đời thứ ${gen}: ${n} người (${pct(n, counts.total)})`}
                     >
                       <span className="text-muted-foreground">Đời {gen}</span>
                       <div className="h-2.5 rounded-full bg-muted">

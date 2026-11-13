@@ -2,12 +2,10 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 import { IconSparkles } from "@/components/icons";
-import {
-  formatCanChiShort,
-  getCanChiForSolarDate,
-} from "@/lib/lunarDate";
+import { formatCanChiShort, getCanChiForSolarDate } from "@/lib/lunarDate";
 import type { UpcomingEvent } from "@/lib/upcomingEvents";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   event: UpcomingEvent;
   clanId: string;
@@ -64,10 +62,10 @@ export function UpcomingEventRow({
           onCreateCard(event);
         }}
         className={`inline-flex items-center justify-center gap-1 rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-sm font-medium text-primary hover:bg-primary/20 whitespace-nowrap ${full ? "w-full" : ""}`}
-        title="Tạo thiệp chia sẻ"
+        title={t`Tạo thiệp chia sẻ`}
       >
         <IconSparkles className="h-4 w-4" />
-        Thiệp
+        {t`Thiệp`}
       </button>
     ) : null;
   const dt = new Date(event.date + "T00:00:00");
@@ -75,29 +73,39 @@ export function UpcomingEventRow({
   const month = dt.getMonth() + 1;
   const countdown =
     event.daysUntil === 0
-      ? "Hôm nay"
+      ? t`Hôm nay`
       : event.daysUntil === 1
-        ? "Ngày mai"
-        : `Còn ${event.daysUntil} ngày`;
+        ? t`Ngày mai`
+        : t`Còn ${event.daysUntil} ngày`;
   const canChi = getCanChiForSolarDate(event.date);
 
   const wrap = (node: ReactNode, className = "block h-full") => {
     // Sự kiện của dòng họ (có eventId) → mở chi tiết sự kiện.
     if (event.eventId && onOpenEvent)
       return (
-        <button type="button" onClick={() => onOpenEvent(event.eventId!)} className={className}>
+        <button
+          type="button"
+          onClick={() => onOpenEvent(event.eventId!)}
+          className={className}
+        >
           {node}
         </button>
       );
     if (event.restingPlaceId)
       return (
-        <Link to={`/clans/${clanId}/graves/${event.restingPlaceId}`} className={className}>
+        <Link
+          to={`/clans/${clanId}/graves/${event.restingPlaceId}`}
+          className={className}
+        >
           {node}
         </Link>
       );
     if (event.personId)
       return (
-        <Link to={`/clans/${clanId}/people/${event.personId}`} className={className}>
+        <Link
+          to={`/clans/${clanId}/people/${event.personId}`}
+          className={className}
+        >
           {node}
         </Link>
       );
@@ -117,11 +125,15 @@ export function UpcomingEventRow({
                 </div>
                 <div className="text-2xl font-semibold leading-none">{day}</div>
               </div>
-              <span className={`text-xs whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
+              <span
+                className={`text-xs whitespace-nowrap ${countdownClass(event.daysUntil)}`}
+              >
                 {countdown}
               </span>
             </div>
-            <p className="font-semibold leading-snug line-clamp-2">{event.title}</p>
+            <p className="font-semibold leading-snug line-clamp-2">
+              {event.title}
+            </p>
             <div>
               <p className="text-sm text-muted-foreground">
                 {kindLabel(event.kind)}
@@ -140,9 +152,9 @@ export function UpcomingEventRow({
         <Link
           to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
           className="text-xs text-primary hover:underline"
-          title="Xem ngày tốt/xấu, giờ hoàng đạo của ngày này"
+          title={t`Xem ngày tốt/xấu, giờ hoàng đạo của ngày này`}
         >
-          Xem ngày →
+          {t`Xem ngày →`}
         </Link>
       </div>
     );
@@ -166,7 +178,9 @@ export function UpcomingEventRow({
         </div>
       </div>
       <div className="min-w-0">
-        <p className={`font-semibold line-clamp-2 ${emphasised ? "text-lg" : "text-base"}`}>
+        <p
+          className={`font-semibold line-clamp-2 ${emphasised ? "text-lg" : "text-base"}`}
+        >
           {event.title}
         </p>
         <p className="text-sm text-muted-foreground">
@@ -193,7 +207,9 @@ export function UpcomingEventRow({
       {clickable}
       <div className="flex flex-col items-end gap-1.5 shrink-0">
         {!emphasised && (
-          <span className={`text-sm whitespace-nowrap ${countdownClass(event.daysUntil)}`}>
+          <span
+            className={`text-sm whitespace-nowrap ${countdownClass(event.daysUntil)}`}
+          >
             {countdown}
           </span>
         )}
@@ -201,9 +217,9 @@ export function UpcomingEventRow({
         <Link
           to={`/clans/${clanId}/xem-ngay?date=${event.date}`}
           className="text-xs text-primary hover:underline whitespace-nowrap"
-          title="Xem ngày tốt/xấu, giờ hoàng đạo của ngày này"
+          title={t`Xem ngày tốt/xấu, giờ hoàng đạo của ngày này`}
         >
-          Xem ngày →
+          {t`Xem ngày →`}
         </Link>
       </div>
     </div>

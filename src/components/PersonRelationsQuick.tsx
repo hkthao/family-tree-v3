@@ -11,12 +11,15 @@ import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { getPersonRelationships } from "@/lib/queries/families";
 import { queryKeys } from "@/lib/queries/keys";
 
+import { t } from "@lingui/core/macro";
 /** Người thân trong ngăn kéo: bấm tên thì ngăn kéo chuyển sang xem người đó. */
 function PanelPersonLink({
   personId,
   ...rest
 }: ComponentProps<typeof Link> & { personId: string }) {
-  return <PanelLink {...rest} panel="person-view" panelParams={{ pid: personId }} />;
+  return (
+    <PanelLink {...rest} panel="person-view" panelParams={{ pid: personId }} />
+  );
 }
 
 /**
@@ -34,15 +37,23 @@ export function PersonRelationsQuick({
   const { user } = useAuth();
   const userId = user?.id ?? "";
   // Người ngoài dòng họ công khai chỉ đọc được view đã che (giống trang chi tiết).
-  const personSource = effectiveRole(clan) === null ? "persons_public_safe" : "persons";
+  const personSource =
+    effectiveRole(clan) === null ? "persons_public_safe" : "persons";
 
   const { data: relationships } = useQuery({
-    queryKey: [...queryKeys.personRelationships(personId, userId), personSource],
+    queryKey: [
+      ...queryKeys.personRelationships(personId, userId),
+      personSource,
+    ],
     queryFn: () => getPersonRelationships(personId, undefined, personSource),
   });
 
   const photoPaths = relationships
-    ? [...relationships.parents, ...relationships.spouses, ...relationships.children]
+    ? [
+        ...relationships.parents,
+        ...relationships.spouses,
+        ...relationships.children,
+      ]
         .map((r) => r.photo_path)
         .filter((p): p is string => !!p)
         .sort()
@@ -60,11 +71,11 @@ export function PersonRelationsQuick({
     <section className="space-y-4">
       <h3 className="inline-flex items-center gap-2 text-base font-semibold">
         <IconUsers className="h-5 w-5" />
-        Quan hệ
+        {t`Quan hệ`}
       </h3>
       <RelationshipGroup
         LinkComponent={PanelPersonLink}
-        label="Cha mẹ"
+        label={t`Cha mẹ`}
         items={relationships.parents}
         clanId={clanId}
         photoUrls={photoUrls}
@@ -72,7 +83,7 @@ export function PersonRelationsQuick({
       />
       <RelationshipGroup
         LinkComponent={PanelPersonLink}
-        label="Vợ / chồng"
+        label={t`Vợ / chồng`}
         items={relationships.spouses}
         clanId={clanId}
         photoUrls={photoUrls}
@@ -80,7 +91,7 @@ export function PersonRelationsQuick({
       />
       <RelationshipGroup
         LinkComponent={PanelPersonLink}
-        label="Con cái"
+        label={t`Con cái`}
         items={relationships.children}
         clanId={clanId}
         photoUrls={photoUrls}

@@ -6,6 +6,7 @@ import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
+import { t } from "@lingui/core/macro";
 /**
  * "Đăng nhập trên điện thoại" affordance: calls the auth-qr
  * edge function (which mints a magic-link URL for the current
@@ -31,14 +32,14 @@ export function QrSignInButton() {
         ttl_seconds: number;
       }>("auth-qr", { method: "POST" });
       if (error) throw new Error(error.message);
-      if (!data?.url) throw new Error("Không nhận được link");
+      if (!data?.url) throw new Error(t`Không nhận được link`);
       setUrl(data.url);
       // Refresh ~1 min before TTL to keep the QR live.
       const ms = Math.max(60_000, (data.ttl_seconds - 60) * 1000);
       if (rotateRef.current) clearTimeout(rotateRef.current);
       rotateRef.current = setTimeout(() => void fetchLink(), ms);
     } catch (e) {
-      toast.error("Không tạo được mã QR", {
+      toast.error(t`Không tạo được mã QR`, {
         description: (e as Error).message,
       });
       setOpen(false);
@@ -75,19 +76,19 @@ export function QrSignInButton() {
         variant="outline"
         onClick={openModal}
         disabled={loading}
-        title="Hiện mã QR — quét bằng điện thoại để đăng nhập cùng tài khoản này"
+        title={t`Hiện mã QR — quét bằng điện thoại để đăng nhập cùng tài khoản này`}
         className="w-full sm:w-auto"
       >
         <IconPhoneDownload className="h-4 w-4 mr-1.5 shrink-0" />
-        Đăng nhập trên điện thoại
+        {t`Đăng nhập trên điện thoại`}
       </Button>
       <QrCodeModal
         open={open}
         loading={loading}
         onClose={closeModal}
         url={url ?? ""}
-        title="Quét để đăng nhập trên điện thoại"
-        description="Mở camera điện thoại, quét mã QR. Mã hiệu lực ~5 phút và chỉ dùng được một lần. KHÔNG chia sẻ ảnh chụp màn hình."
+        title={t`Quét để đăng nhập trên điện thoại`}
+        description={t`Mở camera điện thoại, quét mã QR. Mã hiệu lực ~5 phút và chỉ dùng được một lần. KHÔNG chia sẻ ảnh chụp màn hình.`}
       />
     </>
   );

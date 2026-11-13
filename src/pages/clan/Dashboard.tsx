@@ -45,14 +45,19 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
-import { canEditClan, effectiveRole, isClanAdmin, useClanContext } from "@/hooks/useClanContext";
+import {
+  canEditClan,
+  effectiveRole,
+  isClanAdmin,
+  useClanContext,
+} from "@/hooks/useClanContext";
 import { getClanContentCounts, getClanStats } from "@/lib/queries/clan-stats";
 import { getClansInlawLinks } from "@/lib/queries/clans";
-import { getClansLinkedClans, LINKED_CLAN_RELATION_LABEL } from "@/lib/queries/person-links";
 import {
-  listAnniversaryCandidates,
-  listEvents,
-} from "@/lib/queries/events";
+  getClansLinkedClans,
+  LINKED_CLAN_RELATION_LABEL,
+} from "@/lib/queries/person-links";
+import { listAnniversaryCandidates, listEvents } from "@/lib/queries/events";
 import {
   countClanTodo,
   getClanCompletion,
@@ -70,6 +75,8 @@ import {
   type UpcomingEvent,
 } from "@/lib/upcomingEvents";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 export default function Dashboard() {
   const { clan } = useClanContext();
   const { user } = useAuth();
@@ -181,29 +188,30 @@ export default function Dashboard() {
     <div className="space-y-4">
       <PageHeader
         icon={<IconHome className="h-7 w-7" />}
-        title="Tổng quan"
-        description={`Trang chủ của ${clan.name}.`}
+        title={t`Tổng quan`}
+        description={t`Trang chủ của ${clan.name}.`}
         actionsBelow="mobile"
         actions={
           <div className="flex items-center gap-1">
             {/* Lối tắt tới Cài đặt dòng họ — chỉ quản trị mới thấy (trang đó chỉ
                 quản trị vào được), khỏi phải mở menu trái. */}
-            {isClanAdmin(clan) && isFeatureEnabled(clan.disabled_features, "inlaws") && (
-              <Link
-                to={`/clans/${clan.id}/inlaws`}
-                aria-label="Liên kết dòng họ"
-                title="Liên kết dòng họ"
-                data-testid="dashboard-inlaws-link"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
-              >
-                <IconLink className="h-4 w-4" />
-              </Link>
-            )}
+            {isClanAdmin(clan) &&
+              isFeatureEnabled(clan.disabled_features, "inlaws") && (
+                <Link
+                  to={`/clans/${clan.id}/inlaws`}
+                  aria-label={t`Liên kết dòng họ`}
+                  title={t`Liên kết dòng họ`}
+                  data-testid="dashboard-inlaws-link"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+                >
+                  <IconLink className="h-4 w-4" />
+                </Link>
+              )}
             {canEditClan(clan) && (
               <Link
                 to={`/clans/${clan.id}/so-gia-pha`}
-                aria-label="Chỉnh sửa thông tin dòng họ"
-                title="Chỉnh sửa thông tin dòng họ"
+                aria-label={t`Chỉnh sửa thông tin dòng họ`}
+                title={t`Chỉnh sửa thông tin dòng họ`}
                 data-testid="dashboard-edit-clan-link"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
               >
@@ -213,8 +221,8 @@ export default function Dashboard() {
             {isClanAdmin(clan) && (
               <Link
                 to={`/clans/${clan.id}/settings`}
-                aria-label="Cài đặt dòng họ"
-                title="Cài đặt dòng họ"
+                aria-label={t`Cài đặt dòng họ`}
+                title={t`Cài đặt dòng họ`}
                 data-testid="dashboard-settings-link"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
               >
@@ -232,7 +240,7 @@ export default function Dashboard() {
 
       {showWelcome && (
         <section
-          aria-label="Chào mừng"
+          aria-label={t`Chào mừng`}
           className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3"
         >
           <div>
@@ -240,8 +248,14 @@ export default function Dashboard() {
               Chào mừng bạn đến với dòng họ {clan.name}! 🎉
             </p>
             <p className="text-sm text-muted-foreground">
-              Hai bước để cùng vun đắp gia phả: cho biết bạn là ai trong cây,
-              rồi bổ sung người thân của mình.
+              <Trans>
+                <Trans>
+                  <Trans>
+                    Hai bước để cùng vun đắp gia phả: cho biết bạn là ai trong
+                    cây, rồi bổ sung người thân của mình.
+                  </Trans>
+                </Trans>
+              </Trans>
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -254,11 +268,11 @@ export default function Dashboard() {
                 }}
               >
                 <IconTree className="h-4 w-4 mr-1.5" />
-                Tôi là ai trong cây?
+                {t`Tôi là ai trong cây?`}
               </Link>
             </Button>
             <Button variant="outline" size="sm" onClick={dismissWelcome}>
-              Để sau
+              {t`Để sau`}
             </Button>
           </div>
         </section>
@@ -299,7 +313,9 @@ export default function Dashboard() {
                 to={`/clans/${c.linked_clan_id}`}
                 className="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1 text-sm hover:border-primary transition-colors"
               >
-                <span className="text-xs text-muted-foreground">{LINKED_CLAN_RELATION_LABEL[c.relation]}</span>
+                <span className="text-xs text-muted-foreground">
+                  {LINKED_CLAN_RELATION_LABEL[c.relation]}
+                </span>
                 {c.linked_clan_name}
               </Link>
             ))}
@@ -307,7 +323,7 @@ export default function Dashboard() {
         </section>
       )}
 
-      {isLoading && <p className="text-muted-foreground">Đang tải…</p>}
+      {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
 
       {/* Empty-state check uses the tree query (which goes through the
           masked view for non-members of public clans) — `stats` runs
@@ -318,17 +334,17 @@ export default function Dashboard() {
         canEdit ? (
           <VideoEmptyState
             videoId="them-thuy-to"
-            title="Chưa có ai trong dòng họ"
-            description="Bắt đầu bằng cách thêm Thuỷ tổ. Xem video 1 phút bên dưới rồi vào trang Thêm người."
+            title={t`Chưa có ai trong dòng họ`}
+            description={t`Bắt đầu bằng cách thêm Thuỷ tổ. Xem video 1 phút bên dưới rồi vào trang Thêm người.`}
             ctaLabel="Thêm Thuỷ tổ"
             ctaTo={`/clans/${clan.id}/people/new`}
           />
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Chưa có ai trong dòng họ</CardTitle>
+              <CardTitle>{t`Chưa có ai trong dòng họ`}</CardTitle>
               <CardDescription>
-                Quản trị/biên tập viên sẽ thêm thành viên trước.
+                {t`Quản trị/biên tập viên sẽ thêm thành viên trước.`}
               </CardDescription>
             </CardHeader>
           </Card>
@@ -373,17 +389,17 @@ export default function Dashboard() {
                   <div className="grid grid-cols-3 gap-2 border-t pt-4">
                     <ResourceLink
                       to={`/clans/${clan.id}/memory-room`}
-                      label="Phòng ký ức"
+                      label={t`Phòng ký ức`}
                       value={contentCounts.memory_rooms}
                     />
                     <ResourceLink
                       to={`/clans/${clan.id}/graves`}
-                      label="Mộ phần & tro cốt"
+                      label={t`Mộ phần & tro cốt`}
                       value={contentCounts.resting_places}
                     />
                     <ResourceLink
                       to={`/clans/${clan.id}/heritage`}
-                      label="Di sản văn hoá"
+                      label={t`Di sản văn hoá`}
                       value={contentCounts.heritage_items}
                     />
                   </div>
@@ -395,19 +411,18 @@ export default function Dashboard() {
           {/* Bản đồ dòng họ: nơi ở của con cháu, mộ phần, di sản theo tỉnh — ngay dưới số liệu. */}
           {isMember && <MapOverviewCard clanId={clan.id} />}
 
-
           {/* Sự kiện sắp tới — ưu tiên cao: nhắc giỗ/sinh nhật sắp đến. */}
           {upcomingTop5.length > 0 && (
             <SectionCard
               id="events"
               icon={<IconCalendar />}
-              title="Sự kiện sắp tới"
+              title={t`Sự kiện sắp tới`}
               footer={
                 <Link
                   to={`/clans/${clan.id}/events`}
                   className="shrink-0 text-sm text-primary hover:underline"
                 >
-                  Xem tất cả →
+                  {t`Xem tất cả →`}
                 </Link>
               }
             >
@@ -421,63 +436,63 @@ export default function Dashboard() {
           )}
 
           {/* Thao tác nhanh — điều hướng chính, đưa lên cao. */}
-          <SectionCard id="quick" icon={<IconGrid />} title="Thao tác nhanh">
+          <SectionCard id="quick" icon={<IconGrid />} title={t`Thao tác nhanh`}>
             {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop
                 → thấp hơn hẳn ô vuông cũ, tiết kiệm diện tích. */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <ActionTile
                 to={`/clans/${clan.id}/people`}
                 icon={<IconList />}
-                title="Danh bạ"
+                title={t`Danh bạ`}
               />
               <ActionTile
                 to={`/clans/${clan.id}/tree`}
                 icon={<IconTree />}
-                title="Phả hệ"
+                title={t`Phả hệ`}
               />
               <ActionTile
                 to={`/clans/${clan.id}/graves`}
                 icon={<IconGrave />}
-                title="Mộ phần"
+                title={t`Mộ phần`}
               />
               <ActionTile
                 to={`/clans/${clan.id}/board`}
                 icon={<IconScroll />}
-                title="Bảng tin"
+                title={t`Bảng tin`}
               />
               <ActionTile
                 to={`/clans/${clan.id}/xem-ngay`}
                 icon={<IconSparkles />}
-                title="Xem ngày tốt"
+                title={t`Xem ngày tốt`}
               />
               {isMember && (
                 <>
                   <ActionTile
                     to={`/clans/${clan.id}/memory-room`}
                     icon={<IconCamera />}
-                    title="Phòng ký ức"
+                    title={t`Phòng ký ức`}
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/honor`}
                     icon={<IconAward />}
-                    title="Bảng vàng"
+                    title={t`Bảng vàng`}
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/fund`}
                     icon={<IconWallet />}
-                    title="Quỹ họ"
+                    title={t`Quỹ họ`}
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/todo`}
                     icon={<IconCheck />}
-                    title="Việc làm"
+                    title={t`Việc làm`}
                     badge={todoCount}
                   />
                   {isFeatureEnabled(clan.disabled_features, "inlaws") && (
                     <ActionTile
                       to={`/clans/${clan.id}/inlaws`}
                       icon={<IconLink />}
-                      title="Liên kết họ"
+                      title={t`Liên kết họ`}
                     />
                   )}
                 </>
@@ -487,12 +502,12 @@ export default function Dashboard() {
                   <ActionTile
                     to={`/clans/${clan.id}/people/new`}
                     icon={<IconPlus />}
-                    title="Thêm người"
+                    title={t`Thêm người`}
                   />
                   <ActionTile
                     to={`/clans/${clan.id}/import`}
                     icon={<IconUpload />}
-                    title="Nhập Excel"
+                    title={t`Nhập Excel`}
                   />
                 </>
               )}
@@ -500,14 +515,14 @@ export default function Dashboard() {
                 <ActionTile
                   to={`/clans/${clan.id}/so-gia-pha`}
                   icon={<IconBook />}
-                  title="Thông tin & Sổ gia phả"
+                  title={t`Thông tin & Sổ gia phả`}
                 />
               )}
               {isClanAdmin(clan) && (
                 <ActionTile
                   to={`/clans/${clan.id}/settings`}
                   icon={<IconSettings />}
-                  title="Cài đặt dòng họ"
+                  title={t`Cài đặt dòng họ`}
                 />
               )}
               {/* PDF export is member-only — bulk-downloading the whole
@@ -519,13 +534,19 @@ export default function Dashboard() {
 
           {/* Hồ sơ của tôi: nhận vị trí trên cây + tự cập nhật (quản trị duyệt). */}
           {isMember && userId && (
-            <MyProfileCard clanId={clan.id} userId={userId} persons={tree?.persons} />
+            <MyProfileCard
+              clanId={clan.id}
+              userId={userId}
+              persons={tree?.persons}
+            />
           )}
 
           {/* Ảnh gia đình: bức ảnh ghép mới nhất của họ. */}
-          {isMember && userId && isFeatureEnabled(clan.disabled_features, "mosaic") && (
-            <FamilyPhotoCard clanId={clan.id} userId={userId} />
-          )}
+          {isMember &&
+            userId &&
+            isFeatureEnabled(clan.disabled_features, "mosaic") && (
+              <FamilyPhotoCard clanId={clan.id} userId={userId} />
+            )}
 
           {/* Tiến độ hoàn thiện — nhắc bổ sung thông tin. */}
           {completion && completion.total > 0 && (
@@ -597,7 +618,9 @@ function ActionTile({
       >
         {icon}
       </span>
-      <span className="text-sm font-medium leading-tight truncate">{title}</span>
+      <span className="text-sm font-medium leading-tight truncate">
+        {title}
+      </span>
       {badge !== undefined && badge > 0 && (
         <span className="absolute top-1 right-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] px-1 tabular-nums">
           {badge > 99 ? "99+" : badge}
@@ -608,9 +631,7 @@ function ActionTile({
 }
 
 function PdfActionTile({ clan }: { clan: ClanDetail }) {
-  return (
-    <ExportPdfTile clan={clan} />
-  );
+  return <ExportPdfTile clan={clan} />;
 }
 
 function ExportPdfTile({ clan }: { clan: ClanDetail }) {
@@ -646,7 +667,7 @@ function ExportPdfTile({ clan }: { clan: ClanDetail }) {
         <IconDownload />
       </span>
       <span className="text-sm font-medium leading-tight truncate">
-        {busy ? "Đang xuất…" : "Xuất PDF"}
+        {busy ? t`Đang xuất…` : t`Xuất PDF`}
       </span>
     </button>
   );
@@ -664,10 +685,10 @@ function UpcomingRow({
   const month = dt.getMonth() + 1;
   const countdown =
     event.daysUntil === 0
-      ? "Hôm nay"
+      ? t`Hôm nay`
       : event.daysUntil === 1
-        ? "Ngày mai"
-        : `Còn ${event.daysUntil} ngày`;
+        ? t`Ngày mai`
+        : t`Còn ${event.daysUntil} ngày`;
 
   // Strip the kind prefix from the title so the redesigned row can
   // present "person name (top)" + "kind label (subtitle)" without
@@ -682,10 +703,10 @@ function UpcomingRow({
 
   const kindLabel =
     event.kind === "birthday"
-      ? "Sinh nhật"
+      ? t`Sinh nhật`
       : event.kind === "anniversary"
-        ? "Ngày giỗ"
-        : "Sự kiện";
+        ? t`Ngày giỗ`
+        : t`Sự kiện`;
 
   const stampColor =
     event.kind === "birthday"
@@ -728,7 +749,10 @@ function UpcomingRow({
   return (
     <li>
       {event.personId ? (
-        <Link to={`/clans/${clanId}/people/${event.personId}`} className="block">
+        <Link
+          to={`/clans/${clanId}/people/${event.personId}`}
+          className="block"
+        >
           {inner}
         </Link>
       ) : (
@@ -760,7 +784,7 @@ function ClanDescription({ text }: { text: string }) {
         onClick={() => setExpanded((x) => !x)}
         className="mt-1 text-sm text-primary hover:underline sm:hidden"
       >
-        {expanded ? "Thu gọn" : "Xem thêm"}
+        {expanded ? t`Thu gọn` : t`Xem thêm`}
       </button>
     </div>
   );
@@ -809,48 +833,51 @@ function CompletionTile({
     [...summary].sort((a, b) => b.count - a.count).find((r) => r.count > 0);
 
   return (
-    <SectionCard id="completion" icon={<IconCheck />} title="Tiến độ hoàn thiện">
-    <Link
-      to={`/clans/${clanId}/todo`}
-      aria-label="Mở trang Việc cần làm để bổ sung thông tin"
-      className="block space-y-3 rounded-md hover:bg-muted/30 transition-colors"
+    <SectionCard
+      id="completion"
+      icon={<IconCheck />}
+      title={t`Tiến độ hoàn thiện`}
     >
-      <div className="flex items-baseline justify-between gap-3 flex-wrap">
-        <h3 className="font-medium">Họ ta đã hoàn thành</h3>
-        <span className="text-2xl sm:text-3xl font-semibold tabular-nums">
-          {percent}%
-        </span>
-      </div>
-      <div
-        className="h-2 w-full rounded-full bg-muted overflow-hidden"
-        role="progressbar"
-        aria-valuenow={percent}
-        aria-valuemin={0}
-        aria-valuemax={100}
+      <Link
+        to={`/clans/${clanId}/todo`}
+        aria-label={t`Mở trang Việc cần làm để bổ sung thông tin`}
+        className="block space-y-3 rounded-md hover:bg-muted/30 transition-colors"
       >
-        <div
-          className={`h-full ${tone} transition-[width] duration-500`}
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-      <p className="text-sm">
-        {top ? (
-          <>
-            <span className="text-muted-foreground">
-              Còn{" "}
-              <span className="tabular-nums">{top.count}</span> người{" "}
-              {CATEGORY_CTA[top.category]}
-            </span>
-            <span className="text-primary"> →</span>
-          </>
-        ) : (
-          <span className="text-muted-foreground tabular-nums">
-            {complete.toLocaleString("vi-VN")} /{" "}
-            {total.toLocaleString("vi-VN")} người đã đủ thông tin.
+        <div className="flex items-baseline justify-between gap-3 flex-wrap">
+          <h3 className="font-medium">{t`Họ ta đã hoàn thành`}</h3>
+          <span className="text-2xl sm:text-3xl font-semibold tabular-nums">
+            {percent}%
           </span>
-        )}
-      </p>
-    </Link>
+        </div>
+        <div
+          className="h-2 w-full rounded-full bg-muted overflow-hidden"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={`h-full ${tone} transition-[width] duration-500`}
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+        <p className="text-sm">
+          {top ? (
+            <>
+              <span className="text-muted-foreground">
+                {t`Còn`} <span className="tabular-nums">{top.count}</span> người{" "}
+                {CATEGORY_CTA[top.category]}
+              </span>
+              <span className="text-primary"> →</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground tabular-nums">
+              {complete.toLocaleString("vi-VN")} /{" "}
+              {total.toLocaleString("vi-VN")} người đã đủ thông tin.
+            </span>
+          )}
+        </p>
+      </Link>
     </SectionCard>
   );
 }

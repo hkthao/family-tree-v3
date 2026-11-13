@@ -2,14 +2,29 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
-import { backgroundSuppressed, backgroundUrl, useBackground } from "@/lib/background";
+import {
+  backgroundSuppressed,
+  backgroundUrl,
+  useBackground,
+} from "@/lib/background";
 import { getTheme, subscribeTheme, type Theme } from "@/lib/theme";
 
 /** Trang công khai / chia sẻ giữ nền trơn (ngoài phạm vi hình nền). */
-const PLAIN_PREFIXES = ["/share", "/khoe", "/login", "/signup", "/forgot-password", "/reset-password"];
+const PLAIN_PREFIXES = [
+  "/share",
+  "/khoe",
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+];
 
 function isDark(t: Theme): boolean {
-  return t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  return (
+    t === "dark" ||
+    (t === "system" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)
+  );
 }
 
 /**
@@ -23,21 +38,33 @@ export function AppBackground() {
   const [theme, setLocalTheme] = useState<Theme>(() => getTheme());
   useEffect(() => subscribeTheme(setLocalTheme), []);
 
-  const plain = PLAIN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const plain = PLAIN_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
   useEffect(() => {
     // Trang trơn: gỡ cờ để layout lấy lại nền đặc.
     if (plain) delete document.documentElement.dataset.bg;
-    else if (id && !backgroundSuppressed()) document.documentElement.dataset.bg = "on";
+    else if (id && !backgroundSuppressed())
+      document.documentElement.dataset.bg = "on";
   }, [plain, id]);
 
   if (!id || plain || backgroundSuppressed()) return null;
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 print:hidden" style={{ zIndex: -1 }}>
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 print:hidden"
+      style={{ zIndex: -1 }}
+    >
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${backgroundUrl(id, isDark(theme), desktop)})` }}
+        style={{
+          backgroundImage: `url(${backgroundUrl(id, isDark(theme), desktop)})`,
+        }}
       />
-      <div className="absolute inset-0" style={{ backgroundColor: `hsl(var(--background) / ${dim})` }} />
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: `hsl(var(--background) / ${dim})` }}
+      />
     </div>
   );
 }

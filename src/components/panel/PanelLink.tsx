@@ -20,7 +20,8 @@ export function PanelLink({
         onClick?.(e);
         if (e.defaultPrevented) return;
         // Ctrl/Cmd/Shift/Alt hoặc chuột giữa → để trình duyệt mở như link thường.
-        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+          return;
         e.preventDefault();
         open(panel, panelParams);
       }}

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 import type { CreditQuota } from "@/lib/queries/credits";
 
+import { t } from "@lingui/core/macro";
 /**
  * "Còn 7/10 lượt" ở đầu khung chat.
  *
@@ -30,8 +31,8 @@ export function QuotaBadge({
   // bỏ mẫu số đi cho khỏi khó hiểu ("15/10 lượt" đọc như lỗi).
   const text =
     balance > freeThisMonth || freeThisMonth <= 0
-      ? `Còn ${balance} lượt`
-      : `Còn ${balance}/${freeThisMonth} lượt`;
+      ? t`Còn ${balance} lượt`
+      : t`Còn ${balance}/${freeThisMonth} lượt`;
 
   const tone =
     balance <= 0
@@ -46,7 +47,7 @@ export function QuotaBadge({
     <Link
       to="/account/luot-dung"
       className={`shrink-0 tabular-nums underline-offset-2 hover:underline ${tone} ${className}`}
-      title={`Đã dùng ${quota.usedThisMonth} lượt trong tháng này — xem chi tiết`}
+      title={t`Đã dùng ${quota.usedThisMonth} lượt trong tháng này — xem chi tiết`}
     >
       {text}
     </Link>

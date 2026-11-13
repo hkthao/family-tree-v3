@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { getTheme, setTheme, subscribeTheme, type Theme } from "@/lib/theme";
 
+import { t } from "@lingui/core/macro";
 const OPTIONS: { value: Theme; label: string; description: string }[] = [
   {
     value: "system",
@@ -32,7 +33,7 @@ export function ThemeToggle() {
 
   return (
     <fieldset className="space-y-3">
-      <legend className="text-base font-medium mb-2">Giao diện</legend>
+      <legend className="text-base font-medium mb-2">{t`Giao diện`}</legend>
       <div className="space-y-2">
         {OPTIONS.map((opt) => (
           <label

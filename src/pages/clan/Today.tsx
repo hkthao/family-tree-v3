@@ -6,10 +6,7 @@ import { SectionCard } from "@/components/SectionCard";
 import { PodcastTodayCard } from "@/components/PodcastTodayCard";
 import { PageHeader } from "@/components/PageHeader";
 import { UpcomingEventRow } from "@/components/UpcomingEventRow";
-import {
-  IconBell,
-  IconCalendar,
-} from "@/components/icons";
+import { IconBell, IconCalendar } from "@/components/icons";
 import { useAuth } from "@/hooks/useAuth";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { formatLunarDate, solarStringToLunar } from "@/lib/lunarDate";
@@ -23,6 +20,7 @@ import {
 } from "@/lib/upcomingEvents";
 import { upcomingFestivals } from "@/lib/festivals";
 
+import { t } from "@lingui/core/macro";
 /**
  * "Hôm nay" page — at-a-glance focus on what's happening soon.
  *
@@ -63,8 +61,7 @@ export default function Today() {
       ...queryKeys.anniversaries(clan.id, userId),
       treeSource,
     ] as const,
-    queryFn: () =>
-      listAnniversaryCandidates(clan.id, undefined, treeSource),
+    queryFn: () => listAnniversaryCandidates(clan.id, undefined, treeSource),
     enabled: !!userId,
   });
 
@@ -92,7 +89,8 @@ export default function Today() {
   const withFestivals = useMemo(() => {
     const merged = [...upcoming, ...upcomingFestivals(todayIso(), 30)];
     return merged.sort(
-      (a, b) => a.daysUntil - b.daysUntil || a.title.localeCompare(b.title, "vi"),
+      (a, b) =>
+        a.daysUntil - b.daysUntil || a.title.localeCompare(b.title, "vi"),
     );
   }, [upcoming]);
 
@@ -110,15 +108,15 @@ export default function Today() {
     <div className="space-y-5">
       <PageHeader
         icon={<IconCalendar className="h-7 w-7" />}
-        title="Hôm nay"
+        title={t`Hôm nay`}
         description={todayHeader}
       />
 
       {/* Section: today — biggest header since it's the primary
           focus of the page. */}
       <Section
-        title="Hôm nay"
-                emptyHint="Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
+        title={t`Hôm nay`}
+        emptyHint="Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
         events={todayEvents}
         clanId={clan.id}
         emphasised
@@ -126,7 +124,7 @@ export default function Today() {
 
       {/* Section: this week */}
       <Section
-        title="7 ngày tới"
+        title={t`7 ngày tới`}
         emptyHint="Không có sự kiện nào trong tuần."
         events={weekEvents}
         clanId={clan.id}
@@ -134,7 +132,7 @@ export default function Today() {
 
       {/* Section: this month */}
       <Section
-        title="30 ngày tới"
+        title={t`30 ngày tới`}
         emptyHint="Không có sự kiện nào trong tháng."
         events={monthEvents}
         clanId={clan.id}
@@ -146,18 +144,18 @@ export default function Today() {
         {effectiveRole(clan) !== null ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <IconBell className="h-4 w-4" />
-            <span>Bật nhắc qua email ở trang Sự kiện hoặc trên từng người.</span>
+            <span>{t`Bật nhắc qua email ở trang Sự kiện hoặc trên từng người.`}</span>
           </div>
         ) : (
           <div className="text-muted-foreground">
-            Bạn đang xem dòng họ ở chế độ công khai.
+            {t`Bạn đang xem dòng họ ở chế độ công khai.`}
           </div>
         )}
         <Link
           to={`/clans/${clan.id}/events`}
           className="text-sm text-primary hover:underline whitespace-nowrap"
         >
-          Xem toàn bộ lịch →
+          {t`Xem toàn bộ lịch →`}
         </Link>
       </div>
     </div>
@@ -186,7 +184,7 @@ function Section({
       title={title}
       action={
         <span className="shrink-0 text-sm text-muted-foreground">
-          {events.length === 0 ? "—" : `${events.length} sự kiện`}
+          {events.length === 0 ? "—" : t`${events.length} sự kiện`}
         </span>
       }
     >
@@ -224,7 +222,6 @@ function formatTodayHeader(): string {
   const lunarText = formatLunarDate(lunar);
   return lunarText ? `${solar} · ${lunarText}` : solar;
 }
-
 
 /** Hôm nay theo GIỜ MÁY người dùng — lễ tết là chuyện của lịch địa phương. */
 function todayIso(): string {

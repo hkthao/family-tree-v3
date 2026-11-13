@@ -1,6 +1,12 @@
-import { AVATAR_FRAMES, AVATAR_FRAME_LABEL, PersonAvatar, type AvatarFrame } from "@/components/PersonAvatar";
+import {
+  AVATAR_FRAMES,
+  AVATAR_FRAME_LABEL,
+  PersonAvatar,
+  type AvatarFrame,
+} from "@/components/PersonAvatar";
 import { Label } from "@/components/ui/label";
 
+import { t } from "@lingui/core/macro";
 /**
  * Chọn viền avatar: không viền hoặc một trong các khung (vòng nguyệt quế,
  * vàng, bạc, hoàng gia, sen, phúc lộc). Lưu ở persons.avatar_frame.
@@ -25,7 +31,11 @@ export function AvatarFramePicker({
     <div className="space-y-2 pt-2">
       <Label>{label}</Label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-      <div role="radiogroup" aria-label="Viền avatar" className="flex flex-wrap gap-2">
+      <div
+        role="radiogroup"
+        aria-label={t`Viền avatar`}
+        className="flex flex-wrap gap-2"
+      >
         {options.map((f) => {
           const selected = (value ?? null) === f;
           const label = f ? AVATAR_FRAME_LABEL[f] : "Không viền";
@@ -37,10 +47,17 @@ export function AvatarFramePicker({
               aria-checked={selected}
               onClick={() => onChange(f)}
               className={`flex w-[88px] flex-col items-center gap-1 rounded-lg border p-2 text-center text-xs transition-colors ${
-                selected ? "border-primary bg-primary/5" : "bg-card hover:border-primary/60"
+                selected
+                  ? "border-primary bg-primary/5"
+                  : "bg-card hover:border-primary/60"
               }`}
             >
-              <PersonAvatar gender={gender} photoUrl={photoUrl} frame={f} size={56} />
+              <PersonAvatar
+                gender={gender}
+                photoUrl={photoUrl}
+                frame={f}
+                size={56}
+              />
               <span className="leading-tight">{label}</span>
             </button>
           );

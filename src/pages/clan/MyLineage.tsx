@@ -11,10 +11,7 @@ import { Button } from "@/components/ui/button";
 import { KhoeButton } from "@/components/KhoeButton";
 import { effectiveRole, useClanContext } from "@/hooks/useClanContext";
 import { readAvatarStyle, toFamilyChart } from "@/lib/familyChartAdapter";
-import {
-  traceLineage,
-  type LineageVia,
-} from "@/lib/lineage";
+import { traceLineage, type LineageVia } from "@/lib/lineage";
 import { getSignedPhotoUrlMap, PHOTO_URL_STALE_MS } from "@/lib/photoUpload";
 import { queryKeys } from "@/lib/queries/keys";
 import { listClanMembers, setMySelfPerson } from "@/lib/queries/members";
@@ -23,6 +20,8 @@ import { unaccent } from "@/lib/unaccent";
 
 import "family-chart/styles/family-chart.css";
 
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 /**
  * Đường trực hệ — giờ là MỘT CHẾ ĐỘ của trang Cây gia phả (gộp 2 menu
  * thành 1). `LineageContent` là phần nội dung tái dùng, Tree.tsx nhúng
@@ -63,7 +62,7 @@ export function LineageContent({
   if (!isMember) {
     return (
       <p className="text-sm text-muted-foreground">
-        Bạn cần là thành viên dòng họ để xem đường trực hệ.
+        {t`Bạn cần là thành viên dòng họ để xem đường trực hệ.`}
       </p>
     );
   }
@@ -71,7 +70,11 @@ export function LineageContent({
   return (
     <div className="space-y-5">
       {!myMember?.self_person_id && tree && (
-        <ChoosePersonView clanId={clanId} userId={userId} persons={tree.persons} />
+        <ChoosePersonView
+          clanId={clanId}
+          userId={userId}
+          persons={tree.persons}
+        />
       )}
       {myMember?.self_person_id && tree && (
         <LineageView
@@ -82,7 +85,9 @@ export function LineageContent({
           verified={myMember.self_person_verified}
         />
       )}
-      {treeLoading && <p className="text-muted-foreground">Đang tải gia phả…</p>}
+      {treeLoading && (
+        <p className="text-muted-foreground">{t`Đang tải gia phả…`}</p>
+      )}
     </div>
   );
 }
@@ -121,10 +126,10 @@ function ChoosePersonView({
     mutationFn: (personId: string) => setMySelfPerson(clanId, personId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.clanMembers(clanId, userId) });
-      toast.success("Đã chọn — chờ admin xác nhận");
+      toast.success(t`Đã chọn — chờ admin xác nhận`);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   const matches = useMemo(() => {
@@ -145,18 +150,24 @@ function ChoosePersonView({
         <IconUsers className="h-12 w-12" />
       </div>
       <h3 className="clan-name text-xl font-semibold text-primary text-center mt-4">
-        Bạn là ai trong gia phả này?
+        {t`Bạn là ai trong gia phả này?`}
       </h3>
       <p className="text-sm text-muted-foreground text-center max-w-md mx-auto mt-1.5">
-        Tìm và chọn người đại diện cho mình. Admin sẽ xác nhận trước
-        khi hiển thị công khai.
+        <Trans>
+          <Trans>
+            <Trans>
+              Tìm và chọn người đại diện cho mình. Admin sẽ xác nhận trước khi
+              hiển thị công khai.
+            </Trans>
+          </Trans>
+        </Trans>
       </p>
       <div className="mt-5 mx-auto max-w-md w-full space-y-3">
         <SearchInput
-          label="Tìm theo tên"
+          label={t`Tìm theo tên`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Gõ tên của bạn trong gia phả…"
+          placeholder={t`Gõ tên của bạn trong gia phả…`}
         />
         {matches.length > 0 && (
           <ul className="rounded-md border bg-background divide-y overflow-hidden text-left">
@@ -168,21 +179,17 @@ function ChoosePersonView({
                   disabled={setSelfM.isPending}
                   className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40 disabled:opacity-50"
                 >
-                  <PersonAvatar
-                    gender={p.gender}
-                    photoUrl={null}
-                    size={40}
-                  />
+                  <PersonAvatar gender={p.gender} photoUrl={null} size={40} />
                   <div className="min-w-0 flex-1 text-left">
                     <p className="font-medium truncate">{p.full_name}</p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {p.gender === "M" ? "Nam" : "Nữ"}
+                      {p.gender === "M" ? "Nam" : t`Nữ`}
                       {p.generation !== null &&
-                        ` · Đời ${p.generation - clan.generation_offset}`}
+                        t` · Đời ${p.generation - clan.generation_offset}`}
                       {p.is_living && p.birth_date
                         ? ` · sinh ${p.birth_date.slice(0, 4)}`
                         : !p.is_living && p.death_date
-                          ? ` · đã mất ${p.death_date.slice(0, 4)}`
+                          ? t` · đã mất ${p.death_date.slice(0, 4)}`
                           : ""}
                     </p>
                   </div>
@@ -193,7 +200,7 @@ function ChoosePersonView({
         )}
         {search.trim() && matches.length === 0 && (
           <p className="text-sm text-muted-foreground text-center">
-            Không có ai khớp tên này.
+            {t`Không có ai khớp tên này.`}
           </p>
         )}
       </div>
@@ -216,7 +223,11 @@ interface TreeShape {
     death_date: string | null;
     photo_path: string | null;
   }>;
-  families: Array<{ id: string; husband_id: string | null; wife_id: string | null }>;
+  families: Array<{
+    id: string;
+    husband_id: string | null;
+    wife_id: string | null;
+  }>;
 }
 
 // ─── family-chart bootstrap types ────────────────────────────────
@@ -293,10 +304,10 @@ function LineageView({
     mutationFn: () => setMySelfPerson(clanId, null),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.clanMembers(clanId, userId) });
-      toast.success("Đã bỏ chọn người đại diện");
+      toast.success(t`Đã bỏ chọn người đại diện`);
     },
     onError: (e) =>
-      toast.error("Không lưu được", { description: (e as Error).message }),
+      toast.error(t`Không lưu được`, { description: (e as Error).message }),
   });
 
   // Batch-resolve signed URLs for every uploaded photo on the lineage
@@ -380,9 +391,11 @@ function LineageView({
           }
         ).createChart(node, f3Data);
 
-        const card = (built as F3Chart & {
-          setCardSvg?: () => F3Card;
-        }).setCardSvg?.();
+        const card = (
+          built as F3Chart & {
+            setCardSvg?: () => F3Card;
+          }
+        ).setCardSvg?.();
 
         const lifespan = (d: DatumNode): string => {
           const f = d.data ?? {};
@@ -500,19 +513,19 @@ function LineageView({
         <div className="flex items-center gap-2 flex-wrap">
           <span>
             {lineage.steps.length === 1
-              ? "Chưa có thông tin tổ tiên trong gia phả."
+              ? t`Chưa có thông tin tổ tiên trong gia phả.`
               : lineage.reachedRoot
-                ? `Lên đến thuỷ tổ (${lineage.steps.length} đời)`
-                : `${lineage.steps.length} đời — chưa đến thuỷ tổ`}
+                ? t`Lên đến thuỷ tổ (${lineage.steps.length} đời)`
+                : t`${lineage.steps.length} đời — chưa đến thuỷ tổ`}
           </span>
           {verified ? (
             <span className="inline-flex items-center gap-1 text-xs text-accent">
               <IconCheck className="h-3.5 w-3.5" />
-              Admin đã xác nhận
+              {t`Admin đã xác nhận`}
             </span>
           ) : (
             <span className="text-xs text-muted-foreground">
-              Chờ admin xác nhận
+              {t`Chờ admin xác nhận`}
             </span>
           )}
         </div>
@@ -542,7 +555,7 @@ function LineageView({
             disabled={clearSelfM.isPending}
           >
             <IconPencil className="h-4 w-4 mr-1.5" />
-            Đổi người
+            {t`Đổi người`}
           </Button>
         </div>
       </div>
@@ -550,8 +563,14 @@ function LineageView({
       {lineage.steps.length === 1 && (
         <Alert>
           <AlertDescription>
-            Người bạn chọn chưa có cha/mẹ trong gia phả. Khi admin bổ
-            sung thêm thế hệ trên, đường trực hệ sẽ tự kéo dài.
+            <Trans>
+              <Trans>
+                <Trans>
+                  Người bạn chọn chưa có cha/mẹ trong gia phả. Khi admin bổ sung
+                  thêm thế hệ trên, đường trực hệ sẽ tự kéo dài.
+                </Trans>
+              </Trans>
+            </Trans>
           </AlertDescription>
         </Alert>
       )}
@@ -560,14 +579,16 @@ function LineageView({
         <div className="rounded-xl border bg-card shadow-sm p-3 space-y-2">
           <p className="text-xs text-muted-foreground">
             Có {forks.length} điểm rẽ.{" "}
-            <span className="text-foreground">Bên nội</span> = họ cha ·{" "}
-            <span className="text-foreground">Bên ngoại</span> = họ mẹ.
+            <span className="text-foreground">{t`Bên nội`}</span> = họ cha ·{" "}
+            <span className="text-foreground">{t`Bên ngoại`}</span> = họ mẹ.
           </p>
           <div className="flex flex-wrap gap-2">
             {forks.map((f) => {
               const current: LineageVia =
                 choices[f.child.id] ??
-                (f.parentStep.arrivedVia === "mother" ? "maternal" : "paternal");
+                (f.parentStep.arrivedVia === "mother"
+                  ? "maternal"
+                  : "paternal");
               return (
                 <div
                   key={f.child.id}
@@ -576,7 +597,7 @@ function LineageView({
                   <span className="text-xs text-muted-foreground">
                     {f.child.full_name}
                     {f.child.generation !== null
-                      ? ` (Đời ${f.child.generation - clan.generation_offset})`
+                      ? t` (Đời ${f.child.generation - clan.generation_offset})`
                       : ""}
                     :
                   </span>
@@ -599,7 +620,7 @@ function LineageView({
                           : "hover:bg-muted/50"
                       }`}
                     >
-                      Bên nội
+                      {t`Bên nội`}
                     </button>
                     <button
                       type="button"
@@ -616,7 +637,7 @@ function LineageView({
                           : "hover:bg-muted/50"
                       }`}
                     >
-                      Bên ngoại
+                      {t`Bên ngoại`}
                     </button>
                   </div>
                 </div>
@@ -637,7 +658,7 @@ function LineageView({
             "--female-color": "var(--tree-card-female)",
           } as React.CSSProperties
         }
-        aria-label="Đường trực hệ (chỉ xem)"
+        aria-label={t`Đường trực hệ (chỉ xem)`}
       />
     </div>
   );

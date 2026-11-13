@@ -38,6 +38,7 @@ import {
 } from "@/lib/importPersons";
 import { bulkImportPersons } from "@/lib/queries/import";
 
+import { t } from "@lingui/core/macro";
 export default function Import() {
   const { clanId } = useParams<{ clanId: string }>();
   const { clan } = useClanContext();
@@ -85,7 +86,7 @@ export default function Import() {
 
   const importM = useMutation({
     mutationFn: () => {
-      if (!plan?.payload) throw new Error("Không có payload để nhập.");
+      if (!plan?.payload) throw new Error(t`Không có payload để nhập.`);
       return bulkImportPersons(clanId!, plan.payload);
     },
     onMutate: () => {
@@ -93,207 +94,213 @@ export default function Import() {
     },
     onSuccess: async (res) => {
       await invalidateClanData(qc, clanId!);
-      toast.success("Đã nhập từ Excel", {
-        description: `${res.imported_persons} người, ${res.imported_families} gia đình`,
+      toast.success(t`Đã nhập từ Excel`, {
+        description: t`${res.imported_persons} người, ${res.imported_families} gia đình`,
       });
     },
     onError: (e) =>
-      toast.error("Không nhập được", { description: (e as Error).message }),
+      toast.error(t`Không nhập được`, { description: (e as Error).message }),
   });
 
-  const errorCount = plan?.issues.filter((i) => i.severity === "error").length ?? 0;
-  const warningCount = plan?.issues.filter((i) => i.severity === "warning").length ?? 0;
-  const canSubmit = !!plan?.payload && errorCount === 0 && !importM.isPending && !importM.isSuccess;
+  const errorCount =
+    plan?.issues.filter((i) => i.severity === "error").length ?? 0;
+  const warningCount =
+    plan?.issues.filter((i) => i.severity === "warning").length ?? 0;
+  const canSubmit =
+    !!plan?.payload &&
+    errorCount === 0 &&
+    !importM.isPending &&
+    !importM.isSuccess;
 
   return (
     <div className="space-y-3">
       <Breadcrumb
         items={[
           { label: clan.name, to: `/clans/${clanId}` },
-          { label: "Nhập từ Excel" },
+          { label: t`Nhập từ Excel` },
         ]}
       />
       <PageHeader
         icon={<IconUpload className="h-7 w-7" />}
-        title="Nhập từ Excel"
-        description="Import gia phả lớn từ file .xlsx hoặc .csv."
+        title={t`Nhập từ Excel`}
+        description={t`Import gia phả lớn từ file .xlsx hoặc .csv.`}
         actions={
           <Button asChild variant="outline" size="sm" className="h-10">
             <Link to={`/clans/${clanId}/ai-generate`}>
               <IconSparkles className="h-4 w-4 mr-1.5" />
-                Sinh file bằng AI
+              {t`Sinh file bằng AI`}
             </Link>
           </Button>
         }
       />
 
+      <Card>
+        <CardHeader>
+          <CardTitle>{t`1. Chọn file`}</CardTitle>
+          <CardDescription>
+            {t`Định dạng .xlsx hoặc .csv. Các cột:`}
+            <code className="block mt-2 p-2 bg-muted rounded text-sm overflow-x-auto">
+              {t`ID | Họ tên | Giới tính | Năm sinh | Năm mất | ID Cha | ID Mẹ | ID Vợ/Chồng | Thuỷ tổ | Chi | Ghi chú`}
+            </code>
+            <span className="block mt-2 space-y-1">
+              <span className="block">
+                • <code>ID</code>: mã tạm bạn tự đặt (vd C1, V1…) —
+                {t`cha/mẹ/vợ/chồng nối theo ID này,`}{" "}
+                <strong>{t`không theo tên`}</strong>.
+              </span>
+              <span className="block">
+                • <code>{t`ID Vợ/Chồng`}</code> <strong>{t`(mới)`}</strong>: nối
+                cặp vợ chồng trực tiếp — dâu/rể chỉ cần điền ID người trong họ,
+                không cần qua con. Mẹo: vợ 2 đặt ID thêm chữ "b" (vd C2 → vợ V2,
+                vợ hai V2b).
+              </span>
+              <span className="block">
+                • <code>{t`Thuỷ tổ`}</code> <strong>{t`(mới)`}</strong>: đánh
+                "x" cho đời 1 (khỏi phải đánh dấu sau khi nhập). Chỉ Họ tên +
+                Giới tính là bắt buộc.
+              </span>
+            </span>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <input
+            type="file"
+            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+            onChange={onPickFile}
+            disabled={importM.isPending}
+            className="block w-full text-base file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-4 file:py-2 file:font-medium file:cursor-pointer"
+          />
+          {fileName && (
+            <p className="mt-2 text-sm text-muted-foreground">{fileName}</p>
+          )}
+          {parsing && (
+            <p className="mt-2 text-sm text-muted-foreground">{t`Đang phân tích file…`}</p>
+          )}
+          {parseError && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertDescription>{parseError}</AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+        <CardFooter className="border-t pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            type="button"
+            onClick={() => downloadTemplate()}
+          >
+            <IconDownload className="h-4 w-4 mr-1.5" />
+            {t`Tải file mẫu (.xlsx)`}
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {plan && (
         <Card>
           <CardHeader>
-            <CardTitle>1. Chọn file</CardTitle>
+            <CardTitle>{t`2. Kiểm tra dữ liệu`}</CardTitle>
             <CardDescription>
-              Định dạng .xlsx hoặc .csv. Các cột:
-              <code className="block mt-2 p-2 bg-muted rounded text-sm overflow-x-auto">
-                ID | Họ tên | Giới tính | Năm sinh | Năm mất | ID Cha | ID Mẹ | ID Vợ/Chồng | Thuỷ tổ | Chi | Ghi chú
-              </code>
-              <span className="block mt-2 space-y-1">
-                <span className="block">
-                  • <code>ID</code>: mã tạm bạn tự đặt (vd C1, V1…) — cha/mẹ/vợ/chồng
-                  nối theo ID này, <strong>không theo tên</strong>.
-                </span>
-                <span className="block">
-                  • <code>ID Vợ/Chồng</code> <strong>(mới)</strong>: nối cặp vợ chồng
-                  trực tiếp — dâu/rể chỉ cần điền ID người trong họ, không cần qua con.
-                  Mẹo: vợ 2 đặt ID thêm chữ "b" (vd C2 → vợ V2, vợ hai V2b).
-                </span>
-                <span className="block">
-                  • <code>Thuỷ tổ</code> <strong>(mới)</strong>: đánh "x" cho đời 1
-                  (khỏi phải đánh dấu sau khi nhập). Chỉ Họ tên + Giới tính là bắt buộc.
-                </span>
-              </span>
+              {plan.rows.length} dòng • {errorCount} lỗi • {warningCount} cảnh
+              báo
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <input
-              type="file"
-              accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
-              onChange={onPickFile}
-              disabled={importM.isPending}
-              className="block w-full text-base file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-4 file:py-2 file:font-medium file:cursor-pointer"
-            />
-            {fileName && (
-              <p className="mt-2 text-sm text-muted-foreground">{fileName}</p>
-            )}
-            {parsing && (
-              <p className="mt-2 text-sm text-muted-foreground">Đang phân tích file…</p>
-            )}
-            {parseError && (
-              <Alert variant="destructive" className="mt-3">
-                <AlertDescription>{parseError}</AlertDescription>
+            {plan.issues.length === 0 ? (
+              <Alert>
+                <AlertDescription>
+                  {t`Không có lỗi hay cảnh báo. Bạn có thể nhập ngay.`}
+                </AlertDescription>
               </Alert>
+            ) : (
+              <IssueList issues={plan.issues} />
             )}
           </CardContent>
-          <CardFooter className="border-t pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={() => downloadTemplate()}
-            >
-              <IconDownload className="h-4 w-4 mr-1.5" />
-              Tải file mẫu (.xlsx)
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {plan && (
-          <Card>
-            <CardHeader>
-              <CardTitle>2. Kiểm tra dữ liệu</CardTitle>
-              <CardDescription>
-                {plan.rows.length} dòng • {errorCount} lỗi • {warningCount} cảnh báo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {plan.issues.length === 0 ? (
-                <Alert>
-                  <AlertDescription>
-                    Không có lỗi hay cảnh báo. Bạn có thể nhập ngay.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <IssueList issues={plan.issues} />
-              )}
-            </CardContent>
-            {plan.issues.length > 0 && (
-              <CardFooter className="justify-end border-t pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => downloadIssuesCsv(fileName, plan.issues)}
-                  title="Tải toàn bộ lỗi và cảnh báo về CSV để mở trong Excel cùng file gốc và sửa hàng loạt"
-                >
-                  <IconDownload className="h-4 w-4 mr-1.5" />
-                  Tải file lỗi ({plan.issues.length})
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-        )}
-
-        {plan?.payload && (
-          <Card>
-            <CardHeader>
-              <CardTitle>3. Xem trước (10 dòng đầu)</CardTitle>
-              <CardDescription>
-                Tổng: {plan.payload.persons.length} người •{" "}
-                {plan.payload.families.length} gia đình •{" "}
-                {plan.payload.branches.length} chi sẽ được tạo mới.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PreviewTable rows={plan.rows.slice(0, 10)} />
-            </CardContent>
-          </Card>
-        )}
-
-        {plan?.payload && (
-          <Card>
-            <CardHeader>
-              <CardTitle>4. Nhập vào dòng họ</CardTitle>
-              <CardDescription>
-                Mọi dòng được nhập trong một giao dịch — nếu lỗi, không có ai bị thêm.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {importM.error && (
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    {(importM.error as Error).message}
-                  </AlertDescription>
-                </Alert>
-              )}
-              {importM.isSuccess && importM.data && (
-                <ImportSuccessCard
-                  result={importM.data}
-                  completion={completion}
-                  prePercent={prePercent}
-                />
-              )}
-            </CardContent>
-            <CardFooter className="flex-wrap gap-3 border-t pt-4">
-              {importM.isSuccess && (
-                <Button
-                  asChild
-                  variant="outline"
-                  className="flex-1 sm:flex-none"
-                >
-                  <Link to={`/clans/${clanId}/people`}>
-                    <IconList className="h-4 w-4 mr-1.5" />
-                    Xem danh bạ
-                  </Link>
-                </Button>
-              )}
+          {plan.issues.length > 0 && (
+            <CardFooter className="justify-end border-t pt-4">
               <Button
-                className="flex-1 sm:flex-none"
-                disabled={!canSubmit}
-                onClick={() => importM.mutate()}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => downloadIssuesCsv(fileName, plan.issues)}
+                title={t`Tải toàn bộ lỗi và cảnh báo về CSV để mở trong Excel cùng file gốc và sửa hàng loạt`}
               >
-                {importM.isPending ? (
-                  "Đang nhập…"
-                ) : importM.isSuccess ? (
-                  <>
-                    <IconCheck className="h-4 w-4 mr-1.5" />
-                    Đã nhập
-                  </>
-                ) : (
-                  <>
-                    <IconUpload className="h-4 w-4 mr-1.5" />
-                    Nhập vào dòng họ
-                  </>
-                )}
+                <IconDownload className="h-4 w-4 mr-1.5" />
+                Tải file lỗi ({plan.issues.length})
               </Button>
             </CardFooter>
+          )}
+        </Card>
+      )}
+
+      {plan?.payload && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t`3. Xem trước (10 dòng đầu)`}</CardTitle>
+            <CardDescription>
+              Tổng: {plan.payload.persons.length} người •{" "}
+              {plan.payload.families.length} gia đình •{" "}
+              {plan.payload.branches.length} chi sẽ được tạo mới.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PreviewTable rows={plan.rows.slice(0, 10)} />
+          </CardContent>
+        </Card>
+      )}
+
+      {plan?.payload && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t`4. Nhập vào dòng họ`}</CardTitle>
+            <CardDescription>
+              {t`Mọi dòng được nhập trong một giao dịch — nếu lỗi, không có ai bị thêm.`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {importM.error && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  {(importM.error as Error).message}
+                </AlertDescription>
+              </Alert>
+            )}
+            {importM.isSuccess && importM.data && (
+              <ImportSuccessCard
+                result={importM.data}
+                completion={completion}
+                prePercent={prePercent}
+              />
+            )}
+          </CardContent>
+          <CardFooter className="flex-wrap gap-3 border-t pt-4">
+            {importM.isSuccess && (
+              <Button asChild variant="outline" className="flex-1 sm:flex-none">
+                <Link to={`/clans/${clanId}/people`}>
+                  <IconList className="h-4 w-4 mr-1.5" />
+                  {t`Xem danh bạ`}
+                </Link>
+              </Button>
+            )}
+            <Button
+              className="flex-1 sm:flex-none"
+              disabled={!canSubmit}
+              onClick={() => importM.mutate()}
+            >
+              {importM.isPending ? (
+                t`Đang nhập…`
+              ) : importM.isSuccess ? (
+                <>
+                  <IconCheck className="h-4 w-4 mr-1.5" />
+                  {t`Đã nhập`}
+                </>
+              ) : (
+                <>
+                  <IconUpload className="h-4 w-4 mr-1.5" />
+                  {t`Nhập vào dòng họ`}
+                </>
+              )}
+            </Button>
+          </CardFooter>
         </Card>
       )}
     </div>
@@ -317,8 +324,8 @@ function IssueList({ issues }: { issues: ImportIssue[] }) {
           }`}
         >
           <span className="font-medium">
-            {iss.severity === "error" ? "Lỗi" : "Cảnh báo"}
-            {iss.rowIndex > 0 ? ` (dòng ${iss.rowIndex})` : ""}:
+            {iss.severity === "error" ? t`Lỗi` : t`Cảnh báo`}
+            {iss.rowIndex > 0 ? t` (dòng ${iss.rowIndex})` : ""}:
           </span>{" "}
           {iss.message}
         </li>
@@ -326,7 +333,7 @@ function IssueList({ issues }: { issues: ImportIssue[] }) {
       {issues.length > ISSUE_PREVIEW_CAP && (
         <li className="text-sm text-muted-foreground italic">
           (còn {issues.length - ISSUE_PREVIEW_CAP} vấn đề khác — bấm{" "}
-          <strong>Tải file lỗi</strong> ở trên để xem hết)
+          <strong>{t`Tải file lỗi`}</strong> ở trên để xem hết)
         </li>
       )}
     </ul>
@@ -340,14 +347,14 @@ function PreviewTable({ rows }: { rows: NormalisedRow[] }) {
         <thead>
           <tr className="border-b text-left">
             <th className="px-2 py-2">ID</th>
-            <th className="px-2 py-2">Họ tên</th>
+            <th className="px-2 py-2">{t`Họ tên`}</th>
             <th className="px-2 py-2">GT</th>
             <th className="px-2 py-2">Sinh</th>
-            <th className="px-2 py-2">Mất</th>
+            <th className="px-2 py-2">{t`Mất`}</th>
             <th className="px-2 py-2">Cha</th>
-            <th className="px-2 py-2">Mẹ</th>
-            <th className="px-2 py-2">Vợ/Chồng</th>
-            <th className="px-2 py-2">Thuỷ tổ</th>
+            <th className="px-2 py-2">{t`Mẹ`}</th>
+            <th className="px-2 py-2">{t`Vợ/Chồng`}</th>
+            <th className="px-2 py-2">{t`Thuỷ tổ`}</th>
             <th className="px-2 py-2">Chi</th>
           </tr>
         </thead>
@@ -410,7 +417,7 @@ function ImportSuccessCard({
         <>
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-sm text-muted-foreground">
-              Họ ta giờ đã hoàn thành
+              {t`Họ ta giờ đã hoàn thành`}
             </span>
             <span className="text-xl font-semibold tabular-nums">
               {post}%
@@ -437,8 +444,8 @@ function ImportSuccessCard({
             // Imports with gaps drag the percentage down. Reframe it
             // as the next step instead of a regret.
             <p className="text-xs text-muted-foreground">
-              Hồ sơ mới có chỗ chưa đầy đủ — bấm <em>Việc cần làm</em>{" "}
-              để bổ sung dần.
+              Hồ sơ mới có chỗ chưa đầy đủ — bấm <em>{t`Việc cần làm`}</em> để
+              bổ sung dần.
             </p>
           )}
         </>

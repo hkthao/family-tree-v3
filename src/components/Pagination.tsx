@@ -1,11 +1,8 @@
-import {
-  IconArrowLeft,
-  IconArrowRight,
-  IconList,
-} from "@/components/icons";
+import { IconArrowLeft, IconArrowRight, IconList } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 
+import { t } from "@lingui/core/macro";
 /**
  * Component phân trang chuẩn cho toàn app — style lấy từ `/people`
  * làm canonical. Cấu trúc:
@@ -53,7 +50,7 @@ export function Pagination({
     <div className="flex items-center justify-between flex-wrap gap-3 pb-16 sm:pb-0 text-sm">
       <div className="text-muted-foreground">
         {totalLabel}
-        {isFetching && <span className="ml-2 italic">đang tải…</span>}
+        {isFetching && <span className="ml-2 italic">{t`đang tải…`}</span>}
       </div>
 
       {/* flex-wrap: ở màn 360px, ô "N/trang" cộng hai nút Trước/Sau
@@ -62,7 +59,7 @@ export function Pagination({
       <div className="flex flex-wrap items-center justify-end gap-2">
         {pageSizeOptions && onPageSizeChange && (
           <label className="text-muted-foreground">
-            <span className="sr-only">Số dòng mỗi trang</span>
+            <span className="sr-only">{t`Số dòng mỗi trang`}</span>
             <Select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -83,10 +80,10 @@ export function Pagination({
           size="sm"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          aria-label="Trang trước"
+          aria-label={t`Trang trước`}
         >
           <IconArrowLeft className="h-4 w-4 sm:mr-1" />
-          <span className="hidden sm:inline">Trước</span>
+          <span className="hidden sm:inline">{t`Trước`}</span>
         </Button>
         <span className="px-2 tabular-nums">
           {page}/{totalPages}

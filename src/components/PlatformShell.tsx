@@ -6,6 +6,7 @@ import { IconLogIn } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
+import { t } from "@lingui/core/macro";
 /**
  * Khung trang cho các trang TOÀN NỀN TẢNG (Sổ tay Văn hoá, Podcast…) —
  * thứ không thuộc dòng họ nào.
@@ -45,12 +46,12 @@ export function PlatformShell({
             className="clan-name inline-flex items-center gap-2 text-xl font-semibold text-primary"
           >
             <AppLogo size={28} className="rounded" />
-            Dòng Họ Việt
+            {t`Dòng Họ Việt`}
           </Link>
           <Button size="sm" asChild>
             <Link to="/login">
               <IconLogIn className="mr-1.5 h-4 w-4" />
-              Đăng nhập
+              {t`Đăng nhập`}
             </Link>
           </Button>
         </div>

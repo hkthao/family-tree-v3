@@ -3,7 +3,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { AiChatView } from "@/components/ai/AiChatView";
 import { FAB_RIGHT_LG } from "@/components/Fab";
-import { IconChevronDown, IconMaximize, IconSparkles } from "@/components/icons";
+import {
+  IconChevronDown,
+  IconMaximize,
+  IconSparkles,
+} from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { DESKTOP_QUERY, useMediaQuery } from "@/hooks/useMediaQuery";
@@ -11,6 +15,7 @@ import { track } from "@/lib/analytics";
 import { isFeatureEnabled } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
+import { t } from "@lingui/core/macro";
 /**
  * Khung chat gắn bên phải (cao hết cửa sổ, đẩy nội dung sang trái) — chỉ trên máy tính.
  * Điện thoại mở chat bằng ngăn kéo toàn màn hình (`?panel=chat`, xem PanelHost).
@@ -108,7 +113,7 @@ function Dock({ clan }: { clan: ClanDetail }) {
         className={`fixed bottom-[5.75rem] right-4 z-40 flex h-10 items-center gap-1.5 rounded-full bg-primary pl-3 pr-4 text-sm font-medium text-primary-foreground ${FAB_RIGHT_LG} shadow-lg transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`}
       >
         <IconSparkles className="h-4 w-4" />
-        Trợ lý
+        {t`Trợ lý`}
       </button>
     );
   }
@@ -117,7 +122,7 @@ function Dock({ clan }: { clan: ClanDetail }) {
     <div
       data-ai-dock
       role="complementary"
-      aria-label="Trợ lý dòng họ"
+      aria-label={t`Trợ lý dòng họ`}
       // Gắn cố định bên phải, cao hết cửa sổ: không đè lên nội dung mà ĐẨY nó
       // sang trái (ClanLayout đọc --ai-dock-w), nên vẫn vừa xem vừa hỏi được.
       className="fixed bottom-0 right-0 top-0 z-40 flex w-[24rem] flex-col border-l bg-background shadow-xl"
@@ -131,8 +136,8 @@ function Dock({ clan }: { clan: ClanDetail }) {
               variant="ghost"
               size="icon"
               onClick={() => navigate(`/clans/${clan.id}/tro-ly`)}
-              aria-label="Mở toàn màn hình"
-              title="Mở toàn màn hình"
+              aria-label={t`Mở toàn màn hình`}
+              title={t`Mở toàn màn hình`}
               className="h-9 w-9"
             >
               <IconMaximize className="h-4 w-4" />
@@ -141,8 +146,8 @@ function Dock({ clan }: { clan: ClanDetail }) {
               variant="ghost"
               size="icon"
               onClick={() => setOpenPersisted(false)}
-              aria-label="Thu nhỏ khung trò chuyện"
-              title="Thu nhỏ"
+              aria-label={t`Thu nhỏ khung trò chuyện`}
+              title={t`Thu nhỏ`}
               className="h-9 w-9"
             >
               <IconChevronDown className="h-5 w-5" />

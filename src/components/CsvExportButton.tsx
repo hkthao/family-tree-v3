@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
+import { t } from "@lingui/core/macro";
 interface Props {
   clan: ClanDetail;
 }
@@ -31,22 +32,23 @@ export function CsvExportButton({ clan }: Props) {
     },
     onSuccess: (res) => {
       track("export", { kind: "csv" });
-      toast.success("Đã xuất CSV", {
+      toast.success(t`Đã xuất CSV`, {
         description: `${res.filename} (${Math.round(res.bytes / 1024)} KB)`,
       });
     },
     onError: (e) =>
-      toast.error("Không xuất được", { description: (e as Error).message }),
+      toast.error(t`Không xuất được`, { description: (e as Error).message }),
   });
 
   return (
-    <Button size="sm"
+    <Button
+      size="sm"
       variant="outline"
       onClick={() => m.mutate()}
       disabled={m.isPending}
     >
       <IconDownload className="h-4 w-4 mr-1.5" />
-      {m.isPending ? "Đang xuất…" : "Xuất CSV"}
+      {m.isPending ? t`Đang xuất…` : t`Xuất CSV`}
     </Button>
   );
 }
