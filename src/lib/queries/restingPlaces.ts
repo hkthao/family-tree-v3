@@ -4,7 +4,7 @@ import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { deletePersonPhoto } from "@/lib/photoUpload";
 import { msg } from "@lingui/core/macro";
-import { lazyMessages } from "@/lib/i18n/lazy";
+import { lazyAs, lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
 
@@ -33,28 +33,33 @@ export const RESTING_PLACE_STATUS_LABEL: Record<RestingPlaceStatus, string> = la
 export const KIND_LOCATION_LABELS: Record<
   RestingPlaceKind,
   { name: string; detail: string | null; namePh: string; detailPh: string }
-> = {
+> = lazyAs<
+  Record<
+    RestingPlaceKind,
+    { name: string; detail: string | null; namePh: string; detailPh: string }
+  >
+>({
   grave: {
-    name: "Nghĩa trang / khu",
-    detail: "Lô – hàng – số",
-    namePh: "vd: Nghĩa trang Lạc Hồng / khu mộ họ",
-    detailPh: "vd: Lô B, hàng 3, số 12",
+    name: msg`Nghĩa trang / khu`,
+    detail: msg`Lô – hàng – số`,
+    namePh: msg`vd: Nghĩa trang Lạc Hồng / khu mộ họ`,
+    detailPh: msg`vd: Lô B, hàng 3, số 12`,
   },
   ashes_temple: {
-    name: "Tên chùa",
-    detail: "Vị trí hũ (ngăn/tầng/số)",
-    namePh: "vd: Chùa Vĩnh Nghiêm",
-    detailPh: "vd: Tầng 2, ngăn 15",
+    name: msg`Tên chùa`,
+    detail: msg`Vị trí hũ (ngăn/tầng/số)`,
+    namePh: msg`vd: Chùa Vĩnh Nghiêm`,
+    detailPh: msg`vd: Tầng 2, ngăn 15`,
   },
   columbarium: {
-    name: "Cơ sở lưu tro / tháp họ",
-    detail: "Ngăn / kệ / số hũ",
-    namePh: "vd: Tháp họ Cao, Hoa viên Bình An",
-    detailPh: "vd: Kệ A, số 8",
+    name: msg`Cơ sở lưu tro / tháp họ`,
+    detail: msg`Ngăn / kệ / số hũ`,
+    namePh: msg`vd: Tháp họ Cao, Hoa viên Bình An`,
+    detailPh: msg`vd: Kệ A, số 8`,
   },
-  scattered: { name: "Nơi rải tro", detail: null, namePh: "vd: Sông Hậu, đoạn…", detailPh: "" },
-  other: { name: "Nơi an nghỉ", detail: "Chi tiết vị trí", namePh: "", detailPh: "" },
-};
+  scattered: { name: msg`Nơi rải tro`, detail: null, namePh: msg`vd: Sông Hậu, đoạn…`, detailPh: "" },
+  other: { name: msg`Nơi an nghỉ`, detail: msg`Chi tiết vị trí`, namePh: "", detailPh: "" },
+});
 
 
 export interface RestingPlace {
