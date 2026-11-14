@@ -500,11 +500,6 @@ msgstr "{0} người, {1} gia đình"
 msgid "{0} nơi an nghỉ"
 msgstr "{0} nơi an nghỉ"
 
-#. placeholder {0}: events.length
-#: src/pages/clan/Today.tsx
-msgid "{0} sự kiện"
-msgstr "{0} sự kiện"
-
 #. placeholder {0}: clan.person_count
 #. placeholder {0}: clan.person_count.toLocaleString("vi-VN")
 #: src/components/ClanBadges.tsx
@@ -989,10 +984,6 @@ msgstr "3. Xem trước (10 dòng đầu)"
 msgid "30 ngày"
 msgstr "30 ngày"
 
-#: src/pages/clan/Today.tsx
-msgid "30 ngày tới"
-msgstr "30 ngày tới"
-
 #: src/lib/festivals.ts
 msgid "30/4 — ngày nghỉ lễ."
 msgstr "30/4 — ngày nghỉ lễ."
@@ -1009,10 +1000,6 @@ msgstr "4. Nhập vào dòng họ"
 #: src/pages/clan/GoodDays.tsx
 msgid "7 ngày"
 msgstr "7 ngày"
-
-#: src/pages/clan/Today.tsx
-msgid "7 ngày tới"
-msgstr "7 ngày tới"
 
 #: src/components/SubscriptionSettings.tsx
 msgid "7 ngày trước"
@@ -1520,10 +1507,6 @@ msgstr "Bạn đã góp đủ {quota} mảnh."
 msgid "Bạn đã tạo dòng họ chưa?"
 msgstr "Bạn đã tạo dòng họ chưa?"
 
-#: src/pages/clan/Today.tsx
-msgid "Bạn đang xem dòng họ ở chế độ công khai."
-msgstr "Bạn đang xem dòng họ ở chế độ công khai."
-
 #: src/pages/clan/Board.tsx
 msgid "Bạn đang xem dưới dạng khách. Tham gia dòng họ để đăng bài và bình luận."
 msgstr "Bạn đang xem dưới dạng khách. Tham gia dòng họ để đăng bài và bình luận."
@@ -1708,10 +1691,6 @@ msgstr "Bật mở rộng dần: chỉ hiện gốc, bấm để bung từng nh�
 #: src/components/EnablePushPrompt.tsx
 msgid "Bật ngay"
 msgstr "Bật ngay"
-
-#: src/pages/clan/Today.tsx
-msgid "Bật nhắc qua email ở trang Sự kiện hoặc trên từng người."
-msgstr "Bật nhắc qua email ở trang Sự kiện hoặc trên từng người."
 
 #: src/components/SubscriptionSettings.tsx
 msgid "Bật theo dõi"
@@ -3346,6 +3325,10 @@ msgstr "Chuột trái"
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Chụp ảnh"
 msgstr "Chụp ảnh"
+
+#: src/components/TodayHubCard.tsx
+msgid "Chuyển ngày"
+msgstr "Chuyển ngày"
 
 #: src/components/ThemeQuickToggle.tsx
 msgid "Chuyển sang giao diện sáng"
@@ -7284,8 +7267,6 @@ msgstr "Hỏi về gia phả…"
 #: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/clan/Today.tsx
-#: src/pages/clan/Today.tsx
 msgid "Hôm nay"
 msgstr "Hôm nay"
 
@@ -7294,7 +7275,6 @@ msgid "Hôm nay — {label}"
 msgstr "Hôm nay — {label}"
 
 #: src/components/TodayHubCard.tsx
-#: src/pages/clan/Today.tsx
 msgid "Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
 msgstr "Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
 
@@ -7911,12 +7891,10 @@ msgid "Không có sự kiện nào khớp"
 msgstr "Không có sự kiện nào khớp"
 
 #: src/components/TodayHubCard.tsx
-#: src/pages/clan/Today.tsx
 msgid "Không có sự kiện nào trong tháng."
 msgstr "Không có sự kiện nào trong tháng."
 
 #: src/components/TodayHubCard.tsx
-#: src/pages/clan/Today.tsx
 msgid "Không có sự kiện nào trong tuần."
 msgstr "Không có sự kiện nào trong tuần."
 
@@ -15578,7 +15556,6 @@ msgid "Xem thử gia phả mẫu"
 msgstr "Xem thử gia phả mẫu"
 
 #: src/components/TodayHubCard.tsx
-#: src/pages/clan/Today.tsx
 msgid "Xem toàn bộ lịch →"
 msgstr "Xem toàn bộ lịch →"
 
