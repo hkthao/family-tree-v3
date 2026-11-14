@@ -1,10 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { useSidebarHidden } from "@/lib/sidebarHidden";
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation, useParams } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { usePanel } from "@/components/panel/usePanel";
-import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { AppLogo } from "@/components/AppLogo";
 import { AppVersion } from "@/components/AppVersion";
 import {
@@ -18,7 +16,6 @@ import {
 } from "@/components/icons";
 import { CheckUpdateButton } from "@/components/CheckUpdateButton";
 import {
-  buildSections,
   isItemActive,
   sectionBadge,
   useCollapsedSections,
@@ -27,13 +24,8 @@ import { InstallAppButton } from "@/components/InstallAppButton";
 import { ShareAppQrButton } from "@/components/ShareAppQrButton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavSections } from "@/hooks/useNavSections";
 import { signOutAndClearCache } from "@/lib/auth-actions";
-import { getClanDetail } from "@/lib/queries/clan-detail";
-import { queryKeys } from "@/lib/queries/keys";
-import { countPendingContributions } from "@/lib/queries/contributions";
-import { countPendingPersonLinks } from "@/lib/queries/person-links";
-import { getMyProfile } from "@/lib/queries/profile";
-import { countClanTodo } from "@/lib/queries/todo";
 import { unaccent } from "@/lib/unaccent";
 import { cn } from "@/lib/utils";
 
@@ -59,54 +51,7 @@ export function AppDrawer({ open, onClose }: Props) {
   const [sidebarHidden] = useSidebarHidden();
   const { open: openPanel } = usePanel();
   const { user } = useAuth();
-  const userId = user?.id ?? "";
-  const { clanId } = useParams<{ clanId?: string }>();
-
-  const { data: profile } = useQuery({
-    queryKey: queryKeys.myProfile(userId),
-    queryFn: () => getMyProfile(userId),
-    enabled: !!userId,
-  });
-  const { data: clan } = useQuery({
-    queryKey: queryKeys.clan(clanId ?? "", userId),
-    queryFn: () => getClanDetail(clanId!, userId),
-    enabled: !!userId && !!clanId,
-  });
-  // Pending contributions count — drives the drawer badge. RLS only
-  // returns rows the user can SELECT, so for viewers this is always 0.
-  const canSeeContribs =
-    !!clan &&
-    (clan.isPlatformAdmin ||
-      clan.myRole === "admin" ||
-      clan.myRole === "editor");
-  const { data: pendingContribCount } = useQuery({
-    queryKey: queryKeys.pendingContributionsCount(clanId ?? "", userId),
-    queryFn: () => countPendingContributions(clanId!),
-    enabled: !!userId && !!clanId && canSeeContribs,
-    // Cheap COUNT — refetch fairly often so the badge feels live
-    // when admin lands on the drawer.
-    staleTime: 30_000,
-  });
-  // Pending in-law links on either side of this clan. Admin-only —
-  // viewers can't see person_links rows anyway, but skipping the
-  // probe saves a request.
-  const canSeeInlaws =
-    !!clan && (clan.isPlatformAdmin || clan.myRole === "admin");
-  const { data: pendingInlawCount } = useQuery({
-    queryKey: queryKeys.pendingPersonLinksCount(clanId ?? "", userId),
-    queryFn: () => countPendingPersonLinks(clanId!),
-    enabled: !!userId && !!clanId && canSeeInlaws,
-    staleTime: 30_000,
-  });
-  // Todo count — every clan member can see it. RPC gates on
-  // is_clan_member so platform admin gets it too.
-  const canSeeTodo = !!clan && (clan.isPlatformAdmin || clan.myRole !== null);
-  const { data: todoCount } = useQuery({
-    queryKey: queryKeys.clanTodoCount(clanId ?? "", userId),
-    queryFn: () => countClanTodo(clanId!),
-    enabled: !!userId && !!clanId && canSeeTodo,
-    staleTime: 60_000,
-  });
+  const { profile, sections, drawerSections } = useNavSections();
 
   // On mobile, lock body scroll while the drawer is open so the page
   // doesn't scroll out from under the user on iOS. On desktop (≥lg) the
@@ -146,23 +91,13 @@ export function AppDrawer({ open, onClose }: Props) {
   }
 
   const location = useLocation();
-  const aiEnabled = useAiEnabled();
-  const sections = buildSections(
-    clanId,
-    clan ?? null,
-    profile ?? null,
-    pendingContribCount ?? 0,
-    pendingInlawCount ?? 0,
-    todoCount ?? 0,
-    aiEnabled,
-  );
-
   const { isOpen, toggle } = useCollapsedSections(location.pathname);
 
   // Ô tìm mục menu: menu quá dài nên gõ để lọc (không dấu cũng được). Đang lọc
   // thì mở hết các nhóm có mục khớp, ẩn nhóm không khớp.
   const [menuQuery, setMenuQuery] = useState("");
   const needle = unaccent(menuQuery.trim());
+  // Menu trái chỉ có sáu mục lõi, nên khi tìm phải quét TẤT CẢ mục (kể cả những mục nằm trong trang hub).
   const visibleSections = needle
     ? sections
         .map((sec) => ({
@@ -170,7 +105,7 @@ export function AppDrawer({ open, onClose }: Props) {
           items: sec.items.filter((it) => unaccent(it.label).includes(needle)),
         }))
         .filter((sec) => sec.items.length > 0)
-    : sections;
+    : drawerSections;
 
   return (
     <>
@@ -312,7 +247,7 @@ export function AppDrawer({ open, onClose }: Props) {
                           className={({ isActive }) =>
                             cn(
                               "flex items-center gap-3 px-4 py-2.5 text-sm",
-                              isItemActive(item.to, location, isActive)
+                              isItemActive(item.to, location, isActive, item.alsoActive)
                                 ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
                                 : "text-foreground hover:bg-muted/50 border-l-4 border-transparent pl-3",
                             )

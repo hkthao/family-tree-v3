@@ -1268,6 +1268,10 @@ msgstr "Áp dụng:"
 msgid "App chặn nếu người đã chọn là con cháu của"
 msgstr "App chặn nếu người đã chọn là con cháu của"
 
+#: src/lib/navModel.tsx
+msgid "App dò chỗ còn thiếu trong gia phả."
+msgstr "App dò chỗ còn thiếu trong gia phả."
+
 #: src/pages/clan/AddChild.tsx
 msgid "App gợi ý dựa trên số con đã có. Sửa nếu cần."
 msgstr "App gợi ý dựa trên số con đã có. Sửa nếu cần."
@@ -2847,6 +2851,7 @@ msgstr "Chọn mẫu để có sẵn bài hoàn chỉnh rồi sửa lại; AI so
 msgid "Chọn một ảnh"
 msgstr "Chọn một ảnh"
 
+#: src/pages/clan/ClanMenu.tsx
 #: src/pages/clan/Tools.tsx
 msgid "Chọn một mục để mở."
 msgstr "Chọn một mục để mở."
@@ -3538,6 +3543,10 @@ msgstr "Con cháu nhiều nhất ở"
 #: src/lib/nextSteps.ts
 msgid "Con cháu ở tỉnh nào"
 msgstr "Con cháu ở tỉnh nào"
+
+#: src/lib/navModel.tsx
+msgid "Con cháu, mộ phần theo tỉnh/thành."
+msgstr "Con cháu, mộ phần theo tỉnh/thành."
 
 #: src/pages/clan/MapStats.tsx
 msgid "Con cháu, mộ phần và di sản phân bố theo tỉnh/thành. Chỉ thành viên dòng họ xem được."
@@ -5333,6 +5342,10 @@ msgstr "Đang xuất…"
 msgid "Danh bạ"
 msgstr "Danh bạ"
 
+#: src/lib/navModel.tsx
+msgid "Dành cho mọi người, không thuộc riêng dòng họ nào."
+msgstr "Dành cho mọi người, không thuộc riêng dòng họ nào."
+
 #: src/components/NotificationBell.tsx
 msgid "Đánh dấu đã đọc"
 msgstr "Đánh dấu đã đọc"
@@ -5377,6 +5390,10 @@ msgstr "Danh sách dòng họ"
 #: src/lib/pageTitle.ts
 msgid "Danh sách dòng họ bạn đang quản lý hoặc tham gia trên Dòng Họ Việt."
 msgstr "Danh sách dòng họ bạn đang quản lý hoặc tham gia trên Dòng Họ Việt."
+
+#: src/lib/navModel.tsx
+msgid "Danh sách dòng họ bạn tham gia."
+msgstr "Danh sách dòng họ bạn tham gia."
 
 #: src/lib/pageTitle.ts
 msgid "Danh sách thành viên"
@@ -6411,6 +6428,10 @@ msgstr "ghi nhận"
 msgid "Ghi nhận đóng góp công đức."
 msgstr "Ghi nhận đóng góp công đức."
 
+#: src/lib/navModel.tsx
+msgid "Ghi nhận đóng góp và thành tích."
+msgstr "Ghi nhận đóng góp và thành tích."
+
 #: src/lib/nextSteps.ts
 msgid "Ghi nơi an nghỉ của các cụ"
 msgstr "Ghi nơi an nghỉ của các cụ"
@@ -6851,6 +6872,10 @@ msgstr "Gửi thông báo test"
 #: src/lib/queries/restingPlaces.ts
 msgid "Gửi tro cốt ở chùa"
 msgstr "Gửi tro cốt ở chùa"
+
+#: src/lib/navModel.tsx
+msgid "Gửi ý kiến hoặc báo lỗi cho chúng tôi."
+msgstr "Gửi ý kiến hoặc báo lỗi cho chúng tôi."
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Hai bước để cùng vun đắp gia phả: cho biết bạn là ai trong cây, rồi bổ sung người thân của mình."
@@ -7343,6 +7368,10 @@ msgstr "Hướng dẫn cho trang này"
 #: src/lib/pageTitle.ts
 msgid "Hướng dẫn dùng Dòng Họ Việt: tạo dòng họ, thêm người, vẽ cây gia phả, mời người thân cùng bổ sung."
 msgstr "Hướng dẫn dùng Dòng Họ Việt: tạo dòng họ, thêm người, vẽ cây gia phả, mời người thân cùng bổ sung."
+
+#: src/lib/navModel.tsx
+msgid "Hướng dẫn dùng từng tính năng."
+msgstr "Hướng dẫn dùng từng tính năng."
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Hướng dẫn lấy link (bấm để xem)"
@@ -7859,6 +7888,10 @@ msgstr "Không có mục nào khớp"
 #: src/components/AppDrawer.tsx
 msgid "Không có mục nào khớp \"{menuQuery}\"."
 msgstr "Không có mục nào khớp \"{menuQuery}\"."
+
+#: src/pages/clan/ClanMenu.tsx
+msgid "Không có mục nào khớp."
+msgstr "Không có mục nào khớp."
 
 #: src/pages/clan/AddSpouse.tsx
 msgid "Không có người khớp giới tính + tên."
@@ -9794,6 +9827,7 @@ msgstr "Mỗi dòng họ có thể có nhiều cây (bố cục) riêng."
 msgid "Mỗi dòng họ tạo được nhiều bức."
 msgstr "Mỗi dòng họ tạo được nhiều bức."
 
+#: src/lib/navModel.tsx
 #: src/pages/Clans.tsx
 msgid "Mọi dòng họ trên nền tảng."
 msgstr "Mọi dòng họ trên nền tảng."
@@ -9857,9 +9891,17 @@ msgstr "Mỗi người góp một mảnh ảnh"
 msgid "Mỗi người góp một mảnh ảnh, ghép thành bức tranh chung."
 msgstr "Mỗi người góp một mảnh ảnh, ghép thành bức tranh chung."
 
+#: src/lib/navModel.tsx
+msgid "Mỗi người góp một mảnh ảnh."
+msgstr "Mỗi người góp một mảnh ảnh."
+
 #: src/pages/clan/Members.tsx
 msgid "Mời người, đổi vai trò, gỡ thành viên."
 msgstr "Mời người, đổi vai trò, gỡ thành viên."
+
+#: src/lib/navModel.tsx
+msgid "Mời người, đổi vai trò."
+msgstr "Mời người, đổi vai trò."
 
 #: src/pages/MyFeedback.tsx
 msgid "Mọi phản hồi đều giúp app tốt hơn. Viết ngắn cũng được."
@@ -10397,6 +10439,10 @@ msgstr "Ngày xấu (Hắc đạo)"
 msgid "Nghe gì hôm nay"
 msgstr "Nghe gì hôm nay"
 
+#: src/lib/navModel.tsx
+msgid "Nghe những câu chuyện ngắn về gia phả."
+msgstr "Nghe những câu chuyện ngắn về gia phả."
+
 #. placeholder {0}: fmtDuration(rec.result.durationSec)
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Nghe thử trước khi lưu ({0}):"
@@ -10886,6 +10932,10 @@ msgstr "Nhập vào dòng họ có sẵn"
 msgid "Nhập xong bấm Lưu — danh sách phía sau tự cập nhật."
 msgstr "Nhập xong bấm Lưu — danh sách phía sau tự cập nhật."
 
+#: src/lib/navModel.tsx
+msgid "Nhập, dọn dữ liệu, lịch, tra cứu."
+msgstr "Nhập, dọn dữ liệu, lịch, tra cứu."
+
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Tools.tsx
@@ -10978,6 +11028,10 @@ msgstr "nơi an nghỉ"
 #: src/pages/clan/MapStats.tsx
 msgid "Nơi an nghỉ"
 msgstr "Nơi an nghỉ"
+
+#: src/lib/navModel.tsx
+msgid "Nơi an nghỉ của các cụ, chỉ đường."
+msgstr "Nơi an nghỉ của các cụ, chỉ đường."
 
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ."
@@ -11110,6 +11164,10 @@ msgstr "Nơi sinh"
 #: src/lib/queries/heritage.ts
 msgid "Nơi thờ tự của dòng họ: từ đường, nhà thờ họ, đền, chùa gửi giỗ…"
 msgstr "Nơi thờ tự của dòng họ: từ đường, nhà thờ họ, đền, chùa gửi giỗ…"
+
+#: src/lib/navModel.tsx
+msgid "Nối thông gia, họ hàng giữa các họ."
+msgstr "Nối thông gia, họ hàng giữa các họ."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Nối Trang"
@@ -11329,6 +11387,7 @@ msgid "Phòng trưng bày ảnh 3D của dòng họ."
 msgstr "Phòng trưng bày ảnh 3D của dòng họ."
 
 #: src/lib/clanFeatures.ts
+#: src/lib/navModel.tsx
 msgid "Phòng trưng bày ảnh 3D."
 msgstr "Phòng trưng bày ảnh 3D."
 
@@ -11352,6 +11411,10 @@ msgstr "Phong tục, nghi lễ và tín ngưỡng Việt Nam — giải thích n
 #: src/lib/pageTitle.ts
 msgid "Phong tục, nghi lễ và tín ngưỡng Việt Nam: giỗ chạp, tang lễ, cưới hỏi, thờ cúng tổ tiên — giải thích ngắn gọn, dễ tra cứu."
 msgstr "Phong tục, nghi lễ và tín ngưỡng Việt Nam: giỗ chạp, tang lễ, cưới hỏi, thờ cúng tổ tiên — giải thích ngắn gọn, dễ tra cứu."
+
+#: src/lib/navModel.tsx
+msgid "Phong tục, nghi lễ, tín ngưỡng."
+msgstr "Phong tục, nghi lễ, tín ngưỡng."
 
 #: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
@@ -11935,6 +11998,10 @@ msgstr "Sổ tay Văn hoá"
 #: src/lib/queries/clans.ts
 msgid "Số thành viên (nhiều → ít)"
 msgstr "Số thành viên (nhiều → ít)"
+
+#: src/lib/navModel.tsx
+msgid "Sổ thu chi minh bạch."
+msgstr "Sổ thu chi minh bạch."
 
 #: src/pages/clan/ClanFund.tsx
 msgid "Sổ thu/chi minh bạch — mọi thành viên đều xem được."
@@ -12531,6 +12598,13 @@ msgstr "tất cả người và quan hệ gia đình"
 #: src/pages/Clans.tsx
 msgid "Tất cả quy mô"
 msgstr "Tất cả quy mô"
+
+#: src/lib/navModel.tsx
+#: src/lib/pageTitle.ts
+#: src/pages/clan/ClanMenu.tsx
+#: src/pages/clan/ClanMenu.tsx
+msgid "Tất cả tính năng"
+msgstr "Tất cả tính năng"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tất cả tỉnh/thành"
@@ -13488,6 +13562,10 @@ msgstr "Thông tin người"
 msgid "Thông tin nhạy cảm đã được ẩn"
 msgstr "Thông tin nhạy cảm đã được ẩn"
 
+#: src/lib/navModel.tsx
+msgid "Thông tin, hiển thị, chia sẻ, xuất sổ."
+msgstr "Thông tin, hiển thị, chia sẻ, xuất sổ."
+
 #: src/pages/clan/ClanFund.tsx
 msgid "Thu (đóng góp)"
 msgstr "Thu (đóng góp)"
@@ -13997,6 +14075,14 @@ msgstr "Tìm theo từ khoá…"
 msgid "Tìm thông báo"
 msgstr "Tìm thông báo"
 
+#: src/pages/clan/ClanMenu.tsx
+msgid "Tìm tính năng"
+msgstr "Tìm tính năng"
+
+#: src/pages/clan/ClanMenu.tsx
+msgid "Tìm tính năng…"
+msgstr "Tìm tính năng…"
+
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tìm tỉnh/thành"
 msgstr "Tìm tỉnh/thành"
@@ -14057,9 +14143,21 @@ msgstr "Tin mới"
 msgid "Tín ngưỡng dân gian"
 msgstr "Tín ngưỡng dân gian"
 
+#: src/lib/navModel.tsx
+msgid "Tin từ hệ thống và dòng họ."
+msgstr "Tin từ hệ thống và dòng họ."
+
 #: src/pages/clan/Board.tsx
 msgid "Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc."
 msgstr "Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc."
+
+#: src/lib/navModel.tsx
+msgid "Tin tức, tin vui, thông báo chung của họ."
+msgstr "Tin tức, tin vui, thông báo chung của họ."
+
+#: src/lib/navModel.tsx
+msgid "Tin tức, tư liệu, ký ức và nơi chốn của dòng họ."
+msgstr "Tin tức, tư liệu, ký ức và nơi chốn của dòng họ."
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tỉnh / Thành"
@@ -14594,6 +14692,10 @@ msgstr "Từ dòng họ:"
 msgid "Từ đường / đền / chùa"
 msgstr "Từ đường / đền / chùa"
 
+#: src/lib/navModel.tsx
+msgid "Từ đường, tục lệ, giai thoại, kỷ vật."
+msgstr "Từ đường, tục lệ, giai thoại, kỷ vật."
+
 #: src/pages/clan/Heritage.tsx
 msgid "Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
 msgstr "Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
@@ -15080,6 +15182,10 @@ msgstr "Video nên dùng <0>link .mp4 trực tiếp</0> (chuột phải video đ
 #: src/pages/clan/Todo.tsx
 msgid "Việc cần làm"
 msgstr "Việc cần làm"
+
+#: src/lib/navModel.tsx
+msgid "Việc cần làm, công cụ và quản lý dòng họ."
+msgstr "Việc cần làm, công cụ và quản lý dòng họ."
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Việc làm"
@@ -15799,6 +15905,7 @@ msgid "Xoá toàn bộ danh bạ (nguy hiểm)"
 msgstr "Xoá toàn bộ danh bạ (nguy hiểm)"
 
 #: src/components/AppDrawer.tsx
+#: src/pages/clan/ClanMenu.tsx
 msgid "Xoá từ khoá"
 msgstr "Xoá từ khoá"
 

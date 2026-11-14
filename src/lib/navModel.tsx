@@ -14,6 +14,7 @@ import {
   IconCalendar,
   IconCamera,
   IconGlobe,
+  IconGrid,
   IconMicrophone,
   IconGrave,
   IconHome,
@@ -224,7 +225,10 @@ export function isItemActive(
   to: string,
   location: { pathname: string; search: string },
   navLinkActive: boolean,
+  alsoActive?: string[],
 ): boolean {
+  if (alsoActive?.some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`)))
+    return true;
   return to.includes("?") ? isTabActive(to, location) : navLinkActive;
 }
 
@@ -239,6 +243,10 @@ export interface DrawerItem {
   badge?: string | number;
   /** Bấm thường mở ngăn kéo (?panel=…) thay vì chuyển trang; `to` là link dự phòng. */
   panel?: "chat";
+  /** Một câu mô tả ngắn — hiện ở trang "Tất cả tính năng" (menu trái không dùng). */
+  hint?: string;
+  /** Đường dẫn khác cũng làm mục này sáng (vd mục "Tất cả tính năng" sáng khi đang ở một trang con của nó). */
+  alsoActive?: string[];
 }
 
 export interface DrawerSection {
@@ -247,6 +255,8 @@ export interface DrawerSection {
    *  họ đổi tên dòng họ. */
   id: string;
   label: string;
+  /** Một câu mô tả nhóm — hiện dưới tiêu đề nhóm ở trang "Tất cả tính năng". */
+  hint?: string;
   items: DrawerItem[];
   /**
    * Gập được hay không. Nhóm lõi (mục hay dùng nhất) KHÔNG gập được:
@@ -287,6 +297,9 @@ export function buildSections(
       label: profile?.is_platform_admin
         ? t`Tất cả dòng họ`
         : t`Dòng họ của tôi`,
+      hint: profile?.is_platform_admin
+        ? t`Mọi dòng họ trên nền tảng.`
+        : t`Danh sách dòng họ bạn tham gia.`,
       icon: <IconBuildings className={ic} />,
       end: true,
     },
@@ -295,21 +308,25 @@ export function buildSections(
     {
       to: "/announcements",
       label: t`Thông báo`,
+      hint: t`Tin từ hệ thống và dòng họ.`,
       icon: <IconBell className={ic} />,
     },
     {
       to: "/docs",
       label: t`Trợ giúp`,
+      hint: t`Hướng dẫn dùng từng tính năng.`,
       icon: <IconBook className={ic} />,
     },
     {
       to: "/so-tay",
       label: t`Sổ tay Văn hoá`,
+      hint: t`Phong tục, nghi lễ, tín ngưỡng.`,
       icon: <IconGlobe className={ic} />,
     },
     {
       to: "/podcast",
       label: "Podcast",
+      hint: t`Nghe những câu chuyện ngắn về gia phả.`,
       icon: <IconMicrophone className={ic} />,
     },
     // Góp ý về hẳn menu: trước đây nó là một nút nhỏ lẫn trong hàng
@@ -318,12 +335,14 @@ export function buildSections(
     {
       to: "/gop-y",
       label: t`Góp ý / báo lỗi`,
+      hint: t`Gửi ý kiến hoặc báo lỗi cho chúng tôi.`,
       icon: <IconMail className={ic} />,
     },
   ];
   sections.push({
     id: "global",
     label: t`Chung`,
+    hint: t`Dành cho mọi người, không thuộc riêng dòng họ nào.`,
     items: global,
     // Gập được (mặc định mở): nhóm dùng chung không phải thứ người ta cần hằng ngày bằng nhóm lõi
     // của dòng họ, nên cho thu gọn để menu ngắn lại. Nhóm lõi của dòng họ (Cây, Danh bạ) vẫn không gập được.
@@ -406,6 +425,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/board`,
         label: t`Bảng tin`,
+        hint: t`Tin tức, tin vui, thông báo chung của họ.`,
         icon: <IconSparkles className={ic} />,
       });
     }
@@ -413,6 +433,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/map`,
         label: t`Bản đồ`,
+        hint: t`Con cháu, mộ phần theo tỉnh/thành.`,
         icon: <IconMapPin className={ic} />,
       });
     }
@@ -420,6 +441,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/memory-room`,
         label: t`Phòng ký ức`,
+        hint: t`Phòng trưng bày ảnh 3D.`,
         icon: <IconCamera className={ic} />,
       });
     }
@@ -427,6 +449,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/mosaics`,
         label: t`Ảnh ghép`,
+        hint: t`Mỗi người góp một mảnh ảnh.`,
         icon: <IconCamera className={ic} />,
       });
     }
@@ -434,6 +457,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/heritage`,
         label: t`Di sản dòng họ`,
+        hint: t`Từ đường, tục lệ, giai thoại, kỷ vật.`,
         icon: <IconScroll className={ic} />,
       });
     }
@@ -441,6 +465,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/graves`,
         label: t`Mộ phần & tro cốt`,
+        hint: t`Nơi an nghỉ của các cụ, chỉ đường.`,
         icon: <IconGrave className={ic} />,
       });
     }
@@ -448,6 +473,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/fund`,
         label: t`Quỹ họ`,
+        hint: t`Sổ thu chi minh bạch.`,
         icon: <IconWallet className={ic} />,
       });
     }
@@ -455,6 +481,7 @@ export function buildSections(
       communityItems.push({
         to: `/clans/${clanId}/honor`,
         label: t`Bảng vàng công đức`,
+        hint: t`Ghi nhận đóng góp và thành tích.`,
         icon: <IconAward className={ic} />,
       });
     }
@@ -462,6 +489,7 @@ export function buildSections(
       sections.push({
         id: "clan-community",
         label: t`Cộng đồng & Di sản`,
+        hint: t`Tin tức, tư liệu, ký ức và nơi chốn của dòng họ.`,
         items: communityItems,
         defaultOpen: true,
       });
@@ -472,6 +500,7 @@ export function buildSections(
       workItems.push({
         to: `/clans/${clanId}/todo`,
         label: t`Việc cần làm`,
+        hint: t`App dò chỗ còn thiếu trong gia phả.`,
         icon: <IconList className={ic} />,
         badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
       });
@@ -479,6 +508,7 @@ export function buildSections(
       workItems.push({
         to: `/clans/${clanId}/tools`,
         label: t`Công cụ`,
+        hint: t`Nhập, dọn dữ liệu, lịch, tra cứu.`,
         icon: <IconSettings className={ic} />,
       });
     }
@@ -486,12 +516,14 @@ export function buildSections(
       workItems.push({
         to: `/clans/${clanId}/members`,
         label: t`Thành viên`,
+        hint: t`Mời người, đổi vai trò.`,
         icon: <IconUserPlus className={ic} />,
       });
       if (feat("inlaws")) {
         workItems.push({
           to: `/clans/${clanId}/inlaws`,
           label: t`Liên kết dòng họ`,
+          hint: t`Nối thông gia, họ hàng giữa các họ.`,
           icon: <IconLink className={ic} />,
           badge: pendingInlawCount > 0 ? pendingInlawCount : undefined,
         });
@@ -499,6 +531,7 @@ export function buildSections(
       workItems.push({
         to: `/clans/${clanId}/settings`,
         label: t`Cài đặt dòng họ`,
+        hint: t`Thông tin, hiển thị, chia sẻ, xuất sổ.`,
         icon: <IconSettings className={ic} />,
       });
     }
@@ -506,6 +539,7 @@ export function buildSections(
       sections.push({
         id: "clan-work",
         label: t`Công cụ & Quản trị`,
+        hint: t`Việc cần làm, công cụ và quản lý dòng họ.`,
         items: workItems,
         // Có việc / liên kết đang chờ thì badge phải thấy; còn không, Cài đặt dòng họ vẫn là mục hay
         // tìm (xem nhiều thứ tư trong một dòng họ) — nên mặc định mở.
@@ -546,4 +580,59 @@ export function buildSections(
   }
 
   return sections;
+}
+
+
+/** Trang "Tất cả tính năng" của một dòng họ: mọi mục ngoài sáu mục lõi, gom theo nhóm. */
+export function menuHubPath(clanId: string): string {
+  return `/clans/${clanId}/menu`;
+}
+
+/**
+ * Menu trái rút gọn: CHỈ nhóm lõi của dòng họ (Tổng quan, Cây, Danh bạ, Tra cứu quan hệ, Sự kiện, Hôm nay)
+ * + một mục "Tất cả tính năng" mở trang hub chứa mọi mục còn lại (trừ nhóm Quản trị hệ thống: của riêng admin
+ * nền tảng nên ở lại menu trái). Menu trước đây dài ~25 mục, trên điện thoại
+ * phải cuộn mới thấy cuối; trang hub thì nhóm theo việc, mỗi ô một icon, dễ nhìn và dễ tìm hơn.
+ *
+ * Mục hub mang badge TỔNG của các nhóm đã gập vào (việc cần làm, liên kết chờ…) — badge giấu trong
+ * trang con là badge vô dụng. Ngoài dòng họ (không có nhóm lõi) thì giữ nguyên danh sách đầy đủ.
+ */
+export function toDrawerSections(
+  sections: DrawerSection[],
+  clanId: string | undefined,
+): DrawerSection[] {
+  const core = sections.find((x) => x.id === "clan-core");
+  if (!clanId || !core) return sections;
+  // Nhóm Quản trị hệ thống GIỮ Ở MENU TRÁI (chỉ admin nền tảng có, gập sẵn) — không đưa vào hub.
+  const admin = sections.filter((x) => x.id === "platform-admin");
+  const rest = sections.filter((x) => x.id !== "clan-core" && x.id !== "platform-admin");
+  // Cộng giá trị THẬT của badge (số, hoặc chuỗi như "12"/"99+"), không đếm mỗi badge chuỗi là 1.
+  const badge = rest.reduce(
+    (n, sec) =>
+      n +
+      sec.items.reduce((m, i) => {
+        const b = i.badge;
+        return m + (typeof b === "number" ? b : typeof b === "string" ? parseInt(b, 10) || 1 : 0);
+      }, 0),
+    0,
+  );
+  return [
+    {
+      ...core,
+      items: [
+        ...core.items,
+        {
+          to: menuHubPath(clanId),
+          label: t`Tất cả tính năng`,
+          icon: <IconGrid className="h-5 w-5" />,
+          badge: badge > 0 ? formatBadge(badge) : undefined,
+          // `/clans` (danh sách dòng họ) là tiền tố của mọi trang dòng họ, nên KHÔNG đưa vào: nếu không thì mọi trang đều làm mục hub sáng.
+          alsoActive: rest
+            .flatMap((sec) => sec.items.map((i) => i.to.split("?")[0]))
+            .filter((p) => p !== "/clans"),
+        },
+      ],
+    },
+    ...admin,
+  ];
 }

@@ -1268,6 +1268,10 @@ msgstr "Applies to:"
 msgid "App chặn nếu người đã chọn là con cháu của"
 msgstr "The app blocks this if the chosen person is a descendant of"
 
+#: src/lib/navModel.tsx
+msgid "App dò chỗ còn thiếu trong gia phả."
+msgstr "The app finds what's still missing in the family tree."
+
 #: src/pages/clan/AddChild.tsx
 msgid "App gợi ý dựa trên số con đã có. Sửa nếu cần."
 msgstr "Suggested by the app from the number of children already recorded. Edit if needed."
@@ -2847,6 +2851,7 @@ msgstr "Choose a template to start with a complete draft, then edit it; AI draft
 msgid "Chọn một ảnh"
 msgstr "Choose a photo"
 
+#: src/pages/clan/ClanMenu.tsx
 #: src/pages/clan/Tools.tsx
 msgid "Chọn một mục để mở."
 msgstr "Choose an item to open."
@@ -3538,6 +3543,10 @@ msgstr "Most descendants live in"
 #: src/lib/nextSteps.ts
 msgid "Con cháu ở tỉnh nào"
 msgstr "Which provinces descendants live in"
+
+#: src/lib/navModel.tsx
+msgid "Con cháu, mộ phần theo tỉnh/thành."
+msgstr "Descendants and graves by province / city."
 
 #: src/pages/clan/MapStats.tsx
 msgid "Con cháu, mộ phần và di sản phân bố theo tỉnh/thành. Chỉ thành viên dòng họ xem được."
@@ -5333,6 +5342,10 @@ msgstr "Exporting…"
 msgid "Danh bạ"
 msgstr "People"
 
+#: src/lib/navModel.tsx
+msgid "Dành cho mọi người, không thuộc riêng dòng họ nào."
+msgstr "For everyone, not tied to any one clan."
+
 #: src/components/NotificationBell.tsx
 msgid "Đánh dấu đã đọc"
 msgstr "Mark as read"
@@ -5377,6 +5390,10 @@ msgstr "List of clans"
 #: src/lib/pageTitle.ts
 msgid "Danh sách dòng họ bạn đang quản lý hoặc tham gia trên Dòng Họ Việt."
 msgstr "The list of clans you manage or have joined on Dòng Họ Việt."
+
+#: src/lib/navModel.tsx
+msgid "Danh sách dòng họ bạn tham gia."
+msgstr "The list of clans you belong to."
 
 #: src/lib/pageTitle.ts
 msgid "Danh sách thành viên"
@@ -6411,6 +6428,10 @@ msgstr "records"
 msgid "Ghi nhận đóng góp công đức."
 msgstr "Record merit and contributions."
 
+#: src/lib/navModel.tsx
+msgid "Ghi nhận đóng góp và thành tích."
+msgstr "Recognize contributions and achievements."
+
 #: src/lib/nextSteps.ts
 msgid "Ghi nơi an nghỉ của các cụ"
 msgstr "Record the ancestors' resting places"
@@ -6851,6 +6872,10 @@ msgstr "Send a test notification"
 #: src/lib/queries/restingPlaces.ts
 msgid "Gửi tro cốt ở chùa"
 msgstr "Ashes kept at a pagoda"
+
+#: src/lib/navModel.tsx
+msgid "Gửi ý kiến hoặc báo lỗi cho chúng tôi."
+msgstr "Send us feedback or report a problem."
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Hai bước để cùng vun đắp gia phả: cho biết bạn là ai trong cây, rồi bổ sung người thân của mình."
@@ -7343,6 +7368,10 @@ msgstr "Guide for this page"
 #: src/lib/pageTitle.ts
 msgid "Hướng dẫn dùng Dòng Họ Việt: tạo dòng họ, thêm người, vẽ cây gia phả, mời người thân cùng bổ sung."
 msgstr "How to use Dòng Họ Việt: create a clan, add people, draw the family tree, invite relatives to contribute."
+
+#: src/lib/navModel.tsx
+msgid "Hướng dẫn dùng từng tính năng."
+msgstr "How to use each feature."
 
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Hướng dẫn lấy link (bấm để xem)"
@@ -7859,6 +7888,10 @@ msgstr "No matching entries"
 #: src/components/AppDrawer.tsx
 msgid "Không có mục nào khớp \"{menuQuery}\"."
 msgstr "No menu item matches \"{menuQuery}\"."
+
+#: src/pages/clan/ClanMenu.tsx
+msgid "Không có mục nào khớp."
+msgstr "No matching items."
 
 #: src/pages/clan/AddSpouse.tsx
 msgid "Không có người khớp giới tính + tên."
@@ -9794,6 +9827,7 @@ msgstr "Each clan can have several of its own trees (layouts)."
 msgid "Mỗi dòng họ tạo được nhiều bức."
 msgstr "Each clan can create several mosaics."
 
+#: src/lib/navModel.tsx
 #: src/pages/Clans.tsx
 msgid "Mọi dòng họ trên nền tảng."
 msgstr "Every clan on the platform."
@@ -9857,9 +9891,17 @@ msgstr "Everyone adds a piece of the photo"
 msgid "Mỗi người góp một mảnh ảnh, ghép thành bức tranh chung."
 msgstr "Each person contributes a piece of a photo, together forming one shared picture."
 
+#: src/lib/navModel.tsx
+msgid "Mỗi người góp một mảnh ảnh."
+msgstr "Everyone adds a piece of the photo."
+
 #: src/pages/clan/Members.tsx
 msgid "Mời người, đổi vai trò, gỡ thành viên."
 msgstr "Invite people, change roles, remove members."
+
+#: src/lib/navModel.tsx
+msgid "Mời người, đổi vai trò."
+msgstr "Invite people, change roles."
 
 #: src/pages/MyFeedback.tsx
 msgid "Mọi phản hồi đều giúp app tốt hơn. Viết ngắn cũng được."
@@ -10397,6 +10439,10 @@ msgstr "Inauspicious day (Hắc đạo)"
 msgid "Nghe gì hôm nay"
 msgstr "What to listen to today"
 
+#: src/lib/navModel.tsx
+msgid "Nghe những câu chuyện ngắn về gia phả."
+msgstr "Short stories about family history."
+
 #. placeholder {0}: fmtDuration(rec.result.durationSec)
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Nghe thử trước khi lưu ({0}):"
@@ -10886,6 +10932,10 @@ msgstr "Import into an existing clan"
 msgid "Nhập xong bấm Lưu — danh sách phía sau tự cập nhật."
 msgstr "When you finish, tap Save — the list behind updates by itself."
 
+#: src/lib/navModel.tsx
+msgid "Nhập, dọn dữ liệu, lịch, tra cứu."
+msgstr "Import, clean up data, calendar, look-ups."
+
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Tools.tsx
@@ -10978,6 +11028,10 @@ msgstr "resting places"
 #: src/pages/clan/MapStats.tsx
 msgid "Nơi an nghỉ"
 msgstr "Resting place"
+
+#: src/lib/navModel.tsx
+msgid "Nơi an nghỉ của các cụ, chỉ đường."
+msgstr "The ancestors' resting places, with directions."
 
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Nơi an nghỉ của các cụ: mộ phần, tro cốt gửi chùa / tháp họ."
@@ -11110,6 +11164,10 @@ msgstr "Place of birth"
 #: src/lib/queries/heritage.ts
 msgid "Nơi thờ tự của dòng họ: từ đường, nhà thờ họ, đền, chùa gửi giỗ…"
 msgstr "Places of worship of the clan: ancestral hall (từ đường), clan temple, shrine, pagoda that keeps the death anniversary…"
+
+#: src/lib/navModel.tsx
+msgid "Nối thông gia, họ hàng giữa các họ."
+msgstr "Link in-laws and relatives between clans."
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Nối Trang"
@@ -11329,6 +11387,7 @@ msgid "Phòng trưng bày ảnh 3D của dòng họ."
 msgstr "The clan's 3D photo gallery."
 
 #: src/lib/clanFeatures.ts
+#: src/lib/navModel.tsx
 msgid "Phòng trưng bày ảnh 3D."
 msgstr "A 3D photo gallery."
 
@@ -11352,6 +11411,10 @@ msgstr "Vietnamese customs, rituals and beliefs — short explanations that are 
 #: src/lib/pageTitle.ts
 msgid "Phong tục, nghi lễ và tín ngưỡng Việt Nam: giỗ chạp, tang lễ, cưới hỏi, thờ cúng tổ tiên — giải thích ngắn gọn, dễ tra cứu."
 msgstr "Vietnamese customs, rituals and beliefs: death anniversaries, funerals, weddings, ancestor worship — short explanations that are easy to look up."
+
+#: src/lib/navModel.tsx
+msgid "Phong tục, nghi lễ, tín ngưỡng."
+msgstr "Customs, rituals and beliefs."
 
 #: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
@@ -11935,6 +11998,10 @@ msgstr "Culture handbook"
 #: src/lib/queries/clans.ts
 msgid "Số thành viên (nhiều → ít)"
 msgstr "Number of members (most → fewest)"
+
+#: src/lib/navModel.tsx
+msgid "Sổ thu chi minh bạch."
+msgstr "A transparent income and expense ledger."
 
 #: src/pages/clan/ClanFund.tsx
 msgid "Sổ thu/chi minh bạch — mọi thành viên đều xem được."
@@ -12531,6 +12598,13 @@ msgstr "all people and family relationships"
 #: src/pages/Clans.tsx
 msgid "Tất cả quy mô"
 msgstr "All sizes"
+
+#: src/lib/navModel.tsx
+#: src/lib/pageTitle.ts
+#: src/pages/clan/ClanMenu.tsx
+#: src/pages/clan/ClanMenu.tsx
+msgid "Tất cả tính năng"
+msgstr "All features"
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tất cả tỉnh/thành"
@@ -13488,6 +13562,10 @@ msgstr "Person details"
 msgid "Thông tin nhạy cảm đã được ẩn"
 msgstr "Sensitive information is hidden"
 
+#: src/lib/navModel.tsx
+msgid "Thông tin, hiển thị, chia sẻ, xuất sổ."
+msgstr "Details, display, sharing, book export."
+
 #: src/pages/clan/ClanFund.tsx
 msgid "Thu (đóng góp)"
 msgstr "Income (contribution)"
@@ -13997,6 +14075,14 @@ msgstr "Search by keyword…"
 msgid "Tìm thông báo"
 msgstr "Find announcements"
 
+#: src/pages/clan/ClanMenu.tsx
+msgid "Tìm tính năng"
+msgstr "Find a feature"
+
+#: src/pages/clan/ClanMenu.tsx
+msgid "Tìm tính năng…"
+msgstr "Find a feature…"
+
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tìm tỉnh/thành"
 msgstr "Find provinces / cities"
@@ -14057,9 +14143,21 @@ msgstr "New announcement"
 msgid "Tín ngưỡng dân gian"
 msgstr "Folk beliefs"
 
+#: src/lib/navModel.tsx
+msgid "Tin từ hệ thống và dòng họ."
+msgstr "Messages from the system and your clans."
+
 #: src/pages/clan/Board.tsx
 msgid "Tin tức, sự kiện, sinh, mất, thông báo — cho cả họ cùng đọc."
 msgstr "News, events, births, deaths, announcements — for the whole clan to read."
+
+#: src/lib/navModel.tsx
+msgid "Tin tức, tin vui, thông báo chung của họ."
+msgstr "News, good news and announcements for the clan."
+
+#: src/lib/navModel.tsx
+msgid "Tin tức, tư liệu, ký ức và nơi chốn của dòng họ."
+msgstr "News, records, memories and places of the clan."
 
 #: src/pages/admin/DanhMucDiaGioiPage.tsx
 msgid "Tỉnh / Thành"
@@ -14594,6 +14692,10 @@ msgstr "From the clan:"
 msgid "Từ đường / đền / chùa"
 msgstr "Ancestral hall / shrine / pagoda"
 
+#: src/lib/navModel.tsx
+msgid "Từ đường, tục lệ, giai thoại, kỷ vật."
+msgstr "Ancestral hall, customs, tales, keepsakes."
+
 #: src/pages/clan/Heritage.tsx
 msgid "Từ đường, tục lệ, giai thoại, tư liệu — gìn giữ giá trị tinh thần của dòng họ."
 msgstr "Ancestral halls (từ đường), customs, tales, documents — preserving the clan's spiritual values."
@@ -15080,6 +15182,10 @@ msgstr "For video, use a <0>direct .mp4 link</0> (right-click the playing video 
 #: src/pages/clan/Todo.tsx
 msgid "Việc cần làm"
 msgstr "To-do"
+
+#: src/lib/navModel.tsx
+msgid "Việc cần làm, công cụ và quản lý dòng họ."
+msgstr "To-do, tools and clan management."
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Việc làm"
@@ -15799,6 +15905,7 @@ msgid "Xoá toàn bộ danh bạ (nguy hiểm)"
 msgstr "Delete the whole People list (dangerous)"
 
 #: src/components/AppDrawer.tsx
+#: src/pages/clan/ClanMenu.tsx
 msgid "Xoá từ khoá"
 msgstr "Clear search"
 
