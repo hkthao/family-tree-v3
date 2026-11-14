@@ -494,71 +494,10 @@ export function buildSections(
       });
     }
 
-    // ─── Công cụ: trước đây một trang "Công cụ" trung gian, giờ TRẢI THẲNG ra trang hub (bớt một lần bấm) ───
-    // Hai nhóm chia theo NHỊP DÙNG, không theo kỹ thuật: "Tra cứu" mở ra xem bất cứ lúc nào; "Nhập & dọn dữ
-    // liệu" đụng vài lần lúc mới lập gia phả, và đụng nhầm thì phải đi sửa (chỉ người sửa được mới thấy).
-    const canEditData = isAdmin || clan.myRole === "editor";
-    if (isMember) {
-      sections.push({
-        id: "clan-tools-lookup",
-        label: t`Tra cứu`,
-        hint: t`Mở ra xem, không sửa gì.`,
-        items: [
-          {
-            to: `/clans/${clanId}/xem-ngay`,
-            label: t`Lịch âm dương`,
-            hint: t`Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày.`,
-            icon: <IconCalendar className={ic} />,
-          },
-          {
-            to: `/clans/${clanId}/audit`,
-            label: t`Nhật ký`,
-            hint: t`Lịch sử thay đổi dữ liệu của dòng họ.`,
-            icon: <IconScroll className={ic} />,
-          },
-        ],
-        defaultOpen: true,
-      });
-    }
-    if (canEditData) {
-      sections.push({
-        id: "clan-tools-data",
-        label: t`Nhập & dọn dữ liệu`,
-        hint: t`Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa.`,
-        items: [
-          {
-            to: `/clans/${clanId}/import`,
-            label: t`Nhập từ Excel`,
-            hint: t`Thêm nhiều người cùng lúc từ file Excel.`,
-            icon: <IconUpload className={ic} />,
-          },
-          {
-            to: `/clans/${clanId}/ai-generate`,
-            label: t`Sinh bằng AI`,
-            hint: t`Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt.`,
-            icon: <IconSparkles className={ic} />,
-          },
-          {
-            to: `/clans/${clanId}/merge`,
-            label: t`Gộp người trùng`,
-            hint: t`Tìm và gộp các bản ghi trùng một người.`,
-            icon: <IconCopy className={ic} />,
-          },
-        ],
-        defaultOpen: true,
-      });
-    }
-
     const workItems: DrawerItem[] = [];
-    if (isMember) {
-      workItems.push({
-        to: `/clans/${clanId}/todo`,
-        label: t`Việc cần làm`,
-        hint: t`App dò chỗ còn thiếu trong gia phả.`,
-        icon: <IconList className={ic} />,
-        badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
-      });
-    }
+    // MỘT nhóm "Công cụ & Quản trị" cho gọn: mục QUẢN TRỊ dòng họ (chỉ admin) đứng trước, rồi việc cần làm, tra cứu,
+    // nhập & dọn dữ liệu (trước đây là trang "Công cụ" trung gian, giờ trải thẳng ở đây). Mục chỉ người sửa được thì chỉ
+    // người sửa được mới thấy; mục quản trị chỉ admin.
     if (isAdmin) {
       workItems.push({
         to: `/clans/${clanId}/members`,
@@ -582,11 +521,57 @@ export function buildSections(
         icon: <IconSettings className={ic} />,
       });
     }
+    const canEditData = isAdmin || clan.myRole === "editor";
+    if (isMember) {
+      workItems.push(
+        {
+          to: `/clans/${clanId}/todo`,
+          label: t`Việc cần làm`,
+          hint: t`App dò chỗ còn thiếu trong gia phả.`,
+          icon: <IconList className={ic} />,
+          badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
+        },
+        {
+          to: `/clans/${clanId}/xem-ngay`,
+          label: t`Lịch âm dương`,
+          hint: t`Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày.`,
+          icon: <IconCalendar className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/audit`,
+          label: t`Nhật ký`,
+          hint: t`Lịch sử thay đổi dữ liệu của dòng họ.`,
+          icon: <IconScroll className={ic} />,
+        },
+      );
+    }
+    if (canEditData) {
+      workItems.push(
+        {
+          to: `/clans/${clanId}/import`,
+          label: t`Nhập từ Excel`,
+          hint: t`Thêm nhiều người cùng lúc từ file Excel.`,
+          icon: <IconUpload className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/ai-generate`,
+          label: t`Sinh bằng AI`,
+          hint: t`Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt.`,
+          icon: <IconSparkles className={ic} />,
+        },
+        {
+          to: `/clans/${clanId}/merge`,
+          label: t`Gộp người trùng`,
+          hint: t`Tìm và gộp các bản ghi trùng một người.`,
+          icon: <IconCopy className={ic} />,
+        },
+      );
+    }
     if (workItems.length) {
       sections.push({
         id: "clan-work",
         label: t`Công cụ & Quản trị`,
-        hint: t`Việc cần làm, công cụ và quản lý dòng họ.`,
+        hint: t`Việc cần làm, tra cứu, nhập & dọn dữ liệu, quản lý dòng họ.`,
         items: workItems,
         // Có việc / liên kết đang chờ thì badge phải thấy; còn không, Cài đặt dòng họ vẫn là mục hay
         // tìm (xem nhiều thứ tư trong một dòng họ) — nên mặc định mở.

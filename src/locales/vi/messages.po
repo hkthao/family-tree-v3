@@ -6185,10 +6185,6 @@ msgstr "Đứng tại nơi an nghỉ rồi bấm \"Lấy vị trí hiện tại\
 msgid "Đứng tại từ đường rồi bấm \"Lấy vị trí hiện tại\" để lưu toạ độ chỉ đường."
 msgstr "Đứng tại từ đường rồi bấm \"Lấy vị trí hiện tại\" để lưu toạ độ chỉ đường."
 
-#: src/lib/navModel.tsx
-msgid "Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa."
-msgstr "Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa."
-
 #: src/lib/adminScreens.tsx
 msgid "Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng thật."
 msgstr "Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng thật."
@@ -9644,10 +9640,6 @@ msgstr "Mộ phần, chỉ đường, ảnh mộ"
 msgid "Mở ra xem, hầu như chỉ đọc."
 msgstr "Mở ra xem, hầu như chỉ đọc."
 
-#: src/lib/navModel.tsx
-msgid "Mở ra xem, không sửa gì."
-msgstr "Mở ra xem, không sửa gì."
-
 #: src/components/CollapsibleCard.tsx
 #: src/components/TodayHubCard.tsx
 #: src/components/ui/card.tsx
@@ -10810,10 +10802,6 @@ msgstr "nháp"
 #: src/pages/CustomsImport.tsx
 msgid "Nháp"
 msgstr "Nháp"
-
-#: src/lib/navModel.tsx
-msgid "Nhập & dọn dữ liệu"
-msgstr "Nhập & dọn dữ liệu"
 
 #: src/lib/pageTitle.ts
 msgid "Nhập bài Sổ tay"
@@ -14394,10 +14382,6 @@ msgstr "Tổng quan dòng họ"
 msgid "tốt"
 msgstr "tốt"
 
-#: src/lib/navModel.tsx
-msgid "Tra cứu"
-msgstr "Tra cứu"
-
 #: src/pages/Docs.tsx
 msgid "Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được)."
 msgstr "Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được)."
@@ -15190,8 +15174,8 @@ msgid "Việc cần làm"
 msgstr "Việc cần làm"
 
 #: src/lib/navModel.tsx
-msgid "Việc cần làm, công cụ và quản lý dòng họ."
-msgstr "Việc cần làm, công cụ và quản lý dòng họ."
+msgid "Việc cần làm, tra cứu, nhập & dọn dữ liệu, quản lý dòng họ."
+msgstr "Việc cần làm, tra cứu, nhập & dọn dữ liệu, quản lý dòng họ."
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Việc làm"
