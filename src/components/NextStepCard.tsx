@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { IconArrowRight, IconSparkles, IconX } from "@/components/icons";
 import {
   computeNextSteps,
+  seededRng,
   isSnoozed,
   snooze,
   type NextStepInput,
@@ -23,11 +24,13 @@ export function NextStepCard({
   input: NextStepInput;
 }) {
   const [, setTick] = useState(0);
+  // Một hạt giống mỗi lần vào trang: mỗi lượt gặp một tính năng khác, nhưng không đổi khi dữ liệu tải dần.
+  const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
   const step = useMemo(
-    () => computeNextSteps(input).find((s) => !isSnoozed(clanId, s.id)),
+    () => computeNextSteps(input, seededRng(seed)).find((s) => !isSnoozed(clanId, s.id)),
     // `tick` buộc tính lại sau khi ẩn một gợi ý.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [clanId, input, setTick],
+    [clanId, input, seed, setTick],
   );
   if (!step) return null;
 

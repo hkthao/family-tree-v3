@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import {
   computeNextSteps,
+  seededRng,
   isSnoozed,
   snooze,
   type NextStepInput,
@@ -147,6 +148,28 @@ describe("gợi ý khám phá tính năng", () => {
     const firstDiscover = s.findIndex((x) => x.kind === "discover");
     const lastGap = s.map((x) => x.kind).lastIndexOf("gap");
     expect(lastGap).toBeLessThan(firstDiscover);
+  });
+});
+
+describe("xáo ngẫu nhiên lời mời khám phá", () => {
+  const six = Array.from({ length: 6 }, (_, i) => P({ is_root: i === 0 }));
+  const input = base({ persons: [P(), ...six], isEnabled: () => true, aiOn: true });
+  const ids = (rng?: () => number, kind: "gap" | "discover" = "discover") =>
+    computeNextSteps(input, rng).filter((x) => x.kind === kind).map((x) => x.id);
+
+  it("cùng hạt giống cho cùng thứ tự; khác hạt giống thì thường khác", () => {
+    expect(ids(seededRng(7))).toEqual(ids(seededRng(7)));
+    expect(ids(seededRng(1))).not.toEqual(ids(seededRng(2)));
+  });
+
+  it("xáo chỉ đổi thứ tự, không thêm bớt tính năng", () => {
+    expect([...ids(seededRng(99))].sort()).toEqual([...ids()].sort());
+  });
+
+  it("việc bổ sung dữ liệu không bị xáo và vẫn đứng trước", () => {
+    expect(ids(seededRng(5), "gap")).toEqual(ids(undefined, "gap"));
+    const s = computeNextSteps(input, seededRng(5));
+    expect(s.map((x) => x.kind).lastIndexOf("gap")).toBeLessThan(s.findIndex((x) => x.kind === "discover"));
   });
 });
 
