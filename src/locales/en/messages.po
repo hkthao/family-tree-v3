@@ -657,6 +657,14 @@ msgstr "{mins} minutes ago"
 msgid "{n} người"
 msgstr "{n} people"
 
+#: src/lib/nextSteps.ts
+msgid "{noAnniv} người mất chưa có giỗ"
+msgstr "{noAnniv} deceased without anniversary"
+
+#: src/lib/nextSteps.ts
+msgid "{noParents} người chưa có cha/mẹ"
+msgstr "{noParents} people without parents"
+
 #: src/components/TodayHubCard.tsx
 msgid "{offset} ngày nữa"
 msgstr "in {offset} days"
@@ -1948,6 +1956,10 @@ msgstr "Both sides will see the link on the person's card. It can be revoked lat
 msgid "Cả hiện và ẩn"
 msgstr "Both shown and hidden"
 
+#: src/lib/nextSteps.ts
+msgid "Cả họ được nhắc trước"
+msgstr "The whole clan gets reminded"
+
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Cả họ theo dõi sẽ được nhắc trước (xem ở Sự kiện)."
 msgstr "The whole clan that follows it will be reminded in advance (see Events)."
@@ -2337,6 +2349,10 @@ msgstr "Interactive family tree (view only)"
 #: src/components/ClanBadges.tsx
 msgid "Cây sâu {doi} đời"
 msgstr "Tree {doi} generations deep"
+
+#: src/lib/nextSteps.ts
+msgid "Cây sinh động hơn"
+msgstr "Makes the tree livelier"
 
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Cây tự xếp"
@@ -3219,6 +3235,10 @@ msgstr "None yet."
 #: src/components/InlawFamilyCard.tsx
 msgid "chưa công khai"
 msgstr "not public"
+
+#: src/lib/nextSteps.ts
+msgid "Chưa đánh dấu Thuỷ tổ"
+msgstr "Founding ancestor not marked"
 
 #: src/components/NotificationBell.tsx
 #: src/pages/Announcements.tsx
@@ -5378,6 +5398,10 @@ msgstr "Reset password"
 msgid "Đặt lại về ban đầu"
 msgstr "Reset to the original"
 
+#: src/lib/nextSteps.ts
+msgid "Đặt lịch họp họ, giỗ Tổ"
+msgstr "Set clan gatherings, Giỗ Tổ"
+
 #: src/pages/clan/RestingPlaceDetail.tsx
 msgid "Đặt ngày âm lịch (vd mùng 10 tháng Chạp) — cả họ theo dõi sẽ được nhắc trước qua email/thông báo hằng năm."
 msgstr "Set a lunar-calendar date (e.g. the 10th of the 12th lunar month) — the whole clan that follows it will be reminded in advance by email / notification every year."
@@ -5409,6 +5433,10 @@ msgstr "In-laws on the {0} side"
 msgid "Đầy đủ {pctBirth}%"
 msgstr "{pctBirth}% complete"
 
+#: src/lib/nextSteps.ts
+msgid "Để cây vẽ đúng các đời"
+msgstr "So the tree draws generations right"
+
 #. placeholder {0}: pendingIncoming.length
 #: src/pages/clan/Inlaws.tsx
 msgid "Đề nghị đến với bạn ({0})"
@@ -5435,6 +5463,8 @@ msgstr "New request"
 msgid "Đề nghị tôi đã gửi ({0})"
 msgstr "Requests I sent ({0})"
 
+#: src/components/NextStepCard.tsx
+#: src/components/NextStepCard.tsx
 #: src/components/UpdateBanner.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/InlawsConfirm.tsx
@@ -5528,6 +5558,10 @@ msgstr "Heritage"
 #: src/pages/Share.tsx
 msgid "Di sản & Văn hoá"
 msgstr "Heritage & Culture"
+
+#: src/lib/nextSteps.ts
+msgid "Di sản của dòng họ"
+msgstr "The clan's heritage"
 
 #: src/components/ClanFormFields.tsx
 #: src/lib/clanFeatures.ts
@@ -6348,6 +6382,10 @@ msgstr "records"
 #: src/lib/clanFeatures.ts
 msgid "Ghi nhận đóng góp công đức."
 msgstr "Record merit and contributions."
+
+#: src/lib/nextSteps.ts
+msgid "Ghi nơi an nghỉ của các cụ"
+msgstr "Record the ancestors' resting places"
 
 #: src/components/BookMetaFields.tsx
 msgid "Ghi từ thôn/xã/huyện đến tỉnh theo địa danh hành chính đương thời để người tìm không nhầm lẫn."
@@ -9184,6 +9222,10 @@ msgstr "Save, then keep adding other people (keeps the gender)"
 msgid "Lưu thay đổi"
 msgstr "Save changes"
 
+#: src/lib/nextSteps.ts
+msgid "Lưu từ đường, tục lệ"
+msgstr "Save the ancestral hall, customs"
+
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Lưu ý: link phải bắt đầu bằng <0>https://</0> và để chế độ ai có link đều xem được, nếu không người trong họ sẽ không mở được."
 msgstr "Note: the link must start with <0>https://</0> and be set so that anyone with the link can view it, otherwise clan members won't be able to open it."
@@ -9505,6 +9547,10 @@ msgstr "Grave / ashes"
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Mộ phần & tro cốt"
 msgstr "Graves & ashes"
+
+#: src/lib/nextSteps.ts
+msgid "Mộ phần, chỉ đường, ảnh mộ"
+msgstr "Graves, directions, grave photos"
 
 #: src/lib/adminScreens.tsx
 msgid "Mở ra xem, hầu như chỉ đọc."
@@ -10992,6 +11038,10 @@ msgstr "Places of worship of the clan: ancestral hall (từ đường), clan tem
 #: src/pages/admin/PodcastPage.tsx
 msgid "Nối Trang"
 msgstr "Connect a Page"
+
+#: src/lib/nextSteps.ts
+msgid "Nối vào đúng đời, đúng nhánh"
+msgstr "Link them to the right generation"
 
 #: src/pages/clan/Inlaws.tsx
 msgid "Nối với dòng họ khác (thông gia, cùng tổ tiên, họ hàng) để tra cứu 2 chiều."
@@ -12859,6 +12909,10 @@ msgstr "Add 1 person to the clan. Can be marked as the founding ancestor."
 msgid "Thêm ảnh"
 msgstr "Add photo"
 
+#: src/lib/nextSteps.ts
+msgid "Thêm ảnh chân dung"
+msgstr "Add portrait photos"
+
 #: src/pages/Account.tsx
 msgid "Thêm app vào màn hình chính"
 msgstr "Add the app to the home screen"
@@ -12919,6 +12973,10 @@ msgstr "Add child"
 #: src/lib/tipCatalogue.ts
 msgid "Thêm con / vợ-chồng nhanh"
 msgstr "Quickly add a child / spouse"
+
+#: src/lib/nextSteps.ts
+msgid "Thêm để cả họ được nhắc"
+msgstr "Add it so the clan is reminded"
 
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Heritage.tsx

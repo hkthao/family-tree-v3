@@ -1,5 +1,6 @@
 import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
+import { NextStepCard } from "@/components/NextStepCard";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -184,6 +185,15 @@ export default function Dashboard() {
     });
     return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil);
   }, [tree, events, anniversaries, clan.generation_offset]);
+  const nextStepInput = useMemo(
+    () => ({
+      persons: tree?.persons ?? [],
+      todo: todoSummary,
+      counts: contentCounts,
+      customEvents: events?.length,
+    }),
+    [tree, todoSummary, contentCounts, events],
+  );
   const upcomingTop5 = upcoming.slice(0, 5);
   const todayEvents = upcoming.filter((e) => e.daysUntil === 0);
 
@@ -358,6 +368,10 @@ export default function Dashboard() {
         <>
           {/* Lời mời bật thông báo — mở khoá mọi nhắc nhở (giỗ/sinh nhật/sự
               kiện). Tự ẩn khi đã bật hoặc người dùng bỏ qua. */}
+          {canEdit && isMember && (
+            <NextStepCard clanId={clan.id} input={nextStepInput} />
+          )}
+
           {isMember && <EnablePushPrompt />}
 
           {/* Số liệu dòng họ — chỉ số chính + biểu đồ cơ cấu; kho tư liệu: hàng nút nhỏ bấm được. */}
