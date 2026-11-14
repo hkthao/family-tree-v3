@@ -3644,7 +3644,7 @@ msgstr "(the person on the other side)"
 
 #: src/pages/Clans.tsx
 msgid "Của tôi"
-msgstr "Mine"
+msgstr "My clans"
 
 #: src/pages/clan/Settings.tsx
 msgid "Cùng 9 cột với mẫu Nhập từ Excel — xuất ra để chỉnh hàng loạt rồi nhập lại. Các trường ngoài 9 cột (ngày âm, tên tự, ảnh, nơi sinh…) không được mang theo."
