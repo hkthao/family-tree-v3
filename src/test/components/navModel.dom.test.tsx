@@ -12,6 +12,8 @@ import {
   useCollapsedSections,
   sectionBadge,
   sectionHasPath,
+  toDrawerSections,
+  menuHubPath,
   type DrawerSection,
 } from "@/lib/navModel";
 import { ADMIN_SCREENS, adminPath, pathForLegacyTab } from "@/lib/adminScreens";
@@ -425,5 +427,61 @@ describe("pathForLegacyTab", () => {
   it("slug không trùng nhau", () => {
     const slugs = ADMIN_SCREENS.map((s) => s.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
+  });
+});
+
+
+const lastItem = (d: DrawerSection[]) => d[0].items[d[0].items.length - 1];
+
+describe("menu trái rút gọn + trang hub", () => {
+  it("menu trái chỉ còn nhóm lõi + một mục 'Tất cả tính năng'", () => {
+    const sections = build({ todo: 3, inlaw: 2 });
+    const drawer = toDrawerSections(sections, "c1");
+    expect(drawer).toHaveLength(1); // người thường: chỉ nhóm lõi
+    expect(drawer[0].id).toBe("clan-core");
+    const core = sections.find((x) => x.id === "clan-core")!;
+    expect(drawer[0].items).toHaveLength(core.items.length + 1);
+    expect(drawer[0].items[drawer[0].items.length - 1]?.to).toBe(menuHubPath("c1"));
+  });
+
+  it("mục hub mang badge TỔNG của các nhóm đã gập vào (việc cần làm + liên kết chờ)", () => {
+    const hub = lastItem(toDrawerSections(build({ todo: 3, inlaw: 2 }), "c1"));
+    expect(hub.badge).toBe("5");
+    expect(lastItem(toDrawerSections(build(), "c1")).badge).toBeUndefined();
+  });
+
+  it("mọi mục đã gập vào hub vẫn tới được qua hub: mục hub sáng khi đang ở trang con của nó", () => {
+    const sections = build();
+    const hub = lastItem(toDrawerSections(sections, "c1"));
+    expect(hub.alsoActive).toContain("/clans/c1/graves");
+    expect(hub.alsoActive).toContain("/clans/c1/settings");
+    expect(isItemActive(hub.to, { pathname: "/clans/c1/graves/x", search: "" }, false, hub.alsoActive)).toBe(true);
+    expect(isItemActive(hub.to, { pathname: "/clans/c1/tree", search: "" }, false, hub.alsoActive)).toBe(false);
+  });
+
+  it("Quản trị hệ thống ở lại menu trái cho admin nền tảng, và không bị tính vào hub", () => {
+    const sections = build({ profile: admin, todo: 3 });
+    const drawer = toDrawerSections(sections, "c1");
+    expect(drawer.map((x) => x.id)).toEqual(["clan-core", "platform-admin"]);
+    const hub = lastItem(drawer);
+    expect(hub.alsoActive?.some((p) => p.startsWith("/admin"))).toBe(false);
+    // người thường không có nhóm này
+    expect(toDrawerSections(build({ profile: normal }), "c1").map((x) => x.id)).toEqual(["clan-core"]);
+  });
+
+  it("ngoài dòng họ (không có nhóm lõi) thì giữ nguyên danh sách đầy đủ", () => {
+    const sections = build({ clan: null });
+    expect(toDrawerSections(sections, undefined)).toBe(sections);
+  });
+
+  it("không mất mục nào: mục của hub + lõi = toàn bộ mục của buildSections", () => {
+    const sections = build({ profile: admin });
+    const all = sections.flatMap((x) => x.items.map((i) => i.to)).sort();
+    const drawer = toDrawerSections(sections, "c1");
+    const inDrawer = drawer.flatMap((x) => x.items.map((i) => i.to)).filter((p) => p !== menuHubPath("c1"));
+    const inHub = sections
+      .filter((x) => x.id !== "clan-core" && x.id !== "platform-admin")
+      .flatMap((x) => x.items.map((i) => i.to));
+    expect([...inDrawer, ...inHub].sort()).toEqual(all);
   });
 });

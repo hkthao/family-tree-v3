@@ -168,6 +168,7 @@ export const ROUTE_META: RouteMeta[] = lazyMessages([
   { pattern: "/clans/:clanId/xem-ngay", title: msg`Xem ngày tốt` },
   { pattern: "/clans/:clanId/todo", title: msg`Việc cần làm` },
   { pattern: "/clans/:clanId/tools", title: msg`Công cụ` },
+  { pattern: "/clans/:clanId/menu", title: msg`Tất cả tính năng` },
   { pattern: "/clans/:clanId/kinship", title: msg`Cách xưng hô` },
   { pattern: "/clans/:clanId/contributions/:contribId", title: msg`Đóng góp` },
   { pattern: "/clans/:clanId/contributions", title: msg`Đóng góp chờ duyệt` },
