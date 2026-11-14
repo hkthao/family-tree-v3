@@ -184,7 +184,7 @@ export function TodayHubCard({
           aria-expanded={!collapsed}
           className="min-w-0 px-1 py-2 text-center"
         >
-          <h3 className="truncate text-base font-semibold text-primary sm:text-lg">
+          <h3 className="truncate text-base font-semibold sm:text-lg">
             {relativeLabel(offset)}
           </h3>
         </button>
