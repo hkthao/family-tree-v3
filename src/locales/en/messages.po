@@ -326,7 +326,7 @@ msgstr "(no title)"
 
 #: src/pages/clan/Inlaws.tsx
 msgid "(người bên kia)"
-msgstr "Please enter a name / title for this entry."
+msgstr "(the person on the other side)"
 
 #: src/pages/clan/Members.tsx
 #: src/pages/clan/Members.tsx
@@ -2983,7 +2983,7 @@ msgstr "No photos yet."
 
 #: src/pages/clan/Heritage.tsx
 msgid "Chưa có bài phong tục nào."
-msgstr "No custom articles yet."
+msgstr "No customs articles yet."
 
 #: src/pages/clan/Board.tsx
 msgid "Chưa có bài viết nào"
@@ -3640,7 +3640,7 @@ msgstr "He served as village head of X from 1932 to 1945…"
 
 #: src/pages/clan/Heritage.tsx
 msgid "Của dòng họ"
-msgstr "(the person on the other side)"
+msgstr "Clan's own"
 
 #: src/pages/Clans.tsx
 msgid "Của tôi"
@@ -3660,7 +3660,7 @@ msgstr "The same person."
 
 #: src/lib/festivals.ts
 msgid "Cúng tất niên, đón giao thừa."
-msgstr "Year-end offering and welcoming the New Year's Eve."
+msgstr "Year-end offering and welcoming New Year's Eve."
 
 #: src/components/QuickAddSheet.tsx
 msgid "Cùng với"
@@ -6851,7 +6851,7 @@ msgstr "Enter at least one year — or close if you're not sure."
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Hãy nhập tên / tiêu đề cho mục này."
-msgstr "Clan's own"
+msgstr "Please enter a name / title for this entry."
 
 #: src/components/ThemeToggle.tsx
 #: src/lib/adminScreens.tsx
@@ -6970,7 +6970,7 @@ msgstr "Valid for (days)"
 
 #: src/components/HeritagePhotosSection.tsx
 msgid "Hình ảnh"
-msgstr "Images"
+msgstr "Photos"
 
 #: src/pages/Account.tsx
 msgid "Hình nền"
@@ -10683,7 +10683,7 @@ msgstr "Enter your email to receive a password reset link"
 #: src/lib/tipCatalogue.ts
 #: src/pages/clan/Dashboard.tsx
 msgid "Nhập Excel"
-msgstr "Import Excel"
+msgstr "Import from Excel"
 
 #: src/components/GedcomButtons.tsx
 msgid "Nhập GEDCOM"
@@ -11226,7 +11226,7 @@ msgstr "Vietnamese customs, rituals and beliefs: death anniversaries, funerals, 
 #: src/lib/pageTitle.ts
 #: src/lib/pageTitle.ts
 msgid "Phòng tưởng niệm"
-msgstr "Memorial room"
+msgstr "Memory room"
 
 #: src/components/BookTextsSection.tsx
 msgid "Phụ khảo"
@@ -11817,7 +11817,7 @@ msgstr "The number in the circle = how many children can be expanded."
 
 #: src/lib/pageTitle.ts
 msgid "Sổ vàng"
-msgstr "Golden book"
+msgstr "Honor roll"
 
 #: src/components/admin/AiUsageTab.tsx
 msgid "Số ví"
@@ -11906,7 +11906,7 @@ msgstr "Edit post"
 
 #: src/components/panel/CustomsPanelHost.tsx
 msgid "Sửa bài phong tục"
-msgstr "Edit a custom article"
+msgstr "Edit a customs article"
 
 #: src/lib/pageTitle.ts
 msgid "Sửa bài Sổ tay"
@@ -13613,7 +13613,7 @@ msgstr "Biography after approval"
 
 #: src/pages/clan/Heritage.tsx
 msgid "Tìm bài phong tục"
-msgstr "Find a custom article"
+msgstr "Find a customs article"
 
 #: src/pages/clan/Board.tsx
 msgid "Tìm bài viết"
