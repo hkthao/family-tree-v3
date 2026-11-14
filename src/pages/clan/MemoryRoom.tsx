@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { EmptyState } from "@/components/EmptyState";
-import { IconCamera } from "@/components/icons";
+import { IconCube } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { canEditClan, useClanContext } from "@/hooks/useClanContext";
@@ -163,7 +163,7 @@ export default function MemoryRoom() {
         ]}
       />
       <PageHeader
-        icon={<IconCamera className="h-7 w-7" />}
+        icon={<IconCube className="h-7 w-7" />}
         title={room?.name ?? t`Phòng ký ức`}
         description={t`Kéo để nhìn quanh · WASD/phím mũi tên (hoặc joystick) để đi · chạm khung để xem ảnh.`}
       />
@@ -230,7 +230,7 @@ export default function MemoryRoom() {
             </ul>
           ) : (
             <EmptyState
-              icon={<IconCamera className="h-10 w-10" />}
+              icon={<IconCube className="h-10 w-10" />}
               title={t`Phòng chưa có ảnh`}
               description={t`Thiết bị không hỗ trợ 3D. Thêm ảnh cho phòng để xem ở dạng danh sách.`}
             />

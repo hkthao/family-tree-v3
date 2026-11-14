@@ -7,7 +7,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyState } from "@/components/EmptyState";
 import {
-  IconCamera,
+  IconPuzzle,
   IconCheck,
   IconGrid,
   IconLink,
@@ -182,7 +182,7 @@ export default function MosaicDetail() {
   if (!mosaic) {
     return (
       <EmptyState
-        icon={<IconCamera className="h-10 w-10" />}
+        icon={<IconPuzzle className="h-10 w-10" />}
         title={t`Không tìm thấy bức ảnh`}
       />
     );
@@ -198,7 +198,7 @@ export default function MosaicDetail() {
         ]}
       />
       <PageHeader
-        icon={<IconCamera className="h-7 w-7" />}
+        icon={<IconPuzzle className="h-7 w-7" />}
         title={mosaic.title}
         description={
           mosaic.description ||
@@ -670,7 +670,7 @@ function EditMosaicForm({
         <Label htmlFor="edit-title">{t`Tên bức ảnh`}</Label>
         <Input
           id="edit-title"
-          icon={<IconCamera />}
+          icon={<IconPuzzle />}
           placeholder={t`VD: Đại gia đình Tết 2027`}
           value={title}
           onChange={(e) => setTitle(e.target.value)}

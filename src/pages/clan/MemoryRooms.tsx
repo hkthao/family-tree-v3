@@ -11,7 +11,7 @@ import { GALLERY_PRESETS } from "@/components/gallery/palettes";
 import { IconTile } from "@/components/IconTile";
 import {
   IconArrowRight,
-  IconCamera,
+  IconCube,
   IconGlobe,
   IconLink,
   IconPencil,
@@ -118,7 +118,7 @@ export default function MemoryRooms() {
         ]}
       />
       <PageHeader
-        icon={<IconCamera className="h-7 w-7" />}
+        icon={<IconCube className="h-7 w-7" />}
         title={t`Phòng ký ức`}
         description={t`Các phòng trưng bày ảnh 3D của dòng họ — đi dạo và ngắm như một triển lãm.`}
         actionsBelow
@@ -153,7 +153,7 @@ export default function MemoryRooms() {
             search.trim() ? (
               <IconSearch className="h-10 w-10" />
             ) : (
-              <IconCamera className="h-10 w-10" />
+              <IconCube className="h-10 w-10" />
             )
           }
           title={
@@ -272,7 +272,7 @@ function RoomRow({ room, onOpen }: { room: MemoryRoom; onOpen: () => void }) {
             className="min-h-14 w-14 shrink-0 self-stretch rounded-lg border object-cover"
           />
         ) : (
-          <IconTile icon={IconCamera} tone="violet" />
+          <IconTile icon={IconCube} tone="violet" />
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{room.name}</p>
@@ -403,7 +403,7 @@ function RoomForm({
           <Label htmlFor="room-name">{t`Tên phòng`}</Label>
           <Input
             id="room-name"
-            icon={<IconCamera />}
+            icon={<IconCube />}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t`VD: Ảnh kỷ niệm dòng họ`}
@@ -460,7 +460,7 @@ function RoomForm({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <IconCamera className="h-5 w-5 text-muted-foreground" />
+                <IconCube className="h-5 w-5 text-muted-foreground" />
               )}
             </div>
             <Input
