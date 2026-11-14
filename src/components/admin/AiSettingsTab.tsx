@@ -268,7 +268,7 @@ export function AiSettingsTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Hạn mức &amp; chi phí</CardTitle>
+          <CardTitle className="text-base">{t`Hạn mức & chi phí`}</CardTitle>
           <CardDescription>
             <Trans>Ba con số này trước đây chỉ đổi được bằng SQL trên máy chủ. Đổi ở
             đây có hiệu lực ngay, không cần deploy lại.</Trans>
