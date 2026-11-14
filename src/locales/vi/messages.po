@@ -3330,6 +3330,11 @@ msgstr "Chụp ảnh"
 msgid "Chuyển ngày"
 msgstr "Chuyển ngày"
 
+#. placeholder {0}: l.label
+#: src/pages/clan/ClanMenu.tsx
+msgid "Chuyển sang {0}"
+msgstr "Chuyển sang {0}"
+
 #: src/components/ThemeQuickToggle.tsx
 msgid "Chuyển sang giao diện sáng"
 msgstr "Chuyển sang giao diện sáng"
@@ -5779,6 +5784,10 @@ msgstr "Đổi <0>AI_KEY_ENCRYPTION_KEY</0> sẽ làm mọi khoá đã lưu khô
 msgid "Đổi ảnh"
 msgstr "Đổi ảnh"
 
+#: src/pages/clan/ClanMenu.tsx
+msgid "Đổi chế độ màu"
+msgstr "Đổi chế độ màu"
+
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 msgid "Đổi chi / quản lý chi"
@@ -6485,10 +6494,12 @@ msgid "Giao diện đã lên nhưng cơ sở dữ liệu và hàm phía máy ch�
 msgstr "Giao diện đã lên nhưng cơ sở dữ liệu và hàm phía máy chủ thì chưa. Đây là bình thường: bản tự host áp migration bằng tay, nên frontend có thể lên trước. Làm ba bước dưới đây rồi tải lại trang."
 
 #: src/components/HeaderActions.tsx
+#: src/pages/clan/ClanMenu.tsx
 msgid "Giao diện sáng"
 msgstr "Giao diện sáng"
 
 #: src/components/HeaderActions.tsx
+#: src/pages/clan/ClanMenu.tsx
 msgid "Giao diện tối"
 msgstr "Giao diện tối"
 
@@ -6529,6 +6540,10 @@ msgstr "Giờ tốt (hoàng đạo):"
 #: src/pages/clan/GoodDays.tsx
 msgid "Giờ tốt: {0}"
 msgstr "Giờ tốt: {0}"
+
+#: src/lib/navModel.tsx
+msgid "Giỗ, sinh nhật, lễ tết, họp họ."
+msgstr "Giỗ, sinh nhật, lễ tết, họp họ."
 
 #: src/pages/clan/Events.tsx
 msgid "Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar."
@@ -6941,6 +6956,7 @@ msgstr "Hãy nhập tên / tiêu đề cho mục này."
 #: src/components/ThemeToggle.tsx
 #: src/lib/adminScreens.tsx
 #: src/pages/admin/HeThongPage.tsx
+#: src/pages/clan/ClanMenu.tsx
 msgid "Hệ thống"
 msgstr "Hệ thống"
 
@@ -10454,6 +10470,7 @@ msgid "Ngọc bích"
 msgstr "Ngọc bích"
 
 #: src/pages/Account.tsx
+#: src/pages/clan/ClanMenu.tsx
 msgid "Ngôn ngữ"
 msgstr "Ngôn ngữ"
 
@@ -10677,6 +10694,10 @@ msgstr "Người xem công khai được xem"
 #: src/pages/clan/Contributions.tsx
 msgid "Người xem đề xuất sửa hoặc thêm thông tin — admin duyệt trước khi áp dụng vào gia phả."
 msgstr "Người xem đề xuất sửa hoặc thêm thông tin — admin duyệt trước khi áp dụng vào gia phả."
+
+#: src/pages/clan/ClanMenu.tsx
+msgid "Người, mộ phần, di sản, hướng dẫn…"
+msgstr "Người, mộ phần, di sản, hướng dẫn…"
 
 #: src/pages/clan/Heritage.tsx
 msgid "Nguồn"
@@ -10977,6 +10998,10 @@ msgstr "Những câu chuyện ngắn để nghe lúc rảnh — mỗi tập mộ
 #: src/components/SidePanel.tsx
 msgid "Những gì bạn vừa nhập sẽ mất."
 msgstr "Những gì bạn vừa nhập sẽ mất."
+
+#: src/lib/navModel.tsx
+msgid "Những mục dùng hằng ngày."
+msgstr "Những mục dùng hằng ngày."
 
 #: src/components/TreeFolderView.tsx
 msgid "Những người này chưa có cha/mẹ trong gia phả nên chưa nối được vào nhánh nào."
@@ -13867,12 +13892,17 @@ msgstr "Tìm góp ý"
 #: src/components/GlobalSearch.tsx
 #: src/components/GlobalSearch.tsx
 #: src/components/HeaderActions.tsx
+#: src/pages/clan/ClanMenu.tsx
 msgid "Tìm kiếm"
 msgstr "Tìm kiếm"
 
 #: src/components/GlobalSearch.tsx
 msgid "Tìm kiếm (Ctrl/⌘ + K)"
 msgstr "Tìm kiếm (Ctrl/⌘ + K)"
+
+#: src/pages/clan/ClanMenu.tsx
+msgid "Tìm kiếm, ngôn ngữ, giao diện sáng/tối."
+msgstr "Tìm kiếm, ngôn ngữ, giao diện sáng/tối."
 
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Tìm mộ phần"
@@ -14091,6 +14121,10 @@ msgstr "Tìm và gộp các bản ghi trùng một người."
 msgid "Tìm xã/phường"
 msgstr "Tìm xã/phường"
 
+#: src/lib/navModel.tsx
+msgid "Tìm, thêm, sửa người trong họ."
+msgstr "Tìm, thêm, sửa người trong họ."
+
 #: src/components/BoardPostForm.tsx
 #: src/components/ClanPostCard.tsx
 #: src/lib/announcementFormat.ts
@@ -14205,6 +14239,10 @@ msgstr "Tổ tiên (dòng cha)"
 #: src/lib/nextSteps.ts
 msgid "Tổ tiên, anh em, con cháu một người"
 msgstr "Tổ tiên, anh em, con cháu một người"
+
+#: src/lib/navModel.tsx
+msgid "Tổ tiên, anh em, con cháu một người."
+msgstr "Tổ tiên, anh em, con cháu một người."
 
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
@@ -14422,6 +14460,10 @@ msgstr "Trang cá nhân"
 #: src/pages/clan/Dashboard.tsx
 msgid "Trang chủ của {0}."
 msgstr "Trang chủ của {0}."
+
+#: src/lib/navModel.tsx
+msgid "Trang chủ của dòng họ."
+msgstr "Trang chủ của dòng họ."
 
 #: src/pages/KhoeCard.tsx
 msgid "Trang này được tạo từ<0>Dòng Họ Việt</0> — nơi lưu giữ cây gia phả, kỷ niệm và nét đẹp truyền thống của dòng họ."
@@ -15592,6 +15634,10 @@ msgstr "Xem trước — {0} bài, {1} sẽ được tạo"
 #: src/components/ClanFormFields.tsx
 msgid "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
 msgstr "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
+
+#: src/lib/navModel.tsx
+msgid "Xem và khám phá cây các đời."
+msgstr "Xem và khám phá cây các đời."
 
 #: src/lib/tipCatalogue.ts
 msgid "Xem việc"
