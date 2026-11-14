@@ -1167,6 +1167,7 @@ msgid "Ảnh ghép"
 msgstr "Photo mosaic"
 
 #: src/lib/clanFeatures.ts
+#: src/lib/nextSteps.ts
 msgid "Ảnh ghép đại gia đình"
 msgstr "Extended-family photo mosaic"
 
@@ -1530,6 +1531,7 @@ msgid "Bản đồ"
 msgstr "Map"
 
 #: src/components/MapOverviewCard.tsx
+#: src/lib/nextSteps.ts
 #: src/lib/pageTitle.ts
 #: src/pages/clan/MapStats.tsx
 msgid "Bản đồ dòng họ"
@@ -1595,6 +1597,7 @@ msgstr "Table"
 msgid "Bảng tin"
 msgstr "News feed"
 
+#: src/lib/nextSteps.ts
 #: src/lib/pageTitle.ts
 msgid "Bảng tin dòng họ"
 msgstr "Clan news feed"
@@ -2057,6 +2060,7 @@ msgstr "How the tree diagram is laid out"
 msgid "Cách xem"
 msgstr "How to view"
 
+#: src/lib/nextSteps.ts
 #: src/lib/pageTitle.ts
 msgid "Cách xưng hô"
 msgstr "Kinship terms"
@@ -2690,6 +2694,10 @@ msgstr "Share the app via QR code"
 msgid "Chia sẻ cây"
 msgstr "Share tree"
 
+#: src/lib/nextSteps.ts
+msgid "Chia sẻ cây cho họ hàng"
+msgstr "Share the tree with relatives"
+
 #: src/components/ShareTreeButton.tsx
 msgid "Chia sẻ cây gia phả"
 msgstr "Share the family tree"
@@ -2850,6 +2858,10 @@ msgstr "Choose an item to open. Each item is a separate page."
 #: src/pages/clan/Relations.tsx
 msgid "Chọn một người để xem tổ tiên, vợ/chồng, anh chị em và toàn bộ con cháu."
 msgstr "Choose a person to see their ancestors, spouses, siblings and all descendants."
+
+#: src/lib/nextSteps.ts
+msgid "Chọn ngày cho việc lớn"
+msgstr "Pick a day for a big occasion"
 
 #: src/pages/clan/Relations.tsx
 msgid "Chọn người cần xem"
@@ -3522,6 +3534,10 @@ msgstr "Descendants"
 #: src/components/MapOverviewCard.tsx
 msgid "Con cháu nhiều nhất ở"
 msgstr "Most descendants live in"
+
+#: src/lib/nextSteps.ts
+msgid "Con cháu ở tỉnh nào"
+msgstr "Which provinces descendants live in"
 
 #: src/pages/clan/MapStats.tsx
 msgid "Con cháu, mộ phần và di sản phân bố theo tỉnh/thành. Chỉ thành viên dòng họ xem được."
@@ -5244,6 +5260,10 @@ msgstr "Following the clan's events"
 msgid "Đang tìm…"
 msgstr "Searching…"
 
+#: src/lib/nextSteps.ts
+msgid "Đăng tin vui, tin buồn"
+msgstr "Post good news and sad news"
+
 #: src/pages/InlawsConfirm.tsx
 msgid "Đang xác nhận…"
 msgstr "Confirming…"
@@ -5369,6 +5389,10 @@ msgstr "Member list with filtering, searching and bulk import."
 #: src/lib/queries/customs.ts
 msgid "Đạo Mẫu"
 msgstr "Mother Goddess religion (Đạo Mẫu)"
+
+#: src/lib/nextSteps.ts
+msgid "Dạo xem ảnh như triển lãm"
+msgstr "Stroll through photos like an exhibition"
 
 #. placeholder {0}: selected.size
 #: src/pages/clan/People.tsx
@@ -6202,6 +6226,10 @@ msgstr "Direct line (view only)"
 msgid "Đường trực hệ của tôi"
 msgstr "My direct line"
 
+#: src/lib/nextSteps.ts
+msgid "Đường về Thuỷ tổ của bạn"
+msgstr "Your line back to the founding ancestor"
+
 #: src/pages/clan/ContributionDetail.tsx
 #: src/pages/CustomsDetail.tsx
 msgid "Duyệt"
@@ -6386,6 +6414,10 @@ msgstr "Record merit and contributions."
 #: src/lib/nextSteps.ts
 msgid "Ghi nơi an nghỉ của các cụ"
 msgstr "Record the ancestors' resting places"
+
+#: src/lib/nextSteps.ts
+msgid "Ghi thu chi, ai cũng xem được"
+msgstr "Record income and expenses, visible to all"
 
 #: src/components/BookMetaFields.tsx
 msgid "Ghi từ thôn/xã/huyện đến tỉnh theo địa danh hành chính đương thời để người tìm không nhầm lẫn."
@@ -6658,6 +6690,10 @@ msgstr "You can type a situation too — e.g. \"new house\", \"new baby\"…"
 msgid "Gõ vào ô bên trên ai có quan hệ gì, sinh năm nào…"
 msgstr "Type in the box above who is related to whom, born in which year…"
 
+#: src/lib/nextSteps.ts
+msgid "Gọi nhau là gì theo truyền thống"
+msgstr "What to call each other, the traditional way"
+
 #: src/pages/clan/HeritageForm.tsx
 msgid "Gợi ý — bạn chỉ cần lần lượt trả lời:"
 msgstr "Hints — just answer in turn:"
@@ -6678,6 +6714,10 @@ msgstr "Suggestion: who in your clan?"
 #: src/pages/clan/Tree.tsx
 msgid "Gọn — thẻ to, dễ đọc"
 msgstr "Compact — large cards, easy to read"
+
+#: src/lib/nextSteps.ts
+msgid "Google/Apple Calendar tự cập nhật"
+msgstr "Google/Apple Calendar updates itself"
 
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/Merge.tsx
@@ -7198,9 +7238,17 @@ msgstr "Ask how to use something, or about your data…"
 msgid "Hỏi đáp về gia phả bằng lời — giỗ chạp, xưng hô, tra cứu người. Câu hỏi được gửi tới dịch vụ AI bên ngoài để xử lý (kèm tên, năm sinh/mất của người liên quan; không gửi ảnh hay tiểu sử)."
 msgstr "Ask about the family tree in your own words — death anniversaries, kinship terms, looking people up. Questions are sent to an external AI service for processing (with the name and birth / death year of the people involved; photos and biographies are not sent)."
 
+#: src/lib/nextSteps.ts
+msgid "Hỏi giỗ, xưng hô, tra người"
+msgstr "Ask about anniversaries, kinship, people"
+
 #: src/lib/queries/credits.ts
 msgid "Hỏi trợ lý"
 msgstr "Ask the assistant"
+
+#: src/lib/nextSteps.ts
+msgid "Hỏi trợ lý AI"
+msgstr "Ask the AI assistant"
 
 #: src/components/ai/ChatComposer.tsx
 msgid "Hỏi về gia phả…"
@@ -7399,10 +7447,18 @@ msgstr "ID | Full name | Gender | Year of birth | Year of death | Father ID | Mo
 msgid "Import gia phả lớn từ file .xlsx hoặc .csv."
 msgstr "Import a large family tree from an .xlsx or .csv file."
 
+#: src/lib/nextSteps.ts
+msgid "In lên bia mộ, danh thiếp"
+msgstr "Print on gravestones, business cards"
+
 #. placeholder {0}: new Date().toLocaleDateString(currentIntlTag())
 #: src/pages/clan/Tree.tsx
 msgid "In ngày {0}"
 msgstr "Printed on {0}"
+
+#: src/lib/nextSteps.ts
+msgid "In thành cuốn sổ có bìa"
+msgstr "Printed as a book with a cover"
 
 #: src/components/HistoricalClansSection.tsx
 msgid "Ít người nhất"
@@ -7468,6 +7524,10 @@ msgstr "Drag ready-made cards, connect lines, edit text, choose a background, th
 #: src/components/treeCanvas/CanvasPalette.tsx
 msgid "Kéo thả vào canvas (hoặc nhấp để thêm)."
 msgstr "Drag onto the canvas (or click to add)."
+
+#: src/lib/nextSteps.ts
+msgid "Kéo, phóng to, chọn người làm tâm"
+msgstr "Drag, zoom, choose a center person"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Kết nối Facebook"
@@ -8608,6 +8668,10 @@ msgstr "Calendars already subscribed will stop updating."
 msgid "Lịch đăng"
 msgstr "Publishing schedule"
 
+#: src/lib/nextSteps.ts
+msgid "Lịch giỗ trên điện thoại"
+msgstr "Death anniversaries on your phone"
+
 #: src/components/HistoricalClansSection.tsx
 #: src/components/HistoricalClansSection.tsx
 msgid "Lịch sử"
@@ -8754,6 +8818,10 @@ msgstr "Family tree link"
 #: src/pages/clan/InlawsNew.tsx
 msgid "Link chỉ dùng được một lần — sau khi bên kia xác nhận, mã tự huỷ."
 msgstr "The link works only once — after the other side confirms, the code is destroyed."
+
+#: src/lib/nextSteps.ts
+msgid "Link chỉ xem, không cần đăng nhập"
+msgstr "View-only link, no sign-in needed"
 
 #: src/pages/clan/Settings.tsx
 msgid "Link chia sẻ"
@@ -9275,6 +9343,10 @@ msgstr "The invite code will no longer work. You can create a new one."
 msgid "Mã QR"
 msgstr "QR code"
 
+#: src/lib/nextSteps.ts
+msgid "Mã QR cho từng người"
+msgstr "A QR code for each person"
+
 #: src/pages/Login.tsx
 msgid "Mã QR không hợp lệ."
 msgstr "This QR code is not valid."
@@ -9776,6 +9848,10 @@ msgstr "all users"
 #: src/pages/clan/People.tsx
 msgid "Mỗi người được xoá mềm và có thể khôi phục từ nhật ký."
 msgstr "Each person is soft-deleted and can be restored from the log."
+
+#: src/lib/nextSteps.ts
+msgid "Mỗi người góp một mảnh ảnh"
+msgstr "Everyone adds a piece of the photo"
 
 #: src/lib/clanFeatures.ts
 msgid "Mỗi người góp một mảnh ảnh, ghép thành bức tranh chung."
@@ -11229,6 +11305,10 @@ msgstr "Memory room"
 msgid "Phòng ký ức (ảnh 3D)"
 msgstr "Memory room (3D photos)"
 
+#: src/lib/nextSteps.ts
+msgid "Phòng ký ức 3D"
+msgstr "3D memory room"
+
 #: src/components/ImageLightbox.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
@@ -11808,6 +11888,10 @@ msgstr "House number, hamlet / neighbourhood"
 #: src/pages/clan/People.tsx
 msgid "Số nhà, thôn / xóm (tuỳ chọn)"
 msgstr "House number, hamlet / neighbourhood (optional)"
+
+#: src/lib/nextSteps.ts
+msgid "Sổ quỹ họ minh bạch"
+msgstr "A transparent clan fund ledger"
 
 #: src/lib/clanFeatures.ts
 msgid "Sổ quỹ thu chi dòng họ."
@@ -14044,6 +14128,10 @@ msgstr "Ancestor – descendant"
 msgid "Tổ tiên (dòng cha)"
 msgstr "Ancestors (paternal line)"
 
+#: src/lib/nextSteps.ts
+msgid "Tổ tiên, anh em, con cháu một người"
+msgstr "Ancestors, siblings, descendants of anyone"
+
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
 msgid "Toạ độ GPS (tuỳ chọn)"
@@ -14219,6 +14307,7 @@ msgid "Tra cứu phong tục, nghi lễ, tín ngưỡng các vùng miền Việt
 msgstr "Look up customs, rituals and beliefs of the regions of Vietnam."
 
 #: src/lib/navModel.tsx
+#: src/lib/nextSteps.ts
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
@@ -14472,6 +14561,10 @@ msgstr "From"
 #: src/components/HistoricalPersonSections.tsx
 msgid "từ {from}"
 msgstr "from {from}"
+
+#: src/lib/nextSteps.ts
+msgid "Từ bạn ngược lên các đời"
+msgstr "From you up through the generations"
 
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/ContributionDetail.tsx
@@ -15246,6 +15339,10 @@ msgstr "View the whole tree"
 msgid "Xem cây + đề xuất bổ sung (bạn duyệt mới vào cây). An toàn nhất."
 msgstr "View the tree + suggest additions (you approve before they enter the tree). The safest option."
 
+#: src/lib/nextSteps.ts
+msgid "Xem cây gia phả"
+msgstr "Explore the family tree"
+
 #: src/lib/pageTitle.ts
 msgid "Xem cây gia phả công khai của dòng họ: các đời, ngày giỗ và thông tin thành viên."
 msgstr "View a clan's public family tree: generations, death anniversaries and member details."
@@ -15316,6 +15413,10 @@ msgstr "View previous day"
 #: src/pages/clan/Dashboard.tsx
 msgid "Xem ngày tốt"
 msgstr "View auspicious days"
+
+#: src/lib/nextSteps.ts
+msgid "Xem ngày tốt, lịch âm"
+msgstr "Good days & lunar calendar"
 
 #: src/components/UpcomingEventRow.tsx
 #: src/components/UpcomingEventRow.tsx
@@ -15796,6 +15897,7 @@ msgid "Xuất sổ"
 msgstr "Export book"
 
 #: src/components/ExportPdfButton.tsx
+#: src/lib/nextSteps.ts
 msgid "Xuất sổ gia phả PDF"
 msgstr "Export the family book as PDF"
 

@@ -24,8 +24,15 @@ const base = (o: Partial<NextStepInput> = {}): NextStepInput => ({
   todo: [],
   counts: { resting_places: 1, heritage_items: 1 },
   customEvents: 1,
+  canEdit: true,
+  isEnabled: () => false,
+  aiOn: false,
   ...o,
 });
+
+/** Chỉ các gợi ý bổ sung dữ liệu (bỏ phần mời khám phá). */
+const gaps = (i: NextStepInput) =>
+  computeNextSteps(i).filter((x) => x.kind === "gap");
 
 describe("computeNextSteps", () => {
   it("không gợi ý gì khi cây rỗng (đã có thẻ 'thêm Thuỷ tổ' riêng)", () => {
@@ -33,18 +40,18 @@ describe("computeNextSteps", () => {
   });
 
   it("không gợi ý khi mọi thứ đã đủ", () => {
-    expect(computeNextSteps(base())).toEqual([]);
+    expect(gaps(base())).toEqual([]);
   });
 
   it("Thuỷ tổ chưa đánh dấu là ưu tiên số một", () => {
-    const s = computeNextSteps(
+    const s = gaps(
       base({ persons: [P(), P({ is_living: false })], customEvents: 0 }),
     );
     expect(s[0].id).toBe("root");
   });
 
   it("đếm người mất chưa có ngày mất lẫn ngày giỗ; có giỗ lặp hằng năm thì không tính", () => {
-    const s = computeNextSteps(
+    const s = gaps(
       base({
         persons: [
           P({ is_root: true, is_living: false }),
@@ -61,7 +68,7 @@ describe("computeNextSteps", () => {
     const dead = (n: number) =>
       Array.from({ length: n }, () => P({ is_living: false, death_date: "1990-01-01" }));
     const ids = (n: number, rp: number) =>
-      computeNextSteps(
+      gaps(
         base({ persons: [P({ is_root: true }), ...dead(n)], counts: { resting_places: rp, heritage_items: 1 } }),
       ).map((x) => x.id);
     expect(ids(2, 0)).not.toContain("graves");
@@ -73,13 +80,13 @@ describe("computeNextSteps", () => {
     const many = Array.from({ length: 10 }, (_, i) =>
       P({ is_root: i === 0, photo_path: null }),
     );
-    const ids = computeNextSteps(base({ persons: many, counts: { resting_places: 1, heritage_items: 0 } })).map((x) => x.id);
+    const ids = gaps(base({ persons: many, counts: { resting_places: 1, heritage_items: 0 } })).map((x) => x.id);
     expect(ids).toContain("photos");
     expect(ids).toContain("heritage");
   });
 
   it("chưa tải xong số liệu (undefined) thì không gợi ý theo số liệu đó", () => {
-    const ids = computeNextSteps(
+    const ids = gaps(
       base({ todo: undefined, counts: undefined, customEvents: undefined }),
     ).map((x) => x.id);
     expect(ids).toEqual([]);
@@ -88,6 +95,8 @@ describe("computeNextSteps", () => {
   it("tiêu đề và phụ đề đủ ngắn để vừa một dòng điện thoại", () => {
     const s = computeNextSteps(
       base({
+        isEnabled: () => true,
+        aiOn: true,
         persons: Array.from({ length: 12 }, (_, i) =>
           P({ is_root: i === 0, is_living: false, photo_path: null }),
         ),
@@ -96,11 +105,48 @@ describe("computeNextSteps", () => {
         customEvents: 0,
       }),
     );
-    expect(s.length).toBeGreaterThanOrEqual(5);
+    expect(s.length).toBeGreaterThanOrEqual(15);
     for (const x of s) {
       expect(x.title.length).toBeLessThanOrEqual(30);
       expect(x.hint.length).toBeLessThanOrEqual(42);
     }
+  });
+});
+
+describe("gợi ý khám phá tính năng", () => {
+  const five = Array.from({ length: 6 }, (_, i) => P({ is_root: i === 0 }));
+  const disc = (o: Partial<NextStepInput> = {}) =>
+    computeNextSteps(base({ persons: five, ...o }))
+      .filter((x) => x.kind === "discover")
+      .map((x) => x.id);
+
+  it("mời xem cây, tra cứu quan hệ, bản đồ khi cây đã có từ 5 người", () => {
+    const ids = disc();
+    expect(ids).toEqual(expect.arrayContaining(["tree", "relations", "map", "kinship"]));
+    expect(computeNextSteps(base()).filter((x) => x.kind === "discover").map((x) => x.id)).not.toContain("relations");
+  });
+
+  it("người chỉ xem không bị gợi ý bổ sung dữ liệu, chỉ được mời khám phá", () => {
+    const all = computeNextSteps(
+      base({ persons: [P(), ...five], canEdit: false, customEvents: 0 }),
+    );
+    expect(all.some((x) => x.kind === "gap")).toBe(false);
+    expect(all.some((x) => x.id === "share")).toBe(false); // chia sẻ cần quyền sửa
+    expect(all.some((x) => x.kind === "discover")).toBe(true);
+  });
+
+  it("không mời tính năng đã bị dòng họ tắt; trợ lý AI cần nền tảng bật", () => {
+    expect(disc({ isEnabled: () => false })).not.toContain("memory");
+    expect(disc({ isEnabled: () => true })).toContain("memory");
+    expect(disc({ isEnabled: () => true, aiOn: false })).not.toContain("ai");
+    expect(disc({ isEnabled: () => true, aiOn: true })).toContain("ai");
+  });
+
+  it("việc bổ sung dữ liệu luôn đứng trước lời mời khám phá", () => {
+    const s = computeNextSteps(base({ persons: [P(), ...five] }));
+    const firstDiscover = s.findIndex((x) => x.kind === "discover");
+    const lastGap = s.map((x) => x.kind).lastIndexOf("gap");
+    expect(lastGap).toBeLessThan(firstDiscover);
   });
 });
 
@@ -110,7 +156,7 @@ describe("snooze", () => {
   it("ẩn đúng gợi ý của đúng dòng họ trong 14 ngày rồi hiện lại", () => {
     const t0 = 1_000_000;
     expect(isSnoozed("c1", "root", t0)).toBe(false);
-    snooze("c1", "root", t0);
+    snooze("c1", "root", 14, t0);
     expect(isSnoozed("c1", "root", t0 + 1000)).toBe(true);
     expect(isSnoozed("c2", "root", t0 + 1000)).toBe(false);
     expect(isSnoozed("c1", "anniv", t0 + 1000)).toBe(false);
