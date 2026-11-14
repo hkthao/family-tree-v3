@@ -534,7 +534,7 @@ export function buildSections(
         {
           to: `/clans/${clanId}/xem-ngay`,
           label: t`Lịch âm dương`,
-          hint: t`Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày.`,
+          hint: t`Lịch tháng, ngày tốt xấu, lễ tết.`,
           icon: <IconCalendar className={ic} />,
         },
         {
@@ -556,7 +556,7 @@ export function buildSections(
         {
           to: `/clans/${clanId}/ai-generate`,
           label: t`Sinh bằng AI`,
-          hint: t`Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt.`,
+          hint: t`Mô tả bằng lời, AI dựng dữ liệu để duyệt.`,
           icon: <IconSparkles className={ic} />,
         },
         {
