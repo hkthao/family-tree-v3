@@ -207,7 +207,7 @@ export default function PodcastPage() {
             title={episodes.length === 0 ? t`Chưa có tập nào trong kho` : t`Không có tập nào khớp`}
             description={
               episodes.length === 0
-                ? 'Bấm "Đồng bộ ngay" để kéo về.'
+                ? t`Bấm "Đồng bộ ngay" để kéo về.`
                 : t`Thử bỏ bớt bộ lọc hoặc từ khoá.`
             }
           />

@@ -130,7 +130,7 @@ export default function Customs() {
               label={t`Tìm phong tục`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder='Gõ tình huống cũng được — vd "nhà mới", "có em bé"…'
+              placeholder={t`Gõ tình huống cũng được — vd "nhà mới", "có em bé"…`}
               rightSlot={toggle}
             />
           )}

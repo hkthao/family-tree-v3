@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import { TIP_CATALOGUE, type Tip, type TipContext } from "@/lib/tipCatalogue";
+import { getTipCatalogue, type Tip, type TipContext } from "@/lib/tipCatalogue";
 
 const STORAGE_KEY = "ftv3:tips";
 // How often the mascot auto-pops a fresh tip while the user is
@@ -75,7 +75,7 @@ function pickEligible(
   recentIds: string[],
 ): Tip | null {
   const ctx = buildContext(state);
-  const eligible = TIP_CATALOGUE.filter((t) => !recentIds.includes(t.id))
+  const eligible = getTipCatalogue().filter((t) => !recentIds.includes(t.id))
     .filter((t) => {
       try {
         return t.when(ctx);
@@ -89,7 +89,7 @@ function pickEligible(
   let next: Tip | null = eligible[0] ?? null;
   if (!next) {
     next =
-      TIP_CATALOGUE.filter((t) => !recentIds.includes(t.id)).sort(
+      getTipCatalogue().filter((t) => !recentIds.includes(t.id)).sort(
         (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
       )[0] ?? null;
   }
