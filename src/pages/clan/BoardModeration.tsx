@@ -43,7 +43,7 @@ export default function BoardModeration() {
       <PageHeader
         icon={<IconCheck className="h-7 w-7" />}
         title={t`Duyệt bài`}
-        description='Bài chờ duyệt từ thành viên. Bấm "Duyệt" để đăng, hoặc "Từ chối" để ẩn (vẫn lưu lại — có thể hiện lại sau).'
+        description={t`Bài chờ duyệt từ thành viên. Bấm "Duyệt" để đăng, hoặc "Từ chối" để ẩn (vẫn lưu lại — có thể hiện lại sau).`}
       />
 
       {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}

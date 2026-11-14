@@ -407,7 +407,7 @@ function ProvincesTab({ search, region }: { search: string; region: VnRegion | "
           <EmptyState
             icon={<IconMapPin className="h-10 w-10" />}
             title={t`Chưa có tỉnh/thành nào`}
-            description='Bấm nút "+" để thêm tỉnh/thành.'
+            description={t`Bấm nút "+" để thêm tỉnh/thành.`}
           />
         )
       ) : (

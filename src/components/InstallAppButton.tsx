@@ -87,7 +87,7 @@ export function InstallAppButton() {
     await confirm({
       title: t`Thêm Dòng Họ Việt vào màn hình chính`,
       description:
-        'Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn "Thêm vào Màn hình Chính". App sẽ mở như ứng dụng riêng, không có thanh URL.',
+        t`Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn "Thêm vào Màn hình Chính". App sẽ mở như ứng dụng riêng, không có thanh URL.`,
       confirmLabel: t`Đã hiểu`,
     });
   };

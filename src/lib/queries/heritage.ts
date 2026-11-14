@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase as defaultClient } from "@/lib/supabase";
 import type { Database } from "@/lib/database.types";
 import { deletePersonPhoto } from "@/lib/photoUpload";
-import { msg } from "@lingui/core/macro";
+import { msg, t } from "@lingui/core/macro";
 import { lazyMessages } from "@/lib/i18n/lazy";
 
 type Client = SupabaseClient<Database>;
@@ -77,7 +77,7 @@ export function validateExternalMedia(
   const url = raw.trim();
   if (!url) return { ok: false, error: "Hãy dán đường link." };
   if (!isSafeHttpsUrl(url)) {
-    return { ok: false, error: "Link phải bắt đầu bằng https:// và là địa chỉ hợp lệ." };
+    return { ok: false, error: t`Link phải bắt đầu bằng https:// và là địa chỉ hợp lệ.` };
   }
   if (kind === "video" && !videoEmbedUrl(url)) {
     // Ngoài YouTube/Vimeo chỉ cho phép link file video https trực tiếp.

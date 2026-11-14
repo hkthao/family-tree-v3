@@ -6,6 +6,8 @@
  * biết câu hỏi đang được gửi tới ai. Nói tên cố định trong giao diện là
  * sai ngay lần đầu admin đổi model, nên tên phải suy ra từ cấu hình.
  */
+import { msg } from "@lingui/core/macro";
+import { lazyAs } from "@/lib/i18n/lazy";
 
 export type AiProvider = "openai" | "anthropic" | "deepseek";
 
@@ -13,19 +15,21 @@ export const AI_PROVIDERS: Array<{
   id: AiProvider;
   label: string;
   hint: string;
-}> = [
-  { id: "openai", label: "OpenAI", hint: "Khoá bắt đầu bằng sk-" },
-  { id: "anthropic", label: "Anthropic (Claude)", hint: "Khoá bắt đầu bằng sk-ant-" },
-  { id: "deepseek", label: "DeepSeek", hint: "Khoá bắt đầu bằng sk-" },
-];
+}> = lazyAs<Array<{ id: AiProvider; label: string; hint: string }>>([
+  { id: "openai", label: "OpenAI", hint: msg`Khoá bắt đầu bằng sk-` },
+  { id: "anthropic", label: "Anthropic (Claude)", hint: msg`Khoá bắt đầu bằng sk-ant-` },
+  { id: "deepseek", label: "DeepSeek", hint: msg`Khoá bắt đầu bằng sk-` },
+]);
 
-export const QA_MODELS = [
-  { id: "gpt-5.6-luna", label: "GPT-5.6 Luna — rẻ nhất", credential: "openai" },
+export const QA_MODELS = lazyAs<
+  ReadonlyArray<{ id: string; label: string; credential: AiProvider }>
+>([
+  { id: "gpt-5.6-luna", label: msg`GPT-5.6 Luna — rẻ nhất`, credential: "openai" },
   { id: "gpt-5.6-terra", label: "GPT-5.6 Terra", credential: "openai" },
   { id: "deepseek-v4-flash", label: "DeepSeek V4-Flash", credential: "deepseek" },
   { id: "claude-haiku-4-5", label: "Claude Haiku 4.5", credential: "anthropic" },
-  { id: "claude-sonnet-5", label: "Claude Sonnet 5 — tool tốt nhất", credential: "anthropic" },
-] as const;
+  { id: "claude-sonnet-5", label: msg`Claude Sonnet 5 — tool tốt nhất`, credential: "anthropic" },
+]);
 
 
 /**

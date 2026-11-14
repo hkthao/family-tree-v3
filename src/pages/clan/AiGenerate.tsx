@@ -118,7 +118,7 @@ export default function AiGenerate() {
         // Quick sanity check — every GEDCOM starts with "0 HEAD" line.
         if (!/^0\s+HEAD/m.test(cleaned)) {
           setParseError(
-            'Nội dung không giống GEDCOM (phải bắt đầu bằng "0 HEAD"). Có thể AI trả về CSV — đổi định dạng ở mục 1.',
+            t`Nội dung không giống GEDCOM (phải bắt đầu bằng "0 HEAD"). Có thể AI trả về CSV — đổi định dạng ở mục 1.`,
           );
           return;
         }

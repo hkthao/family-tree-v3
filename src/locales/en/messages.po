@@ -1271,6 +1271,10 @@ msgstr "The app is broken, data is wrong, a blank page…"
 msgid "App tự dò chỗ thiếu trong gia phả — cả họ cùng bổ sung."
 msgstr "The app automatically finds what's missing in the family tree — the whole clan fills it in together."
 
+#: src/lib/tipCatalogue.ts
+msgid "App vừa cập nhật"
+msgstr "The app was just updated"
+
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Avatar của tôi"
 msgstr "My avatar"
@@ -1310,6 +1314,10 @@ msgstr "Platinum"
 msgid "bài"
 msgstr "posts"
 
+#: src/pages/clan/BoardModeration.tsx
+msgid "Bài chờ duyệt từ thành viên. Bấm \"Duyệt\" để đăng, hoặc \"Từ chối\" để ẩn (vẫn lưu lại — có thể hiện lại sau)."
+msgstr "Posts waiting for review from members. Tap \"Approve\" to publish, or \"Reject\" to hide (still kept — can be shown again later)."
+
 #: src/pages/CustomsDetail.tsx
 msgid "Bài liên quan"
 msgstr "Related articles"
@@ -1346,6 +1354,10 @@ msgstr "Tap 'Add' to record the first resting place."
 #: src/pages/clan/Inlaws.tsx
 msgid "Bấm “Đề nghị mới” để gửi mã mời hoặc đề nghị thẳng tới một dòng họ công khai."
 msgstr "Tap “New request” to send an invite code or to send a request straight to a public clan."
+
+#: src/pages/admin/PodcastPage.tsx
+msgid "Bấm \"Đồng bộ ngay\" để kéo về."
+msgstr "Tap \"Sync now\" to pull them in."
 
 #: src/components/ShareLinksSection.tsx
 msgid "Bấm “Tạo link mới” để tạo link công khai cho cây gia phả."
@@ -1408,6 +1420,18 @@ msgstr "Tap the '+' button to write the first announcement."
 msgid "Bấm nút '+' để vinh danh người đóng góp đầu tiên."
 msgstr "Tap the '+' button to honor the first contributor."
 
+#: src/lib/tipCatalogue.ts
+msgid "Bấm nút 'Góp ý' ở góc dưới phải — chúng tôi đọc hết, kể cả 1 dòng."
+msgstr "Tap the 'Feedback' button at the bottom right — we read everything, even a single line."
+
+#: src/pages/admin/DanhMucDiaGioiPage.tsx
+msgid "Bấm nút \"+\" để thêm tỉnh/thành."
+msgstr "Tap the \"+\" button to add a province / city."
+
+#: src/components/InstallAppButton.tsx
+msgid "Bấm nút Chia sẻ ở thanh dưới Safari (biểu tượng ☐ có mũi tên lên), kéo xuống chọn \"Thêm vào Màn hình Chính\". App sẽ mở như ứng dụng riêng, không có thanh URL."
+msgstr "Tap the Share button at the bottom of Safari (the ☐ icon with an arrow pointing up), then scroll down and choose \"Add to Home Screen\". The app will open like a standalone app, without the URL bar."
+
 #: src/components/EnablePushPrompt.tsx
 msgid "Bấm nút Chia sẻ trong Safari → \"Thêm vào Màn hình chính\", rồi mở app từ biểu tượng để bật nhắc giỗ, sinh nhật."
 msgstr "Tap the Share button in Safari → \"Add to Home Screen\", then open the app from its icon to turn on death-anniversary and birthday reminders."
@@ -1468,6 +1492,10 @@ msgstr "You are not following any clan yet. Open a clan's Events page and turn o
 msgid "Bạn có quyền platform admin: chỉnh giới hạn user/clan, khoá tài khoản, gán quyền."
 msgstr "You have platform admin rights: adjust user/clan limits, lock accounts, assign roles."
 
+#: src/lib/tipCatalogue.ts
+msgid "Bạn có thể tắt linh vật ở /account — chúng tôi sẽ ngừng nhắc."
+msgstr "You can turn the mascot off at /account — we'll stop the reminders."
+
 #: src/components/NotificationBell.tsx
 msgid "Bạn đã đọc hết"
 msgstr "You're all caught up"
@@ -1475,6 +1503,10 @@ msgstr "You're all caught up"
 #: src/pages/clan/MosaicDetail.tsx
 msgid "Bạn đã góp đủ {quota} mảnh."
 msgstr "You have contributed all {quota} pieces."
+
+#: src/lib/tipCatalogue.ts
+msgid "Bạn đã tạo dòng họ chưa?"
+msgstr "Have you created your clan yet?"
 
 #: src/pages/clan/Today.tsx
 msgid "Bạn đang xem dòng họ ở chế độ công khai."
@@ -1603,6 +1635,10 @@ msgstr "Required"
 msgid "Bật chế độ nối: nhấp lần lượt hai thẻ"
 msgstr "Turn on connect mode: click two cards in turn"
 
+#: src/lib/tipCatalogue.ts
+msgid "Bắt đầu bằng cách tạo gia phả của bạn — chỉ vài bước."
+msgstr "Start by creating your family tree — it takes only a few steps."
+
 #: src/pages/clan/Tree.tsx
 msgid "Bắt đầu bằng cách thêm Thuỷ tổ (đời 1), hoặc nhập sẵn từ Excel."
 msgstr "Start by adding the founding ancestor (generation 1), or import from Excel."
@@ -1614,6 +1650,10 @@ msgstr "Start by adding the founding ancestor. Watch the 1-minute video below, t
 #: src/pages/clan/HeritageDetail.tsx
 msgid "Bắt đầu ghi âm"
 msgstr "Start recording"
+
+#: src/lib/tipCatalogue.ts
+msgid "Bắt đầu từ Thuỷ tổ"
+msgstr "Start from the founding ancestor"
 
 #: src/components/treeCanvas/NewCanvasPanel.tsx
 msgid "Bắt đầu với"
@@ -2021,6 +2061,10 @@ msgstr "Install app"
 #: src/components/InstallAppButton.tsx
 msgid "Cài app lên màn hình chính"
 msgstr "Install the app on your home screen"
+
+#: src/lib/tipCatalogue.ts
+msgid "Cài đặt"
+msgstr "Settings"
 
 #: src/lib/adminScreens.tsx
 msgid "Cài đặt & nội dung"
@@ -2633,6 +2677,10 @@ msgstr "Share tree"
 #: src/components/ShareTreeButton.tsx
 msgid "Chia sẻ cây gia phả"
 msgstr "Share the family tree"
+
+#: src/lib/tipCatalogue.ts
+msgid "Chia sẻ cây với họ hàng"
+msgstr "Share the tree with relatives"
 
 #: src/components/InviteLinkCard.tsx
 #: src/components/InviteLinkCard.tsx
@@ -3271,6 +3319,10 @@ msgstr "Switch to light mode"
 msgid "Chuyển sang giao diện tối"
 msgstr "Switch to dark mode"
 
+#: src/lib/aiModels.ts
+msgid "Claude Sonnet 5 — tool tốt nhất"
+msgstr "Claude Sonnet 5 — best at tools"
+
 #: src/components/ContributionDiffView.tsx
 msgid "Có"
 msgstr "Yes"
@@ -3341,9 +3393,17 @@ msgstr "Something went wrong"
 msgid "Có một dòng họ đề nghị nối với người trong dòng họ của bạn. Xem trước, rồi chọn đúng người."
 msgstr "A clan has asked to connect with someone in your clan. Preview it, then choose the right person."
 
+#: src/lib/tipCatalogue.ts
+msgid "Có ngày âm?"
+msgstr "Have a lunar date?"
+
 #: src/pages/MyFeedback.tsx
 msgid "Có phản hồi"
 msgstr "Has a reply"
+
+#: src/lib/tipCatalogue.ts
+msgid "Có sẵn file Excel?"
+msgstr "Already have an Excel file?"
 
 #: src/pages/clan/Cemeteries.tsx
 msgid "cơ sở"
@@ -3386,6 +3446,10 @@ msgstr "Can be restored from the log."
 #: src/pages/clan/RestingPlaces.tsx
 msgid "Có vị trí"
 msgstr "Has a location"
+
+#: src/lib/tipCatalogue.ts
+msgid "Có việc cần làm"
+msgstr "You have things to do"
 
 #: src/lib/relations.ts
 msgid "con"
@@ -6197,6 +6261,10 @@ msgstr "Link a resting place (optional)"
 msgid "Gấp khúc"
 msgstr "Zigzag"
 
+#: src/lib/tipCatalogue.ts
+msgid "Gặp lỗi? Nói cho biết."
+msgstr "Found a problem? Tell us."
+
 #: src/pages/clan/AiGenerate.tsx
 msgid "GEDCOM 5.5.1 (chuẩn phả hệ, giữ nhiều trường hơn)"
 msgstr "GEDCOM 5.5.1 (the genealogy standard, keeps more fields)"
@@ -6544,6 +6612,10 @@ msgstr "Type a name to search (no accents needed)"
 msgid "Gõ tên để tìm thành viên…"
 msgstr "Type a name to find a member…"
 
+#: src/pages/Customs.tsx
+msgid "Gõ tình huống cũng được — vd \"nhà mới\", \"có em bé\"…"
+msgstr "You can type a situation too — e.g. \"new house\", \"new baby\"…"
+
 #: src/pages/clan/AiGenerate.tsx
 msgid "Gõ vào ô bên trên ai có quan hệ gì, sinh năm nào…"
 msgstr "Type in the box above who is related to whom, born in which year…"
@@ -6627,6 +6699,10 @@ msgstr "This feedback was sent while signed out, so the sender can't see the rep
 #: src/pages/admin/GopYPage.tsx
 msgid "Góp ý và báo lỗi người dùng gửi lên."
 msgstr "Feedback and bug reports sent by users."
+
+#: src/lib/aiModels.ts
+msgid "GPT-5.6 Luna — rẻ nhất"
+msgstr "GPT-5.6 Luna — cheapest"
 
 #: src/pages/clan/Import.tsx
 msgid "GT"
@@ -7417,6 +7493,10 @@ msgstr "When a clan switches to public mode, it will appear here."
 msgid "Khi có người gửi đề xuất, danh sách sẽ xuất hiện ở đây."
 msgstr "When someone sends a suggestion, the list will appear here."
 
+#: src/lib/tipCatalogue.ts
+msgid "Khi nhập ngày sinh / mất, có thể bấm 'Nhập theo can-chi' để gõ 'Bính Thìn' — app sẽ tự đổi sang năm dương."
+msgstr "When entering a date of birth / death, you can tap 'Enter by Stem-Branch' to type 'Bính Thìn' — the app converts it to a solar year automatically."
+
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Khổ giấy"
 msgstr "Paper size"
@@ -7431,6 +7511,15 @@ msgstr "Paper size: {0} × {1} cm (at most 500 cm per side)."
 #: src/components/admin/AiSettingsTab.tsx
 msgid "Khoá API {0}"
 msgstr "{0} API key"
+
+#: src/lib/aiModels.ts
+#: src/lib/aiModels.ts
+msgid "Khoá bắt đầu bằng sk-"
+msgstr "The key starts with sk-"
+
+#: src/lib/aiModels.ts
+msgid "Khoá bắt đầu bằng sk-ant-"
+msgstr "The key starts with sk-ant-"
 
 #: src/pages/clan/Tree.tsx
 msgid "Khoá để cuộn trang"
@@ -7937,6 +8026,10 @@ msgstr "Could not save the room: {msg}"
 msgid "Không mở được camera. Cho phép quyền camera trong trình duyệt rồi thử lại."
 msgstr "Could not open the camera. Allow camera permission in your browser and try again."
 
+#: src/lib/tipCatalogue.ts
+msgid "Không muốn xem gợi ý?"
+msgstr "Don't want to see tips?"
+
 #: src/pages/clan/TreeCanvases.tsx
 msgid "Không nhân bản được"
 msgstr "Could not duplicate"
@@ -7953,6 +8046,10 @@ msgstr "Could not import"
 #: src/components/CalendarDateInput.tsx
 msgid "Không nhớ đủ thì bỏ trống ngày, hoặc cả ngày-tháng — chỉ năm cũng được."
 msgstr "If you don't remember everything, leave the day — or both day and month — blank; the year alone is fine."
+
+#: src/lib/tipCatalogue.ts
+msgid "Không nhớ năm dương?"
+msgstr "Don't remember the solar year?"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Không nối được"
@@ -8392,7 +8489,7 @@ msgstr "Compiling for the first time (from memory, field research)"
 msgid "Lấy ảnh từ danh sách thành viên (chỉ người có ảnh)."
 msgstr "Take photos from the member list (only people who have a photo)."
 
-#. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { Chip } from "@/components/Chip"; import { CollapsibleFilters } from "@/components/CollapsibleFilters"; import { EmptyState } from "@/components/EmptyState"; import { IconTile } from "@/components/IconTile"; import { IconBellOff, IconCalendar, IconCheck, IconClock, IconMicrophone, IconPencil, IconRefresh, IconSearch, IconTag, } from "@/components/icons"; import { Pagination } from "@/components/Pagination"; import { SearchInput } from "@/components/SearchInput"; import { SidePanel } from "@/components/SidePanel"; import { useToast } from "@/components/Toast"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset"; import { Select } from "@/components/ui/select"; import { ViewEditActions } from "@/components/ui/view-edit-actions"; import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging"; import { unaccent } from "@/lib/unaccent"; import { formatDateOnly, formatRelative } from "@/lib/formatDate"; import { checkFacebookConnection, connectFacebookPage, formatDuration, getFbCredentialStatus, getPodcastSyncStatus, listAllPodcastEpisodes, syncPodcastNow, updatePodcastEpisode, type PodcastEpisode, } from "@/lib/queries/podcast"; import { AdminShell } from "@/pages/admin/AdminShell"; import { t } from "@lingui/core/macro"; import { Trans } from "@lingui/react/macro"; /** * Quản trị Podcast: xem các tập đã kéo về, ẩn tập không phù hợp, sửa tiêu * đề, và bấm đồng bộ tay khi không muốn chờ cron. * * Phần quan trọng nhất lại là dòng nhỏ nhất: MỐC ĐỒNG BỘ GẦN NHẤT. Token * Facebook chết là chuyện sẽ xảy ra (đổi mật khẩu, gỡ app, Meta đổi luật) * — và nó chết âm thầm: app vẫn chạy, chỉ là không bao giờ có tập mới. * Không hiện mốc này thì vài tháng sau mới có người để ý. */ /** Quá số ngày này không đồng bộ được thì coi như hỏng, không phải "chưa tới giờ". */ const STALE_DAYS = 3; export default function PodcastPage() { const qc = useQueryClient(); const toast = useToast(); const episodesQ = useQuery({ queryKey: ["podcast-admin-episodes"], queryFn: () => listAllPodcastEpisodes(), }); const statusQ = useQuery({ queryKey: ["podcast-sync-status"], queryFn: () => getPodcastSyncStatus(), }); const syncM = useMutation({ mutationFn: () => syncPodcastNow(), onSuccess: (r) => { toast.success( t`Đã đồng bộ: ${r.inserted} tập mới, ${r.updated} tập cập nhật`, ); qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-sync-status"] }); qc.invalidateQueries({ queryKey: ["podcast-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-latest"] }); }, onError: (e) => toast.error(t`Đồng bộ hỏng`, { description: (e as Error).message }), }); const [search, setSearch] = useState(""); const [visibility, setVisibility] = useState<"" | "visible" | "hidden">(""); const [panel, setPanel] = useState<EpisodePanel>(null); const episodes = episodesQ.data ?? []; const filtered = useMemo(() => { const needle = unaccent(search.trim()); return episodes.filter( (ep) => (visibility === "" || (visibility === "visible") === ep.is_visible) && (!needle || unaccent(ep.title).includes(needle)), ); }, [episodes, search, visibility]); const paging = useClientPaging(filtered, 20); const status = statusQ.data; const lastSync = status?.lastSyncAt ? new Date(status.lastSyncAt) : null; const staleDays = lastSync ? (Date.now() - lastSync.getTime()) / 86_400_000 : Infinity; return ( <AdminShell icon={<IconMicrophone className="h-7 w-7" />} title="Podcast" description={t`Các tập kéo về từ Trang Facebook. Ẩn tập không phù hợp, sửa tiêu đề, đồng bộ lại.`} > <div className="space-y-4"> <FacebookConnection /> <section className="overflow-hidden rounded-xl border bg-card shadow-sm"> <div className="p-3 text-sm"> <p className="font-medium"> {lastSync ? t`Đồng bộ gần nhất: ${formatRelative(status!.lastSyncAt!) ?? "?"}` : t`Chưa đồng bộ lần nào`} </p> {lastSync && ( <p className="text-xs text-muted-foreground"> {lastSync.toLocaleString("vi-VN")} </p> )} </div> {/* Hành động của cả thẻ nằm ở chân thẻ — docs/design-language.md. */} <div className="flex justify-end gap-2 border-t p-3"> <Button size="sm" type="button" onClick={() => syncM.mutate()} disabled={syncM.isPending}> <IconRefresh className={`mr-1.5 h-4 w-4 ${syncM.isPending ? "animate-spin" : ""}`} /> {syncM.isPending ? t`Đang đồng bộ…` : t`Đồng bộ ngay`} </Button> </div> </section> {status?.lastError && ( <Alert variant="destructive"> <AlertDescription> {t`Lần đồng bộ gần nhất báo lỗi: ${status.lastError}`} </AlertDescription> </Alert> )} {!status?.lastError && staleDays > STALE_DAYS && ( <Alert variant="destructive"> <AlertDescription> {lastSync ? t`Đã ${Math.floor(staleDays)} ngày không đồng bộ được tập nào. Token Facebook có thể đã hết hạn — kiểm tra biến FB_PAGE_TOKEN.` : t`Chưa chạy đồng bộ lần nào. Kiểm tra FB_PAGE_ID / FB_PAGE_TOKEN và lịch cron.`} </AlertDescription> </Alert> )} <CollapsibleFilters activeCount={visibility ? 1 : 0} onReset={() => { setVisibility(""); paging.patchAndResetPage({}); }} title={t`Lọc tập`} search={(toggle) => ( <SearchInput label={t`Tìm tập`} value={search} onChange={(e) => { setSearch(e.target.value); paging.patchAndResetPage({}); }} placeholder={t`Tìm theo tiêu đề tập…`} rightSlot={toggle} /> )} > <div className="flex flex-col gap-3"> <Select value={visibility} onChange={(e) => { setVisibility(e.target.value as "" | "visible" | "hidden"); paging.patchAndResetPage({}); }} aria-label={t`Lọc theo hiển thị`} icon={<IconTag />} className="h-11 w-full text-base" > <option value="">{t`Cả hiện và ẩn`}</option> <option value="visible">{t`Đang hiện`}</option> <option value="hidden">{t`Đang ẩn`}</option> </Select> </div> </CollapsibleFilters> {episodesQ.isLoading && ( <div className="rounded-xl border bg-card p-4 shadow-sm"> <p className="text-muted-foreground">{t`Đang tải…`}</p> </div> )} {!episodesQ.isLoading && filtered.length === 0 && ( <EmptyState icon={<IconSearch className="h-10 w-10" />} title={episodes.length === 0 ? t`Chưa có tập nào trong kho` : t`Không có tập nào khớp`} description={ episodes.length === 0 ? 'Bấm "Đồng bộ ngay" để kéo về.' : t`Thử bỏ bớt bộ lọc hoặc từ khoá.` } /> )} {filtered.length > 0 && ( <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm"> {paging.paged.map((ep) => ( <EpisodeRowItem key={ep.id} episode={ep} onOpen={() => setPanel({ mode: "view", episode: ep })} /> ))} </ul> )} {filtered.length > 0 && ( <Pagination page={paging.page} totalPages={paging.totalPages} total={paging.total} pageSize={paging.pageSize} unit={t`tập`} onPageChange={paging.setPage} pageSizeOptions={LIST_PAGE_SIZE_OPTIONS} onPageSizeChange={paging.setPageSize} /> )} <SidePanel open={panel !== null} title={panel?.mode === "edit" ? t`Sửa tập` : t`Tập podcast`} subtitle={panel?.episode.title} onClose={() => setPanel(null)} guard={panel?.mode === "edit"} > {panel && ( <EpisodeForm key={`${panel.mode}-${panel.episode.id}`} episode={panel.episode} readOnly={panel.mode === "view"} onEdit={() => setPanel({ mode: "edit", episode: panel.episode })} onCancel={() => setPanel(panel.mode === "edit" ? { mode: "view", episode: panel.episode } : null) } onSaved={() => setPanel(null)} /> )} </SidePanel> </div> </AdminShell> ); } /** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa một tập. */ type EpisodePanel = { mode: "view" | "edit"; episode: PodcastEpisode } | null; function EpisodeRowItem({ episode, onOpen }: { episode: PodcastEpisode; onOpen: () => void }) { const duration = formatDuration(episode.duration_seconds); return ( <li className={episode.is_visible ? "" : "bg-muted/30"}> <button type="button" onClick={onOpen} className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40" > {/* Ảnh bìa ngay trong danh sách: admin cần NHÌN THẤY cái mà người dùng sẽ thấy, nhất là khi ảnh bìa lấy từ Facebook và URL có hạn dùng — hỏng ảnh thì phải phát hiện ở đây. */} {episode.thumbnail_url ? ( <img src={episode.thumbnail_url} alt="" loading="lazy" className="min-h-14 w-14 shrink-0 self-stretch rounded-lg border object-cover" /> ) : ( <IconTile icon={IconMicrophone} tone="violet" /> )} <div className="min-w-0 flex-1"> <p className="line-clamp-2 font-medium leading-snug">{episode.title}</p> <p className="mt-0.5 text-xs text-muted-foreground/80"> {[formatDateOnly(episode.published_at), duration].filter(Boolean).join(" · ")} </p> <div className="mt-2 flex flex-wrap justify-end gap-1.5"> {episode.title_edited && ( <Chip tone="warning" icon={<IconPencil />}> {t`Tiêu đề đã sửa tay`} </Chip> )} <Chip tone={episode.is_visible ? "success" : "neutral"} icon={episode.is_visible ? <IconCheck /> : <IconBellOff />} > {episode.is_visible ? t`Đang hiện` : t`Đang ẩn`} </Chip> </div> </div> </button> </li> ); } function EpisodeForm({ episode, readOnly, onEdit, onCancel, onSaved, }: { episode: PodcastEpisode; readOnly: boolean; onEdit: () => void; onCancel: () => void; onSaved: () => void; }) { const qc = useQueryClient(); const toast = useToast(); const [title, setTitle] = useState(episode.title); const [visible, setVisible] = useState(episode.is_visible); const changed = title.trim() !== episode.title || visible !== episode.is_visible; const saveM = useMutation({ mutationFn: () => updatePodcastEpisode(episode.id, { ...(title.trim() !== episode.title ? { title: title.trim() } : {}), ...(visible !== episode.is_visible ? { is_visible: visible } : {}), }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-latest"] }); toast.success(t`Đã cập nhật tập`); onSaved(); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (changed && title.trim()) saveM.mutate(); }} > <ReadOnlyFieldset readOnly={readOnly}> <div className="space-y-1.5"> <Label htmlFor="ep-title" required> {t`Tiêu đề tập`} </Label> <Input id="ep-title" icon={<IconMicrophone />} value={title} onChange={(e) => setTitle(e.target.value)} /> </div> <div className="grid grid-cols-2 gap-3"> <div className="min-w-0 space-y-1.5"> <Label htmlFor="ep-date">{t`Ngày đăng`}</Label> <Input id="ep-date" icon={<IconCalendar />} value={formatDateOnly(episode.published_at) ?? ""} readOnly /> </div> <div className="min-w-0 space-y-1.5"> <Label htmlFor="ep-dur">{t`Thời lượng`}</Label> <Input id="ep-dur" icon={<IconClock />} value={formatDuration(episode.duration_seconds) ?? ""} readOnly /> </div> </div> <label className="flex items-start gap-3"> <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} className="mt-1 h-4 w-4 accent-primary" /> <span> <span className="font-medium">{t`Hiện trên trang Podcast`}</span> <span className="block text-sm text-muted-foreground"> {t`Bỏ chọn để ẩn tập không phù hợp (không xoá khỏi kho).`} </span> </span> </label> </ReadOnlyFieldset> <a href={episode.permalink_url} target="_blank" rel="noreferrer" className="inline-block text-sm text-primary hover:underline" > {t`Mở trên Facebook →`} </a> <ViewEditActions readOnly={readOnly} onEdit={onEdit} onCancel={onCancel} saving={saveM.isPending} canSave={changed && !!title.trim()} /> </form> ); } /** * Kết nối Facebook. * * Admin dán App ID + App Secret + token ngắn lấy từ Graph API Explorer; * máy chủ đổi sang token dài rồi lưu ở dạng mã hoá. Token KHÔNG bao giờ * quay ngược ra trình duyệt, và App Secret không được lưu lại ở đâu — nó * chỉ cần cho đúng lần đổi đó. * * Vì sao cho cắm trong app thay vì để env: đổi token là việc sẽ phải làm * lại nhiều lần (đổi mật khẩu Facebook là token chết), mà mỗi lần lại * phải ssh vào máy chủ thì sớm muộn cũng có lần không ai làm. */ function FacebookConnection() { const qc = useQueryClient(); const toast = useToast(); const [appId, setAppId] = useState(""); const [appSecret, setAppSecret] = useState(""); const [userToken, setUserToken] = useState(""); const [pages, setPages] = useState<{ id: string; name: string }[]>([]); const [open, setOpen] = useState(false); const statusQ = useQuery({ queryKey: ["fb-credential-status"], queryFn: () => getFbCredentialStatus(), }); const active = statusQ.data?.find((c) => c.is_active); const connectM = useMutation({ mutationFn: (pageId?: string) => connectFacebookPage({ appId, appSecret, userToken, pageId }), onSuccess: (r) => { if (r.needPage) { setPages(r.pages ?? []); toast.success(t`Tìm thấy ${r.pages?.length ?? 0} Trang — chọn một Trang`); return; } toast.success(t`Đã nối Trang ${r.pageName ?? ""}`); // Xoá khỏi bộ nhớ trình duyệt ngay khi xong việc. setAppSecret(""); setUserToken(""); setPages([]); setOpen(false); qc.invalidateQueries({ queryKey: ["fb-credential-status"] }); }, onError: (e) => toast.error(t`Không nối được`, { description: (e as Error).message }), }); const checkM = useMutation({ mutationFn: () => checkFacebookConnection(), onSuccess: (r) => { toast.success(t`Token còn tốt — Trang ${r.pageName}`); qc.invalidateQueries({ queryKey: ["fb-credential-status"] }); }, onError: (e) => { toast.error(t`Token không dùng được`, { description: (e as Error).message, }); qc.invalidateQueries({ queryKey: ["fb-credential-status"] }); }, }); return ( <section className="space-y-3 rounded-xl border bg-card shadow-sm p-3"> <div className="flex flex-wrap items-start justify-between gap-3"> <div className="min-w-0 text-sm"> <p className="font-medium">{t`Kết nối Facebook`}</p> {active ? ( <> <p className="text-muted-foreground"> Trang <span className="text-foreground">{active.page_name}</span>{" "} · token {active.hint} ·{" "} {active.token_expires_at ? t`hết hạn ${formatDateOnly(active.token_expires_at) ?? "?"}` : t`không hết hạn`} </p> {active.last_check_at && ( <p className="text-xs text-muted-foreground"> Kiểm tra gần nhất: {formatRelative(active.last_check_at)} —{" "} {active.last_check_ok ? t`tốt` : t`hỏng (${active.last_check_error ?? "?"})`} </p> )} </> ) : ( <p className="text-muted-foreground"> {t`Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi nối.`} </p> )} </div> </div> {active && !active.last_check_ok && active.last_check_error && ( <Alert variant="destructive"> <AlertDescription>{active.last_check_error}</AlertDescription> </Alert> )} {open && ( <div className="space-y-3 border-t pt-3"> <p className="text-xs text-muted-foreground"> <Trans> Lấy ở <span className="font-mono">developers.facebook.com</span>: App ID và App Secret trong Cài đặt › Cơ bản; token người dùng sinh {t`ở Graph API Explorer với quyền`}{" "} <span className="font-mono">pages_show_list</span>,{" "} <span className="font-mono">pages_read_engagement</span>,{" "} <span className="font-mono">pages_read_user_content</span>. Token ngắn hạn cũng được — máy chủ sẽ tự đổi sang loại dài hạn. </Trans> </p> <div className="grid grid-cols-1 gap-2 sm:grid-cols-2"> <label className="block space-y-1"> <span className="text-sm font-medium">App ID</span> <Input value={appId} onChange={(e) => setAppId(e.target.value)} placeholder="1671135124582219" /> </label> <label className="block space-y-1"> <span className="text-sm font-medium">App Secret</span> <Input type="password" value={appSecret} onChange={(e) => setAppSecret(e.target.value)} placeholder={t`không được lưu lại`} /> </label> </div> <label className="block space-y-1"> <span className="text-sm font-medium">{t`Token người dùng`}</span> <Input type="password" value={userToken} onChange={(e) => setUserToken(e.target.value)} placeholder="EAA…" /> </label> {pages.length > 0 && ( <div className="space-y-2"> <p className="text-sm font-medium">{t`Chọn Trang để lấy podcast:`}</p> <ul className="space-y-1"> {pages.map((pg) => ( <li key={pg.id}> <Button size="sm" variant="outline" className="w-full justify-start" onClick={() => connectM.mutate(pg.id)} disabled={connectM.isPending} > {pg.name} </Button> </li> ))} </ul> </div> )} {pages.length === 0 && ( <Button size="sm" onClick={() => connectM.mutate(undefined)} disabled={ connectM.isPending || !appId || !appSecret || !userToken } > {connectM.isPending ? t`Đang nối…` : t`Đọc danh sách Trang`} </Button> )} </div> )} <div className="flex flex-wrap justify-end gap-2 border-t pt-3"> {active && ( <Button size="sm" variant="outline" onClick={() => checkM.mutate()} disabled={checkM.isPending} > {checkM.isPending ? t`Đang kiểm tra…` : t`Kiểm tra token`} </Button> )} <Button size="sm" variant={active ? "outline" : "default"} onClick={() => setOpen((v) => !v)}> {open ? t`Đóng` : active ? t`Nối lại` : t`Nối Trang`} </Button> </div> </section> ); } 
+#. placeholder {0}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { Chip } from "@/components/Chip"; import { CollapsibleFilters } from "@/components/CollapsibleFilters"; import { EmptyState } from "@/components/EmptyState"; import { IconTile } from "@/components/IconTile"; import { IconBellOff, IconCalendar, IconCheck, IconClock, IconMicrophone, IconPencil, IconRefresh, IconSearch, IconTag, } from "@/components/icons"; import { Pagination } from "@/components/Pagination"; import { SearchInput } from "@/components/SearchInput"; import { SidePanel } from "@/components/SidePanel"; import { useToast } from "@/components/Toast"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { Input } from "@/components/ui/input"; import { Label } from "@/components/ui/label"; import { ReadOnlyFieldset } from "@/components/ui/readonly-fieldset"; import { Select } from "@/components/ui/select"; import { ViewEditActions } from "@/components/ui/view-edit-actions"; import { LIST_PAGE_SIZE_OPTIONS, useClientPaging } from "@/hooks/useClientPaging"; import { unaccent } from "@/lib/unaccent"; import { formatDateOnly, formatRelative } from "@/lib/formatDate"; import { checkFacebookConnection, connectFacebookPage, formatDuration, getFbCredentialStatus, getPodcastSyncStatus, listAllPodcastEpisodes, syncPodcastNow, updatePodcastEpisode, type PodcastEpisode, } from "@/lib/queries/podcast"; import { AdminShell } from "@/pages/admin/AdminShell"; import { t } from "@lingui/core/macro"; import { Trans } from "@lingui/react/macro"; /** * Quản trị Podcast: xem các tập đã kéo về, ẩn tập không phù hợp, sửa tiêu * đề, và bấm đồng bộ tay khi không muốn chờ cron. * * Phần quan trọng nhất lại là dòng nhỏ nhất: MỐC ĐỒNG BỘ GẦN NHẤT. Token * Facebook chết là chuyện sẽ xảy ra (đổi mật khẩu, gỡ app, Meta đổi luật) * — và nó chết âm thầm: app vẫn chạy, chỉ là không bao giờ có tập mới. * Không hiện mốc này thì vài tháng sau mới có người để ý. */ /** Quá số ngày này không đồng bộ được thì coi như hỏng, không phải "chưa tới giờ". */ const STALE_DAYS = 3; export default function PodcastPage() { const qc = useQueryClient(); const toast = useToast(); const episodesQ = useQuery({ queryKey: ["podcast-admin-episodes"], queryFn: () => listAllPodcastEpisodes(), }); const statusQ = useQuery({ queryKey: ["podcast-sync-status"], queryFn: () => getPodcastSyncStatus(), }); const syncM = useMutation({ mutationFn: () => syncPodcastNow(), onSuccess: (r) => { toast.success( t`Đã đồng bộ: ${r.inserted} tập mới, ${r.updated} tập cập nhật`, ); qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-sync-status"] }); qc.invalidateQueries({ queryKey: ["podcast-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-latest"] }); }, onError: (e) => toast.error(t`Đồng bộ hỏng`, { description: (e as Error).message }), }); const [search, setSearch] = useState(""); const [visibility, setVisibility] = useState<"" | "visible" | "hidden">(""); const [panel, setPanel] = useState<EpisodePanel>(null); const episodes = episodesQ.data ?? []; const filtered = useMemo(() => { const needle = unaccent(search.trim()); return episodes.filter( (ep) => (visibility === "" || (visibility === "visible") === ep.is_visible) && (!needle || unaccent(ep.title).includes(needle)), ); }, [episodes, search, visibility]); const paging = useClientPaging(filtered, 20); const status = statusQ.data; const lastSync = status?.lastSyncAt ? new Date(status.lastSyncAt) : null; const staleDays = lastSync ? (Date.now() - lastSync.getTime()) / 86_400_000 : Infinity; return ( <AdminShell icon={<IconMicrophone className="h-7 w-7" />} title="Podcast" description={t`Các tập kéo về từ Trang Facebook. Ẩn tập không phù hợp, sửa tiêu đề, đồng bộ lại.`} > <div className="space-y-4"> <FacebookConnection /> <section className="overflow-hidden rounded-xl border bg-card shadow-sm"> <div className="p-3 text-sm"> <p className="font-medium"> {lastSync ? t`Đồng bộ gần nhất: ${formatRelative(status!.lastSyncAt!) ?? "?"}` : t`Chưa đồng bộ lần nào`} </p> {lastSync && ( <p className="text-xs text-muted-foreground"> {lastSync.toLocaleString("vi-VN")} </p> )} </div> {/* Hành động của cả thẻ nằm ở chân thẻ — docs/design-language.md. */} <div className="flex justify-end gap-2 border-t p-3"> <Button size="sm" type="button" onClick={() => syncM.mutate()} disabled={syncM.isPending}> <IconRefresh className={`mr-1.5 h-4 w-4 ${syncM.isPending ? "animate-spin" : ""}`} /> {syncM.isPending ? t`Đang đồng bộ…` : t`Đồng bộ ngay`} </Button> </div> </section> {status?.lastError && ( <Alert variant="destructive"> <AlertDescription> {t`Lần đồng bộ gần nhất báo lỗi: ${status.lastError}`} </AlertDescription> </Alert> )} {!status?.lastError && staleDays > STALE_DAYS && ( <Alert variant="destructive"> <AlertDescription> {lastSync ? t`Đã ${Math.floor(staleDays)} ngày không đồng bộ được tập nào. Token Facebook có thể đã hết hạn — kiểm tra biến FB_PAGE_TOKEN.` : t`Chưa chạy đồng bộ lần nào. Kiểm tra FB_PAGE_ID / FB_PAGE_TOKEN và lịch cron.`} </AlertDescription> </Alert> )} <CollapsibleFilters activeCount={visibility ? 1 : 0} onReset={() => { setVisibility(""); paging.patchAndResetPage({}); }} title={t`Lọc tập`} search={(toggle) => ( <SearchInput label={t`Tìm tập`} value={search} onChange={(e) => { setSearch(e.target.value); paging.patchAndResetPage({}); }} placeholder={t`Tìm theo tiêu đề tập…`} rightSlot={toggle} /> )} > <div className="flex flex-col gap-3"> <Select value={visibility} onChange={(e) => { setVisibility(e.target.value as "" | "visible" | "hidden"); paging.patchAndResetPage({}); }} aria-label={t`Lọc theo hiển thị`} icon={<IconTag />} className="h-11 w-full text-base" > <option value="">{t`Cả hiện và ẩn`}</option> <option value="visible">{t`Đang hiện`}</option> <option value="hidden">{t`Đang ẩn`}</option> </Select> </div> </CollapsibleFilters> {episodesQ.isLoading && ( <div className="rounded-xl border bg-card p-4 shadow-sm"> <p className="text-muted-foreground">{t`Đang tải…`}</p> </div> )} {!episodesQ.isLoading && filtered.length === 0 && ( <EmptyState icon={<IconSearch className="h-10 w-10" />} title={episodes.length === 0 ? t`Chưa có tập nào trong kho` : t`Không có tập nào khớp`} description={ episodes.length === 0 ? t`Bấm "Đồng bộ ngay" để kéo về.` : t`Thử bỏ bớt bộ lọc hoặc từ khoá.` } /> )} {filtered.length > 0 && ( <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm"> {paging.paged.map((ep) => ( <EpisodeRowItem key={ep.id} episode={ep} onOpen={() => setPanel({ mode: "view", episode: ep })} /> ))} </ul> )} {filtered.length > 0 && ( <Pagination page={paging.page} totalPages={paging.totalPages} total={paging.total} pageSize={paging.pageSize} unit={t`tập`} onPageChange={paging.setPage} pageSizeOptions={LIST_PAGE_SIZE_OPTIONS} onPageSizeChange={paging.setPageSize} /> )} <SidePanel open={panel !== null} title={panel?.mode === "edit" ? t`Sửa tập` : t`Tập podcast`} subtitle={panel?.episode.title} onClose={() => setPanel(null)} guard={panel?.mode === "edit"} > {panel && ( <EpisodeForm key={`${panel.mode}-${panel.episode.id}`} episode={panel.episode} readOnly={panel.mode === "view"} onEdit={() => setPanel({ mode: "edit", episode: panel.episode })} onCancel={() => setPanel(panel.mode === "edit" ? { mode: "view", episode: panel.episode } : null) } onSaved={() => setPanel(null)} /> )} </SidePanel> </div> </AdminShell> ); } /** Trạng thái ngăn kéo: xem (chỉ đọc) hoặc sửa một tập. */ type EpisodePanel = { mode: "view" | "edit"; episode: PodcastEpisode } | null; function EpisodeRowItem({ episode, onOpen }: { episode: PodcastEpisode; onOpen: () => void }) { const duration = formatDuration(episode.duration_seconds); return ( <li className={episode.is_visible ? "" : "bg-muted/30"}> <button type="button" onClick={onOpen} className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40" > {/* Ảnh bìa ngay trong danh sách: admin cần NHÌN THẤY cái mà người dùng sẽ thấy, nhất là khi ảnh bìa lấy từ Facebook và URL có hạn dùng — hỏng ảnh thì phải phát hiện ở đây. */} {episode.thumbnail_url ? ( <img src={episode.thumbnail_url} alt="" loading="lazy" className="min-h-14 w-14 shrink-0 self-stretch rounded-lg border object-cover" /> ) : ( <IconTile icon={IconMicrophone} tone="violet" /> )} <div className="min-w-0 flex-1"> <p className="line-clamp-2 font-medium leading-snug">{episode.title}</p> <p className="mt-0.5 text-xs text-muted-foreground/80"> {[formatDateOnly(episode.published_at), duration].filter(Boolean).join(" · ")} </p> <div className="mt-2 flex flex-wrap justify-end gap-1.5"> {episode.title_edited && ( <Chip tone="warning" icon={<IconPencil />}> {t`Tiêu đề đã sửa tay`} </Chip> )} <Chip tone={episode.is_visible ? "success" : "neutral"} icon={episode.is_visible ? <IconCheck /> : <IconBellOff />} > {episode.is_visible ? t`Đang hiện` : t`Đang ẩn`} </Chip> </div> </div> </button> </li> ); } function EpisodeForm({ episode, readOnly, onEdit, onCancel, onSaved, }: { episode: PodcastEpisode; readOnly: boolean; onEdit: () => void; onCancel: () => void; onSaved: () => void; }) { const qc = useQueryClient(); const toast = useToast(); const [title, setTitle] = useState(episode.title); const [visible, setVisible] = useState(episode.is_visible); const changed = title.trim() !== episode.title || visible !== episode.is_visible; const saveM = useMutation({ mutationFn: () => updatePodcastEpisode(episode.id, { ...(title.trim() !== episode.title ? { title: title.trim() } : {}), ...(visible !== episode.is_visible ? { is_visible: visible } : {}), }), onSuccess: () => { qc.invalidateQueries({ queryKey: ["podcast-admin-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-episodes"] }); qc.invalidateQueries({ queryKey: ["podcast-latest"] }); toast.success(t`Đã cập nhật tập`); onSaved(); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (changed && title.trim()) saveM.mutate(); }} > <ReadOnlyFieldset readOnly={readOnly}> <div className="space-y-1.5"> <Label htmlFor="ep-title" required> {t`Tiêu đề tập`} </Label> <Input id="ep-title" icon={<IconMicrophone />} value={title} onChange={(e) => setTitle(e.target.value)} /> </div> <div className="grid grid-cols-2 gap-3"> <div className="min-w-0 space-y-1.5"> <Label htmlFor="ep-date">{t`Ngày đăng`}</Label> <Input id="ep-date" icon={<IconCalendar />} value={formatDateOnly(episode.published_at) ?? ""} readOnly /> </div> <div className="min-w-0 space-y-1.5"> <Label htmlFor="ep-dur">{t`Thời lượng`}</Label> <Input id="ep-dur" icon={<IconClock />} value={formatDuration(episode.duration_seconds) ?? ""} readOnly /> </div> </div> <label className="flex items-start gap-3"> <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} className="mt-1 h-4 w-4 accent-primary" /> <span> <span className="font-medium">{t`Hiện trên trang Podcast`}</span> <span className="block text-sm text-muted-foreground"> {t`Bỏ chọn để ẩn tập không phù hợp (không xoá khỏi kho).`} </span> </span> </label> </ReadOnlyFieldset> <a href={episode.permalink_url} target="_blank" rel="noreferrer" className="inline-block text-sm text-primary hover:underline" > {t`Mở trên Facebook →`} </a> <ViewEditActions readOnly={readOnly} onEdit={onEdit} onCancel={onCancel} saving={saveM.isPending} canSave={changed && !!title.trim()} /> </form> ); } /** * Kết nối Facebook. * * Admin dán App ID + App Secret + token ngắn lấy từ Graph API Explorer; * máy chủ đổi sang token dài rồi lưu ở dạng mã hoá. Token KHÔNG bao giờ * quay ngược ra trình duyệt, và App Secret không được lưu lại ở đâu — nó * chỉ cần cho đúng lần đổi đó. * * Vì sao cho cắm trong app thay vì để env: đổi token là việc sẽ phải làm * lại nhiều lần (đổi mật khẩu Facebook là token chết), mà mỗi lần lại * phải ssh vào máy chủ thì sớm muộn cũng có lần không ai làm. */ function FacebookConnection() { const qc = useQueryClient(); const toast = useToast(); const [appId, setAppId] = useState(""); const [appSecret, setAppSecret] = useState(""); const [userToken, setUserToken] = useState(""); const [pages, setPages] = useState<{ id: string; name: string }[]>([]); const [open, setOpen] = useState(false); const statusQ = useQuery({ queryKey: ["fb-credential-status"], queryFn: () => getFbCredentialStatus(), }); const active = statusQ.data?.find((c) => c.is_active); const connectM = useMutation({ mutationFn: (pageId?: string) => connectFacebookPage({ appId, appSecret, userToken, pageId }), onSuccess: (r) => { if (r.needPage) { setPages(r.pages ?? []); toast.success(t`Tìm thấy ${r.pages?.length ?? 0} Trang — chọn một Trang`); return; } toast.success(t`Đã nối Trang ${r.pageName ?? ""}`); // Xoá khỏi bộ nhớ trình duyệt ngay khi xong việc. setAppSecret(""); setUserToken(""); setPages([]); setOpen(false); qc.invalidateQueries({ queryKey: ["fb-credential-status"] }); }, onError: (e) => toast.error(t`Không nối được`, { description: (e as Error).message }), }); const checkM = useMutation({ mutationFn: () => checkFacebookConnection(), onSuccess: (r) => { toast.success(t`Token còn tốt — Trang ${r.pageName}`); qc.invalidateQueries({ queryKey: ["fb-credential-status"] }); }, onError: (e) => { toast.error(t`Token không dùng được`, { description: (e as Error).message, }); qc.invalidateQueries({ queryKey: ["fb-credential-status"] }); }, }); return ( <section className="space-y-3 rounded-xl border bg-card shadow-sm p-3"> <div className="flex flex-wrap items-start justify-between gap-3"> <div className="min-w-0 text-sm"> <p className="font-medium">{t`Kết nối Facebook`}</p> {active ? ( <> <p className="text-muted-foreground"> Trang <span className="text-foreground">{active.page_name}</span>{" "} · token {active.hint} ·{" "} {active.token_expires_at ? t`hết hạn ${formatDateOnly(active.token_expires_at) ?? "?"}` : t`không hết hạn`} </p> {active.last_check_at && ( <p className="text-xs text-muted-foreground"> Kiểm tra gần nhất: {formatRelative(active.last_check_at)} —{" "} {active.last_check_ok ? t`tốt` : t`hỏng (${active.last_check_error ?? "?"})`} </p> )} </> ) : ( <p className="text-muted-foreground"> {t`Chưa nối Trang nào. Đồng bộ sẽ không chạy cho tới khi nối.`} </p> )} </div> </div> {active && !active.last_check_ok && active.last_check_error && ( <Alert variant="destructive"> <AlertDescription>{active.last_check_error}</AlertDescription> </Alert> )} {open && ( <div className="space-y-3 border-t pt-3"> <p className="text-xs text-muted-foreground"> <Trans> Lấy ở <span className="font-mono">developers.facebook.com</span>: App ID và App Secret trong Cài đặt › Cơ bản; token người dùng sinh {t`ở Graph API Explorer với quyền`}{" "} <span className="font-mono">pages_show_list</span>,{" "} <span className="font-mono">pages_read_engagement</span>,{" "} <span className="font-mono">pages_read_user_content</span>. Token ngắn hạn cũng được — máy chủ sẽ tự đổi sang loại dài hạn. </Trans> </p> <div className="grid grid-cols-1 gap-2 sm:grid-cols-2"> <label className="block space-y-1"> <span className="text-sm font-medium">App ID</span> <Input value={appId} onChange={(e) => setAppId(e.target.value)} placeholder="1671135124582219" /> </label> <label className="block space-y-1"> <span className="text-sm font-medium">App Secret</span> <Input type="password" value={appSecret} onChange={(e) => setAppSecret(e.target.value)} placeholder={t`không được lưu lại`} /> </label> </div> <label className="block space-y-1"> <span className="text-sm font-medium">{t`Token người dùng`}</span> <Input type="password" value={userToken} onChange={(e) => setUserToken(e.target.value)} placeholder="EAA…" /> </label> {pages.length > 0 && ( <div className="space-y-2"> <p className="text-sm font-medium">{t`Chọn Trang để lấy podcast:`}</p> <ul className="space-y-1"> {pages.map((pg) => ( <li key={pg.id}> <Button size="sm" variant="outline" className="w-full justify-start" onClick={() => connectM.mutate(pg.id)} disabled={connectM.isPending} > {pg.name} </Button> </li> ))} </ul> </div> )} {pages.length === 0 && ( <Button size="sm" onClick={() => connectM.mutate(undefined)} disabled={ connectM.isPending || !appId || !appSecret || !userToken } > {connectM.isPending ? t`Đang nối…` : t`Đọc danh sách Trang`} </Button> )} </div> )} <div className="flex flex-wrap justify-end gap-2 border-t pt-3"> {active && ( <Button size="sm" variant="outline" onClick={() => checkM.mutate()} disabled={checkM.isPending} > {checkM.isPending ? t`Đang kiểm tra…` : t`Kiểm tra token`} </Button> )} <Button size="sm" variant={active ? "outline" : "default"} onClick={() => setOpen((v) => !v)}> {open ? t`Đóng` : active ? t`Nối lại` : t`Nối Trang`} </Button> </div> </section> ); } 
 #: src/pages/admin/PodcastPage.tsx
 msgid "Lấy ở <0>developers.facebook.com</0>: App ID và App Secret trong Cài đặt › Cơ bản; token người dùng sinh{0} <1>pages_show_list</1>, <2>pages_read_engagement</2>, <3>pages_read_user_content</3>. Token ngắn hạn cũng được — máy chủ sẽ tự đổi sang loại dài hạn."
 msgstr "Get these at <0>developers.facebook.com</0>: the App ID and App Secret under Settings › Basic; a user token generated{0} <1>pages_show_list</1>, <2>pages_read_engagement</2>, <3>pages_read_user_content</3>. A short-lived token is fine — the server will swap it for a long-lived one."
@@ -8656,6 +8753,10 @@ msgstr "Invite link"
 #: src/pages/JoinClan.tsx
 msgid "Link mời không hợp lệ"
 msgstr "Invalid invite link"
+
+#: src/lib/queries/heritage.ts
+msgid "Link phải bắt đầu bằng https:// và là địa chỉ hợp lệ."
+msgstr "The link must start with https:// and be a valid address."
 
 #: src/lib/queries/restingPlaces.ts
 msgid "Lô – hàng – số"
@@ -9971,6 +10072,10 @@ msgstr "Background: Dragon"
 msgid "Nét đứt"
 msgstr "Dashed"
 
+#: src/lib/tipCatalogue.ts
+msgid "Nếu đã có danh sách trong Excel, có thể nhập hàng loạt thay vì gõ từng người."
+msgstr "If you already have a list in Excel, you can import it in bulk instead of typing each person."
+
 #: src/pages/ForgotPassword.tsx
 msgid "Nếu email có trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu. Kiểm tra hộp thư (cả thư mục spam) và bấm vào liên kết để đặt mật khẩu mới."
 msgstr "If that email is in our system, we've sent a password reset link. Check your inbox (and your spam folder) and click the link to set a new password."
@@ -10575,6 +10680,7 @@ msgstr "Import data from an outside source into a clan."
 msgid "Nhập email để nhận liên kết đặt lại mật khẩu"
 msgstr "Enter your email to receive a password reset link"
 
+#: src/lib/tipCatalogue.ts
 #: src/pages/clan/Dashboard.tsx
 msgid "Nhập Excel"
 msgstr "Import Excel"
@@ -10814,6 +10920,10 @@ msgstr "Content of this section…"
 msgid "Nội dung dòng họ"
 msgstr "Clan content"
 
+#: src/pages/clan/AiGenerate.tsx
+msgid "Nội dung không giống GEDCOM (phải bắt đầu bằng \"0 HEAD\"). Có thể AI trả về CSV — đổi định dạng ở mục 1."
+msgstr "The content doesn't look like GEDCOM (it must start with \"0 HEAD\"). The AI may have returned CSV — change the format in step 1."
+
 #: src/pages/Customs.tsx
 msgid "Nội dung mang tính tham khảo; phong tục có thể khác nhau theo vùng."
 msgstr "The content is for reference only; customs may differ by region."
@@ -11025,6 +11135,10 @@ msgstr "Buddhism"
 #: src/pages/admin/Feedback.tsx
 msgid "Phiên bản"
 msgstr "Version"
+
+#: src/lib/tipCatalogue.ts
+msgid "Phiên bản mới đã sẵn sàng. Tải lại trang để áp dụng."
+msgstr "A new version is ready. Reload the page to apply it."
 
 #: src/components/ErrorState.tsx
 msgid "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
@@ -12089,6 +12203,7 @@ msgstr "Create a family tree for your clan — free, in just a few minutes."
 msgid "Tạo cây mới"
 msgstr "Create a new tree"
 
+#: src/lib/tipCatalogue.ts
 #: src/pages/Clans.tsx
 #: src/pages/Clans.tsx
 #: src/pages/NewClan.tsx
@@ -12801,6 +12916,10 @@ msgstr "Add site"
 msgid "Thêm con"
 msgstr "Add child"
 
+#: src/lib/tipCatalogue.ts
+msgid "Thêm con / vợ-chồng nhanh"
+msgstr "Quickly add a child / spouse"
+
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Heritage.tsx
 msgid "Thêm di sản"
@@ -12875,6 +12994,7 @@ msgstr "Add heritage entry"
 #: src/components/panel/PanelHost.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/lib/pageTitle.ts
+#: src/lib/tipCatalogue.ts
 #: src/pages/clan/Contributions.tsx
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/NewPerson.tsx
@@ -13980,6 +14100,10 @@ msgstr "The token can't be used"
 msgid "Token người dùng"
 msgstr "User token"
 
+#: src/lib/tipCatalogue.ts
+msgid "Tombstone ghi ngày âm — bấm 'Nhập theo lịch Âm' khi sửa người."
+msgstr "The gravestone shows a lunar date — tap 'Enter by lunar calendar' when editing the person."
+
 #: src/lib/queries/customs.ts
 msgid "Tôn giáo"
 msgstr "Religion"
@@ -14068,6 +14192,10 @@ msgstr "Cost ceiling / day (USD)"
 msgid "Trắng"
 msgstr "White"
 
+#: src/lib/tipCatalogue.ts
+msgid "Trang 'Việc cần làm' tự dò chỗ thiếu năm sinh / cha mẹ — cả họ cùng bổ sung dần."
+msgstr "The 'To-do' page automatically finds missing birth years / parents — the whole clan fills them in gradually."
+
 #: src/components/ShareLinksSection.tsx
 #: src/pages/Share.tsx
 msgid "Trang cá nhân"
@@ -14123,9 +14251,21 @@ msgstr "An ink-wash painting as the app background, on this device only."
 msgid "Trễ TB"
 msgstr "Avg latency"
 
+#: src/lib/tipCatalogue.ts
+msgid "Trên cây gia phả, người đầu tiên cần thêm là Thuỷ tổ (đời 1)."
+msgstr "On the family tree, the first person to add is the founding ancestor (generation 1)."
+
+#: src/lib/tipCatalogue.ts
+msgid "Trên cây, bấm dấu + ở góc card — sheet thêm người mở ngay không phải rời cây."
+msgstr "On the tree, tap the + on a card's corner — the add-person sheet opens right away without leaving the tree."
+
 #: src/pages/Account.tsx
 msgid "Trên iOS, để nhận thông báo đẩy, cần"
 msgstr "On iOS, to receive push notifications you need to"
+
+#: src/lib/tipCatalogue.ts
+msgid "Trên trang cây, bấm 'Chia sẻ' để tạo link người trong họ xem được."
+msgstr "On the tree page, tap 'Share' to create a link that clan members can view."
 
 #: src/components/HistoricalPersonSections.tsx
 msgid "Trị vì & tước hiệu"
@@ -15214,6 +15354,10 @@ msgstr "Preview — {0} articles, {1} will be created"
 #: src/components/ClanFormFields.tsx
 msgid "Xem từ đường, tục lệ, giai thoại, kỷ vật kèm ảnh."
 msgstr "View the ancestral hall, customs, tales and keepsakes, with photos."
+
+#: src/lib/tipCatalogue.ts
+msgid "Xem việc"
+msgstr "View tasks"
 
 #: src/components/admin/AiSettingsTab.tsx
 #: src/components/admin/AiSettingsTab.tsx
