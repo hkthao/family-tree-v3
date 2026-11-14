@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { ClanLayout } from "@/components/ClanLayout";
+import { TodayRedirect } from "@/pages/clan/TodayRedirect";
 import { FeatureGuard } from "@/components/FeatureGuard";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
 import { CriticalBanner } from "@/components/CriticalBanner";
@@ -99,7 +100,6 @@ const PersonDetail = lazy(() => import("@/pages/clan/PersonDetail"));
 const QrExport = lazy(() => import("@/pages/clan/QrExport"));
 const Settings = lazy(() => import("@/pages/clan/Settings"));
 const BookInfo = lazy(() => import("@/pages/clan/BookInfo"));
-const Today = lazy(() => import("@/pages/clan/Today"));
 const Todo = lazy(() => import("@/pages/clan/Todo"));
 const Tools = lazy(() => import("@/pages/clan/Tools"));
 const Tree = lazy(() => import("@/pages/clan/Tree"));
@@ -427,7 +427,7 @@ export default function App() {
                 <Route path="audit" element={<Audit />} />
                 <Route path="qr-export" element={<QrExport />} />
                 <Route path="my-lineage" element={<MyLineage />} />
-                <Route path="today" element={<Today />} />
+                <Route path="today" element={<TodayRedirect />} />
                 <Route path="xem-ngay" element={<GoodDays />} />
                 <Route path="todo" element={<Todo />} />
                 <Route path="tools" element={<Tools />} />

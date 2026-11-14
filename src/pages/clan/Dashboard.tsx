@@ -1,6 +1,8 @@
 import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { NextStepCard } from "@/components/NextStepCard";
+import { PodcastTodayCard } from "@/components/PodcastTodayCard";
+import { upcomingFestivals } from "@/lib/festivals";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -8,7 +10,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 
 import {
-  IconCalendar,
   IconCamera,
   IconCheck,
   IconDownload,
@@ -168,24 +169,23 @@ export default function Dashboard() {
     staleTime: 60_000,
   });
 
-  // Bumped to a year so the calendar (below) has data across months.
-  // The flat "next 5" list still slices the top of this list.
-  const upcoming: UpcomingEvent[] = useMemo(() => {
+  // Sự kiện 30 ngày tới cho thẻ "Hôm nay". Lễ tết ghép ở TẦNG HIỂN THỊ (không nằm trong computeUpcomingEvents —
+  // hàm đó là nguồn cho cron gửi mail, mà không ai đăng ký nhận thư nhắc Trung Thu).
+  const cardEvents: UpcomingEvent[] = useMemo(() => {
     if (!tree || !events || !anniversaries) return [];
     const today = new Date();
-    const a = computeUpcomingEvents({
-      today,
-      daysAhead: 365,
-      persons: tree.persons,
-      events,
-    });
+    const a = computeUpcomingEvents({ today, daysAhead: 30, persons: tree.persons, events });
     const b = computeUpcomingAnniversaries({
       today,
-      daysAhead: 365,
+      daysAhead: 30,
       anniversaries,
       generationOffset: clan.generation_offset,
     });
-    return [...a, ...b].sort((x, y) => x.daysUntil - y.daysUntil);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const iso = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+    return [...a, ...b, ...upcomingFestivals(iso, 30)].sort(
+      (x, y) => x.daysUntil - y.daysUntil || x.title.localeCompare(y.title, "vi"),
+    );
   }, [tree, events, anniversaries, clan.generation_offset]);
   const nextStepInput = useMemo(
     () => ({
@@ -199,8 +199,6 @@ export default function Dashboard() {
     }),
     [tree, todoSummary, contentCounts, events, canEdit, clan.disabled_features, aiOn],
   );
-  const upcomingTop5 = upcoming.slice(0, 5);
-  const todayEvents = upcoming.filter((e) => e.daysUntil === 0);
 
   return (
     <div className="space-y-4">
@@ -255,6 +253,12 @@ export default function Dashboard() {
           </div>
         }
       />
+
+      {/* Thẻ "Hôm nay" — GỘP trang Hôm nay cũ, đặt ĐẦU TIÊN ngay dưới tiêu đề (trên cả mô tả, liên kết họ): lịch
+          âm/ngày tốt xấu, giỗ & sinh nhật & lễ tết hôm nay / 7 ngày / 30 ngày. Đổi mỗi ngày → lý do mở app hằng ngày. */}
+      {tree && tree.persons.length > 0 && (
+        <TodayHubCard clanId={clan.id} events={cardEvents} />
+      )}
 
       {showWelcome && (
         <section
@@ -435,30 +439,6 @@ export default function Dashboard() {
           {/* Bản đồ dòng họ: nơi ở của con cháu, mộ phần, di sản theo tỉnh — ngay dưới số liệu. */}
           {isMember && <MapOverviewCard clanId={clan.id} />}
 
-          {/* Sự kiện sắp tới — ưu tiên cao: nhắc giỗ/sinh nhật sắp đến. */}
-          {upcomingTop5.length > 0 && (
-            <SectionCard
-              id="events"
-              icon={<IconCalendar />}
-              title={t`Sự kiện sắp tới`}
-              footer={
-                <Link
-                  to={`/clans/${clan.id}/events`}
-                  className="shrink-0 text-sm text-primary hover:underline"
-                >
-                  {t`Xem tất cả →`}
-                </Link>
-              }
-            >
-              {/* Desktop: 2 cột cho gọn (mỗi sự kiện 1 hàng phí chỗ ngang). */}
-              <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                {upcomingTop5.map((e) => (
-                  <UpcomingRow key={e.key} event={e} clanId={clan.id} />
-                ))}
-              </ul>
-            </SectionCard>
-          )}
-
           {/* Thao tác nhanh — điều hướng chính, đưa lên cao. */}
           <SectionCard id="quick" icon={<IconGrid />} title={t`Thao tác nhanh`}>
             {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop
@@ -581,9 +561,7 @@ export default function Dashboard() {
             />
           )}
 
-          {/* Thẻ "Hôm nay" — đổi mỗi ngày (âm lịch, ngày tốt/xấu, giỗ/sinh
-              nhật hôm nay, phong tục hôm nay) → tạo lý do mở app hằng ngày. */}
-          <TodayHubCard clanId={clan.id} todayEvents={todayEvents} />
+          <PodcastTodayCard />
 
           {effectiveRole(clan) !== null && (
             <RecentActivityPanel clanId={clan.id} />
@@ -694,95 +672,6 @@ function ExportPdfTile({ clan }: { clan: ClanDetail }) {
         {busy ? t`Đang xuất…` : t`Xuất PDF`}
       </span>
     </button>
-  );
-}
-
-function UpcomingRow({
-  event,
-  clanId,
-}: {
-  event: UpcomingEvent;
-  clanId: string;
-}) {
-  const dt = new Date(event.date + "T00:00:00");
-  const day = dt.getDate();
-  const month = dt.getMonth() + 1;
-  const countdown =
-    event.daysUntil === 0
-      ? t`Hôm nay`
-      : event.daysUntil === 1
-        ? t`Ngày mai`
-        : t`Còn ${event.daysUntil} ngày`;
-
-  // Strip the kind prefix from the title so the redesigned row can
-  // present "person name (top)" + "kind label (subtitle)" without
-  // repeating "Sinh nhật" 5 times down the column. For custom events
-  // the title doesn't have a prefix, so it's left intact.
-  let mainText = event.title;
-  if (event.kind === "birthday" && mainText.startsWith("Sinh nhật ")) {
-    mainText = mainText.slice("Sinh nhật ".length);
-  } else if (event.kind === "anniversary" && mainText.startsWith("Giỗ ")) {
-    mainText = mainText.slice("Giỗ ".length);
-  }
-
-  const kindLabel =
-    event.kind === "birthday"
-      ? t`Sinh nhật`
-      : event.kind === "anniversary"
-        ? t`Ngày giỗ`
-        : t`Sự kiện`;
-
-  const stampColor =
-    event.kind === "birthday"
-      ? "bg-primary/10 text-primary"
-      : event.kind === "anniversary"
-        ? "bg-muted text-muted-foreground"
-        : "bg-accent/15 text-accent";
-
-  const inner = (
-    <div className="flex items-center gap-3 p-2.5 rounded-md border bg-card hover:border-primary transition-colors">
-      <div
-        className={`shrink-0 w-12 text-center rounded-md py-1 ${stampColor}`}
-      >
-        <div className="text-xs uppercase tracking-wider leading-none">
-          Th{month}
-        </div>
-        <div className="text-lg font-semibold leading-tight">{day}</div>
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="font-medium truncate">{mainText}</p>
-        <p className="text-xs text-muted-foreground truncate">
-          {kindLabel}
-          {event.subtitle ? ` · ${event.subtitle}` : ""}
-        </p>
-      </div>
-      <span
-        className={`text-xs whitespace-nowrap shrink-0 ${
-          event.daysUntil === 0
-            ? "text-primary font-semibold"
-            : event.daysUntil <= 7
-              ? "text-accent font-medium"
-              : "text-muted-foreground"
-        }`}
-      >
-        {countdown}
-      </span>
-    </div>
-  );
-
-  return (
-    <li>
-      {event.personId ? (
-        <Link
-          to={`/clans/${clanId}/people/${event.personId}`}
-          className="block"
-        >
-          {inner}
-        </Link>
-      ) : (
-        inner
-      )}
-    </li>
   );
 }
 

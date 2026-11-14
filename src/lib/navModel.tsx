@@ -25,7 +25,6 @@ import {
   IconSettings,
   IconShield,
   IconSparkles,
-  IconSun,
   IconTree,
   IconUserPlus,
   IconUsers,
@@ -397,13 +396,7 @@ export function buildSections(
         icon: <IconCalendar className={ic} />,
       });
     }
-    if (canTree) {
-      topItems.push({
-        to: `/clans/${clanId}/today`,
-        label: t`Hôm nay`,
-        icon: <IconSun className={ic} />,
-      });
-    }
+    // "Hôm nay" đã gộp thành một thẻ ở ĐẦU trang Tổng quan; `/today` (link trong email, push) chuyển hướng về đó.
     sections.push({
       id: "clan-core",
       label: clan.name,
@@ -579,8 +572,8 @@ export function menuHubPath(clanId: string): string {
 
 /**
  * Menu trái rút gọn: CHỈ nhóm lõi của dòng họ (Tổng quan, Cây, Danh bạ, Tra cứu quan hệ, Sự kiện, Hôm nay)
- * + một mục "Tất cả tính năng" mở trang hub chứa mọi mục còn lại (trừ nhóm Quản trị hệ thống: của riêng admin
- * nền tảng nên ở lại menu trái). Menu trước đây dài ~25 mục, trên điện thoại
+ * + một mục "Tất cả tính năng" mở trang hub chứa các mục còn lại. Thứ tự menu trái: Gia phả → Chung → Quản trị
+ * hệ thống (hai nhóm sau ở lại menu trái, không đưa vào hub). Menu trước đây dài ~25 mục, trên điện thoại
  * phải cuộn mới thấy cuối; trang hub thì nhóm theo việc, mỗi ô một icon, dễ nhìn và dễ tìm hơn.
  *
  * Mục hub mang badge TỔNG của các nhóm đã gập vào (việc cần làm, liên kết chờ…) — badge giấu trong
@@ -592,9 +585,13 @@ export function toDrawerSections(
 ): DrawerSection[] {
   const core = sections.find((x) => x.id === "clan-core");
   if (!clanId || !core) return sections;
-  // Nhóm Quản trị hệ thống GIỮ Ở MENU TRÁI (chỉ admin nền tảng có, gập sẵn) — không đưa vào hub.
+  // Hai nhóm GIỮ Ở MENU TRÁI, không đưa vào hub: "Chung" (Dòng họ của tôi, Thông báo, Trợ giúp, Sổ tay…, dành
+  // cho mọi người) đặt ngay dưới nhóm Gia phả; "Quản trị hệ thống" (chỉ admin nền tảng) dưới cùng.
+  const general = sections.filter((x) => x.id === "global");
   const admin = sections.filter((x) => x.id === "platform-admin");
-  const rest = sections.filter((x) => x.id !== "clan-core" && x.id !== "platform-admin");
+  const rest = sections.filter(
+    (x) => x.id !== "clan-core" && x.id !== "global" && x.id !== "platform-admin",
+  );
   // Cộng giá trị THẬT của badge (số, hoặc chuỗi như "12"/"99+"), không đếm mỗi badge chuỗi là 1.
   const badge = rest.reduce(
     (n, sec) =>
@@ -622,6 +619,7 @@ export function toDrawerSections(
         },
       ],
     },
+    ...general,
     ...admin,
   ];
 }

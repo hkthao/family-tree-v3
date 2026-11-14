@@ -861,7 +861,6 @@ msgstr "✓ sẽ tạo"
 msgid "✕ Nên tránh"
 msgstr "✕ Nên tránh"
 
-#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "🎂 Sinh nhật"
 msgstr "🎂 Sinh nhật"
@@ -878,7 +877,6 @@ msgstr "👀 Xem thử gia phả mẫu — không cần đăng nhập"
 msgid "📌 Đã ghim"
 msgstr "📌 Đã ghim"
 
-#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "📌 Sự kiện"
 msgstr "📌 Sự kiện"
@@ -887,7 +885,6 @@ msgstr "📌 Sự kiện"
 msgid "🔊 Âm thanh"
 msgstr "🔊 Âm thanh"
 
-#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "🕯️ Ngày giỗ"
 msgstr "🕯️ Ngày giỗ"
@@ -986,6 +983,7 @@ msgstr "3. Đặt khoá mã hoá cho dịch vụ <0>functions</0>"
 msgid "3. Xem trước (10 dòng đầu)"
 msgstr "3. Xem trước (10 dòng đầu)"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "30 ngày"
@@ -1007,6 +1005,7 @@ msgstr "4. Dán kết quả AI vào đây"
 msgid "4. Nhập vào dòng họ"
 msgstr "4. Nhập vào dòng họ"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "7 ngày"
 msgstr "7 ngày"
@@ -3499,8 +3498,8 @@ msgid "Con"
 msgstr "Con"
 
 #. placeholder {0}: event.daysUntil
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Còn {0} ngày"
 msgstr "Còn {0} ngày"
 
@@ -7279,13 +7278,12 @@ msgstr "Hỏi trợ lý AI"
 msgid "Hỏi về gia phả…"
 msgstr "Hỏi về gia phả…"
 
-#: src/components/ClanLayout.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/TodayHubCard.tsx
+#: src/components/TodayHubCard.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Today.tsx
 #: src/pages/clan/Today.tsx
 msgid "Hôm nay"
@@ -7295,13 +7293,10 @@ msgstr "Hôm nay"
 msgid "Hôm nay — {label}"
 msgstr "Hôm nay — {label}"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
 msgstr "Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
-
-#: src/components/TodayHubCard.tsx
-msgid "Hôm nay trong dòng họ"
-msgstr "Hôm nay trong dòng họ"
 
 #: src/components/ClanPostCard.tsx
 #: src/components/RecentActivityPanel.tsx
@@ -7847,10 +7842,6 @@ msgstr "Không có ghi nhận nào khớp"
 msgid "Không có giao dịch nào khớp"
 msgstr "Không có giao dịch nào khớp"
 
-#: src/components/TodayHubCard.tsx
-msgid "Không có giỗ hay sinh nhật."
-msgstr "Không có giỗ hay sinh nhật."
-
 #: src/pages/admin/Feedback.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Không có góp ý nào khớp"
@@ -7919,10 +7910,12 @@ msgstr "Không có phòng nào khớp"
 msgid "Không có sự kiện nào khớp"
 msgstr "Không có sự kiện nào khớp"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Không có sự kiện nào trong tháng."
 msgstr "Không có sự kiện nào trong tháng."
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Không có sự kiện nào trong tuần."
 msgstr "Không có sự kiện nào trong tuần."
@@ -10320,8 +10313,8 @@ msgstr "Ngày Giải phóng miền Nam"
 #: src/components/EventsCalendar.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Ngày giỗ"
 msgstr "Ngày giỗ"
@@ -10343,8 +10336,8 @@ msgid "Ngày kiêng dân gian"
 msgstr "Ngày kiêng dân gian"
 
 #: src/components/TodayHubCard.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Ngày mai"
 msgstr "Ngày mai"
 
@@ -11855,8 +11848,8 @@ msgstr "Sinh link mời, bạn gửi cho admin bên kia qua Zalo/email. Hoạt �
 #: src/components/EventsCalendar.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Sinh nhật"
 msgstr "Sinh nhật"
 
@@ -12041,13 +12034,13 @@ msgstr "sự kiện"
 #: src/components/EventDetailDialog.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/TimelineFields.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/queries/global-search.ts
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 msgid "Sự kiện"
@@ -12061,9 +12054,9 @@ msgstr "Sự kiện & giỗ"
 msgid "Sự kiện dòng họ ngày này"
 msgstr "Sự kiện dòng họ ngày này"
 
-#: src/pages/clan/Dashboard.tsx
-msgid "Sự kiện sắp tới"
-msgstr "Sự kiện sắp tới"
+#: src/components/TodayHubCard.tsx
+msgid "Sự kiện trong dòng họ"
+msgstr "Sự kiện trong dòng họ"
 
 #: src/components/EventsCalendar.tsx
 #: src/components/SubscriptionSettings.tsx
@@ -14176,6 +14169,10 @@ msgstr "Tỉnh có nhiều nhất"
 msgid "Tỉnh còn xã/phường hoặc đang được dùng trong địa chỉ thành viên."
 msgstr "Tỉnh còn xã/phường hoặc đang được dùng trong địa chỉ thành viên."
 
+#: src/components/ClanLayout.tsx
+msgid "Tính năng"
+msgstr "Tính năng"
+
 #: src/pages/clan/Settings.tsx
 msgid "Tính năng hiển thị"
 msgstr "Tính năng hiển thị"
@@ -15555,10 +15552,6 @@ msgstr "Xem tài khoản"
 msgid "Xem tất cả"
 msgstr "Xem tất cả"
 
-#: src/pages/clan/Dashboard.tsx
-msgid "Xem tất cả →"
-msgstr "Xem tất cả →"
-
 #: src/components/CriticalBanner.tsx
 msgid "Xem tất cả thông báo"
 msgstr "Xem tất cả thông báo"
@@ -15575,10 +15568,16 @@ msgstr "Xem thêm"
 msgid "Xem thêm {0} cặp"
 msgstr "Xem thêm {0} cặp"
 
+#. placeholder {0}: shown.length - 6
+#: src/components/TodayHubCard.tsx
+msgid "Xem thêm {0} sự kiện →"
+msgstr "Xem thêm {0} sự kiện →"
+
 #: src/lib/pageTitle.ts
 msgid "Xem thử gia phả mẫu"
 msgstr "Xem thử gia phả mẫu"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Xem toàn bộ lịch →"
 msgstr "Xem toàn bộ lịch →"

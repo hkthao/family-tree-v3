@@ -861,7 +861,6 @@ msgstr "✓ will create"
 msgid "✕ Nên tránh"
 msgstr "✕ Best avoided"
 
-#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "🎂 Sinh nhật"
 msgstr "🎂 Birthday"
@@ -878,7 +877,6 @@ msgstr "👀 Try a sample family tree — no sign-in needed"
 msgid "📌 Đã ghim"
 msgstr "📌 Pinned"
 
-#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "📌 Sự kiện"
 msgstr "📌 Event"
@@ -887,7 +885,6 @@ msgstr "📌 Event"
 msgid "🔊 Âm thanh"
 msgstr "🔊 Audio"
 
-#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "🕯️ Ngày giỗ"
 msgstr "🕯️ Death anniversary"
@@ -986,6 +983,7 @@ msgstr "3. Set the encryption key for the <0>functions</0> service"
 msgid "3. Xem trước (10 dòng đầu)"
 msgstr "3. Preview (first 10 rows)"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "30 ngày"
@@ -1007,6 +1005,7 @@ msgstr "4. Paste the AI's result here"
 msgid "4. Nhập vào dòng họ"
 msgstr "4. Import into the clan"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/GoodDays.tsx
 msgid "7 ngày"
 msgstr "7 days"
@@ -3499,8 +3498,8 @@ msgid "Con"
 msgstr "Child"
 
 #. placeholder {0}: event.daysUntil
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Còn {0} ngày"
 msgstr "{0} days left"
 
@@ -7279,13 +7278,12 @@ msgstr "Ask the AI assistant"
 msgid "Hỏi về gia phả…"
 msgstr "Ask about the family tree…"
 
-#: src/components/ClanLayout.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/TodayHubCard.tsx
+#: src/components/TodayHubCard.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Today.tsx
 #: src/pages/clan/Today.tsx
 msgid "Hôm nay"
@@ -7295,13 +7293,10 @@ msgstr "Today"
 msgid "Hôm nay — {label}"
 msgstr "Today — {label}"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Hôm nay không có giỗ, sinh nhật hay lễ tết nào."
 msgstr "No death anniversaries, birthdays or festivals today."
-
-#: src/components/TodayHubCard.tsx
-msgid "Hôm nay trong dòng họ"
-msgstr "Today in the clan"
 
 #: src/components/ClanPostCard.tsx
 #: src/components/RecentActivityPanel.tsx
@@ -7847,10 +7842,6 @@ msgstr "No matching records"
 msgid "Không có giao dịch nào khớp"
 msgstr "No matching transactions"
 
-#: src/components/TodayHubCard.tsx
-msgid "Không có giỗ hay sinh nhật."
-msgstr "No death anniversaries or birthdays."
-
 #: src/pages/admin/Feedback.tsx
 #: src/pages/MyFeedback.tsx
 msgid "Không có góp ý nào khớp"
@@ -7919,10 +7910,12 @@ msgstr "No matching rooms"
 msgid "Không có sự kiện nào khớp"
 msgstr "No matching events"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Không có sự kiện nào trong tháng."
 msgstr "No events this month."
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Không có sự kiện nào trong tuần."
 msgstr "No events this week."
@@ -10320,8 +10313,8 @@ msgstr "Southern Liberation Day"
 #: src/components/EventsCalendar.tsx
 #: src/components/SharedPersonCard.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/PersonDetail.tsx
 msgid "Ngày giỗ"
 msgstr "Death anniversary"
@@ -10343,8 +10336,8 @@ msgid "Ngày kiêng dân gian"
 msgstr "Folk taboo day"
 
 #: src/components/TodayHubCard.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Ngày mai"
 msgstr "Tomorrow"
 
@@ -11855,8 +11848,8 @@ msgstr "Generate an invite link and send it to the admin on the other side via Z
 #: src/components/EventsCalendar.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/SubscriptionSettings.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Sinh nhật"
 msgstr "Birthday"
 
@@ -12041,13 +12034,13 @@ msgstr "events"
 #: src/components/EventDetailDialog.tsx
 #: src/components/EventsCalendar.tsx
 #: src/components/TimelineFields.tsx
+#: src/components/UpcomingCompactRow.tsx
 #: src/components/UpcomingEventRow.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/lib/queries/global-search.ts
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 msgid "Sự kiện"
@@ -12061,9 +12054,9 @@ msgstr "Events & death anniversaries"
 msgid "Sự kiện dòng họ ngày này"
 msgstr "Clan events on this day"
 
-#: src/pages/clan/Dashboard.tsx
-msgid "Sự kiện sắp tới"
-msgstr "Upcoming events"
+#: src/components/TodayHubCard.tsx
+msgid "Sự kiện trong dòng họ"
+msgstr "Clan events"
 
 #: src/components/EventsCalendar.tsx
 #: src/components/SubscriptionSettings.tsx
@@ -14176,6 +14169,10 @@ msgstr "Province with the most"
 msgid "Tỉnh còn xã/phường hoặc đang được dùng trong địa chỉ thành viên."
 msgstr "The province still has communes / wards, or is used in member addresses."
 
+#: src/components/ClanLayout.tsx
+msgid "Tính năng"
+msgstr "Features"
+
 #: src/pages/clan/Settings.tsx
 msgid "Tính năng hiển thị"
 msgstr "Features shown"
@@ -15555,10 +15552,6 @@ msgstr "View account"
 msgid "Xem tất cả"
 msgstr "View all"
 
-#: src/pages/clan/Dashboard.tsx
-msgid "Xem tất cả →"
-msgstr "View all →"
-
 #: src/components/CriticalBanner.tsx
 msgid "Xem tất cả thông báo"
 msgstr "View all notifications"
@@ -15575,10 +15568,16 @@ msgstr "Show more"
 msgid "Xem thêm {0} cặp"
 msgstr "View {0} more pairs"
 
+#. placeholder {0}: shown.length - 6
+#: src/components/TodayHubCard.tsx
+msgid "Xem thêm {0} sự kiện →"
+msgstr "View {0} more events →"
+
 #: src/lib/pageTitle.ts
 msgid "Xem thử gia phả mẫu"
 msgstr "Try the sample family tree"
 
+#: src/components/TodayHubCard.tsx
 #: src/pages/clan/Today.tsx
 msgid "Xem toàn bộ lịch →"
 msgstr "View the full calendar →"

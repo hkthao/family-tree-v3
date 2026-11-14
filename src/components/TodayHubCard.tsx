@@ -1,3 +1,4 @@
+import { UpcomingCompactRow } from "@/components/UpcomingCompactRow";
 import { weekdayName } from "@/lib/formatDate";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -58,12 +59,22 @@ function relativeLabel(offset: number): string {
  */
 export function TodayHubCard({
   clanId,
-  todayEvents,
+  events,
 }: {
   clanId: string;
-  /** Sự kiện rơi vào HÔM NAY (daysUntil === 0) — trang cha đã tính sẵn. */
-  todayEvents: UpcomingEvent[];
+  /** Sự kiện 30 ngày tới (giỗ, sinh nhật, sự kiện tuỳ chỉnh, lễ tết), đã sắp theo ngày — trang cha tính sẵn. */
+  events: UpcomingEvent[];
 }) {
+  // Ba nhóm của trang "Hôm nay" cũ, giờ là ba tab trong thẻ này.
+  const todayEvents = useMemo(() => events.filter((e) => e.daysUntil === 0), [events]);
+  const weekEvents = useMemo(() => events.filter((e) => e.daysUntil >= 1 && e.daysUntil <= 6), [events]);
+  const monthEvents = useMemo(() => events.filter((e) => e.daysUntil >= 7 && e.daysUntil <= 29), [events]);
+  const buckets = { today: todayEvents, week: weekEvents, month: monthEvents } as const;
+  // Mở sẵn tab đầu tiên có việc (hôm nay → 7 ngày → 30 ngày) để người dùng thấy ngay thứ cần thấy.
+  const [tabPick, setTabPick] = useState<"today" | "week" | "month" | null>(null);
+  const tab: "today" | "week" | "month" =
+    tabPick ?? (todayEvents.length ? "today" : weekEvents.length ? "week" : monthEvents.length ? "month" : "today");
+  const shown = buckets[tab];
   // offset = số ngày lệch so với hôm nay (0 = hôm nay). Điều khiển bằng
   // nút ‹ › để xem lịch ngày kế tiếp/trước mà không rời Trang chủ.
   const [offset, setOffset] = useState(0);
@@ -364,48 +375,65 @@ export function TodayHubCard({
           {/* Giỗ / sinh nhật + phong tục: chỉ hiển thị khi đang xem HÔM NAY. */}
           {isToday && (
             <>
-              <div className="border-t px-4 py-3">
-                <p className="mb-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-                  {t`Hôm nay trong dòng họ`}
+              <div className="border-t px-3 py-3">
+                <p className="mb-2 px-1 text-xs uppercase tracking-wide text-muted-foreground">
+                  {t`Sự kiện trong dòng họ`}
                 </p>
-                {todayEvents.length > 0 ? (
-                  <ul className="space-y-1">
-                    {todayEvents.map((e) => {
-                      const label =
-                        e.kind === "birthday"
-                          ? t`🎂 Sinh nhật`
-                          : e.kind === "anniversary"
-                            ? t`🕯️ Ngày giỗ`
-                            : t`📌 Sự kiện`;
-                      const row = (
-                        <span className="flex items-center gap-2 text-sm">
-                          <span className="shrink-0">{label}:</span>
-                          <span className="truncate font-medium">
-                            {e.title}
-                          </span>
-                        </span>
-                      );
-                      return (
-                        <li key={e.key}>
-                          {e.personId ? (
-                            <Link
-                              to={`/clans/${clanId}/people/${e.personId}`}
-                              className="hover:text-primary"
-                            >
-                              {row}
-                            </Link>
-                          ) : (
-                            row
-                          )}
-                        </li>
-                      );
-                    })}
+                {/* Ba tab ngang đều nhau, nhãn ngắn một dòng: màn nhỏ không bị rớt dòng. */}
+                <div role="tablist" className="mb-2 grid grid-cols-3 gap-1 rounded-lg bg-muted/50 p-1">
+                  {(
+                    [
+                      ["today", t`Hôm nay`, todayEvents.length],
+                      ["week", t`7 ngày`, weekEvents.length],
+                      ["month", t`30 ngày`, monthEvents.length],
+                    ] as const
+                  ).map(([key, label, n]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      role="tab"
+                      aria-selected={tab === key}
+                      onClick={() => setTabPick(key)}
+                      className={`flex min-h-9 items-center justify-center gap-1 whitespace-nowrap rounded-md px-1 text-sm font-medium transition-colors ${
+                        tab === key
+                          ? "bg-background text-primary shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {label}
+                      <span
+                        className={`rounded-full px-1.5 text-xs tabular-nums ${
+                          n > 0 ? "bg-primary/15 text-primary" : "text-muted-foreground/70"
+                        }`}
+                      >
+                        {n}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {shown.length > 0 ? (
+                  <ul className="space-y-1.5">
+                    {shown.slice(0, 6).map((e) => (
+                      <UpcomingCompactRow key={e.key} event={e} clanId={clanId} />
+                    ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {t`Không có giỗ hay sinh nhật.`}
+                  <p className="px-1 py-2 text-sm text-muted-foreground">
+                    {tab === "today"
+                      ? t`Hôm nay không có giỗ, sinh nhật hay lễ tết nào.`
+                      : tab === "week"
+                        ? t`Không có sự kiện nào trong tuần.`
+                        : t`Không có sự kiện nào trong tháng.`}
                   </p>
                 )}
+                <Link
+                  to={`/clans/${clanId}/events`}
+                  className="mt-2 block px-1 text-right text-sm text-primary hover:underline"
+                >
+                  {shown.length > 6
+                    ? t`Xem thêm ${shown.length - 6} sự kiện →`
+                    : t`Xem toàn bộ lịch →`}
+                </Link>
               </div>
 
               {tip && (
