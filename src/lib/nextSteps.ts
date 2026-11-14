@@ -60,8 +60,9 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
 }
 
 /**
- * `rng`: nguồn ngẫu nhiên để xáo thứ tự các lời mời khám phá (mỗi lần vào trang gặp một tính năng khác);
- * mặc định giữ nguyên thứ tự khai báo. Việc bổ sung dữ liệu luôn theo ưu tiên cố định, không xáo.
+ * `rng`: nguồn ngẫu nhiên để xáo TOÀN BỘ danh sách (việc bổ sung dữ liệu lẫn lời mời khám phá), để mỗi lần
+ * vào trang gặp một gợi ý khác thay vì mãi một thẻ "N người mất chưa có giỗ". Không truyền `rng` thì
+ * giữ thứ tự ưu tiên: việc bổ sung dữ liệu trước, rồi tới khám phá.
  */
 export function computeNextSteps(
   input: NextStepInput,
@@ -176,8 +177,9 @@ export function computeNextSteps(
   add("ai", t`Hỏi trợ lý AI`, t`Hỏi giỗ, xưng hô, tra người`, "tro-ly", aiOn && isEnabled("ai_assistant"));
   add("fund", t`Sổ quỹ họ minh bạch`, t`Ghi thu chi, ai cũng xem được`, "fund", canEdit && isEnabled("fund"));
 
-  // Việc bổ sung dữ liệu (chỉ người sửa được) đi trước; hết việc mới mời khám phá tính năng.
-  return [...(canEdit ? gaps : []), ...(rng ? shuffle(discover, rng) : discover)];
+  // Không xáo: việc bổ sung dữ liệu (chỉ người sửa được) đi trước, rồi mới mời khám phá tính năng.
+  const all = [...(canEdit ? gaps : []), ...discover];
+  return rng ? shuffle(all, rng) : all;
 }
 
 const KEY = "next-step-snooze-v1";
