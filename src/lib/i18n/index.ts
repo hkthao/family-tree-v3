@@ -1,4 +1,5 @@
 import { i18n, type Messages } from "@lingui/core";
+import { compileMessage } from "@lingui/message-utils/compileMessage";
 
 import { DEFAULT_LOCALE, intlTagOf, isLocale, type Locale } from "./locales";
 
@@ -12,6 +13,11 @@ const loaders: Partial<Record<Locale, () => Promise<{ messages: Messages }>>> = 
   // Tiếng Việt là ngôn ngữ nguồn: câu gốc nằm sẵn trong mã nên không cần catalog.
   en: () => import("@/locales/en/messages.po"),
 };
+
+// Bản build production của Lingui KHÔNG kèm bộ biên dịch ICU: câu rơi về `message` gốc trong mã (mọi câu
+// tiếng Việt, và câu EN chưa dịch) sẽ in nguyên `{0}` thay vì giá trị. Nạp bộ biên dịch để các câu này
+// vẫn thay biến đúng. (Câu đã có trong catalog EN được biên dịch sẵn lúc build nên không cần.)
+i18n.setMessagesCompiler(compileMessage);
 
 // Kích hoạt tiếng Việt NGAY khi module được nạp: mã ngoài React (menu, thông báo lỗi, PDF…) gọi
 // `t` trước khi có Provider; chưa kích hoạt thì Lingui cảnh báo / trả về khoá.
