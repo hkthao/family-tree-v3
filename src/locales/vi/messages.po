@@ -9739,6 +9739,7 @@ msgstr "Mở trang người này →"
 msgid "Mở trang Nhờ AI lập gia phả (miễn phí)"
 msgstr "Mở trang Nhờ AI lập gia phả (miễn phí)"
 
+#: src/lib/navModel.tsx
 #: src/pages/Account.tsx
 msgid "Mở trang quản trị"
 msgstr "Mở trang quản trị"
@@ -14383,10 +14384,6 @@ msgstr "Tổng quan"
 #: src/lib/pageTitle.ts
 msgid "Tổng quan dòng họ"
 msgstr "Tổng quan dòng họ"
-
-#: src/lib/navModel.tsx
-msgid "Tổng quan quản trị"
-msgstr "Tổng quan quản trị"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "tốt"

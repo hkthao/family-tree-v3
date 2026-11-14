@@ -9739,6 +9739,7 @@ msgstr "Open this person's page →"
 msgid "Mở trang Nhờ AI lập gia phả (miễn phí)"
 msgstr "Open the Ask AI to build a family tree page (free)"
 
+#: src/lib/navModel.tsx
 #: src/pages/Account.tsx
 msgid "Mở trang quản trị"
 msgstr "Open the admin page"
@@ -14383,10 +14384,6 @@ msgstr "Overview"
 #: src/lib/pageTitle.ts
 msgid "Tổng quan dòng họ"
 msgstr "Clan overview"
-
-#: src/lib/navModel.tsx
-msgid "Tổng quan quản trị"
-msgstr "Admin overview"
 
 #: src/pages/admin/PodcastPage.tsx
 msgid "tốt"

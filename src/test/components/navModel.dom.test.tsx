@@ -69,13 +69,20 @@ describe("buildSections — nhóm Quản trị hệ thống", () => {
     expect(global.items.filter((i) => i.to.startsWith("/admin"))).toHaveLength(0);
   });
 
-  it("admin thấy MỘT nhóm quản trị hệ thống chứa tổng quan và TỪNG màn quản trị", () => {
+  it("admin thấy MỘT nhóm quản trị hệ thống chỉ có MỘT mục dẫn vào trang hub /admin (các màn con đã nằm ở hub)", () => {
     const group = build({ profile: admin }).find((x) => x.id === "platform-admin")!;
     expect(group).toBeDefined();
-    const tos = group.items.map((i) => i.to);
-    expect(tos[0]).toBe("/admin");
-    for (const sc of ADMIN_SCREENS) expect(tos).toContain(adminPath(sc.slug));
-    expect(tos).toHaveLength(ADMIN_SCREENS.length + 1);
+    expect(group.items.map((i) => i.to)).toEqual(["/admin"]);
+    // Không liệt kê lại từng màn quản trị ở menu trái.
+    for (const sc of ADMIN_SCREENS)
+      expect(group.items.map((i) => i.to)).not.toContain(adminPath(sc.slug));
+  });
+
+  it("mục quản trị sáng ở mọi trang con /admin/*", () => {
+    const group = build({ profile: admin }).find((x) => x.id === "platform-admin")!;
+    expect(sectionHasPath(group, "/admin")).toBe(true);
+    expect(sectionHasPath(group, "/admin/nguoi-dung")).toBe(true);
+    expect(sectionHasPath(group, "/clans")).toBe(false);
   });
 
   it("nhóm quản trị nằm DƯỚI CÙNG, kể cả khi đang ở trong một dòng họ", () => {
@@ -85,10 +92,9 @@ describe("buildSections — nhóm Quản trị hệ thống", () => {
     }
   });
 
-  it("nhóm quản trị gập được và mặc định gập", () => {
+  it("nhóm quản trị chỉ có một mục nên không gập", () => {
     const group = build({ profile: admin }).find((x) => x.id === "platform-admin")!;
-    expect(group.collapsible).not.toBe(false);
-    expect(group.defaultOpen).toBe(false);
+    expect(group.collapsible).toBe(false);
   });
 
   it("nhóm Chung gập được và mặc định mở", () => {
