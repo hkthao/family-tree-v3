@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { UpcomingCompactRow } from "@/components/UpcomingCompactRow";
 import { weekdayName } from "@/lib/formatDate";
 import { useQuery } from "@tanstack/react-query";
@@ -66,14 +67,36 @@ export function TodayHubCard({
   events: UpcomingEvent[];
 }) {
   // Ba nhóm của trang "Hôm nay" cũ, giờ là ba tab trong thẻ này.
-  const todayEvents = useMemo(() => events.filter((e) => e.daysUntil === 0), [events]);
-  const weekEvents = useMemo(() => events.filter((e) => e.daysUntil >= 1 && e.daysUntil <= 6), [events]);
-  const monthEvents = useMemo(() => events.filter((e) => e.daysUntil >= 7 && e.daysUntil <= 29), [events]);
-  const buckets = { today: todayEvents, week: weekEvents, month: monthEvents } as const;
+  const todayEvents = useMemo(
+    () => events.filter((e) => e.daysUntil === 0),
+    [events],
+  );
+  const weekEvents = useMemo(
+    () => events.filter((e) => e.daysUntil >= 1 && e.daysUntil <= 6),
+    [events],
+  );
+  const monthEvents = useMemo(
+    () => events.filter((e) => e.daysUntil >= 7 && e.daysUntil <= 29),
+    [events],
+  );
+  const buckets = {
+    today: todayEvents,
+    week: weekEvents,
+    month: monthEvents,
+  } as const;
   // Mở sẵn tab đầu tiên có việc (hôm nay → 7 ngày → 30 ngày) để người dùng thấy ngay thứ cần thấy.
-  const [tabPick, setTabPick] = useState<"today" | "week" | "month" | null>(null);
+  const [tabPick, setTabPick] = useState<"today" | "week" | "month" | null>(
+    null,
+  );
   const tab: "today" | "week" | "month" =
-    tabPick ?? (todayEvents.length ? "today" : weekEvents.length ? "week" : monthEvents.length ? "month" : "today");
+    tabPick ??
+    (todayEvents.length
+      ? "today"
+      : weekEvents.length
+        ? "week"
+        : monthEvents.length
+          ? "month"
+          : "today");
   const shown = buckets[tab];
   // offset = số ngày lệch so với hôm nay (0 = hôm nay). Điều khiển bằng
   // nút ‹ › để xem lịch ngày kế tiếp/trước mà không rời Trang chủ.
@@ -122,57 +145,76 @@ export function TodayHubCard({
       aria-label={t`Lịch vạn niên`}
       className="overflow-hidden rounded-xl border bg-card"
     >
-      {/* Thanh điều hướng ngày — nút to, rõ chữ cho người lớn tuổi. */}
-      <div className="flex items-center justify-between gap-2 border-b bg-muted/30 px-2 py-2">
+      {/* Header 3 cột: [ngày trước/sau] — TIÊU ĐỀ Ở GIỮA — [về hôm nay + thu gọn]. Hai cột bên bằng nhau (1fr)
+          nên tiêu đề luôn cân giữa. Nút chỉ icon theo design-language (Button size="icon", có aria-label). */}
+      <header
+        className={`grid grid-cols-[1fr_auto_1fr] items-center gap-1 bg-muted/30 px-2 py-1.5 sm:px-3 ${collapsed ? "" : "border-b"}`}
+      >
+        <div
+          role="group"
+          aria-label={t`Chuyển ngày`}
+          className="flex items-center justify-self-start"
+        >
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-10 w-10"
+            onClick={() => setOffset((o) => o - 1)}
+            aria-label={t`Xem ngày hôm trước`}
+            title={t`Hôm trước`}
+          >
+            <IconArrowLeft className="h-5 w-5" />
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-10 w-10"
+            onClick={() => setOffset((o) => o + 1)}
+            aria-label={t`Xem ngày hôm sau`}
+            title={t`Hôm sau`}
+          >
+            <IconArrowRight className="h-5 w-5" />
+          </Button>
+        </div>
         <button
           type="button"
-          onClick={() => setOffset((o) => o - 1)}
-          className="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-muted active:scale-95"
-          aria-label={t`Xem ngày hôm trước`}
+          onClick={toggleCollapsed}
+          aria-expanded={!collapsed}
+          className="min-w-0 px-1 py-2 text-center"
         >
-          <IconArrowLeft className="h-5 w-5" />
-          <span>{t`Hôm trước`}</span>
-        </button>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-primary">
+          <h3 className="truncate text-base font-semibold text-primary sm:text-lg">
             {relativeLabel(offset)}
-          </span>
+          </h3>
+        </button>
+        <div className="flex items-center justify-self-end">
           {!isToday && (
             <button
               type="button"
               onClick={() => setOffset(0)}
-              className="rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10"
+              className="shrink-0 whitespace-nowrap rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary/10"
             >
               {t`Về hôm nay`}
             </button>
           )}
-          <button
+          <Button
             type="button"
+            size="icon"
+            variant="ghost"
+            className="h-10 w-10"
             onClick={toggleCollapsed}
-            aria-expanded={!collapsed}
             aria-label={collapsed ? t`Mở rộng lịch` : t`Thu gọn lịch`}
             title={collapsed ? t`Mở rộng` : t`Thu gọn`}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted"
           >
             {collapsed ? (
               <IconChevronDown className="h-5 w-5" />
             ) : (
               <IconChevronUp className="h-5 w-5" />
             )}
-          </button>
+          </Button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setOffset((o) => o + 1)}
-          className="inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-muted active:scale-95"
-          aria-label={t`Xem ngày hôm sau`}
-        >
-          <span>{t`Hôm sau`}</span>
-          <IconArrowRight className="h-5 w-5" />
-        </button>
-      </div>
+      </header>
 
       {collapsed ? (
         <button
@@ -182,127 +224,128 @@ export function TodayHubCard({
         >
           <span className="min-w-0">
             <span className="font-semibold">
-              {weekdayName(view.getDay())}, {view.getDate()}/{view.getMonth() + 1}/
-              {view.getFullYear()}
+              {weekdayName(view.getDay())}, {view.getDate()}/
+              {view.getMonth() + 1}/{view.getFullYear()}
             </span>
             {info && (
               <span className="text-muted-foreground">
                 <Trans>
-                {" "}
-                · Âm {info.lunar.day}/{info.lunar.month}
-                {leap}
+                  {" "}
+                  · Âm {info.lunar.day}/{info.lunar.month}
+                  {leap}
                 </Trans>
               </span>
             )}
           </span>
-          <IconChevronDown className="h-5 w-5 shrink-0 text-muted-foreground" />
         </button>
       ) : (
         <>
           {/* Đầu thẻ: Dương lịch (tờ lịch) + Âm lịch (chữ, có nhãn). Badge ngày
           tốt/xấu: mobile xuống hàng riêng, desktop neo góc trên-phải. */}
-          <div className="relative p-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              {/* DƯƠNG LỊCH — tờ lịch, số ngày to (ai cũng quen tờ lịch treo tường) */}
-              <div className="flex w-[84px] shrink-0 flex-col items-center rounded-lg border border-primary/25 bg-primary/5 py-2.5 text-primary sm:w-[96px]">
-                <span className="text-xs font-semibold uppercase tracking-wide">
-                  {weekdayName(view.getDay())}
-                </span>
-                <span className="my-0.5 text-4xl font-bold leading-none tabular-nums sm:text-5xl">
-                  {view.getDate()}
-                </span>
-                <span className="text-[11px] text-muted-foreground">
-                  Th{view.getMonth() + 1} · {view.getFullYear()}
-                </span>
+          <div className="flex items-stretch">
+            <div className="relative min-w-0 flex-1 p-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                {/* DƯƠNG LỊCH — tờ lịch, số ngày to (ai cũng quen tờ lịch treo tường) */}
+                <div className="flex w-[84px] shrink-0 flex-col items-center rounded-lg border border-primary/25 bg-primary/5 py-2.5 text-primary sm:w-[96px]">
+                  <span className="text-xs font-semibold uppercase tracking-wide">
+                    {weekdayName(view.getDay())}
+                  </span>
+                  <span className="my-0.5 text-4xl font-bold leading-none tabular-nums sm:text-5xl">
+                    {view.getDate()}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Th{view.getMonth() + 1} · {view.getFullYear()}
+                  </span>
+                </div>
+
+                {/* ÂM LỊCH — ghi bằng CHỮ, có nhãn, dễ đọc */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+                    {t`Âm lịch`}
+                  </p>
+                  {info && (
+                    <p className="text-lg font-bold leading-snug sm:text-2xl">
+                      {t`Ngày ${info.lunar.day} tháng ${info.lunar.month}`}
+                      {leap}
+                    </p>
+                  )}
+                  {info && (
+                    <p className="text-sm text-muted-foreground">
+                      {t`Năm ${info.canChi.year}`}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* ÂM LỊCH — ghi bằng CHỮ, có nhãn, dễ đọc */}
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
-                  {t`Âm lịch`}
+              {info && prefs.hoangDao && (
+                <span
+                  className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-medium sm:absolute sm:right-4 sm:top-4 sm:mt-0 ${
+                    info.aus.good
+                      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                      : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                  }`}
+                  title={t`Sao ${info.aus.star} · Trực ${info.truc.name}`}
+                >
+                  {info.aus.good
+                    ? t`Ngày tốt (Hoàng đạo)`
+                    : t`Ngày xấu (Hắc đạo)`}
+                </span>
+              )}
+
+              {/* Can chi + trực + sao 28 tú + tiết khí — thông tin phụ, chữ nhỏ mờ */}
+              {info && (
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                  {[
+                    prefs.truc ? t`Trực ${info.truc.name}` : null,
+                    prefs.tu ? `Sao ${info.tu.short}` : null,
+                    prefs.tietKhi && info.tietKhi
+                      ? t`Tiết ${info.tietKhi}`
+                      : null,
+                    t`Can chi ngày ${info.canChi.day}`,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
-                {info && (
-                  <p className="text-lg font-bold leading-snug sm:text-2xl">
-                    {t`Ngày ${info.lunar.day} tháng ${info.lunar.month}`}
-                    {leap}
-                  </p>
-                )}
-                {info && (
-                  <p className="text-sm text-muted-foreground">
-                    {t`Năm ${info.canChi.year}`}
-                  </p>
-                )}
-              </div>
-            </div>
+              )}
 
-            {info && prefs.hoangDao && (
-              <span
-                className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-medium sm:absolute sm:right-4 sm:top-4 sm:mt-0 ${
-                  info.aus.good
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                    : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                }`}
-                title={t`Sao ${info.aus.star} · Trực ${info.truc.name}`}
-              >
-                {info.aus.good
-                  ? t`Ngày tốt (Hoàng đạo)`
-                  : t`Ngày xấu (Hắc đạo)`}
-              </span>
-            )}
-
-            {/* Can chi + trực + sao 28 tú + tiết khí — thông tin phụ, chữ nhỏ mờ */}
-            {info && (
-              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                {[
-                  prefs.truc ? t`Trực ${info.truc.name}` : null,
-                  prefs.tu ? `Sao ${info.tu.short}` : null,
-                  prefs.tietKhi && info.tietKhi
-                    ? t`Tiết ${info.tietKhi}`
-                    : null,
-                  t`Can chi ngày ${info.canChi.day}`,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            )}
-
-            {/* Lễ, tết — đặt TRƯỚC cảnh báo ngày kiêng: người ta mở app ngày
+              {/* Lễ, tết — đặt TRƯỚC cảnh báo ngày kiêng: người ta mở app ngày
             rằm tháng Bảy là để thấy chữ "Vu Lan", không phải để thấy hôm
             nay có kiêng gì. */}
-            {festivals.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {festivals.map((f) => (
-                  <p key={f.key} className="text-sm">
-                    <span className="font-medium text-primary">
-                      🏮 {f.name}
-                    </span>
-                    {f.publicHoliday && (
-                      <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                        {t`Nghỉ lễ`}
+              {festivals.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {festivals.map((f) => (
+                    <p key={f.key} className="text-sm">
+                      <span className="font-medium text-primary">
+                        🏮 {f.name}
                       </span>
-                    )}
-                    <span className="block text-xs text-muted-foreground">
-                      {f.note}
-                    </span>
-                  </p>
-                ))}
-              </div>
-            )}
+                      {f.publicHoliday && (
+                        <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                          {t`Nghỉ lễ`}
+                        </span>
+                      )}
+                      <span className="block text-xs text-muted-foreground">
+                        {f.note}
+                      </span>
+                    </p>
+                  ))}
+                </div>
+              )}
 
-            {/* Cảnh báo ngày kiêng dân gian (Tam Nương / Nguyệt Kỵ) */}
-            {info && prefs.kieng && info.warnings.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {info.warnings.map((w) => (
-                  <span
-                    key={w.key}
-                    title={w.note}
-                    className="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-medium text-rose-600 dark:text-rose-400"
-                  >
-                    ⚠ {w.label}
-                  </span>
-                ))}
-              </div>
-            )}
+              {/* Cảnh báo ngày kiêng dân gian (Tam Nương / Nguyệt Kỵ) */}
+              {info && prefs.kieng && info.warnings.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {info.warnings.map((w) => (
+                    <span
+                      key={w.key}
+                      title={w.note}
+                      className="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-medium text-rose-600 dark:text-rose-400"
+                    >
+                      ⚠ {w.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Vì sao tốt/xấu — giải thích cho người đọc hiểu, viền màu rõ. */}
@@ -380,7 +423,10 @@ export function TodayHubCard({
                   {t`Sự kiện trong dòng họ`}
                 </p>
                 {/* Ba tab ngang đều nhau, nhãn ngắn một dòng: màn nhỏ không bị rớt dòng. */}
-                <div role="tablist" className="mb-2 grid grid-cols-3 gap-1 rounded-lg bg-muted/50 p-1">
+                <div
+                  role="tablist"
+                  className="mb-2 grid grid-cols-3 gap-1 rounded-lg bg-muted/50 p-1"
+                >
                   {(
                     [
                       ["today", t`Hôm nay`, todayEvents.length],
@@ -403,7 +449,9 @@ export function TodayHubCard({
                       {label}
                       <span
                         className={`rounded-full px-1.5 text-xs tabular-nums ${
-                          n > 0 ? "bg-primary/15 text-primary" : "text-muted-foreground/70"
+                          n > 0
+                            ? "bg-primary/15 text-primary"
+                            : "text-muted-foreground/70"
                         }`}
                       >
                         {n}
@@ -414,7 +462,11 @@ export function TodayHubCard({
                 {shown.length > 0 ? (
                   <ul className="space-y-1.5">
                     {shown.slice(0, 6).map((e) => (
-                      <UpcomingCompactRow key={e.key} event={e} clanId={clanId} />
+                      <UpcomingCompactRow
+                        key={e.key}
+                        event={e}
+                        clanId={clanId}
+                      />
                     ))}
                   </ul>
                 ) : (
