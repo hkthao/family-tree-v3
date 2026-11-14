@@ -1,8 +1,6 @@
 import {
-  cloneElement,
   useCallback,
   useState,
-  type ReactElement,
   type ReactNode,
 } from "react";
 
@@ -33,7 +31,6 @@ import {
   IconUsers,
   IconWallet,
 } from "@/components/icons";
-import { adminPath, screensByArea } from "@/lib/adminScreens";
 import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import type { ClanDetail } from "@/lib/queries/clan-detail";
 import type { MyProfile } from "@/lib/queries/profile";
@@ -554,29 +551,20 @@ export function buildSections(
   // "Chung" (dành cho mọi người) để không lẫn vào việc hằng ngày. Gập được và mặc định gập; khi
   // đang ở một trang quản trị thì nhóm tự mở (xem useCollapsedSections).
   if (profile?.is_platform_admin) {
-    const adminGroup: DrawerItem[] = [
-      {
-        to: "/admin",
-        label: t`Tổng quan quản trị`,
-        icon: <IconShield className={ic} />,
-        end: true,
-      },
-      ...(["report", "settings"] as const).flatMap((area) =>
-        screensByArea(area).map((sc) => ({
-          to: adminPath(sc.slug),
-          label: sc.label,
-          // Icon của lưới quản trị cỡ h-6; menu dùng h-5 như mọi mục khác.
-          icon: cloneElement(sc.icon as ReactElement<{ className?: string }>, {
-            className: ic,
-          }),
-        })),
-      ),
-    ];
+    // CHỈ MỘT mục dẫn vào trang hub /admin: mọi màn quản trị đã có đủ ở đó (lưới các màn kèm mô tả), liệt
+    // kê lại hết ở menu trái chỉ làm menu dài thêm. Mục không có `end` nên mọi trang con /admin/* vẫn làm
+    // nó sáng.
     sections.push({
       id: "platform-admin",
       label: t`Quản trị hệ thống`,
-      items: adminGroup,
-      defaultOpen: false,
+      items: [
+        {
+          to: "/admin",
+          label: t`Mở trang quản trị`,
+          icon: <IconShield className={ic} />,
+        },
+      ],
+      collapsible: false,
     });
   }
 
