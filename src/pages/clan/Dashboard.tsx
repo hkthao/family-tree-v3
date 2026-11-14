@@ -254,12 +254,6 @@ export default function Dashboard() {
         }
       />
 
-      {/* Thẻ "Hôm nay" — GỘP trang Hôm nay cũ, đặt ĐẦU TIÊN ngay dưới tiêu đề (trên cả mô tả, liên kết họ): lịch
-          âm/ngày tốt xấu, giỗ & sinh nhật & lễ tết hôm nay / 7 ngày / 30 ngày. Đổi mỗi ngày → lý do mở app hằng ngày. */}
-      {tree && tree.persons.length > 0 && (
-        <TodayHubCard clanId={clan.id} events={cardEvents} />
-      )}
-
       {showWelcome && (
         <section
           aria-label={t`Chào mừng`}
@@ -347,6 +341,17 @@ export default function Dashboard() {
         </section>
       )}
 
+      {/* Gợi ý "Bước tiếp theo" (một việc / một tính năng, xáo ngẫu nhiên) nằm TRÊN thẻ Hôm nay. */}
+      {tree && tree.persons.length > 0 && isMember && (
+        <NextStepCard clanId={clan.id} input={nextStepInput} />
+      )}
+
+      {/* Thẻ "Hôm nay" — GỘP trang Hôm nay cũ, đặt ngay dưới phần tiêu đề, mô tả và gợi ý: lịch
+          âm/ngày tốt xấu, giỗ & sinh nhật & lễ tết hôm nay / 7 ngày / 30 ngày. Đổi mỗi ngày → lý do mở app hằng ngày. */}
+      {tree && tree.persons.length > 0 && (
+        <TodayHubCard clanId={clan.id} events={cardEvents} />
+      )}
+
       {isLoading && <p className="text-muted-foreground">{t`Đang tải…`}</p>}
 
       {/* Empty-state check uses the tree query (which goes through the
@@ -377,10 +382,6 @@ export default function Dashboard() {
         <>
           {/* Lời mời bật thông báo — mở khoá mọi nhắc nhở (giỗ/sinh nhật/sự
               kiện). Tự ẩn khi đã bật hoặc người dùng bỏ qua. */}
-          {isMember && (
-            <NextStepCard clanId={clan.id} input={nextStepInput} />
-          )}
-
           {isMember && <EnablePushPrompt />}
 
           {/* Số liệu dòng họ — chỉ số chính + biểu đồ cơ cấu; kho tư liệu: hàng nút nhỏ bấm được. */}
