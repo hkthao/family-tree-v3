@@ -38,7 +38,35 @@ export interface NextStepInput {
   aiOn: boolean;
 }
 
-export function computeNextSteps(input: NextStepInput): NextStep[] {
+/** Bộ sinh số ngẫu nhiên có hạt giống (mulberry32): cùng hạt → cùng thứ tự, để thẻ không nhảy khi dữ liệu tải dần. */
+export function seededRng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffle<T>(arr: T[], rng: () => number): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * `rng`: nguồn ngẫu nhiên để xáo thứ tự các lời mời khám phá (mỗi lần vào trang gặp một tính năng khác);
+ * mặc định giữ nguyên thứ tự khai báo. Việc bổ sung dữ liệu luôn theo ưu tiên cố định, không xáo.
+ */
+export function computeNextSteps(
+  input: NextStepInput,
+  rng?: () => number,
+): NextStep[] {
   const { persons, todo, counts, customEvents, canEdit, isEnabled, aiOn } = input;
   const out: NextStep[] = [];
   const total = persons.length;
@@ -149,7 +177,7 @@ export function computeNextSteps(input: NextStepInput): NextStep[] {
   add("fund", t`Sổ quỹ họ minh bạch`, t`Ghi thu chi, ai cũng xem được`, "fund", canEdit && isEnabled("fund"));
 
   // Việc bổ sung dữ liệu (chỉ người sửa được) đi trước; hết việc mới mời khám phá tính năng.
-  return [...(canEdit ? gaps : []), ...discover];
+  return [...(canEdit ? gaps : []), ...(rng ? shuffle(discover, rng) : discover)];
 }
 
 const KEY = "next-step-snooze-v1";
