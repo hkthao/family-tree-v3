@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { ClanLayout } from "@/components/ClanLayout";
 import { TodayRedirect } from "@/pages/clan/TodayRedirect";
+import { ToolsRedirect } from "@/pages/clan/ToolsRedirect";
 import { FeatureGuard } from "@/components/FeatureGuard";
 import { ConfirmDialogProvider } from "@/components/ConfirmDialog";
 import { CriticalBanner } from "@/components/CriticalBanner";
@@ -101,7 +102,6 @@ const QrExport = lazy(() => import("@/pages/clan/QrExport"));
 const Settings = lazy(() => import("@/pages/clan/Settings"));
 const BookInfo = lazy(() => import("@/pages/clan/BookInfo"));
 const Todo = lazy(() => import("@/pages/clan/Todo"));
-const Tools = lazy(() => import("@/pages/clan/Tools"));
 const Tree = lazy(() => import("@/pages/clan/Tree"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("@/pages/TermsOfUse"));
@@ -430,7 +430,7 @@ export default function App() {
                 <Route path="today" element={<TodayRedirect />} />
                 <Route path="xem-ngay" element={<GoodDays />} />
                 <Route path="todo" element={<Todo />} />
-                <Route path="tools" element={<Tools />} />
+                <Route path="tools" element={<ToolsRedirect />} />
                 <Route path="kinship" element={<Kinship />} />
                 <Route path="relations" element={<Relations />} />
                 <Route path="menu" element={<ClanMenu />} />
