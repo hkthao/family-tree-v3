@@ -2830,7 +2830,6 @@ msgid "Chọn một ảnh"
 msgstr "Chọn một ảnh"
 
 #: src/pages/clan/ClanMenu.tsx
-#: src/pages/clan/Tools.tsx
 msgid "Chọn một mục để mở."
 msgstr "Chọn một mục để mở."
 
@@ -3590,10 +3589,7 @@ msgstr "Con trai"
 msgid "Cong có mũi tên"
 msgstr "Cong có mũi tên"
 
-#: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/clan/Tools.tsx
-#: src/pages/clan/Tools.tsx
 msgid "Công cụ"
 msgstr "Công cụ"
 
@@ -6189,7 +6185,7 @@ msgstr "Đứng tại nơi an nghỉ rồi bấm \"Lấy vị trí hiện tại\
 msgid "Đứng tại từ đường rồi bấm \"Lấy vị trí hiện tại\" để lưu toạ độ chỉ đường."
 msgstr "Đứng tại từ đường rồi bấm \"Lấy vị trí hiện tại\" để lưu toạ độ chỉ đường."
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa."
 msgstr "Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa."
 
@@ -6748,9 +6744,9 @@ msgstr "Gộp"
 msgid "Gộp \"{0}\" vào \"{1}\"?"
 msgstr "Gộp \"{0}\" vào \"{1}\"?"
 
+#: src/lib/navModel.tsx
 #: src/pages/clan/Merge.tsx
 #: src/pages/clan/Merge.tsx
-#: src/pages/clan/Tools.tsx
 msgid "Gộp người trùng"
 msgstr "Gộp người trùng"
 
@@ -8668,7 +8664,7 @@ msgstr "Lên lịch"
 msgid "Lịch"
 msgstr "Lịch"
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Lịch âm dương"
 msgstr "Lịch âm dương"
 
@@ -8715,7 +8711,7 @@ msgstr "Lịch sử mọi thay đổi với người, gia đình và chi. Editor
 msgid "Lịch sử sử dụng"
 msgstr "Lịch sử sử dụng"
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Lịch sử thay đổi dữ liệu của dòng họ."
 msgstr "Lịch sử thay đổi dữ liệu của dòng họ."
 
@@ -8728,7 +8724,7 @@ msgstr "Lịch sử thay đổi với người, gia đình, chi — có thể kh
 msgid "Lịch sử{0}"
 msgstr "Lịch sử{0}"
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày."
 msgstr "Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày."
 
@@ -9648,7 +9644,7 @@ msgstr "Mộ phần, chỉ đường, ảnh mộ"
 msgid "Mở ra xem, hầu như chỉ đọc."
 msgstr "Mở ra xem, hầu như chỉ đọc."
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Mở ra xem, không sửa gì."
 msgstr "Mở ra xem, không sửa gì."
 
@@ -9701,7 +9697,7 @@ msgstr "Mô tả (tuỳ chọn)"
 msgid "Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
 msgstr "Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt."
 msgstr "Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt."
 
@@ -10815,7 +10811,7 @@ msgstr "nháp"
 msgid "Nháp"
 msgstr "Nháp"
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Nhập & dọn dữ liệu"
 msgstr "Nhập & dọn dữ liệu"
 
@@ -10892,6 +10888,7 @@ msgstr "Nhập theo can-chi (Bính Thìn…)"
 msgid "Nhập theo lịch Âm"
 msgstr "Nhập theo lịch Âm"
 
+#: src/lib/navModel.tsx
 #: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/AiGenerate.tsx
 #: src/pages/clan/AiGenerate.tsx
@@ -10900,7 +10897,6 @@ msgstr "Nhập theo lịch Âm"
 #: src/pages/clan/Import.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
-#: src/pages/clan/Tools.tsx
 #: src/pages/clan/Tree.tsx
 msgid "Nhập từ Excel"
 msgstr "Nhập từ Excel"
@@ -10926,12 +10922,8 @@ msgid "Nhập xong bấm Lưu — danh sách phía sau tự cập nhật."
 msgstr "Nhập xong bấm Lưu — danh sách phía sau tự cập nhật."
 
 #: src/lib/navModel.tsx
-msgid "Nhập, dọn dữ liệu, lịch, tra cứu."
-msgstr "Nhập, dọn dữ liệu, lịch, tra cứu."
-
 #: src/pages/clan/Audit.tsx
 #: src/pages/clan/Audit.tsx
-#: src/pages/clan/Tools.tsx
 msgid "Nhật ký"
 msgstr "Nhật ký"
 
@@ -11829,9 +11821,9 @@ msgstr "sinh {born}"
 msgid "sinh {by}"
 msgstr "sinh {by}"
 
+#: src/lib/navModel.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
-#: src/pages/clan/Tools.tsx
 msgid "Sinh bằng AI"
 msgstr "Sinh bằng AI"
 
@@ -13234,7 +13226,7 @@ msgstr "Thêm người vào cây gia phả rồi quay lại đây tra cứu."
 msgid "Thêm nhanh lễ tiết truyền thống"
 msgstr "Thêm nhanh lễ tiết truyền thống"
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Thêm nhiều người cùng lúc từ file Excel."
 msgstr "Thêm nhiều người cùng lúc từ file Excel."
 
@@ -14113,7 +14105,7 @@ msgstr "Tìm trong nội dung góp ý và phản hồi…"
 msgid "Tìm và chọn người đại diện cho mình. Admin sẽ xác nhận trước khi hiển thị công khai."
 msgstr "Tìm và chọn người đại diện cho mình. Admin sẽ xác nhận trước khi hiển thị công khai."
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Tìm và gộp các bản ghi trùng một người."
 msgstr "Tìm và gộp các bản ghi trùng một người."
 
@@ -14402,7 +14394,7 @@ msgstr "Tổng quan dòng họ"
 msgid "tốt"
 msgstr "tốt"
 
-#: src/pages/clan/Tools.tsx
+#: src/lib/navModel.tsx
 msgid "Tra cứu"
 msgstr "Tra cứu"
 

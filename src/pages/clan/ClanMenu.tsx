@@ -65,7 +65,7 @@ function TileBody({ tile }: { tile: Tile }) {
  * "Tất cả tính năng" — trang hub của một dòng họ, thiết kế GIỐNG trang Quản trị nền tảng (AdminHub): tiêu đề
  * nhóm + mô tả nhóm, ô có icon, nhãn đậm và một câu mô tả mờ.
  *
- * Thứ tự: các mục LÕI của dòng họ lên đầu → Cộng đồng & Di sản → Công cụ & Quản trị → nhóm Chung (Thông báo,
+ * Thứ tự: các mục LÕI của dòng họ lên đầu → Cộng đồng & Di sản → Tra cứu → Nhập & dọn dữ liệu → Công cụ & Quản trị → nhóm Chung (Thông báo,
  * Trợ giúp, Sổ tay…) → Hệ thống (Tìm kiếm, Ngôn ngữ, Giao diện sáng/tối) ở cuối. Nhóm Quản trị hệ thống chỉ ở menu
  * trái. Có ô lọc (gõ không dấu cũng được).
  *
@@ -125,6 +125,8 @@ export default function ClanMenu() {
   const all: Group[] = [
     group("clan-core"),
     group("clan-community"),
+    group("clan-tools-lookup"),
+    group("clan-tools-data"),
     group("clan-work"),
     group("global"),
     {
