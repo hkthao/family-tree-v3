@@ -6692,7 +6692,7 @@ msgstr "Type in the box above who is related to whom, born in which year…"
 
 #: src/lib/nextSteps.ts
 msgid "Gọi nhau là gì theo truyền thống"
-msgstr "What to call each other, the traditional way"
+msgstr "Traditional forms of address"
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "Gợi ý — bạn chỉ cần lần lượt trả lời:"
@@ -14130,7 +14130,7 @@ msgstr "Ancestors (paternal line)"
 
 #: src/lib/nextSteps.ts
 msgid "Tổ tiên, anh em, con cháu một người"
-msgstr "Ancestors, siblings, descendants of anyone"
+msgstr "Ancestors and descendants of anyone"
 
 #: src/pages/clan/Cemeteries.tsx
 #: src/pages/clan/RestingPlaceForm.tsx
