@@ -145,38 +145,54 @@ describe("buildSections — nhóm của dòng họ", () => {
     ]);
     const work = s.find((x) => x.id === "clan-work")!;
     expect(work.items.map((i) => i.label)).toEqual([
-      "Việc cần làm",
       "Thành viên",
       "Liên kết dòng họ",
       "Cài đặt dòng họ",
+      "Việc cần làm",
+      "Lịch âm dương",
+      "Nhật ký",
+      "Nhập từ Excel",
+      "Sinh bằng AI",
+      "Gộp người trùng",
     ]);
   });
 
-  it("trang 'Công cụ' trung gian đã bỏ: công cụ trải thẳng thành hai nhóm Tra cứu / Nhập & dọn dữ liệu", () => {
+  it("trang 'Công cụ' trung gian đã bỏ: công cụ trải thẳng vào MỘT nhóm 'Công cụ & Quản trị'", () => {
     const s = build();
-    const all = s.flatMap((x) => x.items.map((i) => i.to));
-    expect(all).not.toContain("/clans/c1/tools");
-    const lookup = s.find((x) => x.id === "clan-tools-lookup")!;
-    expect(lookup.items.map((i) => i.label)).toEqual(["Lịch âm dương", "Nhật ký"]);
-    const data = s.find((x) => x.id === "clan-tools-data")!;
-    expect(data.items.map((i) => i.label)).toEqual(["Nhập từ Excel", "Sinh bằng AI", "Gộp người trùng"]);
-    // Mục nào cũng có mô tả cho trang hub.
-    for (const it of [...lookup.items, ...data.items]) expect(it.hint).toBeTruthy();
+    expect(s.flatMap((x) => x.items.map((i) => i.to))).not.toContain("/clans/c1/tools");
+    // Không còn nhóm công cụ riêng — gộp một nhóm cho gọn.
+    expect(ids(s)).not.toContain("clan-tools-lookup");
+    expect(ids(s)).not.toContain("clan-tools-data");
+    const work = s.find((x) => x.id === "clan-work")!;
+    // Mục QUẢN TRỊ (chỉ admin) đứng trước, rồi tới việc cần làm và các công cụ.
+    expect(work.items.map((i) => i.label)).toEqual([
+      "Thành viên",
+      "Liên kết dòng họ",
+      "Cài đặt dòng họ",
+      "Việc cần làm",
+      "Lịch âm dương",
+      "Nhật ký",
+      "Nhập từ Excel",
+      "Sinh bằng AI",
+      "Gộp người trùng",
+    ]);
+    for (const it of work.items) expect(it.hint).toBeTruthy(); // mô tả cho trang hub
   });
 
-  it("người chỉ xem thấy Tra cứu nhưng KHÔNG thấy nhóm Nhập & dọn dữ liệu", () => {
+  it("người chỉ xem thấy Việc cần làm / Lịch / Nhật ký nhưng KHÔNG thấy nhập & dọn dữ liệu", () => {
     const viewer = { ...clan, myRole: "viewer" } as unknown as ClanDetail;
-    const ids_ = ids(build({ clan: viewer }));
-    expect(ids_).toContain("clan-tools-lookup");
-    expect(ids_).not.toContain("clan-tools-data");
+    const labels = build({ clan: viewer }).find((x) => x.id === "clan-work")!.items.map((i) => i.label);
+    expect(labels).toEqual(["Việc cần làm", "Lịch âm dương", "Nhật ký"]);
     // Người ngoài (không phải thành viên) không có công cụ nào.
     const outsider = { ...clan, myRole: null } as unknown as ClanDetail;
-    expect(ids(build({ clan: outsider }))).not.toContain("clan-tools-lookup");
+    expect(ids(build({ clan: outsider }))).not.toContain("clan-work");
   });
 
-  it("người biên tập (không phải admin) vẫn thấy nhóm Nhập & dọn dữ liệu", () => {
+  it("người biên tập (không phải admin) thấy nhập & dọn dữ liệu nhưng không thấy mục quản trị", () => {
     const editor = { ...clan, myRole: "editor" } as unknown as ClanDetail;
-    expect(ids(build({ clan: editor }))).toContain("clan-tools-data");
+    const labels = build({ clan: editor }).find((x) => x.id === "clan-work")!.items.map((i) => i.label);
+    expect(labels).toContain("Nhập từ Excel");
+    expect(labels).not.toContain("Cài đặt dòng họ");
   });
 
   it("không còn mục Đóng góp trong menu", () => {

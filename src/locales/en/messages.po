@@ -6185,10 +6185,6 @@ msgstr "Stand at the resting place and tap \"Use my current location\" to save c
 msgid "Đứng tại từ đường rồi bấm \"Lấy vị trí hiện tại\" để lưu toạ độ chỉ đường."
 msgstr "Stand at the ancestral hall (từ đường) and tap \"Use my current location\" to save coordinates for directions."
 
-#: src/lib/navModel.tsx
-msgid "Đụng vào vài lần lúc mới lập gia phả — và đụng nhầm thì phải đi sửa."
-msgstr "You touch these a few times when first building the family tree — and a mistake means fixing it."
-
 #: src/lib/adminScreens.tsx
 msgid "Đụng vào vài lần rồi thôi — và đụng nhầm thì hỏng thật."
 msgstr "Touch a few times and then leave alone — and a mistake really breaks things."
@@ -9644,10 +9640,6 @@ msgstr "Graves, directions, grave photos"
 msgid "Mở ra xem, hầu như chỉ đọc."
 msgstr "Open to view; mostly read-only."
 
-#: src/lib/navModel.tsx
-msgid "Mở ra xem, không sửa gì."
-msgstr "Open to view; nothing is edited."
-
 #: src/components/CollapsibleCard.tsx
 #: src/components/TodayHubCard.tsx
 #: src/components/ui/card.tsx
@@ -10810,10 +10802,6 @@ msgstr "draft"
 #: src/pages/CustomsImport.tsx
 msgid "Nháp"
 msgstr "Draft"
-
-#: src/lib/navModel.tsx
-msgid "Nhập & dọn dữ liệu"
-msgstr "Import & clean up data"
 
 #: src/lib/pageTitle.ts
 msgid "Nhập bài Sổ tay"
@@ -14394,10 +14382,6 @@ msgstr "Clan overview"
 msgid "tốt"
 msgstr "good"
 
-#: src/lib/navModel.tsx
-msgid "Tra cứu"
-msgstr "Look up"
-
 #: src/pages/Docs.tsx
 msgid "Tra cứu nhanh cách dùng app. Chọn chủ đề bên dưới, hoặc tìm theo từ khoá (gõ không dấu cũng được)."
 msgstr "Quickly look up how to use the app. Choose a topic below, or search by keyword (typing without accents works too)."
@@ -15190,8 +15174,8 @@ msgid "Việc cần làm"
 msgstr "To-do"
 
 #: src/lib/navModel.tsx
-msgid "Việc cần làm, công cụ và quản lý dòng họ."
-msgstr "To-do, tools and clan management."
+msgid "Việc cần làm, tra cứu, nhập & dọn dữ liệu, quản lý dòng họ."
+msgstr "To-do, look-ups, data import & clean-up, clan management."
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Việc làm"
