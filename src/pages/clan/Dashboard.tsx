@@ -1,6 +1,7 @@
 import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { NextStepCard } from "@/components/NextStepCard";
+import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -46,7 +47,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { isFeatureEnabled } from "@/lib/clanFeatures";
+import { isFeatureEnabled, type ClanFeatureKey } from "@/lib/clanFeatures";
 import {
   canEditClan,
   effectiveRole,
@@ -86,6 +87,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
+  const aiOn = useAiEnabled();
   // Todo + completion RPCs are member-only (they raise 42501 for
   // anyone not in clan_members). Skip the queries entirely for
   // non-member visitors of a public clan — they shouldn't see the
@@ -191,8 +193,11 @@ export default function Dashboard() {
       todo: todoSummary,
       counts: contentCounts,
       customEvents: events?.length,
+      canEdit,
+      isEnabled: (k: ClanFeatureKey) => isFeatureEnabled(clan.disabled_features, k),
+      aiOn,
     }),
-    [tree, todoSummary, contentCounts, events],
+    [tree, todoSummary, contentCounts, events, canEdit, clan.disabled_features, aiOn],
   );
   const upcomingTop5 = upcoming.slice(0, 5);
   const todayEvents = upcoming.filter((e) => e.daysUntil === 0);
@@ -368,7 +373,7 @@ export default function Dashboard() {
         <>
           {/* Lời mời bật thông báo — mở khoá mọi nhắc nhở (giỗ/sinh nhật/sự
               kiện). Tự ẩn khi đã bật hoặc người dùng bỏ qua. */}
-          {canEdit && isMember && (
+          {isMember && (
             <NextStepCard clanId={clan.id} input={nextStepInput} />
           )}
 

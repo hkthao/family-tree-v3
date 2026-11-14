@@ -38,6 +38,8 @@ export function NextStepCard({
     >
       <Link
         to={`/clans/${clanId}/${step.to}`}
+        // Mở tính năng = đã khám phá: không mời lại. Việc bổ sung dữ liệu thì hiện tới khi hết thiếu.
+        onClick={() => step.kind === "discover" && snooze(clanId, step.id, 365)}
         className="flex min-h-12 min-w-0 flex-1 items-center gap-2.5 px-3 py-1.5 hover:bg-primary/10"
       >
         <IconSparkles className="h-5 w-5 shrink-0 text-primary" />
