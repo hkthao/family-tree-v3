@@ -1361,7 +1361,7 @@ msgstr "Tap \"Sync now\" to pull them in."
 
 #: src/components/ShareLinksSection.tsx
 msgid "Bấm “Tạo link mới” để tạo link công khai cho cây gia phả."
-msgstr "Tap \"Create new link\" to make a public link for the family tree."
+msgstr "Tap “Create a new link” to make a public link for the family tree."
 
 #: src/pages/clan/Merge.tsx
 msgid "Bấm × để chọn lại."
@@ -3251,7 +3251,7 @@ msgstr "No reburial has been recorded yet (exhumation / bone relocation — bố
 
 #: src/pages/clan/Relations.tsx
 msgid "Chưa ghi nhận anh chị em của cha mẹ."
-msgstr "No parents of the parents recorded."
+msgstr "No siblings of the parents recorded."
 
 #: src/pages/clan/Relations.tsx
 msgid "Chưa ghi nhận cha mẹ."
@@ -3636,7 +3636,7 @@ msgstr "Great-grandfather (Cụ)"
 
 #: src/components/ContributeDialog.tsx
 msgid "Cụ từng làm hương trưởng làng X từ 1932 đến 1945…"
-msgstr "He served as village head of X from 1932 to 1945…"
+msgstr "Served as village head of X from 1932 to 1945…"
 
 #: src/pages/clan/Heritage.tsx
 msgid "Của dòng họ"
@@ -8581,7 +8581,7 @@ msgstr "Reburial history"
 
 #: src/components/BookTextsSection.tsx
 msgid "Lịch sử dòng họ: phát tích, vị tổ khai cơ và tiểu sử; tổ quán (địa lý, lịch sử xóm ấp, đình miếu); truyền thống lao động, văn hoá, yêu nước; đặc điểm dòng họ và phương hướng xây dựng dòng họ văn hoá. Số liệu nam/nữ, số đời, từng chi được sổ tự thêm từ dữ liệu. Xuống dòng để tách đoạn."
-msgstr "Clan history: origins, the founding ancestor and his biography; the ancestral homeland (geography, village history, communal house and shrines); traditions of labor, culture and patriotism; the clan's character and its plans for building a cultured clan. Male/female counts, generations and branch figures are added by the book from the data. Start a new line to separate paragraphs."
+msgstr "Clan history: origins, the founding ancestor and their biography; the ancestral homeland (geography, village history, communal house and shrines); traditions of labor, culture and patriotism; the clan's character and its plans for building a cultured clan. Male/female counts, generations and branch figures are added by the book from the data. Start a new line to separate paragraphs."
 
 #: src/pages/clan/Audit.tsx
 msgid "Lịch sử mọi thay đổi với người, gia đình và chi. Editor/admin có thể khôi phục."
@@ -12167,7 +12167,7 @@ msgstr "Created {createdFull}"
 
 #: src/components/InviteLinkCard.tsx
 msgid "Tạo 1 link gửi vào nhóm họ (Zalo/Facebook). Người thân bấm vào, đăng nhập là tham gia được — không cần biết trước hay đăng ký sẵn."
-msgstr "Create one link to send to your clan's group chat (Zalo/Facebook). Relatives just tap it and sign in to join — no need to know anyone or register beforehand."
+msgstr "Create one link to send to your clan's group chat (Zalo/Facebook). Relatives just tap it and sign in to join — no prior invitation or registration needed."
 
 #: src/pages/clan/NewPerson.tsx
 msgid "Tạo bản sao thông tin — không sao chép quan hệ."
@@ -12287,7 +12287,7 @@ msgstr "Create a memory room"
 
 #: src/pages/clan/Events.tsx
 msgid "Tạo sự kiện âm lịch lặp hằng năm — cả họ được nhắc trước. Giỗ Tổ / Chạp họ / Tảo mộ có ngày riêng, dùng \"Thêm sự kiện\" bên dưới."
-msgstr "Create a yearly lunar-calendar event — the whole clan gets a reminder in advance. Ancestor worship / year-end clan rite / grave sweeping have their own dates; use \"Add event\" below."
+msgstr "Create a yearly lunar-calendar event — the whole clan gets a reminder in advance. The founding ancestor's memorial (Giỗ Tổ), year-end clan rite (Chạp họ) and grave sweeping (Tảo mộ) have their own dates; use \"Add event\" below."
 
 #: src/lib/pageTitle.ts
 #: src/pages/JoinClan.tsx
@@ -13524,7 +13524,7 @@ msgstr "The founding ancestor and ancestral home; branches and generations; trad
 #. placeholder {2}: import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; import { useMemo, useState } from "react"; import { useToast } from "@/components/Toast"; import { IconCheck, } from "@/components/icons"; import { getDemoClanIds, setDemoClanIds, } from "@/lib/queries/platformSettings"; import { Alert, AlertDescription } from "@/components/ui/alert"; import { Button } from "@/components/ui/button"; import { listAllClans, } from "@/lib/queries/admin"; import { queryKeys } from "@/lib/queries/keys"; import { isMascotEnabled, setMascotEnabled } from "@/lib/queries/platformSettings"; import { t } from "@lingui/core/macro"; import { Trans } from "@lingui/react/macro"; export function ConfigTab() { const qc = useQueryClient(); const toast = useToast(); // ─── Linh vật ──────────────────────────────────────────────────── const mascotQ = useQuery({ queryKey: ["mascot-enabled"], queryFn: () => isMascotEnabled(), retry: false, }); const mascotM = useMutation({ mutationFn: (on: boolean) => setMascotEnabled(on), onSuccess: (_d, on) => { qc.invalidateQueries({ queryKey: ["mascot-enabled"] }); toast.success(on ? t`Đã bật linh vật` : t`Đã tắt linh vật`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); const { data: clans } = useQuery({ queryKey: queryKeys.adminClans(), queryFn: () => listAllClans(), staleTime: 0, }); const { data: current } = useQuery({ queryKey: ["demo-clan-ids"], queryFn: () => getDemoClanIds(), }); const publicClans = useMemo( () => (clans ?? []).filter((c) => c.visibility === "public"), [clans], ); // Tập id đang chọn — khởi tạo/đồng bộ theo giá trị đã lưu. const [selected, setSelected] = useState<Set<string> | null>(null); const chosen = selected ?? new Set(current ?? []); const toggle = (id: string) => { const next = new Set(chosen); next.has(id) ? next.delete(id) : next.add(id); setSelected(next); }; const savedSet = new Set(current ?? []); const dirty = chosen.size !== savedSet.size || [...chosen].some((id) => !savedSet.has(id)); const saveM = useMutation({ mutationFn: (ids: string[]) => setDemoClanIds(ids), onSuccess: () => { qc.invalidateQueries({ queryKey: ["demo-clan-ids"] }); setSelected(null); toast.success(t`Đã lưu dòng họ demo.`); }, onError: (e) => toast.error(t`Không lưu được`, { description: (e as Error).message }), }); return ( <div className="space-y-4"> <div className="space-y-3 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Linh vật`}</h2> <p className="text-sm text-muted-foreground"> <Trans> {t`Nhân vật nổi ở góc màn hình, hiện mẹo dùng app. Tắt thì ẩn với`}{" "} <b>{t`mọi người dùng`}</b> — dùng khi cần màn hình gọn để chụp ảnh, khi demo, hoặc khi mẹo đang gây phiền. </Trans> </p> </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {mascotQ.data === false ? t`Đang tắt với mọi người` : t`Đang bật`} </span> <Button size="sm" variant={mascotQ.data === false ? "default" : "outline"} disabled={mascotQ.isLoading || mascotM.isPending} onClick={() => mascotM.mutate(mascotQ.data === false)} > {mascotQ.data === false ? t`Bật linh vật` : t`Tắt linh vật`} </Button> </div> </div> <div className="space-y-4 rounded-xl border bg-card shadow-sm p-4"> <div> <h2 className="text-lg font-semibold">{t`Dòng họ demo`}</h2> <p className="text-sm text-muted-foreground"> <Trans> Tick <b>{t`một hoặc nhiều`}</b> dòng họ <b>{t`công khai`}</b> để dùng cho nút{" "} <b>{t`“Xem thử gia phả mẫu”`}</b> ở trang Đăng nhập — giúp khách mới xem sản phẩm trước khi đăng nhập. </Trans> </p> </div> {publicClans.length === 0 ? ( <Alert> <AlertDescription> Chưa có dòng họ công khai nào. Vào một dòng họ → Cài đặt → đặt quyền xem <b>{t`Công khai`}</b>, rồi quay lại đây chọn. </AlertDescription> </Alert> ) : ( <> {/* Danh sách checkbox — mọi hàng cùng chiều cao, đồng nhất. */} <div className="divide-y rounded-md border"> {publicClans.map((c) => ( <label key={c.id} className="flex h-12 cursor-pointer items-center gap-3 px-3 hover:bg-muted/50" > <input type="checkbox" checked={chosen.has(c.id)} onChange={() => toggle(c.id)} className="h-4 w-4 shrink-0 accent-primary" /> <span className="min-w-0 flex-1 truncate"> {c.name}{" "} <span className="text-sm text-muted-foreground"> {t`(${c.person_count} người)`} </span> </span> <a href={`/xem/clans/${c.id}`} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="shrink-0 text-xs text-primary hover:underline" > xem → </a> </label> ))} </div> <div className="flex items-center justify-between gap-3"> <span className="text-sm text-muted-foreground"> {t`Đã chọn ${chosen.size} dòng họ`} </span> <Button size="sm" onClick={() => saveM.mutate([...chosen])} disabled={saveM.isPending || !dirty} > <IconCheck className="h-4 w-4 mr-1.5" /> {saveM.isPending ? t`Đang lưu…` : t`Lưu`} </Button> </div> </> )} </div> </div> ); } 
 #: src/pages/admin/Config.tsx
 msgid "Tick <0>{0}</0> dòng họ <1>{1}</1> để dùng cho nút <2>{2}</2> ở trang Đăng nhập — giúp khách mới xem sản phẩm trước khi đăng nhập."
-msgstr "Tick <0>{0}</0> clan <1>{1}</1> to use for the <2>{2}</2> button on the Sign-in page — helping new visitors see the product before signing in."
+msgstr "Tick <0>{0}</0> <1>{1}</1> clans to use for the <2>{2}</2> button on the Sign-in page — helping new visitors see the product before signing in."
 
 #: src/pages/clan/Dashboard.tsx
 msgid "Tiến độ hoàn thiện"
@@ -14701,7 +14701,7 @@ msgstr "E.g. Đỗ Thị B, born 1975, from Hà Nội"
 
 #: src/pages/clan/ClanFund.tsx
 msgid "Vd: Đóng góp giỗ tổ / Mua vật liệu"
-msgstr "E.g. Contribution to the ancestor memorial / Buying materials"
+msgstr "E.g. Contribution to the founding ancestor's memorial / Buying materials"
 
 #: src/pages/CustomsForm.tsx
 msgid "vd: gia đình chuyển đến nhà mới"
@@ -14733,7 +14733,7 @@ msgstr "E.g. A blank page appears when I tap 'Save', or the app lacks a field fo
 
 #: src/pages/clan/HeritageForm.tsx
 msgid "vd: Lệ giỗ Tổ mùng 10 tháng Giêng"
-msgstr "e.g. The rule for the 10th of the first lunar month ancestor worship"
+msgstr "e.g. The founding ancestor's memorial on the 10th of the 1st lunar month"
 
 #: src/pages/CustomsForm.tsx
 msgid "vd: Lễ nhập trạch (về nhà mới)"
