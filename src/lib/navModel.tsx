@@ -363,6 +363,7 @@ export function buildSections(
       {
         to: `/clans/${clanId}`,
         label: t`Tổng quan`,
+        hint: t`Trang chủ của dòng họ.`,
         icon: <IconHome className={ic} />,
         end: true,
       },
@@ -372,11 +373,13 @@ export function buildSections(
         {
           to: `/clans/${clanId}/tree`,
           label: t`Cây gia phả`,
+          hint: t`Xem và khám phá cây các đời.`,
           icon: <IconTree className={ic} />,
         },
         {
           to: `/clans/${clanId}/people`,
           label: t`Danh bạ`,
+          hint: t`Tìm, thêm, sửa người trong họ.`,
           icon: <IconUsers className={ic} />,
         },
       );
@@ -385,6 +388,7 @@ export function buildSections(
         topItems.push({
           to: `/clans/${clanId}/relations`,
           label: t`Tra cứu quan hệ`,
+          hint: t`Tổ tiên, anh em, con cháu một người.`,
           icon: <IconTree className={ic} />,
         });
       }
@@ -393,6 +397,7 @@ export function buildSections(
       topItems.push({
         to: `/clans/${clanId}/events`,
         label: t`Sự kiện`,
+        hint: t`Giỗ, sinh nhật, lễ tết, họp họ.`,
         icon: <IconCalendar className={ic} />,
       });
     }
@@ -400,6 +405,7 @@ export function buildSections(
     sections.push({
       id: "clan-core",
       label: clan.name,
+      hint: t`Những mục dùng hằng ngày.`,
       items: topItems,
       // Gập được (mặc định mở). Vẫn an toàn: nhóm chứa trang đang xem luôn tự mở (xem
       // useCollapsedSections), nên gập rồi bấm vào Cây / Danh bạ thì nhóm mở lại, không ai lạc.
