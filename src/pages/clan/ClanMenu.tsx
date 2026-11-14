@@ -6,7 +6,6 @@ import { IconGrid, IconSearch, IconX } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavSections } from "@/hooks/useNavSections";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { sectionBadge } from "@/lib/navModel";
 import { unaccent } from "@/lib/unaccent";
 
 /**
@@ -26,8 +25,8 @@ export default function ClanMenu() {
 
   const needle = unaccent(q.trim());
   const groups = sections
-    // Quản trị hệ thống ở menu trái, không lặp lại ở đây.
-    .filter((s) => s.id !== "clan-core" && s.id !== "platform-admin")
+    // Chung và Quản trị hệ thống ở menu trái, không lặp lại ở đây.
+    .filter((s) => !["clan-core", "global", "platform-admin"].includes(s.id))
     .map((s) => ({
       ...s,
       items: needle
@@ -73,18 +72,10 @@ export default function ClanMenu() {
       )}
 
       {groups.map((s) => {
-        const badge = sectionBadge(s);
         return (
           <section key={s.id} className="space-y-3">
             <div>
-              <h2 className="flex items-center gap-2 text-lg font-semibold">
-                {s.label}
-                {badge !== undefined && (
-                  <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 font-sans text-xs font-semibold text-primary-foreground">
-                    {badge}
-                  </span>
-                )}
-              </h2>
+              <h2 className="text-lg font-semibold">{s.label}</h2>
               {s.hint && (
                 <p className="text-sm text-muted-foreground">{s.hint}</p>
               )}

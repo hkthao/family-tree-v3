@@ -18,7 +18,7 @@ import {
   IconArrowLeft,
   IconCalendar,
   IconHome,
-  IconSun,
+  IconGrid,
   IconTree,
   IconUsers,
 } from "@/components/icons";
@@ -143,9 +143,10 @@ export function ClanLayout() {
       icon: <IconCalendar className="h-5 w-5" />,
     },
     {
-      to: `/clans/${clanId}/today`,
-      label: t`Hôm nay`,
-      icon: <IconSun className="h-5 w-5" />,
+      // Lối vào trang "Tất cả tính năng" (mọi mục ngoài các tab này) — trên điện thoại trước đây chỉ vào được qua ☰.
+      to: `/clans/${clanId}/menu`,
+      label: t`Tính năng`,
+      icon: <IconGrid className="h-5 w-5" />,
     },
   ];
 
