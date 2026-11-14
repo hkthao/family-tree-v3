@@ -37,8 +37,9 @@ interface Group {
   tiles: Tile[];
 }
 
+/** CHIỀU CAO CỐ ĐỊNH: mọi ô bằng nhau dù nhãn/mô tả dài ngắn khác nhau (nhãn và mô tả cắt ở 2 dòng). */
 const TILE =
-  "flex h-full min-h-[124px] w-full flex-col gap-2 rounded-xl border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/50";
+  "flex h-[160px] w-full flex-col gap-2 overflow-hidden rounded-xl border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted/50 sm:h-[144px] sm:p-4";
 
 function TileBody({ tile }: { tile: Tile }) {
   return (
@@ -51,9 +52,11 @@ function TileBody({ tile }: { tile: Tile }) {
           </span>
         )}
       </span>
-      <span className="font-medium leading-tight">{tile.label}</span>
+      <span className="line-clamp-2 font-medium leading-tight">
+        {tile.label}
+      </span>
       {tile.hint && (
-        <span className="text-xs leading-snug text-muted-foreground">
+        <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">
           {tile.hint}
         </span>
       )}

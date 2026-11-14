@@ -8721,8 +8721,8 @@ msgid "Lịch sử{0}"
 msgstr "History{0}"
 
 #: src/lib/navModel.tsx
-msgid "Lịch tháng, ngày tốt xấu, lễ tết, và xem chi tiết từng ngày."
-msgstr "Monthly calendar, good and bad days, festivals, and details for each day."
+msgid "Lịch tháng, ngày tốt xấu, lễ tết."
+msgstr "Monthly calendar, good and bad days, festivals."
 
 #: src/components/TodayHubCard.tsx
 msgid "Lịch vạn niên"
@@ -9685,13 +9685,13 @@ msgstr "Description"
 msgid "Mô tả (tuỳ chọn)"
 msgstr "Description (optional)"
 
+#: src/lib/navModel.tsx
+msgid "Mô tả bằng lời, AI dựng dữ liệu để duyệt."
+msgstr "Describe in words; the AI prepares data to review."
+
 #: src/pages/Contact.tsx
 msgid "Mô tả càng cụ thể càng tốt — bạn đang làm gì, app trả lời thế nào, mong app nên xử thế nào…"
 msgstr "The more specific the better — what you were doing, how the app responded, how you'd like it to behave…"
-
-#: src/lib/navModel.tsx
-msgid "Mô tả gia đình bằng lời, AI dựng sẵn dữ liệu để bạn duyệt."
-msgstr "Describe the family in words and the AI prepares the data for you to review."
 
 #: src/pages/CustomsForm.tsx
 msgid "Mô tả ngắn"
