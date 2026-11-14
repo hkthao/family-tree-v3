@@ -12,7 +12,7 @@ import {
   IconBook,
   IconBuildings,
   IconCalendar,
-  IconCamera,
+  IconCube,
   IconGlobe,
   IconGrid,
   IconMicrophone,
@@ -22,6 +22,7 @@ import {
   IconList,
   IconMail,
   IconMapPin,
+  IconPuzzle,
   IconScroll,
   IconSettings,
   IconShield,
@@ -442,7 +443,7 @@ export function buildSections(
         to: `/clans/${clanId}/memory-room`,
         label: t`Phòng ký ức`,
         hint: t`Phòng trưng bày ảnh 3D.`,
-        icon: <IconCamera className={ic} />,
+        icon: <IconCube className={ic} />,
       });
     }
     if (isMember && feat("mosaic")) {
@@ -450,7 +451,7 @@ export function buildSections(
         to: `/clans/${clanId}/mosaics`,
         label: t`Ảnh ghép`,
         hint: t`Mỗi người góp một mảnh ảnh.`,
-        icon: <IconCamera className={ic} />,
+        icon: <IconPuzzle className={ic} />,
       });
     }
     if (canHeritage && feat("heritage")) {

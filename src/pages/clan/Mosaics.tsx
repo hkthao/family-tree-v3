@@ -9,7 +9,7 @@ import { Chip } from "@/components/Chip";
 import { EmptyState } from "@/components/EmptyState";
 import { Fab } from "@/components/Fab";
 import {
-  IconCamera,
+  IconPuzzle,
   IconGrid,
   IconList,
   IconScroll,
@@ -109,7 +109,7 @@ export default function Mosaics() {
         ]}
       />
       <PageHeader
-        icon={<IconCamera className="h-7 w-7" />}
+        icon={<IconPuzzle className="h-7 w-7" />}
         title={t`Ảnh ghép`}
         description={t`Mỗi thành viên góp một tấm ảnh — tất cả ghép lại thành một bức tranh chung của dòng họ.`}
         actionsBelow
@@ -163,7 +163,7 @@ export default function Mosaics() {
             search.trim() ? (
               <IconSearch className="h-10 w-10" />
             ) : (
-              <IconCamera className="h-10 w-10" />
+              <IconPuzzle className="h-10 w-10" />
             )
           }
           title={
@@ -247,7 +247,7 @@ function Preview({
         ) : (
           <div key={i} className="grid place-items-center">
             {urls.length === 0 && i === 0 && (
-              <IconCamera className="h-4 w-4 text-muted-foreground" />
+              <IconPuzzle className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
         ),
@@ -401,7 +401,7 @@ function NewMosaicForm({
         <Label htmlFor="mosaic-title">{t`Tên bức ảnh`}</Label>
         <Input
           id="mosaic-title"
-          icon={<IconCamera />}
+          icon={<IconPuzzle />}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t`VD: Đại gia đình Tết 2027`}
