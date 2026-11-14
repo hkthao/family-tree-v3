@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useEffect, useMemo } from "react";
 
 import { AiChatView } from "@/components/ai/AiChatView";
-import { AI_DOCK_OPEN_EVENT } from "@/components/ai/AiChatDock";
+import {
+  AI_DOCK_OPEN_EVENT,
+  FLOATING_ASSISTANT_ENABLED,
+} from "@/components/ai/AiChatDock";
 import { QuickAddSheet } from "@/components/QuickAddSheet";
 import { SidePanel } from "@/components/SidePanel";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
@@ -65,7 +68,9 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
     aiEnabled && isFeatureEnabled(clan.disabled_features, "ai_assistant");
 
   // Máy tính: "chat" nghĩa là mở khung dock bên phải (không modal) rồi gỡ ?panel=.
-  const openDock = current === "chat" && isDesktop && chatOk;
+  // Khi khung nổi đang TẠM ẨN (FLOATING_ASSISTANT_ENABLED = false) thì chat mở bằng ngăn kéo như điện thoại.
+  const openDock =
+    FLOATING_ASSISTANT_ENABLED && current === "chat" && isDesktop && chatOk;
   useEffect(() => {
     if (!openDock) return;
     window.dispatchEvent(new Event(AI_DOCK_OPEN_EVENT));
@@ -298,7 +303,11 @@ function PanelHostInner({ clan }: { clan: ClanDetail }) {
     );
   }
 
-  if (current === "chat" && !isDesktop && chatOk) {
+  if (
+    current === "chat" &&
+    (!isDesktop || !FLOATING_ASSISTANT_ENABLED) &&
+    chatOk
+  ) {
     return (
       <SidePanel
         open

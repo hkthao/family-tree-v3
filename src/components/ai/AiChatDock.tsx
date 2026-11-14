@@ -32,6 +32,12 @@ import { t } from "@lingui/core/macro";
  * trang được. Đó là toàn bộ mục đích. Nên không focus-trap, không overlay.
  */
 
+/**
+ * TẠM ẨN nút/khung trợ lý nổi (đang vướng màn hình khi xem và nhập dữ liệu). Đặt `true` để bật lại — mọi thứ
+ * khác (trang `/tro-ly`, ngăn kéo chat trên điện thoại, gợi ý "Hỏi trợ lý AI") giữ nguyên.
+ */
+export const FLOATING_ASSISTANT_ENABLED = false;
+
 const OPEN_KEY = "family-tree:ai-dock-open";
 const DOCK_WIDTH = "24rem";
 /** Phát từ nơi khác để mở khung dock (xem PanelHost, ?panel=chat). */
@@ -47,6 +53,7 @@ export function AiChatDock({ clan }: { clan: ClanDetail }) {
   const onChatPage = pathname.endsWith("/tro-ly");
 
   const enabled =
+    FLOATING_ASSISTANT_ENABLED &&
     isDesktop &&
     !onChatPage &&
     aiEnabled &&
