@@ -24,6 +24,28 @@ import { useLocation, useNavigationType } from "react-router-dom";
  */
 
 const STORE_KEY = "family-tree:scroll-positions-v1";
+
+/** Tham số URL chỉ để MỞ/ĐÓNG ngăn kéo (xem components/panel/usePanel.ts) — không phải đổi trang. */
+const OVERLAY_PARAMS = ["panel", "pid", "prel", "pfrom"] as const;
+
+/**
+ * Hai vị trí chỉ khác nhau ở tham số ngăn kéo (cùng đường dẫn, các tham số còn lại như bộ lọc giống hệt)?
+ * Mở ngăn kéo đẩy một mục lịch sử và đóng bằng Back/vuốt-quay-lại, nhưng trang phía sau KHÔNG đổi: cuộn về đầu
+ * (như khi sang trang mới) hay "khôi phục" vị trí đều làm trang giật lên đầu sau lưng ngăn kéo.
+ */
+export function isOverlayOnlyChange(
+  a: { pathname: string; search: string },
+  b: { pathname: string; search: string },
+): boolean {
+  if (a.pathname !== b.pathname) return false;
+  const strip = (search: string) => {
+    const p = new URLSearchParams(search);
+    for (const k of OVERLAY_PARAMS) p.delete(k);
+    p.sort();
+    return p.toString();
+  };
+  return strip(a.search) === strip(b.search);
+}
 const MAX_ENTRIES = 60;
 
 function readStore(): Record<string, number> {
@@ -41,7 +63,10 @@ function readStore(): Record<string, number> {
 function writeStore(map: Map<string, number>) {
   try {
     const entries = [...map.entries()].slice(-MAX_ENTRIES);
-    sessionStorage.setItem(STORE_KEY, JSON.stringify(Object.fromEntries(entries)));
+    sessionStorage.setItem(
+      STORE_KEY,
+      JSON.stringify(Object.fromEntries(entries)),
+    );
   } catch {
     /* private mode / hết chỗ — chỉ mất khả năng khôi phục sau khi nạp lại trang */
   }
@@ -56,6 +81,8 @@ export function ScrollManager() {
   // Đang cố khôi phục vị trí: bỏ qua sự kiện scroll do chính ta / do trang còn ngắn gây ra, kẻo
   // ghi đè vị trí đích bằng giá trị bị cắt.
   const restoring = useRef(false);
+  // Vị trí (đường dẫn + query) của lần điều hướng trước, để nhận ra "chỉ mở/đóng ngăn kéo".
+  const prevLoc = useRef<{ pathname: string; search: string } | null>(null);
 
   useEffect(() => {
     if ("scrollRestoration" in history) {
@@ -106,6 +133,11 @@ export function ScrollManager() {
   // happens before paint — no flash at the wrong offset.
   useLayoutEffect(() => {
     restoring.current = false;
+    const prev = prevLoc.current;
+    prevLoc.current = { pathname: location.pathname, search: location.search };
+    // Mở/đóng ngăn kéo (kể cả đóng bằng vuốt-quay-lại): trang phía sau đứng yên, không cuộn lên đầu cũng không "khôi phục".
+    if (prev && navType !== "REPLACE" && isOverlayOnlyChange(prev, location))
+      return;
     if (navType === "PUSH") {
       window.scrollTo({
         top: 0,
@@ -118,7 +150,9 @@ export function ScrollManager() {
 
     // Lần nạp đầu của một mục chưa từng có khoá riêng ("default") thì không có gì để khôi phục.
     const target =
-      location.key === "default" ? 0 : (positions.current.get(location.key) ?? 0);
+      location.key === "default"
+        ? 0
+        : (positions.current.get(location.key) ?? 0);
     window.scrollTo({
       top: target,
       left: 0,

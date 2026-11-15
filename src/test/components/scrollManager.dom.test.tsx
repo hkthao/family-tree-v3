@@ -2,10 +2,11 @@
  * @vitest-environment jsdom
  */
 import { render, cleanup } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useNavigate } from "react-router-dom";
+import { act } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ScrollManager } from "@/components/ScrollManager";
+import { ScrollManager, isOverlayOnlyChange } from "@/components/ScrollManager";
 
 const STORE_KEY = "family-tree:scroll-positions-v1";
 
@@ -65,5 +66,72 @@ describe("ScrollManager — khôi phục vị trí cuộn", () => {
   it("sessionStorage hỏng thì bỏ qua êm, không văng lỗi", () => {
     sessionStorage.setItem(STORE_KEY, "{not json");
     expect(() => mount("k1")).not.toThrow();
+  });
+});
+
+describe("isOverlayOnlyChange", () => {
+  const loc = (pathname: string, search = "") => ({ pathname, search });
+
+  it("chỉ khác tham số ngăn kéo (panel/pid/prel/pfrom) → true", () => {
+    expect(isOverlayOnlyChange(loc("/clans/c1/people"), loc("/clans/c1/people", "?panel=person-view&pid=p1"))).toBe(true);
+    expect(isOverlayOnlyChange(loc("/a", "?panel=x&pid=1"), loc("/a"))).toBe(true);
+  });
+
+  it("khác đường dẫn → false", () => {
+    expect(isOverlayOnlyChange(loc("/a"), loc("/b", "?panel=x"))).toBe(false);
+  });
+
+  it("khác cả bộ lọc (q, chi…) → false: đó là đổi nội dung trang, không chỉ mở ngăn kéo", () => {
+    expect(isOverlayOnlyChange(loc("/a", "?q=an"), loc("/a", "?q=binh&panel=x"))).toBe(false);
+    expect(isOverlayOnlyChange(loc("/a", "?q=an"), loc("/a", "?panel=x&q=an"))).toBe(true);
+  });
+});
+
+describe("ScrollManager — ngăn kéo (?panel=) không làm trang giật lên đầu", () => {
+  let scrollTo: ReturnType<typeof vi.fn>;
+  let nav: ReturnType<typeof useNavigate>;
+
+  function Grab() {
+    nav = useNavigate();
+    return null;
+  }
+
+  beforeEach(() => {
+    sessionStorage.clear();
+    scrollTo = vi.fn();
+    window.scrollTo = scrollTo as unknown as typeof window.scrollTo;
+    Object.defineProperty(document.documentElement, "scrollHeight", { configurable: true, value: 3000 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 800 });
+  });
+  afterEach(cleanup);
+
+  const mount = () =>
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/clans/c1/people", key: "k1" }]}>
+        <ScrollManager />
+        <Grab />
+      </MemoryRouter>,
+    );
+
+  it("mở ngăn kéo (PUSH chỉ đổi ?panel=) → KHÔNG cuộn về đầu", () => {
+    mount();
+    scrollTo.mockClear();
+    act(() => nav("/clans/c1/people?panel=person-view&pid=p1"));
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("đóng ngăn kéo bằng Back → không cuộn lên đầu và không giật tới vị trí khác", () => {
+    mount();
+    act(() => nav("/clans/c1/people?panel=person-view&pid=p1"));
+    scrollTo.mockClear();
+    act(() => nav(-1));
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it("sang một TRANG khác vẫn cuộn về đầu như cũ", () => {
+    mount();
+    scrollTo.mockClear();
+    act(() => nav("/clans/c1/tree"));
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 0 }));
   });
 });
