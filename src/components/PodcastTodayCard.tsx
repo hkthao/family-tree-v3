@@ -1,3 +1,4 @@
+import { PodcastThumb } from "@/components/PodcastThumb";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
@@ -35,18 +36,15 @@ export function PodcastTodayCard() {
         className="flex items-center gap-3 rounded-xl border bg-card shadow-sm p-3 transition-colors hover:border-primary"
       >
         <span className="relative shrink-0">
-          {ep.thumbnail_url ? (
-            <img
-              src={ep.thumbnail_url}
-              alt=""
-              className="h-20 w-[45px] rounded-lg object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <span className="flex h-20 w-[45px] items-center justify-center rounded-lg bg-muted">
-              <IconMicrophone className="h-6 w-6 text-muted-foreground" />
-            </span>
-          )}
+          <PodcastThumb
+            src={ep.thumbnail_url}
+            className="h-20 w-[45px] rounded-lg object-cover"
+            fallback={
+              <span className="flex h-20 w-[45px] items-center justify-center rounded-lg bg-muted">
+                <IconMicrophone className="h-6 w-6 text-muted-foreground" />
+              </span>
+            }
+          />
           <span className="absolute inset-0 flex items-center justify-center">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white">
               <IconPlay className="h-4 w-4" />
