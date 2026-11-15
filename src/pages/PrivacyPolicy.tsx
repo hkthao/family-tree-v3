@@ -4,31 +4,19 @@ import { AppHeader } from "@/components/AppHeader";
 import { IconLock } from "@/components/icons";
 import { PageHeader } from "@/components/PageHeader";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useAiProviderLabel } from "@/hooks/useAiProvider";
 
 /**
  * Chính sách riêng tư.
  *
- * Viết vì trợ lý AI đã chạy thật: tên và năm sinh của người thật đang
- * được gửi sang một nhà cung cấp nước ngoài, và người dùng có quyền biết
- * trước — plan §Bảo mật mục 18.
- *
- * Hai nguyên tắc khi viết trang này:
- *
- *  1. **Chỉ nói những gì mã nguồn làm thật.** Mỗi câu ở đây soi được ra
- *     một chỗ trong code: PERSON_COLS quyết định trường nào gửi cho AI,
- *     `ai.chat_retention_days` quyết định giữ lịch sử bao lâu,
- *     `sanitizeUrl` quyết định analytics ghi gì. Chính sách hứa nhiều
- *     hơn code làm là chỗ tệ nhất để nói quá.
- *  2. **Tên nhà cung cấp AI suy từ cấu hình**, không viết cứng — admin
- *     đổi model là dòng chữ phải đổi theo.
+ * Nguyên tắc: **chỉ nói những gì mã nguồn làm thật.** Mỗi câu ở đây soi được ra
+ * một chỗ trong code (vd `sanitizeUrl` quyết định analytics ghi gì). Chính sách hứa
+ * nhiều hơn code làm là chỗ tệ nhất để nói quá.
  */
 
 const UPDATED = "25/10/2026";
 
 export default function PrivacyPolicy() {
   usePageTitle("Chính sách riêng tư");
-  const provider = useAiProviderLabel();
 
   return (
     <div className="min-h-dvh bg-background lg:pl-72">
@@ -92,39 +80,26 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
 
-        <Section title="Trợ lý AI — dữ liệu đi ra ngoài chỗ này">
+        <Section title="Kết nối AI bên ngoài — dữ liệu đi ra ngoài chỗ này">
           <p>
-            Đây là chỗ duy nhất dữ liệu gia phả rời khỏi máy chủ của chúng tôi.
-            Khi bạn hỏi trợ lý, câu hỏi của bạn được gửi tới{" "}
-            <b>{provider ?? "một dịch vụ AI bên thứ ba"}</b> để xử lý, kèm{" "}
-            <b>tên, giới tính, còn sống hay đã mất, đời thứ mấy, ngày
-            sinh/mất/giỗ</b> của những người liên quan tới câu hỏi.
+            Ứng dụng <b>không tự gửi</b> dữ liệu gia phả cho dịch vụ AI nào. Chỉ khi
+            quản trị dòng họ hoặc quản trị hệ thống chủ động tạo một <b>token kết nối AI</b>{" "}
+            và dán vào công cụ AI của họ (Claude, ChatGPT…), công cụ đó mới đọc được
+            dữ liệu dòng họ, với <b>đúng quyền của người tạo token</b>. Dữ liệu AI đọc
+            được thì do nhà cung cấp công cụ AI đó xử lý theo chính sách của họ.
           </p>
           <p>
-            <b>Không gửi đi:</b> ảnh, tiểu sử, nơi sinh, nơi an táng, thông tin
-            liên hệ, email, hay bất cứ tài liệu nào bạn tải lên.
-          </p>
-          <p>
-            Trợ lý <b>không tự ghi vào gia phả</b>. Khi nó hiểu là bạn muốn thêm
-            người, nó chỉ đề xuất — bạn xem lại rồi bấm xác nhận thì mới lưu.
-          </p>
-          <p>
-            Không muốn dùng thì quản trị dòng họ tắt tính năng này trong Cài đặt
-            dòng họ; tắt rồi thì không có gì được gửi đi cả.
+            Token có hạn, thu hồi được bất cứ lúc nào, và có ba mức: chỉ đọc, đề xuất
+            (chờ admin duyệt) hoặc ghi trực tiếp. Mọi thay đổi AI ghi vào gia phả đều
+            có trong nhật ký thao tác dưới tên người tạo token.
           </p>
         </Section>
 
         <Section title="Giữ trong bao lâu">
           <ul className="list-disc space-y-1.5 pl-5">
             <li>
-              <b>Lịch sử trò chuyện với trợ lý: 90 ngày</b>, sau đó tự xoá. Mỗi
-              người cũng chỉ giữ 40 tin gần nhất cho mỗi dòng họ, và bạn xoá tay
-              được bất cứ lúc nào bằng nút trong khung chat.
-            </li>
-            <li>
               Gia phả và tài khoản: giữ cho tới khi bạn xoá. Xoá tài khoản trong
-              trang Tài khoản là dữ liệu cá nhân, lịch sử trò chuyện và thông
-              báo của bạn bị xoá theo.
+              trang Tài khoản là dữ liệu cá nhân và thông báo của bạn bị xoá theo.
             </li>
           </ul>
         </Section>

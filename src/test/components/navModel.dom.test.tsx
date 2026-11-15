@@ -58,7 +58,6 @@ const build = (
     opts.contrib ?? 0,
     opts.inlaw ?? 0,
     opts.todo ?? 0,
-    true,
   );
 
 const ids = (sections: DrawerSection[]) => sections.map((s) => s.id);
@@ -149,11 +148,9 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Liên kết dòng họ",
       "Cài đặt dòng họ",
       "Việc cần làm",
-      "Trợ lý AI",
       "Lịch âm dương",
       "Nhật ký",
       "Nhập từ Excel",
-      "Sinh bằng AI",
       "Gộp người trùng",
     ]);
   });
@@ -171,31 +168,18 @@ describe("buildSections — nhóm của dòng họ", () => {
       "Liên kết dòng họ",
       "Cài đặt dòng họ",
       "Việc cần làm",
-      "Trợ lý AI",
       "Lịch âm dương",
       "Nhật ký",
       "Nhập từ Excel",
-      "Sinh bằng AI",
       "Gộp người trùng",
     ]);
     for (const it of work.items) expect(it.hint).toBeTruthy(); // mô tả cho trang hub
   });
 
-  it("Trợ lý AI chỉ hiện khi nền tảng bật và dòng họ chưa tắt tính năng", () => {
-    const labelsOf = (c: ClanDetail, ai: boolean) =>
-      buildSections("c1", c, normal, 0, 0, 0, ai)
-        .find((x) => x.id === "clan-work")!
-        .items.map((i) => i.label);
-    expect(labelsOf(clan, true)).toContain("Trợ lý AI");
-    expect(labelsOf(clan, false)).not.toContain("Trợ lý AI");
-    const off = { ...clan, disabled_features: ["ai_assistant"] } as unknown as ClanDetail;
-    expect(labelsOf(off, true)).not.toContain("Trợ lý AI");
-  });
-
   it("người chỉ xem thấy Việc cần làm / Lịch / Nhật ký nhưng KHÔNG thấy nhập & dọn dữ liệu", () => {
     const viewer = { ...clan, myRole: "viewer" } as unknown as ClanDetail;
     const labels = build({ clan: viewer }).find((x) => x.id === "clan-work")!.items.map((i) => i.label);
-    expect(labels).toEqual(["Việc cần làm", "Trợ lý AI", "Lịch âm dương", "Nhật ký"]);
+    expect(labels).toEqual(["Việc cần làm", "Lịch âm dương", "Nhật ký"]);
     // Người ngoài (không phải thành viên) không có công cụ nào.
     const outsider = { ...clan, myRole: null } as unknown as ClanDetail;
     expect(ids(build({ clan: outsider }))).not.toContain("clan-work");
@@ -469,8 +453,6 @@ describe("pathForLegacyTab", () => {
    */
   it("đổi tab cũ sang đường dẫn mới", () => {
     expect(pathForLegacyTab("users")).toBe("/admin/nguoi-dung");
-    expect(pathForLegacyTab("ai")).toBe("/admin/cau-hinh-ai");
-    expect(pathForLegacyTab("ai_usage")).toBe("/admin/tro-ly-ai");
   });
 
   it("mọi màn đều có lối về từ tab cũ — không bỏ sót màn nào", () => {

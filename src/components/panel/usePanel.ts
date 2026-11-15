@@ -8,7 +8,6 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
  * mang tiền tố riêng để không đụng bộ lọc của trang (q, chi, đời…).
  */
 export type PanelId = "person-view" | "person-new" | "person-edit" | "person-add" | "notifications"
-  | "chat"
   | "grave-view"
   | "grave-new"
   | "grave-edit"

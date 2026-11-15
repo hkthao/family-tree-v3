@@ -1,4 +1,3 @@
-import { clearAll as clearAiChatHistory } from "@/lib/aiChatHistory";
 import { clearAllCache } from "@/lib/queryClient";
 import { supabase } from "@/lib/supabase";
 
@@ -15,6 +14,5 @@ import { supabase } from "@/lib/supabase";
  */
 export async function signOutAndClearCache(): Promise<void> {
   await supabase.auth.signOut();
-  clearAiChatHistory();
   await clearAllCache();
 }

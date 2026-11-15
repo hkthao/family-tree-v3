@@ -242,8 +242,6 @@ export interface DrawerItem {
   badge?: string | number;
   /** Tính năng vừa ra, người dùng chưa mở — hiện nhãn "Mới" (xem lib/whatsNew). */
   isNew?: boolean;
-  /** Bấm thường mở ngăn kéo (?panel=…) thay vì chuyển trang; `to` là link dự phòng. */
-  panel?: "chat";
   /** Một câu mô tả ngắn — hiện ở trang "Tất cả tính năng" (menu trái không dùng). */
   hint?: string;
   /** Đường dẫn khác cũng làm mục này sáng (vd mục "Tất cả tính năng" sáng khi đang ở một trang con của nó). */
@@ -282,7 +280,6 @@ export function buildSections(
   _pendingContribCount: number,
   pendingInlawCount: number,
   todoCount: number,
-  aiEnabled: boolean,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -539,17 +536,6 @@ export function buildSections(
           icon: <IconList className={ic} />,
           badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
         },
-        // Trợ lý AI: lối vào KHÔNG vướng màn hình (nút nổi đang tạm ẩn). Chỉ khi nền tảng bật và dòng họ chưa tắt tính năng.
-        ...(aiEnabled && feat("ai_assistant")
-          ? [
-              {
-                to: `/clans/${clanId}/tro-ly`,
-                label: t`Trợ lý AI`,
-                hint: t`Hỏi về gia phả bằng lời.`,
-                icon: <IconSparkles className={ic} />,
-              },
-            ]
-          : []),
         {
           to: `/clans/${clanId}/xem-ngay`,
           label: t`Lịch âm dương`,
@@ -571,12 +557,6 @@ export function buildSections(
           label: t`Nhập từ Excel`,
           hint: t`Thêm nhiều người cùng lúc từ file Excel.`,
           icon: <IconUpload className={ic} />,
-        },
-        {
-          to: `/clans/${clanId}/ai-generate`,
-          label: t`Sinh bằng AI`,
-          hint: t`Mô tả bằng lời, AI dựng dữ liệu để duyệt.`,
-          icon: <IconSparkles className={ic} />,
         },
         {
           to: `/clans/${clanId}/merge`,

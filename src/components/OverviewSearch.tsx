@@ -1,8 +1,8 @@
 import { t } from "@lingui/core/macro";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-import { IconSearch, IconSparkles } from "@/components/icons";
+import { IconSearch } from "@/components/icons";
 import { track } from "@/lib/analytics";
 
 /**
@@ -10,15 +10,8 @@ import { track } from "@/lib/analytics";
  * hai của app (770 lần/90 ngày, hơn cả mở cây) nhưng trước đây phải vào Danh bạ mới có ô tìm. Nhập rồi Enter → mở
  * Danh bạ với từ khoá đã điền sẵn (`?q=`), dùng lại đúng bộ tìm không dấu của Danh bạ.
  *
- * Nếu trợ lý AI đang bật, có thêm một lối vào nhỏ dưới ô: hỏi bằng lời cho câu hỏi tìm không ra (xưng hô, giỗ…).
  */
-export function OverviewSearch({
-  clanId,
-  aiLink = false,
-}: {
-  clanId: string;
-  aiLink?: boolean;
-}) {
+export function OverviewSearch({ clanId }: { clanId: string }) {
   const [q, setQ] = useState("");
   const navigate = useNavigate();
 
@@ -49,16 +42,6 @@ export function OverviewSearch({
           />
         </label>
       </form>
-      {aiLink && (
-        <Link
-          to={`/clans/${clanId}/tro-ly`}
-          onClick={() => track("overview_ai_click")}
-          className="ml-1 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-        >
-          <IconSparkles className="h-4 w-4" />
-          {t`Hoặc hỏi trợ lý AI bằng lời`}
-        </Link>
-      )}
     </div>
   );
 }

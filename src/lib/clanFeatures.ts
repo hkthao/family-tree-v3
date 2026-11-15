@@ -17,8 +17,7 @@ export type ClanFeatureKey =
   | "graves"
   | "honor"
   | "fund"
-  | "inlaws"
-  | "ai_assistant";
+  | "inlaws";
 
 export interface ClanFeatureDef {
   key: ClanFeatureKey;
@@ -36,7 +35,6 @@ export const CLAN_FEATURES: ClanFeatureDef[] = lazyAs<ClanFeatureDef[]>([
   { key: "honor", label: msg`Bảng vàng công đức`, description: msg`Ghi nhận đóng góp công đức.` },
   { key: "fund", label: msg`Quỹ họ`, description: msg`Sổ quỹ thu chi dòng họ.` },
   { key: "inlaws", label: msg`Liên kết dòng họ`, description: msg`Liên kết chéo giữa các dòng họ (thông gia, họ tổ, họ hậu duệ, họ hàng).` },
-  { key: "ai_assistant", label: msg`Trợ lý AI`, description: msg`Hỏi đáp về gia phả bằng lời — giỗ chạp, xưng hô, tra cứu người. Câu hỏi được gửi tới dịch vụ AI bên ngoài để xử lý (kèm tên, năm sinh/mất của người liên quan; không gửi ảnh hay tiểu sử).` },
 ]);
 
 /** Tính năng `key` có đang bật cho dòng họ này không (mặc định: bật). */

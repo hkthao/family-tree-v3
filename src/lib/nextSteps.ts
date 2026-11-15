@@ -36,7 +36,6 @@ export interface NextStepInput {
   /** Tính năng phụ có đang bật cho dòng họ không. */
   isEnabled: (key: ClanFeatureKey) => boolean;
   /** Trợ lý AI có bật trên nền tảng không. */
-  aiOn: boolean;
   /** Số giỗ / sự kiện của dòng họ rơi trong 7 ngày tới — có thì ưu tiên gợi ý liên quan lịch và chia sẻ. */
   soonEvents?: number;
   /** Thời điểm tính "mùa" (Tết, Chạp họ). Mặc định: bây giờ. */
@@ -137,7 +136,7 @@ export function computeNextSteps(
   input: NextStepInput,
   rng?: () => number,
 ): NextStep[] {
-  const { persons, todo, counts, customEvents, canEdit, isEnabled, aiOn, soonEvents, now } = input;
+  const { persons, todo, counts, customEvents, canEdit, isEnabled, soonEvents, now } = input;
   const out: NextStep[] = [];
   const total = persons.length;
   if (total === 0) return out;
@@ -243,7 +242,6 @@ export function computeNextSteps(
   add("book", t`Xuất sổ gia phả PDF`, t`In thành cuốn sổ có bìa`, "settings", canEdit && total >= 10);
   add("qr", t`Mã QR cho từng người`, t`In lên bia mộ, danh thiếp`, "qr-export", canEdit && total >= 10);
   add("board", t`Bảng tin dòng họ`, t`Đăng tin vui, tin buồn`, "board", isEnabled("board"));
-  add("ai", t`Hỏi trợ lý AI`, t`Hỏi giỗ, xưng hô, tra người`, "tro-ly", aiOn && isEnabled("ai_assistant"));
   add("fund", t`Sổ quỹ họ minh bạch`, t`Ghi thu chi, ai cũng xem được`, "fund", canEdit && isEnabled("fund"));
 
   // Chọn theo trọng số (gap nặng hơn khám phá; mùa Tết / giỗ sắp tới nâng gợi ý liên quan).

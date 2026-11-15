@@ -9,7 +9,6 @@ import {
   useParams,
 } from "react-router-dom";
 
-import { AiChatDock } from "@/components/ai/AiChatDock";
 import { HeaderActions } from "@/components/HeaderActions";
 import { AppDrawer } from "@/components/AppDrawer";
 import { BottomTabBar } from "@/components/BottomTabBar";
@@ -211,10 +210,6 @@ export function ClanLayout() {
       <BottomTabBar tabs={tabs} />
       {/* Ngăn kéo bên phải điều khiển bằng ?panel= (thêm / sửa người…). */}
       <PanelHost clan={clan} />
-      {/* Khung chat nổi — tự ẩn trên điện thoại và khi trợ lý tắt. */}
-      {(clan.myRole !== null || clan.isPlatformAdmin) && (
-        <AiChatDock clan={clan} />
-      )}
     </div>
   );
 }

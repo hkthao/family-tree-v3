@@ -12,7 +12,6 @@ import {
   IconLock,
   IconScroll,
   IconSearch,
-  IconSparkles,
   IconTag,
   IconUser,
   IconUsers,
@@ -175,10 +174,6 @@ export function ClansTab() {
 }
 
 /** Số → ô nhập. `null` (chưa đặt) và `undefined` (dữ liệu cũ) đều thành rỗng. */
-function asText(v: number | null | undefined): string {
-  return v === null || v === undefined ? "" : String(v);
-}
-
 function ClanRow({ clan, onOpen }: { clan: AdminClanRow; onOpen: () => void }) {
   const isPublic = clan.visibility === "public";
   return (
@@ -229,31 +224,15 @@ function ClanForm({
   const toast = useToast();
   const [maxPersons, setMaxPersons] = useState(String(clan.max_persons));
   const [maxUsers, setMaxUsers] = useState(String(clan.max_users));
-  // Rỗng = dùng mức chung của nền tảng. Giữ dạng chuỗi để phân biệt được
-  // "rỗng" với "0" — 0 là một mức thật ("khoá hẳn"), không phải bỏ trống.
-  //
-  // Phải dùng `?? ""` chứ KHÔNG phải so `=== null`: bản ghi cũ còn trong
-  // cache của react-query (từ lần deploy trước, khi cột này chưa tồn
-  // tại) mang giá trị `undefined`, mà `String(undefined)` ra chuỗi
-  // "undefined" — trình duyệt ném đúng lỗi
-  // «The specified value "undefined" cannot be parsed» cho input số.
-  const [aiDaily, setAiDaily] = useState(asText(clan.ai_daily_limit));
-  const [aiMonthly, setAiMonthly] = useState(asText(clan.ai_monthly_limit));
-  const asLimit = (v: string) => (v.trim() === "" ? null : Number(v));
-
   const changed =
     String(clan.max_persons) !== maxPersons ||
-    String(clan.max_users) !== maxUsers ||
-    asText(clan.ai_daily_limit) !== aiDaily ||
-    asText(clan.ai_monthly_limit) !== aiMonthly;
+    String(clan.max_users) !== maxUsers;
 
   const m = useMutation({
     mutationFn: () =>
       updateClanLimits(clan.id, {
         max_persons: Number(maxPersons),
         max_users: Number(maxUsers),
-        ai_daily_limit: asLimit(aiDaily),
-        ai_monthly_limit: asLimit(aiMonthly),
       }),
     onSuccess: () => {
       toast.success(t`Đã cập nhật giới hạn dòng họ`);
@@ -309,37 +288,9 @@ function ClanForm({
             />
           </div>
         </div>
-        {/* Hai ô AI để trống = dùng mức chung của nền tảng (sửa ở Cài đặt › Trợ lý AI);
-            0 = khoá hẳn. */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="ad">{t`Lượt AI / ngày`}</Label>
-            <Input
-              id="ad"
-              icon={<IconSparkles />}
-              type="number"
-              min={0}
-              placeholder={t`mặc định`}
-              value={aiDaily}
-              onChange={(e) => setAiDaily(e.target.value)}
-            />
-          </div>
-          <div className="min-w-0 space-y-1.5">
-            <Label htmlFor="am">{t`Lượt AI / tháng`}</Label>
-            <Input
-              id="am"
-              icon={<IconSparkles />}
-              type="number"
-              min={0}
-              placeholder={t`mặc định`}
-              value={aiMonthly}
-              onChange={(e) => setAiMonthly(e.target.value)}
-            />
-          </div>
-        </div>
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <IconScroll className="h-3.5 w-3.5 shrink-0" />
-          {clan.person_count} người hiện có · để trống hai ô AI = dùng mức chung của nền tảng.
+          {clan.person_count} người hiện có.
         </p>
       </ReadOnlyFieldset>
 

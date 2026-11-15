@@ -186,15 +186,9 @@ export const DOCS_SECTIONS: DocSection[] = [
       },
       {
         slug: "nhap-hang-loat",
-        title: "Nhập từ Excel & sinh bằng AI",
+        title: "Nhập từ Excel",
         summary: "Đổ cả trăm người một lúc, có xem trước và kiểm lỗi.",
         Body: Features.BulkImport,
-      },
-      {
-        slug: "tro-ly-ai",
-        title: "Trợ lý AI",
-        summary: "Hỏi về gia phả của họ mình bằng lời thường.",
-        Body: Features.Assistant,
       },
     ],
   },

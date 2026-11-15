@@ -4,7 +4,6 @@ import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { IconSearch } from "@/components/icons";
-import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useAuth } from "@/hooks/useAuth";
 import {
   PAGE_ENTRIES,
@@ -74,7 +73,6 @@ export function GlobalSearch({
   const userId = user?.id ?? "";
   const navigate = useNavigate();
   const { clanId } = useParams<{ clanId?: string }>();
-  const aiEnabled = useAiEnabled();
 
   const [openState, setOpenState] = useState(false);
   const open = openProp ?? openState;
@@ -151,7 +149,6 @@ export function GlobalSearch({
       0,
       0,
       0,
-      aiEnabled,
     ).flatMap((s) =>
       s.items.map<StaticEntry>((i) => ({
         group: "menu",
@@ -196,7 +193,7 @@ export function GlobalSearch({
       },
     );
     return out;
-  }, [open, clanId, clan, profile, aiEnabled]);
+  }, [open, clanId, clan, profile]);
   const guides = useMemo(() => (open ? guideEntries() : []), [open]);
 
   const rows = useMemo<Row[]>(() => {

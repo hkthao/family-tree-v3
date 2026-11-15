@@ -324,8 +324,8 @@ export function BulkImport() {
   return (
     <>
       <Lead>
-        Đã có sẵn gia phả trong Excel, hay chỉ có vài dòng mô tả? Đừng gõ lại
-        từng người — hãy nhập hàng loạt.
+        Đã có sẵn gia phả trong Excel? Đừng gõ lại từng người — hãy nhập hàng
+        loạt.
       </Lead>
 
       <H2>Nhập từ Excel</H2>
@@ -342,45 +342,12 @@ export function BulkImport() {
         </LI>
       </Steps>
 
-      <H2>Sinh bằng AI</H2>
-      <P>
-        Mô tả bằng lời (vd. “Ông A sinh 1950, vợ là bà B, có 3 con…”), AI dựng
-        thành dữ liệu để bạn <Strong>duyệt</Strong> rồi mới nhập. AI có thể sai,
-        hãy đọc lại trước khi xác nhận.
-      </P>
-
       <Callout kind="warn" title="Trùng người">
         Nhập xong nếu thấy có người bị trùng, dùng{" "}
         <Link to="/docs/gop-trung" className="underline">
           Gộp người trùng
         </Link>
         .
-      </Callout>
-    </>
-  );
-}
-
-export function Assistant() {
-  return (
-    <>
-      <Lead>
-        <Strong>Trợ lý AI</Strong> trả lời câu hỏi về gia phả của chính dòng họ
-        bạn bằng lời thường: “Ông nội của An là ai?”, “Tháng này có giỗ ai?”.
-      </Lead>
-      <UL>
-        <LI>
-          Mở từ <Strong>Công cụ &amp; Quản trị → Trợ lý AI</Strong> (hiện khi
-          tính năng được bật cho dòng họ).
-        </LI>
-        <LI>Trợ lý chỉ dựa trên dữ liệu trong dòng họ của bạn.</LI>
-        <LI>
-          Có hạn mức lượt dùng; xem phần còn lại ở{" "}
-          <Strong>Tài khoản → Lượt dùng</Strong>.
-        </LI>
-      </UL>
-      <Callout kind="warn" title="Luôn kiểm tra lại">
-        AI có thể hiểu nhầm. Với thông tin quan trọng (ngày giỗ, quan hệ), hãy
-        mở hồ sơ người đó để đối chiếu.
       </Callout>
     </>
   );

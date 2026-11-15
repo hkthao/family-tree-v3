@@ -23,16 +23,13 @@ import { t } from "@lingui/core/macro";
 // trang đang vào, không gánh code của cả 65 trang. Giảm mạnh thời gian tải lần
 // đầu, nhất là trên mobile (~67% người dùng) & trình duyệt trong Facebook.
 const Account = lazy(() => import("@/pages/Account"));
-const CreditHistory = lazy(() => import("@/pages/CreditHistory"));
 const AdminHub = lazy(() => import("@/pages/admin/AdminHub"));
 const AdminHeThong = lazy(() => import("@/pages/admin/HeThongPage"));
 const AdminNguoiDung = lazy(() => import("@/pages/admin/NguoiDungPage"));
 const AdminDongHo = lazy(() => import("@/pages/admin/DongHoPage"));
 const AdminGopY = lazy(() => import("@/pages/admin/GopYPage"));
 const AdminKetNoiAi = lazy(() => import("@/pages/admin/KetNoiAiPage"));
-const AdminTroLyAi = lazy(() => import("@/pages/admin/TroLyAiPage"));
 const AdminCauHinh = lazy(() => import("@/pages/admin/CauHinhPage"));
-const AdminCauHinhAi = lazy(() => import("@/pages/admin/CauHinhAiPage"));
 const AdminThongBao = lazy(() => import("@/pages/admin/ThongBaoPage"));
 const AdminDanhMucDiaGioi = lazy(
   () => import("@/pages/admin/DanhMucDiaGioiPage"),
@@ -55,8 +52,6 @@ const Docs = lazy(() => import("@/pages/Docs"));
 const AddChild = lazy(() => import("@/pages/clan/AddChild"));
 const AddParent = lazy(() => import("@/pages/clan/AddParent"));
 const AddSpouse = lazy(() => import("@/pages/clan/AddSpouse"));
-const AiChat = lazy(() => import("@/pages/clan/AiChat"));
-const AiGenerate = lazy(() => import("@/pages/clan/AiGenerate"));
 const Audit = lazy(() => import("@/pages/clan/Audit"));
 const Board = lazy(() => import("@/pages/clan/Board"));
 const BoardModeration = lazy(() => import("@/pages/clan/BoardModeration"));
@@ -415,15 +410,6 @@ export default function App() {
                 <Route path="settings" element={<Settings />} />
                 <Route path="so-gia-pha" element={<BookInfo />} />
                 <Route path="import" element={<Import />} />
-                <Route path="ai-generate" element={<AiGenerate />} />
-                <Route
-                  path="tro-ly"
-                  element={
-                    <FeatureGuard feature="ai_assistant">
-                      <AiChat />
-                    </FeatureGuard>
-                  }
-                />
                 <Route path="merge" element={<Merge />} />
                 <Route path="audit" element={<Audit />} />
                 <Route path="qr-export" element={<QrExport />} />
@@ -506,15 +492,6 @@ export default function App() {
                   </RequireAuth>
                 }
               />
-              {/* Sổ lượt trợ lý — KHÁC lịch sử trò chuyện (xem CreditHistory). */}
-              <Route
-                path="/account/luot-dung"
-                element={
-                  <RequireAuth>
-                    <CreditHistory />
-                  </RequireAuth>
-                }
-              />
               {/* Khu quản trị: MỖI MÀN MỘT TRANG (xem lib/adminScreens.tsx).
             /admin là lưới chọn màn, kiểu màn hình chính điện thoại. */}
               <Route
@@ -558,14 +535,6 @@ export default function App() {
                 }
               />
               <Route
-                path="/admin/tro-ly-ai"
-                element={
-                  <RequireAuth>
-                    <AdminTroLyAi />
-                  </RequireAuth>
-                }
-              />
-              <Route
                 path="/admin/ket-noi-ai"
                 element={
                   <RequireAuth>
@@ -578,14 +547,6 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <AdminCauHinh />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/admin/cau-hinh-ai"
-                element={
-                  <RequireAuth>
-                    <AdminCauHinhAi />
                   </RequireAuth>
                 }
               />

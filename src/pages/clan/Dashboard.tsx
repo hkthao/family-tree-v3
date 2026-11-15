@@ -10,7 +10,6 @@ import {
 import { useHomePrefs } from "@/hooks/useHomePrefs";
 import { PodcastTodayCard } from "@/components/PodcastTodayCard";
 import { upcomingFestivals } from "@/lib/festivals";
-import { useAiEnabled } from "@/hooks/useAiEnabled";
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -81,7 +80,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
-  const aiOn = useAiEnabled();
   const { show } = useHomePrefs();
   const [customizeOpen, setCustomizeOpen] = useState(false);
   // Todo + completion RPCs are member-only (they raise 42501 for
@@ -191,7 +189,6 @@ export default function Dashboard() {
       canEdit,
       isEnabled: (k: ClanFeatureKey) =>
         isFeatureEnabled(clan.disabled_features, k),
-      aiOn,
       // Giỗ / sự kiện của họ trong 7 ngày tới (không tính lễ tết chung): có thì gợi ý lịch & chia sẻ được nâng lên.
       soonEvents: cardEvents.filter(
         (e) => e.daysUntil <= 7 && e.kind !== "festival",
@@ -204,7 +201,6 @@ export default function Dashboard() {
       events,
       canEdit,
       clan.disabled_features,
-      aiOn,
       cardEvents,
     ],
   );
@@ -279,11 +275,6 @@ export default function Dashboard() {
         (isMember || clan.public_show_tree) && (
           <OverviewSearch
             clanId={clan.id}
-            aiLink={
-              aiOn &&
-              isMember &&
-              isFeatureEnabled(clan.disabled_features, "ai_assistant")
-            }
           />
         )}
 
