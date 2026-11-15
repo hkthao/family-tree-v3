@@ -183,6 +183,57 @@ describe("xáo ngẫu nhiên", () => {
   });
 });
 
+describe("trọng số theo ngữ cảnh", () => {
+  const six = Array.from({ length: 6 }, (_, i) => P({ is_root: i === 0 }));
+  const withGap = base({
+    persons: [...six, P({ is_living: false })], // 1 việc bổ sung dữ liệu (giỗ)
+    isEnabled: () => true,
+    aiOn: true,
+  });
+  /** Tỉ lệ id đứng đầu qua nhiều hạt giống. */
+  const topRate = (input: NextStepInput, id: string, n = 600) => {
+    let hit = 0;
+    for (let seed = 1; seed <= n; seed++) {
+      if (computeNextSteps(input, seededRng(seed))[0].id === id) hit++;
+    }
+    return hit / n;
+  };
+  // 20/01/2027 = 12/12 âm lịch (mùa Chạp, Tết); 15/07/2026 là giữa năm, không phải mùa Tết.
+  const tet = new Date(2027, 0, 20);
+  const midYear = new Date(2026, 6, 15);
+
+  it("không rng: xếp theo trọng số giảm dần, việc bổ sung dữ liệu trước khám phá", () => {
+    const s = computeNextSteps({ ...withGap, now: midYear });
+    expect(s[0].id).toBe("anniv");
+    expect(s[0].kind).toBe("gap");
+  });
+
+  it("việc bổ sung dữ liệu hay đứng đầu hơn một gợi ý khám phá bình thường nhưng KHÔNG luôn luôn", () => {
+    const gapRate = topRate({ ...withGap, now: midYear }, "anniv");
+    const treeRate = topRate({ ...withGap, now: midYear }, "tree"); // trọng số 0.5
+    expect(gapRate).toBeGreaterThan(treeRate * 3);
+    expect(gapRate).toBeLessThan(0.9); // vẫn xáo, không kẹt mãi một thẻ
+  });
+
+  it("mùa Tết (tháng Chạp/Giêng âm): xem ngày tốt được nâng rõ rệt so với giữa năm", () => {
+    const inTet = topRate({ ...withGap, now: tet }, "goodday");
+    const off = topRate({ ...withGap, now: midYear }, "goodday");
+    expect(inTet).toBeGreaterThan(off * 1.8);
+  });
+
+  it("có giỗ/sự kiện trong 7 ngày tới: gợi ý lịch và chia sẻ được nâng", () => {
+    const soon = topRate({ ...withGap, now: midYear, soonEvents: 2 }, "calendar");
+    const none = topRate({ ...withGap, now: midYear, soonEvents: 0 }, "calendar");
+    expect(soon).toBeGreaterThan(none * 2);
+  });
+
+  it("cùng hạt giống vẫn cho cùng thứ tự (thẻ không nhảy khi dữ liệu tải dần)", () => {
+    const ids = (seed: number) =>
+      computeNextSteps({ ...withGap, now: midYear }, seededRng(seed)).map((x) => x.id);
+    expect(ids(42)).toEqual(ids(42));
+  });
+});
+
 describe("snooze", () => {
   beforeEach(() => localStorage.clear());
 

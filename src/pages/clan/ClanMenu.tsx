@@ -17,6 +17,7 @@ import { useNavSections } from "@/hooks/useNavSections";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { LOCALES, currentLocale } from "@/lib/i18n";
 import { useChangeLocale } from "@/lib/i18n/useLocale";
+import { track } from "@/lib/analytics";
 import { unaccent } from "@/lib/unaccent";
 
 /** Một ô của lưới: liên kết (`to`) hoặc hành động (`onClick`). Cùng kiểu với trang Quản trị nền tảng. */
@@ -38,6 +39,9 @@ interface Group {
 }
 
 /** CHIỀU CAO CỐ ĐỊNH: mọi ô bằng nhau dù nhãn/mô tả dài ngắn khác nhau (nhãn và mô tả cắt ở 2 dòng). */
+/** Khoá gửi đi đo: bỏ phần `/clans/<id>/` để KHÔNG kèm mã dòng họ. */
+const tileName = (key: string) => key.replace(/^\/clans\/[^/]+\//, "");
+
 const TILE =
   "flex h-[160px] w-full flex-col gap-2 overflow-hidden rounded-xl border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted/50 sm:h-[144px] sm:p-4";
 
@@ -197,11 +201,24 @@ export default function ClanMenu() {
             {g.tiles.map((tile) => (
               <li key={tile.key}>
                 {tile.to ? (
-                  <Link to={tile.to} className={TILE}>
+                  <Link
+                    to={tile.to}
+                    className={TILE}
+                    onClick={() =>
+                      track("hub_tile_click", { key: tileName(tile.key) })
+                    }
+                  >
                     <TileBody tile={tile} />
                   </Link>
                 ) : (
-                  <button type="button" onClick={tile.onClick} className={TILE}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      track("hub_tile_click", { key: tileName(tile.key) });
+                      tile.onClick?.();
+                    }}
+                    className={TILE}
+                  >
                     <TileBody tile={tile} />
                   </button>
                 )}

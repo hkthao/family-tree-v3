@@ -1,0 +1,207 @@
+import { t } from "@lingui/core/macro";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+
+import { IconDownload, IconGrid, IconSliders } from "@/components/icons";
+import { SectionCard } from "@/components/SectionCard";
+import { useNavSections } from "@/hooks/useNavSections";
+import { useHomePrefs } from "@/hooks/useHomePrefs";
+import { track } from "@/lib/analytics";
+import { orderQuick } from "@/lib/homePrefs";
+import { buildQuickCatalog, type QuickEntry } from "@/lib/quickCatalog";
+import type { ClanDetail } from "@/lib/queries/clan-detail";
+
+/** Số ô tối đa của thẻ Thao tác nhanh, TÍNH CẢ ô lối tắt "Tất cả tính năng" ở cuối. */
+export const MAX_QUICK = 12;
+
+/**
+ * Danh mục các ô có thể ghim + danh sách đang HIỂN THỊ (đã theo ghim / lượt bấm). Dùng chung cho thẻ và ngăn
+ * kéo tuỳ chỉnh để hai nơi luôn nói cùng một chuyện.
+ */
+export function useQuickEntries(
+  clan: ClanDetail,
+  canEdit: boolean,
+  isMember: boolean,
+) {
+  const { sections } = useNavSections();
+  const { prefs } = useHomePrefs();
+  const catalog = useMemo(
+    () => buildQuickCatalog(sections, { clanId: clan.id, canEdit, isMember }),
+    [sections, clan.id, canEdit, isMember],
+  );
+  const shown = useMemo(
+    () => orderQuick(catalog, prefs, MAX_QUICK - 1),
+    [catalog, prefs],
+  );
+  return { catalog, shown, pinned: prefs.pins !== null };
+}
+
+const TILE =
+  "group relative flex items-center gap-2.5 rounded-xl border bg-card px-3 py-2.5 text-left shadow-sm transition-colors hover:border-primary hover:bg-muted/30";
+
+/** Một ô của lưới (liên kết). `tone="muted"`: ô lối tắt "Tất cả tính năng", viền nét đứt. */
+export function ActionTile({
+  to,
+  icon,
+  title,
+  badge,
+  tone = "default",
+  onClick,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  /** Badge số đếm (vd. việc cần làm). 0/undefined → không hiện. */
+  badge?: number | string;
+  tone?: "default" | "muted";
+  onClick?: () => void;
+}) {
+  const n = typeof badge === "string" ? parseInt(badge, 10) || 1 : badge;
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className={`${TILE} ${tone === "muted" ? "border-dashed" : ""}`}
+    >
+      <span
+        className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5"
+        aria-hidden="true"
+      >
+        {icon}
+      </span>
+      <span className="truncate text-sm font-medium leading-tight">
+        {title}
+      </span>
+      {n !== undefined && n > 0 && (
+        <span className="absolute right-1 top-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] tabular-nums text-primary-foreground">
+          {n > 99 ? "99+" : n}
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function ExportPdfTile({
+  clan,
+  onClick,
+}: {
+  clan: ClanDetail;
+  onClick?: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function run() {
+    onClick?.();
+    setBusy(true);
+    setErr(null);
+    try {
+      const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
+      await downloadClanBookPdf(clan, { tree: true, detail: true });
+      track("export", { kind: "clan_book_pdf", from: "dashboard" });
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={run}
+      disabled={busy}
+      title={err ?? undefined}
+      className={`${TILE} disabled:cursor-wait disabled:opacity-60`}
+    >
+      <span
+        className="shrink-0 text-primary [&>svg]:h-5 [&>svg]:w-5"
+        aria-hidden="true"
+      >
+        <IconDownload />
+      </span>
+      <span className="truncate text-sm font-medium leading-tight">
+        {busy ? t`Đang xuất…` : t`Xuất PDF`}
+      </span>
+    </button>
+  );
+}
+
+function Tile({
+  entry,
+  clan,
+  onUse,
+}: {
+  entry: QuickEntry;
+  clan: ClanDetail;
+  onUse: (key: string) => void;
+}) {
+  if (entry.special === "pdf") {
+    return <ExportPdfTile clan={clan} onClick={() => onUse(entry.key)} />;
+  }
+  return (
+    <ActionTile
+      to={entry.to!}
+      icon={entry.icon}
+      title={entry.short}
+      badge={entry.badge}
+      onClick={() => onUse(entry.key)}
+    />
+  );
+}
+
+/**
+ * "Thao tác nhanh": TỐI ĐA 12 ô. Mặc định = bốn mục lõi + các ô xếp theo mức người này HAY BẤM (tự học, lưu trên
+ * máy); người dùng có thể GHIM tự chọn ô và thứ tự ở ngăn kéo "Tuỳ chỉnh". Ô thứ 12 luôn là lối tắt vào "Tất cả
+ * tính năng" nên không mục nào mất đường vào. Mỗi lượt bấm ghi sự kiện `quick_tile_click` (khoá ô, không có dữ
+ * liệu cá nhân) để biết ô nào thật sự được dùng.
+ */
+export function QuickActionsCard({
+  clan,
+  canEdit,
+  isMember,
+  onCustomize,
+}: {
+  clan: ClanDetail;
+  canEdit: boolean;
+  isMember: boolean;
+  onCustomize: () => void;
+}) {
+  const { shown, pinned } = useQuickEntries(clan, canEdit, isMember);
+  const { bump } = useHomePrefs();
+  const onUse = (key: string) => {
+    bump(key);
+    track("quick_tile_click", { key, pinned });
+  };
+  return (
+    <SectionCard
+      id="quick"
+      icon={<IconGrid />}
+      title={t`Thao tác nhanh`}
+      footer={
+        <button
+          type="button"
+          onClick={onCustomize}
+          className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+        >
+          <IconSliders className="h-4 w-4" />
+          {t`Tuỳ chỉnh trang chủ`}
+        </button>
+      }
+    >
+      {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop. */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {shown.map((e) => (
+          <Tile key={e.key} entry={e} clan={clan} onUse={onUse} />
+        ))}
+        <ActionTile
+          to={`/clans/${clan.id}/menu`}
+          icon={<IconGrid />}
+          title={t`Tất cả tính năng`}
+          tone="muted"
+          onClick={() => track("quick_tile_click", { key: "menu", pinned })}
+        />
+      </div>
+    </SectionCard>
+  );
+}

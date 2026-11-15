@@ -280,7 +280,7 @@ export function buildSections(
   _pendingContribCount: number,
   pendingInlawCount: number,
   todoCount: number,
-  _aiEnabled: boolean,
+  aiEnabled: boolean,
 ): DrawerSection[] {
   const sections: DrawerSection[] = [];
 
@@ -531,6 +531,17 @@ export function buildSections(
           icon: <IconList className={ic} />,
           badge: todoCount > 0 ? formatBadge(todoCount) : undefined,
         },
+        // Trợ lý AI: lối vào KHÔNG vướng màn hình (nút nổi đang tạm ẩn). Chỉ khi nền tảng bật và dòng họ chưa tắt tính năng.
+        ...(aiEnabled && feat("ai_assistant")
+          ? [
+              {
+                to: `/clans/${clanId}/tro-ly`,
+                label: t`Trợ lý AI`,
+                hint: t`Hỏi về gia phả bằng lời.`,
+                icon: <IconSparkles className={ic} />,
+              },
+            ]
+          : []),
         {
           to: `/clans/${clanId}/xem-ngay`,
           label: t`Lịch âm dương`,
