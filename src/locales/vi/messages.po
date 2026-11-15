@@ -5307,7 +5307,6 @@ msgstr "Đang xuất…"
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/People.tsx
@@ -5564,6 +5563,7 @@ msgstr "Di chuyển"
 
 #: src/lib/queries/global-search.ts
 #: src/lib/queries/mapStats.ts
+#: src/pages/clan/Dashboard.tsx
 #: src/pages/Share.tsx
 msgid "Di sản"
 msgstr "Di sản"
@@ -11244,10 +11244,6 @@ msgstr "Ông Công Ông Táo"
 msgid "pg_cron chưa cài hoặc chưa có job nào — local dev là bình thường."
 msgstr "pg_cron chưa cài hoặc chưa có job nào — local dev là bình thường."
 
-#: src/pages/clan/Dashboard.tsx
-msgid "Phả hệ"
-msgstr "Phả hệ"
-
 #: src/components/BookTextsSection.tsx
 msgid "Phả ký"
 msgstr "Phả ký"
@@ -12581,6 +12577,7 @@ msgstr "Tất cả quy mô"
 #: src/lib/pageTitle.ts
 #: src/pages/clan/ClanMenu.tsx
 #: src/pages/clan/ClanMenu.tsx
+#: src/pages/clan/Dashboard.tsx
 msgid "Tất cả tính năng"
 msgstr "Tất cả tính năng"
 
@@ -13510,7 +13507,6 @@ msgstr "Thông tin"
 
 #: src/pages/clan/BookInfo.tsx
 #: src/pages/clan/BookInfo.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Settings.tsx
 msgid "Thông tin & Sổ gia phả"
 msgstr "Thông tin & Sổ gia phả"
