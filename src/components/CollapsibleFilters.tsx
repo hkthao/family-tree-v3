@@ -1,11 +1,11 @@
 import { useState, type ReactNode } from "react";
 
 import { FilterDrawer } from "@/components/FilterDrawer";
-import { IconFilter } from "@/components/icons";
+import { IconSliders } from "@/components/icons";
 
 import { t } from "@lingui/core/macro";
 /**
- * Bộ lọc / tuỳ chọn của màn danh sách: chỉ còn một icon phễu (kèm số lọc đang
+ * Bộ lọc / tuỳ chọn của màn danh sách: chỉ còn một icon thanh trượt (kèm số lọc đang
  * áp dụng); bấm mở ngăn kéo bên phải chứa các ô chọn (xem FilterDrawer) — mọi
  * cỡ màn hình, danh sách không bị chiếm chỗ. `children` nên xếp DỌC (flex-col).
  *
@@ -17,16 +17,20 @@ export function CollapsibleFilters({
   activeCount = 0,
   actions,
   search,
+  labelled = false,
   onReset,
   title,
 }: {
-  children: ReactNode;
+  /** Nội dung ngăn kéo; truyền hàm để lấy `close` (đóng ngăn kéo sau khi bấm một thao tác). */
+  children: ReactNode | ((close: () => void) => ReactNode);
   /** Số bộ lọc đang áp dụng — hiện trên phễu để biết có lọc hay không. */
   activeCount?: number;
   /** Nút thao tác (thêm/nhập/…) — một hàng căn phải ngay dưới ô tìm kiếm. */
   actions?: ReactNode;
   /** Ô tìm kiếm, nhận nút phễu để nhét vào rightSlot. */
   search?: (toggle: ReactNode) => ReactNode;
+  /** Nút mở ngăn kéo LUÔN có chữ "Tuỳ chọn" (cạnh ô tìm kiếm) thay vì chỉ một icon nhỏ trong ô. */
+  labelled?: boolean;
   /** Có thì ngăn kéo hiện nút "Đặt lại". */
   onReset?: () => void;
   title?: string;
@@ -38,19 +42,21 @@ export function CollapsibleFilters({
       onClick={() => setOpen(true)}
       aria-haspopup="dialog"
       aria-expanded={open}
-      aria-label={t`Bộ lọc`}
+      aria-label={t`Bộ lọc & tuỳ chọn`}
       className={`relative inline-flex items-center justify-center rounded-md text-sm ${
-        search
+        search && !labelled
           ? "h-8 w-8 text-muted-foreground hover:bg-muted"
-          : "h-10 gap-1.5 border bg-card px-3"
+          : labelled
+            ? "h-12 shrink-0 gap-1.5 border bg-card px-3.5 font-medium hover:bg-muted"
+            : "h-10 gap-1.5 border bg-card px-3"
       }`}
     >
-      <IconFilter className="h-4 w-4" />
-      {!search && t`Bộ lọc`}
+      <IconSliders className="h-4 w-4" />
+      {(!search || labelled) && t`Tuỳ chọn`}
       {activeCount > 0 && (
         <span
           className={`rounded-full bg-primary px-1.5 text-xs text-primary-foreground ${
-            search
+            search && !labelled
               ? "absolute -right-0.5 -top-0.5 h-4 min-w-4 px-1 text-[10px] leading-4"
               : ""
           }`}
@@ -78,7 +84,7 @@ export function CollapsibleFilters({
         onReset={onReset}
         title={title}
       >
-        {children}
+        {typeof children === "function" ? children(() => setOpen(false)) : children}
       </FilterDrawer>
     </>
   );

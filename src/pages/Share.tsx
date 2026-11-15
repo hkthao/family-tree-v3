@@ -5,7 +5,7 @@ import { Link, useParams } from "react-router-dom";
 
 import {
   IconDownload,
-  IconFilter,
+  IconSliders,
   IconShield,
   IconUser,
   IconLogIn,
@@ -1071,7 +1071,7 @@ export default function Share() {
                   aria-expanded={showOpts}
                   aria-label={t`Tuỳ chọn cây`}
                 >
-                  <IconFilter className="h-4 w-4" />
+                  <IconSliders className="h-4 w-4" />
                   <span className="hidden sm:inline">{t`Tuỳ chọn`}</span>
                 </Button>
               </div>

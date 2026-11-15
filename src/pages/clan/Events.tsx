@@ -242,127 +242,139 @@ export default function Events() {
           { label: t`Sự kiện` },
         ]}
       />
-      {/* Header: actions xuống hàng riêng do số lượng action (segmented
-          control + xuất .ics + refresh) + description dài → inline sẽ
-          ép description wrap nhiều dòng. */}
+      {/* Màn này CHỈ có: thanh tìm kiếm + nút "Tuỳ chọn" + một dòng gợi ý. Cách xem, khoảng thời gian, đăng ký lịch,
+          xuất .ics và làm mới đều nằm trong ngăn kéo "Tuỳ chọn" (mọi cỡ màn hình). */}
       <PageHeader
         icon={<IconCalendar className="h-7 w-7" />}
         title={t`Sự kiện`}
-        description={t`Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar.`}
-        actionsBelow
-        actions={
-          <>
-            <SegmentedControl ariaLabel={t`Chế độ hiển thị`}>
-              <SegmentedButton
-                active={view === "list"}
-                onClick={() => setView("list")}
-                ariaLabel={t`Danh sách`}
-                className="inline-flex items-center gap-1.5 px-3"
-              >
-                <IconList className="h-4 w-4" />
-                <span className="hidden sm:inline">{t`Danh sách`}</span>
-              </SegmentedButton>
-              <SegmentedButton
-                active={view === "grid"}
-                onClick={() => setView("grid")}
-                ariaLabel={t`Lưới`}
-                className="inline-flex items-center gap-1.5 px-3"
-              >
-                <IconGrid className="h-4 w-4" />
-                <span className="hidden sm:inline">{t`Lưới`}</span>
-              </SegmentedButton>
-              <SegmentedButton
-                active={view === "calendar"}
-                onClick={() => setView("calendar")}
-                ariaLabel={t`Lịch`}
-                className="inline-flex items-center gap-1.5 px-3"
-              >
-                <IconCalendar className="h-4 w-4" />
-                <span className="hidden sm:inline">{t`Lịch`}</span>
-              </SegmentedButton>
-            </SegmentedControl>
-            {effectiveRole(clan) !== null && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10"
-                onClick={() => setFeedOpen(true)}
-                title={t`Đăng ký lịch — Google / Apple Calendar tự cập nhật`}
-              >
-                <IconCalendar className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">{t`Đăng ký lịch`}</span>
-              </Button>
-            )}
-            {effectiveRole(clan) !== null && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10"
-                onClick={handleExportIcs}
-                disabled={!tree || !events || !anniversaries}
-                title={t`Tải file .ics — import vào Google / Apple Calendar`}
-              >
-                <IconDownload className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">{t`Xuất lịch`}</span>
-              </Button>
-            )}
-            <RefreshButton
-              clanId={clan.id}
-              cachedVersion={clan.data_version}
-              compact
-            />
-          </>
-        }
+        description={t`Giỗ, sinh nhật, sự kiện chung của dòng họ.`}
       />
 
-      {/* Tìm kiếm + khoảng thời gian (trong ngăn kéo của phễu) — như Danh bạ. */}
+      {/* Tìm kiếm + nút Tuỳ chọn (ngăn kéo bên phải) + gợi ý để người dùng biết mở. */}
       <CollapsibleFilters
-        activeCount={view !== "calendar" && daysAhead !== 90 ? 1 : 0}
-        onReset={() => setDaysAhead(90)}
-        title={t`Lọc sự kiện`}
+        labelled
+        activeCount={
+          (view !== "list" ? 1 : 0) +
+          (view !== "calendar" && daysAhead !== 90 ? 1 : 0)
+        }
+        onReset={() => {
+          setDaysAhead(90);
+          setView("list");
+        }}
         search={(toggle) => (
-          <SearchInput
-            label={t`Tìm sự kiện`}
-            value={queryText}
-            onChange={(e) => setQueryText(e.target.value)}
-            placeholder={t`Tìm theo tên người, ngày giỗ, sự kiện…`}
-            rightSlot={toggle}
-          />
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <SearchInput
+                  label={t`Tìm sự kiện`}
+                  value={queryText}
+                  onChange={(e) => setQueryText(e.target.value)}
+                  placeholder={t`Tìm theo tên người, ngày giỗ, sự kiện…`}
+                />
+              </div>
+              {toggle}
+            </div>
+            <p className="px-1 text-xs text-muted-foreground">
+              {t`Bấm “Tuỳ chọn” để đổi cách xem, chọn khoảng thời gian, đăng ký hoặc xuất lịch.`}
+            </p>
+          </div>
         )}
       >
-        <div className="flex flex-col gap-3">
-          {view === "calendar" ? (
-            <p className="text-sm text-muted-foreground">
-              <Trans>
-                <Trans>
-                  <Trans>
-                    Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc
-                    Lưới để chọn khoảng thời gian.
-                  </Trans>
-                </Trans>
-              </Trans>
-            </p>
-          ) : (
-            <>
-              <p className="text-base font-medium">{t`Khoảng thời gian`}</p>
-              <SegmentedControl
-                ariaLabel={t`Khoảng thời gian`}
-                className="flex"
-              >
-                {LOOKAHEAD_OPTIONS.map((opt) => (
-                  <SegmentedButton
-                    key={opt.value}
-                    active={daysAhead === opt.value}
-                    onClick={() => setDaysAhead(opt.value)}
-                    className="flex-1 px-3"
-                  >
-                    {opt.label}
-                  </SegmentedButton>
-                ))}
+        {(close) => (
+          <div className="flex flex-col gap-5">
+            <section className="flex flex-col gap-2">
+              <p className="text-base font-medium">{t`Cách xem`}</p>
+              <SegmentedControl ariaLabel={t`Chế độ hiển thị`} className="flex">
+                <SegmentedButton
+                  active={view === "list"}
+                  onClick={() => setView("list")}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
+                >
+                  <IconList className="h-4 w-4" />
+                  {t`Danh sách`}
+                </SegmentedButton>
+                <SegmentedButton
+                  active={view === "grid"}
+                  onClick={() => setView("grid")}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
+                >
+                  <IconGrid className="h-4 w-4" />
+                  {t`Lưới`}
+                </SegmentedButton>
+                <SegmentedButton
+                  active={view === "calendar"}
+                  onClick={() => setView("calendar")}
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 px-3"
+                >
+                  <IconCalendar className="h-4 w-4" />
+                  {t`Lịch`}
+                </SegmentedButton>
               </SegmentedControl>
-            </>
-          )}
-        </div>
+            </section>
+
+            <section className="flex flex-col gap-2">
+              <p className="text-base font-medium">{t`Khoảng thời gian`}</p>
+              {view === "calendar" ? (
+                <p className="text-sm text-muted-foreground">
+                  {t`Chế độ Lịch luôn hiển thị cả năm. Chuyển sang Danh sách hoặc Lưới để chọn khoảng thời gian.`}
+                </p>
+              ) : (
+                <SegmentedControl
+                  ariaLabel={t`Khoảng thời gian`}
+                  className="flex"
+                >
+                  {LOOKAHEAD_OPTIONS.map((opt) => (
+                    <SegmentedButton
+                      key={opt.value}
+                      active={daysAhead === opt.value}
+                      onClick={() => setDaysAhead(opt.value)}
+                      className="flex-1 px-3"
+                    >
+                      {opt.label}
+                    </SegmentedButton>
+                  ))}
+                </SegmentedControl>
+              )}
+            </section>
+
+            {effectiveRole(clan) !== null && (
+              <section className="flex flex-col gap-2">
+                <p className="text-base font-medium">{t`Lịch trên điện thoại`}</p>
+                <Button
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => {
+                    close();
+                    setFeedOpen(true);
+                  }}
+                >
+                  <IconCalendar className="mr-2 h-4 w-4" />
+                  {t`Đăng ký lịch — Google / Apple Calendar tự cập nhật`}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start"
+                  onClick={() => {
+                    close();
+                    handleExportIcs();
+                  }}
+                  disabled={!tree || !events || !anniversaries}
+                >
+                  <IconDownload className="mr-2 h-4 w-4" />
+                  {t`Tải file .ics — import vào Google / Apple Calendar`}
+                </Button>
+              </section>
+            )}
+
+            <section className="flex flex-col gap-2">
+              <p className="text-base font-medium">{t`Dữ liệu`}</p>
+              <RefreshButton
+                clanId={clan.id}
+                cachedVersion={clan.data_version}
+              />
+            </section>
+          </div>
+        )}
       </CollapsibleFilters>
 
       {/* Upcoming list / calendar */}

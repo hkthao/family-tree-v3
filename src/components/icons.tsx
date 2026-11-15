@@ -272,10 +272,22 @@ export function IconSettings(p: IconProps) {
   );
 }
 
-export function IconFilter(p: IconProps) {
+/**
+ * Tuỳ chọn & bộ lọc (ba thanh trượt). THAY cho icon phễu cũ: ngăn kéo mở ra không chỉ để LỌC mà còn chọn cách
+ * xem, sắp xếp và các thao tác của màn hình — phễu làm người dùng tưởng chỉ có lọc.
+ */
+export function IconSliders(p: IconProps) {
   return (
     <Svg {...p}>
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+      <line x1="21" y1="4" x2="14" y2="4" />
+      <line x1="10" y1="4" x2="3" y2="4" />
+      <line x1="21" y1="12" x2="12" y2="12" />
+      <line x1="8" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="20" x2="16" y2="20" />
+      <line x1="12" y1="20" x2="3" y2="20" />
+      <line x1="14" y1="2" x2="14" y2="6" />
+      <line x1="8" y1="10" x2="8" y2="14" />
+      <line x1="16" y1="18" x2="16" y2="22" />
     </Svg>
   );
 }

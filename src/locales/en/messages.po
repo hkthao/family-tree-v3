@@ -1362,6 +1362,10 @@ msgstr "Tap \"Sync now\" to pull them in."
 msgid "Bấm “Tạo link mới” để tạo link công khai cho cây gia phả."
 msgstr "Tap “Create a new link” to make a public link for the family tree."
 
+#: src/pages/clan/Events.tsx
+msgid "Bấm “Tuỳ chọn” để đổi cách xem, chọn khoảng thời gian, đăng ký hoặc xuất lịch."
+msgstr "Tap “Options” to change the view, pick a time range, or subscribe to / export the calendar."
+
 #: src/pages/clan/Merge.tsx
 msgid "Bấm × để chọn lại."
 msgstr "Tap × to choose again."
@@ -1845,10 +1849,6 @@ msgid "Bỏ liên kết"
 msgstr "Remove link"
 
 #: src/components/CollapsibleFilters.tsx
-#: src/components/CollapsibleFilters.tsx
-msgid "Bộ lọc"
-msgstr "Filters"
-
 #: src/components/FilterDrawer.tsx
 msgid "Bộ lọc & tuỳ chọn"
 msgstr "Filters & options"
@@ -2039,6 +2039,7 @@ msgstr "How the tree diagram is laid out"
 #: src/components/tree/TreeGuide.tsx
 #: src/components/Tree3DView.tsx
 #: src/components/Tree3DView.tsx
+#: src/pages/clan/Events.tsx
 msgid "Cách xem"
 msgstr "How to view"
 
@@ -4884,10 +4885,6 @@ msgid "Đăng ký {registered}"
 msgstr "Registered {registered}"
 
 #: src/pages/clan/Events.tsx
-msgid "Đăng ký lịch"
-msgstr "Subscribe to calendar"
-
-#: src/pages/clan/Events.tsx
 msgid "Đăng ký lịch — Google / Apple Calendar tự cập nhật"
 msgstr "Subscribe to calendar — Google / Apple Calendar updates automatically"
 
@@ -5349,7 +5346,6 @@ msgstr "A catalogue of graves and cemeteries."
 
 #: src/components/InlawFamilyCard.tsx
 #: src/components/InlawFamilyCard.tsx
-#: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Mosaics.tsx
 #: src/pages/clan/Mosaics.tsx
@@ -6107,6 +6103,10 @@ msgstr "OK"
 msgid "Đóng: {label}"
 msgstr "Close: {label}"
 
+#: src/pages/clan/Events.tsx
+msgid "Dữ liệu"
+msgstr "Data"
+
 #: src/components/ErrorState.tsx
 msgid "Dữ liệu đã tồn tại (trùng lặp)."
 msgstr "This data already exists (duplicate)."
@@ -6531,8 +6531,8 @@ msgid "Giỗ, sinh nhật, lễ tết, họp họ."
 msgstr "Death anniversaries, birthdays, festivals, clan gatherings."
 
 #: src/pages/clan/Events.tsx
-msgid "Giỗ, sinh nhật, sự kiện chung của dòng họ. Xuất lịch .ics để đẩy vào Google / Apple Calendar."
-msgstr "The clan's death anniversaries, birthdays and shared events. Export a .ics calendar to push into Google / Apple Calendar."
+msgid "Giỗ, sinh nhật, sự kiện chung của dòng họ."
+msgstr "The clan's death anniversaries, birthdays and shared events."
 
 #: src/pages/clan/Settings.tsx
 msgid "Giới hạn"
@@ -8653,7 +8653,6 @@ msgid "Lên lịch"
 msgstr "Schedule"
 
 #: src/pages/clan/Events.tsx
-#: src/pages/clan/Events.tsx
 msgid "Lịch"
 msgstr "Calendar"
 
@@ -8720,6 +8719,10 @@ msgstr "History{0}"
 #: src/lib/navModel.tsx
 msgid "Lịch tháng, ngày tốt xấu, lễ tết."
 msgstr "Monthly calendar, good and bad days, festivals."
+
+#: src/pages/clan/Events.tsx
+msgid "Lịch trên điện thoại"
+msgstr "Calendar on your phone"
 
 #: src/components/TodayHubCard.tsx
 msgid "Lịch vạn niên"
@@ -8972,10 +8975,6 @@ msgstr "Filter feedback"
 msgid "Lọc người dùng"
 msgstr "Filter users"
 
-#: src/pages/clan/Events.tsx
-msgid "Lọc sự kiện"
-msgstr "Filter events"
-
 #: src/pages/admin/PodcastPage.tsx
 msgid "Lọc tập"
 msgstr "Filter episodes"
@@ -9143,7 +9142,6 @@ msgstr "Map layer"
 msgid "Lớp nhắc bổ sung — chạy ngay cả khi app đóng. Cần trình duyệt + (trên iOS) đã cài app vào màn hình chính."
 msgstr "An extra layer of reminders — works even when the app is closed. Requires a browser + (on iOS) the app added to the home screen."
 
-#: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/MosaicDetail.tsx
 #: src/pages/Clans.tsx
@@ -14756,6 +14754,7 @@ msgstr "Custom"
 msgid "Tuỳ chỉnh (cm)"
 msgstr "Custom (cm)"
 
+#: src/components/CollapsibleFilters.tsx
 #: src/components/HeaderActions.tsx
 #: src/components/HeaderActions.tsx
 #: src/components/PersonAddressCard.tsx
@@ -15969,10 +15968,6 @@ msgstr "Export CSV"
 #: src/components/GedcomButtons.tsx
 msgid "Xuất GEDCOM"
 msgstr "Export GEDCOM"
-
-#: src/pages/clan/Events.tsx
-msgid "Xuất lịch"
-msgstr "Export calendar"
 
 #: src/lib/pageTitle.ts
 msgid "Xuất mã QR"
