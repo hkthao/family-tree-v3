@@ -29,6 +29,7 @@ const AdminHeThong = lazy(() => import("@/pages/admin/HeThongPage"));
 const AdminNguoiDung = lazy(() => import("@/pages/admin/NguoiDungPage"));
 const AdminDongHo = lazy(() => import("@/pages/admin/DongHoPage"));
 const AdminGopY = lazy(() => import("@/pages/admin/GopYPage"));
+const AdminKetNoiAi = lazy(() => import("@/pages/admin/KetNoiAiPage"));
 const AdminTroLyAi = lazy(() => import("@/pages/admin/TroLyAiPage"));
 const AdminCauHinh = lazy(() => import("@/pages/admin/CauHinhPage"));
 const AdminCauHinhAi = lazy(() => import("@/pages/admin/CauHinhAiPage"));
@@ -561,6 +562,14 @@ export default function App() {
                 element={
                   <RequireAuth>
                     <AdminTroLyAi />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/ket-noi-ai"
+                element={
+                  <RequireAuth>
+                    <AdminKetNoiAi />
                   </RequireAuth>
                 }
               />

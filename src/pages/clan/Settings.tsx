@@ -21,6 +21,7 @@ import {
   IconSettings,
   IconUsers,
 } from "@/components/icons";
+import { ApiTokensSection } from "@/components/ApiTokensSection";
 import { ShareLinksSection } from "@/components/ShareLinksSection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -273,6 +274,18 @@ export default function Settings() {
         </CardHeader>
         <CardContent>
           <ShareLinksSection clanId={clan.id} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t`Kết nối AI`}</CardTitle>
+          <CardDescription>
+            {t`Token để Claude, ChatGPT… làm việc với gia phả bằng đúng quyền của bạn.`}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ApiTokensSection clanId={clan.id} />
         </CardContent>
       </Card>
 

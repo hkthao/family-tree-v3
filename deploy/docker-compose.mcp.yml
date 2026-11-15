@@ -1,0 +1,21 @@
+# Máy chủ MCP cho AI bên ngoài (Claude, ChatGPT…) — stack RIÊNG, cố ý không gộp vào
+# docker-compose.yml của app: deploy FE chạy `up -d --remove-orphans` sẽ xoá container này,
+# và thiếu mcp.env sẽ làm hỏng cả lần deploy FE.
+#
+# Join mạng genealogy-app để nginx của nó proxy `/mcp` → http://family-tree-v3-mcp:3333
+# (không mở cổng ra host). Gọi sang Supabase self-host qua HTTPS.
+# Bí mật ở /opt/gia-pha-mcp/mcp.env (chmod 600), KHÔNG nằm trong repo — mẫu: deploy/mcp.env.example.
+name: gia-pha-mcp
+
+services:
+  mcp:
+    image: ${MCP_IMAGE:-ghcr.io/hkthao/family-tree-v3-mcp:latest}
+    container_name: family-tree-v3-mcp
+    restart: unless-stopped
+    env_file: /opt/gia-pha-mcp/mcp.env
+    networks:
+      genealogy-app_app-network: {}
+
+networks:
+  genealogy-app_app-network:
+    external: true
