@@ -114,7 +114,7 @@ export const ADMIN_SCREENS: AdminScreen[] = lazyMessages([
   {
     slug: "podcast",
     label: "Podcast",
-    description: msg`Các tập kéo từ Facebook: ẩn/hiện, sửa tiêu đề, đồng bộ.`,
+    description: msg`Các tập kéo từ Facebook: ẩn/hiện, sửa tiêu đề, đồng bộ; cập nhật token Facebook.`,
     icon: <IconMicrophone className={ic} />,
     area: "settings",
     legacyTab: "podcast",

@@ -607,7 +607,7 @@ function FacebookConnection() {
           </Button>
         )}
         <Button size="sm" variant={active ? "outline" : "default"} onClick={() => setOpen((v) => !v)}>
-          {open ? t`Đóng` : active ? t`Nối lại` : t`Nối Trang`}
+          {open ? t`Đóng` : active ? t`Cập nhật token` : t`Nối Trang`}
         </Button>
       </div>
     </section>
