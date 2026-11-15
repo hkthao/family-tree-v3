@@ -28,7 +28,7 @@ VIDEOS_PATH="${VIDEOS_PATH:-/opt/gia-pha/videos}"
 
 LOCAL_DIR="$ROOT/videos/_dist"
 if [ ! -d "$LOCAL_DIR" ]; then
-  echo "Chưa có $LOCAL_DIR. Chạy ./scripts/build-videos.sh trước." >&2
+  echo "Chưa có $LOCAL_DIR. Đặt các file mp4 đã dựng vào đó trước." >&2
   exit 1
 fi
 

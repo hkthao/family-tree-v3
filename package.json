@@ -20,7 +20,6 @@
     "test:rls": "vitest run src/test/rls",
     "seed": "tsx scripts/seed-fixtures.ts",
     "seed:board": "tsx scripts/seed-board.ts",
-    "videos": "playwright test",
     "seed:customs": "tsx scripts/seed-customs.ts"
   },
   "dependencies": {
@@ -71,7 +70,6 @@
     "@lingui/cli": "^5.9.5",
     "@lingui/format-po": "^5.9.5",
     "@lingui/vite-plugin": "^5.9.5",
-    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/d3": "^7.4.3",
@@ -86,6 +84,7 @@
     "dotenv": "^17.4.2",
     "jsdom": "^29.1.1",
     "nodemailer": "^8.0.11",
+    "playwright": "^1.60.0",
     "postcss": "^8.4.49",
     "supabase": "^2.102.0",
     "tailwindcss": "^3.4.15",

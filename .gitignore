@@ -27,8 +27,6 @@ supabase/.temp
 
 # Test
 coverage
-playwright-report
-test-results
 /videos/
 .env.deploy
 
