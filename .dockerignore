@@ -7,8 +7,6 @@ dev-dist
 .vscode
 .idea
 coverage
-playwright-report
-test-results
 .env
 .env.local
 .env.deploy
