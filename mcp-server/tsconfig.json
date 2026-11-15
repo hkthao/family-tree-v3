@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.node.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "paths": {
+      "jsr:@supabase/supabase-js@2": ["../node_modules/@supabase/supabase-js"],
+      "npm:@dqcai/vn-lunar@1.0.1": ["../node_modules/@dqcai/vn-lunar"]
+    }
+  },
+  "include": ["src"]
+}

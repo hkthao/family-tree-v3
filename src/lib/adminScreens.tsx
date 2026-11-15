@@ -112,6 +112,14 @@ export const ADMIN_SCREENS: AdminScreen[] = lazyMessages([
     legacyTab: "ai",
   },
   {
+    slug: "ket-noi-ai",
+    label: msg`Kết nối AI`,
+    description: msg`Token của AI bên ngoài (Claude, ChatGPT…); thu hồi khi nghi bị lộ.`,
+    icon: <IconShield className={ic} />,
+    area: "settings",
+    legacyTab: "api_tokens",
+  },
+  {
     slug: "podcast",
     label: "Podcast",
     description: msg`Các tập kéo từ Facebook: ẩn/hiện, sửa tiêu đề, đồng bộ; cập nhật token Facebook.`,

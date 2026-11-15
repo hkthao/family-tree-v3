@@ -1,0 +1,16 @@
+# Dockerfile.mcp cần mcp-server/ và supabase/functions/_shared; chặn phần còn lại để context nhỏ.
+node_modules
+.git
+.env*
+dist
+dev-dist
+videos
+backups-oldapp
+public
+src
+docs
+landing
+zalo
+data
+mcp-server/dist
+mcp-server/node_modules
