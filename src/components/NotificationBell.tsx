@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { Chip, type ChipTone } from "@/components/Chip";
 import { IconBell, IconCheck, IconClock } from "@/components/icons";
-import { IconTile } from "@/components/IconTile";
 import { Button } from "@/components/ui/button";
 import { PanelActionBar } from "@/components/ui/form-actions";
 import { usePanel } from "@/components/panel/usePanel";
@@ -17,7 +16,11 @@ import {
   listMyAnnouncementReads,
   markAnnouncementRead,
 } from "@/lib/queries/announcements";
-import { LEVEL_LABEL, formatRelative } from "@/lib/announcementFormat";
+import {
+  LEVEL_LABEL,
+  formatRelative,
+  previewLines,
+} from "@/lib/announcementFormat";
 import {
   inboxUnreadCount,
   listMyInbox,
@@ -36,21 +39,22 @@ import { t } from "@lingui/core/macro";
  * dung ngay trong panel (không rời trang); tin hộp thư riêng có đường dẫn thì
  * đi tới đó. Badge số chưa đọc vẫn poll nền 60s. Ẩn khi chưa đăng nhập.
  */
+/** Màu chữ của icon chuông theo mức (icon thuần, không ô nền). */
+const ICON_TEXT: Record<ChipTone, string> = {
+  primary: "text-primary",
+  neutral: "text-muted-foreground",
+  success: "text-green-600 dark:text-green-400",
+  info: "text-blue-600 dark:text-blue-400",
+  warning: "text-amber-600 dark:text-amber-400",
+  danger: "text-destructive",
+} as Record<ChipTone, string>;
+
 const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
   info: "info",
   update: "primary",
   warning: "warning",
   critical: "danger",
 };
-
-/** Các dòng không rỗng đầu tiên của nội dung thông báo, để xem trước ở trạng thái thu gọn. */
-function previewLines(body: string | null, max: number): string[] {
-  return (body ?? "")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .slice(0, max);
-}
 
 export function NotificationBell() {
   const { user } = useAuth();
@@ -245,9 +249,13 @@ export function NotificationBell() {
                       aria-expanded={
                         row.kind === "announcement" ? isOpen : undefined
                       }
-                      className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+                      className="flex w-full items-start gap-3 p-3 text-left"
                     >
-                      <IconTile icon={IconBell} tone={tone} />
+                      {/* Icon thuần: không khung viền, không nền (khác IconTile của trang danh sách). */}
+                      <IconBell
+                        aria-hidden="true"
+                        className={`mt-0.5 h-5 w-5 shrink-0 ${ICON_TEXT[tone]}`}
+                      />
                       <span className="min-w-0 flex-1">
                         <span
                           className={`block text-sm leading-snug ${

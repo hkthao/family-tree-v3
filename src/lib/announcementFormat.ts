@@ -52,3 +52,12 @@ export function formatRelative(iso: string): string {
     year: "numeric",
   });
 }
+
+/** Các dòng không rỗng đầu tiên của nội dung, để xem trước ở trạng thái thu gọn (mỗi ý một dòng). */
+export function previewLines(body: string | null, max: number): string[] {
+  return (body ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, max);
+}

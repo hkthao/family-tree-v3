@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { IconSparkles } from "@/components/icons";
+import { Chip, type ChipTone } from "@/components/Chip";
+import { IconChevronDown, IconClock, IconSparkles } from "@/components/icons";
+import { IconTile } from "@/components/IconTile";
 import { PageHeader } from "@/components/PageHeader";
 import { PlatformShell } from "@/components/PlatformShell";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,12 +12,11 @@ import {
   type Announcement,
   type AnnouncementLevel,
 } from "@/lib/queries/announcements";
+import { LEVEL_LABEL, previewLines } from "@/lib/announcementFormat";
 import { queryKeys } from "@/lib/queries/keys";
 import { markChangelogSeen } from "@/lib/whatsNew";
 
 import { t } from "@lingui/core/macro";
-import { msg } from "@lingui/core/macro";
-import { lazyMessages } from "@/lib/i18n/lazy";
 /**
  * `/changelog` — public, không cần đăng nhập. Đọc các tin
  * `is_public=true`. Plan §32.9 O4: đây là single source of truth cho
@@ -24,20 +25,11 @@ import { lazyMessages } from "@/lib/i18n/lazy";
  * SEO note (plan §32.9 O10): server-side render về sau để search
  * engine index "cập nhật gia phả tháng X".
  */
-const LEVEL_LABEL: Record<AnnouncementLevel, string> = lazyMessages({
-  info: msg`Tin`,
-  update: msg`Cập nhật`,
-  warning: msg`Cảnh báo`,
-  critical: msg`Quan trọng`,
-}) as Record<AnnouncementLevel, string>;
-
-const LEVEL_BADGE: Record<AnnouncementLevel, string> = {
-  info: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30",
-  update: "bg-primary/10 text-primary border-primary/30",
-  warning:
-    "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  critical:
-    "bg-destructive/10 text-destructive border-destructive/30 font-semibold",
+const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
+  info: "info",
+  update: "primary",
+  warning: "warning",
+  critical: "danger",
 };
 
 export default function Changelog() {
@@ -73,39 +65,77 @@ export default function Changelog() {
         </p>
       )}
 
-      <ul className="space-y-4">
-        {rows.map((row) => (
-          <ChangelogEntry key={row.id} row={row} />
+      <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
+        {rows.map((row, i) => (
+          <ChangelogEntry key={row.id} row={row} defaultOpen={i === 0} />
         ))}
       </ul>
     </PlatformShell>
   );
 }
 
-function ChangelogEntry({ row }: { row: Announcement }) {
+/**
+ * Một mục changelog: thu gọn thì chỉ thấy tiêu đề + vài ý đầu (mỗi ý một dòng), bấm để mở toàn bộ. Mục mới nhất
+ * mở sẵn; các mục cũ gập để trang không dài hàng chục màn hình.
+ */
+function ChangelogEntry({
+  row,
+  defaultOpen,
+}: {
+  row: Announcement;
+  defaultOpen: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const tone = LEVEL_TONE[row.level];
   return (
-    <li className="rounded-xl border bg-card shadow-sm p-5 space-y-3">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${LEVEL_BADGE[row.level]}`}
-        >
-          {LEVEL_LABEL[row.level]}
+    <li>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+      >
+        <IconTile icon={IconSparkles} tone={tone} />
+        <span className="min-w-0 flex-1">
+          <span className="flex items-start gap-2">
+            <span className="min-w-0 flex-1 font-semibold leading-snug">
+              {row.title}
+            </span>
+            <IconChevronDown
+              className={`mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                open ? "rotate-180" : ""
+              }`}
+            />
+          </span>
+          {open ? (
+            <span className="mt-1 block whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+              {row.body}
+            </span>
+          ) : (
+            <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">
+              {previewLines(row.body, 3).map((line, i) => (
+                <span key={i} className="block truncate">
+                  {line}
+                </span>
+              ))}
+            </span>
+          )}
+          <span className="mt-2 flex flex-wrap justify-end gap-1.5">
+            <Chip tone={tone}>{LEVEL_LABEL[row.level]}</Chip>
+            {row.published_at && (
+              <Chip tone="neutral" icon={<IconClock />}>
+                <time dateTime={row.published_at}>
+                  {new Date(row.published_at).toLocaleDateString("vi-VN", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
+                </time>
+              </Chip>
+            )}
+          </span>
         </span>
-        {row.published_at && (
-          <time
-            className="text-xs text-muted-foreground ml-auto tabular-nums"
-            dateTime={row.published_at}
-          >
-            {new Date(row.published_at).toLocaleDateString("vi-VN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-            })}
-          </time>
-        )}
-      </div>
-      <h2 className="font-semibold text-lg">{row.title}</h2>
-      <p className="text-sm whitespace-pre-line leading-relaxed">{row.body}</p>
+      </button>
     </li>
   );
 }
