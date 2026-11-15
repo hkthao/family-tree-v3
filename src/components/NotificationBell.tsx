@@ -255,8 +255,10 @@ export function NotificationBell() {
                           )}
                         </span>
                         <span
-                          className={`mt-1 block text-xs leading-relaxed text-muted-foreground ${
-                            isOpen ? "whitespace-pre-line" : "line-clamp-2"
+                          // `block` đè lên `display:-webkit-box` của line-clamp (thu gọn mất tác dụng, cả đoạn tràn ra
+                          // thành một khối chữ) — nên chỉ đặt block khi mở. Giữ xuống dòng ở cả hai trạng thái.
+                          className={`mt-1 whitespace-pre-line text-xs leading-relaxed text-muted-foreground ${
+                            isOpen ? "block" : "line-clamp-2"
                           }`}
                         >
                           {row.body}
