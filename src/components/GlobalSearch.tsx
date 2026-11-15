@@ -14,7 +14,7 @@ import {
   guideEntries,
   type StaticEntry,
 } from "@/lib/globalSearchStatic";
-import { buildSections } from "@/lib/navModel";
+import { buildSections, menuHubPath } from "@/lib/navModel";
 import { getClanDetail } from "@/lib/queries/clan-detail";
 import {
   SEARCH_KIND_ORDER,
@@ -144,7 +144,7 @@ export function GlobalSearch({
 
   const menuEntries = useMemo<StaticEntry[]>(() => {
     if (!open) return [];
-    return buildSections(
+    const out = buildSections(
       clanId,
       clan ?? null,
       profile ?? null,
@@ -156,16 +156,44 @@ export function GlobalSearch({
       s.items.map<StaticEntry>((i) => ({
         group: "menu",
         title: i.label,
-        subtitle: s.label,
+        // Mô tả của mục cũng tìm được ("mộ phần" → Mộ phần & tro cốt, "thu chi" → Quỹ họ…).
+        subtitle: i.hint ?? s.label,
         to: i.to,
+        keywords: `${s.label} ${i.hint ?? ""}`,
       })),
     );
+    // Lối vào trang hub + các mục hệ thống không nằm trong buildSections.
+    if (clanId)
+      out.push({
+        group: "menu",
+        title: "Tất cả tính năng",
+        subtitle: "Mọi tính năng của dòng họ, chia nhóm",
+        to: menuHubPath(clanId),
+        keywords: "menu danh sach tinh nang cong cu",
+      });
+    out.push(
+      {
+        group: "menu",
+        title: "Ngôn ngữ",
+        subtitle: "Đổi giao diện Việt / Anh",
+        to: "/account",
+        keywords: "language english tieng anh tieng viet",
+      },
+      {
+        group: "menu",
+        title: "Giao diện sáng / tối",
+        subtitle: "Đổi chế độ màu",
+        to: "/account",
+        keywords: "theme dark light che do mau sang toi",
+      },
+    );
+    return out;
   }, [open, clanId, clan, profile, aiEnabled]);
   const guides = useMemo(() => (open ? guideEntries() : []), [open]);
 
   const rows = useMemo<Row[]>(() => {
     if (debounced.length < 2) return [];
-    const out: Row[] = filterEntries(menuEntries, debounced).map(staticRow);
+    const out: Row[] = filterEntries(menuEntries, debounced, 10).map(staticRow);
     const byKind = new Map<string, SearchHit[]>();
     for (const h of hits ?? [])
       byKind.set(h.kind, [...(byKind.get(h.kind) ?? []), h]);
