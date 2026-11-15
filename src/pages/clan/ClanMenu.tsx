@@ -45,7 +45,7 @@ interface Group {
 const tileName = (key: string) => key.replace(/^\/clans\/[^/]+\//, "");
 
 const TILE =
-  "flex h-[160px] w-full flex-col gap-2 overflow-hidden rounded-xl border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted/50 sm:h-[144px] sm:p-4";
+  "flex h-full min-h-[160px] w-full flex-col gap-2 rounded-xl border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-muted/50 sm:min-h-[152px] sm:p-4";
 
 function TileBody({ tile }: { tile: Tile }) {
   return (
