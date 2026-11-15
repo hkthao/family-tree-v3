@@ -4,7 +4,7 @@ import { t } from "@lingui/core/macro";
 export function NewBadge({ className = "" }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full bg-primary px-2 py-1 text-[11px] font-bold uppercase leading-none tracking-wide text-primary-foreground shadow-sm ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold leading-[1.4] text-primary-foreground shadow-sm ${className}`}
     >
       <span className="relative flex h-1.5 w-1.5">
         <span className="absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-70 motion-safe:animate-ping" />
