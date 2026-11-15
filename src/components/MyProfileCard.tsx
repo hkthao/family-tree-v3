@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
 import { Chip } from "@/components/Chip";
-import { IconUser } from "@/components/icons";
+import { IconPencil, IconTree, IconUser } from "@/components/icons";
 import { SectionCard } from "@/components/SectionCard";
 import { Button } from "@/components/ui/button";
 import { queryKeys } from "@/lib/queries/keys";
@@ -56,9 +56,9 @@ export function MyProfileCard({
       >
         <p className="text-sm">
           <Trans>
-          <strong>Bạn là ai trong dòng họ?</strong> Chọn vị trí của mình
-          trên cây để xem đường trực hệ từ thuỷ tổ xuống bạn và tự cập nhật ảnh,
-          ngày sinh, tiểu sử của mình.
+            <strong>Bạn là ai trong dòng họ?</strong> Chọn vị trí của mình trên
+            cây để xem đường trực hệ từ thuỷ tổ xuống bạn và tự cập nhật ảnh,
+            ngày sinh, tiểu sử của mình.
           </Trans>
         </p>
       </SectionCard>
@@ -83,14 +83,20 @@ export function MyProfileCard({
         )
       }
       footer={
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link to={lineageTo}>{t`Đường trực hệ của tôi`}</Link>
+        // Một hàng, chữ ngắn (không rớt dòng trên điện thoại): nút phụ "Đường trực hệ" + nút chính "Cập nhật hồ sơ".
+        // `footer` của SectionCard đã bọc ActionArea nên hai nút cùng cỡ như các thẻ khác; icon trước chữ theo design-language.
+        <div className="flex w-full flex-nowrap justify-end gap-2">
+          <Button asChild size="sm" variant="outline" className="min-w-0 px-3">
+            <Link to={lineageTo}>
+              <IconTree className="mr-1.5 h-4 w-4 shrink-0" />
+              <span className="truncate">{t`Đường trực hệ`}</span>
+            </Link>
           </Button>
-          <Button asChild size="sm">
-            <Link
-              to={`/clans/${clanId}/people/${mine.self_person_id}`}
-            >{t`Cập nhật hồ sơ của tôi`}</Link>
+          <Button asChild size="sm" className="min-w-0 px-3">
+            <Link to={`/clans/${clanId}/people/${mine.self_person_id}`}>
+              <IconPencil className="mr-1.5 h-4 w-4 shrink-0" />
+              <span className="truncate">{t`Cập nhật hồ sơ`}</span>
+            </Link>
           </Button>
         </div>
       }
@@ -103,8 +109,9 @@ export function MyProfileCard({
       {missing.length > 0 ? (
         <p className="mt-1 text-sm text-muted-foreground">
           <Trans>
-          Hồ sơ của bạn còn thiếu {missing.join(", ")}. Bổ sung để người thân dễ
-          nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên cây.
+            Hồ sơ của bạn còn thiếu {missing.join(", ")}. Bổ sung để người thân
+            dễ nhận ra bạn; thông tin sẽ được quản trị duyệt trước khi hiện lên
+            cây.
           </Trans>
         </p>
       ) : (

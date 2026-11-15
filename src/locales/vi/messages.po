@@ -2212,8 +2212,8 @@ msgid "Cập nhật gần đây"
 msgstr "Cập nhật gần đây"
 
 #: src/components/MyProfileCard.tsx
-msgid "Cập nhật hồ sơ của tôi"
-msgstr "Cập nhật hồ sơ của tôi"
+msgid "Cập nhật hồ sơ"
+msgstr "Cập nhật hồ sơ"
 
 #. placeholder {0}: formatTime(lastSyncedAt)
 #. placeholder {0}: new Date(data.generated_at).toLocaleString("vi-VN")
@@ -6207,6 +6207,10 @@ msgstr "Đường nối"
 msgid "Đường nối tuỳ chỉnh"
 msgstr "Đường nối tuỳ chỉnh"
 
+#: src/components/MyProfileCard.tsx
+msgid "Đường trực hệ"
+msgstr "Đường trực hệ"
+
 #: src/pages/clan/Tree.tsx
 msgid "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời."
 msgstr "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/ngoại ở từng đời."
@@ -6214,10 +6218,6 @@ msgstr "Đường trực hệ — từ tôi về thuỷ tổ, chọn bên nội/
 #: src/pages/clan/MyLineage.tsx
 msgid "Đường trực hệ (chỉ xem)"
 msgstr "Đường trực hệ (chỉ xem)"
-
-#: src/components/MyProfileCard.tsx
-msgid "Đường trực hệ của tôi"
-msgstr "Đường trực hệ của tôi"
 
 #: src/lib/nextSteps.ts
 msgid "Đường về Thuỷ tổ của bạn"
