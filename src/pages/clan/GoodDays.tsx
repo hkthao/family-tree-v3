@@ -64,7 +64,6 @@ const ACTIVITY_ICON: Record<
   "ky-ket": IconScroll,
 };
 
-
 function pad(n: number) {
   return String(n).padStart(2, "0");
 }
@@ -411,7 +410,7 @@ function MonthCalendar({
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold">
             <Trans>
-            Tháng {m + 1}/{y}
+              Tháng {m + 1}/{y}
             </Trans>
           </span>
           {!atCurrent && (
@@ -514,24 +513,24 @@ function MonthCalendar({
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 px-3 py-2 text-xs text-muted-foreground">
         <Trans>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500/40" />
-          Ngày tốt (hoàng đạo)
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-2.5 w-2.5 rounded-sm bg-rose-500/40" />
-          Ngày xấu (hắc đạo)
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="text-rose-500">•</span> Ngày kiêng
-        </span>
-        <span className="flex items-center gap-1">
-          <span aria-hidden>🏮</span> Lễ, tết
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
-          Có sự kiện dòng họ
-        </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500/40" />
+            Ngày tốt (hoàng đạo)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-2.5 w-2.5 rounded-sm bg-rose-500/40" />
+            Ngày xấu (hắc đạo)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-rose-500">•</span> Ngày kiêng
+          </span>
+          <span className="flex items-center gap-1">
+            <span aria-hidden>🏮</span> Lễ, tết
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+            Có sự kiện dòng họ
+          </span>
         </Trans>
       </div>
     </section>
@@ -572,37 +571,40 @@ function DayDetail({
   ].filter(Boolean);
 
   return (
-    <section className="space-y-3 rounded-xl border bg-card p-4">
-      {/* Đầu: dương lịch + âm lịch to */}
-      <div className="flex flex-wrap items-start gap-4">
-        <div className="text-center">
+    <section className="space-y-3 rounded-xl border bg-card p-3 sm:p-4">
+      {/* Đầu: hai ô ngày (dương | âm) cân đôi chiều ngang — điện thoại không bị ép thành 3 cột hẹp. */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-lg border bg-muted/30 px-2 py-2.5 text-center">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
             {weekdayName(info.weekday)}
           </p>
-          <p className="text-4xl font-bold leading-none tabular-nums text-primary">
+          <p className="my-0.5 text-4xl font-bold leading-none tabular-nums text-primary">
             {info.solar.day}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Th{info.solar.month}/{info.solar.year} (DL)
           </p>
         </div>
-        <div className="text-center">
+        <div className="rounded-lg border bg-muted/30 px-2 py-2.5 text-center">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
             {t`Âm lịch`}
           </p>
-          <p className="text-4xl font-bold leading-none tabular-nums text-emerald-600 dark:text-emerald-400">
+          <p className="my-0.5 text-4xl font-bold leading-none tabular-nums text-emerald-600 dark:text-emerald-400">
             {info.lunar.day}
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Th{info.lunar.month}
             {info.lunar.leap ? t` nhuận` : ""} · {info.canChi.year}
           </p>
         </div>
+      </div>
 
-        <div className="min-w-0 flex-1 space-y-1.5">
+      {/* Tốt/xấu + cảnh báo kiêng: cùng một hàng thẻ nhỏ, tự xuống dòng gọn. */}
+      {(prefs.hoangDao || (prefs.kieng && info.warnings.length > 0)) && (
+        <div className="flex flex-wrap gap-1.5">
           {prefs.hoangDao && (
             <span
-              className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+              className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
                 info.aus.good
                   ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                   : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
@@ -611,16 +613,41 @@ function DayDetail({
               {info.aus.good ? t`Ngày tốt (Hoàng đạo)` : t`Ngày xấu (Hắc đạo)`}
             </span>
           )}
-          <p className="text-sm text-muted-foreground">
-            <Trans>
-            Can chi: ngày {info.canChi.day} · tháng {info.canChi.month} · năm{" "}
-            {info.canChi.year}
-            </Trans>
-          </p>
-          {meta.length > 0 && (
-            <p className="text-sm text-muted-foreground">{meta.join(" · ")}</p>
-          )}
+          {prefs.kieng &&
+            info.warnings.map((w) => (
+              <span
+                key={w.key}
+                title={w.note}
+                className="inline-flex rounded-full bg-rose-500/15 px-2.5 py-1 text-xs font-medium text-rose-600 dark:text-rose-400"
+              >
+                ⚠ {w.label}
+              </span>
+            ))}
         </div>
+      )}
+
+      {/* Can chi + trực/sao/tiết/ngũ hành: các THẺ NHỎ tự xuống dòng thay vì một đoạn văn dài bị bẻ nhiều dòng. */}
+      <div className="flex flex-wrap gap-1.5">
+        {[
+          t`Ngày ${info.canChi.day}`,
+          t`Tháng ${info.canChi.month}`,
+          t`Năm ${info.canChi.year}`,
+        ].map((x) => (
+          <span
+            key={x}
+            className="rounded-md border border-primary/25 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary"
+          >
+            {x}
+          </span>
+        ))}
+        {meta.map((x) => (
+          <span
+            key={x}
+            className="rounded-md bg-muted px-2 py-0.5 text-xs text-foreground/80"
+          >
+            {x}
+          </span>
+        ))}
       </div>
 
       {/* Lễ tết của ngày này. Đặt TRƯỚC sự kiện dòng họ vì nó là thứ
@@ -694,21 +721,6 @@ function DayDetail({
         </div>
       )}
 
-      {/* Cảnh báo ngày kiêng */}
-      {prefs.kieng && info.warnings.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {info.warnings.map((w) => (
-            <span
-              key={w.key}
-              title={w.note}
-              className="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-medium text-rose-600 dark:text-rose-400"
-            >
-              ⚠ {w.label}
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* Vì sao tốt/xấu */}
       <div
         className={`rounded-lg border-l-4 p-3 text-sm leading-relaxed ${
@@ -721,20 +733,38 @@ function DayDetail({
         {info.reason}
       </div>
 
-      {/* Giờ hoàng đạo / hắc đạo */}
+      {/* Giờ hoàng đạo / hắc đạo: mỗi giờ một thẻ nhỏ. */}
       {prefs.hoangDao && (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="space-y-2">
           <div>
             <p className="mb-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               {t`Giờ hoàng đạo (tốt)`}
             </p>
-            <p className="text-sm text-foreground/80">{goodChi.join(" · ")}</p>
+            <div className="flex flex-wrap gap-1">
+              {goodChi.map((h) => (
+                <span
+                  key={h}
+                  className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-sm text-emerald-700 dark:text-emerald-300"
+                >
+                  {h}
+                </span>
+              ))}
+            </div>
           </div>
           <div>
             <p className="mb-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
               {t`Giờ hắc đạo (tránh)`}
             </p>
-            <p className="text-sm text-foreground/80">{badChi.join(" · ")}</p>
+            <div className="flex flex-wrap gap-1">
+              {badChi.map((h) => (
+                <span
+                  key={h}
+                  className="rounded-md bg-rose-500/10 px-2 py-0.5 text-sm text-rose-700 dark:text-rose-300"
+                >
+                  {h}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -765,14 +795,26 @@ function DayDetail({
         </div>
       )}
 
-      {/* Nhị thập bát tú */}
+      {/* Nhị thập bát tú: ghi chú dài nên gập — chạm tên sao để xem. */}
       {prefs.tu && (
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          <span className="font-medium text-foreground/80">
-            Sao {info.tu.name}
-          </span>{" "}
-          ({info.tu.good ? t`cát tinh` : "hung tinh"}) — {info.tu.note}
-        </p>
+        <details className="group rounded-lg border bg-muted/20 px-3 py-2 text-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
+            <span>
+              <span className="font-medium text-foreground/80">
+                Sao {info.tu.name}
+              </span>{" "}
+              <span className="text-muted-foreground">
+                ({info.tu.good ? t`cát tinh` : t`hung tinh`})
+              </span>
+            </span>
+            <span className="text-xs text-muted-foreground group-open:hidden">
+              {t`Xem thêm`}
+            </span>
+          </summary>
+          <p className="mt-1.5 leading-relaxed text-muted-foreground">
+            {info.tu.note}
+          </p>
+        </details>
       )}
     </section>
   );
@@ -894,9 +936,7 @@ function GoodDayRow({ day, prefs }: { day: DayInfo; prefs: AlmanacPrefs }) {
 
         {prefs.hoangDao && goodChi.length > 0 && (
           <p className="text-sm text-muted-foreground">
-            <Trans>
-            Giờ tốt: {goodChi.join(" · ")}
-            </Trans>
+            <Trans>Giờ tốt: {goodChi.join(" · ")}</Trans>
           </p>
         )}
       </div>
