@@ -58,9 +58,11 @@ function TileBody({ tile }: { tile: Tile }) {
           </span>
         )}
       </span>
-      <span className="line-clamp-2 font-medium leading-tight">
-        {tile.label}
-        {tile.isNew && <NewBadge className="ml-1.5 align-middle" />}
+      <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+        <span className="line-clamp-2 font-medium leading-tight">
+          {tile.label}
+        </span>
+        {tile.isNew && <NewBadge />}
       </span>
       {tile.hint && (
         <span className="line-clamp-2 text-xs leading-snug text-muted-foreground">
