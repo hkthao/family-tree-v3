@@ -1,6 +1,7 @@
 import { t } from "@lingui/core/macro";
 
 import type { ClanFeatureKey } from "@/lib/clanFeatures";
+import { solarStringToLunar } from "@/lib/lunarDate";
 import type { PersonForTree } from "@/lib/queries/tree";
 import type { TodoSummaryRow } from "@/lib/queries/todo";
 
@@ -36,6 +37,10 @@ export interface NextStepInput {
   isEnabled: (key: ClanFeatureKey) => boolean;
   /** Trợ lý AI có bật trên nền tảng không. */
   aiOn: boolean;
+  /** Số giỗ / sự kiện của dòng họ rơi trong 7 ngày tới — có thì ưu tiên gợi ý liên quan lịch và chia sẻ. */
+  soonEvents?: number;
+  /** Thời điểm tính "mùa" (Tết, Chạp họ). Mặc định: bây giờ. */
+  now?: Date;
 }
 
 /** Bộ sinh số ngẫu nhiên có hạt giống (mulberry32): cùng hạt → cùng thứ tự, để thẻ không nhảy khi dữ liệu tải dần. */
@@ -50,25 +55,89 @@ export function seededRng(seed: number): () => number {
   };
 }
 
-function shuffle<T>(arr: T[], rng: () => number): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+/**
+ * TRỌNG SỐ cơ sở của từng gợi ý: việc bổ sung dữ liệu nặng hơn lời mời khám phá (làm đủ dữ liệu thì mọi tính năng
+ * khác mới có chất liệu). Trong nhóm khám phá, tính năng "dư địa" lớn mà số liệu Umami cho thấy ít người biết
+ * (chia sẻ, lịch, tra cứu quan hệ, trợ lý AI) cao hơn tính năng vốn đã nhiều người dùng (xem cây) hoặc ít ai cần (quỹ).
+ */
+const BASE_WEIGHT: Record<string, number> = {
+  root: 6,
+  anniv: 4,
+  parents: 3.5,
+  graves: 3,
+  events: 3,
+  photos: 2,
+  heritage: 1.5,
+  share: 1.5,
+  relations: 1.5,
+  calendar: 1.5,
+  ai: 1.2,
+  lineage: 1,
+  map: 1,
+  memory: 1,
+  mosaic: 1,
+  goodday: 1,
+  book: 1,
+  kinship: 0.8,
+  qr: 0.8,
+  board: 0.6,
+  fund: 0.5,
+  tree: 0.5,
+};
+
+/** Tháng Chạp / tháng Giêng âm lịch: mùa giỗ, tảo mộ, Chạp họ và xem ngày. */
+function isTetSeason(now: Date): boolean {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const lunar = solarStringToLunar(
+    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+  );
+  return lunar?.month === 12 || lunar?.month === 1;
+}
+
+/** Hệ số nhân theo NGỮ CẢNH thời điểm (mùa Tết, giỗ sắp tới) — 1 = không đổi. */
+function contextMultiplier(id: string, ctx: { tet: boolean; soon: boolean }): number {
+  let m = 1;
+  if (ctx.tet) {
+    if (id === "goodday") m *= 3;
+    if (id === "graves" || id === "events" || id === "calendar") m *= 2;
+    if (id === "share") m *= 1.5;
   }
-  return a;
+  if (ctx.soon) {
+    if (id === "calendar") m *= 3;
+    if (id === "share") m *= 2;
+    if (id === "anniv") m *= 1.5;
+  }
+  return m;
 }
 
 /**
- * `rng`: nguồn ngẫu nhiên để xáo TOÀN BỘ danh sách (việc bổ sung dữ liệu lẫn lời mời khám phá), để mỗi lần
- * vào trang gặp một gợi ý khác thay vì mãi một thẻ "N người mất chưa có giỗ". Không truyền `rng` thì
- * giữ thứ tự ưu tiên: việc bổ sung dữ liệu trước, rồi tới khám phá.
+ * Xếp thứ tự có trọng số. Có `rng`: lấy mẫu ngẫu nhiên KHÔNG hoàn lại theo trọng số (khoá `u^(1/w)` giảm dần) — nặng
+ * hơn thì hay đứng đầu hơn nhưng không chắc chắn, nên mỗi lần vào trang vẫn gặp gợi ý khác. Không có `rng`: xếp
+ * theo trọng số giảm dần (ổn định), dùng cho test và chỗ cần kết quả cố định.
+ */
+function weightedOrder(items: { step: NextStep; w: number }[], rng?: () => number): NextStep[] {
+  if (!rng) {
+    return items
+      .map((x, i) => ({ ...x, i }))
+      .sort((a, b) => b.w - a.w || a.i - b.i)
+      .map((x) => x.step);
+  }
+  return items
+    .map((x) => ({ x, k: Math.pow(rng(), 1 / x.w) }))
+    .sort((a, b) => b.k - a.k)
+    .map(({ x }) => x.step);
+}
+
+/**
+ * `rng`: nguồn ngẫu nhiên để chọn TOÀN BỘ danh sách (việc bổ sung dữ liệu lẫn lời mời khám phá) THEO TRỌNG SỐ, để mỗi lần
+ * vào trang gặp một gợi ý khác nhưng việc quan trọng/đúng mùa hay xuất hiện hơn. Không truyền `rng` thì xếp theo
+ * trọng số giảm dần: việc bổ sung dữ liệu trước, rồi tới khám phá.
  */
 export function computeNextSteps(
   input: NextStepInput,
   rng?: () => number,
 ): NextStep[] {
-  const { persons, todo, counts, customEvents, canEdit, isEnabled, aiOn } = input;
+  const { persons, todo, counts, customEvents, canEdit, isEnabled, aiOn, soonEvents, now } = input;
   const out: NextStep[] = [];
   const total = persons.length;
   if (total === 0) return out;
@@ -177,9 +246,15 @@ export function computeNextSteps(
   add("ai", t`Hỏi trợ lý AI`, t`Hỏi giỗ, xưng hô, tra người`, "tro-ly", aiOn && isEnabled("ai_assistant"));
   add("fund", t`Sổ quỹ họ minh bạch`, t`Ghi thu chi, ai cũng xem được`, "fund", canEdit && isEnabled("fund"));
 
-  // Không xáo: việc bổ sung dữ liệu (chỉ người sửa được) đi trước, rồi mới mời khám phá tính năng.
-  const all = [...(canEdit ? gaps : []), ...discover];
-  return rng ? shuffle(all, rng) : all;
+  // Chọn theo trọng số (gap nặng hơn khám phá; mùa Tết / giỗ sắp tới nâng gợi ý liên quan).
+  const ctx = { tet: isTetSeason(now ?? new Date()), soon: (soonEvents ?? 0) > 0 };
+  return weightedOrder(
+    [...(canEdit ? gaps : []), ...discover].map((step) => ({
+      step,
+      w: (BASE_WEIGHT[step.id] ?? 1) * contextMultiplier(step.id, ctx),
+    })),
+    rng,
+  );
 }
 
 const KEY = "next-step-snooze-v1";

@@ -1157,6 +1157,7 @@ msgstr "Photo mosaic"
 msgid "Ảnh ghép đại gia đình"
 msgstr "Extended-family photo mosaic"
 
+#: src/components/HomeCustomizeDrawer.tsx
 #: src/components/mosaic/FamilyPhotoCard.tsx
 msgid "Ảnh gia đình"
 msgstr "Family photos"
@@ -1511,6 +1512,10 @@ msgstr "You have contributed all {quota} pieces."
 msgid "Bạn đã tạo dòng họ chưa?"
 msgstr "Have you created your clan yet?"
 
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Bạn đang tự chọn ô. Tối đa {max} ô; ô cuối luôn là “Tất cả tính năng”."
+msgstr "You're choosing the tiles yourself. At most {max} tiles; the last one is always “All features”."
+
 #: src/pages/clan/Board.tsx
 msgid "Bạn đang xem dưới dạng khách. Tham gia dòng họ để đăng bài và bình luận."
 msgstr "You're viewing as a guest. Join the clan to post and comment."
@@ -1520,6 +1525,7 @@ msgstr "You're viewing as a guest. Join the clan to post and comment."
 msgid "Bản đồ"
 msgstr "Map"
 
+#: src/components/HomeCustomizeDrawer.tsx
 #: src/components/MapOverviewCard.tsx
 #: src/lib/nextSteps.ts
 #: src/lib/pageTitle.ts
@@ -1583,7 +1589,6 @@ msgstr "Table"
 #: src/pages/clan/BoardPostDetail.tsx
 #: src/pages/clan/BoardPostEdit.tsx
 #: src/pages/clan/BoardPostNew.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Bảng tin"
 msgstr "News feed"
 
@@ -1592,7 +1597,7 @@ msgstr "News feed"
 msgid "Bảng tin dòng họ"
 msgstr "Clan news feed"
 
-#: src/pages/clan/Dashboard.tsx
+#: src/lib/quickCatalog.tsx
 msgid "Bảng vàng"
 msgstr "Honor roll"
 
@@ -2077,7 +2082,6 @@ msgstr "Settings → GEDCOM"
 #: src/lib/pageTitle.ts
 #: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Dashboard.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Settings.tsx
 #: src/pages/clan/Settings.tsx
 msgid "Cài đặt dòng họ"
@@ -2298,7 +2302,6 @@ msgstr "3D tree"
 #: src/components/InlawFamilyCard.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
@@ -3320,6 +3323,10 @@ msgstr "Left mouse button"
 msgid "Chụp ảnh"
 msgstr "Take a photo"
 
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Chuyển lên"
+msgstr "Move up"
+
 #: src/components/TodayHubCard.tsx
 msgid "Chuyển ngày"
 msgstr "Change day"
@@ -3336,6 +3343,10 @@ msgstr "Switch to light mode"
 #: src/components/ThemeQuickToggle.tsx
 msgid "Chuyển sang giao diện tối"
 msgstr "Switch to dark mode"
+
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Chuyển xuống"
+msgstr "Move down"
 
 #: src/lib/aiModels.ts
 msgid "Claude Sonnet 5 — tool tốt nhất"
@@ -5247,6 +5258,10 @@ msgstr "Searching…"
 msgid "Đăng tin vui, tin buồn"
 msgstr "Post good news and sad news"
 
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Đang tự động: app xếp những ô bạn hay bấm lên trước. Chọn ô để tự quyết định."
+msgstr "Automatic: the app puts the tiles you tap most first. Pick tiles to decide for yourself."
+
 #: src/pages/InlawsConfirm.tsx
 msgid "Đang xác nhận…"
 msgstr "Confirming…"
@@ -5293,8 +5308,8 @@ msgstr "Exporting PDF…"
 
 #: src/components/CsvExportButton.tsx
 #: src/components/GedcomButtons.tsx
+#: src/components/QuickActionsCard.tsx
 #: src/pages/clan/ClanFund.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
@@ -5308,7 +5323,6 @@ msgstr "Exporting…"
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/AddSpouse.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/People.tsx
@@ -5565,7 +5579,7 @@ msgstr "Move"
 
 #: src/lib/queries/global-search.ts
 #: src/lib/queries/mapStats.ts
-#: src/pages/clan/Dashboard.tsx
+#: src/lib/quickCatalog.tsx
 #: src/pages/Share.tsx
 msgid "Di sản"
 msgstr "Heritage"
@@ -6703,6 +6717,10 @@ msgstr "Traditional forms of address"
 msgid "Gợi ý — bạn chỉ cần lần lượt trả lời:"
 msgstr "Hints — just answer in turn:"
 
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Gợi ý bước tiếp theo"
+msgstr "Next-step suggestions"
+
 #: src/pages/CustomsForm.tsx
 msgid "Gợi ý các đoạn: Ý nghĩa · Chuẩn bị / lễ vật · Trình tự thực hiện · Nên / kiêng kỵ · Biến thể vùng miền."
 msgstr "Suggested sections: Meaning · Preparation / offerings · Steps · Do's / taboos · Regional variations."
@@ -7048,6 +7066,10 @@ msgstr "Display & viewing permissions"
 msgid "Hiển thị ở màn Tổng quan"
 msgstr "Show on the Overview screen"
 
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Hiển thị trên trang chủ"
+msgstr "Shown on the home page"
+
 #: src/pages/admin/PodcastPage.tsx
 msgid "Hiện trên trang Podcast"
 msgstr "Shown on the Podcast page"
@@ -7123,6 +7145,7 @@ msgstr "Your profile is still missing {0}. Add it so relatives can recognize you
 msgid "Hồ sơ của bạn đã đủ ảnh và ngày sinh. Có gì thay đổi (em bé mới chào đời, đổi nơi ở…) bạn cứ cập nhật, quản trị sẽ duyệt."
 msgstr "Your profile already has a photo and a birth date. If anything changes (a new baby, a new home…), just update it and an admin will review."
 
+#: src/components/HomeCustomizeDrawer.tsx
 #: src/components/MyProfileCard.tsx
 #: src/components/MyProfileCard.tsx
 msgid "Hồ sơ của tôi"
@@ -7194,6 +7217,10 @@ msgstr "Lozenge pattern"
 msgid "Hoặc gửi trực tiếp tới:"
 msgstr "Or send directly to:"
 
+#: src/components/OverviewSearch.tsx
+msgid "Hoặc hỏi trợ lý AI bằng lời"
+msgstr "Or ask the AI assistant in your own words"
+
 #: src/components/SocialAuthButtons.tsx
 msgid "hoặc tiếp tục với"
 msgstr "or continue with"
@@ -7235,6 +7262,7 @@ msgstr "Royal family"
 msgid "Hoạt động"
 msgstr "Active"
 
+#: src/components/HomeCustomizeDrawer.tsx
 #: src/components/RecentActivityPanel.tsx
 #: src/pages/admin/Health.tsx
 msgid "Hoạt động gần đây"
@@ -7259,6 +7287,10 @@ msgstr "Ask the assistant"
 #: src/lib/nextSteps.ts
 msgid "Hỏi trợ lý AI"
 msgstr "Ask the AI assistant"
+
+#: src/lib/navModel.tsx
+msgid "Hỏi về gia phả bằng lời."
+msgstr "Ask about the family tree in your own words."
 
 #: src/components/ai/ChatComposer.tsx
 msgid "Hỏi về gia phả…"
@@ -8682,6 +8714,10 @@ msgstr "Publishing schedule"
 msgid "Lịch giỗ trên điện thoại"
 msgstr "Death anniversaries on your phone"
 
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Lịch hôm nay"
+msgstr "Today's calendar"
+
 #: src/components/HistoricalClansSection.tsx
 #: src/components/HistoricalClansSection.tsx
 msgid "Lịch sử"
@@ -8764,7 +8800,7 @@ msgstr "Clan links"
 msgid "Liên kết dòng họ chờ"
 msgstr "Pending clan links"
 
-#: src/pages/clan/Dashboard.tsx
+#: src/lib/quickCatalog.tsx
 msgid "Liên kết họ"
 msgstr "Clan links"
 
@@ -9606,7 +9642,7 @@ msgstr "Open the log"
 #: src/lib/pageTitle.ts
 #: src/lib/queries/global-search.ts
 #: src/lib/queries/mapStats.ts
-#: src/pages/clan/Dashboard.tsx
+#: src/lib/quickCatalog.tsx
 msgid "Mộ phần"
 msgstr "Graves"
 
@@ -10829,7 +10865,6 @@ msgid "Nhập email để nhận liên kết đặt lại mật khẩu"
 msgstr "Enter your email to receive a password reset link"
 
 #: src/lib/tipCatalogue.ts
-#: src/pages/clan/Dashboard.tsx
 msgid "Nhập Excel"
 msgstr "Import from Excel"
 
@@ -11324,7 +11359,6 @@ msgstr "This room uses a custom color palette (change it inside the room). Choos
 #: src/lib/clanFeatures.ts
 #: src/lib/navModel.tsx
 #: src/pages/clan/Dashboard.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/MemoryRoom.tsx
 #: src/pages/clan/MemoryRoom.tsx
 #: src/pages/clan/MemoryRooms.tsx
@@ -11408,6 +11442,10 @@ msgstr "Fortune & prosperity"
 #: src/lib/queries/vnDivisions.ts
 msgid "Phường"
 msgstr "Ward"
+
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Podcast hôm nay"
+msgstr "Today's podcast"
 
 #: src/pages/admin/Announcements.tsx
 msgid "Public — hiện ở /changelog"
@@ -11556,6 +11594,10 @@ msgstr "Back to the list of clans"
 msgid "Quay về bảng tin"
 msgstr "Back to the news feed"
 
+#: src/components/HomeCustomizeDrawer.tsx
+msgid "Quay về tự động"
+msgstr "Back to automatic"
+
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
@@ -11626,7 +11668,6 @@ msgstr "Clan fund"
 #: src/lib/navModel.tsx
 #: src/pages/clan/ClanFund.tsx
 #: src/pages/clan/ClanFund.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Quỹ họ"
 msgstr "Clan fund"
 
@@ -11888,6 +11929,7 @@ msgid "Số dư hiện tại"
 msgstr "Current balance"
 
 #: src/components/ClanStatsPanel.tsx
+#: src/components/HomeCustomizeDrawer.tsx
 msgid "Số liệu dòng họ"
 msgstr "Clan statistics"
 
@@ -12023,7 +12065,6 @@ msgstr "events"
 #: src/lib/queries/global-search.ts
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 msgid "Sự kiện"
@@ -12576,11 +12617,11 @@ msgstr "all people and family relationships"
 msgid "Tất cả quy mô"
 msgstr "All sizes"
 
+#: src/components/QuickActionsCard.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
 #: src/pages/clan/ClanMenu.tsx
 #: src/pages/clan/ClanMenu.tsx
-#: src/pages/clan/Dashboard.tsx
 msgid "Tất cả tính năng"
 msgstr "All features"
 
@@ -12948,7 +12989,9 @@ msgstr "Member (use their photo as the background)"
 msgid "Thành viên tài khoản"
 msgstr "Account members"
 
-#: src/pages/clan/Dashboard.tsx
+#: src/components/HomeCustomizeDrawer.tsx
+#: src/components/HomeCustomizeDrawer.tsx
+#: src/components/QuickActionsCard.tsx
 msgid "Thao tác nhanh"
 msgstr "Quick actions"
 
@@ -13193,9 +13236,10 @@ msgstr "Add heritage entry"
 #: src/components/panel/PanelHost.tsx
 #: src/components/QuickAddSheet.tsx
 #: src/lib/pageTitle.ts
+#: src/lib/quickCatalog.tsx
+#: src/lib/quickCatalog.tsx
 #: src/lib/tipCatalogue.ts
 #: src/pages/clan/Contributions.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/People.tsx
@@ -13728,6 +13772,7 @@ msgstr "The founding ancestor and ancestral home; branches and generations; trad
 msgid "Tick <0>{0}</0> dòng họ <1>{1}</1> để dùng cho nút <2>{2}</2> ở trang Đăng nhập — giúp khách mới xem sản phẩm trước khi đăng nhập."
 msgstr "Tick <0>{0}</0> <1>{1}</1> clans to use for the <2>{2}</2> button on the Sign-in page — helping new visitors see the product before signing in."
 
+#: src/components/HomeCustomizeDrawer.tsx
 #: src/pages/clan/Dashboard.tsx
 msgid "Tiến độ hoàn thiện"
 msgstr "Completion progress"
@@ -13927,6 +13972,14 @@ msgstr "Find people by name…"
 #: src/pages/clan/Members.tsx
 msgid "Tìm người trong cây"
 msgstr "Find a person in the tree"
+
+#: src/components/OverviewSearch.tsx
+msgid "Tìm người trong họ"
+msgstr "Find a person in the clan"
+
+#: src/components/OverviewSearch.tsx
+msgid "Tìm người trong họ (gõ không dấu cũng được)…"
+msgstr "Find a person in the clan (accents not required)…"
 
 #: src/components/GlobalSearch.tsx
 msgid "Tìm người, mộ phần, di sản, hướng dẫn, quy định…"
@@ -14397,7 +14450,6 @@ msgstr "Look up customs, rituals and beliefs of the regions of Vietnam."
 
 #: src/lib/navModel.tsx
 #: src/lib/nextSteps.ts
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
@@ -14550,6 +14602,7 @@ msgstr "Assistant"
 
 #: src/lib/adminScreens.tsx
 #: src/lib/clanFeatures.ts
+#: src/lib/navModel.tsx
 #: src/pages/admin/TroLyAiPage.tsx
 msgid "Trợ lý AI"
 msgstr "AI assistant"
@@ -14753,6 +14806,13 @@ msgstr "Custom"
 #: src/pages/clan/TreeCanvas.tsx
 msgid "Tuỳ chỉnh (cm)"
 msgstr "Custom (cm)"
+
+#: src/components/HomeCustomizeDrawer.tsx
+#: src/components/QuickActionsCard.tsx
+#: src/pages/clan/Dashboard.tsx
+#: src/pages/clan/Dashboard.tsx
+msgid "Tuỳ chỉnh trang chủ"
+msgstr "Customize the home page"
 
 #: src/components/CollapsibleFilters.tsx
 #: src/components/HeaderActions.tsx
@@ -15184,7 +15244,7 @@ msgstr "To-do"
 msgid "Việc cần làm, tra cứu, nhập & dọn dữ liệu, quản lý dòng họ."
 msgstr "To-do, look-ups, data import & clean-up, clan management."
 
-#: src/pages/clan/Dashboard.tsx
+#: src/lib/quickCatalog.tsx
 msgid "Việc làm"
 msgstr "Tasks"
 
@@ -15513,7 +15573,7 @@ msgid "Xem ngày hôm trước"
 msgstr "View previous day"
 
 #: src/lib/pageTitle.ts
-#: src/pages/clan/Dashboard.tsx
+#: src/lib/quickCatalog.tsx
 msgid "Xem ngày tốt"
 msgstr "View auspicious days"
 
@@ -15973,8 +16033,10 @@ msgstr "Export GEDCOM"
 msgid "Xuất mã QR"
 msgstr "Export QR codes"
 
+#: src/components/QuickActionsCard.tsx
+#: src/lib/quickCatalog.tsx
+#: src/lib/quickCatalog.tsx
 #: src/pages/clan/ClanFund.tsx
-#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx
 #: src/pages/clan/Relations.tsx

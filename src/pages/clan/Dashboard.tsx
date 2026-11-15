@@ -1,34 +1,27 @@
 import { currentIntlTag } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
+import { HomeCustomizeDrawer } from "@/components/HomeCustomizeDrawer";
 import { NextStepCard } from "@/components/NextStepCard";
+import { OverviewSearch } from "@/components/OverviewSearch";
+import {
+  QuickActionsCard,
+  useQuickEntries,
+} from "@/components/QuickActionsCard";
+import { useHomePrefs } from "@/hooks/useHomePrefs";
 import { PodcastTodayCard } from "@/components/PodcastTodayCard";
 import { upcomingFestivals } from "@/lib/festivals";
 import { useAiEnabled } from "@/hooks/useAiEnabled";
-import { Fragment, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
-import type { ClanDetail } from "@/lib/queries/clan-detail";
-
 import {
-  IconCube,
   IconCheck,
-  IconDownload,
-  IconGrave,
-  IconGrid,
   IconSettings,
   IconHome,
   IconLink,
   IconPencil,
-  IconPlus,
-  IconAward,
-  IconScroll,
-  IconSparkles,
+  IconSliders,
   IconTree,
-  IconList,
-  IconCalendar,
-  IconUsers,
-  IconUpload,
-  IconWallet,
 } from "@/components/icons";
 import { ClanStatsPanel } from "@/components/ClanStatsPanel";
 import { MyProfileCard } from "@/components/MyProfileCard";
@@ -64,7 +57,6 @@ import {
 } from "@/lib/queries/person-links";
 import { listAnniversaryCandidates, listEvents } from "@/lib/queries/events";
 import {
-  countClanTodo,
   getClanCompletion,
   getClanTodoSummary,
   type ClanCompletion,
@@ -90,11 +82,14 @@ export default function Dashboard() {
   const userId = user?.id ?? "";
   const canEdit = canEditClan(clan);
   const aiOn = useAiEnabled();
+  const { show } = useHomePrefs();
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   // Todo + completion RPCs are member-only (they raise 42501 for
   // anyone not in clan_members). Skip the queries entirely for
   // non-member visitors of a public clan — they shouldn't see the
   // progress tile anyway, and the 403s pollute the console.
   const isMember = effectiveRole(clan) !== null;
+  const quick = useQuickEntries(clan, canEdit, isMember);
   const [searchParams, setSearchParams] = useSearchParams();
   const showWelcome = searchParams.get("welcome") === "1" && isMember;
   function dismissWelcome() {
@@ -163,13 +158,6 @@ export default function Dashboard() {
   });
   const linked = linkedMap?.get(clan.id) ?? [];
 
-  const { data: todoCount } = useQuery({
-    queryKey: queryKeys.clanTodoCount(clan.id, userId),
-    queryFn: () => countClanTodo(clan.id),
-    enabled: !!userId && isMember,
-    staleTime: 60_000,
-  });
-
   // Sự kiện 30 ngày tới cho thẻ "Hôm nay". Lễ tết ghép ở TẦNG HIỂN THỊ (không nằm trong computeUpcomingEvents —
   // hàm đó là nguồn cho cron gửi mail, mà không ai đăng ký nhận thư nhắc Trung Thu).
   const cardEvents: UpcomingEvent[] = useMemo(() => {
@@ -204,6 +192,10 @@ export default function Dashboard() {
       isEnabled: (k: ClanFeatureKey) =>
         isFeatureEnabled(clan.disabled_features, k),
       aiOn,
+      // Giỗ / sự kiện của họ trong 7 ngày tới (không tính lễ tết chung): có thì gợi ý lịch & chia sẻ được nâng lên.
+      soonEvents: cardEvents.filter(
+        (e) => e.daysUntil <= 7 && e.kind !== "festival",
+      ).length,
     }),
     [
       tree,
@@ -213,6 +205,7 @@ export default function Dashboard() {
       canEdit,
       clan.disabled_features,
       aiOn,
+      cardEvents,
     ],
   );
 
@@ -225,6 +218,16 @@ export default function Dashboard() {
         actionsBelow="mobile"
         actions={
           <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setCustomizeOpen(true)}
+              aria-label={t`Tuỳ chỉnh trang chủ`}
+              title={t`Tuỳ chỉnh trang chủ`}
+              data-testid="dashboard-customize"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border bg-card text-muted-foreground hover:border-primary hover:text-primary"
+            >
+              <IconSliders className="h-4 w-4" />
+            </button>
             {/* Lối tắt tới Cài đặt dòng họ — chỉ quản trị mới thấy (trang đó chỉ
                 quản trị vào được), khỏi phải mở menu trái. */}
             {isClanAdmin(clan) &&
@@ -269,6 +272,20 @@ export default function Dashboard() {
           </div>
         }
       />
+
+      {/* Ô tìm người ở ĐẦU trang: tìm người là thao tác dùng nhiều thứ hai của app. */}
+      {tree &&
+        tree.persons.length > 0 &&
+        (isMember || clan.public_show_tree) && (
+          <OverviewSearch
+            clanId={clan.id}
+            aiLink={
+              aiOn &&
+              isMember &&
+              isFeatureEnabled(clan.disabled_features, "ai_assistant")
+            }
+          />
+        )}
 
       {showWelcome && (
         <section
@@ -356,13 +373,13 @@ export default function Dashboard() {
       )}
 
       {/* Gợi ý "Bước tiếp theo" (một việc / một tính năng, xáo ngẫu nhiên) nằm TRÊN thẻ Hôm nay. */}
-      {tree && tree.persons.length > 0 && isMember && (
+      {tree && tree.persons.length > 0 && isMember && show("nextstep") && (
         <NextStepCard clanId={clan.id} input={nextStepInput} />
       )}
 
       {/* Thẻ "Hôm nay" — GỘP trang Hôm nay cũ, đặt ngay dưới phần tiêu đề, mô tả và gợi ý: lịch
           âm/ngày tốt xấu, giỗ & sinh nhật & lễ tết hôm nay / 7 ngày / 30 ngày. Đổi mỗi ngày → lý do mở app hằng ngày. */}
-      {tree && tree.persons.length > 0 && (
+      {tree && tree.persons.length > 0 && show("today") && (
         <TodayHubCard clanId={clan.id} events={cardEvents} />
       )}
 
@@ -399,292 +416,75 @@ export default function Dashboard() {
           {isMember && <EnablePushPrompt />}
 
           {/* Số liệu dòng họ — chỉ số chính + biểu đồ cơ cấu; kho tư liệu: hàng nút nhỏ bấm được. */}
-          {(() => {
-            const useStatsRpc = isMember && stats && stats.total_persons > 0;
-            const counts = useStatsRpc
-              ? {
-                  total: stats!.total_persons,
-                  maxGen: stats!.max_generation,
-                  males: stats!.males,
-                  females: stats!.females,
-                  living: stats!.living,
-                  deceased: stats!.deceased,
-                }
-              : {
-                  total: tree.persons.length,
-                  maxGen: tree.persons.reduce<number | null>(
-                    (m, p) =>
-                      p.generation == null
-                        ? m
-                        : m == null || p.generation > m
-                          ? p.generation
-                          : m,
-                    null,
-                  ),
-                  males: tree.persons.filter((p) => p.gender === "M").length,
-                  females: tree.persons.filter((p) => p.gender === "F").length,
-                  living: tree.persons.filter((p) => p.is_living).length,
-                  deceased: tree.persons.filter((p) => !p.is_living).length,
-                };
-            return (
-              <ClanStatsPanel counts={counts} persons={tree.persons}>
-                {isMember && contentCounts && (
-                  <div className="grid grid-cols-3 gap-2 border-t pt-4">
-                    <ResourceLink
-                      to={`/clans/${clan.id}/memory-room`}
-                      label={t`Phòng ký ức`}
-                      value={contentCounts.memory_rooms}
-                    />
-                    <ResourceLink
-                      to={`/clans/${clan.id}/graves`}
-                      label={t`Mộ phần & tro cốt`}
-                      value={contentCounts.resting_places}
-                    />
-                    <ResourceLink
-                      to={`/clans/${clan.id}/heritage`}
-                      label={t`Di sản văn hoá`}
-                      value={contentCounts.heritage_items}
-                    />
-                  </div>
-                )}
-              </ClanStatsPanel>
-            );
-          })()}
+          {show("stats") &&
+            (() => {
+              const useStatsRpc = isMember && stats && stats.total_persons > 0;
+              const counts = useStatsRpc
+                ? {
+                    total: stats!.total_persons,
+                    maxGen: stats!.max_generation,
+                    males: stats!.males,
+                    females: stats!.females,
+                    living: stats!.living,
+                    deceased: stats!.deceased,
+                  }
+                : {
+                    total: tree.persons.length,
+                    maxGen: tree.persons.reduce<number | null>(
+                      (m, p) =>
+                        p.generation == null
+                          ? m
+                          : m == null || p.generation > m
+                            ? p.generation
+                            : m,
+                      null,
+                    ),
+                    males: tree.persons.filter((p) => p.gender === "M").length,
+                    females: tree.persons.filter((p) => p.gender === "F")
+                      .length,
+                    living: tree.persons.filter((p) => p.is_living).length,
+                    deceased: tree.persons.filter((p) => !p.is_living).length,
+                  };
+              return (
+                <ClanStatsPanel counts={counts} persons={tree.persons}>
+                  {isMember && contentCounts && (
+                    <div className="grid grid-cols-3 gap-2 border-t pt-4">
+                      <ResourceLink
+                        to={`/clans/${clan.id}/memory-room`}
+                        label={t`Phòng ký ức`}
+                        value={contentCounts.memory_rooms}
+                      />
+                      <ResourceLink
+                        to={`/clans/${clan.id}/graves`}
+                        label={t`Mộ phần & tro cốt`}
+                        value={contentCounts.resting_places}
+                      />
+                      <ResourceLink
+                        to={`/clans/${clan.id}/heritage`}
+                        label={t`Di sản văn hoá`}
+                        value={contentCounts.heritage_items}
+                      />
+                    </div>
+                  )}
+                </ClanStatsPanel>
+              );
+            })()}
 
           {/* Bản đồ dòng họ: nơi ở của con cháu, mộ phần, di sản theo tỉnh — ngay dưới số liệu. */}
-          {isMember && <MapOverviewCard clanId={clan.id} />}
+          {isMember && show("map") && <MapOverviewCard clanId={clan.id} />}
 
-          {/* Thao tác nhanh — TỐI ĐA 12 ô, icon GIỐNG menu trái. Đứng đầu là ĐỦ các mục của nhóm lõi (Cây gia phả,
-              Danh bạ, Tra cứu quan hệ, Sự kiện — Tổng quan là trang này), rồi tới các mục chọn theo mức dùng thật (Umami
-              90 ngày: Mộ phần 40, Cài đặt 38, Phòng ký ức 32, Di sản 32, Việc cần làm 28, Bảng tin 28, Quỹ họ 11…) và giá trị
-              hành động (Thêm người). Ô thứ 12 LUÔN là lối tắt vào "Tất cả tính năng" để không mục nào mất đường vào. */}
-          {(() => {
-            const feat = (k: Parameters<typeof isFeatureEnabled>[1]) =>
-              isFeatureEnabled(clan.disabled_features, k);
-            const base = `/clans/${clan.id}`;
-            type Quick = {
-              key: string;
-              show: boolean;
-              node: ReactNode;
-            };
-            // Thứ tự = thứ tự ưu tiên: nếu quá 11 ô hợp lệ thì các ô cuối bị bỏ (vẫn vào được qua "Tất cả tính năng").
-            // Cùng điều kiện hiển thị với nhóm lõi ở menu trái (lib/navModel.tsx).
-            const canTree = isMember || clan.public_show_tree;
-            const canEvents = isMember || clan.public_show_events;
-            const candidates: Quick[] = [
-              {
-                key: "tree",
-                show: canTree,
-                node: (
-                  <ActionTile
-                    to={`${base}/tree`}
-                    icon={<IconTree />}
-                    title={t`Cây gia phả`}
-                  />
-                ),
-              },
-              {
-                key: "people",
-                show: canTree,
-                node: (
-                  <ActionTile
-                    to={`${base}/people`}
-                    icon={<IconUsers />}
-                    title={t`Danh bạ`}
-                  />
-                ),
-              },
-              {
-                key: "relations",
-                show: canTree && isMember,
-                node: (
-                  <ActionTile
-                    to={`${base}/relations`}
-                    icon={<IconTree />}
-                    title={t`Tra cứu quan hệ`}
-                  />
-                ),
-              },
-              {
-                key: "events",
-                show: canEvents,
-                node: (
-                  <ActionTile
-                    to={`${base}/events`}
-                    icon={<IconCalendar />}
-                    title={t`Sự kiện`}
-                  />
-                ),
-              },
-              {
-                key: "add",
-                show: canEdit,
-                node: (
-                  <ActionTile
-                    to={`${base}/people/new`}
-                    icon={<IconPlus />}
-                    title={t`Thêm người`}
-                  />
-                ),
-              },
-              {
-                key: "todo",
-                show: isMember,
-                node: (
-                  <ActionTile
-                    to={`${base}/todo`}
-                    icon={<IconList />}
-                    title={t`Việc làm`}
-                    badge={todoCount}
-                  />
-                ),
-              },
-              {
-                key: "graves",
-                show: (isMember || clan.public_show_graves) && feat("graves"),
-                node: (
-                  <ActionTile
-                    to={`${base}/graves`}
-                    icon={<IconGrave />}
-                    title={t`Mộ phần`}
-                  />
-                ),
-              },
-              {
-                key: "board",
-                show: isMember && feat("board"),
-                node: (
-                  <ActionTile
-                    to={`${base}/board`}
-                    icon={<IconSparkles />}
-                    title={t`Bảng tin`}
-                  />
-                ),
-              },
-              {
-                key: "memory",
-                show: isMember && feat("memory_room"),
-                node: (
-                  <ActionTile
-                    to={`${base}/memory-room`}
-                    icon={<IconCube />}
-                    title={t`Phòng ký ức`}
-                  />
-                ),
-              },
-              {
-                key: "heritage",
-                show:
-                  (isMember || clan.public_show_heritage) && feat("heritage"),
-                node: (
-                  <ActionTile
-                    to={`${base}/heritage`}
-                    icon={<IconScroll />}
-                    title={t`Di sản`}
-                  />
-                ),
-              },
-              {
-                key: "goodday",
-                show: true,
-                node: (
-                  <ActionTile
-                    to={`${base}/xem-ngay`}
-                    icon={<IconCalendar />}
-                    title={t`Xem ngày tốt`}
-                  />
-                ),
-              },
-              {
-                key: "settings",
-                show: isClanAdmin(clan),
-                node: (
-                  <ActionTile
-                    to={`${base}/settings`}
-                    icon={<IconSettings />}
-                    title={t`Cài đặt dòng họ`}
-                  />
-                ),
-              },
-              {
-                key: "import",
-                show: canEdit,
-                node: (
-                  <ActionTile
-                    to={`${base}/import`}
-                    icon={<IconUpload />}
-                    title={t`Nhập Excel`}
-                  />
-                ),
-              },
-              // Xuất PDF chỉ cho thành viên: tải cả cuốn sổ là việc của người trong họ.
-              {
-                key: "pdf",
-                show: isMember,
-                node: <PdfActionTile clan={clan} />,
-              },
-              {
-                key: "fund",
-                show: isMember && feat("fund"),
-                node: (
-                  <ActionTile
-                    to={`${base}/fund`}
-                    icon={<IconWallet />}
-                    title={t`Quỹ họ`}
-                  />
-                ),
-              },
-              {
-                key: "inlaws",
-                show: isMember && feat("inlaws"),
-                node: (
-                  <ActionTile
-                    to={`${base}/inlaws`}
-                    icon={<IconLink />}
-                    title={t`Liên kết họ`}
-                  />
-                ),
-              },
-              {
-                key: "honor",
-                show: isMember && feat("honor"),
-                node: (
-                  <ActionTile
-                    to={`${base}/honor`}
-                    icon={<IconAward />}
-                    title={t`Bảng vàng`}
-                  />
-                ),
-              },
-            ];
-            const MAX_QUICK = 12;
-            const shown = candidates
-              .filter((c) => c.show)
-              .slice(0, MAX_QUICK - 1);
-            return (
-              <SectionCard
-                id="quick"
-                icon={<IconGrid />}
-                title={t`Thao tác nhanh`}
-              >
-                {/* Ô NGANG gọn (icon + chữ cùng dòng): 2 cột mobile / 4 cột desktop. */}
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {shown.map((c) => (
-                    <Fragment key={c.key}>{c.node}</Fragment>
-                  ))}
-                  <ActionTile
-                    to={`${base}/menu`}
-                    icon={<IconGrid />}
-                    title={t`Tất cả tính năng`}
-                    tone="muted"
-                  />
-                </div>
-              </SectionCard>
-            );
-          })()}
+          {/* Thao tác nhanh — tối đa 12 ô, người dùng tự ghim / tự học theo lượt bấm (xem QuickActionsCard). */}
+          {show("quick") && (
+            <QuickActionsCard
+              clan={clan}
+              canEdit={canEdit}
+              isMember={isMember}
+              onCustomize={() => setCustomizeOpen(true)}
+            />
+          )}
 
           {/* Hồ sơ của tôi: nhận vị trí trên cây + tự cập nhật (quản trị duyệt). */}
-          {isMember && userId && (
+          {isMember && userId && show("profile") && (
             <MyProfileCard
               clanId={clan.id}
               userId={userId}
@@ -695,12 +495,13 @@ export default function Dashboard() {
           {/* Ảnh gia đình: bức ảnh ghép mới nhất của họ. */}
           {isMember &&
             userId &&
+            show("photos") &&
             isFeatureEnabled(clan.disabled_features, "mosaic") && (
               <FamilyPhotoCard clanId={clan.id} userId={userId} />
             )}
 
           {/* Tiến độ hoàn thiện — nhắc bổ sung thông tin. */}
-          {completion && completion.total > 0 && (
+          {completion && completion.total > 0 && show("completion") && (
             <CompletionTile
               clanId={clan.id}
               completion={completion}
@@ -708,13 +509,21 @@ export default function Dashboard() {
             />
           )}
 
-          <PodcastTodayCard />
+          {show("podcast") && <PodcastTodayCard />}
 
-          {effectiveRole(clan) !== null && (
+          {effectiveRole(clan) !== null && show("activity") && (
             <RecentActivityPanel clanId={clan.id} />
           )}
         </>
       ) : null}
+
+      <HomeCustomizeDrawer
+        open={customizeOpen}
+        onClose={() => setCustomizeOpen(false)}
+        catalog={quick.catalog}
+        shown={quick.shown}
+        pinned={quick.pinned}
+      />
     </div>
   );
 }
@@ -741,87 +550,6 @@ function ResourceLink({
         {label}
       </span>
     </Link>
-  );
-}
-
-function ActionTile({
-  to,
-  icon,
-  title,
-  badge,
-  tone = "default",
-}: {
-  to: string;
-  icon: React.ReactNode;
-  title: string;
-  /** Optional badge số đếm (vd. todo count). 0/undefined → không hiển thị. */
-  badge?: number;
-  /** `muted`: ô lối tắt "Tất cả tính năng" — viền nét đứt để phân biệt với các ô chức năng. */
-  tone?: "default" | "muted";
-}) {
-  return (
-    <Link
-      to={to}
-      className={`group relative flex items-center gap-2.5 rounded-xl border bg-card shadow-sm px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors ${tone === "muted" ? "border-dashed" : ""}`}
-    >
-      <span
-        className="text-primary shrink-0 [&>svg]:h-5 [&>svg]:w-5"
-        aria-hidden="true"
-      >
-        {icon}
-      </span>
-      <span className="text-sm font-medium leading-tight truncate">
-        {title}
-      </span>
-      {badge !== undefined && badge > 0 && (
-        <span className="absolute top-1 right-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] px-1 tabular-nums">
-          {badge > 99 ? "99+" : badge}
-        </span>
-      )}
-    </Link>
-  );
-}
-
-function PdfActionTile({ clan }: { clan: ClanDetail }) {
-  return <ExportPdfTile clan={clan} />;
-}
-
-function ExportPdfTile({ clan }: { clan: ClanDetail }) {
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function onClick() {
-    setBusy(true);
-    setErr(null);
-    try {
-      const { downloadClanBookPdf } = await import("@/lib/pdf/exportClanBook");
-      await downloadClanBookPdf(clan, { tree: true, detail: true });
-      track("export", { kind: "clan_book_pdf", from: "dashboard" });
-    } catch (e) {
-      setErr((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={busy}
-      title={err ?? undefined}
-      className="group relative flex items-center gap-2.5 rounded-xl border bg-card shadow-sm px-3 py-2.5 hover:border-primary hover:bg-muted/30 transition-colors disabled:opacity-60 disabled:cursor-wait"
-    >
-      <span
-        className="text-primary shrink-0 [&>svg]:h-5 [&>svg]:w-5"
-        aria-hidden="true"
-      >
-        <IconDownload />
-      </span>
-      <span className="text-sm font-medium leading-tight truncate">
-        {busy ? t`Đang xuất…` : t`Xuất PDF`}
-      </span>
-    </button>
   );
 }
 
