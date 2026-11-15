@@ -1,0 +1,28 @@
+# Dòng Họ Việt
+
+> Dòng Họ Việt là phần mềm gia phả bằng tiếng Việt cho dòng họ và gia đình Việt Nam: cả họ cùng dựng cây gia phả nhiều đời, ghi ngày giỗ theo âm lịch và được nhắc trước, lưu giữ giọng kể, ảnh và di sản của ông bà, xuất sổ gia phả PDF. Miễn phí để bắt đầu. Chạy trên web và cài như ứng dụng trên điện thoại (Android, iOS).
+
+Dòng Họ Việt hiểu cách tổ chức dòng họ Việt: thuỷ tổ và số đời, chi/nhánh, phả hệ – phả đồ – phả ký, tên tự/huý/thuỵ, ngày giỗ âm lịch (kể cả tháng nhuận), xưng hô họ hàng (bác, chú, cô, cậu, dì, thím, mợ…), mộ phần và nhà thờ họ. Thông tin người còn sống được ẩn khi chia sẻ công khai; chủ dòng họ quyết định ai xem, ai sửa.
+
+## Dùng thử và bắt đầu
+- [Xem thử gia phả mẫu (không cần đăng nhập)](https://giapha.thaohk.com/xem/demo): một dòng họ mẫu để xem cây, ngày giỗ, di sản.
+- [Tạo gia phả miễn phí](https://giapha.thaohk.com/signup): tạo dòng họ, thêm người, mời người thân qua một đường link.
+- [Giới thiệu và hỏi đáp](https://donghoviet.thaohk.com/): trang giới thiệu đầy đủ, câu hỏi thường gặp.
+
+## Hướng dẫn sử dụng
+- [Mục lục hướng dẫn](https://giapha.thaohk.com/docs): tạo dòng họ, thêm người, vai trò, tên tiếng Việt, lịch âm dương, thuỷ tổ và đời, quan hệ, xưng hô, QR cá nhân, đường trực hệ, liên kết thông gia, nhắc giỗ.
+- [Video hướng dẫn từng bước](https://giapha.thaohk.com/huong-dan-video)
+
+## Kiến thức gia phả (bài viết công khai)
+- [Hướng dẫn lập gia phả, ngày giỗ âm lịch, xưng hô họ hàng, thuật ngữ, mẫu sổ gia phả](https://donghoviet.thaohk.com/huong-dan.html)
+- [Sổ tay Văn hoá: phong tục, nghi lễ, tín ngưỡng Việt Nam](https://giapha.thaohk.com/so-tay)
+
+## Liên hệ
+- Email hỗ trợ: support@thaohk.com
+- Nhóm Facebook: https://www.facebook.com/donghoviet2026
+- [Liên hệ / phản hồi](https://giapha.thaohk.com/lien-he)
+
+## Tuỳ chọn
+- [Chính sách riêng tư](https://giapha.thaohk.com/chinh-sach-rieng-tu)
+- [Điều khoản sử dụng](https://giapha.thaohk.com/dieu-khoan-su-dung)
+- [Có gì mới](https://giapha.thaohk.com/changelog)

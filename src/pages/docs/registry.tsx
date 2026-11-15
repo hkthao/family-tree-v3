@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import * as Community from "./articles/community";
 import * as Faq from "./articles/faq";
+import * as Features from "./articles/features";
 import * as Persons from "./articles/persons";
 import * as Start from "./articles/start";
 
@@ -153,6 +154,88 @@ export const DOCS_SECTIONS: DocSection[] = [
         summary:
           "Nhận nhắc giỗ/sinh nhật/đóng góp đẩy thẳng vào điện thoại — kể cả khi app đóng.",
         Body: Community.WebPush,
+      },
+    ],
+  },
+  {
+    label: "Trang chủ & công cụ",
+    articles: [
+      {
+        slug: "tuy-chinh-tong-quan",
+        title: "Trang Tổng quan & Thao tác nhanh",
+        summary: "Tìm người, Hôm nay, Bước tiếp theo, tự ghim ô lối tắt.",
+        Body: Features.HomeCustomize,
+      },
+      {
+        slug: "su-kien",
+        title: "Sự kiện: giỗ, sinh nhật, họp họ",
+        summary: "Gom mọi ngày quan trọng của dòng họ ở một nơi.",
+        Body: Features.Events,
+      },
+      {
+        slug: "lich-xem-ngay",
+        title: "Lịch âm dương & ngày tốt",
+        summary: "Lịch tháng, Can Chi, ngày tốt xấu, lễ tết.",
+        Body: Features.Calendar,
+      },
+      {
+        slug: "so-gia-pha",
+        title: "Sổ gia phả (xuất PDF)",
+        summary: "Lời nói đầu, phả ký, phả hệ, phả đồ — một nút ra PDF.",
+        Body: Features.FamilyBook,
+      },
+      {
+        slug: "nhap-hang-loat",
+        title: "Nhập từ Excel & sinh bằng AI",
+        summary: "Đổ cả trăm người một lúc, có xem trước và kiểm lỗi.",
+        Body: Features.BulkImport,
+      },
+      {
+        slug: "tro-ly-ai",
+        title: "Trợ lý AI",
+        summary: "Hỏi về gia phả của họ mình bằng lời thường.",
+        Body: Features.Assistant,
+      },
+    ],
+  },
+  {
+    label: "Cộng đồng & di sản",
+    articles: [
+      {
+        slug: "mo-phan",
+        title: "Mộ phần & tro cốt",
+        summary: "Nơi an nghỉ, ảnh, GPS và chỉ đường về thăm.",
+        Body: Features.Graves,
+      },
+      {
+        slug: "ban-do",
+        title: "Bản đồ dòng họ",
+        summary: "Con cháu và mộ phần theo tỉnh/thành.",
+        Body: Features.MapPage,
+      },
+      {
+        slug: "phong-ky-uc",
+        title: "Phòng ký ức & Ảnh ghép",
+        summary: "Phòng ảnh 3D và bức ảnh mỗi người góp một mảnh.",
+        Body: Features.MemoryRoom,
+      },
+      {
+        slug: "di-san-quy-bang-vang",
+        title: "Di sản, Quỹ họ, Bảng vàng",
+        summary: "Giữ từ đường, kỷ vật, sổ thu chi và công đức.",
+        Body: Features.Heritage,
+      },
+      {
+        slug: "bang-tin",
+        title: "Bảng tin dòng họ",
+        summary: "Tin vui, thông báo chung, có kiểm duyệt.",
+        Body: Features.Board,
+      },
+      {
+        slug: "ngon-ngu",
+        title: "Đổi ngôn ngữ (Việt / Anh)",
+        summary: "Dùng app bằng tiếng Anh cho con cháu ở xa.",
+        Body: Features.Language,
       },
     ],
   },

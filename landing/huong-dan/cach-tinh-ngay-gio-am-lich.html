@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#7A2230" />
+    <link rel="icon" type="image/svg+xml" href="/assets/app-icon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/app-icon-180.png" />
+    <script defer src="https://analytics.thaohk.com/script.js"
+            data-website-id="f09ad523-5d64-4cf7-a15c-cecc7da13b67"
+            data-domains="donghoviet.thaohk.com,giapha.thaohk.com"></script>
+    <title>Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, tháng nhuận | Dòng Họ Việt</title>
+    <meta name="description" content="Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, mãn tang, xử lý tháng nhuận và tháng thiếu ngày 30, đổi ngày mất dương lịch sang âm lịch và cách nhớ giỗ cho cả dòng họ." />
+    <link rel="canonical" href="https://donghoviet.thaohk.com/huong-dan/cach-tinh-ngay-gio-am-lich.html" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://donghoviet.thaohk.com/huong-dan/cach-tinh-ngay-gio-am-lich.html" />
+    <meta property="og:site_name" content="Dòng Họ Việt" />
+    <meta property="og:title" content="Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, tháng nhuận" />
+    <meta property="og:description" content="Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, mãn tang, xử lý tháng nhuận và tháng thiếu ngày 30, đổi ngày mất dương lịch sang âm lịch và cách nhớ giỗ cho cả dòng họ." />
+    <meta property="og:image" content="https://donghoviet.thaohk.com/assets/og-banner.png" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        try {
+          var v = localStorage.getItem("family-tree:theme");
+          var dark = v === "dark" || ((v === "system" || !v) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute("content", dark ? "#1A1612" : "#7A2230");
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      :root {
+        --bg: 38 60% 96.5%;          /* warm paper */
+        --bg2: 38 50% 93%;           /* tint band */
+        --fg: 20 14% 14%;
+        --card: 0 0% 100%;
+        --primary: 0 45% 33%;        /* oxblood */
+        --primary-fg: 38 60% 97%;
+        --muted: 36 30% 90%;
+        --muted-fg: 25 9% 38%;
+        --accent: 40 64% 40%;        /* bronze */
+        --border: 36 38% 84%;
+        --radius: 1rem;
+      }
+      .dark {
+        --bg: 24 14% 8%;
+        --bg2: 24 14% 11%;
+        --fg: 38 30% 92%;
+        --card: 24 14% 13%;
+        --primary: 0 60% 60%;
+        --primary-fg: 38 30% 95%;
+        --muted: 24 12% 18%;
+        --muted-fg: 35 18% 68%;
+        --accent: 40 65% 62%;
+        --border: 24 10% 22%;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 18px; scroll-behavior: smooth; }
+      @media (max-width: 640px) { html { font-size: 17px; } }
+      body {
+        font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: hsl(var(--bg)); color: hsl(var(--fg));
+        line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+      }
+      h1, h2, h3, .serif { font-family: "Noto Serif", Georgia, serif; line-height: 1.2; letter-spacing: -0.01em; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 1.4rem; }
+      .ico { width: 1.4em; height: 1.4em; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+      /* Buttons */
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem; min-height: 54px;
+             padding: 0 1.8rem; border-radius: 999px; font-weight: 600; font-size: 1.04rem; cursor: pointer;
+             border: 1.5px solid transparent; transition: transform .14s, filter .14s, background .14s; white-space: nowrap; }
+      .btn .ico { width: 1.2em; height: 1.2em; }
+      .btn:active { transform: scale(.97); }
+      .btn-primary { background: hsl(var(--primary)); color: hsl(var(--primary-fg)); box-shadow: 0 10px 26px hsl(var(--primary)/.26); }
+      .btn-primary:hover { filter: brightness(1.08); }
+      .btn-ghost { background: hsl(var(--card)); border-color: hsl(var(--border)); color: hsl(var(--fg)); }
+      .btn-ghost:hover { background: hsl(var(--muted)); }
+
+      /* Header */
+      header { position: sticky; top: 0; z-index: 50; background: hsl(var(--bg)/.9);
+               backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid hsl(var(--border)); }
+      .nav { display: flex; align-items: center; justify-content: space-between; height: 70px; gap: 1rem; }
+      .brand { display: flex; align-items: center; gap: .6rem; font-family: "Noto Serif", serif; font-weight: 700; font-size: 1.3rem; white-space: nowrap; }
+      .brand img { width: 38px; height: 38px; border-radius: 10px; }
+      .nav-links { display: none; gap: 1.6rem; margin-left: auto; margin-right: .8rem; font-weight: 500; }
+      .nav-links a { color: hsl(var(--muted-fg)); position: relative; padding: .35rem 0; transition: color .12s; white-space: nowrap; }
+      .nav-links a:hover { color: hsl(var(--primary)); }
+      .nav-links a.active { color: hsl(var(--primary)); }
+      .nav-links a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 2.5px; background: hsl(var(--primary)); border-radius: 2px; }
+      .nav-actions { display: flex; align-items: center; gap: .5rem; }
+      .icon-btn { width: 46px; height: 46px; display: inline-flex; align-items: center; justify-content: center;
+                  border-radius: 999px; border: 1.5px solid hsl(var(--border)); background: hsl(var(--card)); cursor: pointer; color: hsl(var(--fg)); }
+      .icon-btn:hover { background: hsl(var(--muted)); }
+      .icon-btn .ico { width: 22px; height: 22px; }
+      .menu-btn { display: inline-flex; }
+      .nav-cta { display: none; }
+      /* Nút CTA navbar chỉ hiện khi đã cuộn qua hero (hero đã có CTA riêng) */
+      @media (min-width: 900px) {
+        .nav-links { display: flex; }
+        .menu-btn { display: none; }
+        body.past-hero .nav-cta { display: inline-flex; animation: ctaIn .28s ease; }
+      }
+      @keyframes ctaIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+      .mobile-menu { display: none; flex-direction: column; padding: .4rem 1.4rem 1.3rem; background: hsl(var(--bg)); border-bottom: 1px solid hsl(var(--border)); }
+      .mobile-menu.open { display: flex; }
+      .mobile-menu a:not(.btn) { padding: .95rem .3rem; font-weight: 500; font-size: 1.08rem; border-bottom: 1px solid hsl(var(--border)); }
+      .mobile-menu .btn { width: 100%; margin-top: .7rem; }
+      @media (min-width: 900px) { .mobile-menu { display: none !important; } }
+
+      /* Section scaffolding */
+      section { padding: 5.5rem 0; }
+      @media (max-width: 640px) { section { padding: 3.8rem 0; } }
+      .tint { background: hsl(var(--bg2)); }
+      .eyebrow { display: inline-flex; align-items: center; gap: .5rem; color: hsl(var(--accent)); font-weight: 600;
+                 font-size: .82rem; letter-spacing: .14em; text-transform: uppercase; }
+      .eyebrow .ico { width: 1.05em; height: 1.05em; }
+      .center { text-align: center; }
+      .h-sec { font-size: clamp(1.9rem, 4.6vw, 2.9rem); font-weight: 700; margin-top: .7rem; }
+      .lead { font-size: 1.16rem; color: hsl(var(--muted-fg)); max-width: 640px; margin-top: 1rem; }
+      .center .lead { margin-left: auto; margin-right: auto; }
+
+      /* Reveal on scroll */
+      .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s ease; }
+      .reveal.in { opacity: 1; transform: none; }
+
+      /* Hero */
+      .hero { position: relative; overflow: hidden; padding-top: 4.5rem; }
+      .hero::before { content: ""; position: absolute; inset: 0; z-index: -1;
+        background: radial-gradient(60% 50% at 80% 0%, hsl(var(--accent)/.14), transparent 70%),
+                    radial-gradient(55% 45% at 12% 5%, hsl(var(--primary)/.09), transparent 72%); }
+      .hero-grid { display: grid; grid-template-columns: 1fr; gap: 2.8rem; align-items: center; }
+      @media (min-width: 940px) { .hero-grid { grid-template-columns: 1.02fr .98fr; gap: 3.4rem; } }
+      .hero-badge { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem 1rem; background: hsl(var(--card));
+                    border: 1px solid hsl(var(--border)); border-radius: 999px; font-size: .88rem; font-weight: 500; color: hsl(var(--muted-fg)); margin-bottom: 1.4rem; }
+      .hero-badge .ico { width: 1.05em; height: 1.05em; color: hsl(var(--primary)); }
+      .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 700; }
+      .hero h1 .accent { color: hsl(var(--primary)); }
+      .hero .lead { font-size: 1.24rem; max-width: 540px; }
+      .hero-cta { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: .8rem; margin-top: 2rem; max-width: 500px; }
+      .hero-cta .btn { padding: 0 1rem; }
+      @media (max-width: 520px) { .hero-cta { grid-template-columns: 1fr; } .hero-cta .btn { padding: 0 1.6rem; } }
+      .hero-trust { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; margin-top: 1.7rem; color: hsl(var(--muted-fg)); font-size: .96rem; }
+      .hero-trust span { display: inline-flex; align-items: center; gap: .45rem; }
+      .hero-trust .ico { width: 1.2em; height: 1.2em; color: hsl(var(--accent)); }
+      .hero-photo { position: relative; border-radius: calc(var(--radius) * 1.4); overflow: hidden;
+                    box-shadow: 0 30px 70px hsl(var(--fg)/.22); aspect-ratio: 4/5; }
+      @media (max-width: 940px) { .hero-photo { aspect-ratio: 5/4; max-height: 460px; margin-inline: auto; max-width: 520px; } }
+      .hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 28%; display: block; }
+
+      /* Steps */
+      .steps { display: grid; grid-template-columns: 1fr; gap: 2.2rem; margin-top: 3.4rem; }
+      @media (min-width: 820px) { .steps { grid-template-columns: repeat(3, 1fr); gap: 2.6rem; } }
+      .step { text-align: center; }
+      .step .n { font-family: "Noto Serif", serif; font-size: 3.4rem; font-weight: 700; color: hsl(var(--primary)); line-height: 1; opacity: .9; }
+      .step h3 { font-size: 1.35rem; font-weight: 600; margin-top: .8rem; }
+      .step p { color: hsl(var(--muted-fg)); margin-top: .5rem; font-size: 1.02rem; }
+      .step .bar { width: 46px; height: 3px; background: hsl(var(--accent)/.5); border-radius: 2px; margin: 1rem auto 0; }
+
+      /* Editorial rows */
+      .row { display: grid; grid-template-columns: 1fr; gap: 2.4rem; align-items: center; }
+      @media (min-width: 900px) { .row { grid-template-columns: 1fr 1fr; gap: 4rem; align-items: stretch; } .row.flip .row-text { order: 2; } .row-text { align-self: center; } }
+      .row + .row { margin-top: 5rem; }
+      @media (max-width: 640px) { .row + .row { margin-top: 3.5rem; } }
+      .row-photo { position: relative; border-radius: calc(var(--radius) * 1.3); overflow: hidden; box-shadow: 0 22px 50px hsl(var(--fg)/.16); aspect-ratio: 4/3; }
+      .row-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+      @media (min-width: 900px) { .row-photo { aspect-ratio: auto; min-height: 100%; } }
+      /* Ảnh chụp màn hình app — giữ tỉ lệ thật, không crop */
+      .row-photo.shot { aspect-ratio: auto; border: 1px solid hsl(var(--border)); background: #14110e; }
+      .row-photo.shot img { position: static; width: 100%; height: auto; object-fit: contain; }
+      @media (min-width: 900px) { .row-photo.shot { align-self: center; min-height: 0; } }
+      .row-text h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; }
+      .row-text p { color: hsl(var(--muted-fg)); font-size: 1.1rem; margin-top: 1rem; }
+      .row-text .quote { margin-top: 1.4rem; padding-left: 1.1rem; border-left: 3px solid hsl(var(--accent));
+                         font-family: "Noto Serif", serif; font-style: italic; font-size: 1.18rem; color: hsl(var(--fg)); }
+      .row-text .more { display: inline-flex; align-items: center; gap: .5rem; margin-top: 1.5rem; color: hsl(var(--primary)); font-weight: 600; }
+      .row-text .more:hover { gap: .8rem; }
+      .audio { margin-top: 1.6rem; display: flex; align-items: center; gap: 1rem; background: hsl(var(--card));
+               border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.1rem 1.3rem; box-shadow: 0 8px 24px hsl(var(--fg)/.06); }
+      .audio .play { width: 50px; height: 50px; border-radius: 50%; background: hsl(var(--primary)); color: #fff; display: flex; align-items: center; justify-content: center; flex: none; }
+      .audio .play .ico { width: 24px; height: 24px; }
+      .wave { display: flex; align-items: center; gap: 3px; height: 30px; margin-top: .3rem; }
+      .wave span { width: 4px; border-radius: 2px; background: hsl(var(--accent)); opacity: .8; }
+
+      /* Feature band */
+      .feat-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; margin-top: 3.2rem; }
+      @media (min-width: 560px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 980px) { .feat-grid { grid-template-columns: repeat(4, 1fr); } }
+      .feat { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.8rem 1.5rem; text-align: center;
+              transition: transform .15s, box-shadow .15s; }
+      .feat:hover { transform: translateY(-4px); box-shadow: 0 16px 34px hsl(var(--fg)/.09); }
+      .feat .ic { width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center;
+                  background: hsl(var(--accent)/.14); color: hsl(var(--accent)); margin: 0 auto 1.1rem; }
+      .feat .ic .ico { width: 36px; height: 36px; stroke-width: 1.7; }
+      .feat h3 { font-size: 1.16rem; font-weight: 600; }
+      .feat p { color: hsl(var(--muted-fg)); margin-top: .5rem; font-size: .98rem; }
+
+      /* Trust */
+      .trust-grid { display: grid; grid-template-columns: 1fr; gap: 1.2rem; margin-top: 3rem; }
+      @media (min-width: 760px) { .trust-grid { grid-template-columns: repeat(3, 1fr); } }
+      .trust { text-align: center; padding: 1rem; }
+      .trust .ic { width: 60px; height: 60px; border-radius: 18px; background: hsl(var(--primary)/.10); color: hsl(var(--primary));
+                   display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+      .trust .ic .ico { width: 30px; height: 30px; }
+      .trust h3 { font-size: 1.15rem; font-weight: 600; }
+      .trust p { color: hsl(var(--muted-fg)); margin-top: .4rem; }
+
+      /* Testimonials */
+      .testi-grid { display: grid; grid-template-columns: 1fr; gap: 1.3rem; margin-top: 3.2rem; }
+      @media (min-width: 720px) { .testi-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (min-width: 1000px) { .testi-grid { grid-template-columns: repeat(3, 1fr); } }
+      .tcard { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.8rem; display: flex; flex-direction: column; }
+      .tcard .mark { font: 700 2.6rem "Noto Serif"; color: hsl(var(--accent)); line-height: .5; height: 1rem; }
+      .tcard .q { font-family: "Noto Serif", serif; font-style: italic; font-size: 1.08rem; line-height: 1.6; flex: 1; }
+      .tcard .who { display: flex; align-items: center; gap: .85rem; margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid hsl(var(--border)); }
+      .tcard .ava { width: 48px; height: 48px; border-radius: 50%; background: hsl(var(--primary)/.12); color: hsl(var(--primary));
+                    display: flex; align-items: center; justify-content: center; font: 700 1.05rem "Noto Serif"; flex: none; }
+      .tcard .who b { font-size: .96rem; } .tcard .who small { display: block; color: hsl(var(--muted-fg)); font-weight: 400; font-size: .83rem; }
+
+      /* FAQ */
+      .faq { margin: 3rem auto 0; }
+      .share-row { margin-top: 1.25rem; font-size: .95rem; opacity: .85; }
+      .share-row a { margin-left: .6rem; text-decoration: underline; text-underline-offset: 3px; }
+      details { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 0 1.4rem; margin-bottom: .9rem; }
+      summary { list-style: none; cursor: pointer; padding: 1.3rem 0; font-weight: 600; font-size: 1.1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+      summary::-webkit-details-marker { display: none; }
+      summary .ico { width: 1.3rem; height: 1.3rem; color: hsl(var(--primary)); transition: transform .2s; }
+      details[open] summary .ico { transform: rotate(45deg); }
+      details .ans { padding: 0 0 1.3rem; color: hsl(var(--muted-fg)); }
+
+      /* Final CTA */
+      .cta { position: relative; overflow: hidden; color: #f6efe3; border-radius: calc(var(--radius) * 1.6);
+             background: linear-gradient(135deg, #7a2e2e 0%, #5d2222 60%, #4a1d1d 100%); padding: 4rem 2rem; text-align: center; }
+      .cta::before { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 80% at 85% 115%, rgba(184,134,42,.30), transparent 70%); }
+      .cta > * { position: relative; }
+      .cta h2 { font-size: clamp(1.8rem, 4.6vw, 2.8rem); }
+      .cta p { margin-top: 1rem; opacity: .92; max-width: 560px; margin-inline: auto; font-size: 1.12rem; }
+      .cta .btns { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; max-width: 540px; margin: 2.2rem auto 0; }
+      @media (max-width: 520px) { .cta .btns { grid-template-columns: 1fr; } }
+      .cta .btn-primary { background: #fbf7f0; color: #7a2e2e; box-shadow: 0 8px 24px rgba(0,0,0,.22); }
+      .cta .btn-line { background: rgba(246,239,227,.08); border-color: rgba(246,239,227,.55); color: #f6efe3; }
+      .cta .dragon { position: absolute; right: -24px; bottom: -34px; width: 200px; opacity: .18; pointer-events: none; }
+
+      /* Footer */
+      footer { border-top: 1px solid hsl(var(--border)); padding: 3.2rem 0 2.6rem; }
+      .foot-top { display: grid; grid-template-columns: 1fr; gap: 1.8rem; }
+      @media (min-width: 720px) { .foot-top { grid-template-columns: 1.8fr 1fr 1fr auto; } }
+      .foot-qr { display: flex; flex-direction: column; align-items: center; gap: .55rem; text-align: center; }
+      .foot-qr img { width: 104px; height: 104px; border-radius: 12px; background: #fff; padding: 7px; box-shadow: 0 4px 14px hsl(var(--fg)/.12); }
+      .foot-qr small { font-size: .8rem; color: hsl(var(--muted-fg)); line-height: 1.4; }
+      .foot-brand p { margin-top: .8rem; color: hsl(var(--muted-fg)); font-size: .96rem; max-width: 320px; }
+      .foot-col h4 { font-size: .82rem; text-transform: uppercase; letter-spacing: .08em; color: hsl(var(--muted-fg)); margin-bottom: .9rem; }
+      .foot-col a { display: flex; align-items: center; gap: .5rem; padding: .32rem 0; }
+      .foot-col a:hover { color: hsl(var(--primary)); }
+      .foot-col .ico { width: 1.05rem; height: 1.05rem; }
+      .foot-bottom { margin-top: 2.6rem; padding-top: 1.6rem; border-top: 1px solid hsl(var(--border)); text-align: center; color: hsl(var(--muted-fg)); font-size: .9rem; }
+
+      @media (hover: none) { html, body { scrollbar-width: none; } *::-webkit-scrollbar { display: none; width: 0; height: 0; } }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .reveal { opacity: 1; transform: none; } }
+    
+.article { max-width: 760px; margin: 0 auto; padding: 2.6rem 1.4rem 1rem; }
+.crumbs { font-size: .85rem; color: hsl(var(--muted-fg)); margin-bottom: 1rem; }
+.crumbs a { text-decoration: underline; text-underline-offset: 3px; }
+.article h1 { font-size: clamp(1.7rem, 4.6vw, 2.4rem); margin-bottom: .8rem; }
+.article .meta { font-size: .85rem; color: hsl(var(--muted-fg)); margin-bottom: 1.4rem; }
+.article .lead { font-size: 1.1rem; padding: 1.1rem 1.2rem; background: hsl(var(--bg2)); border-left: 4px solid hsl(var(--primary)); border-radius: .6rem; margin-bottom: 1.8rem; }
+.article h2 { font-size: 1.4rem; margin: 2.2rem 0 .7rem; }
+.article p, .article li, .article dd { margin-bottom: .75rem; }
+.article ul, .article ol { padding-left: 1.4rem; margin-bottom: 1rem; }
+.article dt { font-weight: 700; margin-top: .9rem; }
+.article dd { margin-left: 0; color: hsl(var(--muted-fg)); }
+.article a:not(.btn) { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 3px; }
+.article table { width: 100%; border-collapse: collapse; margin: .6rem 0 1.2rem; font-size: .95rem; }
+.article th, .article td { text-align: left; padding: .6rem .7rem; border: 1px solid hsl(var(--border)); vertical-align: top; }
+.article th { background: hsl(var(--bg2)); }
+.article .faq { padding: 0; }
+.article .cta-box { margin: 2.4rem 0 1rem; padding: 1.4rem; border: 1.5px solid hsl(var(--border)); border-radius: 1rem; background: hsl(var(--card)); }
+.article .cta-box h2 { margin-top: 0; }
+.article .cta-row { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1rem; }
+.article .related a { display: block; padding: .6rem 0; border-bottom: 1px solid hsl(var(--border)); }
+.cards { display: grid; gap: 1rem; margin-top: 1.4rem; }
+@media (min-width: 700px) { .cards { grid-template-columns: 1fr 1fr; } }
+.cards a { display: block; padding: 1.1rem 1.2rem; border: 1.5px solid hsl(var(--border)); border-radius: 1rem; background: hsl(var(--card)); text-decoration: none !important; color: inherit !important; }
+.cards a:hover { background: hsl(var(--muted)); }
+.cards b { display: block; font-family: "Noto Serif", serif; font-size: 1.1rem; margin-bottom: .3rem; }
+.cards span { font-size: .92rem; color: hsl(var(--muted-fg)); }
+</style>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, tháng nhuận",
+      "description": "Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, mãn tang, xử lý tháng nhuận và tháng thiếu ngày 30, đổi ngày mất dương lịch sang âm lịch và cách nhớ giỗ cho cả dòng họ.",
+      "inLanguage": "vi",
+      "datePublished": "2026-11-15",
+      "dateModified": "2026-11-15",
+      "mainEntityOfPage": "https://donghoviet.thaohk.com/huong-dan/cach-tinh-ngay-gio-am-lich.html",
+      "image": "https://donghoviet.thaohk.com/assets/og-banner.png",
+      "author": {
+        "@type": "Organization",
+        "name": "Dòng Họ Việt",
+        "url": "https://donghoviet.thaohk.com/",
+        "logo": "https://donghoviet.thaohk.com/assets/app-icon-180.png"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dòng Họ Việt",
+        "url": "https://donghoviet.thaohk.com/",
+        "logo": "https://donghoviet.thaohk.com/assets/app-icon-180.png"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Dòng Họ Việt",
+          "item": "https://donghoviet.thaohk.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Kiến thức gia phả",
+          "item": "https://donghoviet.thaohk.com/huong-dan.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Cách tính ngày giỗ âm lịch",
+          "item": "https://donghoviet.thaohk.com/huong-dan/cach-tinh-ngay-gio-am-lich.html"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Giỗ đầu là sau bao lâu?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Giỗ đầu (tiểu tường) thường tính khi tròn một năm kể từ ngày mất; một số nơi tính theo tháng (khoảng 13 tháng). Giỗ hết (đại tường) tròn hai năm hoặc khoảng 25 tháng. Hãy theo tập quán của dòng họ."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ngày giỗ tính theo dương lịch hay âm lịch?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Theo âm lịch: ngày giỗ là ngày mất âm lịch lặp lại hằng năm. Ngày dương lịch tương ứng của giỗ thay đổi mỗi năm."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Người mất vào tháng nhuận thì cúng giỗ khi nào?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Phổ biến là cúng ở tháng thường cùng số tháng; một số gia đình cúng thêm khi tháng nhuận đó trở lại. Nên thống nhất trong dòng họ và ghi vào gia phả."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ngày mất là 30 âm lịch, năm sau tháng đó chỉ có 29 ngày thì cúng ngày nào?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Thường cúng vào ngày 29, tức ngày cuối của tháng thiếu."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Không biết ngày mất âm lịch thì làm sao?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Nếu biết ngày mất dương lịch, hãy đổi sang âm lịch bằng lịch vạn niên rồi dùng ngày âm đó. Nếu chỉ nhớ năm mất, hãy hỏi người lớn tuổi hoặc xem bia mộ, bài vị để tìm ngày giỗ đang được cúng."
+          }
+        }
+      ]
+    }
+  ]
+}
+    </script>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-tree" viewBox="0 0 24 24"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></symbol>
+      <symbol id="i-invite" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></symbol>
+      <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></symbol>
+      <symbol id="i-qr" viewBox="0 0 24 24"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></symbol>
+      <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0z"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+      <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><line x1="2" x2="22" y1="2" y2="22"/></symbol>
+      <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+      <symbol id="i-landmark" viewBox="0 0 24 24"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></symbol>
+      <symbol id="i-facebook" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+    </svg>
+    <header>
+      <div class="wrap nav">
+        <a class="brand" href="/"><img src="/assets/app-icon.svg" alt="Dòng Họ Việt" /><span>Dòng Họ Việt</span></a>
+        <nav class="nav-links">
+          <a href="/">Giới thiệu</a>
+          <a href="/huong-dan.html">Kiến thức gia phả</a>
+          <a href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=guide&utm_campaign=nav_demo">Xem thử</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="btn btn-primary" data-cta="guide-nav" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=guide&utm_campaign=guide_nav"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả</a>
+        </div>
+      </div>
+    </header>
+    <main>
+<article class="article">
+<nav class="crumbs" aria-label="Đường dẫn"><a href="/">Dòng Họ Việt</a> › <a href="/huong-dan.html">Kiến thức gia phả</a> › Cách tính ngày giỗ âm lịch</nav>
+<h1>Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, tháng nhuận</h1>
+<p class="meta">Cập nhật 15/11/2026 · khoảng 6 phút đọc · Dòng Họ Việt</p>
+<p class="lead"><strong>Ngày giỗ là ngày mất theo âm lịch, lặp lại mỗi năm vào đúng ngày và tháng âm đó.</strong> Nếu chỉ biết ngày mất theo dương lịch, hãy đổi sang âm lịch một lần rồi dùng ngày âm ấy cho mọi năm sau. Giỗ đầu tính khi tròn một năm kể từ ngày mất, giỗ hết khi tròn hai năm; các mốc cụ thể có khác nhau đôi chút theo vùng và gia đình.</p>
+<h2>Các mốc giỗ sau khi mất</h2>
+<p><strong>Theo cách gọi phổ biến, sau ngày mất có các mốc:</strong> cúng 49 ngày và 100 ngày, <em>giỗ đầu</em> (tiểu tường) khi tròn một năm, <em>giỗ hết</em> (đại tường) khi tròn hai năm, rồi lễ mãn tang (đạm tế). Sau đó mỗi năm giỗ vào đúng ngày mất âm lịch.</p>
+<p>Nhiều gia đình tính các mốc này theo tháng (khoảng 13, 25 và 27 tháng) thay vì theo năm tròn. Cách làm khác nhau theo vùng, nên hãy hỏi người lớn tuổi trong họ và chọn một cách thống nhất cho cả dòng họ.</p>
+<h2>Đổi ngày mất dương lịch sang âm lịch</h2>
+<p><strong>Đổi một lần bằng lịch vạn niên hoặc công cụ đổi ngày, rồi ghi lại ngày tháng âm.</strong> Ví dụ: một người mất ngày 14 tháng 11 dương lịch năm 2026, ngày đó là mùng 6 tháng 10 âm lịch; vậy ngày giỗ hằng năm của người này là mùng 6 tháng 10 âm lịch, không phải ngày 14/11 dương. Ngày dương lịch của giỗ thay đổi mỗi năm vì âm lịch và dương lịch lệch nhau.</p>
+<h2>Khi tháng đó là tháng nhuận</h2>
+<p><strong>Thông lệ phổ biến là cúng giỗ ở tháng thường, không cúng thêm ở tháng nhuận.</strong> Nếu người mất vào tháng nhuận thì có nơi cúng ở tháng thường cùng số, có nơi cúng vào lần tháng nhuận khi nó xuất hiện lại; hãy theo tập quán của dòng họ và ghi rõ trong gia phả để các đời sau không lúng túng.</p>
+<h2>Khi ngày mất là ngày 30 mà năm sau tháng đó chỉ có 29 ngày</h2>
+<p><strong>Lịch âm có tháng đủ (30 ngày) và tháng thiếu (29 ngày).</strong> Nếu ngày mất là 30 mà năm nay tháng đó thiếu, thường cúng vào ngày 29 (ngày cuối tháng). Đây là điểm dễ nhầm nhất khi tự tra lịch, nên các phần mềm nhắc giỗ cần xử lý sẵn.</p>
+<h2>Chuẩn bị và thời điểm cúng</h2>
+<p><strong>Giỗ chính được cúng vào ngày mất âm lịch.</strong> Nhiều nơi làm lễ vào chiều hôm trước (thường gọi là cúng tiên thường) rồi lễ chính ngày giỗ; con cháu ở xa có thể về sớm hơn. Điều quan trọng là cả họ cùng biết đúng ngày, nên hãy ghi giỗ của từng người vào gia phả và đặt nhắc trước một tuần.</p>
+<h2>Nhớ giỗ cho cả dòng họ bằng phần mềm</h2>
+<p>Trong <strong>Dòng Họ Việt</strong>, bạn nhập ngày mất (dương hoặc âm lịch); app tự tính ngày giỗ hằng năm, xử lý tháng nhuận và tháng thiếu, rồi nhắc qua thông báo và email cho thành viên đã đăng ký, kể cả xuất lịch sang Google hoặc Apple Calendar. Xem thêm <a href="/huong-dan/cach-lap-gia-pha-dong-ho.html">cách lập gia phả dòng họ</a>.</p>
+<h2>Câu hỏi thường gặp</h2>
+<div class="faq">
+<details open><summary>Giỗ đầu là sau bao lâu?<svg class="ico"><use href="#i-plus"/></svg></summary><div class="ans">Giỗ đầu (tiểu tường) thường tính khi tròn một năm kể từ ngày mất; một số nơi tính theo tháng (khoảng 13 tháng). Giỗ hết (đại tường) tròn hai năm hoặc khoảng 25 tháng. Hãy theo tập quán của dòng họ.</div></details>
+<details><summary>Ngày giỗ tính theo dương lịch hay âm lịch?<svg class="ico"><use href="#i-plus"/></svg></summary><div class="ans">Theo âm lịch: ngày giỗ là ngày mất âm lịch lặp lại hằng năm. Ngày dương lịch tương ứng của giỗ thay đổi mỗi năm.</div></details>
+<details><summary>Người mất vào tháng nhuận thì cúng giỗ khi nào?<svg class="ico"><use href="#i-plus"/></svg></summary><div class="ans">Phổ biến là cúng ở tháng thường cùng số tháng; một số gia đình cúng thêm khi tháng nhuận đó trở lại. Nên thống nhất trong dòng họ và ghi vào gia phả.</div></details>
+<details><summary>Ngày mất là 30 âm lịch, năm sau tháng đó chỉ có 29 ngày thì cúng ngày nào?<svg class="ico"><use href="#i-plus"/></svg></summary><div class="ans">Thường cúng vào ngày 29, tức ngày cuối của tháng thiếu.</div></details>
+<details><summary>Không biết ngày mất âm lịch thì làm sao?<svg class="ico"><use href="#i-plus"/></svg></summary><div class="ans">Nếu biết ngày mất dương lịch, hãy đổi sang âm lịch bằng lịch vạn niên rồi dùng ngày âm đó. Nếu chỉ nhớ năm mất, hãy hỏi người lớn tuổi hoặc xem bia mộ, bài vị để tìm ngày giỗ đang được cúng.</div></details>
+</div>
+<div class="cta-box">
+<h2>Lập gia phả cho dòng họ của bạn</h2>
+<p>Dòng Họ Việt là phần mềm gia phả tiếng Việt: cây nhiều đời, ngày giỗ âm lịch có nhắc, xưng hô họ hàng, xuất sổ gia phả PDF. Bắt đầu miễn phí.</p>
+<div class="cta-row">
+<a class="btn btn-primary" data-cta="guide-cach-tinh-ngay-gio-am-lich" href="https://giapha.thaohk.com/signup?utm_source=landing&utm_medium=guide&utm_campaign=guide_cach-tinh-ngay-gio-am-lich"><svg class="ico"><use href="#i-tree"/></svg>Tạo gia phả miễn phí</a>
+<a class="btn btn-ghost" data-cta="guide-demo-cach-tinh-ngay-gio-am-lich" href="https://giapha.thaohk.com/xem/demo?utm_source=landing&utm_medium=guide&utm_campaign=guide_cach-tinh-ngay-gio-am-lich"><svg class="ico"><use href="#i-eye"/></svg>Xem thử gia phả mẫu</a>
+</div>
+</div>
+<h2>Bài liên quan</h2>
+<div class="related">
+<a href="/huong-dan/cach-lap-gia-pha-dong-ho.html">Cách lập gia phả dòng họ</a>
+<a href="/huong-dan/chap-ho-tao-mo-gio-to.html">Chạp họ, tảo mộ, giỗ Tổ</a>
+<a href="/huong-dan/thuat-ngu-gia-pha.html">Thuật ngữ gia phả</a>
+</div>
+</article>
+    </main>
+    <footer>
+      <div class="wrap">
+        <div class="foot-bottom">© Dòng Họ Việt · <a href="/">Giới thiệu</a> · <a href="/huong-dan.html">Kiến thức gia phả</a> · <a href="mailto:support@thaohk.com">support@thaohk.com</a> · <a href="https://giapha.thaohk.com/chinh-sach-rieng-tu">Chính sách riêng tư</a></div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -24,6 +24,9 @@ import { lazyMessages } from "@/lib/i18n/lazy";
 
 export const SITE_NAME = "Dòng Họ Việt";
 
+/** Tên miền chính thức của app (dùng cho canonical / og:url). */
+export const SITE_ORIGIN = "https://giapha.thaohk.com";
+
 export const DEFAULT_TITLE = "Dòng Họ Việt — Quản lý gia phả dòng họ";
 
 export const DEFAULT_DESCRIPTION =
@@ -230,6 +233,26 @@ export function applyDocumentMeta(meta: {
     "og:description",
     meta.description || DEFAULT_DESCRIPTION,
   );
+
+  // Canonical + og:url THEO TỪNG TRANG (index.html chỉ có canonical của trang chủ): nếu không, mọi trang công
+  // khai (Sổ tay, Hướng dẫn…) bị công cụ tìm kiếm / AI coi là bản sao của trang chủ. Trang noindex không cần.
+  // Dùng tên miền production cố định (không dùng window.origin) để bản dev/preview không lọt vào chỉ mục.
+  const canonical = `${SITE_ORIGIN}${window.location.pathname}`.replace(
+    /(.)\/$/,
+    "$1",
+  );
+  let link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (meta.noindex) {
+    link?.remove();
+  } else {
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "canonical";
+      document.head.appendChild(link);
+    }
+    link.href = canonical;
+    setMetaTag("property", "og:url", canonical);
+  }
 
   const robots = document.querySelector('meta[name="robots"]');
   if (meta.noindex) {

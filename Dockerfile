@@ -37,6 +37,9 @@ ENV VITE_VAPID_PUBLIC_KEY=$VITE_VAPID_PUBLIC_KEY
 ENV VITE_UMAMI_URL=$VITE_UMAMI_URL
 ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
 ENV GITHUB_SHA=$GITHUB_SHA
+# Sitemap cho bot tìm kiếm / bot AI: trang tĩnh + bài hướng dẫn + mục Sổ tay đã đăng (đọc qua REST bằng khoá anon).
+# Lỗi mạng/khoá thì bỏ phần Sổ tay, KHÔNG làm hỏng build (script luôn thoát 0).
+RUN node scripts/gen-sitemap.mjs || true
 RUN npm run build
 
 # ─── Runtime stage ──────────────────────────────────────────

@@ -1,0 +1,22 @@
+# Dòng Họ Việt
+
+> Phần mềm gia phả bằng tiếng Việt cho dòng họ Việt Nam: cả họ cùng dựng cây gia phả nhiều đời, ghi ngày giỗ âm lịch và được nhắc, lưu giọng kể và di sản của ông bà, xuất sổ gia phả PDF. Bắt đầu miễn phí; chạy trên web, Android, iOS.
+
+## Ứng dụng
+- [Xem thử gia phả mẫu, không cần đăng nhập](https://giapha.thaohk.com/xem/demo)
+- [Tạo gia phả miễn phí](https://giapha.thaohk.com/signup)
+- [Hướng dẫn sử dụng app](https://giapha.thaohk.com/docs)
+
+## Kiến thức gia phả
+- [Cách lập gia phả dòng họ: hướng dẫn 7 bước cho người mới](https://donghoviet.thaohk.com/huong-dan/cach-lap-gia-pha-dong-ho.html): Hướng dẫn lập gia phả dòng họ từng bước: xác định thuỷ tổ, thu thập thông tin, đánh số đời, nối quan hệ, ghi ngày giỗ âm lịch, vẽ phả đồ và cập nhật cùng cả họ.
+- [Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, tháng nhuận](https://donghoviet.thaohk.com/huong-dan/cach-tinh-ngay-gio-am-lich.html): Cách tính ngày giỗ theo âm lịch: giỗ đầu, giỗ hết, mãn tang, xử lý tháng nhuận và tháng thiếu ngày 30, đổi ngày mất dương lịch sang âm lịch và cách nhớ giỗ cho cả dòng họ.
+- [Cách xưng hô họ hàng trong gia đình Việt: bác, chú, cô, cậu, dì](https://donghoviet.thaohk.com/huong-dan/cach-xung-ho-ho-hang.html): Bảng cách xưng hô họ hàng của người Việt: bác, chú, cô, cậu, dì, thím, mợ, dượng, anh chị em họ, và các đời trên dưới như ông bà, cụ, kỵ, cháu, chắt, chít; khác biệt giữa miền Bắc, Trung, Nam.
+- [Phần mềm gia phả tiếng Việt: cách chọn và những tiêu chí quan trọng](https://donghoviet.thaohk.com/huong-dan/phan-mem-gia-pha-tieng-viet.html): Cách chọn phần mềm gia phả tiếng Việt cho dòng họ: 8 tiêu chí (âm lịch và ngày giỗ, xưng hô, nhiều người cùng sửa, quyền riêng tư, dễ dùng cho người lớn tuổi, xuất sổ, nhập dữ liệu) và Dòng Họ Việt đáp ứng thế nào.
+- [Thuật ngữ gia phả: phả hệ, phả đồ, phả ký, thuỷ tổ, đời, chi là gì?](https://donghoviet.thaohk.com/huong-dan/thuat-ngu-gia-pha.html): Giải nghĩa ngắn gọn các thuật ngữ gia phả Việt Nam: gia phả, phả hệ, phả đồ, phả ký, ngoại phả, thuỷ tổ, đời, chi, tộc trưởng, từ đường, tên tự, tên huý, tên thuỵ, chạp họ, tảo mộ.
+- [Mẫu sổ gia phả: cấu trúc và cách viết từng phần](https://donghoviet.thaohk.com/huong-dan/mau-so-gia-pha.html): Mẫu sổ gia phả đầy đủ: bìa và trang đầu, lời nói đầu, phả ký, phả hệ, phả đồ, ngoại phả, phụ khảo; gợi ý cách viết từng phần và cách xuất sổ gia phả PDF.
+- [Chạp họ, tảo mộ, giỗ Tổ dòng họ: ý nghĩa, thời điểm và cách tổ chức](https://donghoviet.thaohk.com/huong-dan/chap-ho-tao-mo-gio-to.html): Chạp họ, tảo mộ và giỗ Tổ dòng họ là gì, thường tổ chức vào lúc nào, cần chuẩn bị gì và khác Giỗ Tổ Hùng Vương ra sao; gợi ý tổ chức để cả họ nhớ và cùng tham gia.
+
+## Khác
+- [Giới thiệu và hỏi đáp](https://donghoviet.thaohk.com/)
+- [Sổ tay Văn hoá: phong tục, nghi lễ, tín ngưỡng](https://giapha.thaohk.com/so-tay)
+- Liên hệ: support@thaohk.com
