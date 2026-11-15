@@ -2,23 +2,22 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { IconBell, IconCheck } from "@/components/icons";
+import { Chip, type ChipTone } from "@/components/Chip";
+import { IconBell, IconCheck, IconClock } from "@/components/icons";
+import { IconTile } from "@/components/IconTile";
 import { Button } from "@/components/ui/button";
 import { PanelActionBar } from "@/components/ui/form-actions";
 import { usePanel } from "@/components/panel/usePanel";
 import { SidePanel } from "@/components/SidePanel";
 import {
+  type AnnouncementLevel,
   announcementsMarkAllRead,
   announcementsUnreadCount,
   listAnnouncements,
   listMyAnnouncementReads,
   markAnnouncementRead,
 } from "@/lib/queries/announcements";
-import {
-  LEVEL_BADGE,
-  LEVEL_LABEL,
-  formatRelative,
-} from "@/lib/announcementFormat";
+import { LEVEL_LABEL, formatRelative } from "@/lib/announcementFormat";
 import {
   inboxUnreadCount,
   listMyInbox,
@@ -37,6 +36,22 @@ import { t } from "@lingui/core/macro";
  * dung ngay trong panel (không rời trang); tin hộp thư riêng có đường dẫn thì
  * đi tới đó. Badge số chưa đọc vẫn poll nền 60s. Ẩn khi chưa đăng nhập.
  */
+const LEVEL_TONE: Record<AnnouncementLevel, ChipTone> = {
+  info: "info",
+  update: "primary",
+  warning: "warning",
+  critical: "danger",
+};
+
+/** Các dòng không rỗng đầu tiên của nội dung thông báo, để xem trước ở trạng thái thu gọn. */
+function previewLines(body: string | null, max: number): string[] {
+  return (body ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
 export function NotificationBell() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -215,59 +230,64 @@ export function NotificationBell() {
             </div>
           )}
           {rows.length > 0 && (
-            <ul className="-mx-4 divide-y border-t sm:-mx-5">
+            <ul className="divide-y overflow-hidden rounded-xl border bg-card shadow-sm">
               {rows.map((row) => {
                 const isRead = row.read;
                 const isOpen = expanded === row.key;
+                const tone: ChipTone = row.level
+                  ? LEVEL_TONE[row.level]
+                  : "neutral";
                 return (
-                  <li key={row.key}>
+                  <li key={row.key} className={isRead ? "opacity-80" : ""}>
                     <button
                       type="button"
                       onClick={() => openItem(row)}
                       aria-expanded={
                         row.kind === "announcement" ? isOpen : undefined
                       }
-                      className={`flex w-full gap-2.5 px-4 py-3 text-left transition-colors hover:bg-muted/60 sm:px-5 ${
-                        isRead ? "" : "bg-primary/[0.045]"
-                      }`}
+                      className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
                     >
-                      <span
-                        aria-hidden
-                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                          isRead ? "bg-transparent" : "bg-primary"
-                        }`}
-                      />
+                      <IconTile icon={IconBell} tone={tone} />
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-start gap-2">
-                          <span
-                            className={`min-w-0 flex-1 text-sm leading-snug ${
-                              isOpen ? "" : "line-clamp-2"
-                            } ${isRead ? "font-medium text-foreground/80" : "font-semibold"}`}
-                          >
-                            {row.title}
-                          </span>
-                          {row.level && (
-                            <span
-                              className={`mt-0.5 shrink-0 rounded-full border px-1.5 py-0.5 text-[10px] font-medium ${LEVEL_BADGE[row.level]}`}
-                            >
-                              {LEVEL_LABEL[row.level]}
-                            </span>
-                          )}
-                        </span>
                         <span
-                          // `block` đè lên `display:-webkit-box` của line-clamp (thu gọn mất tác dụng, cả đoạn tràn ra
-                          // thành một khối chữ) — nên chỉ đặt block khi mở. Giữ xuống dòng ở cả hai trạng thái.
-                          className={`mt-1 whitespace-pre-line text-xs leading-relaxed text-muted-foreground ${
-                            isOpen ? "block" : "line-clamp-2"
-                          }`}
+                          className={`block text-sm leading-snug ${
+                            isOpen ? "" : "line-clamp-2"
+                          } ${isRead ? "font-medium text-foreground/80" : "font-semibold"}`}
                         >
-                          {row.body}
+                          {row.title}
                         </span>
-                        {row.at && (
-                          <span className="mt-1 block text-xs tabular-nums text-muted-foreground">
-                            {formatRelative(row.at)}
+                        {isOpen ? (
+                          <span className="mt-1 block whitespace-pre-line text-xs leading-relaxed text-muted-foreground">
+                            {row.body}
+                          </span>
+                        ) : (
+                          // Thu gọn: mỗi ý (dòng) nằm trên một dòng riêng, tối đa 4 dòng không tính dòng trống,
+                          // dòng dài cắt bằng "…". Dồn thành một đoạn thì không còn thấy cấu trúc bullet.
+                          <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                            {previewLines(row.body, 4).map((line, i) => (
+                              <span key={i} className="block truncate">
+                                {line}
+                              </span>
+                            ))}
                           </span>
                         )}
+                        <span className="mt-2 flex flex-wrap justify-end gap-1.5">
+                          {!isRead && (
+                            <Chip tone="warning" icon={<IconCheck />}>
+                              {t`Chưa đọc`}
+                            </Chip>
+                          )}
+                          {row.level && (
+                            <Chip tone={tone} icon={<IconBell />}>
+                              {LEVEL_LABEL[row.level]}
+                            </Chip>
+                          )}
+                          {row.at && (
+                            <Chip tone="neutral" icon={<IconClock />}>
+                              {formatRelative(row.at)}
+                            </Chip>
+                          )}
+                        </span>
                       </span>
                     </button>
                   </li>
