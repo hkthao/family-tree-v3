@@ -18,13 +18,15 @@ import {
   IconSettings,
   IconHome,
   IconLink,
-  IconMore,
   IconPencil,
   IconPlus,
   IconAward,
   IconScroll,
   IconSparkles,
   IconTree,
+  IconList,
+  IconCalendar,
+  IconUsers,
   IconUpload,
   IconWallet,
 } from "@/components/icons";
@@ -452,10 +454,10 @@ export default function Dashboard() {
           {/* Bản đồ dòng họ: nơi ở của con cháu, mộ phần, di sản theo tỉnh — ngay dưới số liệu. */}
           {isMember && <MapOverviewCard clanId={clan.id} />}
 
-          {/* Thao tác nhanh — TỐI ĐA 12 ô, chọn theo mức dùng thật (Umami 90 ngày: Mộ phần 40, Cài đặt 38,
-              Phòng ký ức 32, Di sản 32, Việc cần làm 28, Bảng tin 28, Quỹ họ 11…) và giá trị hành động (Thêm người, Nhập
-              Excel). Cây / Danh bạ không lặp lại vì đã nằm trên thanh tab dưới. Ô thứ 12 LUÔN là lối tắt vào "Tất cả tính
-              năng" để không mục nào bị mất đường vào. */}
+          {/* Thao tác nhanh — TỐI ĐA 12 ô, icon GIỐNG menu trái. Đứng đầu là ĐỦ các mục của nhóm lõi (Cây gia phả,
+              Danh bạ, Tra cứu quan hệ, Sự kiện — Tổng quan là trang này), rồi tới các mục chọn theo mức dùng thật (Umami
+              90 ngày: Mộ phần 40, Cài đặt 38, Phòng ký ức 32, Di sản 32, Việc cần làm 28, Bảng tin 28, Quỹ họ 11…) và giá trị
+              hành động (Thêm người). Ô thứ 12 LUÔN là lối tắt vào "Tất cả tính năng" để không mục nào mất đường vào. */}
           {(() => {
             const feat = (k: Parameters<typeof isFeatureEnabled>[1]) =>
               isFeatureEnabled(clan.disabled_features, k);
@@ -466,7 +468,54 @@ export default function Dashboard() {
               node: ReactNode;
             };
             // Thứ tự = thứ tự ưu tiên: nếu quá 11 ô hợp lệ thì các ô cuối bị bỏ (vẫn vào được qua "Tất cả tính năng").
+            // Cùng điều kiện hiển thị với nhóm lõi ở menu trái (lib/navModel.tsx).
+            const canTree = isMember || clan.public_show_tree;
+            const canEvents = isMember || clan.public_show_events;
             const candidates: Quick[] = [
+              {
+                key: "tree",
+                show: canTree,
+                node: (
+                  <ActionTile
+                    to={`${base}/tree`}
+                    icon={<IconTree />}
+                    title={t`Cây gia phả`}
+                  />
+                ),
+              },
+              {
+                key: "people",
+                show: canTree,
+                node: (
+                  <ActionTile
+                    to={`${base}/people`}
+                    icon={<IconUsers />}
+                    title={t`Danh bạ`}
+                  />
+                ),
+              },
+              {
+                key: "relations",
+                show: canTree && isMember,
+                node: (
+                  <ActionTile
+                    to={`${base}/relations`}
+                    icon={<IconTree />}
+                    title={t`Tra cứu quan hệ`}
+                  />
+                ),
+              },
+              {
+                key: "events",
+                show: canEvents,
+                node: (
+                  <ActionTile
+                    to={`${base}/events`}
+                    icon={<IconCalendar />}
+                    title={t`Sự kiện`}
+                  />
+                ),
+              },
               {
                 key: "add",
                 show: canEdit,
@@ -484,7 +533,7 @@ export default function Dashboard() {
                 node: (
                   <ActionTile
                     to={`${base}/todo`}
-                    icon={<IconCheck />}
+                    icon={<IconList />}
                     title={t`Việc làm`}
                     badge={todoCount}
                   />
@@ -507,7 +556,7 @@ export default function Dashboard() {
                 node: (
                   <ActionTile
                     to={`${base}/board`}
-                    icon={<IconScroll />}
+                    icon={<IconSparkles />}
                     title={t`Bảng tin`}
                   />
                 ),
@@ -541,7 +590,7 @@ export default function Dashboard() {
                 node: (
                   <ActionTile
                     to={`${base}/xem-ngay`}
-                    icon={<IconSparkles />}
+                    icon={<IconCalendar />}
                     title={t`Xem ngày tốt`}
                   />
                 ),
@@ -625,7 +674,7 @@ export default function Dashboard() {
                   ))}
                   <ActionTile
                     to={`${base}/menu`}
-                    icon={<IconMore />}
+                    icon={<IconGrid />}
                     title={t`Tất cả tính năng`}
                     tone="muted"
                   />

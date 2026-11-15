@@ -2298,6 +2298,7 @@ msgstr "Cây 3D"
 #: src/components/InlawFamilyCard.tsx
 #: src/lib/navModel.tsx
 #: src/lib/pageTitle.ts
+#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/clan/Tree.tsx
 #: src/pages/Share.tsx
@@ -5307,6 +5308,7 @@ msgstr "Đang xuất…"
 #: src/pages/clan/AddChild.tsx
 #: src/pages/clan/AddParent.tsx
 #: src/pages/clan/AddSpouse.tsx
+#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/EditPerson.tsx
 #: src/pages/clan/NewPerson.tsx
 #: src/pages/clan/People.tsx
@@ -12021,6 +12023,7 @@ msgstr "sự kiện"
 #: src/lib/queries/global-search.ts
 #: src/pages/clan/Board.tsx
 #: src/pages/clan/BoardPostDetail.tsx
+#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/Events.tsx
 #: src/pages/clan/Events.tsx
 msgid "Sự kiện"
@@ -14394,6 +14397,7 @@ msgstr "Tra cứu phong tục, nghi lễ, tín ngưỡng các vùng miền Việ
 
 #: src/lib/navModel.tsx
 #: src/lib/nextSteps.ts
+#: src/pages/clan/Dashboard.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
 #: src/pages/clan/People.tsx
