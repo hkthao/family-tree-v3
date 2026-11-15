@@ -92,7 +92,7 @@ function ChangelogEntry({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-stretch gap-3 p-3 text-left transition-colors hover:bg-muted/40"
+        className="flex w-full items-stretch gap-3 p-4 sm:p-5 text-left transition-colors hover:bg-muted/40"
       >
         <span className="min-w-0 flex-1">
           <span className="flex items-start gap-2">
@@ -106,11 +106,11 @@ function ChangelogEntry({
             />
           </span>
           {open ? (
-            <span className="mt-1 block whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+            <span className="mt-2 block whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
               {row.body}
             </span>
           ) : (
-            <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">
+            <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">
               {previewLines(row.body, 3).map((line, i) => (
                 <span key={i} className="block truncate">
                   {line}
@@ -118,7 +118,7 @@ function ChangelogEntry({
               ))}
             </span>
           )}
-          <span className="mt-2 flex flex-wrap justify-end gap-1.5">
+          <span className="mt-4 flex flex-wrap justify-end gap-1.5">
             <Chip tone={tone}>{LEVEL_LABEL[row.level]}</Chip>
             {row.published_at && (
               <Chip tone="neutral" icon={<IconClock />}>
